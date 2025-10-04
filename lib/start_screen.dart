@@ -36,7 +36,7 @@ class _StartScreenState extends State<StartScreen> with SingleTickerProviderStat
       child: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage("background.png"), // background image
+            image: AssetImage("assets/background.png"), // background image
             fit: BoxFit.cover,
           ),
         ),
