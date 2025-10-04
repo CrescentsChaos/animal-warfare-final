@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // 🚀 NEW
-import 'package:google_sign_in/google_sign_in.dart'; // 🚀 NEW
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class MainGameScreen extends StatefulWidget {
   const MainGameScreen({super.key}); 
@@ -13,9 +13,31 @@ class _MainGameScreenState extends State<MainGameScreen> {
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   
-  // 🚀 NEW: State variable to track user status
+  // State variable to track user status
   bool isLoggedIn = false; 
 
+  // 🚀 NEW: Check for an active user session when the screen starts
+  @override
+  void initState() {
+    super.initState();
+    // Use the authStateChanges stream to check the current user status
+    _auth.authStateChanges().listen((User? user) {
+      if (user != null) {
+        // User is signed in
+        setState(() {
+          isLoggedIn = true;
+        });
+        print("Existing user found: ${user.displayName}");
+      } else {
+        // User is signed out
+        setState(() {
+          isLoggedIn = false;
+        });
+        print("No active user session.");
+      }
+    });
+  }
+  
   void _onPlayTapped() {
     // A new game is usually available regardless of login
     print("Play Tapped: Starting new game.");
@@ -49,27 +71,24 @@ class _MainGameScreenState extends State<MainGameScreen> {
         // ➡️ LOGOUT Logic
         await _auth.signOut();
         await _googleSignIn.signOut();
-        setState(() {
-          isLoggedIn = false;
-        });
+        // The authStateChanges listener will handle the setState
         _showSnackbar("Logged out successfully.");
         print("Logged Out");
       } else {
         // ➡️ LOGIN Logic
         User? user = await _signInWithGoogle();
-        if (user != true) {
-          setState(() {
-            isLoggedIn = true;
-          });
-          _showSnackbar("Logged in as ${user!.displayName}.");
-          print("Logged in as ${user!.displayName}");
+        // NOTE: The condition has been corrected from (user != true) to (user != null)
+        if (user != null) {
+          // The authStateChanges listener will handle the setState
+          _showSnackbar("Logged in as ${user.displayName}.");
+          print("Logged in as ${user.displayName}");
         } else {
           _showSnackbar("Google Sign-In failed or was cancelled.");
           print("Google Sign-In failed.");
         }
       }
     }
-    // 🚀 NEW: Method to handle the Google Sign-In flow
+    // Method to handle the Google Sign-In flow
   Future<User?> _signInWithGoogle() async {
     try {
       // 1. Trigger the Google sign-in flow
@@ -102,10 +121,16 @@ class _MainGameScreenState extends State<MainGameScreen> {
   
   // Helper to show messages to the user (snackbars are non-retro, but functional)
   void _showSnackbar(String message) {
+    // Check if the widget is mounted before showing a snackbar
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
     );
   }
+  
+  // NOTE: You should also dispose of any streams you listen to, 
+  // but for the simple FirebaseAuth stream, it's often managed internally 
+  // or the overhead is negligible for a single screen.
 
   @override
   Widget build(BuildContext context) {
@@ -154,7 +179,7 @@ class _MainGameScreenState extends State<MainGameScreen> {
     );
   }
 
-  // ⭐️ Updated Helper method to include 'isEnabled' logic
+  // Helper method to include 'isEnabled' logic
   Widget _buildMenuButton(String text, VoidCallback onPressed, {bool isPrimary = true, required bool isEnabled}) {
     // Use onPressed: null to disable the button, which greys it out automatically
     final effectiveOnPressed = isEnabled ? onPressed : null;

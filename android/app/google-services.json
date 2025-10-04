@@ -12,7 +12,20 @@
           "package_name": "com.crescent.animal_warfare"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "459049398921-s6vag6d2lml4pu3im7srspdon58im5mn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.crescent.animal_warfare",
+            "certificate_hash": "e3b57502d3f4513fc95e62bbce59593400328436"
+          }
+        },
+        {
+          "client_id": "459049398921-f5v7di6bddqqfhfaivbs6u4619ofts4t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBtbgxNcAD5e6nz0gE1fYSeLhmLgnwn2yY"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "459049398921-f5v7di6bddqqfhfaivbs6u4619ofts4t.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "459049398921-fo7s7me25h01jdblsoiab6cvl52ehfha.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.animalWarfare"
+              }
+            }
+          ]
         }
       }
     }
