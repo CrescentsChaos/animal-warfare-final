@@ -1,4 +1,4 @@
-package com.example.animal_warfare
+package com.crescent.animal_warfare
 
 import io.flutter.embedding.android.FlutterActivity
 

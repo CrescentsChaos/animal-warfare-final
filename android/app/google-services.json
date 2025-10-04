@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "459049398921",
+    "project_id": "animal-warfare-game",
+    "storage_bucket": "animal-warfare-game.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:459049398921:android:356a73955719fb90f34c58",
+        "android_client_info": {
+          "package_name": "com.crescent.animal_warfare"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBtbgxNcAD5e6nz0gE1fYSeLhmLgnwn2yY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
