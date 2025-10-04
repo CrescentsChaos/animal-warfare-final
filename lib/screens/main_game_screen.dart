@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:animal_warfare/screens/profile_screen.dart'; 
 
 class MainGameScreen extends StatefulWidget {
   const MainGameScreen({super.key}); 
@@ -58,8 +59,23 @@ class _MainGameScreenState extends State<MainGameScreen> {
   void _onProfileTapped() {
     // Only allow profile access if logged in
     if (isLoggedIn) {
-      // TODO: Implement navigation to the user profile screen
-      print("Profile Tapped: Showing user profile.");
+      final user = _auth.currentUser;
+      
+      if (user != null) {
+      // This part is correct: it navigates and passes the user object.
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (ctx) => ProfileScreen(user: user),
+        ),
+      );
+    } else {
+        // Fallback case
+        print("Profile Blocked: isLoggedIn is true, but currentUser is null.");
+        _showSnackbar("Could not load profile. Please try logging in again.");
+        setState(() {
+          isLoggedIn = false;
+        });
+      }
     } else {
       print("Profile Blocked: Must log in first.");
       _showSnackbar("Please log in to view your profile.");
