@@ -43,15 +43,16 @@ class _StartScreenState extends State<StartScreen> with SingleTickerProviderStat
         child: Center(
           child: FadeTransition(
             opacity: _animation,
-            child: const Text(
+            child: Text(
               "TAP TO CONTINUE",
+              textAlign: TextAlign.center,
               style: TextStyle(
-                fontFamily: 'PressStart2P', // retro font
-                fontSize: 24,
+                fontFamily: 'PressStart2P',
+                fontSize: MediaQuery.of(context).size.width * 0.06, // scales with screen width
                 color: Colors.white,
                 letterSpacing: 2,
-                decoration:TextDecoration.none,
-                shadows: [
+                decoration: TextDecoration.none,
+                shadows: const [
                   Shadow(
                     blurRadius: 4,
                     color: Colors.black,
