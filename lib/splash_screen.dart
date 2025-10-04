@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:animal_warfare/main_screen.dart';
+import 'package:audioplayers/audioplayers.dart'; // ⬅️ NEW: Import the audio package
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -14,12 +15,19 @@ class _SplashScreenState extends State<SplashScreen>
   late AnimationController _animationController;
   late Animation<double> _opacityAnimation;
   
+  // ⬅️ NEW: Declare the audio player instance
+  late AudioPlayer _audioPlayer;
+  
   // Flag to ensure pre-caching runs only once
   bool _assetsPrecached = false; 
 
   @override
   void initState() {
     super.initState();
+    
+    // ⬅️ NEW: Initialize Audio Player and start music
+    _audioPlayer = AudioPlayer();
+    _playBackgroundMusic();
 
     _animationController = AnimationController(
       vsync: this,
@@ -30,6 +38,23 @@ class _SplashScreenState extends State<SplashScreen>
 
     // Set the app to full-screen mode for a game look
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
+  }
+  
+  // ⬅️ NEW: Function to play music in a loop
+  void _playBackgroundMusic() async {
+    // Set a moderate volume (e.g., 50%) for background music
+    await _audioPlayer.setVolume(0.5); 
+    
+    // Set the release mode to loop indefinitely 
+    await _audioPlayer.setReleaseMode(ReleaseMode.loop); 
+    
+    // Start playing the music asset
+    try {
+      await _audioPlayer.play(AssetSource('audio/splash_theme.mp3'));
+    } catch (e) {
+      // Handle the case where the file is not found or cannot be played
+      debugPrint('Could not play audio: $e');
+    }
   }
 
   // Use didChangeDependencies to safely run asset pre-caching
@@ -44,16 +69,24 @@ class _SplashScreenState extends State<SplashScreen>
       
       // 2. Pre-cache the logo image
       precacheImage(const AssetImage('assets/logo.png'), context);
-
-      // The custom font ('PressStart2P') is loaded globally via ThemeData, 
-      // but if you had other specific assets, you'd cache them here too.
       
       _assetsPrecached = true;
+      
+      // OPTIONAL: Add a timer to automatically advance after 5 seconds if no tap occurs
+      // Future.delayed(const Duration(seconds: 5), () {
+      //   if(mounted) { // Check if widget is still active before navigating
+      //     _navigateToMainScreen();
+      //   }
+      // });
     }
   }
 
   // Navigate to the next screen (e.g., your main game menu)
   void _navigateToMainScreen() {
+    // ⬅️ NEW: Stop and dispose of the audio player immediately before navigating
+    _audioPlayer.stop();
+    _audioPlayer.dispose();
+    
     // Restore system UI overlays (status bar, navigation bar)
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
@@ -67,6 +100,8 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void dispose() {
     _animationController.dispose();
+    // ⬅️ NEW: Just in case the player wasn't disposed during navigation, do it here too
+    _audioPlayer.dispose();
     super.dispose();
   }
 
@@ -80,12 +115,9 @@ class _SplashScreenState extends State<SplashScreen>
           fit: StackFit.expand,
           children: <Widget>[
             // 1. Background Image
-            // We use a Builder to ensure the Image is loaded after precacheImage
             Image.asset(
               'assets/background.png',
               fit: BoxFit.cover,
-              // Use a small FadeInImage effect for a smoother transition
-              // This is often not needed with precacheImage, but is a good fallback
               frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
                 if (wasSynchronouslyLoaded || frame != null) {
                   return child;
@@ -118,8 +150,6 @@ class _SplashScreenState extends State<SplashScreen>
                     child: const Text(
                       'TAP TO CONTINUE',
                       style: TextStyle(
-                        // No need for explicit fontFamily here as it's set in the global theme, 
-                        // but keeping it explicit for clarity if the theme is overridden later.
                         fontSize: 16,
                         color: Colors.white,
                         shadows: [
@@ -143,7 +173,6 @@ class _SplashScreenState extends State<SplashScreen>
               child: Text(
                 'V 1.0.0', // Replace with a dynamic version number later
                 style: TextStyle(
-                  // Using Theme text style, ensuring the PressStart2P font is applied
                   fontSize: 10,
                   color: Colors.white.withOpacity(0.7),
                 ),
