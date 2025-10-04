@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:animal_warfare/login_screen.dart';
+import 'package:animal_warfare/login_screen.dart'; 
 import 'package:animal_warfare/profile_screen.dart';
 import 'package:animal_warfare/game_screen.dart';
+import 'package:animal_warfare/local_auth_service.dart'; // Import service
+import 'package:animal_warfare/main.dart'; // Import to use the app's initial route
 
-// Placeholder for user state (should eventually come from Firebase Auth)
-enum AuthStatus { loggedIn, guest }
+// Placeholder for user state (adding 'loading' to prevent incorrect initial display)
+enum AuthStatus { loading, loggedIn, guest } 
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -14,123 +16,177 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  // Simple state to toggle between logged in/guest for the UI demo
-  AuthStatus _authStatus = AuthStatus.guest;
+  final LocalAuthService _authService = LocalAuthService();
+  AuthStatus _authStatus = AuthStatus.loading; // Start in loading state
+  UserData? _currentUser; 
 
   // Define High-Contrast Retro/Military-themed colors
-  static const Color primaryButtonColor = Color(0xFF38761D); // Bright Jungle Green (Primary action)
-  static const Color secondaryButtonColor = Color(0xFF1E3F2A); // Deep Forest Green (Secondary action)
+  static const Color primaryButtonColor = Color(0xFF38761D); // Bright Jungle Green
+  static const Color secondaryButtonColor = Color(0xFF1E3F2A); // Deep Forest Green
   static const Color highlightColor = Color(0xFFDAA520); // Goldenrod (Text/Border highlight)
-  static const Color darkOverlayColor = Colors.black45; // Dark overlay for background
+  static const Color darkOverlayColor = Colors.black45; // Dark overlay
 
-  // Custom button builder to ensure consistent retro/jungle styling
-  Widget _buildThemedButton({
-    required String text,
-    required IconData icon,
-    required VoidCallback onPressed,
-    required bool isPrimary, // Used to make the PLAY button stand out
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10.0), // Slightly less vertical padding
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(
-          maxWidth: 300, 
-          minWidth: 200, 
-        ),
-        child: ElevatedButton(
-          onPressed: onPressed,
-          style: ElevatedButton.styleFrom(
-            // Primary button (PLAY) gets the vibrant green, others get deep forest green
-            backgroundColor: isPrimary ? primaryButtonColor : secondaryButtonColor, 
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8.0),
-              // Use the Goldenrod highlight color for a classic military look
-              side: BorderSide(color: highlightColor, width: isPrimary ? 4 : 3), 
-            ),
-            elevation: 12, // Higher elevation for a more prominent look
-            shadowColor: Colors.black.withOpacity(0.9),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min, 
-            children: [
-              Icon(icon, size: 22), 
-              const SizedBox(width: 10), 
-              Flexible( 
-                child: Text(
-                  text,
-                  textAlign: TextAlign.center, 
-                  style: TextStyle(
-                    fontSize: 16, 
-                    letterSpacing: 1.0, 
-                    fontWeight: FontWeight.bold,
-                    // Use the highlight color for text for better contrast and classic feel
-                    color: highlightColor, 
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+  @override
+  void initState() {
+    super.initState();
+    // CRITICAL: Check local storage status immediately when the screen loads
+    _checkCurrentUserStatus(); 
+  }
+  
+  // Asynchronously checks local storage for a current session
+  Future<void> _checkCurrentUserStatus() async {
+    final user = await _authService.getCurrentUser();
+    if (mounted) {
+      setState(() {
+        if (user != null) {
+          _authStatus = AuthStatus.loggedIn; // Set to loggedIn
+          _currentUser = user;
+        } else {
+          _authStatus = AuthStatus.guest;
+          _currentUser = null;
+        }
+      });
+    }
   }
 
+  // Handle navigation to other screens (Login, Profile, Game)
   void _navigateTo(Widget screen) {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (context) => screen),
     );
   }
 
+  // Handle the combined Login/Logout action
+  Future<void> _handleAuthAction() async {
+    if (_authStatus == AuthStatus.loggedIn) {
+      // LOGOUT LOGIC
+      await _authService.logout();
+      // Force UI update
+      if (mounted) {
+        setState(() {
+          _authStatus = AuthStatus.guest;
+          _currentUser = null;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Logged out successfully.')),
+        );
+      }
+    } else {
+      // LOGIN/SIGNUP LOGIC
+      _navigateTo(const LoginScreen());
+    }
+  }
+
+  // Custom button builder
+  Widget _buildThemedButton({
+    required String text,
+    required IconData icon,
+    required VoidCallback onPressed,
+    required bool isPrimary, // Used to make the PLAY button stand out
+  }) {
+    final Color buttonColor = isPrimary ? primaryButtonColor : secondaryButtonColor;
+    final Color textColor = highlightColor; // Use gold for text
+
+    return Container(
+      // FIX: Changed fixed width (300) to double.infinity to prevent overflow
+      width: double.infinity, 
+      height: 65,
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      decoration: BoxDecoration(
+        color: buttonColor,
+        border: Border.all(color: highlightColor, width: isPrimary ? 3 : 2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.6),
+            offset: const Offset(4, 4),
+            blurRadius: 0,
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, color: textColor, size: 24),
+                const SizedBox(width: 15),
+                Text(
+                  text,
+                  style: TextStyle(
+                    color: textColor,
+                    // FIX: Slightly reduced font size to prevent overflow in Row
+                    fontSize: 16, 
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final loginButtonText = _authStatus == AuthStatus.guest ? 'LOGIN / SIGNUP' : 'LOGOUT';
-    final loginButtonIcon = _authStatus == AuthStatus.guest ? Icons.lock_open : Icons.lock;
+    // Determine button text and icon based on current status
+    final String loginButtonText = 
+      _authStatus == AuthStatus.loggedIn ? 'LOGOUT' : 'LOGIN / SIGNUP';
+    final IconData loginButtonIcon = 
+      _authStatus == AuthStatus.loggedIn ? Icons.lock_open : Icons.lock;
+
+    // Show a spinner while loading the authentication status
+    if (_authStatus == AuthStatus.loading) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(color: highlightColor),
+        ),
+      );
+    }
 
     return Scaffold(
       body: Stack(
-        fit: StackFit.expand,
-        children: [
+        children: <Widget>[
           // 1. Background Image
-          Image.asset(
-            'assets/background.png',
-            fit: BoxFit.cover,
+          Positioned.fill(
+            child: Image.asset(
+              'assets/background.png',
+              fit: BoxFit.cover,
+            ),
           ),
-          
-          // 2. Dark Overlay Layer for High Contrast
-          Container(
-            color: darkOverlayColor,
+          // 2. Dark Overlay
+          Positioned.fill(
+            child: Container(
+              color: darkOverlayColor,
+            ),
           ),
-
-          // 3. Content 
+          // 3. Content (Using SingleChildScrollView to prevent overflow)
           Center(
-            // Use FractionallySizedBox to shift the content vertically
-            child: FractionallySizedBox(
-              heightFactor: 0.8, // Centers the content around 80% of screen height
+            // FIX: Use less aggressive horizontal padding to give more space for the buttons
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(vertical: 40.0, horizontal: 20.0), 
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min, 
                 children: <Widget>[
                   // App Title / Logo Area
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Text(
-                      'ANIMAL WARFARE',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 26, 
-                        color: highlightColor,
-                        shadows: [
-                          Shadow(
-                            color: Colors.black, // Darker shadow for greater depth
-                            blurRadius: 8,
-                            offset: Offset(5, 5),
-                          ),
-                        ],
-                      ),
+                  Text(
+                    'ANIMAL WARFARE',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      // FIX: Reduced font size slightly to prevent overflow on app title
+                      fontSize: 32, 
+                      fontWeight: FontWeight.bold,
+                      color: highlightColor,
+                      shadows: [
+                        Shadow(color: Colors.black, offset: const Offset(4, 4), blurRadius: 0),
+                      ], 
                     ),
                   ),
-                  
                   const SizedBox(height: 50),
 
                   // PLAY GAME Button (Primary)
@@ -145,22 +201,17 @@ class _MainScreenState extends State<MainScreen> {
                   _buildThemedButton(
                     text: loginButtonText,
                     icon: loginButtonIcon,
-                    onPressed: () {
-                      setState(() {
-                        _authStatus = _authStatus == AuthStatus.guest
-                            ? AuthStatus.loggedIn
-                            : AuthStatus.guest;
-                      });
-                    },
+                    onPressed: _handleAuthAction, 
                     isPrimary: false,
                   ),
 
-                  // PROFILE Button (Secondary - Visible when logged in)
+                  // PROFILE Button (Secondary - Visible ONLY when logged in)
                   if (_authStatus == AuthStatus.loggedIn) 
                     _buildThemedButton(
                       text: 'PROFILE',
                       icon: Icons.person,
-                      onPressed: () => _navigateTo(const ProfileScreen()),
+                      // Pass current user data to profile screen
+                      onPressed: () => _navigateTo(const ProfileScreen()), 
                       isPrimary: false,
                     ),
 
@@ -169,8 +220,8 @@ class _MainScreenState extends State<MainScreen> {
                   Text(
                     'STATUS: ${_authStatus == AuthStatus.guest ? 'GUEST ACCESS' : 'PLAYER ACTIVE'}',
                     style: TextStyle(
-                      fontSize: 10,
-                      color: highlightColor.withOpacity(0.8), // Use gold color for status
+                      fontSize: 12,
+                      color: highlightColor.withOpacity(0.8), 
                       shadows: [
                         Shadow(color: Colors.black.withOpacity(0.5), offset: const Offset(1, 1))
                       ]
