@@ -41,6 +41,8 @@ dev_dependencies:
     sdk: flutter
   flutter_launcher_icons: "^0.13.1"
   google_sign_in: ^6.1.0
+  firebase_core: ^4.1.1 # Add this
+  firebase_auth: ^6.1.0 # Add this
 
 flutter_launcher_icons:
   android: "launcher_icon"

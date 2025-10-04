@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // 🚀 NEW
+import 'package:google_sign_in/google_sign_in.dart'; // 🚀 NEW
 
 class MainGameScreen extends StatefulWidget {
   const MainGameScreen({super.key}); 
@@ -8,6 +10,9 @@ class MainGameScreen extends StatefulWidget {
 }
 
 class _MainGameScreenState extends State<MainGameScreen> {
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  
   // 🚀 NEW: State variable to track user status
   bool isLoggedIn = false; 
 
@@ -39,16 +44,59 @@ class _MainGameScreenState extends State<MainGameScreen> {
     }
   }
 
-  void _onLoginLogoutTapped() {
-    // 🚀 NEW: Toggle the login status for demonstration
-    setState(() {
-      isLoggedIn = !isLoggedIn;
-    });
+  void _onLoginLogoutTapped() async {
+      if (isLoggedIn) {
+        // ➡️ LOGOUT Logic
+        await _auth.signOut();
+        await _googleSignIn.signOut();
+        setState(() {
+          isLoggedIn = false;
+        });
+        _showSnackbar("Logged out successfully.");
+        print("Logged Out");
+      } else {
+        // ➡️ LOGIN Logic
+        User? user = await _signInWithGoogle();
+        if (user != true) {
+          setState(() {
+            isLoggedIn = true;
+          });
+          _showSnackbar("Logged in as ${user!.displayName}.");
+          print("Logged in as ${user!.displayName}");
+        } else {
+          _showSnackbar("Google Sign-In failed or was cancelled.");
+          print("Google Sign-In failed.");
+        }
+      }
+    }
+    // 🚀 NEW: Method to handle the Google Sign-In flow
+  Future<User?> _signInWithGoogle() async {
+    try {
+      // 1. Trigger the Google sign-in flow
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
 
-    if (isLoggedIn) {
-      _showSnackbar("Logged In Successfully! (Simulation)");
-    } else {
-      _showSnackbar("Logged Out Successfully!");
+      if (googleUser == null) {
+        // User cancelled the sign-in
+        return null; 
+      }
+
+      // 2. Get the authentication details from the request
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+      // 3. Create a new credential for Firebase
+      final AuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      // 4. Sign in to Firebase with the credential
+      final UserCredential userCredential = await _auth.signInWithCredential(credential);
+
+      // Return the authenticated user
+      return userCredential.user;
+    } catch (e) {
+      print("Error during Google Sign-In: $e");
+      return null;
     }
   }
   

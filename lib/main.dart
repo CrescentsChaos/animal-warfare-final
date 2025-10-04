@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart'; 
+import 'package:animal_warfare/firebase_options.dart';
 import 'package:animal_warfare/screens/start_screen.dart'; // 1. Import your StartScreen
 
-void main() {
+void main() async {
   // Ensure Flutter engine bindings are initialized before runApp, 
   // important for potential asset or device interactions later.
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const AnimalWarfareApp());
 }
 
