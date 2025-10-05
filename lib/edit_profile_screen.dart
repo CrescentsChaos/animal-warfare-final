@@ -1,8 +1,7 @@
-// edit_profile_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:animal_warfare/local_auth_service.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'dart:io';
 
 class EditProfileScreen extends StatefulWidget {
@@ -12,7 +11,7 @@ class EditProfileScreen extends StatefulWidget {
   State<EditProfileScreen> createState() => _EditProfileScreenState();
 }
 
-class _EditProfileScreenState extends State<EditProfileScreen> {
+class _EditProfileScreenState extends State<EditProfileScreen> with WidgetsBindingObserver {
   final LocalAuthService _authService = LocalAuthService();
   final ImagePicker _picker = ImagePicker();
 
@@ -20,7 +19,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   File? _pickedAvatarFile;
   final TextEditingController _usernameController = TextEditingController();
   String? _selectedGender;
-  bool _isLoading = true; // Only used for the initial load
+  bool _isLoading = true; 
+
+  late AudioPlayer _audioPlayer; 
+  bool _wasPlayingBeforePause = false; 
 
   // Custom retro/military colors
   static const Color primaryButtonColor = Color(0xFF38761D);
@@ -30,10 +32,43 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this); 
+
+    _audioPlayer = AudioPlayer(); 
+    
     _loadUserProfile();
   }
+  
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    if (state == AppLifecycleState.paused) {
+      _pauseMusic(true);
+    } else if (state == AppLifecycleState.resumed) {
+      _resumeMusic();
+    }
+  }
 
-  // Load user data from the local storage file
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _audioPlayer.dispose();
+    super.dispose();
+  }
+
+  void _pauseMusic(bool rememberState) async {
+    if (rememberState) {
+      _wasPlayingBeforePause = _audioPlayer.state == PlayerState.playing;
+    }
+    await _audioPlayer.pause();
+  }
+
+  void _resumeMusic() async {
+    if (_wasPlayingBeforePause) {
+      await _audioPlayer.resume();
+      _wasPlayingBeforePause = false;
+    }
+  }
+
   Future<void> _loadUserProfile() async {
     final user = await _authService.getCurrentUser();
     if (user != null) {
@@ -58,7 +93,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     });
   }
 
-  // Pick image from the device gallery (No change needed here)
   Future<void> _pickImage() async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 50);
 
@@ -69,38 +103,31 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
   }
 
-  // Save the updated profile information
   Future<void> _saveProfile() async {
     if (_currentUser == null || _isLoading) return;
 
-    // We do NOT call setState here, which prevents the stutter/jank.
-
-    // 1. Get the new avatar path (if one was picked), otherwise keep the old one
     final newAvatarPath = _pickedAvatarFile?.path ?? _currentUser!.avatar;
 
-    // 2. Call the service to update the profile data in the JSON file (File I/O)
     await _authService.updateProfile(
       _currentUser!.username,
       avatar: newAvatarPath,
       gender: _selectedGender ?? 'N/A',
     );
 
-    // 3. Provide feedback and navigate back smoothly
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Profile Updated Successfully!')),
       );
-      // Pop the Edit screen immediately after saving
       Navigator.of(context).pop(); 
     }
   }
 
-  // --- UI Helpers (No change needed here) ---
+  // --- UI Helpers ---
+
   Widget _buildThemedButton({
     required String text,
     required VoidCallback onPressed,
   }) {
-    // ... (unchanged implementation)
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.symmetric(vertical: 8.0),
@@ -142,7 +169,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     required IconData icon,
     bool enabled = true,
   }) {
-    // ... (unchanged implementation)
     return Container(
       decoration: BoxDecoration(
         color: secondaryButtonColor.withOpacity(0.8),
@@ -169,8 +195,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  // --- Main Build Method ---
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -180,91 +204,101 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         foregroundColor: highlightColor,
         titleTextStyle: const TextStyle(fontFamily: 'PressStart2P', fontSize: 18),
       ),
-      // Only check _isLoading for the initial load, not for the save button click
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: highlightColor))
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  // ... (Avatar and Gender logic unchanged)
-                  
-                  // 1. AVATAR (Select from Gallery)
-                  GestureDetector(
-                    onTap: _pickImage,
-                    child: CircleAvatar(
-                      radius: 80,
-                      backgroundColor: highlightColor.withOpacity(0.2),
-                      backgroundImage: _pickedAvatarFile != null
-                          ? FileImage(_pickedAvatarFile!) as ImageProvider
-                          : null,
-                      child: _pickedAvatarFile == null
-                          ? const Icon(Icons.add_a_photo, size: 50, color: highlightColor)
-                          : null,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    'Tap to Change Avatar',
-                    style: TextStyle(color: highlightColor, fontSize: 10, fontFamily: 'PressStart2P'),
-                  ),
-                  const SizedBox(height: 40),
-
-                  // 2. USERNAME (Read-only)
-                  _buildTextField(
-                    controller: _usernameController,
-                    labelText: 'USERNAME',
-                    icon: Icons.person,
-                    enabled: false,
-                  ),
-
-                  // 3. GENDER (Dropdown)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: secondaryButtonColor.withOpacity(0.8),
-                      border: Border.all(color: highlightColor.withOpacity(0.6), width: 1),
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        isExpanded: true,
-                        value: _selectedGender,
-                        hint: Text(
-                          'GENDER',
-                          style: TextStyle(
-                            color: highlightColor.withOpacity(0.8),
-                            fontSize: 12,
-                            fontFamily: 'PressStart2P',
-                          ),
-                        ),
-                        dropdownColor: secondaryButtonColor.withOpacity(0.9),
-                        style: const TextStyle(color: Colors.white, fontSize: 14, fontFamily: 'PressStart2P'),
-                        icon: Icon(Icons.arrow_drop_down, color: highlightColor.withOpacity(0.8)),
-                        items: const [
-                          DropdownMenuItem(value: 'Male', child: Text('MALE')),
-                          DropdownMenuItem(value: 'Female', child: Text('FEMALE')),
-                          DropdownMenuItem(value: 'Other', child: Text('OTHER')),
-                          DropdownMenuItem(value: 'N/A', child: Text('N/A')),
-                        ],
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            _selectedGender = newValue;
-                          });
-                        },
+      // **FIXED: Use the same background color for Scaffold and added ColorFilter.**
+      backgroundColor: secondaryButtonColor, // Matches AppBar and text field backgrounds
+      body: Container(
+        width: MediaQuery.of(context).size.width,
+        height: MediaQuery.of(context).size.height,
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/profile.png'),
+            fit: BoxFit.cover,
+            colorFilter: ColorFilter.mode(Colors.black54, BlendMode.darken), // Adjust opacity
+          ),
+        ),
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator(color: highlightColor))
+            : SingleChildScrollView(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    // 1. AVATAR (Select from Gallery)
+                    GestureDetector(
+                      onTap: _pickImage,
+                      child: CircleAvatar(
+                        radius: 80,
+                        backgroundColor: highlightColor.withOpacity(0.2),
+                        backgroundImage: _pickedAvatarFile != null
+                            ? FileImage(_pickedAvatarFile!) as ImageProvider
+                            : null,
+                        child: _pickedAvatarFile == null
+                            ? const Icon(Icons.add_a_photo, size: 50, color: highlightColor)
+                            : null,
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 40),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Tap to Change Avatar',
+                      style: TextStyle(color: highlightColor, fontSize: 10, fontFamily: 'PressStart2P'),
+                    ),
+                    const SizedBox(height: 40),
 
-                  // 4. SAVE PROFILE BUTTON
-                  _buildThemedButton(
-                    text: 'SAVE CHANGES',
-                    onPressed: _saveProfile,
-                  ),
-                ],
+                    // 2. USERNAME (Read-only)
+                    _buildTextField(
+                      controller: _usernameController,
+                      labelText: 'USERNAME',
+                      icon: Icons.person,
+                      enabled: false,
+                    ),
+
+                    // 3. GENDER (Dropdown)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: secondaryButtonColor.withOpacity(0.8),
+                        border: Border.all(color: highlightColor.withOpacity(0.6), width: 1),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          isExpanded: true,
+                          value: _selectedGender,
+                          hint: Text(
+                            'GENDER',
+                            style: TextStyle(
+                              color: highlightColor.withOpacity(0.8),
+                              fontSize: 12,
+                              fontFamily: 'PressStart2P',
+                            ),
+                          ),
+                          dropdownColor: secondaryButtonColor.withOpacity(0.9),
+                          style: const TextStyle(color: Colors.white, fontSize: 14, fontFamily: 'PressStart2P'),
+                          icon: Icon(Icons.arrow_drop_down, color: highlightColor.withOpacity(0.8)),
+                          items: const [
+                            DropdownMenuItem(value: 'Male', child: Text('MALE')),
+                            DropdownMenuItem(value: 'Female', child: Text('FEMALE')),
+                            DropdownMenuItem(value: 'Other', child: Text('OTHER')),
+                            DropdownMenuItem(value: 'N/A', child: Text('N/A')),
+                          ],
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              _selectedGender = newValue;
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 40),
+
+                    // 4. SAVE PROFILE BUTTON
+                    _buildThemedButton(
+                      text: 'SAVE CHANGES',
+                      onPressed: _saveProfile,
+                    ),
+                  ],
+                ),
               ),
-            ),
+      ),
     );
   }
 }

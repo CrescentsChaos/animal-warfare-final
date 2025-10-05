@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:animal_warfare/login_screen.dart'; 
 import 'package:animal_warfare/profile_screen.dart';
 import 'package:animal_warfare/game_screen.dart';
-import 'package:animal_warfare/local_auth_service.dart'; // Import service
-import 'package:audioplayers/audioplayers.dart'; // ⬅️ NEW: Import audio package
+import 'package:animal_warfare/local_auth_service.dart';
+import 'package:audioplayers/audioplayers.dart'; 
+import 'package:animal_warfare/utils/transitions.dart'; // Import utility file
 
 // Placeholder for user state (adding 'loading' to prevent incorrect initial display)
 enum AuthStatus { loading, loggedIn, guest } 
@@ -15,156 +16,130 @@ class MainScreen extends StatefulWidget {
   State<MainScreen> createState() => _MainScreenState();
 }
 
-// ⬅️ UPDATED: Add WidgetsBindingObserver mixin
 class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   final LocalAuthService _authService = LocalAuthService();
   AuthStatus _authStatus = AuthStatus.loading; // Start in loading state
   UserData? _currentUser; 
   
-  // ⬅️ NEW: Audio player instance
   late AudioPlayer _audioPlayer; 
-  // ⬅️ NEW: Flag to track if the audio was playing before pause
   bool _wasPlayingBeforePause = false; 
 
   // Define High-Contrast Retro/Military-themed colors
   static const Color primaryButtonColor = Color(0xFF38761D); // Bright Jungle Green
   static const Color secondaryButtonColor = Color(0xFF1E3F2A); // Deep Forest Green
-  static const Color highlightColor = Color(0xFFDAA520); // Goldenrod (Text/Border highlight)
-  static const Color darkOverlayColor = Colors.black45; // Dark overlay
+  static const Color highlightColor = Color(0xFFDAA520); // Goldenrod (Text/Border Highlight)
 
   @override
   void initState() {
     super.initState();
-    // ⬅️ NEW: Register the observer for app lifecycle changes
-    WidgetsBinding.instance.addObserver(this); 
+    WidgetsBinding.instance.addObserver(this);
     
-    // ⬅️ NEW: Initialize Audio Player and start music
     _audioPlayer = AudioPlayer();
     _playBackgroundMusic();
-    
-    // ⬅️ ADDED: Check and request storage permission FIRST
-    
-    // CRITICAL: Check local storage status immediately when the screen loads
-    _checkCurrentUserStatus(); 
+    _checkAuthStatus();
   }
   
-
-  
-  // ⬅️ NEW: Override to handle app lifecycle changes
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
-    super.didChangeAppLifecycleState(state);
-
     if (state == AppLifecycleState.paused) {
-      // App is moving to the background (e.g., switched app, screen lock)
-      // ⬅️ UPDATED: Check if the player is currently playing
-      final isPlaying = await _audioPlayer.state == PlayerState.playing;
-      _wasPlayingBeforePause = isPlaying;
-      if (isPlaying) {
-        // Stop the music to respect the user's focus on other apps/privacy
-        await _audioPlayer.pause(); 
-      }
+      _pauseMusic(true);
     } else if (state == AppLifecycleState.resumed) {
-      // App is returning to the foreground
-      // ⬅️ UPDATED: Resume only if it was playing before the pause AND we are on the MainScreen
-      if (_wasPlayingBeforePause) {
-        await _audioPlayer.resume();
-      } else if (mounted) {
-        // Just in case, ensure it's playing if it's supposed to be
-        _playBackgroundMusic();
-      }
+      _resumeMusic();
     }
   }
 
-  // ⬅️ NEW: Function to play music in a loop
-  void _playBackgroundMusic() async {
-    // ⬅️ NEW: Reset the flag when playback starts
-    _wasPlayingBeforePause = true; 
-    await _audioPlayer.setVolume(0.4); 
-    await _audioPlayer.setReleaseMode(ReleaseMode.loop); 
-    try {
-      // Placeholder for your main menu music
-      await _audioPlayer.play(AssetSource('audio/main_theme.mp3')); 
-    } catch (e) {
-      debugPrint('Could not play main menu audio: $e');
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _audioPlayer.dispose();
+    super.dispose();
+  }
+  
+  // Audio Control Methods
+  Future<void> _playBackgroundMusic() async {
+    await _audioPlayer.setReleaseMode(ReleaseMode.loop);
+    await _audioPlayer.play(AssetSource('audio/main_theme.mp3')); 
+  }
+
+  void _pauseMusic(bool rememberState) async {
+    if (rememberState) {
+      final state = await _audioPlayer.state;
+      _wasPlayingBeforePause = state == PlayerState.playing;
+    }
+    await _audioPlayer.pause();
+  }
+
+  void _resumeMusic() async {
+    if (_wasPlayingBeforePause) {
+      await _audioPlayer.resume();
+      _wasPlayingBeforePause = false;
     }
   }
 
-  // Asynchronously checks local storage status for a current session
-  Future<void> _checkCurrentUserStatus() async {
+  Future<void> _checkAuthStatus() async {
     final user = await _authService.getCurrentUser();
-    if (mounted) {
-      setState(() {
-        if (user != null) {
-          _authStatus = AuthStatus.loggedIn; // Set to loggedIn
-          _currentUser = user;
-        } else {
-          _authStatus = AuthStatus.guest;
-          _currentUser = null;
-        }
-      });
-    }
+    setState(() {
+      _currentUser = user;
+      _authStatus = user != null ? AuthStatus.loggedIn : AuthStatus.guest;
+    });
   }
-
-  // Handle navigation to other screens (Login, Profile, Game)
-  void _navigateTo(Widget screen) {
-    // ⬅️ NEW: Use a more reliable check and set the flag before stopping
+  
+  void _navigateTo(Widget screen) async {
     _audioPlayer.pause().then((_) { 
-      _wasPlayingBeforePause = true; // Assume it should resume when we return
+      _wasPlayingBeforePause = true;
     });
     
-    // Push the new screen
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => screen),
+    // Choose transition based on the destination screen
+    final routeBuilder = screen is GameScreen 
+        ? createCloudTransitionRoute(screen) // Use cloud for the game
+        : createFadeRoute(screen);           // Use fade for other menus
+    
+    await Navigator.of(context).push(
+      routeBuilder,
     ).then((_) {
-      // ⬅️ NEW: Resume music when returning to the main menu
       if(mounted && _wasPlayingBeforePause) {
         _audioPlayer.resume();
       } else if (mounted) {
-        // Just in case, ensure it's playing if it's supposed to be
-        _playBackgroundMusic();
+        // If music was stopped for another reason, restart it here
+        _playBackgroundMusic(); 
       }
     });
   }
 
-  // Handle the combined Login/Logout action
-  Future<void> _handleAuthAction() async {
+  void _handleAuthAction() {
     if (_authStatus == AuthStatus.loggedIn) {
-      // LOGOUT LOGIC
-      await _authService.logout();
-      // Force UI update
-      if (mounted) {
-        setState(() {
-          _authStatus = AuthStatus.guest;
-          _currentUser = null;
-        });
+      // Logout logic
+      _authService.logout().then((_) {
+        _checkAuthStatus();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Logged out successfully.')),
+          const SnackBar(
+            content: Text('LOGOUT SUCCESSFUL!', style: TextStyle(fontFamily: 'PressStart2P', fontSize: 12)),
+            backgroundColor: primaryButtonColor,
+          ),
         );
-      }
+      });
     } else {
-      // LOGIN/SIGNUP LOGIC
-      _navigateTo(const LoginScreen());
+      // Navigate to Login/Register screen
+      _navigateTo(const LoginScreen()); 
     }
   }
 
-  // Custom button builder (Code is unchanged)
+  // --- UI Helpers ---
   Widget _buildThemedButton({
     required String text,
     required IconData icon,
     required VoidCallback onPressed,
-    required bool isPrimary, // Used to make the PLAY button stand out
+    required bool isPrimary,
   }) {
-    final Color buttonColor = isPrimary ? primaryButtonColor : secondaryButtonColor;
-    final Color textColor = highlightColor; // Use gold for text
-
+    final color = isPrimary ? primaryButtonColor : secondaryButtonColor;
+    
     return Container(
-      width: double.infinity, 
-      height: 65,
-      margin: const EdgeInsets.symmetric(vertical: 10),
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(vertical: 8.0),
       decoration: BoxDecoration(
-        color: buttonColor,
-        border: Border.all(color: highlightColor, width: isPrimary ? 3 : 2),
+        color: color,
+        border: Border.all(color: highlightColor, width: 2.0),
+        borderRadius: BorderRadius.circular(4.0), // Slight corner
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.6),
@@ -177,19 +152,20 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         color: Colors.transparent,
         child: InkWell(
           onTap: onPressed,
+          borderRadius: BorderRadius.circular(4.0),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            padding: const EdgeInsets.all(16.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(icon, color: textColor, size: 24),
-                const SizedBox(width: 15),
+                Icon(icon, color: highlightColor, size: 20),
+                const SizedBox(width: 12),
                 Text(
                   text,
-                  style: TextStyle(
-                    color: textColor,
-                    fontSize: 16, 
-                    fontWeight: FontWeight.bold,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontFamily: 'PressStart2P',
                   ),
                 ),
               ],
@@ -201,76 +177,57 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   }
 
   @override
-  void dispose() {
-    // ⬅️ NEW: Remove the observer before disposing
-    WidgetsBinding.instance.removeObserver(this); 
-    
-    // ⬅️ NEW: Stop and dispose of the audio player
-    _audioPlayer.stop();
-    _audioPlayer.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    // Determine button text and icon based on current status
-    final String loginButtonText = 
-      _authStatus == AuthStatus.loggedIn ? 'LOGOUT' : 'LOGIN / SIGNUP';
-    final IconData loginButtonIcon = 
-      _authStatus == AuthStatus.loggedIn ? Icons.lock_open : Icons.lock;
-
-    // Show a spinner while loading the authentication status
     if (_authStatus == AuthStatus.loading) {
       return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(color: highlightColor),
-        ),
+        body: Center(child: CircularProgressIndicator(color: highlightColor)),
       );
     }
+    
+    final loginButtonText = _authStatus == AuthStatus.loggedIn ? 'LOGOUT' : 'LOGIN / REGISTER';
+    final loginButtonIcon = _authStatus == AuthStatus.loggedIn ? Icons.exit_to_app : Icons.login;
 
     return Scaffold(
+      // Theming is managed by the background image and colors
       body: Stack(
-        children: <Widget>[
-          // 1. Background Image
+        children: [
+          // 1. Background Image (Themed)
           Positioned.fill(
-            child: Image.asset(
-              'assets/main.png',
-              fit: BoxFit.cover,
+            // ⬅️ FIX: Wrap Image.asset in ColorFiltered for broader Flutter SDK compatibility
+            child: ColorFiltered(
+              colorFilter: ColorFilter.mode(
+                Colors.black.withOpacity(0.6), 
+                BlendMode.darken,
+              ),
+              child: Image.asset(
+                'assets/main.png', 
+                fit: BoxFit.cover,
+              ),
             ),
           ),
-          // 2. Dark Overlay
-          Positioned.fill(
-            child: Container(
-              color: darkOverlayColor,
-            ),
-          ),
-          // 3. Content (Using SingleChildScrollView to prevent overflow)
+          
+          // 2. Centered Content
           Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(vertical: 40.0, horizontal: 20.0), 
+              padding: const EdgeInsets.all(32.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min, 
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
                   // App Title / Logo Area
-                  Text(
-                    'ANIMAL WARFARE',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 32, 
-                      fontWeight: FontWeight.bold,
-                      color: highlightColor,
-                      shadows: [
-                        Shadow(color: Colors.black, offset: const Offset(4, 4), blurRadius: 0),
-                      ], 
-                    ),
+                  Image.asset(
+                    'assets/logo.png',
+                    height: 200, 
                   ),
                   const SizedBox(height: 50),
 
-                  // PLAY GAME Button (Primary)
+                  // MAIN BUTTONS
+                  
+                  // PLAY Button (Primary)
                   _buildThemedButton(
-                    text: 'PLAY GAME',
-                    icon: Icons.play_arrow,
+                    text: 'START WARFARE',
+                    // ⬅️ FIX: Changed Icons.explosion to the compatible Icons.local_fire_department
+                    icon: Icons.local_fire_department, 
                     onPressed: () => _navigateTo(const GameScreen()),
                     isPrimary: true,
                   ),
@@ -288,7 +245,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     _buildThemedButton(
                       text: 'PROFILE',
                       icon: Icons.person,
-                      // Navigation is now handled by _navigateTo, which pauses/resumes music
                       onPressed: () => _navigateTo(const ProfileScreen()), 
                       isPrimary: false,
                     ),
@@ -297,6 +253,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                   // User Status (Subtle)
                   Text(
                     'STATUS: ${_authStatus == AuthStatus.guest ? 'GUEST ACCESS' : 'PLAYER ACTIVE'}',
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 12,
                       color: highlightColor.withOpacity(0.8), 

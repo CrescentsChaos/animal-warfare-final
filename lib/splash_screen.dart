@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:animal_warfare/main_screen.dart';
-import 'package:audioplayers/audioplayers.dart'; // ⬅️ NEW: Import the audio package
+import 'package:audioplayers/audioplayers.dart'; 
+import 'package:animal_warfare/utils/transitions.dart'; // ⬅️ NEW: Import transitions utility
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -41,116 +42,97 @@ class _SplashScreenState extends State<SplashScreen>
 
     _opacityAnimation = Tween(begin: 0.0, end: 1.0).animate(_animationController);
 
-    // Set the app to full-screen mode for a game look
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
+    // Pre-cache images after the first build cycle
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _precacheAssets();
+    });
   }
-  
+
   // ⬅️ NEW: Override to handle app lifecycle changes
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
-    super.didChangeAppLifecycleState(state);
-
     if (state == AppLifecycleState.paused) {
-      final isPlaying = await _audioPlayer.state == PlayerState.playing;
-      _wasPlayingBeforePause = isPlaying;
-      if (isPlaying) {
-        await _audioPlayer.pause(); 
-      }
+      _pauseMusic(true);
     } else if (state == AppLifecycleState.resumed) {
-      if (_wasPlayingBeforePause) {
-        await _audioPlayer.resume();
-      }
+      _resumeMusic();
     }
-  }
-  
-  // ⬅️ NEW: Function to play music in a loop
-  void _playBackgroundMusic() async {
-    _wasPlayingBeforePause = true; // Assume playback starts
-    // Set a moderate volume (e.g., 50%) for background music
-    await _audioPlayer.setVolume(0.5); 
-    
-    // Set the release mode to loop indefinitely 
-    await _audioPlayer.setReleaseMode(ReleaseMode.loop); 
-    
-    // Start playing the music asset
-    try {
-      await _audioPlayer.play(AssetSource('audio/splash_theme.mp3'));
-    } catch (e) {
-      // Handle the case where the file is not found or cannot be played
-      debugPrint('Could not play audio: $e');
-    }
-  }
-
-  // Use didChangeDependencies to safely run asset pre-caching
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    
-    // Check if assets have been precached already
-    if (!_assetsPrecached) {
-      // 1. Pre-cache the background image
-      precacheImage(const AssetImage('assets/background.png'), context);
-      
-      // 2. Pre-cache the logo image
-      precacheImage(const AssetImage('assets/logo.png'), context);
-      
-      _assetsPrecached = true;
-    }
-  }
-
-  // Navigate to the next screen (e.g., your main game menu)
-  void _navigateToMainScreen() {
-    // ⬅️ NEW: Stop and dispose of the audio player immediately before navigating
-    _audioPlayer.stop();
-    _audioPlayer.dispose();
-    
-    // Restore system UI overlays (status bar, navigation bar)
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => const MainScreen(),
-      ),
-    );
   }
 
   @override
   void dispose() {
-    // ⬅️ NEW: Remove the observer before disposing
-    WidgetsBinding.instance.removeObserver(this); 
+    WidgetsBinding.instance.removeObserver(this);
     _animationController.dispose();
-    // ⬅️ NEW: Just in case the player wasn't disposed during navigation, do it here too
-    _audioPlayer.dispose();
+    _audioPlayer.dispose(); 
     super.dispose();
+  }
+  
+  // ⬅️ NEW: Audio control methods
+  Future<void> _playBackgroundMusic() async {
+    await _audioPlayer.setReleaseMode(ReleaseMode.loop);
+    await _audioPlayer.play(AssetSource('audio/splash_theme.mp3')); 
+  }
+
+  void _pauseMusic(bool rememberState) async {
+    if (rememberState) {
+      final state = await _audioPlayer.state;
+      _wasPlayingBeforePause = state == PlayerState.playing;
+    }
+    await _audioPlayer.pause();
+  }
+
+  void _resumeMusic() async {
+    if (_wasPlayingBeforePause) {
+      await _audioPlayer.resume();
+      _wasPlayingBeforePause = false;
+    }
+  }
+
+  // Pre-cache all necessary assets to prevent lag during the first render
+  void _precacheAssets() {
+    if (_assetsPrecached) return;
+    
+    // Main Logo
+    precacheImage(const AssetImage('assets/logo.png'), context);
+    // Background Image
+    precacheImage(const AssetImage('assets/main.png'), context);
+    // Cloud transition image
+    precacheImage(const AssetImage('assets/cloud_transition.png'), context); 
+    
+    _assetsPrecached = true;
+  }
+  
+  // ⬅️ UPDATED: Use the cloud transition route
+  void _navigateToMainScreen() {
+    if (mounted) {
+      Navigator.of(context).pushReplacement(
+        createCloudTransitionRoute(const MainScreen()), // ⬅️ Use the Cloud Transition!
+      );
+      _audioPlayer.stop(); // Stop the splash music
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Wrap the entire screen in a GestureDetector so tapping anywhere works
-    return GestureDetector(
-      onTap: _navigateToMainScreen,
-      child: Scaffold(
-        body: Stack(
-          fit: StackFit.expand,
-          children: <Widget>[
-            // 1. Background Image
-            Image.asset(
-              'assets/background.png',
-              fit: BoxFit.cover,
-              frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-                if (wasSynchronouslyLoaded || frame != null) {
-                  return child;
-                }
-                return AnimatedOpacity(
-                  opacity: frame == null ? 0 : 1,
-                  duration: const Duration(milliseconds: 500),
-                  curve: Curves.easeOut,
-                  child: child,
-                );
-              },
-            ),
+    // Set system UI to be fully immersive (hides status/nav bars)
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
-            // 2. Main Content (Logo and Tap to Continue)
+    return Scaffold(
+      body: GestureDetector(
+        onTap: _navigateToMainScreen,
+        child: Stack(
+          children: [
+            // 1. Background Image
+            Positioned.fill(
+              child: Image.asset(
+                'assets/background.png', 
+                fit: BoxFit.cover,
+                // Apply a mild overlay to ensure text visibility
+                color: Colors.black.withOpacity(0.5), 
+                colorBlendMode: BlendMode.darken,
+              ),
+            ),
+            
+            // 2. Centered Content (Logo and Text)
             Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
