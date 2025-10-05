@@ -10,7 +10,8 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+// ⬅️ UPDATED: Add WidgetsBindingObserver mixin
+class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
   final LocalAuthService _authService = LocalAuthService();
   // ⬅️ RENAMED: from _emailController
   final TextEditingController _usernameController = TextEditingController(); 
@@ -18,6 +19,8 @@ class _LoginScreenState extends State<LoginScreen> {
   
   // ⬅️ ADDED: Audio player instance
   late AudioPlayer _audioPlayer; 
+  // ⬅️ NEW: Flag to track if the audio was playing before pause
+  bool _wasPlayingBeforePause = false;
   
   bool _isLogin = true;
   bool _isLoading = false;
@@ -25,13 +28,35 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
+    // ⬅️ NEW: Register the observer for app lifecycle changes
+    WidgetsBinding.instance.addObserver(this); 
+    
     // ⬅️ ADDED: Audio setup
     _audioPlayer = AudioPlayer(); 
     _playBackgroundMusic();
   }
   
+  // ⬅️ NEW: Override to handle app lifecycle changes
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    super.didChangeAppLifecycleState(state);
+
+    if (state == AppLifecycleState.paused) {
+      final isPlaying = await _audioPlayer.state == PlayerState.playing;
+      _wasPlayingBeforePause = isPlaying;
+      if (isPlaying) {
+        await _audioPlayer.pause(); 
+      }
+    } else if (state == AppLifecycleState.resumed) {
+      if (_wasPlayingBeforePause) {
+        await _audioPlayer.resume();
+      }
+    }
+  }
+  
   // ⬅️ ADDED: Function to play music in a loop
   void _playBackgroundMusic() async {
+    _wasPlayingBeforePause = true; // Assume playback starts
     await _audioPlayer.setVolume(0.4); 
     await _audioPlayer.setReleaseMode(ReleaseMode.loop); 
     try {
@@ -44,7 +69,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
-    // ⬅️ UPDATED: dispose username controller
+    // ⬅️ NEW: Remove the observer before disposing
+    WidgetsBinding.instance.removeObserver(this); 
     _usernameController.dispose(); 
     _passwordController.dispose();
     // ⬅️ ADDED: Audio cleanup
@@ -64,6 +90,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
   // Helper to navigate back to the main screen and force a refresh
   void _navigateToMainScreen() {
+    // ⬅️ NEW: Stop and dispose the audio player before navigating away
+    _audioPlayer.stop(); 
+    _audioPlayer.dispose();
+    
     if (mounted) {
       // Use pushReplacement to replace the LoginScreen with MainScreen
       Navigator.of(context).pushReplacement(

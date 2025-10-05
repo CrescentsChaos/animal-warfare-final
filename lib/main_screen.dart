@@ -15,13 +15,16 @@ class MainScreen extends StatefulWidget {
   State<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+// ⬅️ UPDATED: Add WidgetsBindingObserver mixin
+class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   final LocalAuthService _authService = LocalAuthService();
   AuthStatus _authStatus = AuthStatus.loading; // Start in loading state
   UserData? _currentUser; 
   
   // ⬅️ NEW: Audio player instance
   late AudioPlayer _audioPlayer; 
+  // ⬅️ NEW: Flag to track if the audio was playing before pause
+  bool _wasPlayingBeforePause = false; 
 
   // Define High-Contrast Retro/Military-themed colors
   static const Color primaryButtonColor = Color(0xFF38761D); // Bright Jungle Green
@@ -32,6 +35,9 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
+    // ⬅️ NEW: Register the observer for app lifecycle changes
+    WidgetsBinding.instance.addObserver(this); 
+    
     // ⬅️ NEW: Initialize Audio Player and start music
     _audioPlayer = AudioPlayer();
     _playBackgroundMusic();
@@ -40,8 +46,33 @@ class _MainScreenState extends State<MainScreen> {
     _checkCurrentUserStatus(); 
   }
   
+  // ⬅️ NEW: Override to handle app lifecycle changes
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    super.didChangeAppLifecycleState(state);
+
+    if (state == AppLifecycleState.paused) {
+      // App is moving to the background (e.g., switched app, screen lock)
+      // ⬅️ UPDATED: Check if the player is currently playing
+      final isPlaying = await _audioPlayer.state == PlayerState.playing;
+      _wasPlayingBeforePause = isPlaying;
+      if (isPlaying) {
+        // Stop the music to respect the user's focus on other apps/privacy
+        await _audioPlayer.pause(); 
+      }
+    } else if (state == AppLifecycleState.resumed) {
+      // App is returning to the foreground
+      // ⬅️ UPDATED: Resume only if it was playing before the pause AND we are on the MainScreen
+      if (_wasPlayingBeforePause) {
+        await _audioPlayer.resume();
+      }
+    }
+  }
+
   // ⬅️ NEW: Function to play music in a loop
   void _playBackgroundMusic() async {
+    // ⬅️ NEW: Reset the flag when playback starts
+    _wasPlayingBeforePause = true; 
     await _audioPlayer.setVolume(0.4); 
     await _audioPlayer.setReleaseMode(ReleaseMode.loop); 
     try {
@@ -70,15 +101,20 @@ class _MainScreenState extends State<MainScreen> {
 
   // Handle navigation to other screens (Login, Profile, Game)
   void _navigateTo(Widget screen) {
-    // ⬅️ NEW: Stop music when navigating away from the main menu
-    _audioPlayer.stop(); 
+    // ⬅️ NEW: Use a more reliable check and set the flag before stopping
+    _audioPlayer.pause().then((_) { 
+      _wasPlayingBeforePause = true; // Assume it should resume when we return
+    });
     
     // Push the new screen
     Navigator.of(context).push(
       MaterialPageRoute(builder: (context) => screen),
     ).then((_) {
       // ⬅️ NEW: Resume music when returning to the main menu
-      if(mounted) {
+      if(mounted && _wasPlayingBeforePause) {
+        _audioPlayer.resume();
+      } else if (mounted) {
+        // Just in case, ensure it's playing if it's supposed to be
         _playBackgroundMusic();
       }
     });
@@ -159,6 +195,9 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   void dispose() {
+    // ⬅️ NEW: Remove the observer before disposing
+    WidgetsBinding.instance.removeObserver(this); 
+    
     // ⬅️ NEW: Stop and dispose of the audio player
     _audioPlayer.stop();
     _audioPlayer.dispose();

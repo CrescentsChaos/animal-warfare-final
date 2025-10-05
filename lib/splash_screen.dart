@@ -10,13 +10,16 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
+// ⬅️ UPDATED: Add WidgetsBindingObserver mixin
 class _SplashScreenState extends State<SplashScreen>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late AnimationController _animationController;
   late Animation<double> _opacityAnimation;
   
   // ⬅️ NEW: Declare the audio player instance
   late AudioPlayer _audioPlayer;
+  // ⬅️ NEW: Flag to track if the audio was playing before pause
+  bool _wasPlayingBeforePause = false;
   
   // Flag to ensure pre-caching runs only once
   bool _assetsPrecached = false; 
@@ -24,6 +27,8 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
+    // ⬅️ NEW: Register the observer for app lifecycle changes
+    WidgetsBinding.instance.addObserver(this); 
     
     // ⬅️ NEW: Initialize Audio Player and start music
     _audioPlayer = AudioPlayer();
@@ -40,8 +45,27 @@ class _SplashScreenState extends State<SplashScreen>
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
   }
   
+  // ⬅️ NEW: Override to handle app lifecycle changes
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    super.didChangeAppLifecycleState(state);
+
+    if (state == AppLifecycleState.paused) {
+      final isPlaying = await _audioPlayer.state == PlayerState.playing;
+      _wasPlayingBeforePause = isPlaying;
+      if (isPlaying) {
+        await _audioPlayer.pause(); 
+      }
+    } else if (state == AppLifecycleState.resumed) {
+      if (_wasPlayingBeforePause) {
+        await _audioPlayer.resume();
+      }
+    }
+  }
+  
   // ⬅️ NEW: Function to play music in a loop
   void _playBackgroundMusic() async {
+    _wasPlayingBeforePause = true; // Assume playback starts
     // Set a moderate volume (e.g., 50%) for background music
     await _audioPlayer.setVolume(0.5); 
     
@@ -71,13 +95,6 @@ class _SplashScreenState extends State<SplashScreen>
       precacheImage(const AssetImage('assets/logo.png'), context);
       
       _assetsPrecached = true;
-      
-      // OPTIONAL: Add a timer to automatically advance after 5 seconds if no tap occurs
-      // Future.delayed(const Duration(seconds: 5), () {
-      //   if(mounted) { // Check if widget is still active before navigating
-      //     _navigateToMainScreen();
-      //   }
-      // });
     }
   }
 
@@ -99,6 +116,8 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   void dispose() {
+    // ⬅️ NEW: Remove the observer before disposing
+    WidgetsBinding.instance.removeObserver(this); 
     _animationController.dispose();
     // ⬅️ NEW: Just in case the player wasn't disposed during navigation, do it here too
     _audioPlayer.dispose();
