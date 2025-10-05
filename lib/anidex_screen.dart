@@ -21,7 +21,7 @@ class _AnidexScreenState extends State<AnidexScreen> {
   List<Organism> _allOrganisms = [];
   List<Organism> _searchResults = [];
   final TextEditingController _searchController = TextEditingController();
-  String _autocompleteSuggestion = '';
+  // Variable _autocompleteSuggestion removed
   
   @override
   void initState() {
@@ -32,7 +32,7 @@ class _AnidexScreenState extends State<AnidexScreen> {
   
   @override
   void dispose() {
-    _searchController.removeListener(_onSearchChanged); // Corrected typo here previously
+    _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     super.dispose();
   }
@@ -47,17 +47,17 @@ class _AnidexScreenState extends State<AnidexScreen> {
       case 'rare':
         return Colors.blueAccent;
       case 'epic':
-        return const Color.fromARGB(255, 128, 3, 150);
+        return const Color.fromARGB(255, 169, 20, 195);
       case 'legendary':
         return Colors.orange;
       case 'mythical':
-        return const Color.fromARGB(255, 229, 18, 208);
+        return const Color.fromARGB(255, 229, 18, 131);
       default:
         return Colors.grey;
     }
   }
   
-  // --- Data Loading & Search Logic (Unchanged) ---
+  // --- Data Loading & Search Logic ---
   Future<void> _loadOrganisms() async {
     const String assetPath = 'assets/Organisms.json';
     try {
@@ -81,35 +81,18 @@ class _AnidexScreenState extends State<AnidexScreen> {
     final query = _searchController.text.trim().toLowerCase();
     
     if (query.isEmpty) {
-      setState(() { _autocompleteSuggestion = ''; _searchResults = []; });
+      // Autocomplete removal: Only clear search results if query is empty
+      setState(() { _searchResults = []; });
       return;
     }
 
-    final suggestion = _allOrganisms.firstWhere(
-      (org) => org.name.toLowerCase().startsWith(query),
-      orElse: () => Organism(name: '', scientificName: '', habitat: '', drops: '', attack: 0, defense: 0, health: 0, speed: 0, abilities: '', category: '', moves: '', sprite: '', rarity: '', description: ''),
-    );
-    
-    setState(() {
-      _autocompleteSuggestion = suggestion.name.isNotEmpty ? suggestion.name.substring(query.length) : '';
-    });
+    // Autocomplete removal: The logic to find and set suggestion is removed.
   }
 
   void _performSearch() {
     final query = _searchController.text.trim().toLowerCase();
     
-    if (_autocompleteSuggestion.isNotEmpty) {
-      _searchController.text = _searchController.text + _autocompleteSuggestion;
-      _searchController.selection = TextSelection.fromPosition(TextPosition(offset: _searchController.text.length));
-      final fullQuery = _searchController.text.trim().toLowerCase();
-      setState(() {
-        _searchResults = _allOrganisms.where(
-          (org) => org.name.toLowerCase().contains(fullQuery) || org.scientificName.toLowerCase().contains(fullQuery)
-        ).toList();
-      });
-      _autocompleteSuggestion = '';
-      return;
-    }
+    // Autocomplete removal: Logic for handling _autocompleteSuggestion is removed.
     
     if (query.isEmpty) { setState(() { _searchResults = []; }); return; }
     
@@ -117,6 +100,9 @@ class _AnidexScreenState extends State<AnidexScreen> {
       _searchResults = _allOrganisms.where(
         (org) => org.name.toLowerCase().contains(query) || org.scientificName.toLowerCase().contains(query)
       ).toList();
+
+      // FIX: Sort by name descending (Z-A)
+      _searchResults.sort((a, b) => a.name.compareTo(b.name));
     });
   }
 
@@ -124,53 +110,38 @@ class _AnidexScreenState extends State<AnidexScreen> {
   Widget _buildSearchBar() {
     return Container(
       padding: const EdgeInsets.only(bottom: 20),
-      child: Stack(
-        alignment: Alignment.centerLeft,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 12.0),
-            child: Text(
-              _searchController.text + _autocompleteSuggestion,
-              style: TextStyle(
-                color: highlightColor.withOpacity(0.3),
-                fontSize: 16,
-                fontFamily: 'PressStart2P',
-              ),
-            ),
+      // Autocomplete removal: Stack and the autocomplete overlay Text widget are removed.
+      child: TextField(
+        controller: _searchController,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 16,
+          fontFamily: 'PressStart2P',
+        ),
+        decoration: InputDecoration(
+          hintText: 'Search Unit Name...',
+          hintStyle: TextStyle(
+            color: Colors.white.withOpacity(0.5),
+            fontFamily: 'PressStart2P',
+            fontSize: 16,
           ),
-          TextField(
-            controller: _searchController,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontFamily: 'PressStart2P',
-            ),
-            decoration: InputDecoration(
-              hintText: 'Search Unit Name...',
-              hintStyle: TextStyle(
-                color: Colors.white.withOpacity(0.5),
-                fontFamily: 'PressStart2P',
-                fontSize: 16,
-              ),
-              filled: true,
-              fillColor: secondaryButtonColor.withOpacity(0.8),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(4.0),
-                borderSide: BorderSide(color: highlightColor, width: 2.0),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(4.0),
-                borderSide: BorderSide(color: highlightColor, width: 3.0),
-              ),
-              suffixIcon: IconButton(
-                icon: const Icon(Icons.search, color: highlightColor),
-                onPressed: _performSearch,
-              ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 15),
-            ),
-            onSubmitted: (_) => _performSearch(),
+          filled: true,
+          fillColor: secondaryButtonColor.withOpacity(0.8),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(4.0),
+            borderSide: BorderSide(color: highlightColor, width: 2.0),
           ),
-        ],
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(4.0),
+            borderSide: BorderSide(color: highlightColor, width: 3.0),
+          ),
+          suffixIcon: IconButton(
+            icon: const Icon(Icons.search, color: highlightColor),
+            onPressed: _performSearch,
+          ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 15),
+        ),
+        onSubmitted: (_) => _performSearch(),
       ),
     );
   }
@@ -230,7 +201,7 @@ class _AnidexScreenState extends State<AnidexScreen> {
   }
 
   // ------------------------------------------------------------------
-  // REWRITTEN: Immersive Modal Bottom Sheet for Details
+  // Immersive Modal Bottom Sheet for Details
   // ------------------------------------------------------------------
   void _showOrganismDetails(Organism organism) {
     Color getStatColor(int stat) {
@@ -276,7 +247,7 @@ class _AnidexScreenState extends State<AnidexScreen> {
                         const SizedBox(height: 5),
                         Text(
                           organism.description,
-                          style: const TextStyle(color: Colors.white70, fontSize: 14),
+                          style: const TextStyle(color: Colors.white70, fontSize: 12),
                         ),
                         
                         // General Details
@@ -339,22 +310,30 @@ class _AnidexScreenState extends State<AnidexScreen> {
             child: organism.sprite.isNotEmpty 
                 ? Image.network(
                     organism.sprite,
-                    height: 120, 
+                    height: 200, 
+                    width: 400, // Removed width to let Image.network respect size constraints if needed, but it's optional.
                     fit: BoxFit.contain,
                     loadingBuilder: (context, child, loadingProgress) {
                       if (loadingProgress == null) return child;
-                      return const Center(child: CircularProgressIndicator(color: highlightColor));
+                      
+                      // --- MODIFIED LOADING BUILDER: Placeholder only, no spinner ---
+                      return Image.asset(
+                        'assets/placeholder_400x200.png', // <-- Ensure this is your correct placeholder path
+                        height: 200, // Keep height consistent
+                        width: 400,  // Re-added width for placeholder consistency
+                        fit: BoxFit.contain, // Changed to 'contain' to match network image fit
+                      );
+                      // --- END MODIFIED LOADING BUILDER ---
                     },
                     errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image, color: Colors.red, size: 80),
                   )
                 : const Icon(Icons.image_not_supported, color: Colors.grey, size: 80),
           ),
-
           // Name
           Text(
             organism.name.toUpperCase(),
             textAlign: TextAlign.center,
-            style: TextStyle(color: rarityColor, fontFamily: 'PressStart2P', fontSize: 24, height: 1.2),
+            style: TextStyle(color: rarityColor, fontFamily: 'PressStart2P', fontSize: 18, height: 1.2),
           ),
           // Rarity (This is the primary display of Rarity, so we'll style it well)
           // No separate "Rarity: " label here to keep it concise, just the value styled with its color
@@ -363,7 +342,7 @@ class _AnidexScreenState extends State<AnidexScreen> {
               style: TextStyle(
                   color: rarityColor, 
                   fontFamily: 'PressStart2P', 
-                  fontSize: 16,
+                  fontSize: 10,
                   fontStyle: FontStyle.italic, // Sets the text to italic
               ),
           ),
