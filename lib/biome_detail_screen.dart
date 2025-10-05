@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:animal_warfare/models/organism.dart'; // Ensure this is the correct path
 import 'explore_screen.dart'; // Import to use getWeightedRandomOrganism and Organism List
-import 'package:audioplayers/audioplayers.dart'; // <<< ADDED: Audio Player Import
+import 'package:audioplayers/audioplayers.dart'; // Audio Player Import
 
 class BiomeDetailScreen extends StatefulWidget {
   final String biomeName;
@@ -18,7 +18,8 @@ class BiomeDetailScreen extends StatefulWidget {
   State<BiomeDetailScreen> createState() => _BiomeDetailScreenState();
 }
 
-class _BiomeDetailScreenState extends State<BiomeDetailScreen> {
+// MODIFIED: Added 'with WidgetsBindingObserver'
+class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindingObserver {
   // Constants copied from ExploreScreen for consistent styling
   static const Color secondaryButtonColor = Color(0xFF1E3F2A); 
   static const Color highlightColor = Color(0xFFDAA520); 
@@ -27,7 +28,7 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> {
   Organism? _currentEncounter;
   bool _isExploring = false;
 
-  // <<< ADDED: Audio Player Setup
+  // Audio Player Setup
   final AudioPlayer _audioPlayer = AudioPlayer();
 
   // Helper to get the background image path (copied from ExploreScreen)
@@ -36,19 +37,23 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> {
     return 'assets/biomes/$fileName-bg.png';
   }
 
-  // <<< ADDED: Helper to get the music path
+  // Helper to get the music path
   String _getMusicPath(String biomeName) {
     final fileName = biomeName.toLowerCase().replaceAll(' ', '_');
-    return 'assets/audio/${fileName}_theme.mp3'; 
+    return 'audio/${fileName}_theme.mp3'; 
   }
   
-  // <<< ADDED: Music Control Function
+  // MODIFIED: Music Control Function - handles initial play and resuming
   void _playBiomeMusic(String biomeName) async {
     String musicPath = _getMusicPath(biomeName);
     try {
-      await _audioPlayer.setSourceAsset(musicPath);
-      await _audioPlayer.setReleaseMode(ReleaseMode.loop); 
-      await _audioPlayer.resume();
+      // Only set source if it hasn't been set yet (or if it's stopped/completed)
+      if (_audioPlayer.state != PlayerState.playing && _audioPlayer.state != PlayerState.paused) {
+        await _audioPlayer.setSourceAsset(musicPath);
+        await _audioPlayer.setReleaseMode(ReleaseMode.loop); 
+      }
+      // Resume handles both initial play and unpausing from background
+      await _audioPlayer.resume(); 
     } catch (e) {
       if (mounted) {
         // Show a warning if music fails to load/play
@@ -59,8 +64,13 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> {
     }
   }
   
-  // <<< ADDED: Stop Music Function
-  void _stopMusic() async {
+  // ADDED: Pause Music Function
+  void _pauseMusic() async {
+    await _audioPlayer.pause();
+  }
+  
+  // MODIFIED: Stop and Dispose Music Function
+  void _stopAndDisposeMusic() async {
     await _audioPlayer.stop();
     await _audioPlayer.dispose();
   }
@@ -68,14 +78,34 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _startExploration(); // <<< ADDED: Start exploration on load
-    _playBiomeMusic(widget.biomeName); // <<< ADDED: Start music on load
+    // ADDED: Register the observer for app lifecycle events
+    WidgetsBinding.instance.addObserver(this); 
+    _startExploration(); 
+    _playBiomeMusic(widget.biomeName); 
   }
 
   @override
   void dispose() {
-    _stopMusic(); // <<< ADDED: Stop music when screen is closed
+    // ADDED: Remove the observer
+    WidgetsBinding.instance.removeObserver(this); 
+    _stopAndDisposeMusic(); // MODIFIED: Stop and dispose music when screen is closed
     super.dispose();
+  }
+
+  // ADDED: App Lifecycle Observer Method
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    
+    if (!mounted) return; 
+
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive || state == AppLifecycleState.detached) {
+      // App is going to the background, switching apps, or screen is locked
+      _pauseMusic();
+    } else if (state == AppLifecycleState.resumed) {
+      // App is returning to the foreground
+      _playBiomeMusic(widget.biomeName);
+    }
   }
 
   // Helper function to determine rarity color (copied from ExploreScreen)

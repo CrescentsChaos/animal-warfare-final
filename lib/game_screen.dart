@@ -31,17 +31,26 @@ class _GameScreenState extends State<GameScreen> {
     super.dispose();
   }
 
+  // MODIFIED: Use setSourceAsset and then resume/pause/stop
   Future<void> _playBackgroundMusic() async {
-    await _audioPlayer.setReleaseMode(ReleaseMode.loop);
-    // Assuming you have a 'game_theme.mp3' in your assets/audio folder
-    await _audioPlayer.play(AssetSource('audio/main.mp3')); 
+    // Set source and release mode once
+    await _audioPlayer.setSourceAsset('audio/main_theme.mp3'); 
+    await _audioPlayer.setReleaseMode(ReleaseMode.loop); 
+    await _audioPlayer.resume(); // Start playing
   }
 
-  // Helper method to navigate to the new screens
+  // MODIFIED: Helper method to navigate to the new screens
   void _navigateTo(Widget screen) {
+    // 1. Pause background music before navigating
+    _audioPlayer.pause(); 
+    
+    // 2. Navigate and wait for the new screen to pop
     Navigator.of(context).push(
       MaterialPageRoute(builder: (context) => screen),
-    );
+    ).then((_) {
+      // 3. Resume background music when returning to GameScreen
+      _audioPlayer.resume(); 
+    });
   }
 
   // Helper method for themed buttons (Copied/Adapted from main_screen)
