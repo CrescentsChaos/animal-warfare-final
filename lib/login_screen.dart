@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:animal_warfare/local_auth_service.dart';
-import 'package:animal_warfare/main_screen.dart'; // To navigate back to main
+import 'package:animal_warfare/main_screen.dart'; 
+import 'package:audioplayers/audioplayers.dart'; // ⬅️ ADDED: Audio package
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -11,18 +12,44 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final LocalAuthService _authService = LocalAuthService();
-  final TextEditingController _emailController = TextEditingController();
+  // ⬅️ RENAMED: from _emailController
+  final TextEditingController _usernameController = TextEditingController(); 
   final TextEditingController _passwordController = TextEditingController();
   
-  // State for toggling between Login and Signup
+  // ⬅️ ADDED: Audio player instance
+  late AudioPlayer _audioPlayer; 
+  
   bool _isLogin = true;
-  // State for showing loading indicator and preventing double-taps
   bool _isLoading = false;
 
   @override
+  void initState() {
+    super.initState();
+    // ⬅️ ADDED: Audio setup
+    _audioPlayer = AudioPlayer(); 
+    _playBackgroundMusic();
+  }
+  
+  // ⬅️ ADDED: Function to play music in a loop
+  void _playBackgroundMusic() async {
+    await _audioPlayer.setVolume(0.4); 
+    await _audioPlayer.setReleaseMode(ReleaseMode.loop); 
+    try {
+      // Placeholder for your login screen music
+      await _audioPlayer.play(AssetSource('audio/login_theme.mp3')); 
+    } catch (e) {
+      debugPrint('Could not play login audio: $e');
+    }
+  }
+
+  @override
   void dispose() {
-    _emailController.dispose();
+    // ⬅️ UPDATED: dispose username controller
+    _usernameController.dispose(); 
     _passwordController.dispose();
+    // ⬅️ ADDED: Audio cleanup
+    _audioPlayer.stop(); 
+    _audioPlayer.dispose();
     super.dispose();
   }
 
@@ -47,11 +74,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
   // The fully functional authentication method
   Future<void> _authenticate() async {
-    final email = _emailController.text.trim();
+    // ⬅️ UPDATED: Use username controller
+    final username = _usernameController.text.trim(); 
     final password = _passwordController.text.trim();
 
-    if (email.isEmpty || password.isEmpty) {
-      _showSnackbar('Alert: Please enter both email and password.');
+    // ⬅️ UPDATED: Check for username emptiness
+    if (username.isEmpty || password.isEmpty) { 
+      _showSnackbar('Alert: Please enter both username and password.');
       return;
     }
     
@@ -61,21 +90,23 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       if (_isLogin) {
         // --- LOGIN LOGIC (using LocalAuthService) ---
-        final user = await _authService.loginUser(email, password);
+        // ⬅️ UPDATED: Call loginUser with username
+        final user = await _authService.loginUser(username, password); 
         if (user != null) {
-          _showSnackbar('Login successful for ${user.email}!');
+          _showSnackbar('Login successful for ${user.username}!'); // ⬅️ UPDATED
           _navigateToMainScreen(); // Navigate on success
         } else {
-          _showSnackbar('Login failed: Invalid email or password.');
+          _showSnackbar('Login failed: Invalid username or password.'); // ⬅️ UPDATED
         }
       } else {
         // --- SIGNUP LOGIC (using LocalAuthService) ---
-        final success = await _authService.registerUser(email, password);
+        // ⬅️ UPDATED: Call registerUser with username
+        final success = await _authService.registerUser(username, password); 
         if (success) {
           _showSnackbar('Account created and automatically logged in!');
           _navigateToMainScreen(); // Navigate on success
         } else {
-          _showSnackbar('Signup failed: User already exists with this email.');
+          _showSnackbar('Signup failed: User already exists with this username.'); // ⬅️ UPDATED
         }
       }
     } catch (e) {
@@ -102,7 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
         padding: const EdgeInsets.all(24.0),
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/background.png'), // Use your jungle background
+            image: AssetImage('assets/login.png'), // Use your jungle background
             fit: BoxFit.cover,
             opacity: 0.2, // Make it subtle in the background
           ),
@@ -119,10 +150,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 40),
 
-                // Email/Username Input Field
+                // Username Input Field (Replaced Email)
                 _buildTextField(
-                  controller: _emailController,
-                  labelText: 'EMAIL',
+                  controller: _usernameController, // ⬅️ UPDATED
+                  labelText: 'USERNAME', // ⬅️ UPDATED
                   icon: Icons.person_outline,
                 ),
                 const SizedBox(height: 20),
@@ -153,7 +184,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: _isLoading ? null : () {
                     setState(() {
                       _isLogin = !_isLogin;
-                      _emailController.clear();
+                      _usernameController.clear(); // ⬅️ UPDATED
                       _passwordController.clear();
                     });
                   },
@@ -175,8 +206,9 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // Helper function for pixel-style buttons
+  // Helper function for pixel-style buttons (No change)
   Widget _buildActionButton(BuildContext context, {required String title, required VoidCallback? onPressed}) {
+    // ... code is unchanged
     return Container(
       width: double.infinity,
       height: 60,
@@ -225,7 +257,8 @@ class _LoginScreenState extends State<LoginScreen> {
       child: TextField(
         controller: controller,
         obscureText: isPassword,
-        keyboardType: isPassword ? TextInputType.visiblePassword : TextInputType.emailAddress,
+        // ⬅️ UPDATED: Keyboard type changed from emailAddress to text
+        keyboardType: isPassword ? TextInputType.visiblePassword : TextInputType.text, 
         style: const TextStyle(color: Colors.white, fontSize: 16),
         decoration: InputDecoration(
           labelText: labelText,

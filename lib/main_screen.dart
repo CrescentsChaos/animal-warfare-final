@@ -3,7 +3,7 @@ import 'package:animal_warfare/login_screen.dart';
 import 'package:animal_warfare/profile_screen.dart';
 import 'package:animal_warfare/game_screen.dart';
 import 'package:animal_warfare/local_auth_service.dart'; // Import service
-import 'package:animal_warfare/main.dart'; // Import to use the app's initial route
+import 'package:audioplayers/audioplayers.dart'; // ⬅️ NEW: Import audio package
 
 // Placeholder for user state (adding 'loading' to prevent incorrect initial display)
 enum AuthStatus { loading, loggedIn, guest } 
@@ -19,6 +19,9 @@ class _MainScreenState extends State<MainScreen> {
   final LocalAuthService _authService = LocalAuthService();
   AuthStatus _authStatus = AuthStatus.loading; // Start in loading state
   UserData? _currentUser; 
+  
+  // ⬅️ NEW: Audio player instance
+  late AudioPlayer _audioPlayer; 
 
   // Define High-Contrast Retro/Military-themed colors
   static const Color primaryButtonColor = Color(0xFF38761D); // Bright Jungle Green
@@ -29,10 +32,26 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
+    // ⬅️ NEW: Initialize Audio Player and start music
+    _audioPlayer = AudioPlayer();
+    _playBackgroundMusic();
+    
     // CRITICAL: Check local storage status immediately when the screen loads
     _checkCurrentUserStatus(); 
   }
   
+  // ⬅️ NEW: Function to play music in a loop
+  void _playBackgroundMusic() async {
+    await _audioPlayer.setVolume(0.4); 
+    await _audioPlayer.setReleaseMode(ReleaseMode.loop); 
+    try {
+      // Placeholder for your main menu music
+      await _audioPlayer.play(AssetSource('audio/main_theme.mp3')); 
+    } catch (e) {
+      debugPrint('Could not play main menu audio: $e');
+    }
+  }
+
   // Asynchronously checks local storage for a current session
   Future<void> _checkCurrentUserStatus() async {
     final user = await _authService.getCurrentUser();
@@ -51,9 +70,18 @@ class _MainScreenState extends State<MainScreen> {
 
   // Handle navigation to other screens (Login, Profile, Game)
   void _navigateTo(Widget screen) {
+    // ⬅️ NEW: Stop music when navigating away from the main menu
+    _audioPlayer.stop(); 
+    
+    // Push the new screen
     Navigator.of(context).push(
       MaterialPageRoute(builder: (context) => screen),
-    );
+    ).then((_) {
+      // ⬅️ NEW: Resume music when returning to the main menu
+      if(mounted) {
+        _playBackgroundMusic();
+      }
+    });
   }
 
   // Handle the combined Login/Logout action
@@ -77,7 +105,7 @@ class _MainScreenState extends State<MainScreen> {
     }
   }
 
-  // Custom button builder
+  // Custom button builder (Code is unchanged)
   Widget _buildThemedButton({
     required String text,
     required IconData icon,
@@ -88,7 +116,6 @@ class _MainScreenState extends State<MainScreen> {
     final Color textColor = highlightColor; // Use gold for text
 
     return Container(
-      // FIX: Changed fixed width (300) to double.infinity to prevent overflow
       width: double.infinity, 
       height: 65,
       margin: const EdgeInsets.symmetric(vertical: 10),
@@ -118,7 +145,6 @@ class _MainScreenState extends State<MainScreen> {
                   text,
                   style: TextStyle(
                     color: textColor,
-                    // FIX: Slightly reduced font size to prevent overflow in Row
                     fontSize: 16, 
                     fontWeight: FontWeight.bold,
                   ),
@@ -129,6 +155,14 @@ class _MainScreenState extends State<MainScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    // ⬅️ NEW: Stop and dispose of the audio player
+    _audioPlayer.stop();
+    _audioPlayer.dispose();
+    super.dispose();
   }
 
   @override
@@ -154,7 +188,7 @@ class _MainScreenState extends State<MainScreen> {
           // 1. Background Image
           Positioned.fill(
             child: Image.asset(
-              'assets/background.png',
+              'assets/main.png',
               fit: BoxFit.cover,
             ),
           ),
@@ -166,7 +200,6 @@ class _MainScreenState extends State<MainScreen> {
           ),
           // 3. Content (Using SingleChildScrollView to prevent overflow)
           Center(
-            // FIX: Use less aggressive horizontal padding to give more space for the buttons
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(vertical: 40.0, horizontal: 20.0), 
               child: Column(
@@ -178,7 +211,6 @@ class _MainScreenState extends State<MainScreen> {
                     'ANIMAL WARFARE',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      // FIX: Reduced font size slightly to prevent overflow on app title
                       fontSize: 32, 
                       fontWeight: FontWeight.bold,
                       color: highlightColor,
@@ -210,7 +242,7 @@ class _MainScreenState extends State<MainScreen> {
                     _buildThemedButton(
                       text: 'PROFILE',
                       icon: Icons.person,
-                      // Pass current user data to profile screen
+                      // Navigation is now handled by _navigateTo, which pauses/resumes music
                       onPressed: () => _navigateTo(const ProfileScreen()), 
                       isPrimary: false,
                     ),

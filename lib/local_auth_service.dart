@@ -3,13 +3,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 // Model to represent a user (we only store the necessary login details locally)
 class UserData {
-  final String email;
+  // CHANGED: Replaced 'email' with 'username'
+  final String username; 
   final String password;
   String avatar;
   String gender;
 
   UserData({
-    required this.email,
+    required this.username, // CHANGED
     required this.password,
     this.avatar = 'default',
     this.gender = 'N/A',
@@ -17,7 +18,7 @@ class UserData {
 
   // Convert a UserData object to a JSON map
   Map<String, dynamic> toJson() => {
-        'email': email,
+        'username': username, // CHANGED
         'password': password,
         'avatar': avatar,
         'gender': gender,
@@ -26,10 +27,11 @@ class UserData {
   // Create a UserData object from a JSON map
   factory UserData.fromJson(Map<String, dynamic> json) {
     return UserData(
-      email: json['email'] as String,
-      password: json['password'] as String,
-      avatar: json['avatar'] as String,
-      gender: json['gender'] as String,
+      // FIX: Use 'as String? ?? '' ' to safely handle null values from local storage
+      username: json['username'] as String? ?? '', 
+      password: json['password'] as String? ?? '',
+      avatar: json['avatar'] as String? ?? 'default',
+      gender: json['gender'] as String? ?? 'N/A',
     );
   }
 }
@@ -37,8 +39,8 @@ class UserData {
 class LocalAuthService {
   // Key used to store the list of all registered users
   static const _usersKey = 'registered_users';
-  // Key used to store the email of the currently logged-in user
-  static const _currentKey = 'current_user_email';
+  // CHANGED: Key used to store the username of the currently logged-in user
+  static const _currentKey = 'current_user_username'; 
 
   // --- User Registration/Login Logic ---
 
@@ -52,39 +54,40 @@ class LocalAuthService {
   }
 
   // Attempts to register a new user
-  Future<bool> registerUser(String email, String password) async {
+  // CHANGED: Takes username instead of email
+  Future<bool> registerUser(String username, String password) async {
     final users = await _getRegisteredUsers();
     
     // Check if user already exists
-    if (users.any((user) => user.email.toLowerCase() == email.toLowerCase())) {
+    if (users.any((user) => user.username.toLowerCase() == username.toLowerCase())) { // CHANGED
       return false; // User already exists
     }
 
-    final newUser = UserData(email: email, password: password);
+    final newUser = UserData(username: username, password: password); // CHANGED
     users.add(newUser);
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_usersKey, jsonEncode(users.map((u) => u.toJson()).toList()));
     
     // Auto-login the new user
-    await _saveCurrentUserEmail(email);
+    await _saveCurrentUserName(username); // CHANGED
     return true;
   }
 
   // Attempts to log a user in
-  // Attempts to log a user in
-  Future<UserData?> loginUser(String email, String password) async {
+  // CHANGED: Takes username instead of email
+  Future<UserData?> loginUser(String username, String password) async {
     final users = await _getRegisteredUsers();
     
-    // Use .where() to filter the list, which returns an iterable.
+    // Use .where() to filter the list
     final matchingUsers = users.where(
-      (user) => user.email.toLowerCase() == email.toLowerCase() && user.password == password,
+      (user) => user.username.toLowerCase() == username.toLowerCase() && user.password == password, // CHANGED
     );
 
     // Check if a user was found.
     if (matchingUsers.isNotEmpty) {
       final foundUser = matchingUsers.first;
-      await _saveCurrentUserEmail(foundUser.email);
+      await _saveCurrentUserName(foundUser.username); // CHANGED
       return foundUser;
     }
     
@@ -93,27 +96,28 @@ class LocalAuthService {
 
   // --- Session Management Logic ---
 
-  // Saves the email of the logged-in user
-  Future<void> _saveCurrentUserEmail(String email) async {
+  // Saves the username of the logged-in user
+  // CHANGED: Saves username instead of email
+  Future<void> _saveCurrentUserName(String username) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_currentKey, email);
+    await prefs.setString(_currentKey, username);
   }
   
   // Checks if a user is currently logged in and returns their data
-  // Checks if a user is currently logged in and returns their data
   Future<UserData?> getCurrentUser() async {
     final prefs = await SharedPreferences.getInstance();
-    final currentEmail = prefs.getString(_currentKey);
+    // CHANGED: Retrieve username key
+    final currentUsername = prefs.getString(_currentKey); 
     
-    if (currentEmail == null) {
+    if (currentUsername == null) {
       return null;
     }
     
     final users = await _getRegisteredUsers();
     
-    // Use .where() to filter for the current user's email.
+    // Use .where() to filter for the current user's username.
     final matchingUsers = users.where(
-      (user) => user.email.toLowerCase() == currentEmail.toLowerCase(),
+      (user) => user.username.toLowerCase() == currentUsername.toLowerCase(), // CHANGED
     );
     
     // Return the first match, or null if the list is empty.
@@ -129,15 +133,16 @@ class LocalAuthService {
   // --- Profile Update Logic ---
   
   // Updates avatar and gender for a logged-in user
-  Future<void> updateProfile(String email, {String? avatar, String? gender}) async {
+  // CHANGED: Uses username for lookup
+  Future<void> updateProfile(String username, {String? avatar, String? gender}) async {
     final users = await _getRegisteredUsers();
-    final userIndex = users.indexWhere((user) => user.email.toLowerCase() == email.toLowerCase());
+    final userIndex = users.indexWhere((user) => user.username.toLowerCase() == username.toLowerCase());
 
     if (userIndex != -1) {
       final user = users[userIndex];
       // Create a copy with updated fields
       final updatedUser = UserData(
-        email: user.email,
+        username: user.username, // CHANGED
         password: user.password,
         avatar: avatar ?? user.avatar,
         gender: gender ?? user.gender,
