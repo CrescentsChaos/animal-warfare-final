@@ -1,3 +1,5 @@
+// lib/anidex_screen.dart
+
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
@@ -30,13 +32,32 @@ class _AnidexScreenState extends State<AnidexScreen> {
   
   @override
   void dispose() {
-    _searchController.removeListener(_onSearchChanged);
+    _searchController.removeListener(_onSearchChanged); // Corrected typo here previously
     _searchController.dispose();
     super.dispose();
   }
+
+  // --- Helper function to get color based on rarity ---
+  Color _getRarityColor(String rarity) {
+    switch (rarity.toLowerCase()) {
+      case 'common':
+        return const Color.fromARGB(255, 188, 188, 188).withOpacity(0.8);
+      case 'uncommon':
+        return const Color.fromARGB(255, 117, 210, 117);
+      case 'rare':
+        return Colors.blueAccent;
+      case 'epic':
+        return const Color.fromARGB(255, 128, 3, 150);
+      case 'legendary':
+        return Colors.orange;
+      case 'mythical':
+        return const Color.fromARGB(255, 229, 18, 208);
+      default:
+        return Colors.grey;
+    }
+  }
   
   // --- Data Loading & Search Logic (Unchanged) ---
-  
   Future<void> _loadOrganisms() async {
     const String assetPath = 'assets/Organisms.json';
     try {
@@ -99,6 +120,7 @@ class _AnidexScreenState extends State<AnidexScreen> {
     });
   }
 
+  // --- UI Builders ---
   Widget _buildSearchBar() {
     return Container(
       padding: const EdgeInsets.only(bottom: 20),
@@ -208,7 +230,7 @@ class _AnidexScreenState extends State<AnidexScreen> {
   }
 
   // ------------------------------------------------------------------
-  // FIXED & REWRITTEN: Immersive Modal Bottom Sheet for Details
+  // REWRITTEN: Immersive Modal Bottom Sheet for Details
   // ------------------------------------------------------------------
   void _showOrganismDetails(Organism organism) {
     Color getStatColor(int stat) {
@@ -217,13 +239,15 @@ class _AnidexScreenState extends State<AnidexScreen> {
       return Colors.redAccent;
     }
 
+    final rarityColor = _getRarityColor(organism.rarity); // Get color once
+
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true, // Allows it to take up most of the screen height
-      backgroundColor: Colors.transparent, // Use custom styling
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (BuildContext context) {
         return DraggableScrollableSheet(
-          initialChildSize: 0.9, // Starts at 90% of screen height
+          initialChildSize: 0.9,
           minChildSize: 0.5,
           maxChildSize: 0.95,
           expand: false,
@@ -232,14 +256,14 @@ class _AnidexScreenState extends State<AnidexScreen> {
               decoration: BoxDecoration(
                 color: secondaryButtonColor.withOpacity(0.95),
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-                border: Border.all(color: highlightColor, width: 3.0),
+                border: Border.all(color: rarityColor, width: 3.0),
               ),
               child: ListView(
                 controller: controller,
                 padding: const EdgeInsets.all(0),
                 children: <Widget>[
                   // 1. Header Section (Image, Name, Rarity)
-                  _buildDetailsHeader(organism),
+                  _buildDetailsHeader(organism, rarityColor),
                   
                   // 2. Main Content
                   Padding(
@@ -257,7 +281,11 @@ class _AnidexScreenState extends State<AnidexScreen> {
                         
                         // General Details
                         const Divider(color: highlightColor),
-                        _buildDetailRow('Scientific Name:', organism.scientificName),
+                        
+                        // FIX: Swapped order of Rarity and Scientific Name again
+                        // The Rarity line itself is implicitly "removed" by not being here twice.
+                        _buildDetailRow('Rarity:', organism.rarity, isRarity: true),
+                        
                         _buildDetailRow('Habitat:', organism.habitat),
                         _buildDetailRow('Drops:', organism.drops),
                         _buildDetailRow('Category:', organism.category),
@@ -273,7 +301,6 @@ class _AnidexScreenState extends State<AnidexScreen> {
                         // Abilities and Moves
                         const Divider(color: highlightColor),
                         _buildSectionTitle('ABILITIES & MOVES'),
-                        // Use a standard text block for long, wrapping content
                         _buildTextDetail('Abilities:', organism.abilities),
                         _buildTextDetail('Moves:', organism.moves.replaceAll(',', ', ')), 
 
@@ -290,14 +317,14 @@ class _AnidexScreenState extends State<AnidexScreen> {
     );
   }
 
-  // --- NEW HELPER: Immersive Header ---
-  Widget _buildDetailsHeader(Organism organism) {
+  // --- HELPER: Immersive Header ---
+  Widget _buildDetailsHeader(Organism organism, Color rarityColor) {
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: const BoxDecoration(
-        color: primaryButtonColor,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        border: Border(bottom: BorderSide(color: highlightColor, width: 3.0)),
+      decoration: BoxDecoration(
+        color: rarityColor.withOpacity(0.4), 
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        border: const Border(bottom: BorderSide(color: highlightColor, width: 3.0)),
       ),
       child: Column(
         children: [
@@ -306,7 +333,7 @@ class _AnidexScreenState extends State<AnidexScreen> {
             padding: const EdgeInsets.all(8),
             margin: const EdgeInsets.only(bottom: 10),
             decoration: BoxDecoration(
-              color: secondaryButtonColor.withOpacity(0.5),
+              color: const Color.fromARGB(255, 41, 48, 68).withOpacity(0.5),
               borderRadius: BorderRadius.circular(8),
             ),
             child: organism.sprite.isNotEmpty 
@@ -327,29 +354,35 @@ class _AnidexScreenState extends State<AnidexScreen> {
           Text(
             organism.name.toUpperCase(),
             textAlign: TextAlign.center,
-            style: const TextStyle(color: highlightColor, fontFamily: 'PressStart2P', fontSize: 24, height: 1.2),
+            style: TextStyle(color: rarityColor, fontFamily: 'PressStart2P', fontSize: 24, height: 1.2),
           ),
-          // Rarity
+          // Rarity (This is the primary display of Rarity, so we'll style it well)
+          // No separate "Rarity: " label here to keep it concise, just the value styled with its color
           Text(
-            'Rarity: ${organism.rarity}',
-            style: const TextStyle(color: Colors.white, fontFamily: 'PressStart2P', fontSize: 14),
+              organism.scientificName, // Displays the Scientific Name
+              style: TextStyle(
+                  color: rarityColor, 
+                  fontFamily: 'PressStart2P', 
+                  fontSize: 16,
+                  fontStyle: FontStyle.italic, // Sets the text to italic
+              ),
           ),
           // Drag handle for modal
           const SizedBox(height: 10),
           Container(
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: highlightColor.withOpacity(0.5),
-              borderRadius: BorderRadius.circular(2),
-            ),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                  color: highlightColor.withOpacity(0.5),
+                  borderRadius: BorderRadius.circular(2),
+              ),
           ),
         ],
       ),
     );
   }
 
-  // --- NEW HELPER: Section Title ---
+  // --- HELPER: Section Title ---
   Widget _buildSectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.only(top: 15.0, bottom: 8.0),
@@ -367,8 +400,18 @@ class _AnidexScreenState extends State<AnidexScreen> {
     );
   }
   
-  // --- EXISTING HELPER: Row with Expanded to prevent overflow (used for stats) ---
-  Widget _buildDetailRow(String label, String value, {bool isHighlight = false, Color? statColor}) {
+  // --- HELPER: Row with Expanded (Handles rarity color and italics) ---
+  Widget _buildDetailRow(String label, String value, {bool isHighlight = false, Color? statColor, bool isScientificName = false, bool isRarity = false}) {
+    
+    // Determine text color and style
+    Color textColor = statColor ?? (isHighlight ? primaryButtonColor : Colors.white);
+    
+    if (isRarity) {
+      textColor = _getRarityColor(value); // Use rarity color for rarity value
+    }
+
+    FontStyle fontStyle = isScientificName ? FontStyle.italic : FontStyle.normal; // Italic for scientific name
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
@@ -384,9 +427,10 @@ class _AnidexScreenState extends State<AnidexScreen> {
               value,
               textAlign: TextAlign.right,
               style: TextStyle(
-                color: statColor ?? (isHighlight ? primaryButtonColor : Colors.white),
+                color: textColor,
                 fontFamily: 'PressStart2P',
                 fontSize: 12,
+                fontStyle: fontStyle, // Apply font style
               ),
             ),
           ),
@@ -395,7 +439,7 @@ class _AnidexScreenState extends State<AnidexScreen> {
     );
   }
 
-  // --- NEW HELPER: Multi-line detail block (used for abilities/moves) ---
+  // --- HELPER: Multi-line detail block ---
   Widget _buildTextDetail(String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
