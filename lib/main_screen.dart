@@ -91,8 +91,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     
     // Choose transition based on the destination screen
     final routeBuilder = screen is GameScreen 
-        ? createCloudTransitionRoute(screen) // Use cloud for the game
-        : createFadeRoute(screen);           // Use fade for other menus
+        ? MaterialPageRoute(builder: (_) => screen) // <-- Use standard route for GameScreen
+        : createFadeRoute(screen);          // Use fade for other menus
     
     await Navigator.of(context).push(
       routeBuilder,
