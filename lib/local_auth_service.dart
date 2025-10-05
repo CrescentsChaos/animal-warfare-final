@@ -5,11 +5,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart'; 
 
 // Model to represent a user
+// Model to represent a user
 class UserData {
   final String username;
   final String password;
-  String avatar;
-  String gender;
+  final String avatar; // ⬅️ CHANGED: MUST be final
+  final String gender; // ⬅️ CHANGED: MUST be final
 
   UserData({
     required this.username,
@@ -17,6 +18,21 @@ class UserData {
     this.avatar = 'default',
     this.gender = 'N/A',
   });
+
+  // ⬅️ NEW: Method to create a new UserData instance with optional updated fields
+  UserData copyWith({
+    String? username,
+    String? password,
+    String? avatar,
+    String? gender,
+  }) {
+    return UserData(
+      username: username ?? this.username,
+      password: password ?? this.password,
+      avatar: avatar ?? this.avatar,
+      gender: gender ?? this.gender,
+    );
+  }
 
   Map<String, dynamic> toJson() => {
         'username': username,

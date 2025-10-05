@@ -39,7 +39,7 @@ dependencies:
   shared_preferences: ^2.2.0  # Required for current session state
   path_provider: ^2.1.0 
   permission_handler: ^11.3.1
-
+  image_picker: ^1.2.0
 
 dev_dependencies:
   flutter_test:
