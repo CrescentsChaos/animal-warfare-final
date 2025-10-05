@@ -42,9 +42,13 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     _audioPlayer = AudioPlayer();
     _playBackgroundMusic();
     
+    // ⬅️ ADDED: Check and request storage permission FIRST
+    
     // CRITICAL: Check local storage status immediately when the screen loads
     _checkCurrentUserStatus(); 
   }
+  
+
   
   // ⬅️ NEW: Override to handle app lifecycle changes
   @override
@@ -65,6 +69,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       // ⬅️ UPDATED: Resume only if it was playing before the pause AND we are on the MainScreen
       if (_wasPlayingBeforePause) {
         await _audioPlayer.resume();
+      } else if (mounted) {
+        // Just in case, ensure it's playing if it's supposed to be
+        _playBackgroundMusic();
       }
     }
   }
@@ -83,7 +90,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     }
   }
 
-  // Asynchronously checks local storage for a current session
+  // Asynchronously checks local storage status for a current session
   Future<void> _checkCurrentUserStatus() async {
     final user = await _authService.getCurrentUser();
     if (mounted) {

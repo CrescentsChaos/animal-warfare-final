@@ -1,4 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    package="com.crescent.animalwarfare"
+
     <application
         android:label="Animal Warfare"
         android:name="${applicationName}"

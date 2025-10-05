@@ -190,7 +190,7 @@ class _SplashScreenState extends State<SplashScreen>
               right: 16,
               bottom: 16,
               child: Text(
-                'V 1.0.0', // Replace with a dynamic version number later
+                'V 0.0.1', // Replace with a dynamic version number later
                 style: TextStyle(
                   fontSize: 10,
                   color: Colors.white.withOpacity(0.7),

@@ -36,7 +36,9 @@ dependencies:
   firebase_core: ^2.27.0 
   firebase_auth: ^4.17.7 
   audioplayers: ^6.0.0
-  shared_preferences: ^2.2.3
+  shared_preferences: ^2.2.0  # Required for current session state
+  path_provider: ^2.1.0 
+  permission_handler: ^11.3.1
 
 
 dev_dependencies:

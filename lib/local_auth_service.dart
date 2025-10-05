@@ -1,34 +1,33 @@
 import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:io'; 
+import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart'; 
+import 'package:path_provider/path_provider.dart'; 
 
-// Model to represent a user (we only store the necessary login details locally)
+// Model to represent a user
 class UserData {
-  // CHANGED: Replaced 'email' with 'username'
-  final String username; 
+  final String username;
   final String password;
   String avatar;
   String gender;
 
   UserData({
-    required this.username, // CHANGED
+    required this.username,
     required this.password,
     this.avatar = 'default',
     this.gender = 'N/A',
   });
 
-  // Convert a UserData object to a JSON map
   Map<String, dynamic> toJson() => {
-        'username': username, // CHANGED
+        'username': username,
         'password': password,
         'avatar': avatar,
         'gender': gender,
       };
 
-  // Create a UserData object from a JSON map
   factory UserData.fromJson(Map<String, dynamic> json) {
     return UserData(
-      // FIX: Use 'as String? ?? '' ' to safely handle null values from local storage
-      username: json['username'] as String? ?? '', 
+      username: json['username'] as String? ?? '',
       password: json['password'] as String? ?? '',
       avatar: json['avatar'] as String? ?? 'default',
       gender: json['gender'] as String? ?? 'N/A',
@@ -37,67 +36,91 @@ class UserData {
 }
 
 class LocalAuthService {
-  // Key used to store the list of all registered users
-  static const _usersKey = 'registered_users';
-  // CHANGED: Key used to store the username of the currently logged-in user
+  // Key used to store the username of the currently logged-in user (uses SharedPreferences)
   static const _currentKey = 'current_user_username'; 
-
-  // --- User Registration/Login Logic ---
-
-  // Retrieves all registered users from local storage
-  Future<List<UserData>> _getRegisteredUsers() async {
-    final prefs = await SharedPreferences.getInstance();
-    final usersJsonString = prefs.getString(_usersKey) ?? '[]';
-    final List usersList = jsonDecode(usersJsonString);
+  
+  // ⬅️ NEW: Generates the file path for a specific user.
+  Future<File> _getUserFile(String username) async {
+    // Use getDownloadsDirectory() for user-accessible data
+    final directory = await getDownloadsDirectory();
     
-    return usersList.map((userMap) => UserData.fromJson(userMap)).toList();
+    // Sanitize username for use as a filename (e.g., replace spaces/special chars)
+    final safeUsername = username.replaceAll(RegExp(r'[^\w]'), '').toLowerCase();
+    final fileName = '$safeUsername.json';
+    
+    // Fallback to Documents if Downloads directory isn't available (e.g., on iOS)
+    final path = directory?.path ?? (await getApplicationDocumentsDirectory()).path;
+    
+    // Use a subfolder to keep files organized: AnimalWarfare/UserSaves/
+    final appSubdirectory = '$path/AnimalWarfare/UserSaves/'; 
+    final appDir = Directory(appSubdirectory);
+    
+    // Ensure the folder structure exists
+    if (!await appDir.exists()) {
+        await appDir.create(recursive: true);
+    }
+
+    return File('$appSubdirectory$fileName');
+  }
+  
+  // ⬅️ NEW: Reads a single user's data from their JSON file
+  Future<UserData?> _readUserFile(String username) async {
+    try {
+      final file = await _getUserFile(username);
+      if (await file.exists()) {
+        final contents = await file.readAsString();
+        final userMap = jsonDecode(contents);
+        return UserData.fromJson(userMap);
+      }
+      return null; // Return null if file doesn't exist
+    } catch (e) {
+      debugPrint("Error reading user file for $username: $e");
+      return null; 
+    }
   }
 
+  // ⬅️ NEW: Writes a single user's data to their JSON file
+  Future<void> _writeUserFile(UserData user) async {
+    try {
+      final file = await _getUserFile(user.username);
+      final userJson = jsonEncode(user.toJson());
+      await file.writeAsString(userJson);
+      debugPrint("User data successfully written to ${file.path}");
+    } catch (e) {
+      debugPrint("Error writing user file for ${user.username}: $e");
+    }
+  }
+  
   // Attempts to register a new user
-  // CHANGED: Takes username instead of email
   Future<bool> registerUser(String username, String password) async {
-    final users = await _getRegisteredUsers();
-    
-    // Check if user already exists
-    if (users.any((user) => user.username.toLowerCase() == username.toLowerCase())) { // CHANGED
+    // ⬅️ CHANGED: Check if the user's specific file already exists
+    final existingUser = await _readUserFile(username);
+    if (existingUser != null) {
       return false; // User already exists
     }
 
-    final newUser = UserData(username: username, password: password); // CHANGED
-    users.add(newUser);
-
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_usersKey, jsonEncode(users.map((u) => u.toJson()).toList()));
+    final newUser = UserData(username: username, password: password);
+    // ⬅️ CHANGED: Write only the single user's data
+    await _writeUserFile(newUser);
     
-    // Auto-login the new user
-    await _saveCurrentUserName(username); // CHANGED
+    await _saveCurrentUserName(username); 
     return true;
   }
 
   // Attempts to log a user in
-  // CHANGED: Takes username instead of email
   Future<UserData?> loginUser(String username, String password) async {
-    final users = await _getRegisteredUsers();
+    // ⬅️ CHANGED: Read the specific user's file
+    final foundUser = await _readUserFile(username);
     
-    // Use .where() to filter the list
-    final matchingUsers = users.where(
-      (user) => user.username.toLowerCase() == username.toLowerCase() && user.password == password, // CHANGED
-    );
-
-    // Check if a user was found.
-    if (matchingUsers.isNotEmpty) {
-      final foundUser = matchingUsers.first;
-      await _saveCurrentUserName(foundUser.username); // CHANGED
+    if (foundUser != null && foundUser.password == password) {
+      await _saveCurrentUserName(foundUser.username); 
       return foundUser;
     }
     
-    return null; // Explicitly return null if no user was found.
+    return null;
   }
 
-  // --- Session Management Logic ---
-
-  // Saves the username of the logged-in user
-  // CHANGED: Saves username instead of email
+  // --- Session Management Logic (uses SharedPreferences) ---
   Future<void> _saveCurrentUserName(String username) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_currentKey, username);
@@ -106,22 +129,14 @@ class LocalAuthService {
   // Checks if a user is currently logged in and returns their data
   Future<UserData?> getCurrentUser() async {
     final prefs = await SharedPreferences.getInstance();
-    // CHANGED: Retrieve username key
     final currentUsername = prefs.getString(_currentKey); 
     
     if (currentUsername == null) {
       return null;
     }
     
-    final users = await _getRegisteredUsers();
-    
-    // Use .where() to filter for the current user's username.
-    final matchingUsers = users.where(
-      (user) => user.username.toLowerCase() == currentUsername.toLowerCase(), // CHANGED
-    );
-    
-    // Return the first match, or null if the list is empty.
-    return matchingUsers.isNotEmpty ? matchingUsers.first : null;
+    // ⬅️ CHANGED: Read the current user's file
+    return await _readUserFile(currentUsername);
   }
 
   // Logs out the current user
@@ -131,27 +146,20 @@ class LocalAuthService {
   }
   
   // --- Profile Update Logic ---
-  
-  // Updates avatar and gender for a logged-in user
-  // CHANGED: Uses username for lookup
   Future<void> updateProfile(String username, {String? avatar, String? gender}) async {
-    final users = await _getRegisteredUsers();
-    final userIndex = users.indexWhere((user) => user.username.toLowerCase() == username.toLowerCase());
+    // ⬅️ CHANGED: Read the specific user's file
+    final user = await _readUserFile(username);
 
-    if (userIndex != -1) {
-      final user = users[userIndex];
-      // Create a copy with updated fields
+    if (user != null) {
       final updatedUser = UserData(
-        username: user.username, // CHANGED
+        username: user.username,
         password: user.password,
         avatar: avatar ?? user.avatar,
         gender: gender ?? user.gender,
       );
       
-      users[userIndex] = updatedUser;
-
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_usersKey, jsonEncode(users.map((u) => u.toJson()).toList()));
+      // ⬅️ CHANGED: Write only the updated user's data back to their file
+      await _writeUserFile(updatedUser);
     }
   }
 }
