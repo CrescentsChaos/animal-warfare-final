@@ -144,7 +144,7 @@ class _GameScreenState extends State<GameScreen> {
 
                   // Explore Button
                   _buildThemedButton(
-                    text: 'EXPLORE TERRITORY',
+                    text: 'EXPLORE BIOME',
                     icon: Icons.map,
                     onPressed: () => _navigateTo(const ExploreScreen()),
                     isPrimary: true,
@@ -152,7 +152,7 @@ class _GameScreenState extends State<GameScreen> {
 
                   // Anidex Button
                   _buildThemedButton(
-                    text: 'ANIDEX (UNITS)',
+                    text: 'ANIMAL DEX',
                     icon: Icons.pets,
                     onPressed: () => _navigateTo(const AnidexScreen()),
                     isPrimary: false,

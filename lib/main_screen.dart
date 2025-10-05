@@ -184,7 +184,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       );
     }
     
-    final loginButtonText = _authStatus == AuthStatus.loggedIn ? 'LOGOUT' : 'LOGIN / REGISTER';
+    final loginButtonText = _authStatus == AuthStatus.loggedIn ? 'LOGOUT' : 'LOGIN';
     final loginButtonIcon = _authStatus == AuthStatus.loggedIn ? Icons.exit_to_app : Icons.login;
 
     return Scaffold(
@@ -225,7 +225,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                   
                   // PLAY Button (Primary)
                   _buildThemedButton(
-                    text: 'START WARFARE',
+                    text: 'Play',
                     // ⬅️ FIX: Changed Icons.explosion to the compatible Icons.local_fire_department
                     icon: Icons.local_fire_department, 
                     onPressed: () => _navigateTo(const GameScreen()),
