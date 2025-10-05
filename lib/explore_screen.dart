@@ -5,11 +5,13 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:animal_warfare/models/organism.dart'; // Must import the model
+import 'biome_detail_screen.dart'; // <<< ADDED IMPORT for navigation
 
 // --- Biome Spawning Logic (Uses Organism.habitat and Organism.rarity) ---
 
 /// Maps rarity string to a weight integer. Higher weight means higher probability.
 int _getRarityWeight(String rarity) {
+// ... (Logic remains the same)
   switch (rarity.toLowerCase()) {
     case 'common':
       return 50;
@@ -31,7 +33,7 @@ int _getRarityWeight(String rarity) {
 /// Selects a random organism from the biome by filtering on Organism.habitat 
 /// and weighting by Organism.rarity.
 Organism? getWeightedRandomOrganism(String biomeName, List<Organism> allOrganisms) {
-  
+// ... (Logic remains the same)
   // Normalize the selected biome name for case-insensitive search
   final String searchBiome = biomeName.toLowerCase();
 
@@ -140,144 +142,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
     return 'assets/biomes/$fileName.png';
   }
 
-  // --- Encounter Modal Function ---
-  void _showEncounterModal(Organism organism) {
-    // Helper function to determine rarity color (copied from anidex_screen logic)
-    Color _getRarityColor(String rarity) {
-      switch (rarity.toLowerCase()) {
-        case 'common': return Colors.grey;
-        case 'uncommon': return Colors.green;
-        case 'rare': return Colors.blue;
-        case 'epic': return Colors.purple;
-        case 'legendary': return Colors.orange;
-        case 'mythical': return Colors.red;
-        default: return Colors.white;
-      }
-    }
-    
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent, 
-      builder: (BuildContext context) {
-        return Container(
-          decoration: BoxDecoration(
-            color: secondaryButtonColor,
-            border: Border.all(color: highlightColor, width: 2),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-          ),
-          height: MediaQuery.of(context).size.height * 0.75, 
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              // Header: Title and Rarity
-              Text(
-                'ENCOUNTER: ${organism.rarity.toUpperCase()}!',
-                style: TextStyle(
-                  color: _getRarityColor(organism.rarity), // Use rarity color
-                  fontFamily: 'PressStart2P',
-                  fontSize: 14,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const Divider(color: highlightColor),
-
-              // Organism Sprite and Name
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10.0),
-                child: Column(
-                  children: [
-                    // Use Image.network or Image.asset based on your sprite field
-                    Image.network(
-                      organism.sprite, 
-                      height: 120, 
-                      errorBuilder: (context, error, stackTrace) => 
-                        Image.asset('assets/placeholder_400x200.png', height: 120),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      organism.name.toUpperCase(),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontFamily: 'PressStart2P',
-                        fontSize: 18,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Description/Mission Brief
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Text(
-                    organism.description,
-                    style: const TextStyle(color: Colors.white70, fontSize: 14),
-                  ),
-                ),
-              ),
-              const Divider(color: highlightColor),
-
-              // Action Buttons
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  // FIGHT Button
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // TODO: Implement navigation to the Battle Screen
-                        Navigator.pop(context); // Close modal
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('BATTLE STARTED! (Unimplemented)')),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryButtonColor, 
-                        shape: const StadiumBorder(
-                          side: BorderSide(color: highlightColor, width: 2),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                      ),
-                      child: const Text(
-                        'FIGHT',
-                        style: TextStyle(color: highlightColor, fontFamily: 'PressStart2P', fontSize: 14),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 15),
-                  // RUN Button
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // TODO: Implement run logic (e.g., success chance)
-                        Navigator.pop(context); // Close modal
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('${organism.name} ESCAPED!')),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: secondaryButtonColor, 
-                        shape: const StadiumBorder(
-                          side: BorderSide(color: Colors.white70, width: 2),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                      ),
-                      child: const Text(
-                        'RUN',
-                        style: TextStyle(color: Colors.white70, fontFamily: 'PressStart2P', fontSize: 14),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
+  // --- Encounter Modal Function (REMOVED) ---
+  // The _showEncounterModal function is removed as the logic is now handled 
+  // in BiomeDetailScreen.
 
   void _navigateToBiome(BuildContext context, String biomeName) {
     if (_isLoading) {
@@ -287,15 +154,17 @@ class _ExploreScreenState extends State<ExploreScreen> {
       return;
     }
     
-    final Organism? encounter = getWeightedRandomOrganism(biomeName, _allOrganisms);
-
-    if (encounter != null) {
-      _showEncounterModal(encounter);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Exploring $biomeName. No organism data found for habitat "$biomeName".')),
-      );
-    }
+    // --- MODIFIED: Navigate to BiomeDetailScreen ---
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BiomeDetailScreen(
+          biomeName: biomeName,
+          allOrganisms: _allOrganisms,
+        ),
+      ),
+    );
+    // The previous encounter finding logic is removed.
   }
 
   Widget _buildBiomeButton(BuildContext context, String biome) {

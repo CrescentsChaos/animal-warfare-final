@@ -81,11 +81,12 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/
-    - assets/audio/
-    # Add your other asset directories too:
-    - assets/fonts/
-    - assets/icon/
+    - assets/main.png
     - assets/biomes/
+    - assets/audio/ # <<< CRITICAL: This line must be present and correctly indented!
+    # If your placeholder is at the root of assets, include it too:
+    - assets/placeholder_400x200.png 
+    - assets/audio/swamp_theme.mp3
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
