@@ -1,5 +1,3 @@
-// lib/anidex_screen.dart
-
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
@@ -13,7 +11,7 @@ class AnidexScreen extends StatefulWidget {
 }
 
 class _AnidexScreenState extends State<AnidexScreen> {
-  // Define High-Contrast Retro/Military-themed colors inside the State class
+  // Define High-Contrast Retro/Military-themed colors
   static const Color primaryButtonColor = Color(0xFF38761D); // Bright Jungle Green
   static const Color secondaryButtonColor = Color(0xFF1E3F2A); // Deep Forest Green
   static const Color highlightColor = Color(0xFFDAA520); // Goldenrod
@@ -37,14 +35,12 @@ class _AnidexScreenState extends State<AnidexScreen> {
     super.dispose();
   }
   
-  // --- Data Loading ---
+  // --- Data Loading & Search Logic (Unchanged) ---
+  
   Future<void> _loadOrganisms() async {
     const String assetPath = 'assets/Organisms.json';
-    
     try {
       final String response = await rootBundle.loadString(assetPath);
-      
-      // FIX: Decode directly as a List, as the JSON starts with [
       final List<dynamic> animalsData = json.decode(response);
       
       setState(() {
@@ -60,7 +56,6 @@ class _AnidexScreenState extends State<AnidexScreen> {
     }
   }
 
-  // --- Search and Autocomplete Logic ---
   void _onSearchChanged() {
     final query = _searchController.text.trim().toLowerCase();
     
@@ -103,8 +98,7 @@ class _AnidexScreenState extends State<AnidexScreen> {
       ).toList();
     });
   }
-  
-  // --- UI Builders ---
+
   Widget _buildSearchBar() {
     return Container(
       padding: const EdgeInsets.only(bottom: 20),
@@ -213,6 +207,9 @@ class _AnidexScreenState extends State<AnidexScreen> {
     );
   }
 
+  // ------------------------------------------------------------------
+  // FIXED & REWRITTEN: Immersive Modal Bottom Sheet for Details
+  // ------------------------------------------------------------------
   void _showOrganismDetails(Organism organism) {
     Color getStatColor(int stat) {
       if (stat >= 80) return Colors.greenAccent;
@@ -220,114 +217,201 @@ class _AnidexScreenState extends State<AnidexScreen> {
       return Colors.redAccent;
     }
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
+      isScrollControlled: true, // Allows it to take up most of the screen height
+      backgroundColor: Colors.transparent, // Use custom styling
       builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: secondaryButtonColor,
-          shape: RoundedRectangleBorder(
-             side: const BorderSide(color: highlightColor, width: 3.0),
-             borderRadius: BorderRadius.circular(4.0)
-          ),
-          title: Text(
-            organism.name.toUpperCase(),
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: highlightColor, fontFamily: 'PressStart2P', fontSize: 18),
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Center(
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 15.0),
-                    child: organism.sprite.isNotEmpty 
-                        ? Image.network(
-                            organism.sprite,
-                            height: 100, 
-                            loadingBuilder: (context, child, loadingProgress) {
-                              if (loadingProgress == null) return child;
-                              return const Center(child: CircularProgressIndicator(color: highlightColor));
-                            },
-                            errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image, color: Colors.red, size: 50),
-                          )
-                        : const Icon(Icons.image_not_supported, color: Colors.grey, size: 50),
-                  ),
-                ),
+        return DraggableScrollableSheet(
+          initialChildSize: 0.9, // Starts at 90% of screen height
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          expand: false,
+          builder: (_, controller) {
+            return Container(
+              decoration: BoxDecoration(
+                color: secondaryButtonColor.withOpacity(0.95),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                border: Border.all(color: highlightColor, width: 3.0),
+              ),
+              child: ListView(
+                controller: controller,
+                padding: const EdgeInsets.all(0),
+                children: <Widget>[
+                  // 1. Header Section (Image, Name, Rarity)
+                  _buildDetailsHeader(organism),
                   
-                _buildDetailRow('Scientific Name:', organism.scientificName),
-                _buildDetailRow('Habitat:', organism.habitat),
-                _buildDetailRow('Drops:', organism.drops),
-                _buildDetailRow('Rarity:', organism.rarity, isHighlight: true),
-                _buildDetailRow('Category:', organism.category),
+                  // 2. Main Content
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Description/Brief
+                        _buildSectionTitle('MISSION BRIEF'),
+                        const SizedBox(height: 5),
+                        Text(
+                          organism.description,
+                          style: const TextStyle(color: Colors.white70, fontSize: 14),
+                        ),
+                        
+                        // General Details
+                        const Divider(color: highlightColor),
+                        _buildDetailRow('Scientific Name:', organism.scientificName),
+                        _buildDetailRow('Habitat:', organism.habitat),
+                        _buildDetailRow('Drops:', organism.drops),
+                        _buildDetailRow('Category:', organism.category),
 
-                const Divider(color: highlightColor),
-                const Text(
-                  'BATTLE STATS:',
-                  style: TextStyle(color: highlightColor, fontFamily: 'PressStart2P', fontSize: 12),
-                ),
-                _buildDetailRow('HEALTH:', organism.health.toString(), statColor: getStatColor(organism.health)),
-                _buildDetailRow('ATTACK:', organism.attack.toString(), statColor: getStatColor(organism.attack)),
-                _buildDetailRow('DEFENSE:', organism.defense.toString(), statColor: getStatColor(organism.defense)),
-                _buildDetailRow('SPEED:', organism.speed.toString(), statColor: getStatColor(organism.speed)),
-                
-                const Divider(color: highlightColor),
-                _buildDetailRow('Abilities:', organism.abilities),
-                _buildDetailRow('Moves:', organism.moves.replaceAll(',', ', ')),
+                        // Stats Section
+                        const Divider(color: highlightColor),
+                        _buildSectionTitle('BATTLE STATS'),
+                        _buildDetailRow('HEALTH:', organism.health.toString(), statColor: getStatColor(organism.health)),
+                        _buildDetailRow('ATTACK:', organism.attack.toString(), statColor: getStatColor(organism.attack)),
+                        _buildDetailRow('DEFENSE:', organism.defense.toString(), statColor: getStatColor(organism.defense)),
+                        _buildDetailRow('SPEED:', organism.speed.toString(), statColor: getStatColor(organism.speed)),
+                        
+                        // Abilities and Moves
+                        const Divider(color: highlightColor),
+                        _buildSectionTitle('ABILITIES & MOVES'),
+                        // Use a standard text block for long, wrapping content
+                        _buildTextDetail('Abilities:', organism.abilities),
+                        _buildTextDetail('Moves:', organism.moves.replaceAll(',', ', ')), 
 
-                const Divider(color: highlightColor),
-                const Text(
-                  'MISSION BRIEF:',
-                  style: TextStyle(color: Colors.white, fontFamily: 'PressStart2P', fontSize: 12),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  organism.description,
-                  style: const TextStyle(color: Colors.white70, fontSize: 14),
-                ),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('DISMISS', style: TextStyle(color: primaryButtonColor, fontFamily: 'PressStart2P')),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
+                        const SizedBox(height: 50),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
         );
       },
     );
   }
 
-  // ------------------------------------------------------------------
-  // FIXED: The buildDetailRow method to prevent horizontal overflow
-  // ------------------------------------------------------------------
+  // --- NEW HELPER: Immersive Header ---
+  Widget _buildDetailsHeader(Organism organism) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: const BoxDecoration(
+        color: primaryButtonColor,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        border: Border(bottom: BorderSide(color: highlightColor, width: 3.0)),
+      ),
+      child: Column(
+        children: [
+          // Image/Sprite
+          Container(
+            padding: const EdgeInsets.all(8),
+            margin: const EdgeInsets.only(bottom: 10),
+            decoration: BoxDecoration(
+              color: secondaryButtonColor.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: organism.sprite.isNotEmpty 
+                ? Image.network(
+                    organism.sprite,
+                    height: 120, 
+                    fit: BoxFit.contain,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return const Center(child: CircularProgressIndicator(color: highlightColor));
+                    },
+                    errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image, color: Colors.red, size: 80),
+                  )
+                : const Icon(Icons.image_not_supported, color: Colors.grey, size: 80),
+          ),
+
+          // Name
+          Text(
+            organism.name.toUpperCase(),
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: highlightColor, fontFamily: 'PressStart2P', fontSize: 24, height: 1.2),
+          ),
+          // Rarity
+          Text(
+            'Rarity: ${organism.rarity}',
+            style: const TextStyle(color: Colors.white, fontFamily: 'PressStart2P', fontSize: 14),
+          ),
+          // Drag handle for modal
+          const SizedBox(height: 10),
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: highlightColor.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- NEW HELPER: Section Title ---
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 15.0, bottom: 8.0),
+      child: Text(
+        title.toUpperCase(),
+        style: const TextStyle(
+          color: highlightColor,
+          fontFamily: 'PressStart2P',
+          fontSize: 14,
+          decoration: TextDecoration.underline,
+          decorationColor: highlightColor,
+          decorationThickness: 2,
+        ),
+      ),
+    );
+  }
+  
+  // --- EXISTING HELPER: Row with Expanded to prevent overflow (used for stats) ---
   Widget _buildDetailRow(String label, String value, {bool isHighlight = false, Color? statColor}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.start, // Align to top for multiline
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Label is fixed width
           Text(
             label,
             style: const TextStyle(color: Colors.white, fontFamily: 'PressStart2P', fontSize: 12),
           ),
-          
-          // Value is Expanded, allowing it to wrap within the remaining space
           Expanded( 
             child: Text(
               value,
-              textAlign: TextAlign.right, // Align text to the right 
+              textAlign: TextAlign.right,
               style: TextStyle(
                 color: statColor ?? (isHighlight ? primaryButtonColor : Colors.white),
                 fontFamily: 'PressStart2P',
                 fontSize: 12,
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- NEW HELPER: Multi-line detail block (used for abilities/moves) ---
+  Widget _buildTextDetail(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label.toUpperCase(),
+            style: const TextStyle(color: Colors.white, fontFamily: 'PressStart2P', fontSize: 12),
+          ),
+          const SizedBox(height: 5),
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: 14,
             ),
           ),
         ],
