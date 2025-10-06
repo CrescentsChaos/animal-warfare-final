@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
-import 'dart:convert'; // Required for JSON decoding
-import 'package:flutter/services.dart' show rootBundle; // Required for asset loading
+import 'dart:convert';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:animal_warfare/local_auth_service.dart';
 import 'package:animal_warfare/models/organism.dart'; // Import the Organism model
 
@@ -9,6 +9,9 @@ import 'package:animal_warfare/models/organism.dart'; // Import the Organism mod
 enum QuizType {
   scientificToCommon,
   commonToScientific,
+  // NEW: Sprite-based quizzes
+  spriteToName, 
+  spriteToScientific,
 }
 
 // Data structure for the animal facts (DELETED: Replaced by Organism)
@@ -30,8 +33,8 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
   final LocalAuthService _authService = LocalAuthService();
 
   // State variables for the quiz
-  Organism? _currentQuestion; // Changed from AnimalFact
-  List<Organism>? _currentOptions; // Changed from List<AnimalFact>
+  Organism? _currentQuestion;
+  List<Organism>? _currentOptions;
   String? _selectedAnswer;
   String? _correctAnswer;
   bool _isAnswered = false;
@@ -52,7 +55,7 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
     _loadOrganismsAndGenerateQuestion();
   }
 
-  // --- NEW: Function to load data from JSON asset (copied from AnidexScreen logic) ---
+  // Function to load data from JSON asset
   Future<void> _loadOrganisms() async {
     const String assetPath = 'assets/Organisms.json';
     try {
@@ -66,16 +69,23 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
       if (organisms.length < 4) {
           throw Exception("Not enough organisms in JSON file (need at least 4)");
       }
+      
+      // Filter out organisms that don't have a sprite for the new quiz types
+      if (widget.quizType == QuizType.spriteToName || widget.quizType == QuizType.spriteToScientific) {
+        _allOrganisms = organisms.where((org) => org.sprite.isNotEmpty).toList();
+        if (_allOrganisms.length < 4) {
+          throw Exception("Not enough organisms with sprites for this quiz type (need at least 4)");
+        }
+      } else {
+        _allOrganisms = organisms;
+      }
 
-      _allOrganisms = organisms;
     } catch (e) {
-      // In a real app, this should show an error to the user
       print('Error loading organisms for quiz: $e');
-      // Optionally re-throw or use a fallback list here
     }
   }
 
-  // NEW: Combined loading and generation function
+  // Combined loading and generation function
   Future<void> _loadOrganismsAndGenerateQuestion() async {
     await _loadOrganisms();
     
@@ -89,7 +99,7 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
       // Handle the case where loading failed or data is insufficient
       setState(() {
         _isLoading = false;
-        _currentQuestion = null; // Ensure the UI knows there is no question
+        _currentQuestion = null;
       });
     }
   }
@@ -111,9 +121,16 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
       _currentQuestion = correctOrganism;
 
       // 2. Determine the correct answer string based on quiz type
-      _correctAnswer = widget.quizType == QuizType.scientificToCommon
-          ? correctOrganism.name // Use 'name' for common name
-          : correctOrganism.scientificName;
+      switch (widget.quizType) {
+        case QuizType.scientificToCommon:
+        case QuizType.spriteToName:
+          _correctAnswer = correctOrganism.name; // Common name
+          break;
+        case QuizType.commonToScientific:
+        case QuizType.spriteToScientific:
+          _correctAnswer = correctOrganism.scientificName; // Scientific name
+          break;
+      }
 
       // 3. Select 3 random unique incorrect options
       final availableOrganisms = _allOrganisms.where((org) => org != correctOrganism).toList();
@@ -139,9 +156,22 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
     });
 
     final bool isCorrect = selectedOption == _correctAnswer;
-    final quizName = widget.quizType == QuizType.scientificToCommon
-        ? 'Scientific to Common'
-        : 'Common to Scientific';
+    
+    String quizName;
+    switch (widget.quizType) {
+      case QuizType.scientificToCommon:
+        quizName = 'Scientific to Common';
+        break;
+      case QuizType.commonToScientific:
+        quizName = 'Common to Scientific';
+        break;
+      case QuizType.spriteToName:
+        quizName = 'Sprite to Name';
+        break;
+      case QuizType.spriteToScientific:
+        quizName = 'Sprite to Scientific';
+        break;
+    }
 
     // Save the attempt data
     final currentUser = await _authService.getCurrentUser();
@@ -199,24 +229,73 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
   }
 
   // Helper method to extract the display text for an option
-  String _getOptionText(Organism fact) { // Changed parameter type
-    return widget.quizType == QuizType.scientificToCommon
-        ? fact.name // Use 'name' for common name
+  String _getOptionText(Organism fact) {
+    // Options are always either Common Name or Scientific Name
+    return widget.quizType == QuizType.scientificToCommon || widget.quizType == QuizType.spriteToName
+        ? fact.name 
         : fact.scientificName;
   }
 
   // Helper method to get the main question text
+  // Only returns the text for text-based quizzes
   String _getQuestionText() {
-    // Fallback if somehow currentQuestion is null (shouldn't happen after successful load)
     if (_currentQuestion == null) return "Error Loading Question...";
 
-    return widget.quizType == QuizType.scientificToCommon
-        ? _currentQuestion!.scientificName
-        : _currentQuestion!.name; // Use 'name' for common name
+    switch (widget.quizType) {
+      case QuizType.scientificToCommon:
+        return _currentQuestion!.scientificName;
+      case QuizType.commonToScientific:
+        return _currentQuestion!.name;
+      case QuizType.spriteToName:
+      case QuizType.spriteToScientific:
+        // Return the sprite URL so it can be used by the sprite builder
+        return _currentQuestion!.sprite;
+    }
+  }
+  
+  // NEW: Widget to display the sprite question
+  Widget _buildSpriteQuestion(String spriteUrl) {
+    return Container(
+      padding: const EdgeInsets.all(20.0),
+      margin: const EdgeInsets.only(bottom: 20.0),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.7),
+        border: Border.all(color: highlightColor, width: 3.0),
+        borderRadius: BorderRadius.circular(8.0),
+      ),
+      child: Column(
+        children: [
+          Text(
+            'IDENTIFY THIS UNIT:',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: highlightColor,
+              fontSize: 12,
+              fontFamily: 'PressStart2P',
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Display the sprite image
+          // Using Image.network assuming the sprite is a URL
+          Image.network(
+            spriteUrl,
+            height: 150, // Fixed height for visual consistency
+            width: 200,
+            fit: BoxFit.contain,
+            loadingBuilder: (context, child, loadingProgress) {
+              if (loadingProgress == null) return child;
+              return const Center(child: CircularProgressIndicator(color: highlightColor));
+            },
+            errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image, color: Colors.red, size: 80),
+          ),
+        ],
+      ),
+    );
   }
 
+
   // The main button widget for the answers
-  Widget _buildAnswerButton(Organism fact) { // Changed parameter type
+  Widget _buildAnswerButton(Organism fact) {
     final optionText = _getOptionText(fact);
     final buttonColor = _getButtonColor(optionText);
     final buttonShadow = _getButtonShadow(optionText);
@@ -261,9 +340,22 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final String title = widget.quizType == QuizType.scientificToCommon
-        ? 'Scientific to Common'
-        : 'Common to Scientific';
+    String title;
+    switch (widget.quizType) {
+      case QuizType.scientificToCommon:
+        title = 'Scientific to Common';
+        break;
+      case QuizType.commonToScientific:
+        title = 'Common to Scientific';
+        break;
+      case QuizType.spriteToName:
+        title = 'Sprite to Name';
+        break;
+      case QuizType.spriteToScientific:
+        title = 'Sprite to Scientific';
+        break;
+    }
+
 
     // Handle the loading state before attempting to display the quiz
     if (_isLoading || _currentQuestion == null || _currentOptions == null) {
@@ -293,6 +385,43 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
         ),
       );
     }
+    
+    // Determine the question widget based on quiz type
+    final isSpriteQuiz = widget.quizType == QuizType.spriteToName || widget.quizType == QuizType.spriteToScientific;
+    final questionWidget = isSpriteQuiz
+        ? _buildSpriteQuestion(_currentQuestion!.sprite)
+        : Container(
+            padding: const EdgeInsets.all(20.0),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.7),
+              border: Border.all(color: highlightColor, width: 3.0),
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  'WHICH ANIMAL IS THIS?',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: highlightColor,
+                    fontSize: 12,
+                    fontFamily: 'PressStart2P',
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  _getQuestionText(),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontFamily: 'PressStart2P',
+                  ),
+                ),
+              ],
+            ),
+          );
+
 
     return Scaffold(
       appBar: AppBar(
@@ -323,39 +452,12 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Question Box
-                  Container(
-                    padding: const EdgeInsets.all(20.0),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.7),
-                      border: Border.all(color: highlightColor, width: 3.0),
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                    child: Column(
-                      children: [
-                        Text(
-                          'WHICH ANIMAL IS THIS?',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: highlightColor,
-                            fontSize: 12,
-                            fontFamily: 'PressStart2P',
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          _getQuestionText(),
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontFamily: 'PressStart2P',
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 40),
+                  // Question Box (Sprite or Text)
+                  questionWidget,
+                  
+                  // Add spacing only if it's a text-based quiz, as sprite quiz adds margin
+                  if (!isSpriteQuiz)
+                    const SizedBox(height: 40),
 
                   // Answer Options
                   // Use the Organism list for options
