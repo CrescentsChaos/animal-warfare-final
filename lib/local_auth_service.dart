@@ -5,32 +5,43 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart'; 
 
 // Model to represent a user
-// Model to represent a user
 class UserData {
   final String username;
   final String password;
-  final String avatar; // ⬅️ CHANGED: MUST be final
-  final String gender; // ⬅️ CHANGED: MUST be final
+  final String avatar;
+  final String gender;
+  // START NEW: Quiz Stats
+  final Map<String, dynamic> quizStats; // Stores {quizName: {attempts: 5, correct: 3, lastAttempt: timestamp}}
+  // END NEW
 
   UserData({
     required this.username,
     required this.password,
     this.avatar = 'default',
     this.gender = 'N/A',
-  });
+    // START NEW
+    Map<String, dynamic>? quizStats,
+    // END NEW
+  }) : quizStats = quizStats ?? {};
 
-  // ⬅️ NEW: Method to create a new UserData instance with optional updated fields
+  // Method to create a new UserData instance with optional updated fields
   UserData copyWith({
     String? username,
     String? password,
     String? avatar,
     String? gender,
+    // START NEW
+    Map<String, dynamic>? quizStats,
+    // END NEW
   }) {
     return UserData(
       username: username ?? this.username,
       password: password ?? this.password,
       avatar: avatar ?? this.avatar,
       gender: gender ?? this.gender,
+      // START NEW
+      quizStats: quizStats ?? this.quizStats,
+      // END NEW
     );
   }
 
@@ -39,6 +50,9 @@ class UserData {
         'password': password,
         'avatar': avatar,
         'gender': gender,
+        // START NEW
+        'quizStats': quizStats,
+        // END NEW
       };
 
   factory UserData.fromJson(Map<String, dynamic> json) {
@@ -47,31 +61,29 @@ class UserData {
       password: json['password'] as String? ?? '',
       avatar: json['avatar'] as String? ?? 'default',
       gender: json['gender'] as String? ?? 'N/A',
+      // START NEW
+      // Safely deserialize quizStats (handling null or wrong type)
+      quizStats: (json['quizStats'] as Map<String, dynamic>?) ?? {},
+      // END NEW
     );
   }
 }
 
+// ------------------------------------------------------------------
+// LocalAuthService
+// Handles file operations, login, registration, and user session
+// ------------------------------------------------------------------
 class LocalAuthService {
-  // Key used to store the username of the currently logged-in user (uses SharedPreferences)
   static const _currentKey = 'current_user_username'; 
   
-  // ⬅️ NEW: Generates the file path for a specific user.
+  // Generates the file path for a specific user.
   Future<File> _getUserFile(String username) async {
-    // Use getDownloadsDirectory() for user-accessible data
-    final directory = await getDownloadsDirectory();
-    
-    // Sanitize username for use as a filename (e.g., replace spaces/special chars)
+    final directory = await getApplicationDocumentsDirectory();
     final safeUsername = username.replaceAll(RegExp(r'[^\w]'), '').toLowerCase();
     final fileName = '$safeUsername.json';
-    
-    // Fallback to Documents if Downloads directory isn't available (e.g., on iOS)
-    final path = directory?.path ?? (await getApplicationDocumentsDirectory()).path;
-    
-    // Use a subfolder to keep files organized: AnimalWarfare/UserSaves/
-    final appSubdirectory = '$path/AnimalWarfare/UserSaves/'; 
+    final appSubdirectory = '${directory.path}/AnimalWarfare/UserSaves/'; 
     final appDir = Directory(appSubdirectory);
     
-    // Ensure the folder structure exists
     if (!await appDir.exists()) {
         await appDir.create(recursive: true);
     }
@@ -79,7 +91,7 @@ class LocalAuthService {
     return File('$appSubdirectory$fileName');
   }
   
-  // ⬅️ NEW: Reads a single user's data from their JSON file
+  // Reads a single user's data from their JSON file
   Future<UserData?> _readUserFile(String username) async {
     try {
       final file = await _getUserFile(username);
@@ -88,44 +100,44 @@ class LocalAuthService {
         final userMap = jsonDecode(contents);
         return UserData.fromJson(userMap);
       }
-      return null; // Return null if file doesn't exist
+      return null;
     } catch (e) {
-      debugPrint("Error reading user file for $username: $e");
+      if (kDebugMode) {
+        print("Error reading user file for $username: $e");
+      }
       return null; 
     }
   }
 
-  // ⬅️ NEW: Writes a single user's data to their JSON file
+  // Writes a single user's data to their JSON file
   Future<void> _writeUserFile(UserData user) async {
     try {
       final file = await _getUserFile(user.username);
       final userJson = jsonEncode(user.toJson());
       await file.writeAsString(userJson);
-      debugPrint("User data successfully written to ${file.path}");
     } catch (e) {
-      debugPrint("Error writing user file for ${user.username}: $e");
+      if (kDebugMode) {
+        print("Error writing user file for ${user.username}: $e");
+      }
     }
   }
   
-  // Attempts to register a new user
+  // Attempts to register a new user (renamed for compatibility)
   Future<bool> registerUser(String username, String password) async {
-    // ⬅️ CHANGED: Check if the user's specific file already exists
     final existingUser = await _readUserFile(username);
     if (existingUser != null) {
       return false; // User already exists
     }
 
     final newUser = UserData(username: username, password: password);
-    // ⬅️ CHANGED: Write only the single user's data
     await _writeUserFile(newUser);
     
     await _saveCurrentUserName(username); 
     return true;
   }
 
-  // Attempts to log a user in
+  // Attempts to log a user in (renamed for compatibility)
   Future<UserData?> loginUser(String username, String password) async {
-    // ⬅️ CHANGED: Read the specific user's file
     final foundUser = await _readUserFile(username);
     
     if (foundUser != null && foundUser.password == password) {
@@ -136,7 +148,7 @@ class LocalAuthService {
     return null;
   }
 
-  // --- Session Management Logic (uses SharedPreferences) ---
+  // --- Session Management Logic ---
   Future<void> _saveCurrentUserName(String username) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_currentKey, username);
@@ -151,7 +163,6 @@ class LocalAuthService {
       return null;
     }
     
-    // ⬅️ CHANGED: Read the current user's file
     return await _readUserFile(currentUsername);
   }
 
@@ -163,19 +174,41 @@ class LocalAuthService {
   
   // --- Profile Update Logic ---
   Future<void> updateProfile(String username, {String? avatar, String? gender}) async {
-    // ⬅️ CHANGED: Read the specific user's file
     final user = await _readUserFile(username);
 
     if (user != null) {
-      final updatedUser = UserData(
-        username: user.username,
-        password: user.password,
-        avatar: avatar ?? user.avatar,
-        gender: gender ?? user.gender,
+      final updatedUser = user.copyWith(
+        avatar: avatar,
+        gender: gender,
       );
       
-      // ⬅️ CHANGED: Write only the updated user's data back to their file
       await _writeUserFile(updatedUser);
     }
   }
+  
+  // START NEW: Method to update quiz statistics
+  Future<void> updateQuizStats(String username, String quizName, bool isCorrect) async {
+    final user = await _readUserFile(username);
+
+    if (user != null) {
+      // Create a mutable copy of the stats map
+      final stats = Map<String, dynamic>.from(user.quizStats);
+      // Get mutable copy of the specific quiz's data, initializing if necessary
+      final quizData = Map<String, dynamic>.from(stats[quizName] ?? {'attempts': 0, 'correct': 0});
+
+      quizData['attempts'] = (quizData['attempts'] as int) + 1;
+      quizData['lastAttempt'] = DateTime.now().toIso8601String();
+
+      if (isCorrect) {
+        quizData['correct'] = (quizData['correct'] as int) + 1;
+      }
+      
+      stats[quizName] = quizData;
+      
+      final updatedUser = user.copyWith(quizStats: stats);
+      
+      await _writeUserFile(updatedUser);
+    }
+  }
+  // END NEW
 }

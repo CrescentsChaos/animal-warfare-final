@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:audioplayers/audioplayers.dart'; // Add this
-import 'package:animal_warfare/explore_screen.dart'; // Add this
-import 'package:animal_warfare/anidex_screen.dart'; // Add this
+import 'package:audioplayers/audioplayers.dart'; 
+import 'package:animal_warfare/explore_screen.dart'; 
+import 'package:animal_warfare/anidex_screen.dart'; 
+import 'package:animal_warfare/quiz_screen.dart'; // 1. ADD: Import the new screen
 
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
@@ -16,6 +17,7 @@ class _GameScreenState extends State<GameScreen> {
   // Define High-Contrast Retro/Military-themed colors (Copied from main_screen for consistency)
   static const Color primaryButtonColor = Color(0xFF38761D); // Bright Jungle Green
   static const Color secondaryButtonColor = Color(0xFF1E3F2A); // Deep Forest Green
+  static const Color tertiaryButtonColor = Color(0xFF8B0000); // 2. ADD: A new color for the quiz button (Deep Red/Maroon)
   static const Color highlightColor = Color(0xFFDAA520); // Goldenrod (Text/Border Highlight)
 
   @override
@@ -53,20 +55,19 @@ class _GameScreenState extends State<GameScreen> {
     });
   }
 
-  // Helper method for themed buttons (Copied/Adapted from main_screen)
+  // Helper method for themed buttons (MODIFIED to accept explicit color)
   Widget _buildThemedButton({
     required String text,
     required IconData icon,
     required VoidCallback onPressed,
-    required bool isPrimary,
+    required Color color, // MODIFIED: Take color as a required argument
   }) {
-    final color = isPrimary ? primaryButtonColor : secondaryButtonColor;
     
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       decoration: BoxDecoration(
-        color: color,
+        color: color, // Use the passed-in color
         border: Border.all(color: highlightColor, width: 2.0),
         borderRadius: BorderRadius.circular(4.0), 
         boxShadow: [
@@ -156,7 +157,7 @@ class _GameScreenState extends State<GameScreen> {
                     text: 'EXPLORE BIOME',
                     icon: Icons.map,
                     onPressed: () => _navigateTo(const ExploreScreen()),
-                    isPrimary: true,
+                    color: primaryButtonColor, // Use explicit color
                   ),
 
                   // Anidex Button
@@ -164,8 +165,17 @@ class _GameScreenState extends State<GameScreen> {
                     text: 'ANIMAL DEX',
                     icon: Icons.pets,
                     onPressed: () => _navigateTo(const AnidexScreen()),
-                    isPrimary: false,
+                    color: secondaryButtonColor, // Use explicit color
                   ),
+                  
+                  // 3. ADD: Quiz Button
+                  _buildThemedButton(
+                    text: 'BATTLE QUIZ',
+                    icon: Icons.quiz,
+                    onPressed: () => _navigateTo(const QuizScreen()),
+                    color: tertiaryButtonColor, // Use the new color
+                  ),
+                  // END ADD
 
                   const SizedBox(height: 40),
                   Text(

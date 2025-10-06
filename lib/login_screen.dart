@@ -120,7 +120,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
     try {
       if (_isLogin) {
         // --- LOGIN LOGIC (using LocalAuthService) ---
-        // ⬅️ UPDATED: Call loginUser with username
+        // ⬅️ FIXED: Call loginUser
         final user = await _authService.loginUser(username, password); 
         if (user != null) {
           _showSnackbar('Login successful for ${user.username}!'); // ⬅️ UPDATED
@@ -130,7 +130,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
         }
       } else {
         // --- SIGNUP LOGIC (using LocalAuthService) ---
-        // ⬅️ UPDATED: Call registerUser with username
+        // ⬅️ FIXED: Call registerUser
         final success = await _authService.registerUser(username, password); 
         if (success) {
           _showSnackbar('Account created and automatically logged in!');
