@@ -17,6 +17,14 @@ class _AnidexScreenState extends State<AnidexScreen> {
   static const Color primaryButtonColor = Color(0xFF38761D); // Bright Jungle Green
   static const Color secondaryButtonColor = Color(0xFF1E3F2A); // Deep Forest Green
   static const Color highlightColor = Color(0xFFDAA520); // Goldenrod
+  
+  // Removed complementaryColor, replaced with individual stat colors
+  
+  // NEW: Individual Stat Colors
+  static const Color healthColor = Color(0xFFC6FF00); // Lime (High saturation)
+  static const Color attackColor = Color(0xFFFF0000); // Red
+  static const Color defenseColor = Color(0xFFFFEB3B); // Yellow
+  static const Color speedColor = Color(0xFF00FFFF); // Cyan
 
   List<Organism> _allOrganisms = [];
   List<Organism> _searchResults = [];
@@ -47,6 +55,7 @@ class _AnidexScreenState extends State<AnidexScreen> {
       case 'rare':
         return Colors.blueAccent;
       case 'epic':
+      case 'elite': // Added for completeness
         return const Color.fromARGB(255, 169, 20, 195);
       case 'legendary':
         return Colors.orange;
@@ -204,11 +213,15 @@ class _AnidexScreenState extends State<AnidexScreen> {
   // Immersive Modal Bottom Sheet for Details
   // ------------------------------------------------------------------
   void _showOrganismDetails(Organism organism) {
-    Color getStatColor(int stat) {
-      if (stat >= 80) return Colors.greenAccent;
-      if (stat >= 60) return highlightColor;
-      return Colors.redAccent;
+    // Stat color logic to determine the text color based on value, 
+    // now separate from the bar color.
+    Color getStatTextColor(int stat) {
+      if (stat >= 400) return Colors.white; // Keep white for high visibility against dark background
+      if (stat >= 300) return Colors.white.withOpacity(0.9);
+      if (stat >= 200) return highlightColor;
+      return Colors.blueGrey;
     }
+    
 
     final rarityColor = _getRarityColor(organism.rarity); // Get color once
 
@@ -254,7 +267,6 @@ class _AnidexScreenState extends State<AnidexScreen> {
                         const Divider(color: highlightColor),
                         
                         // FIX: Swapped order of Rarity and Scientific Name again
-                        // The Rarity line itself is implicitly "removed" by not being here twice.
                         _buildDetailRow('Rarity:', organism.rarity, isRarity: true),
                         
                         _buildDetailRow('Habitat:', organism.habitat),
@@ -263,17 +275,49 @@ class _AnidexScreenState extends State<AnidexScreen> {
 
                         // Stats Section
                         const Divider(color: highlightColor),
+                        // Removed ' (MAX: 500)'
                         _buildSectionTitle('BATTLE STATS'),
-                        _buildDetailRow('HEALTH:', organism.health.toString(), statColor: getStatColor(organism.health)),
-                        _buildDetailRow('ATTACK:', organism.attack.toString(), statColor: getStatColor(organism.attack)),
-                        _buildDetailRow('DEFENSE:', organism.defense.toString(), statColor: getStatColor(organism.defense)),
-                        _buildDetailRow('SPEED:', organism.speed.toString(), statColor: getStatColor(organism.speed)),
+                        
+                        // Stat bars with specific colors and glow
+                        _buildStatBar(
+                          'HEALTH', 
+                          organism.health, 
+                          500, 
+                          getStatTextColor(organism.health), 
+                          const Color.fromARGB(255, 0, 255, 4)
+                        ),
+                        _buildStatBar(
+                          'ATTACK', 
+                          organism.attack, 
+                          150, 
+                          getStatTextColor(organism.attack), 
+                          attackColor
+                        ),
+                        _buildStatBar(
+                          'DEFENSE', 
+                          organism.defense, 
+                          150, 
+                          getStatTextColor(organism.defense), 
+                          defenseColor
+                        ),
+                        _buildStatBar(
+                          'SPEED', 
+                          organism.speed, 
+                          120, 
+                          getStatTextColor(organism.speed), 
+                          speedColor
+                        ),
                         
                         // Abilities and Moves
                         const Divider(color: highlightColor),
-                        _buildSectionTitle('ABILITIES & MOVES'),
-                        _buildTextDetail('Abilities:', organism.abilities),
-                        _buildTextDetail('Moves:', organism.moves.replaceAll(',', ', ')), 
+                        _buildSectionTitle('ABILITIES'),
+                        // Changed to use the standard text detail for abilities
+                        _buildTextDetail(organism.abilities),
+                        
+                        const Divider(color: highlightColor),
+                        _buildSectionTitle('COMBAT MOVES'),
+                        // NEW: Chip/Tag style for moves
+                        _buildMovesChips(organism.moves), 
 
                         const SizedBox(height: 50),
                       ],
@@ -311,19 +355,18 @@ class _AnidexScreenState extends State<AnidexScreen> {
                 ? Image.network(
                     organism.sprite,
                     height: 200, 
-                    width: 400, // Removed width to let Image.network respect size constraints if needed, but it's optional.
+                    width: 400, 
                     fit: BoxFit.contain,
                     loadingBuilder: (context, child, loadingProgress) {
                       if (loadingProgress == null) return child;
                       
-                      // --- MODIFIED LOADING BUILDER: Placeholder only, no spinner ---
+                      // Placeholder
                       return Image.asset(
-                        'assets/placeholder_400x200.png', // <-- Ensure this is your correct placeholder path
-                        height: 200, // Keep height consistent
-                        width: 400,  // Re-added width for placeholder consistency
-                        fit: BoxFit.contain, // Changed to 'contain' to match network image fit
+                        'assets/placeholder_400x200.png', 
+                        height: 200, 
+                        width: 400,  
+                        fit: BoxFit.contain, 
                       );
-                      // --- END MODIFIED LOADING BUILDER ---
                     },
                     errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image, color: Colors.red, size: 80),
                   )
@@ -335,15 +378,14 @@ class _AnidexScreenState extends State<AnidexScreen> {
             textAlign: TextAlign.center,
             style: TextStyle(color: rarityColor, fontFamily: 'PressStart2P', fontSize: 18, height: 1.2),
           ),
-          // Rarity (This is the primary display of Rarity, so we'll style it well)
-          // No separate "Rarity: " label here to keep it concise, just the value styled with its color
+          // Scientific Name
           Text(
-              organism.scientificName, // Displays the Scientific Name
+              organism.scientificName, 
               style: TextStyle(
                   color: rarityColor, 
                   fontFamily: 'PressStart2P', 
                   fontSize: 10,
-                  fontStyle: FontStyle.italic, // Sets the text to italic
+                  fontStyle: FontStyle.italic, 
               ),
           ),
           // Drag handle for modal
@@ -379,7 +421,7 @@ class _AnidexScreenState extends State<AnidexScreen> {
     );
   }
   
-  // --- HELPER: Row with Expanded (Handles rarity color and italics) ---
+  // --- HELPER: Row with Expanded (General Details) ---
   Widget _buildDetailRow(String label, String value, {bool isHighlight = false, Color? statColor, bool isScientificName = false, bool isRarity = false}) {
     
     // Determine text color and style
@@ -417,31 +459,138 @@ class _AnidexScreenState extends State<AnidexScreen> {
       ),
     );
   }
+  
+  // --- MODIFIED HELPER: Horizontal Stat Bar with Glow ---
+  Widget _buildStatBar(String label, int statValue, double maxStat, Color statTextColor, Color barColor) {
+    // Ensure the fraction is between 0.0 and 1.0
+    double fraction = (statValue / maxStat).clamp(0.0, 1.0);
 
-  // --- HELPER: Multi-line detail block ---
-  Widget _buildTextDetail(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label.toUpperCase(),
-            style: const TextStyle(color: Colors.white, fontFamily: 'PressStart2P', fontSize: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontFamily: 'PressStart2P',
+                  fontSize: 10,
+                ),
+              ),
+              Text(
+                statValue.toString(),
+                style: TextStyle(
+                  color: barColor, // Use the bar color for the stat value text
+                  fontFamily: 'PressStart2P',
+                  fontSize: 10,
+                  shadows: [
+                    // Add a slight glow/shadow to the number too
+                    Shadow(
+                      blurRadius: 2.0,
+                      color: barColor.withOpacity(0.8),
+                    )
+                  ]
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 5),
-          Text(
-            value,
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 14,
-            ),
+          const SizedBox(height: 4),
+          // The actual bar visualization
+          Stack(
+            children: [
+              // Background bar (max value)
+              Container(
+                height: 10,
+                decoration: BoxDecoration(
+                  color: Colors.grey.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(5),
+                ),
+              ),
+              // Foreground bar (actual stat value)
+              FractionallySizedBox(
+                widthFactor: fraction,
+                child: Container(
+                  height: 10,
+                  decoration: BoxDecoration(
+                    color: barColor, // Specific stat color
+                    borderRadius: BorderRadius.circular(5),
+                    boxShadow: [
+                      // Glow Effect
+                      BoxShadow(
+                        color: barColor.withOpacity(0.8),
+                        blurRadius: 8, // Stronger blur for glow
+                        spreadRadius: 2, // Slight spread
+                      ),
+                      BoxShadow( // Inner shadow for intense glow
+                        color: barColor,
+                        blurRadius: 4,
+                        spreadRadius: 0,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
+
+
+  // --- MODIFIED HELPER: Multi-line detail block (for Abilities) ---
+  Widget _buildTextDetail(String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Text(
+        value,
+        style: const TextStyle(
+          color: Colors.white70,
+          fontSize: 14,
+        ),
+      ),
+    );
+  }
   
+  // --- NEW HELPER: Moves displayed as chips/tags ---
+  Widget _buildMovesChips(String moves) {
+    // Split the comma-separated string into a list of move names
+    List<String> moveList = moves.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 4.0, bottom: 8.0),
+      child: Wrap(
+        spacing: 8.0, // horizontal spacing
+        runSpacing: 8.0, // vertical spacing
+        children: moveList.map((move) {
+          return Chip(
+            padding: const EdgeInsets.all(8.0),
+            // Use a dark color for the move background
+            backgroundColor: primaryButtonColor.withOpacity(0.8), 
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
+              // Use highlightColor for the border
+              side: const BorderSide(color: highlightColor, width: 1.0), 
+            ),
+            label: Text(
+              move.toUpperCase(),
+              style: const TextStyle(
+                color: Colors.white,
+                fontFamily: 'PressStart2P',
+                fontSize: 10,
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

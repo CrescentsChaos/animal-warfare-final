@@ -18,20 +18,52 @@ class BiomeDetailScreen extends StatefulWidget {
   State<BiomeDetailScreen> createState() => _BiomeDetailScreenState();
 }
 
-// MODIFIED: Added 'with WidgetsBindingObserver'
 class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindingObserver {
-  // Constants copied from ExploreScreen for consistent styling
-  static const Color secondaryButtonColor = Color(0xFF1E3F2A); 
-  static const Color highlightColor = Color(0xFFDAA520); 
-  static const Color primaryButtonColor = Color(0xFF38761D); 
+  // Constants
+  static const Color highlightColor = Color(0xFFDAA520); // Gold/Yellow (kept as fallback)
   
   Organism? _currentEncounter;
   bool _isExploring = false;
+  // State for name visibility
+  bool _isNameRevealed = false; 
+
+  // DYNAMIC COLORS
+  late Color _biomeBaseColor; 
+  late Color _biomeDarkColor;
+  late Color _biomeHighlightColor; // Dynamic highlight color for general UI elements
+  late Color _rarityHighlightColor = highlightColor; // Initialized to default highlight
 
   // Audio Player Setup
   final AudioPlayer _audioPlayer = AudioPlayer();
 
-  // Helper to get the background image path (copied from ExploreScreen)
+  // Helper function to create a darker version of a color
+  Color _getDarkerColor(Color color) {
+    int r = (color.red * 0.6).round().clamp(0, 255);
+    int g = (color.green * 0.6).round().clamp(0, 255);
+    int b = (color.blue * 0.6).round().clamp(0, 255);
+    return Color.fromARGB(color.alpha, r, g, b);
+  }
+
+  // REVISED: Helper function to determine a reliable contrasting highlight color
+  Color _getComplementaryHighlightColor(Color biomeColor) {
+    // Calculate relative luminance
+    double luminance = (0.299 * biomeColor.red + 0.587 * biomeColor.green + 0.114 * biomeColor.blue) / 255;
+    
+    // If the background is dark, use a vibrant, highly contrasting color (like neon green or bright cyan)
+    if (luminance < 0.3) { 
+      return const Color(0xFF39FF14); // Neon Green for dark biomes
+    } 
+    // If the background is moderately dark/medium, use a bright yellow/white
+    else if (luminance < 0.6) {
+      return const Color(0xFFFFFFFF); // Pure White
+    }
+    // If the background is light, use a deep, high-contrast color (like dark blue)
+    else {
+      return const Color(0xFF000080); // Navy Blue for light biomes
+    }
+  }
+
+  // Helper to get the background image path
   String _getAssetPath(String biomeName) {
     final fileName = biomeName.toLowerCase().replaceAll(' ', '_');
     return 'assets/biomes/$fileName-bg.png';
@@ -43,20 +75,16 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
     return 'audio/${fileName}_theme.mp3'; 
   }
   
-  // MODIFIED: Music Control Function - handles initial play and resuming
   void _playBiomeMusic(String biomeName) async {
     String musicPath = _getMusicPath(biomeName);
     try {
-      // Only set source if it hasn't been set yet (or if it's stopped/completed)
       if (_audioPlayer.state != PlayerState.playing && _audioPlayer.state != PlayerState.paused) {
         await _audioPlayer.setSourceAsset(musicPath);
         await _audioPlayer.setReleaseMode(ReleaseMode.loop); 
       }
-      // Resume handles both initial play and unpausing from background
       await _audioPlayer.resume(); 
     } catch (e) {
       if (mounted) {
-        // Show a warning if music fails to load/play
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Warning: Could not play music for $biomeName. Check asset path: $musicPath')),
         );
@@ -64,21 +92,64 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
     }
   }
   
-  // ADDED: Pause Music Function
   void _pauseMusic() async {
     await _audioPlayer.pause();
   }
   
-  // MODIFIED: Stop and Dispose Music Function
   void _stopAndDisposeMusic() async {
     await _audioPlayer.stop();
     await _audioPlayer.dispose();
   }
   
+  // REVISED: Helper to get the base color based on biome (More Immersive Palette)
+  Color _getBiomeBaseColor(String biomeName) {
+    switch (biomeName.toLowerCase()) {
+      case 'swamp': return const Color(0xFF4B6F44); // Deep, Muted Olive
+      case 'savanna': return const Color(0xFFC39C6B); // Dusty Gold
+      case 'desert': return const Color(0xFFC17E45); // Rich Terracotta Brown
+      case 'taiga': return const Color(0xFF5A6A6F); // Cool, Desaturated Grey-Blue
+      case 'mountain': return const Color(0xFF757D75); // Slate Grey
+      case 'coastal': return const Color(0xFF4C98A7); // Seafoam Teal
+      case 'volcano': return const Color(0xFF8B0000); // Deep Dark Red
+      case 'cave': return const Color(0xFF3A3A3A); // Very Dark Grey/Black
+      case 'urban': return const Color(0xFF6C6C6C); // Industrial Mid-Grey
+      case 'polar': return const Color(0xFFB0E0E6); // Powder Blue/Cyan
+      case 'ocean': return const Color(0xFF005897); // Deep Ocean Blue
+      case 'deep sea': return const Color(0xFF0D0D2E); // Almost Black Indigo
+      case 'coral reef': return const Color(0xFFE9967A); // Light Salmon/Coral
+      case 'rainforest': return const Color(0xFF1E5B3D); // Dark Jungle Green
+      case 'kelp forest': return const Color(0xFF708F70); // Muted Seaweed Green
+      case 'mangrove': return const Color(0xFF535C3E); // Deep Forest Green-Brown
+      case 'frozen ocean': return const Color(0xFF8BA6C7); // Muted Light Blue
+      case 'river': return const Color(0xFF488FB2); // Medium Cerulean Blue
+      case 'lake': return const Color(0xFF6495ED); // Cornflower Blue
+      case 'tundra': return const Color(0xFF909C90); // Muted Grey-Green
+      case 'jungle': return const Color(0xFF38761D); // Primary Green (for general use)
+      default: return highlightColor; 
+    }
+  }
+
+  // Helper to get a rarity-specific color for the encounter card highlight
+  Color _getRarityHighlightColor(String rarity) {
+    switch (rarity.toLowerCase()) {
+      case 'common': return Colors.grey.shade400;
+      case 'uncommon': return const Color.fromARGB(255, 22, 254, 95);
+      case 'rare': return const Color.fromARGB(255, 0, 175, 194);
+      case 'epic': return const Color.fromARGB(255, 103, 0, 114);
+      case 'legendary': return const Color.fromARGB(226, 227, 148, 0);
+      case 'mythical': return Colors.redAccent.shade400;
+      default: return highlightColor;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    // ADDED: Register the observer for app lifecycle events
+    // INITIALIZE DYNAMIC COLORS
+    _biomeBaseColor = _getBiomeBaseColor(widget.biomeName);
+    _biomeDarkColor = _getDarkerColor(_biomeBaseColor); 
+    // Initialize dynamic biome highlight
+    _biomeHighlightColor = _getComplementaryHighlightColor(_biomeBaseColor); 
     WidgetsBinding.instance.addObserver(this); 
     _startExploration(); 
     _playBiomeMusic(widget.biomeName); 
@@ -86,13 +157,11 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
 
   @override
   void dispose() {
-    // ADDED: Remove the observer
     WidgetsBinding.instance.removeObserver(this); 
-    _stopAndDisposeMusic(); // MODIFIED: Stop and dispose music when screen is closed
+    _stopAndDisposeMusic(); 
     super.dispose();
   }
 
-  // ADDED: App Lifecycle Observer Method
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
@@ -100,15 +169,13 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
     if (!mounted) return; 
 
     if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive || state == AppLifecycleState.detached) {
-      // App is going to the background, switching apps, or screen is locked
       _pauseMusic();
     } else if (state == AppLifecycleState.resumed) {
-      // App is returning to the foreground
       _playBiomeMusic(widget.biomeName);
     }
   }
 
-  // Helper function to determine rarity color (copied from ExploreScreen)
+  // Helper function to determine rarity color (used for text)
   Color _getRarityColor(String rarity) {
     switch (rarity.toLowerCase()) {
       case 'common': return Colors.grey;
@@ -120,14 +187,22 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
       default: return Colors.white;
     }
   }
+  
+  // Method to reveal the name
+  void _revealName() {
+    setState(() {
+      _isNameRevealed = true;
+    });
+  }
 
   void _startExploration() {
     setState(() {
       _isExploring = true;
       _currentEncounter = null;
+      _rarityHighlightColor = highlightColor;
+      _isNameRevealed = false; // RESET on new encounter
     });
 
-    // Simulate an exploration delay for better user experience
     Future.delayed(const Duration(seconds: 1), () {
       final Organism? encounter = getWeightedRandomOrganism(
         widget.biomeName, 
@@ -137,10 +212,12 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
       setState(() {
         _currentEncounter = encounter;
         _isExploring = false;
+        if (encounter != null) {
+          _rarityHighlightColor = _getRarityHighlightColor(encounter.rarity);
+        }
       });
 
       if (encounter == null) {
-         // Show message if no organism is found for the habitat
          ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Exploring ${widget.biomeName}. No organism data found.')),
          );
@@ -154,21 +231,22 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
     return Scaffold(
       appBar: AppBar(
         title: Text('${widget.biomeName.toUpperCase()}'),
-        backgroundColor: secondaryButtonColor,
-        titleTextStyle: const TextStyle(
-          color: highlightColor, 
+        backgroundColor: _biomeDarkColor, 
+        titleTextStyle: TextStyle(
+          // USE DYNAMIC HIGHLIGHT COLOR
+          color: _biomeHighlightColor, 
           fontFamily: 'PressStart2P', 
           fontSize: 16
         ),
       ),
       body: Container(
         decoration: BoxDecoration(
-          color: secondaryButtonColor,
+          color: _biomeBaseColor, 
           image: DecorationImage(
-            image: AssetImage(_getAssetPath(widget.biomeName)), // Use biome-specific asset
+            image: AssetImage(_getAssetPath(widget.biomeName)), 
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(
-              Colors.black.withOpacity(0.5),
+              _biomeDarkColor.withOpacity(0.5),
               BlendMode.darken,
             ),
           ),
@@ -180,13 +258,27 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
             children: [
               // Display Exploration Status
               if (_isExploring)
-                const Column(
+                Column(
                   children: [
-                    CircularProgressIndicator(color: highlightColor),
-                    SizedBox(height: 10),
+                    // USE DYNAMIC HIGHLIGHT COLOR
+                    CircularProgressIndicator(color: _biomeHighlightColor),
+                    const SizedBox(height: 10),
                     Text(
                       'EXPLORING...',
-                      style: TextStyle(color: highlightColor, fontFamily: 'PressStart2P', fontSize: 18),
+                      style: TextStyle(
+                        // USE DYNAMIC HIGHLIGHT COLOR
+                        color: _biomeHighlightColor, 
+                        fontFamily: 'PressStart2P', 
+                        fontSize: 18,
+                        shadows: [
+                          Shadow(
+                            // USE DYNAMIC HIGHLIGHT COLOR
+                            color: _biomeHighlightColor.withOpacity(0.5), 
+                            blurRadius: 5.0, 
+                            offset: const Offset(1, 1)
+                          )
+                        ]
+                      ),
                     ),
                   ],
                 ),
@@ -195,20 +287,22 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
               if (!_isExploring && _currentEncounter != null)
                 _buildEncounterResultCard(_currentEncounter!),
 
-              // Initial State / Explore Button
+              // Initial State / Explore Button (Only shown before any encounter)
               if (!_isExploring && _currentEncounter == null)
                 ElevatedButton(
                   onPressed: _startExploration,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryButtonColor, 
-                    shape: const StadiumBorder(
-                      side: BorderSide(color: highlightColor, width: 2),
+                    backgroundColor: _biomeDarkColor, 
+                    shape: StadiumBorder(
+                      // USE DYNAMIC HIGHLIGHT COLOR
+                      side: BorderSide(color: _biomeHighlightColor, width: 2),
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 40),
                   ),
                   child: Text(
-                    _currentEncounter == null ? 'START EXPLORING' : 'EXPLORE AGAIN',
-                    style: const TextStyle(color: highlightColor, fontFamily: 'PressStart2P', fontSize: 16),
+                    'START EXPLORING',
+                    // USE DYNAMIC HIGHLIGHT COLOR
+                    style: TextStyle(color: _biomeHighlightColor, fontFamily: 'PressStart2P', fontSize: 16),
                   ),
                 ),
             ],
@@ -218,58 +312,146 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
     );
   }
   
-  // Method to build the encounter card (simplified version of the modal content)
+  // Method to build the encounter card
   Widget _buildEncounterResultCard(Organism organism) {
      return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20.0),
       decoration: BoxDecoration(
-        color: secondaryButtonColor.withOpacity(0.9),
-        border: Border.all(color: highlightColor, width: 2),
+        // SEMI-TRANSPARENT CARD BACKGROUND (0.8 opacity)
+        color: _biomeDarkColor.withOpacity(0.8),
+        // Rarity color border
+        border: Border.all(color: _rarityHighlightColor, width: 3),
         borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          // Rarity color glow shadow
+          BoxShadow(
+            color: _rarityHighlightColor.withOpacity(0.5),
+            blurRadius: 10,
+            spreadRadius: 3,
+          ),
+        ],
       ),
       child: Column(
         children: [
           // Encounter Header
           Text(
-            'ENCOUNTER: ${organism.rarity.toUpperCase()}!',
+            'ENCOUNTER:',
             style: TextStyle(
-              color: _getRarityColor(organism.rarity), 
+              color: Colors.white, 
               fontFamily: 'PressStart2P',
               fontSize: 14,
+              shadows: [
+                Shadow(
+                  color: _rarityHighlightColor.withOpacity(0.8), 
+                  blurRadius: 8.0, 
+                  offset: const Offset(0, 0)
+                )
+              ]
             ),
             textAlign: TextAlign.center,
           ),
-          const Divider(color: highlightColor),
+          
+          // Rarity Level
+          Text(
+            organism.rarity.toUpperCase(),
+            style: TextStyle(
+              color: _getRarityColor(organism.rarity), 
+              fontFamily: 'PressStart2P',
+              fontSize: 20, 
+              shadows: [
+                Shadow(
+                  color: _getRarityHighlightColor(organism.rarity).withOpacity(0.8), 
+                  blurRadius: 10.0, 
+                  offset: const Offset(0, 0)
+                )
+              ]
+            ),
+            textAlign: TextAlign.center,
+          ),
+          
+          const SizedBox(height: 10),
+          Divider(color: _rarityHighlightColor, thickness: 2), 
+          const SizedBox(height: 10),
 
-          // Organism Sprite and Name
+          // Organism Sprite
           Image.network(
             organism.sprite, 
-            height: 100, 
+            height: 120, 
             loadingBuilder: (context, child, loadingProgress) {
               if (loadingProgress == null) return child;
-              // Placeholder only, no spinner
               return Image.asset(
                 'assets/placeholder_400x200.png', 
-                height: 100, 
-                width: 200, 
+                height: 120, 
+                width: 240, 
                 fit: BoxFit.contain, 
               );
             },
             errorBuilder: (context, error, stackTrace) => 
-              Image.asset('assets/placeholder_400x200.png', height: 100),
+              Image.asset('assets/placeholder_400x200.png', height: 120),
           ),
-          const SizedBox(height: 8),
-          Text(
-            organism.name.toUpperCase(),
-            style: const TextStyle(
-              color: Colors.white,
-              fontFamily: 'PressStart2P',
-              fontSize: 16,
+          
+          const SizedBox(height: 12),
+          
+          // Organism Name or Identify Button
+          if (_isNameRevealed)
+            // Organism Name - Primary Element (REVEALED STATE)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: _biomeBaseColor.withOpacity(0.4),
+                borderRadius: BorderRadius.circular(4),
+                // USE DYNAMIC HIGHLIGHT COLOR
+                border: Border.all(color: _biomeHighlightColor, width: 1),
+              ),
+              child: Text(
+                organism.name.toUpperCase(),
+                style: TextStyle(
+                  // USE DYNAMIC HIGHLIGHT COLOR
+                  color: _biomeHighlightColor, 
+                  fontFamily: 'PressStart2P',
+                  fontSize: 16, 
+                  shadows: [
+                    Shadow(
+                      color: _rarityHighlightColor.withOpacity(0.6), 
+                      blurRadius: 4.0, 
+                      offset: const Offset(1, 1)
+                    )
+                  ]
+                ),
+                textAlign: TextAlign.center,
+              ),
+            )
+          else
+            // Identify Button (HIDDEN STATE)
+            ElevatedButton(
+              onPressed: _revealName,
+              style: ElevatedButton.styleFrom(
+                // USE DYNAMIC HIGHLIGHT COLOR
+                backgroundColor: _biomeHighlightColor.withOpacity(0.8), 
+                shape: const StadiumBorder(
+                  side: BorderSide(color: Colors.black, width: 2),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+              ),
+              child: Text(
+                'IDENTIFY',
+                style: TextStyle(
+                  color: _biomeDarkColor, 
+                  fontFamily: 'PressStart2P', 
+                  fontSize: 14,
+                  shadows: [
+                    Shadow(
+                      color: Colors.white.withOpacity(0.5), 
+                      blurRadius: 4.0, 
+                      offset: const Offset(1, 1)
+                    )
+                  ]
+                ),
+              ),
             ),
-          ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 30), // Increased spacing before buttons
 
           // Action Buttons (Fight and Run)
           Row(
@@ -278,41 +460,76 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
               Expanded(
                 child: ElevatedButton(
                   onPressed: () {
-                    // TODO: Implement navigation to the Battle Screen
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('BATTLE STARTED! (Unimplemented)')),
                     );
-                    _startExploration(); 
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryButtonColor, 
+                    backgroundColor: _rarityHighlightColor, 
                     shape: const StadiumBorder(
-                      side: BorderSide(color: highlightColor, width: 2),
+                      side: BorderSide(color: Colors.black, width: 3),
                     ),
                   ),
-                  child: const Text('FIGHT', style: TextStyle(color: highlightColor, fontFamily: 'PressStart2P', fontSize: 12)),
+                  child: Text(
+                    'FIGHT', 
+                    style: TextStyle(color: Colors.black, fontFamily: 'PressStart2P', fontSize: 14)
+                  ),
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: ElevatedButton(
                   onPressed: () {
-                    // TODO: Implement run logic
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('${organism.name} ESCAPED!')),
                     );
-                    _startExploration(); 
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: secondaryButtonColor, 
-                    shape: const StadiumBorder(
-                      side: BorderSide(color: Colors.white70, width: 2),
+                    backgroundColor: _biomeDarkColor.withOpacity(0.8), 
+                    shape: StadiumBorder(
+                      // USE DYNAMIC HIGHLIGHT COLOR
+                      side: BorderSide(color: _biomeHighlightColor, width: 2),
                     ),
                   ),
-                  child: const Text('RUN', style: TextStyle(color: Colors.white70, fontFamily: 'PressStart2P', fontSize: 12)),
+                  child: Text(
+                    'RUN', 
+                    // USE DYNAMIC HIGHLIGHT COLOR
+                    style: TextStyle(color: _biomeHighlightColor, fontFamily: 'PressStart2P', fontSize: 14)
+                  ),
                 ),
               ),
             ],
+          ),
+          
+          const SizedBox(height: 20),
+          
+          // Explore Again Button inside the card
+          ElevatedButton(
+            onPressed: _startExploration,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _biomeDarkColor.withOpacity(0.7), 
+              shape: StadiumBorder(
+                // Use rarity highlight color for the border
+                side: BorderSide(color: _rarityHighlightColor, width: 2),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+            ),
+            child: Text(
+              'EXPLORE',
+              style: TextStyle(
+                color: _rarityHighlightColor, 
+                fontFamily: 'PressStart2P', 
+                fontSize: 14,
+                // Text Shadow using biome color for depth
+                shadows: [
+                    Shadow(
+                      color: _biomeBaseColor, 
+                      blurRadius: 4.0, 
+                      offset: const Offset(1, 1)
+                    )
+                  ]
+              ),
+            ),
           ),
         ],
       ),
