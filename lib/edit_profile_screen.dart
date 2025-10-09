@@ -54,7 +54,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> with WidgetsBindi
     _audioPlayer.dispose();
     super.dispose();
   }
-
+  
   void _pauseMusic(bool rememberState) async {
     if (rememberState) {
       _wasPlayingBeforePause = _audioPlayer.state == PlayerState.playing;

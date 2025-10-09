@@ -4,9 +4,13 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:animal_warfare/models/organism.dart'; // Ensure this path is correct
-
+import 'package:animal_warfare/local_auth_service.dart';
 class AnidexScreen extends StatefulWidget {
-  const AnidexScreen({super.key});
+  // User data must be passed to check discovery status
+  final UserData currentUser; 
+  final LocalAuthService authService;
+
+  const AnidexScreen({super.key, required this.currentUser,required this.authService,});
 
   @override
   State<AnidexScreen> createState() => _AnidexScreenState();
@@ -18,8 +22,6 @@ class _AnidexScreenState extends State<AnidexScreen> {
   static const Color secondaryButtonColor = Color(0xFF1E3F2A); // Deep Forest Green
   static const Color highlightColor = Color(0xFFDAA520); // Goldenrod
   
-  // Removed complementaryColor, replaced with individual stat colors
-  
   // NEW: Individual Stat Colors
   static const Color healthColor = Color(0xFFC6FF00); // Lime (High saturation)
   static const Color attackColor = Color(0xFFFF0000); // Red
@@ -29,7 +31,11 @@ class _AnidexScreenState extends State<AnidexScreen> {
   List<Organism> _allOrganisms = [];
   List<Organism> _searchResults = [];
   final TextEditingController _searchController = TextEditingController();
-  // Variable _autocompleteSuggestion removed
+  
+  // Helper to check if organism is discovered
+  bool _isDiscovered(Organism organism) {
+    return widget.currentUser.discoveredOrganisms.contains(organism.name);
+  }
   
   @override
   void initState() {
@@ -117,6 +123,7 @@ class _AnidexScreenState extends State<AnidexScreen> {
 
   // --- UI Builders ---
   Widget _buildSearchBar() {
+    // ... (unchanged)
     return Container(
       padding: const EdgeInsets.only(bottom: 20),
       // Autocomplete removal: Stack and the autocomplete overlay Text widget are removed.
@@ -128,7 +135,7 @@ class _AnidexScreenState extends State<AnidexScreen> {
           fontFamily: 'PressStart2P',
         ),
         decoration: InputDecoration(
-          hintText: 'Search Unit Name...',
+          hintText: 'Search Animal Name...',
           hintStyle: TextStyle(
             color: Colors.white.withOpacity(0.5),
             fontFamily: 'PressStart2P',
@@ -163,7 +170,7 @@ class _AnidexScreenState extends State<AnidexScreen> {
     if (_searchResults.isEmpty && _searchController.text.isNotEmpty) {
       return const Center(
         child: Text(
-          'NO UNITS FOUND.',
+          'NO ANIMALS FOUND.',
           textAlign: TextAlign.center,
           style: TextStyle(color: Colors.red, fontFamily: 'PressStart2P', fontSize: 14),
         ),
@@ -172,7 +179,7 @@ class _AnidexScreenState extends State<AnidexScreen> {
     if (_searchResults.isEmpty) {
       return const Center(
         child: Text(
-          'SEARCH FOR A UNIT TO BEGIN.',
+          'SEARCH FOR AN ANIMAL TO BEGIN.',
           textAlign: TextAlign.center,
           style: TextStyle(color: highlightColor, fontFamily: 'PressStart2P', fontSize: 14),
         ),
@@ -189,22 +196,33 @@ class _AnidexScreenState extends State<AnidexScreen> {
   }
   
   Widget _buildOrganismTile(Organism organism) {
+    // Check discovery status
+    final bool isDiscovered = _isDiscovered(organism);
+    
+    // Conditional display for title/subtitle if not discovered
+    final String titleText = isDiscovered ? organism.name.toUpperCase() : '???';
+    final String subtitleText = isDiscovered ? 'Rarity: ${organism.rarity}' : 'Status: UNDISCOVERED';
+    final Color titleColor = isDiscovered ? Colors.white : Colors.grey.shade600;
+
     return Card(
       color: secondaryButtonColor.withOpacity(0.9),
       elevation: 5,
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: ListTile(
-        leading: const Icon(Icons.pets, color: highlightColor),
+        leading: Icon(isDiscovered ? Icons.pets : Icons.question_mark_rounded, 
+          color: isDiscovered ? highlightColor : Colors.grey.shade800
+        ),
         title: Text(
-          organism.name.toUpperCase(),
-          style: const TextStyle(color: Colors.white, fontFamily: 'PressStart2P', fontSize: 16),
+          titleText,
+          style: TextStyle(color: titleColor, fontFamily: 'PressStart2P', fontSize: 16),
         ),
         subtitle: Text(
-          'Rarity: ${organism.rarity}',
+          subtitleText,
           style: TextStyle(color: highlightColor, fontFamily: 'PressStart2P', fontSize: 12),
         ),
-        trailing: const Icon(Icons.chevron_right, color: highlightColor),
-        onTap: () => _showOrganismDetails(organism),
+        trailing: Icon(Icons.chevron_right, color: highlightColor),
+        // Always allow showing details, but the modal will restrict content
+        onTap: () => _showOrganismDetails(organism), 
       ),
     );
   }
@@ -213,6 +231,9 @@ class _AnidexScreenState extends State<AnidexScreen> {
   // Immersive Modal Bottom Sheet for Details
   // ------------------------------------------------------------------
   void _showOrganismDetails(Organism organism) {
+    // Check discovery status once
+    final bool isDiscovered = _isDiscovered(organism);
+    
     // Stat color logic to determine the text color based on value, 
     // now separate from the bar color.
     Color getStatTextColor(int stat) {
@@ -247,7 +268,7 @@ class _AnidexScreenState extends State<AnidexScreen> {
                 padding: const EdgeInsets.all(0),
                 children: <Widget>[
                   // 1. Header Section (Image, Name, Rarity)
-                  _buildDetailsHeader(organism, rarityColor),
+                  _buildDetailsHeader(organism, rarityColor, isDiscovered), // UPDATED: Pass discovery status
                   
                   // 2. Main Content
                   Padding(
@@ -255,11 +276,31 @@ class _AnidexScreenState extends State<AnidexScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Discovery Status Message
+                        if (!isDiscovered)
+                          Column(
+                            children: [
+                              _buildSectionTitle('CLASSIFIED DATA'),
+                              const SizedBox(height: 10),
+                              Text(
+                                'ANIMAL IDENTIFICATION REQUIRED. DATA BLOCKED.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Colors.red.shade400, 
+                                  fontFamily: 'PressStart2P', 
+                                  fontSize: 14
+                                ),
+                              ),
+                              const Divider(color: Colors.red),
+                              const SizedBox(height: 10),
+                            ],
+                          ),
+                          
                         // Description/Brief
                         _buildSectionTitle('MISSION BRIEF'),
                         const SizedBox(height: 5),
                         Text(
-                          organism.description,
+                          isDiscovered ? organism.description : 'Description is classified until identification.',
                           style: const TextStyle(color: Colors.white70, fontSize: 12),
                         ),
                         
@@ -270,55 +311,58 @@ class _AnidexScreenState extends State<AnidexScreen> {
                         _buildDetailRow('Rarity:', organism.rarity, isRarity: true),
                         
                         _buildDetailRow('Habitat:', organism.habitat),
-                        _buildDetailRow('Drops:', organism.drops),
-                        _buildDetailRow('Category:', organism.category),
+                        // Conditional Details
+                        if (isDiscovered) ...[
+                          _buildDetailRow('Drops:', organism.drops),
+                          _buildDetailRow('Category:', organism.category),
 
-                        // Stats Section
-                        const Divider(color: highlightColor),
-                        // Removed ' (MAX: 500)'
-                        _buildSectionTitle('BATTLE STATS'),
+                          // Stats Section
+                          const Divider(color: highlightColor),
+                          // Removed ' (MAX: 500)'
+                          _buildSectionTitle('BATTLE STATS'),
+                          
+                          // Stat bars with specific colors and glow
+                          _buildStatBar(
+                            'HEALTH', 
+                            organism.health, 
+                            500, 
+                            getStatTextColor(organism.health), 
+                            const Color.fromARGB(255, 0, 255, 4)
+                          ),
+                          _buildStatBar(
+                            'ATTACK', 
+                            organism.attack, 
+                            150, 
+                            getStatTextColor(organism.attack), 
+                            attackColor
+                          ),
+                          _buildStatBar(
+                            'DEFENSE', 
+                            organism.defense, 
+                            150, 
+                            getStatTextColor(organism.defense), 
+                            defenseColor
+                          ),
+                          _buildStatBar(
+                            'SPEED', 
+                            organism.speed, 
+                            120, 
+                            getStatTextColor(organism.speed), 
+                            speedColor
+                          ),
+                          
+                          // Abilities and Moves
+                          const Divider(color: highlightColor),
+                          _buildSectionTitle('ABILITIES'),
+                          // Changed to use the standard text detail for abilities
+                          _buildTextDetail(organism.abilities),
+                          
+                          const Divider(color: highlightColor),
+                          _buildSectionTitle('COMBAT MOVES'),
+                          // NEW: Chip/Tag style for moves
+                          _buildMovesChips(organism.moves), 
+                        ],
                         
-                        // Stat bars with specific colors and glow
-                        _buildStatBar(
-                          'HEALTH', 
-                          organism.health, 
-                          500, 
-                          getStatTextColor(organism.health), 
-                          const Color.fromARGB(255, 0, 255, 4)
-                        ),
-                        _buildStatBar(
-                          'ATTACK', 
-                          organism.attack, 
-                          150, 
-                          getStatTextColor(organism.attack), 
-                          attackColor
-                        ),
-                        _buildStatBar(
-                          'DEFENSE', 
-                          organism.defense, 
-                          150, 
-                          getStatTextColor(organism.defense), 
-                          defenseColor
-                        ),
-                        _buildStatBar(
-                          'SPEED', 
-                          organism.speed, 
-                          120, 
-                          getStatTextColor(organism.speed), 
-                          speedColor
-                        ),
-                        
-                        // Abilities and Moves
-                        const Divider(color: highlightColor),
-                        _buildSectionTitle('ABILITIES'),
-                        // Changed to use the standard text detail for abilities
-                        _buildTextDetail(organism.abilities),
-                        
-                        const Divider(color: highlightColor),
-                        _buildSectionTitle('COMBAT MOVES'),
-                        // NEW: Chip/Tag style for moves
-                        _buildMovesChips(organism.moves), 
-
                         const SizedBox(height: 50),
                       ],
                     ),
@@ -333,7 +377,12 @@ class _AnidexScreenState extends State<AnidexScreen> {
   }
 
   // --- HELPER: Immersive Header ---
-  Widget _buildDetailsHeader(Organism organism, Color rarityColor) {
+  Widget _buildDetailsHeader(Organism organism, Color rarityColor, bool isDiscovered) {
+    // Conditional values
+    final String nameText = isDiscovered ? organism.name.toUpperCase() : 'CLASSIFIED ANIMAL';
+    final String scientificNameText = isDiscovered ? organism.scientificName : '[Redacted]';
+    final Color nameColor = isDiscovered ? rarityColor : Colors.grey.shade600;
+    
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -351,7 +400,7 @@ class _AnidexScreenState extends State<AnidexScreen> {
               color: const Color.fromARGB(255, 41, 48, 68).withOpacity(0.5),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: organism.sprite.isNotEmpty 
+            child: isDiscovered && organism.sprite.isNotEmpty 
                 ? Image.network(
                     organism.sprite,
                     height: 200, 
@@ -370,19 +419,26 @@ class _AnidexScreenState extends State<AnidexScreen> {
                     },
                     errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image, color: Colors.red, size: 80),
                   )
-                : const Icon(Icons.image_not_supported, color: Colors.grey, size: 80),
+                // REPLACED: Black/Monochrome Placeholder for undiscovered unit
+                : buildSilhouetteSprite( // <--- MODIFIED HERE
+                    imageUrl: organism.sprite, // Use the actual sprite URL
+                    silhouetteColor: Colors.black, // Apply a solid black color
+                    height: 200, 
+                    width: 400, 
+                    fit: BoxFit.contain,
+                  ),
           ),
           // Name
           Text(
-            organism.name.toUpperCase(),
+            nameText,
             textAlign: TextAlign.center,
-            style: TextStyle(color: rarityColor, fontFamily: 'PressStart2P', fontSize: 18, height: 1.2),
+            style: TextStyle(color: nameColor, fontFamily: 'PressStart2P', fontSize: 18, height: 1.2),
           ),
           // Scientific Name
           Text(
-              organism.scientificName, 
+              scientificNameText, 
               style: TextStyle(
-                  color: rarityColor, 
+                  color: nameColor, 
                   fontFamily: 'PressStart2P', 
                   fontSize: 10,
                   fontStyle: FontStyle.italic, 
@@ -405,6 +461,7 @@ class _AnidexScreenState extends State<AnidexScreen> {
 
   // --- HELPER: Section Title ---
   Widget _buildSectionTitle(String title) {
+    // ... (unchanged)
     return Padding(
       padding: const EdgeInsets.only(top: 15.0, bottom: 8.0),
       child: Text(
@@ -461,6 +518,7 @@ class _AnidexScreenState extends State<AnidexScreen> {
   }
   
   // --- MODIFIED HELPER: Horizontal Stat Bar with Glow ---
+  // Note: Only called if isDiscovered is true in _showOrganismDetails, so no conditional logic needed here.
   Widget _buildStatBar(String label, int statValue, double maxStat, Color statTextColor, Color barColor) {
     // Ensure the fraction is between 0.0 and 1.0
     double fraction = (statValue / maxStat).clamp(0.0, 1.0);
@@ -544,6 +602,7 @@ class _AnidexScreenState extends State<AnidexScreen> {
 
   // --- MODIFIED HELPER: Multi-line detail block (for Abilities) ---
   Widget _buildTextDetail(String value) {
+    // ... (unchanged)
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Text(
@@ -593,6 +652,7 @@ class _AnidexScreenState extends State<AnidexScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // ... (unchanged)
     return Scaffold(
       appBar: AppBar(
         title: const Text('ANIMAL INDEX'),

@@ -1,4 +1,5 @@
 // lib/models/organism.dart
+import 'package:flutter/material.dart';
 
 class Organism {
   final String name;
@@ -51,4 +52,49 @@ class Organism {
       description: json['description'] as String,
     );
   }
+}
+
+
+/// A utility function to display a network image as a solid-colored silhouette.
+Widget buildSilhouetteSprite({
+  required String imageUrl,
+  required Color silhouetteColor,
+  double? width,
+  double? height,
+  BoxFit fit = BoxFit.contain,
+}) {
+  return ColorFiltered(
+    // The ColorFilter.mode constructor is used to blend a single color 
+    // with the child widget (your image).
+    colorFilter: ColorFilter.mode(
+      silhouetteColor,
+      // BlendMode.srcIn uses the alpha channel of the image (the source) 
+      // and replaces the color with the filter color, creating a perfect silhouette.
+      BlendMode.srcIn,
+    ),
+    child: Image.network(
+      imageUrl,
+      width: width,
+      height: height,
+      fit: fit,
+      // You can add a loadingBuilder and errorBuilder here for better UX
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return Center(
+          child: CircularProgressIndicator(
+            color: silhouetteColor,
+            value: loadingProgress.expectedTotalBytes != null
+                ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                : null,
+          ),
+        );
+      },
+      errorBuilder: (context, error, stackTrace) => Container(
+        width: width,
+        height: height,
+        color: Colors.grey.shade800,
+        child: const Icon(Icons.broken_image, color: Colors.white),
+      ),
+    ),
+  );
 }

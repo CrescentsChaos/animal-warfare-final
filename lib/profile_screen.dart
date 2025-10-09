@@ -5,6 +5,11 @@ import 'package:audioplayers/audioplayers.dart';
 import 'dart:io';
 // REMOVED: import 'package:intl/intl.dart'; // FIX: This caused the dependency error
 
+// START NEW IMPORTS for Anidex Stat
+import 'dart:convert';
+import 'package:flutter/services.dart' show rootBundle; 
+// END NEW IMPORTS
+
 // ------------------------------------------------------------------
 // FIX: Define the missing _createFadeRoute function here.
 // ------------------------------------------------------------------
@@ -34,6 +39,10 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
 
   UserData? _currentUser;
   bool _isLoading = true;
+  
+  // START NEW: Organism list for total count
+  List<dynamic> _allOrganisms = []; 
+  // END NEW
 
   late AudioPlayer _audioPlayer; 
   bool _wasPlayingBeforePause = false; 
@@ -48,7 +57,8 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
     WidgetsBinding.instance.addObserver(this);
     _audioPlayer = AudioPlayer();
     _playBackgroundMusic();
-    _loadUserProfile();
+    // UPDATED: Load organisms alongside profile
+    _loadAllData();
   }
 
   @override
@@ -78,9 +88,35 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
     await _audioPlayer.resume();
   }
 
-  Future<void> _loadUserProfile() async {
+  // START NEW: Function to load all organism data for total count
+  Future<void> _loadAllOrganisms() async {
+    const String assetPath = 'assets/Organisms.json';
+    try {
+      final String response = await rootBundle.loadString(assetPath);
+      final List<dynamic> animalsData = json.decode(response);
+      _allOrganisms = animalsData;
+    } catch (e) {
+      if (mounted) {
+        // NOTE: Error handling is simple here, in a real app a better toast/dialog might be needed.
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading organism data. Error: $e')),
+        );
+      }
+    }
+  }
+  // END NEW
+
+  // UPDATED: Combine loading into one function
+  Future<void> _loadAllData() async {
     setState(() => _isLoading = true);
-    final user = await _authService.getCurrentUser();
+    
+    final userFuture = _authService.getCurrentUser();
+    final organismFuture = _loadAllOrganisms(); // Load total organism count
+
+    await Future.wait([userFuture, organismFuture]);
+    
+    final user = await userFuture;
+
     setState(() {
       _currentUser = user;
       _isLoading = false;
@@ -97,7 +133,7 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
       const EditProfileScreen(), 
     )).then((_) {
       _audioPlayer.resume(); 
-      _loadUserProfile(); // Reload profile data upon return
+      _loadAllData(); // Reload profile data (and organism count, though it won't change) upon return
     });
   }
   
@@ -286,6 +322,11 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
         ? null
         : FileImage(File(user.avatar)) as ImageProvider?;
 
+    // NEW: Calculate Anidex Stat
+    final discoveredCount = user.discoveredOrganisms.length;
+    final totalCount = _allOrganisms.length;
+    final anidexStat = '$discoveredCount / $totalCount';
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile'),
@@ -320,6 +361,11 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
 
               // 3. GENDER (Read-only Detail)
               _buildProfileDetail('GENDER', user.gender),
+
+              // START NEW: ANIDEX IDENTIFIED STAT
+              if (totalCount > 0)
+                _buildProfileDetail('ANIMALS IDENTIFIED', anidexStat),
+              // END NEW
 
               const SizedBox(height: 40),
 

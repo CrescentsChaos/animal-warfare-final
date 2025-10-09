@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:animal_warfare/quiz_game_screen.dart'; // Ensure this path is correct
+import 'package:animal_warfare/local_auth_service.dart';
 
 class QuizScreen extends StatelessWidget {
-  const QuizScreen({super.key});
+  final UserData currentUser;
+  final LocalAuthService authService;
+  const QuizScreen({super.key, required this.currentUser,required this.authService,});
 
   // Custom retro/military colors (Copied from GameScreen for consistency)
   static const Color primaryButtonColor = Color(0xFF38761D); // Bright Jungle Green

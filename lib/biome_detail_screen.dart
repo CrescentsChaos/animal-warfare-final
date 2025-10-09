@@ -3,17 +3,22 @@ import 'package:flutter/material.dart';
 import 'package:animal_warfare/models/organism.dart'; // Ensure this is the correct path
 import 'explore_screen.dart'; // Import to use getWeightedRandomOrganism and Organism List
 import 'package:audioplayers/audioplayers.dart'; // Audio Player Import
+import 'package:animal_warfare/local_auth_service.dart'; // ADDED: LocalAuthService
 
 class BiomeDetailScreen extends StatefulWidget {
   final String biomeName;
   final List<Organism> allOrganisms; // Pass the data to avoid reloading
+  final UserData currentUser; // ADDED: Current user data
+  final LocalAuthService authService; // ADDED: Auth service
 
   const BiomeDetailScreen({
     super.key,
     required this.biomeName,
     required this.allOrganisms,
+    required this.currentUser, // ADDED
+    required this.authService, // ADDED
   });
-
+  
   @override
   State<BiomeDetailScreen> createState() => _BiomeDetailScreenState();
 }
@@ -24,7 +29,8 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
   
   Organism? _currentEncounter;
   bool _isExploring = false;
-  // State for name visibility
+  // State for name visibility: Now only used to control the single reveal *after* encounter
+  // The persistent "discovered" state is tracked in UserData.
   bool _isNameRevealed = false; 
 
   // DYNAMIC COLORS
@@ -188,11 +194,30 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
     }
   }
   
-  // Method to reveal the name
-  void _revealName() {
+  // Method to reveal the name and update discovery status
+  void _revealName(Organism organism) async {
+    // 1. Mark as discovered in the database/file
+    await widget.authService.markOrganismAsDiscovered(
+      widget.currentUser.username, 
+      organism.name
+    );
+    
+    // 2. Set the local state to reveal
     setState(() {
       _isNameRevealed = true;
+      // Note: We don't need to reload widget.currentUser here, 
+      // but in a real app, you might want to call a method 
+      // in the parent widget to force a UserData refresh 
+      // if it's used elsewhere (like the AnidexScreen).
     });
+  }
+  
+  // Helper to check if organism is discovered
+  bool _isDiscovered(Organism organism) {
+    // This assumes the parent widget (which holds currentUser) 
+    // might need to refresh its state occasionally, but for a simple check,
+    // we use the passed-in list.
+    return widget.currentUser.discoveredOrganisms.contains(organism.name);
   }
 
   void _startExploration() {
@@ -214,6 +239,8 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
         _isExploring = false;
         if (encounter != null) {
           _rarityHighlightColor = _getRarityHighlightColor(encounter.rarity);
+          // Set _isNameRevealed based on persistent discovery status
+          _isNameRevealed = _isDiscovered(encounter); 
         }
       });
 
@@ -228,6 +255,7 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
 
   @override
   Widget build(BuildContext context) {
+    // ... (rest of the build method is unchanged)
     return Scaffold(
       appBar: AppBar(
         title: Text('${widget.biomeName.toUpperCase()}'),
@@ -314,6 +342,11 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
   
   // Method to build the encounter card
   Widget _buildEncounterResultCard(Organism organism) {
+    // Determine the current state of discovery
+    final bool isDiscovered = _isDiscovered(organism);
+    // The name is revealed if it was pre-discovered OR if it was revealed in this encounter
+    final bool isNameVisible = isDiscovered || _isNameRevealed; 
+    
      return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20.0),
@@ -336,7 +369,7 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
         children: [
           // Encounter Header
           Text(
-            'ENCOUNTER:',
+            isNameVisible ? 'ENCOUNTER:' : 'UNKNOWN ANIMAL DETECTED:', // UPDATED TEXT
             style: TextStyle(
               color: Colors.white, 
               fontFamily: 'PressStart2P',
@@ -374,27 +407,36 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
           Divider(color: _rarityHighlightColor, thickness: 2), 
           const SizedBox(height: 10),
 
-          // Organism Sprite
-          Image.network(
-            organism.sprite, 
-            height: 120, 
-            loadingBuilder: (context, child, loadingProgress) {
-              if (loadingProgress == null) return child;
-              return Image.asset(
-                'assets/placeholder_400x200.png', 
-                height: 120, 
-                width: 240, 
-                fit: BoxFit.contain, 
-              );
-            },
-            errorBuilder: (context, error, stackTrace) => 
-              Image.asset('assets/placeholder_400x200.png', height: 120),
-          ),
+          // Organism Sprite (Conditional)
+          isNameVisible
+          ? Image.network(
+              organism.sprite, 
+              height: 200, 
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return Image.asset(
+                  'assets/placeholder_400x200.png', 
+                  height: 200, 
+                  width: 400, 
+                  fit: BoxFit.contain, 
+                );
+              },
+              errorBuilder: (context, error, stackTrace) => 
+                Image.asset('assets/placeholder_400x200.png', height: 120),
+            )
+          // REPLACED: Placeholder for undiscovered with buildSilhouetteSprite
+          : buildSilhouetteSprite( 
+              imageUrl: organism.sprite,
+              silhouetteColor: Colors.black, // Use black for the silhouette
+              height: 200, 
+              width: 400, 
+              fit: BoxFit.contain,
+            ), // <--- MODIFIED HERE
           
           const SizedBox(height: 12),
           
           // Organism Name or Identify Button
-          if (_isNameRevealed)
+          if (isNameVisible)
             // Organism Name - Primary Element (REVEALED STATE)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -425,7 +467,7 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
           else
             // Identify Button (HIDDEN STATE)
             ElevatedButton(
-              onPressed: _revealName,
+              onPressed: () => _revealName(organism), // UPDATED: Pass organism
               style: ElevatedButton.styleFrom(
                 // USE DYNAMIC HIGHLIGHT COLOR
                 backgroundColor: _biomeHighlightColor.withOpacity(0.8), 
