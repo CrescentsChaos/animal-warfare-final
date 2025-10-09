@@ -1,0 +1,20 @@
+[
+  {
+    "title": "Novice Collector",
+    "description": "Discover 5 Common organisms.",
+    "requiredRarity": "Common",
+    "requiredCount": 5
+  },
+  {
+    "title": "Rare Hunter",
+    "description": "Discover 3 Rare organisms.",
+    "requiredRarity": "Rare",
+    "requiredCount": 3
+  },
+  {
+    "title": "Mythical Seeker",
+    "description": "Discover 1 Mythical organism.",
+    "requiredRarity": "Mythical",
+    "requiredCount": 1
+  }
+]

@@ -3,7 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:animal_warfare/models/organism.dart'; // Ensure this is the correct path
 import 'explore_screen.dart'; // Import to use getWeightedRandomOrganism and Organism List
 import 'package:audioplayers/audioplayers.dart'; // Audio Player Import
-import 'package:animal_warfare/local_auth_service.dart'; // ADDED: LocalAuthService
+import 'package:animal_warfare/local_auth_service.dart'; 
+// ADDED IMPORTS FOR ACHIEVEMENTS
+import 'package:animal_warfare/achievement_service.dart'; 
+import 'dart:convert';
+import 'package:flutter/services.dart' show rootBundle;
+// END ADDED IMPORTS
 
 class BiomeDetailScreen extends StatefulWidget {
   final String biomeName;
@@ -15,8 +20,8 @@ class BiomeDetailScreen extends StatefulWidget {
     super.key,
     required this.biomeName,
     required this.allOrganisms,
-    required this.currentUser, // ADDED
-    required this.authService, // ADDED
+    required this.currentUser, 
+    required this.authService, 
   });
   
   @override
@@ -29,18 +34,24 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
   
   Organism? _currentEncounter;
   bool _isExploring = false;
-  // State for name visibility: Now only used to control the single reveal *after* encounter
-  // The persistent "discovered" state is tracked in UserData.
   bool _isNameRevealed = false; 
 
   // DYNAMIC COLORS
   late Color _biomeBaseColor; 
   late Color _biomeDarkColor;
-  late Color _biomeHighlightColor; // Dynamic highlight color for general UI elements
-  late Color _rarityHighlightColor = highlightColor; // Initialized to default highlight
+  late Color _biomeHighlightColor; 
+  late Color _rarityHighlightColor = highlightColor; 
 
   // Audio Player Setup
   final AudioPlayer _audioPlayer = AudioPlayer();
+  
+  // ADDED: Achievement Service instance
+  late AchievementService _achievementService;
+  // ADDED: List of ALL organisms (in JSON format) for the service
+  List<dynamic> _allOrganismsJson = []; 
+  
+  // ADDED: Local state to hold current user data, which can be updated
+  late UserData _currentUser; 
 
   // Helper function to create a darker version of a color
   Color _getDarkerColor(Color color) {
@@ -91,9 +102,8 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
       await _audioPlayer.resume(); 
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Warning: Could not play music for $biomeName. Check asset path: $musicPath')),
-        );
+        // Suppress or handle the error gracefully if the music asset is missing
+        debugPrint('Warning: Could not play music for $biomeName. Error: $e');
       }
     }
   }
@@ -107,7 +117,7 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
     await _audioPlayer.dispose();
   }
   
-  // REVISED: Helper to get the base color based on biome (More Immersive Palette)
+  // Helper to get the base color based on biome (More Immersive Palette)
   Color _getBiomeBaseColor(String biomeName) {
     switch (biomeName.toLowerCase()) {
       case 'swamp': return const Color(0xFF4B6F44); // Deep, Muted Olive
@@ -148,14 +158,48 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
     }
   }
 
+  // Fallback to load organisms data if not provided (needed for achievement check)
+  Future<void> _loadOrganismsData() async {
+    try {
+      final String response = await rootBundle.loadString('assets/Organisms.json'); 
+      _allOrganismsJson = json.decode(response);
+      _achievementService = AchievementService( // Re-initialize with data
+        allOrganisms: _allOrganismsJson, 
+        authService: widget.authService,
+      );
+    } catch (e) {
+      debugPrint('Error loading organisms for achievement check: $e');
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+    // INITIALIZE LOCAL STATE USER DATA FROM WIDGET
+    _currentUser = widget.currentUser; 
+    
     // INITIALIZE DYNAMIC COLORS
     _biomeBaseColor = _getBiomeBaseColor(widget.biomeName);
     _biomeDarkColor = _getDarkerColor(_biomeBaseColor); 
     // Initialize dynamic biome highlight
     _biomeHighlightColor = _getComplementaryHighlightColor(_biomeBaseColor); 
+    
+    // Initialize Achievement Service
+    if (widget.allOrganisms.isNotEmpty) {
+      // Convert Organism list to the required dynamic list for the service
+      _allOrganismsJson = widget.allOrganisms.map((o) => o.toJson()).toList();
+    } 
+    
+    _achievementService = AchievementService(
+      allOrganisms: _allOrganismsJson, 
+      authService: widget.authService,
+    );
+    
+    // Fallback in case list was empty/not passed
+    if (_allOrganismsJson.isEmpty) {
+      _loadOrganismsData();
+    }
+    
     WidgetsBinding.instance.addObserver(this); 
     _startExploration(); 
     _playBiomeMusic(widget.biomeName); 
@@ -194,30 +238,49 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
     }
   }
   
-  // Method to reveal the name and update discovery status
+  // ADDED: Utility to re-fetch and update local user data
+  Future<void> _refreshUserData() async {
+     final UserData? updatedUser = await widget.authService.getCurrentUser();
+     if (updatedUser != null && mounted) {
+       setState(() {
+         _currentUser = updatedUser;
+       });
+     }
+  }
+
+  // Method to reveal the name and update discovery status (FIXED)
   void _revealName(Organism organism) async {
-    // 1. Mark as discovered in the database/file
+    // 1. Mark as discovered in the database/file (FIXED METHOD NAME)
     await widget.authService.markOrganismAsDiscovered(
-      widget.currentUser.username, 
+      _currentUser.username, 
       organism.name
     );
     
-    // 2. Set the local state to reveal
-    setState(() {
-      _isNameRevealed = true;
-      // Note: We don't need to reload widget.currentUser here, 
-      // but in a real app, you might want to call a method 
-      // in the parent widget to force a UserData refresh 
-      // if it's used elsewhere (like the AnidexScreen).
-    });
+    // 2. Fetch the updated user data
+    // This is crucial: _currentUser now includes the newly discovered organism.
+    await _refreshUserData(); 
+    
+    // 3. Check and unlock achievements using the REFRESHED local user data
+    final newAchievements = await _achievementService.checkAndUnlockAchievements(_currentUser); // FIX: Swapped with _refreshUserData
+
+    // 4. Show a pop-up for each newly unlocked achievement
+    for (var title in newAchievements) {
+      if (mounted) {
+        _achievementService.showAchievementSnackbar(context, title);
+      }
+    }
+    
+    // 5. We set the local reveal state (which should trigger a rebuild and update _isDiscovered)
+    if (mounted) {
+      setState(() {
+        _isNameRevealed = true;
+      });
+    }
   }
   
-  // Helper to check if organism is discovered
+  // Helper to check if organism is discovered - UPDATED to use local state
   bool _isDiscovered(Organism organism) {
-    // This assumes the parent widget (which holds currentUser) 
-    // might need to refresh its state occasionally, but for a simple check,
-    // we use the passed-in list.
-    return widget.currentUser.discoveredOrganisms.contains(organism.name);
+    return _currentUser.discoveredOrganisms.contains(organism.name);
   }
 
   void _startExploration() {
@@ -255,7 +318,6 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
 
   @override
   Widget build(BuildContext context) {
-    // ... (rest of the build method is unchanged)
     return Scaffold(
       appBar: AppBar(
         title: Text('${widget.biomeName.toUpperCase()}'),

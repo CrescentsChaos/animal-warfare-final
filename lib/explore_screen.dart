@@ -15,15 +15,15 @@ int _getRarityWeight(String rarity) {
 // ... (Logic remains the same)
   switch (rarity.toLowerCase()) {
     case 'common':
-      return 50;
+      return 150;
     case 'uncommon':
-      return 35;
+      return 50;
     case 'rare':
-      return 20;
+      return 30;
     case 'epic':
-      return 10;
+      return 15;
     case 'legendary':
-      return 5;
+      return 7;
     case 'mythical':
       return 1;
     default:

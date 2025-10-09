@@ -8,6 +8,8 @@ import 'dart:io';
 
 // NEW IMPORT
 import 'package:animal_warfare/settings_screen.dart'; 
+// ADDED
+import 'package:animal_warfare/achievement_screen.dart'; 
 // END NEW IMPORT
 
 // START NEW IMPORTS for Anidex Stat
@@ -95,10 +97,18 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
   }
 
   Future<void> _loadOrganisms() async {
-    final String response = await rootBundle.loadString('assets/organisms.json');
-    setState(() {
-      _allOrganisms = json.decode(response);
-    });
+    const String assetPath = 'assets/Organisms.json';
+    try {
+      final String response = await rootBundle.loadString(assetPath);
+      setState(() {
+        _allOrganisms = json.decode(response);
+      });
+    } catch (e) {
+      debugPrint('Error loading Organisms.json: $e');
+      setState(() {
+        _allOrganisms = [];
+      });
+    }
   }
 
   Future<void> _loadUserProfile() async {
@@ -166,6 +176,17 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
       Navigator.of(context).push(_createFadeRoute(SettingsScreen(
         currentUser: _currentUser!, 
         authService: _authService,
+      )));
+    }
+  }
+  
+  // ADDED: Navigation function for the Achievements Screen
+  void _navigateToAchievementsScreen() {
+    if (_currentUser != null) {
+      Navigator.of(context).push(_createFadeRoute(AchievementsScreen(
+        currentUser: _currentUser!,
+        allOrganisms: _allOrganisms, 
+        authService: _authService, // ADDED: Pass the auth service
       )));
     }
   }
@@ -326,7 +347,7 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
                         : null,
                   ),
                   child: user.avatar.isEmpty || user.avatar == 'default'
-                      ? Center(
+                      ? const Center(
                           child: Icon(
                             Icons.person,
                             color: highlightColor,
@@ -362,6 +383,14 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
                 onPressed: _navigateToSettingsScreen,
               ),
               // END NEW
+              
+              // ADDED: ACHIEVEMENTS BUTTON
+              const SizedBox(height: 20), 
+              _buildThemedButton(
+                text: 'ACHIEVEMENTS',
+                onPressed: _navigateToAchievementsScreen,
+              ),
+              // END ADDED
               
               const SizedBox(height: 40),
 

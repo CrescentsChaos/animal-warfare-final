@@ -1,4 +1,5 @@
 // lib/local_auth_service.dart
+
 import 'dart:convert';
 import 'dart:io'; 
 import 'package:flutter/foundation.dart';
@@ -11,28 +12,22 @@ class UserData {
   final String password;
   final String avatar;
   final String gender;
-  // START NEW: Quiz Stats
-  final Map<String, dynamic> quizStats; // Stores {quizName: {attempts: 5, correct: 3, lastAttempt: timestamp}}
-  // END NEW
-  // START NEW DISCOVERY TRACKING
-  final List<String> discoveredOrganisms; // Stores names of discovered organisms
-  // END NEW DISCOVERY TRACKING
+  final Map<String, dynamic> quizStats; 
+  final List<String> discoveredOrganisms; 
+  // ADDED: List to track completed achievement titles
+  final List<String> completedAchievements; 
 
   UserData({
     required this.username,
     required this.password,
     this.avatar = 'default',
     this.gender = 'N/A',
-    // START NEW
     Map<String, dynamic>? quizStats,
-    // END NEW
-    // START NEW DISCOVERY TRACKING
     List<String>? discoveredOrganisms,
-    // END NEW DISCOVERY TRACKING
+    List<String>? completedAchievements, // ADDED
   }) : quizStats = quizStats ?? {},
-       // START NEW DISCOVERY TRACKING
-       discoveredOrganisms = discoveredOrganisms ?? [];
-       // END NEW DISCOVERY TRACKING
+       discoveredOrganisms = discoveredOrganisms ?? [],
+       completedAchievements = completedAchievements ?? []; // INITIALIZE
 
   // Method to create a new UserData instance with optional updated fields
   UserData copyWith({
@@ -40,24 +35,18 @@ class UserData {
     String? password,
     String? avatar,
     String? gender,
-    // START NEW
     Map<String, dynamic>? quizStats,
-    // END NEW
-    // START NEW DISCOVERY TRACKING
     List<String>? discoveredOrganisms,
-    // END NEW DISCOVERY TRACKING
+    List<String>? completedAchievements, // ADDED
   }) {
     return UserData(
       username: username ?? this.username,
       password: password ?? this.password,
       avatar: avatar ?? this.avatar,
       gender: gender ?? this.gender,
-      // START NEW
       quizStats: quizStats ?? this.quizStats,
-      // END NEW
-      // START NEW DISCOVERY TRACKING
       discoveredOrganisms: discoveredOrganisms ?? this.discoveredOrganisms,
-      // END NEW DISCOVERY TRACKING
+      completedAchievements: completedAchievements ?? this.completedAchievements, // ADDED
     );
   }
 
@@ -66,12 +55,9 @@ class UserData {
         'password': password,
         'avatar': avatar,
         'gender': gender,
-        // START NEW
         'quizStats': quizStats,
-        // END NEW
-        // START NEW DISCOVERY TRACKING
         'discoveredOrganisms': discoveredOrganisms,
-        // END NEW DISCOVERY TRACKING
+        'completedAchievements': completedAchievements, // ADDED
       };
 
   factory UserData.fromJson(Map<String, dynamic> json) {
@@ -80,21 +66,18 @@ class UserData {
       password: json['password'] as String? ?? '',
       avatar: json['avatar'] as String? ?? 'default',
       gender: json['gender'] as String? ?? 'N/A',
-      // START NEW
       // Safely deserialize quizStats (handling null or wrong type)
       quizStats: (json['quizStats'] as Map<String, dynamic>?) ?? {},
-      // END NEW
-      // START NEW DISCOVERY TRACKING
       // Safely deserialize discoveredOrganisms
       discoveredOrganisms: (json['discoveredOrganisms'] as List<dynamic>?)?.map((e) => e as String).toList() ?? [],
-      // END NEW DISCOVERY TRACKING
+      // ADDED: Safely deserialize completedAchievements
+      completedAchievements: (json['completedAchievements'] as List<dynamic>?)?.map((e) => e as String).toList() ?? [],
     );
   }
 }
 
 // ------------------------------------------------------------------
 // LocalAuthService
-// Handles file operations, login, registration, and user session
 // ------------------------------------------------------------------
 class LocalAuthService {
   static const _currentKey = 'current_user_username'; 
@@ -145,35 +128,40 @@ class LocalAuthService {
     }
   }
   
-  // Attempts to register a new user (renamed for compatibility)
-  Future<bool> registerUser(String username, String password) async {
+  // NEW: Generic method for AchievementService to use
+  Future<void> updateUser(UserData user) async {
+    await _writeUserFile(user);
+  }
+
+  // 🚨 FIXED: Renamed from registerUser to register and ensures Future<bool> return type
+  Future<bool> register(String username, String password) async {
     final existingUser = await _readUserFile(username);
     if (existingUser != null) {
       return false; // User already exists
     }
 
-    // UPDATED: Create new user with empty discoveredOrganisms list
     final newUser = UserData(
       username: username, 
       password: password,
       discoveredOrganisms: [], 
+      completedAchievements: [], // Initialize new field
     );
     await _writeUserFile(newUser);
     
-    await _saveCurrentUserName(username); 
-    return true;
+    // Automatically log the user in after successful registration
+    return await login(username, password);
   }
 
-  // Attempts to log a user in (renamed for compatibility)
-  Future<UserData?> loginUser(String username, String password) async {
+  // 🚨 FIXED: Renamed from loginUser to login and returns Future<bool>
+  Future<bool> login(String username, String password) async {
     final foundUser = await _readUserFile(username);
     
     if (foundUser != null && foundUser.password == password) {
       await _saveCurrentUserName(foundUser.username); 
-      return foundUser;
+      return true; // Login success
     }
     
-    return null;
+    return false; // Login failure
   }
 
   // --- Session Management Logic ---
@@ -214,7 +202,7 @@ class LocalAuthService {
     }
   }
   
-  // START NEW: Method to update quiz statistics
+  // Method to update quiz statistics
   Future<void> updateQuizStats(String username, String quizName, bool isCorrect) async {
     final user = await _readUserFile(username);
 
@@ -238,9 +226,8 @@ class LocalAuthService {
       await _writeUserFile(updatedUser);
     }
   }
-  // END NEW
 
-  // START NEW: Method to mark an organism as discovered
+  // Method to mark an organism as discovered
   Future<void> markOrganismAsDiscovered(String username, String organismName) async {
     final user = await _readUserFile(username);
 
@@ -256,5 +243,4 @@ class LocalAuthService {
       }
     }
   }
-  // END NEW
 }

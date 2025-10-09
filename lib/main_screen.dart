@@ -6,27 +6,13 @@ import 'package:animal_warfare/profile_screen.dart';
 import 'package:animal_warfare/game_screen.dart';
 import 'package:animal_warfare/local_auth_service.dart';
 import 'package:audioplayers/audioplayers.dart'; 
-import 'package:animal_warfare/utils/transitions.dart'; // Import utility file (assuming this defines _createFadeRoute)
+import 'package:shared_preferences/shared_preferences.dart'; 
+// REMOVED: import 'package:animal_warfare/utils/transitions.dart'; 
 
-// Placeholder for user state (adding 'loading' to prevent incorrect initial display)
 enum AuthStatus { loading, loggedIn, guest } 
 
 // ------------------------------------------------------------------
-// FIX: Define the missing _createFadeRoute function here 
-// or ensure transitions.dart is correctly defining it.
-// ------------------------------------------------------------------
-PageRouteBuilder _createFadeRoute(Widget page) {
-  return PageRouteBuilder(
-    transitionDuration: const Duration(milliseconds: 400),
-    pageBuilder: (context, animation, secondaryAnimation) => page,
-    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      return FadeTransition(
-        opacity: animation,
-        child: child,
-      );
-    },
-  );
-}
+// 🚨 REMOVED: The custom _createFadeRoute function definition is removed entirely
 // ------------------------------------------------------------------
 
 
@@ -45,7 +31,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   late AudioPlayer _audioPlayer; 
   bool _wasPlayingBeforePause = false; 
 
-  // Define High-Contrast Retro/Military-themed colors (Copied from main_screen for consistency)
+  // Define High-Contrast Retro/Military-themed colors
   static const Color primaryButtonColor = Color(0xFF38761D); // Bright Jungle Green
   static const Color secondaryButtonColor = Color(0xFF1E3F2A); // Deep Forest Green
   static const Color highlightColor = Color(0xFFDAA520); // Goldenrod
@@ -94,28 +80,30 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _playBackgroundMusic() async {
-    // Note: The logic for turning music ON/OFF (from settings_screen.dart) 
-    // should be implemented here using SharedPreferences to check the preference.
-    // For now, it plays by default.
-    await _audioPlayer.setReleaseMode(ReleaseMode.loop);
-    await _audioPlayer.play(AssetSource('audio/background_track.mp3'));
+    final prefs = await SharedPreferences.getInstance();
+    final isMusicEnabled = prefs.getBool('isMusicEnabled') ?? true; // Default to ON
+
+    if (isMusicEnabled) {
+      await _audioPlayer.setReleaseMode(ReleaseMode.loop);
+      // Ensure you use a valid AssetSource path
+      await _audioPlayer.play(AssetSource('audio/background_track.mp3'));
+    } else {
+      await _audioPlayer.stop();
+    }
   }
 
   void _navigateTo(Widget page) {
-    Navigator.of(context).push(_createFadeRoute(page)).then((_) {
-      // Re-check auth status when returning to MainScreen
+    // Stop and immediately replay music when returning to ensure the latest setting is applied
+    _audioPlayer.stop();
+    // 🚨 EDITED: Replaced custom route with standard MaterialPageRoute
+    Navigator.of(context).push(MaterialPageRoute(builder: (context) => page)).then((_) {
       _checkAuthStatus();
+      _playBackgroundMusic();
     });
   }
 
   void _handleAuthAction() {
-    if (_authStatus == AuthStatus.loggedIn) {
-      // Logout logic is now handled in ProfileScreen via Settings
-      // For now, this button navigates to the Login/Register screen for non-logged-in users
-      _navigateTo(const LoginScreen()); 
-    } else {
-      _navigateTo(const LoginScreen());
-    }
+    _navigateTo(const LoginScreen()); 
   }
 
   Widget _buildThemedButton({
@@ -155,9 +143,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    final loginButtonText = _authStatus == AuthStatus.loggedIn ? 'LOGOUT' : 'LOGIN / REGISTER';
-    final loginButtonIcon = _authStatus == AuthStatus.loggedIn ? Icons.exit_to_app : Icons.login;
-
     if (_authStatus == AuthStatus.loading) {
       return Scaffold(
         body: Container(
@@ -175,7 +160,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             decoration: BoxDecoration(
               color: secondaryButtonColor,
               image: DecorationImage(
-                image: const AssetImage('assets/main.png'), // Replace with your actual asset path
+                image: const AssetImage('assets/background.png'), 
                 fit: BoxFit.cover,
                 colorFilter: ColorFilter.mode(
                   Colors.black.withOpacity(0.7),
@@ -212,7 +197,6 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                   _buildThemedButton(
                     text: 'START GAME',
                     icon: Icons.shield,
-                    // ⚠️ UPDATED: Pass currentUser and authService to GameScreen
                     onPressed: () {
                        if (_currentUser != null) {
                         _navigateTo(GameScreen(
@@ -220,28 +204,27 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                           authService: _authService,
                         ));
                       } else {
-                        // Handle guest access if applicable, or redirect to login
+                        // Redirect to login if a player attempts to start the game while logged out
                         _navigateTo(const LoginScreen());
                       }
                     },
                     isPrimary: true,
                   ),
 
-                  // LOGIN / LOGOUT Button (Secondary)
-                  // This now acts as LOGIN/REGISTER. LOGOUT is moved to Settings/Profile.
-                  _buildThemedButton(
-                    text: loginButtonText,
-                    icon: loginButtonIcon,
-                    onPressed: _handleAuthAction, 
-                    isPrimary: false,
-                  ),
+                  // LOGIN / REGISTER Button (Secondary) - Only show if not logged in
+                  if (_authStatus == AuthStatus.guest)
+                    _buildThemedButton(
+                      text: 'LOGIN / REGISTER',
+                      icon: Icons.login,
+                      onPressed: _handleAuthAction, 
+                      isPrimary: false,
+                    ),
 
                   // PROFILE Button (Secondary - Visible ONLY when logged in)
                   if (_authStatus == AuthStatus.loggedIn) 
                     _buildThemedButton(
                       text: 'PROFILE',
                       icon: Icons.person,
-                      // ⚠️ UPDATED: Pass currentUser and authService to ProfileScreen
                       onPressed: () => _navigateTo(const ProfileScreen()), 
                       isPrimary: false,
                     ),

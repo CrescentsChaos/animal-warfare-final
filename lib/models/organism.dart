@@ -52,6 +52,26 @@ class Organism {
       description: json['description'] as String,
     );
   }
+
+  // FIX: Added the missing toJson method for JSON serialization.
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'scientific_name': scientificName, 
+      'habitat': habitat,
+      'drops': drops,
+      'attack': attack,
+      'defense': defense,
+      'health': health,
+      'speed': speed,
+      'abilities': abilities,
+      'category': category,
+      'moves': moves,
+      'sprite': sprite,
+      'rarity': rarity,
+      'description': description,
+    };
+  }
 }
 
 

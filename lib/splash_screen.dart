@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:animal_warfare/main_screen.dart';
 import 'package:audioplayers/audioplayers.dart'; 
-import 'package:animal_warfare/utils/transitions.dart'; // ⬅️ NEW: Import transitions utility
+// REMOVED: import 'package:animal_warfare/utils/transitions.dart'; 
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -11,15 +11,14 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-// ⬅️ UPDATED: Add WidgetsBindingObserver mixin
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late AnimationController _animationController;
   late Animation<double> _opacityAnimation;
   
-  // ⬅️ NEW: Declare the audio player instance
+  // NEW: Declare the audio player instance
   late AudioPlayer _audioPlayer;
-  // ⬅️ NEW: Flag to track if the audio was playing before pause
+  // NEW: Flag to track if the audio was playing before pause
   bool _wasPlayingBeforePause = false;
   
   // Flag to ensure pre-caching runs only once
@@ -28,33 +27,45 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
-    // ⬅️ NEW: Register the observer for app lifecycle changes
+    // NEW: Register the observer for app lifecycle changes
     WidgetsBinding.instance.addObserver(this); 
     
-    // ⬅️ NEW: Initialize Audio Player and start music
+    // 🚨 MODIFIED: Set the screen to Immersive/Full-screen mode
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+
+    // NEW: Initialize Audio Player and start music
     _audioPlayer = AudioPlayer();
     _playBackgroundMusic();
 
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 700),
+      duration: const Duration(seconds: 1),
     )..repeat(reverse: true);
 
     _opacityAnimation = Tween(begin: 0.0, end: 1.0).animate(_animationController);
-
-    // Pre-cache images after the first build cycle
+    
+    // Listen for the first frame to precache assets
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _precacheAssets();
     });
   }
 
-  // ⬅️ NEW: Override to handle app lifecycle changes
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
+    super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.paused) {
-      _pauseMusic(true);
+      final playerState = await _audioPlayer.state;
+      if (playerState == PlayerState.playing) {
+        _wasPlayingBeforePause = true;
+        await _audioPlayer.pause();
+      }
     } else if (state == AppLifecycleState.resumed) {
-      _resumeMusic();
+      if (_wasPlayingBeforePause) {
+        // 🚨 EDITED: Re-apply immersive mode on resume, as system might have restored UI
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+        await _audioPlayer.resume();
+        _wasPlayingBeforePause = false;
+      }
     }
   }
 
@@ -62,77 +73,72 @@ class _SplashScreenState extends State<SplashScreen>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _animationController.dispose();
-    _audioPlayer.dispose(); 
+    _audioPlayer.dispose();
     super.dispose();
   }
   
-  // ⬅️ NEW: Audio control methods
   Future<void> _playBackgroundMusic() async {
     await _audioPlayer.setReleaseMode(ReleaseMode.loop);
-    await _audioPlayer.play(AssetSource('audio/splash_theme.mp3')); 
+    await _audioPlayer.play(AssetSource('audio/login_background.mp3'));
   }
-
-  void _pauseMusic(bool rememberState) async {
-    if (rememberState) {
-      final state = await _audioPlayer.state;
-      _wasPlayingBeforePause = state == PlayerState.playing;
-    }
-    await _audioPlayer.pause();
-  }
-
-  void _resumeMusic() async {
-    if (_wasPlayingBeforePause) {
-      await _audioPlayer.resume();
-      _wasPlayingBeforePause = false;
-    }
-  }
-
-  // Pre-cache all necessary assets to prevent lag during the first render
-  void _precacheAssets() {
+  
+  // Precache all necessary images and JSON data
+  Future<void> _precacheAssets() async {
     if (_assetsPrecached) return;
+
+    final BuildContext? currentContext = context;
+    if (currentContext == null) return;
     
-    // Main Logo
-    precacheImage(const AssetImage('assets/logo.png'), context);
-    // Background Image
-    precacheImage(const AssetImage('assets/main.png'), context);
-    // Cloud transition image
-    precacheImage(const AssetImage('assets/cloud_transition.png'), context); 
+    // 1. Precache main assets
+    await precacheImage(const AssetImage('assets/main.png'), currentContext);
+    await precacheImage(const AssetImage('assets/logo.png'), currentContext);
+    
+    // 2. Precache other common assets (add any other images used in the first few screens)
+    // Example: await precacheImage(const AssetImage('assets/default_avatar.png'), currentContext);
+
+    // 3. Load and cache JSON data (Optional, for very fast access)
+    // await rootBundle.loadString('assets/data/organisms.json');
     
     _assetsPrecached = true;
   }
-  
-  // ⬅️ UPDATED: Use the cloud transition route
-  void _navigateToMainScreen() {
-    if (mounted) {
-      Navigator.of(context).pushReplacement(
-        createCloudTransitionRoute(const MainScreen()), // ⬅️ Use the Cloud Transition!
-      );
-      _audioPlayer.stop(); // Stop the splash music
-    }
+
+  void _navigateToMain() {
+    // 🚨 MODIFIED: Revert to default System UI visibility before navigating
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+
+    // Stop and immediately dispose of the audio player
+    _audioPlayer.stop();
+    _audioPlayer.dispose();
+    
+    // 🚨 EDITED: Replaced custom route with standard MaterialPageRoute
+    Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const MainScreen())
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    // Set system UI to be fully immersive (hides status/nav bars)
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-
     return Scaffold(
       body: GestureDetector(
-        onTap: _navigateToMainScreen,
+        onTap: _navigateToMain,
         child: Stack(
           children: [
             // 1. Background Image
-            Positioned.fill(
-              child: Image.asset(
-                'assets/background.png', 
-                fit: BoxFit.cover,
-                // Apply a mild overlay to ensure text visibility
-                color: Colors.black.withOpacity(0.5), 
-                colorBlendMode: BlendMode.darken,
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.black,
+                image: DecorationImage(
+                  image: const AssetImage('assets/background.png'),
+                  fit: BoxFit.cover,
+                  colorFilter: ColorFilter.mode(
+                    Colors.black.withOpacity(0.7),
+                    BlendMode.darken,
+                  ),
+                ),
               ),
             ),
-            
-            // 2. Centered Content (Logo and Text)
+
+            // 2. Center Content (Logo and Tap to Continue)
             Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,

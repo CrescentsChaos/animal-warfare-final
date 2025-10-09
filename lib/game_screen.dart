@@ -180,7 +180,7 @@ class _GameScreenState extends State<GameScreen> {
 
                   // Explore Biome Button
                   _buildThemedButton(
-                    text: 'EXPLORE BIOME',
+                    text: 'EXPLORE BIOMES',
                     icon: Icons.map,
                     // PASSING REQUIRED WIDGET PROPERTIES
                     onPressed: () => _navigateTo(ExploreScreen(
@@ -203,7 +203,7 @@ class _GameScreenState extends State<GameScreen> {
                   ), 
                   // Quiz Button
                   _buildThemedButton(  
-                    text: 'BATTLE QUIZ',
+                    text: 'ANIMAL QUIZ',
                     icon: Icons.quiz,
                     // PASSING REQUIRED WIDGET PROPERTIES (Assuming QuizScreen needs them)
                     onPressed: () => _navigateTo(QuizScreen(
