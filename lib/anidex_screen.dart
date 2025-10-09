@@ -400,33 +400,16 @@ class _AnidexScreenState extends State<AnidexScreen> {
               color: const Color.fromARGB(255, 41, 48, 68).withOpacity(0.5),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: isDiscovered && organism.sprite.isNotEmpty 
-                ? Image.network(
-                    organism.sprite,
-                    height: 200, 
-                    width: 400, 
-                    fit: BoxFit.contain,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      
-                      // Placeholder
-                      return Image.asset(
-                        'assets/placeholder_400x200.png', 
-                        height: 200, 
-                        width: 400,  
-                        fit: BoxFit.contain, 
-                      );
-                    },
-                    errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image, color: Colors.red, size: 80),
-                  )
-                // REPLACED: Black/Monochrome Placeholder for undiscovered unit
-                : buildSilhouetteSprite( // <--- MODIFIED HERE
-                    imageUrl: organism.sprite, // Use the actual sprite URL
-                    silhouetteColor: Colors.black, // Apply a solid black color
-                    height: 200, 
-                    width: 400, 
-                    fit: BoxFit.contain,
-                  ),
+            // START MODIFIED IMAGE LOADING BLOCK
+            child: _OrganismSpriteDisplay(
+              organism: organism,
+              isDiscovered: isDiscovered,
+              silhouetteColor: Colors.black, // Use black for the silhouette
+              height: 200,
+              width: 400,
+              fit: BoxFit.contain,
+            ),
+            // END MODIFIED IMAGE LOADING BLOCK
           ),
           // Name
           Text(
@@ -682,5 +665,141 @@ class _AnidexScreenState extends State<AnidexScreen> {
         ),
       ),
     );
+  }
+}
+
+// ----------------------------------------------------------------------
+// NEW WIDGET: _OrganismSpriteDisplay
+// Handles the local asset check and network fallback for the Anidex screen.
+// This must be placed OUTSIDE the main AnidexScreenState class.
+// ----------------------------------------------------------------------
+class _OrganismSpriteDisplay extends StatefulWidget {
+  final Organism organism;
+  final bool isDiscovered;
+  final Color silhouetteColor;
+  final double height;
+  final double width;
+  final BoxFit fit;
+
+  const _OrganismSpriteDisplay({
+    required this.organism,
+    required this.isDiscovered,
+    required this.silhouetteColor,
+    this.height = 200,
+    this.width = 400,
+    this.fit = BoxFit.contain,
+  });
+
+  @override
+  __OrganismSpriteDisplayState createState() => __OrganismSpriteDisplayState();
+}
+
+class __OrganismSpriteDisplayState extends State<_OrganismSpriteDisplay> {
+  // null initially, 'local' if found, 'network' if not found locally
+  String? _imageSourceType;
+  
+  // The determined path/url to use
+  late String _imagePath;
+
+  @override
+  void initState() {
+    super.initState();
+    _determineImageSource();
+  }
+  
+  // Helper to construct the local path
+  String _getLocalPath() {
+    // Organism name logic: lowercase and replace spaces with underscores.
+    final fileName = widget.organism.name.toLowerCase().replaceAll(' ', '_');
+    return 'assets/sprites/$fileName.png';
+  }
+  
+  @override
+  void didUpdateWidget(covariant _OrganismSpriteDisplay oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.organism.name != widget.organism.name) {
+      // Reset state if the organism changes
+      _imageSourceType = null;
+      _determineImageSource();
+    }
+  }
+
+  Future<void> _determineImageSource() async {
+    final localPath = _getLocalPath();
+    
+    // 1. Try to load the local asset
+    try {
+      // Use rootBundle.load to check for existence without rendering
+      await rootBundle.load(localPath);
+      // If load succeeds, the asset exists
+      if (mounted) {
+        setState(() {
+          _imageSourceType = 'local';
+          _imagePath = localPath;
+        });
+      }
+    } catch (e) {
+      // 2. If load fails (asset not found), fallback to network
+      if (mounted) {
+        setState(() {
+          _imageSourceType = 'network';
+          _imagePath = widget.organism.sprite; // Network URL
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_imageSourceType == null) {
+      // Show a simple loading indicator while determining the source
+      return SizedBox(
+        height: widget.height,
+        child: const Center(child: CircularProgressIndicator(color: Colors.white)),
+      );
+    }
+    
+    final String source = _imagePath;
+
+    if (widget.isDiscovered) {
+      // Discovered: Normal Image Display with local fallback logic
+      if (_imageSourceType == 'local') {
+        return Image.asset(
+          source, 
+          height: widget.height, 
+          width: widget.width, 
+          fit: widget.fit,
+        );
+      } else {
+        // Network Image (Fallback)
+        return Image.network(
+          source, 
+          height: widget.height, 
+          width: widget.width, 
+          fit: widget.fit,
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            // Use a loading indicator instead of the old placeholder
+            return SizedBox(
+              height: widget.height,
+              child: const Center(child: CircularProgressIndicator(color: Colors.white)),
+            );
+          },
+          errorBuilder: (context, error, stackTrace) => 
+            // Fallback for network error (if sprite is missing entirely)
+            const Icon(Icons.broken_image, color: Colors.red, size: 80),
+        );
+      }
+    } else {
+      // Undiscovered: Silhouette Display using the determined image source
+      // (Assumes buildSilhouetteSprite is globally available)
+      return buildSilhouetteSprite( 
+        imageUrl: source, // Pass the determined local path or network URL
+        silhouetteColor: widget.silhouetteColor,
+        height: widget.height, 
+        width: widget.width, 
+        fit: widget.fit,
+      );
+    }
   }
 }

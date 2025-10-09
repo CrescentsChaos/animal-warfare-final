@@ -85,6 +85,12 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
     final fileName = biomeName.toLowerCase().replaceAll(' ', '_');
     return 'assets/biomes/$fileName-bg.png';
   }
+  
+  // Helper to get the organism's local sprite path
+  String _getOrganismLocalAssetPath(String organismName) {
+    final fileName = organismName.toLowerCase().replaceAll(' ', '_');
+    return 'assets/sprites/$fileName.png';
+  }
 
   // Helper to get the music path
   String _getMusicPath(String biomeName) {
@@ -469,31 +475,14 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
           Divider(color: _rarityHighlightColor, thickness: 2), 
           const SizedBox(height: 10),
 
-          // Organism Sprite (Conditional)
-          isNameVisible
-          ? Image.network(
-              organism.sprite, 
-              height: 200, 
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) return child;
-                return Image.asset(
-                  'assets/placeholder_400x200.png', 
-                  height: 200, 
-                  width: 400, 
-                  fit: BoxFit.contain, 
-                );
-              },
-              errorBuilder: (context, error, stackTrace) => 
-                Image.asset('assets/placeholder_400x200.png', height: 120),
-            )
-          // REPLACED: Placeholder for undiscovered with buildSilhouetteSprite
-          : buildSilhouetteSprite( 
-              imageUrl: organism.sprite,
-              silhouetteColor: Colors.black, // Use black for the silhouette
-              height: 200, 
-              width: 400, 
-              fit: BoxFit.contain,
-            ), // <--- MODIFIED HERE
+          // Organism Sprite (Conditional) - REPLACED WITH NEW WIDGET
+          _OrganismSpriteDisplay(
+            organism: organism,
+            isNameVisible: isNameVisible,
+            silhouetteColor: Colors.black, // Use black for the silhouette
+            height: 200,
+            fit: BoxFit.contain,
+          ), // <--- MODIFIED HERE
           
           const SizedBox(height: 12),
           
@@ -638,5 +627,145 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
         ],
       ),
     );
+  }
+}
+
+// ----------------------------------------------------------------------
+// NEW WIDGET: _OrganismSpriteDisplay
+// Handles the local asset check and network fallback.
+// This must be placed OUTSIDE the main BiomeDetailScreenState class.
+// ----------------------------------------------------------------------
+class _OrganismSpriteDisplay extends StatefulWidget {
+  final Organism organism;
+  final bool isNameVisible;
+  final Color silhouetteColor;
+  final double height;
+  final BoxFit fit;
+
+  const _OrganismSpriteDisplay({
+    required this.organism,
+    required this.isNameVisible,
+    required this.silhouetteColor,
+    this.height = 200,
+    this.fit = BoxFit.contain,
+  });
+
+  @override
+  __OrganismSpriteDisplayState createState() => __OrganismSpriteDisplayState();
+}
+
+class __OrganismSpriteDisplayState extends State<_OrganismSpriteDisplay> {
+  // null initially, 'local' if found, 'network' if not found locally
+  String? _imageSourceType;
+  
+  // The determined path/url to use
+  late String _imagePath;
+
+  @override
+  void initState() {
+    super.initState();
+    _determineImageSource();
+  }
+  
+  // Helper to construct the local path (copied from _BiomeDetailScreenState)
+  String _getLocalPath() {
+    final fileName = widget.organism.name.toLowerCase().replaceAll(' ', '_');
+    return 'assets/sprites/$fileName.png';
+  }
+  
+  // Call this if the organism changes, but in this case, the widget is
+  // rebuilt with a new organism, so the key is fine.
+  @override
+  void didUpdateWidget(covariant _OrganismSpriteDisplay oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.organism.name != widget.organism.name) {
+      _imageSourceType = null;
+      _determineImageSource();
+    }
+  }
+
+  Future<void> _determineImageSource() async {
+    final localPath = _getLocalPath();
+    
+    // 1. Try to load the local asset
+    try {
+      // Use rootBundle.load to check for existence without rendering
+      await rootBundle.load(localPath);
+      // If load succeeds, the asset exists
+      if (mounted) {
+        setState(() {
+          _imageSourceType = 'local';
+          _imagePath = localPath;
+        });
+      }
+    } catch (e) {
+      // 2. If load fails (asset not found), fallback to network
+      if (mounted) {
+        // debugPrint('Local asset not found for ${widget.organism.name}. Falling back to network. Error: $e');
+        setState(() {
+          _imageSourceType = 'network';
+          _imagePath = widget.organism.sprite; // Network URL
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_imageSourceType == null) {
+      // Show a simple placeholder while determining the source
+      return SizedBox(
+        height: widget.height,
+        child: const Center(child: CircularProgressIndicator(color: Colors.white)),
+      );
+    }
+    
+    // Use the determined path/URL
+    final String source = _imagePath;
+
+    if (widget.isNameVisible) {
+      // Normal Image Display
+      if (_imageSourceType == 'local') {
+        return Image.asset(
+          source, 
+          height: widget.height, 
+          width: 400, 
+          fit: widget.fit,
+        );
+      } else {
+        // Network Image
+        return Image.network(
+          source, 
+          height: widget.height, 
+          width: 400, 
+          fit: widget.fit,
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            // Use a loading indicator for network fetching
+            return SizedBox(
+              height: widget.height,
+              child: const Center(child: CircularProgressIndicator(color: Colors.white)),
+            );
+          },
+          errorBuilder: (context, error, stackTrace) => 
+            // Fallback for network error (Can't load sprite at all)
+            SizedBox(
+              height: widget.height,
+              child: Center(
+                child: Text('IMAGE ERROR', style: TextStyle(color: Colors.red, fontFamily: 'PressStart2P', fontSize: 12)),
+              ),
+            ),
+        );
+      }
+    } else {
+      // Silhouette Display (Assumes buildSilhouetteSprite is globally available)
+      return buildSilhouetteSprite( 
+        imageUrl: source, // Pass the determined local path or network URL
+        silhouetteColor: widget.silhouetteColor,
+        height: widget.height, 
+        width: 400, 
+        fit: widget.fit,
+      );
+    }
   }
 }
