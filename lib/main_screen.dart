@@ -1,3 +1,5 @@
+// lib/main_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:animal_warfare/login_screen.dart'; 
 import 'package:animal_warfare/profile_screen.dart';
@@ -37,25 +39,43 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   final LocalAuthService _authService = LocalAuthService();
-  AuthStatus _authStatus = AuthStatus.loading; // Start in loading state
-  UserData? _currentUser; 
+  AuthStatus _authStatus = AuthStatus.loading;
+  UserData? _currentUser;
   
   late AudioPlayer _audioPlayer; 
   bool _wasPlayingBeforePause = false; 
 
-  // Define High-Contrast Retro/Military-themed colors
+  // Define High-Contrast Retro/Military-themed colors (Copied from main_screen for consistency)
   static const Color primaryButtonColor = Color(0xFF38761D); // Bright Jungle Green
   static const Color secondaryButtonColor = Color(0xFF1E3F2A); // Deep Forest Green
-  static const Color highlightColor = Color(0xFFDAA520); // Goldenrod (Text/Border Highlight)
+  static const Color highlightColor = Color(0xFFDAA520); // Goldenrod
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addObserver(this); 
     
-    _audioPlayer = AudioPlayer();
+    _audioPlayer = AudioPlayer(); 
+    _checkAuthStatus();
     _playBackgroundMusic();
-    _checkLoginStatus();
+  }
+
+  // Override to handle app lifecycle changes
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.paused) {
+      final playerState = await _audioPlayer.state;
+      if (playerState == PlayerState.playing) {
+        _wasPlayingBeforePause = true;
+        await _audioPlayer.pause();
+      }
+    } else if (state == AppLifecycleState.resumed) {
+      if (_wasPlayingBeforePause) {
+        await _audioPlayer.resume();
+        _wasPlayingBeforePause = false;
+      }
+    }
   }
 
   @override
@@ -64,37 +84,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     _audioPlayer.dispose();
     super.dispose();
   }
-  
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) async {
-    super.didChangeAppLifecycleState(state);
-    if (state == AppLifecycleState.paused) {
-      _wasPlayingBeforePause = _audioPlayer.state == PlayerState.playing;
-      await _audioPlayer.pause();
-    } else if (state == AppLifecycleState.resumed) {
-      if (_wasPlayingBeforePause) {
-        await _audioPlayer.resume();
-      }
-    }
-  }
 
-  Future<void> _playBackgroundMusic() async {
-    // Assuming audio file is at assets/audio/main_theme.mp3
-    try {
-      await _audioPlayer.setSourceAsset('audio/main_theme.mp3'); 
-      await _audioPlayer.setReleaseMode(ReleaseMode.loop); 
-      await _audioPlayer.resume();
-    } catch (e) {
-      if (mounted) {
-        // Simple error handling for missing audio file
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Warning: Could not play main screen music.')),
-        );
-      }
-    }
-  }
-
-  Future<void> _checkLoginStatus() async {
+  Future<void> _checkAuthStatus() async {
     final user = await _authService.getCurrentUser();
     setState(() {
       _currentUser = user;
@@ -102,98 +93,80 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     });
   }
 
+  Future<void> _playBackgroundMusic() async {
+    // Note: The logic for turning music ON/OFF (from settings_screen.dart) 
+    // should be implemented here using SharedPreferences to check the preference.
+    // For now, it plays by default.
+    await _audioPlayer.setReleaseMode(ReleaseMode.loop);
+    await _audioPlayer.play(AssetSource('audio/background_track.mp3'));
+  }
+
   void _navigateTo(Widget page) {
-    _audioPlayer.pause();
-    // Navigate using the custom fade transition
     Navigator.of(context).push(_createFadeRoute(page)).then((_) {
-      // Refresh status and resume music when returning
-      _checkLoginStatus(); 
-      _audioPlayer.resume(); 
+      // Re-check auth status when returning to MainScreen
+      _checkAuthStatus();
     });
   }
-  
+
   void _handleAuthAction() {
     if (_authStatus == AuthStatus.loggedIn) {
-      // Logout
-      _authService.logout().then((_) {
-        // After logout, refresh the status
-        _checkLoginStatus(); 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Logged out successfully.')),
-        );
-      });
+      // Logout logic is now handled in ProfileScreen via Settings
+      // For now, this button navigates to the Login/Register screen for non-logged-in users
+      _navigateTo(const LoginScreen()); 
     } else {
-      // Navigate to Login/Register screen
       _navigateTo(const LoginScreen());
     }
   }
 
   Widget _buildThemedButton({
-    required String text, 
-    required IconData icon, 
-    required VoidCallback onPressed, 
-    required bool isPrimary
+    required String text,
+    required IconData icon,
+    required VoidCallback onPressed,
+    required bool isPrimary,
   }) {
-    // Determine the color scheme based on primary/secondary
-    final Color color = isPrimary ? primaryButtonColor : secondaryButtonColor;
+    final Color buttonColor = isPrimary ? primaryButtonColor : secondaryButtonColor;
     final Color textColor = isPrimary ? Colors.white : highlightColor;
-    final Color borderColor = highlightColor;
 
     return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      decoration: BoxDecoration(
-        color: color,
-        border: Border.all(color: borderColor, width: 2.0),
-        borderRadius: BorderRadius.circular(4.0), 
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.6),
-            offset: const Offset(4, 4),
-            blurRadius: 0,
+      margin: const EdgeInsets.symmetric(vertical: 10.0),
+      child: ElevatedButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon, color: textColor),
+        label: Text(
+          text,
+          style: TextStyle(
+            color: textColor,
+            fontFamily: 'PressStart2P',
+            fontSize: 16,
           ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onPressed,
-          borderRadius: BorderRadius.circular(4.0),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, color: highlightColor, size: 20),
-                const SizedBox(width: 10),
-                Text(
-                  text,
-                  style: TextStyle(
-                    color: textColor,
-                    fontSize: 16,
-                    fontFamily: 'PressStart2P',
-                  ),
-                ),
-              ],
-            ),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: buttonColor.withOpacity(0.9),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(5.0),
+            side: BorderSide(color: highlightColor, width: 2.0),
           ),
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 30),
+          minimumSize: const Size(double.infinity, 70),
         ),
       ),
     );
   }
-  
+
   @override
   Widget build(BuildContext context) {
+    final loginButtonText = _authStatus == AuthStatus.loggedIn ? 'LOGOUT' : 'LOGIN / REGISTER';
+    final loginButtonIcon = _authStatus == AuthStatus.loggedIn ? Icons.exit_to_app : Icons.login;
+
     if (_authStatus == AuthStatus.loading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator(color: highlightColor)),
+      return Scaffold(
+        body: Container(
+          color: secondaryButtonColor,
+          child: const Center(child: CircularProgressIndicator(color: highlightColor)),
+        ),
       );
     }
     
-    // Determine text and icon for the login/logout button
-    final String loginButtonText = _authStatus == AuthStatus.loggedIn ? 'LOGOUT' : 'LOGIN / REGISTER';
-    final IconData loginButtonIcon = _authStatus == AuthStatus.loggedIn ? Icons.exit_to_app : Icons.login;
-
     return Scaffold(
       body: Stack(
         children: [
@@ -202,7 +175,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             decoration: BoxDecoration(
               color: secondaryButtonColor,
               image: DecorationImage(
-                image: const AssetImage('assets/main.png'), 
+                image: const AssetImage('assets/main.png'), // Replace with your actual asset path
                 fit: BoxFit.cover,
                 colorFilter: ColorFilter.mode(
                   Colors.black.withOpacity(0.7),
@@ -212,49 +185,50 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
             ),
           ),
           
+          // Content
           Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.all(30.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
                   // Title
-                  const Text(
+                  Text(
                     'ANIMAL WARFARE',
                     textAlign: TextAlign.center,
                     style: TextStyle(
+                      fontSize: 32,
                       color: highlightColor,
-                      fontSize: 28,
                       fontFamily: 'PressStart2P',
-                      height: 1.5,
                       shadows: [
-                        Shadow(
-                          color: Color(0xFF8B0000),
-                          blurRadius: 5.0,
-                          offset: Offset(2, 2)
-                        )
-                      ]
+                        Shadow(color: Colors.black.withOpacity(0.9), blurRadius: 4, offset: const Offset(3, 3))
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 60),
+                  const SizedBox(height: 50),
 
-                  // START GAME Button (Primary)
-                  // FIX: Pass currentUser and authService to GameScreen
+                  // GAME Button (Primary)
                   _buildThemedButton(
                     text: 'START GAME',
-                    icon: Icons.play_arrow,
+                    icon: Icons.shield,
+                    // ⚠️ UPDATED: Pass currentUser and authService to GameScreen
                     onPressed: () {
-                      // Ensure we have user data if logged in, otherwise pass null or handle as guest
-                      final userToPass = _currentUser ?? UserData(username: 'Guest', password: '');
-                      _navigateTo(GameScreen(
-                        currentUser: userToPass, // Pass the user data
-                        authService: _authService, // Pass the service
-                      ));
+                       if (_currentUser != null) {
+                        _navigateTo(GameScreen(
+                          currentUser: _currentUser!, 
+                          authService: _authService,
+                        ));
+                      } else {
+                        // Handle guest access if applicable, or redirect to login
+                        _navigateTo(const LoginScreen());
+                      }
                     },
                     isPrimary: true,
                   ),
 
                   // LOGIN / LOGOUT Button (Secondary)
+                  // This now acts as LOGIN/REGISTER. LOGOUT is moved to Settings/Profile.
                   _buildThemedButton(
                     text: loginButtonText,
                     icon: loginButtonIcon,
@@ -267,6 +241,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     _buildThemedButton(
                       text: 'PROFILE',
                       icon: Icons.person,
+                      // ⚠️ UPDATED: Pass currentUser and authService to ProfileScreen
                       onPressed: () => _navigateTo(const ProfileScreen()), 
                       isPrimary: false,
                     ),

@@ -1,9 +1,14 @@
+// lib/profile_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:animal_warfare/local_auth_service.dart';
 import 'package:animal_warfare/edit_profile_screen.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'dart:io';
-// REMOVED: import 'package:intl/intl.dart'; // FIX: This caused the dependency error
+
+// NEW IMPORT
+import 'package:animal_warfare/settings_screen.dart'; 
+// END NEW IMPORT
 
 // START NEW IMPORTS for Anidex Stat
 import 'dart:convert';
@@ -41,24 +46,45 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
   bool _isLoading = true;
   
   // START NEW: Organism list for total count
-  List<dynamic> _allOrganisms = []; 
+  List<dynamic> _allOrganisms = [];
   // END NEW
-
+  
   late AudioPlayer _audioPlayer; 
   bool _wasPlayingBeforePause = false; 
 
-  // Custom retro/military colors
+  // Custom retro/military colors (Copied from other screens for consistency)
   static const Color primaryButtonColor = Color(0xFF38761D); // Bright Jungle Green
+  static const Color secondaryButtonColor = Color(0xFF1E3F2A); // Deep Forest Green
   static const Color highlightColor = Color(0xFFDAA520); // Goldenrod
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    _audioPlayer = AudioPlayer();
-    _playBackgroundMusic();
-    // UPDATED: Load organisms alongside profile
-    _loadAllData();
+    WidgetsBinding.instance.addObserver(this); 
+    
+    _audioPlayer = AudioPlayer(); 
+    _loadUserProfile();
+    _loadOrganisms();
+  }
+
+  // Override to handle app lifecycle changes
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.paused) {
+      // Pause audio when app goes to background
+      final playerState = await _audioPlayer.state;
+      if (playerState == PlayerState.playing) {
+        _wasPlayingBeforePause = true;
+        await _audioPlayer.pause();
+      }
+    } else if (state == AppLifecycleState.resumed) {
+      // Resume audio when app returns to foreground if it was playing
+      if (_wasPlayingBeforePause) {
+        await _audioPlayer.resume();
+        _wasPlayingBeforePause = false;
+      }
+    }
   }
 
   @override
@@ -67,198 +93,129 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
     _audioPlayer.dispose();
     super.dispose();
   }
-  
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) async {
-    super.didChangeAppLifecycleState(state);
-    if (state == AppLifecycleState.paused) {
-      _wasPlayingBeforePause = _audioPlayer.state == PlayerState.playing;
-      await _audioPlayer.pause();
-    } else if (state == AppLifecycleState.resumed) {
-      if (_wasPlayingBeforePause) {
-        await _audioPlayer.resume();
+
+  Future<void> _loadOrganisms() async {
+    final String response = await rootBundle.loadString('assets/organisms.json');
+    setState(() {
+      _allOrganisms = json.decode(response);
+    });
+  }
+
+  Future<void> _loadUserProfile() async {
+    UserData? user = await _authService.getCurrentUser();
+    
+    // START NEW: Check for an existing avatar file
+    if (user != null && user.avatar.isNotEmpty && user.avatar != 'default') {
+      // Attempt to load the file to ensure it exists
+      File avatarFile = File(user.avatar);
+      if (await avatarFile.exists()) {
+        // Avatar file exists, update user object with the path
+        user = user.copyWith(avatar: avatarFile.path);
+      } else {
+        // File not found, reset to default
+        user = user.copyWith(avatar: 'default');
       }
     }
-  }
-
-  Future<void> _playBackgroundMusic() async {
-    // Assuming audio file is at assets/audio/main_theme.mp3
-    await _audioPlayer.setSourceAsset('audio/main_theme.mp3'); 
-    await _audioPlayer.setReleaseMode(ReleaseMode.loop); 
-    await _audioPlayer.resume();
-  }
-
-  // START NEW: Function to load all organism data for total count
-  Future<void> _loadAllOrganisms() async {
-    const String assetPath = 'assets/Organisms.json';
-    try {
-      final String response = await rootBundle.loadString(assetPath);
-      final List<dynamic> animalsData = json.decode(response);
-      _allOrganisms = animalsData;
-    } catch (e) {
-      if (mounted) {
-        // NOTE: Error handling is simple here, in a real app a better toast/dialog might be needed.
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading organism data. Error: $e')),
-        );
-      }
-    }
-  }
-  // END NEW
-
-  // UPDATED: Combine loading into one function
-  Future<void> _loadAllData() async {
-    setState(() => _isLoading = true);
+    // END NEW
     
-    final userFuture = _authService.getCurrentUser();
-    final organismFuture = _loadAllOrganisms(); // Load total organism count
-
-    await Future.wait([userFuture, organismFuture]);
-    
-    final user = await userFuture;
-
     setState(() {
       _currentUser = user;
       _isLoading = false;
     });
   }
 
-  void _navigateToEditScreen() {
-    _audioPlayer.pause();
-    
-    // NOTE: If EditProfileScreen requires 'initialUser' and 'onProfileUpdated', 
-    // you must define those parameters in EditProfileScreen. 
-    // For now, removing them to fix the "undefined named parameter" errors.
-    Navigator.of(context).push(_createFadeRoute(
-      const EditProfileScreen(), 
-    )).then((_) {
-      _audioPlayer.resume(); 
-      _loadAllData(); // Reload profile data (and organism count, though it won't change) upon return
-    });
-  }
-  
-  // FIX: Manual date formatter to replace DateFormat from intl package
-  String _formatLastPlayedDate(DateTime dateTime) {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    
-    final day = dateTime.day.toString().padLeft(2, '0');
-    final month = months[dateTime.month - 1];
-    final hour = dateTime.hour % 12 == 0 ? 12 : dateTime.hour % 12;
-    final minute = dateTime.minute.toString().padLeft(2, '0');
-    final ampm = dateTime.hour >= 12 ? 'PM' : 'AM';
-    
-    return '$month $day, $hour:$minute $ampm';
-  }
-
-
-  Widget _buildProfileDetail(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '$label:',
-            style: TextStyle(
-              color: highlightColor,
-              fontSize: 10,
-              fontFamily: 'PressStart2P',
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.brown.shade700.withOpacity(0.5),
-              border: Border.all(color: primaryButtonColor, width: 1),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              value,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontFamily: 'PressStart2P',
-              ),
-            ),
-          ),
-        ],
+  // Reusable button widget for consistency
+  Widget _buildThemedButton({
+    required String text,
+    required VoidCallback onPressed,
+  }) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: primaryButtonColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(5.0),
+          side: const BorderSide(color: highlightColor, width: 2.0),
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+        minimumSize: const Size(double.infinity, 50),
       ),
-    );
-  }
-
-  Widget _buildThemedButton({required String text, required VoidCallback onPressed}) {
-    // ... (button styling implementation remains the same)
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      decoration: BoxDecoration(
-        color: primaryButtonColor,
-        border: Border.all(color: highlightColor, width: 2.0),
-        borderRadius: BorderRadius.circular(4.0), 
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.6),
-            offset: const Offset(4, 4),
-            blurRadius: 0,
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onPressed,
-          borderRadius: BorderRadius.circular(4.0),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Center(
-              child: Text(
-                text,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontFamily: 'PressStart2P',
-                ),
-              ),
-            ),
-          ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: Colors.white,
+          fontFamily: 'PressStart2P',
+          fontSize: 14,
         ),
       ),
     );
   }
+
+  void _navigateToEditScreen() {
+    if (_currentUser != null) {
+      Navigator.of(context).push(_createFadeRoute(const EditProfileScreen())).then((_) {
+        // Reload profile when returning from the edit screen
+        _loadUserProfile();
+      });
+    }
+  }
   
-  // Widget to display individual quiz stat blocks
+  // NEW: Navigation function for the Settings Screen
+  void _navigateToSettingsScreen() {
+    if (_currentUser != null) {
+      Navigator.of(context).push(_createFadeRoute(SettingsScreen(
+        currentUser: _currentUser!, 
+        authService: _authService,
+      )));
+    }
+  }
+  // END NEW
+
+  Widget _buildProfileDetail(String label, String value) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10.0),
+      padding: const EdgeInsets.all(10.0),
+      decoration: BoxDecoration(
+        color: secondaryButtonColor.withOpacity(0.8),
+        border: Border.all(color: highlightColor, width: 1.0),
+        borderRadius: BorderRadius.circular(5.0),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          Text(
+            '$label:',
+            style: const TextStyle(
+              color: highlightColor,
+              fontFamily: 'PressStart2P',
+              fontSize: 12,
+            ),
+          ),
+          Text(
+            value.toUpperCase(),
+            style: const TextStyle(
+              color: Colors.white,
+              fontFamily: 'PressStart2P',
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildQuizStatBlock(String quizName, Map<String, dynamic> stats) {
     final attempts = stats['attempts'] as int? ?? 0;
     final correct = stats['correct'] as int? ?? 0;
-    final lastAttempt = stats['lastAttempt'] as String?;
-    
-    final accuracy = attempts > 0 ? (correct / attempts * 100).toStringAsFixed(1) : 'N/A';
-    String lastPlayed = 'Never';
-    if (lastAttempt != null) {
-      try {
-        final dateTime = DateTime.parse(lastAttempt);
-        // FIX: Use the internal formatter
-        lastPlayed = _formatLastPlayedDate(dateTime); 
-      } catch (_) {
-        lastPlayed = 'Unknown Date';
-      }
-    }
+    final accuracy = attempts > 0 ? ((correct / attempts) * 100).toStringAsFixed(1) : '0.0';
 
     return Container(
-      padding: const EdgeInsets.all(16.0),
-      margin: const EdgeInsets.only(bottom: 16.0),
+      margin: const EdgeInsets.only(bottom: 10.0),
+      padding: const EdgeInsets.all(10.0),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.6),
+        color: primaryButtonColor.withOpacity(0.8),
         border: Border.all(color: highlightColor, width: 1.0),
-        borderRadius: BorderRadius.circular(8.0),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.4),
-            offset: const Offset(2, 2),
-            blurRadius: 0,
-          ),
-        ],
+        borderRadius: BorderRadius.circular(5.0),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -266,41 +223,40 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
           Text(
             quizName.toUpperCase(),
             style: const TextStyle(
-              color: Color(0xFFDAA520), // Highlight color
-              fontSize: 14,
+              color: highlightColor,
               fontFamily: 'PressStart2P',
+              fontSize: 12,
             ),
           ),
-          const Divider(color: Color(0xFF1E3F2A), thickness: 1, height: 16),
-          _buildStatRow('Attempts', attempts.toString()),
-          _buildStatRow('Correct', correct.toString()),
-          _buildStatRow('Accuracy', '$accuracy%'),
-          _buildStatRow('Last Play', lastPlayed, smallFont: true),
+          const SizedBox(height: 10),
+          _buildDetailRow('ATTEMPTS', attempts.toString(), Colors.white),
+          _buildDetailRow('CORRECT', correct.toString(), Colors.white),
+          _buildDetailRow('ACCURACY', '$accuracy%', highlightColor),
         ],
       ),
     );
   }
-  
-  Widget _buildStatRow(String label, String value, {bool smallFont = false}) {
+
+  Widget _buildDetailRow(String label, String value, Color color) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      padding: const EdgeInsets.symmetric(vertical: 2.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             '$label:',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.8),
-              fontSize: 12,
+            style: const TextStyle(
+              color: Colors.white70,
               fontFamily: 'PressStart2P',
+              fontSize: 10,
             ),
           ),
           Text(
             value,
             style: TextStyle(
-              color: highlightColor,
-              fontSize: smallFont ? 10 : 14,
+              color: color,
               fontFamily: 'PressStart2P',
+              fontSize: 10,
             ),
           ),
         ],
@@ -312,57 +268,81 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
   Widget build(BuildContext context) {
     if (_isLoading || _currentUser == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Profile'), backgroundColor: Colors.green[900]),
-        body: const Center(child: CircularProgressIndicator(color: highlightColor)),
+        appBar: AppBar(
+          title: const Text('PROFILE'),
+          backgroundColor: secondaryButtonColor,
+          titleTextStyle: const TextStyle(color: highlightColor, fontFamily: 'PressStart2P', fontSize: 16),
+        ),
+        body: Container(
+          color: secondaryButtonColor,
+          child: const Center(child: CircularProgressIndicator(color: highlightColor)),
+        ),
       );
     }
-
+    
     final user = _currentUser!;
-    final avatarImage = user.avatar == 'default'
-        ? null
-        : FileImage(File(user.avatar)) as ImageProvider?;
-
-    // NEW: Calculate Anidex Stat
-    final discoveredCount = user.discoveredOrganisms.length;
     final totalCount = _allOrganisms.length;
-    final anidexStat = '$discoveredCount / $totalCount';
+    final discoveredCount = user.discoveredOrganisms.length;
+    final anidexStat = totalCount > 0 ? '$discoveredCount / $totalCount' : '0 / 0';
+
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile'),
-        backgroundColor: Colors.green[900],
+        title: const Text('PROFILE'),
+        backgroundColor: secondaryButtonColor,
+        titleTextStyle: const TextStyle(color: highlightColor, fontFamily: 'PressStart2P', fontSize: 16),
       ),
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
+          color: secondaryButtonColor,
           image: DecorationImage(
-            image: AssetImage('assets/main.png'),
+            image: const AssetImage('assets/main.png'), 
             fit: BoxFit.cover,
-            colorFilter: ColorFilter.mode(Colors.black54, BlendMode.darken), 
+            colorFilter: ColorFilter.mode(
+              Colors.black.withOpacity(0.7),
+              BlendMode.darken,
+            ),
           ),
         ),
+        padding: const EdgeInsets.all(20.0),
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              // 1. AVATAR (Display Only)
-              CircleAvatar(
-                radius: 80,
-                backgroundColor: highlightColor.withOpacity(0.2),
-                backgroundImage: avatarImage,
-                child: avatarImage == null
-                    ? const Icon(Icons.person, size: 50, color: highlightColor)
-                    : null,
+              // 1. AVATAR (Same logic as edit_profile_screen)
+              Center(
+                child: Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    color: primaryButtonColor.withOpacity(0.9),
+                    border: Border.all(color: highlightColor, width: 4.0),
+                    borderRadius: BorderRadius.circular(60.0),
+                    image: user.avatar.isNotEmpty && user.avatar != 'default'
+                        ? DecorationImage(
+                            image: FileImage(File(user.avatar)),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
+                  ),
+                  child: user.avatar.isEmpty || user.avatar == 'default'
+                      ? Center(
+                          child: Icon(
+                            Icons.person,
+                            color: highlightColor,
+                            size: 60,
+                          ),
+                        )
+                      : null,
+                ),
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 20),
 
-              // 2. USERNAME (Read-only Detail)
+              // 2. PROFILE DETAILS
               _buildProfileDetail('USERNAME', user.username),
-
-              // 3. GENDER (Read-only Detail)
               _buildProfileDetail('GENDER', user.gender),
 
-              // START NEW: ANIDEX IDENTIFIED STAT
+              // START NEW: Anidex Stat
               if (totalCount > 0)
                 _buildProfileDetail('ANIMALS IDENTIFIED', anidexStat),
               // END NEW
@@ -374,6 +354,15 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
                 text: 'EDIT PROFILE',
                 onPressed: _navigateToEditScreen,
               ),
+              
+              // NEW: SETTINGS BUTTON
+              const SizedBox(height: 20), 
+              _buildThemedButton(
+                text: 'SETTINGS',
+                onPressed: _navigateToSettingsScreen,
+              ),
+              // END NEW
+              
               const SizedBox(height: 40),
 
               // START: QUIZ STATS SECTION
