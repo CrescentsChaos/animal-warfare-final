@@ -669,7 +669,7 @@ class __OrganismSpriteDisplayState extends State<_OrganismSpriteDisplay> {
   
   // Helper to construct the local path (copied from _BiomeDetailScreenState)
   String _getLocalPath() {
-    final fileName = widget.organism.name.toLowerCase().replaceAll(' ', '_');
+    final fileName = widget.organism.name.toLowerCase().replaceAll(' ', '_').replaceAll("'", '_').replaceAll("-", '_');
     return 'assets/sprites/$fileName.png';
   }
   

@@ -671,7 +671,6 @@ class _AnidexScreenState extends State<AnidexScreen> {
 // ----------------------------------------------------------------------
 // NEW WIDGET: _OrganismSpriteDisplay
 // Handles the local asset check and network fallback for the Anidex screen.
-// This must be placed OUTSIDE the main AnidexScreenState class.
 // ----------------------------------------------------------------------
 class _OrganismSpriteDisplay extends StatefulWidget {
   final Organism organism;
@@ -710,7 +709,7 @@ class __OrganismSpriteDisplayState extends State<_OrganismSpriteDisplay> {
   // Helper to construct the local path
   String _getLocalPath() {
     // Organism name logic: lowercase and replace spaces with underscores.
-    final fileName = widget.organism.name.toLowerCase().replaceAll(' ', '_');
+    final fileName = widget.organism.name.toLowerCase().replaceAll(' ', '_').replaceAll("'", '_').replaceAll("-", '_');
     return 'assets/sprites/$fileName.png';
   }
   
@@ -794,12 +793,13 @@ class __OrganismSpriteDisplayState extends State<_OrganismSpriteDisplay> {
       // Undiscovered: Silhouette Display using the determined image source
       // (Assumes buildSilhouetteSprite is globally available)
       return buildSilhouetteSprite( 
-        imageUrl: source, // Pass the determined local path or network URL
-        silhouetteColor: widget.silhouetteColor,
-        height: widget.height, 
-        width: widget.width, 
-        fit: widget.fit,
-      );
-    }
+      imageUrl: source, // Pass the determined local path or network URL
+      silhouetteColor: widget.silhouetteColor,
+      organismName: widget.organism.name, // <-- THIS IS THE REQUIRED ADDITION
+      height: widget.height, 
+      width: widget.width, 
+      fit: widget.fit,
+    );
   }
+}
 }
