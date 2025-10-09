@@ -14,24 +14,25 @@ enum QuizType {
   spriteToScientific,
 }
 
-// Data structure for the animal facts (DELETED: Replaced by Organism)
-// class AnimalFact { ... }
-
-// Static database of animals (DELETED: Replaced by async loading)
-// const List<AnimalFact> _animalDatabase = [ ... ];
-
 class QuizGameScreen extends StatefulWidget {
   final QuizType quizType;
+  // FIX: Added currentUser and authService to match other screens
+  final UserData currentUser; 
+  final LocalAuthService authService;
 
-  const QuizGameScreen({super.key, required this.quizType});
+
+  const QuizGameScreen({
+    super.key, 
+    required this.quizType,
+    required this.currentUser,
+    required this.authService,
+  });
 
   @override
   State<QuizGameScreen> createState() => _QuizGameScreenState();
 }
 
 class _QuizGameScreenState extends State<QuizGameScreen> {
-  final LocalAuthService _authService = LocalAuthService();
-
   // State variables for the quiz
   Organism? _currentQuestion;
   List<Organism>? _currentOptions;
@@ -39,415 +40,326 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
   String? _correctAnswer;
   bool _isAnswered = false;
 
-  // State variables for data loading
+  // State variables for data
   List<Organism> _allOrganisms = [];
   bool _isLoading = true;
 
-  // Custom retro/military colors
+  // Constants
   static const Color primaryButtonColor = Color(0xFF38761D); // Bright Jungle Green
+  static const Color secondaryButtonColor = Color(0xFF1E3F2A); // Deep Forest Green
   static const Color highlightColor = Color(0xFFDAA520); // Goldenrod
-  static const Color correctGlowColor = Color(0xFF00FF00); // Bright Green Glow
-  static const Color wrongGlowColor = Color(0xFFFF0000); // Bright Red Glow
+  static const Color correctGlowColor = Color(0xFF00FF00); // Bright Green
+  static const Color wrongGlowColor = Color(0xFFFF0000); // Bright Red
+  
+  // Quiz parameters
+  static const int _numberOfOptions = 4;
+  static const int _delayAfterAnswerSeconds = 3;
 
   @override
   void initState() {
     super.initState();
-    _loadOrganismsAndGenerateQuestion();
+    _loadOrganisms().then((_) {
+      _startNewQuestion();
+    });
   }
 
-  // Function to load data from JSON asset
+  // ADDED: Utility function for responsive font size
+  double _responsiveFontSize(BuildContext context, double baseSize) {
+    // Get the screen width
+    final screenWidth = MediaQuery.of(context).size.width;
+    // Define a reference width (e.g., 400 pixels for a typical phone)
+    const double referenceWidth = 400.0;
+    // Calculate a scaling factor
+    final double scaleFactor = screenWidth / referenceWidth;
+    // Apply the scaling factor to the base size
+    return baseSize * scaleFactor;
+  }
+  // END ADDED
+
+  // --- Data Loading and Setup ---
   Future<void> _loadOrganisms() async {
     const String assetPath = 'assets/Organisms.json';
     try {
       final String response = await rootBundle.loadString(assetPath);
       final List<dynamic> animalsData = json.decode(response);
-
-      // Map the List of JSON objects to a List of Organism objects
-      final List<Organism> organisms = animalsData.map((json) => Organism.fromJson(json)).toList();
-
-      // Ensure we have enough data for the quiz (at least 4 options)
-      if (organisms.length < 4) {
-          throw Exception("Not enough organisms in JSON file (need at least 4)");
-      }
       
-      // Filter out organisms that don't have a sprite for the new quiz types
-      if (widget.quizType == QuizType.spriteToName || widget.quizType == QuizType.spriteToScientific) {
-        _allOrganisms = organisms.where((org) => org.sprite.isNotEmpty).toList();
-        if (_allOrganisms.length < 4) {
-          throw Exception("Not enough organisms with sprites for this quiz type (need at least 4)");
-        }
-      } else {
-        _allOrganisms = organisms;
-      }
-
+      _allOrganisms = animalsData.map((json) => Organism.fromJson(json)).toList();
+      setState(() { _isLoading = false; });
+      
     } catch (e) {
-      print('Error loading organisms for quiz: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading data: $e')),
+        );
+      }
     }
   }
 
-  // Combined loading and generation function
-  Future<void> _loadOrganismsAndGenerateQuestion() async {
-    await _loadOrganisms();
+  // --- Quiz Logic ---
+  void _startNewQuestion() {
+    if (_allOrganisms.isEmpty) return;
+
+    // FIX: Use widget.currentUser to access discovered organisms
+    final discoveredAnimals = _allOrganisms.where(
+        // Line 83: Fixed error by using widget.currentUser
+        (org) => widget.currentUser.discoveredOrganisms.contains(org.name) 
+    ).toList();
     
-    // Only set loading to false and generate question if we have data
-    if (_allOrganisms.isNotEmpty) {
-      setState(() {
-        _isLoading = false;
-      });
-      _generateQuestion();
-    } else {
-      // Handle the case where loading failed or data is insufficient
+    // Fallback: If no animals are discovered, use all animals for the quiz
+    final List<Organism> quizSource = discoveredAnimals.isNotEmpty ? discoveredAnimals : _allOrganisms;
+
+    if (quizSource.length < _numberOfOptions) {
+      // Not enough animals to create a quiz with 4 options
       setState(() {
         _isLoading = false;
         _currentQuestion = null;
       });
+      return;
     }
-  }
 
+    // 1. Select the question (correct answer)
+    final random = Random();
+    final questionIndex = random.nextInt(quizSource.length);
+    _currentQuestion = quizSource[questionIndex];
 
-  // Generates a new question and three random incorrect options
-  void _generateQuestion() {
-    // Only proceed if we have loaded data and have enough options
-    if (_allOrganisms.length < 4) return;
+    // 2. Select the decoy options
+    final List<Organism> options = [_currentQuestion!];
+    final Set<int> usedIndices = {questionIndex};
+
+    while (options.length < _numberOfOptions) {
+      int decoyIndex;
+      do {
+        decoyIndex = random.nextInt(quizSource.length);
+      } while (usedIndices.contains(decoyIndex));
+      
+      usedIndices.add(decoyIndex);
+      options.add(quizSource[decoyIndex]);
+    }
+
+    // 3. Determine correct answer string and shuffle options
+    _correctAnswer = _getAnswerText(_currentQuestion!);
+    options.shuffle();
 
     setState(() {
-      _isAnswered = false;
+      _currentOptions = options;
       _selectedAnswer = null;
-      _correctAnswer = null;
-
-      final random = Random();
-      // 1. Pick the correct answer from the loaded list
-      final correctOrganism = _allOrganisms[random.nextInt(_allOrganisms.length)];
-      _currentQuestion = correctOrganism;
-
-      // 2. Determine the correct answer string based on quiz type
-      switch (widget.quizType) {
-        case QuizType.scientificToCommon:
-        case QuizType.spriteToName:
-          _correctAnswer = correctOrganism.name; // Common name
-          break;
-        case QuizType.commonToScientific:
-        case QuizType.spriteToScientific:
-          _correctAnswer = correctOrganism.scientificName; // Scientific name
-          break;
-      }
-
-      // 3. Select 3 random unique incorrect options
-      final availableOrganisms = _allOrganisms.where((org) => org != correctOrganism).toList();
-      availableOrganisms.shuffle(random);
-
-      final incorrectOrganisms = availableOrganisms.take(3).toList();
-
-      // 4. Combine and shuffle options
-      final List<Organism> allOptions = [correctOrganism, ...incorrectOrganisms];
-      allOptions.shuffle(random);
-
-      _currentOptions = allOptions;
+      _isAnswered = false;
     });
   }
 
-  // Handles the user's answer submission
-  void _handleAnswer(String selectedOption) async {
-    if (_isAnswered) return;
-
-    setState(() {
-      _selectedAnswer = selectedOption;
-      _isAnswered = true;
-    });
-
-    final bool isCorrect = selectedOption == _correctAnswer;
-    
-    String quizName;
+  String _getAnswerText(Organism organism) {
     switch (widget.quizType) {
       case QuizType.scientificToCommon:
-        quizName = 'Scientific to Common';
-        break;
-      case QuizType.commonToScientific:
-        quizName = 'Common to Scientific';
-        break;
       case QuizType.spriteToName:
-        quizName = 'Sprite to Name';
-        break;
-      case QuizType.spriteToScientific:
-        quizName = 'Sprite to Scientific';
-        break;
-    }
-
-    // Save the attempt data
-    final currentUser = await _authService.getCurrentUser();
-    if (currentUser != null) {
-      await _authService.updateQuizStats(currentUser.username, quizName, isCorrect);
-    }
-
-    // Delay before moving to the next question
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        _generateQuestion();
-      }
-    });
-  }
-
-  // Determines the background color for the button
-  Color _getButtonColor(String option) {
-    if (!_isAnswered) {
-      return primaryButtonColor;
-    }
-
-    // If answered, check for glow effects
-    if (option == _correctAnswer) {
-      return correctGlowColor; // Correct button glows green
-    }
-
-    if (option == _selectedAnswer) {
-      return wrongGlowColor; // Selected WRONG button glows red
-    }
-
-    return primaryButtonColor; // Default color for unselected wrong options
-  }
-
-  // Determines the shadow/glow for the button
-  BoxShadow _getButtonShadow(String option) {
-    Color shadowColor = Colors.black.withOpacity(0.6);
-    double blurRadius = 0;
-
-    if (_isAnswered) {
-      if (option == _correctAnswer) {
-        shadowColor = correctGlowColor.withOpacity(0.8);
-        blurRadius = 8.0;
-      } else if (option == _selectedAnswer) {
-        shadowColor = wrongGlowColor.withOpacity(0.8);
-        blurRadius = 8.0;
-      }
-    }
-
-    return BoxShadow(
-      color: shadowColor,
-      offset: const Offset(4, 4),
-      blurRadius: blurRadius,
-      spreadRadius: 0,
-    );
-  }
-
-  // Helper method to extract the display text for an option
-  String _getOptionText(Organism fact) {
-    // Options are always either Common Name or Scientific Name
-    return widget.quizType == QuizType.scientificToCommon || widget.quizType == QuizType.spriteToName
-        ? fact.name 
-        : fact.scientificName;
-  }
-
-  // Helper method to get the main question text
-  // Only returns the text for text-based quizzes
-  String _getQuestionText() {
-    if (_currentQuestion == null) return "Error Loading Question...";
-
-    switch (widget.quizType) {
-      case QuizType.scientificToCommon:
-        return _currentQuestion!.scientificName;
+        return organism.name;
       case QuizType.commonToScientific:
-        return _currentQuestion!.name;
-      case QuizType.spriteToName:
       case QuizType.spriteToScientific:
-        // Return the sprite URL so it can be used by the sprite builder
-        return _currentQuestion!.sprite;
+        return organism.scientificName;
     }
   }
   
-  // NEW: Widget to display the sprite question
-  Widget _buildSpriteQuestion(String spriteUrl) {
-    return Container(
-      padding: const EdgeInsets.all(20.0),
-      margin: const EdgeInsets.only(bottom: 20.0),
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.7),
-        border: Border.all(color: highlightColor, width: 3.0),
-        borderRadius: BorderRadius.circular(8.0),
-      ),
-      child: Column(
-        children: [
-          Text(
-            'IDENTIFY THIS UNIT:',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: highlightColor,
-              fontSize: 12,
-              fontFamily: 'PressStart2P',
-            ),
-          ),
-          const SizedBox(height: 16),
-          // Display the sprite image
-          // Using Image.network assuming the sprite is a URL
-          Image.network(
-            spriteUrl,
-            height: 150, // Fixed height for visual consistency
-            width: 200,
-            fit: BoxFit.contain,
-            loadingBuilder: (context, child, loadingProgress) {
-              if (loadingProgress == null) return child;
-              return const Center(child: CircularProgressIndicator(color: highlightColor));
-            },
-            errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image, color: Colors.red, size: 80),
-          ),
-        ],
-      ),
-    );
+  String _getQuestionText(Organism organism) {
+    switch (widget.quizType) {
+      case QuizType.scientificToCommon:
+        return organism.scientificName;
+      case QuizType.commonToScientific:
+        return organism.name;
+      case QuizType.spriteToName:
+      case QuizType.spriteToScientific:
+        return 'What is this animal?'; // Question is implied by the sprite
+    }
   }
 
+  void _handleAnswer(String answer) {
+    if (_isAnswered) return;
 
-  // The main button widget for the answers
-  Widget _buildAnswerButton(Organism fact) {
-    final optionText = _getOptionText(fact);
-    final buttonColor = _getButtonColor(optionText);
-    final buttonShadow = _getButtonShadow(optionText);
+    setState(() {
+      _selectedAnswer = answer;
+      _isAnswered = true;
+    });
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      width: double.infinity,
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      decoration: BoxDecoration(
-        color: buttonColor,
-        border: Border.all(color: highlightColor, width: 2.0),
-        borderRadius: BorderRadius.circular(4.0),
-        boxShadow: [
-          buttonShadow,
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: _isAnswered ? null : () => _handleAnswer(optionText),
-          borderRadius: BorderRadius.circular(4.0),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Center(
-              child: Text(
-                optionText,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  // Change text color to black for better contrast on bright green glow
-                  color: optionText == _correctAnswer && _isAnswered ? Colors.black : Colors.white,
-                  fontSize: 16,
-                  fontFamily: 'PressStart2P',
-                ),
-              ),
-            ),
+    // START: Update Quiz Stats
+    final bool isCorrect = answer == _correctAnswer;
+    
+    // FIX: Changed the first positional argument from UserData to String userId.
+    widget.authService.updateQuizStats(
+      widget.currentUser.username, // Positional arg 1: String userId (FIXED)
+      widget.quizType.name,  // Positional arg 2: String quizName
+      isCorrect,             // Positional arg 3: bool isCorrect
+    );
+    // END: Update Quiz Stats
+
+    Future.delayed(const Duration(seconds: _delayAfterAnswerSeconds), () {
+      if (mounted) {
+        _startNewQuestion();
+      }
+    });
+  }
+
+  // --- UI Builders ---
+
+  // Helper to determine if the quiz uses a sprite image
+  bool get isSpriteQuiz => 
+      widget.quizType == QuizType.spriteToName || 
+      widget.quizType == QuizType.spriteToScientific;
+
+  Widget _buildAnswerButton(Organism option) {
+    final answerText = _getAnswerText(option);
+    
+    Color buttonColor = secondaryButtonColor;
+    Color borderColor = highlightColor;
+    Color textColor = highlightColor;
+
+    if (_isAnswered) {
+      if (answerText == _correctAnswer) {
+        buttonColor = correctGlowColor.withOpacity(0.3);
+        borderColor = correctGlowColor;
+        textColor = correctGlowColor;
+      } else if (answerText == _selectedAnswer) {
+        buttonColor = wrongGlowColor.withOpacity(0.3);
+        borderColor = wrongGlowColor;
+        textColor = wrongGlowColor;
+      }
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: ElevatedButton(
+        onPressed: _isAnswered ? null : () => _handleAnswer(answerText),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: buttonColor,
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 15),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8.0),
+            side: BorderSide(color: borderColor, width: 2.0),
+          ),
+          elevation: 8,
+          shadowColor: borderColor,
+        ),
+        child: Text(
+          answerText.toUpperCase(),
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: textColor,
+            fontFamily: 'PressStart2P',
+            fontSize: _responsiveFontSize(context, 12), // Responsive font size
+            shadows: [
+              const Shadow(color: Colors.black, offset: Offset(1, 1))
+            ]
           ),
         ),
       ),
     );
   }
 
+  Widget _buildQuestionWidget() {
+    final questionOrganism = _currentQuestion!;
+    
+    if (isSpriteQuiz) {
+      // Use the new _QuizSpriteDisplay to handle local/network loading
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 20.0),
+        child: _QuizSpriteDisplay(
+          organism: questionOrganism,
+          height: 250,
+          width: 300,
+          // Only show the silhouette if the answer is incorrect
+          showSilhouette: _isAnswered && _selectedAnswer != _correctAnswer,
+        ),
+      );
+    } else {
+      // Text-based question
+      return Container(
+        padding: const EdgeInsets.all(20),
+        margin: const EdgeInsets.only(bottom: 20),
+        decoration: BoxDecoration(
+          color: secondaryButtonColor.withOpacity(0.9),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: highlightColor, width: 3),
+        ),
+        child: Text(
+          _getQuestionText(questionOrganism).toUpperCase(),
+          textAlign: TextAlign.center,
+          style: TextStyle( // MODIFIED: Use TextStyle instead of const TextStyle
+            color: highlightColor,
+            fontFamily: 'PressStart2P',
+            fontSize: _responsiveFontSize(context, 16), // MODIFIED: Responsive font size
+          ),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    String title;
-    switch (widget.quizType) {
-      case QuizType.scientificToCommon:
-        title = 'Scientific to Common';
-        break;
-      case QuizType.commonToScientific:
-        title = 'Common to Scientific';
-        break;
-      case QuizType.spriteToName:
-        title = 'Sprite to Name';
-        break;
-      case QuizType.spriteToScientific:
-        title = 'Sprite to Scientific';
-        break;
+    if (_isLoading) {
+      return const Scaffold(
+        backgroundColor: secondaryButtonColor,
+        body: Center(
+          child: CircularProgressIndicator(color: highlightColor),
+        ),
+      );
     }
 
-
-    // Handle the loading state before attempting to display the quiz
-    if (_isLoading || _currentQuestion == null || _currentOptions == null) {
+    if (_currentQuestion == null) {
       return Scaffold(
-        appBar: AppBar(title: Text(title), backgroundColor: Colors.green[900]),
+        appBar: AppBar(
+          title: const Text('Quiz Game'), 
+          backgroundColor: secondaryButtonColor,
+          titleTextStyle: TextStyle(
+            color: highlightColor, 
+            fontFamily: 'PressStart2P', 
+            fontSize: _responsiveFontSize(context, 16), // MODIFIED: Responsive font size
+          ),
+        ),
+        backgroundColor: secondaryButtonColor,
         body: Center(
-            child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-                const CircularProgressIndicator(color: highlightColor),
-                const SizedBox(height: 20),
-                Text(
-                  _isLoading ? "LOADING ORGANISMS..." : "PREPARING QUIZ...",
-                  style: const TextStyle(color: highlightColor, fontFamily: 'PressStart2P'),
-                ),
-                if (!_isLoading && _allOrganisms.isEmpty)
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Text(
-                      "ERROR: FAILED TO LOAD DATA OR INSUFFICIENT DATA.",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: wrongGlowColor, fontFamily: 'PressStart2P', fontSize: 10),
-                    ),
-                  )
-            ],
+          child: Text('Not enough animals discovered for this quiz type.', 
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: wrongGlowColor, 
+              fontFamily: 'PressStart2P', 
+              fontSize: _responsiveFontSize(context, 14), // MODIFIED: Responsive font size
+            )
           ),
         ),
       );
     }
     
-    // Determine the question widget based on quiz type
-    final isSpriteQuiz = widget.quizType == QuizType.spriteToName || widget.quizType == QuizType.spriteToScientific;
-    final questionWidget = isSpriteQuiz
-        ? _buildSpriteQuestion(_currentQuestion!.sprite)
-        : Container(
-            padding: const EdgeInsets.all(20.0),
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.7),
-              border: Border.all(color: highlightColor, width: 3.0),
-              borderRadius: BorderRadius.circular(8.0),
-            ),
-            child: Column(
-              children: [
-                Text(
-                  'WHICH ANIMAL IS THIS?',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: highlightColor,
-                    fontSize: 12,
-                    fontFamily: 'PressStart2P',
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  _getQuestionText(),
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontFamily: 'PressStart2P',
-                  ),
-                ),
-              ],
-            ),
-          );
-
+    final isSpriteQuiz = this.isSpriteQuiz;
+    final questionWidget = _buildQuestionWidget();
+    
+    // MODIFIED: Added for the AppBar title
+    final appBarTextStyle = TextStyle(
+        color: highlightColor, 
+        fontFamily: 'PressStart2P', 
+        fontSize: _responsiveFontSize(context, 16)
+    );
+    // END MODIFIED
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(title),
-        backgroundColor: Colors.green[900],
+        title: Text('${widget.quizType.name.toUpperCase()} Quiz'),
+        backgroundColor: secondaryButtonColor,
+        titleTextStyle: appBarTextStyle, // MODIFIED: Use responsive style
       ),
-      body: Stack(
-        children: [
-          // Background Image
-          Positioned.fill(
-            child: ColorFiltered(
-              colorFilter: ColorFilter.mode(
-                Colors.black.withOpacity(0.5),
-                BlendMode.darken,
-              ),
-              child: Image.asset(
-                'assets/main.png',
-                fit: BoxFit.cover,
-              ),
+      body: Container(
+        decoration: BoxDecoration(
+          color: secondaryButtonColor,
+          image: DecorationImage(
+            image: const AssetImage('assets/main.png'), 
+            fit: BoxFit.cover,
+            colorFilter: ColorFilter.mode(
+              Colors.black.withOpacity(0.7),
+              BlendMode.darken,
             ),
           ),
-
-          // Quiz Content
-          Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
+        ),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20.0),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -471,11 +383,11 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
                       _selectedAnswer == _correctAnswer ? 'CORRECT! NEXT QUESTION LOADING...' : 'INCORRECT! ANSWER WAS: $_correctAnswer',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: _responsiveFontSize(context, 12), // MODIFIED: Responsive font size
                         color: _selectedAnswer == _correctAnswer ? correctGlowColor : wrongGlowColor,
                         fontFamily: 'PressStart2P',
                         shadows: [
-                          Shadow(color: Colors.black, offset: const Offset(1, 1))
+                          const Shadow(color: Colors.black, offset: Offset(1, 1))
                         ]
                       ),
                     ),
@@ -483,8 +395,139 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
+  }
+}
+
+// ----------------------------------------------------------------------
+// NEW WIDGET: _QuizSpriteDisplay
+// Handles the local asset check and network fallback for the Quiz screen.
+// ----------------------------------------------------------------------
+class _QuizSpriteDisplay extends StatefulWidget {
+  final Organism organism;
+  final double height;
+  final double width;
+  final bool showSilhouette; // NEW property to decide if silhouette or color image is shown
+
+  const _QuizSpriteDisplay({
+    required this.organism,
+    this.height = 250,
+    this.width = 300,
+    required this.showSilhouette,
+  });
+
+  @override
+  __QuizSpriteDisplayState createState() => __QuizSpriteDisplayState();
+}
+
+class __QuizSpriteDisplayState extends State<_QuizSpriteDisplay> {
+  // null initially, 'local' if found, 'network' if not found locally
+  String? _imageSourceType;
+  
+  // The determined path/url to use
+  late String _imagePath;
+
+  @override
+  void initState() {
+    super.initState();
+    _determineImageSource();
+  }
+  
+  // Helper to construct the local path
+  String _getLocalPath() {
+    // Organism name logic: lowercase and replace spaces with underscores.
+    final fileName = widget.organism.name.toLowerCase().replaceAll(' ', '_');
+    return 'assets/sprites/$fileName.png';
+  }
+  
+  @override
+  void didUpdateWidget(covariant _QuizSpriteDisplay oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Only re-determine source if the organism or question state changes
+    if (oldWidget.organism.name != widget.organism.name || oldWidget.showSilhouette != widget.showSilhouette) {
+      _imageSourceType = null;
+      _determineImageSource();
+    }
+  }
+
+  Future<void> _determineImageSource() async {
+    final localPath = _getLocalPath();
+    
+    // 1. Try to load the local asset
+    try {
+      // Use rootBundle.load to check for existence without rendering
+      await rootBundle.load(localPath);
+      // If load succeeds, the asset exists
+      if (mounted) {
+        setState(() {
+          _imageSourceType = 'local';
+          _imagePath = localPath;
+        });
+      }
+    } catch (e) {
+      // 2. If load fails (asset not found), fallback to network
+      if (mounted) {
+        setState(() {
+          _imageSourceType = 'network';
+          _imagePath = widget.organism.sprite; // Network URL
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_imageSourceType == null) {
+      // Show a simple loading indicator while determining the source
+      return SizedBox(
+        height: widget.height,
+        child: const Center(child: CircularProgressIndicator(color: Colors.white)),
+      );
+    }
+    
+    final String source = _imagePath;
+
+    if (widget.showSilhouette) {
+      // Show Silhouette (e.g., when the answer is wrong)
+      // Assuming buildSilhouetteSprite is globally available via organism.dart import
+      return buildSilhouetteSprite( 
+        imageUrl: source, 
+        silhouetteColor: Colors.black, // Dark silhouette for quiz
+        organismName: widget.organism.name,
+        height: widget.height, 
+        width: widget.width, 
+        fit: BoxFit.contain,
+      );
+    } else {
+      // Show the actual image (colored image)
+      if (_imageSourceType == 'local') {
+        return Image.asset(
+          source, 
+          height: widget.height, 
+          width: widget.width, 
+          fit: BoxFit.contain,
+        );
+      } else {
+        // Network Image (Fallback)
+        return Image.network(
+          source, 
+          height: widget.height, 
+          width: widget.width, 
+          fit: BoxFit.contain,
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return SizedBox(
+              height: widget.height,
+              child: const Center(child: CircularProgressIndicator(color: Colors.white)),
+            );
+          },
+          errorBuilder: (context, error, stackTrace) => 
+            // Fallback for network error (if sprite is missing entirely)
+            const Icon(Icons.broken_image, color: Colors.red, size: 80),
+        );
+      }
+    }
   }
 }

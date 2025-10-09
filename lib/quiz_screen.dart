@@ -30,9 +30,9 @@ class QuizScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(8.0), 
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.6),
-            offset: const Offset(6, 6),
-            blurRadius: 0,
+            color: Colors.black.withOpacity(0.5),
+            blurRadius: 5.0,
+            offset: const Offset(3, 3),
           ),
         ],
       ),
@@ -42,23 +42,23 @@ class QuizScreen extends StatelessWidget {
           onTap: onPressed,
           borderRadius: BorderRadius.circular(8.0),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
+            padding: const EdgeInsets.all(12.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Icon(icon, color: highlightColor, size: 24),
+                Icon(icon, color: highlightColor, size: 30),
                 Expanded(
                   child: Text(
                     text,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 14,
                       fontFamily: 'PressStart2P',
+                      fontSize: 14,
                     ),
                   ),
                 ),
-                Icon(icon, color: highlightColor, size: 24),
+                Icon(Icons.chevron_right, color: highlightColor, size: 30),
               ],
             ),
           ),
@@ -67,11 +67,15 @@ class QuizScreen extends StatelessWidget {
     );
   }
 
-  // Navigation function
-  void _navigateToQuizGame(BuildContext context, QuizType type) {
+  // FIX: Helper method to navigate to QuizGameScreen, now passing required arguments
+  void _navigateToQuizGame(BuildContext context, QuizType quizType) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => QuizGameScreen(quizType: type),
+        builder: (context) => QuizGameScreen(
+          quizType: quizType,
+          currentUser: currentUser,      // <-- ADDED required argument
+          authService: authService,      // <-- ADDED required argument
+        ),
       ),
     );
   }
@@ -80,83 +84,82 @@ class QuizScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('BATTLE QUIZ'),
-        backgroundColor: Colors.green[900],
-        titleTextStyle: const TextStyle(color: highlightColor, fontFamily: 'PressStart2P', fontSize: 16),
+        title: const Text('WARFARE TRAINING'),
+        backgroundColor: primaryButtonColor,
+        titleTextStyle: const TextStyle(color: highlightColor, fontFamily: 'PressStart2P', fontSize: 18),
       ),
-      body: Stack(
-        children: [
-          // Background Image
-          Positioned.fill(
-            child: ColorFiltered(
-              colorFilter: ColorFilter.mode(
-                Colors.black.withOpacity(0.5),
-                BlendMode.darken,
-              ),
-              child: Image.asset(
-                'assets/main.png',
-                fit: BoxFit.cover,
-              ),
+      body: Container(
+        decoration: BoxDecoration(
+          color: secondaryButtonColor,
+          image: DecorationImage(
+            image: const AssetImage('assets/main.png'), 
+            fit: BoxFit.cover,
+            colorFilter: ColorFilter.mode(
+              Colors.black.withOpacity(0.7),
+              BlendMode.darken,
             ),
           ),
-          
-          // Content
-          Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    'SELECT YOUR QUIZ CHALLENGE',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.headlineSmall!.copyWith(
-                      color: highlightColor,
-                      fontFamily: 'PressStart2P',
-                      shadows: [
-                        Shadow(color: Colors.black, offset: const Offset(2, 2))
-                      ]
+        ),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Text(
+                'SELECT TRAINING MODE',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: highlightColor,
+                  fontFamily: 'PressStart2P',
+                  fontSize: 16,
+                  shadows: [
+                    Shadow(color: Colors.black.withOpacity(0.5), offset: const Offset(2, 2))
+                  ]
+                ),
+              ),
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Game One Button (Scientific Name to Common Name)
+                    _buildThemedButton(
+                      text: 'SCIENTIFIC TO COMMON',
+                      icon: Icons.science,
+                      onPressed: () => _navigateToQuizGame(context, QuizType.scientificToCommon),
+                      color: primaryButtonColor, // Green
                     ),
-                  ),
-                  const SizedBox(height: 50),
-                  
-                  // Game One Button (Scientific Name to Common Name)
-                  _buildThemedButton(
-                    text: 'SCIENTIFIC TO COMMON',
-                    icon: Icons.science,
-                    onPressed: () => _navigateToQuizGame(context, QuizType.scientificToCommon),
-                    color: primaryButtonColor, // Green
-                  ),
 
-                  // Game Two Button (Common Name to Scientific Name)
-                  _buildThemedButton(
-                    text: 'COMMON TO SCIENTIFIC',
-                    icon: Icons.sort_by_alpha,
-                    onPressed: () => _navigateToQuizGame(context, QuizType.commonToScientific),
-                    color: secondaryButtonColor, // Red/Maroon
-                  ),
-                  
-                  // NEW Game Three Button (Sprite to Common Name)
-                  _buildThemedButton(
-                    text: 'SPRITE TO NAME',
-                    icon: Icons.image,
-                    onPressed: () => _navigateToQuizGame(context, QuizType.spriteToName),
-                    color: tertiaryButtonColor, // Orange/Yellow
-                  ),
-                  
-                  // NEW Game Four Button (Sprite to Scientific Name)
-                  _buildThemedButton(
-                    text: 'SPRITE TO SCIENTIFIC',
-                    icon: Icons.image_search,
-                    onPressed: () => _navigateToQuizGame(context, QuizType.spriteToScientific),
-                    color: primaryButtonColor, // Re-use Green
-                  ),
-                ],
+                    // Game Two Button (Common Name to Scientific Name)
+                    _buildThemedButton(
+                      text: 'COMMON TO SCIENTIFIC',
+                      icon: Icons.sort_by_alpha,
+                      onPressed: () => _navigateToQuizGame(context, QuizType.commonToScientific),
+                      color: secondaryButtonColor, // Red/Maroon
+                    ),
+                    
+                    // NEW Game Three Button (Sprite to Common Name)
+                    _buildThemedButton(
+                      text: 'SPRITE TO NAME',
+                      icon: Icons.image,
+                      onPressed: () => _navigateToQuizGame(context, QuizType.spriteToName),
+                      color: tertiaryButtonColor, // Orange/Yellow
+                    ),
+                    
+                    // NEW Game Four Button (Sprite to Scientific Name)
+                    _buildThemedButton(
+                      text: 'SPRITE TO SCIENTIFIC',
+                      icon: Icons.image_search,
+                      onPressed: () => _navigateToQuizGame(context, QuizType.spriteToScientific),
+                      color: primaryButtonColor.withOpacity(0.7), // Re-use Green, slightly darker
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

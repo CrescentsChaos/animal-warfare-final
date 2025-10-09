@@ -68,10 +68,23 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
     _loadUserProfile();
     _loadOrganisms();
   }
+  
+  // ADDED: Utility function for responsive font size
+  double _responsiveFontSize(BuildContext context, double baseSize) {
+    // Get the screen width
+    final screenWidth = MediaQuery.of(context).size.width;
+    // Define a reference width (e.g., 400 pixels for a typical phone)
+    const double referenceWidth = 400.0;
+    // Calculate a scaling factor
+    final double scaleFactor = screenWidth / referenceWidth;
+    // Apply the scaling factor to the base size
+    return baseSize * scaleFactor;
+  }
+  // END ADDED
 
   // Override to handle app lifecycle changes
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) async {
+  didChangeAppLifecycleState(AppLifecycleState state) async {
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.paused) {
       // Pause audio when app goes to background
@@ -152,10 +165,10 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
       ),
       child: Text(
         text,
-        style: const TextStyle(
+        style: TextStyle( // MODIFIED: Use TextStyle instead of const TextStyle
           color: Colors.white,
           fontFamily: 'PressStart2P',
-          fontSize: 14,
+          fontSize: _responsiveFontSize(context, 14), // MODIFIED: Responsive font size
         ),
       ),
     );
@@ -206,18 +219,18 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
         children: <Widget>[
           Text(
             '$label:',
-            style: const TextStyle(
+            style: TextStyle( // MODIFIED: Use TextStyle instead of const TextStyle
               color: highlightColor,
               fontFamily: 'PressStart2P',
-              fontSize: 12,
+              fontSize: _responsiveFontSize(context, 12), // MODIFIED: Responsive font size
             ),
           ),
           Text(
             value.toUpperCase(),
-            style: const TextStyle(
+            style: TextStyle( // MODIFIED: Use TextStyle instead of const TextStyle
               color: Colors.white,
               fontFamily: 'PressStart2P',
-              fontSize: 12,
+              fontSize: _responsiveFontSize(context, 12), // MODIFIED: Responsive font size
             ),
           ),
         ],
@@ -243,10 +256,10 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
         children: [
           Text(
             quizName.toUpperCase(),
-            style: const TextStyle(
+            style: TextStyle( // MODIFIED: Use TextStyle instead of const TextStyle
               color: highlightColor,
               fontFamily: 'PressStart2P',
-              fontSize: 12,
+              fontSize: _responsiveFontSize(context, 12), // MODIFIED: Responsive font size
             ),
           ),
           const SizedBox(height: 10),
@@ -266,10 +279,10 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
         children: [
           Text(
             '$label:',
-            style: const TextStyle(
+            style: TextStyle( // MODIFIED: Use TextStyle instead of const TextStyle
               color: Colors.white70,
               fontFamily: 'PressStart2P',
-              fontSize: 10,
+              fontSize: _responsiveFontSize(context, 10), // MODIFIED: Responsive font size
             ),
           ),
           Text(
@@ -277,7 +290,7 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
             style: TextStyle(
               color: color,
               fontFamily: 'PressStart2P',
-              fontSize: 10,
+              fontSize: _responsiveFontSize(context, 10), // MODIFIED: Responsive font size
             ),
           ),
         ],
@@ -287,12 +300,21 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
 
   @override
   Widget build(BuildContext context) {
+    
+    // MODIFIED: Added for the AppBar title
+    final appBarTextStyle = TextStyle(
+        color: highlightColor, 
+        fontFamily: 'PressStart2P', 
+        fontSize: _responsiveFontSize(context, 16)
+    );
+    // END MODIFIED
+    
     if (_isLoading || _currentUser == null) {
       return Scaffold(
         appBar: AppBar(
           title: const Text('PROFILE'),
           backgroundColor: secondaryButtonColor,
-          titleTextStyle: const TextStyle(color: highlightColor, fontFamily: 'PressStart2P', fontSize: 16),
+          titleTextStyle: appBarTextStyle, // MODIFIED: Use responsive style
         ),
         body: Container(
           color: secondaryButtonColor,
@@ -311,7 +333,7 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
       appBar: AppBar(
         title: const Text('PROFILE'),
         backgroundColor: secondaryButtonColor,
-        titleTextStyle: const TextStyle(color: highlightColor, fontFamily: 'PressStart2P', fontSize: 16),
+        titleTextStyle: appBarTextStyle, // MODIFIED: Use responsive style
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -397,7 +419,11 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
               // START: QUIZ STATS SECTION
               Text(
                 '--- BATTLE QUIZ STATS ---',
-                style: TextStyle(color: highlightColor.withOpacity(0.8), fontSize: 10, fontFamily: 'PressStart2P'),
+                style: TextStyle(
+                  color: highlightColor.withOpacity(0.8), 
+                  fontSize: _responsiveFontSize(context, 10), // MODIFIED: Responsive font size
+                  fontFamily: 'PressStart2P'
+                ),
               ),
               const SizedBox(height: 20),
               
@@ -413,7 +439,7 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.white.withOpacity(0.6),
-                    fontSize: 12,
+                    fontSize: _responsiveFontSize(context, 12), // MODIFIED: Responsive font size
                     fontFamily: 'PressStart2P',
                   ),
                 ),
