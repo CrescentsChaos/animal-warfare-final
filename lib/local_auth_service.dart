@@ -103,13 +103,27 @@ class LocalAuthService {
       final file = await _getUserFile(username);
       if (await file.exists()) {
         final contents = await file.readAsString();
-        final userMap = jsonDecode(contents);
-        return UserData.fromJson(userMap);
+        
+        try {
+          // NEW: Inner try-catch to specifically handle JSON decoding errors
+          final userMap = jsonDecode(contents);
+          return UserData.fromJson(userMap);
+        } on FormatException catch (e) {
+          if (kDebugMode) {
+            print("ERROR: JSON decoding failed for user file $username (File Corrupted): $e");
+          }
+          return null;
+        }
+        
+      }
+      if (kDebugMode) {
+         print("DEBUG: User file not found/does not exist for $username."); // NEW: Debug print for missing file
       }
       return null;
     } catch (e) {
       if (kDebugMode) {
-        print("Error reading user file for $username: $e");
+        // CRITICAL ERROR: File I/O failure (e.g., permissions, pathing)
+        print("CRITICAL ERROR: File I/O failure for $username: $e"); 
       }
       return null; 
     }
@@ -121,6 +135,9 @@ class LocalAuthService {
       final file = await _getUserFile(user.username);
       final userJson = jsonEncode(user.toJson());
       await file.writeAsString(userJson);
+      if (kDebugMode) {
+        print("DEBUG: User data written successfully for ${user.username}");
+      }
     } catch (e) {
       if (kDebugMode) {
         print("Error writing user file for ${user.username}: $e");
@@ -137,6 +154,9 @@ class LocalAuthService {
   Future<bool> register(String username, String password) async {
     final existingUser = await _readUserFile(username);
     if (existingUser != null) {
+      if (kDebugMode) {
+        print("DEBUG: Registration failed for $username. User already exists.");
+      }
       return false; // User already exists
     }
 
@@ -156,9 +176,24 @@ class LocalAuthService {
   Future<bool> login(String username, String password) async {
     final foundUser = await _readUserFile(username);
     
-    if (foundUser != null && foundUser.password == password) {
-      await _saveCurrentUserName(foundUser.username); 
-      return true; // Login success
+    if (foundUser != null) {
+        if (foundUser.password == password) {
+             await _saveCurrentUserName(foundUser.username); 
+             if (kDebugMode) {
+                 print("DEBUG: Login successful for $username."); // NEW: Success debug print
+             }
+             return true; // Login success
+        } else {
+             if (kDebugMode) {
+                 // NEW: Explicit password mismatch log
+                 print("DEBUG: Login failed for $username. Password mismatch. (Input: '$password', Stored: '${foundUser.password}')"); 
+             }
+        }
+    } else {
+        if (kDebugMode) {
+            // NEW: Explicit user not found log
+            print("DEBUG: Login failed for $username. User not found/file read error (see _readUserFile logs)."); 
+        }
     }
     
     return false; // Login failure

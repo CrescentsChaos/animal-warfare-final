@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:animal_warfare/models/organism.dart'; // Ensure this path is correct
 import 'package:animal_warfare/local_auth_service.dart';
+import 'package:animal_warfare/models/achievement.dart';
 class AnidexScreen extends StatefulWidget {
   // User data must be passed to check discovery status
   final UserData currentUser; 

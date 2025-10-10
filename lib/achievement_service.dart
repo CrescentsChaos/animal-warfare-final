@@ -48,23 +48,54 @@ class AchievementService {
     if (user.completedAchievements.contains(achievement.title)) {
       return true; // Already unlocked
     }
-
-    // 1. Filter all known organisms by the required rarity
-    final requiredOrganisms = allOrganisms
-      .where((organism) => organism['rarity'].toLowerCase() == achievement.requiredRarity.toLowerCase())
-      .map((organism) => organism['name'])
-      .toSet();
-
-    // 2. Count how many of the required organisms the user has discovered
-    int discoveredCount = 0;
-    for (String orgName in user.discoveredOrganisms) {
-      if (requiredOrganisms.contains(orgName)) {
-        discoveredCount++;
+    
+    // --- LOGIC 1: Specific Organisms (e.g., 'African Lion' or '5 Panthera species') ---
+    if (achievement.requiredOrganisms.isNotEmpty && achievement.requiredSpecificCount > 0) {
+      int specificDiscoveredCount = 0;
+      final requiredSet = achievement.requiredOrganisms.toSet(); // For O(1) lookup
+      
+      // Count how many of the required organisms the user has discovered
+      for (String orgName in user.discoveredOrganisms) {
+        if (requiredSet.contains(orgName)) {
+          specificDiscoveredCount++;
+        }
       }
+      
+      return specificDiscoveredCount >= achievement.requiredSpecificCount;
     }
 
-    // 3. Check if the discovered count meets the requirement
-    return discoveredCount >= achievement.requiredCount;
+    // --- LOGIC 2: Rarity-based achievements (e.g., 'Collect 10 Common') ---
+    if (achievement.requiredRarity.isNotEmpty && achievement.requiredCount > 0) {
+      // 1. Filter all known organisms by the required rarity
+      final requiredOrganisms = allOrganisms
+        .where((organism) => organism['rarity'].toLowerCase() == achievement.requiredRarity.toLowerCase())
+        .map((organism) => organism['name'])
+        .toSet();
+
+      // 2. Count how many of the required organisms the user has discovered
+      int discoveredCount = 0;
+      for (String orgName in user.discoveredOrganisms) {
+        if (requiredOrganisms.contains(orgName)) {
+          discoveredCount++;
+        }
+      }
+
+      // 3. Check if the discovered count meets the requirement
+      return discoveredCount >= achievement.requiredCount;
+    }
+    
+    // 🆕 LOGIC 3: Total Discovered Count (for achievements like "Discover your first animal")
+    // This runs if requiredOrganisms and requiredRarity are empty, but a requiredCount > 0 exists.
+    if (achievement.requiredOrganisms.isEmpty && 
+        achievement.requiredRarity.isEmpty && 
+        achievement.requiredCount > 0) {
+      
+      // Check if the total number of unique discovered organisms meets the required count
+      return user.discoveredOrganisms.length >= achievement.requiredCount;
+    }
+
+    // Default to false if no condition is defined (or invalid achievement object)
+    return false; 
   }
 
 
@@ -87,10 +118,14 @@ class AchievementService {
     
     // Save updated user data if any achievement was newly unlocked
     if (newlyUnlocked.isNotEmpty) {
+      // NOTE: We MUST create a new UserData instance for this to work correctly
+      // as `user` is immutable (final fields in UserData).
       final updatedUser = user.copyWith(completedAchievements: completedTitles.toList());
       // Use the new public updateUser method
       await authService.updateUser(updatedUser); 
     }
+    
+    // ... (rest of the file remains the same)
     
     return newlyUnlocked;
   }
@@ -98,6 +133,7 @@ class AchievementService {
   // --- UI Helpers ---
   
   void showAchievementSnackbar(BuildContext context, String achievementTitle) {
+    // ... (This function remains unchanged)
     // 1. Define the duration and the overlay entry
     final overlay = Overlay.of(context);
     late OverlayEntry overlayEntry;
@@ -170,4 +206,4 @@ class AchievementService {
       overlayEntry.remove();
     });
   }
-  }
+}

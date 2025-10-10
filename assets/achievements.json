@@ -1,20 +1,136 @@
 [
   {
+    "title": "Darwin's Apprentice",
+    "description": "Discover your first animals.",
+    "requiredCount": 1
+  },
+  {
+    "title": "Naturalist",
+    "description": "Discover 100 unique animals.",
+    "requiredCount": 100
+  },
+  {
+    "title": "Biodiversity Buff",
+    "description": "Discover 500 unique animals.",
+    "requiredCount": 500
+  },
+  {
+    "title": "The Collector",
+    "description": "Discover 1000 unique animals.",
+    "requiredCount": 1000
+  },
+  {
+    "title": "Life Encyclopedia",
+    "description": "Discover all unique animals.",
+    "requiredCount": 1400
+  },
+  {
     "title": "Novice Collector",
-    "description": "Discover 5 Common organisms.",
+    "description": "Discover 5 Common animals.",
     "requiredRarity": "Common",
-    "requiredCount": 5
+    "requiredCount": 20
   },
   {
     "title": "Rare Hunter",
-    "description": "Discover 3 Rare organisms.",
+    "description": "Discover 3 Rare animals.",
     "requiredRarity": "Rare",
-    "requiredCount": 3
+    "requiredCount": 5
+  },
+  {
+    "title": "Treat to the Eyes",
+    "description": "Discover all Epic animals.",
+    "requiredRarity": "Epic",
+    "requiredCount": 90
+  },
+  {
+    "title": "Living Legend",
+    "description": "Discover all Legendary animals.",
+    "requiredRarity": "Rare",
+    "requiredCount": 30
   },
   {
     "title": "Mythical Seeker",
-    "description": "Discover 1 Mythical organism.",
+    "description": "Discover 1 Mythical animal.",
     "requiredRarity": "Mythical",
     "requiredCount": 1
+  },
+  {
+    "title": "I wish...",
+    "description": "Discover all Mythical animals.",
+    "requiredRarity": "Mythical",
+    "requiredCount": 4
+  },
+  {
+    "title": "King of the Jungle",
+    "description": "Discover the mighty African Lion.",
+    "requiredOrganisms": ["African Lion"],
+    "requiredSpecificCount": 1
+  },
+  {
+    "title": "Largest Fish Alive",
+    "description": "Discover the mighty Whale Shark.",
+    "requiredOrganisms": ["Whale Shark"],
+    "requiredSpecificCount": 1
+  },
+  {
+    "title": "Eternal Behemoth",
+    "description": "Discover the mighty Blue Whale.",
+    "requiredOrganisms": ["Blue Whale"],
+    "requiredSpecificCount": 1
+  },
+  {
+    "title": "Fastest Creature Alive",
+    "description": "Discover the Peregrine Falcon.",
+    "requiredOrganisms": ["Peregrine Falcon"],
+    "requiredSpecificCount": 1
+  },
+  {
+    "title": "Largest Land Creature Alive",
+    "description": "Discover the mighty African Bush Elephant.",
+    "requiredOrganisms": ["African Bush Elephant"],
+    "requiredSpecificCount": 1
+  },
+  {
+    "title": "The Big Cat Whisperer",
+    "description": "Discover 5 different species from the Panthera genus.",
+    "requiredOrganisms": [
+      "African Lion",
+      "Royal Bengal Tiger",
+      "Leopard",
+      "Jaguar",
+      "African Cheetah"
+    ],
+    "requiredSpecificCount": 5
+  },
+  {
+    "title": "Healthy Soil",
+    "description": "Discover an earthworm.",
+    "requiredOrganisms": ["Earthworm"],
+    "requiredSpecificCount": 1
+  },
+  {
+    "title": "Feeding Frenzy",
+    "description": "Discover all Piranhas.",
+    "requiredOrganisms": [
+      "Red-bellied Piranha",
+      "Black Piranha"
+    ],
+    "requiredSpecificCount": 2
+  },
+  {
+    "title": "Did someone say.. vampire?",
+    "description": "Discover any vampire bat.",
+    "requiredOrganisms": [
+      "Common Vampire Bat"
+    ],
+    "requiredSpecificCount": 1
+  },
+  {
+    "title": "Arena Trap",
+    "description": "Discover an Antlion Larvae.",
+    "requiredOrganisms": [
+      "Antlion Larvae"
+    ],
+    "requiredSpecificCount": 1
   }
 ]
