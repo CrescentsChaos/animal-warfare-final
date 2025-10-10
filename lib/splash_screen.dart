@@ -79,7 +79,7 @@ class _SplashScreenState extends State<SplashScreen>
   
   Future<void> _playBackgroundMusic() async {
     await _audioPlayer.setReleaseMode(ReleaseMode.loop);
-    await _audioPlayer.play(AssetSource('audio/login_background.mp3'));
+    await _audioPlayer.play(AssetSource('audio/rainforest_theme.mp3'));
   }
   
   // Precache all necessary images and JSON data
@@ -90,7 +90,7 @@ class _SplashScreenState extends State<SplashScreen>
     if (currentContext == null) return;
     
     // 1. Precache main assets
-    await precacheImage(const AssetImage('assets/main.png'), currentContext);
+    await precacheImage(const AssetImage('assets/taiga-bg.png'), currentContext);
     await precacheImage(const AssetImage('assets/logo.png'), currentContext);
     
     // 2. Precache other common assets (add any other images used in the first few screens)
@@ -128,7 +128,7 @@ class _SplashScreenState extends State<SplashScreen>
               decoration: BoxDecoration(
                 color: Colors.black,
                 image: DecorationImage(
-                  image: const AssetImage('assets/background.png'),
+                  image: const AssetImage('assets/biomes/rainforest-bg.png'),
                   fit: BoxFit.cover,
                   colorFilter: ColorFilter.mode(
                     Colors.black.withOpacity(0.7),

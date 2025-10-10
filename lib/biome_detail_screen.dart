@@ -8,12 +8,14 @@ import 'package:animal_warfare/local_auth_service.dart';
 import 'package:animal_warfare/achievement_service.dart'; 
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:provider/provider.dart'; // 🚨 NEW: Import Provider
+import 'package:animal_warfare/user_state.dart'; // 🚨 NEW: Import UserState
 // END ADDED IMPORTS
 
 class BiomeDetailScreen extends StatefulWidget {
   final String biomeName;
   final List<Organism> allOrganisms; // Pass the data to avoid reloading
-  final UserData currentUser; // ADDED: Current user data
+  final UserData currentUser; // ADDED: Current user data (Kept for now, but Provider is main source)
   final LocalAuthService authService; // ADDED: Auth service
 
   const BiomeDetailScreen({
@@ -57,7 +59,10 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
   Color _getDarkerColor(Color color) {
     int r = (color.red * 0.6).round().clamp(0, 255);
     int g = (color.green * 0.6).round().clamp(0, 255);
+    
+    // 🚨 FIX: Declare 'b' using 'int b =' instead of just 'b ='
     int b = (color.blue * 0.6).round().clamp(0, 255);
+    
     return Color.fromARGB(color.alpha, r, g, b);
   }
 
@@ -97,7 +102,17 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
     final fileName = biomeName.toLowerCase().replaceAll(' ', '_');
     return 'audio/${fileName}_theme.mp3'; 
   }
-  
+  int _getIdentifyStaminaCost(String rarity) {
+    switch (rarity.toLowerCase()) {
+      case 'common': return 5;
+      case 'uncommon': return 10;
+      case 'rare': return 15;
+      case 'epic': return 25;
+      case 'legendary': return 40;
+      case 'mythical': return 60;
+      default: return 5; // Default cost
+    }
+  }
   void _playBiomeMusic(String biomeName) async {
     String musicPath = _getMusicPath(biomeName);
     try {
@@ -207,7 +222,8 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
     }
     
     WidgetsBinding.instance.addObserver(this); 
-    _startExploration(); 
+    // Do NOT call _startExploration here, let the user tap the button first.
+    // We only call _playBiomeMusic here.
     _playBiomeMusic(widget.biomeName); 
   }
 
@@ -246,6 +262,7 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
   
   // ADDED: Utility to re-fetch and update local user data
   Future<void> _refreshUserData() async {
+     // NOTE: This now gets the latest data, but the UI is primarily driven by the Provider listener.
      final UserData? updatedUser = await widget.authService.getCurrentUser();
      if (updatedUser != null && mounted) {
        setState(() {
@@ -257,17 +274,32 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
   // Method to reveal the name and update discovery status (FIXED)
   void _revealName(Organism organism) async {
     // 1. Mark as discovered in the database/file (FIXED METHOD NAME)
+    final userState = Provider.of<UserState>(context, listen: false);
+    final int cost = _getIdentifyStaminaCost(organism.rarity);
+    if (userState.currentUser == null || userState.currentUser!.stamina < cost) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Not enough stamina! Need $cost stamina to identify a ${organism.rarity} animal.'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+      return; // Stop identification
+    }
+
+    // 4. Deduct stamina
+    await userState.decreaseStamina(cost);
     await widget.authService.markOrganismAsDiscovered(
       _currentUser.username, 
       organism.name
     );
     
     // 2. Fetch the updated user data
-    // This is crucial: _currentUser now includes the newly discovered organism.
     await _refreshUserData(); 
     
     // 3. Check and unlock achievements using the REFRESHED local user data
-    final newAchievements = await _achievementService.checkAndUnlockAchievements(_currentUser); // FIX: Swapped with _refreshUserData
+    final newAchievements = await _achievementService.checkAndUnlockAchievements(_currentUser); 
 
     // 4. Show a pop-up for each newly unlocked achievement
     for (var title in newAchievements) {
@@ -289,7 +321,29 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
     return _currentUser.discoveredOrganisms.contains(organism.name);
   }
 
-  void _startExploration() {
+  // 🚨 UPDATED: _startExploration to check and deduct stamina
+  void _startExploration() async {
+    // 1. Get UserState from Provider to access the live data and modification methods
+    // listen: false as we are only calling a method, the Consumer handles the update
+    final userState = Provider.of<UserState>(context, listen: false);
+    
+    // 2. Check if stamina is sufficient (needs 10)
+    if (userState.currentUser == null || userState.currentUser!.stamina < 10) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Not enough stamina! Need 10 stamina to explore.'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+      return; // Stop exploration
+    }
+    
+    // 3. Deduct stamina by calling the method on UserState
+    await userState.decreaseStamina(10); 
+    
+    // 4. Proceed with exploration UI logic
     setState(() {
       _isExploring = true;
       _currentEncounter = null;
@@ -321,19 +375,92 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
     });
   }
 
+  // 🚨 NEW: Utility to show the stats modal (used for the bar's onTap)
+  void _showStatsModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        return const _StatsModalContent(); // Use the modal content defined below
+      },
+    );
+  }
+
+  // 🚨 NEW: Widget for the small stamina bar in the AppBar
+  Widget _buildStaminaBarIcon(BuildContext context) {
+    // 1. Use GestureDetector to make the bar clickable
+    return GestureDetector(
+      onTap: () => _showStatsModal(context), // Tapping opens the stats modal
+      // 2. Use Consumer to listen to UserState and rebuild ONLY this small widget
+      child: Consumer<UserState>(
+        builder: (context, userState, child) {
+          final user = userState.currentUser;
+          final currentStamina = user?.stamina ?? 0;
+          final progress = currentStamina / 100;
+          
+          // Only show the bar if a user is logged in
+          if (user == null) {
+            return const SizedBox.shrink();
+          }
+
+          return Container(
+            width: 90, // Fixed width for the bar
+            margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            decoration: BoxDecoration(
+              border: Border.all(color: _biomeHighlightColor, width: 2),
+              borderRadius: BorderRadius.circular(4),
+              color: _biomeDarkColor,
+            ),
+            child: Stack(
+              children: [
+                // Stamina Fill
+                FractionallySizedBox(
+                  widthFactor: progress,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: currentStamina > 25 ? Colors.greenAccent[400] : Colors.redAccent,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                // Stamina Text Overlay
+                Center(
+                  child: Text(
+                    '${currentStamina.toString()}/100',
+                    style: TextStyle(
+                      color: currentStamina > 50 ? Colors.black : Colors.white,
+                      fontFamily: 'PressStart2P',
+                      fontSize: 8,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.biomeName.toUpperCase()}'),
+        // The title now displays only the biome name
+        title: Text('${widget.biomeName.toUpperCase()}'), 
         backgroundColor: _biomeDarkColor, 
         titleTextStyle: TextStyle(
-          // USE DYNAMIC HIGHLIGHT COLOR
           color: _biomeHighlightColor, 
           fontFamily: 'PressStart2P', 
           fontSize: 16
         ),
+        // 🚨 CRITICAL FIX: Add the stamina bar icon to the AppBar actions
+        actions: [
+          _buildStaminaBarIcon(context),
+        ],
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -767,5 +894,114 @@ class __OrganismSpriteDisplayState extends State<_OrganismSpriteDisplay> {
         fit: widget.fit,
       );
     }
+  }
+}
+// NEW WIDGET: _StatsModalContent 
+// This is required for the stamina bar's onTap functionality.
+// ----------------------------------------------------------------------
+class _StatsModalContent extends StatelessWidget {
+  const _StatsModalContent({super.key});
+
+  Widget _buildStatRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text(value),
+        ],
+      ),
+    );
+  }
+
+  // Same detailed stamina bar from the previous solution
+  Widget _buildStaminaBar(BuildContext context, int currentStamina) {
+    final progress = currentStamina / 100;
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('STAMINA', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+        const SizedBox(height: 5),
+        
+        Stack(
+          children: [
+            LinearProgressIndicator(
+              value: 1.0, 
+              backgroundColor: Colors.grey[800],
+              minHeight: 20,
+              color: Colors.grey[600],
+            ),
+            
+            LinearProgressIndicator(
+              value: progress,
+              backgroundColor: Colors.transparent,
+              color: currentStamina > 25 ? Colors.greenAccent[400] : Colors.redAccent,
+              minHeight: 20,
+            ),
+            
+            Positioned.fill(
+              child: Center(
+                child: Text(
+                  '$currentStamina / 100',
+                  style: const TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        
+        const SizedBox(height: 5),
+        // Regeneration Info
+        const Text(
+          'Regenerates +10 every 10 seconds.',
+          style: TextStyle(fontSize: 10, color: Colors.greenAccent),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Use Consumer to listen to UserState and rebuild ONLY this part
+    return Consumer<UserState>(
+      builder: (context, userState, child) {
+        final user = userState.currentUser;
+        
+        if (user == null) {
+          return const SizedBox.shrink();
+        }
+
+        return Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                'Player Stats',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              const Divider(),
+              
+              _buildStatRow('Username:', user.username),
+              _buildStatRow('Gender:', user.gender),
+              _buildStatRow('Money:', '\$${user.money}'), 
+              
+              const SizedBox(height: 20),
+              
+              _buildStaminaBar(context, user.stamina),
+              
+              const SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
+    );
   }
 }

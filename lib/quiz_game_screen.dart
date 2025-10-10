@@ -1,3 +1,4 @@
+// lib/quiz_game_screen.dart
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'dart:convert';
@@ -9,9 +10,12 @@ import 'package:animal_warfare/models/organism.dart'; // Import the Organism mod
 enum QuizType {
   scientificToCommon,
   commonToScientific,
-  // NEW: Sprite-based quizzes
+  // Sprite-based quizzes (Full Sprite as Question)
   spriteToName, 
   spriteToScientific,
+  // Silhouette-based quizzes (Silhouette as Question)
+  silhouetteToName, 
+  silhouetteToScientific,
 }
 
 class QuizGameScreen extends StatefulWidget {
@@ -44,7 +48,7 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
   List<Organism> _allOrganisms = [];
   bool _isLoading = true;
 
-  // Constants
+  // Constants (Used by this class and _QuizSpriteDisplay)
   static const Color primaryButtonColor = Color(0xFF38761D); // Bright Jungle Green
   static const Color secondaryButtonColor = Color(0xFF1E3F2A); // Deep Forest Green
   static const Color highlightColor = Color(0xFFDAA520); // Goldenrod
@@ -99,14 +103,9 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
   void _startNewQuestion() {
     if (_allOrganisms.isEmpty) return;
 
-    // FIX: Use widget.currentUser to access discovered organisms
-    final discoveredAnimals = _allOrganisms.where(
-        // Line 83: Fixed error by using widget.currentUser
-        (org) => widget.currentUser.discoveredOrganisms.contains(org.name) 
-    ).toList();
-    
-    // Fallback: If no animals are discovered, use all animals for the quiz
-    final List<Organism> quizSource = discoveredAnimals.isNotEmpty ? discoveredAnimals : _allOrganisms;
+    // FIX: Removed the logic to filter by discovered animals. 
+    // The quiz should now use ALL organisms.
+    final List<Organism> quizSource = _allOrganisms;
 
     if (quizSource.length < _numberOfOptions) {
       // Not enough animals to create a quiz with 4 options
@@ -151,9 +150,11 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
     switch (widget.quizType) {
       case QuizType.scientificToCommon:
       case QuizType.spriteToName:
+      case QuizType.silhouetteToName:
         return organism.name;
       case QuizType.commonToScientific:
       case QuizType.spriteToScientific:
+      case QuizType.silhouetteToScientific:
         return organism.scientificName;
     }
   }
@@ -166,7 +167,10 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
         return organism.name;
       case QuizType.spriteToName:
       case QuizType.spriteToScientific:
-        return 'What is this animal?'; // Question is implied by the sprite
+        return 'What animal is this? (Full Sprite)';
+      case QuizType.silhouetteToName:
+      case QuizType.silhouetteToScientific:
+        return 'What animal is this? (Silhouette)';
     }
   }
 
@@ -198,27 +202,40 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
 
   // --- UI Builders ---
 
-  // Helper to determine if the quiz uses a sprite image
-  bool get isSpriteQuiz => 
+  // Helper to determine if the quiz uses a sprite image/silhouette
+  bool get usesImageQuestion => 
       widget.quizType == QuizType.spriteToName || 
-      widget.quizType == QuizType.spriteToScientific;
+      widget.quizType == QuizType.spriteToScientific ||
+      widget.quizType == QuizType.silhouetteToName || 
+      widget.quizType == QuizType.silhouetteToScientific;
 
   Widget _buildAnswerButton(Organism option) {
     final answerText = _getAnswerText(option);
     
+    // START MODIFICATION FOR GLOW EFFECT (Buttons remain solid, but glow/border changes)
     Color buttonColor = secondaryButtonColor;
     Color borderColor = highlightColor;
     Color textColor = highlightColor;
+    Color shadowColor = Colors.black; // Default shadow color
+    double borderWidth = 2.0;
+    double elevation = 8;
+    // END MODIFICATION
 
     if (_isAnswered) {
       if (answerText == _correctAnswer) {
-        buttonColor = correctGlowColor.withOpacity(0.3);
+        // CORRECT GLOW EFFECT (Solid background, glowing border/shadow)
         borderColor = correctGlowColor;
         textColor = correctGlowColor;
+        shadowColor = correctGlowColor; // Sets the glow
+        borderWidth = 3.0; // Thicker border
+        elevation = 15; // Increased lift for stronger shadow
       } else if (answerText == _selectedAnswer) {
-        buttonColor = wrongGlowColor.withOpacity(0.3);
+        // INCORRECT GLOW EFFECT (Solid background, glowing border/shadow)
         borderColor = wrongGlowColor;
         textColor = wrongGlowColor;
+        shadowColor = wrongGlowColor; // Sets the glow
+        borderWidth = 3.0;
+        elevation = 15;
       }
     }
 
@@ -227,14 +244,16 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
       child: ElevatedButton(
         onPressed: _isAnswered ? null : () => _handleAnswer(answerText),
         style: ElevatedButton.styleFrom(
-          backgroundColor: buttonColor,
+          backgroundColor: buttonColor, // Now using solid color
           padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 15),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8.0),
-            side: BorderSide(color: borderColor, width: 2.0),
+            // MODIFIED: Use the determined border width
+            side: BorderSide(color: borderColor, width: borderWidth),
           ),
-          elevation: 8,
-          shadowColor: borderColor,
+          // MODIFIED: Use the determined elevation and shadow color
+          elevation: elevation,
+          shadowColor: shadowColor,
         ),
         child: Text(
           answerText.toUpperCase(),
@@ -255,17 +274,51 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
   Widget _buildQuestionWidget() {
     final questionOrganism = _currentQuestion!;
     
-    if (isSpriteQuiz) {
-      // Use the new _QuizSpriteDisplay to handle local/network loading
+    if (usesImageQuestion) { // Changed from isSpriteQuiz
+      
+      final bool isSilhouetteQuizType = 
+          widget.quizType == QuizType.silhouetteToName || 
+          widget.quizType == QuizType.silhouetteToScientific;
+          
+      bool displaySilhouette = false; // Default for Sprite Quiz: show full sprite
+      
+      if (isSilhouetteQuizType) {
+        // SILHOUETTE Quiz: Show silhouette initially.
+        displaySilhouette = true; 
+        
+        // 🟢 FIX: Only set displaySilhouette to false (reveal sprite) if answered CORRECTLY.
+        if (_isAnswered && _selectedAnswer == _correctAnswer) {
+            displaySilhouette = false;
+        }
+
+      } else {
+        // SPRITE Quiz: Always show full sprite as the question.
+        displaySilhouette = false;
+      }
+      
       return Padding(
         padding: const EdgeInsets.only(bottom: 20.0),
-        child: _QuizSpriteDisplay(
-          organism: questionOrganism,
-          height: 250,
-          width: 300,
-          // Only show the silhouette if the answer is incorrect
-          showSilhouette: _isAnswered && _selectedAnswer != _correctAnswer,
-        ),
+        child: Column(
+          children: [
+            Text(
+              _getQuestionText(questionOrganism),
+              textAlign: TextAlign.center,
+              style: TextStyle( 
+                color: highlightColor,
+                fontFamily: 'PressStart2P',
+                fontSize: _responsiveFontSize(context, 14), 
+              ),
+            ),
+            const SizedBox(height: 10),
+            _QuizSpriteDisplay(
+              organism: questionOrganism,
+              height: 250,
+              width: 300,
+              // Use the determined logic for the display
+              showSilhouette: displaySilhouette,
+            ),
+          ],
+        )
       );
     } else {
       // Text-based question
@@ -326,7 +379,7 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
       );
     }
     
-    final isSpriteQuiz = this.isSpriteQuiz;
+    final usesImageQuestion = this.usesImageQuestion;
     final questionWidget = _buildQuestionWidget();
     
     // MODIFIED: Added for the AppBar title
@@ -347,7 +400,7 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
         decoration: BoxDecoration(
           color: secondaryButtonColor,
           image: DecorationImage(
-            image: const AssetImage('assets/main.png'), 
+            image: const AssetImage('assets/biomes/savanna-bg.png'), 
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(
               Colors.black.withOpacity(0.7),
@@ -368,7 +421,7 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
                   questionWidget,
                   
                   // Add spacing only if it's a text-based quiz, as sprite quiz adds margin
-                  if (!isSpriteQuiz)
+                  if (!usesImageQuestion)
                     const SizedBox(height: 40),
 
                   // Answer Options
@@ -402,14 +455,13 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
 }
 
 // ----------------------------------------------------------------------
-// NEW WIDGET: _QuizSpriteDisplay
-// Handles the local asset check and network fallback for the Quiz screen.
+// WIDGET: _QuizSpriteDisplay (Handles Sprite/Silhouette logic and Border)
 // ----------------------------------------------------------------------
 class _QuizSpriteDisplay extends StatefulWidget {
   final Organism organism;
   final double height;
   final double width;
-  final bool showSilhouette; // NEW property to decide if silhouette or color image is shown
+  final bool showSilhouette; // Property to decide if silhouette or color image is shown
 
   const _QuizSpriteDisplay({
     required this.organism,
@@ -488,11 +540,13 @@ class __QuizSpriteDisplayState extends State<_QuizSpriteDisplay> {
     }
     
     final String source = _imagePath;
-
+    Widget imageWidget;
+    
+    // LOGIC: If showSilhouette is true, display the silhouette. Otherwise, display the full sprite.
     if (widget.showSilhouette) {
-      // Show Silhouette (e.g., when the answer is wrong)
-      // Assuming buildSilhouetteSprite is globally available via organism.dart import
-      return buildSilhouetteSprite( 
+      // Show Silhouette
+      // NOTE: This function is assumed to be defined externally (e.g., in organism.dart)
+      imageWidget = buildSilhouetteSprite( 
         imageUrl: source, 
         silhouetteColor: Colors.black, // Dark silhouette for quiz
         organismName: widget.organism.name,
@@ -503,7 +557,7 @@ class __QuizSpriteDisplayState extends State<_QuizSpriteDisplay> {
     } else {
       // Show the actual image (colored image)
       if (_imageSourceType == 'local') {
-        return Image.asset(
+        imageWidget = Image.asset(
           source, 
           height: widget.height, 
           width: widget.width, 
@@ -511,7 +565,7 @@ class __QuizSpriteDisplayState extends State<_QuizSpriteDisplay> {
         );
       } else {
         // Network Image (Fallback)
-        return Image.network(
+        imageWidget = Image.network(
           source, 
           height: widget.height, 
           width: widget.width, 
@@ -529,5 +583,23 @@ class __QuizSpriteDisplayState extends State<_QuizSpriteDisplay> {
         );
       }
     }
+    
+    // Wrap the image/sprite with a Container for the border
+    return Container(
+      height: widget.height,
+      width: widget.width,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: _QuizGameScreenState.secondaryButtonColor.withOpacity(0.8), // Solid background for image box
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          // Use the static constant for a consistent border color
+          color: _QuizGameScreenState.highlightColor, 
+          width: 4,
+        ),
+      ),
+      padding: const EdgeInsets.all(5), // Slight padding inside the border
+      child: imageWidget,
+    );
   }
 }

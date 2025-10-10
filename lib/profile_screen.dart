@@ -205,6 +205,7 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
   }
   // END NEW
 
+  // MODIFIED: Wrapped Text widgets in Flexible/Expanded to fix overflow
   Widget _buildProfileDetail(String label, String value) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10.0),
@@ -217,20 +218,25 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
-          Text(
-            '$label:',
-            style: TextStyle( // MODIFIED: Use TextStyle instead of const TextStyle
-              color: highlightColor,
-              fontFamily: 'PressStart2P',
-              fontSize: _responsiveFontSize(context, 12), // MODIFIED: Responsive font size
+          Flexible( // WRAPPED IN FLEXIBLE
+            child: Text(
+              '$label:',
+              style: TextStyle( 
+                color: highlightColor,
+                fontFamily: 'PressStart2P',
+                fontSize: _responsiveFontSize(context, 12), 
+              ),
             ),
           ),
-          Text(
-            value.toUpperCase(),
-            style: TextStyle( // MODIFIED: Use TextStyle instead of const TextStyle
-              color: Colors.white,
-              fontFamily: 'PressStart2P',
-              fontSize: _responsiveFontSize(context, 12), // MODIFIED: Responsive font size
+          Expanded( // WRAPPED IN EXPANDED
+            child: Text(
+              value.toUpperCase(),
+              textAlign: TextAlign.right,
+              style: TextStyle( 
+                color: Colors.white,
+                fontFamily: 'PressStart2P',
+                fontSize: _responsiveFontSize(context, 12), 
+              ),
             ),
           ),
         ],
@@ -271,26 +277,32 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
     );
   }
 
+  // MODIFIED: Wrapped Text widgets in Flexible/Expanded to fix overflow
   Widget _buildDetailRow(String label, String value, Color color) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            '$label:',
-            style: TextStyle( // MODIFIED: Use TextStyle instead of const TextStyle
-              color: Colors.white70,
-              fontFamily: 'PressStart2P',
-              fontSize: _responsiveFontSize(context, 10), // MODIFIED: Responsive font size
+          Flexible( // WRAPPED IN FLEXIBLE
+            child: Text(
+              '$label:',
+              style: TextStyle( 
+                color: Colors.white70,
+                fontFamily: 'PressStart2P',
+                fontSize: _responsiveFontSize(context, 10), 
+              ),
             ),
           ),
-          Text(
-            value,
-            style: TextStyle(
-              color: color,
-              fontFamily: 'PressStart2P',
-              fontSize: _responsiveFontSize(context, 10), // MODIFIED: Responsive font size
+          Expanded( // WRAPPED IN EXPANDED
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                color: color,
+                fontFamily: 'PressStart2P',
+                fontSize: _responsiveFontSize(context, 10), 
+              ),
             ),
           ),
         ],

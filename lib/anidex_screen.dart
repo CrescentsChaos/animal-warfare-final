@@ -6,6 +6,10 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:animal_warfare/models/organism.dart'; // Ensure this path is correct
 import 'package:animal_warfare/local_auth_service.dart';
 import 'package:animal_warfare/models/achievement.dart';
+// IMPORTED: Theme and styles from the external file
+import 'package:animal_warfare/theme.dart'; 
+
+
 class AnidexScreen extends StatefulWidget {
   // User data must be passed to check discovery status
   final UserData currentUser; 
@@ -18,17 +22,6 @@ class AnidexScreen extends StatefulWidget {
 }
 
 class _AnidexScreenState extends State<AnidexScreen> {
-  // Define High-Contrast Retro/Military-themed colors
-  static const Color primaryButtonColor = Color(0xFF38761D); // Bright Jungle Green
-  static const Color secondaryButtonColor = Color(0xFF1E3F2A); // Deep Forest Green
-  static const Color highlightColor = Color(0xFFDAA520); // Goldenrod
-  
-  // NEW: Individual Stat Colors
-  static const Color healthColor = Color(0xFFC6FF00); // Lime (High saturation)
-  static const Color attackColor = Color(0xFFFF0000); // Red
-  static const Color defenseColor = Color(0xFFFFEB3B); // Yellow
-  static const Color speedColor = Color(0xFF00FFFF); // Cyan
-
   List<Organism> _allOrganisms = [];
   List<Organism> _searchResults = [];
   final TextEditingController _searchController = TextEditingController();
@@ -87,7 +80,8 @@ class _AnidexScreenState extends State<AnidexScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading data. Check JSON format and asset path. Error: $e')),
+          // 🚨 EDITED: Use AppTextStyles.small for SnackBar content
+          SnackBar(content: Text('Error loading data. Check JSON format and asset path. Error: $e', style: AppTextStyles.small(context, color: Colors.white))),
         );
       }
     }
@@ -130,30 +124,28 @@ class _AnidexScreenState extends State<AnidexScreen> {
       // Autocomplete removal: Stack and the autocomplete overlay Text widget are removed.
       child: TextField(
         controller: _searchController,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 16,
-          fontFamily: 'PressStart2P',
-        ),
+        // 🚨 EDITED: Use AppTextStyles.body
+        style: AppTextStyles.body(context, baseSize: 16, color: Colors.white),
         decoration: InputDecoration(
           hintText: 'Search Animal Name...',
-          hintStyle: TextStyle(
-            color: Colors.white.withOpacity(0.5),
-            fontFamily: 'PressStart2P',
-            fontSize: 16,
-          ),
+          // 🚨 EDITED: Use AppTextStyles.body
+          hintStyle: AppTextStyles.body(context, baseSize: 16, color: Colors.white.withOpacity(0.5)),
           filled: true,
-          fillColor: secondaryButtonColor.withOpacity(0.8),
+          // 🚨 EDITED: Use AppColors.secondaryButtonColor
+          fillColor: AppColors.secondaryButtonColor.withOpacity(0.8),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(4.0),
-            borderSide: BorderSide(color: highlightColor, width: 2.0),
+            // 🚨 EDITED: Use AppColors.highlightColor
+            borderSide: const BorderSide(color: AppColors.highlightColor, width: 2.0),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(4.0),
-            borderSide: BorderSide(color: highlightColor, width: 3.0),
+            // 🚨 EDITED: Use AppColors.highlightColor
+            borderSide: const BorderSide(color: AppColors.highlightColor, width: 3.0),
           ),
           suffixIcon: IconButton(
-            icon: const Icon(Icons.search, color: highlightColor),
+            // 🚨 EDITED: Use AppColors.highlightColor
+            icon: const Icon(Icons.search, color: AppColors.highlightColor),
             onPressed: _performSearch,
           ),
           contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 15),
@@ -165,24 +157,27 @@ class _AnidexScreenState extends State<AnidexScreen> {
 
   Widget _buildResultList() {
     if (_allOrganisms.isEmpty) {
-      return const Center(child: Text('Loading Data...', style: TextStyle(color: highlightColor, fontFamily: 'PressStart2P')));
+      // 🚨 EDITED: Use AppTextStyles.small
+      return Center(child: Text('Loading Data...', style: AppTextStyles.small(context, color: AppColors.highlightColor)));
     }
     
     if (_searchResults.isEmpty && _searchController.text.isNotEmpty) {
-      return const Center(
+      return Center(
+        // 🚨 EDITED: Use AppTextStyles.body
         child: Text(
           'NO ANIMALS FOUND.',
           textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.red, fontFamily: 'PressStart2P', fontSize: 14),
+          style: AppTextStyles.body(context, baseSize: 14, color: Colors.red),
         ),
       );
     }
     if (_searchResults.isEmpty) {
-      return const Center(
+      return Center(
+        // 🚨 EDITED: Use AppTextStyles.body
         child: Text(
           'SEARCH FOR AN ANIMAL TO BEGIN.',
           textAlign: TextAlign.center,
-          style: TextStyle(color: highlightColor, fontFamily: 'PressStart2P', fontSize: 14),
+          style: AppTextStyles.body(context, baseSize: 14, color: AppColors.highlightColor),
         ),
       );
     }
@@ -206,22 +201,27 @@ class _AnidexScreenState extends State<AnidexScreen> {
     final Color titleColor = isDiscovered ? Colors.white : Colors.grey.shade600;
 
     return Card(
-      color: secondaryButtonColor.withOpacity(0.9),
+      // 🚨 EDITED: Use AppColors.secondaryButtonColor
+      color: AppColors.secondaryButtonColor.withOpacity(0.9),
       elevation: 5,
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: ListTile(
         leading: Icon(isDiscovered ? Icons.pets : Icons.question_mark_rounded, 
-          color: isDiscovered ? highlightColor : Colors.grey.shade800
+          // 🚨 EDITED: Use AppColors.highlightColor
+          color: isDiscovered ? AppColors.highlightColor : Colors.grey.shade800
         ),
         title: Text(
           titleText,
-          style: TextStyle(color: titleColor, fontFamily: 'PressStart2P', fontSize: 16),
+          // 🚨 EDITED: Use AppTextStyles.body
+          style: AppTextStyles.body(context, baseSize: 16, color: titleColor),
         ),
         subtitle: Text(
           subtitleText,
-          style: TextStyle(color: highlightColor, fontFamily: 'PressStart2P', fontSize: 12),
+          // 🚨 EDITED: Use AppTextStyles.small
+          style: AppTextStyles.small(context, baseSize: 12, color: AppColors.highlightColor),
         ),
-        trailing: Icon(Icons.chevron_right, color: highlightColor),
+        // 🚨 EDITED: Use AppColors.highlightColor
+        trailing: const Icon(Icons.chevron_right, color: AppColors.highlightColor),
         // Always allow showing details, but the modal will restrict content
         onTap: () => _showOrganismDetails(organism), 
       ),
@@ -240,7 +240,8 @@ class _AnidexScreenState extends State<AnidexScreen> {
     Color getStatTextColor(int stat) {
       if (stat >= 400) return Colors.white; // Keep white for high visibility against dark background
       if (stat >= 300) return Colors.white.withOpacity(0.9);
-      if (stat >= 200) return highlightColor;
+      // 🚨 EDITED: Use AppColors.highlightColor
+      if (stat >= 200) return AppColors.highlightColor;
       return Colors.blueGrey;
     }
     
@@ -260,7 +261,8 @@ class _AnidexScreenState extends State<AnidexScreen> {
           builder: (_, controller) {
             return Container(
               decoration: BoxDecoration(
-                color: secondaryButtonColor.withOpacity(0.95),
+                // 🚨 EDITED: Use AppColors.secondaryButtonColor
+                color: AppColors.secondaryButtonColor.withOpacity(0.95),
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
                 border: Border.all(color: rarityColor, width: 3.0),
               ),
@@ -286,11 +288,8 @@ class _AnidexScreenState extends State<AnidexScreen> {
                               Text(
                                 'ANIMAL IDENTIFICATION REQUIRED. DATA BLOCKED.',
                                 textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Colors.red.shade400, 
-                                  fontFamily: 'PressStart2P', 
-                                  fontSize: 14
-                                ),
+                                // 🚨 EDITED: Use AppTextStyles.body
+                                style: AppTextStyles.body(context, baseSize: 14, color: Colors.red.shade400),
                               ),
                               const Divider(color: Colors.red),
                               const SizedBox(height: 10),
@@ -302,23 +301,31 @@ class _AnidexScreenState extends State<AnidexScreen> {
                         const SizedBox(height: 5),
                         Text(
                           isDiscovered ? organism.description : 'Description is classified until identification.',
-                          style: const TextStyle(color: Colors.white70, fontSize: 12),
+                          // 🚨 EDITED: Use AppTextStyles.small
+                          style: AppTextStyles.small(context, baseSize: 12, color: Colors.white70),
                         ),
                         
                         // General Details
-                        const Divider(color: highlightColor),
+                        // 🚨 EDITED: Use AppColors.highlightColor
+                        const Divider(color: AppColors.highlightColor),
                         
-                        // FIX: Swapped order of Rarity and Scientific Name again
+                        // FIX: Rarity remains visible as a general, non-classified detail.
                         _buildDetailRow('Rarity:', organism.rarity, isRarity: true),
                         
+                        // 🟢 MOVED: Habitat row to outside the conditional block
                         _buildDetailRow('Habitat:', organism.habitat),
-                        // Conditional Details
-                        if (isDiscovered) ...[
+
+                        // Conditional Details (Stats and classified info)
+                        if (isDiscovered) ...[ // This block only runs IF discovered.
+                          // ADDED: Scientific Name row
+                          _buildDetailRow('Scientific Name:', organism.scientificName, isScientificName: true),
+                          
                           _buildDetailRow('Drops:', organism.drops),
                           _buildDetailRow('Category:', organism.category),
 
                           // Stats Section
-                          const Divider(color: highlightColor),
+                          // 🚨 EDITED: Use AppColors.highlightColor
+                          const Divider(color: AppColors.highlightColor),
                           // Removed ' (MAX: 500)'
                           _buildSectionTitle('BATTLE STATS'),
                           
@@ -328,37 +335,43 @@ class _AnidexScreenState extends State<AnidexScreen> {
                             organism.health, 
                             500, 
                             getStatTextColor(organism.health), 
-                            const Color.fromARGB(255, 0, 255, 4)
+                            // 🚨 EDITED: Use AppColors.statHealthColor
+                            AppColors.statHealthColor
                           ),
                           _buildStatBar(
                             'ATTACK', 
                             organism.attack, 
                             150, 
                             getStatTextColor(organism.attack), 
-                            attackColor
+                            // 🚨 EDITED: Use AppColors.statAttackColor
+                            AppColors.statAttackColor
                           ),
                           _buildStatBar(
                             'DEFENSE', 
                             organism.defense, 
                             150, 
                             getStatTextColor(organism.defense), 
-                            defenseColor
+                            // 🚨 EDITED: Use AppColors.statDefenseColor
+                            AppColors.statDefenseColor
                           ),
                           _buildStatBar(
                             'SPEED', 
                             organism.speed, 
                             120, 
                             getStatTextColor(organism.speed), 
-                            speedColor
+                            // 🚨 EDITED: Use AppColors.statSpeedColor
+                            AppColors.statSpeedColor
                           ),
                           
                           // Abilities and Moves
-                          const Divider(color: highlightColor),
+                          // 🚨 EDITED: Use AppColors.highlightColor
+                          const Divider(color: AppColors.highlightColor),
                           _buildSectionTitle('ABILITIES'),
                           // Changed to use the standard text detail for abilities
                           _buildTextDetail(organism.abilities),
                           
-                          const Divider(color: highlightColor),
+                          // 🚨 EDITED: Use AppColors.highlightColor
+                          const Divider(color: AppColors.highlightColor),
                           _buildSectionTitle('COMBAT MOVES'),
                           // NEW: Chip/Tag style for moves
                           _buildMovesChips(organism.moves), 
@@ -389,7 +402,8 @@ class _AnidexScreenState extends State<AnidexScreen> {
       decoration: BoxDecoration(
         color: rarityColor.withOpacity(0.4), 
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        border: const Border(bottom: BorderSide(color: highlightColor, width: 3.0)),
+        // 🚨 EDITED: Use AppColors.highlightColor
+        border: const Border(bottom: BorderSide(color: AppColors.highlightColor, width: 3.0)),
       ),
       child: Column(
         children: [
@@ -416,17 +430,14 @@ class _AnidexScreenState extends State<AnidexScreen> {
           Text(
             nameText,
             textAlign: TextAlign.center,
-            style: TextStyle(color: nameColor, fontFamily: 'PressStart2P', fontSize: 18, height: 1.2),
+            // 🚨 EDITED: Use AppTextStyles.headline
+            style: AppTextStyles.headline(context, baseSize: 18, color: nameColor).copyWith(height: 1.2),
           ),
           // Scientific Name
           Text(
               scientificNameText, 
-              style: TextStyle(
-                  color: nameColor, 
-                  fontFamily: 'PressStart2P', 
-                  fontSize: 10,
-                  fontStyle: FontStyle.italic, 
-              ),
+              // 🚨 EDITED: Use AppTextStyles.small
+              style: AppTextStyles.small(context, baseSize: 10, color: nameColor).copyWith(fontStyle: FontStyle.italic),
           ),
           // Drag handle for modal
           const SizedBox(height: 10),
@@ -434,7 +445,8 @@ class _AnidexScreenState extends State<AnidexScreen> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                  color: highlightColor.withOpacity(0.5),
+                  // 🚨 EDITED: Use AppColors.highlightColor
+                  color: AppColors.highlightColor.withOpacity(0.5),
                   borderRadius: BorderRadius.circular(2),
               ),
           ),
@@ -450,12 +462,10 @@ class _AnidexScreenState extends State<AnidexScreen> {
       padding: const EdgeInsets.only(top: 15.0, bottom: 8.0),
       child: Text(
         title.toUpperCase(),
-        style: const TextStyle(
-          color: highlightColor,
-          fontFamily: 'PressStart2P',
-          fontSize: 14,
+        // 🚨 EDITED: Use AppTextStyles.body
+        style: AppTextStyles.body(context, baseSize: 14, color: AppColors.highlightColor).copyWith(
           decoration: TextDecoration.underline,
-          decorationColor: highlightColor,
+          decorationColor: AppColors.highlightColor,
           decorationThickness: 2,
         ),
       ),
@@ -466,7 +476,8 @@ class _AnidexScreenState extends State<AnidexScreen> {
   Widget _buildDetailRow(String label, String value, {bool isHighlight = false, Color? statColor, bool isScientificName = false, bool isRarity = false}) {
     
     // Determine text color and style
-    Color textColor = statColor ?? (isHighlight ? primaryButtonColor : Colors.white);
+    // 🚨 EDITED: Use AppColors.primaryButtonColor
+    Color textColor = statColor ?? (isHighlight ? AppColors.primaryButtonColor : Colors.white);
     
     if (isRarity) {
       textColor = _getRarityColor(value); // Use rarity color for rarity value
@@ -480,18 +491,17 @@ class _AnidexScreenState extends State<AnidexScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // 🚨 EDITED: Use AppTextStyles.small
           Text(
             label,
-            style: const TextStyle(color: Colors.white, fontFamily: 'PressStart2P', fontSize: 12),
+            style: AppTextStyles.small(context, baseSize: 12, color: Colors.white),
           ),
           Expanded( 
             child: Text(
               value,
               textAlign: TextAlign.right,
-              style: TextStyle(
-                color: textColor,
-                fontFamily: 'PressStart2P',
-                fontSize: 12,
+              // 🚨 EDITED: Use AppTextStyles.small
+              style: AppTextStyles.small(context, baseSize: 12, color: textColor).copyWith(
                 fontStyle: fontStyle, // Apply font style
               ),
             ),
@@ -515,20 +525,15 @@ class _AnidexScreenState extends State<AnidexScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              // 🚨 EDITED: Use AppTextStyles.small
               Text(
                 label,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'PressStart2P',
-                  fontSize: 10,
-                ),
+                style: AppTextStyles.small(context, baseSize: 10, color: Colors.white),
               ),
               Text(
                 statValue.toString(),
-                style: TextStyle(
-                  color: barColor, // Use the bar color for the stat value text
-                  fontFamily: 'PressStart2P',
-                  fontSize: 10,
+                // 🚨 EDITED: Use AppTextStyles.small
+                style: AppTextStyles.small(context, baseSize: 10, color: barColor).copyWith(
                   shadows: [
                     // Add a slight glow/shadow to the number too
                     Shadow(
@@ -589,12 +594,10 @@ class _AnidexScreenState extends State<AnidexScreen> {
     // ... (unchanged)
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
+      // 🚨 EDITED: Use AppTextStyles.body
       child: Text(
         value,
-        style: const TextStyle(
-          color: Colors.white70,
-          fontSize: 14,
-        ),
+        style: AppTextStyles.body(context, baseSize: 14, color: Colors.white70),
       ),
     );
   }
@@ -612,20 +615,17 @@ class _AnidexScreenState extends State<AnidexScreen> {
         children: moveList.map((move) {
           return Chip(
             padding: const EdgeInsets.all(8.0),
-            // Use a dark color for the move background
-            backgroundColor: primaryButtonColor.withOpacity(0.8), 
+            // 🚨 EDITED: Use AppColors.primaryButtonColor
+            backgroundColor: AppColors.primaryButtonColor.withOpacity(0.8), 
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10.0),
-              // Use highlightColor for the border
-              side: const BorderSide(color: highlightColor, width: 1.0), 
+              // 🚨 EDITED: Use AppColors.highlightColor
+              side: const BorderSide(color: AppColors.highlightColor, width: 1.0), 
             ),
             label: Text(
               move.toUpperCase(),
-              style: const TextStyle(
-                color: Colors.white,
-                fontFamily: 'PressStart2P',
-                fontSize: 10,
-              ),
+              // 🚨 EDITED: Use AppTextStyles.small
+              style: AppTextStyles.small(context, baseSize: 10, color: Colors.white),
             ),
           );
         }).toList(),
@@ -636,16 +636,18 @@ class _AnidexScreenState extends State<AnidexScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // ... (unchanged)
+    // 🚨 EDITED: Scaffold background color is handled by ThemeData/Container below
     return Scaffold(
       appBar: AppBar(
         title: const Text('ANIMAL INDEX'),
-        backgroundColor: secondaryButtonColor,
-        titleTextStyle: const TextStyle(color: highlightColor, fontFamily: 'PressStart2P', fontSize: 16),
+        // 🚨 EDITED: Use AppColors.secondaryButtonColor and AppColors.highlightColor (though ThemeData should handle this, repeating for safety)
+        backgroundColor: AppColors.secondaryButtonColor,
+        titleTextStyle: AppTextStyles.headline(context, baseSize: 16.0, color: AppColors.highlightColor),
       ),
       body: Container(
         decoration: BoxDecoration(
-          color: secondaryButtonColor,
+          // 🚨 EDITED: Use AppColors.secondaryButtonColor
+          color: AppColors.secondaryButtonColor,
           image: DecorationImage(
             image: const AssetImage('assets/main.png'), 
             fit: BoxFit.cover,
@@ -755,7 +757,8 @@ class __OrganismSpriteDisplayState extends State<_OrganismSpriteDisplay> {
       // Show a simple loading indicator while determining the source
       return SizedBox(
         height: widget.height,
-        child: const Center(child: CircularProgressIndicator(color: Colors.white)),
+        // 🚨 EDITED: Use AppColors.highlightColor
+        child: const Center(child: CircularProgressIndicator(color: AppColors.highlightColor)),
       );
     }
     
@@ -782,7 +785,8 @@ class __OrganismSpriteDisplayState extends State<_OrganismSpriteDisplay> {
             // Use a loading indicator instead of the old placeholder
             return SizedBox(
               height: widget.height,
-              child: const Center(child: CircularProgressIndicator(color: Colors.white)),
+              // 🚨 EDITED: Use AppColors.highlightColor
+              child: const Center(child: CircularProgressIndicator(color: AppColors.highlightColor)),
             );
           },
           errorBuilder: (context, error, stackTrace) => 

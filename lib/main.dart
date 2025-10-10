@@ -1,27 +1,41 @@
+// lib/main.dart
+
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart'; // Required for initialization
+import 'package:firebase_core/firebase_core.dart'; 
 import 'package:animal_warfare/splash_screen.dart'; 
-import 'package:animal_warfare/main_screen.dart'; // (Currently unused, but good practice to keep the import)
+import 'package:audioplayers/audioplayers.dart'; 
+import 'package:provider/provider.dart'; // 🚨 NEW: Import Provider
+import 'package:animal_warfare/user_state.dart'; // 🚨 NEW: Import UserState (Assumed to exist/created in previous steps)
 
 void main() async {
   // 1. Ensure Flutter bindings are initialized first
   WidgetsFlutterBinding.ensureInitialized();
   
-  // 2. Initialize Firebase asynchronously before running the app
+  // 2. CONFIGURE GLOBAL AUDIO CONTEXT (Retained)
+  final audioContext = AudioContext(
+    android: AudioContextAndroid(
+      isSpeakerphoneOn: false,
+      audioFocus: AndroidAudioFocus.gainTransientMayDuck, 
+      audioMode: AndroidAudioMode.normal,
+    ),
+  );
+  AudioPlayer.global.setAudioContext(audioContext);
+  
+  // 3. Initialize Firebase (Retained from your file)
   try {
-    await Firebase.initializeApp(
-        // NOTE: If you have generated a firebase_options.dart file 
-        // using the FlutterFire CLI, uncomment and use it here:
-        // options: DefaultFirebaseOptions.currentPlatform,
-    );
+    await Firebase.initializeApp();
   } catch (e) {
-    // In a production app, you would log this error.
     debugPrint("Firebase Initialization Error: $e");
-    // Consider adding code here to show a critical error screen to the user.
   }
   
-  // 3. Run the application only after initialization is complete
-  runApp(const MyApp());
+  // 4. 🚨 CRITICAL FIX: Wrap the application with the UserState Provider
+  runApp(
+    ChangeNotifierProvider(
+      // This is where the UserState is created and starts loading data/timers.
+      create: (context) => UserState()..loadCurrentUser(), 
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -29,7 +43,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Since Firebase is initialized in main(), we don't need the FutureBuilder here.
     return MaterialApp(
       title: 'Animal Warfare',
       theme: ThemeData(
@@ -41,7 +54,6 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.black,
         useMaterial3: true,
       ),
-      // App starts directly with the splash screen
       home: const SplashScreen(), 
     );
   }

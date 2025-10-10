@@ -5,6 +5,8 @@ import 'package:animal_warfare/explore_screen.dart';
 import 'package:animal_warfare/anidex_screen.dart'; 
 import 'package:animal_warfare/quiz_screen.dart'; 
 import 'package:animal_warfare/local_auth_service.dart';
+// IMPORT THE STATS BUTTON
+import 'package:animal_warfare/stats_display_button.dart'; 
  // Import service
 
 class GameScreen extends StatefulWidget {
@@ -134,6 +136,8 @@ class _GameScreenState extends State<GameScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // ADD THE FLOATING ACTION BUTTON HERE
+      floatingActionButton: const StatsDisplayButton(),
       body: Stack(
         children: [
           // Background Image

@@ -277,8 +277,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> with WidgetsBindi
                           items: const [
                             DropdownMenuItem(value: 'Male', child: Text('MALE')),
                             DropdownMenuItem(value: 'Female', child: Text('FEMALE')),
-                            DropdownMenuItem(value: 'Other', child: Text('OTHER')),
-                            DropdownMenuItem(value: 'N/A', child: Text('N/A')),
                           ],
                           onChanged: (String? newValue) {
                             setState(() {

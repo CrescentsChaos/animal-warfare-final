@@ -12,9 +12,10 @@ class UserData {
   final String password;
   final String avatar;
   final String gender;
+  final int money;
+  final int stamina;
   final Map<String, dynamic> quizStats; 
   final List<String> discoveredOrganisms; 
-  // ADDED: List to track completed achievement titles
   final List<String> completedAchievements; 
 
   UserData({
@@ -22,6 +23,8 @@ class UserData {
     required this.password,
     this.avatar = 'default',
     this.gender = 'N/A',
+    this.money = 1000,
+    this.stamina = 100,
     Map<String, dynamic>? quizStats,
     List<String>? discoveredOrganisms,
     List<String>? completedAchievements, // ADDED
@@ -35,6 +38,8 @@ class UserData {
     String? password,
     String? avatar,
     String? gender,
+    int? money,
+    int? stamina,
     Map<String, dynamic>? quizStats,
     List<String>? discoveredOrganisms,
     List<String>? completedAchievements, // ADDED
@@ -44,17 +49,35 @@ class UserData {
       password: password ?? this.password,
       avatar: avatar ?? this.avatar,
       gender: gender ?? this.gender,
+      money: money ?? this.money,
+      stamina: stamina ?? this.stamina,
       quizStats: quizStats ?? this.quizStats,
       discoveredOrganisms: discoveredOrganisms ?? this.discoveredOrganisms,
       completedAchievements: completedAchievements ?? this.completedAchievements, // ADDED
     );
   }
-
+  UserData decreaseStamina(int amount) {
+    final newStamina = (stamina - amount).clamp(0, 100);
+    return copyWith(stamina: newStamina);
+  }
+  UserData restoreStamina(int amount) {
+    final newStamina = (stamina + amount).clamp(0, 100);
+    return copyWith(stamina: newStamina);
+  }
+  UserData spendMoney(int amount) {
+    final newMoney = (money - amount).clamp(0, 100);
+    return copyWith(money: newMoney);
+  }
+  UserData addMoney(int amount) {
+    final newMoney = (money + amount).clamp(0, 100);
+    return copyWith(money: newMoney);
+  }
   Map<String, dynamic> toJson() => {
         'username': username,
         'password': password,
         'avatar': avatar,
         'gender': gender,
+        'stamina': stamina,
         'quizStats': quizStats,
         'discoveredOrganisms': discoveredOrganisms,
         'completedAchievements': completedAchievements, // ADDED
@@ -65,7 +88,8 @@ class UserData {
       username: json['username'] as String? ?? '',
       password: json['password'] as String? ?? '',
       avatar: json['avatar'] as String? ?? 'default',
-      gender: json['gender'] as String? ?? 'N/A',
+      gender: json['gender'] as String? ?? 'Select Gender',
+      stamina: json['stamina'] as int? ?? 100,
       // Safely deserialize quizStats (handling null or wrong type)
       quizStats: (json['quizStats'] as Map<String, dynamic>?) ?? {},
       // Safely deserialize discoveredOrganisms
@@ -98,7 +122,7 @@ class LocalAuthService {
   }
   
   // Reads a single user's data from their JSON file
-  Future<UserData?> _readUserFile(String username) async {
+  Future<UserData?> readUserFile(String username) async {
     try {
       final file = await _getUserFile(username);
       if (await file.exists()) {
@@ -152,7 +176,7 @@ class LocalAuthService {
 
   // 🚨 FIXED: Renamed from registerUser to register and ensures Future<bool> return type
   Future<bool> register(String username, String password) async {
-    final existingUser = await _readUserFile(username);
+    final existingUser = await readUserFile(username);
     if (existingUser != null) {
       if (kDebugMode) {
         print("DEBUG: Registration failed for $username. User already exists.");
@@ -174,7 +198,7 @@ class LocalAuthService {
 
   // 🚨 FIXED: Renamed from loginUser to login and returns Future<bool>
   Future<bool> login(String username, String password) async {
-    final foundUser = await _readUserFile(username);
+    final foundUser = await readUserFile(username);
     
     if (foundUser != null) {
         if (foundUser.password == password) {
@@ -214,7 +238,7 @@ class LocalAuthService {
       return null;
     }
     
-    return await _readUserFile(currentUsername);
+    return await readUserFile(currentUsername);
   }
 
   // Logs out the current user
@@ -225,7 +249,7 @@ class LocalAuthService {
   
   // --- Profile Update Logic ---
   Future<void> updateProfile(String username, {String? avatar, String? gender}) async {
-    final user = await _readUserFile(username);
+    final user = await readUserFile(username);
 
     if (user != null) {
       final updatedUser = user.copyWith(
@@ -239,7 +263,7 @@ class LocalAuthService {
   
   // Method to update quiz statistics
   Future<void> updateQuizStats(String username, String quizName, bool isCorrect) async {
-    final user = await _readUserFile(username);
+    final user = await readUserFile(username);
 
     if (user != null) {
       // Create a mutable copy of the stats map
@@ -264,7 +288,7 @@ class LocalAuthService {
 
   // Method to mark an organism as discovered
   Future<void> markOrganismAsDiscovered(String username, String organismName) async {
-    final user = await _readUserFile(username);
+    final user = await readUserFile(username);
 
     if (user != null) {
       // Use a Set for efficient check and prevent duplicates

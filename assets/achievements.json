@@ -26,13 +26,13 @@
   },
   {
     "title": "Novice Collector",
-    "description": "Discover 5 Common animals.",
+    "description": "Discover 20 Common animals.",
     "requiredRarity": "Common",
     "requiredCount": 20
   },
   {
     "title": "Rare Hunter",
-    "description": "Discover 3 Rare animals.",
+    "description": "Discover 5 Rare animals.",
     "requiredRarity": "Rare",
     "requiredCount": 5
   },

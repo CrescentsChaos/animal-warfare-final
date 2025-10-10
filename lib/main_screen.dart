@@ -7,14 +7,11 @@ import 'package:animal_warfare/game_screen.dart';
 import 'package:animal_warfare/local_auth_service.dart';
 import 'package:audioplayers/audioplayers.dart'; 
 import 'package:shared_preferences/shared_preferences.dart'; 
-// REMOVED: import 'package:animal_warfare/utils/transitions.dart'; 
+// IMPORTED: Theme and styles from the external file
+import 'package:animal_warfare/theme.dart'; 
+
 
 enum AuthStatus { loading, loggedIn, guest } 
-
-// ------------------------------------------------------------------
-// 🚨 REMOVED: The custom _createFadeRoute function definition is removed entirely
-// ------------------------------------------------------------------
-
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -31,10 +28,10 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   late AudioPlayer _audioPlayer; 
   bool _wasPlayingBeforePause = false; 
 
-  // Define High-Contrast Retro/Military-themed colors
-  static const Color primaryButtonColor = Color(0xFF38761D); // Bright Jungle Green
-  static const Color secondaryButtonColor = Color(0xFF1E3F2A); // Deep Forest Green
-  static const Color highlightColor = Color(0xFFDAA520); // Goldenrod
+  // 🚨 REMOVED: Redundant color definitions, now using AppColors
+  // static const Color primaryButtonColor = Color(0xFF38761D);
+  // static const Color secondaryButtonColor = Color(0xFF1E3F2A);
+  // static const Color highlightColor = Color(0xFFDAA520);
 
   @override
   void initState() {
@@ -86,7 +83,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     if (isMusicEnabled) {
       await _audioPlayer.setReleaseMode(ReleaseMode.loop);
       // Ensure you use a valid AssetSource path
-      await _audioPlayer.play(AssetSource('audio/background_track.mp3'));
+      await _audioPlayer.play(AssetSource('audio/coastal_theme.mp3'));
     } else {
       await _audioPlayer.stop();
     }
@@ -95,7 +92,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   void _navigateTo(Widget page) {
     // Stop and immediately replay music when returning to ensure the latest setting is applied
     _audioPlayer.stop();
-    // 🚨 EDITED: Replaced custom route with standard MaterialPageRoute
+    // EDITED: Replaced custom route with standard MaterialPageRoute
     Navigator.of(context).push(MaterialPageRoute(builder: (context) => page)).then((_) {
       _checkAuthStatus();
       _playBackgroundMusic();
@@ -112,8 +109,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     required VoidCallback onPressed,
     required bool isPrimary,
   }) {
-    final Color buttonColor = isPrimary ? primaryButtonColor : secondaryButtonColor;
-    final Color textColor = isPrimary ? Colors.white : highlightColor;
+    // 🚨 EDITED: Use AppColors
+    final Color buttonColor = isPrimary ? AppColors.primaryButtonColor : AppColors.secondaryButtonColor;
+    final Color textColor = isPrimary ? Colors.white : AppColors.highlightColor;
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 10.0),
@@ -122,17 +120,15 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         icon: Icon(icon, color: textColor),
         label: Text(
           text,
-          style: TextStyle(
-            color: textColor,
-            fontFamily: 'PressStart2P',
-            fontSize: 16,
-          ),
+          // 🚨 EDITED: Use AppTextStyles.body (or a custom size based on it)
+          style: AppTextStyles.body(context, baseSize: 16.0, color: textColor),
         ),
         style: ElevatedButton.styleFrom(
           backgroundColor: buttonColor.withOpacity(0.9),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(5.0),
-            side: BorderSide(color: highlightColor, width: 2.0),
+            // 🚨 EDITED: Use AppColors.highlightColor
+            side: const BorderSide(color: AppColors.highlightColor, width: 2.0),
           ),
           padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 30),
           minimumSize: const Size(double.infinity, 70),
@@ -145,22 +141,23 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     if (_authStatus == AuthStatus.loading) {
       return Scaffold(
-        body: Container(
-          color: secondaryButtonColor,
-          child: const Center(child: CircularProgressIndicator(color: highlightColor)),
-        ),
+        // 🚨 EDITED: Use AppColors for scaffold background
+        backgroundColor: AppColors.secondaryButtonColor,
+        body: Center(child: CircularProgressIndicator(color: AppColors.highlightColor)),
       );
     }
     
     return Scaffold(
+      // 🚨 EDITED: Use AppColors for scaffold background
+      backgroundColor: AppColors.secondaryButtonColor,
       body: Stack(
         children: [
           // Background Image
           Container(
             decoration: BoxDecoration(
-              color: secondaryButtonColor,
+              color: AppColors.secondaryButtonColor,
               image: DecorationImage(
-                image: const AssetImage('assets/background.png'), 
+                image: const AssetImage('assets/biomes/coastal-bg.png'), 
                 fit: BoxFit.cover,
                 colorFilter: ColorFilter.mode(
                   Colors.black.withOpacity(0.7),
@@ -182,10 +179,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                   Text(
                     'ANIMAL WARFARE',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 32,
-                      color: highlightColor,
-                      fontFamily: 'PressStart2P',
+                    // 🚨 EDITED: Use AppTextStyles.headline for the main title
+                    style: AppTextStyles.headline(context, baseSize: 32.0).copyWith(
                       shadows: [
                         Shadow(color: Colors.black.withOpacity(0.9), blurRadius: 4, offset: const Offset(3, 3))
                       ],
@@ -234,10 +229,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                   Text(
                     'STATUS: ${_authStatus == AuthStatus.guest ? 'GUEST ACCESS' : 'PLAYER ACTIVE'}',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: highlightColor.withOpacity(0.8), 
-                      fontFamily: 'PressStart2P',
+                    // 🚨 EDITED: Use AppTextStyles.small for subtle status text
+                    style: AppTextStyles.small(context, baseSize: 12.0, color: AppColors.highlightColor.withOpacity(0.8)).copyWith(
                       shadows: [
                         Shadow(color: Colors.black.withOpacity(0.5), offset: const Offset(1, 1))
                       ]
