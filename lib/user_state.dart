@@ -38,7 +38,12 @@ class UserState with ChangeNotifier {
       }
     });
   }
-
+  void setCurrentUser(UserData? user) {
+    if (user != _currentUser) {
+      _currentUser = user;
+      notifyListeners();
+    }
+  }
   Future<void> _regenerateStamina(int amount) async {
     if (_currentUser == null) return;
 

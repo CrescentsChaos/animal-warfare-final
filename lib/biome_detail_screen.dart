@@ -288,15 +288,21 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
       return; // Stop identification
     }
 
-    // 4. Deduct stamina
+    // 4. Deduct stamina (This updates UserState for stamina)
     await userState.decreaseStamina(cost);
+    
+    // 5. Mark organism as discovered (This updates the file)
     await widget.authService.markOrganismAsDiscovered(
       _currentUser.username, 
       organism.name
     );
     
-    // 2. Fetch the updated user data
+    // 2. Fetch the updated user data (Gets the latest data from the file)
     await _refreshUserData(); 
+    
+    // 🚨 NEW: UPDATE THE USERSTATE PROVIDER WITH THE REFRESHED DATA
+    // The refreshed _currentUser now contains the newly discovered organism.
+    userState.setCurrentUser(_currentUser); 
     
     // 3. Check and unlock achievements using the REFRESHED local user data
     final newAchievements = await _achievementService.checkAndUnlockAchievements(_currentUser); 
