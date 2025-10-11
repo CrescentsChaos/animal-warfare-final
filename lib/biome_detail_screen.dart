@@ -297,16 +297,31 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
       organism.name
     );
     
-    // 2. Fetch the updated user data (Gets the latest data from the file)
+    // 2. Fetch the updated user data (Gets the latest data from the file, now with the discovery)
     await _refreshUserData(); 
-    
-    // 🚨 NEW: UPDATE THE USERSTATE PROVIDER WITH THE REFRESHED DATA
-    // The refreshed _currentUser now contains the newly discovered organism.
-    userState.setCurrentUser(_currentUser); 
     
     // 3. Check and unlock achievements using the REFRESHED local user data
     final newAchievements = await _achievementService.checkAndUnlockAchievements(_currentUser); 
+    
+    // 💡 FIX START: Update and Save Achievements
+    if (newAchievements.isNotEmpty) {
+      // 1. Manually update the local _currentUser object with the new achievement titles
+      final List<String> currentAchievements = [..._currentUser.completedAchievements];
+      currentAchievements.addAll(newAchievements);
+      
+      // Create a new UserData object for saving
+      _currentUser = _currentUser.copyWith(completedAchievements: currentAchievements);
 
+      // 2. 💾 PERSISTENCE STEP: Save the fully updated _currentUser object to the file
+      // This is necessary because AchievementService only returns titles, it doesn't save.
+      await widget.authService.updateUser(_currentUser); 
+    }
+    // 💡 FIX END
+
+    // 🚨 UPDATE THE USERSTATE PROVIDER WITH THE LATEST SAVED DATA
+    // This is now done AFTER the potential achievement save, ensuring the provider is current.
+    userState.setCurrentUser(_currentUser); 
+    
     // 4. Show a pop-up for each newly unlocked achievement
     for (var title in newAchievements) {
       if (mounted) {
@@ -320,7 +335,7 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
         _isNameRevealed = true;
       });
     }
-  }
+}
   
   // Helper to check if organism is discovered - UPDATED to use local state
   bool _isDiscovered(Organism organism) {

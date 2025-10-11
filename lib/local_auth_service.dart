@@ -285,7 +285,7 @@ class LocalAuthService {
       await _writeUserFile(updatedUser);
     }
   }
-
+  
   // Method to mark an organism as discovered
   Future<void> markOrganismAsDiscovered(String username, String organismName) async {
     final user = await readUserFile(username);
