@@ -7,7 +7,6 @@ import 'package:animal_warfare/game_screen.dart';
 import 'package:animal_warfare/local_auth_service.dart';
 import 'package:audioplayers/audioplayers.dart'; 
 import 'package:shared_preferences/shared_preferences.dart'; 
-// IMPORTED: Theme and styles from the external file
 import 'package:animal_warfare/theme.dart'; 
 
 
@@ -92,12 +91,17 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   void _navigateTo(Widget page) {
     // Stop and immediately replay music when returning to ensure the latest setting is applied
     _audioPlayer.stop();
-    // EDITED: Replaced custom route with standard MaterialPageRoute
-    Navigator.of(context).push(MaterialPageRoute(builder: (context) => page)).then((_) {
-      _checkAuthStatus();
-      _playBackgroundMusic();
+    
+    // FIX: Replace MaterialPageRoute with your custom _createFadeRoute
+    Navigator.of(context).push(
+        _createFadeRoute(page), // <--- Use the custom route here!
+    ).then((_) {
+        // This block runs AFTER the new page is POPPED (i.e., you return to the current screen)
+        _checkAuthStatus();
+        _playBackgroundMusic();
+        // REMOVED: The stray '_createFadeRoute(page),' which was incorrectly placed inside the .then() block.
     });
-  }
+}
 
   void _handleAuthAction() {
     _navigateTo(const LoginScreen()); 
@@ -244,4 +248,17 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       ),
     );
   }
+}
+PageRouteBuilder _createFadeRoute(Widget page) {
+  return PageRouteBuilder(
+    // Reduce duration for a snappier feel
+    transitionDuration: const Duration(milliseconds: 300), 
+    pageBuilder: (context, animation, secondaryAnimation) => page,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      return FadeTransition(
+        opacity: animation,
+        child: child,
+      );
+    },
+  );
 }

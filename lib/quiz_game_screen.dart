@@ -49,8 +49,8 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
   bool _isLoading = true;
 
   // Constants (Used by this class and _QuizSpriteDisplay)
-  static const Color primaryButtonColor = Color(0xFF38761D); // Bright Jungle Green
-  static const Color secondaryButtonColor = Color(0xFF1E3F2A); // Deep Forest Green
+  static const Color primaryButtonColor = Color.fromARGB(0, 56, 118, 29); // Bright Jungle Green
+  static const Color secondaryButtonColor = Color.fromARGB(0, 30, 63, 42); // Deep Forest Green
   static const Color highlightColor = Color(0xFFDAA520); // Goldenrod
   static const Color correctGlowColor = Color(0xFF00FF00); // Bright Green
   static const Color wrongGlowColor = Color(0xFFFF0000); // Bright Red
@@ -213,7 +213,7 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
     final answerText = _getAnswerText(option);
     
     // START MODIFICATION FOR GLOW EFFECT (Buttons remain solid, but glow/border changes)
-    Color buttonColor = secondaryButtonColor;
+    Color buttonColor = const Color.fromARGB(0, 30, 63, 42);
     Color borderColor = highlightColor;
     Color textColor = highlightColor;
     Color shadowColor = Colors.black; // Default shadow color
@@ -326,7 +326,7 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
         padding: const EdgeInsets.all(20),
         margin: const EdgeInsets.only(bottom: 20),
         decoration: BoxDecoration(
-          color: secondaryButtonColor.withOpacity(0.9),
+          color: const Color.fromARGB(0, 30, 63, 42).withOpacity(0.9),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: highlightColor, width: 3),
         ),
@@ -347,7 +347,7 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const Scaffold(
-        backgroundColor: secondaryButtonColor,
+        backgroundColor: Color.fromARGB(0, 30, 63, 42),
         body: Center(
           child: CircularProgressIndicator(color: highlightColor),
         ),
@@ -357,15 +357,15 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
     if (_currentQuestion == null) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Quiz Game'), 
-          backgroundColor: secondaryButtonColor,
+          title: const Text('Quiz'), 
+          backgroundColor: const Color.fromARGB(0, 30, 63, 42),
           titleTextStyle: TextStyle(
             color: highlightColor, 
             fontFamily: 'PressStart2P', 
             fontSize: _responsiveFontSize(context, 16), // MODIFIED: Responsive font size
           ),
         ),
-        backgroundColor: secondaryButtonColor,
+        backgroundColor: const Color.fromARGB(0, 30, 63, 42),
         body: Center(
           child: Text('Not enough animals discovered for this quiz type.', 
             textAlign: TextAlign.center,
@@ -386,19 +386,19 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
     final appBarTextStyle = TextStyle(
         color: highlightColor, 
         fontFamily: 'PressStart2P', 
-        fontSize: _responsiveFontSize(context, 16)
+        fontSize: _responsiveFontSize(context, 12)
     );
     // END MODIFIED
 
     return Scaffold(
       appBar: AppBar(
         title: Text('${widget.quizType.name.toUpperCase()} Quiz'),
-        backgroundColor: secondaryButtonColor,
+        backgroundColor: const Color.fromARGB(0, 30, 63, 42),
         titleTextStyle: appBarTextStyle, // MODIFIED: Use responsive style
       ),
       body: Container(
         decoration: BoxDecoration(
-          color: secondaryButtonColor,
+          color: const Color.fromARGB(0, 30, 63, 42),
           image: DecorationImage(
             image: const AssetImage('assets/biomes/savanna-bg.png'), 
             fit: BoxFit.cover,
@@ -590,7 +590,7 @@ class __QuizSpriteDisplayState extends State<_QuizSpriteDisplay> {
       width: widget.width,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: _QuizGameScreenState.secondaryButtonColor.withOpacity(0.8), // Solid background for image box
+        color: const Color.fromARGB(78, 1, 6, 38).withOpacity(0.8), // Solid background for image box
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
           // Use the static constant for a consistent border color

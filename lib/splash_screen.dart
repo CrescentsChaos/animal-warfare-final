@@ -110,11 +110,11 @@ class _SplashScreenState extends State<SplashScreen>
     _audioPlayer.stop();
     _audioPlayer.dispose();
     
-    // 🚨 EDITED: Replaced custom route with standard MaterialPageRoute
+    // ✅ FIX: Use the custom _createFadeRoute for a smooth, fade-in transition
     Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const MainScreen())
+        _createFadeRoute(const MainScreen()), // <--- Use the custom route here!
     );
-  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -190,4 +190,17 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
   }
+}
+PageRouteBuilder _createFadeRoute(Widget page) {
+  return PageRouteBuilder(
+    // Reduce duration for a snappier feel
+    transitionDuration: const Duration(milliseconds: 300), 
+    pageBuilder: (context, animation, secondaryAnimation) => page,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      return FadeTransition(
+        opacity: animation,
+        child: child,
+      );
+    },
+  );
 }
