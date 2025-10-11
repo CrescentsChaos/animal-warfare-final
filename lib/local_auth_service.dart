@@ -65,11 +65,11 @@ class UserData {
     return copyWith(stamina: newStamina);
   }
   UserData spendMoney(int amount) {
-    final newMoney = (money - amount).clamp(0, 100);
+    final newMoney = (money - amount);
     return copyWith(money: newMoney);
   }
   UserData addMoney(int amount) {
-    final newMoney = (money + amount).clamp(0, 100);
+    final newMoney = (money + amount);
     return copyWith(money: newMoney);
   }
   Map<String, dynamic> toJson() => {

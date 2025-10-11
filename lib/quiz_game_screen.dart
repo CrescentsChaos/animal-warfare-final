@@ -392,7 +392,7 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.quizType.name.toUpperCase()} Quiz'),
+        title: Text('${widget.quizType.name.toUpperCase()}'),
         backgroundColor: const Color.fromARGB(0, 30, 63, 42),
         titleTextStyle: appBarTextStyle, // MODIFIED: Use responsive style
       ),
