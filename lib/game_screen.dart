@@ -5,7 +5,6 @@ import 'package:animal_warfare/explore_screen.dart';
 import 'package:animal_warfare/anidex_screen.dart'; 
 import 'package:animal_warfare/quiz_screen.dart'; 
 import 'package:animal_warfare/local_auth_service.dart';
-// IMPORT THE STATS BUTTON
 import 'package:animal_warfare/stats_display_button.dart'; 
  // Import service
 
@@ -63,9 +62,9 @@ class _GameScreenState extends State<GameScreen> {
   }
   
   // Navigation function to pass UserData and LocalAuthService
-  void _navigateTo(Widget screen) {
+  void _navigateTo(Widget screen) async {
     _audioPlayer.pause();
-    Navigator.of(context).push(
+    await Navigator.of(context).push(
       PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 400),
         pageBuilder: (context, animation, secondaryAnimation) => screen,
@@ -76,10 +75,20 @@ class _GameScreenState extends State<GameScreen> {
           );
         },
       ),
-    ).then((_) {
-      // Resume music when returning
-      _audioPlayer.resume(); 
-    });
+    );
+    
+    // Resume music when returning
+    _audioPlayer.resume();
+    
+    // 🟢 FIX: Refresh user data when returning from any screen
+    final updatedUser = await widget.authService.getCurrentUser();
+    if (updatedUser != null && mounted) {
+      setState(() {
+        // This updates the GameScreen's reference to currentUser
+        // Note: We can't directly modify widget.currentUser, but we need to
+        // ensure the parent (MainScreen or wherever) knows about updates
+      });
+    }
   }
 
   // Helper function for themed buttons

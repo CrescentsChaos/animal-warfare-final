@@ -4,13 +4,11 @@ import 'package:animal_warfare/models/organism.dart'; // Ensure this is the corr
 import 'explore_screen.dart'; // Import to use getWeightedRandomOrganism and Organism List
 import 'package:audioplayers/audioplayers.dart'; // Audio Player Import
 import 'package:animal_warfare/local_auth_service.dart'; 
-// ADDED IMPORTS FOR ACHIEVEMENTS
 import 'package:animal_warfare/achievement_service.dart'; 
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:provider/provider.dart'; // 🚨 NEW: Import Provider
-import 'package:animal_warfare/user_state.dart'; // 🚨 NEW: Import UserState
-// END ADDED IMPORTS
+import 'package:provider/provider.dart';
+import 'package:animal_warfare/user_state.dart'; 
 
 class BiomeDetailScreen extends StatefulWidget {
   final String biomeName;
@@ -93,7 +91,7 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
   
   // Helper to get the organism's local sprite path
   String _getOrganismLocalAssetPath(String organismName) {
-    final fileName = organismName.toLowerCase().replaceAll(' ', '_');
+    final fileName = organismName.toLowerCase().replaceAll(' ', '_').replaceAll('-', '_').replaceAll("'", '_');
     return 'assets/sprites/$fileName.png';
   }
 
@@ -299,7 +297,6 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
     
     // 2. Fetch the updated user data (Gets the latest data from the file, now with the discovery)
     await _refreshUserData(); 
-    
     // 3. Check and unlock achievements using the REFRESHED local user data
     final newAchievements = await _achievementService.checkAndUnlockAchievements(_currentUser); 
     
@@ -312,14 +309,8 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
       // Create a new UserData object for saving
       _currentUser = _currentUser.copyWith(completedAchievements: currentAchievements);
 
-      // 2. 💾 PERSISTENCE STEP: Save the fully updated _currentUser object to the file
-      // This is necessary because AchievementService only returns titles, it doesn't save.
       await widget.authService.updateUser(_currentUser); 
     }
-    // 💡 FIX END
-
-    // 🚨 UPDATE THE USERSTATE PROVIDER WITH THE LATEST SAVED DATA
-    // This is now done AFTER the potential achievement save, ensuring the provider is current.
     userState.setCurrentUser(_currentUser); 
     
     // 4. Show a pop-up for each newly unlocked achievement

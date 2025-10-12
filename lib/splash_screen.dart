@@ -90,7 +90,7 @@ class _SplashScreenState extends State<SplashScreen>
     if (currentContext == null) return;
     
     // 1. Precache main assets
-    await precacheImage(const AssetImage('assets/taiga-bg.png'), currentContext);
+    await precacheImage(const AssetImage('assets/biomes/taiga-bg.png'), currentContext);
     await precacheImage(const AssetImage('assets/logo.png'), currentContext);
     
     // 2. Precache other common assets (add any other images used in the first few screens)

@@ -44,18 +44,20 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
   // Override to handle app lifecycle changes
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) async {
-    super.didChangeAppLifecycleState(state);
+  void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused) {
-      final playerState = await _audioPlayer.state;
-      if (playerState == PlayerState.playing) {
+      // Pause audio when app goes into background
+      if (_audioPlayer.state == PlayerState.playing) {
         _wasPlayingBeforePause = true;
-        await _audioPlayer.pause();
+        _audioPlayer.pause();
+      } else {
+        _wasPlayingBeforePause = false;
       }
     } else if (state == AppLifecycleState.resumed) {
+      // Resume audio when app comes back to foreground
       if (_wasPlayingBeforePause) {
-        await _audioPlayer.resume();
-        _wasPlayingBeforePause = false;
+        _audioPlayer.resume();
+        _wasPlayingBeforePause = false; // Reset the flag
       }
     }
   }
@@ -63,7 +65,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _audioPlayer.dispose();
+    // 🚨 FIX: Stop and release the audio player to prevent resource leaks and errors
+    _audioPlayer.stop();
+    _audioPlayer.release();
     super.dispose();
   }
 

@@ -1,8 +1,7 @@
 // lib/user_state.dart
 
 import 'package:flutter/foundation.dart';
-import 'package:provider/provider.dart';
-import 'dart:async'; // 🚨 NEW: Import for the Timer class
+import 'dart:async'; 
 import 'local_auth_service.dart'; 
 
 class UserState with ChangeNotifier {
@@ -24,7 +23,7 @@ class UserState with ChangeNotifier {
   }
   
   // ------------------------------------------------------------------
-  // 🚨 NEW: Stamina Regeneration Logic
+  // Stamina Regeneration Logic
   // ------------------------------------------------------------------
   void _startStaminaRegeneration() {
     // Stop any existing timer before starting a new one
@@ -44,6 +43,7 @@ class UserState with ChangeNotifier {
       notifyListeners();
     }
   }
+  
   Future<void> _regenerateStamina(int amount) async {
     if (_currentUser == null) return;
 
@@ -57,10 +57,11 @@ class UserState with ChangeNotifier {
     notifyListeners();
   }
   
-  // ------------------------------------------------------------------
-  // Existing Methods
-  // ------------------------------------------------------------------
-
+  Future<void> refreshCurrentUser() async {
+    await loadCurrentUser();
+    // loadCurrentUser handles the setState and notifyListeners
+  }
+  
   Future<void> loadCurrentUser() async {
     _currentUser = await _authService.getCurrentUser();
     notifyListeners();
@@ -75,17 +76,19 @@ class UserState with ChangeNotifier {
   Future<void> decreaseStamina(int amount) async {
     if (_currentUser == null) return;
     
+    // 1. Update local state
     _currentUser = _currentUser!.decreaseStamina(amount);
+    
     await _authService.updateUser(_currentUser!);
-    notifyListeners();
-  }
-  
-  // ------------------------------------------------------------------
-  // 🚨 CRITICAL FIX: Dispose the Timer
-  // ------------------------------------------------------------------
+    
+    //await refreshCurrentUser(); 
+    }
+
   @override
   void dispose() {
-    _staminaRegenTimer?.cancel(); // Cancel the timer when the state is destroyed
+    // 🚨 FIX: Cancel the timer to prevent memory leaks or runtime errors 
+    // if the UserState object is ever removed from the widget tree.
+    _staminaRegenTimer?.cancel(); 
     super.dispose();
   }
 }

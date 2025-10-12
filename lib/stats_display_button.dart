@@ -1,8 +1,7 @@
 // lib/stats_display_button.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'user_state.dart';
-import 'local_auth_service.dart'; // Ensure this is imported for UserData type
+import 'package:animal_warfare/user_state.dart';
 
 class StatsDisplayButton extends StatelessWidget {
   const StatsDisplayButton({super.key});

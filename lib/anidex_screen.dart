@@ -5,10 +5,9 @@ import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:animal_warfare/models/organism.dart'; // Ensure this path is correct
 import 'package:animal_warfare/local_auth_service.dart';
-import 'package:animal_warfare/models/achievement.dart';
-// IMPORTED: Theme and styles from the external file
+import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/theme.dart'; 
-
+import 'package:provider/provider.dart';
 
 class AnidexScreen extends StatefulWidget {
   // User data must be passed to check discovery status
@@ -27,9 +26,13 @@ class _AnidexScreenState extends State<AnidexScreen> {
   final TextEditingController _searchController = TextEditingController();
   
   // Helper to check if organism is discovered
-  bool _isDiscovered(Organism organism) {
-    return widget.currentUser.discoveredOrganisms.contains(organism.name);
-  }
+  bool _isDiscovered(BuildContext context, Organism organism) {
+  // Retrieve the UserData from the Provider without listening 
+  // (the Consumer around the search results list will handle rebuilding)
+  final userState = Provider.of<UserState>(context, listen: false); 
+  // Use null-aware operator if currentUser can be null
+  return userState.currentUser?.discoveredOrganisms.contains(organism.name) ?? false;
+}
   
   @override
   void initState() {
@@ -183,57 +186,67 @@ class _AnidexScreenState extends State<AnidexScreen> {
     }
 
     return ListView.builder(
-      itemCount: _searchResults.length,
-      itemBuilder: (context, index) {
-        final organism = _searchResults[index];
-        return _buildOrganismTile(organism);
-      },
-    );
+  // FIX: Use the list with current search results
+  itemCount: _searchResults.length, 
+  itemBuilder: (context, index) {
+    final organism = _searchResults[index];
+    
+    // 💡 FIX: Pass the 'context' to the _buildOrganismTile function.
+    return _buildOrganismTile(context, organism); 
+  },
+);
   }
   
-  Widget _buildOrganismTile(Organism organism) {
-    // Check discovery status
-    final bool isDiscovered = _isDiscovered(organism);
-    
-    // Conditional display for title/subtitle if not discovered
-    final String titleText = isDiscovered ? organism.name.toUpperCase() : '???';
-    final String subtitleText = isDiscovered ? 'Rarity: ${organism.rarity}' : 'Status: UNDISCOVERED';
-    final Color titleColor = isDiscovered ? Colors.white : Colors.grey.shade600;
+  // lib/anidex_screen.dart
 
-    return Card(
-      // 🚨 EDITED: Use AppColors.secondaryButtonColor
-      color: AppColors.secondaryButtonColor.withOpacity(0.9),
-      elevation: 5,
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      child: ListTile(
-        leading: Icon(isDiscovered ? Icons.pets : Icons.question_mark_rounded, 
-          // 🚨 EDITED: Use AppColors.highlightColor
-          color: isDiscovered ? AppColors.highlightColor : Colors.grey.shade800
-        ),
-        title: Text(
-          titleText,
-          // 🚨 EDITED: Use AppTextStyles.body
-          style: AppTextStyles.body(context, baseSize: 16, color: titleColor),
-        ),
-        subtitle: Text(
-          subtitleText,
-          // 🚨 EDITED: Use AppTextStyles.small
-          style: AppTextStyles.small(context, baseSize: 12, color: AppColors.highlightColor),
-        ),
+// ... (inside _AnidexScreenState)
+
+// 💡 FIX: Add 'BuildContext context' as the first argument
+Widget _buildOrganismTile(BuildContext context, Organism organism) {
+  // 💡 FIX: Pass 'context' to the _isDiscovered helper function
+  final bool isDiscovered = _isDiscovered(context, organism);
+  
+  // Conditional display for title/subtitle if not discovered
+  final String titleText = isDiscovered ? organism.name.toUpperCase() : '???';
+  final String subtitleText = isDiscovered ? 'Rarity: ${organism.rarity}' : 'Status: UNDISCOVERED';
+  final Color titleColor = isDiscovered ? Colors.white : Colors.grey.shade600;
+
+  return Card(
+    // 🚨 EDITED: Use AppColors.secondaryButtonColor
+    color: AppColors.secondaryButtonColor.withOpacity(0.9),
+    elevation: 5,
+    margin: const EdgeInsets.symmetric(vertical: 8),
+    child: ListTile(
+      leading: Icon(isDiscovered ? Icons.pets : Icons.question_mark_rounded, 
         // 🚨 EDITED: Use AppColors.highlightColor
-        trailing: const Icon(Icons.chevron_right, color: AppColors.highlightColor),
-        // Always allow showing details, but the modal will restrict content
-        onTap: () => _showOrganismDetails(organism), 
+        color: isDiscovered ? AppColors.highlightColor : Colors.grey.shade800
       ),
-    );
-  }
+      title: Text(
+        titleText,
+        // 🚨 EDITED: Use AppTextStyles.body
+        // The context is now available here
+        style: AppTextStyles.body(context, baseSize: 16, color: titleColor), 
+      ),
+      subtitle: Text(
+        subtitleText,
+        // 🚨 EDITED: Use AppTextStyles.small
+        // The context is now available here
+        style: AppTextStyles.small(context, baseSize: 12, color: AppColors.highlightColor),
+      ),
+      // 🚨 EDITED: Use AppColors.highlightColor
+      trailing: const Icon(Icons.chevron_right, color: AppColors.highlightColor),
+      // 💡 FIX: Pass 'context' to the _showOrganismDetails function.
+      onTap: () => _showOrganismDetails(context, organism), 
+    ),
+  );
+}
 
   // ------------------------------------------------------------------
   // Immersive Modal Bottom Sheet for Details
   // ------------------------------------------------------------------
-  void _showOrganismDetails(Organism organism) {
+  void _showOrganismDetails(BuildContext context, Organism organism) {
     // Check discovery status once
-    final bool isDiscovered = _isDiscovered(organism);
+    final bool isDiscovered = _isDiscovered(context, organism);
     
     // Stat color logic to determine the text color based on value, 
     // now separate from the bar color.
