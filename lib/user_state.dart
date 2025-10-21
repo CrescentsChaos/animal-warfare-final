@@ -30,10 +30,10 @@ class UserState with ChangeNotifier {
     _staminaRegenTimer?.cancel(); 
     
     // Create a periodic timer that runs every 10 seconds
-    _staminaRegenTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
+    _staminaRegenTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
       if (_currentUser != null && _currentUser!.stamina < 100) {
         // Regeneration amount: 10
-        _regenerateStamina(10); 
+        _regenerateStamina(20); 
       }
     });
   }
