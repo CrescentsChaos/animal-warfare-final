@@ -81,7 +81,7 @@ class UserState with ChangeNotifier {
     
     await _authService.updateUser(_currentUser!);
     
-    //await refreshCurrentUser(); 
+    notifyListeners();
     }
 
   @override

@@ -127,6 +127,12 @@ class LocalAuthService {
   
   // Reads a single user's data from their JSON file
   Future<UserData?> readUserFile(String username) async {
+    if (_writeLocks[username] != null) {
+      if (kDebugMode) {
+        print("DEBUG: Waiting for pending write to complete before reading for $username");
+      }
+      await _writeLocks[username];
+    }
     try {
       final file = await _getUserFile(username);
       if (await file.exists()) {
