@@ -22,7 +22,7 @@
   {
     "title": "Life Encyclopedia",
     "description": "Discover all unique animals.",
-    "requiredCount": 1500
+    "requiredCount": 1700
   },
   {
     "title": "Novice Collector",
@@ -45,7 +45,7 @@
   {
     "title": "Living Legend",
     "description": "Discover all Legendary animals.",
-    "requiredRarity": "Rare",
+    "requiredRarity": "Legendary",
     "requiredCount": 30
   },
   {
