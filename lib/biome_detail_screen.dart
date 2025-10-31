@@ -971,7 +971,7 @@ class _StatsModalContent extends StatelessWidget {
         const SizedBox(height: 5),
         // Regeneration Info
         const Text(
-          'Regenerates +10 every 10 seconds.',
+          'Regenerates +20 every 5 seconds.',
           style: TextStyle(fontSize: 10, color: Colors.greenAccent),
         ),
       ],
