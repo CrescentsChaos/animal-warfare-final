@@ -1,6 +1,8 @@
 // lib/biome_detail_screen.dart
 import 'package:flutter/material.dart';
-import 'package:animal_warfare/models/organism.dart'; // Ensure this is the correct path
+import 'package:animal_warfare/models/organism.dart';
+import 'package:animal_warfare/models/captured_organism.dart';
+import 'package:animal_warfare/battle_screen.dart';// Ensure this is the correct path
 import 'explore_screen.dart'; // Import to use getWeightedRandomOrganism and Organism List
 import 'package:audioplayers/audioplayers.dart'; // Audio Player Import
 import 'package:animal_warfare/local_auth_service.dart'; 
@@ -32,6 +34,24 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
   // Constants
   static const Color highlightColor = Color(0xFFDAA520); // Gold/Yellow (kept as fallback)
   
+  // 🚨 NEW: Define a static Organism model for the Human fighter
+  static final Organism HUMAN_ORGANISM = Organism(
+    name: 'Human',
+    scientificName: 'Homo sapiens',
+    habitat: 'Everywhere',
+    drops: 'N/A',
+    attack: 40,  // Base stats for a weak but non-zero fighter
+    defense: 30,
+    health: 120,
+    speed: 50,
+    abilities: 'None',
+    category: 'Human',
+    moves: 'Punch, Run',
+    sprite: 'https://i.imgur.com/your_human_sprite.png', // Placeholder sprite URL
+    rarity: 'Common',
+    description: 'The dominant species.',
+  );
+  
   Organism? _currentEncounter;
   bool _isExploring = false;
   bool _isNameRevealed = false; 
@@ -58,7 +78,7 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
     int r = (color.red * 0.6).round().clamp(0, 255);
     int g = (color.green * 0.6).round().clamp(0, 255);
     
-    // 🚨 FIX: Declare 'b' using 'int b =' instead of just 'b ='
+    // 圷 FIX: Declare 'b' using 'int b =' instead of just 'b ='
     int b = (color.blue * 0.6).round().clamp(0, 255);
     
     return Color.fromARGB(color.alpha, r, g, b);
@@ -111,6 +131,73 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
       default: return 5; // Default cost
     }
   }
+  void _displayMessage(String message) {
+  // Ensure the context is available and the ScaffoldMessenger is accessible
+  if (mounted) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+}
+  void _onEncounterFound(Organism wildOrganism) async {
+  final userState = Provider.of<UserState>(context, listen: false);
+  final user = userState.currentUser;
+  
+  if (user == null) {
+    _displayMessage("You must be logged in to battle!");
+    return;
+  }
+  
+  CapturedOrganism playerFighter;
+  
+  // 🚨 LOGIC CHANGE: Check if the user has any captured organisms
+  if (user.capturedOrganisms.isEmpty) {
+    // If no captured organisms, the player fights as a Human
+    _displayMessage("You have no organisms! Prepare to fight as Human!");
+    
+    // Create a CapturedOrganism instance for the Human fighter
+    playerFighter = CapturedOrganism.spawn(HUMAN_ORGANISM);
+    
+  } else {
+    // If captured organisms exist, use the player's first captured organism
+    playerFighter = user.capturedOrganisms.first; 
+  }
+
+  // 2. Generate the Wild Organism with unique DNA (the opponent)
+  final wildFighter = CapturedOrganism.spawn(wildOrganism);
+  
+  // 3. Navigate to the Battle Screen
+  // 🚨 FIX: Add the missing required argument 'biomeName'
+  final bool? captureSuccessful = await Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (context) => BattleScreen(
+        playerOrganism: playerFighter,
+        opponentOrganism: wildFighter,
+        biomeName: widget.biomeName, // <--- ADDED REQUIRED ARGUMENT
+      ),
+    ),
+  );
+  
+  // 🚨 NEW LOGIC: Check the result after the BattleScreen is popped
+  if (captureSuccessful == true) {
+    // If the battle resulted in a successful capture, automatically start a new exploration.
+    _displayMessage("Capture successful! Starting new exploration...");
+    
+    // Delay slightly to allow the previous UI update to finish
+    Future.delayed(const Duration(milliseconds: 500), () {
+      // Automatically press the Explore button
+      _startExploration();
+    });
+    
+  } else if (captureSuccessful == false) {
+    // This is the default case for loss or run/flee.
+    // Do nothing, the user is back at the encounter card and must press Explore manually.
+  }
+}
+
   void _playBiomeMusic(String biomeName) async {
     String musicPath = _getMusicPath(biomeName);
     try {
@@ -300,7 +387,7 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
     // 3. Check and unlock achievements using the REFRESHED local user data
     final newAchievements = await _achievementService.checkAndUnlockAchievements(_currentUser); 
     
-    // 💡 FIX START: Update and Save Achievements
+    // 庁 FIX START: Update and Save Achievements
     if (newAchievements.isNotEmpty) {
       // 1. Manually update the local _currentUser object with the new achievement titles
       final List<String> currentAchievements = [..._currentUser.completedAchievements];
@@ -333,7 +420,7 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
     return _currentUser.discoveredOrganisms.contains(organism.name);
   }
 
-  // 🚨 UPDATED: _startExploration to check and deduct stamina
+  // 圷 UPDATED: _startExploration to check and deduct stamina
   void _startExploration() async {
     // 1. Get UserState from Provider to access the live data and modification methods
     // listen: false as we are only calling a method, the Consumer handles the update
@@ -387,7 +474,7 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
     });
   }
 
-  // 🚨 NEW: Utility to show the stats modal (used for the bar's onTap)
+  // 圷 NEW: Utility to show the stats modal (used for the bar's onTap)
   void _showStatsModal(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -398,7 +485,7 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
     );
   }
 
-  // 🚨 NEW: Widget for the small stamina bar in the AppBar
+  // 圷 NEW: Widget for the small stamina bar in the AppBar
   Widget _buildStaminaBarIcon(BuildContext context) {
     // 1. Use GestureDetector to make the bar clickable
     return GestureDetector(
@@ -469,7 +556,7 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
           fontFamily: 'PressStart2P', 
           fontSize: 16
         ),
-        // 🚨 CRITICAL FIX: Add the stamina bar icon to the AppBar actions
+        // 圷 CRITICAL FIX: Add the stamina bar icon to the AppBar actions
         actions: [
           _buildStaminaBarIcon(context),
         ],
@@ -691,11 +778,8 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
             children: [
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('BATTLE STARTED! (Unimplemented)')),
-                    );
-                  },
+                  // 🚨 FIX: Bind FIGHT to initiate the BattleScreen
+                  onPressed: () => _onEncounterFound(organism), 
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _rarityHighlightColor, 
                     shape: const StadiumBorder(
@@ -711,11 +795,8 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
               const SizedBox(width: 10),
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('${organism.name} ESCAPED!')),
-                    );
-                  },
+                  // 🚨 FIX: Bind RUN to initiate the BattleScreen (where the actual run logic is)
+                  onPressed: () => _onEncounterFound(organism), 
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _biomeDarkColor.withOpacity(0.8), 
                     shape: StadiumBorder(

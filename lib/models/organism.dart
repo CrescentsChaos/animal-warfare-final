@@ -52,7 +52,39 @@ class Organism {
       description: json['description'] as String,
     );
   }
-
+  Organism copyWith({
+    String? name,
+    String? scientificName,
+    String? habitat,
+    String? drops,
+    int? attack,
+    int? defense,
+    int? health,
+    int? speed,
+    String? abilities,
+    String? category,
+    String? moves, // The field we need to update
+    String? sprite,
+    String? rarity,
+    String? description,
+  }) {
+    return Organism(
+      name: name ?? this.name,
+      scientificName: scientificName ?? this.scientificName,
+      habitat: habitat ?? this.habitat,
+      drops: drops ?? this.drops,
+      attack: attack ?? this.attack,
+      defense: defense ?? this.defense,
+      health: health ?? this.health,
+      speed: speed ?? this.speed,
+      abilities: abilities ?? this.abilities,
+      category: category ?? this.category,
+      moves: moves ?? this.moves, // This is the key update line
+      sprite: sprite ?? this.sprite,
+      rarity: rarity ?? this.rarity,
+      description: description ?? this.description,
+    );
+  }
   // FIX: Added the missing toJson method for JSON serialization.
   Map<String, dynamic> toJson() {
     return {

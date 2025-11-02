@@ -5,6 +5,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart'; 
 import 'package:path_provider/path_provider.dart'; 
+import 'package:animal_warfare/models/captured_organism.dart';
+import 'package:animal_warfare/models/organism.dart';
 
 // Model to represent a user
 class UserData {
@@ -17,6 +19,7 @@ class UserData {
   final Map<String, dynamic> quizStats; 
   final List<String> discoveredOrganisms; 
   final List<String> completedAchievements; 
+  final List<CapturedOrganism> capturedOrganisms;
 
   UserData({
     required this.username,
@@ -27,10 +30,12 @@ class UserData {
     this.stamina = 100,
     Map<String, dynamic>? quizStats,
     List<String>? discoveredOrganisms,
-    List<String>? completedAchievements, // ADDED
+    List<String>? completedAchievements,
+    List<CapturedOrganism>? capturedOrganisms,
   }) : quizStats = quizStats ?? {},
        discoveredOrganisms = discoveredOrganisms ?? [],
-       completedAchievements = completedAchievements ?? []; // INITIALIZE
+       completedAchievements = completedAchievements ?? [],
+       capturedOrganisms = capturedOrganisms ?? []; // INITIALIZE
 
   // Method to create a new UserData instance with optional updated fields
   UserData copyWith({
@@ -42,7 +47,8 @@ class UserData {
     int? stamina,
     Map<String, dynamic>? quizStats,
     List<String>? discoveredOrganisms,
-    List<String>? completedAchievements, // ADDED
+    List<String>? completedAchievements,
+    List<CapturedOrganism>? capturedOrganisms,
   }) {
     return UserData(
       username: username ?? this.username,
@@ -53,7 +59,8 @@ class UserData {
       stamina: stamina ?? this.stamina,
       quizStats: quizStats ?? this.quizStats,
       discoveredOrganisms: discoveredOrganisms ?? this.discoveredOrganisms,
-      completedAchievements: completedAchievements ?? this.completedAchievements, // ADDED
+      completedAchievements: completedAchievements ?? this.completedAchievements,
+      capturedOrganisms: capturedOrganisms ?? this.capturedOrganisms, 
     );
   }
   UserData decreaseStamina(int amount) {
@@ -81,10 +88,48 @@ class UserData {
         'money': money,
         'quizStats': quizStats,
         'discoveredOrganisms': discoveredOrganisms,
-        'completedAchievements': completedAchievements, // ADDED
+        'completedAchievements': completedAchievements, 
+        'capturedOrganisms': capturedOrganisms.map((co) => co.toJson()).toList(),
       };
 
-  factory UserData.fromJson(Map<String, dynamic> json) {
+  factory UserData.fromJson(Map<String, dynamic> json,{List<Organism>? allOrganisms}) {
+    Organism? findBaseOrganism(String name) {
+      if (allOrganisms == null) return null;
+      try {
+        return allOrganisms.firstWhere((org) => org.name == name);
+      } catch (_) {
+        return null; 
+      }
+    }
+    final List<dynamic> capturedJson = json['capturedOrganisms'] ?? [];
+    final List<CapturedOrganism> capturedList = capturedJson.map((coJson) {
+      
+      // 🚨 FIX: Safely check and cast 'name' to String, providing a fallback if null
+      final organismName = coJson['name'] as String?; // Cast to nullable String
+      if (organismName == null) {
+          return null; // Skip this entry if the name is missing/null
+      }
+      
+      final baseOrganism = findBaseOrganism(organismName);
+      
+      if (baseOrganism == null) {
+        // If the base organism list isn't provided or the organism is missing, skip
+        return null; 
+      }
+      
+      // FIX: Also ensure currentHealth is safely handled, though the main error is 'String'
+      final currentHealth = coJson['currentHealth'] as int?; 
+      if (currentHealth == null) {
+          return null;
+      }
+      
+      return CapturedOrganism(
+        baseOrganism: baseOrganism,
+        // Safely map individualValues as Map<String, int>
+        individualValues: Map<String, int>.from(coJson['ivs'] ?? {}),
+        currentHealth: currentHealth,
+      );
+    }).whereType<CapturedOrganism>().toList();
     return UserData(
       username: json['username'] as String? ?? '',
       password: json['password'] as String? ?? '',
@@ -97,7 +142,9 @@ class UserData {
       discoveredOrganisms: (json['discoveredOrganisms'] as List<dynamic>?)?.map((e) => e as String).toList() ?? [],
       // ADDED: Safely deserialize completedAchievements
       completedAchievements: (json['completedAchievements'] as List<dynamic>?)?.map((e) => e as String).toList() ?? [],
+      
     );
+    
   }
 }
 
@@ -124,7 +171,29 @@ class LocalAuthService {
 
     return File('$appSubdirectory$fileName');
   }
-  
+  Future<void> addCapturedOrganism(String username, CapturedOrganism newCapture) async {
+    // NOTE: In a complete app, you would pass the list of all base organisms 
+    // to the `readUserFile` method (which internally uses UserData.fromJson).
+    
+    // 1. Read fresh data 
+    final user = await readUserFile(username); // Assume readUserFile now loads base organisms
+
+    if (user != null) {
+      final updatedList = List<CapturedOrganism>.from(user.capturedOrganisms)
+        ..add(newCapture);
+        
+      // 2. Use copyWith to preserve ALL existing fields
+      final updatedUser = user.copyWith(capturedOrganisms: updatedList);
+      
+      // 3. Write to file
+      // Assume _writeUserFile is the private method in the original file
+      await _writeUserFile(updatedUser); 
+      
+      if (kDebugMode) {
+        print("DEBUG: Organism '${newCapture.baseOrganism.name}' captured for $username");
+      }
+    }
+  }
   // Reads a single user's data from their JSON file
   Future<UserData?> readUserFile(String username) async {
     if (_writeLocks[username] != null) {
