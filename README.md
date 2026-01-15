@@ -118,6 +118,4 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## 📞 Contact
 
-Your Name - [@YourTwitterHandle](https://www.google.com/search?q=https://twitter.com/YourTwitterHandle) - YourEmail@example.com
-
 Project Link: [https://github.com/CrescentsChaos/animal-warfare-final](https://www.google.com/search?q=https://github.com/CrescentsChaos/animal-warfare-final)
