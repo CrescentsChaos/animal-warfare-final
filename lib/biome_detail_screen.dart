@@ -345,22 +345,18 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
     }
   }
   
-  // ADDED: Utility to re-fetch and update local user data
+  /// Reloads user from disk and updates local state (e.g. after identify or discovery).
   Future<void> _refreshUserData() async {
-     // NOTE: This now gets the latest data, but the UI is primarily driven by the Provider listener.
-     final UserData? updatedUser = await widget.authService.getCurrentUser();
-     if (updatedUser != null && mounted) {
-       setState(() {
-         _currentUser = updatedUser;
-       });
-     }
+    final user = await widget.authService.getCurrentUser();
+    if (user != null && mounted) {
+      setState(() => _currentUser = user);
+    }
   }
 
-  // Method to reveal the name and update discovery status (FIXED)
+  /// Identifies the organism: deducts stamina, marks discovered, checks achievements.
   void _revealName(Organism organism) async {
-    // 1. Mark as discovered in the database/file (FIXED METHOD NAME)
     final userState = Provider.of<UserState>(context, listen: false);
-    final int cost = _getIdentifyStaminaCost(organism.rarity);
+    final cost = _getIdentifyStaminaCost(organism.rarity);
     if (userState.currentUser == null || userState.currentUser!.stamina < cost) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -370,63 +366,35 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
           ),
         );
       }
-      return; // Stop identification
+      return;
     }
 
-    // 4. Deduct stamina (This updates UserState for stamina)
     await userState.decreaseStamina(cost);
-    
-    // 5. Mark organism as discovered (This updates the file)
-    await widget.authService.markOrganismAsDiscovered(
-      _currentUser.username, 
-      organism.name
-    );
-    
-    // 2. Fetch the updated user data (Gets the latest data from the file, now with the discovery)
-    await _refreshUserData(); 
-    // 3. Check and unlock achievements using the REFRESHED local user data
-    final newAchievements = await _achievementService.checkAndUnlockAchievements(_currentUser); 
-    
-    // 庁 FIX START: Update and Save Achievements
-    if (newAchievements.isNotEmpty) {
-      // 1. Manually update the local _currentUser object with the new achievement titles
-      final List<String> currentAchievements = [..._currentUser.completedAchievements];
-      currentAchievements.addAll(newAchievements);
-      
-      // Create a new UserData object for saving
-      _currentUser = _currentUser.copyWith(completedAchievements: currentAchievements);
+    await widget.authService.markOrganismAsDiscovered(_currentUser.username, organism.name);
+    await _refreshUserData();
 
-      await widget.authService.updateUser(_currentUser); 
+    final newAchievements = await _achievementService.checkAndUnlockAchievements(_currentUser);
+    if (newAchievements.isNotEmpty) {
+      _currentUser = _currentUser.copyWith(
+        completedAchievements: [..._currentUser.completedAchievements, ...newAchievements],
+      );
+      await widget.authService.updateUser(_currentUser);
     }
-    userState.setCurrentUser(_currentUser); 
-    
-    // 4. Show a pop-up for each newly unlocked achievement
-    for (var title in newAchievements) {
-      if (mounted) {
-        _achievementService.showAchievementSnackbar(context, title);
-      }
+    userState.setCurrentUser(_currentUser);
+
+    for (final title in newAchievements) {
+      if (mounted) _achievementService.showAchievementSnackbar(context, title);
     }
-    
-    // 5. We set the local reveal state (which should trigger a rebuild and update _isDiscovered)
-    if (mounted) {
-      setState(() {
-        _isNameRevealed = true;
-      });
-    }
-}
+    if (mounted) setState(() => _isNameRevealed = true);
+  }
   
   // Helper to check if organism is discovered - UPDATED to use local state
   bool _isDiscovered(Organism organism) {
     return _currentUser.discoveredOrganisms.contains(organism.name);
   }
 
-  // 圷 UPDATED: _startExploration to check and deduct stamina
   void _startExploration() async {
-    // 1. Get UserState from Provider to access the live data and modification methods
-    // listen: false as we are only calling a method, the Consumer handles the update
     final userState = Provider.of<UserState>(context, listen: false);
-    
-    // 2. Check if stamina is sufficient (needs 10)
     if (userState.currentUser == null || userState.currentUser!.stamina < 10) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -436,13 +404,9 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
           ),
         );
       }
-      return; // Stop exploration
+      return;
     }
-    
-    // 3. Deduct stamina by calling the method on UserState
-    await userState.decreaseStamina(10); 
-    
-    // 4. Proceed with exploration UI logic
+    await userState.decreaseStamina(10);
     setState(() {
       _isExploring = true;
       _currentEncounter = null;

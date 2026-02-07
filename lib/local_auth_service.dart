@@ -136,13 +136,10 @@ class UserData {
       avatar: json['avatar'] as String? ?? 'default',
       gender: json['gender'] as String? ?? 'Select Gender',
       stamina: json['stamina'] as int? ?? 100,
-      // Safely deserialize quizStats (handling null or wrong type)
       quizStats: (json['quizStats'] as Map<String, dynamic>?) ?? {},
-      // Safely deserialize discoveredOrganisms
       discoveredOrganisms: (json['discoveredOrganisms'] as List<dynamic>?)?.map((e) => e as String).toList() ?? [],
-      // ADDED: Safely deserialize completedAchievements
       completedAchievements: (json['completedAchievements'] as List<dynamic>?)?.map((e) => e as String).toList() ?? [],
-      
+      capturedOrganisms: capturedList,
     );
     
   }
@@ -154,7 +151,7 @@ class UserData {
 class LocalAuthService {
   static const _currentKey = 'current_user_username';
   
-  // 🟢 NEW: Add a lock to prevent concurrent writes to the same user file
+  /// Prevents concurrent writes to the same user file.
   final Map<String, Future<void>?> _writeLocks = {};
   
   // Generates the file path for a specific user.
@@ -171,30 +168,14 @@ class LocalAuthService {
 
     return File('$appSubdirectory$fileName');
   }
+  /// Adds a captured organism (read-modify-write). Preserves quiz stats and other data.
   Future<void> addCapturedOrganism(String username, CapturedOrganism newCapture) async {
-    // NOTE: In a complete app, you would pass the list of all base organisms 
-    // to the `readUserFile` method (which internally uses UserData.fromJson).
-    
-    // 1. Read fresh data 
-    final user = await readUserFile(username); // Assume readUserFile now loads base organisms
-
-    if (user != null) {
-      final updatedList = List<CapturedOrganism>.from(user.capturedOrganisms)
-        ..add(newCapture);
-        
-      // 2. Use copyWith to preserve ALL existing fields
-      final updatedUser = user.copyWith(capturedOrganisms: updatedList);
-      
-      // 3. Write to file
-      // Assume _writeUserFile is the private method in the original file
-      await _writeUserFile(updatedUser); 
-      
-      if (kDebugMode) {
-        print("DEBUG: Organism '${newCapture.baseOrganism.name}' captured for $username");
-      }
-    }
+    final user = await readUserFile(username);
+    if (user == null) return;
+    final list = List<CapturedOrganism>.from(user.capturedOrganisms)..add(newCapture);
+    await _writeUserFile(user.copyWith(capturedOrganisms: list));
   }
-  // Reads a single user's data from their JSON file
+
   Future<UserData?> readUserFile(String username) async {
     if (_writeLocks[username] != null) {
       if (kDebugMode) {
@@ -205,31 +186,19 @@ class LocalAuthService {
     try {
       final file = await _getUserFile(username);
       if (await file.exists()) {
-        // 🟢 FIX: Force a fresh read by checking file length first (bypasses caching)
-        final fileLength = await file.length();
         final contents = await file.readAsString();
-        
         if (kDebugMode) {
-          print("DEBUG: Reading user file for $username (length: $fileLength bytes)");
+          print("DEBUG: Read user file for $username (${await file.length()} bytes)");
         }
-        
         try {
-          // NEW: Inner try-catch to specifically handle JSON decoding errors
           final userMap = jsonDecode(contents);
-          final userData = UserData.fromJson(userMap);
-          
-          if (kDebugMode) {
-            print("DEBUG: Loaded user data for $username - Quiz stats: ${userData.quizStats}");
-          }
-          
-          return userData;
+          return UserData.fromJson(userMap);
         } on FormatException catch (e) {
           if (kDebugMode) {
-            print("ERROR: JSON decoding failed for user file $username (File Corrupted): $e");
+            print("ERROR: JSON decode failed for $username: $e");
           }
           return null;
         }
-        
       }
       if (kDebugMode) {
          print("DEBUG: User file not found/does not exist for $username."); // NEW: Debug print for missing file
@@ -243,9 +212,7 @@ class LocalAuthService {
       return null; 
     }
   }
-  // Writes a single user's data to their JSON file
   Future<void> _writeUserFile(UserData user) async {
-    // 🟢 FIX: Wait for any existing write operation to complete first
     if (_writeLocks[user.username] != null) {
       if (kDebugMode) {
         print("DEBUG: Waiting for existing write operation to complete for ${user.username}");
@@ -265,108 +232,68 @@ class LocalAuthService {
     }
   }
   
-  // 🟢 NEW: Actual write implementation with staleness check
+  /// Writes user to file. Aborts if file on disk has more quiz types (stale write).
   Future<void> _performWrite(UserData user) async {
     try {
       final file = await _getUserFile(user.username);
-      
-      // 🟢 NEW: Before writing, read the current file to check if we have stale data
       if (await file.exists()) {
-        final currentContents = await file.readAsString();
-        final currentData = jsonDecode(currentContents);
-        final currentUser = UserData.fromJson(currentData);
-        
-        // Compare quiz stats sizes - if current file has MORE quiz types, we're stale
-        if (currentUser.quizStats.length > user.quizStats.length) {
+        final current = UserData.fromJson(jsonDecode(await file.readAsString()));
+        if (current.quizStats.length > user.quizStats.length) {
           if (kDebugMode) {
-            print("⚠️  WARNING: Prevented stale data write for ${user.username}!");
-            print("   Current file has ${currentUser.quizStats.length} quiz types");
-            print("   Attempted write has ${user.quizStats.length} quiz types");
-            print("   WRITE ABORTED to preserve data integrity");
+            print("WARNING: Aborted stale write for ${user.username} (file has more quiz data)");
           }
-          return; // Abort the write - our data is stale
+          return;
         }
       }
-      
-      final userJson = jsonEncode(user.toJson());
-      
-      // Write and immediately flush to disk to ensure persistence
-      await file.writeAsString(userJson, flush: true);
-      
+      await file.writeAsString(jsonEncode(user.toJson()), flush: true);
       if (kDebugMode) {
-        print("DEBUG: User data written successfully for ${user.username}");
-        print("DEBUG: Quiz stats being saved: ${user.quizStats}");
-        print("DEBUG: Discovered organisms: ${user.discoveredOrganisms.length}");
+        print("DEBUG: Saved ${user.username} (quiz keys: ${user.quizStats.length})");
       }
     } catch (e) {
-      if (kDebugMode) {
-        print("Error writing user file for ${user.username}: $e");
-      }
+      if (kDebugMode) print("Error writing user ${user.username}: $e");
       rethrow;
     }
   }
-  
-  // NEW: Generic method for AchievementService to use
+
   Future<void> updateUser(UserData user) async {
     await _writeUserFile(user);
   }
 
   // 🚨 FIXED: Renamed from registerUser to register and ensures Future<bool> return type
   Future<bool> register(String username, String password) async {
-    final existingUser = await readUserFile(username);
-    if (existingUser != null) {
-      if (kDebugMode) {
-        print("DEBUG: Registration failed for $username. User already exists.");
-      }
-      return false; // User already exists
+    if (await readUserFile(username) != null) {
+      if (kDebugMode) print("DEBUG: Registration failed for $username (already exists).");
+      return false;
     }
-
-    final newUser = UserData(
-      username: username, 
+    await _writeUserFile(UserData(
+      username: username,
       password: password,
-      discoveredOrganisms: [], 
-      completedAchievements: [], // Initialize new field
-    );
-    await _writeUserFile(newUser);
-    
-    // Automatically log the user in after successful registration
+      discoveredOrganisms: [],
+      completedAchievements: [],
+    ));
     return await login(username, password);
   }
 
-  // 🚨 FIXED: Renamed from loginUser to login and returns Future<bool>
   Future<bool> login(String username, String password) async {
-    final foundUser = await readUserFile(username);
-    
-    if (foundUser != null) {
-        if (foundUser.password == password) {
-             await _saveCurrentUserName(foundUser.username); 
-             if (kDebugMode) {
-                 print("DEBUG: Login successful for $username."); // NEW: Success debug print
-             }
-             return true; // Login success
-        } else {
-             if (kDebugMode) {
-                 // NEW: Explicit password mismatch log
-                 print("DEBUG: Login failed for $username. Password mismatch. (Input: '$password', Stored: '${foundUser.password}')"); 
-             }
-        }
-    } else {
-        if (kDebugMode) {
-            // NEW: Explicit user not found log
-            print("DEBUG: Login failed for $username. User not found/file read error (see _readUserFile logs)."); 
-        }
+    final user = await readUserFile(username);
+    if (user == null) {
+      if (kDebugMode) print("DEBUG: Login failed for $username (user not found).");
+      return false;
     }
-    
-    return false; // Login failure
+    if (user.password != password) {
+      if (kDebugMode) print("DEBUG: Login failed for $username (wrong password).");
+      return false;
+    }
+    await _saveCurrentUserName(user.username);
+    if (kDebugMode) print("DEBUG: Login successful for $username.");
+    return true;
   }
 
-  // --- Session Management Logic ---
   Future<void> _saveCurrentUserName(String username) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_currentKey, username);
   }
   
-  // Checks if a user is currently logged in and returns their data
   Future<UserData?> getCurrentUser() async {
     final prefs = await SharedPreferences.getInstance();
     final currentUsername = prefs.getString(_currentKey); 
@@ -378,92 +305,44 @@ class LocalAuthService {
     return await readUserFile(currentUsername);
   }
 
-  // Logs out the current user
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_currentKey);
   }
   
-  // --- Profile Update Logic ---
   Future<void> updateProfile(String username, {String? avatar, String? gender}) async {
-    // 🟢 FIX: Always read fresh data first
     final user = await readUserFile(username);
-
     if (user != null) {
-      final updatedUser = user.copyWith(
-        avatar: avatar,
-        gender: gender,
-      );
-      
-      await _writeUserFile(updatedUser);
+      await _writeUserFile(user.copyWith(avatar: avatar, gender: gender));
     }
   }
   
-  // Method to update quiz statistics
+  /// Updates quiz stats (read-modify-write). Preserves all other user data.
   Future<void> updateQuizStats(String username, String quizName, bool isCorrect) async {
-    // 🟢 FIX: Always read fresh data first
     final user = await readUserFile(username);
+    if (user == null) return;
 
-    if (user != null) {
-      // 1. Get the current stats for the specific quiz, providing defaults if null
-      final Map<String, dynamic> currentQuizData = 
-          Map.from(user.quizStats[quizName] ?? {'attempts': 0, 'correct': 0});
-      
-      // 2. Calculate the new values for the specific quiz
-      final int newAttempts = (currentQuizData['attempts'] as int) + 1;
-      final int newCorrect = (currentQuizData['correct'] as int) + (isCorrect ? 1 : 0);
-      
-      // 3. Create the new, updated data map for the specific quiz
-      final Map<String, dynamic> newQuizData = {
-        // Keep existing keys, if any (though we initialized above)
-        ...?currentQuizData, 
-        'attempts': newAttempts,
-        'correct': newCorrect,
+    final current = Map.from(user.quizStats[quizName] ?? {'attempts': 0, 'correct': 0});
+    final newStats = {
+      ...user.quizStats,
+      quizName: {
+        ...current,
+        'attempts': (current['attempts'] as int) + 1,
+        'correct': (current['correct'] as int) + (isCorrect ? 1 : 0),
         'lastAttempt': DateTime.now().toIso8601String(),
-      };
-      
-      // 4. Create the final top-level quizStats map with the updated quiz entry
-      final Map<String, dynamic> newStats = {
-        // Copy all existing quiz stats
-        ...user.quizStats,
-        // Override or add the updated quiz data
-        quizName: newQuizData,
-      };
-      
-      // 5. Update the user object and write to file
-      final updatedUser = user.copyWith(quizStats: newStats);
-      await _writeUserFile(updatedUser);
-      
-      if (kDebugMode) {
-        print("DEBUG: Updated quiz stats for $quizName - Attempts: $newAttempts, Correct: $newCorrect");
-      }
-    }
+      },
+    };
+    await _writeUserFile(user.copyWith(quizStats: newStats));
   }
-  
-  // Method to mark an organism as discovered
-  Future<void> markOrganismAsDiscovered(String username, String organismName) async {
-    // 🟢 FIX: Always read fresh data first
-    final user = await readUserFile(username);
 
-    if (user != null) {
-      // Use a Set for efficient check and prevent duplicates
-      final discovered = Set<String>.from(user.discoveredOrganisms);
-      
-      if (!discovered.contains(organismName)) {
-        discovered.add(organismName);
-        
-        // 🟢 FIX: Use copyWith to preserve ALL existing fields including quizStats
-        final updatedUser = user.copyWith(discoveredOrganisms: discovered.toList());
-        await _writeUserFile(updatedUser);
-        
-        if (kDebugMode) {
-          print("DEBUG: Organism '$organismName' marked as discovered for $username");
-          print("DEBUG: Total discovered: ${discovered.length}");
-          print("DEBUG: Quiz stats preserved: ${updatedUser.quizStats}");
-        }
-      }
-    }
+  /// Adds organism to discovered list (read-modify-write). Preserves quiz stats etc.
+  Future<void> markOrganismAsDiscovered(String username, String organismName) async {
+    final user = await readUserFile(username);
+    if (user == null) return;
+
+    final discovered = Set<String>.from(user.discoveredOrganisms);
+    if (discovered.contains(organismName)) return;
+    discovered.add(organismName);
+    await _writeUserFile(user.copyWith(discoveredOrganisms: discovered.toList()));
   }
 }
-// 🟢 NEW: Add a map to track the last write time for each user
-  
