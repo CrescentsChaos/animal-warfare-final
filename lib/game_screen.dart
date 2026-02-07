@@ -1,12 +1,14 @@
 // lib/game_screen.dart
 import 'package:flutter/material.dart';
-import 'package:audioplayers/audioplayers.dart'; 
-import 'package:animal_warfare/explore_screen.dart'; 
-import 'package:animal_warfare/anidex_screen.dart'; 
-import 'package:animal_warfare/quiz_screen.dart'; 
+import 'package:provider/provider.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'package:animal_warfare/explore_screen.dart';
+import 'package:animal_warfare/anidex_screen.dart';
+import 'package:animal_warfare/quiz_screen.dart';
+import 'package:animal_warfare/animal_box_screen.dart';
 import 'package:animal_warfare/local_auth_service.dart';
-import 'package:animal_warfare/stats_display_button.dart'; 
- // Import service
+import 'package:animal_warfare/stats_display_button.dart';
+import 'package:animal_warfare/user_state.dart';
 
 class GameScreen extends StatefulWidget {
   // FIX: ADDED: Required fields to pass down user data and service
@@ -191,39 +193,41 @@ class _GameScreenState extends State<GameScreen> {
                   ),
                   const SizedBox(height: 60),
 
-                  // Explore Biome Button
+                  // Use UserState's current user when available (e.g. after setting attacker in Animal Box)
                   _buildThemedButton(
                     text: 'EXPLORE BIOMES',
                     icon: Icons.map,
-                    // PASSING REQUIRED WIDGET PROPERTIES
-                    onPressed: () => _navigateTo(ExploreScreen(
-                      currentUser: widget.currentUser, 
-                      authService: widget.authService,
-                    )),
-                    color: primaryButtonColor, 
+                    onPressed: () {
+                      final user = Provider.of<UserState>(context, listen: false).currentUser ?? widget.currentUser;
+                      _navigateTo(ExploreScreen(currentUser: user, authService: widget.authService));
+                    },
+                    color: primaryButtonColor,
                   ),
 
-                  // Anidex Button
+                  _buildThemedButton(
+                    text: 'ANIMAL BOX',
+                    icon: Icons.inventory_2,
+                    onPressed: () => _navigateTo(const AnimalBoxScreen()),
+                    color: Color(0xFF2E5A1C),
+                  ),
+
                   _buildThemedButton(
                     text: 'ANIMAL DEX',
                     icon: Icons.pets,
-                    // PASSING REQUIRED WIDGET PROPERTIES
-                    onPressed: () => _navigateTo(AnidexScreen(
-                      currentUser: widget.currentUser,
-                      authService: widget.authService,
-                    )),
-                    color: secondaryButtonColor, 
-                  ), 
-                  // Quiz Button
-                  _buildThemedButton(  
+                    onPressed: () {
+                      final user = Provider.of<UserState>(context, listen: false).currentUser ?? widget.currentUser;
+                      _navigateTo(AnidexScreen(currentUser: user, authService: widget.authService));
+                    },
+                    color: secondaryButtonColor,
+                  ),
+                  _buildThemedButton(
                     text: 'ANIMAL QUIZ',
                     icon: Icons.quiz,
-                    // PASSING REQUIRED WIDGET PROPERTIES (Assuming QuizScreen needs them)
                     onPressed: () => _navigateTo(QuizScreen(
                       currentUser: widget.currentUser,
                       authService: widget.authService,
                     )),
-                    color: tertiaryButtonColor, 
+                    color: tertiaryButtonColor,
                   ),
 
                   const SizedBox(height: 40),

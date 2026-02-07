@@ -33,9 +33,8 @@ class BattleOrganism {
   String statusEffect = 'None'; // e.g., 'Poison', 'Sleep'
 
   BattleOrganism(this.organism)
-      // 🚨 FIX: Reverting to baseOrganism
-      : health = organism.currentHealth,
-        ability = Ability.findByName(organism.baseOrganism.abilities); 
+      : health = organism.currentHealth.clamp(0, organism.maxHealth),
+        ability = Ability.findByName(organism.baseOrganism.abilities);
 
   // Helper for stat stage multipliers (e.g., +1 stage is 1.5x)
   double _getStatStageMultiplier(int stage) {
@@ -43,42 +42,34 @@ class BattleOrganism {
     if (stage < 0) return 2 / (2 + stage.abs());
     return 1.0;
   }
-  
-  // Getter for the current effective stat, considering stages and abilities
+
   int get currentAttack {
-    // 🚨 FIX: Reverting to baseOrganism
-    double attack = organism.baseOrganism.attack.toDouble(); 
+    double attack = organism.effectiveAttack.toDouble();
     attack *= _getStatStageMultiplier(attackStage);
-    
-    // Ability: Passive Stat Boost
     if (ability?.effectType == AbilityEffectType.passiveStatBoost && ability?.targetStat == 'attack') {
       attack *= ability!.magnitude;
     }
-    // Ability: On Low HP (Frenzy)
-    if (ability?.effectType == AbilityEffectType.onLowHP && 
-        ability?.targetStat == 'attack' && 
-        // 🚨 FIX: Reverting to baseOrganism
-        health / organism.baseOrganism.health <= 0.3) { 
+    if (ability?.effectType == AbilityEffectType.onLowHP &&
+        ability?.targetStat == 'attack' &&
+        health / maxHealth <= 0.3) {
       attack *= ability!.magnitude;
     }
     return attack.round();
   }
-  
-  // 🚨 FIX: Reverting to baseOrganism
-  int get currentDefense => (organism.baseOrganism.defense * _getStatStageMultiplier(defenseStage)).round(); 
-  
+
+  int get currentDefense =>
+      (organism.effectiveDefense * _getStatStageMultiplier(defenseStage)).round();
+
   int get currentSpeed {
-    // 🚨 FIX: Reverting to baseOrganism
-    double speed = organism.baseOrganism.speed.toDouble();
+    double speed = organism.effectiveSpeed.toDouble();
     if (ability?.effectType == AbilityEffectType.passiveStatBoost && ability?.targetStat == 'speed') {
       speed *= ability!.magnitude;
     }
     return speed.round();
   }
 
-  // Helper to get max health
-  // 🚨 FIX: Reverting to baseOrganism
-  int get maxHealth => organism.baseOrganism.health;
+  /// Use the captured organism's calculated max HP (IVs included), not base stat.
+  int get maxHealth => organism.maxHealth;
 }
 
 // --- BattleManager: The Core State Machine ---
@@ -96,41 +87,24 @@ class BattleManager extends ChangeNotifier {
   String battleLog = '';
   BattleResult? result;
 
-  // Utility to get a random damaging move for fallback
-  static final List<Move> _damagingMoves = Move.allMoves.where((m) => m.baseDamage > 0).toList();
-  Move _getRandomDamagingMove() {
-      if (_damagingMoves.isEmpty) {
-          return const Move(name: 'Struggle', description: 'A desperate attack.', baseDamage: 5); 
-      }
-      return _damagingMoves[Random().nextInt(_damagingMoves.length)];
-  }
-
-  // Helper to parse moves from an organism's string, with fallback
+  /// Builds the move list for an organism from its moveset string. Uses predefined
+  /// moves when available; otherwise creates moves with random damage (placeholder).
   List<Move> _getOrganismMoves(CapturedOrganism organism) {
-      // 🚨 FIX: Reverting to baseOrganism for moves access
-      final moveNames = organism.baseOrganism.moves.split(',').map((s) => s.trim()).toList();
-      final List<Move> moves = [];
-      
-      for (final name in moveNames) {
-          if (name.isEmpty) continue; // Skip empty strings from splitting
-          
-          final move = Move.findByName(name); // Use the helper from move.dart
-          if (move != null) {
-              moves.add(move);
-          } else {
-              // REQUIRED: If move is not in the list, assign random damage move
-              final fallbackMove = _getRandomDamagingMove();
-              // Only add one fallback move, to prevent spamming the same 'random' move
-              if (!moves.contains(fallbackMove)) {
-                 moves.add(fallbackMove);
-              }
-          }
-      }
-      // Ensure the organism always has at least one move
-      if (moves.isEmpty) {
-          moves.add(_getRandomDamagingMove());
-      }
-      return moves;
+    final moveNames = organism.baseOrganism.moves
+        .split(',')
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty)
+        .toSet()
+        .toList();
+    final rng = Random();
+    final List<Move> moves = [];
+    for (final name in moveNames) {
+      moves.add(Move.findOrCreate(name, rng));
+    }
+    if (moves.isEmpty) {
+      moves.add(Move.findOrCreate('Struggle', rng));
+    }
+    return moves;
   }
 
   BattleManager(this.playerOrganism, this.opponentOrganism) {

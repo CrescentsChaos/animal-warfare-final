@@ -86,6 +86,16 @@ class UserState with ChangeNotifier {
     await _readModifyWrite((u) => u.decreaseStamina(amount));
   }
 
+  /// Set which captured animal is used as attacker in battle. Persists via read-modify-write.
+  Future<void> setActiveAttacker(int index) async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) {
+      if (u.capturedOrganisms.isEmpty) return u;
+      final i = index.clamp(0, u.capturedOrganisms.length - 1);
+      return u.copyWith(activeAttackerIndex: i);
+    });
+  }
+
   @override
   void dispose() {
     _staminaRegenTimer?.cancel();

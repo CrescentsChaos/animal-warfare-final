@@ -1,6 +1,8 @@
 // lib/models/move.dart
 // Defines the structure for an animal's attack
 
+import 'dart:math';
+
 // Enum for the type of effect a move can apply
 enum MoveEffectType {
   none,
@@ -84,12 +86,27 @@ class Move {
   // 💡 FIX: Add public static getter to allow access to the private list.
   static List<Move> get allMoves => _allMoves;
   
-  // Helper to find a move by name
+  /// Find a move by name in the predefined list.
   static Move? findByName(String name) {
     try {
       return _allMoves.firstWhere((m) => m.name.toLowerCase() == name.toLowerCase());
     } catch (_) {
       return null;
     }
+  }
+
+  /// Create a move by name. If not in the predefined list, returns a move with
+  /// that name and random base damage (for DB moves not yet defined).
+  static Move findOrCreate(String name, [Random? random]) {
+    final existing = findByName(name);
+    if (existing != null) return existing;
+    final rng = random ?? Random();
+    final baseDamage = 5 + rng.nextInt(21); // 5–25 placeholder damage
+    return Move(
+      name: name.trim().isEmpty ? 'Struggle' : name.trim(),
+      description: 'A natural attack.',
+      baseDamage: baseDamage,
+      accuracy: 85 + rng.nextInt(16), // 85–100
+    );
   }
 }

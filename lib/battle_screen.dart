@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:animal_warfare/models/captured_organism.dart';
-import 'package:animal_warfare/models/move.dart';
 import 'package:animal_warfare/game/battle_manager.dart';
 import 'package:animal_warfare/user_state.dart'; 
 
@@ -106,22 +105,19 @@ class BattleScreenContent extends StatelessWidget {
 
   // --- UI Builders ---
 
-  // Status bar for the OPPONENT (Top right)
   Widget _buildOpponentStatus(BattleOrganism organism, Color textColor, Color barColor) {
-    // Assuming CapturedOrganism exposes the base Organism as 'baseOrganism'
-    final baseOrganismModel = organism.organism.baseOrganism; 
-    // Use the base organism's health as the maximum health
-    final hpRatio = organism.health / baseOrganismModel.health; 
-    
+    final baseOrganismModel = organism.organism.baseOrganism;
+    final maxHp = organism.maxHealth;
+    final hpRatio = maxHp > 0 ? organism.health / maxHp : 0.0;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        // Status Bar (on the left of the sprite)
         Container(
           width: 150,
           padding: const EdgeInsets.all(8.0),
           decoration: BoxDecoration(
-            color: barColor, 
+            color: barColor,
             borderRadius: BorderRadius.circular(8.0),
             border: Border.all(color: textColor, width: 2),
           ),
@@ -135,7 +131,7 @@ class BattleScreenContent extends StatelessWidget {
                 backgroundColor: Colors.grey[700],
                 minHeight: 10,
               ),
-              Text('HP: ${organism.health}/${baseOrganismModel.health}', style: TextStyle(color: textColor)),
+              Text('HP: ${organism.health}/$maxHp', style: TextStyle(color: textColor)),
             ],
           ),
         ),
@@ -156,34 +152,31 @@ class BattleScreenContent extends StatelessWidget {
     );
   }
   
-  // Status bar for the PLAYER (Bottom left)
   Widget _buildPlayerStatus(BattleOrganism organism, Color textColor, Color barColor) {
-    // Assuming CapturedOrganism exposes the base Organism as 'baseOrganism'
     final baseOrganismModel = organism.organism.baseOrganism;
-    final hpRatio = organism.health / baseOrganismModel.health;
-    
+    final maxHp = organism.maxHealth;
+    final hpRatio = maxHp > 0 ? organism.health / maxHp : 0.0;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
-        // Sprite
         ClipRRect(
           borderRadius: BorderRadius.circular(8.0),
           child: Image.network(
-            baseOrganismModel.sprite, 
+            baseOrganismModel.sprite,
             height: 100,
             width: 100,
             fit: BoxFit.contain,
-            errorBuilder: (context, error, stackTrace) => 
+            errorBuilder: (context, error, stackTrace) =>
                 Container(height: 100, width: 100, color: barColor, child: const Center(child: Text('?', style: TextStyle(color: Colors.white)))),
           ),
         ),
         const SizedBox(width: 10),
-        // Status Bar (on the right of the sprite)
         Container(
           width: 150,
           padding: const EdgeInsets.all(8.0),
           decoration: BoxDecoration(
-            color: barColor, 
+            color: barColor,
             borderRadius: BorderRadius.circular(8.0),
             border: Border.all(color: textColor, width: 2),
           ),
@@ -197,7 +190,7 @@ class BattleScreenContent extends StatelessWidget {
                 backgroundColor: Colors.grey[700],
                 minHeight: 10,
               ),
-              Text('HP: ${organism.health}/${baseOrganismModel.health}', style: TextStyle(color: textColor)),
+              Text('HP: ${organism.health}/$maxHp', style: TextStyle(color: textColor)),
             ],
           ),
         ),
@@ -214,11 +207,11 @@ class BattleScreenContent extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // 1. FIGHT BUTTONS (Move Selection)
+          // Fight: show this organism's moves only
           Wrap(
             spacing: 10,
             runSpacing: 5,
-            children: Move.allMoves.map((move) {
+            children: battleManager.playerMoves.map((move) {
               return ElevatedButton(
                 onPressed: () => battleManager.processPlayerAction(move),
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.green),

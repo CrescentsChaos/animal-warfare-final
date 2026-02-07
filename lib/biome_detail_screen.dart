@@ -152,18 +152,11 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
   }
   
   CapturedOrganism playerFighter;
-  
-  // 🚨 LOGIC CHANGE: Check if the user has any captured organisms
   if (user.capturedOrganisms.isEmpty) {
-    // If no captured organisms, the player fights as a Human
     _displayMessage("You have no organisms! Prepare to fight as Human!");
-    
-    // Create a CapturedOrganism instance for the Human fighter
     playerFighter = CapturedOrganism.spawn(HUMAN_ORGANISM);
-    
   } else {
-    // If captured organisms exist, use the player's first captured organism
-    playerFighter = user.capturedOrganisms.first; 
+    playerFighter = user.activeAttacker ?? user.capturedOrganisms.first;
   }
 
   // 2. Generate the Wild Organism with unique DNA (the opponent)

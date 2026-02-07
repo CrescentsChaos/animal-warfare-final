@@ -1,10 +1,11 @@
 // lib/local_auth_service.dart
 
 import 'dart:convert';
-import 'dart:io'; 
+import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart'; 
-import 'package:path_provider/path_provider.dart'; 
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:animal_warfare/models/captured_organism.dart';
 import 'package:animal_warfare/models/organism.dart';
 
@@ -16,10 +17,12 @@ class UserData {
   final String gender;
   final int money;
   final int stamina;
-  final Map<String, dynamic> quizStats; 
-  final List<String> discoveredOrganisms; 
-  final List<String> completedAchievements; 
+  final Map<String, dynamic> quizStats;
+  final List<String> discoveredOrganisms;
+  final List<String> completedAchievements;
   final List<CapturedOrganism> capturedOrganisms;
+  /// Index into [capturedOrganisms] for the animal used as attacker in battle. 0 if none chosen.
+  final int activeAttackerIndex;
 
   UserData({
     required this.username,
@@ -32,12 +35,13 @@ class UserData {
     List<String>? discoveredOrganisms,
     List<String>? completedAchievements,
     List<CapturedOrganism>? capturedOrganisms,
+    int? activeAttackerIndex,
   }) : quizStats = quizStats ?? {},
        discoveredOrganisms = discoveredOrganisms ?? [],
        completedAchievements = completedAchievements ?? [],
-       capturedOrganisms = capturedOrganisms ?? []; // INITIALIZE
+       capturedOrganisms = capturedOrganisms ?? [],
+       activeAttackerIndex = activeAttackerIndex ?? 0;
 
-  // Method to create a new UserData instance with optional updated fields
   UserData copyWith({
     String? username,
     String? password,
@@ -49,6 +53,7 @@ class UserData {
     List<String>? discoveredOrganisms,
     List<String>? completedAchievements,
     List<CapturedOrganism>? capturedOrganisms,
+    int? activeAttackerIndex,
   }) {
     return UserData(
       username: username ?? this.username,
@@ -60,8 +65,16 @@ class UserData {
       quizStats: quizStats ?? this.quizStats,
       discoveredOrganisms: discoveredOrganisms ?? this.discoveredOrganisms,
       completedAchievements: completedAchievements ?? this.completedAchievements,
-      capturedOrganisms: capturedOrganisms ?? this.capturedOrganisms, 
+      capturedOrganisms: capturedOrganisms ?? this.capturedOrganisms,
+      activeAttackerIndex: activeAttackerIndex ?? this.activeAttackerIndex,
     );
+  }
+
+  /// The captured organism currently set as battle attacker, or null if none/invalid.
+  CapturedOrganism? get activeAttacker {
+    if (capturedOrganisms.isEmpty) return null;
+    final i = activeAttackerIndex.clamp(0, capturedOrganisms.length - 1);
+    return capturedOrganisms[i];
   }
   UserData decreaseStamina(int amount) {
     final newStamina = (stamina - amount).clamp(0, 100);
@@ -88,8 +101,9 @@ class UserData {
         'money': money,
         'quizStats': quizStats,
         'discoveredOrganisms': discoveredOrganisms,
-        'completedAchievements': completedAchievements, 
+        'completedAchievements': completedAchievements,
         'capturedOrganisms': capturedOrganisms.map((co) => co.toJson()).toList(),
+        'activeAttackerIndex': activeAttackerIndex,
       };
 
   factory UserData.fromJson(Map<String, dynamic> json,{List<Organism>? allOrganisms}) {
@@ -140,6 +154,7 @@ class UserData {
       discoveredOrganisms: (json['discoveredOrganisms'] as List<dynamic>?)?.map((e) => e as String).toList() ?? [],
       completedAchievements: (json['completedAchievements'] as List<dynamic>?)?.map((e) => e as String).toList() ?? [],
       capturedOrganisms: capturedList,
+      activeAttackerIndex: json['activeAttackerIndex'] as int? ?? 0,
     );
     
   }
@@ -150,9 +165,24 @@ class UserData {
 // ------------------------------------------------------------------
 class LocalAuthService {
   static const _currentKey = 'current_user_username';
-  
+  static const _organismsAssetPath = 'assets/Organisms.json';
+
   /// Prevents concurrent writes to the same user file.
   final Map<String, Future<void>?> _writeLocks = {};
+
+  static List<Organism>? _cachedOrganisms;
+  static Future<List<Organism>> _loadOrganisms() async {
+    if (_cachedOrganisms != null) return _cachedOrganisms!;
+    try {
+      final String response = await rootBundle.loadString(_organismsAssetPath);
+      final List<dynamic> data = jsonDecode(response);
+      _cachedOrganisms = data.map((e) => Organism.fromJson(e as Map<String, dynamic>)).toList();
+      return _cachedOrganisms!;
+    } catch (e) {
+      if (kDebugMode) print('LocalAuthService: could not load organisms: $e');
+      return [];
+    }
+  }
   
   // Generates the file path for a specific user.
   Future<File> _getUserFile(String username) async {
@@ -191,8 +221,9 @@ class LocalAuthService {
           print("DEBUG: Read user file for $username (${await file.length()} bytes)");
         }
         try {
-          final userMap = jsonDecode(contents);
-          return UserData.fromJson(userMap);
+          final userMap = jsonDecode(contents) as Map<String, dynamic>;
+          final organisms = await _loadOrganisms();
+          return UserData.fromJson(userMap, allOrganisms: organisms.isEmpty ? null : organisms);
         } on FormatException catch (e) {
           if (kDebugMode) {
             print("ERROR: JSON decode failed for $username: $e");
@@ -237,8 +268,9 @@ class LocalAuthService {
     try {
       final file = await _getUserFile(user.username);
       if (await file.exists()) {
-        final current = UserData.fromJson(jsonDecode(await file.readAsString()));
-        if (current.quizStats.length > user.quizStats.length) {
+        final data = jsonDecode(await file.readAsString()) as Map<String, dynamic>;
+        final currentQuizCount = (data['quizStats'] as Map?)?.length ?? 0;
+        if (currentQuizCount > user.quizStats.length) {
           if (kDebugMode) {
             print("WARNING: Aborted stale write for ${user.username} (file has more quiz data)");
           }
