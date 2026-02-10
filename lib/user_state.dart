@@ -5,6 +5,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:animal_warfare/models/captured_organism.dart';
+import 'package:animal_warfare/models/talisman.dart';
 import 'local_auth_service.dart';
 
 class UserState with ChangeNotifier {
@@ -179,12 +180,37 @@ class UserState with ChangeNotifier {
       if (organismIndex < 0 || organismIndex >= u.capturedOrganisms.length) return u;
       
       final organisms = List<CapturedOrganism>.from(u.capturedOrganisms);
-      final organism = organisms[organismIndex];
+      final targetOrg = organisms[organismIndex];
+      final oldTalismanId = targetOrg.equippedTalisman?.id;
       
-      // For simplicity, we'll need to update CapturedOrganism
-      // This is a limitation - we can't easily modify the talisman field
-      // without recreating the object. Let me handle this differently.
-      return u; // TODO: Implement talisman equipment
+      final newCraftedTalismans = List<String>.from(u.craftedTalismans);
+      
+      // If equipping a new one
+      if (talismanId != null) {
+        // Check if we have it
+        final tIndex = newCraftedTalismans.indexOf(talismanId);
+        if (tIndex == -1) return u; // Don't have it
+        
+        // Remove from inventory
+        newCraftedTalismans.removeAt(tIndex);
+        
+        // Equip
+        final talisman = Talisman.findById(talismanId);
+        organisms[organismIndex] = targetOrg.copyWith(equippedTalisman: talisman);
+      } else {
+        // Unequipping
+        organisms[organismIndex] = targetOrg.copyWith(equippedTalisman: null);
+      }
+      
+      // Return old one to inventory if it existed
+      if (oldTalismanId != null) {
+        newCraftedTalismans.add(oldTalismanId);
+      }
+      
+      return u.copyWith(
+        capturedOrganisms: organisms,
+        craftedTalismans: newCraftedTalismans,
+      );
     });
   }
 

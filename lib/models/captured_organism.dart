@@ -28,6 +28,19 @@ class CapturedOrganism {
   // NEW: Convenience getter for the organism's name
   String get name => baseOrganism.name; 
 
+  CapturedOrganism copyWith({
+    Organism? baseOrganism,
+    Map<String, int>? individualValues,
+    int? currentHealth,
+    Talisman? equippedTalisman,
+  }) {
+    return CapturedOrganism(
+      baseOrganism: baseOrganism ?? this.baseOrganism,
+      individualValues: individualValues ?? this.individualValues,
+      currentHealth: currentHealth ?? this.currentHealth,
+      equippedTalisman: equippedTalisman ?? this.equippedTalisman,
+    );
+  }
   // --- DNA Generation and Stat Calculation ---
   
   // Maximum IV value (0 to 31)

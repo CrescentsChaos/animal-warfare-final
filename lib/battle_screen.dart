@@ -10,6 +10,7 @@ import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/models/weather.dart';
 import 'package:animal_warfare/models/terrain.dart';
 import 'package:animal_warfare/models/status_effect.dart';
+import 'package:animal_warfare/models/loot_item.dart';
 
 class BattleScreen extends StatelessWidget {
   final CapturedOrganism playerOrganism;
@@ -564,20 +565,60 @@ class BattleScreenContent extends StatelessWidget {
           titleText = 'BATTLE END';
       }
 
+      final String? lootId = battleManager.droppedLoot;
+      final String? lootName = lootId != null ? LootItem.findById(lootId)?.name : null;
+      
+      // Handle loot drop
+      if (battleManager.result == BattleResult.win && lootId != null) {
+        userState.addLoot(lootId, 1);
+      }
+
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (ctx) => AlertDialog(
           title: Text(titleText),
-          content: Text(
-            battleManager.result == BattleResult.capture
-                ? 'You successfully captured the ${battleManager.opponent.organism.baseOrganism.name}!'
-                : battleManager.result == BattleResult.win
-                    ? 'You defeated the wild encounter!'
-                    : battleManager.result == BattleResult.fled
-                        ? 'You ran away safely!'
-                        : 'Your ${battleManager.player.organism.baseOrganism.name} has died in battle...',
-            style: const TextStyle(fontFamily: 'PressStart2P', fontSize: 12),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                battleManager.result == BattleResult.capture
+                    ? 'You successfully captured the ${battleManager.opponent.organism.baseOrganism.name}!'
+                    : battleManager.result == BattleResult.win
+                        ? 'You defeated the wild encounter!'
+                        : battleManager.result == BattleResult.fled
+                            ? 'You ran away safely!'
+                            : 'Your ${battleManager.player.organism.baseOrganism.name} has died in battle...',
+                style: const TextStyle(fontFamily: 'PressStart2P', fontSize: 10),
+              ),
+              if (battleManager.result == BattleResult.win && lootName != null) ...[
+                const SizedBox(height: 16),
+                Text(
+                  'LOOT DROPPED:',
+                  style: TextStyle(
+                    fontFamily: 'PressStart2P',
+                    fontSize: 10,
+                    color: Colors.yellow[700],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    const Icon(Icons.inventory_2, size: 16, color: Colors.amber),
+                    const SizedBox(width: 8),
+                    Text(
+                      lootName,
+                      style: const TextStyle(
+                        fontFamily: 'PressStart2P',
+                        fontSize: 12,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ],
           ),
           actions: [
             TextButton(

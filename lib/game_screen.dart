@@ -9,6 +9,7 @@ import 'package:animal_warfare/animal_box_screen.dart';
 import 'package:animal_warfare/local_auth_service.dart';
 import 'package:animal_warfare/stats_display_button.dart';
 import 'package:animal_warfare/user_state.dart';
+import 'package:animal_warfare/crafting_screen.dart';
 
 class GameScreen extends StatefulWidget {
   // FIX: ADDED: Required fields to pass down user data and service
@@ -208,7 +209,14 @@ class _GameScreenState extends State<GameScreen> {
                     text: 'ANIMAL BOX',
                     icon: Icons.inventory_2,
                     onPressed: () => _navigateTo(const AnimalBoxScreen()),
-                    color: Color(0xFF2E5A1C),
+                    color: const Color(0xFF2E5A1C),
+                  ),
+                  
+                  _buildThemedButton(
+                    text: 'CRAFTING STATION',
+                    icon: Icons.auto_awesome,
+                    onPressed: () => _navigateTo(const CraftingScreen()),
+                    color: const Color(0xFF5A4A1C),
                   ),
 
                   _buildThemedButton(

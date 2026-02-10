@@ -8,6 +8,7 @@ import 'package:animal_warfare/models/ability.dart';
 import 'package:animal_warfare/models/weather.dart';
 import 'package:animal_warfare/models/terrain.dart';
 import 'package:animal_warfare/models/status_effect.dart';
+import 'package:animal_warfare/models/talisman.dart';
 import 'package:animal_warfare/models/elemental_type.dart';
 import 'package:animal_warfare/game/biome_weather.dart';
 
@@ -68,11 +69,25 @@ class BattleOrganism {
     if (statusEffect.type == StatusEffectType.burn) {
       attack *= 0.5;
     }
+
+    // Talisman boost
+    if (organism.equippedTalisman?.effect.type == TalismanEffectType.attackBoost) {
+      attack *= organism.equippedTalisman!.effect.magnitude;
+    }
+
     return attack.round();
   }
 
-  int get currentDefense =>
-      (organism.effectiveDefense * _getStatStageMultiplier(defenseStage)).round();
+  int get currentDefense {
+    double defense = (organism.effectiveDefense * _getStatStageMultiplier(defenseStage)).toDouble();
+    
+    // Talisman boost
+    if (organism.equippedTalisman?.effect.type == TalismanEffectType.defenseBoost) {
+      defense *= organism.equippedTalisman!.effect.magnitude;
+    }
+    
+    return defense.round();
+  }
 
   int get currentSpeed {
     double speed = organism.effectiveSpeed.toDouble();
@@ -84,12 +99,26 @@ class BattleOrganism {
     if (statusEffect.type == StatusEffectType.paralysis) {
       speed *= 0.25;
     }
+
+    // Talisman boost
+    if (organism.equippedTalisman?.effect.type == TalismanEffectType.speedBoost) {
+      speed *= organism.equippedTalisman!.effect.magnitude;
+    }
+
     return speed.round();
   }
 
   /// Use the captured organism's calculated max HP (IVs included), not base stat.
-  /// Use the captured organism's calculated max HP (IVs included), not base stat.
-  int get maxHealth => organism.maxHealth;
+  int get maxHealth {
+    double hp = organism.maxHealth.toDouble();
+    
+    // Talisman boost
+    if (organism.equippedTalisman?.effect.type == TalismanEffectType.healthBoost) {
+      hp *= organism.equippedTalisman!.effect.magnitude;
+    }
+    
+    return hp.round();
+  }
 }
 
 // --- Battle Turn Data ---
@@ -383,21 +412,40 @@ class BattleManager extends ChangeNotifier {
           
           // Critical Hit Logic
           bool isCrit = false;
-          double critMult = 1.0;
-          double critChance = 0.0416; // ~1/24 default
-          if (move.critRate == 1) critChance = 0.125;
-          if (move.critRate == 2) critChance = 0.50;
-          if (move.critRate >= 3) critChance = 1.0;
+          double critChance = 6.25; // Base 1/16 chance
+          
+          // Talisman crit boost
+          if (attacker.organism.equippedTalisman?.effect.type == TalismanEffectType.critBoost) {
+            critChance += attacker.organism.equippedTalisman!.effect.magnitude;
+          }
 
-          if (Random().nextDouble() < critChance) {
+          // Move-specific crit rate
+          if (move.critRate == 1) critChance = 12.5; // 1/8
+          if (move.critRate == 2) critChance = 50.0; // 1/2
+          if (move.critRate >= 3) critChance = 100.0; // Guaranteed crit
+
+          if (Random().nextDouble() * 100 < critChance) {
             isCrit = true;
-            critMult = 1.5;
+          }
+          
+          double damageCalc = ((attacker.currentAttack / defender.currentDefense) * move.baseDamage);
+          if (isCrit) {
+            damageCalc *= 1.5;
+          }
+          
+          // Talisman damage multiplier
+          if (attacker.organism.equippedTalisman?.effect.type == TalismanEffectType.damageMultiplier) {
+            damageCalc *= attacker.organism.equippedTalisman!.effect.magnitude;
+          }
+          
+          // Talisman resistance boost (multiplier on incoming damage)
+          if (defender.organism.equippedTalisman?.effect.type == TalismanEffectType.resistanceBoost) {
+            damageCalc *= defender.organism.equippedTalisman!.effect.magnitude;
           }
 
           // Vulnerable Status
-          double vulnerableMod = 1.0;
           if (defender.statusEffect.type == StatusEffectType.vulnerable) {
-            vulnerableMod = 1.3; // Take 30% more damage
+            damageCalc *= 1.3; // Take 30% more damage
           }
 
           // Type Effectiveness
@@ -405,13 +453,19 @@ class BattleManager extends ChangeNotifier {
           for (final defType in defender.types) {
              typeMod *= TypeChart.getEffectiveness(move.type, defType);
           }
-
-          final damage = ((attacker.currentAttack / defender.currentDefense) * move.baseDamage * weatherMod * critMult * vulnerableMod * typeMod * (Random().nextDouble() * 0.2 + 0.9)).round(); 
-          defender.health -= damage;
-          defender.health = defender.health.clamp(0, defender.maxHealth); 
-          totalDamageDealt += damage;
+          damageCalc *= typeMod;
           
-          _addToLog(hits > 1 ? 'Hit ${i+1}!' : '${defender.organism.baseOrganism.name} took $damage damage!');
+          // Weather Modifiers
+          damageCalc *= weatherMod;
+
+          // Randomness (0.9 to 1.1) and Round
+          final int finalDamage = (damageCalc * (Random().nextDouble() * 0.2 + 0.9)).round(); 
+          
+          defender.health -= finalDamage;
+          defender.health = defender.health.clamp(0, defender.maxHealth); 
+          totalDamageDealt += finalDamage;
+          
+          _addToLog(hits > 1 ? 'Hit ${i+1}!' : '${defender.organism.baseOrganism.name} took $finalDamage damage!');
           
           if (typeMod > 1.0) _addToLog('It\'s super effective!');
           if (typeMod < 1.0 && typeMod > 0) _addToLog('It\'s not very effective...');
@@ -786,8 +840,16 @@ class BattleManager extends ChangeNotifier {
     }
     if (opponent.health <= 0) {
       result = BattleResult.win;
-      // 🚨 FIX: Reverting to baseOrganism
-      _addToLog('The wild ${opponent.organism.baseOrganism.name} fainted! You won the battle.');
+      
+      // Roll for loot
+      droppedLoot = opponent.organism.baseOrganism.rollLootDrop();
+      if (droppedLoot != null) {
+        _addToLog('The wild ${opponent.organism.baseOrganism.name} fainted! You won the battle.');
+        _appendToLog('\nIt dropped something!');
+      } else {
+        _addToLog('The wild ${opponent.organism.baseOrganism.name} fainted! You won the battle.');
+      }
+      
       currentState = BattleState.battleEnd;
       notifyListeners();
       return true;
