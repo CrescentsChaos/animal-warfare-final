@@ -26,7 +26,7 @@ class BattleScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) => BattleManager(playerOrganism, opponentOrganism),
+      create: (context) => BattleManager(playerOrganism, opponentOrganism, biomeName: biomeName),
       child: BattleScreenContent(biomeName: biomeName),
     );
   }
@@ -530,19 +530,45 @@ class BattleScreenContent extends StatelessWidget {
     UserState userState,
   ) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Handle capture - add organism to collection
       if (battleManager.result == BattleResult.capture) {
         final baseOrganismModel = battleManager.opponent.organism.baseOrganism;
         final newCapturedInstance = CapturedOrganism.spawn(baseOrganismModel);
         userState.addCapturedOrganism(newCapturedInstance);
       }
+      
+      // Handle loss - remove player's creature (death mechanic)
+      if (battleManager.result == BattleResult.loss) {
+        final deadCreature = battleManager.player.organism;
+        userState.removeCapturedOrganism(deadCreature);
+      }
 
       final bool battleResult = battleManager.result == BattleResult.capture;
+      
+      // Get proper title text
+      String titleText;
+      switch (battleManager.result) {
+        case BattleResult.win:
+          titleText = 'VICTORY!';
+          break;
+        case BattleResult.loss:
+          titleText = 'DEFEAT!';
+          break;
+        case BattleResult.capture:
+          titleText = 'CAPTURED!';
+          break;
+        case BattleResult.fled:
+          titleText = 'ESCAPED!';
+          break;
+        default:
+          titleText = 'BATTLE END';
+      }
 
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (ctx) => AlertDialog(
-          title: Text(battleManager.result.toString().toUpperCase()),
+          title: Text(titleText),
           content: Text(
             battleManager.result == BattleResult.capture
                 ? 'You successfully captured the ${battleManager.opponent.organism.baseOrganism.name}!'
@@ -550,7 +576,7 @@ class BattleScreenContent extends StatelessWidget {
                     ? 'You defeated the wild encounter!'
                     : battleManager.result == BattleResult.fled
                         ? 'You ran away safely!'
-                        : 'You were defeated...',
+                        : 'Your ${battleManager.player.organism.baseOrganism.name} has died in battle...',
             style: const TextStyle(fontFamily: 'PressStart2P', fontSize: 12),
           ),
           actions: [

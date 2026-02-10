@@ -9,6 +9,7 @@ import 'package:animal_warfare/models/weather.dart';
 import 'package:animal_warfare/models/terrain.dart';
 import 'package:animal_warfare/models/status_effect.dart';
 import 'package:animal_warfare/models/elemental_type.dart';
+import 'package:animal_warfare/game/biome_weather.dart';
 
 // --- Enums ---
 enum BattleState {
@@ -171,7 +172,7 @@ class BattleManager extends ChangeNotifier {
     return moves;
   }
 
-  BattleManager(this.playerOrganism, this.opponentOrganism) {
+  BattleManager(this.playerOrganism, this.opponentOrganism, {String? biomeName}) {
     player = BattleOrganism(playerOrganism);
     opponent = BattleOrganism(opponentOrganism);
     
@@ -184,11 +185,24 @@ class BattleManager extends ChangeNotifier {
 
     _addToLog('A wild ${opponent.organism.name} appeared! Go, ${player.organism.name}!'); 
     
-    _initializeBattle();
+    _initializeBattle(biomeName);
   }
   
-  void _initializeBattle() {
-    // 1. Check for Auto-Weather/Terrain/Intimidate
+  void _initializeBattle(String? biomeName) {
+    // 0. Apply biome weather/terrain if no ability overrides
+    if (biomeName != null && biomeName.isNotEmpty) {
+      final biomeWeather = BiomeWeatherTable.getRandomWeatherForBiome(biomeName);
+      if (biomeWeather != Weather.none && biomeWeather != Weather.clear) {
+        _setWeather(biomeWeather, 99); // Long duration for biome weather
+      }
+      
+      final biomeTerrain = BiomeWeatherTable.getDefaultTerrainForBiome(biomeName);
+      if (biomeTerrain != Terrain.none) {
+        _setTerrain(biomeTerrain, 99);
+      }
+    }
+    
+    // 1. Check for Auto-Weather/Terrain/Intimidate (abilities can override)
     _checkEntranceAbility(player, opponent);
     _checkEntranceAbility(opponent, player);
     
@@ -204,8 +218,8 @@ class BattleManager extends ChangeNotifier {
     switch (user.ability!.effectType) {
       case AbilityEffectType.weatherChange:
         if (user.ability!.targetStat == 'rain') _setWeather(Weather.rain);
-        else if (user.ability!.targetStat == 'sun') _setWeather(Weather.harshSun);
-        else if (user.ability!.targetStat == 'hail') _setWeather(Weather.hail);
+        else if (user.ability!.targetStat == 'sun') _setWeather(Weather.heatwave);
+        else if (user.ability!.targetStat == 'hail') _setWeather(Weather.blizzard);
         else if (user.ability!.targetStat == 'sandstorm') _setWeather(Weather.sandstorm);
         break;
       case AbilityEffectType.terrainChange:
@@ -238,6 +252,22 @@ class BattleManager extends ChangeNotifier {
     currentTerrain = TerrainEffect(terrain: t, duration: duration);
     terrainTurnsLeft = duration;
     _appendToLog('\n${currentTerrain.description}');
+  }
+
+  String _getWeatherPersistenceMessage(Weather w) {
+    switch (w) {
+      case Weather.rain: return 'Rain continues to fall.';
+      case Weather.heavyRain: return 'The downpour persists!';
+      case Weather.drizzle: return 'It\'s still drizzling.';
+      case Weather.snow: return 'Snow keeps falling.';
+      case Weather.blizzard: return 'The blizzard rages on!';
+      case Weather.fog: return 'The fog lingers.';
+      case Weather.heatwave: return 'The heat is intense!';
+      case Weather.sandstorm: return 'The sandstorm continues.';
+      case Weather.windstorm: return 'Strong winds persist.';
+      case Weather.thunderstorm: return 'The storm rumbles on!';
+      default: return '';
+    }
   }
 
   // --- Turn Logic ---
@@ -316,11 +346,14 @@ class BattleManager extends ChangeNotifier {
     notifyListeners();
     await Future.delayed(const Duration(milliseconds: 700));
 
-    // 1. Accuracy Check (Blindness affects accuracy)
+    // 1. Accuracy Check (Blindness + Weather affects accuracy)
     int accuracy = move.accuracy;
     if (attacker.statusEffect.type == StatusEffectType.blind) {
       accuracy = (accuracy * 0.75).round(); // Reduce accuracy by 25% if blinded
     }
+    
+    // Weather-based accuracy modifier
+    accuracy = (accuracy * currentWeather.accuracyModifier).round();
 
     if (Random().nextInt(100) >= accuracy) {
       _addToLog('...but it missed!');
@@ -343,12 +376,7 @@ class BattleManager extends ChangeNotifier {
         // 2. Damage Calculation (Simplified Formula: (AttackerATK / DefenderDEF) * MovePower)
         if (move.baseDamage > 0) {
           // Weather Modifiers
-          double weatherMod = 1.0;
-          if (currentWeather.weather == Weather.rain) {
-             // If move is Water -> 1.5, Fire -> 0.5
-          } else if (currentWeather.weather == Weather.harshSun) {
-             // If move is Fire -> 1.5, Water -> 0.5
-          }
+          double weatherMod = currentWeather.getDamageMultiplier(move.type.toString().split('.').last);
           
           // Critical Hit Logic
           bool isCrit = false;
@@ -539,8 +567,8 @@ class BattleManager extends ChangeNotifier {
         // Ex: value mapping to Weather enum could be done here. 
         // For now, hardcode "Rain" if stat == 'rain', etc.
         if (effect.stat == 'rain') _setWeather(Weather.rain);
-        else if (effect.stat == 'sun') _setWeather(Weather.harshSun);
-        else if (effect.stat == 'hail') _setWeather(Weather.hail);
+        else if (effect.stat == 'sun') _setWeather(Weather.heatwave);
+        else if (effect.stat == 'hail') _setWeather(Weather.blizzard);
         else if (effect.stat == 'sandstorm') _setWeather(Weather.sandstorm);
         break;
       case MoveEffectType.terrain:
@@ -580,12 +608,15 @@ class BattleManager extends ChangeNotifier {
     // Weather
     if (weatherTurnsLeft > 0) {
       weatherTurnsLeft--;
-      _addToLog(currentWeather.weather == Weather.rain ? 'Rain continues to fall.' : 
-                currentWeather.weather == Weather.harshSun ? 'The sunlight is strong.' : 
-                currentWeather.weather == Weather.hail ? 'The hail crashes down.' : 
-                currentWeather.weather == Weather.sandstorm ? 'The sandstorm rages.' : '');
-      notifyListeners();
-      await Future.delayed(const Duration(milliseconds: 500));
+      // Show weather persistence message occasionally
+      if (weatherTurnsLeft % 3 == 0 && currentWeather.weather != Weather.clear) {
+        final msg = _getWeatherPersistenceMessage(currentWeather.weather);
+        if (msg.isNotEmpty) {
+          _addToLog(msg);
+          notifyListeners();
+          await Future.delayed(const Duration(milliseconds: 500));
+        }
+      }
       
       if (weatherTurnsLeft == 0) {
         _addToLog(currentWeather.endMessage);
@@ -641,13 +672,21 @@ class BattleManager extends ChangeNotifier {
        await Future.delayed(const Duration(milliseconds: 500));
     }
     
-    // Weather Damage (Sandstorm/Hail)
+    // Weather Damage
     if (currentWeather.weather == Weather.sandstorm) {
        // TODO: Check types (Rock/Ground/Steel immune). For now, damage everyone.
        final damage = (target.maxHealth * 0.06).round().clamp(1, 9999);
        target.health -= damage;
        target.health = target.health.clamp(0, target.maxHealth);
-        _addToLog('The sandstorm buffets ${target.organism.baseOrganism.name}!');
+        _addToLog('${target.organism.baseOrganism.name} is buffeted by the sandstorm!');
+       notifyListeners();
+       await Future.delayed(const Duration(milliseconds: 500));
+    } else if (currentWeather.weather == Weather.blizzard) {
+       // Blizzard damages non-Ice types
+       final damage = (target.maxHealth * 0.0625).round().clamp(1, 9999);
+       target.health -= damage;
+       target.health = target.health.clamp(0, target.maxHealth);
+       _addToLog('${target.organism.baseOrganism.name} is battered by the blizzard!');
        notifyListeners();
        await Future.delayed(const Duration(milliseconds: 500));
     }

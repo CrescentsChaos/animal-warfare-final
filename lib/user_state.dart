@@ -114,6 +114,22 @@ class UserState with ChangeNotifier {
     });
   }
 
+  /// Remove a specific captured organism (e.g., death in battle). Finds by matching properties.
+  Future<void> removeCapturedOrganism(CapturedOrganism organism) async {
+    if (_currentUser == null) return;
+    // Find the organism by matching name and IVs (unique signature)
+    final index = _currentUser!.capturedOrganisms.indexWhere((o) => 
+      o.baseOrganism.name == organism.baseOrganism.name &&
+      o.individualValues['health'] == organism.individualValues['health'] &&
+      o.individualValues['attack'] == organism.individualValues['attack'] &&
+      o.individualValues['defense'] == organism.individualValues['defense'] &&
+      o.individualValues['speed'] == organism.individualValues['speed']
+    );
+    if (index >= 0) {
+      await releaseOrganism(index);
+    }
+  }
+
   @override
   void dispose() {
     _staminaRegenTimer?.cancel();

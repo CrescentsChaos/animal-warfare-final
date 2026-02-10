@@ -9,6 +9,10 @@ enum AbilityEffectType {
   weatherChange,     // Changes weather on entry
   terrainChange,     // Changes terrain on entry
   statusImmunity,    // Immune to specific status
+  weatherBoost,      // Stat boost in specific weather
+  weatherImmunity,   // No damage from weather
+  weatherHeal,       // Heal each turn in specific weather
+  terrainBoost,      // Stat boost on specific terrain
 }
 
 class Ability {
@@ -66,6 +70,57 @@ class Ability {
       effectType: AbilityEffectType.onBattleStart,
       targetStat: 'attack',
       magnitude: -1,
+    ),
+    // Weather-boosted abilities
+    Ability(
+      name: 'Sand Rush',
+      description: 'Speed doubles in sandstorm.',
+      effectType: AbilityEffectType.weatherBoost,
+      targetStat: 'speed',
+      magnitude: 2.0,
+    ),
+    Ability(
+      name: 'Chlorophyll',
+      description: 'Speed doubles in harsh sunlight.',
+      effectType: AbilityEffectType.weatherBoost,
+      targetStat: 'speed',
+      magnitude: 2.0,
+    ),
+    Ability(
+      name: 'Swift Swim',
+      description: 'Speed doubles in rain.',
+      effectType: AbilityEffectType.weatherBoost,
+      targetStat: 'speed',
+      magnitude: 2.0,
+    ),
+    Ability(
+      name: 'Slush Rush',
+      description: 'Speed doubles in snow.',
+      effectType: AbilityEffectType.weatherBoost,
+      targetStat: 'speed',
+      magnitude: 2.0,
+    ),
+    // Weather healing/immunity
+    Ability(
+      name: 'Rain Dish',
+      description: 'Heals 1/16 HP per turn in rain.',
+      effectType: AbilityEffectType.weatherHeal,
+      targetStat: 'rain',
+      magnitude: 0.0625,
+    ),
+    Ability(
+      name: 'Ice Body',
+      description: 'Heals 1/16 HP per turn in snow or blizzard.',
+      effectType: AbilityEffectType.weatherHeal,
+      targetStat: 'snow',
+      magnitude: 0.0625,
+    ),
+    Ability(
+      name: 'Solar Power',
+      description:'Boosts attack by 50% in harsh sun.',
+      effectType: AbilityEffectType.weatherBoost,
+      targetStat: 'attack',
+      magnitude: 1.5,
     ),
   ];
   
