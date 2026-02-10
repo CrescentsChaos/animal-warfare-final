@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
-import 'dart:ui';
 import 'package:animal_warfare/local_auth_service.dart';
 import 'package:animal_warfare/models/organism.dart';
+import 'package:animal_warfare/theme.dart';
 
 enum QuizType {
   scientificToCommon,
@@ -80,10 +80,7 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
   // 🟢 NEW: Store the current user data locally so we can update it
   late UserData _currentUser;
 
-  static const Color highlightColor = Color(0xFFDAA520);
-  static const Color backgroundColor = Color(0xFF13281A);
-  static const Color correctGlowColor = Color(0xFF4CAF50); // Softer green
-  static const Color wrongGlowColor = Color(0xFFF44336); // Softer red
+  // 🔴 REMOVED: Soft hardcoded colors
   
   static const int _numberOfOptions = 4;
   static const int _delayAfterAnswerSeconds = 2; // Faster transition
@@ -236,26 +233,26 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
     bool isCorrect = _isAnswered && answerText == _correctAnswer;
     bool isWrong = _isAnswered && answerText == _selectedAnswer && answerText != _correctAnswer;
 
-    Color borderColor = highlightColor.withOpacity(0.3);
-    Color textColor = highlightColor;
-    Color glowColor = Colors.transparent;
+    Color borderColor = AppColors.highlightColor.withOpacity(0.5);
+    Color textColor = Colors.white;
+    Color bgColor = Colors.black.withOpacity(0.3);
 
     if (isCorrect) {
-      borderColor = correctGlowColor;
-      textColor = correctGlowColor;
-      glowColor = correctGlowColor.withOpacity(0.2);
+      borderColor = AppColors.correctGreen;
+      textColor = AppColors.correctGreen;
+      bgColor = AppColors.correctGreen.withOpacity(0.1);
     } else if (isWrong) {
-      borderColor = wrongGlowColor;
-      textColor = wrongGlowColor;
-      glowColor = wrongGlowColor.withOpacity(0.2);
+      borderColor = AppColors.wrongRed;
+      textColor = AppColors.wrongRed;
+      bgColor = AppColors.wrongRed.withOpacity(0.1);
     }
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       margin: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: glowColor,
-        borderRadius: BorderRadius.circular(12),
+        color: bgColor,
+        borderRadius: BorderRadius.circular(4),
         border: Border.all(color: borderColor, width: 2),
       ),
       child: Material(
@@ -302,12 +299,7 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
             child: Text(
               _getQuestionText(questionOrganism),
               textAlign: TextAlign.center,
-              style: TextStyle( 
-                color: Colors.white70,
-                fontFamily: 'PressStart2P',
-                fontSize: _responsiveFontSize(context, 10), 
-                letterSpacing: 1.5,
-              ),
+              style: AppTextStyles.small(context, color: Colors.grey[400]!),
             ),
           ),
           _QuizSpriteDisplay(
@@ -322,26 +314,14 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
       return Container(
         padding: const EdgeInsets.all(32),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: highlightColor.withOpacity(0.5), width: 2),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              highlightColor.withOpacity(0.15),
-              Colors.transparent,
-            ],
-          ),
+          color: Colors.black.withOpacity(0.4),
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(color: AppColors.highlightColor, width: 2),
         ),
         child: Text(
           _getQuestionText(questionOrganism).toUpperCase(),
           textAlign: TextAlign.center,
-          style: TextStyle(
-            color: highlightColor,
-            fontFamily: 'PressStart2P',
-            fontSize: _responsiveFontSize(context, 14),
-            height: 1.6,
-          ),
+          style: AppTextStyles.headline(context, baseSize: 12),
         ),
       );
     }
@@ -351,9 +331,9 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const Scaffold(
-        backgroundColor: backgroundColor,
+        backgroundColor: AppColors.secondaryButtonColor,
         body: Center(
-          child: CircularProgressIndicator(color: highlightColor),
+          child: CircularProgressIndicator(color: AppColors.highlightColor),
         ),
       );
     }
@@ -364,21 +344,13 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
           title: const Text('QUIZ'), 
           backgroundColor: Colors.transparent,
           elevation: 0,
-          titleTextStyle: TextStyle(
-            color: highlightColor, 
-            fontFamily: 'PressStart2P', 
-            fontSize: _responsiveFontSize(context, 16),
-          ),
+          titleTextStyle: AppTextStyles.headline(context, baseSize: 16),
         ),
-        backgroundColor: backgroundColor,
+        backgroundColor: AppColors.secondaryButtonColor,
         body: Center(
           child: Text('NOT ENOUGH ANIMALS DISCOVERED.', 
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: wrongGlowColor, 
-              fontFamily: 'PressStart2P', 
-              fontSize: _responsiveFontSize(context, 12),
-            )
+              style: AppTextStyles.body(context, baseSize: 12, color: AppColors.wrongRed),
           ),
         ),
       );
@@ -391,22 +363,20 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        titleTextStyle: TextStyle(
-          color: highlightColor, 
-          fontFamily: 'PressStart2P', 
-          fontSize: _responsiveFontSize(context, 10),
-          letterSpacing: 2,
-        ),
+        titleTextStyle: AppTextStyles.headline(context, baseSize: 10),
       ),
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
-          color: backgroundColor,
+        decoration: BoxDecoration(
+          color: AppColors.secondaryButtonColor,
           image: DecorationImage(
-            image: AssetImage('assets/biomes/savanna-bg.png'), 
+            image: const AssetImage('assets/biomes/savanna-bg.png'), 
             fit: BoxFit.cover,
-            opacity: 0.2,
+            colorFilter: ColorFilter.mode(
+              Colors.black.withOpacity(0.7),
+              BlendMode.darken,
+            ),
           ),
         ),
         child: SafeArea(
@@ -436,11 +406,9 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
                     child: Text(
                       _selectedAnswer == _correctAnswer ? 'EXCELLENT! + XP' : 'WRONG! THE ANSWER IS:\n$_correctAnswer'.toUpperCase(),
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: _responsiveFontSize(context, 10),
-                        color: _selectedAnswer == _correctAnswer ? correctGlowColor : wrongGlowColor,
-                        fontFamily: 'PressStart2P',
-                        height: 1.5,
+                      style: AppTextStyles.small(
+                        context,
+                        color: _selectedAnswer == _correctAnswer ? AppColors.correctGreen : AppColors.wrongRed,
                       ),
                     ),
                   ),
@@ -568,17 +536,17 @@ class __QuizSpriteDisplayState extends State<_QuizSpriteDisplay> {
       width: widget.width,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(20),
+        color: Colors.black.withOpacity(0.4),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: _QuizGameScreenState.highlightColor.withOpacity(0.2), 
+          color: AppColors.highlightColor, 
           width: 2,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
+            color: Colors.black.withOpacity(0.5),
+            offset: const Offset(4, 4),
+            blurRadius: 0,
           ),
         ],
       ),

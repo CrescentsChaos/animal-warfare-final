@@ -1,121 +1,90 @@
-# Animal Warfare🐾
+# Animal Warfare 🐾
 
-**Animal Warfare** is a Flutter-based mobile application where players explore diverse biomes, discover and identify exotic organisms, and manage their resources like **Stamina** to continue their exploration. The app features dynamic biome-based aesthetics, an achievement system, and a **retro 8-bit aesthetic** using the `PressStart2P` font.
+**Animal Warfare** is a feature-rich Flutter-based mobile application that combines education with an engaging monster-battler experience. Explore diverse biomes, discover exotic organisms, capture them in tactical battles, and master the ecosystem in the Quiz Lab.
 
-## ✨ Features
+The application features a **retro pixel-art aesthetic**, utilizing the `PressStart2P` font and high-contrast visuals for a nostalgic gaming feel.
 
-  * **Dynamic Biome Exploration:** Explore a variety of real-world biomes (Swamp, Desert, Rainforest, Ocean, etc.), each with a unique visual palette, background art, and looping theme music.
-  * **Weighted Encounter System:** Encounter organisms specific to each biome, with discovery chance weighted by their **Rarity** (Common, Uncommon, Rare, Epic, Legendary, Mythical).
-  * **Stamina System:** Manage a crucial resource, **Stamina (100 Max)**, which is required for both exploring a biome (10 Stamina) and identifying new organisms (cost determined by Rarity). Stamina regenerates over time.
-  * **Discovery and Identification:** Encountered organisms are initially silhouetted. Players must spend stamina to **Identify** the organism, permanently adding it to their discovered list.
-  * **Achievement System:** Track discovery progress and unlock achievements related to collecting organisms.
-  * **Responsive UI:** Uses a dedicated 8-bit font (`PressStart2P`) and high-contrast color schemes for a nostalgic gaming feel.
+---
 
------
+## ✨ Core Features
 
-## ⚙️ Stamina Costs
+### 🌍 Dynamic Biome Exploration
+Explore real-world biomes like **Swamp, Desert, Rainforest, Ocean**, and more. Each biome features:
+*   Unique visual palettes and custom background art.
+*   Looping theme music specific to the environment.
+*   **Weighted Encounter System**: Discover animals based on **Rarity** (Common, Uncommon, Rare, Epic, Legendary, Mythical).
 
-The core loop revolves around two stamina drains: Exploration and Identification.
+### ⚔️ Battle & Capture System
+Take your team of captured animals into the wild and engage in strategic turn-based combat.
+*   **Capture Wild Animals**: Use your tools to capture new animals and add them to your collection.
+*   **Individual Values (IVs)**: Every animal has unique stats (Health, Attack, Defense, Speed) determined at spawn.
+*   **Element Types**: Strategic advantages based on elemental affinities (Fire, Water, Grass, etc.).
+*   **Talismans & Abilities**: Equip items and utilize unique passive abilities to turn the tide.
 
-| Action | Stamina Cost | Notes |
-| :--- | :--- | :--- |
-| **Start Exploration** | 10 Stamina | Deducted on the initial button press to trigger an encounter. |
-| **Identify Organism** | Varies by Rarity | Deducted when revealing a hidden organism's name. |
+### 🔋 Dual Stamina Systems
+1.  **Exploration Stamina (Global)**: Manage your player's energy to explore biomes and identify new species. Regenerates over time.
+2.  **Move Stamina (Move-specific)**: Each attack in battle has its own stamina (PP). Use your moves wisely; running out forces you to use "Struggle".
 
-### Identification Cost Breakdown
+### 📦 Animal Box & Move Management
+Manage your captured team with ease:
+*   **Move Selection**: Customize each animal's moveset by picking up to 4 moves from their natural pool.
+*   **Attacker Selection**: Choose which animal leads your party into battle.
 
-| Rarity | Stamina Cost |
-| :--- | :--- |
-| **Common** | 5 |
-| **Uncommon**| 10 |
-| **Rare** | 15 |
-| **Epic** | 25 |
-| **Legendary**| 40 |
-| **Mythical** | 60 |
+### 🧪 Quiz Lab
+Test and improve your biological knowledge in the newly redesigned Quiz Lab:
+*   Multiple quiz types: Scientific Names, Sprite Identification, and Silhouette Challenges.
+*   Earn XP and track your stats as you become an expert in the ecosystem.
+*   **Retro UI**: A fully themed interface that matches the core game experience.
 
------
+---
 
-## 🛠️ Installation and Setup
+## 🛠️ Technical Overview
+
+*   **Framework**: Flutter (Dart)
+*   **State Management**: Provider (for real-time battle state and persistent user data)
+*   **Persistence**: Local JSON-based storage with auto-sync.
+*   **Audio**: Audioplayers for environment immersion.
+*   **Theming**: Custom rigid-border design system with responsive typography.
+
+---
+
+## ⚙️ Installation and Setup
 
 ### Prerequisites
-
-  * **Flutter SDK:** Ensure you have the latest stable version of Flutter installed.
-  * **Dart SDK:** Included with Flutter.
+*   **Flutter SDK**: Latest stable version.
+*   **Dart SDK**: Included with Flutter.
 
 ### Getting Started
-
-1.  **Clone the repository:**
-
+1.  **Clone the repository**:
     ```bash
-    git clone https://github.com/YOUR_USERNAME/animal-warfare-biome-explorer.git
-    cd animal-warfare-biome-explorer
+    git clone https://github.com/CrescentsChaos/animal-warfare-final.git
+    cd animal-warfare-final
     ```
-
-2.  **Install dependencies:**
-
+2.  **Install dependencies**:
     ```bash
     flutter pub get
     ```
-
-3.  **Ensure assets are linked:**
-    Verify that `assets/sprites`, `assets/biomes`, and `assets/Organisms.json` are present and correctly linked in your `pubspec.yaml` file.
-
-4.  **Run the app:**
-
+3.  **Run the app**:
     ```bash
     flutter run
     ```
 
-### Asset Structure
-
-For the app's functionality to work, ensure the following directory structure is maintained, especially for organism sprites and biome backgrounds:
-
-```
-.
-├── assets/
-│   ├── sprites/
-│   │   └── organism_name.png  # Local sprites (checked first)
-│   ├── biomes/
-│   │   └── biome_name-bg.png  # Biome background images
-│   ├── audio/
-│   │   └── biome_name_theme.mp3 # Biome music
-│   └── Organisms.json         # Master list of all organisms
-└── lib/
-    ├── main.dart
-    ├── biome_detail_screen.dart # Main exploration logic
-    └── ...
-```
-
------
-
-## 💡 Technologies Used
-
-  * **Flutter:** Mobile application framework.
-  * **Dart:** Programming language.
-  * **Provider:** State management for real-time user data updates (especially Stamina).
-  * **Audioplayers:** Used for background biome music.
-  * **LocalAuthService:** Handles user persistence and organism discovery tracking.
-
------
+---
 
 ## 🤝 Contributing
-
-Contributions are always welcome\! If you have suggestions for new biomes, organisms, or feature improvements, please open an issue or submit a pull request.
-
+Contributions are welcome! Whether it's adding new biomes, animals, or balancing battle mechanics.
 1.  Fork the Project.
-2.  Create your Feature Branch (`git checkout -b feature/AmazingFeature`).
-3.  Commit your Changes (`git commit -m 'Add some AmazingFeature'`).
-4.  Push to the Branch (`git push origin feature/AmazingFeature`).
+2.  Create your Feature Branch.
+3.  Commit your Changes.
+4.  Push to the Branch.
 5.  Open a Pull Request.
 
------
+---
 
 ## 📜 License
+Distributed under the MIT License.
 
-Distributed under the MIT License. See `LICENSE` for more information.
-
------
+---
 
 ## 📞 Contact
-
-Project Link: [https://github.com/CrescentsChaos/animal-warfare-final](https://www.google.com/search?q=https://github.com/CrescentsChaos/animal-warfare-final)
+Project Link: [https://github.com/CrescentsChaos/animal-warfare-final](https://github.com/CrescentsChaos/animal-warfare-final)
