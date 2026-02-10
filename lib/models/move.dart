@@ -10,44 +10,65 @@
 // 1) Pure damage (no effect):
 //    Move(name: 'Pounce', description: 'Leap at the foe.', baseDamage: 25, accuracy: 95),
 //
-// 2) Damage + poison:
+// 2) Damage + poison (Status Effect):
 //    Move(name: 'Venom Sting', description: 'May poison.', baseDamage: 12, accuracy: 90,
-//      effect: MoveEffect(type: MoveEffectType.statusPoison, target: 'opponent', value: 3)),
+//      effect: MoveEffect(type: MoveEffectType.statusPoison, target: 'opponent', value: 3)), // Value is duration or severity
 //
-// 3) No damage, raise your defense:
+// 3) Stat Change (Raise your defense):
 //    Move(name: 'Harden', description: 'Raises defense.', baseDamage: 0,
 //      effect: MoveEffect(type: MoveEffectType.statChange, target: 'self', stat: 'defense', value: 1)),
 //
-// 4) No damage, lower opponent attack:
-//    Move(name: 'Growl', description: 'Lowers attack.', baseDamage: 0,
-//      effect: MoveEffect(type: MoveEffectType.statChange, target: 'opponent', stat: 'attack', value: -1)),
+// 4) Weather Change:
+//    Move(name: 'Rain Dance', description: 'Summons rain.', baseDamage: 0,
+//      effect: MoveEffect(type: MoveEffectType.weather, target: 'field', stat: 'rain', value: 5)),
 //
-// 5) Heal self (value = HP restored):
-//    Move(name: 'Recover', description: 'Restore HP.', baseDamage: 0,
-//      effect: MoveEffect(type: MoveEffectType.heal, target: 'self', value: 30)),
+// 5) Terrain Change:
+//    Move(name: 'Electric Terrain', description: 'Electrifies ground.', baseDamage: 0,
+//      effect: MoveEffect(type: MoveEffectType.terrain, target: 'field', stat: 'electric', value: 5)),
 //
-// Effect types: none, statusPoison, statusSleep, statChange, heal.
-// stat for statChange: 'attack', 'defense', 'speed'.
-// value: for statChange = stage change (+1/-1); for heal = HP; for poison = intensity.
+// Effect types: none, statusPoison, statusSleep, statusBurn, statusParalysis, statChange, heal, weather, terrain.
+//
+// 6) Complex Mechanics:
+//    Move(name: 'Quick Attack', description: 'Strikes first.', baseDamage: 40, priority: 1),
+//    Move(name: 'Double Slap', description: 'Hits 2-5 times.', baseDamage: 15, minHits: 2, maxHits: 5),
+//    Move(name: 'Drain Punch', description: 'Heals half damage dealt.', baseDamage: 75, drainPercent: 0.5),
+//    Move(name: 'Take Down', description: 'Hurts user.', baseDamage: 90, recoilPercent: 0.25),
+//    Move(name: 'Slash', description: 'High crit rate.', baseDamage: 70, critRate: 1),
+//
+// Effect types: ... statusBleed, statusConfusion, statusBlind, statusRegen, statusVulnerable, statusStun ...
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import 'dart:math';
 
+import 'package:animal_warfare/models/elemental_type.dart';
+
 // Enum for the type of effect a move can apply
 enum MoveEffectType {
   none,
-  statusPoison, // Applies a damage-over-time status
-  statusSleep,  // Prevents action for a turn
-  statChange,   // Changes an attacker's or defender's stat
-  heal,         // Restores HP
+  statusPoison, 
+  statusSleep,
+  statusBurn,
+  statusParalysis,
+  statusFreeze,
+  statChange,   
+  heal,         
+  weather,      // Changes Weather
+  terrain,      // Changes Terrain
+  // New Effect Types
+  statusBleed,
+  statusConfusion,
+  statusBlind,
+  statusRegen,
+  statusVulnerable,
+  statusStun,
 }
 
 // Model for the effect component of a Move
 class MoveEffect {
   final MoveEffectType type;
-  final String target; // 'self', 'opponent'
-  final String stat;   // e.g., 'attack', 'defense', only for statChange
-  final int value;     // The magnitude of the change (e.g., stat boost level or damage/heal amount)
+  final String target; // 'self', 'opponent', 'field'
+  final String stat;   // e.g., 'attack', 'defense', 'rain', 'electric'
+  final int value;     // Magnitude, duration, or probability
   
   const MoveEffect({
     required this.type,
@@ -76,13 +97,27 @@ class Move {
   final int baseDamage;
   final int accuracy; // 0 to 100
   final MoveEffect effect;
-  
+  final int priority; // Higher goes first
+  final int critRate; // 0=4%, 1=12.5%, 2=50%, 3+=100%
+  final double drainPercent; // % of damage heals user
+  final double recoilPercent; // % of damage hurts user
+  final int minHits; // For multi-hit moves
+  final int maxHits;
+  final ElementalType type; // NEW: Elemental Type of the move
+
   const Move({
     required this.name,
     required this.description,
     required this.baseDamage,
     this.accuracy = 100,
     this.effect = const MoveEffect(type: MoveEffectType.none),
+    this.priority = 0,
+    this.critRate = 0,
+    this.drainPercent = 0.0,
+    this.recoilPercent = 0.0,
+    this.minHits = 1,
+    this.maxHits = 1,
+    this.type = ElementalType.normal, // Default
   });
 
   // Constructor for loading Move from JSON
@@ -95,20 +130,71 @@ class Move {
       effect: json['effect'] != null
           ? MoveEffect.fromJson(json['effect'] as Map<String, dynamic>)
           : const MoveEffect(type: MoveEffectType.none),
+      priority: json['priority'] as int? ?? 0,
+      critRate: json['critRate'] as int? ?? 0,
+      drainPercent: (json['drainPercent'] as num?)?.toDouble() ?? 0.0,
+      recoilPercent: (json['recoilPercent'] as num?)?.toDouble() ?? 0.0,
+      minHits: json['minHits'] as int? ?? 1,
+      maxHits: json['maxHits'] as int? ?? 1,
+      type: json['type'] != null
+          ? ElementalType.values.firstWhere(
+              (e) => e.toString().split('.').last == json['type'],
+              orElse: () => ElementalType.normal)
+          : ElementalType.normal,
     );
   }
   
   // FIX: Make the static list private and use a helper function to access it.
   static const List<Move> _allMoves = [
-    Move(name: 'Scratch', description: 'A basic attack.', baseDamage: 10,),
-    Move(name: 'Venom Sting', description: 'May poison the foe.', baseDamage: 8,
+    Move(name: 'Scratch', description: 'A basic attack.', baseDamage: 10, type: ElementalType.normal),
+    Move(name: 'Venom Sting', description: 'May poison the foe.', baseDamage: 8, type: ElementalType.venomous,
       effect: MoveEffect(type: MoveEffectType.statusPoison, value: 3), // 3 turns of poison
     ),
-    Move(name: 'Hunker Down', description: 'Raises the user\'s defense.', baseDamage: 0,
+    Move(name: 'Hunker Down', description: 'Raises the user\'s defense.', baseDamage: 0, type: ElementalType.armored,
       effect: MoveEffect(type: MoveEffectType.statChange, target: 'self', stat: 'defense', value: 1), // +1 Defense stage
     ),
-    Move(name: 'Hibernate', description: 'A healing nap.', baseDamage: 0,
+    Move(name: 'Hibernate', description: 'A healing nap.', baseDamage: 0, type: ElementalType.burrowing,
       effect: MoveEffect(type: MoveEffectType.heal, target: 'self', value: 20), // Heals 20 HP
+    ),
+    // Basic Damage Moves
+    Move(name: 'Tackle', description: 'A full-body charge.', baseDamage: 35, accuracy: 95, type: ElementalType.giant),
+    Move(name: 'Bite', description: 'Bites with vicious fangs.', baseDamage: 40, type: ElementalType.predator,
+      effect: MoveEffect(type: MoveEffectType.statusBleed, value: 3),),
+    Move(name: 'Water Gun', description: 'Squirts water to attack.', baseDamage: 40, type: ElementalType.aquatic),
+    
+    // Status Effect Moves
+    Move(name: 'Ember', description: 'May burn the foe.', baseDamage: 40, type: ElementalType.normal, // No Fire type, fallback to Normal
+      effect: MoveEffect(type: MoveEffectType.statusBurn, value: 3), // Burn
+    ),
+    Move(name: 'Thunder Shock', description: 'May paralyze the foe.', baseDamage: 40, type: ElementalType.normal, // No Electric type
+      effect: MoveEffect(type: MoveEffectType.statusParalysis, value: 3), // Paralysis
+    ),
+    Move(name: 'Sing', description: 'Lulls the foe to sleep.', baseDamage: 0, accuracy: 55, type: ElementalType.social,
+      effect: MoveEffect(type: MoveEffectType.statusSleep, value: 3), // Sleep
+    ),
+    
+    // Weather Moves
+    Move(name: 'Rain Dance', description: 'Summons rain.', baseDamage: 0, type: ElementalType.aquatic,
+      effect: MoveEffect(type: MoveEffectType.weather, target: 'field', stat: 'rain', value: 5),
+    ),
+    Move(name: 'Sunny Day', description: 'Summons harsh sunlight.', baseDamage: 0, type: ElementalType.normal,
+      effect: MoveEffect(type: MoveEffectType.weather, target: 'field', stat: 'sun', value: 5),
+    ),
+
+    // COMPLEX MOVES
+    Move(name: 'Quick Attack', description: 'Strikes first.', baseDamage: 40, priority: 1, type: ElementalType.agile),
+    Move(name: 'Double Slap', description: 'Hits 2-5 times.', baseDamage: 15, minHits: 2, maxHits: 5, type: ElementalType.social),
+    Move(name: 'Drain Punch', description: 'Heals half damage dealt.', baseDamage: 75, drainPercent: 0.5, type: ElementalType.parasite),
+    Move(name: 'Take Down', description: 'Hurts user.', baseDamage: 90, recoilPercent: 0.25, type: ElementalType.giant),
+    Move(name: 'Slash', description: 'High crit rate.', baseDamage: 70, critRate: 1, type: ElementalType.predator),
+    Move(name: 'Confuse Ray', description: 'Confuses the foe.', baseDamage: 0, type: ElementalType.normal,
+      effect: MoveEffect(type: MoveEffectType.statusConfusion, value: 3),
+    ),
+    Move(name: 'Glare', description: 'Stuns the foe.', baseDamage: 0, type: ElementalType.predator,
+      effect: MoveEffect(type: MoveEffectType.statusStun, value: 1),
+    ),
+    Move(name: 'Poison Jab', description: 'Damage + Poison.', baseDamage: 80, type: ElementalType.venomous,
+      effect: MoveEffect(type: MoveEffectType.statusPoison, value: 3),
     ),
     // Add more moves here as constants
   ];

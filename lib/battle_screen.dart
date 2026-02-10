@@ -7,6 +7,9 @@ import 'package:animal_warfare/models/captured_organism.dart';
 import 'package:animal_warfare/game/battle_manager.dart';
 import 'package:animal_warfare/theme.dart';
 import 'package:animal_warfare/user_state.dart';
+import 'package:animal_warfare/models/weather.dart';
+import 'package:animal_warfare/models/terrain.dart';
+import 'package:animal_warfare/models/status_effect.dart';
 
 class BattleScreen extends StatelessWidget {
   final CapturedOrganism playerOrganism;
@@ -92,7 +95,8 @@ class BattleScreenContent extends StatelessWidget {
                   padding: const EdgeInsets.all(16),
                   itemCount: battleManager.battleLogHistory.length,
                   itemBuilder: (_, i) {
-                    final entry = battleManager.battleLogHistory[i];
+                    // Show latest first
+                    final entry = battleManager.battleLogHistory[battleManager.battleLogHistory.length - 1 - i];
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 8),
                       child: Container(
@@ -177,6 +181,9 @@ class BattleScreenContent extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
+                _buildFieldEffects(context, battleManager),
+                const SizedBox(height: 8),
+
                 Expanded(
                   child: Column(
                     children: [
@@ -195,6 +202,45 @@ class BattleScreenContent extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildFieldEffects(BuildContext context, BattleManager bm) {
+    if (bm.currentWeather.weather == Weather.none && bm.currentTerrain.terrain == Terrain.none) {
+      return const SizedBox.shrink();
+    }
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        if (bm.currentWeather.weather != Weather.none)
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.blue.withOpacity(0.6),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.white70),
+            ),
+            child: Text(
+              bm.currentWeather.weather.toString().split('.').last.toUpperCase(),
+              style: const TextStyle(color: Colors.white, fontFamily: 'PressStart2P', fontSize: 10),
+            ),
+          ),
+        if (bm.currentTerrain.terrain != Terrain.none)
+            Container(
+            margin: const EdgeInsets.symmetric(horizontal: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.purple.withOpacity(0.6),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.white70),
+            ),
+            child: Text(
+              bm.currentTerrain.terrain.toString().split('.').last.toUpperCase(),
+              style: const TextStyle(color: Colors.white, fontFamily: 'PressStart2P', fontSize: 10),
+            ),
+          ),
+      ],
     );
   }
 
@@ -246,6 +292,19 @@ class BattleScreenContent extends StatelessWidget {
                   'HP: ${organism.health}/$maxHp',
                   style: TextStyle(color: Colors.white70, fontSize: isNarrow ? 9 : 11, fontFamily: 'PressStart2P'),
                 ),
+                if (organism.statusEffect.type != StatusEffectType.none)
+                  Container(
+                    margin: const EdgeInsets.only(top: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.redAccent,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      organism.statusEffect.name.toUpperCase(),
+                      style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -305,6 +364,19 @@ class BattleScreenContent extends StatelessWidget {
                   'HP: ${organism.health}/$maxHp',
                   style: TextStyle(color: Colors.white70, fontSize: isNarrow ? 9 : 11, fontFamily: 'PressStart2P'),
                 ),
+                if (organism.statusEffect.type != StatusEffectType.none)
+                  Container(
+                    margin: const EdgeInsets.only(top: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.redAccent,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      organism.statusEffect.name.toUpperCase(),
+                      style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -460,7 +532,7 @@ class BattleScreenContent extends StatelessWidget {
             TextButton(
               onPressed: () {
                 Navigator.of(ctx).pop();
-                Navigator.of(context).pop(battleResult);
+                Navigator.of(context).pop(battleManager.result); // Return the enum
               },
               child: const Text('OK'),
             ),

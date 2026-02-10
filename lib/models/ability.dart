@@ -4,6 +4,11 @@ enum AbilityEffectType {
   none,
   passiveStatBoost,  // Always boosts a specific stat (e.g., Swift Hunter)
   onLowHP,           // Triggers when HP is low (e.g., Frenzy)
+  onBattleStart,     // Triggers at start (e.g., Intimidate)
+  onTurnEnd,         // Triggers at end of turn (e.g., Shed Skin)
+  weatherChange,     // Changes weather on entry
+  terrainChange,     // Changes terrain on entry
+  statusImmunity,    // Immune to specific status
 }
 
 class Ability {
@@ -36,6 +41,31 @@ class Ability {
       effectType: AbilityEffectType.onLowHP,
       targetStat: 'attack',
       magnitude: 1.5,
+    ),
+    Ability(
+      name: 'Drizzle',
+      description: 'Summons rain when entering battle.',
+      effectType: AbilityEffectType.weatherChange,
+      targetStat: 'rain',
+    ),
+    Ability(
+      name: 'Drought',
+      description: 'Summons harsh sunlight when entering battle.',
+      effectType: AbilityEffectType.weatherChange,
+      targetStat: 'sun',
+    ),
+    Ability(
+      name: 'Electric Surge',
+      description: 'Creates Electric Terrain when entering battle.',
+      effectType: AbilityEffectType.terrainChange,
+      targetStat: 'electric',
+    ),
+    Ability(
+      name: 'Intimidate',
+      description: 'Lowers opponent\'s Attack when entering.',
+      effectType: AbilityEffectType.onBattleStart,
+      targetStat: 'attack',
+      magnitude: -1,
     ),
   ];
   

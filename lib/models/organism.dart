@@ -1,5 +1,6 @@
 // lib/models/organism.dart
 import 'package:flutter/material.dart';
+import 'package:animal_warfare/models/elemental_type.dart';
 
 class Organism {
   final String name;
@@ -16,6 +17,7 @@ class Organism {
   final String sprite;
   final String rarity;
   final String description;
+  final List<String> types; // NEW: Supports multiple types
 
   Organism({
     required this.name,
@@ -32,9 +34,21 @@ class Organism {
     required this.sprite,
     required this.rarity,
     required this.description,
+    this.types = const ['normal'], // Default
   });
 
   factory Organism.fromJson(Map<String, dynamic> json) {
+    // Handle 'types' being a list of strings or a comma-separated string or null
+    var typeList = <String>[];
+    if (json['types'] is List) {
+      typeList = List<String>.from(json['types']);
+    } else if (json['types'] is String) {
+       typeList = (json['types'] as String).split(',').map((e) => e.trim()).toList();
+    } else {
+      // Fallback: default to normal
+      typeList = ['normal']; 
+    }
+
     return Organism(
       name: json['name'] as String,
       scientificName: json['scientific_name'] as String, 
@@ -50,6 +64,7 @@ class Organism {
       sprite: json['sprite'] as String,
       rarity: json['rarity'] as String,
       description: json['description'] as String,
+      types: typeList,
     );
   }
   Organism copyWith({
@@ -63,10 +78,11 @@ class Organism {
     int? speed,
     String? abilities,
     String? category,
-    String? moves, // The field we need to update
+    String? moves, 
     String? sprite,
     String? rarity,
     String? description,
+    List<String>? types,
   }) {
     return Organism(
       name: name ?? this.name,
@@ -79,13 +95,14 @@ class Organism {
       speed: speed ?? this.speed,
       abilities: abilities ?? this.abilities,
       category: category ?? this.category,
-      moves: moves ?? this.moves, // This is the key update line
+      moves: moves ?? this.moves,
       sprite: sprite ?? this.sprite,
       rarity: rarity ?? this.rarity,
       description: description ?? this.description,
+      types: types ?? this.types,
     );
   }
-  // FIX: Added the missing toJson method for JSON serialization.
+  
   Map<String, dynamic> toJson() {
     return {
       'name': name,
@@ -102,7 +119,18 @@ class Organism {
       'sprite': sprite,
       'rarity': rarity,
       'description': description,
+      'types': types,
     };
+  }
+
+  // Helper to convert String types to Enum
+  List<ElementalType> get elementalTypes {
+    return types.map((t) {
+      return ElementalType.values.firstWhere(
+        (e) => e.toString().split('.').last.toLowerCase() == t.toLowerCase(),
+        orElse: () => ElementalType.normal,
+      );
+    }).toList();
   }
 }
 

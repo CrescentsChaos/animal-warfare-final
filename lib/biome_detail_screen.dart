@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:animal_warfare/models/organism.dart';
 import 'package:animal_warfare/models/captured_organism.dart';
 import 'package:animal_warfare/battle_screen.dart';// Ensure this is the correct path
+import 'package:animal_warfare/game/battle_manager.dart'; // Import for BattleResult enum
 import 'explore_screen.dart'; // Import to use getWeightedRandomOrganism and Organism List
 import 'package:audioplayers/audioplayers.dart'; // Audio Player Import
 import 'package:animal_warfare/local_auth_service.dart'; 
@@ -163,31 +164,43 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
   final wildFighter = CapturedOrganism.spawn(wildOrganism);
   
   // 3. Navigate to the Battle Screen
-  // 🚨 FIX: Add the missing required argument 'biomeName'
-  final bool? captureSuccessful = await Navigator.of(context).push(
+  final Object? result = await Navigator.of(context).push(
     MaterialPageRoute(
       builder: (context) => BattleScreen(
         playerOrganism: playerFighter,
         opponentOrganism: wildFighter,
-        biomeName: widget.biomeName, // <--- ADDED REQUIRED ARGUMENT
+        biomeName: widget.biomeName,
       ),
     ),
   );
   
-  // 🚨 NEW LOGIC: Check the result after the BattleScreen is popped
-  if (captureSuccessful == true) {
-    // If the battle resulted in a successful capture, automatically start a new exploration.
+  // 🚨 NEW LOGIC: Check the BattleResult
+  if (result == BattleResult.capture) {
+    // If captured, show success and keep exploring
     _displayMessage("Capture successful! Starting new exploration...");
     
-    // Delay slightly to allow the previous UI update to finish
     Future.delayed(const Duration(milliseconds: 500), () {
-      // Automatically press the Explore button
       _startExploration();
     });
     
-  } else if (captureSuccessful == false) {
-    // This is the default case for loss or run/flee.
-    // Do nothing, the user is back at the encounter card and must press Explore manually.
+  } else if (result == BattleResult.fled) {
+    // If fled, show success and start new exploration (as requested)
+    _displayMessage("Escaped safely! Searching for new opponent...");
+
+    Future.delayed(const Duration(milliseconds: 500), () {
+      _startExploration();
+    });
+
+  } else if (result == BattleResult.win) {
+    // If won, show success and start new exploration
+    _displayMessage("Victory! Searching for new opponent...");
+
+    Future.delayed(const Duration(milliseconds: 500), () {
+      _startExploration();
+    });
+    
+  } else {
+    // Loss or other (back to card)
   }
 }
 
@@ -735,16 +748,18 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
             children: [
               Expanded(
                 child: ElevatedButton(
-                  // 🚨 FIX: Bind FIGHT to initiate the BattleScreen
-                  onPressed: () => _onEncounterFound(organism), 
+                  // 🚨 FIX: Allow FIGHT only if identified
+                  onPressed: isNameVisible 
+                      ? () => _onEncounterFound(organism) 
+                      : () => _displayMessage("You cannot fight an unidentified animal!"), 
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _rarityHighlightColor, 
+                    backgroundColor: isNameVisible ? _rarityHighlightColor : Colors.grey.shade600, 
                     shape: const StadiumBorder(
                       side: BorderSide(color: Colors.black, width: 3),
                     ),
                   ),
                   child: Text(
-                    'FIGHT', 
+                    isNameVisible ? 'FIGHT' : 'LOCKED', 
                     style: TextStyle(color: Colors.black, fontFamily: 'PressStart2P', fontSize: 14)
                   ),
                 ),
@@ -752,8 +767,8 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
               const SizedBox(width: 10),
               Expanded(
                 child: ElevatedButton(
-                  // 🚨 FIX: Bind RUN to initiate the BattleScreen (where the actual run logic is)
-                  onPressed: () => _onEncounterFound(organism), 
+                  // 🚨 FIX: RUN button now behaves like "Explore" (Skip/Re-roll)
+                  onPressed: _startExploration, 
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _biomeDarkColor.withOpacity(0.8), 
                     shape: StadiumBorder(
