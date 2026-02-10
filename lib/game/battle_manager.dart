@@ -124,6 +124,9 @@ class BattleManager extends ChangeNotifier {
   int currentTurn = 1;
   final List<BattleTurn> turnHistory = [];
   BattleResult? result;
+  
+  // LOOT DROP
+  String? droppedLoot; // loot_id of dropped item, if any
 
   void _addToLog(String message) {
     battleLog = message;

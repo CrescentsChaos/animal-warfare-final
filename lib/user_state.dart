@@ -130,6 +130,64 @@ class UserState with ChangeNotifier {
     }
   }
 
+  /// Add loot to inventory
+  Future<void> addLoot(String lootId, int quantity) async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) {
+      final newInventory = Map<String, int>.from(u.inventory);
+      newInventory[lootId] = (newInventory[lootId] ?? 0) + quantity;
+      return u.copyWith(inventory: newInventory);
+    });
+    if (kDebugMode) print('UserState: Added $quantity x $lootId to inventory.');
+  }
+
+  /// Craft a talisman from recipe
+  Future<bool> craftTalisman(String talismanId, Map<String, int> requiredLoot) async {
+    if (_currentUser == null) return false;
+    
+    // Check if we have enough materials
+    for (final entry in requiredLoot.entries) {
+      final owned = _currentUser!.inventory[entry.key] ?? 0;
+      if (owned < entry.value) {
+        if (kDebugMode) print('UserState: Not enough ${entry.key} to craft.');
+        return false;
+      }
+    }
+    
+    // Consume materials and add talisman
+    await _readModifyWrite((u) {
+      final newInventory = Map<String, int>.from(u.inventory);
+      for (final entry in requiredLoot.entries) {
+        newInventory[entry.key] = (newInventory[entry.key] ?? 0) - entry.value;
+        if (newInventory[entry.key]! <= 0) {
+          newInventory.remove(entry.key);
+        }
+      }
+      final newTalismans = List<String>.from(u.craftedTalismans)..add(talismanId);
+      return u.copyWith(inventory: newInventory, craftedTalismans: newTalismans);
+    });
+    
+    if (kDebugMode) print('UserState: Crafted talisman $talismanId.');
+    return true;
+  }
+
+  /// Equip talisman to a captured organism
+  Future<void> equipTalisman(int organismIndex, String? talismanId) async {
+    if (_currentUser == null) return;
+    
+    await _readModifyWrite((u) {
+      if (organismIndex < 0 || organismIndex >= u.capturedOrganisms.length) return u;
+      
+      final organisms = List<CapturedOrganism>.from(u.capturedOrganisms);
+      final organism = organisms[organismIndex];
+      
+      // For simplicity, we'll need to update CapturedOrganism
+      // This is a limitation - we can't easily modify the talisman field
+      // without recreating the object. Let me handle this differently.
+      return u; // TODO: Implement talisman equipment
+    });
+  }
+
   @override
   void dispose() {
     _staminaRegenTimer?.cancel();

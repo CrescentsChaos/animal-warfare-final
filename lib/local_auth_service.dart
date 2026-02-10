@@ -24,6 +24,10 @@ class UserData {
   final List<CapturedOrganism> capturedOrganisms;
   /// Index into [capturedOrganisms] for the animal used as attacker in battle. 0 if none chosen.
   final int activeAttackerIndex;
+  /// Inventory: map from loot_id to quantity
+  final Map<String, int> inventory;
+  /// Crafted talismans (owned but not equipped)
+  final List<String> craftedTalismans; // List of talisman IDs
 
   UserData({
     required this.username,
@@ -37,11 +41,15 @@ class UserData {
     List<String>? completedAchievements,
     List<CapturedOrganism>? capturedOrganisms,
     int? activeAttackerIndex,
+    Map<String, int>? inventory,
+    List<String>? craftedTalismans,
   }) : quizStats = quizStats ?? {},
        discoveredOrganisms = discoveredOrganisms ?? [],
        completedAchievements = completedAchievements ?? [],
        capturedOrganisms = capturedOrganisms ?? [],
-       activeAttackerIndex = activeAttackerIndex ?? 0;
+       activeAttackerIndex = activeAttackerIndex ?? 0,
+       inventory = inventory ?? {},
+       craftedTalismans = craftedTalismans ?? [];
 
   UserData copyWith({
     String? username,
@@ -55,6 +63,8 @@ class UserData {
     List<String>? completedAchievements,
     List<CapturedOrganism>? capturedOrganisms,
     int? activeAttackerIndex,
+    Map<String, int>? inventory,
+    List<String>? craftedTalismans,
   }) {
     return UserData(
       username: username ?? this.username,
@@ -68,6 +78,8 @@ class UserData {
       completedAchievements: completedAchievements ?? this.completedAchievements,
       capturedOrganisms: capturedOrganisms ?? this.capturedOrganisms,
       activeAttackerIndex: activeAttackerIndex ?? this.activeAttackerIndex,
+      inventory: inventory ?? this.inventory,
+      craftedTalismans: craftedTalismans ?? this.craftedTalismans,
     );
   }
 
@@ -105,6 +117,8 @@ class UserData {
         'completedAchievements': completedAchievements,
         'capturedOrganisms': capturedOrganisms.map((co) => co.toJson()).toList(),
         'activeAttackerIndex': activeAttackerIndex,
+        'inventory': inventory,
+        'craftedTalismans': craftedTalismans,
       };
 
   factory UserData.fromJson(Map<String, dynamic> json,{List<Organism>? allOrganisms}) {
@@ -152,6 +166,8 @@ class UserData {
       completedAchievements: (json['completedAchievements'] as List<dynamic>?)?.map((e) => e as String).toList() ?? [],
       capturedOrganisms: capturedList,
       activeAttackerIndex: json['activeAttackerIndex'] as int? ?? 0,
+      inventory: json['inventory'] != null ? Map<String, int>.from(json['inventory'] as Map) : {},
+      craftedTalismans: (json['craftedTalismans'] as List<dynamic>?)?.map((e) => e as String).toList() ?? [],
     );
 
   }

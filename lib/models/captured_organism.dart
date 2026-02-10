@@ -1,6 +1,7 @@
 // lib/models/captured_organism.dart
 import 'dart:math';
 import 'organism.dart'; // Import the base model
+import 'package:animal_warfare/models/talisman.dart';
 
 // Represents an individual instance of a captured or wild organism.
 // This is the model that holds the unique DNA (IVs).
@@ -14,10 +15,14 @@ class CapturedOrganism {
   // Current Battle State
   int currentHealth;
   
+  // Equipped Talisman
+  Talisman? equippedTalisman;
+  
   CapturedOrganism({
     required this.baseOrganism,
     required this.individualValues,
     required this.currentHealth,
+    this.equippedTalisman,
   });
 
   // NEW: Convenience getter for the organism's name
@@ -94,5 +99,30 @@ class CapturedOrganism {
     'name': baseOrganism.name, 
     'ivs': individualValues,
     'currentHealth': currentHealth,
+    'equippedTalisman': equippedTalisman?.toJson(),
   };
+  
+  /// Create CapturedOrganism from JSON
+  static CapturedOrganism? fromJson(Map<String, dynamic> json, List<Organism> allOrganisms) {
+    final name = json['name'] as String;
+    final baseOrganism = allOrganisms.firstWhere(
+      (o) => o.name == name,
+      orElse: () => allOrganisms[0],
+    );
+    
+    final ivs = Map<String, int>.from(json['ivs'] as Map);
+    final currentHealth = json['currentHealth'] as int;
+    
+    Talisman? talisman;
+    if (json['equippedTalisman'] != null) {
+      talisman = Talisman.fromJson(json['equippedTalisman'] as Map<String, dynamic>);
+    }
+    
+    return CapturedOrganism(
+      baseOrganism: baseOrganism,
+      individualValues: ivs,
+      currentHealth: currentHealth,
+      equippedTalisman: talisman,
+    );
+  }
 }
