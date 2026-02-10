@@ -87,7 +87,16 @@ class BattleOrganism {
   }
 
   /// Use the captured organism's calculated max HP (IVs included), not base stat.
+  /// Use the captured organism's calculated max HP (IVs included), not base stat.
   int get maxHealth => organism.maxHealth;
+}
+
+// --- Battle Turn Data ---
+class BattleTurn {
+  final int turnNumber;
+  final List<String> logEntries = [];
+
+  BattleTurn(this.turnNumber);
 }
 
 // --- BattleManager: The Core State Machine ---
@@ -108,18 +117,38 @@ class BattleManager extends ChangeNotifier {
   int terrainTurnsLeft = 0;
 
   BattleState currentState = BattleState.waitingForInput;
-  String battleLog = '';
-  final List<String> battleLogHistory = [];
+  String battleLog = ''; // Current/Latest message
+  
+  // LOGGING REFACTOR
+  int currentTurn = 1;
+  final List<BattleTurn> turnHistory = [];
   BattleResult? result;
 
   void _addToLog(String message) {
     battleLog = message;
-    battleLogHistory.add(message);
+    if (turnHistory.isEmpty) {
+      turnHistory.add(BattleTurn(currentTurn));
+    }
+    turnHistory.last.logEntries.add(message);
   }
 
   void _appendToLog(String message) {
     battleLog += message;
-    battleLogHistory.add(message.trim());
+    if (turnHistory.isNotEmpty && turnHistory.last.logEntries.isNotEmpty) {
+       // Append to the last entry instead of creating a new one? 
+       // The original logic seemed to treat _appendToLog as adding to the 'current line' in a sense,
+       // but for the list it just added a new entry.
+       // Let's keep it simple and add as a new entry to the current turn history
+       // to allow easier reading, OR append to the last string.
+       // Given "battleLog += message", let's update the last entry if meaningful,
+       // otherwise just add it.
+       // User request: "turn number and things happened in order".
+       // Let's just add it as a new line for clarity in the list.
+       turnHistory.last.logEntries.add(message.trim());
+    } else {
+       if (turnHistory.isEmpty) turnHistory.add(BattleTurn(currentTurn));
+       turnHistory.last.logEntries.add(message.trim());
+    }
   }
 
   /// Builds the move list for an organism from its moveset string. Uses predefined
@@ -150,6 +179,9 @@ class BattleManager extends ChangeNotifier {
     playerMoves = _getOrganismMoves(playerOrganism);
     opponentMoves = _getOrganismMoves(opponentOrganism);
     
+    // Initialize first turn
+    turnHistory.add(BattleTurn(currentTurn));
+
     _addToLog('A wild ${opponent.organism.name} appeared! Go, ${player.organism.name}!'); 
     
     _initializeBattle();
@@ -268,6 +300,10 @@ class BattleManager extends ChangeNotifier {
     
     // 3. Transition to next turn or end
     if (!_checkBattleEnd()) {
+      // End of this turn's cycle. Prepare for next turn.
+      currentTurn++;
+      turnHistory.add(BattleTurn(currentTurn));
+      
       currentState = BattleState.waitingForInput;
       _addToLog('What will ${player.organism.name} do?');
     }

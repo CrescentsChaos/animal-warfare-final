@@ -758,9 +758,12 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
                       side: BorderSide(color: Colors.black, width: 3),
                     ),
                   ),
-                  child: Text(
-                    isNameVisible ? 'FIGHT' : 'LOCKED', 
-                    style: TextStyle(color: Colors.black, fontFamily: 'PressStart2P', fontSize: 14)
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      isNameVisible ? 'FIGHT' : 'LOCKED', 
+                      style: TextStyle(color: Colors.black, fontFamily: 'PressStart2P', fontSize: 14)
+                    ),
                   ),
                 ),
               ),

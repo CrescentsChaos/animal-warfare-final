@@ -93,30 +93,55 @@ class BattleScreenContent extends StatelessWidget {
                 child: ListView.builder(
                   controller: scrollController,
                   padding: const EdgeInsets.all(16),
-                  itemCount: battleManager.battleLogHistory.length,
+                  // Reverse order of turns (Latest turn first)
+                  itemCount: battleManager.turnHistory.length,
                   itemBuilder: (_, i) {
-                    // Show latest first
-                    final entry = battleManager.battleLogHistory[battleManager.battleLogHistory.length - 1 - i];
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.4),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.grey.shade700),
-                        ),
-                        child: Text(
-                          entry,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: isNarrow ? 11 : 13,
-                            fontFamily: 'PressStart2P',
-                            height: 1.4,
+                    final turnIndex = battleManager.turnHistory.length - 1 - i;
+                    final turn = battleManager.turnHistory[turnIndex];
+                    
+                    if (turn.logEntries.isEmpty) return const SizedBox.shrink();
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Turn Header
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: Center(
+                            child: Text(
+                              '--- TURN ${turn.turnNumber} ---',
+                              style: TextStyle(
+                                color: AppColors.highlightColor, 
+                                fontSize: 12, 
+                                fontFamily: 'PressStart2P',
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+                        // Log Entries for this turn (Chronological)
+                        ...turn.logEntries.map((entry) => Padding(
+                          padding: const EdgeInsets.only(bottom: 6),
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.4),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: Colors.grey.shade800),
+                            ),
+                            child: Text(
+                              entry,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: isNarrow ? 10 : 12,
+                                fontFamily: 'PressStart2P',
+                                height: 1.4,
+                              ),
+                            ),
+                          ),
+                        )),
+                      ],
                     );
                   },
                 ),
@@ -518,15 +543,15 @@ class BattleScreenContent extends StatelessWidget {
         barrierDismissible: false,
         builder: (ctx) => AlertDialog(
           title: Text(battleManager.result.toString().toUpperCase()),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: battleManager.battleLogHistory.map((e) => Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: Text(e, style: const TextStyle(fontFamily: 'PressStart2P', fontSize: 11)),
-              )).toList(),
-            ),
+          content: Text(
+            battleManager.result == BattleResult.capture
+                ? 'You successfully captured the ${battleManager.opponent.organism.baseOrganism.name}!'
+                : battleManager.result == BattleResult.win
+                    ? 'You defeated the wild encounter!'
+                    : battleManager.result == BattleResult.fled
+                        ? 'You ran away safely!'
+                        : 'You were defeated...',
+            style: const TextStyle(fontFamily: 'PressStart2P', fontSize: 12),
           ),
           actions: [
             TextButton(
