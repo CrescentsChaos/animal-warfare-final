@@ -479,9 +479,26 @@ class BattleScreenContent extends StatelessWidget {
                   ),
                   elevation: 2,
                 ),
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(move.name, style: TextStyle(fontSize: isNarrow ? 9 : 11, fontFamily: 'PressStart2P')),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      move.name,
+                      style: TextStyle(fontSize: isNarrow ? 8 : 10, fontFamily: 'PressStart2P'),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${battleManager.playerOrganism.moveStamina[move.name] ?? 0}/${move.stamina}',
+                      style: TextStyle(
+                        fontSize: isNarrow ? 7 : 9,
+                        fontFamily: 'PressStart2P',
+                        color: (battleManager.playerOrganism.moveStamina[move.name] ?? 0) > 0 
+                            ? Colors.white70 
+                            : Colors.redAccent,
+                      ),
+                    ),
+                  ],
                 ),
               );
             }).toList(),
@@ -533,8 +550,10 @@ class BattleScreenContent extends StatelessWidget {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // Handle capture - add organism to collection
       if (battleManager.result == BattleResult.capture) {
-        final baseOrganismModel = battleManager.opponent.organism.baseOrganism;
-        final newCapturedInstance = CapturedOrganism.spawn(baseOrganismModel);
+        final wildOpponent = battleManager.opponent.organism;
+        final newCapturedInstance = wildOpponent.copyWith(
+          currentHealth: wildOpponent.maxHealth, // Heal to full on capture
+        );
         userState.addCapturedOrganism(newCapturedInstance);
       }
       

@@ -6,6 +6,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:animal_warfare/models/captured_organism.dart';
 import 'package:animal_warfare/models/talisman.dart';
+import 'package:animal_warfare/models/move.dart';
 import 'local_auth_service.dart';
 
 class UserState with ChangeNotifier {
@@ -211,6 +212,31 @@ class UserState with ChangeNotifier {
         capturedOrganisms: organisms,
         craftedTalismans: newCraftedTalismans,
       );
+    });
+  }
+
+  /// Update the selected moves for a captured organism.
+  Future<void> updateCapturedOrganismMoves(int index, List<String> newMoves) async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) {
+      if (index < 0 || index >= u.capturedOrganisms.length) return u;
+      final list = List<CapturedOrganism>.from(u.capturedOrganisms);
+      final org = list[index];
+      
+      // Initialize stamina for new moves if they weren't selected before
+      final newStamina = Map<String, int>.from(org.moveStamina);
+      for (final moveName in newMoves) {
+        if (!newStamina.containsKey(moveName)) {
+          final move = Move.findByName(moveName);
+          newStamina[moveName] = move?.stamina ?? 20;
+        }
+      }
+      
+      list[index] = org.copyWith(
+        selectedMoveNames: newMoves,
+        moveStamina: newStamina,
+      );
+      return u.copyWith(capturedOrganisms: list);
     });
   }
 

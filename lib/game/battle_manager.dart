@@ -187,19 +187,20 @@ class BattleManager extends ChangeNotifier {
   /// Builds the move list for an organism from its moveset string. Uses predefined
   /// moves when available; otherwise creates moves with random damage (placeholder).
   List<Move> _getOrganismMoves(CapturedOrganism organism) {
-    final moveNames = organism.baseOrganism.moves
-        .split(',')
-        .map((s) => s.trim())
-        .where((s) => s.isNotEmpty)
-        .toSet()
-        .toList();
-    final rng = Random();
     final List<Move> moves = [];
-    for (final name in moveNames) {
-      moves.add(Move.findOrCreate(name, rng));
+    
+    // For wild animals, use their current move selection
+    // (If they don't have one, initialize it now)
+    if (organism.selectedMoveNames.isEmpty) {
+      organism.initializeDefaultMoves();
     }
+    
+    for (final name in organism.selectedMoveNames) {
+      moves.add(Move.findOrCreate(name));
+    }
+
     if (moves.isEmpty) {
-      moves.add(Move.findOrCreate('Struggle', rng));
+      moves.add(Move.findOrCreate('Struggle'));
     }
     return moves;
   }
@@ -306,6 +307,15 @@ class BattleManager extends ChangeNotifier {
 
   Future<void> processPlayerAction(Move move) async {
     if (currentState != BattleState.waitingForInput) return;
+    
+    // Check Stamina
+    final currentStamina = playerOrganism.moveStamina[move.name] ?? 0;
+    if (currentStamina <= 0) {
+      _addToLog('${move.name} has no stamina left!');
+      notifyListeners();
+      return;
+    }
+
     currentState = BattleState.playerTurn;
     notifyListeners();
     
@@ -375,6 +385,12 @@ class BattleManager extends ChangeNotifier {
   // Executes the move and applies effects
   Future<void> _executeTurn(BattleOrganism attacker, BattleOrganism defender, Move move) async {
     _addToLog('${attacker.organism.baseOrganism.name} used ${move.name}!');
+    
+    // Deduct Stamina
+    if (attacker.organism.moveStamina.containsKey(move.name)) {
+      attacker.organism.moveStamina[move.name] = (attacker.organism.moveStamina[move.name]! - 1).clamp(0, move.stamina);
+    }
+
     notifyListeners();
     await Future.delayed(const Duration(milliseconds: 700));
 

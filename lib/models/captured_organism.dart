@@ -2,6 +2,7 @@
 import 'dart:math';
 import 'organism.dart'; // Import the base model
 import 'package:animal_warfare/models/talisman.dart';
+import 'package:animal_warfare/models/move.dart';
 
 // Represents an individual instance of a captured or wild organism.
 // This is the model that holds the unique DNA (IVs).
@@ -14,16 +15,35 @@ class CapturedOrganism {
   
   // Current Battle State
   int currentHealth;
-  
+
   // Equipped Talisman
   Talisman? equippedTalisman;
+  
+  // NEW: Move Selection and Stamina
+  List<String> selectedMoveNames;
+  Map<String, int> moveStamina; // current stamina for each selected move
   
   CapturedOrganism({
     required this.baseOrganism,
     required this.individualValues,
     required this.currentHealth,
     this.equippedTalisman,
-  });
+    this.selectedMoveNames = const [],
+    this.moveStamina = const {},
+  }) {
+    // Ensure moves are initialized if empty (for legacy data)
+    if (selectedMoveNames.isEmpty) {
+      initializeDefaultMoves();
+    } else {
+      // Sync stamina map keys if missing (new system on old data)
+      for (final moveName in selectedMoveNames) {
+        if (!moveStamina.containsKey(moveName)) {
+           final move = Move.findByName(moveName);
+           moveStamina[moveName] = move?.stamina ?? Move.defaultStamina;
+        }
+      }
+    }
+  }
 
   // NEW: Convenience getter for the organism's name
   String get name => baseOrganism.name; 
@@ -33,12 +53,16 @@ class CapturedOrganism {
     Map<String, int>? individualValues,
     int? currentHealth,
     Talisman? equippedTalisman,
+    List<String>? selectedMoveNames,
+    Map<String, int>? moveStamina,
   }) {
     return CapturedOrganism(
       baseOrganism: baseOrganism ?? this.baseOrganism,
       individualValues: individualValues ?? this.individualValues,
       currentHealth: currentHealth ?? this.currentHealth,
       equippedTalisman: equippedTalisman ?? this.equippedTalisman,
+      selectedMoveNames: selectedMoveNames ?? this.selectedMoveNames,
+      moveStamina: moveStamina ?? this.moveStamina,
     );
   }
   // --- DNA Generation and Stat Calculation ---
@@ -61,11 +85,15 @@ class CapturedOrganism {
     // Calculate initial max HP
     final maxHp = calculateStat('health', base.health, ivs['health']!);
     
-    return CapturedOrganism(
+    final spawn = CapturedOrganism(
       baseOrganism: base,
       individualValues: ivs,
       currentHealth: maxHp, // Starts with full health
     );
+    
+    // Explicitly initialize moves now so they are set in stone
+    spawn.initializeDefaultMoves();
+    return spawn;
   }
   
   // Stat calculation formula: BaseStat + (IV / 2) + Constant
@@ -105,6 +133,39 @@ class CapturedOrganism {
     individualValues['speed']!
   );
 
+  /// Initializes the move selection with 4 moves from the base organism.
+  /// Uses a deterministic approach (first 4) to avoid order jitter.
+  void initializeDefaultMoves() {
+    final allPossibleMoves = baseOrganism.moves
+        .split(',')
+        .map((m) => m.trim())
+        .where((m) => m.isNotEmpty)
+        .toList();
+    
+    // Take the first 4 unique moves
+    final List<String> selected = [];
+    for (final moveName in allPossibleMoves) {
+      if (!selected.contains(moveName)) {
+        selected.add(moveName);
+      }
+      if (selected.length >= 4) break;
+    }
+    
+    // Fallback if no moves listed
+    if (selected.isEmpty) {
+      selected.add('Struggle');
+    }
+    
+    selectedMoveNames = selected;
+    
+    // Initialize stamina for these moves
+    moveStamina = {};
+    for (final moveName in selectedMoveNames) {
+      final move = Move.findByName(moveName);
+      moveStamina[moveName] = move?.stamina ?? Move.defaultStamina;
+    }
+  }
+
   // --- Serialization for Storage ---
 
   Map<String, dynamic> toJson() => {
@@ -113,6 +174,8 @@ class CapturedOrganism {
     'ivs': individualValues,
     'currentHealth': currentHealth,
     'equippedTalisman': equippedTalisman?.toJson(),
+    'selectedMoveNames': selectedMoveNames,
+    'moveStamina': moveStamina,
   };
   
   /// Create CapturedOrganism from JSON
@@ -131,11 +194,20 @@ class CapturedOrganism {
       talisman = Talisman.fromJson(json['equippedTalisman'] as Map<String, dynamic>);
     }
     
+    final moveStamina = json['moveStamina'] != null 
+        ? Map<String, int>.from(json['moveStamina'] as Map)
+        : <String, int>{};
+    final selectedMoves = json['selectedMoveNames'] != null
+        ? List<String>.from(json['selectedMoveNames'] as List)
+        : <String>[];
+
     return CapturedOrganism(
       baseOrganism: baseOrganism,
       individualValues: ivs,
       currentHealth: currentHealth,
       equippedTalisman: talisman,
+      selectedMoveNames: selectedMoves,
+      moveStamina: moveStamina,
     );
   }
 }

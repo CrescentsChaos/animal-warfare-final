@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:provider/provider.dart';
 import 'package:animal_warfare/models/captured_organism.dart';
+import 'package:animal_warfare/models/move.dart';
 import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/theme.dart';
 
@@ -135,7 +136,7 @@ class _AnimalCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final base = captured.baseOrganism;
-    final movesList = base.moves.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty);
+    final movesList = captured.selectedMoveNames;
     final spriteSize = isNarrow ? 100.0 : 120.0;
     final padding = isNarrow ? 8.0 : 12.0;
 
@@ -240,6 +241,22 @@ class _AnimalCard extends StatelessWidget {
                   ),
                   SizedBox(
                     height: isNarrow ? 28 : 32,
+                    child: ElevatedButton(
+                      onPressed: () => _showMoveSelection(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.secondaryButtonColor,
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(horizontal: isNarrow ? 8 : 12),
+                        side: const BorderSide(color: AppColors.highlightColor),
+                      ),
+                      child: Text(
+                        'Manage Moves',
+                        style: TextStyle(fontSize: isNarrow ? 9 : 12, fontFamily: 'PressStart2P'),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    height: isNarrow ? 28 : 32,
                     child: OutlinedButton(
                       onPressed: onRelease,
                       style: OutlinedButton.styleFrom(
@@ -273,7 +290,7 @@ class _AnimalCard extends StatelessWidget {
         Center(
           child: Text(
             base.name,
-            style: TextStyle(
+            style: const TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 12,
               fontFamily: 'PressStart2P',
@@ -305,8 +322,10 @@ class _AnimalCard extends StatelessWidget {
             ),
           ),
         const SizedBox(height: 10),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 8,
+          runSpacing: 8,
           children: [
             ElevatedButton(
               onPressed: isActiveAttacker ? null : onSetAsAttacker,
@@ -320,7 +339,19 @@ class _AnimalCard extends StatelessWidget {
                 style: const TextStyle(fontSize: 9, fontFamily: 'PressStart2P'),
               ),
             ),
-            const SizedBox(width: 8),
+            ElevatedButton(
+              onPressed: () => _showMoveSelection(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.secondaryButtonColor,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                side: const BorderSide(color: AppColors.highlightColor),
+              ),
+              child: const Text(
+                'Moves',
+                style: TextStyle(fontSize: 9, fontFamily: 'PressStart2P'),
+              ),
+            ),
             OutlinedButton(
               onPressed: onRelease,
               style: OutlinedButton.styleFrom(
@@ -334,6 +365,108 @@ class _AnimalCard extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ],
+    );
+  }
+
+  void _showMoveSelection(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => _MoveSelectionDialog(captured: captured, index: index),
+    );
+  }
+}
+
+class _MoveSelectionDialog extends StatefulWidget {
+  final CapturedOrganism captured;
+  final int index;
+
+  const _MoveSelectionDialog({required this.captured, required this.index});
+
+  @override
+  State<_MoveSelectionDialog> createState() => _MoveSelectionDialogState();
+}
+
+class _MoveSelectionDialogState extends State<_MoveSelectionDialog> {
+  late List<String> _selectedMoves;
+  late List<String> _allPossibleMoves;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedMoves = List<String>.from(widget.captured.selectedMoveNames);
+    _allPossibleMoves = widget.captured.baseOrganism.moves
+        .split(',')
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty)
+        .toList();
+  }
+
+  void _toggleMove(String moveName) {
+    setState(() {
+      if (_selectedMoves.contains(moveName)) {
+        if (_selectedMoves.length > 1) {
+          _selectedMoves.remove(moveName);
+        }
+      } else {
+        if (_selectedMoves.length < 4) {
+          _selectedMoves.add(moveName);
+        }
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: AppColors.secondaryButtonColor,
+      title: const Text(
+        'Select Moves (Max 4)',
+        style: TextStyle(fontFamily: 'PressStart2P', fontSize: 14, color: AppColors.highlightColor),
+      ),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: ListView.builder(
+          shrinkWrap: true,
+          itemCount: _allPossibleMoves.length,
+          itemBuilder: (ctx, i) {
+            final moveName = _allPossibleMoves[i];
+            final isSelected = _selectedMoves.contains(moveName);
+            final move = Move.findByName(moveName);
+
+            return CheckboxListTile(
+              title: Text(
+                moveName,
+                style: const TextStyle(fontFamily: 'PressStart2P', fontSize: 10, color: Colors.white),
+              ),
+              subtitle: move != null 
+                ? Text(
+                    'DMG: ${move.baseDamage}, STAMINA: ${move.stamina}',
+                    style: TextStyle(fontSize: 8, color: Colors.grey[400]),
+                  )
+                : null,
+              value: isSelected,
+              onChanged: (_) => _toggleMove(moveName),
+              activeColor: AppColors.highlightColor,
+              checkColor: Colors.black,
+            );
+          },
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel', style: TextStyle(color: Colors.white70)),
+        ),
+        ElevatedButton(
+          onPressed: () async {
+            final userState = Provider.of<UserState>(context, listen: false);
+            await userState.updateCapturedOrganismMoves(widget.index, _selectedMoves);
+            if (context.mounted) Navigator.pop(context);
+          },
+          style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryButtonColor),
+          child: const Text('Save', style: TextStyle(fontFamily: 'PressStart2P', fontSize: 10)),
         ),
       ],
     );
