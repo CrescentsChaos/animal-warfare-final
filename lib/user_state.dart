@@ -96,6 +96,24 @@ class UserState with ChangeNotifier {
     });
   }
 
+  /// Release (remove) a captured organism at the given index. Persists via read-modify-write.
+  Future<void> releaseOrganism(int index) async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) {
+      if (u.capturedOrganisms.isEmpty || index < 0 || index >= u.capturedOrganisms.length) return u;
+      final list = List<CapturedOrganism>.from(u.capturedOrganisms)..removeAt(index);
+      int newAttacker = u.activeAttackerIndex;
+      if (list.isEmpty) {
+        newAttacker = 0;
+      } else if (index <= u.activeAttackerIndex) {
+        newAttacker = (u.activeAttackerIndex - 1).clamp(0, list.length - 1);
+      } else {
+        newAttacker = u.activeAttackerIndex.clamp(0, list.length - 1);
+      }
+      return u.copyWith(capturedOrganisms: list, activeAttackerIndex: newAttacker);
+    });
+  }
+
   @override
   void dispose() {
     _staminaRegenTimer?.cancel();

@@ -1,13 +1,14 @@
 // lib/local_auth_service.dart
 
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:animal_warfare/models/captured_organism.dart';
 import 'package:animal_warfare/models/organism.dart';
+
+import 'local_auth_storage_io.dart'
+    if (dart.library.html) 'local_auth_storage_web.dart' as user_storage;
 
 // Model to represent a user
 class UserData {
@@ -112,34 +113,30 @@ class UserData {
       try {
         return allOrganisms.firstWhere((org) => org.name == name);
       } catch (_) {
-        return null; 
+        return null;
       }
     }
     final List<dynamic> capturedJson = json['capturedOrganisms'] ?? [];
     final List<CapturedOrganism> capturedList = capturedJson.map((coJson) {
-      
-      // 🚨 FIX: Safely check and cast 'name' to String, providing a fallback if null
-      final organismName = coJson['name'] as String?; // Cast to nullable String
+
+      final organismName = coJson['name'] as String?;
       if (organismName == null) {
-          return null; // Skip this entry if the name is missing/null
+          return null;
       }
-      
+
       final baseOrganism = findBaseOrganism(organismName);
-      
+
       if (baseOrganism == null) {
-        // If the base organism list isn't provided or the organism is missing, skip
-        return null; 
+        return null;
       }
-      
-      // FIX: Also ensure currentHealth is safely handled, though the main error is 'String'
-      final currentHealth = coJson['currentHealth'] as int?; 
+
+      final currentHealth = coJson['currentHealth'] as int?;
       if (currentHealth == null) {
           return null;
       }
-      
+
       return CapturedOrganism(
         baseOrganism: baseOrganism,
-        // Safely map individualValues as Map<String, int>
         individualValues: Map<String, int>.from(coJson['ivs'] ?? {}),
         currentHealth: currentHealth,
       );
@@ -156,7 +153,7 @@ class UserData {
       capturedOrganisms: capturedList,
       activeAttackerIndex: json['activeAttackerIndex'] as int? ?? 0,
     );
-    
+
   }
 }
 
@@ -183,28 +180,6 @@ class LocalAuthService {
       return [];
     }
   }
-  
-  // Generates the file path for a specific user.
-  Future<File> _getUserFile(String username) async {
-    final directory = await getApplicationDocumentsDirectory();
-    final safeUsername = username.replaceAll(RegExp(r'[^\w]'), '').toLowerCase();
-    final fileName = '$safeUsername.json';
-    final appSubdirectory = '${directory.path}/AnimalWarfare/UserSaves/'; 
-    final appDir = Directory(appSubdirectory);
-    
-    if (!await appDir.exists()) {
-        await appDir.create(recursive: true);
-    }
-
-    return File('$appSubdirectory$fileName');
-  }
-  /// Adds a captured organism (read-modify-write). Preserves quiz stats and other data.
-  Future<void> addCapturedOrganism(String username, CapturedOrganism newCapture) async {
-    final user = await readUserFile(username);
-    if (user == null) return;
-    final list = List<CapturedOrganism>.from(user.capturedOrganisms)..add(newCapture);
-    await _writeUserFile(user.copyWith(capturedOrganisms: list));
-  }
 
   Future<UserData?> readUserFile(String username) async {
     if (_writeLocks[username] != null) {
@@ -214,35 +189,31 @@ class LocalAuthService {
       await _writeLocks[username];
     }
     try {
-      final file = await _getUserFile(username);
-      if (await file.exists()) {
-        final contents = await file.readAsString();
+      final contents = await user_storage.readUserData(username);
+      if (contents == null) {
         if (kDebugMode) {
-          print("DEBUG: Read user file for $username (${await file.length()} bytes)");
+          print("DEBUG: User file not found/does not exist for $username.");
         }
-        try {
-          final userMap = jsonDecode(contents) as Map<String, dynamic>;
-          final organisms = await _loadOrganisms();
-          return UserData.fromJson(userMap, allOrganisms: organisms.isEmpty ? null : organisms);
-        } on FormatException catch (e) {
-          if (kDebugMode) {
-            print("ERROR: JSON decode failed for $username: $e");
-          }
-          return null;
+        return null;
+      }
+      try {
+        final userMap = jsonDecode(contents) as Map<String, dynamic>;
+        final organisms = await _loadOrganisms();
+        return UserData.fromJson(userMap, allOrganisms: organisms.isEmpty ? null : organisms);
+      } on FormatException catch (e) {
+        if (kDebugMode) {
+          print("ERROR: JSON decode failed for $username: $e");
         }
+        return null;
       }
-      if (kDebugMode) {
-         print("DEBUG: User file not found/does not exist for $username."); // NEW: Debug print for missing file
-      }
-      return null;
     } catch (e) {
       if (kDebugMode) {
-        // CRITICAL ERROR: File I/O failure (e.g., permissions, pathing)
-        print("CRITICAL ERROR: File I/O failure for $username: $e"); 
+        print("CRITICAL ERROR: Storage failure for $username: $e");
       }
-      return null; 
+      return null;
     }
   }
+
   Future<void> _writeUserFile(UserData user) async {
     if (_writeLocks[user.username] != null) {
       if (kDebugMode) {
@@ -250,25 +221,22 @@ class LocalAuthService {
       }
       await _writeLocks[user.username];
     }
-    
-    // Create a new write operation
+
     final writeOperation = _performWrite(user);
     _writeLocks[user.username] = writeOperation;
-    
+
     try {
       await writeOperation;
     } finally {
-      // Clear the lock after write completes
       _writeLocks[user.username] = null;
     }
   }
-  
-  /// Writes user to file. Aborts if file on disk has more quiz types (stale write).
+
   Future<void> _performWrite(UserData user) async {
     try {
-      final file = await _getUserFile(user.username);
-      if (await file.exists()) {
-        final data = jsonDecode(await file.readAsString()) as Map<String, dynamic>;
+      final contents = await user_storage.readUserData(user.username);
+      if (contents != null) {
+        final data = jsonDecode(contents) as Map<String, dynamic>;
         final currentQuizCount = (data['quizStats'] as Map?)?.length ?? 0;
         if (currentQuizCount > user.quizStats.length) {
           if (kDebugMode) {
@@ -277,7 +245,7 @@ class LocalAuthService {
           return;
         }
       }
-      await file.writeAsString(jsonEncode(user.toJson()), flush: true);
+      await user_storage.writeUserData(user.username, jsonEncode(user.toJson()));
       if (kDebugMode) {
         print("DEBUG: Saved ${user.username} (quiz keys: ${user.quizStats.length})");
       }
@@ -291,7 +259,6 @@ class LocalAuthService {
     await _writeUserFile(user);
   }
 
-  // 🚨 FIXED: Renamed from registerUser to register and ensures Future<bool> return type
   Future<bool> register(String username, String password) async {
     if (await readUserFile(username) != null) {
       if (kDebugMode) print("DEBUG: Registration failed for $username (already exists).");
@@ -321,19 +288,31 @@ class LocalAuthService {
     return true;
   }
 
+  /// Reset password for an existing user. Returns true if successful.
+  Future<bool> resetPassword(String username, String newPassword) async {
+    final user = await readUserFile(username);
+    if (user == null) {
+      if (kDebugMode) print("DEBUG: Password reset failed for $username (user not found).");
+      return false;
+    }
+    await _writeUserFile(user.copyWith(password: newPassword));
+    if (kDebugMode) print("DEBUG: Password reset successful for $username.");
+    return true;
+  }
+
   Future<void> _saveCurrentUserName(String username) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_currentKey, username);
   }
-  
+
   Future<UserData?> getCurrentUser() async {
     final prefs = await SharedPreferences.getInstance();
-    final currentUsername = prefs.getString(_currentKey); 
-    
+    final currentUsername = prefs.getString(_currentKey);
+
     if (currentUsername == null) {
       return null;
     }
-    
+
     return await readUserFile(currentUsername);
   }
 
@@ -341,15 +320,21 @@ class LocalAuthService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_currentKey);
   }
-  
+
   Future<void> updateProfile(String username, {String? avatar, String? gender}) async {
     final user = await readUserFile(username);
     if (user != null) {
       await _writeUserFile(user.copyWith(avatar: avatar, gender: gender));
     }
   }
-  
-  /// Updates quiz stats (read-modify-write). Preserves all other user data.
+
+  Future<void> addCapturedOrganism(String username, CapturedOrganism newCapture) async {
+    final user = await readUserFile(username);
+    if (user == null) return;
+    final list = List<CapturedOrganism>.from(user.capturedOrganisms)..add(newCapture);
+    await _writeUserFile(user.copyWith(capturedOrganisms: list));
+  }
+
   Future<void> updateQuizStats(String username, String quizName, bool isCorrect) async {
     final user = await readUserFile(username);
     if (user == null) return;
@@ -367,7 +352,6 @@ class LocalAuthService {
     await _writeUserFile(user.copyWith(quizStats: newStats));
   }
 
-  /// Adds organism to discovered list (read-modify-write). Preserves quiz stats etc.
   Future<void> markOrganismAsDiscovered(String username, String organismName) async {
     final user = await readUserFile(username);
     if (user == null) return;

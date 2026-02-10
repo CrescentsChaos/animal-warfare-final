@@ -1,5 +1,35 @@
 // lib/models/move.dart
-// Defines the structure for an animal's attack
+// Defines the structure for an animal's attack.
+//
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEMPLATE: How to add a new move with damage and/or effects
+// ═══════════════════════════════════════════════════════════════════════════════
+// Add a new entry to the _allMoves list below. Match the name exactly to your
+// Organisms.json "moves" field (e.g. "Pounce,Scratch,Bite,Tail Whip").
+//
+// 1) Pure damage (no effect):
+//    Move(name: 'Pounce', description: 'Leap at the foe.', baseDamage: 25, accuracy: 95),
+//
+// 2) Damage + poison:
+//    Move(name: 'Venom Sting', description: 'May poison.', baseDamage: 12, accuracy: 90,
+//      effect: MoveEffect(type: MoveEffectType.statusPoison, target: 'opponent', value: 3)),
+//
+// 3) No damage, raise your defense:
+//    Move(name: 'Harden', description: 'Raises defense.', baseDamage: 0,
+//      effect: MoveEffect(type: MoveEffectType.statChange, target: 'self', stat: 'defense', value: 1)),
+//
+// 4) No damage, lower opponent attack:
+//    Move(name: 'Growl', description: 'Lowers attack.', baseDamage: 0,
+//      effect: MoveEffect(type: MoveEffectType.statChange, target: 'opponent', stat: 'attack', value: -1)),
+//
+// 5) Heal self (value = HP restored):
+//    Move(name: 'Recover', description: 'Restore HP.', baseDamage: 0,
+//      effect: MoveEffect(type: MoveEffectType.heal, target: 'self', value: 30)),
+//
+// Effect types: none, statusPoison, statusSleep, statChange, heal.
+// stat for statChange: 'attack', 'defense', 'speed'.
+// value: for statChange = stage change (+1/-1); for heal = HP; for poison = intensity.
+// ═══════════════════════════════════════════════════════════════════════════════
 
 import 'dart:math';
 

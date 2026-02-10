@@ -85,7 +85,18 @@ class BattleManager extends ChangeNotifier {
 
   BattleState currentState = BattleState.waitingForInput;
   String battleLog = '';
+  final List<String> battleLogHistory = [];
   BattleResult? result;
+
+  void _addToLog(String message) {
+    battleLog = message;
+    battleLogHistory.add(message);
+  }
+
+  void _appendToLog(String message) {
+    battleLog += message;
+    battleLogHistory.add(message.trim());
+  }
 
   /// Builds the move list for an organism from its moveset string. Uses predefined
   /// moves when available; otherwise creates moves with random damage (placeholder).
@@ -115,10 +126,10 @@ class BattleManager extends ChangeNotifier {
     playerMoves = _getOrganismMoves(playerOrganism);
     opponentMoves = _getOrganismMoves(opponentOrganism);
     
-    battleLog = 'A wild ${opponent.organism.name} appeared! Go, ${player.organism.name}!'; 
+    _addToLog('A wild ${opponent.organism.name} appeared! Go, ${player.organism.name}!'); 
     
     if (player.currentSpeed < opponent.currentSpeed) {
-      battleLog += '\n${opponent.organism.name} is faster and will attack first!';
+      _appendToLog('\n${opponent.organism.name} is faster and will attack first!');
     }
   }
 
@@ -152,7 +163,7 @@ class BattleManager extends ChangeNotifier {
     // 3. Transition to next turn or end
     if (!_checkBattleEnd()) {
       currentState = BattleState.waitingForInput;
-      battleLog = 'What will ${player.organism.name} do?';
+      _addToLog('What will ${player.organism.name} do?');
     }
     notifyListeners();
   }
@@ -160,13 +171,13 @@ class BattleManager extends ChangeNotifier {
   // Executes the move and applies effects
   Future<void> _executeTurn(BattleOrganism attacker, BattleOrganism defender, Move move) async {
     // 🚨 FIX: Reverting to baseOrganism
-    battleLog = '${attacker.organism.baseOrganism.name} used ${move.name}!';
+    _addToLog('${attacker.organism.baseOrganism.name} used ${move.name}!');
     notifyListeners();
     await Future.delayed(const Duration(milliseconds: 700));
 
     // 1. Accuracy Check
     if (Random().nextInt(100) >= move.accuracy) {
-      battleLog = '...but it missed!';
+      _addToLog('...but it missed!');
       notifyListeners();
       await Future.delayed(const Duration(milliseconds: 500));
       return;
@@ -179,7 +190,7 @@ class BattleManager extends ChangeNotifier {
       defender.health = defender.health.clamp(0, defender.maxHealth); 
       
       // 🚨 FIX: Reverting to baseOrganism
-      battleLog = '${defender.organism.baseOrganism.name} took $damage damage!';
+      _addToLog('${defender.organism.baseOrganism.name} took $damage damage!');
       notifyListeners();
       await Future.delayed(const Duration(milliseconds: 700));
     }
@@ -190,7 +201,7 @@ class BattleManager extends ChangeNotifier {
 
   Future<void> _processOpponentTurn({required bool isCounter}) async {
     if (!isCounter) {
-        battleLog = 'Opponent\'s turn!';
+        _addToLog('Opponent\'s turn!');
         notifyListeners();
         await Future.delayed(const Duration(milliseconds: 700));
     }
@@ -213,20 +224,20 @@ class BattleManager extends ChangeNotifier {
         if (target.statusEffect == 'None') {
           target.statusEffect = 'Poison';
           // 🚨 FIX: Reverting to baseOrganism
-          battleLog += '\n${target.organism.baseOrganism.name} is poisoned!';
+          _appendToLog('\n${target.organism.baseOrganism.name} is poisoned!');
         }
         break;
       case MoveEffectType.statChange:
         _applyStatChange(target, effect.stat, effect.value);
         // 🚨 FIX: Reverting to baseOrganism
-        battleLog += '\n${target.organism.baseOrganism.name}\'s ${effect.stat} stage ${effect.value > 0 ? 'increased' : 'decreased'}!';
+        _appendToLog('\n${target.organism.baseOrganism.name}\'s ${effect.stat} stage ${effect.value > 0 ? 'increased' : 'decreased'}!');
         break;
       case MoveEffectType.heal:
         final healedAmount = effect.value;
         target.health += healedAmount;
         target.health = target.health.clamp(0, target.maxHealth);
         // 🚨 FIX: Reverting to baseOrganism
-        battleLog += '\n${target.organism.baseOrganism.name} recovered $healedAmount HP!';
+        _appendToLog('\n${target.organism.baseOrganism.name} recovered $healedAmount HP!');
         break;
       default:
         break;
@@ -251,7 +262,7 @@ class BattleManager extends ChangeNotifier {
       target.health -= poisonDamage;
       target.health = target.health.clamp(0, target.maxHealth);
       // 🚨 FIX: Reverting to baseOrganism
-      battleLog = 'Poison hurt ${target.organism.baseOrganism.name} for $poisonDamage!';
+      _addToLog('Poison hurt ${target.organism.baseOrganism.name} for $poisonDamage!');
       notifyListeners();
       await Future.delayed(const Duration(milliseconds: 700));
     }
@@ -263,7 +274,7 @@ class BattleManager extends ChangeNotifier {
     if (currentState != BattleState.waitingForInput) return;
     
     currentState = BattleState.applyingEffects;
-    battleLog = 'Throwing a Capture Net...';
+    _addToLog('Throwing a Capture Net...');
     notifyListeners();
     await Future.delayed(const Duration(seconds: 1));
 
@@ -282,10 +293,10 @@ class BattleManager extends ChangeNotifier {
       opponent.organism.currentHealth = opponent.health; 
       result = BattleResult.capture;
       // 🚨 FIX: Reverting to baseOrganism
-      battleLog = 'Success! ${opponent.organism.baseOrganism.name} was captured!';
+      _addToLog('Success! ${opponent.organism.baseOrganism.name} was captured!');
     } else {
       result = null; 
-      battleLog = 'The capture failed! Opponent is still fighting.';
+      _addToLog('The capture failed! Opponent is still fighting.');
       currentState = BattleState.opponentTurn;
       await Future.delayed(const Duration(seconds: 1));
       await _processOpponentTurn(isCounter: false);
@@ -303,7 +314,7 @@ class BattleManager extends ChangeNotifier {
     if (currentState != BattleState.waitingForInput) return;
     
     currentState = BattleState.applyingEffects;
-    battleLog = 'Attempting to run...';
+    _addToLog('Attempting to run...');
     notifyListeners();
     await Future.delayed(const Duration(seconds: 1));
 
@@ -311,11 +322,11 @@ class BattleManager extends ChangeNotifier {
 
     if (Random().nextDouble() < runChance.clamp(0.1, 1.0)) { 
       result = BattleResult.fled;
-      battleLog = 'You successfully ran away!';
+      _addToLog('You successfully ran away!');
       currentState = BattleState.battleEnd;
     } else {
       result = null; 
-      battleLog = 'Failed to run! Opponent\'s turn.';
+      _addToLog('Failed to run! Opponent\'s turn.');
       currentState = BattleState.opponentTurn;
       await Future.delayed(const Duration(seconds: 1));
       await _processOpponentTurn(isCounter: false);
@@ -331,7 +342,7 @@ class BattleManager extends ChangeNotifier {
     if (player.health <= 0) {
       result = BattleResult.loss;
       // 🚨 FIX: Reverting to baseOrganism
-      battleLog = 'Your ${player.organism.baseOrganism.name} fainted! You lost the battle.';
+      _addToLog('Your ${player.organism.baseOrganism.name} fainted! You lost the battle.');
       currentState = BattleState.battleEnd;
       notifyListeners();
       return true;
@@ -339,7 +350,7 @@ class BattleManager extends ChangeNotifier {
     if (opponent.health <= 0) {
       result = BattleResult.win;
       // 🚨 FIX: Reverting to baseOrganism
-      battleLog = 'The wild ${opponent.organism.baseOrganism.name} fainted! You won the battle.';
+      _addToLog('The wild ${opponent.organism.baseOrganism.name} fainted! You won the battle.');
       currentState = BattleState.battleEnd;
       notifyListeners();
       return true;

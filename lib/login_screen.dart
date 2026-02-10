@@ -1,10 +1,12 @@
 // lib/login_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:animal_warfare/local_auth_service.dart';
-import 'package:animal_warfare/main_screen.dart'; 
-import 'package:audioplayers/audioplayers.dart'; 
-import 'package:shared_preferences/shared_preferences.dart'; // ADDED: For music control
+import 'package:animal_warfare/main_screen.dart';
+import 'package:animal_warfare/user_state.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,16 +17,18 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
   final LocalAuthService _authService = LocalAuthService();
-  final TextEditingController _usernameController = TextEditingController(); 
+  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  // 🚨 NEW: Controller for password confirmation
-  final TextEditingController _confirmPasswordController = TextEditingController(); 
+  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _newPasswordController = TextEditingController();
+  final TextEditingController _confirmNewPasswordController = TextEditingController(); 
   
   late AudioPlayer _audioPlayer; 
   bool _wasPlayingBeforePause = false;
   
   bool _isLogin = true;
   bool _isLoading = false;
+  bool _showForgotPassword = false;
   
   // Custom Theming
   static const Color highlightColor = Color(0xFFDAA520); // Goldenrod
@@ -61,7 +65,9 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     _usernameController.dispose();
     _passwordController.dispose();
-    _confirmPasswordController.dispose(); // 🚨 NEW: Dispose new controller
+    _confirmPasswordController.dispose();
+    _newPasswordController.dispose();
+    _confirmNewPasswordController.dispose();
     _audioPlayer.dispose();
     super.dispose();
   }
@@ -89,6 +95,49 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
         );
       },
     );
+  }
+
+  Future<void> _handleForgotPassword() async {
+    final username = _usernameController.text.trim();
+    final newPassword = _newPasswordController.text.trim();
+    final confirmNew = _confirmNewPasswordController.text.trim();
+
+    if (username.isEmpty) {
+      _showError('Enter your username first.');
+      return;
+    }
+    if (newPassword.isEmpty || confirmNew.isEmpty) {
+      _showError('Fill in both password fields.');
+      return;
+    }
+    if (newPassword != confirmNew) {
+      _showError('New passwords do not match!');
+      return;
+    }
+
+    setState(() => _isLoading = true);
+    final success = await _authService.resetPassword(username, newPassword);
+    if (mounted) {
+      setState(() => _isLoading = false);
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text(
+              'Password reset successfully! You can now log in.',
+              style: TextStyle(fontFamily: 'PressStart2P', fontSize: 12),
+            ),
+            backgroundColor: primaryButtonColor,
+          ),
+        );
+        setState(() {
+          _showForgotPassword = false;
+          _newPasswordController.clear();
+          _confirmNewPasswordController.clear();
+        });
+      } else {
+        _showError('Username not found. Check your username and try again.');
+      }
+    }
   }
 
   void _showError(String message) {
@@ -145,6 +194,8 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
       });
 
       if (success) {
+        await context.read<UserState>().handleSuccessfulAuth();
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -154,7 +205,6 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
             backgroundColor: primaryButtonColor,
           ),
         );
-        // Navigate to the main screen on success
         if (mounted) {
           Navigator.of(context).pushAndRemoveUntil(
             _createFadeRoute(const MainScreen()),
@@ -258,9 +308,10 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                // Title
                 Text(
-                  _isLogin ? 'SYSTEM LOGIN' : 'NEW RECRUIT',
+                  _showForgotPassword
+                      ? 'RESET PASSWORD'
+                      : (_isLogin ? 'SYSTEM LOGIN' : 'NEW RECRUIT'),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 24,
@@ -271,66 +322,117 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                     ],
                   ),
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 40                ),
 
-                // Username Field
-                _buildTextField(
-                  controller: _usernameController,
-                  labelText: 'USERNAME',
-                  icon: Icons.person,
-                ),
-
-                // Password Field
-                _buildTextField(
-                  controller: _passwordController,
-                  labelText: 'PASSWORD',
-                  icon: Icons.lock,
-                  isPassword: true,
-                ),
-                
-                // 🚨 NEW: Password Confirmation Field (Only shown during registration)
-                if (!_isLogin)
+                if (_showForgotPassword) ...[
                   _buildTextField(
-                    controller: _confirmPasswordController,
-                    labelText: 'CONFIRM PASSWORD',
+                    controller: _usernameController,
+                    labelText: 'USERNAME',
+                    icon: Icons.person,
+                  ),
+                  _buildTextField(
+                    controller: _newPasswordController,
+                    labelText: 'NEW PASSWORD',
+                    icon: Icons.lock,
+                    isPassword: true,
+                  ),
+                  _buildTextField(
+                    controller: _confirmNewPasswordController,
+                    labelText: 'CONFIRM NEW PASSWORD',
                     icon: Icons.lock_open,
                     isPassword: true,
                   ),
-                
-                const SizedBox(height: 30),
-
-                // Main Action Button (Login/Register)
-                _isLoading
-                    ? Center(child: CircularProgressIndicator(color: primaryButtonColor))
-                    : _buildActionButton(
-                        title: _isLogin ? 'LOG IN' : 'REGISTER',
-                        onPressed: _authenticate,
-                        color: primaryButtonColor,
+                  const SizedBox(height: 30),
+                  _isLoading
+                      ? Center(child: CircularProgressIndicator(color: primaryButtonColor))
+                      : _buildActionButton(
+                          title: 'RESET PASSWORD',
+                          onPressed: _handleForgotPassword,
+                          color: primaryButtonColor,
+                        ),
+                  const SizedBox(height: 20),
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        _showForgotPassword = false;
+                        _newPasswordController.clear();
+                        _confirmNewPasswordController.clear();
+                      });
+                    },
+                    child: Text(
+                      'BACK TO LOGIN',
+                      style: TextStyle(
+                        color: highlightColor,
+                        fontFamily: 'PressStart2P',
+                        fontSize: 12,
+                        decoration: TextDecoration.underline,
                       ),
-
-                const SizedBox(height: 20),
-
-                // Toggle Button (Switch to Register/Login)
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      _isLogin = !_isLogin;
-                      // Clear fields when switching mode
-                      _usernameController.clear();
-                      _passwordController.clear();
-                      _confirmPasswordController.clear(); // 🚨 NEW: Clear confirm field
-                    });
-                  },
-                  child: Text(
-                    _isLogin ? 'CREATE NEW ACCOUNT' : 'BACK TO LOGIN',
-                    style: TextStyle(
-                      color: highlightColor,
-                      fontFamily: 'PressStart2P',
-                      fontSize: 12,
-                      decoration: TextDecoration.underline,
                     ),
                   ),
-                ),
+                ] else ...[
+                  _buildTextField(
+                    controller: _usernameController,
+                    labelText: 'USERNAME',
+                    icon: Icons.person,
+                  ),
+                  _buildTextField(
+                    controller: _passwordController,
+                    labelText: 'PASSWORD',
+                    icon: Icons.lock,
+                    isPassword: true,
+                  ),
+                  if (!_isLogin)
+                    _buildTextField(
+                      controller: _confirmPasswordController,
+                      labelText: 'CONFIRM PASSWORD',
+                      icon: Icons.lock_open,
+                      isPassword: true,
+                    ),
+                  const SizedBox(height: 30),
+                  _isLoading
+                      ? Center(child: CircularProgressIndicator(color: primaryButtonColor))
+                      : _buildActionButton(
+                          title: _isLogin ? 'LOG IN' : 'REGISTER',
+                          onPressed: _authenticate,
+                          color: primaryButtonColor,
+                        ),
+                  const SizedBox(height: 12),
+                  if (_isLogin)
+                    TextButton(
+                      onPressed: () {
+                        setState(() => _showForgotPassword = true);
+                      },
+                      child: Text(
+                        'FORGOT PASSWORD?',
+                        style: TextStyle(
+                          color: highlightColor.withOpacity(0.9),
+                          fontFamily: 'PressStart2P',
+                          fontSize: 10,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
+                  const SizedBox(height: 12),
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        _isLogin = !_isLogin;
+                        _usernameController.clear();
+                        _passwordController.clear();
+                        _confirmPasswordController.clear();
+                      });
+                    },
+                    child: Text(
+                      _isLogin ? 'CREATE NEW ACCOUNT' : 'BACK TO LOGIN',
+                      style: TextStyle(
+                        color: highlightColor,
+                        fontFamily: 'PressStart2P',
+                        fontSize: 12,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
