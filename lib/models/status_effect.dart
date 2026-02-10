@@ -24,6 +24,16 @@ class StatusEffect {
     this.duration = -1,
   });
 
+  StatusEffect copyWith({
+    StatusEffectType? type,
+    int? duration,
+  }) {
+    return StatusEffect(
+      type: type ?? this.type,
+      duration: duration ?? this.duration,
+    );
+  }
+
   String get name {
     switch (type) {
       case StatusEffectType.poison: return 'Poison';

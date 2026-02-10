@@ -516,8 +516,8 @@ class BattleManager extends ChangeNotifier {
       _addToLog('${org.organism.baseOrganism.name} is stunned and cannot move!');
       notifyListeners();
       await Future.delayed(const Duration(milliseconds: 500));
-      // Stun usually lasts 1 turn, so we might want to clear it here or rely on duration logic. 
-      // For now, let's assume duration logic handles it, or clarify that stun wears off.
+      // Stun is cleared immediately after skipping one turn
+      org.statusEffect = const StatusEffect(type: StatusEffectType.none);
       return false;
     }
     if (org.statusEffect.type == StatusEffectType.confusion) {
@@ -598,26 +598,34 @@ class BattleManager extends ChangeNotifier {
       case MoveEffectType.statusVulnerable:
       case MoveEffectType.statusStun:
         if (target.statusEffect.type == StatusEffectType.none) {
-           if (currentTerrain.terrain == Terrain.misty || (effect.type == MoveEffectType.statusSleep && currentTerrain.terrain == Terrain.electric)) {
-             _appendToLog('\nThe terrain prevents the status condition!');
-           } else {
-             // Map MoveEffectType to StatusEffectType
-             var statusType = StatusEffectType.none;
-             if (effect.type == MoveEffectType.statusBurn) statusType = StatusEffectType.burn;
-             else if (effect.type == MoveEffectType.statusSleep) statusType = StatusEffectType.sleep;
-             else if (effect.type == MoveEffectType.statusParalysis) statusType = StatusEffectType.paralysis;
-             else if (effect.type == MoveEffectType.statusFreeze) statusType = StatusEffectType.freeze;
-             else if (effect.type == MoveEffectType.statusBleed) statusType = StatusEffectType.bleed;
-             else if (effect.type == MoveEffectType.statusConfusion) statusType = StatusEffectType.confusion;
-             else if (effect.type == MoveEffectType.statusBlind) statusType = StatusEffectType.blind;
-             else if (effect.type == MoveEffectType.statusRegen) statusType = StatusEffectType.regen;
-             else if (effect.type == MoveEffectType.statusVulnerable) statusType = StatusEffectType.vulnerable;
-             else if (effect.type == MoveEffectType.statusStun) statusType = StatusEffectType.stun;
-             
-             final newStatus = StatusEffect(type: statusType, duration: (effect.type == MoveEffectType.statusSleep) ? 2 + Random().nextInt(3) : -1); 
-             target.statusEffect = newStatus;
-             _appendToLog('\n${target.organism.baseOrganism.name} ${newStatus.startMessage}');
-           }
+          // Check for trigger chance
+          if (Random().nextInt(100) >= effect.chance) return;
+
+          if (currentTerrain.terrain == Terrain.misty || (effect.type == MoveEffectType.statusSleep && currentTerrain.terrain == Terrain.electric)) {
+            _appendToLog('\nThe terrain prevents the status condition!');
+          } else {
+            // Map MoveEffectType to StatusEffectType
+            var statusType = StatusEffectType.none;
+            if (effect.type == MoveEffectType.statusBurn) statusType = StatusEffectType.burn;
+            else if (effect.type == MoveEffectType.statusSleep) statusType = StatusEffectType.sleep;
+            else if (effect.type == MoveEffectType.statusParalysis) statusType = StatusEffectType.paralysis;
+            else if (effect.type == MoveEffectType.statusFreeze) statusType = StatusEffectType.freeze;
+            else if (effect.type == MoveEffectType.statusBleed) statusType = StatusEffectType.bleed;
+            else if (effect.type == MoveEffectType.statusConfusion) statusType = StatusEffectType.confusion;
+            else if (effect.type == MoveEffectType.statusBlind) statusType = StatusEffectType.blind;
+            else if (effect.type == MoveEffectType.statusRegen) statusType = StatusEffectType.regen;
+            else if (effect.type == MoveEffectType.statusVulnerable) statusType = StatusEffectType.vulnerable;
+            else if (effect.type == MoveEffectType.statusStun) statusType = StatusEffectType.stun;
+            
+            // Default durations: Sleep (1-3), Stun (1), Others (3-5)
+            int duration = 3 + Random().nextInt(3); // 3-5 turns default
+            if (effect.type == MoveEffectType.statusSleep) duration = 1 + Random().nextInt(3); // 1-3 turns
+            if (effect.type == MoveEffectType.statusStun) duration = 1;
+
+            final newStatus = StatusEffect(type: statusType, duration: duration); 
+            target.statusEffect = newStatus;
+            _appendToLog('\n${target.organism.baseOrganism.name} ${newStatus.startMessage}');
+          }
         }
         break;
       case MoveEffectType.weather:
@@ -756,6 +764,18 @@ class BattleManager extends ChangeNotifier {
       _addToLog('${target.organism.baseOrganism.name} is healed by the Grassy Terrain!');
        notifyListeners();
        await Future.delayed(const Duration(milliseconds: 500));
+    }
+    
+    // Status Duration Decay and Recovery
+    if (target.statusEffect.type != StatusEffectType.none && target.statusEffect.duration > 0) {
+      target.statusEffect = target.statusEffect.copyWith(duration: target.statusEffect.duration - 1);
+      
+      if (target.statusEffect.duration == 0) {
+        _addToLog('${target.organism.baseOrganism.name} recovered from ${target.statusEffect.name}!');
+        target.statusEffect = const StatusEffect(type: StatusEffectType.none);
+        notifyListeners();
+        await Future.delayed(const Duration(milliseconds: 500));
+      }
     }
   }
 

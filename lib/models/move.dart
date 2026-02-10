@@ -69,12 +69,14 @@ class MoveEffect {
   final String target; // 'self', 'opponent', 'field'
   final String stat;   // e.g., 'attack', 'defense', 'rain', 'electric'
   final int value;     // Magnitude, duration, or probability
+  final int chance;    // Probability (0-100)
   
   const MoveEffect({
     required this.type,
     this.target = 'opponent',
     this.stat = '',
     this.value = 0,
+    this.chance = 100,
   });
 
   // Constructor for loading effects from JSON
@@ -87,6 +89,7 @@ class MoveEffect {
       target: json['target'] as String? ?? 'opponent',
       stat: json['stat'] as String? ?? '',
       value: json['value'] as int? ?? 0,
+      chance: json['chance'] as int? ?? 100,
     );
   }
 }
@@ -147,30 +150,49 @@ class Move {
   // FIX: Make the static list private and use a helper function to access it.
   static const List<Move> _allMoves = [
     Move(name: 'Scratch', description: 'A basic attack.', baseDamage: 10, type: ElementalType.normal),
+    Move(name: 'Claw Swipe', description: 'A basic attack.', baseDamage: 20, type: ElementalType.normal),
+    Move(name: 'Kick', description: 'A basic attack.', baseDamage: 20, type: ElementalType.normal),
+    Move(name: 'Slash', description: 'A basic attack.', baseDamage: 30, type: ElementalType.normal,critRate: 1),
+    Move(name: 'Peck', description: 'A basic attack.', baseDamage: 10, type: ElementalType.flying),
+    Move(name: 'Wing Flap', description: 'A basic attack.', baseDamage: 15, type: ElementalType.flying),
+    Move(name: 'Piercing Beak', description: 'A strong peck attack.', baseDamage: 40, type: ElementalType.flying,critRate: 1),
+    Move(name: 'Dive', description: 'A strong wing attack.', baseDamage: 50, type: ElementalType.flying, effect: MoveEffect(type: MoveEffectType.statusStun, value: 1, chance: 30),),
+    Move(name: 'Sonic Slash', description: 'A strong wing attack.', baseDamage: 70, type: ElementalType.flying, effect: MoveEffect(type: MoveEffectType.statusStun, value: 1, chance: 30),),
+    Move(name: 'Glide', description: 'A strong wing attack.', baseDamage: 40, type: ElementalType.flying, effect: MoveEffect(type: MoveEffectType.statusStun, value: 1, chance: 20),),
     Move(name: 'Venom Sting', description: 'May poison the foe.', baseDamage: 8, type: ElementalType.venomous,
-      effect: MoveEffect(type: MoveEffectType.statusPoison, value: 3), // 3 turns of poison
+      effect: MoveEffect(type: MoveEffectType.statusPoison, value: 3, chance: 30), // 30% chance
+    ),
+    Move(name: 'Chomp', description: 'A basic attack.', baseDamage: 30, type: ElementalType.aquatic),
+    Move(name: 'Venomous Fang', description: 'May poison the foe.', baseDamage: 55, type: ElementalType.venomous,
+      effect: MoveEffect(type: MoveEffectType.statusPoison, value: 3, chance: 50), 
     ),
     Move(name: 'Hunker Down', description: 'Raises the user\'s defense.', baseDamage: 0, type: ElementalType.armored,
-      effect: MoveEffect(type: MoveEffectType.statChange, target: 'self', stat: 'defense', value: 1), // +1 Defense stage
+      effect: MoveEffect(type: MoveEffectType.statChange, target: 'self', stat: 'defense', value: 1), // +1 Defense stage, 100% chance
+    ),
+    Move(name: 'Tail Whip', description: 'Lowers the opponent\'s defense.', baseDamage: 10, type: ElementalType.agile,
+      effect: MoveEffect(type: MoveEffectType.statChange, target: 'opponent', stat: 'defense', value: -1),
     ),
     Move(name: 'Hibernate', description: 'A healing nap.', baseDamage: 0, type: ElementalType.burrowing,
-      effect: MoveEffect(type: MoveEffectType.heal, target: 'self', value: 20), // Heals 20 HP
+      effect: MoveEffect(type: MoveEffectType.heal, target: 'self', value: 50), 
     ),
     // Basic Damage Moves
     Move(name: 'Tackle', description: 'A full-body charge.', baseDamage: 35, accuracy: 95, type: ElementalType.giant),
+    Move(name: 'Pounce', description: 'User pounces at the foe.', baseDamage: 60, accuracy: 85, type: ElementalType.predator),
     Move(name: 'Bite', description: 'Bites with vicious fangs.', baseDamage: 40, type: ElementalType.predator,
-      effect: MoveEffect(type: MoveEffectType.statusBleed, value: 3),),
+      effect: MoveEffect(type: MoveEffectType.statusBleed, value: 1, chance: 30),),
+    Move(name: 'Crunch', description: 'Bites with vicious fangs.', baseDamage: 60, type: ElementalType.predator,
+      effect: MoveEffect(type: MoveEffectType.statusBleed, value: 1, chance: 30),),
     Move(name: 'Water Gun', description: 'Squirts water to attack.', baseDamage: 40, type: ElementalType.aquatic),
     
     // Status Effect Moves
-    Move(name: 'Ember', description: 'May burn the foe.', baseDamage: 40, type: ElementalType.normal, // No Fire type, fallback to Normal
-      effect: MoveEffect(type: MoveEffectType.statusBurn, value: 3), // Burn
+    Move(name: 'Ember', description: 'May burn the foe.', baseDamage: 40, type: ElementalType.normal, 
+      effect: MoveEffect(type: MoveEffectType.statusBurn, value: 3, chance: 15), // 15% chance
     ),
-    Move(name: 'Thunder Shock', description: 'May paralyze the foe.', baseDamage: 40, type: ElementalType.normal, // No Electric type
-      effect: MoveEffect(type: MoveEffectType.statusParalysis, value: 3), // Paralysis
+    Move(name: 'Thunder Shock', description: 'May paralyze the foe.', baseDamage: 40, type: ElementalType.normal, 
+      effect: MoveEffect(type: MoveEffectType.statusParalysis, value: 3, chance: 15), 
     ),
     Move(name: 'Sing', description: 'Lulls the foe to sleep.', baseDamage: 0, accuracy: 55, type: ElementalType.social,
-      effect: MoveEffect(type: MoveEffectType.statusSleep, value: 3), // Sleep
+      effect: MoveEffect(type: MoveEffectType.statusSleep, value: 3, chance: 100), // Guaranteed but low accuracy
     ),
     
     // Weather Moves
@@ -188,13 +210,13 @@ class Move {
     Move(name: 'Take Down', description: 'Hurts user.', baseDamage: 90, recoilPercent: 0.25, type: ElementalType.giant),
     Move(name: 'Slash', description: 'High crit rate.', baseDamage: 70, critRate: 1, type: ElementalType.predator),
     Move(name: 'Confuse Ray', description: 'Confuses the foe.', baseDamage: 0, type: ElementalType.normal,
-      effect: MoveEffect(type: MoveEffectType.statusConfusion, value: 3),
+      effect: MoveEffect(type: MoveEffectType.statusConfusion, value: 3, chance: 100),
     ),
     Move(name: 'Glare', description: 'Stuns the foe.', baseDamage: 0, type: ElementalType.predator,
-      effect: MoveEffect(type: MoveEffectType.statusStun, value: 1),
+      effect: MoveEffect(type: MoveEffectType.statusStun, value: 1, chance: 100),
     ),
     Move(name: 'Poison Jab', description: 'Damage + Poison.', baseDamage: 80, type: ElementalType.venomous,
-      effect: MoveEffect(type: MoveEffectType.statusPoison, value: 3),
+      effect: MoveEffect(type: MoveEffectType.statusPoison, value: 3, chance: 30),
     ),
     // Add more moves here as constants
   ];

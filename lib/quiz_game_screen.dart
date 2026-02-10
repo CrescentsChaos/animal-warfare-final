@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
+import 'dart:ui';
 import 'package:animal_warfare/local_auth_service.dart';
 import 'package:animal_warfare/models/organism.dart';
 
@@ -13,6 +14,41 @@ enum QuizType {
   spriteToScientific,
   silhouetteToName, 
   silhouetteToScientific,
+}
+
+extension QuizTypeExtension on QuizType {
+  String get displayName {
+    switch (this) {
+      case QuizType.scientificToCommon: return 'Scientific to Name';
+      case QuizType.commonToScientific: return 'Name to Scientific';
+      case QuizType.spriteToName: return 'Sprite to Name';
+      case QuizType.spriteToScientific: return 'Sprite to Scientific';
+      case QuizType.silhouetteToName: return 'Silhouette to Name';
+      case QuizType.silhouetteToScientific: return 'Silhouette to Scientific';
+    }
+  }
+
+  String get description {
+    switch (this) {
+      case QuizType.scientificToCommon: return 'Identify by Latin names';
+      case QuizType.commonToScientific: return 'Learn the biology';
+      case QuizType.spriteToName: return 'Visual identification';
+      case QuizType.spriteToScientific: return 'Advanced recognition';
+      case QuizType.silhouetteToName: return 'Shadow challenge';
+      case QuizType.silhouetteToScientific: return 'Expert biology';
+    }
+  }
+
+  IconData get icon {
+    switch (this) {
+      case QuizType.scientificToCommon: return Icons.biotech;
+      case QuizType.commonToScientific: return Icons.sort_by_alpha;
+      case QuizType.spriteToName: return Icons.image;
+      case QuizType.spriteToScientific: return Icons.image_search;
+      case QuizType.silhouetteToName: return Icons.hide_image;
+      case QuizType.silhouetteToScientific: return Icons.visibility_off;
+    }
+  }
 }
 
 class QuizGameScreen extends StatefulWidget {
@@ -44,14 +80,13 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
   // 🟢 NEW: Store the current user data locally so we can update it
   late UserData _currentUser;
 
-  static const Color primaryButtonColor = Color.fromARGB(0, 56, 118, 29);
-  static const Color secondaryButtonColor = Color.fromARGB(0, 30, 63, 42);
   static const Color highlightColor = Color(0xFFDAA520);
-  static const Color correctGlowColor = Color(0xFF00FF00);
-  static const Color wrongGlowColor = Color(0xFFFF0000);
+  static const Color backgroundColor = Color(0xFF13281A);
+  static const Color correctGlowColor = Color(0xFF4CAF50); // Softer green
+  static const Color wrongGlowColor = Color(0xFFF44336); // Softer red
   
   static const int _numberOfOptions = 4;
-  static const int _delayAfterAnswerSeconds = 3;
+  static const int _delayAfterAnswerSeconds = 2; // Faster transition
 
   @override
   void initState() {
@@ -198,53 +233,49 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
   Widget _buildAnswerButton(Organism option) {
     final answerText = _getAnswerText(option);
     
-    Color buttonColor = const Color.fromARGB(0, 30, 63, 42);
-    Color borderColor = highlightColor;
-    Color textColor = highlightColor;
-    Color shadowColor = Colors.black;
-    double borderWidth = 2.0;
-    double elevation = 8;
+    bool isCorrect = _isAnswered && answerText == _correctAnswer;
+    bool isWrong = _isAnswered && answerText == _selectedAnswer && answerText != _correctAnswer;
 
-    if (_isAnswered) {
-      if (answerText == _correctAnswer) {
-        borderColor = correctGlowColor;
-        textColor = correctGlowColor;
-        shadowColor = correctGlowColor;
-        borderWidth = 3.0;
-        elevation = 15;
-      } else if (answerText == _selectedAnswer) {
-        borderColor = wrongGlowColor;
-        textColor = wrongGlowColor;
-        shadowColor = wrongGlowColor;
-        borderWidth = 3.0;
-        elevation = 15;
-      }
+    Color borderColor = highlightColor.withOpacity(0.3);
+    Color textColor = highlightColor;
+    Color glowColor = Colors.transparent;
+
+    if (isCorrect) {
+      borderColor = correctGlowColor;
+      textColor = correctGlowColor;
+      glowColor = correctGlowColor.withOpacity(0.2);
+    } else if (isWrong) {
+      borderColor = wrongGlowColor;
+      textColor = wrongGlowColor;
+      glowColor = wrongGlowColor.withOpacity(0.2);
     }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: ElevatedButton(
-        onPressed: _isAnswered ? null : () => _handleAnswer(answerText),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: buttonColor,
-          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 15),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8.0),
-            side: BorderSide(color: borderColor, width: borderWidth),
-          ),
-          elevation: elevation,
-          shadowColor: shadowColor,
-        ),
-        child: Text(
-          answerText.toUpperCase(),
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: textColor,
-            fontFamily: 'PressStart2P',
-            fontSize: _responsiveFontSize(context, 12),
-            shadows: [
-              const Shadow(color: Colors.black, offset: Offset(1, 1))
-            ]
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      margin: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: glowColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: borderColor, width: 2),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: _isAnswered ? null : () => _handleAnswer(answerText),
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 12),
+            alignment: Alignment.center,
+            child: Text(
+              answerText.toUpperCase(),
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: textColor,
+                fontFamily: 'PressStart2P',
+                fontSize: _responsiveFontSize(context, 10),
+                height: 1.5,
+              ),
+            ),
           ),
         ),
       ),
@@ -259,48 +290,48 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
           widget.quizType == QuizType.silhouetteToName || 
           widget.quizType == QuizType.silhouetteToScientific;
           
-      bool displaySilhouette = false;
-      
-      if (isSilhouetteQuizType) {
-        displaySilhouette = true;
-        if (_isAnswered && _selectedAnswer == _correctAnswer) {
-            displaySilhouette = false;
-        }
-      } else {
-        displaySilhouette = false;
+      bool displaySilhouette = isSilhouetteQuizType;
+      if (_isAnswered && _selectedAnswer == _correctAnswer) {
+          displaySilhouette = false;
       }
       
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 20.0),
-        child: Column(
-          children: [
-            Text(
+      return Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Text(
               _getQuestionText(questionOrganism),
               textAlign: TextAlign.center,
               style: TextStyle( 
-                color: highlightColor,
+                color: Colors.white70,
                 fontFamily: 'PressStart2P',
-                fontSize: _responsiveFontSize(context, 14), 
+                fontSize: _responsiveFontSize(context, 10), 
+                letterSpacing: 1.5,
               ),
             ),
-            const SizedBox(height: 10),
-            _QuizSpriteDisplay(
-              organism: questionOrganism,
-              height: 250,
-              width: 300,
-              showSilhouette: displaySilhouette,
-            ),
-          ],
-        )
+          ),
+          _QuizSpriteDisplay(
+            organism: questionOrganism,
+            height: 200,
+            width: double.infinity,
+            showSilhouette: displaySilhouette,
+          ),
+        ],
       );
     } else {
       return Container(
-        padding: const EdgeInsets.all(20),
-        margin: const EdgeInsets.only(bottom: 20),
+        padding: const EdgeInsets.all(32),
         decoration: BoxDecoration(
-          color: const Color.fromARGB(0, 30, 63, 42).withOpacity(0.9),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: highlightColor, width: 3),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: highlightColor.withOpacity(0.5), width: 2),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              highlightColor.withOpacity(0.15),
+              Colors.transparent,
+            ],
+          ),
         ),
         child: Text(
           _getQuestionText(questionOrganism).toUpperCase(),
@@ -308,7 +339,8 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
           style: TextStyle(
             color: highlightColor,
             fontFamily: 'PressStart2P',
-            fontSize: _responsiveFontSize(context, 16),
+            fontSize: _responsiveFontSize(context, 14),
+            height: 1.6,
           ),
         ),
       );
@@ -319,7 +351,7 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const Scaffold(
-        backgroundColor: Color.fromARGB(0, 30, 63, 42),
+        backgroundColor: backgroundColor,
         body: Center(
           child: CircularProgressIndicator(color: highlightColor),
         ),
@@ -329,88 +361,90 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
     if (_currentQuestion == null) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Quiz'), 
-          backgroundColor: const Color.fromARGB(0, 30, 63, 42),
+          title: const Text('QUIZ'), 
+          backgroundColor: Colors.transparent,
+          elevation: 0,
           titleTextStyle: TextStyle(
             color: highlightColor, 
             fontFamily: 'PressStart2P', 
             fontSize: _responsiveFontSize(context, 16),
           ),
         ),
-        backgroundColor: const Color.fromARGB(0, 30, 63, 42),
+        backgroundColor: backgroundColor,
         body: Center(
-          child: Text('Not enough animals discovered for this quiz type.', 
+          child: Text('NOT ENOUGH ANIMALS DISCOVERED.', 
             textAlign: TextAlign.center,
             style: TextStyle(
               color: wrongGlowColor, 
               fontFamily: 'PressStart2P', 
-              fontSize: _responsiveFontSize(context, 14),
+              fontSize: _responsiveFontSize(context, 12),
             )
           ),
         ),
       );
     }
     
-    final usesImageQuestion = this.usesImageQuestion;
-    final questionWidget = _buildQuestionWidget();
-    
-    final appBarTextStyle = TextStyle(
-        color: highlightColor, 
-        fontFamily: 'PressStart2P', 
-        fontSize: _responsiveFontSize(context, 12)
-    );
-
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: Text('${widget.quizType.name.toUpperCase()}'),
-        backgroundColor: const Color.fromARGB(0, 30, 63, 42),
-        titleTextStyle: appBarTextStyle,
+        title: Text(widget.quizType.displayName.toUpperCase()),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        titleTextStyle: TextStyle(
+          color: highlightColor, 
+          fontFamily: 'PressStart2P', 
+          fontSize: _responsiveFontSize(context, 10),
+          letterSpacing: 2,
+        ),
       ),
       body: Container(
-        decoration: BoxDecoration(
-          color: const Color.fromARGB(0, 30, 63, 42),
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          color: backgroundColor,
           image: DecorationImage(
-            image: const AssetImage('assets/biomes/savanna-bg.png'), 
+            image: AssetImage('assets/biomes/savanna-bg.png'), 
             fit: BoxFit.cover,
-            colorFilter: ColorFilter.mode(
-              Colors.black.withOpacity(0.7),
-              BlendMode.darken,
-            ),
+            opacity: 0.2,
           ),
         ),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20.0),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 600),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  questionWidget,
-                  
-                  if (!usesImageQuestion)
-                    const SizedBox(height: 40),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: Center(child: _buildQuestionWidget()),
+                ),
+                
+                Expanded(
+                  flex: 4,
+                  child: GridView.count(
+                    crossAxisCount: 2,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    childAspectRatio: 1.5,
+                    children: _currentOptions!.map((org) => _buildAnswerButton(org)).toList(),
+                  ),
+                ),
 
-                  ..._currentOptions!.map((org) => _buildAnswerButton(org)).toList(),
-
-                  const SizedBox(height: 40),
-
-                  if (_isAnswered)
-                    Text(
-                      _selectedAnswer == _correctAnswer ? 'CORRECT! NEXT QUESTION LOADING...' : 'INCORRECT! ANSWER WAS: $_correctAnswer',
+                if (_isAnswered)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 24),
+                    child: Text(
+                      _selectedAnswer == _correctAnswer ? 'EXCELLENT! + XP' : 'WRONG! THE ANSWER IS:\n$_correctAnswer'.toUpperCase(),
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: _responsiveFontSize(context, 12),
+                        fontSize: _responsiveFontSize(context, 10),
                         color: _selectedAnswer == _correctAnswer ? correctGlowColor : wrongGlowColor,
                         fontFamily: 'PressStart2P',
-                        shadows: [
-                          const Shadow(color: Colors.black, offset: Offset(1, 1))
-                        ]
+                        height: 1.5,
                       ),
                     ),
-                ],
-              ),
+                  ),
+              ],
             ),
           ),
         ),
@@ -534,14 +568,21 @@ class __QuizSpriteDisplayState extends State<_QuizSpriteDisplay> {
       width: widget.width,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: const Color.fromARGB(78, 1, 6, 38).withOpacity(0.8),
-        borderRadius: BorderRadius.circular(10),
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: _QuizGameScreenState.highlightColor, 
-          width: 4,
+          color: _QuizGameScreenState.highlightColor.withOpacity(0.2), 
+          width: 2,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
-      padding: const EdgeInsets.all(5),
+      padding: const EdgeInsets.all(16),
       child: imageWidget,
     );
   }

@@ -70,64 +70,22 @@ class Organism {
     );
   }
 
-  /// Parse drops field (e.g., "hide, horn") into LootDrops with chances
-  List<LootDrop> get lootDrops {
-    if (drops.isEmpty) return [];
-    
-    final dropsList = drops.split(',').map((e) => e.trim().toLowerCase()).toList();
-    final lootDropsList = <LootDrop>[];
-    
-    for (final dropName in dropsList) {
-      // Map common drop names to loot IDs
-      String? lootId;
-      if (dropName.contains('hide') || dropName.contains('fur')) {
-        lootId = 'hide';
-      } else if (dropName.contains('horn')) {
-        lootId = 'horn';
-      } else if (dropName.contains('feather')) {
-        lootId = 'feather';
-      } else if (dropName.contains('fang') || dropName.contains('tooth')) {
-        lootId = 'fang';
-      } else if (dropName.contains('claw')) {
-        lootId = 'claw';
-      } else if (dropName.contains('scale')) {
-        lootId = 'scale';
-      } else if (dropName.contains('shell')) {
-        lootId = 'shell';
-      } else if (dropName.contains('venom')) {
-        lootId = 'venom_sac';
-      } else if (dropName.contains('antler')) {
-        lootId = 'antler';
-      } else if (dropName.contains('pearl')) {
-        lootId = 'pearl';
-      }
-      
-      if (lootId != null) {
-        // Drop chance based on rarity: Common 60%, Uncommon 40%, Rare 25%, Epic 15%
-        double chance = 0.6;
-        if (rarity.toLowerCase().contains('uncommon')) chance = 0.4;
-        if (rarity.toLowerCase().contains('rare')) chance = 0.25;
-        if (rarity.toLowerCase().contains('epic') || rarity.toLowerCase().contains('legendary')) chance = 0.15;
-        
-        lootDropsList.add(LootDrop(lootId: lootId, dropChance: chance));
-      }
-    }
-    
-    return lootDropsList;
-  }
-  
-  /// Roll for a random loot drop from this organism
+  /// Roll for a random loot drop directly from the JSON field.
+  /// Returns a Title Case string (e.g., "Fur", "Meat").
   String? rollLootDrop() {
-    final drops = lootDrops;
     if (drops.isEmpty) return null;
     
-    final random = Random();
-    for (final drop in drops) {
-      if (random.nextDouble() < drop.dropChance) {
-        return drop.lootId;
-      }
-    }
-    return null; // No drop
+    final dropsList = drops.split(',').map((e) {
+      final trimmed = e.trim();
+      if (trimmed.isEmpty) return '';
+      // Simple Title Case: capitalize first letter, lowercase rest
+      return trimmed[0].toUpperCase() + trimmed.substring(1).toLowerCase();
+    }).where((e) => e.isNotEmpty).toList();
+    
+    if (dropsList.isEmpty) return null;
+    
+    // Pick one at random
+    return dropsList[Random().nextInt(dropsList.length)];
   }
   Organism copyWith({
     String? name,

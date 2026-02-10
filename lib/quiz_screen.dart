@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'package:animal_warfare/quiz_game_screen.dart'; // Ensure this path is correct
 import 'package:animal_warfare/local_auth_service.dart';
 
@@ -7,58 +8,93 @@ class QuizScreen extends StatelessWidget {
   final LocalAuthService authService;
   const QuizScreen({super.key, required this.currentUser,required this.authService,});
 
-  // Custom retro/military colors (Copied from GameScreen for consistency)
-  static const Color primaryButtonColor = Color(0xFF38761D); // Bright Jungle Green
   static const Color highlightColor = Color(0xFFDAA520); // Goldenrod
-  static const Color secondaryButtonColor = Color(0xFF1E3F2A); // Deep Forest Green
-  // NEW: A tertiary color for the sprite modes
-  static const Color tertiaryButtonColor = Color(0xFF13281A); // Very Dark Forest Green
-  // 🟢 NEW: A quaternary color for the silhouette modes
-  static const Color quaternaryButtonColor = Color(0xFF674EA7); // A deep purple/indigo
+  static const Color backgroundColor = Color(0xFF13281A); // Very Dark Forest Green
 
-  // Helper method for themed buttons (Adapted for use here)
-  Widget _buildThemedButton({
-    required String text,
-    required IconData icon,
-    required VoidCallback onPressed,
-    required Color color,
-  }) {
+  Widget _buildQuizCard(BuildContext context, QuizType type, Color color) {
     return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.symmetric(vertical: 16.0),
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: color,
-        border: Border.all(color: highlightColor, width: 2.0),
-        borderRadius: BorderRadius.circular(8.0), 
-        // Shadow effect for depth
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.5),
-            offset: const Offset(4, 4),
-            blurRadius: 0,
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: ElevatedButton.icon(
-        onPressed: onPressed,
-        icon: Icon(icon, color: highlightColor),
-        label: Text(
-          text,
-          style: const TextStyle(
-            color: highlightColor,
-            fontFamily: 'PressStart2P',
-            fontSize: 14.0,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: highlightColor.withOpacity(0.3),
+                width: 1.5,
+              ),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  color.withOpacity(0.3),
+                  color.withOpacity(0.1),
+                ],
+              ),
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => _navigateToQuizGame(context, type),
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: highlightColor.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: highlightColor.withOpacity(0.5)),
+                        ),
+                        child: Icon(type.icon, color: highlightColor, size: 28),
+                      ),
+                      const SizedBox(width: 20),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              type.displayName.toUpperCase(),
+                              style: const TextStyle(
+                                color: highlightColor,
+                                fontFamily: 'PressStart2P',
+                                fontSize: 12,
+                                letterSpacing: 1.2,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              type.description,
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.7),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w300,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.chevron_right, color: highlightColor),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ),
-        ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: color, // Use the passed color as the base
-          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 15),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8.0),
-            // The border is handled by the parent Container's Decoration for the full effect
-          ),
-          elevation: 0, // Remove default elevation as we use BoxDecoration for shadow
-          foregroundColor: highlightColor,
         ),
       ),
     );
@@ -79,103 +115,61 @@ class QuizScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Animal Warfare Quizzes'),
-        backgroundColor: secondaryButtonColor, // Use deep forest green for app bar
+        title: const Text('QUIZ LAB'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         titleTextStyle: const TextStyle(
           color: highlightColor, 
           fontFamily: 'PressStart2P', 
-          fontSize: 16.0,
+          fontSize: 18.0,
+          letterSpacing: 2,
         ),
+        centerTitle: true,
       ),
       body: Container(
-        decoration: BoxDecoration(
-          color: secondaryButtonColor,
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          color: backgroundColor,
           image: DecorationImage(
-            image: const AssetImage('assets/biomes/savanna-bg.png'), 
+            image: AssetImage('assets/biomes/savanna-bg.png'), 
             fit: BoxFit.cover,
-            colorFilter: ColorFilter.mode(
-              Colors.black.withOpacity(0.7),
-              BlendMode.darken,
-            ),
+            opacity: 0.3,
           ),
         ),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Text(
-                'Select a Quiz Mode',
-                style: TextStyle(
-                  color: highlightColor,
-                  fontFamily: 'PressStart2P',
-                  fontSize: 18.0,
-                  shadows: [
-                    Shadow(color: Colors.black.withOpacity(0.5), offset: const Offset(2, 2))
-                  ]
+        child: SafeArea(
+          child: Column(
+            children: [
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                child: Text(
+                  'MASTER THE ECOSYSTEM',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    letterSpacing: 2,
+                    fontSize: 10,
+                    fontFamily: 'PressStart2P',
+                  ),
                 ),
-                textAlign: TextAlign.center,
               ),
-            ),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  physics: const BouncingScrollPhysics(),
                   children: [
-                    // Game One Button (Scientific Name to Common Name)
-                    _buildThemedButton(
-                      text: 'SCIENTIFIC TO NAME',
-                      icon: Icons.science,
-                      onPressed: () => _navigateToQuizGame(context, QuizType.scientificToCommon),
-                      color: primaryButtonColor, // Bright Jungle Green
-                    ),
-
-                    // Game Two Button (Common Name to Scientific Name)
-                    _buildThemedButton(
-                      text: 'NAME TO SCIENTIFIC',
-                      icon: Icons.sort_by_alpha,
-                      onPressed: () => _navigateToQuizGame(context, QuizType.commonToScientific),
-                      color: secondaryButtonColor,
-                    ),
-                    
-                    // Game Three Button (Sprite to Common Name)
-                    _buildThemedButton(
-                      text: 'SPRITE TO NAME', 
-                      icon: Icons.image,
-                      onPressed: () => _navigateToQuizGame(context, QuizType.spriteToName),
-                      color: tertiaryButtonColor, 
-                    ),
-                    
-                    // Game Four Button (Sprite to Scientific Name)
-                    _buildThemedButton(
-                      text: 'SPRITE TO SCIENTIFIC',
-                      icon: Icons.image_search,
-                      onPressed: () => _navigateToQuizGame(context, QuizType.spriteToScientific),
-                      color: primaryButtonColor.withOpacity(0.7),
-                    ),
-                    
-                    // 🟢 NEW Game Five Button (Silhouette to Common Name)
-                    _buildThemedButton(
-                      text: 'SILHOUETTE TO NAME',
-                      icon: Icons.hide_image, 
-                      onPressed: () => _navigateToQuizGame(context, QuizType.silhouetteToName),
-                      color: quaternaryButtonColor, // Deep purple
-                    ),
-                    
-                    // 🟢 NEW Game Six Button (Silhouette to Scientific Name)
-                    _buildThemedButton(
-                      text: 'SILHOUETTE TO SCIENTIFIC',
-                      icon: Icons.visibility_off, 
-                      onPressed: () => _navigateToQuizGame(context, QuizType.silhouetteToScientific),
-                      color: secondaryButtonColor.withOpacity(0.7), // Darker shade of secondary
-                    ),
+                    _buildQuizCard(context, QuizType.scientificToCommon, const Color(0xFF38761D)),
+                    _buildQuizCard(context, QuizType.commonToScientific, const Color(0xFF1E3F2A)),
+                    _buildQuizCard(context, QuizType.spriteToName, const Color(0xFF13281A)),
+                    _buildQuizCard(context, QuizType.spriteToScientific, const Color(0xFF674EA7)),
+                    _buildQuizCard(context, QuizType.silhouetteToName, const Color(0xFF8E3E63)),
+                    _buildQuizCard(context, QuizType.silhouetteToScientific, const Color(0xFF2C3E50)),
                   ],
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

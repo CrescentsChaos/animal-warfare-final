@@ -208,14 +208,10 @@ class InventoryTab extends StatelessWidget {
           color: Colors.black.withOpacity(0.3),
           margin: const EdgeInsets.only(bottom: 8),
           child: ListTile(
-            leading: Icon(Icons.category, color: _getRarityColor(loot.rarity)),
+            leading: const Icon(Icons.inventory_2, color: AppColors.highlightColor),
             title: Text(
               loot.name,
               style: const TextStyle(fontFamily: 'PressStart2P', fontSize: 12, color: Colors.white),
-            ),
-            subtitle: Text(
-              loot.description,
-              style: const TextStyle(color: Colors.white54, fontSize: 10),
             ),
             trailing: Text(
               'x${entry.value}',
@@ -229,15 +225,6 @@ class InventoryTab extends StatelessWidget {
         );
       },
     );
-  }
-
-  Color _getRarityColor(LootRarity rarity) {
-    switch (rarity) {
-      case LootRarity.common: return Colors.grey;
-      case LootRarity.uncommon: return Colors.green;
-      case LootRarity.rare: return Colors.blue;
-      case LootRarity.epic: return Colors.purple;
-    }
   }
 }
 
