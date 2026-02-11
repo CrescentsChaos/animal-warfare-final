@@ -6,6 +6,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:animal_warfare/models/captured_organism.dart';
 import 'package:animal_warfare/models/organism.dart';
+import 'package:animal_warfare/models/quest.dart';
 
 import 'local_auth_storage_io.dart'
     if (dart.library.html) 'local_auth_storage_web.dart' as user_storage;
@@ -28,6 +29,7 @@ class UserData {
   final Map<String, int> inventory;
   /// Crafted talismans (owned but not equipped)
   final List<String> craftedTalismans; // List of talisman IDs
+  final List<Quest> activeQuests;
 
   UserData({
     required this.username,
@@ -43,13 +45,15 @@ class UserData {
     int? activeAttackerIndex,
     Map<String, int>? inventory,
     List<String>? craftedTalismans,
+    List<Quest>? activeQuests,
   }) : quizStats = quizStats ?? {},
        discoveredOrganisms = discoveredOrganisms ?? [],
        completedAchievements = completedAchievements ?? [],
        capturedOrganisms = capturedOrganisms ?? [],
        activeAttackerIndex = activeAttackerIndex ?? 0,
        inventory = inventory ?? {},
-       craftedTalismans = craftedTalismans ?? [];
+       craftedTalismans = craftedTalismans ?? [],
+       activeQuests = activeQuests ?? [];
 
   UserData copyWith({
     String? username,
@@ -65,6 +69,7 @@ class UserData {
     int? activeAttackerIndex,
     Map<String, int>? inventory,
     List<String>? craftedTalismans,
+    List<Quest>? activeQuests,
   }) {
     return UserData(
       username: username ?? this.username,
@@ -80,6 +85,7 @@ class UserData {
       activeAttackerIndex: activeAttackerIndex ?? this.activeAttackerIndex,
       inventory: inventory ?? this.inventory,
       craftedTalismans: craftedTalismans ?? this.craftedTalismans,
+      activeQuests: activeQuests ?? this.activeQuests,
     );
   }
 
@@ -119,6 +125,7 @@ class UserData {
         'activeAttackerIndex': activeAttackerIndex,
         'inventory': inventory,
         'craftedTalismans': craftedTalismans,
+        'activeQuests': activeQuests.map((q) => q.toJson()).toList(),
       };
 
   factory UserData.fromJson(Map<String, dynamic> json,{List<Organism>? allOrganisms}) {
@@ -168,6 +175,7 @@ class UserData {
       activeAttackerIndex: json['activeAttackerIndex'] as int? ?? 0,
       inventory: json['inventory'] != null ? Map<String, int>.from(json['inventory'] as Map) : {},
       craftedTalismans: (json['craftedTalismans'] as List<dynamic>?)?.map((e) => e as String).toList() ?? [],
+      activeQuests: (json['activeQuests'] as List<dynamic>?)?.map((q) => Quest.fromJson(q as Map<String, dynamic>)).toList() ?? [],
     );
 
   }

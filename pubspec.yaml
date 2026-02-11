@@ -84,6 +84,7 @@ flutter:
     - assets/
     - assets/main.png
     - assets/biomes/
+    - assets/npc/
     - assets/audio/ # <<< CRITICAL: This line must be present and correctly indented!
     # If your placeholder is at the root of assets, include it too:
     - assets/placeholder_400x200.png 

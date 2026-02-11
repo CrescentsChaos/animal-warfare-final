@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:animal_warfare/models/captured_organism.dart';
 import 'package:animal_warfare/models/talisman.dart';
 import 'package:animal_warfare/models/move.dart';
+import 'package:animal_warfare/models/quest.dart';
 import 'local_auth_service.dart';
 
 class UserState with ChangeNotifier {
@@ -237,6 +238,63 @@ class UserState with ChangeNotifier {
         moveStamina: newStamina,
       );
       return u.copyWith(capturedOrganisms: list);
+    });
+  }
+
+  /// Quest management methods
+  Future<void> acceptQuest(Quest quest) async {
+    if (_currentUser == null) return;
+    
+    // Check if player already has 2 quests from this NPC
+    final npcQuests = _currentUser!.activeQuests.where((q) => q.npcId == quest.npcId).length;
+    if (npcQuests >= 2) {
+      if (kDebugMode) print('UserState: Already have 2 quests from ${quest.npcId}');
+      return;
+    }
+
+    await _readModifyWrite((u) {
+      final list = List<Quest>.from(u.activeQuests)..add(quest);
+      return u.copyWith(activeQuests: list);
+    });
+    if (kDebugMode) print('UserState: Accepted quest ${quest.description}');
+  }
+
+  Future<void> updateQuestProgress(String organismName) async {
+    if (_currentUser == null || _currentUser!.activeQuests.isEmpty) return;
+    
+    await _readModifyWrite((u) {
+      final list = u.activeQuests.map((quest) {
+        if (quest.status == QuestStatus.active && quest.targetOrganismName == organismName) {
+          return quest.copyWith(currentCount: quest.currentCount + 1);
+        }
+        return quest;
+      }).toList();
+      return u.copyWith(activeQuests: list);
+    });
+    if (kDebugMode) print('UserState: Progressed quests for $organismName');
+  }
+
+  Future<void> claimQuestReward(String questId) async {
+    if (_currentUser == null) return;
+    
+    await _readModifyWrite((u) {
+      final index = u.activeQuests.indexWhere((q) => q.id == questId);
+      if (index == -1) return u;
+      
+      final quest = u.activeQuests[index];
+      if (!quest.isCompleted) return u;
+      
+      final newList = List<Quest>.from(u.activeQuests)..removeAt(index);
+      return u.addMoney(quest.rewardMoney).copyWith(activeQuests: newList);
+    });
+    if (kDebugMode) print('UserState: Claimed reward for quest $questId');
+  }
+
+  Future<void> removeQuestById(String questId) async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) {
+      final newList = List<Quest>.from(u.activeQuests)..removeWhere((q) => q.id == questId);
+      return u.copyWith(activeQuests: newList);
     });
   }
 

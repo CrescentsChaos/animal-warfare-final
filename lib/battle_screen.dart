@@ -30,15 +30,19 @@ class BattleScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (context) => BattleManager(playerOrganism, opponentOrganism, biomeName: biomeName),
-      child: BattleScreenContent(biomeName: biomeName),
+      child: BattleScreenContent(
+        biomeName: biomeName,
+        opponentName: opponentOrganism.baseOrganism.name,
+      ),
     );
   }
 }
 
 class BattleScreenContent extends StatefulWidget {
   final String biomeName;
+  final String opponentName;
 
-  const BattleScreenContent({super.key, required this.biomeName});
+  const BattleScreenContent({super.key, required this.biomeName, required this.opponentName});
 
   @override
   State<BattleScreenContent> createState() => _BattleScreenContentState();
@@ -65,6 +69,14 @@ class _BattleScreenContentState extends State<BattleScreenContent> with TickerPr
 
     _playerShakeAnimation = shakeTween.animate(_playerShakeController);
     _opponentShakeAnimation = shakeTween.animate(_opponentShakeController);
+
+    // Set up BattleManager callbacks
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final bm = Provider.of<BattleManager>(context, listen: false);
+      bm.onAttack = _onAttack;
+      bm.onVictory = _onVictory;
+    });
   }
 
   @override
@@ -76,20 +88,7 @@ class _BattleScreenContentState extends State<BattleScreenContent> with TickerPr
 
   void _onAttack(BattleOrganism attacker) {
     if (!mounted) return;
-    // Shake the ATTACKER to simulate lunge/attack
-    // OR shake the DEFENDER to simulate hit?
-    // User said: "when the animal attacks the image should shake"
-    // Usually attacking involves a lunge.
-    // Let's shake the attacker.
     
-    // We need to access battleManager.player to check identity.
-    // Since we are inside State, we can access provider if we listened? 
-    // Attacker is passed.
-    // We can assume if attacker.organism.isPlayer -> player shake.
-    // CapturedOrganism doesn't store 'isPlayer'.
-    // But we know 'playerOrganism' from widget? No, widget only has biomeName.
-    // BattleManager has 'player' and 'opponent' fields.
-    // We can check reference equality with battle manager's fields.
     final bm = Provider.of<BattleManager>(context, listen: false);
     
     if (attacker == bm.player) { // Player attacks
@@ -97,6 +96,12 @@ class _BattleScreenContentState extends State<BattleScreenContent> with TickerPr
     } else { // Opponent attacks
        _opponentShakeController.forward(from: 0);
     }
+  }
+
+  void _onVictory() {
+    if (!mounted) return;
+    final userState = Provider.of<UserState>(context, listen: false);
+    userState.updateQuestProgress(widget.opponentName);
   }
 
   String _getAssetPath(String biomeName) {

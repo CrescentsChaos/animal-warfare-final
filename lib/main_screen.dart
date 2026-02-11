@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:animal_warfare/login_screen.dart'; 
 import 'package:animal_warfare/profile_screen.dart';
 import 'package:animal_warfare/game_screen.dart';
+import 'package:animal_warfare/quest_screen.dart';
 import 'package:animal_warfare/local_auth_service.dart';
 import 'package:audioplayers/audioplayers.dart'; 
 import 'package:shared_preferences/shared_preferences.dart'; 
@@ -224,11 +225,20 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                     ),
 
                   // PROFILE Button (Secondary - Visible ONLY when logged in)
-                  if (_authStatus == AuthStatus.loggedIn) 
+                  if (_authStatus == AuthStatus.loggedIn)
                     _buildThemedButton(
                       text: 'PROFILE',
                       icon: Icons.person,
                       onPressed: () => _navigateTo(const ProfileScreen()), 
+                      isPrimary: false,
+                    ),
+
+                  // QUEST Button (Secondary - Visible ONLY when logged in)
+                  if (_authStatus == AuthStatus.loggedIn)
+                    _buildThemedButton(
+                      text: 'QUESTS',
+                      icon: Icons.assignment,
+                      onPressed: () => _navigateTo(const QuestScreen()),
                       isPrimary: false,
                     ),
 

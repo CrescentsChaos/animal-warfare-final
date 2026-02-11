@@ -186,6 +186,7 @@ class BattleManager extends ChangeNotifier {
 
   // Callbacks for UI
   Function(BattleOrganism)? onAttack;
+  VoidCallback? onVictory;
 
   void _addToLog(String message) {
     battleLog = message;
@@ -1184,6 +1185,7 @@ class BattleManager extends ChangeNotifier {
       }
       
       currentState = BattleState.battleEnd;
+      onVictory?.call();
       notifyListeners();
       return true;
     }
