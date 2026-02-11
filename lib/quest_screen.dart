@@ -2,6 +2,7 @@
 
 import 'dart:math';
 import 'dart:convert';
+import 'dart:async';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -20,22 +21,70 @@ class QuestScreen extends StatefulWidget {
 class _QuestScreenState extends State<QuestScreen> {
   List<Organism> _allOrganisms = [];
   bool _isLoadingOrganisms = true;
+  String _currentDialogue = "";
+  
+  // Dialogue pools for Jeremy Wade
+  final List<String> _greetings = [
+    "The water holds secrets most people never see. To find a monster, you have to think like one.",
+    "Listen carefully... the ripples in the dark water tell a story. A story of things that should not exist.",
+    "I've traveled the world's most dangerous rivers, but these waters... they have a different kind of hunger.",
+    "You look like you've got the stomach for this. Most turn back at the first sign of a silhouette beneath the surface.",
+  ];
 
-  final List<String> _fishTargets = [
-    'Alligator Gar',
-    'Arapaima',
-    'Nile Perch',
-    'Giant Snakehead',
-    'Atlantic Bluefin Tuna',
-    'Giant Grouper',
-    'Atlantic Goliath Grouper',
-    'Giant Oarfish',
+  final List<String> _idleQuotes = [
+    "I've seen things in the Congo that would turn your hair white overnight.",
+    "Equipment check: Lines strong? Hooks sharp? Mental resolve intact?",
+    "Every monster has a weakness. You just have to be patient enough to find it.",
+    "The locals speak of a legend... something that pulls entire boats under. We're going to find it.",
+  ];
+
+  final List<String> _questFullQuotes = [
+    "You're already tracking two legends. Stay focused. One monster at a time.",
+    "Your log is full. Finish what you started before we go chasing more shadows.",
+    "Too many lines in the water will only lead to a tangle. Clear your active hunts first.",
+  ];
+
+  final List<String> _questAcceptedQuotes = [
+    "Good. The hunt is on. Don't let it out of your sight.",
+    "Keep your eyes on the horizon. These creatures won't wait for you to be ready.",
+    "A bold choice. That monster has been terrorizing these docks for weeks.",
+  ];
+
+  final Map<String, List<String>> _habitatQuestTemplates = {
+    'Ocean': [
+      "The deep blue is hiding something massive. A group of {target} has been seen patrolling the outer reefs. Take out {count} of them.",
+      "The local fishermen are terrified of a 'shadow from the abyss'. It's just {count} {target} getting too close to the surface. Deal with them.",
+      "A rogue current has brought a frenzy of {target} to the bay. Clear out {count} before they disrupt the local trade.",
+    ],
+    'River': [
+      "The rapids are churned up by something fierce. Reports say {count} {target} are blocking the upstream migration. Clear the path.",
+      "A massive {target} was seen near the old stone bridge. I need you to thin the pack. Bag {count} of them.",
+      "The murky depths of the river are home to ancient predators. {count} {target} have been targeting local livestock. Stop them.",
+    ],
+    'Swamp': [
+      "The mist-covered marshes are hiding a silent killer. {count} {target} are lurking in the stagnant pools. Find and cull them.",
+      "The mangrove roots are thick with {target}. They're outcompeting everything else in the swamp. Remove {count} of them.",
+      "The locals speak of spirits in the swamp, but it's just the glowing eyes of {target}. Go and clear out {count}.",
+    ],
+    'Lake': [
+      "The tranquil surface of the lake belies the danger below. {count} {target} have taken over the northern reeds. Deal with them.",
+      "A massive {target} has been seen near the town pier. It's only a matter of time before someone gets hurt. Thin the pack by {count}.",
+      "The dark depths of the lake are home to a legend. To understand it, I need data from {count} {target} specimens.",
+    ],
+  };
+
+  final List<String> _generalQuestTemplates = [
+    "Reports of a 'demon fish' have been coming in from the local village. We need to clear out {count} {target} to restore order.",
+    "The ecosystem is out of balance. Too many {target} are depleting the smaller fry. Cull {count} of them.",
+    "I'm tracking a migratory pattern. To understand it, I need data from {count} {target} specimens.",
+    "The water is turning red near the estuary. The {target} are in a feeding frenzy. Go and stop {count} of them.",
   ];
 
   @override
   void initState() {
     super.initState();
     _loadOrganisms();
+    _currentDialogue = _greetings[Random().nextInt(_greetings.length)];
   }
 
   Future<void> _loadOrganisms() async {
@@ -51,16 +100,60 @@ class _QuestScreenState extends State<QuestScreen> {
     }
   }
 
+  void _updateDialogue(String message) {
+    setState(() {
+      _currentDialogue = message;
+    });
+  }
+
   void _generateNewQuest() {
     final userState = Provider.of<UserState>(context, listen: false);
+    
+    // Check limit
+    final activeQuests = userState.currentUser?.activeQuests
+            .where((q) => q.npcId == 'jeremy_wade')
+            .toList() ?? [];
+    
+    if (activeQuests.length >= 2) {
+      _updateDialogue(_questFullQuotes[Random().nextInt(_questFullQuotes.length)]);
+      return;
+    }
+
+    if (_isLoadingOrganisms || _allOrganisms.isEmpty) return;
+
     final random = Random();
-    final target = _fishTargets[random.nextInt(_fishTargets.length)];
+    
+    // Refined Fish Detection based on drops
+    final fishDrops = ['fillet', 'shark fin', 'fish scales', 'stingray tail', 'roe', 'fish bone', 'caviar'];
+    final fishOptions = _allOrganisms.where((o) {
+      final drops = o.drops.toLowerCase();
+      return fishDrops.any((drop) => drops.contains(drop));
+    }).toList();
+
+    // Fallback if no specific drops found (shouldn't happen with large DB)
+    final options = fishOptions.isNotEmpty ? fishOptions : _allOrganisms;
+
+    final targetOrg = options[random.nextInt(options.length)];
+    final target = targetOrg.name;
     final count = random.nextInt(5) + 3; // 3 to 7
-    final reward = count * 50 + random.nextInt(100); // 150 to 450 approx
+    final baseReward = count * 50;
+    final rarityBonus = (targetOrg.rarity.toLowerCase() == 'rare' ? 100 : 0) + 
+                       (targetOrg.rarity.toLowerCase() == 'legendary' ? 300 : 0);
+    final reward = baseReward + rarityBonus + random.nextInt(50);
+
+    final templatePool = _habitatQuestTemplates.entries
+        .firstWhere((e) => targetOrg.habitat.contains(e.key), 
+          orElse: () => MapEntry('General', _generalQuestTemplates))
+        .value;
+
+    final template = templatePool[random.nextInt(templatePool.length)];
+    final flavoredDescription = template
+        .replaceAll('{count}', count.toString())
+        .replaceAll('{target}', target);
 
     final newQuest = Quest(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
-      description: 'Hunt down $count $target to help Jeremy Wade!',
+      description: flavoredDescription,
       targetOrganismName: target,
       targetCount: count,
       rewardMoney: reward,
@@ -69,6 +162,7 @@ class _QuestScreenState extends State<QuestScreen> {
     );
 
     userState.acceptQuest(newQuest);
+    _updateDialogue(_questAcceptedQuotes[random.nextInt(_questAcceptedQuotes.length)]);
   }
 
   @override
@@ -115,12 +209,13 @@ class _QuestScreenState extends State<QuestScreen> {
         // NPC Header Area
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: const Column(
+          child: Column(
             children: [
               // Speech Bubble
               SpeechBubble(
                 title: 'Jeremy Wade',
-                message: "The water holds secrets most people never see. To find a monster, you have to think like one. Are you ready for another hunt?",
+                message: _currentDialogue,
+                key: ValueKey(_currentDialogue), // Force rebuild for typewriter
               ),
             ],
           ),
@@ -208,7 +303,7 @@ class _QuestScreenState extends State<QuestScreen> {
   Widget _buildQuestCard(Quest quest, UserState userState) {
     final progress = quest.currentCount / quest.targetCount;
     return GestureDetector(
-      onLongPress: () => _showOrganismDetails(quest.targetOrganismName),
+      onLongPress: () => _showOrganismDetails(context, quest.targetOrganismName),
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
@@ -243,7 +338,7 @@ class _QuestScreenState extends State<QuestScreen> {
             const SizedBox(height: 10),
             Text(
               quest.description,
-              style: const TextStyle(color: Colors.white, fontSize: 12),
+              style: const TextStyle(color: Colors.white, fontSize: 12, height: 1.3),
             ),
             const SizedBox(height: 12),
             Row(
@@ -274,7 +369,10 @@ class _QuestScreenState extends State<QuestScreen> {
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                   ),
-                  onPressed: () => userState.claimQuestReward(quest.id),
+                  onPressed: () {
+                    userState.claimQuestReward(quest.id);
+                    _updateDialogue("Excellent work. That's one less monster to worry about.");
+                  },
                   child: const Text(
                     'CLAIM REWARD',
                     style: TextStyle(fontFamily: 'PressStart2P', fontSize: 8),
@@ -288,9 +386,12 @@ class _QuestScreenState extends State<QuestScreen> {
     );
   }
 
-  void _showOrganismDetails(String name) {
+  void _showOrganismDetails(BuildContext context, String name) {
     if (_isLoadingOrganisms) return;
     
+    final userState = Provider.of<UserState>(context, listen: false);
+    final isDiscovered = userState.currentUser?.discoveredOrganisms.contains(name) ?? false;
+
     final organism = _allOrganisms.firstWhere(
       (o) => o.name.toLowerCase() == name.toLowerCase(),
       orElse: () => Organism(
@@ -320,10 +421,10 @@ class _QuestScreenState extends State<QuestScreen> {
           side: const BorderSide(color: AppColors.highlightColor, width: 2),
         ),
         title: Text(
-          organism.name.toUpperCase(),
+          isDiscovered ? organism.name.toUpperCase() : "UNDISCOVERED MONSTER",
           style: const TextStyle(
             fontFamily: 'PressStart2P',
-            fontSize: 12,
+            fontSize: 10,
             color: AppColors.highlightColor,
           ),
         ),
@@ -331,14 +432,60 @@ class _QuestScreenState extends State<QuestScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildDetailInfo('Scientific', organism.scientificName),
-            _buildDetailInfo('Habitat', organism.habitat),
-            _buildDetailInfo('Category', organism.category),
-            _buildDetailInfo('Rarity', organism.rarity),
-            const SizedBox(height: 10),
-            Text(
-              organism.description,
-              style: const TextStyle(color: Colors.white70, fontSize: 11),
+            Center(
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: Colors.black26,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: _OrganismSpriteDisplay(
+                  organism: organism,
+                  isDiscovered: isDiscovered,
+                  silhouetteColor: Colors.black,
+                  height: 100,
+                  width: 100,
+                ),
+              ),
+            ),
+            _buildDetailInfo('Scientific', isDiscovered ? organism.scientificName : "???"),
+            const SizedBox(height: 8),
+            const Text(
+              'Habitat:',
+              style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: 11),
+            ),
+            const SizedBox(height: 4),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: organism.habitat.split(',').map((h) => Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(color: Colors.blue.withOpacity(0.5)),
+                ),
+                child: Text(
+                  h.trim().toUpperCase(),
+                  style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
+                ),
+              )).toList(),
+            ),
+            const SizedBox(height: 12),
+            _buildDetailInfo('Rarity', isDiscovered ? organism.rarity : "???"),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.black12,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.white10),
+              ),
+              child: Text(
+                isDiscovered ? organism.description : "You haven't encountered this monster in battle yet. Identify it to unlock more data.",
+                style: const TextStyle(color: Colors.white70, fontSize: 11, height: 1.4),
+              ),
             ),
           ],
         ),
@@ -374,25 +521,177 @@ class _QuestScreenState extends State<QuestScreen> {
   }
 }
 
-class SpeechBubble extends StatelessWidget {
+class _OrganismSpriteDisplay extends StatefulWidget {
+  final Organism organism;
+  final bool isDiscovered;
+  final Color silhouetteColor;
+  final double height;
+  final double width;
+  final BoxFit fit;
+
+  const _OrganismSpriteDisplay({
+    required this.organism,
+    required this.isDiscovered,
+    required this.silhouetteColor,
+    this.height = 200,
+    this.width = 400,
+    this.fit = BoxFit.contain,
+  });
+
+  @override
+  __OrganismSpriteDisplayState createState() => __OrganismSpriteDisplayState();
+}
+
+class __OrganismSpriteDisplayState extends State<_OrganismSpriteDisplay> {
+  String? _imageSourceType;
+  late String _imagePath;
+
+  @override
+  void initState() {
+    super.initState();
+    _determineImageSource();
+  }
+
+  String _getLocalPath() {
+    final fileName = widget.organism.name.toLowerCase().replaceAll(' ', '_').replaceAll("'", '_').replaceAll("-", '_');
+    return 'assets/sprites/$fileName.png';
+  }
+
+  Future<void> _determineImageSource() async {
+    final localPath = _getLocalPath();
+    try {
+      await rootBundle.load(localPath);
+      if (mounted) {
+        setState(() {
+          _imageSourceType = 'local';
+          _imagePath = localPath;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _imageSourceType = 'network';
+          _imagePath = widget.organism.sprite;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_imageSourceType == null) {
+      return SizedBox(
+        height: widget.height,
+        child: const Center(child: CircularProgressIndicator(color: AppColors.highlightColor)),
+      );
+    }
+
+    if (widget.isDiscovered) {
+      if (_imageSourceType == 'local') {
+        return Image.asset(
+          _imagePath, 
+          height: widget.height, 
+          width: widget.width, 
+          fit: widget.fit,
+        );
+      } else {
+        return Image.network(
+          _imagePath, 
+          height: widget.height, 
+          width: widget.width, 
+          fit: widget.fit,
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return SizedBox(
+              height: widget.height,
+              child: const Center(child: CircularProgressIndicator(color: AppColors.highlightColor)),
+            );
+          },
+          errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image, color: Colors.red, size: 40),
+        );
+      }
+    } else {
+      return buildSilhouetteSprite( 
+        imageUrl: _imagePath,
+        silhouetteColor: widget.silhouetteColor,
+        organismName: widget.organism.name,
+        height: widget.height, 
+        width: widget.width, 
+        fit: widget.fit,
+      );
+    }
+  }
+}
+
+class SpeechBubble extends StatefulWidget {
   final String title;
   final String message;
 
   const SpeechBubble({super.key, required this.title, required this.message});
 
   @override
+  State<SpeechBubble> createState() => _SpeechBubbleState();
+}
+
+class _SpeechBubbleState extends State<SpeechBubble> {
+  String _displayText = "";
+  Timer? _timer;
+  int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _startTypewriter();
+  }
+
+  @override
+  void didUpdateWidget(SpeechBubble oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.message != widget.message) {
+      _startTypewriter();
+    }
+  }
+
+  void _startTypewriter() {
+    _timer?.cancel();
+    _displayText = "";
+    _currentIndex = 0;
+    
+    _timer = Timer.periodic(const Duration(milliseconds: 30), (timer) {
+      if (_currentIndex < widget.message.length) {
+        setState(() {
+          _displayText += widget.message[_currentIndex];
+          _currentIndex++;
+        });
+      } else {
+        timer.cancel();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
+      constraints: const BoxConstraints(minHeight: 100),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.blue, width: 3),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 4, offset: const Offset(2, 2)),
+        ],
       ),
       child: Column(
         children: [
           Text(
-            title,
+            widget.title,
             style: const TextStyle(
               color: Colors.blue,
               fontWeight: FontWeight.bold,
@@ -402,12 +701,13 @@ class SpeechBubble extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text(
-            message,
+            _displayText,
             textAlign: TextAlign.center,
             style: const TextStyle(
               color: Colors.black,
               fontSize: 11,
               height: 1.4,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],

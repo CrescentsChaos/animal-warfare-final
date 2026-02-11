@@ -73,6 +73,11 @@ class _BattleScreenContentState extends State<BattleScreenContent> with TickerPr
     // Set up BattleManager callbacks
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      
+      final userState = Provider.of<UserState>(context, listen: false);
+      // Trigger quest progress ON ENCOUNTER (as soon as battle starts)
+      userState.updateQuestProgress(widget.opponentName);
+
       final bm = Provider.of<BattleManager>(context, listen: false);
       bm.onAttack = _onAttack;
       bm.onVictory = _onVictory;
@@ -100,8 +105,7 @@ class _BattleScreenContentState extends State<BattleScreenContent> with TickerPr
 
   void _onVictory() {
     if (!mounted) return;
-    final userState = Provider.of<UserState>(context, listen: false);
-    userState.updateQuestProgress(widget.opponentName);
+    // Quest progress shifted to encounter phase in initState
   }
 
   String _getAssetPath(String biomeName) {

@@ -2,6 +2,7 @@
 // Platform-specific storage for mobile/desktop using dart:io File.
 
 import 'dart:io';
+import 'dart:convert';
 import 'package:path_provider/path_provider.dart';
 
 Future<String?> readUserData(String username) async {
@@ -14,7 +15,12 @@ Future<String?> readUserData(String username) async {
 
 Future<void> writeUserData(String username, String jsonData) async {
   final file = await _getUserFile(username);
-  await file.writeAsString(jsonData, flush: true);
+  // Use writeAsBytes with FileMode.write to ensure full truncation on all platforms
+  await file.writeAsBytes(
+    utf8.encode(jsonData),
+    mode: FileMode.write,
+    flush: true,
+  );
 }
 
 Future<File> _getUserFile(String username) async {

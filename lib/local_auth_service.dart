@@ -221,10 +221,10 @@ class LocalAuthService {
         return null;
       }
       try {
-        final userMap = jsonDecode(contents) as Map<String, dynamic>;
+        final userMap = _robustJsonDecode(contents, username);
         final organisms = await _loadOrganisms();
         return UserData.fromJson(userMap, allOrganisms: organisms.isEmpty ? null : organisms);
-      } on FormatException catch (e) {
+      } catch (e) {
         if (kDebugMode) {
           print("ERROR: JSON decode failed for $username: $e");
         }
@@ -235,6 +235,30 @@ class LocalAuthService {
         print("CRITICAL ERROR: Storage failure for $username: $e");
       }
       return null;
+    }
+  }
+
+  Map<String, dynamic> _robustJsonDecode(String contents, String username) {
+    try {
+      return jsonDecode(contents) as Map<String, dynamic>;
+    } catch (e) {
+      // Recovery attempt: strip trailing junk characters by searching for valid closing brace from the end
+      if (kDebugMode) print("DEBUG: Attempting robust JSON recovery for $username...");
+      int index = contents.lastIndexOf('}');
+      while (index != -1) {
+        try {
+          final cleaned = contents.substring(0, index + 1);
+          final decoded = jsonDecode(cleaned);
+          if (decoded is Map<String, dynamic>) {
+            if (kDebugMode) print("DEBUG: Successfully recovered JSON for $username at index $index.");
+            return decoded;
+          }
+        } catch (_) {
+          // ignore and keep searching backwards
+        }
+        index = contents.lastIndexOf('}', index - 1);
+      }
+      rethrow;
     }
   }
 
@@ -260,13 +284,21 @@ class LocalAuthService {
     try {
       final contents = await user_storage.readUserData(user.username);
       if (contents != null) {
-        final data = jsonDecode(contents) as Map<String, dynamic>;
-        final currentQuizCount = (data['quizStats'] as Map?)?.length ?? 0;
-        if (currentQuizCount > user.quizStats.length) {
-          if (kDebugMode) {
-            print("WARNING: Aborted stale write for ${user.username} (file has more quiz data)");
+        try {
+          final data = _robustJsonDecode(contents, user.username);
+          final currentQuizCount = (data['quizStats'] as Map?)?.length ?? 0;
+          if (currentQuizCount > user.quizStats.length) {
+            if (kDebugMode) {
+              print("WARNING: Aborted stale write for ${user.username} (file has more quiz data)");
+            }
+            return;
           }
-          return;
+        } catch (e) {
+          if (kDebugMode) {
+            print("WARNING: Failed to decode existing file for ${user.username} during write: $e. Proceeding with atomic write to fix corruption.");
+          }
+          // If the file is so corrupted that recovery fails, we MUST proceed with the write
+          // to overwrite the corruption with a fresh, valid JSON state.
         }
       }
       await user_storage.writeUserData(user.username, jsonEncode(user.toJson()));
