@@ -185,7 +185,7 @@ class BattleScreenContent extends StatelessWidget {
             child: Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -206,17 +206,17 @@ class BattleScreenContent extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 2),
                 _buildFieldEffects(context, battleManager),
-                const SizedBox(height: 8),
+                const SizedBox(height: 2),
 
                 Expanded(
                   child: Column(
                     children: [
-                      _buildOpponentStatus(battleManager.opponent, overlayColor, isNarrow),
-                      const Spacer(flex: 2),
-                      _buildPlayerStatus(battleManager.player, overlayColor, isNarrow),
-                      const Spacer(),
+                      _buildOpponentStatus(context, battleManager.opponent, overlayColor, isNarrow),
+                      const SizedBox(height: 4),
+                      _buildPlayerStatus(context, battleManager.player, overlayColor, isNarrow),
+                      const SizedBox(height: 2),
                       _buildMessageBox(context, battleManager.battleLog, isNarrow),
                       if (battleManager.currentState == BattleState.waitingForInput)
                         _buildActionControls(context, battleManager, overlayColor, isNarrow),
@@ -270,142 +270,344 @@ class BattleScreenContent extends StatelessWidget {
     );
   }
 
-  Widget _buildOpponentStatus(BattleOrganism organism, Color barColor, bool isNarrow) {
+  Widget _buildOpponentStatus(BuildContext context, BattleOrganism organism, Color barColor, bool isNarrow) {
     final base = organism.organism.baseOrganism;
     final maxHp = organism.maxHealth;
     final hpRatio = maxHp > 0 ? organism.health / maxHp : 0.0;
-    final spriteSize = isNarrow ? 80.0 : 100.0;
+    final spriteSize = isNarrow ? 85.0 : 105.0;
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: isNarrow ? 8 : 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Container(
-            constraints: BoxConstraints(maxWidth: isNarrow ? 140 : 180),
-            padding: EdgeInsets.all(isNarrow ? 6 : 8),
-            decoration: BoxDecoration(
-              color: barColor,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.highlightColor, width: 2),
-              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.4), blurRadius: 6, offset: const Offset(2, 2))],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  base.name,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    fontSize: isNarrow ? 10 : 12,
-                    fontFamily: 'PressStart2P',
-                  ),
-                  textAlign: TextAlign.right,
-                  overflow: TextOverflow.ellipsis,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Container(
+                constraints: BoxConstraints(maxWidth: isNarrow ? 180 : 220),
+                padding: EdgeInsets.all(isNarrow ? 8 : 10),
+                decoration: BoxDecoration(
+                  color: barColor,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.highlightColor, width: 2),
+                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.4), blurRadius: 6, offset: const Offset(2, 2))],
                 ),
-                const SizedBox(height: 4),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
-                    value: hpRatio.clamp(0.0, 1.0),
-                    color: hpRatio > 0.5 ? const Color(0xFF4CAF50) : (hpRatio > 0.2 ? Colors.orange : Colors.red),
-                    backgroundColor: Colors.grey[800],
-                    minHeight: isNarrow ? 8 : 10,
-                  ),
-                ),
-                Text(
-                  'HP: ${organism.health}/$maxHp',
-                  style: TextStyle(color: Colors.white70, fontSize: isNarrow ? 9 : 11, fontFamily: 'PressStart2P'),
-                ),
-                if (organism.statusEffect.type != StatusEffectType.none)
-                  Container(
-                    margin: const EdgeInsets.only(top: 4),
-                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Colors.redAccent,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      base.name,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontSize: isNarrow ? 10 : 12,
+                        fontFamily: 'PressStart2P',
+                      ),
+                      textAlign: TextAlign.right,
+                    ),
+                    const SizedBox(height: 6),
+                    ClipRRect(
                       borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: hpRatio.clamp(0.0, 1.0),
+                        color: hpRatio > 0.5 ? const Color(0xFF4CAF50) : (hpRatio > 0.2 ? Colors.orange : Colors.red),
+                        backgroundColor: Colors.grey[800],
+                        minHeight: isNarrow ? 10 : 12,
+                      ),
                     ),
-                    child: Text(
-                      organism.statusEffect.name.toUpperCase(),
-                      style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
+                    const SizedBox(height: 4),
+                    Text(
+                      'HP: ${organism.health}/$maxHp',
+                      style: TextStyle(color: Colors.white70, fontSize: isNarrow ? 8 : 10, fontFamily: 'PressStart2P'),
                     ),
-                  ),
-              ],
-            ),
+                    if (organism.statusEffect.type != StatusEffectType.none)
+                      Container(
+                        margin: const EdgeInsets.only(top: 4),
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.redAccent,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          organism.statusEffect.name.toUpperCase(),
+                          style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 8),
-          _BattleSprite(organism: base, size: spriteSize),
+          const SizedBox(height: 4),
+          _BattleSprite(
+            organism: organism, 
+            size: spriteSize,
+            onLongPress: () => _showOrganismInfo(context, organism),
+            mirror: false,
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildPlayerStatus(BattleOrganism organism, Color barColor, bool isNarrow) {
+  Widget _buildPlayerStatus(BuildContext context, BattleOrganism organism, Color barColor, bool isNarrow) {
     final base = organism.organism.baseOrganism;
     final maxHp = organism.maxHealth;
     final hpRatio = maxHp > 0 ? organism.health / maxHp : 0.0;
-    final spriteSize = isNarrow ? 90.0 : 110.0;
+    final spriteSize = isNarrow ? 95.0 : 115.0;
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: isNarrow ? 8 : 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _BattleSprite(organism: base, size: spriteSize),
-          const SizedBox(width: 8),
-          Container(
-            constraints: BoxConstraints(maxWidth: isNarrow ? 140 : 180),
-            padding: EdgeInsets.all(isNarrow ? 6 : 8),
-            decoration: BoxDecoration(
-              color: barColor,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.highlightColor, width: 2),
-              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.4), blurRadius: 6, offset: const Offset(2, 2))],
+          _BattleSprite(
+            organism: organism, 
+            size: spriteSize,
+            onLongPress: () => _showOrganismInfo(context, organism),
+            mirror: true,
+          ),
+          const SizedBox(height: 4),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Container(
+                constraints: BoxConstraints(maxWidth: isNarrow ? 180 : 220),
+                padding: EdgeInsets.all(isNarrow ? 8 : 10),
+                decoration: BoxDecoration(
+                  color: barColor,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.highlightColor, width: 2),
+                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.4), blurRadius: 6, offset: const Offset(2, 2))],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      base.name,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontSize: isNarrow ? 10 : 12,
+                        fontFamily: 'PressStart2P',
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: hpRatio.clamp(0.0, 1.0),
+                        color: hpRatio > 0.5 ? const Color(0xFF4CAF50) : (hpRatio > 0.2 ? Colors.orange : Colors.red),
+                        backgroundColor: Colors.grey[800],
+                        minHeight: isNarrow ? 10 : 12,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'HP: ${organism.health}/$maxHp',
+                      style: TextStyle(color: Colors.white70, fontSize: isNarrow ? 8 : 10, fontFamily: 'PressStart2P'),
+                    ),
+                    if (organism.statusEffect.type != StatusEffectType.none)
+                      Container(
+                        margin: const EdgeInsets.only(top: 4),
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.redAccent,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          organism.statusEffect.name.toUpperCase(),
+                          style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showOrganismInfo(BuildContext context, BattleOrganism bo) {
+    final base = bo.organism.baseOrganism;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.secondaryButtonColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: AppColors.highlightColor, width: 2),
+        ),
+        titlePadding: EdgeInsets.zero,
+        title: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [AppColors.primaryButtonColor.withOpacity(0.8), AppColors.secondaryButtonColor],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  base.name,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    fontSize: isNarrow ? 10 : 12,
-                    fontFamily: 'PressStart2P',
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
+          ),
+          child: Text(
+            base.name,
+            style: const TextStyle(
+              color: AppColors.highlightColor, 
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              height: 1.2,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.visible,
+          ),
+        ),
+        contentPadding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Category
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.only(top: 4.0),
+                    child: Text('CATEGORY: ', style: TextStyle(color: Colors.white70, fontSize: 9, fontFamily: 'PressStart2P')),
                   ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
-                    value: hpRatio.clamp(0.0, 1.0),
-                    color: hpRatio > 0.5 ? const Color(0xFF4CAF50) : (hpRatio > 0.2 ? Colors.orange : Colors.red),
-                    backgroundColor: Colors.grey[800],
-                    minHeight: isNarrow ? 8 : 10,
+                  Expanded(
+                    child: Wrap(
+                      spacing: 4.0,
+                      runSpacing: 4.0,
+                      children: base.category.toUpperCase().split(',').map((cat) {
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryButtonColor.withOpacity(0.4),
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(color: AppColors.highlightColor.withOpacity(0.5)),
+                          ),
+                          child: Text(
+                            cat.trim(),
+                            style: const TextStyle(
+                              color: AppColors.highlightColor,
+                              fontSize: 9,
+                              fontFamily: 'PressStart2P',
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
                   ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              
+              // HP Section
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.green.withOpacity(0.3)),
                 ),
-                Text(
-                  'HP: ${organism.health}/$maxHp',
-                  style: TextStyle(color: Colors.white70, fontSize: isNarrow ? 9 : 11, fontFamily: 'PressStart2P'),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('HP', style: TextStyle(color: Colors.white, fontSize: 10, fontFamily: 'PressStart2P')),
+                    Text(
+                      '${bo.health}/${bo.maxHealth}',
+                      style: const TextStyle(color: Colors.green, fontSize: 10, fontFamily: 'PressStart2P', fontWeight: FontWeight.bold),
+                    ),
+                  ],
                 ),
-                if (organism.statusEffect.type != StatusEffectType.none)
+              ),
+              const SizedBox(height: 10),
+              
+              // Stat Boosts
+              const Text(
+                'STAT BOOSTS',
+                style: TextStyle(color: AppColors.highlightColor, fontSize: 9, fontFamily: 'PressStart2P'),
+              ),
+              const SizedBox(height: 6),
+              _buildStatRow('ATK', bo.attackStage > 0 ? '+${bo.attackStage}' : '${bo.attackStage}', Colors.orange),
+              _buildStatRow('DEF', bo.defenseStage > 0 ? '+${bo.defenseStage}' : '${bo.defenseStage}', Colors.blue),
+              _buildStatRow('SPD', bo.speedStage > 0 ? '+${bo.speedStage}' : '${bo.speedStage}', Colors.yellow),
+              
+              const SizedBox(height: 10),
+              const Divider(color: Colors.white24, height: 1),
+              const SizedBox(height: 10),
+              
+              // Status
+              Row(
+                children: [
+                  const Text('STATUS: ', style: TextStyle(color: Colors.white70, fontSize: 9, fontFamily: 'PressStart2P')),
                   Container(
-                    margin: const EdgeInsets.only(top: 4),
-                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
-                      color: Colors.redAccent,
+                      color: bo.statusEffect.type == StatusEffectType.none ? Colors.grey.withOpacity(0.3) : Colors.redAccent.withOpacity(0.3),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
-                      organism.statusEffect.name.toUpperCase(),
-                      style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
+                      bo.statusEffect.type == StatusEffectType.none ? "NONE" : bo.statusEffect.name.toUpperCase(),
+                      style: TextStyle(
+                        color: bo.statusEffect.type == StatusEffectType.none ? Colors.white70 : Colors.redAccent,
+                        fontSize: 9,
+                        fontFamily: 'PressStart2P',
+                      ),
                     ),
                   ),
-              ],
-            ),
+                ],
+              ),
+              
+              const SizedBox(height: 10),
+              const Divider(color: Colors.white24, height: 1),
+              const SizedBox(height: 10),
+              
+              // Ability
+              const Text(
+                'ABILITY',
+                style: TextStyle(color: AppColors.highlightColor, fontSize: 9, fontFamily: 'PressStart2P'),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                base.abilities.toUpperCase(),
+                style: const TextStyle(color: Colors.white, fontSize: 10, fontFamily: 'PressStart2P', fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                bo.ability?.description ?? 'No description available.',
+                style: const TextStyle(color: Colors.white70, fontSize: 9, height: 1.5),
+              ),
+            ],
           ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            style: TextButton.styleFrom(
+              backgroundColor: AppColors.primaryButtonColor.withOpacity(0.3),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            ),
+            child: const Text('OK', style: TextStyle(color: AppColors.highlightColor, fontFamily: 'PressStart2P', fontSize: 10)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatRow(String label, String value, Color color) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(color: Colors.white, fontSize: 10, fontFamily: 'PressStart2P')),
+          Text(value, style: TextStyle(color: color, fontSize: 10, fontFamily: 'PressStart2P', fontWeight: FontWeight.bold)),
         ],
       ),
     );
@@ -413,8 +615,8 @@ class BattleScreenContent extends StatelessWidget {
 
   Widget _buildMessageBox(BuildContext context, String message, bool isNarrow) {
     return Container(
-      margin: EdgeInsets.all(isNarrow ? 8 : 12),
-      padding: EdgeInsets.all(isNarrow ? 12 : 16),
+      margin: EdgeInsets.all(isNarrow ? 2 : 4),
+      padding: EdgeInsets.all(isNarrow ? 4 : 8),
       decoration: BoxDecoration(
         color: Colors.black.withOpacity(0.75),
         borderRadius: BorderRadius.circular(12),
@@ -444,8 +646,8 @@ class BattleScreenContent extends StatelessWidget {
 
   Widget _buildActionControls(BuildContext context, BattleManager battleManager, Color overlayColor, bool isNarrow) {
     return Container(
-      margin: EdgeInsets.fromLTRB(isNarrow ? 8 : 12, 0, isNarrow ? 8 : 12, isNarrow ? 12 : 16),
-      padding: EdgeInsets.all(isNarrow ? 10 : 12),
+      margin: EdgeInsets.fromLTRB(isNarrow ? 8 : 12, 0, isNarrow ? 8 : 12, isNarrow ? 4 : 6),
+      padding: EdgeInsets.all(isNarrow ? 8 : 10),
       decoration: BoxDecoration(
         color: overlayColor,
         borderRadius: BorderRadius.circular(12),
@@ -458,7 +660,7 @@ class BattleScreenContent extends StatelessWidget {
             'What will ${battleManager.player.organism.baseOrganism.name} do?',
             style: TextStyle(color: AppColors.highlightColor, fontSize: isNarrow ? 9 : 10, fontFamily: 'PressStart2P'),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 6),
           GridView.count(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -514,7 +716,7 @@ class BattleScreenContent extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue.shade700,
                     foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: isNarrow ? 10 : 12),
+                    padding: EdgeInsets.symmetric(vertical: isNarrow ? 8 : 10),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     elevation: 2,
                   ),
@@ -529,7 +731,7 @@ class BattleScreenContent extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red.shade700,
                     foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: isNarrow ? 10 : 12),
+                    padding: EdgeInsets.symmetric(vertical: isNarrow ? 8 : 10),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     elevation: 2,
                   ),
@@ -655,10 +857,17 @@ class BattleScreenContent extends StatelessWidget {
 }
 
 class _BattleSprite extends StatefulWidget {
-  final dynamic organism;
+  final BattleOrganism organism;
   final double size;
+  final VoidCallback? onLongPress;
+  final bool mirror;
 
-  const _BattleSprite({required this.organism, required this.size});
+  const _BattleSprite({
+    required this.organism, 
+    required this.size, 
+    this.onLongPress,
+    this.mirror = false,
+  });
 
   @override
   State<_BattleSprite> createState() => _BattleSpriteState();
@@ -675,7 +884,7 @@ class _BattleSpriteState extends State<_BattleSprite> {
   }
 
   String _getLocalPath() {
-    final fileName = widget.organism.name
+    final fileName = widget.organism.organism.baseOrganism.name
         .toString()
         .toLowerCase()
         .replaceAll(' ', '_')
@@ -698,7 +907,7 @@ class _BattleSpriteState extends State<_BattleSprite> {
       if (mounted) {
         setState(() {
           _imageSourceType = 'network';
-          _imagePath = widget.organism.sprite;
+          _imagePath = widget.organism.organism.baseOrganism.sprite;
         });
       }
     }
@@ -730,17 +939,25 @@ class _BattleSpriteState extends State<_BattleSprite> {
             errorBuilder: (context, error, stackTrace) => const Icon(Icons.pets, color: Colors.white54, size: 40),
           );
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.4),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.highlightColor.withOpacity(0.5)),
+    return GestureDetector(
+      onLongPress: widget.onLongPress,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.4),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.highlightColor.withOpacity(0.5)),
+          ),
+          child: widget.mirror 
+              ? Transform.flip(
+                  flipX: true,
+                  child: imageWidget,
+                )
+              : imageWidget,
         ),
-        child: imageWidget,
       ),
     );
   }
