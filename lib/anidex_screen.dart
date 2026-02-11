@@ -3,7 +3,8 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:animal_warfare/models/organism.dart'; // Ensure this path is correct
+import 'package:animal_warfare/models/organism.dart';
+import 'package:animal_warfare/models/ability.dart';
 import 'package:animal_warfare/local_auth_service.dart';
 import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/theme.dart'; 
@@ -380,8 +381,32 @@ Widget _buildOrganismTile(BuildContext context, Organism organism) {
                           // 🚨 EDITED: Use AppColors.highlightColor
                           const Divider(color: AppColors.highlightColor),
                           _buildSectionTitle('ABILITIES'),
-                          // Changed to use the standard text detail for abilities
-                          _buildTextDetail(organism.abilities),
+                          // --- Multi-Ability Support: Display all abilities ---
+                          ...(() {
+                            final abilityNames = organism.abilities.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty);
+                            if (abilityNames.isEmpty) return [const Text('No abilities.')];
+                            
+                            return abilityNames.map((name) {
+                              final ab = Ability.findByName(name);
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      ab?.name.toUpperCase() ?? name.toUpperCase(),
+                                      style: AppTextStyles.body(context, baseSize: 14, color: AppColors.highlightColor).copyWith(fontWeight: FontWeight.bold),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      ab?.description ?? 'No description available.',
+                                      style: AppTextStyles.small(context, baseSize: 12, color: Colors.white70),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }).toList();
+                          })(),
                           
                           // 🚨 EDITED: Use AppColors.highlightColor
                           const Divider(color: AppColors.highlightColor),

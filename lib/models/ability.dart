@@ -262,6 +262,11 @@ class Ability {
       magnitude: 2.0,
       conditions: ['weather_snow'],
     ),
+    Ability(
+      name: 'Cold-blooded',
+      description: 'Speed Raises by 1 stage during sunny weather and drops by 1 stage during rain or snow weather while entering the field.',
+      trigger: AbilityTrigger.onEntry,
+    ),
   ];
   
   static Ability? findByName(String name) {

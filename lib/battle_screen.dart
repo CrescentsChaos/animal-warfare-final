@@ -325,6 +325,9 @@ class _BattleScreenContentState extends State<BattleScreenContent> with TickerPr
               ],
             ),
           ),
+          // Ability Pop-up Overlay
+          if (battleManager.currentAbilityNotify != null)
+            _AbilityPopUp(notification: battleManager.currentAbilityNotify!),
         ],
       ),
     );
@@ -677,21 +680,29 @@ class _BattleScreenContentState extends State<BattleScreenContent> with TickerPr
               const Divider(color: Colors.white24, height: 1),
               const SizedBox(height: 10),
               
-              // Ability
+              // Abilities
               const Text(
-                'ABILITY',
+                'ABILITIES',
                 style: TextStyle(color: AppColors.highlightColor, fontSize: 9, fontFamily: 'PressStart2P'),
               ),
               const SizedBox(height: 6),
-              Text(
-                base.abilities.toUpperCase(),
-                style: const TextStyle(color: Colors.white, fontSize: 10, fontFamily: 'PressStart2P', fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                bo.ability?.description ?? 'No description available.',
-                style: const TextStyle(color: Colors.white70, fontSize: 9, height: 1.5),
-              ),
+              ...bo.abilities.map((ab) => Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      ab.name.toUpperCase(),
+                      style: const TextStyle(color: Colors.white, fontSize: 10, fontFamily: 'PressStart2P', fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      ab.description,
+                      style: const TextStyle(color: Colors.white70, fontSize: 9, height: 1.5),
+                    ),
+                  ],
+                ),
+              )).toList(),
             ],
           ),
         ),
@@ -750,7 +761,7 @@ class _BattleScreenContentState extends State<BattleScreenContent> with TickerPr
                   reverse: false,
                   child: TypewriterText(
                     message,
-                    speed: const Duration(milliseconds: 35),
+                    speed: const Duration(milliseconds: 50),
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: isNarrow ? 10 : 12,
@@ -1040,14 +1051,10 @@ class _BattleSpriteState extends State<_BattleSprite> {
   Widget build(BuildContext context) {
     final size = widget.size;
     if (_imageSourceType == null) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          width: size,
-          height: size,
-          color: Colors.black.withOpacity(0.5),
-          child: const Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))),
-        ),
+      return SizedBox(
+        width: size,
+        height: size,
+        child: const Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))),
       );
     }
     final imageWidget = _imageSourceType == 'local'
@@ -1064,23 +1071,15 @@ class _BattleSpriteState extends State<_BattleSprite> {
 
     return GestureDetector(
       onLongPress: widget.onLongPress,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.4),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.highlightColor.withOpacity(0.5)),
-          ),
-          child: widget.mirror 
-              ? Transform.flip(
-                  flipX: true,
-                  child: imageWidget,
-                )
-              : imageWidget,
-        ),
+      child: SizedBox(
+        width: size,
+        height: size,
+        child: widget.mirror 
+            ? Transform.flip(
+                flipX: true,
+                child: imageWidget,
+              )
+            : imageWidget,
       ),
     );
   }
@@ -1091,7 +1090,7 @@ class TypewriterText extends StatefulWidget {
   final TextStyle? style;
   final Duration speed;
   
-  const TypewriterText(this.text, {super.key, this.style, this.speed = const Duration(milliseconds: 30)});
+  const TypewriterText(this.text, {super.key, this.style, this.speed = const Duration(milliseconds: 50)});
 
   @override
   State<TypewriterText> createState() => _TypewriterTextState();
@@ -1151,5 +1150,118 @@ class _TypewriterTextState extends State<TypewriterText> {
   @override
   Widget build(BuildContext context) {
     return Text(_displayedText, style: widget.style);
+  }
+}
+
+class _AbilityPopUp extends StatefulWidget {
+  final AbilityNotification notification;
+
+  const _AbilityPopUp({required this.notification});
+
+  @override
+  State<_AbilityPopUp> createState() => _AbilityPopUpState();
+}
+
+class _AbilityPopUpState extends State<_AbilityPopUp> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _slideAnimation;
+  late Animation<double> _opacityAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+
+    _slideAnimation = Tween<double>(
+      begin: widget.notification.isPlayer ? -200.0 : 200.0,
+      end: 0.0,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutCubic,
+    ));
+
+    _opacityAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeIn,
+    ));
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      top: widget.notification.isPlayer 
+          ? MediaQuery.of(context).size.height * 0.7
+          : MediaQuery.of(context).size.height * 0.25,
+      left: widget.notification.isPlayer ? 0 : null,
+      right: widget.notification.isPlayer ? null : 0,
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          return Opacity(
+            opacity: _opacityAnimation.value,
+            child: Transform.translate(
+              offset: Offset(_slideAnimation.value, 0),
+              child: child,
+            ),
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.8),
+            border: Border.all(color: AppColors.highlightColor, width: 2),
+            borderRadius: BorderRadius.horizontal(
+              left: widget.notification.isPlayer ? Radius.zero : const Radius.circular(20),
+              right: widget.notification.isPlayer ? const Radius.circular(20) : Radius.zero,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.5),
+                blurRadius: 10,
+                offset: const Offset(4, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: widget.notification.isPlayer ? CrossAxisAlignment.start : CrossAxisAlignment.end,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "${widget.notification.animalName}'S",
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 10,
+                  fontFamily: 'PressStart2P',
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                widget.notification.abilityName.toUpperCase(),
+                style: const TextStyle(
+                  color: AppColors.highlightColor,
+                  fontSize: 14,
+                  fontFamily: 'PressStart2P',
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

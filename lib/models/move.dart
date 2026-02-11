@@ -145,17 +145,21 @@ class Move {
     this.multiplierCondition = '',
     this.conditionalMultiplier = 1.0,
     this.failIfTargetNotAttacking = false,
-  });
+    bool? isContact,
+  }) : isContact = isContact ?? (baseDamage > 0);
+
+  final bool isContact;
 
   // Helper for multi-turn moves
   bool get isMultiTurn => effect.type == MoveEffectType.charge || effect.type == MoveEffectType.recharge || effect.type == MoveEffectType.semiInvulnerable;
 
   // Constructor for loading Move from JSON
   factory Move.fromJson(Map<String, dynamic> json) {
+    final baseDamage = json['baseDamage'] as int? ?? 0;
     return Move(
       name: json['name'] as String,
       description: json['description'] as String,
-      baseDamage: json['baseDamage'] as int,
+      baseDamage: baseDamage,
       accuracy: json['accuracy'] as int? ?? 100,
       effect: json['effect'] != null
           ? MoveEffect.fromJson(json['effect'] as Map<String, dynamic>)
@@ -176,6 +180,7 @@ class Move {
       multiplierCondition: json['multiplierCondition'] as String? ?? '',
       conditionalMultiplier: (json['conditionalMultiplier'] as num?)?.toDouble() ?? 1.0,
       failIfTargetNotAttacking: json['failIfTargetNotAttacking'] as bool? ?? false,
+      isContact: json['isContact'] as bool?,
     );
   }
   
@@ -194,7 +199,7 @@ class Move {
     Move(name: 'Dive', description: 'A strong wing attack.', baseDamage: 50, type: ElementalType.flying, stamina: 10, effect: MoveEffect(type: MoveEffectType.statusStun, value: 1, chance: 30),),
     Move(name: 'Sonic Slash', description: 'A strong wing attack.', baseDamage: 70, type: ElementalType.flying, stamina: 5, effect: MoveEffect(type: MoveEffectType.statusStun, value: 1, chance: 30),),
     Move(name: 'Glide', description: 'A strong wing attack.', baseDamage: 40, type: ElementalType.flying, stamina: 20, effect: MoveEffect(type: MoveEffectType.statusStun, value: 1, chance: 20),),
-    Move(name: 'Venom Sting', description: 'May poison the foe.', baseDamage: 8, type: ElementalType.venomous, stamina: 25,
+    Move(name: 'Venom Sting', description: 'May poison the foe.', baseDamage: 8, type: ElementalType.venomous, stamina: 25, isContact: false,
       effect: MoveEffect(type: MoveEffectType.statusPoison, value: 3, chance: 30), // 30% chance
     ),
     Move(name: 'Chomp', description: 'A basic attack.', baseDamage: 30, type: ElementalType.aquatic, stamina: 25),
@@ -220,10 +225,10 @@ class Move {
     Move(name: 'Water Gun', description: 'Squirts water to attack.', baseDamage: 40, type: ElementalType.aquatic, stamina: 25),
     
     // Status Effect Moves
-    Move(name: 'Ember', description: 'May burn the foe.', baseDamage: 40, type: ElementalType.normal, stamina: 20, 
+    Move(name: 'Ember', description: 'May burn the foe.', baseDamage: 40, type: ElementalType.normal, stamina: 20, isContact: false,
       effect: MoveEffect(type: MoveEffectType.statusBurn, value: 3, chance: 15), // 15% chance
     ),
-    Move(name: 'Thunder Shock', description: 'May paralyze the foe.', baseDamage: 40, type: ElementalType.normal, stamina: 20, 
+    Move(name: 'Thunder Shock', description: 'May paralyze the foe.', baseDamage: 40, type: ElementalType.normal, stamina: 20, isContact: false,
       effect: MoveEffect(type: MoveEffectType.statusParalysis, value: 3, chance: 15), 
     ),
     Move(name: 'Sing', description: 'Lulls the foe to sleep.', baseDamage: 0, accuracy: 55, type: ElementalType.social, stamina: 15,
@@ -255,18 +260,18 @@ class Move {
     ),
     
     // NEW COMPLEX MOVES
-    Move(name: 'Giga Drain', description: 'A nutrient-draining attack. The user\'s HP is restored by half the damage taken by the target.', baseDamage: 75, drainPercent: 0.5, type: ElementalType.parasite, stamina: 10),
+    Move(name: 'Giga Drain', description: 'A nutrient-draining attack. The user\'s HP is restored by half the damage taken by the target.', baseDamage: 75, drainPercent: 0.5, type: ElementalType.parasite, stamina: 10, isContact: false),
     Move(name: 'Dig', description: 'The user burrows into the ground, then attacks on the next turn.', baseDamage: 80, type: ElementalType.burrowing, stamina: 10, effect: MoveEffect(type: MoveEffectType.semiInvulnerable, stat: 'underground')),
     Move(name: 'Rest', description: 'The user goes to sleep for two turns. This fully restores the user\'s HP.', baseDamage: 0, type: ElementalType.normal, stamina: 5, effect: MoveEffect(type: MoveEffectType.heal, target: 'self', value: 999)), // Logic in BattleManager for Sleep
     Move(name: 'Protect', description: 'Enables the user to evade all attacks. Its chance of failing rises if it is used in succession.', baseDamage: 0, type: ElementalType.normal, stamina: 10, effect: MoveEffect(type: MoveEffectType.protect)),
     Move(name: 'Sucker Punch', description: 'This move enables the user to attack first. This move fails if the target is not preparing an attack.', baseDamage: 70, priority: 1, type: ElementalType.predator, stamina: 5, failIfTargetNotAttacking: true),
     Move(name: 'Shell Smash', description: 'The user shatters its shell, which sharply raises Attack and Speed but lowers Defense.', baseDamage: 0, type: ElementalType.armored, stamina: 15, effect: MoveEffect(type: MoveEffectType.multiStatChange, stat: 'attack:2,speed:2,defense:-1')),
-    Move(name: 'Ancient Power', description: 'The user attacks with a prehistoric power. This may also raise all the user\'s stats at once.', baseDamage: 60, type: ElementalType.normal, stamina: 5, effect: MoveEffect(type: MoveEffectType.statChangeChance, stat: 'attack:1,defense:1,speed:1', chance: 10)),
+    Move(name: 'Ancient Power', description: 'The user attacks with a prehistoric power. This may also raise all the user\'s stats at once.', baseDamage: 60, type: ElementalType.normal, stamina: 5, isContact: false, effect: MoveEffect(type: MoveEffectType.statChangeChance, stat: 'attack:1,defense:1,speed:1', chance: 10)),
     Move(name: 'Assurance', description: 'If the target has already taken some damage in the same turn, this move\'s power is doubled.', baseDamage: 60, type: ElementalType.normal, stamina: 10, multiplierCondition: 'target_damaged', conditionalMultiplier: 2.0),
     Move(name: 'Baneful Bunker', description: 'In addition to protecting the user from attacks, this move also poisons any attacker that makes direct contact.', baseDamage: 0, type: ElementalType.venomous, stamina: 10, effect: MoveEffect(type: MoveEffectType.protect, stat: 'poison')),
-    Move(name: 'Barb Barrage', description: 'The user launches countless toxic spikes to inflict damage. This may also poison the target.', baseDamage: 60, type: ElementalType.venomous, stamina: 10, effect: MoveEffect(type: MoveEffectType.statusPoison, chance: 30), multiplierCondition: 'target_poisoned', conditionalMultiplier: 2.0),
+    Move(name: 'Barb Barrage', description: 'The user launches countless toxic spikes to inflict damage. This may also poison the target.', baseDamage: 60, type: ElementalType.venomous, stamina: 10, isContact: false, effect: MoveEffect(type: MoveEffectType.statusPoison, chance: 30), multiplierCondition: 'target_poisoned', conditionalMultiplier: 2.0),
     Move(name: 'Belly Drum', description: 'The user maximizes its Attack stat in exchange for HP equal to half its max HP.', baseDamage: 0, type: ElementalType.social, stamina: 10, effect: MoveEffect(type: MoveEffectType.multiStatChange, stat: 'attack:6', hpCostPercent: 0.5)),
-    Move(name: 'Hyper Beam', description: 'The target is attacked with a powerful beam. The user can\'t move on the next turn.', baseDamage: 150, type: ElementalType.normal, stamina: 5, effect: MoveEffect(type: MoveEffectType.recharge)),
+    Move(name: 'Hyper Beam', description: 'The target is attacked with a powerful beam. The user can\'t move on the next turn.', baseDamage: 150, type: ElementalType.normal, stamina: 5, isContact: false, effect: MoveEffect(type: MoveEffectType.recharge)),
     Move(name: 'Geomancy', description: 'The user absorbs energy and sharply raises its stats on the next turn.', baseDamage: 0, type: ElementalType.social, stamina: 10, effect: MoveEffect(type: MoveEffectType.charge, stat: 'attack:2,defense:2,speed:2')),
     Move(name: 'Body Press', description: 'The user attacks by slamming its body into the target. The higher its Defense, the more damage it can inflict.', baseDamage: 80, type: ElementalType.armored, stamina: 10, damageStat: 'defense'),
     Move(name: 'Bulk Up', description: 'The user tenses its muscles to bulk up its body, raising both Attack and Defense stats.', baseDamage: 0, type: ElementalType.normal, stamina: 20, effect: MoveEffect(type: MoveEffectType.multiStatChange, stat: 'attack:1,defense:1')),

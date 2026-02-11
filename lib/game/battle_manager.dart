@@ -14,6 +14,7 @@ import 'package:animal_warfare/game/biome_weather.dart';
 
 // --- Enums ---
 enum BattleState {
+  intro,           // New state for initialization sequence
   waitingForInput, // Player must select Move, Capture, or Run
   playerTurn,
   opponentTurn,
@@ -31,7 +32,7 @@ enum BattleResult {
 // --- BattleOrganism: Holds state for battle ---
 class BattleOrganism {
   final CapturedOrganism organism;
-  final Ability? ability;
+  final List<Ability> abilities;
   int health;
   
   // Dynamic battle stats
@@ -52,7 +53,14 @@ class BattleOrganism {
 
   BattleOrganism(this.organism)
       : health = organism.currentHealth.clamp(0, organism.maxHealth),
-        ability = Ability.findByName(organism.baseOrganism.abilities);
+        abilities = organism.baseOrganism.abilities
+            .split(',')
+            .map((s) => s.trim())
+            .where((s) => s.isNotEmpty)
+            .map((name) => Ability.findByName(name))
+            .where((a) => a != null)
+            .cast<Ability>()
+            .toList();
 
   List<ElementalType>? _battleTypes;
   List<ElementalType> get types => _battleTypes ?? organism.baseOrganism.elementalTypes;
@@ -66,21 +74,30 @@ class BattleOrganism {
   }
 
   double _getAbilityStatMultiplier(String statName) {
-    if (ability == null || ability!.trigger != AbilityTrigger.onCalculateStat || ability!.targetStat != statName) {
-      return 1.0;
+    double totalMultiplier = 1.0;
+
+    for (final ability in abilities) {
+      if (ability.trigger != AbilityTrigger.onCalculateStat || ability.targetStat != statName) {
+        continue;
+      }
+
+      // Check conditions
+      bool conditionMet = true;
+      for (final condition in ability.conditions) {
+        if (condition == 'statused' && statusEffect.type == StatusEffectType.none) conditionMet = false;
+        if (condition == 'hp_below_30' && health / maxHealth > 0.3) conditionMet = false;
+        if (condition == 'weather_sandstorm' && !(BattleManager.currentWeatherGlobal?.weather == Weather.sandstorm)) conditionMet = false;
+        if (condition == 'weather_sun' && !(BattleManager.currentWeatherGlobal?.weather == Weather.heatwave)) conditionMet = false;
+        if (condition == 'weather_rain' && !(BattleManager.currentWeatherGlobal?.weather == Weather.rain)) conditionMet = false;
+        if (condition == 'weather_snow' && !(BattleManager.currentWeatherGlobal?.weather == Weather.snow || BattleManager.currentWeatherGlobal?.weather == Weather.blizzard)) conditionMet = false;
+      }
+
+      if (conditionMet) {
+        totalMultiplier *= ability.magnitude;
+      }
     }
 
-    // Check conditions
-    for (final condition in ability!.conditions) {
-      if (condition == 'statused' && statusEffect.type == StatusEffectType.none) return 1.0;
-      if (condition == 'hp_below_30' && health / maxHealth > 0.3) return 1.0;
-      if (condition == 'weather_sandstorm' && !(BattleManager.currentWeatherGlobal?.weather == Weather.sandstorm)) return 1.0;
-      if (condition == 'weather_sun' && !(BattleManager.currentWeatherGlobal?.weather == Weather.heatwave)) return 1.0;
-      if (condition == 'weather_rain' && !(BattleManager.currentWeatherGlobal?.weather == Weather.rain)) return 1.0;
-      if (condition == 'weather_snow' && !(BattleManager.currentWeatherGlobal?.weather == Weather.snow || BattleManager.currentWeatherGlobal?.weather == Weather.blizzard)) return 1.0;
-    }
-
-    return ability!.magnitude;
+    return totalMultiplier;
   }
 
   int get currentAttack {
@@ -153,6 +170,18 @@ class BattleTurn {
   BattleTurn(this.turnNumber);
 }
 
+class AbilityNotification {
+  final String animalName;
+  final String abilityName;
+  final bool isPlayer;
+
+  AbilityNotification({
+    required this.animalName,
+    required this.abilityName,
+    required this.isPlayer,
+  });
+}
+
 // --- BattleManager: The Core State Machine ---
 class BattleManager extends ChangeNotifier {
   final CapturedOrganism playerOrganism;
@@ -173,8 +202,9 @@ class BattleManager extends ChangeNotifier {
   int weatherTurnsLeft = 0;
   int terrainTurnsLeft = 0;
 
-  BattleState currentState = BattleState.waitingForInput;
+  BattleState currentState = BattleState.intro;
   String battleLog = ''; // Current/Latest message
+  AbilityNotification? currentAbilityNotify;
   
   // LOGGING REFACTOR
   int currentTurn = 1;
@@ -247,15 +277,27 @@ class BattleManager extends ChangeNotifier {
     // Initialize first turn
     turnHistory.add(BattleTurn(currentTurn));
 
-    _addToLog('A wild ${opponent.organism.name} appeared! Go, ${player.organism.name}!'); 
-    
     currentWeatherGlobal = currentWeather;
     currentTerrainGlobal = currentTerrain;
 
-    _initializeBattle(biomeName);
+    // Start initialization sequence asynchronously
+    _initializeSequence(biomeName);
+  }
+
+  Future<void> _initializeSequence(String? biomeName) async {
+    _addToLog('A wild ${opponent.organism.name} appeared! Go, ${player.organism.name}!');
+    notifyListeners();
+    await Future.delayed(const Duration(milliseconds: 3000));
+
+    await _initializeBattle(biomeName);
+    
+    // Transition to waiting for input
+    currentState = BattleState.waitingForInput;
+    _addToLog('What will ${player.organism.name} do?');
+    notifyListeners();
   }
   
-  void _initializeBattle(String? biomeName) {
+  Future<void> _initializeBattle(String? biomeName) async {
     // 0. Apply biome weather/terrain if no ability overrides
     if (biomeName != null && biomeName.isNotEmpty) {
       final biomeWeather = BiomeWeatherTable.getRandomWeatherForBiome(biomeName);
@@ -270,39 +312,86 @@ class BattleManager extends ChangeNotifier {
     }
     
     // 1. Check for Auto-Weather/Terrain/Intimidate (abilities can override)
-    _checkEntranceAbility(player, opponent);
-    _checkEntranceAbility(opponent, player);
+    await _checkEntranceAbility(player, opponent);
+    await _checkEntranceAbility(opponent, player);
     
     // 2. Speed Check
     if (player.currentSpeed < opponent.currentSpeed) {
       _appendToLog('\n${opponent.organism.name} is faster and will attack first!');
+      notifyListeners();
+      await Future.delayed(const Duration(milliseconds: 3000));
     }
   }
 
-  void _checkEntranceAbility(BattleOrganism user, BattleOrganism target) {
-    if (user.ability == null || user.ability!.trigger != AbilityTrigger.onEntry) return;
-    
-    switch (user.ability!.effectType) {
-      case AbilityEffectType.weatherChange:
-        if (user.ability!.value == 'rain') _setWeather(Weather.rain);
-        else if (user.ability!.value == 'sun') _setWeather(Weather.heatwave);
-        else if (user.ability!.value == 'hail') _setWeather(Weather.blizzard);
-        else if (user.ability!.value == 'sandstorm') _setWeather(Weather.sandstorm);
-        break;
-      case AbilityEffectType.terrainChange:
-         if (user.ability!.value == 'electric') _setTerrain(Terrain.electric);
-         else if (user.ability!.value == 'grassy') _setTerrain(Terrain.grassy);
-         else if (user.ability!.value == 'misty') _setTerrain(Terrain.misty);
-         else if (user.ability!.value == 'psychic') _setTerrain(Terrain.psychic);
-         break;
-      case AbilityEffectType.statChange:
-        _applyStatChange(user.ability!.targetStat == 'attack' ? target : user, 
-            user.ability!.targetStat, user.ability!.magnitude.toInt());
-        _appendToLog('\n${user.organism.baseOrganism.name}\'s ${user.ability!.name} triggered!');
-        break;
-      default:
-        break;
+  Future<void> _checkEntranceAbility(BattleOrganism user, BattleOrganism target) async {
+    for (final ability in user.abilities) {
+      if (ability.trigger != AbilityTrigger.onEntry) continue;
+      
+      bool triggered = false;
+      switch (ability.effectType) {
+        case AbilityEffectType.weatherChange:
+          triggered = true;
+          await _notifyAbilityTrigger(user, ability);
+          if (ability.value == 'rain') _setWeather(Weather.rain);
+          else if (ability.value == 'sun') _setWeather(Weather.heatwave);
+          else if (ability.value == 'hail') _setWeather(Weather.blizzard);
+          else if (ability.value == 'sandstorm') _setWeather(Weather.sandstorm);
+          break;
+        case AbilityEffectType.terrainChange:
+           triggered = true;
+           await _notifyAbilityTrigger(user, ability);
+           if (ability.value == 'electric') _setTerrain(Terrain.electric);
+           else if (ability.value == 'grassy') _setTerrain(Terrain.grassy);
+           else if (ability.value == 'misty') _setTerrain(Terrain.misty);
+           else if (ability.value == 'psychic') _setTerrain(Terrain.psychic);
+           break;
+        case AbilityEffectType.statChange:
+          triggered = true;
+          await _notifyAbilityTrigger(user, ability);
+          await _applyStatChange(ability.targetStat == 'attack' ? target : user, 
+              ability.targetStat, ability.magnitude.toInt());
+          notifyListeners();
+          await Future.delayed(const Duration(milliseconds: 3000));
+          break;
+        default:
+          if (ability.name == 'Cold-blooded') {
+            final w = currentWeatherGlobal?.weather ?? Weather.none;
+            int stageChange = 0;
+            
+            if (w == Weather.heatwave) {
+              stageChange = 1;
+            } else if (w == Weather.rain || w == Weather.heavyRain || w == Weather.drizzle || 
+                       w == Weather.snow || w == Weather.blizzard || w == Weather.thunderstorm) {
+              stageChange = -1;
+            }
+  
+            if (stageChange != 0) {
+              triggered = true;
+              await _notifyAbilityTrigger(user, ability);
+              await _applyStatChange(user, 'speed', stageChange);
+              notifyListeners();
+              await Future.delayed(const Duration(milliseconds: 3000));
+            }
+          }
+          break;
+      }
     }
+  }
+
+  Future<void> _notifyAbilityTrigger(BattleOrganism user, Ability ability) async {
+    final isPlayer = user == player;
+    currentAbilityNotify = AbilityNotification(
+      animalName: user.organism.baseOrganism.name,
+      abilityName: ability.name,
+      isPlayer: isPlayer,
+    );
+    
+    _addToLog("${user.organism.baseOrganism.name}'s ${ability.name}!");
+    notifyListeners();
+    await Future.delayed(const Duration(milliseconds: 3000));
+    
+    currentAbilityNotify = null;
+    notifyListeners();
   }
 
   void _setWeather(Weather w, [int duration = 5]) {
@@ -364,15 +453,19 @@ class BattleManager extends ChangeNotifier {
     int opponentPriority = opponentMove.priority;
 
     // Gale Wings check
-    if (player.ability?.name == 'Gale Wings' && 
-        player.health == player.maxHealth && 
-        move.type == ElementalType.flying) {
-      playerPriority += (player.ability!.magnitude).toInt();
+    for (final ab in player.abilities) {
+      if (ab.name == 'Gale Wings' && 
+          player.health == player.maxHealth && 
+          move.type == ElementalType.flying) {
+        playerPriority += ab.magnitude.toInt();
+      }
     }
-    if (opponent.ability?.name == 'Gale Wings' && 
-        opponent.health == opponent.maxHealth && 
-        opponentMove.type == ElementalType.flying) {
-      opponentPriority += (opponent.ability!.magnitude).toInt();
+    for (final ab in opponent.abilities) {
+      if (ab.name == 'Gale Wings' && 
+          opponent.health == opponent.maxHealth && 
+          opponentMove.type == ElementalType.flying) {
+        opponentPriority += ab.magnitude.toInt();
+      }
     }
 
     if (playerPriority > opponentPriority) {
@@ -479,7 +572,13 @@ class BattleManager extends ChangeNotifier {
     await Future.delayed(const Duration(milliseconds: 2500));
 
     // --- Ability Triggers: onCalculateDamage (Self) ---
-    // (Already handled in damageCalc for Adaptability)
+    for (final ab in attacker.abilities) {
+      if (ab.trigger == AbilityTrigger.onCalculateDamage) {
+         if (ab.name == 'Adaptability' && attacker.types.contains(move.type)) {
+           // Handled below in STAB
+         }
+      }
+    }
 
     // 1. Accuracy Check (Blindness + Weather affects accuracy)
     int accuracy = move.accuracy;
@@ -522,7 +621,7 @@ class BattleManager extends ChangeNotifier {
        if (opponentMove == null || opponentMove.baseDamage == 0) {
          _addToLog('...but it failed!');
          notifyListeners();
-         await Future.delayed(const Duration(milliseconds: 2000));
+         await Future.delayed(const Duration(milliseconds: 3000));
          return;
        }
     }
@@ -570,7 +669,11 @@ class BattleManager extends ChangeNotifier {
           }
 
           // Battle Armor check
-          if (defender.ability?.name == 'Battle Armor') {
+          bool hasBattleArmor = false;
+          for (final ab in defender.abilities) {
+            if (ab.name == 'Battle Armor') hasBattleArmor = true;
+          }
+          if (hasBattleArmor) {
              isCrit = false;
           }
           
@@ -620,8 +723,10 @@ class BattleManager extends ChangeNotifier {
           // STAB
           if (attacker.types.contains(move.type)) {
             double stabBonus = 1.5;
-            if (attacker.ability?.name == 'Adaptability') {
-              stabBonus = attacker.ability!.magnitude;
+            for (final ab in attacker.abilities) {
+               if (ab.name == 'Adaptability') {
+                 stabBonus = ab.magnitude;
+               }
             }
             damageCalc *= stabBonus;
           }
@@ -649,28 +754,55 @@ class BattleManager extends ChangeNotifier {
             _addToLog('${attacker.organism.baseOrganism.name} took $recoilDamage recoil damage!');
           }
           // --- Ability Triggers: onDamageTaken ---
-          if (defender.ability != null && defender.ability!.trigger == AbilityTrigger.onDamageTaken) {
-            final ab = defender.ability!;
-            bool conditionMet = true;
-            for (final cond in ab.conditions) {
-               if (cond == 'crit' && !isCrit) conditionMet = false;
-               if (cond == 'hp_below_50' && (defender.health / defender.maxHealth >= 0.5 || oldHealth / defender.maxHealth < 0.5)) conditionMet = false;
-               if (cond == 'contact') {} // Trigger for contact moves
-            }
-
-            if (conditionMet) {
-                if (ab.effectType == AbilityEffectType.statChange) {
-                  _applyStatChange(defender, ab.targetStat, ab.magnitude.toInt());
-                  _appendToLog('\n${defender.organism.baseOrganism.name}\'s ${ab.name} triggered!');
-                } else if (ab.effectType == AbilityEffectType.typeChange) {
-                  defender.battleTypes = [move.type];
-                  _appendToLog('\n${defender.organism.baseOrganism.name} changed its type to ${move.type.toString().split('.').last}!');
-                } else if (ab.effectType == AbilityEffectType.statusChange && Random().nextDouble() < ab.chance) {
-                  if (attacker.statusEffect.type == StatusEffectType.none) {
-                     attacker.statusEffect = StatusEffect(type: StatusEffectType.poison);
-                     _appendToLog('\n${attacker.organism.baseOrganism.name} was poisoned by ${defender.ability!.name}!');
+          for (final ab in defender.abilities) {
+            if (ab.trigger == AbilityTrigger.onDamageTaken) {
+              bool conditionMet = true;
+              for (final cond in ab.conditions) {
+                 if (cond == 'crit' && !isCrit) conditionMet = false;
+                 if (cond == 'hp_below_50' && (defender.health / defender.maxHealth >= 0.5 || oldHealth / defender.maxHealth < 0.5)) conditionMet = false;
+                 if (cond == 'contact' && !move.isContact) conditionMet = false;
+              }
+  
+              if (conditionMet) {
+                  if (ab.effectType == AbilityEffectType.statChange) {
+                    await _notifyAbilityTrigger(defender, ab);
+                    await _applyStatChange(defender, ab.targetStat, ab.magnitude.toInt());
+                  } else if (ab.effectType == AbilityEffectType.typeChange) {
+                    await _notifyAbilityTrigger(defender, ab);
+                    defender.battleTypes = [move.type];
+                    _addToLog('${defender.organism.baseOrganism.name} changed its type to ${move.type.toString().split('.').last}!');
+                    notifyListeners();
+                    await Future.delayed(const Duration(milliseconds: 3000));
+                  } else if (ab.effectType == AbilityEffectType.statusChange && Random().nextDouble() < ab.chance) {
+                    if (attacker.statusEffect.type == StatusEffectType.none) {
+                       await _notifyAbilityTrigger(defender, ab);
+                       attacker.statusEffect = StatusEffect(type: StatusEffectType.poison);
+                       _addToLog('${attacker.organism.baseOrganism.name} was poisoned!');
+                       notifyListeners();
+                       await Future.delayed(const Duration(milliseconds: 3000));
+                    }
                   }
+              }
+            }
+          }
+
+          // --- Ability Triggers: onDamageDealt ---
+          for (final ab in attacker.abilities) {
+            if (ab.trigger == AbilityTrigger.onDamageDealt) {
+              bool conditionMet = true;
+              for (final cond in ab.conditions) {
+                if (cond == 'contact' && !move.isContact) conditionMet = false;
+              }
+
+              if (conditionMet && ab.effectType == AbilityEffectType.statusChange && Random().nextDouble() < ab.chance) {
+                if (defender.statusEffect.type == StatusEffectType.none) {
+                  await _notifyAbilityTrigger(attacker, ab);
+                  defender.statusEffect = StatusEffect(type: StatusEffectType.poison);
+                  _addToLog('${defender.organism.baseOrganism.name} was poisoned!');
+                  notifyListeners();
+                  await Future.delayed(const Duration(milliseconds: 3000));
                 }
+              }
             }
           }
           
@@ -803,51 +935,58 @@ class BattleManager extends ChangeNotifier {
       case MoveEffectType.statusStun:
       case MoveEffectType.statusPoison:
         if (target.statusEffect.type == StatusEffectType.none) {
-           // Mapping
-           var statusType = StatusEffectType.none;
-           if (effect.type == MoveEffectType.statusBurn) statusType = StatusEffectType.burn;
-           else if (effect.type == MoveEffectType.statusSleep) statusType = StatusEffectType.sleep;
-           else if (effect.type == MoveEffectType.statusParalysis) statusType = StatusEffectType.paralysis;
-           else if (effect.type == MoveEffectType.statusFreeze) statusType = StatusEffectType.freeze;
-           else if (effect.type == MoveEffectType.statusBleed) statusType = StatusEffectType.bleed;
-           else if (effect.type == MoveEffectType.statusConfusion) statusType = StatusEffectType.confusion;
-           else if (effect.type == MoveEffectType.statusBlind) statusType = StatusEffectType.blind;
-           else if (effect.type == MoveEffectType.statusRegen) statusType = StatusEffectType.regen;
-           else if (effect.type == MoveEffectType.statusVulnerable) statusType = StatusEffectType.vulnerable;
-           else if (effect.type == MoveEffectType.statusStun) statusType = StatusEffectType.stun;
-           else if (effect.type == MoveEffectType.statusPoison) statusType = StatusEffectType.poison;
-
-          // --- Ability Trigger: onStatusAttempt (Prevention) ---
-          if (target.ability != null && target.ability!.trigger == AbilityTrigger.onStatusAttempt) {
-             if (target.ability!.effectType == AbilityEffectType.preventStatus && 
-                 target.ability!.value == statusType.toString().split('.').last) {
-               _appendToLog('\n${target.organism.baseOrganism.name}\'s ${target.ability!.name} prevents status!');
-               return;
-             }
+          // --- 1. Consolidate Status Mapping ---
+          StatusEffectType statusType;
+          switch (effect.type) {
+            case MoveEffectType.statusPoison: statusType = StatusEffectType.poison; break;
+            case MoveEffectType.statusBurn: statusType = StatusEffectType.burn; break;
+            case MoveEffectType.statusSleep: statusType = StatusEffectType.sleep; break;
+            case MoveEffectType.statusParalysis: statusType = StatusEffectType.paralysis; break;
+            case MoveEffectType.statusFreeze: statusType = StatusEffectType.freeze; break;
+            case MoveEffectType.statusBleed: statusType = StatusEffectType.bleed; break;
+            case MoveEffectType.statusConfusion: statusType = StatusEffectType.confusion; break;
+            case MoveEffectType.statusBlind: statusType = StatusEffectType.blind; break;
+            case MoveEffectType.statusRegen: statusType = StatusEffectType.regen; break;
+            case MoveEffectType.statusVulnerable: statusType = StatusEffectType.vulnerable; break;
+            case MoveEffectType.statusStun: statusType = StatusEffectType.stun; break;
+            default: statusType = StatusEffectType.none;
           }
 
+          if (statusType == StatusEffectType.none) return;
+
+          // --- 2. Ability Trigger: onStatusAttempt (Prevention) ---
+          for (final ab in target.abilities) {
+            if (ab.trigger == AbilityTrigger.onStatusAttempt) {
+               if (ab.effectType == AbilityEffectType.preventStatus && 
+                   ab.value == statusType.toString().split('.').last) {
+                 await _notifyAbilityTrigger(target, ab);
+                 _addToLog('${target.organism.baseOrganism.name} prevented the status!');
+                 notifyListeners();
+                 await Future.delayed(const Duration(milliseconds: 3000));
+                 return;
+               }
+            }
+          }
+
+          // --- 3. Chance and Terrain Checks ---
           if (Random().nextInt(100) >= effect.chance) return;
 
           if (currentTerrain.terrain == Terrain.misty || (effect.type == MoveEffectType.statusSleep && currentTerrain.terrain == Terrain.electric)) {
             _appendToLog('\nThe terrain prevents the status condition!');
           } else {
-            // Map MoveEffectType to StatusEffectType
-            var statusType = StatusEffectType.none;
-            if (effect.type == MoveEffectType.statusBurn) statusType = StatusEffectType.burn;
-            else if (effect.type == MoveEffectType.statusSleep) statusType = StatusEffectType.sleep;
-            else if (effect.type == MoveEffectType.statusParalysis) statusType = StatusEffectType.paralysis;
-            else if (effect.type == MoveEffectType.statusFreeze) statusType = StatusEffectType.freeze;
-            else if (effect.type == MoveEffectType.statusBleed) statusType = StatusEffectType.bleed;
-            else if (effect.type == MoveEffectType.statusConfusion) statusType = StatusEffectType.confusion;
-            else if (effect.type == MoveEffectType.statusBlind) statusType = StatusEffectType.blind;
-            else if (effect.type == MoveEffectType.statusRegen) statusType = StatusEffectType.regen;
-            else if (effect.type == MoveEffectType.statusVulnerable) statusType = StatusEffectType.vulnerable;
-            else if (effect.type == MoveEffectType.statusStun) statusType = StatusEffectType.stun;
+            // Default durations: Major (Indefinite), Volatile (Fixed)
+            // Major: Poison, Burn, Paralysis, Freeze, Bleed
+            // Volatile/Fixed: Sleep (1-3), Stun (1), Regen (3-5), Confusion (3-5), Blind (3-5), Vulnerable (3-5)
+            int duration = -1; // Default to indefinite for major statuses
             
-            // Default durations: Sleep (1-3), Stun (1), Others (3-5)
-            int duration = 3 + Random().nextInt(3); // 3-5 turns default
-            if (effect.type == MoveEffectType.statusSleep) duration = 1 + Random().nextInt(3); // 1-3 turns
-            if (effect.type == MoveEffectType.statusStun) duration = 1;
+            if (statusType == StatusEffectType.sleep) duration = 1 + Random().nextInt(3);
+            else if (statusType == StatusEffectType.stun) duration = 1;
+            else if (statusType == StatusEffectType.regen || 
+                     statusType == StatusEffectType.confusion || 
+                     statusType == StatusEffectType.blind || 
+                     statusType == StatusEffectType.vulnerable) {
+              duration = 3 + Random().nextInt(3);
+            }
 
             final newStatus = StatusEffect(type: statusType, duration: duration); 
             target.statusEffect = newStatus;
@@ -870,17 +1009,17 @@ class BattleManager extends ChangeNotifier {
         else if (effect.stat == 'psychic') _setTerrain(Terrain.psychic);
         break;
       case MoveEffectType.statChange:
-        _applyStatChange(target, effect.stat, effect.value);
+        await _applyStatChange(target, effect.stat, effect.value);
         // 🚨 FIX: Reverting to baseOrganism
         _appendToLog('\n${target.organism.baseOrganism.name}\'s ${effect.stat} stage ${effect.value > 0 ? 'increased' : 'decreased'}!');
         break;
       case MoveEffectType.multiStatChange:
-        _applyStatChange(target, effect.stat, effect.value);
+        await _applyStatChange(target, effect.stat, effect.value);
         _appendToLog('\n${target.organism.baseOrganism.name}\'s ${effect.stat} stages changed!');
         break;
       case MoveEffectType.statChangeChance:
         if (Random().nextInt(100) < effect.chance) {
-          _applyStatChange(target, effect.stat, effect.value);
+          await _applyStatChange(target, effect.stat, effect.value);
           _appendToLog('\n${target.organism.baseOrganism.name}\'s ${effect.stat} stages increased!');
         }
         break;
@@ -901,7 +1040,7 @@ class BattleManager extends ChangeNotifier {
     
     // Generic logic for multi-stat changes triggered on second turn of charge
     if (attacker.chargingMove == null && move.effect.type == MoveEffectType.charge) {
-       _applyStatChange(attacker, move.effect.stat, move.effect.value);
+       await _applyStatChange(attacker, move.effect.stat, move.effect.value);
        _appendToLog('\n${attacker.organism.baseOrganism.name}\'s stats sharply rose!');
     }
     
@@ -912,7 +1051,7 @@ class BattleManager extends ChangeNotifier {
     }
 
     notifyListeners();
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 3000));
   }
 
   void _handleHPCost(BattleOrganism attacker, MoveEffect effect) {
@@ -924,31 +1063,34 @@ class BattleManager extends ChangeNotifier {
     }
   }
 
-  void _applyStatChange(BattleOrganism target, String stat, int value) {
+  Future<void> _applyStatChange(BattleOrganism target, String stat, int value) async {
     // --- Ability Trigger: onStatLoss (Prevention) ---
-    if (value < 0 && target.ability != null && target.ability!.trigger == AbilityTrigger.onStatLoss) {
-       if (target.ability!.effectType == AbilityEffectType.preventStatLoss) {
-         _appendToLog('\n${target.organism.baseOrganism.name}\'s ${target.ability!.name} prevents stat loss!');
-         return;
-       }
+    if (value < 0) {
+      for (final ab in target.abilities) {
+        if (ab.trigger == AbilityTrigger.onStatLoss && ab.effectType == AbilityEffectType.preventStatLoss) {
+          await _notifyAbilityTrigger(target, ab);
+          _addToLog('${target.organism.baseOrganism.name}\'s ${ab.name} prevents stat loss!');
+          return;
+        }
+      }
     }
 
     if (stat == 'all') {
-      _changeStat(target, 'attack', value);
-      _changeStat(target, 'defense', value);
-      _changeStat(target, 'speed', value);
+      await _changeStat(target, 'attack', value);
+      await _changeStat(target, 'defense', value);
+      await _changeStat(target, 'speed', value);
     } else {
       final stats = stat.split(',');
       for (final s in stats) {
         final pair = s.trim().split(':'); 
         final statName = pair[0];
         final statValue = pair.length > 1 ? int.tryParse(pair[1]) ?? value : value;
-        _changeStat(target, statName, statValue);
+        await _changeStat(target, statName, statValue);
       }
     }
   }
 
-  void _changeStat(BattleOrganism target, String statName, int value) {
+  Future<void> _changeStat(BattleOrganism target, String statName, int value) async {
     int oldStage = 0;
     if (statName == 'attack') oldStage = target.attackStage;
     else if (statName == 'defense') oldStage = target.defenseStage;
@@ -959,11 +1101,13 @@ class BattleManager extends ChangeNotifier {
     else if (statName == 'speed') target.speedStage = (target.speedStage + value).clamp(-6, 6);
     
     // --- Ability Trigger: onStatLoss (Reaction e.g. Defiant) ---
-    if (value < 0 && target.ability != null && target.ability!.trigger == AbilityTrigger.onStatLoss) {
-       if (target.ability!.effectType == AbilityEffectType.statChange) {
-         _applyStatChange(target, target.ability!.targetStat, target.ability!.magnitude.toInt());
-         _appendToLog('\n${target.organism.baseOrganism.name}\'s ${target.ability!.name} triggered!');
-       }
+    if (value < 0) {
+      for (final ab in target.abilities) {
+        if (ab.trigger == AbilityTrigger.onStatLoss && ab.effectType == AbilityEffectType.statChange) {
+          await _notifyAbilityTrigger(target, ab);
+          await _applyStatChange(target, ab.targetStat, ab.magnitude.toInt());
+        }
+      }
     }
   }
   
@@ -977,8 +1121,7 @@ class BattleManager extends ChangeNotifier {
         if (msg.isNotEmpty) {
           _addToLog(msg);
           notifyListeners();
-          notifyListeners();
-          await Future.delayed(const Duration(milliseconds: 1200));
+          await Future.delayed(const Duration(milliseconds: 3000));
         }
       }
       
@@ -986,7 +1129,7 @@ class BattleManager extends ChangeNotifier {
         _addToLog(currentWeather.endMessage);
         currentWeather = const WeatherEffect(weather: Weather.none);
         notifyListeners();
-        await Future.delayed(const Duration(milliseconds: 500));
+        await Future.delayed(const Duration(milliseconds: 3000));
       }
     }
     
@@ -997,7 +1140,7 @@ class BattleManager extends ChangeNotifier {
         _addToLog(currentTerrain.endMessage);
         currentTerrain = const TerrainEffect(terrain: Terrain.none);
         notifyListeners();
-        await Future.delayed(const Duration(milliseconds: 500));
+        await Future.delayed(const Duration(milliseconds: 3000));
       }
     }
   }
@@ -1052,7 +1195,7 @@ class BattleManager extends ChangeNotifier {
        target.health = target.health.clamp(0, target.maxHealth);
        _addToLog('${target.organism.baseOrganism.name} is battered by the blizzard!');
        notifyListeners();
-       await Future.delayed(const Duration(milliseconds: 500));
+       await Future.delayed(const Duration(milliseconds: 3000));
     }
     
     // Grassy Terrain Healing
@@ -1062,13 +1205,15 @@ class BattleManager extends ChangeNotifier {
       target.health = target.health.clamp(0, target.maxHealth);
       _addToLog('${target.organism.baseOrganism.name} is healed by the Grassy Terrain!');
        notifyListeners();
-       await Future.delayed(const Duration(milliseconds: 500));
+       await Future.delayed(const Duration(milliseconds: 3000));
     }
     
     // Status Duration Decay and Recovery
     if (target.statusEffect.type != StatusEffectType.none && target.statusEffect.duration > 0) {
       int decay = 1;
-      if (target.ability?.effectType == AbilityEffectType.wakeUpFaster && target.statusEffect.type == StatusEffectType.sleep) {
+      final wakeUpAbility = target.abilities.firstWhere((ab) => ab.effectType == AbilityEffectType.wakeUpFaster, orElse: () => const Ability(name: '', description: ''));
+      if (wakeUpAbility.name.isNotEmpty && target.statusEffect.type == StatusEffectType.sleep) {
+         await _notifyAbilityTrigger(target, wakeUpAbility);
          decay = 2;
       }
       target.statusEffect = target.statusEffect.copyWith(duration: max(0, target.statusEffect.duration - decay));
@@ -1135,7 +1280,9 @@ class BattleManager extends ChangeNotifier {
     final runChance = (player.currentSpeed / opponent.currentSpeed) * 0.75; 
 
     // Arena Trap check
-    if (opponent.ability?.name == 'Arena Trap') {
+    final trapper = opponent.abilities.firstWhere((ab) => ab.name == 'Arena Trap', orElse: () => const Ability(name: '', description: ''));
+    if (trapper.name.isNotEmpty) {
+       await _notifyAbilityTrigger(opponent, trapper);
        _addToLog('The wild ${opponent.organism.baseOrganism.name} prevents escape!');
        currentState = BattleState.opponentTurn;
        await Future.delayed(const Duration(seconds: 1));
