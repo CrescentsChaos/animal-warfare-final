@@ -11,6 +11,8 @@ import 'package:animal_warfare/models/weather.dart';
 import 'package:animal_warfare/models/terrain.dart';
 import 'package:animal_warfare/models/status_effect.dart';
 import 'package:animal_warfare/models/loot_item.dart';
+import 'dart:math' as math;
+import 'dart:async';
 
 class BattleScreen extends StatelessWidget {
   final CapturedOrganism playerOrganism;
@@ -33,10 +35,69 @@ class BattleScreen extends StatelessWidget {
   }
 }
 
-class BattleScreenContent extends StatelessWidget {
+class BattleScreenContent extends StatefulWidget {
   final String biomeName;
 
   const BattleScreenContent({super.key, required this.biomeName});
+
+  @override
+  State<BattleScreenContent> createState() => _BattleScreenContentState();
+}
+
+class _BattleScreenContentState extends State<BattleScreenContent> with TickerProviderStateMixin {
+  late AnimationController _playerShakeController;
+  late AnimationController _opponentShakeController;
+  late Animation<double> _playerShakeAnimation;
+  late Animation<double> _opponentShakeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _playerShakeController = AnimationController(vsync: this, duration: const Duration(milliseconds: 500));
+    _opponentShakeController = AnimationController(vsync: this, duration: const Duration(milliseconds: 500));
+    
+    final shakeTween = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 0, end: 10), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: 10, end: -10), weight: 2),
+      TweenSequenceItem(tween: Tween(begin: -10, end: 10), weight: 2),
+      TweenSequenceItem(tween: Tween(begin: 10, end: 0), weight: 1),
+    ]);
+
+    _playerShakeAnimation = shakeTween.animate(_playerShakeController);
+    _opponentShakeAnimation = shakeTween.animate(_opponentShakeController);
+  }
+
+  @override
+  void dispose() {
+    _playerShakeController.dispose();
+    _opponentShakeController.dispose();
+    super.dispose();
+  }
+
+  void _onAttack(BattleOrganism attacker) {
+    if (!mounted) return;
+    // Shake the ATTACKER to simulate lunge/attack
+    // OR shake the DEFENDER to simulate hit?
+    // User said: "when the animal attacks the image should shake"
+    // Usually attacking involves a lunge.
+    // Let's shake the attacker.
+    
+    // We need to access battleManager.player to check identity.
+    // Since we are inside State, we can access provider if we listened? 
+    // Attacker is passed.
+    // We can assume if attacker.organism.isPlayer -> player shake.
+    // CapturedOrganism doesn't store 'isPlayer'.
+    // But we know 'playerOrganism' from widget? No, widget only has biomeName.
+    // BattleManager has 'player' and 'opponent' fields.
+    // We can check reference equality with battle manager's fields.
+    final bm = Provider.of<BattleManager>(context, listen: false);
+    
+    if (attacker == bm.player) { // Player attacks
+       _playerShakeController.forward(from: 0);
+    } else { // Opponent attacks
+       _opponentShakeController.forward(from: 0);
+    }
+  }
 
   String _getAssetPath(String biomeName) {
     final fileName = biomeName.toLowerCase().replaceAll(' ', '_');
@@ -166,13 +227,20 @@ class BattleScreenContent extends StatelessWidget {
 
     final overlayColor = Colors.black.withOpacity(0.55);
 
+    // Initialize/Update listener
+    // Note: We should probably do this in initState/didChangeDependencies but
+    // since battleManager comes from Provider which might change, setting it here is safe-ish
+    // provided we don't duplicate listeners.
+    // Actually, onAttack is a single field in BattleManager (Function?), so reassignment is fine.
+    battleManager.onAttack = _onAttack;
+
     return Scaffold(
       body: Stack(
         children: [
           Container(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: AssetImage(_getAssetPath(biomeName)),
+                image: AssetImage(_getAssetPath(widget.biomeName)),
                 fit: BoxFit.cover,
                 colorFilter: ColorFilter.mode(
                   Colors.black.withOpacity(0.35),
@@ -185,7 +253,7 @@ class BattleScreenContent extends StatelessWidget {
             child: Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -213,13 +281,35 @@ class BattleScreenContent extends StatelessWidget {
                 Expanded(
                   child: Column(
                     children: [
-                      _buildOpponentStatus(context, battleManager.opponent, overlayColor, isNarrow),
+                      // Opponent is shaken when attacking? Or when hit?
+                      // User said "when the animal attacks".
+                      AnimatedBuilder(
+                        animation: _opponentShakeAnimation,
+                        builder: (context, child) {
+                          return Transform.translate(
+                            offset: Offset(_opponentShakeAnimation.value, 0),
+                            child: child,
+                          );
+                        },
+                        child: _buildOpponentStatus(context, battleManager.opponent, overlayColor, isNarrow),
+                      ),
                       const SizedBox(height: 4),
-                      _buildPlayerStatus(context, battleManager.player, overlayColor, isNarrow),
+                      AnimatedBuilder(
+                        animation: _playerShakeAnimation,
+                        builder: (context, child) {
+                          return Transform.translate(
+                            offset: Offset(_playerShakeAnimation.value, 0),
+                            child: child,
+                          );
+                        },
+                        child: _buildPlayerStatus(context, battleManager.player, overlayColor, isNarrow),
+                      ),
                       const SizedBox(height: 2),
-                      _buildMessageBox(context, battleManager.battleLog, isNarrow),
-                      if (battleManager.currentState == BattleState.waitingForInput)
+                      if (battleManager.currentState == BattleState.waitingForInput) ...[
+                        _buildMessageBox(context, battleManager.battleLog, isNarrow, expanded: false),
                         _buildActionControls(context, battleManager, overlayColor, isNarrow),
+                      ] else 
+                        Expanded(child: _buildMessageBox(context, battleManager.battleLog, isNarrow, expanded: true)),
                     ],
                   ),
                 ),
@@ -306,14 +396,19 @@ class BattleScreenContent extends StatelessWidget {
                       ),
                       textAlign: TextAlign.right,
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 4),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(4),
-                      child: LinearProgressIndicator(
-                        value: hpRatio.clamp(0.0, 1.0),
-                        color: hpRatio > 0.5 ? const Color(0xFF4CAF50) : (hpRatio > 0.2 ? Colors.orange : Colors.red),
-                        backgroundColor: Colors.grey[800],
-                        minHeight: isNarrow ? 10 : 12,
+                      child: TweenAnimationBuilder<double>(
+                        duration: const Duration(milliseconds: 1200),
+                        curve: Curves.easeInOut,
+                        tween: Tween<double>(begin: hpRatio.clamp(0.0, 1.0), end: hpRatio.clamp(0.0, 1.0)),
+                        builder: (context, value, _) => LinearProgressIndicator(
+                          value: value,
+                          color: value > 0.5 ? const Color(0xFF4CAF50) : (value > 0.2 ? Colors.orange : Colors.red),
+                          backgroundColor: Colors.grey[800],
+                          minHeight: isNarrow ? 8 : 10,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -393,14 +488,19 @@ class BattleScreenContent extends StatelessWidget {
                         fontFamily: 'PressStart2P',
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 4),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(4),
-                      child: LinearProgressIndicator(
-                        value: hpRatio.clamp(0.0, 1.0),
-                        color: hpRatio > 0.5 ? const Color(0xFF4CAF50) : (hpRatio > 0.2 ? Colors.orange : Colors.red),
-                        backgroundColor: Colors.grey[800],
-                        minHeight: isNarrow ? 10 : 12,
+                      child: TweenAnimationBuilder<double>(
+                        duration: const Duration(milliseconds: 1200),
+                        curve: Curves.easeInOut,
+                        tween: Tween<double>(begin: hpRatio.clamp(0.0, 1.0), end: hpRatio.clamp(0.0, 1.0)),
+                        builder: (context, value, _) => LinearProgressIndicator(
+                          value: value,
+                          color: value > 0.5 ? const Color(0xFF4CAF50) : (value > 0.2 ? Colors.orange : Colors.red),
+                          backgroundColor: Colors.grey[800],
+                          minHeight: isNarrow ? 8 : 10,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -602,7 +702,7 @@ class BattleScreenContent extends StatelessWidget {
 
   Widget _buildStatRow(String label, String value, Color color) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -613,33 +713,47 @@ class BattleScreenContent extends StatelessWidget {
     );
   }
 
-  Widget _buildMessageBox(BuildContext context, String message, bool isNarrow) {
-    return Container(
-      margin: EdgeInsets.all(isNarrow ? 2 : 4),
-      padding: EdgeInsets.all(isNarrow ? 4 : 8),
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.75),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.highlightColor, width: 2),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.5), blurRadius: 8, offset: const Offset(0, 2))],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(Icons.chat_bubble_outline, color: AppColors.highlightColor, size: isNarrow ? 18 : 22),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              message,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: isNarrow ? 11 : 13,
-                fontFamily: 'PressStart2P',
-                height: 1.4,
+  Widget _buildMessageBox(BuildContext context, String message, bool isNarrow, {bool expanded = false}) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: isNarrow ? 8 : 12, vertical: isNarrow ? 4 : 8),
+      child: Container(
+        padding: EdgeInsets.all(isNarrow ? 10 : 16),
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.85),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: AppColors.highlightColor, width: 2),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.5), blurRadius: 10, offset: const Offset(0, 4))],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Icon(Icons.chat_bubble_outline, color: AppColors.highlightColor, size: isNarrow ? 16 : 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Container(
+                height: expanded ? null : (isNarrow ? 50 : 70),
+                width: double.infinity,
+                alignment: Alignment.topLeft,
+                child: SingleChildScrollView(
+                  reverse: false,
+                  child: TypewriterText(
+                    message,
+                    speed: const Duration(milliseconds: 35),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: isNarrow ? 10 : 12,
+                      fontFamily: 'PressStart2P',
+                      height: 1.2,
+                    ),
+                  ),
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -660,14 +774,14 @@ class BattleScreenContent extends StatelessWidget {
             'What will ${battleManager.player.organism.baseOrganism.name} do?',
             style: TextStyle(color: AppColors.highlightColor, fontSize: isNarrow ? 9 : 10, fontFamily: 'PressStart2P'),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           GridView.count(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             crossAxisCount: 2,
-            mainAxisSpacing: 6,
-            crossAxisSpacing: 6,
-            childAspectRatio: isNarrow ? 2.8 : 3.2,
+            mainAxisSpacing: 4,
+            crossAxisSpacing: 4,
+            childAspectRatio: isNarrow ? 3.5 : 4.0,
             children: battleManager.playerMoves.map((move) {
               return ElevatedButton(
                 onPressed: () => battleManager.processPlayerAction(move),
@@ -705,7 +819,7 @@ class BattleScreenContent extends StatelessWidget {
               );
             }).toList(),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 6),
           Row(
             children: [
               Expanded(
@@ -716,7 +830,7 @@ class BattleScreenContent extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue.shade700,
                     foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: isNarrow ? 8 : 10),
+                    padding: EdgeInsets.symmetric(vertical: isNarrow ? 6 : 8),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     elevation: 2,
                   ),
@@ -731,7 +845,7 @@ class BattleScreenContent extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red.shade700,
                     foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: isNarrow ? 8 : 10),
+                    padding: EdgeInsets.symmetric(vertical: isNarrow ? 6 : 8),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     elevation: 2,
                   ),
@@ -960,5 +1074,73 @@ class _BattleSpriteState extends State<_BattleSprite> {
         ),
       ),
     );
+  }
+}
+
+class TypewriterText extends StatefulWidget {
+  final String text;
+  final TextStyle? style;
+  final Duration speed;
+  
+  const TypewriterText(this.text, {super.key, this.style, this.speed = const Duration(milliseconds: 30)});
+
+  @override
+  State<TypewriterText> createState() => _TypewriterTextState();
+}
+
+class _TypewriterTextState extends State<TypewriterText> {
+  String _displayedText = "";
+  int _charIndex = 0;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _startTyping();
+  }
+
+  @override
+  void didUpdateWidget(TypewriterText oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.text != oldWidget.text) {
+      if (widget.text.startsWith(oldWidget.text) && oldWidget.text.isNotEmpty) {
+          if (_timer?.isActive != true && _displayedText.length < widget.text.length) {
+             _startTyping();
+          }
+      } else {
+         _displayedText = "";
+         _charIndex = 0;
+         _startTyping();
+      }
+    }
+  }
+  
+  void _startTyping() {
+    _timer?.cancel();
+    _timer = Timer.periodic(widget.speed, (timer) {
+      if (_charIndex < widget.text.length) {
+        if (!mounted) {
+           timer.cancel();
+           return;
+        }
+        setState(() {
+          _charIndex++;
+          _displayedText = widget.text.substring(0, _charIndex);
+        });
+      } else {
+        timer.cancel();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(_displayedText, style: widget.style);
   }
 }

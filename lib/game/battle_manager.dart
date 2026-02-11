@@ -184,6 +184,9 @@ class BattleManager extends ChangeNotifier {
   // LOOT DROP
   String? droppedLoot; // loot_id of dropped item, if any
 
+  // Callbacks for UI
+  Function(BattleOrganism)? onAttack;
+
   void _addToLog(String message) {
     battleLog = message;
     if (turnHistory.isEmpty) {
@@ -468,8 +471,11 @@ class BattleManager extends ChangeNotifier {
       attacker.organism.moveStamina[move.name] = (attacker.organism.moveStamina[move.name]! - 1).clamp(0, move.stamina);
     }
 
+    _addToLog('${attacker.organism.baseOrganism.name} used ${move.name}!');
     notifyListeners();
-    await Future.delayed(const Duration(milliseconds: 700));
+    // Trigger attack animation
+    onAttack?.call(attacker);
+    await Future.delayed(const Duration(milliseconds: 2500));
 
     // --- Ability Triggers: onCalculateDamage (Self) ---
     // (Already handled in damageCalc for Adaptability)
@@ -486,7 +492,7 @@ class BattleManager extends ChangeNotifier {
     if (Random().nextInt(100) >= accuracy) {
       _addToLog('...but it missed!');
       notifyListeners();
-      await Future.delayed(const Duration(milliseconds: 500));
+      await Future.delayed(const Duration(milliseconds: 3000));
       return;
     }
 
@@ -494,7 +500,7 @@ class BattleManager extends ChangeNotifier {
     if (defender.isInvulnerable) {
       _addToLog('${defender.organism.baseOrganism.name} is hidden!');
       notifyListeners();
-      await Future.delayed(const Duration(milliseconds: 500));
+      await Future.delayed(const Duration(milliseconds: 3000));
       return;
     }
 
@@ -506,7 +512,7 @@ class BattleManager extends ChangeNotifier {
          }
       }
       notifyListeners();
-      await Future.delayed(const Duration(milliseconds: 500));
+      await Future.delayed(const Duration(milliseconds: 3000));
       return;
     }
 
@@ -515,7 +521,7 @@ class BattleManager extends ChangeNotifier {
        if (opponentMove == null || opponentMove.baseDamage == 0) {
          _addToLog('...but it failed!');
          notifyListeners();
-         await Future.delayed(const Duration(milliseconds: 500));
+         await Future.delayed(const Duration(milliseconds: 2000));
          return;
        }
     }
@@ -675,7 +681,7 @@ class BattleManager extends ChangeNotifier {
           if (isCrit) _addToLog('A critical hit!');
           
           notifyListeners();
-          await Future.delayed(const Duration(milliseconds: 300));
+          await Future.delayed(const Duration(milliseconds: 3000));
         }
     }
     if (attacker.health > 0 && defender.health >= 0) {
@@ -692,15 +698,25 @@ class BattleManager extends ChangeNotifier {
       return false;
     }
     if (org.statusEffect.type == StatusEffectType.sleep) {
+      if (org.statusEffect.duration > 0) {
+        org.statusEffect = StatusEffect(type: StatusEffectType.sleep, duration: org.statusEffect.duration - 1);
+      }
+      if (org.statusEffect.duration <= 0) {
+      _addToLog('${org.organism.baseOrganism.name} woke up!');
+         org.statusEffect = const StatusEffect(type: StatusEffectType.none);
+         notifyListeners();
+         await Future.delayed(const Duration(milliseconds: 2500));
+         return true;
+      }
       _addToLog('${org.organism.baseOrganism.name} is fast asleep.');
       notifyListeners();
-      await Future.delayed(const Duration(milliseconds: 500));
+      await Future.delayed(const Duration(milliseconds: 2500));
       return false; 
     }
     if (org.statusEffect.type == StatusEffectType.stun) {
       _addToLog('${org.organism.baseOrganism.name} is stunned and cannot move!');
       notifyListeners();
-      await Future.delayed(const Duration(milliseconds: 500));
+      await Future.delayed(const Duration(milliseconds: 2500));
       // Stun is cleared immediately after skipping one turn
       org.statusEffect = const StatusEffect(type: StatusEffectType.none);
       return false;
@@ -708,28 +724,36 @@ class BattleManager extends ChangeNotifier {
     if (org.statusEffect.type == StatusEffectType.confusion) {
       _addToLog('${org.organism.baseOrganism.name} is confused!');
       notifyListeners();
-      await Future.delayed(const Duration(milliseconds: 500));
+      await Future.delayed(const Duration(milliseconds: 2000));
       if (Random().nextDouble() < 0.33) {
          _addToLog('It hurt itself in its confusion!');
          final selfDamage = (org.maxHealth * 0.15).round();
          org.health -= selfDamage;
          org.health = org.health.clamp(0, org.maxHealth);
          notifyListeners();
-         await Future.delayed(const Duration(milliseconds: 500));
+         await Future.delayed(const Duration(milliseconds: 2800));
          return false;
       }
     }
     if (org.statusEffect.type == StatusEffectType.freeze) {
+       // 20% chance to thaw
+       if (Random().nextDouble() < 0.2) {
+          _addToLog('${org.organism.baseOrganism.name} thawed out!');
+          org.statusEffect = const StatusEffect(type: StatusEffectType.none);
+          notifyListeners();
+          await Future.delayed(const Duration(milliseconds: 2500));
+          return true;
+       }
        _addToLog('${org.organism.baseOrganism.name} is frozen solid!');
        notifyListeners();
-       await Future.delayed(const Duration(milliseconds: 500));
+       await Future.delayed(const Duration(milliseconds: 2500));
        return false;
     }
     if (org.statusEffect.type == StatusEffectType.paralysis) {
       if (Random().nextDouble() < 0.25) {
         _addToLog('${org.organism.baseOrganism.name} is paralyzed! It can\'t move!');
         notifyListeners();
-        await Future.delayed(const Duration(milliseconds: 500));
+        await Future.delayed(const Duration(milliseconds: 2200));
         return false;
       }
     }
@@ -740,7 +764,7 @@ class BattleManager extends ChangeNotifier {
     if (!isCounter) {
         _addToLog('Opponent\'s turn!');
         notifyListeners();
-        await Future.delayed(const Duration(milliseconds: 700));
+        await Future.delayed(const Duration(milliseconds: 1200));
     }
     
     // Simple AI: Select a random move from its specific list
@@ -952,7 +976,8 @@ class BattleManager extends ChangeNotifier {
         if (msg.isNotEmpty) {
           _addToLog(msg);
           notifyListeners();
-          await Future.delayed(const Duration(milliseconds: 500));
+          notifyListeners();
+          await Future.delayed(const Duration(milliseconds: 1200));
         }
       }
       
@@ -986,28 +1011,28 @@ class BattleManager extends ChangeNotifier {
       target.health = target.health.clamp(0, target.maxHealth);
       _addToLog('${target.organism.baseOrganism.name} is hurt by poison!');
       notifyListeners();
-      await Future.delayed(const Duration(milliseconds: 500));
+      await Future.delayed(const Duration(milliseconds: 3000));
     } else if (target.statusEffect.type == StatusEffectType.burn) {
        final burnDamage = (target.maxHealth * 0.06).round().clamp(1, 9999);
        target.health -= burnDamage;
        target.health = target.health.clamp(0, target.maxHealth);
        _addToLog('${target.organism.baseOrganism.name} is hurt by its burn!');
        notifyListeners();
-       await Future.delayed(const Duration(milliseconds: 500));
+       await Future.delayed(const Duration(milliseconds: 3000));
     } else if (target.statusEffect.type == StatusEffectType.bleed) {
        final bleedDamage = (target.maxHealth * 0.125).round().clamp(1, 9999);
        target.health -= bleedDamage;
        target.health = target.health.clamp(0, target.maxHealth);
        _addToLog('${target.organism.baseOrganism.name} is hurt by bleeding!');
        notifyListeners();
-       await Future.delayed(const Duration(milliseconds: 500));
+       await Future.delayed(const Duration(milliseconds: 3000));
     } else if (target.statusEffect.type == StatusEffectType.regen) {
        final heal = (target.maxHealth * 0.06).round().clamp(1, 9999);
        target.health += heal;
        target.health = target.health.clamp(0, target.maxHealth);
        _addToLog('${target.organism.baseOrganism.name} restored a little HP.');
        notifyListeners();
-       await Future.delayed(const Duration(milliseconds: 500));
+       await Future.delayed(const Duration(milliseconds: 3000));
     }
     
     // Weather Damage
@@ -1018,7 +1043,7 @@ class BattleManager extends ChangeNotifier {
        target.health = target.health.clamp(0, target.maxHealth);
         _addToLog('${target.organism.baseOrganism.name} is buffeted by the sandstorm!');
        notifyListeners();
-       await Future.delayed(const Duration(milliseconds: 500));
+       await Future.delayed(const Duration(milliseconds: 3000));
     } else if (currentWeather.weather == Weather.blizzard) {
        // Blizzard damages non-Ice types
        final damage = (target.maxHealth * 0.0625).round().clamp(1, 9999);
