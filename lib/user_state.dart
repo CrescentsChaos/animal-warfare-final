@@ -181,6 +181,12 @@ class UserState with ChangeNotifier {
     if (kDebugMode) print('UserState: Added $quantity x $lootId to inventory.');
   }
 
+  /// Add money to user's wallet. Persists via read-modify-write.
+  Future<void> addMoney(int amount) async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) => u.addMoney(amount));
+  }
+
   /// Craft a talisman from recipe
   Future<bool> craftTalisman(String talismanId, Map<String, int> requiredLoot) async {
     if (_currentUser == null) return false;

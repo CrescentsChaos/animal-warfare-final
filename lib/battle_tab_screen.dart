@@ -1,0 +1,269 @@
+// lib/battle_tab_screen.dart
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:provider/provider.dart';
+import 'package:animal_warfare/models/organism.dart';
+import 'package:animal_warfare/models/captured_organism.dart';
+import 'package:animal_warfare/models/talisman.dart';
+import 'package:animal_warfare/battle_screen.dart';
+import 'package:animal_warfare/user_state.dart';
+import 'package:animal_warfare/theme.dart';
+import 'dart:convert';
+import 'dart:math';
+
+class BattleTabScreen extends StatefulWidget {
+  const BattleTabScreen({super.key});
+
+  @override
+  State<BattleTabScreen> createState() => _BattleTabScreenState();
+}
+
+class _BattleTabScreenState extends State<BattleTabScreen> {
+  List<Organism> _allOrganisms = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadOrganisms();
+  }
+
+  Future<void> _loadOrganisms() async {
+    try {
+      final String response = await rootBundle.loadString('assets/Organisms.json');
+      final List<dynamic> data = json.decode(response);
+      setState(() {
+        _allOrganisms = data.map((json) => Organism.fromJson(json)).toList();
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading organisms: $e')),
+        );
+      }
+    }
+  }
+
+  List<CapturedOrganism> _generateRandomTeam({bool withTalismans = false}) {
+    if (_allOrganisms.isEmpty) return [];
+    
+    final random = Random();
+    final List<CapturedOrganism> team = [];
+    
+    for (int i = 0; i < 5; i++) {
+      final randomOrganism = _allOrganisms[random.nextInt(_allOrganisms.length)];
+      final captured = CapturedOrganism.spawn(randomOrganism);
+      
+      // Randomly assign talisman if requested
+      if (withTalismans && random.nextBool()) {
+        final randomTalisman = Talisman.allTalismans[random.nextInt(Talisman.allTalismans.length)];
+        team.add(captured.copyWith(equippedTalisman: randomTalisman));
+      } else {
+        team.add(captured);
+      }
+    }
+    
+    return team;
+  }
+
+  void _startBattle({
+    required List<CapturedOrganism> playerTeam, 
+    required List<CapturedOrganism> opponentTeam,
+    required String battleTitle,
+  }) async {
+    if (playerTeam.isEmpty || opponentTeam.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to generate teams!')),
+      );
+      return;
+    }
+
+    // Pick first animal from each team as the initial fighters
+    final result = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => BattleScreen(
+          playerOrganism: playerTeam[0],
+          opponentOrganism: opponentTeam[0],
+          biomeName: 'Battle Arena',
+          playerTeam: playerTeam,
+          opponentTeam: opponentTeam,
+          battleTitle: battleTitle,
+          isArenaBattle: true,
+        ),
+      ),
+    );
+
+    // Handle battle result if needed
+    if (result != null && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Battle ended: $result')),
+      );
+    }
+  }
+
+  Widget _buildModeCard({
+    required String title,
+    required String description,
+    required IconData icon,
+    required VoidCallback onTap,
+    required Color color,
+  }) {
+    return Card(
+      elevation: 8,
+      color: color,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: AppColors.highlightColor, width: 3),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 64, color: AppColors.highlightColor),
+              const SizedBox(height: 16),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontFamily: 'PressStart2P',
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                description,
+                style: const TextStyle(
+                  fontSize: 10,
+                  fontFamily: 'PressStart2P',
+                  color: Colors.white70,
+                  height: 1.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Scaffold(
+        backgroundColor: AppColors.secondaryButtonColor,
+        appBar: AppBar(
+          title: const Text('BATTLE', style: TextStyle(fontFamily: 'PressStart2P')),
+          backgroundColor: AppColors.primaryButtonColor,
+        ),
+        body: const Center(
+          child: CircularProgressIndicator(color: AppColors.highlightColor),
+        ),
+      );
+    }
+
+    final userState = Provider.of<UserState>(context);
+    final user = userState.currentUser;
+
+    return Scaffold(
+      backgroundColor: AppColors.secondaryButtonColor,
+      appBar: AppBar(
+        title: const Text('BATTLE ARENA', style: TextStyle(fontFamily: 'PressStart2P', fontSize: 16)),
+        backgroundColor: AppColors.primaryButtonColor,
+        centerTitle: true,
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              AppColors.secondaryButtonColor,
+              AppColors.primaryButtonColor.withOpacity(0.3),
+            ],
+          ),
+        ),
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  'SELECT MODE',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontFamily: 'PressStart2P',
+                    color: AppColors.highlightColor,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black,
+                        blurRadius: 4,
+                        offset: Offset(2, 2),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 40),
+                
+                // vs AI Mode
+                _buildModeCard(
+                  title: 'VS AI',
+                  description: 'Battle with your team against a randomized AI team with items!',
+                  icon: Icons.psychology,
+                  color: AppColors.primaryButtonColor.withOpacity(0.8),
+                  onTap: () {
+                    if (user == null || user.battleTeam.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Please configure your battle team first!')),
+                      );
+                      return;
+                    }
+                    
+                    final playerTeam = user.teamOrganisms;
+                    final aiTeam = _generateRandomTeam(withTalismans: true);
+                    
+                    _startBattle(
+                      playerTeam: playerTeam, 
+                      opponentTeam: aiTeam,
+                      battleTitle: 'vs AI',
+                    );
+                  },
+                ),
+                
+                const SizedBox(height: 24),
+                
+                // Randoms Mode
+                _buildModeCard(
+                  title: 'RANDOMS',
+                  description: 'Both teams are completely randomized. Pure chaos!',
+                  icon: Icons.shuffle,
+                  color: const Color(0xFF8B0000).withOpacity(0.8),
+                  onTap: () {
+                    final playerTeam = _generateRandomTeam(withTalismans: false);
+                    final aiTeam = _generateRandomTeam(withTalismans: true);
+                    
+                    _startBattle(
+                      playerTeam: playerTeam, 
+                      opponentTeam: aiTeam,
+                      battleTitle: 'Randoms',
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

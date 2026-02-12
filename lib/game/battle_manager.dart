@@ -20,6 +20,7 @@ enum BattleState {
   opponentTurn,
   applyingEffects,
   battleEnd,
+  waitingForPlayerSwitch, // User must select a new animal after fainting
 }
 
 enum BattleResult {
@@ -244,10 +245,17 @@ class BattleManager extends ChangeNotifier {
   // LOGGING REFACTOR
   int currentTurn = 1;
   final List<BattleTurn> turnHistory = [];
-  BattleResult? result;
+  BattleResult? _result;
+  BattleResult? get result => _result;
   
   // LOOT DROP
-  String? droppedLoot; // loot_id of dropped item, if any
+  String? _droppedLoot;
+  String? get droppedLoot => _droppedLoot;
+  final bool isArenaBattle;
+  List<CapturedOrganism> opponentTeam = [];
+  int currentOpponentIndex = 0;
+  bool opponentJustSwitched = false;
+  bool playerJustSwitched = false;
 
   // Callbacks for UI
   Function(BattleOrganism)? onAttack;
@@ -301,14 +309,19 @@ class BattleManager extends ChangeNotifier {
     return moves;
   }
 
-  BattleManager(CapturedOrganism initialPlayer, this.opponentOrganism, {String? biomeName, List<CapturedOrganism>? team}) 
-      : playerTeam = team ?? [initialPlayer] {
+  BattleManager(CapturedOrganism initialPlayer, this.opponentOrganism, {String? biomeName, List<CapturedOrganism>? team, List<CapturedOrganism>? opponentTeam, this.isArenaBattle = false}) 
+      : playerTeam = team ?? [initialPlayer],
+        opponentTeam = opponentTeam ?? [opponentOrganism] {
     // Find initial player index if it's in the team
     int idx = playerTeam.indexOf(initialPlayer);
     currentPlayerIndex = idx != -1 ? idx : 0;
 
+    // Set up opponent index
+    int oppIdx = this.opponentTeam.indexOf(opponentOrganism);
+    currentOpponentIndex = oppIdx != -1 ? oppIdx : 0;
+
     player = BattleOrganism(playerOrganism);
-    opponent = BattleOrganism(opponentOrganism);
+    opponent = BattleOrganism(this.opponentOrganism);
     
     // Initialize move lists
     playerMoves = _getOrganismMoves(playerOrganism);
@@ -521,25 +534,31 @@ class BattleManager extends ChangeNotifier {
     // Reset "took damage" at start of turn
     player.tookDamageThisTurn = false;
     opponent.tookDamageThisTurn = false;
+    opponentJustSwitched = false;
+    playerJustSwitched = false;
 
     if (playerGoesFirst) {
-      if (await _canMove(player)) {
+      // Skip player turn if they just switched due to fainting
+      if (!playerJustSwitched && await _canMove(player)) {
         await _executeTurn(player, opponent, move, opponentMove: opponentMove);
       }
       if (_checkBattleEnd()) return;
       
       // Calculate Opponent Move (Need to select it earlier for priority check)
       // Done above in logic preparation
-      if (await _canMove(opponent)) {
+      // Skip opponent turn if they just switched due to fainting
+      if (!opponentJustSwitched && await _canMove(opponent)) {
          await _executeTurn(opponent, player, opponentMove, opponentMove: move);
       }
     } else {
-      if (await _canMove(opponent)) {
+      // Skip opponent turn if they just switched due to fainting
+      if (!opponentJustSwitched && await _canMove(opponent)) {
          await _executeTurn(opponent, player, opponentMove, opponentMove: move);
       }
       if (_checkBattleEnd()) return;
 
-      if (await _canMove(player)) {
+      // Skip player turn if they just switched due to fainting
+      if (!playerJustSwitched && await _canMove(player)) {
         await _executeTurn(player, opponent, move, opponentMove: opponentMove);
       }
     }
@@ -1312,11 +1331,11 @@ class BattleManager extends ChangeNotifier {
 
     if (Random().nextDouble() < captureChance) {
       opponent.organism.currentHealth = opponent.health; 
-      result = BattleResult.capture;
+      _result = BattleResult.capture;
       // 🚨 FIX: Reverting to baseOrganism
       _addToLog('Success! ${opponent.organism.baseOrganism.name} was captured!');
     } else {
-      result = null; 
+      _result = null; 
       _addToLog('The capture failed! Opponent is still fighting.');
       currentState = BattleState.opponentTurn;
       await Future.delayed(const Duration(seconds: 1));
@@ -1355,11 +1374,11 @@ class BattleManager extends ChangeNotifier {
     }
 
     if (Random().nextDouble() < runChance.clamp(0.1, 1.0)) { 
-      result = BattleResult.fled;
+      _result = BattleResult.fled;
       _addToLog('You successfully ran away!');
       currentState = BattleState.battleEnd;
     } else {
-      result = null; 
+      _result = null; 
       _addToLog('Failed to run! Opponent\'s turn.');
       currentState = BattleState.opponentTurn;
       await Future.delayed(const Duration(seconds: 1));
@@ -1371,7 +1390,8 @@ class BattleManager extends ChangeNotifier {
   }
 
   Future<void> switchAnimal(int index) async {
-    if (currentState != BattleState.waitingForInput) return;
+    bool isForced = currentState == BattleState.waitingForPlayerSwitch;
+    if (currentState != BattleState.waitingForInput && !isForced) return;
     if (index < 0 || index >= playerTeam.length) return;
     if (index == currentPlayerIndex) return;
     if (playerTeam[index].currentHealth <= 0) return;
@@ -1379,13 +1399,24 @@ class BattleManager extends ChangeNotifier {
     currentState = BattleState.applyingEffects;
     _addToLog('Come back, ${player.organism.baseOrganism.name}!');
     notifyListeners();
-    await Future.delayed(const Duration(milliseconds: 1000));
+    await Future.delayed(const Duration(milliseconds: 3000));
 
     _switchToAnimal(index);
+    if (isForced) {
+      playerJustSwitched = true;
+    }
     notifyListeners();
-    await Future.delayed(const Duration(milliseconds: 1000));
+    await Future.delayed(const Duration(milliseconds: 3000));
 
-    // Switching takes a turn, so process opponent's turn
+    if (isForced) {
+      // If forced switch, turn continues or waits for next round
+      currentState = BattleState.waitingForInput;
+      _addToLog('What will ${player.organism.name} do?');
+      notifyListeners();
+      return;
+    }
+
+    // Normal switching takes a turn, so process opponent's turn
     currentState = BattleState.opponentTurn;
     await _processOpponentTurn(isCounter: false);
 
@@ -1425,12 +1456,13 @@ class BattleManager extends ChangeNotifier {
       final nextHealthyIndex = playerTeam.indexWhere((org) => org.currentHealth > 0);
       
       if (nextHealthyIndex != -1) {
-        _addToLog('Your ${player.organism.baseOrganism.name} fainted!');
-        _switchToAnimal(nextHealthyIndex);
-        return false; // Battle continues with new animal
+        _addToLog('Your ${player.organism.baseOrganism.name} fainted! Choose an animal to send out.');
+        currentState = BattleState.waitingForPlayerSwitch;
+        notifyListeners();
+        return false; // Battle continues, but waiting for switch
       }
 
-      result = BattleResult.loss;
+      _result = BattleResult.loss;
       // 🚨 FIX: Reverting to baseOrganism
       _addToLog('Your ${player.organism.baseOrganism.name} fainted! Your whole team is defeated.');
       currentState = BattleState.battleEnd;
@@ -1438,11 +1470,32 @@ class BattleManager extends ChangeNotifier {
       return true;
     }
     if (opponent.health <= 0) {
-      result = BattleResult.win;
+      // ARENA BATTLE: Check if opponent has more animals
+      if (isArenaBattle) {
+        final nextOpponentHealthy = opponentTeam.indexWhere((org) => org.currentHealth > 0);
+        
+        if (nextOpponentHealthy != -1) {
+          _addToLog('Opponent\'s ${opponent.organism.baseOrganism.name} fainted!');
+          _switchOpponentTo(nextOpponentHealthy);
+          opponentJustSwitched = true; // Prevent immediate attack
+          return false; // Battle continues
+        }
+        
+        // All opponent animals defeated
+        _result = BattleResult.win;
+        _addToLog('Opponent\'s ${opponent.organism.baseOrganism.name} fainted! You won the arena battle!');
+        currentState = BattleState.battleEnd;
+        onVictory?.call();
+        notifyListeners();
+        return true;
+      }
       
-      // Roll for loot
-      droppedLoot = opponent.organism.baseOrganism.rollLootDrop();
-      if (droppedLoot != null) {
+      // WILD BATTLE: Single opponent defeat
+      _result = BattleResult.win;
+      
+      // Roll for loot (only in wild battles)
+      _droppedLoot = opponent.organism.baseOrganism.rollLootDrop();
+      if (_droppedLoot != null) {
         _addToLog('The wild ${opponent.organism.baseOrganism.name} fainted! You won the battle.');
         _appendToLog('\nIt dropped something!');
       } else {
@@ -1455,5 +1508,16 @@ class BattleManager extends ChangeNotifier {
       return true;
     }
     return false;
+  }
+
+  void _switchOpponentTo(int index) {
+    if (index < 0 || index >= opponentTeam.length) return;
+    currentOpponentIndex = index;
+    
+    opponent = BattleOrganism(opponentTeam[currentOpponentIndex]);
+    opponentMoves = _getOrganismMoves(opponentTeam[currentOpponentIndex]);
+    
+    _addToLog('Opponent sends out ${opponent.organism.baseOrganism.name}!');
+    notifyListeners();
   }
 }

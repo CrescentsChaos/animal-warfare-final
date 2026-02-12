@@ -19,6 +19,9 @@ class BattleScreen extends StatelessWidget {
   final CapturedOrganism opponentOrganism;
   final String biomeName;
   final List<CapturedOrganism>? playerTeam;
+  final String? battleTitle;
+  final bool isArenaBattle;
+  final List<CapturedOrganism>? opponentTeam;
 
   const BattleScreen({
     super.key,
@@ -26,15 +29,20 @@ class BattleScreen extends StatelessWidget {
     required this.opponentOrganism,
     required this.biomeName,
     this.playerTeam,
+    this.battleTitle,
+    this.isArenaBattle = false,
+    this.opponentTeam,
   });
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) => BattleManager(playerOrganism, opponentOrganism, biomeName: biomeName, team: playerTeam),
+      create: (context) => BattleManager(playerOrganism, opponentOrganism, biomeName: biomeName, team: playerTeam, opponentTeam: opponentTeam, isArenaBattle: isArenaBattle),
       child: BattleScreenContent(
         biomeName: biomeName,
         opponentName: opponentOrganism.baseOrganism.name,
+        battleTitle: battleTitle,
+        isArenaBattle: isArenaBattle,
       ),
     );
   }
@@ -43,8 +51,10 @@ class BattleScreen extends StatelessWidget {
 class BattleScreenContent extends StatefulWidget {
   final String biomeName;
   final String opponentName;
+  final String? battleTitle;
+  final bool isArenaBattle;
 
-  const BattleScreenContent({super.key, required this.biomeName, required this.opponentName});
+  const BattleScreenContent({super.key, required this.biomeName, required this.opponentName, this.battleTitle, this.isArenaBattle = false});
 
   @override
   State<BattleScreenContent> createState() => _BattleScreenContentState();
@@ -55,6 +65,7 @@ class _BattleScreenContentState extends State<BattleScreenContent> with TickerPr
   late AnimationController _opponentShakeController;
   late Animation<double> _playerShakeAnimation;
   late Animation<double> _opponentShakeAnimation;
+  bool _isSwitchDialogShowing = false;
 
   @override
   void initState() {
@@ -241,8 +252,8 @@ class _BattleScreenContentState extends State<BattleScreenContent> with TickerPr
     );
   }
 
-  void _showSwitchDialog(BuildContext context, BattleManager bm) {
-    showDialog(
+  Future<void> _showSwitchDialog(BuildContext context, BattleManager bm) {
+    return showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.secondaryButtonColor,
@@ -264,9 +275,15 @@ class _BattleScreenContentState extends State<BattleScreenContent> with TickerPr
               final isCurrent = index == bm.currentPlayerIndex;
               final isFainted = animal.currentHealth <= 0;
 
-              return ListTile(
-                enabled: !isCurrent && !isFainted,
-                leading: Opacity(
+              return GestureDetector(
+                onLongPressStart: (_) {
+                  // Show animal details on long press
+                  final battleOrg = BattleOrganism(animal);
+                  _showOrganismInfo(context, battleOrg);
+                },
+                child: ListTile(
+                  enabled: !isCurrent && !isFainted,
+                  leading: Opacity(
                   opacity: isFainted ? 0.5 : 1.0,
                   child: Image.asset(
                     'assets/sprites/${animal.name.toLowerCase().replaceAll(' ', '_').replaceAll('-', '_').replaceAll("'", "_")}.png',
@@ -293,19 +310,21 @@ class _BattleScreenContentState extends State<BattleScreenContent> with TickerPr
                 trailing: isCurrent 
                   ? const Icon(Icons.check_circle, color: AppColors.highlightColor) 
                   : (isFainted ? const Text('FAINTED', style: TextStyle(color: Colors.red, fontSize: 8, fontFamily: 'PressStart2P')) : null),
-                onTap: (!isCurrent && !isFainted) ? () {
-                  Navigator.pop(ctx);
-                  bm.switchAnimal(index);
-                } : null,
+                  onTap: (!isCurrent && !isFainted) ? () {
+                    Navigator.pop(ctx);
+                    bm.switchAnimal(index);
+                  } : null,
+                ),
               );
             },
           ),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('CANCEL', style: TextStyle(color: Colors.white70, fontFamily: 'PressStart2P', fontSize: 10)),
-          ),
+          if (bm.currentState != BattleState.waitingForPlayerSwitch)
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('CANCEL', style: TextStyle(color: Colors.white70, fontFamily: 'PressStart2P', fontSize: 10)),
+            ),
         ],
       ),
     );
@@ -319,6 +338,15 @@ class _BattleScreenContentState extends State<BattleScreenContent> with TickerPr
 
     if (battleManager.currentState == BattleState.battleEnd) {
       _handleBattleEnd(context, battleManager, userState);
+    }
+
+    if (battleManager.currentState == BattleState.waitingForPlayerSwitch && !_isSwitchDialogShowing) {
+      _isSwitchDialogShowing = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showSwitchDialog(context, battleManager).then((_) {
+          _isSwitchDialogShowing = false;
+        });
+      });
     }
 
     final overlayColor = Colors.black.withOpacity(0.55);
@@ -360,6 +388,7 @@ class _BattleScreenContentState extends State<BattleScreenContent> with TickerPr
                               child: Column(
                                 children: [
                                   _buildFieldEffects(context, battleManager),
+                                  if (widget.isArenaBattle) _buildOpponentTeamIndicator(context, battleManager),
                                   const SizedBox(height: 2),
                                   AnimatedBuilder(
                                     animation: _opponentShakeAnimation,
@@ -411,6 +440,7 @@ class _BattleScreenContentState extends State<BattleScreenContent> with TickerPr
                     _buildHeader(context, battleManager, overlayColor),
                     const SizedBox(height: 2),
                     _buildFieldEffects(context, battleManager),
+                    if (widget.isArenaBattle) _buildOpponentTeamIndicator(context, battleManager),
                     const SizedBox(height: 2),
                     Expanded(
                       child: Column(
@@ -461,7 +491,7 @@ class _BattleScreenContentState extends State<BattleScreenContent> with TickerPr
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            'Wild Encounter',
+            widget.battleTitle ?? 'Wild Encounter',
             style: AppTextStyles.headline(context, baseSize: 12, color: AppColors.highlightColor),
           ),
           Row(
@@ -530,6 +560,63 @@ class _BattleScreenContentState extends State<BattleScreenContent> with TickerPr
             ),
           ),
       ],
+    );
+  }
+
+  Widget _buildOpponentTeamIndicator(BuildContext context, BattleManager bm) {
+    if (!widget.isArenaBattle || bm.opponentTeam.isEmpty) return const SizedBox.shrink();
+    
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          const Text(
+            'OPP: ',
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 8,
+              fontFamily: 'PressStart2P',
+            ),
+          ),
+          const SizedBox(width: 4),
+          ...List.generate(bm.opponentTeam.length, (index) {
+            final animal = bm.opponentTeam[index];
+            final isCurrent = index == bm.currentOpponentIndex;
+            final hpRatio = animal.currentHealth / animal.maxHealth;
+            
+            Color indicatorColor;
+            if (animal.currentHealth <= 0) {
+              indicatorColor = Colors.grey.shade700;
+            } else if (hpRatio > 0.5) {
+              indicatorColor = const Color(0xFF4CAF50); // Green
+            } else if (hpRatio > 0.2) {
+              indicatorColor = Colors.orange; // Yellow/Orange
+            } else {
+              indicatorColor = Colors.red; // Critical
+            }
+            
+            return Padding(
+              padding: const EdgeInsets.only(right: 4),
+              child: Container(
+                width: 16,
+                height: 16,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: indicatorColor,
+                  border: Border.all(
+                    color: isCurrent ? AppColors.highlightColor : Colors.white30,
+                    width: isCurrent ? 2 : 1,
+                  ),
+                ),
+                child: animal.currentHealth <= 0
+                    ? const Icon(Icons.close, size: 10, color: Colors.white54)
+                    : null,
+              ),
+            );
+          }),
+        ],
+      ),
     );
   }
 
@@ -1104,10 +1191,15 @@ class _BattleScreenContentState extends State<BattleScreenContent> with TickerPr
         userState.addCapturedOrganism(newCapturedInstance);
       }
       
-      // Handle loss - remove player's creature (death mechanic)
-      if (battleManager.result == BattleResult.loss) {
+      // Handle loss - remove player's creature (death mechanic) ONLY in wild battles
+      if (battleManager.result == BattleResult.loss && !widget.isArenaBattle) {
         final deadCreature = battleManager.player.organism;
         userState.removeCapturedOrganism(deadCreature);
+      }
+
+      // Arena battle prize money
+      if (widget.isArenaBattle && battleManager.result == BattleResult.win) {
+        userState.addMoney(1000);
       }
 
       final bool battleResult = battleManager.result == BattleResult.capture;

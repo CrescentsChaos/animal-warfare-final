@@ -705,6 +705,15 @@ class _AnimalBoxSpriteState extends State<_AnimalBoxSprite> {
   }
 
   @override
+  void didUpdateWidget(_AnimalBoxSprite oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.organism.name != oldWidget.organism.name ||
+        widget.organism.sprite != oldWidget.organism.sprite) {
+      _determineImageSource();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final size = widget.size;
     if (_imageSourceType == null) {

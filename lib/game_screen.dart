@@ -10,6 +10,7 @@ import 'package:animal_warfare/local_auth_service.dart';
 import 'package:animal_warfare/stats_display_button.dart';
 import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/crafting_screen.dart';
+import 'package:animal_warfare/battle_tab_screen.dart';
 
 class GameScreen extends StatefulWidget {
   // FIX: ADDED: Required fields to pass down user data and service
@@ -203,6 +204,13 @@ class _GameScreenState extends State<GameScreen> {
                       _navigateTo(ExploreScreen(currentUser: user, authService: widget.authService));
                     },
                     color: primaryButtonColor,
+                  ),
+
+                  _buildThemedButton(
+                    text: 'BATTLE ARENA',
+                    icon: Icons.sports_kabaddi,
+                    onPressed: () => _navigateTo(const BattleTabScreen()),
+                    color: const Color(0xFF8B0000),
                   ),
 
                   _buildThemedButton(
