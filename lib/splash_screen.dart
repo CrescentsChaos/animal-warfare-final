@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:animal_warfare/main_screen.dart';
-import 'package:audioplayers/audioplayers.dart'; 
-// REMOVED: import 'package:animal_warfare/utils/transitions.dart'; 
+import 'package:animal_warfare/audio_manager.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -12,14 +11,9 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen>
-    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
+    with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _opacityAnimation;
-  
-  // NEW: Declare the audio player instance
-  late AudioPlayer _audioPlayer;
-  // NEW: Flag to track if the audio was playing before pause
-  bool _wasPlayingBeforePause = false;
   
   // Flag to ensure pre-caching runs only once
   bool _assetsPrecached = false; 
@@ -27,14 +21,11 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
-    // NEW: Register the observer for app lifecycle changes
-    WidgetsBinding.instance.addObserver(this); 
     
     // 🚨 MODIFIED: Set the screen to Immersive/Full-screen mode
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
-    // NEW: Initialize Audio Player and start music
-    _audioPlayer = AudioPlayer();
+    // NEW: Initialize Audio Player and start music via AudioManager
     _playBackgroundMusic();
 
     _animationController = AnimationController(
@@ -51,35 +42,13 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) async {
-    super.didChangeAppLifecycleState(state);
-    if (state == AppLifecycleState.paused) {
-      final playerState = await _audioPlayer.state;
-      if (playerState == PlayerState.playing) {
-        _wasPlayingBeforePause = true;
-        await _audioPlayer.pause();
-      }
-    } else if (state == AppLifecycleState.resumed) {
-      if (_wasPlayingBeforePause) {
-        // 🚨 EDITED: Re-apply immersive mode on resume, as system might have restored UI
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-        await _audioPlayer.resume();
-        _wasPlayingBeforePause = false;
-      }
-    }
-  }
-
-  @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
     _animationController.dispose();
-    _audioPlayer.dispose();
     super.dispose();
   }
   
-  Future<void> _playBackgroundMusic() async {
-    await _audioPlayer.setReleaseMode(ReleaseMode.loop);
-    await _audioPlayer.play(AssetSource('audio/rainforest_theme.mp3'));
+  void _playBackgroundMusic() {
+    AudioManager.instance.playBackgroundMusic('audio/rainforest_theme.mp3');
   }
   
   // Precache all necessary images and JSON data
@@ -106,9 +75,7 @@ class _SplashScreenState extends State<SplashScreen>
     // 🚨 MODIFIED: Revert to default System UI visibility before navigating
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
-    // Stop and immediately dispose of the audio player
-    _audioPlayer.stop();
-    _audioPlayer.dispose();
+    // Stop the audio via AudioManager if needed, or it will be replaced by local screen music
     
     // ✅ FIX: Use the custom _createFadeRoute for a smooth, fade-in transition
     Navigator.of(context).pushReplacement(

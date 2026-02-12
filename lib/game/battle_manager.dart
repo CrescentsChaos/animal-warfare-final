@@ -256,6 +256,12 @@ class BattleManager extends ChangeNotifier {
   int currentOpponentIndex = 0;
   bool opponentJustSwitched = false;
   bool playerJustSwitched = false;
+  
+  bool playerMovedThisTurn = false;
+  bool opponentMovedThisTurn = false;
+  bool isResumingTurn = false;
+  Move? pendingPlayerMove;
+  Move? currentTurnOpponentMove;
 
   // Callbacks for UI
   Function(BattleOrganism)? onAttack;
@@ -494,101 +500,148 @@ class BattleManager extends ChangeNotifier {
     currentState = BattleState.playerTurn;
     notifyListeners();
     
-    // Pre-calculate opponent move for priority check
-    final opponentMove = opponentMoves[Random().nextInt(opponentMoves.length)];
-    
-    // 1. Process who moves first in this turn (Check Priority first, then Speed)
-    bool playerGoesFirst = false;
-    
-    // Priority Check
-    int playerPriority = move.priority;
-    int opponentPriority = opponentMove.priority;
+    // 1. Determine priority and order (only if not resuming mid-turn)
+    bool playerGoesFirst = true;
 
-    // Gale Wings check
-    for (final ab in player.abilities) {
-      if (ab.name == 'Gale Wings' && 
-          player.health == player.maxHealth && 
-          move.type == ElementalType.flying) {
-        playerPriority += ab.magnitude.toInt();
-      }
-    }
-    for (final ab in opponent.abilities) {
-      if (ab.name == 'Gale Wings' && 
-          opponent.health == opponent.maxHealth && 
-          opponentMove.type == ElementalType.flying) {
-        opponentPriority += ab.magnitude.toInt();
-      }
-    }
+    if (!isResumingTurn) {
+      // Pre-calculate opponent move for priority check
+      currentTurnOpponentMove = opponentMoves[Random().nextInt(opponentMoves.length)];
+      
+      // Determine who goes first
+      int playerPriority = move.priority;
+      int opponentPriority = currentTurnOpponentMove!.priority;
 
-    if (playerPriority > opponentPriority) {
-      playerGoesFirst = true;
-    } else if (opponentPriority > playerPriority) {
-      playerGoesFirst = false;
-    } else {
-      // Speed Check (same priority)
-      if (player.currentSpeed >= opponent.currentSpeed) {
+      // Gale Wings check
+      for (final ab in player.abilities) {
+        if (ab.name == 'Gale Wings' && 
+            player.health == player.maxHealth && 
+            move.type == ElementalType.flying) {
+          playerPriority += ab.magnitude.toInt();
+        }
+      }
+      for (final ab in opponent.abilities) {
+        if (ab.name == 'Gale Wings' && 
+            opponent.health == opponent.maxHealth && 
+            currentTurnOpponentMove!.type == ElementalType.flying) {
+          opponentPriority += ab.magnitude.toInt();
+        }
+      }
+
+      if (playerPriority > opponentPriority) {
         playerGoesFirst = true;
+      } else if (opponentPriority > playerPriority) {
+        playerGoesFirst = false;
+      } else {
+        // Speed Check (same priority)
+        if (player.currentSpeed >= opponent.currentSpeed) {
+          playerGoesFirst = true;
+        } else {
+          playerGoesFirst = false;
+        }
       }
-    }
-    
-    // Reset "took damage" at start of turn
-    player.tookDamageThisTurn = false;
-    opponent.tookDamageThisTurn = false;
-    opponentJustSwitched = false;
-    playerJustSwitched = false;
-
-    if (playerGoesFirst) {
-      // Skip player turn if they just switched due to fainting
-      if (!playerJustSwitched && await _canMove(player)) {
-        await _executeTurn(player, opponent, move, opponentMove: opponentMove);
-      }
-      if (_checkBattleEnd()) return;
       
-      // Calculate Opponent Move (Need to select it earlier for priority check)
-      // Done above in logic preparation
-      // Skip opponent turn if they just switched due to fainting
-      if (!opponentJustSwitched && await _canMove(opponent)) {
-         await _executeTurn(opponent, player, opponentMove, opponentMove: move);
-      }
+      // Reset flags for a new complete turn cycle
+      playerMovedThisTurn = false;
+      opponentMovedThisTurn = false;
+      player.tookDamageThisTurn = false;
+      opponent.tookDamageThisTurn = false;
+      opponentJustSwitched = false;
+      playerJustSwitched = false;
     } else {
-      // Skip opponent turn if they just switched due to fainting
-      if (!opponentJustSwitched && await _canMove(opponent)) {
-         await _executeTurn(opponent, player, opponentMove, opponentMove: move);
-      }
-      if (_checkBattleEnd()) return;
-
-      // Skip player turn if they just switched due to fainting
-      if (!playerJustSwitched && await _canMove(player)) {
-        await _executeTurn(player, opponent, move, opponentMove: opponentMove);
+      // If resuming, we need to know who was supposed to go first originally,
+      // or simply rely on the moved flags. 
+      // Actually, if we are resuming, it means one side already moved (or fainted).
+      // We can just follow the "player first" or "opponent first" logic but skip if already moved.
+      // To be safe, we'll re-calculate who goes first based on current stats, 
+      // but the 'moved' flags will ensure they don't double-move.
+      
+      // We need to know who should go first among those who HAVEN'T moved.
+      if (opponentMovedThisTurn && !playerMovedThisTurn) {
+        playerGoesFirst = true; // Only player left
+      } else if (playerMovedThisTurn && !opponentMovedThisTurn) {
+        playerGoesFirst = false; // Only opponent left
+      } else {
+        // This shouldn't happen if isResumingTurn is true, but fallback:
+        playerGoesFirst = player.currentSpeed >= opponent.currentSpeed;
       }
     }
 
-    // 2. Apply Turn-End Effects (e.g., Poison damage, Weather)
-    if (!_checkBattleEnd()) {
-      await _applyGlobalTurnEffects();
+    // 2. Execute turns
+    if (playerGoesFirst) {
+      // Player Turn
+      if (!playerMovedThisTurn && (!playerJustSwitched || isResumingTurn)) {
+        if (await _canMove(player)) {
+          await _executeTurn(player, opponent, move, opponentMove: currentTurnOpponentMove);
+        }
+        playerMovedThisTurn = true;
+      }
       if (_checkBattleEnd()) return;
-      
-      await _applyTurnEffects(player);
+      if (currentState == BattleState.waitingForPlayerSwitch) return;
+
+      // Opponent Turn
+      if (!opponentMovedThisTurn && !opponentJustSwitched) {
+        if (await _canMove(opponent)) {
+           await _executeTurn(opponent, player, currentTurnOpponentMove!, opponentMove: move);
+        }
+        opponentMovedThisTurn = true;
+      }
       if (_checkBattleEnd()) return;
-      
-      await _applyTurnEffects(opponent);
+      if (currentState == BattleState.waitingForPlayerSwitch) return;
+
+    } else {
+      // Opponent Turn
+      if (!opponentMovedThisTurn && !opponentJustSwitched) {
+        if (await _canMove(opponent)) {
+           await _executeTurn(opponent, player, currentTurnOpponentMove!, opponentMove: move);
+        }
+        opponentMovedThisTurn = true;
+      }
+      if (_checkBattleEnd()) return;
+      if (currentState == BattleState.waitingForPlayerSwitch) return;
+
+      // Player Turn
+      if (!playerMovedThisTurn && (!playerJustSwitched || isResumingTurn)) {
+        if (await _canMove(player)) {
+          await _executeTurn(player, opponent, move, opponentMove: currentTurnOpponentMove);
+        }
+        playerMovedThisTurn = true;
+      }
+      if (_checkBattleEnd()) return;
+      if (currentState == BattleState.waitingForPlayerSwitch) return;
     }
+
+    // 3. Apply Turn-End Effects (only if everyone who was supposed to move did move)
+    // Wait, if an opponent fainted and was replaced, does the replacement move?
+    // In traditional games, the replacement does NOT move in the same turn it was sent out.
+    // Our logic handles this because opponentJustSwitched/playerJustSwitched is set.
     
-    // 3. Transition to next turn or end
-    if (!_checkBattleEnd()) {
-      // End of this turn's cycle. Prepare for next turn.
-      currentTurn++;
-      turnHistory.add(BattleTurn(currentTurn));
-      
-      currentState = BattleState.waitingForInput;
-      _addToLog('What will ${player.organism.name} do?');
-      
-      // Clear one-turn flags
-      player.isProtected = false;
-      opponent.isProtected = false;
-      player.isInvulnerable = false; // Should already be false if move finished, but safe to clear
-      opponent.isInvulnerable = false;
-    }
+    await _applyGlobalTurnEffects();
+    if (_checkBattleEnd()) return;
+    
+    await _applyTurnEffects(player);
+    if (_checkBattleEnd()) return;
+    
+    await _applyTurnEffects(opponent);
+    if (_checkBattleEnd()) return;
+
+    // 4. End Turn Cycle
+    currentTurn++;
+    turnHistory.add(BattleTurn(currentTurn));
+    
+    currentState = BattleState.waitingForInput;
+    _addToLog('What will ${player.organism.name} do?');
+    
+    // Reset flags for next turn
+    playerMovedThisTurn = false;
+    opponentMovedThisTurn = false;
+    isResumingTurn = false;
+    currentTurnOpponentMove = null;
+    
+    player.isProtected = false;
+    opponent.isProtected = false;
+    player.isInvulnerable = false;
+    opponent.isInvulnerable = false;
+    
     notifyListeners();
   }
   
@@ -906,16 +959,27 @@ class BattleManager extends ChangeNotifier {
       return false;
     }
     if (org.statusEffect.type == StatusEffectType.sleep) {
-      if (org.statusEffect.duration > 0) {
-        org.statusEffect = StatusEffect(type: StatusEffectType.sleep, duration: org.statusEffect.duration - 1);
-      }
       if (org.statusEffect.duration <= 0) {
-      _addToLog('${org.organism.baseOrganism.name} woke up!');
-         org.statusEffect = const StatusEffect(type: StatusEffectType.none);
-         notifyListeners();
-         await Future.delayed(const Duration(milliseconds: 2500));
-         return true;
+        _addToLog('${org.organism.baseOrganism.name} woke up!');
+        org.statusEffect = const StatusEffect(type: StatusEffectType.none);
+        notifyListeners();
+        await Future.delayed(const Duration(milliseconds: 2500));
+        return true;
       }
+      
+      // Status Duration Decay
+      int decay = 1;
+      final wakeUpAbility = org.abilities.firstWhere(
+        (ab) => ab.effectType == AbilityEffectType.wakeUpFaster, 
+        orElse: () => const Ability(name: '', description: '')
+      );
+      if (wakeUpAbility.name.isNotEmpty) {
+        await _notifyAbilityTrigger(org, wakeUpAbility);
+        decay = 2;
+      }
+
+      org.statusEffect = org.statusEffect.copyWith(duration: max(0, org.statusEffect.duration - decay));
+      
       _addToLog('${org.organism.baseOrganism.name} is fast asleep.');
       notifyListeners();
       await Future.delayed(const Duration(milliseconds: 2500));
@@ -1054,14 +1118,14 @@ class BattleManager extends ChangeNotifier {
             // Volatile/Fixed: Sleep (1-3), Stun (1), Regen (3-5), Confusion (3-5), Blind (3-5), Vulnerable (3-5)
             int duration = -1; // Default to indefinite for major statuses
             
-            if (statusType == StatusEffectType.sleep) duration = 3 + Random().nextInt(3); // 3-5 turns
-            else if (statusType == StatusEffectType.stun) duration = 1;
-            else if (statusType == StatusEffectType.regen || 
-                     statusType == StatusEffectType.confusion || 
-                     statusType == StatusEffectType.blind || 
-                     statusType == StatusEffectType.vulnerable) {
-              duration = 3 + Random().nextInt(3);
-            }
+          if (statusType == StatusEffectType.sleep) duration = 2 + Random().nextInt(4); // 2-5 turns
+          else if (statusType == StatusEffectType.stun) duration = 1;
+          else if (statusType == StatusEffectType.regen || 
+                   statusType == StatusEffectType.confusion || 
+                   statusType == StatusEffectType.blind || 
+                   statusType == StatusEffectType.vulnerable) {
+            duration = 3 + Random().nextInt(3);
+          }
 
             final newStatus = StatusEffect(type: statusType, duration: duration); 
             target.statusEffect = newStatus;
@@ -1290,13 +1354,11 @@ class BattleManager extends ChangeNotifier {
     }
     
     // Status Duration Decay and Recovery
-    if (target.statusEffect.type != StatusEffectType.none && target.statusEffect.duration > 0) {
+    if (target.statusEffect.type != StatusEffectType.none && 
+        target.statusEffect.type != StatusEffectType.sleep && // Sleep skip/wake handled in _canMove
+        target.statusEffect.duration > 0) {
       int decay = 1;
-      final wakeUpAbility = target.abilities.firstWhere((ab) => ab.effectType == AbilityEffectType.wakeUpFaster, orElse: () => const Ability(name: '', description: ''));
-      if (wakeUpAbility.name.isNotEmpty && target.statusEffect.type == StatusEffectType.sleep) {
-         await _notifyAbilityTrigger(target, wakeUpAbility);
-         decay = 2;
-      }
+      
       target.statusEffect = target.statusEffect.copyWith(duration: max(0, target.statusEffect.duration - decay));
       
       if (target.statusEffect.duration == 0) {
@@ -1403,7 +1465,9 @@ class BattleManager extends ChangeNotifier {
 
     _switchToAnimal(index);
     if (isForced) {
-      playerJustSwitched = true;
+      isResumingTurn = true; // Mark as resuming so we don't start a new turn cycle
+    } else {
+      playerJustSwitched = true; // Normal switch skips player's turn action
     }
     notifyListeners();
     await Future.delayed(const Duration(milliseconds: 3000));

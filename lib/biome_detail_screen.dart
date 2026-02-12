@@ -6,12 +6,13 @@ import 'package:animal_warfare/battle_screen.dart';// Ensure this is the correct
 import 'package:animal_warfare/game/battle_manager.dart'; // Import for BattleResult enum
 import 'explore_screen.dart'; // Import to use getWeightedRandomOrganism and Organism List
 import 'package:audioplayers/audioplayers.dart'; // Audio Player Import
-import 'package:animal_warfare/local_auth_service.dart'; 
-import 'package:animal_warfare/achievement_service.dart'; 
+import 'package:animal_warfare/local_auth_service.dart';
+import 'package:animal_warfare/audio_manager.dart';
+import 'package:animal_warfare/achievement_service.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:provider/provider.dart';
-import 'package:animal_warfare/user_state.dart'; 
+import 'package:animal_warfare/user_state.dart';
 
 class BiomeDetailScreen extends StatefulWidget {
   final String biomeName;
@@ -166,6 +167,7 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
   final wildFighter = CapturedOrganism.spawn(wildOrganism);
   
   // 3. Navigate to the Battle Screen
+  AudioManager.instance.pause();
   final Object? result = await Navigator.of(context).push(
     MaterialPageRoute(
       builder: (context) => BattleScreen(
@@ -176,6 +178,7 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
       ),
     ),
   );
+  AudioManager.instance.resume();
   
   // 🚨 NEW LOGIC: Check the BattleResult
   if (result == BattleResult.capture) {
@@ -207,29 +210,18 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
   }
 }
 
-  void _playBiomeMusic(String biomeName) async {
+  void _playBiomeMusic(String biomeName) {
     String musicPath = _getMusicPath(biomeName);
-    try {
-      if (_audioPlayer.state != PlayerState.playing && _audioPlayer.state != PlayerState.paused) {
-        await _audioPlayer.setSourceAsset(musicPath);
-        await _audioPlayer.setReleaseMode(ReleaseMode.loop); 
-      }
-      await _audioPlayer.resume(); 
-    } catch (e) {
-      if (mounted) {
-        // Suppress or handle the error gracefully if the music asset is missing
-        debugPrint('Warning: Could not play music for $biomeName. Error: $e');
-      }
-    }
+    AudioManager.instance.playBackgroundMusic(musicPath);
   }
   
-  void _pauseMusic() async {
-    await _audioPlayer.pause();
+  void _pauseMusic() {
+    AudioManager.instance.pause();
   }
   
-  void _stopAndDisposeMusic() async {
-    await _audioPlayer.stop();
-    await _audioPlayer.dispose();
+  void _stopAndDisposeMusic() {
+    // No explicit dispose for singleton AudioPlayer usually, but we can stop it
+    AudioManager.instance.stop();
   }
   
   // Helper to get the base color based on biome (More Immersive Palette)

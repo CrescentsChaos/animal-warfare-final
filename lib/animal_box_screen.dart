@@ -9,6 +9,7 @@ import 'package:animal_warfare/models/move.dart';
 import 'package:animal_warfare/local_auth_service.dart';
 import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/theme.dart';
+import 'package:animal_warfare/models/nature.dart';
 
 class AnimalBoxScreen extends StatefulWidget {
   const AnimalBoxScreen({super.key});
@@ -489,13 +490,14 @@ class _AnimalDetailsDialog extends StatelessWidget {
             _buildStatRow('SPD IV', ivs['speed'] ?? 0),
             const Divider(color: Colors.grey),
             _buildStatHeader('EFFECTIVE STATS'),
-            const SizedBox(height: 8),
-            _buildEffectiveStatRow('HP', captured.maxHealth),
-            _buildEffectiveStatRow('Attack', captured.effectiveAttack),
-            _buildEffectiveStatRow('Defense', captured.effectiveDefense),
-            _buildEffectiveStatRow('Power', captured.effectivePower),
-            _buildEffectiveStatRow('Resistance', captured.effectiveResistance),
-            _buildEffectiveStatRow('Speed', captured.effectiveSpeed),
+            _buildNatureHeader(captured.nature),
+            const SizedBox(height: 6),
+            _buildEffectiveStatRow('HP', captured.maxHealth, _getNatureColor('health', captured.nature)),
+            _buildEffectiveStatRow('Attack', captured.effectiveAttack, _getNatureColor('attack', captured.nature)),
+            _buildEffectiveStatRow('Defense', captured.effectiveDefense, _getNatureColor('defense', captured.nature)),
+            _buildEffectiveStatRow('Power', captured.effectivePower, _getNatureColor('power', captured.nature)),
+            _buildEffectiveStatRow('Resistance', captured.effectiveResistance, _getNatureColor('resistance', captured.nature)),
+            _buildEffectiveStatRow('Speed', captured.effectiveSpeed, _getNatureColor('speed', captured.nature)),
             const SizedBox(height: 16),
             _buildStatHeader('SELECTED MOVES'),
             const SizedBox(height: 8),
@@ -545,14 +547,31 @@ class _AnimalDetailsDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildEffectiveStatRow(String label, int value) {
+  Widget _buildNatureHeader(Nature nature) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 4.0),
+      child: Text(
+        'Nature: ${nature.name}',
+        style: const TextStyle(fontSize: 10, fontFamily: 'PressStart2P', color: AppColors.highlightColor),
+      ),
+    );
+  }
+
+  Color _getNatureColor(String statName, Nature nature) {
+    final mult = nature.getMultiplier(statName);
+    if (mult > 1.0) return Colors.orange;
+    if (mult < 1.0) return Colors.cyan;
+    return Colors.white;
+  }
+
+  Widget _buildEffectiveStatRow(String label, int value, [Color color = Colors.white]) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: const TextStyle(fontSize: 9, fontFamily: 'PressStart2P')),
-          Text('$value', style: const TextStyle(fontSize: 9, fontFamily: 'PressStart2P', color: Colors.white)),
+          Text('$value', style: TextStyle(fontSize: 9, fontFamily: 'PressStart2P', color: color)),
         ],
       ),
     );

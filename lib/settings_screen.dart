@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // For saving settings
 import 'package:animal_warfare/local_auth_service.dart'; // For UserData and logout
 import 'package:animal_warfare/main_screen.dart'; // For logout navigation
+import 'package:animal_warfare/audio_manager.dart';
 
 class SettingsScreen extends StatefulWidget {
   // Required fields based on your existing screen structure
@@ -185,6 +186,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         setState(() {
                           _isMusicEnabled = value;
                           _saveSettings();
+                          if (!_isMusicEnabled) {
+                            AudioManager.instance.stop();
+                          } else {
+                            // If they turn it back on, we might want to resume 
+                            // but we don't know the track here. 
+                            // The next screen transition or reload will handle it.
+                            AudioManager.instance.resume();
+                          }
                         });
                       },
                       activeColor: highlightColor,

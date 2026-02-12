@@ -41,7 +41,7 @@ class ProfileScreen extends StatefulWidget {
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserver {
+class _ProfileScreenState extends State<ProfileScreen> {
   final LocalAuthService _authService = LocalAuthService();
 
   UserData? _currentUser;
@@ -51,9 +51,6 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
   List<dynamic> _allOrganisms = [];
   // END NEW
   
-  late AudioPlayer _audioPlayer; 
-  bool _wasPlayingBeforePause = false; 
-
   // Custom retro/military colors (Copied from other screens for consistency)
   static const Color primaryButtonColor = Color(0xFF38761D); // Bright Jungle Green
   static const Color secondaryButtonColor = Color(0xFF1E3F2A); // Deep Forest Green
@@ -62,9 +59,6 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this); 
-    
-    _audioPlayer = AudioPlayer(); 
     _loadUserProfile();
     _loadOrganisms();
   }
@@ -82,30 +76,10 @@ class _ProfileScreenState extends State<ProfileScreen> with WidgetsBindingObserv
   }
   // END ADDED
 
-  // Override to handle app lifecycle changes
-  @override
-  didChangeAppLifecycleState(AppLifecycleState state) async {
-    super.didChangeAppLifecycleState(state);
-    if (state == AppLifecycleState.paused) {
-      // Pause audio when app goes to background
-      final playerState = await _audioPlayer.state;
-      if (playerState == PlayerState.playing) {
-        _wasPlayingBeforePause = true;
-        await _audioPlayer.pause();
-      }
-    } else if (state == AppLifecycleState.resumed) {
-      // Resume audio when app returns to foreground if it was playing
-      if (_wasPlayingBeforePause) {
-        await _audioPlayer.resume();
-        _wasPlayingBeforePause = false;
-      }
-    }
-  }
-
+  // ... (Other methods remain unchanged)
+  
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    _audioPlayer.dispose();
     super.dispose();
   }
 

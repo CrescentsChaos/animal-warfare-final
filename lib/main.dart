@@ -6,6 +6,7 @@ import 'package:animal_warfare/splash_screen.dart';
 import 'package:audioplayers/audioplayers.dart'; 
 import 'package:provider/provider.dart'; // 🚨 NEW: Import Provider
 import 'package:animal_warfare/user_state.dart'; // 🚨 NEW: Import UserState (Assumed to exist/created in previous steps)
+import 'package:animal_warfare/audio_manager.dart';
 
 void main() async {
   // 1. Ensure Flutter bindings are initialized first
@@ -38,8 +39,35 @@ void main() async {
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.paused) {
+      AudioManager.instance.handleLifecycleChange(true);
+    } else if (state == AppLifecycleState.resumed) {
+      AudioManager.instance.handleLifecycleChange(false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

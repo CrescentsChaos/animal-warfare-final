@@ -11,7 +11,7 @@ class EditProfileScreen extends StatefulWidget {
   State<EditProfileScreen> createState() => _EditProfileScreenState();
 }
 
-class _EditProfileScreenState extends State<EditProfileScreen> with WidgetsBindingObserver {
+class _EditProfileScreenState extends State<EditProfileScreen> {
   final LocalAuthService _authService = LocalAuthService();
   final ImagePicker _picker = ImagePicker();
 
@@ -21,9 +21,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> with WidgetsBindi
   String? _selectedGender;
   bool _isLoading = true; 
 
-  late AudioPlayer _audioPlayer; 
-  bool _wasPlayingBeforePause = false; 
-
   // Custom retro/military colors
   static const Color primaryButtonColor = Color(0xFF38761D);
   static const Color secondaryButtonColor = Color(0xFF1E3F2A);
@@ -32,41 +29,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> with WidgetsBindi
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this); 
-
-    _audioPlayer = AudioPlayer(); 
-    
     _loadUserProfile();
   }
   
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) async {
-    if (state == AppLifecycleState.paused) {
-      _pauseMusic(true);
-    } else if (state == AppLifecycleState.resumed) {
-      _resumeMusic();
-    }
-  }
-
-  @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    _audioPlayer.dispose();
     super.dispose();
-  }
-  
-  void _pauseMusic(bool rememberState) async {
-    if (rememberState) {
-      _wasPlayingBeforePause = _audioPlayer.state == PlayerState.playing;
-    }
-    await _audioPlayer.pause();
-  }
-
-  void _resumeMusic() async {
-    if (_wasPlayingBeforePause) {
-      await _audioPlayer.resume();
-      _wasPlayingBeforePause = false;
-    }
   }
 
   Future<void> _loadUserProfile() async {
@@ -217,7 +185,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> with WidgetsBindi
           ),
         ),
         child: _isLoading
-            ? const Center(child: CircularProgressIndicator(color: highlightColor))
+            ? Center(child: CircularProgressIndicator(color: highlightColor))
             : SingleChildScrollView(
                 padding: const EdgeInsets.all(24.0),
                 child: Column(
@@ -233,7 +201,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> with WidgetsBindi
                             ? FileImage(_pickedAvatarFile!) as ImageProvider
                             : null,
                         child: _pickedAvatarFile == null
-                            ? const Icon(Icons.add_a_photo, size: 50, color: highlightColor)
+                            ? Icon(Icons.add_a_photo, size: 50, color: highlightColor)
                             : null,
                       ),
                     ),

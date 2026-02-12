@@ -8,6 +8,8 @@ import 'package:animal_warfare/user_state.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:animal_warfare/audio_manager.dart';
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -15,16 +17,13 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
+class _LoginScreenState extends State<LoginScreen> {
   final LocalAuthService _authService = LocalAuthService();
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
   final TextEditingController _newPasswordController = TextEditingController();
   final TextEditingController _confirmNewPasswordController = TextEditingController(); 
-  
-  late AudioPlayer _audioPlayer; 
-  bool _wasPlayingBeforePause = false;
   
   bool _isLogin = true;
   bool _isLoading = false;
@@ -37,38 +36,16 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this); 
-    
-    _audioPlayer = AudioPlayer(); 
     _playBackgroundMusic();
   }
   
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) async {
-    super.didChangeAppLifecycleState(state);
-    if (state == AppLifecycleState.paused) {
-      final playerState = await _audioPlayer.state;
-      if (playerState == PlayerState.playing) {
-        _wasPlayingBeforePause = true;
-        await _audioPlayer.pause();
-      }
-    } else if (state == AppLifecycleState.resumed) {
-      if (_wasPlayingBeforePause) {
-        await _audioPlayer.resume();
-        _wasPlayingBeforePause = false;
-      }
-    }
-  }
-
-  @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
     _usernameController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     _newPasswordController.dispose();
     _confirmNewPasswordController.dispose();
-    _audioPlayer.dispose();
     super.dispose();
   }
 
@@ -77,10 +54,9 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
     final isMusicEnabled = prefs.getBool('isMusicEnabled') ?? true; // Default to ON
 
     if (isMusicEnabled) {
-      await _audioPlayer.setReleaseMode(ReleaseMode.loop);
-      await _audioPlayer.play(AssetSource('audio/login_background.mp3'));
+      AudioManager.instance.playBackgroundMusic('audio/login_background.mp3');
     } else {
-      await _audioPlayer.stop();
+      AudioManager.instance.stop();
     }
   }
 

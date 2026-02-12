@@ -12,6 +12,8 @@ import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/crafting_screen.dart';
 import 'package:animal_warfare/battle_tab_screen.dart';
 
+import 'package:animal_warfare/audio_manager.dart';
+
 class GameScreen extends StatefulWidget {
   // FIX: ADDED: Required fields to pass down user data and service
   final UserData currentUser; 
@@ -28,7 +30,6 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> {
-  late AudioPlayer _audioPlayer;
 
   // Define High-Contrast Retro/Military-themed colors (Copied from main_screen for consistency)
   static const Color primaryButtonColor = Color(0xFF38761D); // Bright Jungle Green
@@ -39,35 +40,21 @@ class _GameScreenState extends State<GameScreen> {
   @override
   void initState() {
     super.initState();
-    _audioPlayer = AudioPlayer();
     _playBackgroundMusic();
   }
 
   @override
   void dispose() {
-    _audioPlayer.dispose();
     super.dispose();
   }
   
-  void _playBackgroundMusic() async {
-    // ... (music playback logic remains the same)
-    try {
-      await _audioPlayer.setSourceAsset('audio/main_theme.mp3');
-      await _audioPlayer.setReleaseMode(ReleaseMode.loop);
-      await _audioPlayer.resume();
-    } catch (e) {
-      // Handle error if music file is missing
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Warning: Could not play game screen music.')),
-        );
-      }
-    }
+  void _playBackgroundMusic() {
+    AudioManager.instance.playBackgroundMusic('audio/main_theme.mp3');
   }
   
   // Navigation function to pass UserData and LocalAuthService
   void _navigateTo(Widget screen) async {
-    _audioPlayer.pause();
+    AudioManager.instance.pause();
     await Navigator.of(context).push(
       PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 400),
@@ -82,7 +69,7 @@ class _GameScreenState extends State<GameScreen> {
     );
     
     // Resume music when returning
-    _audioPlayer.resume();
+    AudioManager.instance.resume();
     
     // 🟢 FIX: Refresh user data when returning from any screen
     final updatedUser = await widget.authService.getCurrentUser();

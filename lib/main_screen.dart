@@ -11,6 +11,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:animal_warfare/theme.dart'; 
 
 
+import 'package:animal_warfare/audio_manager.dart';
+
 enum AuthStatus { loading, loggedIn, guest } 
 
 class MainScreen extends StatefulWidget {
@@ -20,55 +22,20 @@ class MainScreen extends StatefulWidget {
   State<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
+class _MainScreenState extends State<MainScreen> {
   final LocalAuthService _authService = LocalAuthService();
   AuthStatus _authStatus = AuthStatus.loading;
   UserData? _currentUser;
   
-  late AudioPlayer _audioPlayer; 
-  bool _wasPlayingBeforePause = false; 
-
-  // 🚨 REMOVED: Redundant color definitions, now using AppColors
-  // static const Color primaryButtonColor = Color(0xFF38761D);
-  // static const Color secondaryButtonColor = Color(0xFF1E3F2A);
-  // static const Color highlightColor = Color(0xFFDAA520);
-
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this); 
-    
-    _audioPlayer = AudioPlayer(); 
     _checkAuthStatus();
     _playBackgroundMusic();
   }
 
-  // Override to handle app lifecycle changes
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused) {
-      // Pause audio when app goes into background
-      if (_audioPlayer.state == PlayerState.playing) {
-        _wasPlayingBeforePause = true;
-        _audioPlayer.pause();
-      } else {
-        _wasPlayingBeforePause = false;
-      }
-    } else if (state == AppLifecycleState.resumed) {
-      // Resume audio when app comes back to foreground
-      if (_wasPlayingBeforePause) {
-        _audioPlayer.resume();
-        _wasPlayingBeforePause = false; // Reset the flag
-      }
-    }
-  }
-
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    // 🚨 FIX: Stop and release the audio player to prevent resource leaks and errors
-    _audioPlayer.stop();
-    _audioPlayer.release();
     super.dispose();
   }
 
@@ -85,17 +52,16 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     final isMusicEnabled = prefs.getBool('isMusicEnabled') ?? true; // Default to ON
 
     if (isMusicEnabled) {
-      await _audioPlayer.setReleaseMode(ReleaseMode.loop);
-      // Ensure you use a valid AssetSource path
-      await _audioPlayer.play(AssetSource('audio/coastal_theme.mp3'));
+      AudioManager.instance.playBackgroundMusic('audio/coastal_theme.mp3');
     } else {
-      await _audioPlayer.stop();
+      AudioManager.instance.stop();
     }
   }
 
   void _navigateTo(Widget page) {
-    // Stop and immediately replay music when returning to ensure the latest setting is applied
-    _audioPlayer.stop();
+    // Stop music via AudioManager when navigating away if necessary, 
+    // though the new page should handle its own music or pause it.
+    AudioManager.instance.pause();
     
     // FIX: Replace MaterialPageRoute with your custom _createFadeRoute
     Navigator.of(context).push(
@@ -104,7 +70,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
         // This block runs AFTER the new page is POPPED (i.e., you return to the current screen)
         _checkAuthStatus();
         _playBackgroundMusic();
-        // REMOVED: The stray '_createFadeRoute(page),' which was incorrectly placed inside the .then() block.
+        // Resume music when returning
+        AudioManager.instance.resume();
     });
 }
 

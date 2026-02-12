@@ -203,7 +203,9 @@ class Move {
     Move(name: 'Death Roll', description: 'The user grabs the target and spins violently, tearing and crushing at the same time.', baseDamage: 80, type: ElementalType.aquatic, stamina: 5, category: MoveCategory.physical,
       effect: MoveEffect(type: MoveEffectType.statChange, target: 'opponent', stat: 'defense', value: -1, chance: 40),
     ),
-    Move(name: 'Scratch', description: 'A basic attack.', baseDamage: 10, type: ElementalType.normal, stamina: 35, category: MoveCategory.physical),
+    Move(name: 'Scratch', description: 'A basic attack.', baseDamage: 10, type: ElementalType.normal, stamina: 35, accuracy: 100, category: MoveCategory.physical),
+    Move(name: 'Headbutt', description: 'A basic attack.', baseDamage: 70, type: ElementalType.normal, stamina: 15, accuracy: 90, category: MoveCategory.physical),
+    Move(name: 'Stomp', description: 'A basic attack.', baseDamage: 65, type: ElementalType.normal, stamina: 25, accuracy: 95, category: MoveCategory.physical),
     Move(name: 'Claw Swipe', description: 'A basic attack.', baseDamage: 20, type: ElementalType.normal, stamina: 30, category: MoveCategory.physical),
     Move(name: 'Kick', description: 'A basic attack.', baseDamage: 20, type: ElementalType.normal, stamina: 30, category: MoveCategory.physical),
     Move(name: 'Slash', description: 'A basic attack.', baseDamage: 30, type: ElementalType.normal, critRate: 1, stamina: 20, category: MoveCategory.physical),
@@ -259,6 +261,7 @@ class Move {
  
     // COMPLEX MOVES
     Move(name: 'Quick Attack', description: 'Strikes first.', baseDamage: 40, priority: 1, type: ElementalType.agile, stamina: 30, category: MoveCategory.physical),
+    Move(name: 'Dash', description: 'Strikes first.', baseDamage: 50, priority: 1, type: ElementalType.agile, stamina: 20, category: MoveCategory.physical),
     Move(name: 'Double Slap', description: 'Hits 2-5 times.', baseDamage: 15, minHits: 2, maxHits: 5, type: ElementalType.social, stamina: 15, category: MoveCategory.physical),
     Move(name: 'Drain Punch', description: 'Heals half damage dealt.', baseDamage: 75, drainPercent: 0.5, type: ElementalType.parasite, stamina: 10, category: MoveCategory.physical),
     Move(name: 'Take Down', description: 'Hurts user.', baseDamage: 90, recoilPercent: 0.25, type: ElementalType.giant, stamina: 15, category: MoveCategory.physical),

@@ -50,8 +50,15 @@ class Organism {
       typeList = List<String>.from(json['types']);
     } else if (json['types'] is String) {
        typeList = (json['types'] as String).split(',').map((e) => e.trim()).toList();
-    } else {
-      // Fallback: default to normal
+    } 
+    
+    // FALLBACK: Use 'category' if types is still empty
+    if (typeList.isEmpty && json['category'] is String) {
+      typeList = (json['category'] as String).split(',').map((e) => e.trim()).toList();
+    }
+
+    if (typeList.isEmpty) {
+      // Final Fallback: always have at least 'normal'
       typeList = ['normal']; 
     }
 
