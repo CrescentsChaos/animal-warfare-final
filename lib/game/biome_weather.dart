@@ -104,8 +104,7 @@ class BiomeWeatherTable {
       case 'lake':
         return {
           Weather.clear: 40,
-          Weather.drizzle: 35,
-          Weather.rain: 15,
+          Weather.rain: 50,
           Weather.fog: 10,
         };
         
@@ -156,8 +155,7 @@ class BiomeWeatherTable {
       case 'kelp forest':
         return {
           Weather.clear: 50,
-          Weather.drizzle: 30,
-          Weather.rain: 20,
+          Weather.rain: 50,
         };
         
       // Default for unknown biomes

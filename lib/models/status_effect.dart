@@ -1,4 +1,5 @@
 // lib/models/status_effect.dart
+import 'package:flutter/material.dart';
 
 enum StatusEffectType {
   none,
@@ -65,6 +66,23 @@ class StatusEffect {
       case StatusEffectType.vulnerable: return 'became vulnerable to attacks!';
       case StatusEffectType.stun: return 'was stunned!';
       default: return '';
+    }
+  }
+
+  Color get color {
+    switch (type) {
+      case StatusEffectType.poison: return Colors.purple;
+      case StatusEffectType.burn: return Colors.deepOrange;
+      case StatusEffectType.sleep: return Colors.lightBlue;
+      case StatusEffectType.paralysis: return Colors.amber;
+      case StatusEffectType.freeze: return Colors.cyan;
+      case StatusEffectType.bleed: return Colors.red[900]!;
+      case StatusEffectType.confusion: return Colors.purpleAccent;
+      case StatusEffectType.blind: return Colors.grey;
+      case StatusEffectType.regen: return Colors.green;
+      case StatusEffectType.vulnerable: return Colors.pink;
+      case StatusEffectType.stun: return Colors.brown;
+      default: return Colors.grey;
     }
   }
 }

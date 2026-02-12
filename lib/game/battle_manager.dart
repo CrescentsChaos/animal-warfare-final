@@ -387,7 +387,7 @@ class BattleManager extends ChangeNotifier {
             
             if (w == Weather.heatwave) {
               stageChange = 1;
-            } else if (w == Weather.rain || w == Weather.heavyRain || w == Weather.drizzle || 
+            } else if (w == Weather.rain || w == Weather.heavyRain || 
                        w == Weather.snow || w == Weather.blizzard || w == Weather.thunderstorm) {
               stageChange = -1;
             }
@@ -441,7 +441,6 @@ class BattleManager extends ChangeNotifier {
     switch (w) {
       case Weather.rain: return 'Rain continues to fall.';
       case Weather.heavyRain: return 'The downpour persists!';
-      case Weather.drizzle: return 'It\'s still drizzling.';
       case Weather.snow: return 'Snow keeps falling.';
       case Weather.blizzard: return 'The blizzard rages on!';
       case Weather.fog: return 'The fog lingers.';
@@ -1023,7 +1022,7 @@ class BattleManager extends ChangeNotifier {
             // Volatile/Fixed: Sleep (1-3), Stun (1), Regen (3-5), Confusion (3-5), Blind (3-5), Vulnerable (3-5)
             int duration = -1; // Default to indefinite for major statuses
             
-            if (statusType == StatusEffectType.sleep) duration = 1 + Random().nextInt(3);
+            if (statusType == StatusEffectType.sleep) duration = 3 + Random().nextInt(3); // 3-5 turns
             else if (statusType == StatusEffectType.stun) duration = 1;
             else if (statusType == StatusEffectType.regen || 
                      statusType == StatusEffectType.confusion || 
@@ -1090,7 +1089,7 @@ class BattleManager extends ChangeNotifier {
     
     if (move.name == 'Rest') {
       attacker.health = attacker.maxHealth;
-      attacker.statusEffect = const StatusEffect(type: StatusEffectType.sleep, duration: 2);
+      attacker.statusEffect = const StatusEffect(type: StatusEffectType.sleep, duration: 2); // Always 2 turns
       _appendToLog('\n${attacker.organism.baseOrganism.name} fell asleep and restored its HP!');
     }
 
@@ -1165,13 +1164,13 @@ class BattleManager extends ChangeNotifier {
     // Weather
     if (weatherTurnsLeft > 0) {
       weatherTurnsLeft--;
-      // Show weather persistence message occasionally
-      if (weatherTurnsLeft % 3 == 0 && currentWeather.weather != Weather.clear) {
+      // Show weather persistence message every turn
+      if (currentWeather.weather != Weather.clear) {
         final msg = _getWeatherPersistenceMessage(currentWeather.weather);
         if (msg.isNotEmpty) {
           _addToLog(msg);
           notifyListeners();
-          await Future.delayed(const Duration(milliseconds: 3000));
+          await Future.delayed(const Duration(milliseconds: 2500));
         }
       }
       

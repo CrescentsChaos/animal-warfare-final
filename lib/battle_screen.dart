@@ -524,7 +524,7 @@ class _BattleScreenContentState extends State<BattleScreenContent> with TickerPr
               margin: const EdgeInsets.only(top: 4),
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
               decoration: BoxDecoration(
-                color: Colors.redAccent,
+                color: organism.statusEffect.color,
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
@@ -617,7 +617,7 @@ class _BattleScreenContentState extends State<BattleScreenContent> with TickerPr
               margin: const EdgeInsets.only(top: 4),
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
               decoration: BoxDecoration(
-                color: Colors.redAccent,
+                color: organism.statusEffect.color,
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
