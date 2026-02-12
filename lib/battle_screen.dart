@@ -13,7 +13,6 @@ import 'package:animal_warfare/models/terrain.dart';
 import 'package:animal_warfare/models/status_effect.dart';
 import 'package:animal_warfare/models/loot_item.dart';
 import 'package:animal_warfare/models/organism.dart';
-import 'package:animal_warfare/models/nature.dart';
 import 'dart:math' as math;
 import 'dart:async';
 
@@ -25,6 +24,7 @@ class BattleScreen extends StatelessWidget {
   final String? battleTitle;
   final bool isArenaBattle;
   final List<CapturedOrganism>? opponentTeam;
+  final bool isRogueMode;
 
   const BattleScreen({
     super.key,
@@ -35,6 +35,7 @@ class BattleScreen extends StatelessWidget {
     this.battleTitle,
     this.isArenaBattle = false,
     this.opponentTeam,
+    this.isRogueMode = false,
   });
 
   @override
@@ -47,12 +48,14 @@ class BattleScreen extends StatelessWidget {
         team: playerTeam,
         opponentTeam: opponentTeam,
         isArenaBattle: isArenaBattle,
+        isRogueMode: isRogueMode,
       ),
       child: BattleScreenContent(
         biomeName: biomeName,
         opponentName: opponentOrganism.baseOrganism.name,
         battleTitle: battleTitle,
         isArenaBattle: isArenaBattle,
+        isRogueMode: isRogueMode,
       ),
     );
   }
@@ -63,6 +66,7 @@ class BattleScreenContent extends StatefulWidget {
   final String opponentName;
   final String? battleTitle;
   final bool isArenaBattle;
+  final bool isRogueMode;
 
   const BattleScreenContent({
     super.key,
@@ -70,6 +74,7 @@ class BattleScreenContent extends StatefulWidget {
     required this.opponentName,
     this.battleTitle,
     this.isArenaBattle = false,
+    this.isRogueMode = false,
   });
 
   @override
@@ -117,7 +122,28 @@ class _BattleScreenContentState extends State<BattleScreenContent>
       final bm = Provider.of<BattleManager>(context, listen: false);
       bm.onAttack = _onAttack;
       bm.onVictory = _onVictory;
+
+      // Sync rogue state mid-battle
+      if (widget.isRogueMode) {
+        bm.addListener(_syncRogueState);
+      }
     });
+  }
+
+  void _syncRogueState() {
+    if (!mounted || !widget.isRogueMode) return;
+    final bm = Provider.of<BattleManager>(context, listen: false);
+    final userState = Provider.of<UserState>(context, listen: false);
+    final user = userState.currentUser;
+    if (user == null) return;
+
+    // Update the rogue state with current team and opponent health/stamina/status
+    final updatedState = user.rogueLikeState.copyWith(
+      team: bm.playerTeam,
+      opponentTeam: bm.opponentTeam,
+      currentOpponentIndex: bm.currentOpponentIndex,
+    );
+    userState.updateRogueRunState(updatedState);
   }
 
   @override
@@ -160,7 +186,23 @@ class _BattleScreenContentState extends State<BattleScreenContent>
   }
 
   String _getAssetPath(String biomeName) {
-    final fileName = biomeName.toLowerCase().replaceAll(' ', '_');
+    // 1. Clean raw string & Handle multiple biomes - Take the first one
+    var name = biomeName;
+    if (name.contains(',')) {
+      name = name.split(',')[0];
+    }
+
+    // 2. Normalize
+    name = name.trim().toLowerCase();
+
+    // 3. Overrides/Fallbacks
+    if (name == 'forest') return 'assets/biomes/jungle-bg.png';
+    if (name == 'rain forest' || name == 'rainforest')
+      return 'assets/biomes/rainforest-bg.png';
+    if (name == 'grassland') return 'assets/biomes/savanna-bg.png';
+
+    // 4. Asset formatting
+    final fileName = name.replaceAll(' ', '_');
     return 'assets/biomes/$fileName-bg.png';
   }
 
@@ -516,6 +558,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                                           battleManager,
                                           overlayColor,
                                           isNarrow,
+                                          userState,
                                         ),
                                       ),
                                     ),
@@ -591,6 +634,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                               battleManager,
                               overlayColor,
                               isNarrow,
+                              userState,
                             ),
                           ] else
                             Expanded(
@@ -622,18 +666,49 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     BattleManager battleManager,
     Color overlayColor,
   ) {
+    final userState = Provider.of<UserState>(context, listen: false);
+    final rogueState = userState.currentUser?.rogueLikeState;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            widget.battleTitle ?? 'Wild Encounter',
-            style: AppTextStyles.headline(
-              context,
-              baseSize: 12,
-              color: AppColors.highlightColor,
-            ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                widget.battleTitle ?? 'Wild Encounter',
+                style: AppTextStyles.headline(
+                  context,
+                  baseSize: 12,
+                  color: AppColors.highlightColor,
+                ),
+              ),
+              if (widget.isRogueMode && rogueState != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.highlightColor,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      'FLOOR ${rogueState.floor} - ${rogueState.encounterIndex + 1}/5',
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 9,
+                        fontFamily: 'PressStart2P',
+                      ),
+                    ),
+                  ),
+                ),
+            ],
           ),
           Row(
             children: [
@@ -1469,6 +1544,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     BattleManager battleManager,
     Color overlayColor,
     bool isNarrow,
+    UserState userState,
   ) {
     return Container(
       margin: EdgeInsets.fromLTRB(
@@ -1599,6 +1675,38 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                 ),
                 const SizedBox(width: 4),
               ],
+              if (widget.isRogueMode) ...[
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () =>
+                        _showReleaseDialog(context, battleManager, userState),
+                    icon: Icon(Icons.outbox, size: isNarrow ? 14 : 18),
+                    label: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: const Text(
+                        'Release',
+                        style: TextStyle(
+                          fontFamily: 'PressStart2P',
+                          fontSize: 9,
+                        ),
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange.shade800,
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(
+                        vertical: isNarrow ? 4 : 8,
+                        horizontal: 2,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      elevation: 2,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 4),
+              ],
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () => _showSwitchDialog(context, battleManager),
@@ -1676,13 +1784,101 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     }
   }
 
+  void _showReleaseDialog(
+    BuildContext context,
+    BattleManager bm,
+    UserState userState,
+  ) {
+    final runTeam = userState.currentUser?.rogueLikeState.team ?? [];
+    if (runTeam.length <= 1) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('You must have at least one animal!')),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.secondaryButtonColor,
+        title: const Text(
+          'RELEASE ANIMAL',
+          style: TextStyle(
+            color: AppColors.highlightColor,
+            fontFamily: 'PressStart2P',
+            fontSize: 12,
+          ),
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: runTeam.length,
+            itemBuilder: (context, index) {
+              final animal = runTeam[index];
+              final isCurrent = animal.id == bm.player.organism.id;
+
+              return ListTile(
+                leading: Image.asset(
+                  'assets/sprites/${animal.name.toLowerCase().replaceAll(' ', '_').replaceAll('-', '_').replaceAll("'", "_")}.png',
+                  width: 32,
+                  errorBuilder: (_, __, ___) =>
+                      const Icon(Icons.pets, color: Colors.white),
+                ),
+                title: Text(
+                  animal.name,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontFamily: 'PressStart2P',
+                    fontSize: 10,
+                  ),
+                ),
+                trailing: isCurrent
+                    ? const Text(
+                        'ACTIVE',
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontSize: 8,
+                          fontFamily: 'PressStart2P',
+                        ),
+                      )
+                    : const Icon(Icons.delete, color: Colors.red),
+                onTap: isCurrent
+                    ? null
+                    : () async {
+                        Navigator.pop(ctx);
+                        await userState.releaseFromRogueRun(index);
+                      },
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text(
+              'CANCEL',
+              style: TextStyle(
+                color: Colors.white70,
+                fontFamily: 'PressStart2P',
+                fontSize: 10,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _handleBattleEnd(
     BuildContext context,
     BattleManager battleManager,
     UserState userState,
   ) {
+    if (_isSwitchDialogShowing) return;
+
     // Add delay to allow reading the final log message
-    Future.delayed(const Duration(milliseconds: 2500), () {
+    Future.delayed(const Duration(milliseconds: 2500), () async {
       if (!mounted) return;
 
       int moneyEarned = 0;
@@ -1694,26 +1890,69 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           currentHealth: wildOpponent.maxHealth, // Heal to full on capture
         );
         newCapturedInstance.restoreAllStamina(); // Restore stamina on capture
-        userState.addCapturedOrganism(newCapturedInstance);
+
+        if (widget.isRogueMode) {
+          await userState.captureForRogueRun(newCapturedInstance);
+        } else {
+          userState.addCapturedOrganism(newCapturedInstance);
+        }
       }
 
-      // Handle loss - remove player's creature (death mechanic) ONLY in wild battles
-      if (battleManager.result == BattleResult.loss && !widget.isArenaBattle) {
+      // Handle loss - remove player's creature (death mechanic)
+      // For Rogue-like mode, we remove from the Rogue run team
+      // For normal wild battles, we remove from user collection
+      if (battleManager.result == BattleResult.loss) {
         final deadCreature = battleManager.player.organism;
-        userState.removeCapturedOrganism(deadCreature);
+        if (widget.isRogueMode) {
+          final runTeam = List<CapturedOrganism>.from(
+            userState.currentUser?.rogueLikeState.team ?? [],
+          );
+          runTeam.removeWhere((co) => co.id == deadCreature.id);
+          await userState.updateRogueTeam(runTeam);
+        } else if (!widget.isArenaBattle) {
+          userState.removeCapturedOrganism(deadCreature);
+        }
       }
 
-      // Arena battle prize money
-      if (widget.isArenaBattle && battleManager.result == BattleResult.win) {
-        moneyEarned = 1000;
-        userState.addMoney(moneyEarned);
-      } else if (!widget.isArenaBattle &&
-          battleManager.result == BattleResult.win) {
-        // Wild battle prize money
-        moneyEarned = _calculateWildMoneyReward(
-          battleManager.opponent.organism.baseOrganism,
-        );
-        userState.addMoney(moneyEarned);
+      // Rogue-like specific progression
+      if (widget.isRogueMode) {
+        if (battleManager.result == BattleResult.win ||
+            battleManager.result == BattleResult.capture) {
+          // Perma-death: Remove any fainted animals from the team
+          final currentTeam = userState.currentUser?.rogueLikeState.team ?? [];
+          final survivingTeam = currentTeam
+              .where((o) => o.currentHealth > 0)
+              .toList();
+
+          // Update team if anyone died
+          if (survivingTeam.length < currentTeam.length) {
+            await userState.updateRogueTeam(survivingTeam);
+          }
+
+          // Increment floor
+          await userState.incrementRogueFloor();
+        } else if (battleManager.result == BattleResult.loss) {
+          // Check if entire rogue team is wiped
+          final runTeam = userState.currentUser?.rogueLikeState.team ?? [];
+          if (runTeam.isEmpty) {
+            await userState.endRogueRun();
+          }
+        }
+      }
+
+      // Arena battle prize money (not for rogue mode usually, or different rewards)
+      if (!widget.isRogueMode) {
+        if (widget.isArenaBattle && battleManager.result == BattleResult.win) {
+          moneyEarned = 1000;
+          userState.addMoney(moneyEarned);
+        } else if (!widget.isArenaBattle &&
+            battleManager.result == BattleResult.win) {
+          // Wild battle prize money
+          moneyEarned = _calculateWildMoneyReward(
+            battleManager.opponent.organism.baseOrganism,
+          );
+          userState.addMoney(moneyEarned);
+        }
       }
 
       final String? lootId = battleManager.droppedLoot;
@@ -1725,6 +1964,8 @@ class _BattleScreenContentState extends State<BattleScreenContent>
       if (battleManager.result == BattleResult.win && lootId != null) {
         userState.addLoot(lootId, 1);
       }
+
+      if (!mounted) return;
 
       showDialog(
         context: context,
@@ -1740,7 +1981,35 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               DeviceOrientation.portraitUp,
             ]);
             Navigator.of(ctx).pop();
-            Navigator.of(context).pop(battleManager.result);
+
+            if (widget.isRogueMode &&
+                (battleManager.result == BattleResult.win ||
+                    battleManager.result == BattleResult.capture) &&
+                (userState.currentUser?.rogueLikeState.isActive ?? false)) {
+              // Sequence to next encounter: effectively restart this screen with new data
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(
+                  builder: (context) {
+                    final rogue = userState.currentUser!.rogueLikeState;
+                    return BattleScreen(
+                      playerOrganism:
+                          rogue.team[0], // Will be switched by BM if needed
+                      opponentOrganism: rogue.opponentTeam![0],
+                      biomeName: rogue.currentBiome ?? 'Forest',
+                      playerTeam: rogue.team,
+                      opponentTeam: rogue.opponentTeam,
+                      battleTitle:
+                          'Rogue Floor ${rogue.floor} - ${rogue.encounterIndex + 1}/5',
+                      isArenaBattle:
+                          rogue.encounterIndex == 4, // Boss is arena battle
+                      isRogueMode: true,
+                    );
+                  },
+                ),
+              );
+            } else {
+              Navigator.of(context).pop(battleManager.result);
+            }
           },
         ),
       );

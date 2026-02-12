@@ -7,9 +7,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:animal_warfare/models/captured_organism.dart';
 import 'package:animal_warfare/models/organism.dart';
 import 'package:animal_warfare/models/quest.dart';
+import 'package:animal_warfare/models/rogue_like_state.dart';
 
 import 'local_auth_storage_io.dart'
-    if (dart.library.html) 'local_auth_storage_web.dart' as user_storage;
+    if (dart.library.html) 'local_auth_storage_web.dart'
+    as user_storage;
 
 // Model to represent a user
 class UserData {
@@ -23,15 +25,22 @@ class UserData {
   final List<String> discoveredOrganisms;
   final List<String> completedAchievements;
   final List<CapturedOrganism> capturedOrganisms;
+
   /// Index into [capturedOrganisms] for the animal used as attacker in battle. 0 if none chosen.
   final int activeAttackerIndex;
+
   /// Inventory: map from loot_id to quantity
   final Map<String, int> inventory;
+
   /// Crafted talismans (owned but not equipped)
   final List<String> craftedTalismans; // List of talisman IDs
   final List<Quest> activeQuests;
+
   /// Indices into [capturedOrganisms] for the 5-animal team
   final List<int> battleTeam;
+
+  /// State of the current rogue-like run
+  final RogueLikeState rogueLikeState;
 
   UserData({
     required this.username,
@@ -49,6 +58,7 @@ class UserData {
     List<String>? craftedTalismans,
     List<Quest>? activeQuests,
     List<int>? battleTeam,
+    RogueLikeState? rogueLikeState,
   }) : quizStats = quizStats ?? {},
        discoveredOrganisms = discoveredOrganisms ?? [],
        completedAchievements = completedAchievements ?? [],
@@ -57,7 +67,8 @@ class UserData {
        inventory = inventory ?? {},
        craftedTalismans = craftedTalismans ?? [],
        activeQuests = activeQuests ?? [],
-       battleTeam = battleTeam ?? [];
+       battleTeam = battleTeam ?? [],
+       rogueLikeState = rogueLikeState ?? const RogueLikeState();
 
   UserData copyWith({
     String? username,
@@ -75,6 +86,7 @@ class UserData {
     List<String>? craftedTalismans,
     List<Quest>? activeQuests,
     List<int>? battleTeam,
+    RogueLikeState? rogueLikeState,
   }) {
     return UserData(
       username: username ?? this.username,
@@ -85,13 +97,15 @@ class UserData {
       stamina: stamina ?? this.stamina,
       quizStats: quizStats ?? this.quizStats,
       discoveredOrganisms: discoveredOrganisms ?? this.discoveredOrganisms,
-      completedAchievements: completedAchievements ?? this.completedAchievements,
+      completedAchievements:
+          completedAchievements ?? this.completedAchievements,
       capturedOrganisms: capturedOrganisms ?? this.capturedOrganisms,
       activeAttackerIndex: activeAttackerIndex ?? this.activeAttackerIndex,
       inventory: inventory ?? this.inventory,
       craftedTalismans: craftedTalismans ?? this.craftedTalismans,
       activeQuests: activeQuests ?? this.activeQuests,
       battleTeam: battleTeam ?? this.battleTeam,
+      rogueLikeState: rogueLikeState ?? this.rogueLikeState,
     );
   }
 
@@ -114,37 +128,45 @@ class UserData {
     final newStamina = (stamina - amount).clamp(0, 100);
     return copyWith(stamina: newStamina);
   }
+
   UserData restoreStamina(int amount) {
     final newStamina = (stamina + amount).clamp(0, 100);
     return copyWith(stamina: newStamina);
   }
+
   UserData spendMoney(int amount) {
     final newMoney = (money - amount);
     return copyWith(money: newMoney);
   }
+
   UserData addMoney(int amount) {
     final newMoney = (money + amount);
     return copyWith(money: newMoney);
   }
-  Map<String, dynamic> toJson() => {
-        'username': username,
-        'password': password,
-        'avatar': avatar,
-        'gender': gender,
-        'stamina': stamina,
-        'money': money,
-        'quizStats': quizStats,
-        'discoveredOrganisms': discoveredOrganisms,
-        'completedAchievements': completedAchievements,
-        'capturedOrganisms': capturedOrganisms.map((co) => co.toJson()).toList(),
-        'activeAttackerIndex': activeAttackerIndex,
-        'inventory': inventory,
-        'craftedTalismans': craftedTalismans,
-        'activeQuests': activeQuests.map((q) => q.toJson()).toList(),
-        'battleTeam': battleTeam,
-      };
 
-  factory UserData.fromJson(Map<String, dynamic> json,{List<Organism>? allOrganisms}) {
+  Map<String, dynamic> toJson() => {
+    'username': username,
+    'password': password,
+    'avatar': avatar,
+    'gender': gender,
+    'stamina': stamina,
+    'money': money,
+    'quizStats': quizStats,
+    'discoveredOrganisms': discoveredOrganisms,
+    'completedAchievements': completedAchievements,
+    'capturedOrganisms': capturedOrganisms.map((co) => co.toJson()).toList(),
+    'activeAttackerIndex': activeAttackerIndex,
+    'inventory': inventory,
+    'craftedTalismans': craftedTalismans,
+    'activeQuests': activeQuests.map((q) => q.toJson()).toList(),
+    'battleTeam': battleTeam,
+    'rogueLikeState': rogueLikeState.toJson(),
+  };
+
+  factory UserData.fromJson(
+    Map<String, dynamic> json, {
+    List<Organism>? allOrganisms,
+  }) {
     Organism? findBaseOrganism(String name) {
       if (allOrganisms == null) return null;
       try {
@@ -153,31 +175,25 @@ class UserData {
         return null;
       }
     }
+
     final List<dynamic> capturedJson = json['capturedOrganisms'] ?? [];
-    final List<CapturedOrganism> capturedList = capturedJson.map((coJson) {
+    final List<CapturedOrganism> capturedList = capturedJson
+        .map((coJson) {
+          final organismName = coJson['name'] as String?;
+          if (organismName == null) {
+            return null;
+          }
 
-      final organismName = coJson['name'] as String?;
-      if (organismName == null) {
-          return null;
-      }
+          final baseOrganism = findBaseOrganism(organismName);
 
-      final baseOrganism = findBaseOrganism(organismName);
+          if (baseOrganism == null) {
+            return null;
+          }
 
-      if (baseOrganism == null) {
-        return null;
-      }
-
-      final currentHealth = coJson['currentHealth'] as int?;
-      if (currentHealth == null) {
-          return null;
-      }
-
-      return CapturedOrganism(
-        baseOrganism: baseOrganism,
-        individualValues: Map<String, int>.from(coJson['ivs'] ?? {}),
-        currentHealth: currentHealth,
-      );
-    }).whereType<CapturedOrganism>().toList();
+          return CapturedOrganism.fromJson(coJson, [baseOrganism]);
+        })
+        .whereType<CapturedOrganism>()
+        .toList();
     return UserData(
       username: json['username'] as String? ?? '',
       password: json['password'] as String? ?? '',
@@ -185,16 +201,43 @@ class UserData {
       gender: json['gender'] as String? ?? 'Select Gender',
       stamina: json['stamina'] as int? ?? 100,
       quizStats: (json['quizStats'] as Map<String, dynamic>?) ?? {},
-      discoveredOrganisms: (json['discoveredOrganisms'] as List<dynamic>?)?.map((e) => e as String).toList() ?? [],
-      completedAchievements: (json['completedAchievements'] as List<dynamic>?)?.map((e) => e as String).toList() ?? [],
+      discoveredOrganisms:
+          (json['discoveredOrganisms'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          [],
+      completedAchievements:
+          (json['completedAchievements'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          [],
       capturedOrganisms: capturedList,
       activeAttackerIndex: json['activeAttackerIndex'] as int? ?? 0,
-      inventory: json['inventory'] != null ? Map<String, int>.from(json['inventory'] as Map) : {},
-      craftedTalismans: (json['craftedTalismans'] as List<dynamic>?)?.map((e) => e as String).toList() ?? [],
-      activeQuests: (json['activeQuests'] as List<dynamic>?)?.map((q) => Quest.fromJson(q as Map<String, dynamic>)).toList() ?? [],
-      battleTeam: (json['battleTeam'] as List<dynamic>?)?.map((e) => e as int).toList() ?? [],
+      inventory: json['inventory'] != null
+          ? Map<String, int>.from(json['inventory'] as Map)
+          : {},
+      craftedTalismans:
+          (json['craftedTalismans'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          [],
+      activeQuests:
+          (json['activeQuests'] as List<dynamic>?)
+              ?.map((q) => Quest.fromJson(q as Map<String, dynamic>))
+              .toList() ??
+          [],
+      battleTeam:
+          (json['battleTeam'] as List<dynamic>?)
+              ?.map((e) => e as int)
+              .toList() ??
+          [],
+      rogueLikeState: json['rogueLikeState'] != null
+          ? RogueLikeState.fromJson(
+              json['rogueLikeState'] as Map<String, dynamic>,
+              allOrganisms ?? [],
+            )
+          : const RogueLikeState(),
     );
-
   }
 }
 
@@ -209,12 +252,14 @@ class LocalAuthService {
   final Map<String, Future<void>?> _writeLocks = {};
 
   static List<Organism>? _cachedOrganisms;
-  static Future<List<Organism>> _loadOrganisms() async {
+  static Future<List<Organism>> loadOrganisms() async {
     if (_cachedOrganisms != null) return _cachedOrganisms!;
     try {
       final String response = await rootBundle.loadString(_organismsAssetPath);
       final List<dynamic> data = jsonDecode(response);
-      _cachedOrganisms = data.map((e) => Organism.fromJson(e as Map<String, dynamic>)).toList();
+      _cachedOrganisms = data
+          .map((e) => Organism.fromJson(e as Map<String, dynamic>))
+          .toList();
       return _cachedOrganisms!;
     } catch (e) {
       if (kDebugMode) print('LocalAuthService: could not load organisms: $e');
@@ -222,10 +267,14 @@ class LocalAuthService {
     }
   }
 
+  static List<Organism> getCachedOrganisms() => _cachedOrganisms ?? [];
+
   Future<UserData?> readUserFile(String username) async {
     if (_writeLocks[username] != null) {
       if (kDebugMode) {
-        print("DEBUG: Waiting for pending write to complete before reading for $username");
+        print(
+          "DEBUG: Waiting for pending write to complete before reading for $username",
+        );
       }
       await _writeLocks[username];
     }
@@ -239,8 +288,11 @@ class LocalAuthService {
       }
       try {
         final userMap = _robustJsonDecode(contents, username);
-        final organisms = await _loadOrganisms();
-        return UserData.fromJson(userMap, allOrganisms: organisms.isEmpty ? null : organisms);
+        final organisms = await loadOrganisms();
+        return UserData.fromJson(
+          userMap,
+          allOrganisms: organisms.isEmpty ? null : organisms,
+        );
       } catch (e) {
         if (kDebugMode) {
           print("ERROR: JSON decode failed for $username: $e");
@@ -260,14 +312,18 @@ class LocalAuthService {
       return jsonDecode(contents) as Map<String, dynamic>;
     } catch (e) {
       // Recovery attempt: strip trailing junk characters by searching for valid closing brace from the end
-      if (kDebugMode) print("DEBUG: Attempting robust JSON recovery for $username...");
+      if (kDebugMode)
+        print("DEBUG: Attempting robust JSON recovery for $username...");
       int index = contents.lastIndexOf('}');
       while (index != -1) {
         try {
           final cleaned = contents.substring(0, index + 1);
           final decoded = jsonDecode(cleaned);
           if (decoded is Map<String, dynamic>) {
-            if (kDebugMode) print("DEBUG: Successfully recovered JSON for $username at index $index.");
+            if (kDebugMode)
+              print(
+                "DEBUG: Successfully recovered JSON for $username at index $index.",
+              );
             return decoded;
           }
         } catch (_) {
@@ -282,7 +338,9 @@ class LocalAuthService {
   Future<void> _writeUserFile(UserData user) async {
     if (_writeLocks[user.username] != null) {
       if (kDebugMode) {
-        print("DEBUG: Waiting for existing write operation to complete for ${user.username}");
+        print(
+          "DEBUG: Waiting for existing write operation to complete for ${user.username}",
+        );
       }
       await _writeLocks[user.username];
     }
@@ -306,21 +364,30 @@ class LocalAuthService {
           final currentQuizCount = (data['quizStats'] as Map?)?.length ?? 0;
           if (currentQuizCount > user.quizStats.length) {
             if (kDebugMode) {
-              print("WARNING: Aborted stale write for ${user.username} (file has more quiz data)");
+              print(
+                "WARNING: Aborted stale write for ${user.username} (file has more quiz data)",
+              );
             }
             return;
           }
         } catch (e) {
           if (kDebugMode) {
-            print("WARNING: Failed to decode existing file for ${user.username} during write: $e. Proceeding with atomic write to fix corruption.");
+            print(
+              "WARNING: Failed to decode existing file for ${user.username} during write: $e. Proceeding with atomic write to fix corruption.",
+            );
           }
           // If the file is so corrupted that recovery fails, we MUST proceed with the write
           // to overwrite the corruption with a fresh, valid JSON state.
         }
       }
-      await user_storage.writeUserData(user.username, jsonEncode(user.toJson()));
+      await user_storage.writeUserData(
+        user.username,
+        jsonEncode(user.toJson()),
+      );
       if (kDebugMode) {
-        print("DEBUG: Saved ${user.username} (quiz keys: ${user.quizStats.length})");
+        print(
+          "DEBUG: Saved ${user.username} (quiz keys: ${user.quizStats.length})",
+        );
       }
     } catch (e) {
       if (kDebugMode) print("Error writing user ${user.username}: $e");
@@ -334,26 +401,31 @@ class LocalAuthService {
 
   Future<bool> register(String username, String password) async {
     if (await readUserFile(username) != null) {
-      if (kDebugMode) print("DEBUG: Registration failed for $username (already exists).");
+      if (kDebugMode)
+        print("DEBUG: Registration failed for $username (already exists).");
       return false;
     }
-    await _writeUserFile(UserData(
-      username: username,
-      password: password,
-      discoveredOrganisms: [],
-      completedAchievements: [],
-    ));
+    await _writeUserFile(
+      UserData(
+        username: username,
+        password: password,
+        discoveredOrganisms: [],
+        completedAchievements: [],
+      ),
+    );
     return await login(username, password);
   }
 
   Future<bool> login(String username, String password) async {
     final user = await readUserFile(username);
     if (user == null) {
-      if (kDebugMode) print("DEBUG: Login failed for $username (user not found).");
+      if (kDebugMode)
+        print("DEBUG: Login failed for $username (user not found).");
       return false;
     }
     if (user.password != password) {
-      if (kDebugMode) print("DEBUG: Login failed for $username (wrong password).");
+      if (kDebugMode)
+        print("DEBUG: Login failed for $username (wrong password).");
       return false;
     }
     await _saveCurrentUserName(user.username);
@@ -365,7 +437,8 @@ class LocalAuthService {
   Future<bool> resetPassword(String username, String newPassword) async {
     final user = await readUserFile(username);
     if (user == null) {
-      if (kDebugMode) print("DEBUG: Password reset failed for $username (user not found).");
+      if (kDebugMode)
+        print("DEBUG: Password reset failed for $username (user not found).");
       return false;
     }
     await _writeUserFile(user.copyWith(password: newPassword));
@@ -394,25 +467,39 @@ class LocalAuthService {
     await prefs.remove(_currentKey);
   }
 
-  Future<void> updateProfile(String username, {String? avatar, String? gender}) async {
+  Future<void> updateProfile(
+    String username, {
+    String? avatar,
+    String? gender,
+  }) async {
     final user = await readUserFile(username);
     if (user != null) {
       await _writeUserFile(user.copyWith(avatar: avatar, gender: gender));
     }
   }
 
-  Future<void> addCapturedOrganism(String username, CapturedOrganism newCapture) async {
+  Future<void> addCapturedOrganism(
+    String username,
+    CapturedOrganism newCapture,
+  ) async {
     final user = await readUserFile(username);
     if (user == null) return;
-    final list = List<CapturedOrganism>.from(user.capturedOrganisms)..add(newCapture);
+    final list = List<CapturedOrganism>.from(user.capturedOrganisms)
+      ..add(newCapture);
     await _writeUserFile(user.copyWith(capturedOrganisms: list));
   }
 
-  Future<void> updateQuizStats(String username, String quizName, bool isCorrect) async {
+  Future<void> updateQuizStats(
+    String username,
+    String quizName,
+    bool isCorrect,
+  ) async {
     final user = await readUserFile(username);
     if (user == null) return;
 
-    final current = Map.from(user.quizStats[quizName] ?? {'attempts': 0, 'correct': 0});
+    final current = Map.from(
+      user.quizStats[quizName] ?? {'attempts': 0, 'correct': 0},
+    );
     final newStats = {
       ...user.quizStats,
       quizName: {
@@ -425,13 +512,18 @@ class LocalAuthService {
     await _writeUserFile(user.copyWith(quizStats: newStats));
   }
 
-  Future<void> markOrganismAsDiscovered(String username, String organismName) async {
+  Future<void> markOrganismAsDiscovered(
+    String username,
+    String organismName,
+  ) async {
     final user = await readUserFile(username);
     if (user == null) return;
 
     final discovered = Set<String>.from(user.discoveredOrganisms);
     if (discovered.contains(organismName)) return;
     discovered.add(organismName);
-    await _writeUserFile(user.copyWith(discoveredOrganisms: discovered.toList()));
+    await _writeUserFile(
+      user.copyWith(discoveredOrganisms: discovered.toList()),
+    );
   }
 }

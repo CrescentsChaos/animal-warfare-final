@@ -9,6 +9,7 @@ import 'package:animal_warfare/models/talisman.dart';
 import 'package:animal_warfare/battle_screen.dart';
 import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/theme.dart';
+import 'package:animal_warfare/game/battle_manager.dart'; // Import BattleResult
 import 'dart:convert';
 import 'dart:math';
 
@@ -31,7 +32,9 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
 
   Future<void> _loadOrganisms() async {
     try {
-      final String response = await rootBundle.loadString('assets/Organisms.json');
+      final String response = await rootBundle.loadString(
+        'assets/Organisms.json',
+      );
       final List<dynamic> data = json.decode(response);
       setState(() {
         _allOrganisms = data.map((json) => Organism.fromJson(json)).toList();
@@ -40,37 +43,39 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading organisms: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading organisms: $e')));
       }
     }
   }
 
   List<CapturedOrganism> _generateRandomTeam({bool withTalismans = false}) {
     if (_allOrganisms.isEmpty) return [];
-    
+
     final random = Random();
     final List<CapturedOrganism> team = [];
-    
+
     for (int i = 0; i < 5; i++) {
-      final randomOrganism = _allOrganisms[random.nextInt(_allOrganisms.length)];
+      final randomOrganism =
+          _allOrganisms[random.nextInt(_allOrganisms.length)];
       final captured = CapturedOrganism.spawn(randomOrganism);
-      
+
       // Randomly assign talisman if requested
       if (withTalismans && random.nextBool()) {
-        final randomTalisman = Talisman.allTalismans[random.nextInt(Talisman.allTalismans.length)];
+        final randomTalisman =
+            Talisman.allTalismans[random.nextInt(Talisman.allTalismans.length)];
         team.add(captured.copyWith(equippedTalisman: randomTalisman));
       } else {
         team.add(captured);
       }
     }
-    
+
     return team;
   }
 
   void _startBattle({
-    required List<CapturedOrganism> playerTeam, 
+    required List<CapturedOrganism> playerTeam,
     required List<CapturedOrganism> opponentTeam,
     required String battleTitle,
   }) async {
@@ -98,8 +103,70 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
 
     // Handle battle result if needed
     if (result != null && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Battle ended: $result')),
+      if (battleTitle == 'Rogue-like' && result == BattleResult.win) {
+        // This is handled by BattleScreen usually, but we refresh just in case
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Battle ended: $result')));
+    }
+  }
+
+  void _startRogueLike(UserState userState) async {
+    final user = userState.currentUser;
+    if (user == null) return;
+
+    if (user.rogueLikeState.isActive) {
+      // Continue existing run
+      final playerTeam = user.rogueLikeState.team;
+      var opponentTeam = user.rogueLikeState.opponentTeam ?? [];
+      if (opponentTeam.isEmpty) {
+        opponentTeam = _generateRandomTeam(withTalismans: true);
+      }
+
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => BattleScreen(
+            playerOrganism: playerTeam[0],
+            opponentOrganism: opponentTeam[0],
+            biomeName: user.rogueLikeState.currentBiome ?? 'Forest',
+            playerTeam: playerTeam,
+            opponentTeam: opponentTeam,
+            battleTitle: 'Rogue Floor ${user.rogueLikeState.floor}',
+            isArenaBattle: true,
+            isRogueMode: true,
+          ),
+        ),
+      );
+    } else {
+      // Start new run
+      // Start new run with random starter
+      await userState.startRogueRun(); // Generates random starter
+
+      if (!mounted) return;
+
+      // Refresh user reference to get the new rogue state
+      final updatedUser = userState.currentUser;
+      if (updatedUser == null || !updatedUser.rogueLikeState.isActive) return;
+
+      final playerTeam = updatedUser.rogueLikeState.team;
+      final opponentTeam =
+          updatedUser.rogueLikeState.opponentTeam ??
+          _generateRandomTeam(withTalismans: true);
+
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => BattleScreen(
+            playerOrganism: playerTeam[0],
+            opponentOrganism: opponentTeam[0],
+            biomeName: updatedUser.rogueLikeState.currentBiome ?? 'Forest',
+            playerTeam: playerTeam,
+            opponentTeam: opponentTeam,
+            battleTitle: 'Rogue Floor 1',
+            isArenaBattle: false,
+            isRogueMode: true,
+          ),
+        ),
       );
     }
   }
@@ -162,7 +229,10 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
       return Scaffold(
         backgroundColor: AppColors.secondaryButtonColor,
         appBar: AppBar(
-          title: const Text('BATTLE', style: TextStyle(fontFamily: 'PressStart2P')),
+          title: const Text(
+            'BATTLE',
+            style: TextStyle(fontFamily: 'PressStart2P'),
+          ),
           backgroundColor: AppColors.primaryButtonColor,
         ),
         body: const Center(
@@ -177,7 +247,10 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
     return Scaffold(
       backgroundColor: AppColors.secondaryButtonColor,
       appBar: AppBar(
-        title: const Text('BATTLE ARENA', style: TextStyle(fontFamily: 'PressStart2P', fontSize: 16)),
+        title: const Text(
+          'BATTLE ARENA',
+          style: TextStyle(fontFamily: 'PressStart2P', fontSize: 16),
+        ),
         backgroundColor: AppColors.primaryButtonColor,
         centerTitle: true,
       ),
@@ -214,46 +287,69 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
                   ),
                 ),
                 const SizedBox(height: 40),
-                
+
                 // vs AI Mode
                 _buildModeCard(
                   title: 'VS AI',
-                  description: 'Battle with your team against a randomized AI team with items!',
+                  description:
+                      'Battle with your team against a randomized AI team with items!',
                   icon: Icons.psychology,
                   color: AppColors.primaryButtonColor.withOpacity(0.8),
                   onTap: () {
                     if (user == null || user.battleTeam.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Please configure your battle team first!')),
+                        const SnackBar(
+                          content: Text(
+                            'Please configure your battle team first!',
+                          ),
+                        ),
                       );
                       return;
                     }
-                    
+
                     final playerTeam = user.teamOrganisms;
                     final aiTeam = _generateRandomTeam(withTalismans: true);
-                    
+
                     _startBattle(
-                      playerTeam: playerTeam, 
+                      playerTeam: playerTeam,
                       opponentTeam: aiTeam,
                       battleTitle: 'vs AI',
                     );
                   },
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
+                if (user != null)
+                  _buildModeCard(
+                    title: user.rogueLikeState.isActive
+                        ? 'ROGUE: FLOOR ${user.rogueLikeState.floor}'
+                        : 'ROGUE-LIKE',
+                    description: user.rogueLikeState.isActive
+                        ? 'CONTINUE: Resume your high-stakes run!'
+                        : 'START: Randomized floors. Permadeath. High rewards! Record: Floor ${user.rogueLikeState.highestFloor}',
+                    icon: Icons.vignette,
+                    color: const Color(0xFF4B0082).withOpacity(0.8), // Indigo
+                    onTap: () => _startRogueLike(userState),
+                  ),
+
+                if (user != null) const SizedBox(height: 24),
+
                 // Randoms Mode
                 _buildModeCard(
                   title: 'RANDOMS',
-                  description: 'Both teams are completely randomized. Pure chaos!',
+                  description:
+                      'Both teams are completely randomized. Pure chaos!',
                   icon: Icons.shuffle,
                   color: const Color(0xFF8B0000).withOpacity(0.8),
                   onTap: () {
-                    final playerTeam = _generateRandomTeam(withTalismans: false);
+                    final playerTeam = _generateRandomTeam(
+                      withTalismans: false,
+                    );
                     final aiTeam = _generateRandomTeam(withTalismans: true);
-                    
+
                     _startBattle(
-                      playerTeam: playerTeam, 
+                      playerTeam: playerTeam,
                       opponentTeam: aiTeam,
                       battleTitle: 'Randoms',
                     );

@@ -1,13 +1,16 @@
 // lib/models/captured_organism.dart
 import 'dart:math';
+import 'package:uuid/uuid.dart';
 import 'organism.dart'; // Import the base model
 import 'package:animal_warfare/models/talisman.dart';
 import 'package:animal_warfare/models/move.dart';
 import 'package:animal_warfare/models/nature.dart';
+import 'package:animal_warfare/models/status_effect.dart';
 
 // Represents an individual instance of a captured or wild organism.
 // This is the model that holds the unique DNA (IVs).
 class CapturedOrganism {
+  final String id;
   final Organism baseOrganism;
 
   // Unique DNA/IVs: Individual Values (0-31 for each stat)
@@ -26,6 +29,8 @@ class CapturedOrganism {
   Map<String, int> moveStamina; // current stamina for each selected move
 
   final Nature nature;
+  StatusEffect statusEffect;
+  final int level; // NEW: Level of the organism
 
   CapturedOrganism({
     required this.baseOrganism,
@@ -33,13 +38,19 @@ class CapturedOrganism {
     required this.currentHealth,
     this.equippedTalisman,
     this.selectedMoveNames = const [],
-    this.moveStamina = const {},
+    Map<String, int>? initialMoveStamina,
     this.nature = const Nature(
       name: 'Hardy',
       increasedStat: NatureStat.attack,
       decreasedStat: NatureStat.attack,
     ),
-  }) {
+    this.statusEffect = const StatusEffect(type: StatusEffectType.none),
+    String? id,
+    this.level = 50, // Default level to 50
+  }) : id = id ?? const Uuid().v4(),
+       moveStamina = initialMoveStamina != null
+           ? Map.from(initialMoveStamina)
+           : {} {
     // Ensure moves are initialized if empty (for legacy data)
     if (selectedMoveNames.isEmpty) {
       initializeDefaultMoves();
@@ -79,15 +90,21 @@ class CapturedOrganism {
     List<String>? selectedMoveNames,
     Map<String, int>? moveStamina,
     Nature? nature,
+    StatusEffect? statusEffect,
+    String? id,
+    int? level, // Added level to copyWith
   }) {
     return CapturedOrganism(
       baseOrganism: baseOrganism ?? this.baseOrganism,
-      individualValues: individualValues ?? this.individualValues,
+      individualValues: individualValues ?? Map.from(this.individualValues),
       currentHealth: currentHealth ?? this.currentHealth,
       equippedTalisman: equippedTalisman ?? this.equippedTalisman,
-      selectedMoveNames: selectedMoveNames ?? this.selectedMoveNames,
-      moveStamina: moveStamina ?? this.moveStamina,
+      selectedMoveNames: selectedMoveNames ?? List.from(this.selectedMoveNames),
+      initialMoveStamina: moveStamina ?? Map.from(this.moveStamina),
       nature: nature ?? this.nature,
+      statusEffect: statusEffect ?? this.statusEffect,
+      id: id ?? this.id,
+      level: level ?? this.level, // Pass level to constructor
     );
   }
   // --- DNA Generation and Stat Calculation ---
@@ -98,7 +115,7 @@ class CapturedOrganism {
   static const int statConstant = 10;
 
   // Factory constructor for generating a new wild organism with random IVs
-  factory CapturedOrganism.spawn(Organism base) {
+  factory CapturedOrganism.spawn(Organism base, {int level = 5}) {
     final rng = Random();
     final ivs = {
       'health': rng.nextInt(maxIV + 1), // 0 to 31
@@ -110,13 +127,19 @@ class CapturedOrganism {
     };
 
     // Calculate initial max HP
-    final maxHp = calculateStat('health', base.health, ivs['health']!);
+    final maxHp = calculateStat(
+      'health',
+      base.health,
+      ivs['health']!,
+      level: level,
+    );
 
     final spawn = CapturedOrganism(
       baseOrganism: base,
       individualValues: ivs,
       currentHealth: maxHp, // Starts with full health
       nature: Nature.getRandom(),
+      level: level, // Pass level to constructor
     );
 
     // Explicitly initialize moves now so they are set in stone
@@ -130,57 +153,99 @@ class CapturedOrganism {
     String statName,
     int baseStat,
     int iv, {
-    int level = 50,
+    int level = 50, // Default level for static calculation
   }) {
+    // Standard Formula: ((Base * 2 + IV + (EV/4)) * Level / 100) + N
+    // But since we don't have EVs yet and statConstant was 10.
+    // Let's adapt closer to standard Pokemon formula logic but simplified.
+    // HP: ((Base + IV) * 2 * Level / 100) + Level + 10
+    // Others: ((Base + IV) * 2 * Level / 100) + 5
+
+    // Using simple version for balance continuity with previous logic if level was 50-ish?
+    // Old formula was (Base + IV/2)*2 + 10.
+    // If we assume old logic was "Level 50", let's make it scale linearly.
+
+    final double levelMultiplier = level / 50.0;
+
     if (statName == 'health') {
-      // HP Formula: (Base + IV/2) * 2 + Constant
-      return (baseStat + (iv / 2).floor()) * 2 + statConstant;
+      // HP Formula: (Base + IV/2) * 2 * Multiplier + Constant (scaled?)
+      // Keeping it simple so it doesn't break balance:
+      return ((baseStat + (iv / 2).floor()) * 2 * levelMultiplier).floor() +
+          statConstant +
+          level;
     }
-    // Other Stats Formula: Base + IV/2 + Constant
-    return baseStat + (iv / 2).floor() + statConstant;
+    // Other Stats Formula: (Base + IV/2) * Multiplier + Constant
+    return ((baseStat + (iv / 2).floor()) * levelMultiplier).floor() +
+        statConstant;
   }
 
   // --- Getters for Effective Stats ---
 
-  int get maxHealth =>
-      calculateStat('health', baseOrganism.health, individualValues['health']!);
+  int getMaxHealth({int? atLevel}) => calculateStat(
+    'health',
+    baseOrganism.health,
+    individualValues['health']!,
+    level: atLevel ?? level,
+  );
 
-  int get effectiveAttack =>
+  int getAttack({int? atLevel}) =>
       (calculateStat(
                 'attack',
                 baseOrganism.attack,
                 individualValues['attack']!,
+                level: atLevel ?? level,
               ) *
               nature.getMultiplier('attack'))
           .round();
 
-  int get effectiveDefense =>
+  int getDefense({int? atLevel}) =>
       (calculateStat(
                 'defense',
                 baseOrganism.defense,
                 individualValues['defense']!,
+                level: atLevel ?? level,
               ) *
               nature.getMultiplier('defense'))
           .round();
 
-  int get effectivePower =>
-      (calculateStat('power', baseOrganism.power, individualValues['power']!) *
+  int getPower({int? atLevel}) =>
+      (calculateStat(
+                'power',
+                baseOrganism.power,
+                individualValues['power']!,
+                level: atLevel ?? level,
+              ) *
               nature.getMultiplier('power'))
           .round();
 
-  int get effectiveResistance =>
+  int getResistance({int? atLevel}) =>
       (calculateStat(
                 'resistance',
                 baseOrganism.resistance,
                 individualValues['resistance']!,
+                level: atLevel ?? level,
               ) *
               nature.getMultiplier('resistance'))
           .round();
 
-  int get effectiveSpeed =>
-      (calculateStat('speed', baseOrganism.speed, individualValues['speed']!) *
+  int getSpeed({int? atLevel}) =>
+      (calculateStat(
+                'speed',
+                baseOrganism.speed,
+                individualValues['speed']!,
+                level: atLevel ?? level,
+              ) *
               nature.getMultiplier('speed'))
           .round();
+
+  // --- Getters for Effective Stats (Default to instance level) ---
+
+  int get maxHealth => getMaxHealth();
+  int get effectiveAttack => getAttack();
+  int get effectiveDefense => getDefense();
+  int get effectivePower => getPower();
+  int get effectiveResistance => getResistance();
+  int get effectiveSpeed => getSpeed();
 
   /// Initializes the move selection with 4 moves from the base organism.
   /// Uses a deterministic approach (first 4) to avoid order jitter.
@@ -226,6 +291,7 @@ class CapturedOrganism {
   // --- Serialization for Storage ---
 
   Map<String, dynamic> toJson() => {
+    'id': id, // Add id to JSON
     // Only store the name and IVs, the base stats are looked up from the base Organism list
     'name': baseOrganism.name,
     'ivs': individualValues,
@@ -234,6 +300,8 @@ class CapturedOrganism {
     'selectedMoveNames': selectedMoveNames,
     'moveStamina': moveStamina,
     'nature': nature.name,
+    'statusEffect': statusEffect.toJson(),
+    'level': level, // Added level to toJson
   };
 
   /// Create CapturedOrganism from JSON
@@ -241,6 +309,7 @@ class CapturedOrganism {
     Map<String, dynamic> json,
     List<Organism> allOrganisms,
   ) {
+    final id = json['id'] as String?; // Read id from JSON
     final name = json['name'] as String;
     final baseOrganism = allOrganisms.firstWhere(
       (o) => o.name == name,
@@ -267,14 +336,27 @@ class CapturedOrganism {
     final natureName = json['nature'] as String? ?? 'Hardy';
     final nature = Nature.findByName(natureName);
 
+    StatusEffect? status;
+    if (json['statusEffect'] != null) {
+      status = StatusEffect.fromJson(
+        json['statusEffect'] as Map<String, dynamic>,
+      );
+    }
+
+    final level =
+        json['level'] as int? ?? 50; // Read level from JSON, default to 50
+
     return CapturedOrganism(
+      id: id, // Pass id to constructor
       baseOrganism: baseOrganism,
       individualValues: ivs,
       currentHealth: currentHealth,
       equippedTalisman: talisman,
       selectedMoveNames: selectedMoves,
-      moveStamina: moveStamina,
+      initialMoveStamina: moveStamina,
       nature: nature,
+      statusEffect: status ?? const StatusEffect(type: StatusEffectType.none),
+      level: level, // Pass level to constructor
     );
   }
 }
