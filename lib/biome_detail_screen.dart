@@ -172,6 +172,7 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
         playerOrganism: playerFighter,
         opponentOrganism: wildFighter,
         biomeName: widget.biomeName,
+        playerTeam: user.teamOrganisms,
       ),
     ),
   );

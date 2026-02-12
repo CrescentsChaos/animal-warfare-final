@@ -18,18 +18,20 @@ class BattleScreen extends StatelessWidget {
   final CapturedOrganism playerOrganism;
   final CapturedOrganism opponentOrganism;
   final String biomeName;
+  final List<CapturedOrganism>? playerTeam;
 
   const BattleScreen({
     super.key,
     required this.playerOrganism,
     required this.opponentOrganism,
     required this.biomeName,
+    this.playerTeam,
   });
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) => BattleManager(playerOrganism, opponentOrganism, biomeName: biomeName),
+      create: (context) => BattleManager(playerOrganism, opponentOrganism, biomeName: biomeName, team: playerTeam),
       child: BattleScreenContent(
         biomeName: biomeName,
         opponentName: opponentOrganism.baseOrganism.name,
@@ -235,6 +237,76 @@ class _BattleScreenContentState extends State<BattleScreenContent> with TickerPr
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _showSwitchDialog(BuildContext context, BattleManager bm) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.secondaryButtonColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: AppColors.highlightColor, width: 2),
+        ),
+        title: Text(
+          'SELECT ANIMAL',
+          style: AppTextStyles.headline(context, baseSize: 14, color: AppColors.highlightColor),
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: bm.playerTeam.length,
+            itemBuilder: (context, index) {
+              final animal = bm.playerTeam[index];
+              final isCurrent = index == bm.currentPlayerIndex;
+              final isFainted = animal.currentHealth <= 0;
+
+              return ListTile(
+                enabled: !isCurrent && !isFainted,
+                leading: Opacity(
+                  opacity: isFainted ? 0.5 : 1.0,
+                  child: Image.asset(
+                    'assets/sprites/${animal.name.toLowerCase().replaceAll(' ', '_').replaceAll('-', '_').replaceAll("'", "_")}.png',
+                    width: 40,
+                    errorBuilder: (_, __, ___) => const Icon(Icons.pets, color: Colors.white),
+                  ),
+                ),
+                title: Text(
+                  animal.name,
+                  style: TextStyle(
+                    color: isCurrent ? AppColors.highlightColor : (isFainted ? Colors.grey : Colors.white),
+                    fontFamily: 'PressStart2P',
+                    fontSize: 10,
+                  ),
+                ),
+                subtitle: Text(
+                  'HP: ${animal.currentHealth}/${animal.maxHealth}',
+                  style: TextStyle(
+                    color: isFainted ? Colors.red : Colors.green,
+                    fontFamily: 'PressStart2P',
+                    fontSize: 8,
+                  ),
+                ),
+                trailing: isCurrent 
+                  ? const Icon(Icons.check_circle, color: AppColors.highlightColor) 
+                  : (isFainted ? const Text('FAINTED', style: TextStyle(color: Colors.red, fontSize: 8, fontFamily: 'PressStart2P')) : null),
+                onTap: (!isCurrent && !isFainted) ? () {
+                  Navigator.pop(ctx);
+                  bm.switchAnimal(index);
+                } : null,
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('CANCEL', style: TextStyle(color: Colors.white70, fontFamily: 'PressStart2P', fontSize: 10)),
+          ),
+        ],
       ),
     );
   }
@@ -960,33 +1032,51 @@ class _BattleScreenContentState extends State<BattleScreenContent> with TickerPr
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: battleManager.attemptCapture,
-                  icon: Icon(Icons.catching_pokemon, size: isNarrow ? 16 : 20),
+                  icon: Icon(Icons.catching_pokemon, size: isNarrow ? 14 : 18),
                   label: FittedBox(
                     fit: BoxFit.scaleDown,
-                    child: const Text('Capture', style: TextStyle(fontFamily: 'PressStart2P', fontSize: 11)),
+                    child: const Text('Net', style: TextStyle(fontFamily: 'PressStart2P', fontSize: 9)),
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue.shade700,
                     foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: isNarrow ? 4 : 8, horizontal: 4),
+                    padding: EdgeInsets.symmetric(vertical: isNarrow ? 4 : 8, horizontal: 2),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     elevation: 2,
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 4),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () => _showSwitchDialog(context, battleManager),
+                  icon: Icon(Icons.swap_horiz, size: isNarrow ? 14 : 18),
+                  label: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: const Text('Switch', style: TextStyle(fontFamily: 'PressStart2P', fontSize: 9)),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green.shade700,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: isNarrow ? 4 : 8, horizontal: 2),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    elevation: 2,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 4),
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: battleManager.attemptRun,
-                  icon: Icon(Icons.directions_run, size: isNarrow ? 16 : 20),
+                  icon: Icon(Icons.directions_run, size: isNarrow ? 14 : 18),
                   label: FittedBox(
                     fit: BoxFit.scaleDown,
-                    child: const Text('Run', style: TextStyle(fontFamily: 'PressStart2P', fontSize: 11)),
+                    child: const Text('Run', style: TextStyle(fontFamily: 'PressStart2P', fontSize: 9)),
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red.shade700,
                     foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: isNarrow ? 4 : 8, horizontal: 4),
+                    padding: EdgeInsets.symmetric(vertical: isNarrow ? 4 : 8, horizontal: 2),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     elevation: 2,
                   ),
@@ -1137,6 +1227,15 @@ class _BattleSpriteState extends State<_BattleSprite> {
   void initState() {
     super.initState();
     _determineImageSource();
+  }
+
+  @override
+  void didUpdateWidget(_BattleSprite oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.organism.organism.baseOrganism.name != oldWidget.organism.organism.baseOrganism.name ||
+        widget.organism.organism.baseOrganism.sprite != oldWidget.organism.organism.baseOrganism.sprite) {
+      _determineImageSource();
+    }
   }
 
   String _getLocalPath() {

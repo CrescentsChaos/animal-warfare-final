@@ -30,6 +30,8 @@ class UserData {
   /// Crafted talismans (owned but not equipped)
   final List<String> craftedTalismans; // List of talisman IDs
   final List<Quest> activeQuests;
+  /// Indices into [capturedOrganisms] for the 5-animal team
+  final List<int> battleTeam;
 
   UserData({
     required this.username,
@@ -46,6 +48,7 @@ class UserData {
     Map<String, int>? inventory,
     List<String>? craftedTalismans,
     List<Quest>? activeQuests,
+    List<int>? battleTeam,
   }) : quizStats = quizStats ?? {},
        discoveredOrganisms = discoveredOrganisms ?? [],
        completedAchievements = completedAchievements ?? [],
@@ -53,7 +56,8 @@ class UserData {
        activeAttackerIndex = activeAttackerIndex ?? 0,
        inventory = inventory ?? {},
        craftedTalismans = craftedTalismans ?? [],
-       activeQuests = activeQuests ?? [];
+       activeQuests = activeQuests ?? [],
+       battleTeam = battleTeam ?? [];
 
   UserData copyWith({
     String? username,
@@ -70,6 +74,7 @@ class UserData {
     Map<String, int>? inventory,
     List<String>? craftedTalismans,
     List<Quest>? activeQuests,
+    List<int>? battleTeam,
   }) {
     return UserData(
       username: username ?? this.username,
@@ -86,6 +91,7 @@ class UserData {
       inventory: inventory ?? this.inventory,
       craftedTalismans: craftedTalismans ?? this.craftedTalismans,
       activeQuests: activeQuests ?? this.activeQuests,
+      battleTeam: battleTeam ?? this.battleTeam,
     );
   }
 
@@ -95,6 +101,15 @@ class UserData {
     final i = activeAttackerIndex.clamp(0, capturedOrganisms.length - 1);
     return capturedOrganisms[i];
   }
+
+  /// The 5 animals in the battle team
+  List<CapturedOrganism> get teamOrganisms {
+    return battleTeam
+        .where((index) => index >= 0 && index < capturedOrganisms.length)
+        .map((index) => capturedOrganisms[index])
+        .toList();
+  }
+
   UserData decreaseStamina(int amount) {
     final newStamina = (stamina - amount).clamp(0, 100);
     return copyWith(stamina: newStamina);
@@ -126,6 +141,7 @@ class UserData {
         'inventory': inventory,
         'craftedTalismans': craftedTalismans,
         'activeQuests': activeQuests.map((q) => q.toJson()).toList(),
+        'battleTeam': battleTeam,
       };
 
   factory UserData.fromJson(Map<String, dynamic> json,{List<Organism>? allOrganisms}) {
@@ -176,6 +192,7 @@ class UserData {
       inventory: json['inventory'] != null ? Map<String, int>.from(json['inventory'] as Map) : {},
       craftedTalismans: (json['craftedTalismans'] as List<dynamic>?)?.map((e) => e as String).toList() ?? [],
       activeQuests: (json['activeQuests'] as List<dynamic>?)?.map((q) => Quest.fromJson(q as Map<String, dynamic>)).toList() ?? [],
+      battleTeam: (json['battleTeam'] as List<dynamic>?)?.map((e) => e as int).toList() ?? [],
     );
 
   }

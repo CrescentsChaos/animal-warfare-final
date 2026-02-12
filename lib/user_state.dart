@@ -99,12 +99,38 @@ class UserState with ChangeNotifier {
     });
   }
 
+  /// Toggle an animal's presence in the 5-animal battle team.
+  Future<void> toggleTeamMember(int index) async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) {
+      if (index < 0 || index >= u.capturedOrganisms.length) return u;
+      final team = List<int>.from(u.battleTeam);
+      if (team.contains(index)) {
+        team.remove(index);
+      } else {
+        if (team.length < 5) {
+          team.add(index);
+        }
+      }
+      return u.copyWith(battleTeam: team);
+    });
+  }
+
+  /// Clear the entire battle team.
+  Future<void> clearTeam() async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) => u.copyWith(battleTeam: []));
+  }
+
   /// Release (remove) a captured organism at the given index. Persists via read-modify-write.
   Future<void> releaseOrganism(int index) async {
     if (_currentUser == null) return;
     await _readModifyWrite((u) {
       if (u.capturedOrganisms.isEmpty || index < 0 || index >= u.capturedOrganisms.length) return u;
+      
       final list = List<CapturedOrganism>.from(u.capturedOrganisms)..removeAt(index);
+      
+      // Update active attacker index
       int newAttacker = u.activeAttackerIndex;
       if (list.isEmpty) {
         newAttacker = 0;
@@ -113,7 +139,18 @@ class UserState with ChangeNotifier {
       } else {
         newAttacker = u.activeAttackerIndex.clamp(0, list.length - 1);
       }
-      return u.copyWith(capturedOrganisms: list, activeAttackerIndex: newAttacker);
+
+      // Update battle team indices
+      final newTeam = u.battleTeam
+          .where((i) => i != index) // Remove the released organism
+          .map((i) => i > index ? i - 1 : i) // Shift indices down
+          .toList();
+
+      return u.copyWith(
+        capturedOrganisms: list, 
+        activeAttackerIndex: newAttacker,
+        battleTeam: newTeam,
+      );
     });
   }
 

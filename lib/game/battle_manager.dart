@@ -33,7 +33,12 @@ enum BattleResult {
 class BattleOrganism {
   final CapturedOrganism organism;
   final List<Ability> abilities;
-  int health;
+  int _health;
+  int get health => _health;
+  set health(int value) {
+    _health = value;
+    organism.currentHealth = value;
+  }
   
   // Dynamic battle stats
   int attackStage = 0; // -6 to +6 stages
@@ -54,7 +59,7 @@ class BattleOrganism {
   String semiInvulnerableTag = ''; // e.g., 'underground'
 
   BattleOrganism(this.organism)
-      : health = organism.currentHealth.clamp(0, organism.maxHealth),
+      : _health = organism.currentHealth.clamp(0, organism.maxHealth),
         abilities = organism.baseOrganism.abilities
             .split(',')
             .map((s) => s.trim())
@@ -211,8 +216,11 @@ class AbilityNotification {
 
 // --- BattleManager: The Core State Machine ---
 class BattleManager extends ChangeNotifier {
-  final CapturedOrganism playerOrganism;
+  final List<CapturedOrganism> playerTeam;
+  int currentPlayerIndex = 0;
   final CapturedOrganism opponentOrganism;
+
+  CapturedOrganism get playerOrganism => playerTeam[currentPlayerIndex];
   
   late BattleOrganism player;
   late BattleOrganism opponent;
@@ -293,7 +301,12 @@ class BattleManager extends ChangeNotifier {
     return moves;
   }
 
-  BattleManager(this.playerOrganism, this.opponentOrganism, {String? biomeName}) {
+  BattleManager(CapturedOrganism initialPlayer, this.opponentOrganism, {String? biomeName, List<CapturedOrganism>? team}) 
+      : playerTeam = team ?? [initialPlayer] {
+    // Find initial player index if it's in the team
+    int idx = playerTeam.indexOf(initialPlayer);
+    currentPlayerIndex = idx != -1 ? idx : 0;
+
     player = BattleOrganism(playerOrganism);
     opponent = BattleOrganism(opponentOrganism);
     
@@ -1357,13 +1370,69 @@ class BattleManager extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> switchAnimal(int index) async {
+    if (currentState != BattleState.waitingForInput) return;
+    if (index < 0 || index >= playerTeam.length) return;
+    if (index == currentPlayerIndex) return;
+    if (playerTeam[index].currentHealth <= 0) return;
+
+    currentState = BattleState.applyingEffects;
+    _addToLog('Come back, ${player.organism.baseOrganism.name}!');
+    notifyListeners();
+    await Future.delayed(const Duration(milliseconds: 1000));
+
+    _switchToAnimal(index);
+    notifyListeners();
+    await Future.delayed(const Duration(milliseconds: 1000));
+
+    // Switching takes a turn, so process opponent's turn
+    currentState = BattleState.opponentTurn;
+    await _processOpponentTurn(isCounter: false);
+
+    if (!_checkBattleEnd()) {
+      await _applyGlobalTurnEffects();
+      if (_checkBattleEnd()) return;
+      await _applyTurnEffects(player);
+      if (_checkBattleEnd()) return;
+      await _applyTurnEffects(opponent);
+    }
+
+    if (!_checkBattleEnd()) {
+      currentTurn++;
+      turnHistory.add(BattleTurn(currentTurn));
+      currentState = BattleState.waitingForInput;
+      _addToLog('What will ${player.organism.name} do?');
+    }
+    notifyListeners();
+  }
+
+  void _switchToAnimal(int index) {
+    if (index < 0 || index >= playerTeam.length) return;
+    currentPlayerIndex = index;
+    
+    player = BattleOrganism(playerOrganism);
+    playerMoves = _getOrganismMoves(playerOrganism);
+    
+    _addToLog('Go, ${player.organism.baseOrganism.name}!');
+    notifyListeners();
+  }
+
   // --- End Check ---
   
   bool _checkBattleEnd() {
     if (player.health <= 0) {
+      // Check if team has more healthy animals
+      final nextHealthyIndex = playerTeam.indexWhere((org) => org.currentHealth > 0);
+      
+      if (nextHealthyIndex != -1) {
+        _addToLog('Your ${player.organism.baseOrganism.name} fainted!');
+        _switchToAnimal(nextHealthyIndex);
+        return false; // Battle continues with new animal
+      }
+
       result = BattleResult.loss;
       // 🚨 FIX: Reverting to baseOrganism
-      _addToLog('Your ${player.organism.baseOrganism.name} fainted! You lost the battle.');
+      _addToLog('Your ${player.organism.baseOrganism.name} fainted! Your whole team is defeated.');
       currentState = BattleState.battleEnd;
       notifyListeners();
       return true;
