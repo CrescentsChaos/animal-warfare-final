@@ -38,6 +38,8 @@ class BattleOrganism {
   // Dynamic battle stats
   int attackStage = 0; // -6 to +6 stages
   int defenseStage = 0;
+  int powerStage = 0; // NEW
+  int resistanceStage = 0; // NEW
   int speedStage = 0; // Added speed stage
 
   StatusEffect statusEffect = const StatusEffect(type: StatusEffectType.none); // Strong typing
@@ -128,6 +130,31 @@ class BattleOrganism {
     }
     
     return defense.round();
+  }
+
+  int get currentPower {
+    double power = organism.effectivePower.toDouble();
+    power *= _getStatStageMultiplier(powerStage);
+    power *= _getAbilityStatMultiplier('power');
+
+    // Talisman boost
+    if (organism.equippedTalisman?.effect.type == TalismanEffectType.powerBoost) {
+      power *= organism.equippedTalisman!.effect.magnitude;
+    }
+
+    return power.round();
+  }
+
+  int get currentResistance {
+    double resistance = (organism.effectiveResistance * _getStatStageMultiplier(resistanceStage)).toDouble();
+    resistance *= _getAbilityStatMultiplier('resistance');
+
+    // Talisman boost
+    if (organism.equippedTalisman?.effect.type == TalismanEffectType.resistanceStatBoost) {
+      resistance *= organism.equippedTalisman!.effect.magnitude;
+    }
+
+    return resistance.round();
   }
 
   int get currentSpeed {
@@ -628,10 +655,27 @@ class BattleManager extends ChangeNotifier {
 
     // Generic damage stat source
     int effectiveAttackerAtk = attacker.currentAttack;
-    if (move.damageStat == 'defense') {
-      effectiveAttackerAtk = attacker.currentDefense;
+    int effectiveDefenderDef = defender.currentDefense;
+
+    if (move.damageStat == 'power') {
+      effectiveAttackerAtk = attacker.currentPower;
+      effectiveDefenderDef = defender.currentResistance;
     } else if (move.damageStat == 'speed') {
       effectiveAttackerAtk = attacker.currentSpeed;
+    } else if (move.damageStat == 'defense') {
+      effectiveAttackerAtk = attacker.currentDefense;
+    } else if (move.damageStat == 'resistance') {
+      effectiveAttackerAtk = attacker.currentResistance;
+    }
+
+    // Special case: Psyshock style moves (Special attack vs Physical defense)
+    // If we wanted to support that, we'd need another field or logic.
+    // For now, damageStat handles the attacker side, and we assume 
+    // it targets Resistance if damageStat is 'power', otherwise Defense.
+    if (move.category == MoveCategory.special && move.damageStat == 'power') {
+       effectiveDefenderDef = defender.currentResistance;
+    } else {
+       effectiveDefenderDef = defender.currentDefense;
     }
 
     // Multi-Hit Loop
@@ -677,7 +721,7 @@ class BattleManager extends ChangeNotifier {
              isCrit = false;
           }
           
-          double damageCalc = ((effectiveAttackerAtk / defender.currentDefense) * move.baseDamage);
+          double damageCalc = ((effectiveAttackerAtk / effectiveDefenderDef) * move.baseDamage);
           if (isCrit) {
             damageCalc *= 1.5;
           }
@@ -1078,6 +1122,8 @@ class BattleManager extends ChangeNotifier {
     if (stat == 'all') {
       await _changeStat(target, 'attack', value);
       await _changeStat(target, 'defense', value);
+      await _changeStat(target, 'power', value);
+      await _changeStat(target, 'resistance', value);
       await _changeStat(target, 'speed', value);
     } else {
       final stats = stat.split(',');
@@ -1094,10 +1140,14 @@ class BattleManager extends ChangeNotifier {
     int oldStage = 0;
     if (statName == 'attack') oldStage = target.attackStage;
     else if (statName == 'defense') oldStage = target.defenseStage;
+    else if (statName == 'power') oldStage = target.powerStage;
+    else if (statName == 'resistance') oldStage = target.resistanceStage;
     else if (statName == 'speed') oldStage = target.speedStage;
 
     if (statName == 'attack') target.attackStage = (target.attackStage + value).clamp(-6, 6);
     else if (statName == 'defense') target.defenseStage = (target.defenseStage + value).clamp(-6, 6);
+    else if (statName == 'power') target.powerStage = (target.powerStage + value).clamp(-6, 6);
+    else if (statName == 'resistance') target.resistanceStage = (target.resistanceStage + value).clamp(-6, 6);
     else if (statName == 'speed') target.speedStage = (target.speedStage + value).clamp(-6, 6);
     
     // --- Ability Trigger: onStatLoss (Reaction e.g. Defiant) ---

@@ -369,6 +369,22 @@ Widget _buildOrganismTile(BuildContext context, Organism organism) {
                             AppColors.statDefenseColor
                           ),
                           _buildStatBar(
+                            'POWER', 
+                            organism.power, 
+                            150, 
+                            getStatTextColor(organism.power), 
+                            // 🚨 EDITED: Use AppColors.statPowerColor
+                            AppColors.statPowerColor
+                          ),
+                          _buildStatBar(
+                            'RESISTANCE', 
+                            organism.resistance, 
+                            150, 
+                            getStatTextColor(organism.resistance), 
+                            // 🚨 EDITED: Use AppColors.statResistanceStatColor
+                            AppColors.statResistanceStatColor
+                          ),
+                          _buildStatBar(
                             'SPEED', 
                             organism.speed, 
                             120, 

@@ -402,6 +402,8 @@ class _QuestScreenState extends State<QuestScreen> {
         health: 0,
         attack: 0,
         defense: 0,
+        power: 0,
+        resistance: 0,
         speed: 0,
         abilities: 'Unknown',
         moves: 'Unknown',

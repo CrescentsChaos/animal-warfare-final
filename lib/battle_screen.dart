@@ -1,7 +1,7 @@
 // lib/battle_screen.dart
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/services.dart' show rootBundle, SystemChrome, DeviceOrientation;
 import 'package:provider/provider.dart';
 import 'package:animal_warfare/models/captured_organism.dart';
 import 'package:animal_warfare/game/battle_manager.dart';
@@ -88,6 +88,7 @@ class _BattleScreenContentState extends State<BattleScreenContent> with TickerPr
   void dispose() {
     _playerShakeController.dispose();
     _opponentShakeController.dispose();
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     super.dispose();
   }
 
@@ -106,6 +107,20 @@ class _BattleScreenContentState extends State<BattleScreenContent> with TickerPr
   void _onVictory() {
     if (!mounted) return;
     // Quest progress shifted to encounter phase in initState
+  }
+
+  void _toggleOrientation() {
+    final orientation = MediaQuery.of(context).orientation;
+    if (orientation == Orientation.portrait) {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
+    } else {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+      ]);
+    }
   }
 
   String _getAssetPath(String biomeName) {
@@ -237,10 +252,6 @@ class _BattleScreenContentState extends State<BattleScreenContent> with TickerPr
     final overlayColor = Colors.black.withOpacity(0.55);
 
     // Initialize/Update listener
-    // Note: We should probably do this in initState/didChangeDependencies but
-    // since battleManager comes from Provider which might change, setting it here is safe-ish
-    // provided we don't duplicate listeners.
-    // Actually, onAttack is a single field in BattleManager (Function?), so reassignment is fine.
     battleManager.onAttack = _onAttack;
 
     return Scaffold(
@@ -259,75 +270,153 @@ class _BattleScreenContentState extends State<BattleScreenContent> with TickerPr
             ),
           ),
           SafeArea(
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: OrientationBuilder(
+              builder: (context, orientation) {
+                final isLandscape = orientation == Orientation.landscape;
+
+                if (isLandscape) {
+                  return Column(
                     children: [
-                      Text(
-                        'Wild Encounter',
-                        style: AppTextStyles.headline(context, baseSize: 12, color: AppColors.highlightColor),
-                      ),
-                      IconButton(
-                        onPressed: () => _showBattleLog(context, battleManager),
-                        icon: const Icon(Icons.menu_book),
-                        color: AppColors.highlightColor,
-                        tooltip: 'Battle Log',
-                        style: IconButton.styleFrom(
-                          backgroundColor: overlayColor,
-                          padding: const EdgeInsets.all(8),
+                      _buildHeader(context, battleManager, overlayColor),
+                      Expanded(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Left side: Animal Statuses and Sprites
+                            Expanded(
+                              flex: 5,
+                              child: Column(
+                                children: [
+                                  _buildFieldEffects(context, battleManager),
+                                  const SizedBox(height: 2),
+                                  AnimatedBuilder(
+                                    animation: _opponentShakeAnimation,
+                                    builder: (context, child) => Transform.translate(
+                                      offset: Offset(_opponentShakeAnimation.value, 0),
+                                      child: child,
+                                    ),
+                                    child: _buildOpponentStatus(context, battleManager.opponent, overlayColor, isNarrow),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  AnimatedBuilder(
+                                    animation: _playerShakeAnimation,
+                                    builder: (context, child) => Transform.translate(
+                                      offset: Offset(_playerShakeAnimation.value, 0),
+                                      child: child,
+                                    ),
+                                    child: _buildPlayerStatus(context, battleManager.player, overlayColor, isNarrow),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            // Right side: Logs and Controls
+                            Expanded(
+                              flex: 4,
+                              child: Column(
+                                children: [
+                                  if (battleManager.currentState == BattleState.waitingForInput) ...[
+                                    _buildMessageBox(context, battleManager.battleLog, isNarrow, expanded: false),
+                                    Expanded(
+                                      child: SingleChildScrollView(
+                                        child: _buildActionControls(context, battleManager, overlayColor, isNarrow),
+                                      ),
+                                    ),
+                                  ] else
+                                    Expanded(child: _buildMessageBox(context, battleManager.battleLog, isNarrow, expanded: true)),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
-                  ),
-                ),
-                const SizedBox(height: 2),
-                _buildFieldEffects(context, battleManager),
-                const SizedBox(height: 2),
+                  );
+                }
 
-                Expanded(
-                  child: Column(
-                    children: [
-                      // Opponent is shaken when attacking? Or when hit?
-                      // User said "when the animal attacks".
-                      AnimatedBuilder(
-                        animation: _opponentShakeAnimation,
-                        builder: (context, child) {
-                          return Transform.translate(
-                            offset: Offset(_opponentShakeAnimation.value, 0),
-                            child: child,
-                          );
-                        },
-                        child: _buildOpponentStatus(context, battleManager.opponent, overlayColor, isNarrow),
+                // Portrait layout
+                return Column(
+                  children: [
+                    _buildHeader(context, battleManager, overlayColor),
+                    const SizedBox(height: 2),
+                    _buildFieldEffects(context, battleManager),
+                    const SizedBox(height: 2),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          AnimatedBuilder(
+                            animation: _opponentShakeAnimation,
+                            builder: (context, child) => Transform.translate(
+                              offset: Offset(_opponentShakeAnimation.value, 0),
+                              child: child,
+                            ),
+                            child: _buildOpponentStatus(context, battleManager.opponent, overlayColor, isNarrow),
+                          ),
+                          const SizedBox(height: 4),
+                          AnimatedBuilder(
+                            animation: _playerShakeAnimation,
+                            builder: (context, child) => Transform.translate(
+                              offset: Offset(_playerShakeAnimation.value, 0),
+                              child: child,
+                            ),
+                            child: _buildPlayerStatus(context, battleManager.player, overlayColor, isNarrow),
+                          ),
+                          const SizedBox(height: 1),
+                          if (battleManager.currentState == BattleState.waitingForInput) ...[
+                            _buildMessageBox(context, battleManager.battleLog, isNarrow, expanded: false),
+                            _buildActionControls(context, battleManager, overlayColor, isNarrow),
+                          ] else
+                            Expanded(child: _buildMessageBox(context, battleManager.battleLog, isNarrow, expanded: true)),
+                        ],
                       ),
-                      const SizedBox(height: 4),
-                      AnimatedBuilder(
-                        animation: _playerShakeAnimation,
-                        builder: (context, child) {
-                          return Transform.translate(
-                            offset: Offset(_playerShakeAnimation.value, 0),
-                            child: child,
-                          );
-                        },
-                        child: _buildPlayerStatus(context, battleManager.player, overlayColor, isNarrow),
-                      ),
-                      const SizedBox(height: 2),
-                      if (battleManager.currentState == BattleState.waitingForInput) ...[
-                        _buildMessageBox(context, battleManager.battleLog, isNarrow, expanded: false),
-                        _buildActionControls(context, battleManager, overlayColor, isNarrow),
-                      ] else 
-                        Expanded(child: _buildMessageBox(context, battleManager.battleLog, isNarrow, expanded: true)),
-                    ],
-                  ),
-                ),
-              ],
+                    ),
+                  ],
+                );
+              },
             ),
           ),
           // Ability Pop-up Overlay
           if (battleManager.currentAbilityNotify != null)
             _AbilityPopUp(notification: battleManager.currentAbilityNotify!),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context, BattleManager battleManager, Color overlayColor) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            'Wild Encounter',
+            style: AppTextStyles.headline(context, baseSize: 12, color: AppColors.highlightColor),
+          ),
+          Row(
+            children: [
+              IconButton(
+                onPressed: _toggleOrientation,
+                icon: const Icon(Icons.screen_rotation),
+                color: AppColors.highlightColor,
+                tooltip: 'Rotate Screen',
+                style: IconButton.styleFrom(
+                  backgroundColor: overlayColor,
+                  padding: const EdgeInsets.all(8),
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                onPressed: () => _showBattleLog(context, battleManager),
+                icon: const Icon(Icons.menu_book),
+                color: AppColors.highlightColor,
+                tooltip: 'Battle Log',
+                style: IconButton.styleFrom(
+                  backgroundColor: overlayColor,
+                  padding: const EdgeInsets.all(8),
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -376,82 +465,90 @@ class _BattleScreenContentState extends State<BattleScreenContent> with TickerPr
     final base = organism.organism.baseOrganism;
     final maxHp = organism.maxHealth;
     final hpRatio = maxHp > 0 ? organism.health / maxHp : 0.0;
-    final spriteSize = isNarrow ? 85.0 : 105.0;
+    
+    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+    final spriteSize = isLandscape 
+        ? (isNarrow ? 90.0 : 110.0) 
+        : (isNarrow ? 130.0 : 150.0);
 
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: isNarrow ? 8 : 16),
+    final statusBox = Container(
+      constraints: BoxConstraints(maxWidth: isNarrow ? 160 : 200),
+      padding: EdgeInsets.all(isNarrow ? 6 : 8),
+      decoration: BoxDecoration(
+        color: barColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.highlightColor, width: 2),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.4), blurRadius: 6, offset: const Offset(2, 2))],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Container(
-                constraints: BoxConstraints(maxWidth: isNarrow ? 180 : 220),
-                padding: EdgeInsets.all(isNarrow ? 8 : 10),
-                decoration: BoxDecoration(
-                  color: barColor,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.highlightColor, width: 2),
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.4), blurRadius: 6, offset: const Offset(2, 2))],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      base.name,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        fontSize: isNarrow ? 10 : 12,
-                        fontFamily: 'PressStart2P',
-                      ),
-                      textAlign: TextAlign.right,
-                    ),
-                    const SizedBox(height: 4),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: TweenAnimationBuilder<double>(
-                        duration: const Duration(milliseconds: 1200),
-                        curve: Curves.easeInOut,
-                        tween: Tween<double>(begin: hpRatio.clamp(0.0, 1.0), end: hpRatio.clamp(0.0, 1.0)),
-                        builder: (context, value, _) => LinearProgressIndicator(
-                          value: value,
-                          color: value > 0.5 ? const Color(0xFF4CAF50) : (value > 0.2 ? Colors.orange : Colors.red),
-                          backgroundColor: Colors.grey[800],
-                          minHeight: isNarrow ? 8 : 10,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'HP: ${organism.health}/$maxHp',
-                      style: TextStyle(color: Colors.white70, fontSize: isNarrow ? 8 : 10, fontFamily: 'PressStart2P'),
-                    ),
-                    if (organism.statusEffect.type != StatusEffectType.none)
-                      Container(
-                        margin: const EdgeInsets.only(top: 4),
-                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Colors.redAccent,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          organism.statusEffect.name.toUpperCase(),
-                          style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                  ],
-                ),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              base.name,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                fontSize: isNarrow ? 10 : 12,
+                fontFamily: 'PressStart2P',
               ),
-            ],
+              textAlign: TextAlign.right,
+            ),
           ),
           const SizedBox(height: 4),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: TweenAnimationBuilder<double>(
+              duration: const Duration(milliseconds: 1200),
+              curve: Curves.easeInOut,
+              tween: Tween<double>(begin: hpRatio.clamp(0.0, 1.0), end: hpRatio.clamp(0.0, 1.0)),
+              builder: (context, value, _) => LinearProgressIndicator(
+                value: value,
+                color: value > 0.5 ? const Color(0xFF4CAF50) : (value > 0.2 ? Colors.orange : Colors.red),
+                backgroundColor: Colors.grey[800],
+                minHeight: isNarrow ? 8 : 10,
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              'HP: ${organism.health}/$maxHp',
+              style: TextStyle(color: Colors.white70, fontSize: isNarrow ? 8 : 10, fontFamily: 'PressStart2P'),
+            ),
+          ),
+          if (organism.statusEffect.type != StatusEffectType.none)
+            Container(
+              margin: const EdgeInsets.only(top: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.redAccent,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                organism.statusEffect.name.toUpperCase(),
+                style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
+              ),
+            ),
+        ],
+      ),
+    );
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: isNarrow ? 8 : 16, vertical: 2),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Flexible(child: statusBox),
+          const SizedBox(width: 8),
           _BattleSprite(
             organism: organism, 
             size: spriteSize,
             onLongPress: () => _showOrganismInfo(context, organism),
-            mirror: false,
+            mirror: false, // Mirrored from previous State
           ),
         ],
       ),
@@ -462,82 +559,90 @@ class _BattleScreenContentState extends State<BattleScreenContent> with TickerPr
     final base = organism.organism.baseOrganism;
     final maxHp = organism.maxHealth;
     final hpRatio = maxHp > 0 ? organism.health / maxHp : 0.0;
-    final spriteSize = isNarrow ? 95.0 : 115.0;
 
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: isNarrow ? 8 : 16),
+    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+    final spriteSize = isLandscape 
+        ? (isNarrow ? 100.0 : 120.0) 
+        : (isNarrow ? 140.0 : 170.0);
+
+    final statusBox = Container(
+      constraints: BoxConstraints(maxWidth: isNarrow ? 160 : 200),
+      padding: EdgeInsets.all(isNarrow ? 6 : 8),
+      decoration: BoxDecoration(
+        color: barColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.highlightColor, width: 2),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.4), blurRadius: 6, offset: const Offset(2, 2))],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              base.name,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                fontSize: isNarrow ? 10 : 12,
+                fontFamily: 'PressStart2P',
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: TweenAnimationBuilder<double>(
+              duration: const Duration(milliseconds: 1200),
+              curve: Curves.easeInOut,
+              tween: Tween<double>(begin: hpRatio.clamp(0.0, 1.0), end: hpRatio.clamp(0.0, 1.0)),
+              builder: (context, value, _) => LinearProgressIndicator(
+                value: value,
+                color: value > 0.5 ? const Color(0xFF4CAF50) : (value > 0.2 ? Colors.orange : Colors.red),
+                backgroundColor: Colors.grey[800],
+                minHeight: isNarrow ? 8 : 10,
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              'HP: ${organism.health}/$maxHp',
+              style: TextStyle(color: Colors.white70, fontSize: isNarrow ? 8 : 10, fontFamily: 'PressStart2P'),
+            ),
+          ),
+          if (organism.statusEffect.type != StatusEffectType.none)
+            Container(
+              margin: const EdgeInsets.only(top: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.redAccent,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                organism.statusEffect.name.toUpperCase(),
+                style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
+              ),
+            ),
+        ],
+      ),
+    );
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: isNarrow ? 8 : 16, vertical: 2),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           _BattleSprite(
             organism: organism, 
             size: spriteSize,
             onLongPress: () => _showOrganismInfo(context, organism),
-            mirror: true,
+            mirror: true, // Mirrored from previous State
           ),
-          const SizedBox(height: 4),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Container(
-                constraints: BoxConstraints(maxWidth: isNarrow ? 180 : 220),
-                padding: EdgeInsets.all(isNarrow ? 8 : 10),
-                decoration: BoxDecoration(
-                  color: barColor,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.highlightColor, width: 2),
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.4), blurRadius: 6, offset: const Offset(2, 2))],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      base.name,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        fontSize: isNarrow ? 10 : 12,
-                        fontFamily: 'PressStart2P',
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: TweenAnimationBuilder<double>(
-                        duration: const Duration(milliseconds: 1200),
-                        curve: Curves.easeInOut,
-                        tween: Tween<double>(begin: hpRatio.clamp(0.0, 1.0), end: hpRatio.clamp(0.0, 1.0)),
-                        builder: (context, value, _) => LinearProgressIndicator(
-                          value: value,
-                          color: value > 0.5 ? const Color(0xFF4CAF50) : (value > 0.2 ? Colors.orange : Colors.red),
-                          backgroundColor: Colors.grey[800],
-                          minHeight: isNarrow ? 8 : 10,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'HP: ${organism.health}/$maxHp',
-                      style: TextStyle(color: Colors.white70, fontSize: isNarrow ? 8 : 10, fontFamily: 'PressStart2P'),
-                    ),
-                    if (organism.statusEffect.type != StatusEffectType.none)
-                      Container(
-                        margin: const EdgeInsets.only(top: 4),
-                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Colors.redAccent,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          organism.statusEffect.name.toUpperCase(),
-                          style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+          const SizedBox(width: 8),
+          Flexible(child: statusBox),
         ],
       ),
     );
@@ -648,6 +753,8 @@ class _BattleScreenContentState extends State<BattleScreenContent> with TickerPr
               const SizedBox(height: 6),
               _buildStatRow('ATK', bo.attackStage > 0 ? '+${bo.attackStage}' : '${bo.attackStage}', Colors.orange),
               _buildStatRow('DEF', bo.defenseStage > 0 ? '+${bo.defenseStage}' : '${bo.defenseStage}', Colors.blue),
+              _buildStatRow('PWR', bo.powerStage > 0 ? '+${bo.powerStage}' : '${bo.powerStage}', Colors.purple),
+              _buildStatRow('RES', bo.resistanceStage > 0 ? '+${bo.resistanceStage}' : '${bo.resistanceStage}', Colors.deepOrange),
               _buildStatRow('SPD', bo.speedStage > 0 ? '+${bo.speedStage}' : '${bo.speedStage}', Colors.yellow),
               
               const SizedBox(height: 10),
@@ -801,14 +908,16 @@ class _BattleScreenContentState extends State<BattleScreenContent> with TickerPr
             crossAxisCount: 2,
             mainAxisSpacing: 4,
             crossAxisSpacing: 4,
-            childAspectRatio: isNarrow ? 3.5 : 4.0,
+            childAspectRatio: isNarrow 
+                ? 3.4 
+                : (MediaQuery.of(context).orientation == Orientation.landscape ? 4.2 : 3.6),
             children: battleManager.playerMoves.map((move) {
               return ElevatedButton(
                 onPressed: () => battleManager.processPlayerAction(move),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryButtonColor,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                     side: const BorderSide(color: AppColors.highlightColor),
@@ -818,20 +927,26 @@ class _BattleScreenContentState extends State<BattleScreenContent> with TickerPr
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      move.name,
-                      style: TextStyle(fontSize: isNarrow ? 8 : 10, fontFamily: 'PressStart2P'),
-                      overflow: TextOverflow.ellipsis,
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        move.name,
+                        style: TextStyle(fontSize: isNarrow ? 8 : 10, fontFamily: 'PressStart2P'),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                     const SizedBox(height: 2),
-                    Text(
-                      '${battleManager.playerOrganism.moveStamina[move.name] ?? 0}/${move.stamina}',
-                      style: TextStyle(
-                        fontSize: isNarrow ? 7 : 9,
-                        fontFamily: 'PressStart2P',
-                        color: (battleManager.playerOrganism.moveStamina[move.name] ?? 0) > 0 
-                            ? Colors.white70 
-                            : Colors.redAccent,
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        '${battleManager.playerOrganism.moveStamina[move.name] ?? 0}/${move.stamina}',
+                        style: TextStyle(
+                          fontSize: isNarrow ? 7 : 9,
+                          fontFamily: 'PressStart2P',
+                          color: (battleManager.playerOrganism.moveStamina[move.name] ?? 0) > 0 
+                              ? Colors.white70 
+                              : Colors.redAccent,
+                        ),
                       ),
                     ),
                   ],
@@ -845,12 +960,15 @@ class _BattleScreenContentState extends State<BattleScreenContent> with TickerPr
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: battleManager.attemptCapture,
-                  icon: const Icon(Icons.catching_pokemon, size: 20),
-                  label: const Text('Capture', style: TextStyle(fontFamily: 'PressStart2P', fontSize: 11)),
+                  icon: Icon(Icons.catching_pokemon, size: isNarrow ? 16 : 20),
+                  label: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: const Text('Capture', style: TextStyle(fontFamily: 'PressStart2P', fontSize: 11)),
+                  ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue.shade700,
                     foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: isNarrow ? 6 : 8),
+                    padding: EdgeInsets.symmetric(vertical: isNarrow ? 4 : 8, horizontal: 4),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     elevation: 2,
                   ),
@@ -860,12 +978,15 @@ class _BattleScreenContentState extends State<BattleScreenContent> with TickerPr
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: battleManager.attemptRun,
-                  icon: const Icon(Icons.directions_run, size: 20),
-                  label: const Text('Run', style: TextStyle(fontFamily: 'PressStart2P', fontSize: 11)),
+                  icon: Icon(Icons.directions_run, size: isNarrow ? 16 : 20),
+                  label: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: const Text('Run', style: TextStyle(fontFamily: 'PressStart2P', fontSize: 11)),
+                  ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red.shade700,
                     foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: isNarrow ? 6 : 8),
+                    padding: EdgeInsets.symmetric(vertical: isNarrow ? 4 : 8, horizontal: 4),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     elevation: 2,
                   ),
@@ -978,6 +1099,7 @@ class _BattleScreenContentState extends State<BattleScreenContent> with TickerPr
           actions: [
             TextButton(
               onPressed: () {
+                SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
                 Navigator.of(ctx).pop();
                 Navigator.of(context).pop(battleManager.result); // Return the enum
               },

@@ -11,7 +11,7 @@ class CapturedOrganism {
   
   // Unique DNA/IVs: Individual Values (0-31 for each stat)
   // These are the "genes" that make this animal unique.
-  final Map<String, int> individualValues; // 'health', 'attack', 'defense', 'speed'
+  final Map<String, int> individualValues; // 'health', 'attack', 'defense', 'power', 'resistance', 'speed'
   
   // Current Battle State
   int currentHealth;
@@ -41,6 +41,13 @@ class CapturedOrganism {
            final move = Move.findByName(moveName);
            moveStamina[moveName] = move?.stamina ?? Move.defaultStamina;
         }
+      }
+    }
+    // Ensure all IVs exist (for legacy data)
+    final stats = ['health', 'attack', 'defense', 'power', 'resistance', 'speed'];
+    for (final stat in stats) {
+      if (!individualValues.containsKey(stat)) {
+        individualValues[stat] = Random().nextInt(maxIV + 1);
       }
     }
   }
@@ -79,6 +86,8 @@ class CapturedOrganism {
       'health': rng.nextInt(maxIV + 1), // 0 to 31
       'attack': rng.nextInt(maxIV + 1),
       'defense': rng.nextInt(maxIV + 1),
+      'power': rng.nextInt(maxIV + 1),
+      'resistance': rng.nextInt(maxIV + 1),
       'speed': rng.nextInt(maxIV + 1),
     };
 
@@ -125,6 +134,18 @@ class CapturedOrganism {
     'defense', 
     baseOrganism.defense, 
     individualValues['defense']!
+  );
+
+  int get effectivePower => calculateStat(
+    'power', 
+    baseOrganism.power, 
+    individualValues['power']!
+  );
+  
+  int get effectiveResistance => calculateStat(
+    'resistance', 
+    baseOrganism.resistance, 
+    individualValues['resistance']!
   );
   
   int get effectiveSpeed => calculateStat(

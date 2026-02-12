@@ -11,6 +11,8 @@ class Organism {
   final String drops;
   final int attack;
   final int defense;
+  final int power; // NEW: Special Attack
+  final int resistance; // NEW: Special Defense
   final int health;
   final int speed;
   final String abilities;
@@ -28,6 +30,8 @@ class Organism {
     required this.drops,
     required this.attack,
     required this.defense,
+    required this.power,
+    required this.resistance,
     required this.health,
     required this.speed,
     required this.abilities,
@@ -58,6 +62,8 @@ class Organism {
       drops: json['drops'] as String,
       attack: json['attack'] as int,
       defense: json['defense'] as int,
+      power: json['power'] as int,
+      resistance: json['resistance'] as int,
       health: json['health'] as int,
       speed: json['speed'] as int,
       abilities: json['abilities'] as String,
@@ -94,6 +100,8 @@ class Organism {
     String? drops,
     int? attack,
     int? defense,
+    int? power,
+    int? resistance,
     int? health,
     int? speed,
     String? abilities,
@@ -111,6 +119,8 @@ class Organism {
       drops: drops ?? this.drops,
       attack: attack ?? this.attack,
       defense: defense ?? this.defense,
+      power: power ?? this.power,
+      resistance: resistance ?? this.resistance,
       health: health ?? this.health,
       speed: speed ?? this.speed,
       abilities: abilities ?? this.abilities,
@@ -131,6 +141,8 @@ class Organism {
       'drops': drops,
       'attack': attack,
       'defense': defense,
+      'power': power,
+      'resistance': resistance,
       'health': health,
       'speed': speed,
       'abilities': abilities,

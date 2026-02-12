@@ -11,6 +11,8 @@ class AppColors {
   static const Color statHealthColor = Color(0xFFC6FF00); // Lime
   static const Color statAttackColor = Color(0xFFFF0000); // Red
   static const Color statDefenseColor = Color(0xFFFFEB3B); // Yellow
+  static const Color statPowerColor = Color(0xFF9C27B0); // Purple
+  static const Color statResistanceStatColor = Color(0xFFFF5722); // Deep Orange
   static const Color statSpeedColor = Color(0xFF00FFFF); // Cyan
 
   // UI Feedback Colors (Used in Quiz)

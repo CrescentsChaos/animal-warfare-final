@@ -43,11 +43,13 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen> with WidgetsBindi
     drops: 'N/A',
     attack: 40,  // Base stats for a weak but non-zero fighter
     defense: 30,
+    power: 40,
+    resistance: 30,
     health: 120,
     speed: 50,
     abilities: 'None',
     category: 'Human',
-    moves: 'Punch, Run',
+    moves: 'Punch, Kick, Uppercut, Jab',
     sprite: 'https://i.imgur.com/your_human_sprite.png', // Placeholder sprite URL
     rarity: 'Common',
     description: 'The dominant species.',

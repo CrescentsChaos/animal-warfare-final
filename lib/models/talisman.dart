@@ -6,7 +6,9 @@ enum TalismanEffectType {
   speedBoost,
   healthBoost,
   damageMultiplier,
-  resistanceBoost,
+  resistanceBoost, // This is current 20% reduction
+  powerBoost,      // NEW: Power stat boost
+  resistanceStatBoost, // NEW: Resistance stat boost
   critBoost,
 }
 
