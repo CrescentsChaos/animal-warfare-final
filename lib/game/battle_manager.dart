@@ -525,8 +525,8 @@ class BattleManager extends ChangeNotifier {
     }
 
     // 1. Check for Auto-Weather/Terrain/Intimidate (abilities can override)
-    await _checkEntranceAbility(player, opponent);
-    await _checkEntranceAbility(opponent, player);
+    await _checkEntranceAbility(player, opponent, biomeName);
+    await _checkEntranceAbility(opponent, player, biomeName);
 
     // 2. Speed Check
     if (player.currentSpeed < opponent.currentSpeed) {
@@ -541,6 +541,7 @@ class BattleManager extends ChangeNotifier {
   Future<void> _checkEntranceAbility(
     BattleOrganism user,
     BattleOrganism target,
+    String? biomeName,
   ) async {
     for (final ability in user.abilities) {
       if (ability.trigger != AbilityTrigger.onEntry) continue;
@@ -581,6 +582,17 @@ class BattleManager extends ChangeNotifier {
           );
           notifyListeners();
           await Future.delayed(const Duration(milliseconds: 3000));
+        case AbilityEffectType.statusChange:
+          if (ability.name == 'Camouflage Carapace' && biomeName == 'Swamp') {
+            triggered = true;
+            await _notifyAbilityTrigger(user, ability);
+            user.addStatusEffect(
+              const StatusEffect(type: StatusEffectType.stealth),
+            );
+            _addToLog('${user.organism.name} became hidden in the swamp!');
+            notifyListeners();
+            await Future.delayed(const Duration(milliseconds: 3000));
+          }
           break;
         default:
           if (ability.name == 'Cold-blooded') {
@@ -892,6 +904,13 @@ class BattleManager extends ChangeNotifier {
     // Weather-based accuracy modifier
     accuracy = (accuracy * currentWeather.accuracyModifier).round();
 
+    // Stealth evasion (50% chance of getting hit over opponents actual accuracy)
+    if (defender.statusEffects.any(
+      (se) => se.type == StatusEffectType.stealth,
+    )) {
+      accuracy = (accuracy * 0.5).round();
+    }
+
     if (Random().nextInt(100) >= accuracy) {
       _addToLog('...but it missed!');
       notifyListeners();
@@ -1029,6 +1048,20 @@ class BattleManager extends ChangeNotifier {
         damageCalc *= random;
 
         damageCalc *= weatherMod;
+
+        // Stealth damage bonus (2x damage addressed in effect removal below)
+        if (attacker.statusEffects.any(
+          (se) => se.type == StatusEffectType.stealth,
+        )) {
+          damageCalc *= 2.0;
+        }
+
+        // Stealth damage taken penalty (2x damage)
+        if (defender.statusEffects.any(
+          (se) => se.type == StatusEffectType.stealth,
+        )) {
+          damageCalc *= 2.0;
+        }
 
         // Generic conditional multiplier
         if (move.multiplierCondition.isNotEmpty) {
@@ -1220,6 +1253,31 @@ class BattleManager extends ChangeNotifier {
     if (attacker.health > 0 && defender.health >= 0) {
       await _applyMoveEffect(attacker, defender, move.effects, move);
     }
+
+    // Stealth removal
+    bool attackerHadStealth = attacker.statusEffects.any(
+      (se) => se.type == StatusEffectType.stealth,
+    );
+    if (attackerHadStealth) {
+      attacker.statusEffects = attacker.statusEffects
+          .where((se) => se.type != StatusEffectType.stealth)
+          .toList();
+      _addToLog('${attacker.organism.name} is no longer hidden!');
+      notifyListeners();
+      await Future.delayed(const Duration(milliseconds: 2000));
+    }
+
+    bool defenderHadStealth = defender.statusEffects.any(
+      (se) => se.type == StatusEffectType.stealth,
+    );
+    if (defenderHadStealth && defender.tookDamageThisTurn) {
+      defender.statusEffects = defender.statusEffects
+          .where((se) => se.type != StatusEffectType.stealth)
+          .toList();
+      _addToLog('${defender.organism.name} was revealed!');
+      notifyListeners();
+      await Future.delayed(const Duration(milliseconds: 2000));
+    }
   }
 
   Future<bool> _canMove(BattleOrganism org) async {
@@ -1400,6 +1458,9 @@ class BattleManager extends ChangeNotifier {
               break;
             case MoveEffectType.statusMarked:
               statusType = StatusEffectType.marked;
+              break;
+            case MoveEffectType.statusStealth:
+              statusType = StatusEffectType.stealth;
               break;
             default:
               statusType = StatusEffectType.none;
@@ -2127,6 +2188,10 @@ class BattleManager extends ChangeNotifier {
       damageCalc *= 1.3;
     if (defender.statusEffects.any((se) => se.type == StatusEffectType.marked))
       damageCalc *= 1.2;
+    if (attacker.statusEffects.any((se) => se.type == StatusEffectType.stealth))
+      damageCalc *= 2.0;
+    if (defender.statusEffects.any((se) => se.type == StatusEffectType.stealth))
+      damageCalc *= 2.0;
 
     // Type Effectiveness
     double typeMod = 1.0;

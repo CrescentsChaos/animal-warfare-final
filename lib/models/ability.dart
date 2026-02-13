@@ -15,8 +15,8 @@ enum AbilityTrigger {
 
 enum AbilityEffectType {
   none,
-  statChange,      // Self or Target stat change
-  statusChange,    // Self or Target status
+  statChange, // Self or Target stat change
+  statusChange, // Self or Target status
   weatherChange,
   terrainChange,
   damageMultiplier,
@@ -34,13 +34,13 @@ class Ability {
   final String description;
   final AbilityTrigger trigger;
   final AbilityEffectType effectType;
-  
+
   // Generic parameters for different effect types
-  final String targetStat;      // e.g., 'attack', 'defense', 'speed'
-  final double magnitude;       // Multiplier (e.g., 2.0) or stat stages (e.g., -1)
-  final double chance;          // 0.0 to 1.0
+  final String targetStat; // e.g., 'attack', 'defense', 'speed'
+  final double magnitude; // Multiplier (e.g., 2.0) or stat stages (e.g., -1)
+  final double chance; // 0.0 to 1.0
   final List<String> conditions; // e.g., 'at_full_hp', 'contact', 'poisoned'
-  final String value;           // e.g., 'rain', 'flying', status name
+  final String value; // e.g., 'rain', 'flying', status name
 
   const Ability({
     required this.name,
@@ -58,7 +58,8 @@ class Ability {
     // --- Requested Abilities ---
     Ability(
       name: 'Adaptability',
-      description: 'Increases the STAB (Same Type Attack Bonus) multiplier from 1.5x to 2.0x.',
+      description:
+          'Increases the STAB (Same Type Attack Bonus) multiplier from 1.5x to 2.0x.',
       trigger: AbilityTrigger.onCalculateDamage,
       effectType: AbilityEffectType.damageMultiplier,
       magnitude: 2.0,
@@ -102,7 +103,8 @@ class Ability {
     ),
     Ability(
       name: 'Color Change',
-      description: 'Changes the organism\'s type to the type of the move it was hit by.',
+      description:
+          'Changes the organism\'s type to the type of the move it was hit by.',
       trigger: AbilityTrigger.onDamageTaken,
       effectType: AbilityEffectType.typeChange,
     ),
@@ -193,7 +195,7 @@ class Ability {
       effectType: AbilityEffectType.preventStatus,
       value: 'paralysis',
     ),
-    
+
     // --- Existing/Original Abilities ---
     Ability(
       name: 'Swift Hunter',
@@ -264,14 +266,24 @@ class Ability {
     ),
     Ability(
       name: 'Cold-blooded',
-      description: 'Speed Raises by 1 stage during sunny weather and drops by 1 stage during rain or snow weather while entering the field.',
+      description:
+          'Speed Raises by 1 stage during sunny weather and drops by 1 stage during rain or snow weather while entering the field.',
       trigger: AbilityTrigger.onEntry,
     ),
+    Ability(
+      name: 'Camouflage Carapace',
+      description: 'In Swamp biome, user gains Stealth on entry.',
+      trigger: AbilityTrigger.onEntry,
+      effectType: AbilityEffectType.statusChange,
+      value: 'stealth',
+    ),
   ];
-  
+
   static Ability? findByName(String name) {
     try {
-      return allAbilities.firstWhere((a) => a.name.toLowerCase() == name.toLowerCase());
+      return allAbilities.firstWhere(
+        (a) => a.name.toLowerCase() == name.toLowerCase(),
+      );
     } catch (_) {
       return null;
     }

@@ -16,6 +16,7 @@ enum StatusEffectType {
   stun, // Skip turn (1 turn usually)
   fear, // Reduces all stats by 10%
   marked, // Takes 20% extra damage
+  stealth, // 50% evasion, 2x damage dealt/taken, removed on hit/attack
 }
 
 class StatusEffect {
@@ -71,6 +72,8 @@ class StatusEffect {
         return 'Fear';
       case StatusEffectType.marked:
         return 'Marked';
+      case StatusEffectType.stealth:
+        return 'Stealth';
       default:
         return 'None';
     }
@@ -104,6 +107,8 @@ class StatusEffect {
         return 'is trembling with fear!';
       case StatusEffectType.marked:
         return 'was marked for death!';
+      case StatusEffectType.stealth:
+        return 'became hidden in the shadows!';
       default:
         return '';
     }
@@ -137,6 +142,8 @@ class StatusEffect {
         return Colors.indigo;
       case StatusEffectType.marked:
         return Colors.redAccent;
+      case StatusEffectType.stealth:
+        return Colors.blueGrey;
       default:
         return Colors.grey;
     }
@@ -170,6 +177,8 @@ class StatusEffect {
         return 'All stats are reduced by 10%.';
       case StatusEffectType.marked:
         return 'Takes 20% extra damage for 2 turns.';
+      case StatusEffectType.stealth:
+        return '50% evasion. 2x damage dealt and taken. Removed on attack or hit.';
       default:
         return 'No current effect.';
     }

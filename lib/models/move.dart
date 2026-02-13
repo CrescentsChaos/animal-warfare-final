@@ -63,6 +63,7 @@ enum MoveEffectType {
   statusStun,
   statusFear,
   statusMarked,
+  statusStealth,
   // New Effect Types for Complex Moves
   multiStatChange,
   recharge,
@@ -422,11 +423,11 @@ class Move {
       ],
     ),
     Move(
-      name: 'Hunker Down',
+      name: 'Withdraw',
       description: 'Raises the user\'s defense.',
       baseDamage: 0,
       type: ElementalType.armored,
-      stamina: 20,
+      stamina: 10,
       category: MoveCategory.status,
       effects: [
         MoveEffect(
@@ -438,17 +439,739 @@ class Move {
       ],
     ),
     Move(
+      name: 'Titan\'s Wake',
+      description:
+          'Creates a massive displacement wave that slows all enemies.',
+      baseDamage: 90,
+      accuracy: 100,
+      type: ElementalType.giant,
+      stamina: 10,
+      category: MoveCategory.physical,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statChange,
+          target: 'opponent',
+          stat: 'speed',
+          value: -2,
+          chance: 100,
+        ),
+      ],
+    ),
+    Move(
+      name: 'Vortex Suction',
+      description:
+          'The user opens its massive mouth to create a vacuum. Deals damage and restores HP.',
+      baseDamage: 65,
+      accuracy: 95,
+      type: ElementalType.aquatic,
+      stamina: 15,
+      category:
+          MoveCategory.special, // Whale sharks "pull" water rather than biting
+      drainPercent: 0.5, // Heals half the damage dealt
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statusMarked,
+          target: 'opponent',
+          chance: 30,
+        ),
+      ],
+    ),
+    Move(
+      name: 'Denticle Armor',
+      description:
+          'The user flexes its sandpaper-thick skin, boosting defense and punishing contact.',
+      baseDamage: 0,
+      type: ElementalType.armored,
+      stamina: 10,
+      category: MoveCategory.status,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statChange,
+          target: 'self',
+          stat: 'defense',
+          value: 2,
+        ),
+        MoveEffect(
+          type: MoveEffectType.statusRegen,
+          target: 'self',
+          value: 3, // Regens HP for 3 turns
+        ),
+      ],
+    ),
+    Move(
+      name: 'Colossal Tail Sweep',
+      description: 'A slow but devastating swing of the massive caudal fin.',
+      baseDamage: 100,
+      accuracy: 80,
+      type: ElementalType.giant,
+      stamina: 12,
+      category: MoveCategory.physical,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statusStun,
+          target: 'opponent',
+          value: 1,
+          chance: 40,
+        ),
+      ],
+    ),
+    // White Rhinoceros Moveset
+    Move(
+      name: 'Wide-Track Juggernaut',
+      description:
+          'A massive, straight-line charge. Damage scales with the user\'s Defense.',
+      baseDamage: 130,
+      accuracy: 90,
+      type: ElementalType.giant,
+      stamina: 5,
+      category: MoveCategory.physical,
+      damageStat: 'defense', // Uses the Rhino's 130 Defense instead of Attack
+      effects: [
+        MoveEffect(type: MoveEffectType.statusStun, value: 1, chance: 30),
+      ],
+    ),
+    Move(
+      name: 'Mud Armor',
+      description: 'Coats the body in thick mud to boost protection.',
+      baseDamage: 0,
+      type: ElementalType.armored,
+      stamina: 10,
+      category: MoveCategory.status,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statChange,
+          target: 'self',
+          stat: 'defense',
+          value: 2,
+        ),
+      ],
+    ),
+    Move(
+      name: 'Hook-Lip Gore',
+      description:
+          'A surgical strike with the front horn. High critical-hit ratio.',
+      baseDamage: 95,
+      accuracy: 100,
+      type: ElementalType.predator,
+      stamina: 10,
+      category: MoveCategory.physical,
+      critRate: 2, // 50% Critical Hit rate
+      effects: [
+        MoveEffect(type: MoveEffectType.statusBleed, value: 2, chance: 40),
+      ],
+    ),
+    Move(
+      name: 'Blind Charge',
+      description:
+          'A reckless dash at anything that moves. High damage but hurts the user.',
+      baseDamage: 110,
+      accuracy: 85,
+      type: ElementalType.giant,
+      stamina: 10,
+      recoilPercent: 0.25, // 25% recoil damage
+      category: MoveCategory.physical,
+    ),
+    Move(
+      name: 'Scary Face',
+      description:
+          'A terrifying glare that halts the opponent in their tracks.',
+      baseDamage: 0,
+      type: ElementalType.predator,
+      stamina: 15,
+      category: MoveCategory.status,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statusFear,
+          target: 'opponent',
+          value: 2,
+        ),
+        MoveEffect(
+          type: MoveEffectType.statChange,
+          target: 'opponent',
+          stat: 'speed',
+          value: -2,
+        ),
+      ],
+    ),
+    Move(
+      name: 'Relic Echo',
+      description:
+          'A ghostly call from the ancient past. Ignores the target\'s stat changes.',
+      baseDamage: 80,
+      accuracy: 100, // Never misses in jungle terrain
+      type: ElementalType.normal,
+      stamina: 10,
+      category: MoveCategory.special,
+      damageStat: 'power',
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statusConfusion,
+          target: 'opponent',
+          value: 2,
+          chance: 30,
+        ),
+      ],
+    ),
+    Move(
+      name: 'Jungle Song',
+      description:
+          'Emits a high-pitched vocalization that lulls the foe to sleep.',
+      baseDamage: 0,
+      accuracy: 60,
+      type: ElementalType.social,
+      stamina: 8,
+      category: MoveCategory.status,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statusSleep,
+          target: 'opponent',
+          value: 2,
+        ),
+      ],
+    ),
+    Move(
+      name: 'Horn Leech',
+      description: 'A specialized browsing strike that restores health.',
+      baseDamage: 75,
+      type: ElementalType.parasite, // Uses the drain logic from your code
+      stamina: 10,
+      drainPercent: 0.5, // Heals half of damage dealt
+      category: MoveCategory.physical,
+    ),
+    Move(
+      name: 'Resonating Honk',
+      description: 'Amplifies sound through the casque to disorient the foe.',
+      baseDamage: 85,
+      accuracy: 100,
+      type: ElementalType.social,
+      stamina: 10,
+      category: MoveCategory.special,
+      effects: [
+        MoveEffect(type: MoveEffectType.statusConfusion, value: 2, chance: 30),
+      ],
+    ),
+    Move(
+      name: 'Sealed Nest Protection',
+      description: 'Recalls the nesting habit to temporarily boost defenses.',
+      baseDamage: 0,
+      type: ElementalType.armored,
+      stamina: 20,
+      category: MoveCategory.status,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statChange,
+          target: 'self',
+          stat: 'defense',
+          value: 2,
+        ),
+        MoveEffect(
+          type: MoveEffectType.statChange,
+          target: 'self',
+          stat: 'spDef',
+          value: 2,
+        ),
+      ],
+    ),
+    // ⭐ Signature Move
+    Move(
+      name: 'Casque Cannonade',
+      description:
+          'A focused blast of sonic energy. Ignores the target\'s Defense.',
+      baseDamage: 100,
+      accuracy: 95,
+      type: ElementalType.giant,
+      stamina: 15,
+      category: MoveCategory.special,
+      damageStat: 'power',
+    ),
+    Move(
+      name: 'Head Bob Display',
+      description: 'A rhythmic dominance display that intimidates the foe.',
+      baseDamage: 0,
+      type: ElementalType.social,
+      stamina: 12,
+      category: MoveCategory.status,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statChange,
+          target: 'opponent',
+          stat: 'attack',
+          value: -2,
+        ),
+      ],
+    ),
+    // ⭐ Signature Move
+    Move(
+      name: 'Pseudo-Horn Skewer',
+      description: 'Drives the bony horn-scales into the target.',
+      baseDamage: 90,
+      accuracy: 100,
+      type: ElementalType.armored,
+      stamina: 12,
+      category: MoveCategory.physical,
+      critRate: 2, // High crit due to the focused pressure of the horn
+    ),
+    Move(
+      name: 'Territorial Roar',
+      description:
+          'A wide-mouthed threat display that strikes fear into the foe.',
+      baseDamage: 0,
+      type: ElementalType.social,
+      stamina: 15,
+      category: MoveCategory.status,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statusFear,
+          target: 'opponent',
+          value: 2,
+        ),
+        MoveEffect(
+          type: MoveEffectType.statChange,
+          target: 'opponent',
+          stat: 'attack',
+          value: -2,
+        ),
+      ],
+    ),
+    Move(
+      name: 'Submerge',
+      description: 'Dives underwater to dodge attacks and hydrate.',
+      baseDamage: 0,
+      type: ElementalType.aquatic,
+      stamina: 10,
+      category: MoveCategory.status,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statusStealth,
+          target: 'self',
+          value: 1,
+        ),
+        MoveEffect(
+          type: MoveEffectType.statChange,
+          target: 'self',
+          stat: 'defense',
+          value: 1,
+        ),
+      ],
+    ),
+    // ⭐ Signature Move
+    Move(
+      name: 'Megamouth Chomp',
+      description: 'A 180-degree jaw snap with 2,000 PSI of force.',
+      baseDamage: 120,
+      accuracy: 85,
+      type: ElementalType.predator,
+      stamina: 20,
+      category: MoveCategory.physical,
+      effects: [
+        MoveEffect(type: MoveEffectType.statusBleed, value: 3, chance: 50),
+        MoveEffect(type: MoveEffectType.statusStun, value: 1, chance: 20),
+      ],
+    ),
+    Move(
+      name: 'Slick Skin',
+      description: 'Secretes a "blood sweat" that makes the user hard to grab.',
+      baseDamage: 0,
+      type: ElementalType.normal,
+      stamina: 12,
+      category: MoveCategory.status,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statChange,
+          target: 'self',
+          stat: 'speed',
+          value: 2,
+        ),
+        // Makes the user immune to 'Grip' or 'Bleed' for 2 turns
+      ],
+    ),
+    // ⭐ Signature Move
+    Move(
+      name: 'Shadow Wallower',
+      description:
+          'Vanishes into the muddy forest floor before striking from behind.',
+      baseDamage: 85,
+      accuracy: 95,
+      type: ElementalType.agile,
+      stamina: 15,
+      category: MoveCategory.physical,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statusStealth,
+          target: 'self',
+          value: 1,
+        ),
+      ],
+      // Damage is doubled if the user is already in 'Stealth' (handled in battle_manager.dart)
+    ),
+    Move(
+      name: 'Scent Lock',
+      description:
+          'Uses the tongue to lock onto the target\'s chemical trail. Target takes 1.2x damage.',
+      baseDamage: 0,
+      type: ElementalType.agile,
+      stamina: 10,
+      category: MoveCategory.status,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statusMarked,
+          target: 'opponent',
+          chance: 100,
+          value: 2, // Duration of the mark
+        ),
+      ],
+    ),
+    Move(
+      name: 'Septic Bite',
+      description: 'A deep, jagged bite that causes intense bleeding.',
+      baseDamage: 110,
+      accuracy: 85,
+      type: ElementalType.predator,
+      stamina: 20,
+      category: MoveCategory.physical,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statusBleed,
+          target: 'opponent',
+          value: 4, // Higher duration for the Komodo
+          chance: 100,
+        ),
+      ],
+    ),
+    Move(
+      name: 'Arboreal Ambush',
+      description:
+          'Strikes from the canopy, entering stealth and dealing high damage.',
+      baseDamage: 85,
+      accuracy: 100,
+      type: ElementalType.agile,
+      stamina: 15,
+      category: MoveCategory.physical,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statusStealth,
+          target: 'self',
+          value:
+              1, // Sets up for the 2.0x Stealth damage multiplier on next turn
+          chance: 100,
+        ),
+      ],
+    ),
+    Move(
+      name: 'Wide Gape',
+      description:
+          'Displays its massive square lip to intimidate the opponent.',
+      baseDamage: 0,
+      type: ElementalType.social,
+      stamina: 15,
+      category: MoveCategory.status,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statChange,
+          target: 'opponent',
+          stat: 'attack',
+          value: -1,
+        ),
+      ],
+    ),
+    Move(
+      name: 'Filter Feed',
+      description:
+          'The user filters the surrounding water for nutrients, clearing status and healing.',
+      baseDamage: 0,
+      type: ElementalType.aquatic,
+      stamina: 8,
+      category: MoveCategory.status,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.heal,
+          target: 'self',
+          value: 40, // Heals 40% of Max HP
+        ),
+      ],
+    ),
+    Move(
+      name: 'Depth Pressure',
+      description:
+          'Uses the weight of the ocean to crush the foe. Damage scales with Defense.',
+      baseDamage: 80,
+      accuracy: 100,
+      type: ElementalType.aquatic,
+      stamina: 15,
+      category: MoveCategory.physical,
+      damageStat: 'defense', // Uses the whale's 120 Defense for damage
+      effects: [],
+    ),
+    Move(
+      name: 'Abyssal Breach',
+      description:
+          'The whale leaps and crashes down. Power increases if the user has high HP.',
+      baseDamage: 120,
+      accuracy: 85,
+      type: ElementalType.aquatic,
+      stamina: 5,
+      category: MoveCategory.physical,
+      multiplierCondition:
+          'user_high_hp', // You can implement this logic in your battle engine
+      conditionalMultiplier: 1.5,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statusStun,
+          target: 'opponent',
+          value: 1,
+          chance: 30,
+        ),
+      ],
+    ),
+    Move(
+      name: 'Event Horizon Gulp',
+      description: 'The ultimate apex move. Swallows weakened foes whole.',
+      baseDamage: 200, // Extreme damage placeholder for OHKO feel
+      accuracy: 30,
+      type: ElementalType.predator,
+      stamina: 5,
+      category: MoveCategory.physical,
+      customUsageText: 'The whale creates a massive vacuum suction!',
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.recharge, // Must rest after such a huge move
+        ),
+      ],
+    ),
+    Move(
+      name: 'Deep Meditation',
+      description:
+          'The whale enters a trance, boosting defenses and regenerating.',
+      baseDamage: 0,
+      type: ElementalType.aquatic,
+      stamina: 10,
+      category: MoveCategory.status,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.multiStatChange,
+          stat: 'defense:1,resistance:1',
+        ),
+        MoveEffect(
+          type: MoveEffectType.statusRegen,
+          target: 'self',
+          value: 5, // Duration for regen
+        ),
+      ],
+    ),
+    Move(
+      name: 'Blubber Shield',
+      description: 'Sacrifices health to create a massive protective barrier.',
+      baseDamage: 0,
+      type: ElementalType.armored,
+      stamina: 5,
+      category: MoveCategory.status,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.protect,
+          hpCostPercent: 0.25, // Consumes 25% of that huge 200 HP pool
+        ),
+      ],
+    ),
+    Move(
+      name: 'Infrasonic Blast',
+      description:
+          'A sound so loud it vibrates internal organs, causing confusion.',
+      baseDamage: 70,
+      accuracy: 100,
+      type: ElementalType.social, // Fitting for whale song
+      stamina: 10,
+      category: MoveCategory.special,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statusConfusion,
+          target: 'opponent',
+          value: 3,
+          chance: 50,
+        ),
+      ],
+    ),
+    Move(
       name: 'Tail Whip',
       description: 'Lowers the opponent\'s defense.',
       baseDamage: 10,
       type: ElementalType.agile,
+      stamina: 25,
+      category: MoveCategory.physical,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statChange,
+          target: 'opponent',
+          stat: 'defense',
+          value: -1,
+        ),
+      ],
+    ),
+    Move(
+      name: 'Jet Ram',
+      description: 'A high-speed tackle using jet propulsion. High crit rate.',
+      baseDamage: 60,
+      type: ElementalType.agile,
+      stamina: 15,
+      category: MoveCategory.physical,
+      critRate: 1, // 12.5% crit rate
+    ),
+    Move(
+      name: 'Barbed Tentacle',
+      description:
+          'Strikes with hooked tentacles. May make the target vulnerable.',
+      baseDamage: 55,
+      type: ElementalType.aquatic,
+      stamina: 20,
+      category: MoveCategory.physical,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statusVulnerable,
+          target: 'opponent',
+          value: 2,
+          chance: 30,
+        ),
+      ],
+    ),
+    Move(
+      name: 'Ink Cloud',
+      description: 'Sprays thick ink to hide and confuse the opponent.',
+      baseDamage: 0,
+      type: ElementalType.agile,
+      stamina: 10,
+      category: MoveCategory.status,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statusBlind,
+          target: 'opponent',
+          value: 2,
+          chance: 100,
+        ),
+        MoveEffect(
+          type: MoveEffectType.statusStealth,
+          target: 'self',
+          value: 1,
+          chance: 100,
+        ),
+      ],
+    ),
+    Move(
+      name: 'Strobe Flash',
+      description: 'Rapidly shifts skin colors to daze and stun the target.',
+      baseDamage: 20,
+      type: ElementalType.aquatic,
+      stamina: 15,
+      category: MoveCategory.special,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statusStun,
+          target: 'opponent',
+          value: 1,
+          chance: 70,
+        ),
+      ],
+    ),
+    Move(
+      name: 'Paralyzing Sting',
+      description: 'Stinging cells that may paralyze the foe.',
+      baseDamage: 35,
+      type: ElementalType.venomous,
+      stamina: 20,
+      category: MoveCategory.special,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statusParalysis,
+          target: 'opponent',
+          value: 3,
+          chance: 50,
+        ),
+      ],
+    ),
+    Move(
+      name: 'Biolume Flare',
+      description: 'A sudden burst of light that may blind the foe.',
+      baseDamage: 60,
+      type: ElementalType.aquatic,
+      stamina: 15,
+      category: MoveCategory.special,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statusBlind,
+          target: 'opponent',
+          value: 1,
+          chance: 30,
+        ),
+      ],
+    ),
+    Move(
+      name: 'Drifting Tentacles',
+      description: 'Sets a stinging field that makes opponents vulnerable.',
+      baseDamage: 0,
+      type: ElementalType.venomous,
+      stamina: 10,
+      category: MoveCategory.status,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statusVulnerable,
+          target: 'opponent',
+          value: 3,
+          chance: 100,
+        ),
+      ],
+    ),
+    Move(
+      name: 'Osmosis',
+      description: 'Absorbs nutrients from the water to heal the user.',
+      baseDamage: 0,
+      type: ElementalType.aquatic,
+      stamina: 5,
+      category: MoveCategory.status,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.heal,
+          target: 'self',
+          value: 33,
+          chance: 100,
+        ),
+      ],
+    ),
+    Move(
+      name: 'Hypnotic Ripple',
+      description: 'Mesmerizes the target, lowering their mental resistance.',
+      baseDamage: 20,
+      type: ElementalType.aquatic,
+      stamina: 20,
+      category: MoveCategory.special,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statChange,
+          target: 'opponent',
+          stat: 'resistance',
+          value: -1,
+          chance: 100,
+        ),
+      ],
+    ),
+    Move(
+      name: 'Tentacle Snap',
+      description: 'A lightning-fast grab with tentacles that hits first.',
+      baseDamage: 40,
+      type: ElementalType.agile,
+      stamina: 20,
+      priority: 1, // Moves first
+      category: MoveCategory.physical,
+    ),
+    Move(
+      name: 'Hiss',
+      description: 'Lowers the opponent\'s attack.',
+      baseDamage: 0,
+      type: ElementalType.venomous,
       stamina: 25,
       category: MoveCategory.status,
       effects: [
         MoveEffect(
           type: MoveEffectType.statChange,
           target: 'opponent',
-          stat: 'defense',
+          stat: 'attack',
           value: -1,
         ),
       ],
@@ -520,7 +1243,27 @@ class Move {
       stamina: 25,
       category: MoveCategory.physical,
       effects: [
-        MoveEffect(type: MoveEffectType.statusBleed, value: 1, chance: 30),
+        MoveEffect(type: MoveEffectType.statusBleed, value: 1, chance: 10),
+      ],
+    ),
+    Move(
+      name: 'Hide',
+      description: 'User gain stealth.',
+      baseDamage: 0,
+      type: ElementalType.predator,
+      stamina: 25,
+      category: MoveCategory.status,
+      effects: [MoveEffect(type: MoveEffectType.statusStealth, chance: 80)],
+    ),
+    Move(
+      name: 'Varanid Rake',
+      description: 'Bites with vicious fangs.',
+      baseDamage: 30,
+      type: ElementalType.predator,
+      stamina: 25,
+      category: MoveCategory.physical,
+      effects: [
+        MoveEffect(type: MoveEffectType.statusBleed, value: 1, chance: 70),
       ],
     ),
     Move(
@@ -640,6 +1383,24 @@ class Move {
       effects: [],
     ),
     Move(
+      name: 'Apex Ravage',
+      description:
+          'A devastating series of bites. Always causes heavy bleeding.',
+      baseDamage: 120,
+      accuracy: 85,
+      type: ElementalType.predator,
+      stamina: 20,
+      category: MoveCategory.physical,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statusBleed,
+          target: 'opponent',
+          value: 4,
+          chance: 100,
+        ),
+      ],
+    ),
+    Move(
       name: 'Double Slap',
       description: 'Hits 2-5 times.',
       baseDamage: 15,
@@ -651,6 +1412,230 @@ class Move {
       effects: [],
     ),
     Move(
+      name: 'Camoflauge',
+      description: 'Blends into the landscape. Grants Stealth.',
+      baseDamage: 0,
+      type: ElementalType.agile,
+      stamina: 15,
+      category: MoveCategory.status,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statusStealth,
+          target: 'self',
+          value: 1,
+        ),
+      ],
+    ),
+    Move(
+      name: 'Shadow Throat-Grip',
+      description: 'A lethal strike from the shadows. High Critical-Hit ratio.',
+      baseDamage: 90,
+      accuracy: 95,
+      type: ElementalType.predator,
+      stamina: 18,
+      category: MoveCategory.physical,
+      critRate: 2, // Combined with Stealth 2.0x, this can 1-shot opponents
+    ),
+    Move(
+      name: 'King\'s Command',
+      description:
+          'A roar that freezes the hearts of enemies. Applies Fear and Marks the target.',
+      baseDamage: 0,
+      type: ElementalType.social,
+      stamina: 20,
+      category: MoveCategory.status,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statusFear,
+          target: 'opponent',
+          value: 2,
+        ),
+        MoveEffect(
+          type: MoveEffectType.statusMarked,
+          target: 'opponent',
+          chance: 100,
+        ),
+      ],
+    ),
+    Move(
+      name: 'Jungle Pounce',
+      description:
+          'A stealthy leap from the brush. Guarantees a critical hit if the user is in Stealth.',
+      baseDamage: 90,
+      accuracy: 100,
+      type: ElementalType.predator,
+      stamina: 12,
+      category: MoveCategory.physical,
+      critRate: 2, // Doubles crit chance
+    ),
+    Move(
+      name: 'Gigantism Crush',
+      description:
+          'A heavy strike that scales with the user\'s massive weight.',
+      baseDamage: 130,
+      accuracy: 80,
+      type: ElementalType.giant,
+      stamina: 25,
+      category: MoveCategory.physical,
+      damageStat: 'attack',
+    ),
+    Move(
+      name: 'Skull-Piercer',
+      description: 'An eerie, blinding attack that confuses the target.',
+      baseDamage: 90,
+      accuracy: 100,
+      type: ElementalType.predator,
+      stamina: 15,
+      category: MoveCategory.physical,
+      // Logic: In battle_manager, ignore defender's defense stat
+    ),
+    Move(
+      name: 'Savannah Sweep',
+      description: 'A sweeping claw attack that hits the legs, lowering Speed.',
+      baseDamage: 75,
+      accuracy: 100,
+      type: ElementalType.agile,
+      stamina: 10,
+      category: MoveCategory.physical,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statChange,
+          target: 'opponent',
+          stat: 'speed',
+          value: -1,
+        ),
+      ],
+    ),
+    Move(
+      name: 'Frost-Leap',
+      description:
+          'Strikes from a frozen ledge. Chance to freeze or stun the foe.',
+      baseDamage: 85,
+      accuracy: 100,
+      type: ElementalType.agile,
+      stamina: 12,
+      category: MoveCategory.physical,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statusStun,
+          target: 'opponent',
+          value: 1,
+          chance: 30,
+        ),
+      ],
+    ),
+    Move(
+      name: 'Tree-Drag Takedown',
+      description:
+          'Pokes the target into a vulnerable state by dragging them into the canopy.',
+      baseDamage: 80,
+      accuracy: 95,
+      type: ElementalType.predator,
+      stamina: 15,
+      category: MoveCategory.physical,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statusVulnerable,
+          target: 'opponent',
+          value: 2,
+          chance: 100,
+        ),
+      ],
+    ),
+    Move(
+      name: 'Atlas Roar',
+      description:
+          'An ancient roar that boosts the user\'s confidence while weakening others.',
+      baseDamage: 0,
+      type: ElementalType.social,
+      stamina: 20,
+      category: MoveCategory.status,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statChange,
+          target: 'self',
+          stat: 'defense',
+          value: 2,
+        ),
+        MoveEffect(
+          type: MoveEffectType.statChange,
+          target: 'opponent',
+          stat: 'attack',
+          value: -2,
+        ),
+      ],
+    ),
+    Move(
+      name: 'Midnight Eviscerate',
+      description: 'An eerie, blinding attack that confuses the target.',
+      baseDamage: 85,
+      accuracy: 100,
+      type: ElementalType.agile,
+      stamina: 12,
+      category: MoveCategory.physical,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statusBleed,
+          target: 'opponent',
+          value: 3,
+          chance: 100,
+        ),
+      ],
+    ),
+    Move(
+      name: 'Spectral Strike',
+      description: 'An eerie, blinding attack that confuses the target.',
+      baseDamage: 85,
+      accuracy: 95,
+      type: ElementalType.normal,
+      stamina: 15,
+      category: MoveCategory.physical,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statusConfusion,
+          target: 'opponent',
+          value: 2,
+          chance: 40,
+        ),
+      ],
+    ),
+    Move(
+      name: 'Tundra Smash',
+      description:
+          'Uses massive body weight to crush the foe. High chance to Stun.',
+      baseDamage: 110,
+      accuracy: 85,
+      type: ElementalType.giant,
+      stamina: 18,
+      category: MoveCategory.physical,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statusStun,
+          target: 'opponent',
+          value: 1,
+          chance: 50,
+        ),
+      ],
+    ),
+    Move(
+      name: 'Overdrive Sprint',
+      description:
+          'Uses extreme acceleration to strike before the opponent can react',
+      baseDamage: 80,
+      accuracy: 100,
+      type: ElementalType.agile,
+      stamina: 15,
+      category: MoveCategory.physical,
+      priority: 1,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statusMarked,
+          target: 'opponent',
+          chance: 30,
+        ),
+      ],
+    ),
+    Move(
       name: 'Drain Punch',
       description: 'Heals half damage dealt.',
       baseDamage: 75,
@@ -659,6 +1644,64 @@ class Move {
       stamina: 10,
       category: MoveCategory.physical,
       effects: [],
+    ),
+    Move(
+      name: 'Constrict',
+      description: 'Traps and crushes the foe, dealing damage over time.',
+      baseDamage: 35,
+      accuracy: 90,
+      type: ElementalType.predator,
+      stamina: 20,
+      category: MoveCategory.physical,
+      effects: [
+        MoveEffect(type: MoveEffectType.statusStun, value: 1, chance: 30),
+        MoveEffect(
+          type: MoveEffectType.statusVulnerable,
+          value: 2,
+          chance: 100,
+        ),
+      ],
+    ),
+
+    Move(
+      name: 'Crush Grip',
+      description:
+          'A heavy strike that scales with the user\'s massive weight.',
+      baseDamage: 100,
+      accuracy: 100,
+      type: ElementalType.giant,
+      stamina: 10,
+      category: MoveCategory.physical,
+      damageStat: 'attack',
+    ),
+
+    Move(
+      name: 'Coil',
+      description:
+          'The user gathers its body, boosting Attack, Defense, and Accuracy.',
+      baseDamage: 0,
+      type: ElementalType.predator,
+      stamina: 10,
+      category: MoveCategory.status,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.multiStatChange,
+          stat:
+              'attack:1,defense:1,accuracy:1', // Accuracy is handled via stat string
+        ),
+      ],
+    ),
+    Move(
+      name: 'Guillotine Snap',
+      description:
+          'The user lies perfectly still, then snaps its beak with bone-crushing force. This move deals massive damage and has a high critical-hit ratio.',
+      baseDamage: 130,
+      priority: -1,
+      type: ElementalType.aquatic,
+      stamina: 5,
+      category: MoveCategory.physical,
+      critRate: 1,
+      accuracy: 85,
     ),
     Move(
       name: 'Take Down',
