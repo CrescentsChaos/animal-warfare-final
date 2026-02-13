@@ -935,21 +935,48 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               ),
             ),
           ),
-          if (organism.statusEffect.type != StatusEffectType.none)
-            Container(
-              margin: const EdgeInsets.only(top: 4),
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-              decoration: BoxDecoration(
-                color: organism.statusEffect.color,
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                organism.statusEffect.name.toUpperCase(),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 8,
-                  fontWeight: FontWeight.bold,
-                ),
+          if (organism.statusEffects.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Wrap(
+                spacing: 4,
+                runSpacing: 4,
+                alignment: WrapAlignment.end,
+                children: organism.statusEffects
+                    .map(
+                      (se) => GestureDetector(
+                        onLongPress: () {
+                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('${se.name}: ${se.description}'),
+                              duration: const Duration(seconds: 4),
+                              behavior: SnackBarBehavior.floating,
+                              width: 250,
+                            ),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 4,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: se.color,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            se.name.toUpperCase(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 8,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+                    .toList(),
               ),
             ),
         ],
@@ -1058,21 +1085,47 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               ),
             ),
           ),
-          if (organism.statusEffect.type != StatusEffectType.none)
-            Container(
-              margin: const EdgeInsets.only(top: 4),
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-              decoration: BoxDecoration(
-                color: organism.statusEffect.color,
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                organism.statusEffect.name.toUpperCase(),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 8,
-                  fontWeight: FontWeight.bold,
-                ),
+          if (organism.statusEffects.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Wrap(
+                spacing: 4,
+                runSpacing: 4,
+                children: organism.statusEffects
+                    .map(
+                      (se) => GestureDetector(
+                        onLongPress: () {
+                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('${se.name}: ${se.description}'),
+                              duration: const Duration(seconds: 4),
+                              behavior: SnackBarBehavior.floating,
+                              width: 250,
+                            ),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 4,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: se.color,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            se.name.toUpperCase(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 8,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+                    .toList(),
               ),
             ),
         ],
@@ -1318,8 +1371,8 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               const Divider(color: Colors.white24, height: 1),
               const SizedBox(height: 10),
 
-              // Status
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
                     'STATUS: ',
@@ -1329,30 +1382,72 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                       fontFamily: 'PressStart2P',
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: bo.statusEffect.type == StatusEffectType.none
-                          ? Colors.grey.withOpacity(0.3)
-                          : Colors.redAccent.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      bo.statusEffect.type == StatusEffectType.none
-                          ? "NONE"
-                          : bo.statusEffect.name.toUpperCase(),
-                      style: TextStyle(
-                        color: bo.statusEffect.type == StatusEffectType.none
-                            ? Colors.white70
-                            : Colors.redAccent,
-                        fontSize: 9,
-                        fontFamily: 'PressStart2P',
+                  if (bo.statusEffects.isEmpty)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Text(
+                        "NONE",
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 9,
+                          fontFamily: 'PressStart2P',
+                        ),
+                      ),
+                    )
+                  else
+                    Expanded(
+                      child: Wrap(
+                        spacing: 4,
+                        runSpacing: 4,
+                        children: bo.statusEffects
+                            .map(
+                              (se) => GestureDetector(
+                                onLongPress: () {
+                                  ScaffoldMessenger.of(
+                                    context,
+                                  ).hideCurrentSnackBar();
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        '${se.name}: ${se.description}',
+                                      ),
+                                      duration: const Duration(seconds: 4),
+                                      behavior: SnackBarBehavior.floating,
+                                      width: 250,
+                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: se.color.withOpacity(0.5),
+                                    borderRadius: BorderRadius.circular(4),
+                                    border: Border.all(color: se.color),
+                                  ),
+                                  child: Text(
+                                    se.name.toUpperCase(),
+                                    style: TextStyle(
+                                      color: se.color,
+                                      fontSize: 9,
+                                      fontFamily: 'PressStart2P',
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
                       ),
                     ),
-                  ),
                 ],
               ),
 
@@ -1932,11 +2027,9 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           // Increment floor
           await userState.incrementRogueFloor();
         } else if (battleManager.result == BattleResult.loss) {
-          // Check if entire rogue team is wiped
-          final runTeam = userState.currentUser?.rogueLikeState.team ?? [];
-          if (runTeam.isEmpty) {
-            await userState.endRogueRun();
-          }
+          // LOSS IN ROGUE-LIKE: Fully reset the run and release all animals in the team
+          await userState.endRogueRun();
+          // Note: endRogueRun clears the isActive flag and the team
         }
       }
 

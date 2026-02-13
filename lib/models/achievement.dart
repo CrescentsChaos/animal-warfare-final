@@ -3,14 +3,17 @@
 class Achievement {
   final String title;
   final String description;
-  
+
   // Rarity-based fields (Used for existing logic, e.g., "Collect 10 Common")
-  final String requiredRarity; 
-  final int requiredCount; 
-  
+  final String requiredRarity;
+  final int requiredCount;
+
   // NEW: Specific Organism/Group fields (Used for new custom logic)
-  final List<String> requiredOrganisms; // List of specific organism names, e.g., ['African Lion']
-  final int requiredSpecificCount;      // Required number from the list, e.g., 1 or 5
+  final List<String>
+  requiredOrganisms; // List of specific organism names, e.g., ['African Lion']
+  final int
+  requiredSpecificCount; // Required number from the list, e.g., 1 or 5
+  final int requiredFloor; // NEW: Floor reached in Rogue-like mode
 
   Achievement({
     required this.title,
@@ -18,8 +21,9 @@ class Achievement {
     this.requiredRarity = '',
     this.requiredCount = 0,
     // NEW FIELDS
-    this.requiredOrganisms = const [], 
+    this.requiredOrganisms = const [],
     this.requiredSpecificCount = 0,
+    this.requiredFloor = 0,
   });
 
   factory Achievement.fromJson(Map<String, dynamic> json) {
@@ -29,8 +33,13 @@ class Achievement {
       requiredRarity: json['requiredRarity'] as String? ?? '',
       requiredCount: json['requiredCount'] as int? ?? 0,
       // NEW: Safely deserialize new fields
-      requiredOrganisms: (json['requiredOrganisms'] as List<dynamic>?)?.map((e) => e as String).toList() ?? [],
+      requiredOrganisms:
+          (json['requiredOrganisms'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          [],
       requiredSpecificCount: json['requiredSpecificCount'] as int? ?? 0,
+      requiredFloor: json['requiredFloor'] as int? ?? 0,
     );
   }
 }

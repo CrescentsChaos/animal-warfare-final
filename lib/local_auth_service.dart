@@ -42,6 +42,10 @@ class UserData {
   /// State of the current rogue-like run
   final RogueLikeState rogueLikeState;
 
+  /// NEW: Best records for Rogue-like
+  final int bestRogueFloor;
+  final List<CapturedOrganism> bestRogueTeam;
+
   UserData({
     required this.username,
     required this.password,
@@ -59,6 +63,8 @@ class UserData {
     List<Quest>? activeQuests,
     List<int>? battleTeam,
     RogueLikeState? rogueLikeState,
+    this.bestRogueFloor = 0,
+    this.bestRogueTeam = const [],
   }) : quizStats = quizStats ?? {},
        discoveredOrganisms = discoveredOrganisms ?? [],
        completedAchievements = completedAchievements ?? [],
@@ -87,6 +93,8 @@ class UserData {
     List<Quest>? activeQuests,
     List<int>? battleTeam,
     RogueLikeState? rogueLikeState,
+    int? bestRogueFloor,
+    List<CapturedOrganism>? bestRogueTeam,
   }) {
     return UserData(
       username: username ?? this.username,
@@ -106,6 +114,8 @@ class UserData {
       activeQuests: activeQuests ?? this.activeQuests,
       battleTeam: battleTeam ?? this.battleTeam,
       rogueLikeState: rogueLikeState ?? this.rogueLikeState,
+      bestRogueFloor: bestRogueFloor ?? this.bestRogueFloor,
+      bestRogueTeam: bestRogueTeam ?? this.bestRogueTeam,
     );
   }
 
@@ -161,6 +171,8 @@ class UserData {
     'activeQuests': activeQuests.map((q) => q.toJson()).toList(),
     'battleTeam': battleTeam,
     'rogueLikeState': rogueLikeState.toJson(),
+    'bestRogueFloor': bestRogueFloor,
+    'bestRogueTeam': bestRogueTeam.map((co) => co.toJson()).toList(),
   };
 
   factory UserData.fromJson(
@@ -237,6 +249,18 @@ class UserData {
               allOrganisms ?? [],
             )
           : const RogueLikeState(),
+      bestRogueFloor: json['bestRogueFloor'] as int? ?? 0,
+      bestRogueTeam: (json['bestRogueTeam'] as List? ?? [])
+          .map((coJson) {
+            final organismName = coJson['name'] as String?;
+            if (organismName == null) return null;
+            final base = findBaseOrganism(organismName);
+            return base != null
+                ? CapturedOrganism.fromJson(coJson, [base])
+                : null;
+          })
+          .whereType<CapturedOrganism>()
+          .toList(),
     );
   }
 }

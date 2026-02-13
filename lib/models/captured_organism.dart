@@ -29,7 +29,7 @@ class CapturedOrganism {
   Map<String, int> moveStamina; // current stamina for each selected move
 
   final Nature nature;
-  StatusEffect statusEffect;
+  List<StatusEffect> statusEffects;
   final int level; // NEW: Level of the organism
 
   CapturedOrganism({
@@ -44,10 +44,13 @@ class CapturedOrganism {
       increasedStat: NatureStat.attack,
       decreasedStat: NatureStat.attack,
     ),
-    this.statusEffect = const StatusEffect(type: StatusEffectType.none),
+    List<StatusEffect>? statusEffects,
+    StatusEffect? statusEffect, // Legacy support
     String? id,
     this.level = 50, // Default level to 50
   }) : id = id ?? const Uuid().v4(),
+       statusEffects =
+           statusEffects ?? (statusEffect != null ? [statusEffect] : []),
        moveStamina = initialMoveStamina != null
            ? Map.from(initialMoveStamina)
            : {} {
@@ -82,6 +85,19 @@ class CapturedOrganism {
   // NEW: Convenience getter for the organism's name
   String get name => baseOrganism.name;
 
+  // Backward compatibility getter/setter
+  StatusEffect get statusEffect => statusEffects.isNotEmpty
+      ? statusEffects.first
+      : const StatusEffect(type: StatusEffectType.none);
+
+  set statusEffect(StatusEffect value) {
+    if (value.type == StatusEffectType.none) {
+      statusEffects = [];
+    } else {
+      statusEffects = [value];
+    }
+  }
+
   CapturedOrganism copyWith({
     Organism? baseOrganism,
     Map<String, int>? individualValues,
@@ -90,7 +106,7 @@ class CapturedOrganism {
     List<String>? selectedMoveNames,
     Map<String, int>? moveStamina,
     Nature? nature,
-    StatusEffect? statusEffect,
+    List<StatusEffect>? statusEffects,
     String? id,
     int? level, // Added level to copyWith
   }) {
@@ -102,7 +118,7 @@ class CapturedOrganism {
       selectedMoveNames: selectedMoveNames ?? List.from(this.selectedMoveNames),
       initialMoveStamina: moveStamina ?? Map.from(this.moveStamina),
       nature: nature ?? this.nature,
-      statusEffect: statusEffect ?? this.statusEffect,
+      statusEffects: statusEffects ?? List.from(this.statusEffects),
       id: id ?? this.id,
       level: level ?? this.level, // Pass level to constructor
     );
@@ -300,7 +316,7 @@ class CapturedOrganism {
     'selectedMoveNames': selectedMoveNames,
     'moveStamina': moveStamina,
     'nature': nature.name,
-    'statusEffect': statusEffect.toJson(),
+    'statusEffects': statusEffects.map((e) => e.toJson()).toList(),
     'level': level, // Added level to toJson
   };
 
@@ -355,7 +371,11 @@ class CapturedOrganism {
       selectedMoveNames: selectedMoves,
       initialMoveStamina: moveStamina,
       nature: nature,
-      statusEffect: status ?? const StatusEffect(type: StatusEffectType.none),
+      statusEffects: json['statusEffects'] != null
+          ? (json['statusEffects'] as List)
+                .map((e) => StatusEffect.fromJson(e as Map<String, dynamic>))
+                .toList()
+          : (status != null ? [status] : []),
       level: level, // Pass level to constructor
     );
   }

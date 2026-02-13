@@ -132,5 +132,20 @@
       "Antlion Larvae"
     ],
     "requiredSpecificCount": 1
+  },
+  {
+    "title": "Rogue Scout",
+    "description": "Reach Floor 5 in Rogue-like mode.",
+    "requiredFloor": 5
+  },
+  {
+    "title": "Survival Specialist",
+    "description": "Reach Floor 10 in Rogue-like mode.",
+    "requiredFloor": 10
+  },
+  {
+    "title": "Apex Predator",
+    "description": "Reach Floor 20 in Rogue-like mode.",
+    "requiredFloor": 20
   }
 ]

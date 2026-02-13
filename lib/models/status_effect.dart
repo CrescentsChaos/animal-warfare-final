@@ -14,6 +14,8 @@ enum StatusEffectType {
   regen, // Heal over time
   vulnerable, // Take extra damage
   stun, // Skip turn (1 turn usually)
+  fear, // Reduces all stats by 10%
+  marked, // Takes 20% extra damage
 }
 
 class StatusEffect {
@@ -65,6 +67,10 @@ class StatusEffect {
         return 'Vulnerable';
       case StatusEffectType.stun:
         return 'Stunned';
+      case StatusEffectType.fear:
+        return 'Fear';
+      case StatusEffectType.marked:
+        return 'Marked';
       default:
         return 'None';
     }
@@ -94,6 +100,10 @@ class StatusEffect {
         return 'became vulnerable to attacks!';
       case StatusEffectType.stun:
         return 'was stunned!';
+      case StatusEffectType.fear:
+        return 'is trembling with fear!';
+      case StatusEffectType.marked:
+        return 'was marked for death!';
       default:
         return '';
     }
@@ -123,8 +133,45 @@ class StatusEffect {
         return Colors.pink;
       case StatusEffectType.stun:
         return Colors.brown;
+      case StatusEffectType.fear:
+        return Colors.indigo;
+      case StatusEffectType.marked:
+        return Colors.redAccent;
       default:
         return Colors.grey;
+    }
+  }
+
+  String get description {
+    switch (type) {
+      case StatusEffectType.poison:
+        return 'Takes 12.5% max HP damage each turn.';
+      case StatusEffectType.burn:
+        return 'Takes 6% max HP damage each turn and physical damage is halved.';
+      case StatusEffectType.sleep:
+        return 'Cannot move for 2-5 turns.';
+      case StatusEffectType.paralysis:
+        return 'Speed is reduced by 75% and may fail to move.';
+      case StatusEffectType.freeze:
+        return 'Cannot move until thawed.';
+      case StatusEffectType.bleed:
+        return 'Takes 12.5% max HP damage each turn.';
+      case StatusEffectType.confusion:
+        return 'May hit itself instead of attacking.';
+      case StatusEffectType.blind:
+        return 'Accuracy is reduced by 25%.';
+      case StatusEffectType.regen:
+        return 'Restores 6% max HP each turn.';
+      case StatusEffectType.vulnerable:
+        return 'Takes increased damage from attacks.';
+      case StatusEffectType.stun:
+        return 'Cannot move for 1 turn.';
+      case StatusEffectType.fear:
+        return 'All stats are reduced by 10%.';
+      case StatusEffectType.marked:
+        return 'Takes 20% extra damage for 2 turns.';
+      default:
+        return 'No current effect.';
     }
   }
 }

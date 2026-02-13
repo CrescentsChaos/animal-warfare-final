@@ -8,9 +8,8 @@ import 'package:animal_warfare/models/captured_organism.dart';
 import 'package:animal_warfare/models/talisman.dart';
 import 'package:animal_warfare/models/move.dart';
 import 'package:animal_warfare/models/quest.dart';
-import 'package:animal_warfare/models/rogue_like_state.dart';
 import 'dart:math';
-import 'package:animal_warfare/models/status_effect.dart';
+import 'package:animal_warfare/models/rogue_like_state.dart';
 
 import 'local_auth_service.dart';
 
@@ -445,7 +444,7 @@ class UserState with ChangeNotifier {
 
           return upgraded.copyWith(
             currentHealth: upgraded.maxHealth,
-            statusEffect: const StatusEffect(type: StatusEffectType.none),
+            statusEffects: [], // Clear all statuses
           );
         }).toList();
       }
@@ -464,7 +463,18 @@ class UserState with ChangeNotifier {
           ? newFloor
           : state.highestFloor;
 
+      // Update best records if this is a new high floor
+      int bestFloor = u.bestRogueFloor;
+      List<CapturedOrganism> bestTeam = List.from(u.bestRogueTeam);
+
+      if (newFloor > bestFloor) {
+        bestFloor = newFloor;
+        bestTeam = List.from(nextTeam);
+      }
+
       return u.copyWith(
+        bestRogueFloor: bestFloor,
+        bestRogueTeam: bestTeam,
         rogueLikeState: state.copyWith(
           floor: newFloor,
           encounterIndex: newEncounter,
@@ -549,22 +559,37 @@ class UserState with ChangeNotifier {
       return habitats.contains(biome.toLowerCase());
     }).toList();
     final fallout = possible.isEmpty ? organisms : possible;
-    if (kDebugMode) {
-      print(
-        'DEBUG: Biome "$biome" has ${possible.length} organisms. Fallout size: ${fallout.length}',
-      );
-    }
 
     final team = <CapturedOrganism>[];
-    // Calculate level based on floor.
-    // Floor 1: Level 10
-    // Floor 2: Level 15
-    // ...
-    final int level = 5 + (floor * 5);
+
+    // Balanced Scaling Logic:
+    // Regular encounters: Level = 5 + (floor * 5)
+    // Boss encounters (count > 1): Slightly higher level but capped team size
+
+    bool isBoss = count > 1;
+    int effectiveLevel = 5 + (floor * 5);
+    if (isBoss) {
+      effectiveLevel += 3; // Bosses are slightly higher level
+      // Cap boss team size to 4 max for balance
+      count = count.clamp(2, 4);
+    }
 
     for (int i = 0; i < count; i++) {
       final base = fallout[Random().nextInt(fallout.length)];
-      final spawn = CapturedOrganism.spawn(base, level: level);
+      // Bosses have guaranteed better IVs (31 in all stats)
+      final spawn = isBoss
+          ? CapturedOrganism.spawn(base, level: effectiveLevel).copyWith(
+              individualValues: {
+                'health': 31,
+                'attack': 31,
+                'defense': 31,
+                'power': 31,
+                'resistance': 31,
+                'speed': 31,
+              },
+            )
+          : CapturedOrganism.spawn(base, level: effectiveLevel);
+
       team.add(spawn);
     }
     return team;

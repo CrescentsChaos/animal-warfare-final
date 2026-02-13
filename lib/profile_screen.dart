@@ -7,14 +7,14 @@ import 'package:audioplayers/audioplayers.dart';
 import 'dart:io';
 
 // NEW IMPORT
-import 'package:animal_warfare/settings_screen.dart'; 
+import 'package:animal_warfare/settings_screen.dart';
 // ADDED
-import 'package:animal_warfare/achievement_screen.dart'; 
+import 'package:animal_warfare/achievement_screen.dart';
 // END NEW IMPORT
 
 // START NEW IMPORTS for Anidex Stat
 import 'dart:convert';
-import 'package:flutter/services.dart' show rootBundle; 
+import 'package:flutter/services.dart' show rootBundle;
 // END NEW IMPORTS
 
 // ------------------------------------------------------------------
@@ -25,10 +25,7 @@ PageRouteBuilder _createFadeRoute(Widget page) {
     transitionDuration: const Duration(milliseconds: 400),
     pageBuilder: (context, animation, secondaryAnimation) => page,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      return FadeTransition(
-        opacity: animation,
-        child: child,
-      );
+      return FadeTransition(opacity: animation, child: child);
     },
   );
 }
@@ -46,14 +43,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   UserData? _currentUser;
   bool _isLoading = true;
-  
+
   // START NEW: Organism list for total count
   List<dynamic> _allOrganisms = [];
   // END NEW
-  
+
   // Custom retro/military colors (Copied from other screens for consistency)
-  static const Color primaryButtonColor = Color(0xFF38761D); // Bright Jungle Green
-  static const Color secondaryButtonColor = Color(0xFF1E3F2A); // Deep Forest Green
+  static const Color primaryButtonColor = Color(
+    0xFF38761D,
+  ); // Bright Jungle Green
+  static const Color secondaryButtonColor = Color(
+    0xFF1E3F2A,
+  ); // Deep Forest Green
   static const Color highlightColor = Color(0xFFDAA520); // Goldenrod
 
   @override
@@ -62,7 +63,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _loadUserProfile();
     _loadOrganisms();
   }
-  
+
   // ADDED: Utility function for responsive font size
   double _responsiveFontSize(BuildContext context, double baseSize) {
     // Get the screen width
@@ -77,7 +78,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // END ADDED
 
   // ... (Other methods remain unchanged)
-  
+
   @override
   void dispose() {
     super.dispose();
@@ -100,7 +101,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _loadUserProfile() async {
     UserData? user = await _authService.getCurrentUser();
-    
+
     // START NEW: Check for an existing avatar file
     if (user != null && user.avatar.isNotEmpty && user.avatar != 'default') {
       // Attempt to load the file to ensure it exists
@@ -114,7 +115,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
     }
     // END NEW
-    
+
     setState(() {
       _currentUser = user;
       _isLoading = false;
@@ -139,10 +140,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       child: Text(
         text,
-        style: TextStyle( // MODIFIED: Use TextStyle instead of const TextStyle
+        style: TextStyle(
+          // MODIFIED: Use TextStyle instead of const TextStyle
           color: Colors.white,
           fontFamily: 'PressStart2P',
-          fontSize: _responsiveFontSize(context, 14), // MODIFIED: Responsive font size
+          fontSize: _responsiveFontSize(
+            context,
+            14,
+          ), // MODIFIED: Responsive font size
         ),
       ),
     );
@@ -150,31 +155,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _navigateToEditScreen() {
     if (_currentUser != null) {
-      Navigator.of(context).push(_createFadeRoute(const EditProfileScreen())).then((_) {
+      Navigator.of(
+        context,
+      ).push(_createFadeRoute(const EditProfileScreen())).then((_) {
         // Reload profile when returning from the edit screen
         _loadUserProfile();
       });
     }
   }
-  
+
   // NEW: Navigation function for the Settings Screen
   void _navigateToSettingsScreen() {
     if (_currentUser != null) {
-      Navigator.of(context).push(_createFadeRoute(SettingsScreen(
-        currentUser: _currentUser!, 
-        authService: _authService,
-      )));
+      Navigator.of(context).push(
+        _createFadeRoute(
+          SettingsScreen(currentUser: _currentUser!, authService: _authService),
+        ),
+      );
     }
   }
-  
+
   // ADDED: Navigation function for the Achievements Screen
   void _navigateToAchievementsScreen() {
     if (_currentUser != null) {
-      Navigator.of(context).push(_createFadeRoute(AchievementsScreen(
-        currentUser: _currentUser!,
-        allOrganisms: _allOrganisms, 
-        authService: _authService, // ADDED: Pass the auth service
-      )));
+      Navigator.of(context).push(
+        _createFadeRoute(
+          AchievementsScreen(
+            currentUser: _currentUser!,
+            allOrganisms: _allOrganisms,
+            authService: _authService, // ADDED: Pass the auth service
+          ),
+        ),
+      );
     }
   }
   // END NEW
@@ -192,24 +204,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
-          Flexible( // WRAPPED IN FLEXIBLE
+          Flexible(
+            // WRAPPED IN FLEXIBLE
             child: Text(
               '$label:',
-              style: TextStyle( 
+              style: TextStyle(
                 color: highlightColor,
                 fontFamily: 'PressStart2P',
-                fontSize: _responsiveFontSize(context, 12), 
+                fontSize: _responsiveFontSize(context, 12),
               ),
             ),
           ),
-          Expanded( // WRAPPED IN EXPANDED
+          Expanded(
+            // WRAPPED IN EXPANDED
             child: Text(
               value.toUpperCase(),
               textAlign: TextAlign.right,
-              style: TextStyle( 
+              style: TextStyle(
                 color: Colors.white,
                 fontFamily: 'PressStart2P',
-                fontSize: _responsiveFontSize(context, 12), 
+                fontSize: _responsiveFontSize(context, 12),
               ),
             ),
           ),
@@ -221,7 +235,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildQuizStatBlock(String quizName, Map<String, dynamic> stats) {
     final attempts = stats['attempts'] as int? ?? 0;
     final correct = stats['correct'] as int? ?? 0;
-    final accuracy = attempts > 0 ? ((correct / attempts) * 100).toStringAsFixed(1) : '0.0';
+    final accuracy = attempts > 0
+        ? ((correct / attempts) * 100).toStringAsFixed(1)
+        : '0.0';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10.0),
@@ -236,10 +252,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
         children: [
           Text(
             quizName.toUpperCase(),
-            style: TextStyle( // MODIFIED: Use TextStyle instead of const TextStyle
+            style: TextStyle(
+              // MODIFIED: Use TextStyle instead of const TextStyle
               color: highlightColor,
               fontFamily: 'PressStart2P',
-              fontSize: _responsiveFontSize(context, 12), // MODIFIED: Responsive font size
+              fontSize: _responsiveFontSize(
+                context,
+                12,
+              ), // MODIFIED: Responsive font size
             ),
           ),
           const SizedBox(height: 10),
@@ -258,24 +278,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Flexible( // WRAPPED IN FLEXIBLE
+          Flexible(
+            // WRAPPED IN FLEXIBLE
             child: Text(
               '$label:',
-              style: TextStyle( 
+              style: TextStyle(
                 color: Colors.white70,
                 fontFamily: 'PressStart2P',
-                fontSize: _responsiveFontSize(context, 10), 
+                fontSize: _responsiveFontSize(context, 10),
               ),
             ),
           ),
-          Expanded( // WRAPPED IN EXPANDED
+          Expanded(
+            // WRAPPED IN EXPANDED
             child: Text(
               value,
               textAlign: TextAlign.right,
               style: TextStyle(
                 color: color,
                 fontFamily: 'PressStart2P',
-                fontSize: _responsiveFontSize(context, 10), 
+                fontSize: _responsiveFontSize(context, 10),
               ),
             ),
           ),
@@ -286,15 +308,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    
     // MODIFIED: Added for the AppBar title
     final appBarTextStyle = TextStyle(
-        color: highlightColor, 
-        fontFamily: 'PressStart2P', 
-        fontSize: _responsiveFontSize(context, 16)
+      color: highlightColor,
+      fontFamily: 'PressStart2P',
+      fontSize: _responsiveFontSize(context, 16),
     );
     // END MODIFIED
-    
+
     if (_isLoading || _currentUser == null) {
       return Scaffold(
         appBar: AppBar(
@@ -304,16 +325,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         body: Container(
           color: secondaryButtonColor,
-          child: const Center(child: CircularProgressIndicator(color: highlightColor)),
+          child: const Center(
+            child: CircularProgressIndicator(color: highlightColor),
+          ),
         ),
       );
     }
-    
+
     final user = _currentUser!;
     final totalCount = _allOrganisms.length;
     final discoveredCount = user.discoveredOrganisms.length;
-    final anidexStat = totalCount > 0 ? '$discoveredCount / $totalCount' : '0 / 0';
-
+    final anidexStat = totalCount > 0
+        ? '$discoveredCount / $totalCount'
+        : '0 / 0';
 
     return Scaffold(
       appBar: AppBar(
@@ -325,7 +349,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         decoration: BoxDecoration(
           color: secondaryButtonColor,
           image: DecorationImage(
-            image: const AssetImage('assets/main.png'), 
+            image: const AssetImage('assets/main.png'),
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(
               Colors.black.withOpacity(0.7),
@@ -374,8 +398,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               // START NEW: Anidex Stat
               if (totalCount > 0)
                 _buildProfileDetail('ANIMALS IDENTIFIED', anidexStat),
-              // END NEW
 
+              // END NEW
               const SizedBox(height: 40),
 
               // 4. EDIT PROFILE BUTTON
@@ -383,36 +407,93 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 text: 'EDIT PROFILE',
                 onPressed: _navigateToEditScreen,
               ),
-              
+
               // NEW: SETTINGS BUTTON
-              const SizedBox(height: 20), 
+              const SizedBox(height: 20),
               _buildThemedButton(
                 text: 'SETTINGS',
                 onPressed: _navigateToSettingsScreen,
               ),
               // END NEW
-              
+
               // ADDED: ACHIEVEMENTS BUTTON
-              const SizedBox(height: 20), 
+              const SizedBox(height: 20),
               _buildThemedButton(
                 text: 'ACHIEVEMENTS',
                 onPressed: _navigateToAchievementsScreen,
               ),
               // END ADDED
-              
+
+              // NEW: BEST ROGRE RUN SECTION
+              if (user.bestRogueFloor > 0) ...[
+                const SizedBox(height: 40),
+                Text(
+                  '--- BEST ROGUE RUN ---',
+                  style: TextStyle(
+                    color: highlightColor.withOpacity(0.8),
+                    fontSize: _responsiveFontSize(context, 10),
+                    fontFamily: 'PressStart2P',
+                  ),
+                ),
+                const SizedBox(height: 10),
+                _buildProfileDetail('HIGHEST FLOOR', '${user.bestRogueFloor}'),
+                const SizedBox(height: 10),
+                Text(
+                  'FINAL TEAM:',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: _responsiveFontSize(context, 8),
+                    fontFamily: 'PressStart2P',
+                  ),
+                ),
+                const SizedBox(height: 10),
+                SizedBox(
+                  height: 48,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: user.bestRogueTeam.map((animal) {
+                      final fileName = animal.name
+                          .toLowerCase()
+                          .replaceAll(' ', '_')
+                          .replaceAll("'", '_')
+                          .replaceAll('-', '_');
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: Tooltip(
+                          message: animal.name,
+                          child: Image.asset(
+                            'assets/sprites/$fileName.png',
+                            width: 40,
+                            errorBuilder: (_, __, ___) => const Icon(
+                              Icons.pets,
+                              color: Colors.white,
+                              size: 24,
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ],
+
+              // END NEW
               const SizedBox(height: 40),
 
               // START: QUIZ STATS SECTION
               Text(
                 '--- BATTLE QUIZ STATS ---',
                 style: TextStyle(
-                  color: highlightColor.withOpacity(0.8), 
-                  fontSize: _responsiveFontSize(context, 10), // MODIFIED: Responsive font size
-                  fontFamily: 'PressStart2P'
+                  color: highlightColor.withOpacity(0.8),
+                  fontSize: _responsiveFontSize(
+                    context,
+                    10,
+                  ), // MODIFIED: Responsive font size
+                  fontFamily: 'PressStart2P',
                 ),
               ),
               const SizedBox(height: 20),
-              
+
               // Dynamically build stat blocks for each quiz
               ...user.quizStats.entries.map((entry) {
                 return _buildQuizStatBlock(entry.key, entry.value);
@@ -425,13 +506,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.white.withOpacity(0.6),
-                    fontSize: _responsiveFontSize(context, 12), // MODIFIED: Responsive font size
+                    fontSize: _responsiveFontSize(
+                      context,
+                      12,
+                    ), // MODIFIED: Responsive font size
                     fontFamily: 'PressStart2P',
                   ),
                 ),
+
               // END: QUIZ STATS SECTION
-              
-              const SizedBox(height: 40), 
+              const SizedBox(height: 40),
             ],
           ),
         ),
