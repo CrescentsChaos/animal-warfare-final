@@ -93,27 +93,62 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
     return Color.fromARGB(color.alpha, r, g, b);
   }
 
-  // REVISED: Helper function to determine a reliable contrasting highlight color
-  Color _getComplementaryHighlightColor(Color biomeColor) {
-    // Calculate relative luminance
-    double luminance =
-        (0.299 * biomeColor.red +
-            0.587 * biomeColor.green +
-            0.114 * biomeColor.blue) /
-        255;
+  // REVISED: Helper function to determine biome-specific highlight color
+  Color _getBiomeHighlightColor(String biomeName) {
+    final biome = biomeName.toLowerCase();
 
-    // If the background is dark, use a vibrant, highly contrasting color (like neon green or bright cyan)
-    if (luminance < 0.3) {
-      return const Color(0xFF39FF14); // Neon Green for dark biomes
+    // Purple/Pink Accents
+    if (biome.contains('swamp') || biome.contains('mangrove')) {
+      return const Color(0xFFCE93D8); // Purple Accent
     }
-    // If the background is moderately dark/medium, use a bright yellow/white
-    else if (luminance < 0.6) {
-      return const Color(0xFFFFFFFF); // Pure White
+
+    // Amber/Gold Accents
+    if (biome.contains('desert') || biome.contains('savanna')) {
+      return const Color(0xFFFFD740); // Amber Accent
     }
-    // If the background is light, use a deep, high-contrast color (like dark blue)
-    else {
-      return const Color(0xFF000080); // Navy Blue for light biomes
+
+    // Light Blue/Cyan Accents (Cold)
+    if (biome.contains('snow') ||
+        biome.contains('ice') ||
+        biome.contains('tundra') ||
+        biome.contains('polar') ||
+        biome.contains('frozen')) {
+      return const Color(0xFF40C4FF); // Light Blue Accent
     }
+
+    // Red Accents
+    if (biome.contains('volcan')) {
+      return const Color(0xFFFF5252); // Red Accent
+    }
+
+    // Grey/Silver Accents
+    if (biome.contains('mountain') ||
+        biome.contains('cave') ||
+        biome.contains('urban') ||
+        biome.contains('taiga')) {
+      return const Color(0xFFB0BEC5); // Blue Grey
+    }
+
+    // Green Accents
+    if (biome.contains('forest') ||
+        biome.contains('jungle') ||
+        biome.contains('rainforest') ||
+        biome.contains('kelp')) {
+      return const Color(0xFF69F0AE); // Green Accent
+    }
+
+    // Blue Accents (Water)
+    if (biome.contains('ocean') ||
+        biome.contains('beach') ||
+        biome.contains('lake') ||
+        biome.contains('river') ||
+        biome.contains('deep sea') ||
+        biome.contains('coral') ||
+        biome.contains('coastal')) {
+      return const Color(0xFF448AFF); // Blue Accent
+    }
+
+    return const Color(0xFFDAA520); // Default Goldenrod
   }
 
   // Helper to get the background image path
@@ -338,7 +373,7 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
     _biomeBaseColor = _getBiomeBaseColor(widget.biomeName);
     _biomeDarkColor = _getDarkerColor(_biomeBaseColor);
     // Initialize dynamic biome highlight
-    _biomeHighlightColor = _getComplementaryHighlightColor(_biomeBaseColor);
+    _biomeHighlightColor = _getBiomeHighlightColor(widget.biomeName);
 
     // Initialize Achievement Service
     if (widget.allOrganisms.isNotEmpty) {

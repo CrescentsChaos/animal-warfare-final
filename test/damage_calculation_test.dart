@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:animal_warfare/game/battle_manager.dart';
+import 'package:animal_warfare/game/battle_models.dart';
 import 'package:animal_warfare/models/captured_organism.dart';
 import 'package:animal_warfare/models/organism.dart';
 

@@ -844,7 +844,7 @@ class Move {
           'Strikes from the canopy, entering stealth and dealing high damage.',
       baseDamage: 85,
       accuracy: 100,
-      type: ElementalType.agile,
+      type: ElementalType.arboreal,
       stamina: 15,
       category: MoveCategory.physical,
       effects: [
@@ -1070,6 +1070,74 @@ class Move {
         ),
       ],
     ),
+    // Clownfish Family Moveset
+    Move(
+      name: 'Symbiotic Guard',
+      description:
+          'The user retreats into a stinging anemone. Grants protection and poisons contact attackers.',
+      baseDamage: 0,
+      type: ElementalType.aquatic,
+      stamina: 10,
+      category: MoveCategory.status,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.protect, // Standard protection logic
+          stat:
+              'poison', // Triggers the poison-on-contact logic like Baneful Bunker
+        ),
+      ],
+    ),
+    Move(
+      name: 'Nipping Snap',
+      description: 'A lightning-fast bite that strikes first.',
+      baseDamage: 40,
+      accuracy: 100,
+      priority: 1, // High priority to strike before the whale
+      type: ElementalType.predator,
+      stamina: 20,
+      category: MoveCategory.physical,
+      effects: [],
+    ),
+    Move(
+      name: 'Mucus Coat',
+      description:
+          'Coats the body in protective slime to boost evasion and special defense.',
+      baseDamage: 0,
+      type: ElementalType.aquatic,
+      stamina: 15,
+      category: MoveCategory.status,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.multiStatChange,
+          stat:
+              'speed:1,resistance:1', // Speed represents evasion in many engines
+        ),
+      ],
+    ),
+    Move(
+      name: 'Reef Clicking',
+      description:
+          'A noisy display that weakens the foe and emboldens the user.',
+      baseDamage: 0,
+      accuracy: 100,
+      type: ElementalType.social,
+      stamina: 12,
+      category: MoveCategory.status,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statChange,
+          target: 'opponent',
+          stat: 'attack',
+          value: -1,
+        ),
+        MoveEffect(
+          type: MoveEffectType.statusFear, // Applies fear status
+          target: 'opponent',
+          value: 2,
+          chance: 50,
+        ),
+      ],
+    ),
     Move(
       name: 'Paralyzing Sting',
       description: 'Stinging cells that may paralyze the foe.',
@@ -1238,22 +1306,28 @@ class Move {
     Move(
       name: 'Bite',
       description: 'Bites with vicious fangs.',
-      baseDamage: 40,
+      baseDamage: 60,
       type: ElementalType.predator,
       stamina: 25,
       category: MoveCategory.physical,
       effects: [
-        MoveEffect(type: MoveEffectType.statusBleed, value: 1, chance: 10),
+        MoveEffect(type: MoveEffectType.statusBleed, value: 2, chance: 10),
       ],
     ),
     Move(
       name: 'Hide',
       description: 'User gain stealth.',
       baseDamage: 0,
-      type: ElementalType.predator,
+      type: ElementalType.prey,
       stamina: 25,
       category: MoveCategory.status,
-      effects: [MoveEffect(type: MoveEffectType.statusStealth, chance: 80)],
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statusStealth,
+          chance: 80,
+          target: 'self',
+        ),
+      ],
     ),
     Move(
       name: 'Varanid Rake',
@@ -1412,7 +1486,7 @@ class Move {
       effects: [],
     ),
     Move(
-      name: 'Camoflauge',
+      name: 'Camouflage',
       description: 'Blends into the landscape. Grants Stealth.',
       baseDamage: 0,
       type: ElementalType.agile,
@@ -1686,6 +1760,7 @@ class Move {
       effects: [
         MoveEffect(
           type: MoveEffectType.multiStatChange,
+          target: 'self',
           stat:
               'attack:1,defense:1,accuracy:1', // Accuracy is handled via stat string
         ),
@@ -1780,6 +1855,42 @@ class Move {
       ],
     ),
     Move(
+      name: 'Dive',
+      description: 'The user dives underwater, then attacks on the next turn.',
+      baseDamage: 80,
+      type: ElementalType.aquatic,
+      stamina: 10,
+      category: MoveCategory.physical,
+      effects: [
+        MoveEffect(type: MoveEffectType.semiInvulnerable, stat: 'underwater'),
+      ],
+    ),
+    Move(
+      name: 'Fly',
+      description:
+          'The user flies into the sky, then attacks on the next turn.',
+      baseDamage: 90,
+      type: ElementalType.flying,
+      stamina: 15,
+      category: MoveCategory.physical,
+      effects: [
+        MoveEffect(type: MoveEffectType.semiInvulnerable, stat: 'airborne'),
+      ],
+    ),
+    Move(
+      name: 'Bounce',
+      description:
+          'The user bounces high into the air, then attacks on the next turn.',
+      baseDamage: 85,
+      type: ElementalType.normal,
+      stamina: 10,
+      category: MoveCategory.physical,
+      effects: [
+        MoveEffect(type: MoveEffectType.semiInvulnerable, stat: 'airborne'),
+        MoveEffect(type: MoveEffectType.statusParalysis, value: 3, chance: 30),
+      ],
+    ),
+    Move(
       name: 'Rest',
       description:
           'The user goes to sleep for two turns. This fully restores the user\'s HP.',
@@ -1825,6 +1936,7 @@ class Move {
         MoveEffect(
           type: MoveEffectType.multiStatChange,
           stat: 'attack:2,power:2,speed:2,defense:-1,resistance:-1',
+          target: 'self',
         ),
       ],
     ),

@@ -10,9 +10,11 @@ import 'package:animal_warfare/theme.dart';
 import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/models/weather.dart';
 import 'package:animal_warfare/models/terrain.dart';
-import 'package:animal_warfare/models/status_effect.dart';
 import 'package:animal_warfare/models/loot_item.dart';
+import 'package:animal_warfare/game/battle_models.dart';
 import 'package:animal_warfare/models/organism.dart';
+import 'package:animal_warfare/models/elemental_type.dart'; // Added
+import 'package:animal_warfare/models/move.dart'; // Added
 import 'dart:math' as math;
 import 'dart:async';
 
@@ -83,6 +85,132 @@ class BattleScreenContent extends StatefulWidget {
 
 class _BattleScreenContentState extends State<BattleScreenContent>
     with TickerProviderStateMixin {
+  Color _getBiomeThemeColor() {
+    final biome = widget.biomeName.toLowerCase();
+    if (biome.contains('swamp'))
+      return const Color.fromARGB(255, 1, 177, 53); // Purple Accent
+    if (biome.contains('desert') || biome.contains('savanna'))
+      return const Color(0xFFFFD740); // Amber Accent
+    if (biome.contains('snow') ||
+        biome.contains('ice') ||
+        biome.contains('tundra'))
+      return const Color(0xFF40C4FF); // Light Blue Accent
+    if (biome.contains('volcan')) return const Color(0xFFFF5252); // Red Accent
+    if (biome.contains('mountain')) return const Color(0xFF90A4AE); // Blue Grey
+    if (biome.contains('forest') || biome.contains('jungle'))
+      return const Color(0xFF69F0AE); // Green Accent
+    if (biome.contains('ocean') ||
+        biome.contains('beach') ||
+        biome.contains('lake') ||
+        biome.contains('river'))
+      return const Color(0xFF448AFF); // Blue Accent
+    return const Color(0xFFDAA520); // Default Goldenrod
+  }
+
+  Color _getBiomePrimaryColor() {
+    final biome = widget.biomeName.toLowerCase();
+    if (biome.contains('swamp'))
+      return const Color.fromARGB(164, 43, 185, 0); // Purple
+    if (biome.contains('desert') || biome.contains('savanna'))
+      return const Color(0xFFFFC107); // Amber
+    if (biome.contains('snow') ||
+        biome.contains('ice') ||
+        biome.contains('tundra'))
+      return const Color(0xFF00B0FF); // Light Blue
+    if (biome.contains('volcan')) return const Color(0xFFD32F2F); // Red
+    if (biome.contains('mountain')) return const Color(0xFF607D8B); // Blue Grey
+    if (biome.contains('forest') || biome.contains('jungle'))
+      return const Color(0xFF388E3C); // Green
+    if (biome.contains('ocean') ||
+        biome.contains('beach') ||
+        biome.contains('lake') ||
+        biome.contains('river'))
+      return const Color(0xFF1976D2); // Blue
+    return const Color(0xFF38761D); // Default Jungle Green
+  }
+
+  Color _getBiomeSecondaryColor() {
+    final biome = widget.biomeName.toLowerCase();
+    if (biome.contains('swamp'))
+      return const Color.fromARGB(115, 15, 129, 0); // Dark Purple
+    if (biome.contains('desert') || biome.contains('savanna'))
+      return const Color(0xFFFF6F00); // Dark Amber
+    if (biome.contains('snow') ||
+        biome.contains('ice') ||
+        biome.contains('tundra'))
+      return const Color(0xFF01579B); // Dark Blue
+    if (biome.contains('volcan')) return const Color(0xFFB71C1C); // Dark Red
+    if (biome.contains('mountain'))
+      return const Color(0xFF37474F); // Dark Blue Grey
+    if (biome.contains('forest') || biome.contains('jungle'))
+      return const Color(0xFF1B5E20); // Dark Green
+    if (biome.contains('ocean') ||
+        biome.contains('beach') ||
+        biome.contains('lake') ||
+        biome.contains('river'))
+      return const Color(0xFF0D47A1); // Dark Blue
+    return const Color(0xFF1E3F2A); // Default Deep Forest Green
+  }
+
+  // Helper: Get color for ElementalType
+  Color _getTypeColor(ElementalType type) {
+    switch (type) {
+      case ElementalType.normal:
+        return const Color(0xFFA8A77A);
+      case ElementalType.flying:
+        return const Color(0xFFA98FF3);
+      case ElementalType.aquatic:
+        return const Color(0xFF6390F0);
+      case ElementalType.arboreal:
+        return const Color(0xFF7AC74C);
+      case ElementalType.burrowing:
+        return const Color(0xFFE2BF65);
+      case ElementalType.armored:
+        return const Color(0xFFB7B7CE);
+      case ElementalType.agile:
+        return const Color(0xFFF7D02C);
+      case ElementalType.scavenger:
+        return const Color(0xFF705746);
+      case ElementalType.parasite:
+        return const Color(0xFFA6B91A);
+      case ElementalType.venomous:
+        return const Color(0xFFA33EA1);
+      case ElementalType.poisonous:
+        return const Color(0xFFA33EA1);
+      case ElementalType.social:
+        return const Color(0xFFF95587);
+      case ElementalType.solitary:
+        return const Color(0xFF7038F8);
+      case ElementalType.prey:
+        return const Color(0xFFD685AD);
+      case ElementalType.predator:
+        return const Color(0xFFC22E28);
+      case ElementalType.tiny:
+        return const Color(0xFFEE99AC);
+      case ElementalType.giant:
+        return const Color(0xFF705848);
+    }
+  }
+
+  // Helper: Calculate effectiveness multiplier
+  double _calculateMoveEffectiveness(Move move, BattleOrganism opponent) {
+    if (move.category == MoveCategory.status) return 1.0;
+
+    double multiplier = 1.0;
+    for (final type in opponent.organism.baseOrganism.elementalTypes) {
+      multiplier *= TypeChart.getEffectiveness(move.type, type);
+    }
+    return multiplier;
+  }
+
+  // Helper: Get effectiveness text
+  String _getEffectivenessText(double multiplier) {
+    if (multiplier > 1.0) return 'Super Effective!';
+    if (multiplier == 0.0) return 'Immune';
+    if (multiplier < 1.0) return 'Not Effective';
+    return '';
+  }
+
   late AnimationController _playerShakeController;
   late AnimationController _opponentShakeController;
   late Animation<double> _playerShakeAnimation;
@@ -218,9 +346,9 @@ class _BattleScreenContentState extends State<BattleScreenContent>
         maxChildSize: 0.95,
         builder: (_, scrollController) => Container(
           decoration: BoxDecoration(
-            color: AppColors.secondaryButtonColor,
+            color: _getBiomeSecondaryColor(),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-            border: Border.all(color: AppColors.highlightColor, width: 2),
+            border: Border.all(color: _getBiomeThemeColor(), width: 2),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.5),
@@ -237,7 +365,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                   horizontal: 16,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryButtonColor.withOpacity(0.5),
+                  color: _getBiomePrimaryColor().withOpacity(0.5),
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(14),
                   ),
@@ -250,7 +378,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                       style: AppTextStyles.headline(
                         context,
                         baseSize: 14,
-                        color: AppColors.highlightColor,
+                        color: _getBiomeThemeColor(),
                       ),
                     ),
                     IconButton(
@@ -284,7 +412,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                             child: Text(
                               '--- TURN ${turn.turnNumber} ---',
                               style: TextStyle(
-                                color: AppColors.highlightColor,
+                                color: _getBiomeThemeColor(),
                                 fontSize: 12,
                                 fontFamily: 'PressStart2P',
                                 fontWeight: FontWeight.bold,
@@ -335,17 +463,17 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     return showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.secondaryButtonColor,
+        backgroundColor: _getBiomeSecondaryColor(),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: AppColors.highlightColor, width: 2),
+          side: BorderSide(color: _getBiomeThemeColor(), width: 2),
         ),
         title: Text(
           'SELECT ANIMAL',
           style: AppTextStyles.headline(
             context,
             baseSize: 14,
-            color: AppColors.highlightColor,
+            color: _getBiomeThemeColor(),
           ),
         ),
         content: SizedBox(
@@ -355,14 +483,14 @@ class _BattleScreenContentState extends State<BattleScreenContent>
             itemCount: bm.playerTeam.length,
             itemBuilder: (context, index) {
               final animal = bm.playerTeam[index];
+              final battleOrg = BattleOrganism(animal);
               final isCurrent = index == bm.currentPlayerIndex;
-              final isFainted = animal.currentHealth <= 0;
+              final isFainted = battleOrg.health <= 0;
 
               return ListTile(
                 enabled: !isCurrent && !isFainted,
                 onLongPress: () {
                   // Show animal details on long press
-                  final battleOrg = BattleOrganism(animal);
                   _showOrganismInfo(context, battleOrg, bm: bm);
                 },
                 leading: Opacity(
@@ -378,14 +506,14 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                   animal.name,
                   style: TextStyle(
                     color: isCurrent
-                        ? AppColors.highlightColor
+                        ? _getBiomeThemeColor()
                         : (isFainted ? Colors.grey : Colors.white),
                     fontFamily: 'PressStart2P',
                     fontSize: 10,
                   ),
                 ),
                 subtitle: Text(
-                  'HP: ${animal.currentHealth}/${animal.maxHealth}',
+                  'HP: ${battleOrg.health}/${battleOrg.maxHealth}',
                   style: TextStyle(
                     color: isFainted ? Colors.red : Colors.green,
                     fontFamily: 'PressStart2P',
@@ -393,10 +521,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                   ),
                 ),
                 trailing: isCurrent
-                    ? const Icon(
-                        Icons.check_circle,
-                        color: AppColors.highlightColor,
-                      )
+                    ? Icon(Icons.check_circle, color: _getBiomeThemeColor())
                     : (isFainted
                           ? const Text(
                               'FAINTED',
@@ -655,7 +780,10 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           ),
           // Ability Pop-up Overlay
           if (battleManager.currentAbilityNotify != null)
-            _AbilityPopUp(notification: battleManager.currentAbilityNotify!),
+            _AbilityPopUp(
+              notification: battleManager.currentAbilityNotify!,
+              themeColor: _getBiomeThemeColor(),
+            ),
         ],
       ),
     );
@@ -682,7 +810,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                 style: AppTextStyles.headline(
                   context,
                   baseSize: 12,
-                  color: AppColors.highlightColor,
+                  color: _getBiomeThemeColor(),
                 ),
               ),
               if (widget.isRogueMode && rogueState != null)
@@ -694,7 +822,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.highlightColor,
+                      color: _getBiomeThemeColor(),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
@@ -715,7 +843,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               IconButton(
                 onPressed: _toggleOrientation,
                 icon: const Icon(Icons.screen_rotation),
-                color: AppColors.highlightColor,
+                color: _getBiomeThemeColor(),
                 tooltip: 'Rotate Screen',
                 style: IconButton.styleFrom(
                   backgroundColor: overlayColor,
@@ -726,7 +854,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               IconButton(
                 onPressed: () => _showBattleLog(context, battleManager),
                 icon: const Icon(Icons.menu_book),
-                color: AppColors.highlightColor,
+                color: _getBiomeThemeColor(),
                 tooltip: 'Battle Log',
                 style: IconButton.styleFrom(
                   backgroundColor: overlayColor,
@@ -839,9 +967,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                   shape: BoxShape.circle,
                   color: indicatorColor,
                   border: Border.all(
-                    color: isCurrent
-                        ? AppColors.highlightColor
-                        : Colors.white30,
+                    color: isCurrent ? _getBiomeThemeColor() : Colors.white30,
                     width: isCurrent ? 2 : 1,
                   ),
                 ),
@@ -878,7 +1004,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
       decoration: BoxDecoration(
         color: barColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.highlightColor, width: 2),
+        border: Border.all(color: _getBiomeThemeColor(), width: 2),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.4),
@@ -1001,6 +1127,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
             size: spriteSize,
             onLongPress: () => _showOrganismInfo(context, organism),
             mirror: false, // Mirrored from previous State
+            biomeName: widget.biomeName,
           ),
         ],
       ),
@@ -1029,7 +1156,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
       decoration: BoxDecoration(
         color: barColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.highlightColor, width: 2),
+        border: Border.all(color: _getBiomeThemeColor(), width: 2),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.4),
@@ -1143,6 +1270,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
             size: spriteSize,
             onLongPress: () => _showOrganismInfo(context, organism),
             mirror: true, // Mirrored from previous State
+            biomeName: widget.biomeName,
           ),
           const SizedBox(width: 8),
           Flexible(
@@ -1171,10 +1299,10 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.secondaryButtonColor,
+        backgroundColor: _getBiomeSecondaryColor(),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: AppColors.highlightColor, width: 2),
+          side: BorderSide(color: _getBiomeThemeColor(), width: 2),
         ),
         titlePadding: EdgeInsets.zero,
         title: Container(
@@ -1182,8 +1310,8 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                AppColors.primaryButtonColor.withOpacity(0.8),
-                AppColors.secondaryButtonColor,
+                _getBiomePrimaryColor().withOpacity(0.8),
+                _getBiomeSecondaryColor(),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -1192,8 +1320,8 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           ),
           child: Text(
             base.name,
-            style: const TextStyle(
-              color: AppColors.highlightColor,
+            style: TextStyle(
+              color: _getBiomeThemeColor(),
               fontSize: 18,
               fontWeight: FontWeight.bold,
               height: 1.2,
@@ -1236,18 +1364,16 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.primaryButtonColor.withOpacity(
-                              0.4,
-                            ),
+                            color: _getBiomePrimaryColor().withOpacity(0.4),
                             borderRadius: BorderRadius.circular(4),
                             border: Border.all(
-                              color: AppColors.highlightColor.withOpacity(0.5),
+                              color: _getBiomeThemeColor().withOpacity(0.5),
                             ),
                           ),
                           child: Text(
                             cat.trim(),
-                            style: const TextStyle(
-                              color: AppColors.highlightColor,
+                            style: TextStyle(
+                              color: _getBiomeThemeColor(),
                               fontSize: 9,
                               fontFamily: 'PressStart2P',
                               fontWeight: FontWeight.bold,
@@ -1276,8 +1402,8 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                     ),
                     Text(
                       bo.organism.nature.name.toUpperCase(),
-                      style: const TextStyle(
-                        color: AppColors.highlightColor,
+                      style: TextStyle(
+                        color: _getBiomeThemeColor(),
                         fontSize: 9,
                         fontFamily: 'PressStart2P',
                         fontWeight: FontWeight.bold,
@@ -1321,10 +1447,10 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               const SizedBox(height: 10),
 
               // Stat Boosts
-              const Text(
+              Text(
                 'STATS & BOOSTS',
                 style: TextStyle(
-                  color: AppColors.highlightColor,
+                  color: _getBiomeThemeColor(),
                   fontSize: 9,
                   fontFamily: 'PressStart2P',
                 ),
@@ -1456,10 +1582,10 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               const SizedBox(height: 10),
 
               // Abilities
-              const Text(
+              Text(
                 'ABILITIES',
                 style: TextStyle(
-                  color: AppColors.highlightColor,
+                  color: _getBiomeThemeColor(),
                   fontSize: 9,
                   fontFamily: 'PressStart2P',
                 ),
@@ -1502,13 +1628,13 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             style: TextButton.styleFrom(
-              backgroundColor: AppColors.primaryButtonColor.withOpacity(0.3),
+              backgroundColor: _getBiomePrimaryColor().withOpacity(0.3),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             ),
-            child: const Text(
+            child: Text(
               'OK',
               style: TextStyle(
-                color: AppColors.highlightColor,
+                color: _getBiomeThemeColor(),
                 fontFamily: 'PressStart2P',
                 fontSize: 10,
               ),
@@ -1587,7 +1713,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
         decoration: BoxDecoration(
           color: Colors.black.withOpacity(0.85),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppColors.highlightColor, width: 2),
+          border: Border.all(color: _getBiomeThemeColor(), width: 2),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.5),
@@ -1603,7 +1729,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               padding: const EdgeInsets.only(top: 2),
               child: Icon(
                 Icons.chat_bubble_outline,
-                color: AppColors.highlightColor,
+                color: _getBiomeThemeColor(),
                 size: isNarrow ? 16 : 20,
               ),
             ),
@@ -1652,7 +1778,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
       decoration: BoxDecoration(
         color: overlayColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.highlightColor, width: 2),
+        border: Border.all(color: _getBiomeThemeColor(), width: 2),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.4),
@@ -1666,7 +1792,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           Text(
             'What will ${battleManager.player.organism.baseOrganism.name} do?',
             style: TextStyle(
-              color: AppColors.highlightColor,
+              color: _getBiomeThemeColor(),
               fontSize: isNarrow ? 9 : 10,
               fontFamily: 'PressStart2P',
             ),
@@ -1684,53 +1810,141 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                       ? 4.2
                       : 3.6),
             children: battleManager.playerMoves.map((move) {
+              final typeColor = _getTypeColor(move.type);
+              final effectiveness = _calculateMoveEffectiveness(
+                move,
+                battleManager.opponent,
+              );
+              final effectivenessText = _getEffectivenessText(effectiveness);
+              final categoryText = move.category
+                  .toString()
+                  .split('.')
+                  .last
+                  .toUpperCase();
+
               return ElevatedButton(
                 onPressed: () => battleManager.processPlayerAction(move),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryButtonColor,
+                  backgroundColor: typeColor,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 4,
-                    vertical: 2,
-                  ),
+                  padding: const EdgeInsets.all(4),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
-                    side: const BorderSide(color: AppColors.highlightColor),
+                    side: BorderSide(
+                      color: Colors.white.withOpacity(0.5),
+                      width: 2,
+                    ),
                   ),
                   elevation: 2,
                 ),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        move.name,
-                        style: TextStyle(
-                          fontSize: isNarrow ? 8 : 10,
-                          fontFamily: 'PressStart2P',
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        '${battleManager.playerOrganism.moveStamina[move.name] ?? 0}/${move.stamina}',
-                        style: TextStyle(
-                          fontSize: isNarrow ? 7 : 9,
-                          fontFamily: 'PressStart2P',
-                          color:
-                              (battleManager.playerOrganism.moveStamina[move
-                                          .name] ??
-                                      0) >
-                                  0
-                              ? Colors.white70
-                              : Colors.redAccent,
+                    // Move Name
+                    Expanded(
+                      flex: 2,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.center,
+                        child: Text(
+                          move.name,
+                          style: TextStyle(
+                            fontSize: isNarrow ? 9 : 11,
+                            fontFamily: 'PressStart2P',
+                            fontWeight: FontWeight.bold,
+                            shadows: [
+                              const Shadow(
+                                blurRadius: 2,
+                                color: Colors.black54,
+                                offset: Offset(1, 1),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
+
+                    // Category & Stamina Row
+                    Expanded(
+                      flex: 1,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Category Badge
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 2,
+                              vertical: 1,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.black26,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                            child: Text(
+                              categoryText.substring(0, 4), // PHYS, SPEC, STAT
+                              style: const TextStyle(
+                                fontSize: 6, // Very small
+                                fontFamily: 'PressStart2P',
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                          // Stamina
+                          Text(
+                            '${battleManager.playerOrganism.moveStamina[move.name] ?? 0}/${move.stamina}',
+                            style: TextStyle(
+                              fontSize: isNarrow ? 7 : 8,
+                              fontFamily: 'PressStart2P',
+                              color:
+                                  (battleManager.playerOrganism.moveStamina[move
+                                              .name] ??
+                                          0) >
+                                      0
+                                  ? Colors.white
+                                  : Colors.redAccent,
+                              shadows: [
+                                const Shadow(
+                                  blurRadius: 2,
+                                  color: Colors.black54,
+                                  offset: Offset(1, 1),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Effectiveness (if applicable)
+                    if (move.category != MoveCategory.status &&
+                        effectivenessText.isNotEmpty)
+                      Expanded(
+                        flex: 1,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Container(
+                            margin: const EdgeInsets.only(top: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 4,
+                              vertical: 1,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.black45,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              effectivenessText,
+                              style: const TextStyle(
+                                fontSize: 7,
+                                fontFamily: 'PressStart2P',
+                                color: Colors.yellowAccent,
+                              ),
+                            ),
+                          ),
+                        ),
+                      )
+                    else
+                      const Spacer(flex: 1),
                   ],
                 ),
               );
@@ -1895,11 +2109,11 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.secondaryButtonColor,
-        title: const Text(
+        backgroundColor: _getBiomeSecondaryColor(),
+        title: Text(
           'RELEASE ANIMAL',
           style: TextStyle(
-            color: AppColors.highlightColor,
+            color: _getBiomeThemeColor(),
             fontFamily: 'PressStart2P',
             fontSize: 12,
           ),
@@ -2069,6 +2283,9 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           playerName: battleManager.player.organism.baseOrganism.name,
           moneyEarned: moneyEarned,
           lootName: lootName,
+          themeColor: _getBiomeThemeColor(),
+          primaryColor: _getBiomePrimaryColor(),
+          secondaryColor: _getBiomeSecondaryColor(),
           onConfirm: () {
             SystemChrome.setPreferredOrientations([
               DeviceOrientation.portraitUp,
@@ -2125,7 +2342,14 @@ class _BattleResultDialog extends StatelessWidget {
     required this.moneyEarned,
     this.lootName,
     required this.onConfirm,
+    required this.themeColor,
+    required this.primaryColor,
+    required this.secondaryColor,
   });
+
+  final Color themeColor;
+  final Color primaryColor;
+  final Color secondaryColor;
 
   @override
   Widget build(BuildContext context) {
@@ -2137,7 +2361,7 @@ class _BattleResultDialog extends StatelessWidget {
     switch (result) {
       case BattleResult.win:
         titleText = 'VICTORY!';
-        titleColor = AppColors.highlightColor;
+        titleColor = themeColor;
         description = 'You defeated the wild encounter!';
         mainIcon = Icons.emoji_events;
         break;
@@ -2162,7 +2386,7 @@ class _BattleResultDialog extends StatelessWidget {
     }
 
     return AlertDialog(
-      backgroundColor: AppColors.secondaryButtonColor,
+      backgroundColor: secondaryColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(color: titleColor, width: 3),
@@ -2269,7 +2493,7 @@ class _BattleResultDialog extends StatelessWidget {
           child: ElevatedButton(
             onPressed: onConfirm,
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryButtonColor,
+              backgroundColor: primaryColor,
               foregroundColor: Colors.white,
               side: BorderSide(color: titleColor.withOpacity(0.5)),
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
@@ -2299,7 +2523,10 @@ class _BattleSprite extends StatefulWidget {
     required this.size,
     this.onLongPress,
     this.mirror = false,
+    required this.biomeName,
   });
+
+  final String biomeName;
 
   @override
   State<_BattleSprite> createState() => _BattleSpriteState();
@@ -2397,14 +2624,75 @@ class _BattleSpriteState extends State<_BattleSprite> {
                 const Icon(Icons.pets, color: Colors.white54, size: 40),
           );
 
+    Color platformColor;
+    final biome = widget.biomeName.toLowerCase();
+    if (biome.contains('swamp')) {
+      platformColor = const Color(0xFF4E342E); // Dark Brown
+    } else if (biome.contains('desert') || biome.contains('savanna')) {
+      platformColor = const Color(0xFFE0C487); // Sand/Dry Grass
+    } else if (biome.contains('snow') ||
+        biome.contains('ice') ||
+        biome.contains('tundra')) {
+      platformColor = const Color(0xFFE0F7FA); // Icy Blue
+    } else if (biome.contains('volcan')) {
+      platformColor = const Color(0xFF3E2723); // Dark Ash
+    } else if (biome.contains('mountain')) {
+      platformColor = const Color(0xFF757575); // Grey Rock
+    } else if (biome.contains('forest') || biome.contains('jungle')) {
+      platformColor = const Color(0xFF2E7D32); // Green
+    } else if (biome.contains('ocean') ||
+        biome.contains('beach') ||
+        biome.contains('lake') ||
+        biome.contains('river')) {
+      platformColor = const Color(0xFF0277BD); // Deep Blue
+    } else {
+      platformColor = const Color(0xFF8D6E63); // Generic Dirt
+    }
+
     return GestureDetector(
       onLongPress: widget.onLongPress,
       child: SizedBox(
         width: size,
         height: size,
-        child: widget.mirror
-            ? Transform.flip(flipX: true, child: imageWidget)
-            : imageWidget,
+        child: Stack(
+          alignment: Alignment.center,
+          clipBehavior: Clip.none,
+          children: [
+            // The Platform
+            Positioned(
+              bottom: -size * 0.05,
+              child: Transform(
+                transform: Matrix4.identity()
+                  ..setEntry(3, 2, 0.001) // perspective
+                  ..rotateX(1.2), // flatten only the circle
+                alignment: Alignment.center,
+                child: Container(
+                  width: size * 0.9,
+                  height: size * 0.9,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: platformColor.withOpacity(0.6),
+                    border: Border.all(
+                      color: platformColor.withOpacity(0.8),
+                      width: 2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.3),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            // The Sprite
+            widget.mirror
+                ? Transform.flip(flipX: true, child: imageWidget)
+                : imageWidget,
+          ],
+        ),
       ),
     );
   }
@@ -2486,8 +2774,9 @@ class _TypewriterTextState extends State<TypewriterText> {
 
 class _AbilityPopUp extends StatefulWidget {
   final AbilityNotification notification;
+  final Color themeColor;
 
-  const _AbilityPopUp({required this.notification});
+  const _AbilityPopUp({required this.notification, required this.themeColor});
 
   @override
   State<_AbilityPopUp> createState() => _AbilityPopUpState();
@@ -2549,7 +2838,7 @@ class _AbilityPopUpState extends State<_AbilityPopUp>
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           decoration: BoxDecoration(
             color: Colors.black.withOpacity(0.8),
-            border: Border.all(color: AppColors.highlightColor, width: 2),
+            border: Border.all(color: widget.themeColor, width: 2),
             borderRadius: BorderRadius.horizontal(
               left: widget.notification.isPlayer
                   ? Radius.zero
@@ -2583,8 +2872,8 @@ class _AbilityPopUpState extends State<_AbilityPopUp>
               const SizedBox(height: 8),
               Text(
                 widget.notification.abilityName.toUpperCase(),
-                style: const TextStyle(
-                  color: AppColors.highlightColor,
+                style: TextStyle(
+                  color: widget.themeColor,
                   fontSize: 14,
                   fontFamily: 'PressStart2P',
                   fontWeight: FontWeight.bold,

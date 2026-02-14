@@ -11,6 +11,8 @@ import 'package:animal_warfare/models/status_effect.dart';
 import 'package:animal_warfare/models/talisman.dart';
 import 'package:animal_warfare/models/elemental_type.dart';
 import 'package:animal_warfare/game/biome_weather.dart';
+import 'package:animal_warfare/game/battle_models.dart';
+import 'package:animal_warfare/game/ability_helpers.dart';
 
 // --- Enums ---
 enum BattleState {
@@ -30,312 +32,8 @@ enum BattleResult {
   fled, // Successful run
 }
 
-// --- BattleOrganism: Holds state for battle ---
-class BattleOrganism {
-  final CapturedOrganism organism;
-  final List<Ability> abilities;
-  int _health;
-  int get health => _health;
-  set health(int value) {
-    _health = value;
-    organism.currentHealth = value;
-  }
-
-  // Dynamic battle stats
-  int attackStage = 0; // -6 to +6 stages
-  int defenseStage = 0;
-  int powerStage = 0; // NEW
-  int resistanceStage = 0; // NEW
-  int speedStage = 0; // Added speed stage
-
-  List<StatusEffect> _statusEffects = [];
-  List<StatusEffect> get statusEffects => _statusEffects;
-  set statusEffects(List<StatusEffect> value) {
-    _statusEffects = value;
-    organism.statusEffects = value;
-  }
-
-  // Compatibility getter/setter for single status check
-  StatusEffect get statusEffect {
-    if (_statusEffects.isEmpty)
-      return const StatusEffect(type: StatusEffectType.none);
-    return _statusEffects.last;
-  }
-
-  set statusEffect(StatusEffect value) {
-    if (value.type == StatusEffectType.none) {
-      _statusEffects = [];
-    } else {
-      _statusEffects = [value];
-    }
-    organism.statusEffects = _statusEffects;
-  }
-
-  void addStatusEffect(StatusEffect effect) {
-    // Prevent duplicate status effects of the same type
-    if (_statusEffects.any((se) => se.type == effect.type)) {
-      return;
-    }
-    _statusEffects.add(effect);
-    organism.statusEffects = _statusEffects;
-  }
-
-  void clearStatusEffects() {
-    _statusEffects.clear();
-    organism.statusEffects = _statusEffects;
-  }
-
-  // New flags for complex moves
-  bool isInvulnerable = false;
-  bool isProtected = false;
-  bool rechargeTurn = false; // For Hyper Beam etc
-  Move? chargeMove; // For Solar Beam etc
-  String? chargeStatChanges; // Stat changes to apply after charge
-  Move? chargingMove; // The move currently being charged
-  bool mustRecharge = false;
-  int protectSuccessionCount = 0;
-  bool tookDamageThisTurn = false;
-  String? semiInvulnerable; // e.g., 'underground'
-
-  final bool isRogueMode;
-  final int level;
-
-  BattleOrganism(this.organism, {this.isRogueMode = false})
-    : level = isRogueMode ? organism.level : 50,
-      _health =
-          (isRogueMode
-                  ? organism.currentHealth
-                  : organism.getMaxHealth(atLevel: 50))
-              .clamp(
-                0,
-                (isRogueMode
-                    ? organism.maxHealth
-                    : organism.getMaxHealth(atLevel: 50)),
-              ),
-      _statusEffects = List.from(organism.statusEffects),
-      abilities = organism.baseOrganism.abilities
-          .split(',')
-          .map((s) => s.trim())
-          .where((s) => s.isNotEmpty)
-          .map((name) => Ability.findByName(name))
-          .where((a) => a != null)
-          .cast<Ability>()
-          .toList();
-
-  List<ElementalType>? _battleTypes;
-  List<ElementalType> get types =>
-      _battleTypes ?? organism.baseOrganism.elementalTypes;
-  set battleTypes(List<ElementalType> value) => _battleTypes = value;
-
-  // Helper for stat stage multipliers (e.g., +1 stage is 1.5x)
-  static double _getStatStageMultiplier(int stage) {
-    if (stage > 0) return (2 + stage) / 2;
-    if (stage < 0) return 2 / (2 + stage.abs());
-    return 1.0;
-  }
-
-  double _getAbilityStatMultiplier(String statName) {
-    double totalMultiplier = 1.0;
-
-    for (final ability in abilities) {
-      if (ability.trigger != AbilityTrigger.onCalculateStat ||
-          ability.targetStat != statName) {
-        continue;
-      }
-
-      // Check conditions
-      bool conditionMet = true;
-      for (final condition in ability.conditions) {
-        if (condition == 'statused' &&
-            statusEffect.type == StatusEffectType.none)
-          conditionMet = false;
-        if (condition == 'hp_below_30' && health / maxHealth > 0.3)
-          conditionMet = false;
-        if (condition == 'weather_sandstorm' &&
-            !(BattleManager.currentWeatherGlobal?.weather == Weather.sandstorm))
-          conditionMet = false;
-        if (condition == 'weather_sun' &&
-            !(BattleManager.currentWeatherGlobal?.weather == Weather.heatwave))
-          conditionMet = false;
-        if (condition == 'weather_rain' &&
-            !(BattleManager.currentWeatherGlobal?.weather == Weather.rain))
-          conditionMet = false;
-        if (condition == 'weather_snow' &&
-            !(BattleManager.currentWeatherGlobal?.weather == Weather.snow ||
-                BattleManager.currentWeatherGlobal?.weather ==
-                    Weather.blizzard))
-          conditionMet = false;
-      }
-
-      if (conditionMet) {
-        totalMultiplier *= ability.magnitude;
-      }
-    }
-
-    return totalMultiplier;
-  }
-
-  int get currentAttack {
-    double attack =
-        (isRogueMode
-                ? organism.effectiveAttack
-                : organism.getAttack(atLevel: 50))
-            .toDouble();
-    attack *= _getStatStageMultiplier(attackStage);
-    attack *= _getAbilityStatMultiplier('attack');
-
-    // Apply multiple status modifiers
-    for (final se in statusEffects) {
-      if (se.type == StatusEffectType.burn) {
-        attack *= 0.5;
-      }
-      if (se.type == StatusEffectType.fear) {
-        attack *= 0.9;
-      }
-    }
-
-    // Talisman boost
-    if (organism.equippedTalisman?.effect.type ==
-        TalismanEffectType.attackBoost) {
-      attack *= organism.equippedTalisman!.effect.magnitude;
-    }
-
-    return attack.round();
-  }
-
-  int get currentDefense {
-    int baseDefense = isRogueMode
-        ? organism.effectiveDefense
-        : organism.getDefense(atLevel: 50);
-    double defense = (baseDefense * _getStatStageMultiplier(defenseStage))
-        .toDouble();
-    defense *= _getAbilityStatMultiplier('defense');
-
-    // Apply multiple status modifiers
-    for (final se in statusEffects) {
-      if (se.type == StatusEffectType.fear) {
-        defense *= 0.9;
-      }
-    }
-
-    // Talisman boost
-    if (organism.equippedTalisman?.effect.type ==
-        TalismanEffectType.defenseBoost) {
-      defense *= organism.equippedTalisman!.effect.magnitude;
-    }
-
-    return defense.round();
-  }
-
-  int get currentPower {
-    double power =
-        (isRogueMode ? organism.effectivePower : organism.getPower(atLevel: 50))
-            .toDouble();
-    power *= _getStatStageMultiplier(powerStage);
-    power *= _getAbilityStatMultiplier('power');
-
-    // Apply multiple status modifiers
-    for (final se in statusEffects) {
-      if (se.type == StatusEffectType.fear) {
-        power *= 0.9;
-      }
-    }
-
-    return power.round();
-  }
-
-  int get currentResistance {
-    int baseRes = isRogueMode
-        ? organism.effectiveResistance
-        : organism.getResistance(atLevel: 50);
-    double resistance = (baseRes * _getStatStageMultiplier(resistanceStage))
-        .toDouble();
-    resistance *= _getAbilityStatMultiplier('resistance');
-
-    // Apply multiple status modifiers
-    for (final se in statusEffects) {
-      if (se.type == StatusEffectType.fear) {
-        resistance *= 0.9;
-      }
-    }
-
-    // Talisman boost
-    if (organism.equippedTalisman?.effect.type ==
-        TalismanEffectType.resistanceStatBoost) {
-      resistance *= organism.equippedTalisman!.effect.magnitude;
-    }
-
-    return resistance.round();
-  }
-
-  int get currentSpeed {
-    double speed =
-        (isRogueMode ? organism.effectiveSpeed : organism.getSpeed(atLevel: 50))
-            .toDouble();
-    speed *= _getAbilityStatMultiplier('speed');
-
-    // Paralysis is now checked in the loop below
-
-    // Talisman boost
-    if (organism.equippedTalisman?.effect.type ==
-        TalismanEffectType.speedBoost) {
-      speed *= organism.equippedTalisman!.effect.magnitude;
-    }
-
-    speed *= _getStatStageMultiplier(speedStage);
-
-    // Apply multiple status modifiers
-    for (final se in statusEffects) {
-      if (se.type == StatusEffectType.fear) {
-        speed *= 0.9;
-      }
-      if (se.type == StatusEffectType.paralysis) {
-        speed *= 0.25;
-      }
-    }
-
-    return speed.round();
-  }
-
-  /// Use the captured organism's calculated max HP (IVs included), not base stat.
-  int get maxHealth {
-    int baseMax = isRogueMode
-        ? organism.maxHealth
-        : organism.getMaxHealth(atLevel: 50);
-    double hp = baseMax.toDouble();
-
-    // Talisman boost
-    if (organism.equippedTalisman?.effect.type ==
-        TalismanEffectType.healthBoost) {
-      hp *= organism.equippedTalisman!.effect.magnitude;
-    }
-
-    return hp.round();
-  }
-}
-
-// --- Battle Turn Data ---
-class BattleTurn {
-  final int turnNumber;
-  final List<String> logEntries = [];
-
-  BattleTurn(this.turnNumber);
-}
-
-class AbilityNotification {
-  final String animalName;
-  final String abilityName;
-  final bool isPlayer;
-
-  AbilityNotification({
-    required this.animalName,
-    required this.abilityName,
-    required this.isPlayer,
-  });
-}
-
 // --- BattleManager: The Core State Machine ---
-class BattleManager extends ChangeNotifier {
+class BattleManager extends ChangeNotifier with AbilityHelpers {
   final List<CapturedOrganism> playerTeam;
   int currentPlayerIndex = 0;
   final CapturedOrganism opponentOrganism;
@@ -844,6 +542,7 @@ class BattleManager extends ChangeNotifier {
       move = attacker.chargingMove!;
       attacker.chargingMove = null;
       attacker.semiInvulnerable = null;
+      attacker.isInvulnerable = false; // Clear invulnerability when attacking
     } else if (move.isMultiTurn) {
       final chargeEffect = move.effects.firstWhere(
         (e) =>
@@ -853,13 +552,35 @@ class BattleManager extends ChangeNotifier {
       );
 
       if (chargeEffect.type != MoveEffectType.none) {
-        _addToLog(
-          '${attacker.organism.baseOrganism.name} ${move.name == 'Dig' ? 'burrowed underground!' : 'is preparing an attack!'}',
-        );
+        String chargeMessage;
+        switch (move.name) {
+          case 'Dig':
+            chargeMessage =
+                '${attacker.organism.baseOrganism.name} burrowed underground!';
+            break;
+          case 'Dive':
+            chargeMessage =
+                '${attacker.organism.baseOrganism.name} dove underwater!';
+            break;
+          case 'Fly':
+            chargeMessage =
+                '${attacker.organism.baseOrganism.name} flew up high!';
+            break;
+          case 'Bounce':
+            chargeMessage =
+                '${attacker.organism.baseOrganism.name} bounced into the air!';
+            break;
+          default:
+            chargeMessage =
+                '${attacker.organism.baseOrganism.name} is preparing an attack!';
+        }
+        _addToLog(chargeMessage);
         attacker.chargingMove = move;
         attacker.chargeStatChanges = chargeEffect.stat;
         if (chargeEffect.type == MoveEffectType.semiInvulnerable) {
           attacker.semiInvulnerable = chargeEffect.stat;
+          attacker.isInvulnerable =
+              true; // Make user invulnerable during charge
         }
         notifyListeners();
         await Future.delayed(const Duration(milliseconds: 3000));
@@ -903,6 +624,18 @@ class BattleManager extends ChangeNotifier {
 
     // Weather-based accuracy modifier
     accuracy = (accuracy * currentWeather.accuracyModifier).round();
+
+    // Accuracy stage modifier
+    if (attacker.accuracyStage != 0) {
+      double stageMultiplier = 1.0;
+      // Standard Pokemon accuracy formula: (3+stage)/3 for positive, 3/(3-stage) for negative
+      if (attacker.accuracyStage > 0) {
+        stageMultiplier = (3 + attacker.accuracyStage) / 3.0;
+      } else {
+        stageMultiplier = 3.0 / (3 - attacker.accuracyStage);
+      }
+      accuracy = (accuracy * stageMultiplier).round();
+    }
 
     // Stealth evasion (50% chance of getting hit over opponents actual accuracy)
     if (defender.statusEffects.any(
@@ -1264,7 +997,7 @@ class BattleManager extends ChangeNotifier {
           .toList();
       _addToLog('${attacker.organism.name} is no longer hidden!');
       notifyListeners();
-      await Future.delayed(const Duration(milliseconds: 2000));
+      await Future.delayed(const Duration(milliseconds: 3000));
     }
 
     bool defenderHadStealth = defender.statusEffects.any(
@@ -1276,7 +1009,7 @@ class BattleManager extends ChangeNotifier {
           .toList();
       _addToLog('${defender.organism.name} was revealed!');
       notifyListeners();
-      await Future.delayed(const Duration(milliseconds: 2000));
+      await Future.delayed(const Duration(milliseconds: 3000));
     }
   }
 
@@ -1328,21 +1061,26 @@ class BattleManager extends ChangeNotifier {
       );
       notifyListeners();
       await Future.delayed(const Duration(milliseconds: 3000));
-      // Stun is cleared immediately after skipping one turn
-      org.clearStatusEffects(); // Clear all statuses, or just stun? For now, clear all.
+      // Remove only the stun status
+      org.statusEffects = org.statusEffects
+          .where((se) => se.type != StatusEffectType.stun)
+          .toList();
+      _addToLog('${org.organism.baseOrganism.name} recovered from Stun!');
+      notifyListeners();
+      await Future.delayed(const Duration(milliseconds: 3000));
       return false;
     }
     if (org.statusEffect.type == StatusEffectType.confusion) {
       _addToLog('${org.organism.baseOrganism.name} is confused!');
       notifyListeners();
-      await Future.delayed(const Duration(milliseconds: 2000));
+      await Future.delayed(const Duration(milliseconds: 3000));
       if (Random().nextDouble() < 0.33) {
         _addToLog('It hurt itself in its confusion!');
         final selfDamage = (org.maxHealth * 0.15).round();
         org.health -= selfDamage;
         org.health = org.health.clamp(0, org.maxHealth);
         notifyListeners();
-        await Future.delayed(const Duration(milliseconds: 2800));
+        await Future.delayed(const Duration(milliseconds: 3000));
         return false;
       }
     }
@@ -1366,7 +1104,7 @@ class BattleManager extends ChangeNotifier {
           '${org.organism.baseOrganism.name} is paralyzed! It can\'t move!',
         );
         notifyListeners();
-        await Future.delayed(const Duration(milliseconds: 2200));
+        await Future.delayed(const Duration(milliseconds: 3000));
         return false;
       }
     }
@@ -1377,7 +1115,7 @@ class BattleManager extends ChangeNotifier {
     if (!isCounter) {
       _addToLog('Opponent\'s turn!');
       notifyListeners();
-      await Future.delayed(const Duration(milliseconds: 1200));
+      await Future.delayed(const Duration(milliseconds: 3000));
     }
 
     // Simple AI: Select a random move from its specific list
@@ -1417,6 +1155,7 @@ class BattleManager extends ChangeNotifier {
         case MoveEffectType.statusPoison:
         case MoveEffectType.statusFear:
         case MoveEffectType.statusMarked:
+        case MoveEffectType.statusStealth:
           // --- 1. Consolidate Status Mapping ---
           StatusEffectType statusType;
           switch (effect.type) {
@@ -1512,7 +1251,9 @@ class BattleManager extends ChangeNotifier {
               duration = 3 + Random().nextInt(3);
             } else if (statusType == StatusEffectType.fear ||
                 statusType == StatusEffectType.marked) {
-              duration = 2; // Lasts for next 2 turns
+              duration = effect.value > 0
+                  ? effect.value
+                  : 2; // Use move value or default to 2
             } else if (effect.value > 0) {
               duration = effect.value; // Use move-defined duration if present
             }
@@ -1676,6 +1417,8 @@ class BattleManager extends ChangeNotifier {
       oldStage = target.resistanceStage;
     else if (statName == 'speed')
       oldStage = target.speedStage;
+    else if (statName == 'accuracy')
+      oldStage = target.accuracyStage;
 
     if (statName == 'attack')
       target.attackStage = (target.attackStage + value).clamp(-6, 6);
@@ -1687,6 +1430,33 @@ class BattleManager extends ChangeNotifier {
       target.resistanceStage = (target.resistanceStage + value).clamp(-6, 6);
     else if (statName == 'speed')
       target.speedStage = (target.speedStage + value).clamp(-6, 6);
+    else if (statName == 'accuracy')
+      target.accuracyStage = (target.accuracyStage + value).clamp(-6, 6);
+
+    // Log Pokemon-style stat change message
+    if (value != 0) {
+      final String displayStatName = statName.toUpperCase();
+      final bool increased = value > 0;
+      final String direction = increased ? 'rose' : 'fell';
+      final int absValue = value.abs();
+
+      String stageText;
+      if (absValue == 1) {
+        stageText = '';
+      } else if (absValue == 2) {
+        stageText = ' sharply';
+      } else if (absValue >= 3) {
+        stageText = ' drastically';
+      } else {
+        stageText = '';
+      }
+
+      _addToLog(
+        '${target.organism.baseOrganism.name}\'s $displayStatName $direction$stageText!',
+      );
+      notifyListeners();
+      await Future.delayed(const Duration(milliseconds: 3000));
+    }
 
     // --- Ability Trigger: onStatLoss (Reaction e.g. Defiant) ---
     if (value < 0) {
@@ -1829,6 +1599,11 @@ class BattleManager extends ChangeNotifier {
       }
     }
 
+    // Actually update the status effects list
+    if (stateChanged) {
+      target.statusEffects = updatedEffects;
+    }
+
     if (stateChanged || updatedEffects.length != target.statusEffects.length) {
       target.organism.statusEffects = updatedEffects;
       target.organism.statusEffects = updatedEffects; // Sync
@@ -1873,6 +1648,7 @@ class BattleManager extends ChangeNotifier {
     }
 
     if (result == BattleResult.capture) {
+      _cleanupStatusEffects();
       currentState = BattleState.battleEnd;
       notifyListeners();
     } else if (currentState == BattleState.opponentTurn) {
@@ -1911,6 +1687,7 @@ class BattleManager extends ChangeNotifier {
     if (Random().nextDouble() < runChance.clamp(0.1, 1.0)) {
       _result = BattleResult.fled;
       _addToLog('You successfully ran away!');
+      _cleanupStatusEffects();
       currentState = BattleState.battleEnd;
       notifyListeners();
     } else {
@@ -2027,6 +1804,7 @@ class BattleManager extends ChangeNotifier {
       _addToLog(
         'Your ${player.organism.baseOrganism.name} fainted! Your whole team is defeated.',
       );
+      _cleanupStatusEffects();
       currentState = BattleState.battleEnd;
       notifyListeners();
       return true;
@@ -2052,6 +1830,7 @@ class BattleManager extends ChangeNotifier {
         _addToLog(
           'Opponent\'s ${opponent.organism.baseOrganism.name} fainted! You won the arena battle!',
         );
+        _cleanupStatusEffects();
         currentState = BattleState.battleEnd;
         onVictory?.call();
         notifyListeners();
@@ -2076,6 +1855,7 @@ class BattleManager extends ChangeNotifier {
         );
       }
 
+      _cleanupStatusEffects();
       currentState = BattleState.battleEnd;
       onVictory?.call();
       notifyListeners();
@@ -2213,11 +1993,12 @@ class BattleManager extends ChangeNotifier {
 
     return DamageResult(damageCalc.round(), typeMod, isCrit);
   }
-}
 
-class DamageResult {
-  final int damage;
-  final double typeMultiplier;
-  final bool isCrit;
-  const DamageResult(this.damage, this.typeMultiplier, this.isCrit);
+  void _cleanupStatusEffects() {
+    if (!isRogueMode) {
+      for (var captured in playerTeam) {
+        captured.statusEffects = [];
+      }
+    }
+  }
 }
