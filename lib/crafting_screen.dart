@@ -40,11 +40,7 @@ class _CraftingScreenState extends State<CraftingScreen> {
           ),
         ),
         body: const TabBarView(
-          children: [
-            CraftingTab(),
-            InventoryTab(),
-            EquipmentTab(),
-          ],
+          children: [CraftingTab(), InventoryTab(), EquipmentTab()],
         ),
       ),
     );
@@ -95,7 +91,11 @@ class CraftingTab extends StatelessWidget {
                       ),
                     ),
                     if (canCraft)
-                      const Icon(Icons.check_circle, color: Colors.green, size: 20),
+                      const Icon(
+                        Icons.check_circle,
+                        color: Colors.green,
+                        size: 20,
+                      ),
                   ],
                 ),
                 const SizedBox(height: 8),
@@ -106,7 +106,11 @@ class CraftingTab extends StatelessWidget {
                 const Divider(color: Colors.white24, height: 24),
                 const Text(
                   'MATERIALS:',
-                  style: TextStyle(fontFamily: 'PressStart2P', fontSize: 10, color: Colors.white54),
+                  style: TextStyle(
+                    fontFamily: 'PressStart2P',
+                    fontSize: 10,
+                    color: Colors.white54,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 ...recipe.requiredLoot.entries.map((entry) {
@@ -120,7 +124,7 @@ class CraftingTab extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          '- ${loot?.name ?? entry.key}',
+                          '- ${loot.name ?? entry.key}',
                           style: TextStyle(
                             color: hasEnough ? Colors.white : Colors.redAccent,
                             fontSize: 12,
@@ -144,7 +148,9 @@ class CraftingTab extends StatelessWidget {
                     onPressed: canCraft
                         ? () async {
                             final success = await userState.craftTalisman(
-                                recipe.resultTalismanId, recipe.requiredLoot);
+                              recipe.resultTalismanId,
+                              recipe.requiredLoot,
+                            );
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
@@ -153,19 +159,29 @@ class CraftingTab extends StatelessWidget {
                                         ? 'Crafted ${talisman.name}!'
                                         : 'Crafting failed!',
                                   ),
-                                  backgroundColor: success ? Colors.green : Colors.red,
+                                  backgroundColor: success
+                                      ? Colors.green
+                                      : Colors.red,
                                 ),
                               );
                             }
                           }
                         : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: canCraft ? Colors.green[800] : Colors.grey[800],
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                      backgroundColor: canCraft
+                          ? Colors.green[800]
+                          : Colors.grey[800],
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
                     ),
                     child: const Text(
                       'CRAFT',
-                      style: TextStyle(fontFamily: 'PressStart2P', fontSize: 12, color: Colors.white),
+                      style: TextStyle(
+                        fontFamily: 'PressStart2P',
+                        fontSize: 12,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
@@ -202,16 +218,22 @@ class InventoryTab extends StatelessWidget {
       itemBuilder: (context, index) {
         final entry = lootItems[index];
         final loot = LootItem.findById(entry.key);
-        if (loot == null) return const SizedBox.shrink();
 
         return Card(
           color: Colors.black.withOpacity(0.3),
           margin: const EdgeInsets.only(bottom: 8),
           child: ListTile(
-            leading: const Icon(Icons.inventory_2, color: AppColors.highlightColor),
+            leading: const Icon(
+              Icons.inventory_2,
+              color: AppColors.highlightColor,
+            ),
             title: Text(
               loot.name,
-              style: const TextStyle(fontFamily: 'PressStart2P', fontSize: 12, color: Colors.white),
+              style: const TextStyle(
+                fontFamily: 'PressStart2P',
+                fontSize: 12,
+                color: Colors.white,
+              ),
             ),
             trailing: Text(
               'x${entry.value}',
@@ -264,7 +286,10 @@ class EquipmentTab extends StatelessWidget {
                   backgroundColor: AppColors.secondaryButtonColor,
                   child: Text(
                     organism.name[0],
-                    style: const TextStyle(fontFamily: 'PressStart2P', color: Colors.white),
+                    style: const TextStyle(
+                      fontFamily: 'PressStart2P',
+                      color: Colors.white,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -274,28 +299,45 @@ class EquipmentTab extends StatelessWidget {
                     children: [
                       Text(
                         organism.name,
-                        style: const TextStyle(fontFamily: 'PressStart2P', fontSize: 12, color: Colors.white),
+                        style: const TextStyle(
+                          fontFamily: 'PressStart2P',
+                          fontSize: 12,
+                          color: Colors.white,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        talisman != null ? 'EQUIPPED: ${talisman.name}' : 'NO EQUIPMENT',
+                        talisman != null
+                            ? 'EQUIPPED: ${talisman.name}'
+                            : 'NO EQUIPMENT',
                         style: TextStyle(
                           fontSize: 10,
-                          color: talisman != null ? AppColors.highlightColor : Colors.white38,
+                          color: talisman != null
+                              ? AppColors.highlightColor
+                              : Colors.white38,
                         ),
                       ),
                     ],
                   ),
                 ),
                 ElevatedButton(
-                  onPressed: () => _showTalismanSelector(context, userState, index, organism),
+                  onPressed: () => _showTalismanSelector(
+                    context,
+                    userState,
+                    index,
+                    organism,
+                  ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryButtonColor,
                     padding: const EdgeInsets.all(8),
                   ),
                   child: Text(
                     talisman != null ? 'CHANGE' : 'EQUIP',
-                    style: const TextStyle(fontFamily: 'PressStart2P', fontSize: 8, color: Colors.white),
+                    style: const TextStyle(
+                      fontFamily: 'PressStart2P',
+                      fontSize: 8,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ],
@@ -306,9 +348,14 @@ class EquipmentTab extends StatelessWidget {
     );
   }
 
-  void _showTalismanSelector(BuildContext context, UserState userState, int index, CapturedOrganism organism) {
+  void _showTalismanSelector(
+    BuildContext context,
+    UserState userState,
+    int index,
+    CapturedOrganism organism,
+  ) {
     final craftedTalismans = userState.currentUser?.craftedTalismans ?? [];
-    
+
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.secondaryButtonColor,
@@ -320,13 +367,24 @@ class EquipmentTab extends StatelessWidget {
             children: [
               const Text(
                 'SELECT TALISMAN',
-                style: TextStyle(fontFamily: 'PressStart2P', fontSize: 14, color: AppColors.highlightColor),
+                style: TextStyle(
+                  fontFamily: 'PressStart2P',
+                  fontSize: 14,
+                  color: AppColors.highlightColor,
+                ),
               ),
               const SizedBox(height: 16),
               if (organism.equippedTalisman != null)
                 ListTile(
                   leading: const Icon(Icons.remove_circle, color: Colors.red),
-                  title: const Text('UNEQUIP', style: TextStyle(fontFamily: 'PressStart2P', fontSize: 12, color: Colors.white)),
+                  title: const Text(
+                    'UNEQUIP',
+                    style: TextStyle(
+                      fontFamily: 'PressStart2P',
+                      fontSize: 12,
+                      color: Colors.white,
+                    ),
+                  ),
                   onTap: () async {
                     await userState.equipTalisman(index, null);
                     if (ctx.mounted) Navigator.pop(ctx);
@@ -343,11 +401,29 @@ class EquipmentTab extends StatelessWidget {
               else
                 ...craftedTalismans.toSet().map((tid) {
                   final t = Talisman.findById(tid);
-                  final count = craftedTalismans.where((id) => id == tid).length;
+                  final count = craftedTalismans
+                      .where((id) => id == tid)
+                      .length;
                   return ListTile(
-                    leading: const Icon(Icons.auto_awesome, color: AppColors.highlightColor),
-                    title: Text(t?.name ?? tid, style: const TextStyle(fontFamily: 'PressStart2P', fontSize: 12, color: Colors.white)),
-                    subtitle: Text('Count: x$count', style: const TextStyle(color: Colors.white54, fontSize: 10)),
+                    leading: const Icon(
+                      Icons.auto_awesome,
+                      color: AppColors.highlightColor,
+                    ),
+                    title: Text(
+                      t?.name ?? tid,
+                      style: const TextStyle(
+                        fontFamily: 'PressStart2P',
+                        fontSize: 12,
+                        color: Colors.white,
+                      ),
+                    ),
+                    subtitle: Text(
+                      'Count: x$count',
+                      style: const TextStyle(
+                        color: Colors.white54,
+                        fontSize: 10,
+                      ),
+                    ),
                     onTap: () async {
                       await userState.equipTalisman(index, tid);
                       if (ctx.mounted) Navigator.pop(ctx);

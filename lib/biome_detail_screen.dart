@@ -622,7 +622,7 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
     return Scaffold(
       appBar: AppBar(
         // The title now displays only the biome name
-        title: Text('${widget.biomeName.toUpperCase()}'),
+        title: Text(widget.biomeName.toUpperCase()),
         backgroundColor: _biomeDarkColor,
         titleTextStyle: TextStyle(
           color: _biomeHighlightColor,
@@ -1110,7 +1110,7 @@ class __OrganismSpriteDisplayState extends State<_OrganismSpriteDisplay> {
 // This is required for the stamina bar's onTap functionality.
 // ----------------------------------------------------------------------
 class _StatsModalContent extends StatelessWidget {
-  const _StatsModalContent({super.key});
+  const _StatsModalContent();
 
   Widget _buildStatRow(String label, String value) {
     return Padding(

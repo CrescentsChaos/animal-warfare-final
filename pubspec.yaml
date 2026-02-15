@@ -86,6 +86,7 @@ flutter:
     - assets/biomes/
     - assets/npc/
     - assets/audio/ # <<< CRITICAL: This line must be present and correctly indented!
+    - assets/audio/effects/
     # If your placeholder is at the root of assets, include it too:
     - assets/placeholder_400x200.png 
     - assets/sprites/

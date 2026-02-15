@@ -13,6 +13,7 @@ import 'package:animal_warfare/models/elemental_type.dart';
 import 'package:animal_warfare/game/biome_weather.dart';
 import 'package:animal_warfare/game/battle_models.dart';
 import 'package:animal_warfare/game/ability_helpers.dart';
+import 'package:animal_warfare/services/audio_service.dart';
 
 // --- Enums ---
 enum BattleState {
@@ -47,7 +48,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   late List<Move> opponentMoves;
 
   // New Battle State
+  @override
   WeatherEffect currentWeather = const WeatherEffect(weather: Weather.none);
+  @override
   TerrainEffect currentTerrain = const TerrainEffect(terrain: Terrain.none);
 
   static WeatherEffect? currentWeatherGlobal;
@@ -84,6 +87,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   // Callbacks for UI
   Function(BattleOrganism)? onAttack;
   VoidCallback? onVictory;
+
+  // Audio service for battle sounds and music
+  final AudioService _audioService = AudioService();
 
   void _addToLog(String message) {
     battleLog = message;
@@ -154,7 +160,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     currentOpponentIndex = oppIdx != -1 ? oppIdx : 0;
 
     player = BattleOrganism(playerOrganism, isRogueMode: isRogueMode);
-    opponent = BattleOrganism(this.opponentOrganism, isRogueMode: isRogueMode);
+    opponent = BattleOrganism(opponentOrganism, isRogueMode: isRogueMode);
 
     // Initialize move lists
     playerMoves = _getOrganismMoves(playerOrganism);
@@ -193,6 +199,10 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     _addToLog(
       'A wild ${opponent.organism.name} appeared! Go, ${player.organism.name}!',
     );
+
+    // Start battle music
+    await _audioService.playMusic('audio/battle_default.mp3');
+
     notifyListeners();
     await Future.delayed(const Duration(milliseconds: 3000));
 
@@ -227,13 +237,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     await _checkEntranceAbility(opponent, player, biomeName);
 
     // 2. Speed Check
-    if (player.currentSpeed < opponent.currentSpeed) {
-      _appendToLog(
-        '\n${opponent.organism.name} is faster and will attack first!',
-      );
-      notifyListeners();
-      await Future.delayed(const Duration(milliseconds: 3000));
-    }
+    // Removed "Opponent is faster" notification as per user request.
   }
 
   Future<void> _checkEntranceAbility(
@@ -249,9 +253,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         case AbilityEffectType.weatherChange:
           triggered = true;
           await _notifyAbilityTrigger(user, ability);
-          if (ability.value == 'rain')
+          if (ability.value == 'rain') {
             _setWeather(Weather.rain);
-          else if (ability.value == 'sun')
+          } else if (ability.value == 'sun')
             _setWeather(Weather.heatwave);
           else if (ability.value == 'hail')
             _setWeather(Weather.blizzard);
@@ -261,9 +265,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         case AbilityEffectType.terrainChange:
           triggered = true;
           await _notifyAbilityTrigger(user, ability);
-          if (ability.value == 'electric')
+          if (ability.value == 'electric') {
             _setTerrain(Terrain.electric);
-          else if (ability.value == 'grassy')
+          } else if (ability.value == 'grassy')
             _setTerrain(Terrain.grassy);
           else if (ability.value == 'misty')
             _setTerrain(Terrain.misty);
@@ -524,6 +528,17 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       }
       if (_checkBattleEnd()) return;
       if (currentState == BattleState.waitingForPlayerSwitch) return;
+
+      // START FIX: Prevent attack on new animal
+      if (opponentJustSwitched) {
+        _addToLog(
+          '${opponent.organism.baseOrganism.name} enters the battlefield!',
+        );
+        notifyListeners();
+        await Future.delayed(const Duration(milliseconds: 2000));
+        return;
+      }
+      // END FIX
     }
 
     // 3. Finalize Turn
@@ -602,6 +617,23 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     } else {
       _addToLog('${attacker.organism.baseOrganism.name} used ${move.name}!');
     }
+
+    // Wait 1 second before playing the sound effect as requested
+    await Future.delayed(const Duration(seconds: 1));
+
+    // Play move sound effect
+    String soundPath =
+        move.soundEffect ??
+        _audioService.getDefaultSoundEffect(
+          move.category.toString().split('.').last,
+        );
+    await _audioService.playSound(soundPath);
+
+    // Switch battle music if move has custom music
+    if (move.battleMusic != null && move.battleMusic!.isNotEmpty) {
+      await _audioService.playMusic(move.battleMusic!);
+    }
+
     notifyListeners();
     // Trigger attack animation
     onAttack?.call(attacker);
@@ -618,30 +650,41 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     // 1. Accuracy Check (Blindness + Weather affects accuracy)
     int accuracy = move.accuracy;
-    if (attacker.statusEffect.type == StatusEffectType.blind) {
-      accuracy = (accuracy * 0.75).round(); // Reduce accuracy by 25% if blinded
-    }
 
-    // Weather-based accuracy modifier
-    accuracy = (accuracy * currentWeather.accuracyModifier).round();
+    // Guaranteed hit if target is Marked
+    bool targetIsMarked = defender.statusEffects.any(
+      (se) => se.type == StatusEffectType.marked,
+    );
 
-    // Accuracy stage modifier
-    if (attacker.accuracyStage != 0) {
-      double stageMultiplier = 1.0;
-      // Standard Pokemon accuracy formula: (3+stage)/3 for positive, 3/(3-stage) for negative
-      if (attacker.accuracyStage > 0) {
-        stageMultiplier = (3 + attacker.accuracyStage) / 3.0;
-      } else {
-        stageMultiplier = 3.0 / (3 - attacker.accuracyStage);
+    if (targetIsMarked) {
+      accuracy = 100;
+    } else {
+      if (attacker.statusEffect.type == StatusEffectType.blind) {
+        accuracy = (accuracy * 0.75)
+            .round(); // Reduce accuracy by 25% if blinded
       }
-      accuracy = (accuracy * stageMultiplier).round();
-    }
 
-    // Stealth evasion (50% chance of getting hit over opponents actual accuracy)
-    if (defender.statusEffects.any(
-      (se) => se.type == StatusEffectType.stealth,
-    )) {
-      accuracy = (accuracy * 0.5).round();
+      // Weather-based accuracy modifier
+      accuracy = (accuracy * currentWeather.accuracyModifier).round();
+
+      // Accuracy stage modifier
+      if (attacker.accuracyStage != 0) {
+        double stageMultiplier = 1.0;
+        // Standard Pokemon accuracy formula: (3+stage)/3 for positive, 3/(3-stage) for negative
+        if (attacker.accuracyStage > 0) {
+          stageMultiplier = (3 + attacker.accuracyStage) / 3.0;
+        } else {
+          stageMultiplier = 3.0 / (3 - attacker.accuracyStage);
+        }
+        accuracy = (accuracy * stageMultiplier).round();
+      }
+
+      // Stealth evasion (50% chance of getting hit over opponents actual accuracy)
+      if (defender.statusEffects.any(
+        (se) => se.type == StatusEffectType.stealth,
+      )) {
+        accuracy = (accuracy * 0.5).round();
+      }
     }
 
     if (Random().nextInt(100) >= accuracy) {
@@ -660,21 +703,29 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     }
 
     if (defender.isProtected) {
-      _addToLog('${defender.organism.baseOrganism.name} protected itself!');
-      if (move.name == 'Baneful Bunker' ||
-          (move.name != 'Protect' &&
-              attacker.organism.baseOrganism.moves.contains(
-                'Baneful Bunker',
-              ))) {
-        if (move.baseDamage > 0) {
-          await _applyMoveEffect(defender, attacker, [
-            const MoveEffect(type: MoveEffectType.statusPoison),
-          ], move);
+      // Allow self-targeting status moves to bypass Protect
+      bool isSelfStatus =
+          move.category == MoveCategory.status &&
+          (move.baseDamage == 0 &&
+              !move.effects.any((e) => e.target == 'opponent'));
+
+      if (!isSelfStatus) {
+        _addToLog('${defender.organism.baseOrganism.name} protected itself!');
+        if (move.name == 'Baneful Bunker' ||
+            (move.name != 'Protect' &&
+                attacker.organism.baseOrganism.moves.contains(
+                  'Baneful Bunker',
+                ))) {
+          if (move.baseDamage > 0) {
+            await _applyMoveEffect(defender, attacker, [
+              const MoveEffect(type: MoveEffectType.statusPoison),
+            ], move);
+          }
         }
+        notifyListeners();
+        await Future.delayed(const Duration(milliseconds: 3000));
+        return;
       }
-      notifyListeners();
-      await Future.delayed(const Duration(milliseconds: 3000));
-      return;
     }
 
     // Flag-based fail check
@@ -702,9 +753,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     // Allow the move to override EXACTLY which stat it uses for the ATTACKER
     if (move.damageStat.isNotEmpty) {
-      if (move.damageStat == 'attack')
+      if (move.damageStat == 'attack') {
         effectiveAttackerAtk = attacker.currentAttack;
-      else if (move.damageStat == 'power')
+      } else if (move.damageStat == 'power')
         effectiveAttackerAtk = attacker.currentPower;
       else if (move.damageStat == 'defense')
         effectiveAttackerAtk = attacker.currentDefense;
@@ -896,8 +947,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
               if (cond == 'crit' && !isCrit) conditionMet = false;
               if (cond == 'hp_below_50' &&
                   (defender.health / defender.maxHealth >= 0.5 ||
-                      oldHealth / defender.maxHealth < 0.5))
+                      oldHealth / defender.maxHealth < 0.5)) {
                 conditionMet = false;
+              }
               if (cond == 'contact' && !move.isContact) conditionMet = false;
             }
 
@@ -974,10 +1026,17 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         );
 
         if (typeMod > 1.0) _addToLog('It\'s super effective!');
-        if (typeMod < 1.0 && typeMod > 0)
+        if (typeMod < 1.0 && typeMod > 0) {
           _addToLog('It\'s not very effective...');
+        }
         if (typeMod == 0) _addToLog('It had no effect!');
         if (isCrit) _addToLog('A critical hit!');
+
+        // Determine damage percentage
+        final damagePercent = (finalDamage / defender.maxHealth * 100)
+            .round()
+            .clamp(1, 100);
+        _appendToLog(' ($damagePercent%)');
 
         notifyListeners();
         await Future.delayed(const Duration(milliseconds: 3000));
@@ -987,19 +1046,22 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       await _applyMoveEffect(attacker, defender, move.effects, move);
     }
 
-    // Stealth removal
+    // Stealth removal (attacker)
+    // Attacking reveals the attacker (unless it's a status move)
     bool attackerHadStealth = attacker.statusEffects.any(
       (se) => se.type == StatusEffectType.stealth,
     );
-    if (attackerHadStealth) {
+    if (attackerHadStealth && move.category != MoveCategory.status) {
       attacker.statusEffects = attacker.statusEffects
           .where((se) => se.type != StatusEffectType.stealth)
           .toList();
-      _addToLog('${attacker.organism.name} is no longer hidden!');
+      _addToLog('${attacker.organism.baseOrganism.name} was revealed!');
       notifyListeners();
       await Future.delayed(const Duration(milliseconds: 3000));
     }
 
+    // Stealth removal (defender)
+    // Taking damage from an attack reveals the defender
     bool defenderHadStealth = defender.statusEffects.any(
       (se) => se.type == StatusEffectType.stealth,
     );
@@ -1007,7 +1069,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       defender.statusEffects = defender.statusEffects
           .where((se) => se.type != StatusEffectType.stealth)
           .toList();
-      _addToLog('${defender.organism.name} was revealed!');
+      _addToLog('${defender.organism.baseOrganism.name} was revealed!');
       notifyListeners();
       await Future.delayed(const Duration(milliseconds: 3000));
     }
@@ -1240,9 +1302,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             // Default durations: Major (Indefinite), Volatile (Fixed)
             int duration = -1; // Default to indefinite for major statuses
 
-            if (statusType == StatusEffectType.sleep)
+            if (statusType == StatusEffectType.sleep) {
               duration = 2 + Random().nextInt(4); // 2-5 turns
-            else if (statusType == StatusEffectType.stun)
+            } else if (statusType == StatusEffectType.stun)
               duration = 1;
             else if (statusType == StatusEffectType.regen ||
                 statusType == StatusEffectType.confusion ||
@@ -1270,9 +1332,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           }
           break;
         case MoveEffectType.weather:
-          if (effect.stat == 'rain')
+          if (effect.stat == 'rain') {
             _setWeather(Weather.rain);
-          else if (effect.stat == 'sun')
+          } else if (effect.stat == 'sun')
             _setWeather(Weather.heatwave);
           else if (effect.stat == 'hail')
             _setWeather(Weather.blizzard);
@@ -1280,9 +1342,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             _setWeather(Weather.sandstorm);
           break;
         case MoveEffectType.terrain:
-          if (effect.stat == 'electric')
+          if (effect.stat == 'electric') {
             _setTerrain(Terrain.electric);
-          else if (effect.stat == 'grassy')
+          } else if (effect.stat == 'grassy')
             _setTerrain(Terrain.grassy);
           else if (effect.stat == 'misty')
             _setTerrain(Terrain.misty);
@@ -1291,9 +1353,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           break;
         case MoveEffectType.statChange:
           await _applyStatChange(target, effect.stat, effect.value);
-          _appendToLog(
-            '\n${target.organism.baseOrganism.name}\'s ${effect.stat} stage ${effect.value > 0 ? 'increased' : 'decreased'}!',
-          );
+          // Log is handled in _applyStatChange
           break;
         case MoveEffectType.multiStatChange:
           // Format stat: 'attack:1,defense:1' or similar
@@ -1306,9 +1366,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
               await _applyStatChange(target, stat, val);
             }
           }
-          _appendToLog(
-            '\n${target.organism.baseOrganism.name}\'s stats changed!',
-          );
+          _addToLog('\n${target.organism.baseOrganism.name}\'s stats changed!');
           break;
         case MoveEffectType.statChangeChance:
           if (Random().nextInt(100) < effect.chance) {
@@ -1321,7 +1379,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
                 await _applyStatChange(target, stat, val);
               }
             }
-            _appendToLog(
+            _addToLog(
               '\n${target.organism.baseOrganism.name}\'s stats increased!',
             );
           }
@@ -1336,6 +1394,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           _appendToLog(
             '\n${target.organism.baseOrganism.name} recovered $healedAmount HP!',
           );
+          // Play healing sound effect
+          await _audioService.playSound('audio/effects/heal.mp3');
           break;
         case MoveEffectType.recharge:
           attacker.rechargeTurn = true;
@@ -1407,9 +1467,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     int value,
   ) async {
     int oldStage = 0;
-    if (statName == 'attack')
+    if (statName == 'attack') {
       oldStage = target.attackStage;
-    else if (statName == 'defense')
+    } else if (statName == 'defense')
       oldStage = target.defenseStage;
     else if (statName == 'power')
       oldStage = target.powerStage;
@@ -1420,9 +1480,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     else if (statName == 'accuracy')
       oldStage = target.accuracyStage;
 
-    if (statName == 'attack')
+    if (statName == 'attack') {
       target.attackStage = (target.attackStage + value).clamp(-6, 6);
-    else if (statName == 'defense')
+    } else if (statName == 'defense')
       target.defenseStage = (target.defenseStage + value).clamp(-6, 6);
     else if (statName == 'power')
       target.powerStage = (target.powerStage + value).clamp(-6, 6);
@@ -1433,9 +1493,12 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     else if (statName == 'accuracy')
       target.accuracyStage = (target.accuracyStage + value).clamp(-6, 6);
 
-    // Log Pokemon-style stat change message
+    // Map internal stat names to UI/User-friendly terms
+    String displayStatName = statName.toUpperCase();
+    if (statName == 'power') displayStatName = 'POWER'; // Was Sp. Atk
+    if (statName == 'resistance') displayStatName = 'RESISTANCE'; // Was Sp. Def
     if (value != 0) {
-      final String displayStatName = statName.toUpperCase();
+      // displayStatName is already upper case from logic above
       final bool increased = value > 0;
       final String direction = increased ? 'rose' : 'fell';
       final int absValue = value.abs();
@@ -1454,6 +1517,14 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       _addToLog(
         '${target.organism.baseOrganism.name}\'s $displayStatName $direction$stageText!',
       );
+
+      // Play stat change sound effect
+      if (increased) {
+        await _audioService.playSound('audio/effects/stat_up.mp3');
+      } else {
+        await _audioService.playSound('audio/effects/stat_down.mp3');
+      }
+
       notifyListeners();
       await Future.delayed(const Duration(milliseconds: 3000));
     }
@@ -1517,6 +1588,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         _addToLog('${target.organism.baseOrganism.name} is hurt by poison!');
         notifyListeners();
         await Future.delayed(const Duration(milliseconds: 3000));
+        if (_checkBattleEnd()) return;
       } else if (se.type == StatusEffectType.burn) {
         final burnDamage = (target.maxHealth * 0.06).round().clamp(1, 9999);
         target.health -= burnDamage;
@@ -1524,6 +1596,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         _addToLog('${target.organism.baseOrganism.name} is hurt by its burn!');
         notifyListeners();
         await Future.delayed(const Duration(milliseconds: 3000));
+        if (_checkBattleEnd()) return;
       } else if (se.type == StatusEffectType.bleed) {
         final bleedDamage = (target.maxHealth * 0.125).round().clamp(1, 9999);
         target.health -= bleedDamage;
@@ -1531,15 +1604,22 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         _addToLog('${target.organism.baseOrganism.name} is hurt by bleeding!');
         notifyListeners();
         await Future.delayed(const Duration(milliseconds: 3000));
+        if (_checkBattleEnd()) return;
       } else if (se.type == StatusEffectType.regen) {
         final heal = (target.maxHealth * 0.06).round().clamp(1, 9999);
         target.health += heal;
         target.health = target.health.clamp(0, target.maxHealth);
-        _addToLog('${target.organism.baseOrganism.name} restored a little HP.');
+        final hpPercent = (target.health / target.maxHealth * 100).round();
+        _addToLog(
+          '${target.organism.baseOrganism.name} restored a little HP. ($hpPercent%)',
+        );
         notifyListeners();
         await Future.delayed(const Duration(milliseconds: 3000));
       }
     }
+
+    // Check for fainting after status effects
+    if (_checkBattleEnd()) return;
 
     if (target.health <= 0) return;
 
@@ -1584,9 +1664,13 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       if (se.duration > 0 && se.type != StatusEffectType.sleep) {
         final newDuration = max(0, se.duration - 1);
         if (newDuration == 0) {
-          _addToLog(
-            '${target.organism.baseOrganism.name} recovered from ${se.name}!',
-          );
+          if (se.type == StatusEffectType.stealth) {
+            _addToLog('${target.organism.baseOrganism.name} was revealed!');
+          } else {
+            _addToLog(
+              '${target.organism.baseOrganism.name} recovered from ${se.name}!',
+            );
+          }
           notifyListeners();
           await Future.delayed(const Duration(milliseconds: 3000));
           stateChanged = true;
@@ -1742,14 +1826,20 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       await _applyGlobalTurnEffects();
       if (_checkBattleEnd()) return;
 
+      // Check if waiting for switch (e.g. from arena opponent fainting in global effects)
+      if (currentState == BattleState.waitingForPlayerSwitch) return;
+
       await _applyTurnEffects(player);
       if (_checkBattleEnd()) return;
+      if (currentState == BattleState.waitingForPlayerSwitch) return;
 
       await _applyTurnEffects(opponent);
       if (_checkBattleEnd()) return;
+      if (currentState == BattleState.waitingForPlayerSwitch) return;
     }
 
-    if (!_checkBattleEnd()) {
+    if (!_checkBattleEnd() &&
+        currentState != BattleState.waitingForPlayerSwitch) {
       currentTurn++;
       turnHistory.add(BattleTurn(currentTurn));
 
@@ -1921,9 +2011,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     // Stat overrides
     if (move.damageStat.isNotEmpty) {
-      if (move.damageStat == 'attack')
+      if (move.damageStat == 'attack') {
         atk = attacker.currentAttack;
-      else if (move.damageStat == 'power')
+      } else if (move.damageStat == 'power')
         atk = attacker.currentPower;
       else if (move.damageStat == 'defense')
         atk = attacker.currentDefense;
@@ -1951,9 +2041,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       if (condition == 'target_poisoned' &&
           defender.statusEffects.any(
             (se) => se.type == StatusEffectType.poison,
-          ))
+          )) {
         multiplier = move.conditionalMultiplier;
-      else if (condition == 'target_damaged' && defender.tookDamageThisTurn)
+      } else if (condition == 'target_damaged' && defender.tookDamageThisTurn)
         multiplier = move.conditionalMultiplier;
       else if (condition == 'target_statused' &&
           defender.statusEffects.isNotEmpty)
@@ -1964,14 +2054,24 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     // Status modifiers
     if (defender.statusEffects.any(
       (se) => se.type == StatusEffectType.vulnerable,
-    ))
+    )) {
       damageCalc *= 1.3;
-    if (defender.statusEffects.any((se) => se.type == StatusEffectType.marked))
+    }
+    if (defender.statusEffects.any(
+      (se) => se.type == StatusEffectType.marked,
+    )) {
       damageCalc *= 1.2;
-    if (attacker.statusEffects.any((se) => se.type == StatusEffectType.stealth))
+    }
+    if (attacker.statusEffects.any(
+      (se) => se.type == StatusEffectType.stealth,
+    )) {
       damageCalc *= 2.0;
-    if (defender.statusEffects.any((se) => se.type == StatusEffectType.stealth))
+    }
+    if (defender.statusEffects.any(
+      (se) => se.type == StatusEffectType.stealth,
+    )) {
       damageCalc *= 2.0;
+    }
 
     // Type Effectiveness
     double typeMod = 1.0;
@@ -2000,5 +2100,22 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         captured.statusEffects = [];
       }
     }
+  }
+
+  /// Pause all audio (called when app goes to background)
+  void pauseAudio() {
+    _audioService.pauseAll();
+  }
+
+  /// Resume audio (called when app returns to foreground)
+  void resumeAudio() {
+    _audioService.resumeAll();
+  }
+
+  @override
+  void dispose() {
+    // Clean up audio resources
+    _audioService.dispose();
+    super.dispose();
   }
 }

@@ -32,16 +32,19 @@ mixin AbilityHelpers {
       if (cond == 'crit' && !isCrit) return false;
       if (cond == 'contact' && !isContact) return false;
       if (cond == 'full_hp' && org.health < org.maxHealth) return false;
-      if (cond == 'hp_below_50' && org.health >= org.maxHealth * 0.5)
+      if (cond == 'hp_below_50' && org.health >= org.maxHealth * 0.5) {
         return false;
-      if (cond == 'hp_below_30' && org.health >= org.maxHealth * 0.3)
+      }
+      if (cond == 'hp_below_30' && org.health >= org.maxHealth * 0.3) {
         return false;
+      }
       if (cond == 'statused' && org.statusEffects.isEmpty) return false;
 
       if (cond.startsWith('weather_')) {
         final reqWeather = cond.replaceFirst('weather_', '');
-        if (currentWeather?.weather.toString().split('.').last != reqWeather)
+        if (currentWeather.weather.toString().split('.').last != reqWeather) {
           return false;
+        }
       }
 
       if (cond.startsWith('type_') && moveType != null) {
@@ -60,7 +63,6 @@ mixin AbilityHelpers {
     Move? move,
     bool isCrit = false,
     bool isContact = false,
-    int? damageDealt,
   }) async {
     for (final ab in org.abilities) {
       if (ab.trigger != trigger) continue;

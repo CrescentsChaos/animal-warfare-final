@@ -126,6 +126,10 @@ class Move {
   final MoveCategory category; // NEW: physical, special, status
   final String? customUsageText; // Custom text when using the move
 
+  // Audio fields
+  final String? soundEffect; // Optional path to sound effect file
+  final String? battleMusic; // Optional path to custom battle music
+
   // Versatility fields
   final String
   damageStat; // 'attack', 'defense', 'speed', 'power', 'resistance'
@@ -157,6 +161,8 @@ class Move {
     this.conditionalMultiplier = 1.0,
     this.failIfTargetNotAttacking = false,
     this.customUsageText,
+    this.soundEffect,
+    this.battleMusic,
     bool? isContact,
   }) : isContact =
            isContact ?? (category == MoveCategory.physical && baseDamage > 0);
@@ -228,6 +234,8 @@ class Move {
       failIfTargetNotAttacking:
           json['failIfTargetNotAttacking'] as bool? ?? false,
       customUsageText: json['customUsageText'] as String?,
+      soundEffect: json['soundEffect'] as String?,
+      battleMusic: json['battleMusic'] as String?,
       isContact: json['isContact'] as bool?,
     );
   }
@@ -239,7 +247,7 @@ class Move {
       description:
           'The user grabs the target and spins violently, tearing and crushing at the same time.',
       baseDamage: 80,
-      type: ElementalType.aquatic,
+      type: ElementalType.predator,
       stamina: 5,
       category: MoveCategory.physical,
       effects: [
@@ -256,6 +264,16 @@ class Move {
       name: 'Scratch',
       description: 'A basic attack.',
       baseDamage: 10,
+      type: ElementalType.normal,
+      stamina: 35,
+      accuracy: 100,
+      category: MoveCategory.physical,
+      effects: [],
+    ),
+    Move(
+      name: 'Punch',
+      description: 'A basic attack.',
+      baseDamage: 60,
       type: ElementalType.normal,
       stamina: 35,
       accuracy: 100,
@@ -305,7 +323,7 @@ class Move {
     Move(
       name: 'Kick',
       description: 'A basic attack.',
-      baseDamage: 20,
+      baseDamage: 60,
       type: ElementalType.normal,
       stamina: 30,
       category: MoveCategory.physical,
@@ -412,6 +430,15 @@ class Move {
       effects: [],
     ),
     Move(
+      name: 'Honking Havoc',
+      description: 'A basic attack.',
+      baseDamage: 90,
+      type: ElementalType.flying,
+      stamina: 15,
+      category: MoveCategory.special,
+      effects: [],
+    ),
+    Move(
       name: 'Venomous Fang',
       description: 'May poison the foe.',
       baseDamage: 55,
@@ -439,7 +466,7 @@ class Move {
       ],
     ),
     Move(
-      name: 'Titan\'s Wake',
+      name: "Titan's Wake",
       description:
           'Creates a massive displacement wave that slows all enemies.',
       baseDamage: 90,
@@ -461,6 +488,7 @@ class Move {
       name: 'Vortex Suction',
       description:
           'The user opens its massive mouth to create a vacuum. Deals damage and restores HP.',
+      soundEffect: 'audio/effects/absorb.mp3',
       baseDamage: 65,
       accuracy: 95,
       type: ElementalType.aquatic,
@@ -632,6 +660,7 @@ class Move {
     Move(
       name: 'Horn Leech',
       description: 'A specialized browsing strike that restores health.',
+      soundEffect: 'audio/effects/absorb.mp3',
       baseDamage: 75,
       type: ElementalType.parasite, // Uses the drain logic from your code
       stamina: 10,
@@ -744,7 +773,7 @@ class Move {
         MoveEffect(
           type: MoveEffectType.statusStealth,
           target: 'self',
-          value: 1,
+          value: 2,
         ),
         MoveEffect(
           type: MoveEffectType.statChange,
@@ -790,6 +819,7 @@ class Move {
       name: 'Shadow Wallower',
       description:
           'Vanishes into the muddy forest floor before striking from behind.',
+      soundEffect: 'audio/effects/agile.mp3',
       baseDamage: 85,
       accuracy: 95,
       type: ElementalType.agile,
@@ -878,6 +908,7 @@ class Move {
       name: 'Filter Feed',
       description:
           'The user filters the surrounding water for nutrients, clearing status and healing.',
+      soundEffect: 'audio/effects/absorb.mp3',
       baseDamage: 0,
       type: ElementalType.aquatic,
       stamina: 8,
@@ -928,7 +959,7 @@ class Move {
       description: 'The ultimate apex move. Swallows weakened foes whole.',
       baseDamage: 200, // Extreme damage placeholder for OHKO feel
       accuracy: 30,
-      type: ElementalType.predator,
+      type: ElementalType.aquatic,
       stamina: 5,
       category: MoveCategory.physical,
       customUsageText: 'The whale creates a massive vacuum suction!',
@@ -961,15 +992,150 @@ class Move {
     Move(
       name: 'Blubber Shield',
       description: 'Sacrifices health to create a massive protective barrier.',
+      soundEffect: 'audio/effects/protect.mp3',
       baseDamage: 0,
       type: ElementalType.armored,
       stamina: 5,
+      priority: 2,
       category: MoveCategory.status,
       effects: [
         MoveEffect(
           type: MoveEffectType.protect,
           hpCostPercent: 0.25, // Consumes 25% of that huge 200 HP pool
         ),
+      ],
+    ),
+    Move(
+      name: 'Surgeon\'s Scalpel',
+      description: 'A precise strike with the tail spine. High crit rate.',
+      baseDamage: 70,
+      type: ElementalType.aquatic,
+      stamina: 15,
+      category: MoveCategory.physical,
+      critRate: 1,
+    ),
+    Move(
+      name: 'Aqua Cutter',
+      description: 'Slices through the water with a sharp fin.',
+      baseDamage: 70,
+      type: ElementalType.aquatic,
+      stamina: 15,
+      category: MoveCategory.physical,
+      critRate: 1,
+    ),
+    Move(
+      name: 'Achilles\' Heel',
+      description: 'A strike to the weak point that makes the foe vulnerable.',
+      baseDamage: 60,
+      type: ElementalType.agile,
+      stamina: 15,
+      category: MoveCategory.physical,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statusVulnerable,
+          value: 2,
+          chance: 100,
+        ),
+      ],
+    ),
+    Move(
+      name: 'Warning Colors',
+      description:
+          'Flashes bright yellow and black. Lowers opponent\'s Attack.',
+      baseDamage: 0,
+      type: ElementalType.social,
+      stamina: 10,
+      category: MoveCategory.status,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statChange,
+          target: 'opponent',
+          stat: 'attack',
+          value: -2,
+        ),
+      ],
+    ),
+    Move(
+      name: 'Epaulette Strike',
+      description:
+          'A strike named for its orange markings. Deals double damage if the target is Marked.',
+      baseDamage: 60,
+      type: ElementalType.predator,
+      stamina: 15,
+      category: MoveCategory.physical,
+      multiplierCondition: 'target_marked',
+      conditionalMultiplier: 2.0,
+    ),
+    Move(
+      name: 'Precision Probe',
+      description: 'Uses its long snout to find a weak spot. Ignores Defense.',
+      baseDamage: 60,
+      type: ElementalType.aquatic,
+      category: MoveCategory.special,
+    ),
+    Move(
+      name: 'Masked Guard',
+      description:
+          'Hides behind its facial patterns. Boosts Defense and SpDef.',
+      baseDamage: 0,
+      type: ElementalType.normal,
+      category: MoveCategory.status,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.multiStatChange,
+          target: 'self',
+          value: 1,
+        ),
+      ],
+    ),
+    Move(
+      name: 'Thread-Tail Slap',
+      description: 'Lashes out with a fine fin filament. Hits 2-5 times.',
+      baseDamage: 15,
+      type: ElementalType.normal,
+      category: MoveCategory.physical,
+      minHits: 2,
+      maxHits: 5,
+    ),
+    Move(
+      name: 'Eye-Spot Decoy',
+      description: 'Uses spots to confuse the foe. Raises Evasion (Stealth).',
+      baseDamage: 0,
+      type: ElementalType.normal,
+      category: MoveCategory.status,
+      effects: [
+        MoveEffect(
+          type: MoveEffectType.statusStealth,
+          target: 'self',
+          value: 2,
+        ),
+      ],
+    ),
+    Move(
+      name: 'Needle Stream',
+      description: 'A high-pressure jet of water from its snout.',
+      baseDamage: 80,
+      type: ElementalType.aquatic,
+      category: MoveCategory.special,
+      accuracy: 95,
+    ),
+    Move(
+      name: 'Glass Teeth',
+      description: 'Needle-thin teeth that bypass thick scales and armor.',
+      baseDamage: 70,
+      type: ElementalType.aquatic,
+      category: MoveCategory.physical,
+      accuracy: 100,
+    ),
+    Move(
+      name: 'Schooling Formation',
+      description: 'Calls on the reef community. Heals user and boosts SpDef.',
+      soundEffect: 'audio/effects/absorb.mp3',
+      baseDamage: 0,
+      type: ElementalType.social,
+      category: MoveCategory.status,
+      effects: [
+        MoveEffect(type: MoveEffectType.heal, target: 'self', value: 25),
       ],
     ),
     Move(
@@ -993,6 +1159,7 @@ class Move {
     Move(
       name: 'Tail Whip',
       description: 'Lowers the opponent\'s defense.',
+      soundEffect: 'audio/effects/agile.mp3',
       baseDamage: 10,
       type: ElementalType.agile,
       stamina: 25,
@@ -1009,6 +1176,7 @@ class Move {
     Move(
       name: 'Jet Ram',
       description: 'A high-speed tackle using jet propulsion. High crit rate.',
+      soundEffect: 'audio/effects/agile.mp3',
       baseDamage: 60,
       type: ElementalType.agile,
       stamina: 15,
@@ -1046,12 +1214,6 @@ class Move {
           value: 2,
           chance: 100,
         ),
-        MoveEffect(
-          type: MoveEffectType.statusStealth,
-          target: 'self',
-          value: 1,
-          chance: 100,
-        ),
       ],
     ),
     Move(
@@ -1075,9 +1237,11 @@ class Move {
       name: 'Symbiotic Guard',
       description:
           'The user retreats into a stinging anemone. Grants protection and poisons contact attackers.',
+      soundEffect: 'audio/effects/protect.mp3',
       baseDamage: 0,
       type: ElementalType.aquatic,
-      stamina: 10,
+      stamina: 5,
+      priority: 2,
       category: MoveCategory.status,
       effects: [
         MoveEffect(
@@ -1090,10 +1254,10 @@ class Move {
     Move(
       name: 'Nipping Snap',
       description: 'A lightning-fast bite that strikes first.',
-      baseDamage: 40,
+      baseDamage: 70,
       accuracy: 100,
       priority: 1, // High priority to strike before the whale
-      type: ElementalType.predator,
+      type: ElementalType.aquatic,
       stamina: 20,
       category: MoveCategory.physical,
       effects: [],
@@ -1109,8 +1273,8 @@ class Move {
       effects: [
         MoveEffect(
           type: MoveEffectType.multiStatChange,
-          stat:
-              'speed:1,resistance:1', // Speed represents evasion in many engines
+          target: 'self',
+          stat: 'speed:1,resistance:1',
         ),
       ],
     ),
@@ -1189,6 +1353,7 @@ class Move {
     Move(
       name: 'Osmosis',
       description: 'Absorbs nutrients from the water to heal the user.',
+      soundEffect: 'audio/effects/absorb.mp3',
       baseDamage: 0,
       type: ElementalType.aquatic,
       stamina: 5,
@@ -1205,10 +1370,11 @@ class Move {
     Move(
       name: 'Hypnotic Ripple',
       description: 'Mesmerizes the target, lowering their mental resistance.',
-      baseDamage: 20,
+      soundEffect: 'audio/effects/special_attack.mp3',
+      baseDamage: 0,
       type: ElementalType.aquatic,
       stamina: 20,
-      category: MoveCategory.special,
+      category: MoveCategory.status,
       effects: [
         MoveEffect(
           type: MoveEffectType.statChange,
@@ -1222,6 +1388,7 @@ class Move {
     Move(
       name: 'Tentacle Snap',
       description: 'A lightning-fast grab with tentacles that hits first.',
+      soundEffect: 'audio/effects/agile.mp3',
       baseDamage: 40,
       type: ElementalType.agile,
       stamina: 20,
@@ -1258,6 +1425,7 @@ class Move {
     Move(
       name: 'Cavitation Strike',
       description: 'Lowers the opponent\'s defense.',
+      soundEffect: 'audio/effects/agile.mp3',
       baseDamage: 90,
       type: ElementalType.agile,
       stamina: 15,
@@ -1275,6 +1443,7 @@ class Move {
     Move(
       name: 'Hibernate',
       description: 'A healing nap.',
+      soundEffect: 'audio/effects/absorb.mp3',
       baseDamage: 0,
       type: ElementalType.burrowing,
       stamina: 5,
@@ -1286,9 +1455,19 @@ class Move {
     Move(
       name: 'Tackle',
       description: 'A full-body charge.',
-      baseDamage: 35,
+      baseDamage: 40,
       accuracy: 95,
       type: ElementalType.giant,
+      stamina: 35,
+      category: MoveCategory.physical,
+      effects: [],
+    ),
+    Move(
+      name: 'Lunge',
+      description: 'A full-body charge.',
+      baseDamage: 60,
+      accuracy: 95,
+      type: ElementalType.predator,
       stamina: 35,
       category: MoveCategory.physical,
       effects: [],
@@ -1297,7 +1476,7 @@ class Move {
       name: 'Pounce',
       description: 'User pounces at the foe.',
       baseDamage: 60,
-      accuracy: 85,
+      accuracy: 95,
       type: ElementalType.predator,
       stamina: 15,
       category: MoveCategory.physical,
@@ -1324,6 +1503,7 @@ class Move {
       effects: [
         MoveEffect(
           type: MoveEffectType.statusStealth,
+          value: 3,
           chance: 80,
           target: 'self',
         ),
@@ -1428,6 +1608,7 @@ class Move {
     ),
     Move(
       name: 'Quick Attack',
+      soundEffect: 'audio/effects/agile.mp3',
       description: 'Strikes first.',
       baseDamage: 40,
       priority: 1,
@@ -1449,6 +1630,7 @@ class Move {
     Move(
       name: 'Dash',
       description: 'Strikes first.',
+      soundEffect: 'audio/effects/agile.mp3',
       baseDamage: 50,
       priority: 1,
       type: ElementalType.agile,
@@ -1486,6 +1668,17 @@ class Move {
       effects: [],
     ),
     Move(
+      name: 'Pharyngeal Grip',
+      description: 'Hits 2 times.',
+      baseDamage: 45,
+      minHits: 2,
+      maxHits: 2,
+      type: ElementalType.aquatic,
+      stamina: 15,
+      category: MoveCategory.physical,
+      effects: [],
+    ),
+    Move(
       name: 'Camouflage',
       description: 'Blends into the landscape. Grants Stealth.',
       baseDamage: 0,
@@ -1496,7 +1689,7 @@ class Move {
         MoveEffect(
           type: MoveEffectType.statusStealth,
           target: 'self',
-          value: 1,
+          value: 3,
         ),
       ],
     ),
@@ -1566,6 +1759,7 @@ class Move {
     Move(
       name: 'Savannah Sweep',
       description: 'A sweeping claw attack that hits the legs, lowering Speed.',
+      soundEffect: 'audio/effects/agile.mp3',
       baseDamage: 75,
       accuracy: 100,
       type: ElementalType.agile,
@@ -1584,6 +1778,7 @@ class Move {
       name: 'Frost-Leap',
       description:
           'Strikes from a frozen ledge. Chance to freeze or stun the foe.',
+      soundEffect: 'audio/effects/agile.mp3',
       baseDamage: 85,
       accuracy: 100,
       type: ElementalType.agile,
@@ -1642,6 +1837,7 @@ class Move {
     Move(
       name: 'Midnight Eviscerate',
       description: 'An eerie, blinding attack that confuses the target.',
+      soundEffect: 'audio/effects/agile.mp3',
       baseDamage: 85,
       accuracy: 100,
       type: ElementalType.agile,
@@ -1695,6 +1891,7 @@ class Move {
       name: 'Overdrive Sprint',
       description:
           'Uses extreme acceleration to strike before the opponent can react',
+      soundEffect: 'audio/effects/agile.mp3',
       baseDamage: 80,
       accuracy: 100,
       type: ElementalType.agile,
@@ -1894,6 +2091,7 @@ class Move {
       name: 'Rest',
       description:
           'The user goes to sleep for two turns. This fully restores the user\'s HP.',
+      soundEffect: 'audio/effects/absorb.mp3',
       baseDamage: 0,
       type: ElementalType.normal,
       stamina: 5,
@@ -1906,6 +2104,7 @@ class Move {
       name: 'Protect',
       description:
           'Enables the user to evade all attacks. Its chance of failing rises if it is used in succession.',
+      soundEffect: 'audio/effects/protect.mp3',
       baseDamage: 0,
       type: ElementalType.normal,
       stamina: 10,
@@ -1941,18 +2140,17 @@ class Move {
       ],
     ),
     Move(
-      name: 'Ancient Power',
-      description:
-          'The user attacks with a prehistoric power. This may also raise all the user\'s stats at once.',
-      baseDamage: 60,
-      type: ElementalType.normal,
-      stamina: 5,
-      category: MoveCategory.special,
+      name: 'Feline Reflexes',
+      description: 'Sharpen focus to dodge incoming attacks.',
+      baseDamage: 0,
+      type: ElementalType.predator,
+      stamina: 15,
+      category: MoveCategory.status,
       effects: [
         MoveEffect(
-          type: MoveEffectType.statChangeChance,
-          stat: 'attack:1,defense:1,speed:1,power:1,resistance:1',
-          chance: 10,
+          type: MoveEffectType.multiStatChange,
+          stat: 'speed:2,defense:1',
+          target: 'self',
         ),
       ],
     ),
@@ -1972,6 +2170,7 @@ class Move {
       name: 'Baneful Bunker',
       description:
           'In addition to protecting the user from attacks, this move also poisons any attacker that makes direct contact.',
+      soundEffect: 'audio/effects/protect.mp3',
       baseDamage: 0,
       type: ElementalType.venomous,
       stamina: 10,
@@ -2101,6 +2300,7 @@ class Move {
       name: 'Hunter\'s Mark',
       description:
           'The user marks the target. The target takes 20% extra damage for 2 turns.',
+      soundEffect: 'audio/effects/agile.mp3',
       baseDamage: 0,
       type: ElementalType.agile,
       stamina: 10,

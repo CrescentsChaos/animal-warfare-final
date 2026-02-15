@@ -336,18 +336,20 @@ class LocalAuthService {
       return jsonDecode(contents) as Map<String, dynamic>;
     } catch (e) {
       // Recovery attempt: strip trailing junk characters by searching for valid closing brace from the end
-      if (kDebugMode)
+      if (kDebugMode) {
         print("DEBUG: Attempting robust JSON recovery for $username...");
+      }
       int index = contents.lastIndexOf('}');
       while (index != -1) {
         try {
           final cleaned = contents.substring(0, index + 1);
           final decoded = jsonDecode(cleaned);
           if (decoded is Map<String, dynamic>) {
-            if (kDebugMode)
+            if (kDebugMode) {
               print(
                 "DEBUG: Successfully recovered JSON for $username at index $index.",
               );
+            }
             return decoded;
           }
         } catch (_) {
@@ -425,8 +427,9 @@ class LocalAuthService {
 
   Future<bool> register(String username, String password) async {
     if (await readUserFile(username) != null) {
-      if (kDebugMode)
+      if (kDebugMode) {
         print("DEBUG: Registration failed for $username (already exists).");
+      }
       return false;
     }
     await _writeUserFile(
@@ -443,13 +446,15 @@ class LocalAuthService {
   Future<bool> login(String username, String password) async {
     final user = await readUserFile(username);
     if (user == null) {
-      if (kDebugMode)
+      if (kDebugMode) {
         print("DEBUG: Login failed for $username (user not found).");
+      }
       return false;
     }
     if (user.password != password) {
-      if (kDebugMode)
+      if (kDebugMode) {
         print("DEBUG: Login failed for $username (wrong password).");
+      }
       return false;
     }
     await _saveCurrentUserName(user.username);
@@ -461,8 +466,9 @@ class LocalAuthService {
   Future<bool> resetPassword(String username, String newPassword) async {
     final user = await readUserFile(username);
     if (user == null) {
-      if (kDebugMode)
+      if (kDebugMode) {
         print("DEBUG: Password reset failed for $username (user not found).");
+      }
       return false;
     }
     await _writeUserFile(user.copyWith(password: newPassword));

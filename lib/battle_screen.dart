@@ -84,71 +84,87 @@ class BattleScreenContent extends StatefulWidget {
 }
 
 class _BattleScreenContentState extends State<BattleScreenContent>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   Color _getBiomeThemeColor() {
     final biome = widget.biomeName.toLowerCase();
-    if (biome.contains('swamp'))
+    if (biome.contains('swamp')) {
       return const Color.fromARGB(255, 1, 177, 53); // Purple Accent
-    if (biome.contains('desert') || biome.contains('savanna'))
+    }
+    if (biome.contains('desert') || biome.contains('savanna')) {
       return const Color(0xFFFFD740); // Amber Accent
+    }
     if (biome.contains('snow') ||
         biome.contains('ice') ||
-        biome.contains('tundra'))
+        biome.contains('tundra')) {
       return const Color(0xFF40C4FF); // Light Blue Accent
+    }
     if (biome.contains('volcan')) return const Color(0xFFFF5252); // Red Accent
     if (biome.contains('mountain')) return const Color(0xFF90A4AE); // Blue Grey
-    if (biome.contains('forest') || biome.contains('jungle'))
+    if (biome.contains('forest') || biome.contains('jungle')) {
       return const Color(0xFF69F0AE); // Green Accent
+    }
     if (biome.contains('ocean') ||
         biome.contains('beach') ||
         biome.contains('lake') ||
-        biome.contains('river'))
+        biome.contains('river')) {
       return const Color(0xFF448AFF); // Blue Accent
+    }
     return const Color(0xFFDAA520); // Default Goldenrod
   }
 
   Color _getBiomePrimaryColor() {
     final biome = widget.biomeName.toLowerCase();
-    if (biome.contains('swamp'))
+    if (biome.contains('swamp')) {
       return const Color.fromARGB(164, 43, 185, 0); // Purple
-    if (biome.contains('desert') || biome.contains('savanna'))
+    }
+    if (biome.contains('desert') || biome.contains('savanna')) {
       return const Color(0xFFFFC107); // Amber
+    }
     if (biome.contains('snow') ||
         biome.contains('ice') ||
-        biome.contains('tundra'))
+        biome.contains('tundra')) {
       return const Color(0xFF00B0FF); // Light Blue
+    }
     if (biome.contains('volcan')) return const Color(0xFFD32F2F); // Red
     if (biome.contains('mountain')) return const Color(0xFF607D8B); // Blue Grey
-    if (biome.contains('forest') || biome.contains('jungle'))
+    if (biome.contains('forest') || biome.contains('jungle')) {
       return const Color(0xFF388E3C); // Green
+    }
     if (biome.contains('ocean') ||
         biome.contains('beach') ||
         biome.contains('lake') ||
-        biome.contains('river'))
+        biome.contains('river')) {
       return const Color(0xFF1976D2); // Blue
+    }
     return const Color(0xFF38761D); // Default Jungle Green
   }
 
   Color _getBiomeSecondaryColor() {
     final biome = widget.biomeName.toLowerCase();
-    if (biome.contains('swamp'))
+    if (biome.contains('swamp')) {
       return const Color.fromARGB(115, 15, 129, 0); // Dark Purple
-    if (biome.contains('desert') || biome.contains('savanna'))
+    }
+    if (biome.contains('desert') || biome.contains('savanna')) {
       return const Color(0xFFFF6F00); // Dark Amber
+    }
     if (biome.contains('snow') ||
         biome.contains('ice') ||
-        biome.contains('tundra'))
+        biome.contains('tundra')) {
       return const Color(0xFF01579B); // Dark Blue
+    }
     if (biome.contains('volcan')) return const Color(0xFFB71C1C); // Dark Red
-    if (biome.contains('mountain'))
+    if (biome.contains('mountain')) {
       return const Color(0xFF37474F); // Dark Blue Grey
-    if (biome.contains('forest') || biome.contains('jungle'))
+    }
+    if (biome.contains('forest') || biome.contains('jungle')) {
       return const Color(0xFF1B5E20); // Dark Green
+    }
     if (biome.contains('ocean') ||
         biome.contains('beach') ||
         biome.contains('lake') ||
-        biome.contains('river'))
+        biome.contains('river')) {
       return const Color(0xFF0D47A1); // Dark Blue
+    }
     return const Color(0xFF1E3F2A); // Default Deep Forest Green
   }
 
@@ -220,6 +236,10 @@ class _BattleScreenContentState extends State<BattleScreenContent>
   @override
   void initState() {
     super.initState();
+
+    // Add lifecycle observer to handle app backgrounding
+    WidgetsBinding.instance.addObserver(this);
+
     _playerShakeController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 500),
@@ -276,10 +296,36 @@ class _BattleScreenContentState extends State<BattleScreenContent>
 
   @override
   void dispose() {
+    // Remove lifecycle observer
+    WidgetsBinding.instance.removeObserver(this);
+
     _playerShakeController.dispose();
     _opponentShakeController.dispose();
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    if (!mounted) return;
+
+    final bm = Provider.of<BattleManager>(context, listen: false);
+
+    switch (state) {
+      case AppLifecycleState.paused:
+      case AppLifecycleState.inactive:
+        // App went to background - pause audio
+        bm.pauseAudio();
+        break;
+      case AppLifecycleState.resumed:
+        // App came back to foreground - resume audio
+        bm.resumeAudio();
+        break;
+      default:
+        break;
+    }
   }
 
   void _onAttack(BattleOrganism attacker) {
@@ -325,8 +371,9 @@ class _BattleScreenContentState extends State<BattleScreenContent>
 
     // 3. Overrides/Fallbacks
     if (name == 'forest') return 'assets/biomes/jungle-bg.png';
-    if (name == 'rain forest' || name == 'rainforest')
+    if (name == 'rain forest' || name == 'rainforest') {
       return 'assets/biomes/rainforest-bg.png';
+    }
     if (name == 'grassland') return 'assets/biomes/savanna-bg.png';
 
     // 4. Asset formatting
@@ -460,102 +507,108 @@ class _BattleScreenContentState extends State<BattleScreenContent>
   }
 
   Future<void> _showSwitchDialog(BuildContext context, BattleManager bm) {
+    // START FIX: Prevent dismissal if switch is forced
+    final bool isForced = bm.currentState == BattleState.waitingForPlayerSwitch;
     return showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: _getBiomeSecondaryColor(),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: _getBiomeThemeColor(), width: 2),
-        ),
-        title: Text(
-          'SELECT ANIMAL',
-          style: AppTextStyles.headline(
-            context,
-            baseSize: 14,
-            color: _getBiomeThemeColor(),
+      barrierDismissible: !isForced,
+      builder: (ctx) => PopScope(
+        canPop: !isForced,
+        child: AlertDialog(
+          backgroundColor: _getBiomeSecondaryColor(),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(color: _getBiomeThemeColor(), width: 2),
           ),
-        ),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: bm.playerTeam.length,
-            itemBuilder: (context, index) {
-              final animal = bm.playerTeam[index];
-              final battleOrg = BattleOrganism(animal);
-              final isCurrent = index == bm.currentPlayerIndex;
-              final isFainted = battleOrg.health <= 0;
+          title: Text(
+            'SELECT ANIMAL',
+            style: AppTextStyles.headline(
+              context,
+              baseSize: 14,
+              color: _getBiomeThemeColor(),
+            ),
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: bm.playerTeam.length,
+              itemBuilder: (context, index) {
+                final animal = bm.playerTeam[index];
+                final battleOrg = BattleOrganism(animal);
+                final isCurrent = index == bm.currentPlayerIndex;
+                final isFainted = battleOrg.health <= 0;
 
-              return ListTile(
-                enabled: !isCurrent && !isFainted,
-                onLongPress: () {
-                  // Show animal details on long press
-                  _showOrganismInfo(context, battleOrg, bm: bm);
-                },
-                leading: Opacity(
-                  opacity: isFainted ? 0.5 : 1.0,
-                  child: Image.asset(
-                    'assets/sprites/${animal.name.toLowerCase().replaceAll(' ', '_').replaceAll('-', '_').replaceAll("'", "_")}.png',
-                    width: 40,
-                    errorBuilder: (_, __, ___) =>
-                        const Icon(Icons.pets, color: Colors.white),
+                return ListTile(
+                  enabled: !isCurrent && !isFainted,
+                  onLongPress: () {
+                    // Show animal details on long press
+                    _showOrganismInfo(context, battleOrg, bm: bm);
+                  },
+                  leading: Opacity(
+                    opacity: isFainted ? 0.5 : 1.0,
+                    child: Image.asset(
+                      'assets/sprites/${animal.name.toLowerCase().replaceAll(' ', '_').replaceAll('-', '_').replaceAll("'", "_")}.png',
+                      width: 40,
+                      errorBuilder: (_, __, ___) =>
+                          const Icon(Icons.pets, color: Colors.white),
+                    ),
                   ),
-                ),
-                title: Text(
-                  animal.name,
+                  title: Text(
+                    animal.name,
+                    style: TextStyle(
+                      color: isCurrent
+                          ? _getBiomeThemeColor()
+                          : (isFainted ? Colors.grey : Colors.white),
+                      fontFamily: 'PressStart2P',
+                      fontSize: 10,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'HP: ${battleOrg.health}/${battleOrg.maxHealth}',
+                    style: TextStyle(
+                      color: isFainted ? Colors.red : Colors.green,
+                      fontFamily: 'PressStart2P',
+                      fontSize: 8,
+                    ),
+                  ),
+                  trailing: isCurrent
+                      ? Icon(Icons.check_circle, color: _getBiomeThemeColor())
+                      : (isFainted
+                            ? const Text(
+                                'FAINTED',
+                                style: TextStyle(
+                                  color: Colors.red,
+                                  fontSize: 8,
+                                  fontFamily: 'PressStart2P',
+                                ),
+                              )
+                            : null),
+                  onTap: (!isCurrent && !isFainted)
+                      ? () {
+                          Navigator.pop(ctx);
+                          bm.switchAnimal(index);
+                        }
+                      : null,
+                );
+              },
+            ),
+          ),
+          actions: [
+            if (bm.currentState != BattleState.waitingForPlayerSwitch)
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text(
+                  'CANCEL',
                   style: TextStyle(
-                    color: isCurrent
-                        ? _getBiomeThemeColor()
-                        : (isFainted ? Colors.grey : Colors.white),
+                    color: Colors.white70,
                     fontFamily: 'PressStart2P',
                     fontSize: 10,
                   ),
                 ),
-                subtitle: Text(
-                  'HP: ${battleOrg.health}/${battleOrg.maxHealth}',
-                  style: TextStyle(
-                    color: isFainted ? Colors.red : Colors.green,
-                    fontFamily: 'PressStart2P',
-                    fontSize: 8,
-                  ),
-                ),
-                trailing: isCurrent
-                    ? Icon(Icons.check_circle, color: _getBiomeThemeColor())
-                    : (isFainted
-                          ? const Text(
-                              'FAINTED',
-                              style: TextStyle(
-                                color: Colors.red,
-                                fontSize: 8,
-                                fontFamily: 'PressStart2P',
-                              ),
-                            )
-                          : null),
-                onTap: (!isCurrent && !isFainted)
-                    ? () {
-                        Navigator.pop(ctx);
-                        bm.switchAnimal(index);
-                      }
-                    : null,
-              );
-            },
-          ),
-        ),
-        actions: [
-          if (bm.currentState != BattleState.waitingForPlayerSwitch)
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text(
-                'CANCEL',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontFamily: 'PressStart2P',
-                  fontSize: 10,
-                ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -925,8 +978,9 @@ class _BattleScreenContentState extends State<BattleScreenContent>
   }
 
   Widget _buildOpponentTeamIndicator(BuildContext context, BattleManager bm) {
-    if (!widget.isArenaBattle || bm.opponentTeam.isEmpty)
+    if (!widget.isArenaBattle || bm.opponentTeam.isEmpty) {
       return const SizedBox.shrink();
+    }
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -1053,7 +1107,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
-              'HP: ${organism.health}/$maxHp',
+              'HP: ${organism.health}/$maxHp (${(hpRatio * 100).round()}%)',
               style: TextStyle(
                 color: Colors.white70,
                 fontSize: isNarrow ? 8 : 10,
@@ -1204,7 +1258,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
-              'HP: ${organism.health}/$maxHp',
+              'HP: ${organism.health}/$maxHp (${(hpRatio * 100).round()}%)',
               style: TextStyle(
                 color: Colors.white70,
                 fontSize: isNarrow ? 8 : 10,
@@ -1591,36 +1645,34 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                 ),
               ),
               const SizedBox(height: 6),
-              ...bo.abilities
-                  .map(
-                    (ab) => Padding(
-                      padding: const EdgeInsets.only(bottom: 8.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            ab.name.toUpperCase(),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontFamily: 'PressStart2P',
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            ab.description,
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 9,
-                              height: 1.5,
-                            ),
-                          ),
-                        ],
+              ...bo.abilities.map(
+                (ab) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        ab.name.toUpperCase(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontFamily: 'PressStart2P',
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                  )
-                  .toList(),
+                      const SizedBox(height: 4),
+                      Text(
+                        ab.description,
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 9,
+                          height: 1.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -1760,6 +1812,108 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     );
   }
 
+  Widget _buildDetailRow(String label, String value, Color valueColor) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.grey,
+            fontFamily: 'PressStart2P',
+            fontSize: 10,
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            color: valueColor,
+            fontFamily: 'PressStart2P',
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showMoveDetails(
+    BuildContext context,
+    Move move,
+    Color themeColor,
+    BattleManager bm,
+  ) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: _getBiomeSecondaryColor(),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: themeColor, width: 2),
+        ),
+        title: Text(
+          move.name,
+          style: TextStyle(
+            color: themeColor,
+            fontFamily: 'PressStart2P',
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildDetailRow(
+              'TYPE:',
+              move.type.name.toUpperCase(),
+              _getTypeColor(move.type),
+            ),
+            const SizedBox(height: 8),
+            _buildDetailRow(
+              'CATEGORY:',
+              move.category.name.toUpperCase().split('.').last,
+              Colors.white,
+            ),
+            const SizedBox(height: 8),
+            _buildDetailRow(
+              'POWER:',
+              move.baseDamage > 0 ? '${move.baseDamage}' : '-',
+              Colors.white,
+            ),
+            const SizedBox(height: 8),
+            _buildDetailRow('ACCURACY:', '${move.accuracy}%', Colors.white),
+            const SizedBox(height: 8),
+            _buildDetailRow('STAMINA:', '${move.stamina}', Colors.orange),
+            const SizedBox(height: 12),
+            Text(
+              move.description,
+              style: const TextStyle(
+                color: Colors.white70,
+                fontFamily: 'PressStart2P',
+                fontSize: 10,
+                height: 1.4,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'CLOSE',
+              style: TextStyle(
+                color: themeColor,
+                fontFamily: 'PressStart2P',
+                fontSize: 10,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildActionControls(
     BuildContext context,
     BattleManager battleManager,
@@ -1824,6 +1978,12 @@ class _BattleScreenContentState extends State<BattleScreenContent>
 
               return ElevatedButton(
                 onPressed: () => battleManager.processPlayerAction(move),
+                onLongPress: () => _showMoveDetails(
+                  context,
+                  move,
+                  _getBiomeThemeColor(),
+                  battleManager,
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: typeColor,
                   foregroundColor: Colors.white,
@@ -2264,7 +2424,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
 
       final String? lootId = battleManager.droppedLoot;
       final String? lootName = lootId != null
-          ? LootItem.findById(lootId)?.name
+          ? LootItem.findById(lootId).name
           : null;
 
       // Handle loot drop
@@ -2532,14 +2692,31 @@ class _BattleSprite extends StatefulWidget {
   State<_BattleSprite> createState() => _BattleSpriteState();
 }
 
-class _BattleSpriteState extends State<_BattleSprite> {
+class _BattleSpriteState extends State<_BattleSprite>
+    with SingleTickerProviderStateMixin {
   String? _imageSourceType;
   late String _imagePath;
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
 
   @override
   void initState() {
     super.initState();
     _determineImageSource();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 3),
+    )..repeat(reverse: true);
+
+    _pulseAnimation = Tween<double>(begin: 0.4, end: 0.8).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
   }
 
   @override
@@ -2649,6 +2826,63 @@ class _BattleSpriteState extends State<_BattleSprite> {
       platformColor = const Color(0xFF8D6E63); // Generic Dirt
     }
 
+    // Darker complementary outline for PLATFORM
+    final platformOutlineColor = HSLColor.fromColor(platformColor)
+        .withLightness(
+          (HSLColor.fromColor(platformColor).lightness - 0.2).clamp(0.0, 1.0),
+        )
+        .toColor();
+
+    // Saturation Boost (1.3x) + Slight Contrast
+    // Standard saturation matrix calculation
+    const double sat = 1.3;
+    const List<double> matrix = <double>[
+      0.2126 * (1 - sat) + sat,
+      0.7152 * (1 - sat),
+      0.0722 * (1 - sat),
+      0,
+      0,
+      0.2126 * (1 - sat),
+      0.7152 * (1 - sat) + sat,
+      0.0722 * (1 - sat),
+      0,
+      0,
+      0.2126 * (1 - sat),
+      0.7152 * (1 - sat),
+      0.0722 * (1 - sat) + sat,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+    ];
+
+    final enhancedImage = ColorFiltered(
+      colorFilter: const ColorFilter.mode(
+        Colors.transparent,
+        BlendMode.multiply,
+      ), // Basis
+      child: ColorFiltered(
+        colorFilter: const ColorFilter.matrix(matrix),
+        child: widget.mirror
+            ? Transform.flip(flipX: true, child: imageWidget)
+            : imageWidget,
+      ),
+    );
+
+    // Sprite Outline Logic
+    final spriteOutlineColor = Colors.black.withOpacity(0.8);
+    const double outlineOffset = 1.0;
+
+    final outlineImage = ColorFiltered(
+      colorFilter: ColorFilter.mode(spriteOutlineColor, BlendMode.srcIn),
+      child: widget.mirror
+          ? Transform.flip(flipX: true, child: imageWidget)
+          : imageWidget,
+    );
+
     return GestureDetector(
       onLongPress: widget.onLongPress,
       child: SizedBox(
@@ -2664,33 +2898,67 @@ class _BattleSpriteState extends State<_BattleSprite> {
               child: Transform(
                 transform: Matrix4.identity()
                   ..setEntry(3, 2, 0.001) // perspective
-                  ..rotateX(1.2), // flatten only the circle
+                  ..rotateX(
+                    1.1,
+                  ), // slightly less flattened rotation for visibility
                 alignment: Alignment.center,
-                child: Container(
-                  width: size * 0.9,
-                  height: size * 0.9,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: platformColor.withOpacity(0.6),
-                    border: Border.all(
-                      color: platformColor.withOpacity(0.8),
-                      width: 2,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
+                child: AnimatedBuilder(
+                  animation: _pulseAnimation,
+                  builder: (context, child) {
+                    return Container(
+                      width: size * 1.3, // Extended width
+                      height: size * 0.9,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle, // Oval due to width > height
+                        border: Border.all(
+                          color: platformOutlineColor,
+                          width: 3, // Thicker outline
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.4),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                        gradient: RadialGradient(
+                          center: Alignment.center,
+                          radius: 0.8,
+                          colors: [
+                            platformColor.withOpacity(
+                              _pulseAnimation.value * 0.5,
+                            ), // Fading middle
+                            platformColor.withOpacity(0.9), // Solid edge
+                          ],
+                          stops: const [0.2, 1.0],
+                        ),
                       ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
               ),
             ),
-            // The Sprite
-            widget.mirror
-                ? Transform.flip(flipX: true, child: imageWidget)
-                : imageWidget,
+
+            // Outline Layers (4 directions)
+            Transform.translate(
+              offset: const Offset(-outlineOffset, -outlineOffset),
+              child: outlineImage,
+            ),
+            Transform.translate(
+              offset: const Offset(outlineOffset, -outlineOffset),
+              child: outlineImage,
+            ),
+            Transform.translate(
+              offset: const Offset(-outlineOffset, outlineOffset),
+              child: outlineImage,
+            ),
+            Transform.translate(
+              offset: const Offset(outlineOffset, outlineOffset),
+              child: outlineImage,
+            ),
+
+            // The Sprite (Enhanced)
+            enhancedImage,
           ],
         ),
       ),

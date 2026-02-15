@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:animal_warfare/local_auth_service.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:audioplayers/audioplayers.dart';
 import 'dart:io';
 
 class EditProfileScreen extends StatefulWidget {
@@ -19,7 +18,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   File? _pickedAvatarFile;
   final TextEditingController _usernameController = TextEditingController();
   String? _selectedGender;
-  bool _isLoading = true; 
+  bool _isLoading = true;
 
   // Custom retro/military colors
   static const Color primaryButtonColor = Color(0xFF38761D);
@@ -31,7 +30,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     super.initState();
     _loadUserProfile();
   }
-  
+
   @override
   void dispose() {
     super.dispose();
@@ -62,7 +61,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Future<void> _pickImage() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 50);
+    final XFile? image = await _picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 50,
+    );
 
     if (image != null) {
       setState(() {
@@ -86,7 +88,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Profile Updated Successfully!')),
       );
-      Navigator.of(context).pop(); 
+      Navigator.of(context).pop();
     }
   }
 
@@ -130,7 +132,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       ),
     );
   }
-  
+
   Widget _buildTextField({
     required TextEditingController controller,
     required String labelText,
@@ -155,7 +157,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             fontSize: 12,
             fontFamily: 'PressStart2P',
           ),
-          prefixIcon: Icon(icon, color: highlightColor.withOpacity(0.8), size: 18),
+          prefixIcon: Icon(
+            icon,
+            color: highlightColor.withOpacity(0.8),
+            size: 18,
+          ),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(vertical: 10),
         ),
@@ -170,10 +176,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         title: const Text('EDIT PROFILE'),
         backgroundColor: secondaryButtonColor,
         foregroundColor: highlightColor,
-        titleTextStyle: const TextStyle(fontFamily: 'PressStart2P', fontSize: 18),
+        titleTextStyle: const TextStyle(
+          fontFamily: 'PressStart2P',
+          fontSize: 18,
+        ),
       ),
       // **FIXED: Use the same background color for Scaffold and added ColorFilter.**
-      backgroundColor: secondaryButtonColor, // Matches AppBar and text field backgrounds
+      backgroundColor:
+          secondaryButtonColor, // Matches AppBar and text field backgrounds
       body: Container(
         width: MediaQuery.of(context).size.width,
         height: MediaQuery.of(context).size.height,
@@ -181,7 +191,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           image: DecorationImage(
             image: AssetImage('assets/profile.png'),
             fit: BoxFit.cover,
-            colorFilter: ColorFilter.mode(Colors.black54, BlendMode.darken), // Adjust opacity
+            colorFilter: ColorFilter.mode(
+              Colors.black54,
+              BlendMode.darken,
+            ), // Adjust opacity
           ),
         ),
         child: _isLoading
@@ -201,14 +214,22 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             ? FileImage(_pickedAvatarFile!) as ImageProvider
                             : null,
                         child: _pickedAvatarFile == null
-                            ? Icon(Icons.add_a_photo, size: 50, color: highlightColor)
+                            ? Icon(
+                                Icons.add_a_photo,
+                                size: 50,
+                                color: highlightColor,
+                              )
                             : null,
                       ),
                     ),
                     const SizedBox(height: 10),
                     Text(
                       'Tap to Change Avatar',
-                      style: TextStyle(color: highlightColor, fontSize: 10, fontFamily: 'PressStart2P'),
+                      style: TextStyle(
+                        color: highlightColor,
+                        fontSize: 10,
+                        fontFamily: 'PressStart2P',
+                      ),
                     ),
                     const SizedBox(height: 40),
 
@@ -222,10 +243,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
                     // 3. GENDER (Dropdown)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: secondaryButtonColor.withOpacity(0.8),
-                        border: Border.all(color: highlightColor.withOpacity(0.6), width: 1),
+                        border: Border.all(
+                          color: highlightColor.withOpacity(0.6),
+                          width: 1,
+                        ),
                       ),
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<String>(
@@ -240,11 +267,24 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             ),
                           ),
                           dropdownColor: secondaryButtonColor.withOpacity(0.9),
-                          style: const TextStyle(color: Colors.white, fontSize: 14, fontFamily: 'PressStart2P'),
-                          icon: Icon(Icons.arrow_drop_down, color: highlightColor.withOpacity(0.8)),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontFamily: 'PressStart2P',
+                          ),
+                          icon: Icon(
+                            Icons.arrow_drop_down,
+                            color: highlightColor.withOpacity(0.8),
+                          ),
                           items: const [
-                            DropdownMenuItem(value: 'Male', child: Text('MALE')),
-                            DropdownMenuItem(value: 'Female', child: Text('FEMALE')),
+                            DropdownMenuItem(
+                              value: 'Male',
+                              child: Text('MALE'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'Female',
+                              child: Text('FEMALE'),
+                            ),
                           ],
                           onChanged: (String? newValue) {
                             setState(() {

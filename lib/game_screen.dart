@@ -1,7 +1,6 @@
 // lib/game_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:animal_warfare/explore_screen.dart';
 import 'package:animal_warfare/anidex_screen.dart';
 import 'package:animal_warfare/quiz_screen.dart';
@@ -16,7 +15,7 @@ import 'package:animal_warfare/audio_manager.dart';
 
 class GameScreen extends StatefulWidget {
   // FIX: ADDED: Required fields to pass down user data and service
-  final UserData currentUser; 
+  final UserData currentUser;
   final LocalAuthService authService;
 
   const GameScreen({
@@ -30,12 +29,17 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> {
-
   // Define High-Contrast Retro/Military-themed colors (Copied from main_screen for consistency)
-  static const Color primaryButtonColor = Color(0xFF38761D); // Bright Jungle Green
-  static const Color secondaryButtonColor = Color(0xFF1E3F2A); // Deep Forest Green
+  static const Color primaryButtonColor = Color(
+    0xFF38761D,
+  ); // Bright Jungle Green
+  static const Color secondaryButtonColor = Color(
+    0xFF1E3F2A,
+  ); // Deep Forest Green
   static const Color tertiaryButtonColor = Color(0xFF8B0000); // Deep Red/Maroon
-  static const Color highlightColor = Color(0xFFDAA520); // Goldenrod (Text/Border Highlight)
+  static const Color highlightColor = Color(
+    0xFFDAA520,
+  ); // Goldenrod (Text/Border Highlight)
 
   @override
   void initState() {
@@ -47,11 +51,11 @@ class _GameScreenState extends State<GameScreen> {
   void dispose() {
     super.dispose();
   }
-  
+
   void _playBackgroundMusic() {
     AudioManager.instance.playBackgroundMusic('audio/main_theme.mp3');
   }
-  
+
   // Navigation function to pass UserData and LocalAuthService
   void _navigateTo(Widget screen) async {
     AudioManager.instance.pause();
@@ -60,17 +64,14 @@ class _GameScreenState extends State<GameScreen> {
         transitionDuration: const Duration(milliseconds: 400),
         pageBuilder: (context, animation, secondaryAnimation) => screen,
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(
-            opacity: animation,
-            child: child,
-          );
+          return FadeTransition(opacity: animation, child: child);
         },
       ),
     );
-    
+
     // Resume music when returning
     AudioManager.instance.resume();
-    
+
     // 🟢 FIX: Refresh user data when returning from any screen
     final updatedUser = await widget.authService.getCurrentUser();
     if (updatedUser != null && mounted) {
@@ -96,7 +97,7 @@ class _GameScreenState extends State<GameScreen> {
       decoration: BoxDecoration(
         color: color,
         border: Border.all(color: highlightColor, width: 2.0),
-        borderRadius: BorderRadius.circular(4.0), 
+        borderRadius: BorderRadius.circular(4.0),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.6),
@@ -132,7 +133,7 @@ class _GameScreenState extends State<GameScreen> {
       ),
     );
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -145,7 +146,7 @@ class _GameScreenState extends State<GameScreen> {
             decoration: BoxDecoration(
               color: secondaryButtonColor,
               image: DecorationImage(
-                image: const AssetImage('assets/main.png'), 
+                image: const AssetImage('assets/main.png'),
                 fit: BoxFit.cover,
                 colorFilter: ColorFilter.mode(
                   Colors.black.withOpacity(0.7),
@@ -154,15 +155,13 @@ class _GameScreenState extends State<GameScreen> {
               ),
             ),
           ),
-          
+
           Center(
-            
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  
                   const Text(
                     'ANIMAL WARFARE',
                     textAlign: TextAlign.center,
@@ -175,9 +174,9 @@ class _GameScreenState extends State<GameScreen> {
                         Shadow(
                           color: Color(0xFF8B0000),
                           blurRadius: 5.0,
-                          offset: Offset(2, 2)
-                        )
-                      ]
+                          offset: Offset(2, 2),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 60),
@@ -187,8 +186,18 @@ class _GameScreenState extends State<GameScreen> {
                     text: 'EXPLORE BIOMES',
                     icon: Icons.map,
                     onPressed: () {
-                      final user = Provider.of<UserState>(context, listen: false).currentUser ?? widget.currentUser;
-                      _navigateTo(ExploreScreen(currentUser: user, authService: widget.authService));
+                      final user =
+                          Provider.of<UserState>(
+                            context,
+                            listen: false,
+                          ).currentUser ??
+                          widget.currentUser;
+                      _navigateTo(
+                        ExploreScreen(
+                          currentUser: user,
+                          authService: widget.authService,
+                        ),
+                      );
                     },
                     color: primaryButtonColor,
                   ),
@@ -206,7 +215,7 @@ class _GameScreenState extends State<GameScreen> {
                     onPressed: () => _navigateTo(const AnimalBoxScreen()),
                     color: const Color(0xFF2E5A1C),
                   ),
-                  
+
                   _buildThemedButton(
                     text: 'CRAFTING STATION',
                     icon: Icons.auto_awesome,
@@ -218,18 +227,30 @@ class _GameScreenState extends State<GameScreen> {
                     text: 'ANIMAL DEX',
                     icon: Icons.pets,
                     onPressed: () {
-                      final user = Provider.of<UserState>(context, listen: false).currentUser ?? widget.currentUser;
-                      _navigateTo(AnidexScreen(currentUser: user, authService: widget.authService));
+                      final user =
+                          Provider.of<UserState>(
+                            context,
+                            listen: false,
+                          ).currentUser ??
+                          widget.currentUser;
+                      _navigateTo(
+                        AnidexScreen(
+                          currentUser: user,
+                          authService: widget.authService,
+                        ),
+                      );
                     },
                     color: secondaryButtonColor,
                   ),
                   _buildThemedButton(
                     text: 'ANIMAL QUIZ',
                     icon: Icons.quiz,
-                    onPressed: () => _navigateTo(QuizScreen(
-                      currentUser: widget.currentUser,
-                      authService: widget.authService,
-                    )),
+                    onPressed: () => _navigateTo(
+                      QuizScreen(
+                        currentUser: widget.currentUser,
+                        authService: widget.authService,
+                      ),
+                    ),
                     color: tertiaryButtonColor,
                   ),
 

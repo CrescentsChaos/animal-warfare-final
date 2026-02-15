@@ -32,8 +32,9 @@ class BattleOrganism {
 
   // Compatibility getter/setter for single status check
   StatusEffect get statusEffect {
-    if (_statusEffects.isEmpty)
+    if (_statusEffects.isEmpty) {
       return const StatusEffect(type: StatusEffectType.none);
+    }
     return _statusEffects.last;
   }
 

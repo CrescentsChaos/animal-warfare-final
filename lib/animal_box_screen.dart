@@ -24,9 +24,22 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
   String? _selectedCategory;
 
   static const List<String> _predefinedCategories = [
-    "Predator", "Prey", "Scavenger", "Parasite", "Venomous", "Poisonous",
-    "Social", "Solitary", "Flying", "Aquatic", "Arboreal", "Burrowing",
-    "Armored", "Agile", "Tiny", "Giant"
+    "Predator",
+    "Prey",
+    "Scavenger",
+    "Parasite",
+    "Venomous",
+    "Poisonous",
+    "Social",
+    "Solitary",
+    "Flying",
+    "Aquatic",
+    "Arboreal",
+    "Burrowing",
+    "Armored",
+    "Agile",
+    "Tiny",
+    "Giant",
   ];
 
   @override
@@ -79,9 +92,14 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
 
     final filtered = captured.asMap().entries.where((entry) {
       final org = entry.value;
-      final matchesSearch = org.name.toLowerCase().contains(_searchQuery.toLowerCase());
-      final matchesCategory = _selectedCategory == null || 
-          org.baseOrganism.category.toLowerCase().contains(_selectedCategory!.toLowerCase());
+      final matchesSearch = org.name.toLowerCase().contains(
+        _searchQuery.toLowerCase(),
+      );
+      final matchesCategory =
+          _selectedCategory == null ||
+          org.baseOrganism.category.toLowerCase().contains(
+            _selectedCategory!.toLowerCase(),
+          );
       return matchesSearch && matchesCategory;
     }).toList();
 
@@ -107,9 +125,12 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
                 isNarrow: MediaQuery.sizeOf(context).width < 400,
                 onTap: () => _showAnimalDetails(context, org),
                 onToggleTeam: () => userState.toggleTeamMember(originalIndex),
-                onSetAsAttacker: () => userState.setActiveAttacker(originalIndex),
-                onManageMoves: () => _showMoveSelection(context, org, originalIndex),
-                onRelease: () => _confirmRelease(context, org, originalIndex, userState),
+                onSetAsAttacker: () =>
+                    userState.setActiveAttacker(originalIndex),
+                onManageMoves: () =>
+                    _showMoveSelection(context, org, originalIndex),
+                onRelease: () =>
+                    _confirmRelease(context, org, originalIndex, userState),
               );
             },
           ),
@@ -129,7 +150,8 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
       itemCount: teamIndices.length,
       itemBuilder: (context, index) {
         final originalIndex = teamIndices[index];
-        if (originalIndex < 0 || originalIndex >= user.capturedOrganisms.length) {
+        if (originalIndex < 0 ||
+            originalIndex >= user.capturedOrganisms.length) {
           return const SizedBox.shrink();
         }
         final org = user.capturedOrganisms[originalIndex];
@@ -145,7 +167,8 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
           onToggleTeam: () => userState.toggleTeamMember(originalIndex),
           onSetAsAttacker: () => userState.setActiveAttacker(originalIndex),
           onManageMoves: () => _showMoveSelection(context, org, originalIndex),
-          onRelease: () => _confirmRelease(context, org, originalIndex, userState),
+          onRelease: () =>
+              _confirmRelease(context, org, originalIndex, userState),
         );
       },
     );
@@ -161,12 +184,22 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
             child: TextField(
               controller: _searchController,
               onChanged: (val) => setState(() => _searchQuery = val),
-              style: const TextStyle(color: Colors.white, fontFamily: 'PressStart2P', fontSize: 10),
+              style: const TextStyle(
+                color: Colors.white,
+                fontFamily: 'PressStart2P',
+                fontSize: 10,
+              ),
               decoration: InputDecoration(
                 hintText: 'Search...',
                 hintStyle: const TextStyle(color: Colors.white54, fontSize: 10),
-                prefixIcon: const Icon(Icons.search, color: Colors.white54, size: 18),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                prefixIcon: const Icon(
+                  Icons.search,
+                  color: Colors.white54,
+                  size: 18,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
                 filled: true,
                 fillColor: Colors.grey[850],
                 contentPadding: const EdgeInsets.symmetric(vertical: 4),
@@ -178,18 +211,31 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
             builder: (context, userState, _) {
               final user = userState.currentUser;
               if (user == null) return const SizedBox.shrink();
-              
+
               return DropdownButton<String>(
                 value: _selectedCategory,
-                hint: const Text('Cat', style: TextStyle(color: Colors.white54, fontSize: 10, fontFamily: 'PressStart2P')),
+                hint: const Text(
+                  'Cat',
+                  style: TextStyle(
+                    color: Colors.white54,
+                    fontSize: 10,
+                    fontFamily: 'PressStart2P',
+                  ),
+                ),
                 dropdownColor: Colors.grey[850],
-                style: const TextStyle(color: Colors.white, fontSize: 10, fontFamily: 'PressStart2P'),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontFamily: 'PressStart2P',
+                ),
                 items: [
                   const DropdownMenuItem(value: null, child: Text('All')),
-                  ..._predefinedCategories.map((c) => DropdownMenuItem(
-                    value: c,
-                    child: Text(c.toUpperCase()),
-                  )),
+                  ..._predefinedCategories.map(
+                    (c) => DropdownMenuItem(
+                      value: c,
+                      child: Text(c.toUpperCase()),
+                    ),
+                  ),
                 ],
                 onChanged: (val) => setState(() => _selectedCategory = val),
               );
@@ -210,7 +256,11 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
           Text(
             'No animals captured yet.',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14, color: Colors.grey[400], fontFamily: 'PressStart2P'),
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[400],
+              fontFamily: 'PressStart2P',
+            ),
           ),
         ],
       ),
@@ -229,7 +279,12 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
             Text(
               'Your team is empty.\nGo to "Box" and add some animals to your team (Max 5).',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12, color: Colors.grey[400], fontFamily: 'PressStart2P', height: 1.5),
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[400],
+                fontFamily: 'PressStart2P',
+                height: 1.5,
+              ),
             ),
           ],
         ),
@@ -237,7 +292,12 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
     );
   }
 
-  Future<void> _confirmRelease(BuildContext context, CapturedOrganism org, int index, UserState userState) async {
+  Future<void> _confirmRelease(
+    BuildContext context,
+    CapturedOrganism org,
+    int index,
+    UserState userState,
+  ) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -247,7 +307,10 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
           style: const TextStyle(fontFamily: 'PressStart2P', fontSize: 12),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
@@ -268,7 +331,11 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
     );
   }
 
-  void _showMoveSelection(BuildContext context, CapturedOrganism captured, int index) {
+  void _showMoveSelection(
+    BuildContext context,
+    CapturedOrganism captured,
+    int index,
+  ) {
     showDialog(
       context: context,
       builder: (ctx) => _MoveSelectionDialog(captured: captured, index: index),
@@ -305,14 +372,16 @@ class _AnimalCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final base = captured.baseOrganism;
     final spriteSize = isNarrow ? 80.0 : 100.0;
-    
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       color: Colors.grey[850],
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
         side: BorderSide(
-          color: isActiveAttacker ? AppColors.highlightColor : (isInTeam ? Colors.blue[300]! : Colors.grey[700]!),
+          color: isActiveAttacker
+              ? AppColors.highlightColor
+              : (isInTeam ? Colors.blue[300]! : Colors.grey[700]!),
           width: isActiveAttacker || isInTeam ? 2 : 1,
         ),
       ),
@@ -334,28 +403,53 @@ class _AnimalCard extends StatelessWidget {
                         Expanded(
                           child: Text(
                             base.name,
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, fontFamily: 'PressStart2P'),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                              fontFamily: 'PressStart2P',
+                            ),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        if (isInTeam) 
+                        if (isInTeam)
                           Container(
                             margin: const EdgeInsets.only(left: 8),
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(color: Colors.blue[800], borderRadius: BorderRadius.circular(4)),
-                            child: const Text('TEAM', style: TextStyle(fontSize: 8, fontFamily: 'PressStart2P', color: Colors.white)),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.blue[800],
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const Text(
+                              'TEAM',
+                              style: TextStyle(
+                                fontSize: 8,
+                                fontFamily: 'PressStart2P',
+                                color: Colors.white,
+                              ),
+                            ),
                           ),
                       ],
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'Category: ${base.category}',
-                      style: const TextStyle(color: AppColors.highlightColor, fontSize: 9, fontFamily: 'PressStart2P'),
+                      style: const TextStyle(
+                        color: AppColors.highlightColor,
+                        fontSize: 9,
+                        fontFamily: 'PressStart2P',
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'HP: ${captured.currentHealth}/${captured.maxHealth}',
-                      style: TextStyle(color: Colors.grey[400], fontSize: 10, fontFamily: 'PressStart2P'),
+                      style: TextStyle(
+                        color: Colors.grey[400],
+                        fontSize: 10,
+                        fontFamily: 'PressStart2P',
+                      ),
                     ),
                     const SizedBox(height: 8),
                     _buildActions(context),
@@ -376,7 +470,9 @@ class _AnimalCard extends StatelessWidget {
       children: [
         _SmallActionBtn(
           label: isActiveAttacker ? 'ACTIVE' : 'ATTACK',
-          color: isActiveAttacker ? AppColors.highlightColor : AppColors.primaryButtonColor,
+          color: isActiveAttacker
+              ? AppColors.highlightColor
+              : AppColors.primaryButtonColor,
           onPressed: isActiveAttacker ? null : onSetAsAttacker,
         ),
         _SmallActionBtn(
@@ -391,7 +487,13 @@ class _AnimalCard extends StatelessWidget {
           color: isInTeam ? Colors.blue[700]! : Colors.blue[400]!,
           onPressed: onToggleTeam,
         ),
-        _SmallActionBtn(label: 'RELEASE', color: Colors.transparent, textColor: Colors.red[300], onPressed: onRelease, isOutlined: true),
+        _SmallActionBtn(
+          label: 'RELEASE',
+          color: Colors.transparent,
+          textColor: Colors.red[300],
+          onPressed: onRelease,
+          isOutlined: true,
+        ),
       ],
     );
   }
@@ -423,7 +525,14 @@ class _SmallActionBtn extends StatelessWidget {
             side: BorderSide(color: textColor ?? color),
             padding: const EdgeInsets.symmetric(horizontal: 8),
           ),
-          child: Text(label, style: TextStyle(fontSize: 8, fontFamily: 'PressStart2P', color: textColor)),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 8,
+              fontFamily: 'PressStart2P',
+              color: textColor,
+            ),
+          ),
         ),
       );
     }
@@ -436,7 +545,10 @@ class _SmallActionBtn extends StatelessWidget {
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(horizontal: 8),
         ),
-        child: Text(label, style: const TextStyle(fontSize: 8, fontFamily: 'PressStart2P')),
+        child: Text(
+          label,
+          style: const TextStyle(fontSize: 8, fontFamily: 'PressStart2P'),
+        ),
       ),
     );
   }
@@ -466,9 +578,22 @@ class _AnimalDetailsDialog extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(base.name, style: const TextStyle(fontFamily: 'PressStart2P', fontSize: 14)),
+                  Text(
+                    base.name,
+                    style: const TextStyle(
+                      fontFamily: 'PressStart2P',
+                      fontSize: 14,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text(base.scientificName, style: TextStyle(fontSize: 10, color: Colors.grey[400], fontStyle: FontStyle.italic)),
+                  Text(
+                    base.scientificName,
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.grey[400],
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -492,56 +617,123 @@ class _AnimalDetailsDialog extends StatelessWidget {
             _buildStatHeader('EFFECTIVE STATS'),
             _buildNatureHeader(captured.nature),
             const SizedBox(height: 6),
-            _buildEffectiveStatRow('HP', captured.maxHealth, _getNatureColor('health', captured.nature)),
-            _buildEffectiveStatRow('Attack', captured.effectiveAttack, _getNatureColor('attack', captured.nature)),
-            _buildEffectiveStatRow('Defense', captured.effectiveDefense, _getNatureColor('defense', captured.nature)),
-            _buildEffectiveStatRow('Power', captured.effectivePower, _getNatureColor('power', captured.nature)),
-            _buildEffectiveStatRow('Resistance', captured.effectiveResistance, _getNatureColor('resistance', captured.nature)),
-            _buildEffectiveStatRow('Speed', captured.effectiveSpeed, _getNatureColor('speed', captured.nature)),
+            _buildEffectiveStatRow(
+              'HP',
+              captured.maxHealth,
+              _getNatureColor('health', captured.nature),
+            ),
+            _buildEffectiveStatRow(
+              'Attack',
+              captured.effectiveAttack,
+              _getNatureColor('attack', captured.nature),
+            ),
+            _buildEffectiveStatRow(
+              'Defense',
+              captured.effectiveDefense,
+              _getNatureColor('defense', captured.nature),
+            ),
+            _buildEffectiveStatRow(
+              'Power',
+              captured.effectivePower,
+              _getNatureColor('power', captured.nature),
+            ),
+            _buildEffectiveStatRow(
+              'Resistance',
+              captured.effectiveResistance,
+              _getNatureColor('resistance', captured.nature),
+            ),
+            _buildEffectiveStatRow(
+              'Speed',
+              captured.effectiveSpeed,
+              _getNatureColor('speed', captured.nature),
+            ),
             const SizedBox(height: 16),
             _buildStatHeader('SELECTED MOVES'),
             const SizedBox(height: 8),
-             ...captured.selectedMoveNames.map((mn) {
-               final move = Move.findByName(mn);
-               return Padding(
-                 padding: const EdgeInsets.only(bottom: 8.0),
-                 child: Row(
-                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                   children: [
-                     Text(mn, style: const TextStyle(fontSize: 10, fontFamily: 'PressStart2P', color: AppColors.highlightColor)),
-                     if (move != null) 
-                       Text('DMG: ${move.baseDamage}', style: const TextStyle(fontSize: 8, fontFamily: 'PressStart2P')),
-                   ],
-                 ),
-               );
-             }),
+            ...captured.selectedMoveNames.map((mn) {
+              final move = Move.findByName(mn);
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      mn,
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontFamily: 'PressStart2P',
+                        color: AppColors.highlightColor,
+                      ),
+                    ),
+                    if (move != null)
+                      Text(
+                        'DMG: ${move.baseDamage}',
+                        style: const TextStyle(
+                          fontSize: 8,
+                          fontFamily: 'PressStart2P',
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            }),
           ],
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close', style: TextStyle(color: AppColors.highlightColor, fontFamily: 'PressStart2P', fontSize: 10))),
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text(
+            'Close',
+            style: TextStyle(
+              color: AppColors.highlightColor,
+              fontFamily: 'PressStart2P',
+              fontSize: 10,
+            ),
+          ),
+        ),
       ],
     );
   }
 
   Widget _buildStatHeader(String label) {
-    return Text(label, style: const TextStyle(fontSize: 10, fontFamily: 'PressStart2P', color: Colors.white54));
+    return Text(
+      label,
+      style: const TextStyle(
+        fontSize: 10,
+        fontFamily: 'PressStart2P',
+        color: Colors.white54,
+      ),
+    );
   }
 
   Widget _buildStatRow(String label, int value) {
     // Determine color based on IV quality
     Color color = Colors.grey;
-    if (value >= 31) color = Colors.orange;
-    else if (value >= 25) color = Colors.greenAccent;
-    else if (value >= 15) color = Colors.blueAccent;
+    if (value >= 31) {
+      color = Colors.orange;
+    } else if (value >= 25)
+      color = Colors.greenAccent;
+    else if (value >= 15)
+      color = Colors.blueAccent;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(fontSize: 9, fontFamily: 'PressStart2P')),
-          Text('$value / 31', style: TextStyle(fontSize: 9, fontFamily: 'PressStart2P', color: color)),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 9, fontFamily: 'PressStart2P'),
+          ),
+          Text(
+            '$value / 31',
+            style: TextStyle(
+              fontSize: 9,
+              fontFamily: 'PressStart2P',
+              color: color,
+            ),
+          ),
         ],
       ),
     );
@@ -552,7 +744,11 @@ class _AnimalDetailsDialog extends StatelessWidget {
       padding: const EdgeInsets.only(top: 4.0),
       child: Text(
         'Nature: ${nature.name}',
-        style: const TextStyle(fontSize: 10, fontFamily: 'PressStart2P', color: AppColors.highlightColor),
+        style: const TextStyle(
+          fontSize: 10,
+          fontFamily: 'PressStart2P',
+          color: AppColors.highlightColor,
+        ),
       ),
     );
   }
@@ -564,14 +760,28 @@ class _AnimalDetailsDialog extends StatelessWidget {
     return Colors.white;
   }
 
-  Widget _buildEffectiveStatRow(String label, int value, [Color color = Colors.white]) {
+  Widget _buildEffectiveStatRow(
+    String label,
+    int value, [
+    Color color = Colors.white,
+  ]) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(fontSize: 9, fontFamily: 'PressStart2P')),
-          Text('$value', style: TextStyle(fontSize: 9, fontFamily: 'PressStart2P', color: color)),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 9, fontFamily: 'PressStart2P'),
+          ),
+          Text(
+            '$value',
+            style: TextStyle(
+              fontSize: 9,
+              fontFamily: 'PressStart2P',
+              color: color,
+            ),
+          ),
         ],
       ),
     );
@@ -623,7 +833,11 @@ class _MoveSelectionDialogState extends State<_MoveSelectionDialog> {
       backgroundColor: AppColors.secondaryButtonColor,
       title: const Text(
         'Select Moves (Max 4)',
-        style: TextStyle(fontFamily: 'PressStart2P', fontSize: 14, color: AppColors.highlightColor),
+        style: TextStyle(
+          fontFamily: 'PressStart2P',
+          fontSize: 14,
+          color: AppColors.highlightColor,
+        ),
       ),
       content: SizedBox(
         width: double.maxFinite,
@@ -638,14 +852,18 @@ class _MoveSelectionDialogState extends State<_MoveSelectionDialog> {
             return CheckboxListTile(
               title: Text(
                 moveName,
-                style: const TextStyle(fontFamily: 'PressStart2P', fontSize: 10, color: Colors.white),
+                style: const TextStyle(
+                  fontFamily: 'PressStart2P',
+                  fontSize: 10,
+                  color: Colors.white,
+                ),
               ),
-              subtitle: move != null 
-                ? Text(
-                    'DMG: ${move.baseDamage}, STAMINA: ${move.stamina}',
-                    style: TextStyle(fontSize: 8, color: Colors.grey[400]),
-                  )
-                : null,
+              subtitle: move != null
+                  ? Text(
+                      'DMG: ${move.baseDamage}, STAMINA: ${move.stamina}',
+                      style: TextStyle(fontSize: 8, color: Colors.grey[400]),
+                    )
+                  : null,
               value: isSelected,
               onChanged: (_) => _toggleMove(moveName),
               activeColor: AppColors.highlightColor,
@@ -662,11 +880,19 @@ class _MoveSelectionDialogState extends State<_MoveSelectionDialog> {
         ElevatedButton(
           onPressed: () async {
             final userState = Provider.of<UserState>(context, listen: false);
-            await userState.updateCapturedOrganismMoves(widget.index, _selectedMoves);
+            await userState.updateCapturedOrganismMoves(
+              widget.index,
+              _selectedMoves,
+            );
             if (context.mounted) Navigator.pop(context);
           },
-          style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryButtonColor),
-          child: const Text('Save', style: TextStyle(fontFamily: 'PressStart2P', fontSize: 10)),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primaryButtonColor,
+          ),
+          child: const Text(
+            'Save',
+            style: TextStyle(fontFamily: 'PressStart2P', fontSize: 10),
+          ),
         ),
       ],
     );
@@ -743,7 +969,13 @@ class _AnimalBoxSpriteState extends State<_AnimalBoxSprite> {
           height: size,
           child: Container(
             color: Colors.grey[800],
-            child: const Center(child: SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))),
+            child: const Center(
+              child: SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
           ),
         ),
       );
@@ -757,7 +989,12 @@ class _AnimalBoxSpriteState extends State<_AnimalBoxSprite> {
           color: Colors.grey[900],
           alignment: Alignment.center,
           child: _imageSourceType == 'local'
-              ? Image.asset(_imagePath, width: size, height: size, fit: BoxFit.contain)
+              ? Image.asset(
+                  _imagePath,
+                  width: size,
+                  height: size,
+                  fit: BoxFit.contain,
+                )
               : Image.network(
                   _imagePath,
                   width: size,
@@ -765,13 +1002,23 @@ class _AnimalBoxSpriteState extends State<_AnimalBoxSprite> {
                   fit: BoxFit.contain,
                   loadingBuilder: (context, child, loadingProgress) {
                     if (loadingProgress == null) return child;
-                    return const Center(child: SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)));
+                    return const Center(
+                      child: SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    );
                   },
                   errorBuilder: (_, __, ___) => Container(
                     width: size,
                     height: size,
                     color: Colors.grey[800],
-                    child: const Icon(Icons.pets, color: Colors.white54, size: 24),
+                    child: const Icon(
+                      Icons.pets,
+                      color: Colors.white54,
+                      size: 24,
+                    ),
                   ),
                 ),
         ),
