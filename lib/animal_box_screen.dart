@@ -556,7 +556,7 @@ class _AnimalCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'HP: ${captured.currentHealth}/${captured.maxHealth}',
+                      'HP: ${(captured.getMaxHealth(atLevel: 50) * (captured.currentHealth / captured.maxHealth)).round()}/${captured.getMaxHealth(atLevel: 50)}',
                       style: TextStyle(
                         color: Colors.grey[400],
                         fontSize: 10,
@@ -773,36 +773,46 @@ class _AnimalDetailsDialog extends StatelessWidget {
             _buildStatRow('SPD IV', ivs['speed'] ?? 0),
             const Divider(color: Colors.grey),
             _buildStatHeader('EFFECTIVE STATS'),
+            const SizedBox(height: 4),
+            const Text(
+              'LV 50 BATTLE SCALE',
+              style: TextStyle(
+                fontFamily: 'PressStart2P',
+                fontSize: 8,
+                color: Colors.white38,
+              ),
+            ),
+            const SizedBox(height: 4),
             _buildNatureHeader(captured.nature),
             const SizedBox(height: 6),
             _buildEffectiveStatRow(
               'HP',
-              captured.maxHealth,
+              captured.getMaxHealth(atLevel: 50),
               _getNatureColor('health', captured.nature),
             ),
             _buildEffectiveStatRow(
               'Attack',
-              captured.effectiveAttack,
+              captured.getAttack(atLevel: 50),
               _getNatureColor('attack', captured.nature),
             ),
             _buildEffectiveStatRow(
               'Defense',
-              captured.effectiveDefense,
+              captured.getDefense(atLevel: 50),
               _getNatureColor('defense', captured.nature),
             ),
             _buildEffectiveStatRow(
               'Power',
-              captured.effectivePower,
+              captured.getPower(atLevel: 50),
               _getNatureColor('power', captured.nature),
             ),
             _buildEffectiveStatRow(
               'Resistance',
-              captured.effectiveResistance,
+              captured.getResistance(atLevel: 50),
               _getNatureColor('resistance', captured.nature),
             ),
             _buildEffectiveStatRow(
               'Speed',
-              captured.effectiveSpeed,
+              captured.getSpeed(atLevel: 50),
               _getNatureColor('speed', captured.nature),
             ),
             const SizedBox(height: 16),

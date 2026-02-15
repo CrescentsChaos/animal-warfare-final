@@ -1,9 +1,9 @@
 // lib/biome_detail_screen.dart
 import 'package:flutter/material.dart';
-import 'dart:math'; // Import Random
+// Import Random
 import 'package:animal_warfare/models/organism.dart';
 import 'package:animal_warfare/models/captured_organism.dart';
-import 'package:animal_warfare/models/talisman.dart'; // Import Talisman model
+// Import Talisman model
 import 'package:animal_warfare/battle_screen.dart'; // Ensure this is the correct path
 import 'package:animal_warfare/game/battle_manager.dart'; // Import for BattleResult enum
 import 'explore_screen.dart'; // Import to use getWeightedRandomOrganism and Organism List
@@ -222,13 +222,6 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
 
     // 2. Generate the Wild Organism with unique DNA (the opponent)
     final wildFighter = CapturedOrganism.spawn(wildOrganism);
-
-    // Equip a random talisman (100% chance for wild encounters too)
-    if (Talisman.allTalismans.isNotEmpty) {
-      final randomTalisman =
-          Talisman.allTalismans[Random().nextInt(Talisman.allTalismans.length)];
-      wildFighter.equippedTalisman = randomTalisman;
-    }
 
     // 3. Navigate to the Battle Screen
     AudioService.instance.pauseAll();

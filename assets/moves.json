@@ -185,7 +185,7 @@
     {
         "name": "Chomp",
         "description": "A basic attack.",
-        "baseDamage": 30,
+        "baseDamage": 70,
         "type": "aquatic",
         "stamina": 25,
         "category": "physical",
@@ -194,7 +194,7 @@
     {
         "name": "Venomous Fang",
         "description": "May poison the foe.",
-        "baseDamage": 55,
+        "baseDamage": 65,
         "type": "venomous",
         "stamina": 15,
         "category": "physical",
@@ -202,7 +202,22 @@
             {
                 "type": "statusPoison",
                 "value": 3,
-                "chance": 50
+                "chance": 90
+            }
+        ]
+    },
+    {
+        "name": "Venom Spit",
+        "description": "May poison the foe.",
+        "baseDamage": 65,
+        "type": "venomous",
+        "stamina": 15,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statusPoison",
+                "value": 3,
+                "chance": 90
             }
         ]
     },
@@ -243,12 +258,22 @@
     {
         "name": "Vortex Suction",
         "description": "The user opens its massive mouth to create a vacuum. Deals damage and restores HP.",
+        "baseDamage": 80,
+        "accuracy": 95,
+        "type": "aquatic",
+        "stamina": 15,
+        "category": "special",
+        "drainPercent": 0.5
+    },
+    {
+        "name": "Vacuum Gulp",
+        "description": "The user opens its massive mouth to create a vacuum. Deals damage and restores HP.",
         "baseDamage": 65,
         "accuracy": 95,
         "type": "aquatic",
         "stamina": 15,
         "category": "special",
-        "// Whale sharks \"pull\" water rather than biting\n      drainPercent": 0.5
+        "drainPercent": 0.5
     },
     {
         "name": "Denticle Armor",
@@ -332,7 +357,7 @@
         "type": "giant",
         "stamina": 10,
         "recoilPercent": 0.25,
-        "// 25% recoil damage\n      category": "physical"
+        "category": "physical"
     },
     {
         "name": "Scary Face",
@@ -360,7 +385,7 @@
         "description": "A ghostly call from the ancient past. Ignores the target's stat changes.",
         "baseDamage": 80,
         "accuracy": 100,
-        "// Never misses in jungle terrain\n      type": "normal",
+        "type": "normal",
         "stamina": 10,
         "category": "special",
         "damageStat": "power",
@@ -392,11 +417,12 @@
     {
         "name": "Horn Leech",
         "description": "A specialized browsing strike that restores health.",
+        "soundeffect": "asset/effects/absorb.mp3",
         "baseDamage": 75,
         "type": "parasite",
-        "// Uses the drain logic from your code\n      stamina": 10,
+        "stamina": 10,
         "drainPercent": 0.5,
-        "// Heals half of damage dealt\n      category": "physical"
+        "category": "physical"
     },
     {
         "name": "Resonating Honk",
@@ -552,8 +578,112 @@
         ]
     },
     {
+        "name": "Upstream Surge",
+        "description": "The user pushes through resistance. Increases Speed and ignores terrain debuffs.",
+        "baseDamage": 50,
+        "type": "aquatic",
+        "stamina": 15,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "speed",
+                "value": 1
+            }
+        ]
+    },
+    {
+        "name": "Tree Scramble",
+        "description": "Deals damage and raises user's Speed by 1.",
+        "baseDamage": 50,
+        "type": "predator",
+        "stamina": 15,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "speed",
+                "value": 1
+            }
+        ]
+    },
+    {
+        "name": "Arctic Maul",
+        "description": "30% chance to Slow the target.",
+        "baseDamage": 95,
+        "type": "predator",
+        "stamina": 25,
+        "accuracy": 85,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "speed",
+                "value": -1
+            }
+        ]
+    },
+    {
+        "name": "Kodiak Crush",
+        "description": "High damage; reduces opponent's Defense by 1.",
+        "baseDamage": 110,
+        "type": "predator",
+        "stamina": 15,
+        "accuracy": 80,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "defense",
+                "value": -1
+            }
+        ]
+    },
+    {
+        "name": "Claw Penetration",
+        "description": "reduces opponent's Defense by 2.",
+        "baseDamage": 70,
+        "type": "predator",
+        "stamina": 15,
+        "accuracy": 90,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "defense",
+                "value": -2
+            }
+        ]
+    },
+    {
+        "name": "Leaping Strike",
+        "description": "A high-velocity jump attack. Has a high critical hit ratio.",
+        "baseDamage": 65,
+        "type": "aquatic",
+        "stamina": 15,
+        "accuracy": 95,
+        "category": "physical",
+        "critRate": 2
+    },
+    {
+        "name": "Vicious Bite",
+        "description": "Has a very high Critical Hit ratio.",
+        "baseDamage": 65,
+        "type": "predator",
+        "stamina": 20,
+        "accuracy": 100,
+        "category": "physical",
+        "critRate": 2
+    },
+    {
         "name": "Shadow Wallower",
         "description": "Vanishes into the muddy forest floor before striking from behind.",
+        "soundeffect": "asset/effects/agile.mp3",
         "baseDamage": 85,
         "accuracy": 95,
         "type": "agile",
@@ -596,7 +726,7 @@
                 "type": "statusBleed",
                 "target": "opponent",
                 "value": 4,
-                "// Higher duration for the Komodo\n          chance": 100
+                "chance": 100
             }
         ]
     },
@@ -605,7 +735,7 @@
         "description": "Strikes from the canopy, entering stealth and dealing high damage.",
         "baseDamage": 85,
         "accuracy": 100,
-        "type": "agile",
+        "type": "arboreal",
         "stamina": 15,
         "category": "physical",
         "effects": [
@@ -613,7 +743,7 @@
                 "type": "statusStealth",
                 "target": "self",
                 "value": 1,
-                "// Sets up for the 2.0x Stealth damage multiplier on next turn\n          chance": 100
+                "chance": 100
             }
         ]
     },
@@ -636,6 +766,7 @@
     {
         "name": "Filter Feed",
         "description": "The user filters the surrounding water for nutrients, clearing status and healing.",
+        "soundeffect": "asset/effects/absorb.mp3",
         "baseDamage": 0,
         "type": "aquatic",
         "stamina": 8,
@@ -667,7 +798,7 @@
         "stamina": 5,
         "category": "physical",
         "multiplierCondition": "user_high_hp",
-        "// You can implement this logic in your battle engine\n      conditionalMultiplier": 1.5,
+        "conditionalMultiplier": 1.5,
         "effects": [
             {
                 "type": "statusStun",
@@ -681,8 +812,8 @@
         "name": "Event Horizon Gulp",
         "description": "The ultimate apex move. Swallows weakened foes whole.",
         "baseDamage": 200,
-        "// Extreme damage placeholder for OHKO feel\n      accuracy": 30,
-        "type": "predator",
+        "accuracy": 30,
+        "type": "aquatic",
         "stamina": 5,
         "category": "physical",
         "customUsageText": "The whale creates a massive vacuum suction!",
@@ -714,6 +845,7 @@
     {
         "name": "Blubber Shield",
         "description": "Sacrifices health to create a massive protective barrier.",
+        "soundeffect": "asset/effects/protect.mp3",
         "baseDamage": 0,
         "type": "armored",
         "stamina": 5,
@@ -731,7 +863,7 @@
         "baseDamage": 70,
         "accuracy": 100,
         "type": "social",
-        "// Fitting for whale song\n      stamina": 10,
+        "stamina": 10,
         "category": "special",
         "effects": [
             {
@@ -745,6 +877,7 @@
     {
         "name": "Tail Whip",
         "description": "Lowers the opponent's defense.",
+        "soundeffect": "asset/effects/agile.mp3",
         "baseDamage": 10,
         "type": "agile",
         "stamina": 25,
@@ -761,6 +894,7 @@
     {
         "name": "Jet Ram",
         "description": "A high-speed tackle using jet propulsion. High crit rate.",
+        "soundeffect": "asset/effects/agile.mp3",
         "baseDamage": 60,
         "type": "agile",
         "stamina": 15,
@@ -795,12 +929,6 @@
                 "type": "statusBlind",
                 "target": "opponent",
                 "value": 2,
-                "chance": 100
-            },
-            {
-                "type": "statusStealth",
-                "target": "self",
-                "value": 1,
                 "chance": 100
             }
         ]
@@ -872,6 +1000,7 @@
     {
         "name": "Osmosis",
         "description": "Absorbs nutrients from the water to heal the user.",
+        "soundeffect": "asset/effects/absorb.mp3",
         "baseDamage": 0,
         "type": "aquatic",
         "stamina": 5,
@@ -905,11 +1034,12 @@
     {
         "name": "Tentacle Snap",
         "description": "A lightning-fast grab with tentacles that hits first.",
+        "soundeffect": "asset/effects/agile.mp3",
         "baseDamage": 40,
         "type": "agile",
         "stamina": 20,
         "priority": 1,
-        "// Moves first\n      category": "physical"
+        "category": "physical"
     },
     {
         "name": "Hiss",
@@ -943,8 +1073,31 @@
         ]
     },
     {
+        "name": "Angler's Deceit",
+        "description": "The user wiggles its lure, tricking the foe into a vulnerable position before striking.",
+        "baseDamage": 45,
+        "type": "aquatic",
+        "stamina": 20,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statusFear",
+                "value": 23,
+                "chance": 100
+            },
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "speed",
+                "value": -1,
+                "chance": 20
+            }
+        ]
+    },
+    {
         "name": "Cavitation Strike",
         "description": "Lowers the opponent's defense.",
+        "soundeffect": "asset/effects/agile.mp3",
         "baseDamage": 90,
         "type": "agile",
         "stamina": 15,
@@ -962,6 +1115,7 @@
     {
         "name": "Hibernate",
         "description": "A healing nap.",
+        "soundeffect": "asset/effects/absorb.mp3",
         "baseDamage": 0,
         "type": "burrowing",
         "stamina": 5,
@@ -990,6 +1144,16 @@
         "baseDamage": 60,
         "accuracy": 85,
         "type": "predator",
+        "stamina": 15,
+        "category": "physical",
+        "effects": []
+    },
+    {
+        "name": "Lunge",
+        "description": "User lunges at the foe.",
+        "baseDamage": 60,
+        "accuracy": 85,
+        "type": "prey",
         "stamina": 15,
         "category": "physical",
         "effects": []
@@ -1050,6 +1214,21 @@
                 "type": "statusBleed",
                 "value": 1,
                 "chance": 30
+            }
+        ]
+    },
+    {
+        "name": "Glass Teeth",
+        "description": "Bites with vicious fangs.",
+        "baseDamage": 80,
+        "type": "aquatic",
+        "stamina": 15,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusBleed",
+                "value": 1,
+                "chance": 50
             }
         ]
     },
@@ -1143,6 +1322,7 @@
     {
         "name": "Quick Attack",
         "description": "Strikes first.",
+        "soundeffect": "asset/effects/agile.mp3",
         "baseDamage": 40,
         "priority": 1,
         "type": "agile",
@@ -1153,6 +1333,7 @@
     {
         "name": "Bullet Punch",
         "description": "Strikes first.",
+        "soundeffect": "asset/effects/agile.mp3",
         "baseDamage": 40,
         "priority": 1,
         "type": "agile",
@@ -1163,6 +1344,7 @@
     {
         "name": "Dash",
         "description": "Strikes first.",
+        "soundeffect": "asset/effects/agile.mp3",
         "baseDamage": 50,
         "priority": 1,
         "type": "agile",
@@ -1194,6 +1376,28 @@
         "minHits": 2,
         "maxHits": 5,
         "type": "social",
+        "stamina": 15,
+        "category": "physical",
+        "effects": []
+    },
+    {
+        "name": "Grizzly Frenzy",
+        "description": "Hits 2-3 times.",
+        "baseDamage": 45,
+        "minHits": 2,
+        "maxHits": 3,
+        "type": "predator",
+        "stamina": 20,
+        "accuracy": 95,
+        "category": "physical"
+    },
+    {
+        "name": "Pharyngeal Grip",
+        "description": "Hits 2 times.",
+        "baseDamage": 45,
+        "minHits": 2,
+        "maxHits": 2,
+        "type": "aquatic",
         "stamina": 15,
         "category": "physical",
         "effects": []
@@ -1276,6 +1480,7 @@
     {
         "name": "Savannah Sweep",
         "description": "A sweeping claw attack that hits the legs, lowering Speed.",
+        "soundeffect": "asset/effects/agile.mp3",
         "baseDamage": 75,
         "accuracy": 100,
         "type": "agile",
@@ -1293,6 +1498,7 @@
     {
         "name": "Frost-Leap",
         "description": "Strikes from a frozen ledge. Chance to freeze or stun the foe.",
+        "soundeffect": "asset/effects/agile.mp3",
         "baseDamage": 85,
         "accuracy": 100,
         "type": "agile",
@@ -1349,6 +1555,7 @@
     {
         "name": "Midnight Eviscerate",
         "description": "An eerie, blinding attack that confuses the target.",
+        "soundeffect": "asset/effects/agile.mp3",
         "baseDamage": 85,
         "accuracy": 100,
         "type": "agile",
@@ -1400,6 +1607,7 @@
     {
         "name": "Overdrive Sprint",
         "description": "Uses extreme acceleration to strike before the opponent can react",
+        "soundeffect": "asset/effects/agile.mp3",
         "baseDamage": 80,
         "accuracy": 100,
         "type": "agile",
@@ -1417,6 +1625,7 @@
     {
         "name": "Drain Punch",
         "description": "Heals half damage dealt.",
+        "soundeffect": "asset/effects/absorb.mp3",
         "baseDamage": 75,
         "drainPercent": 0.5,
         "type": "parasite",
@@ -1465,7 +1674,8 @@
         "effects": [
             {
                 "type": "multiStatChange",
-                "stat": "attack:1,defense:1,accuracy:1"
+                "stat": "attack:1,defense:1,accuracy:1",
+                "target": "self"
             }
         ]
     },
@@ -1548,6 +1758,7 @@
     {
         "name": "Giga Drain",
         "description": "A nutrient-draining attack. The user's HP is restored by half the damage taken by the target.",
+        "soundeffect": "asset/effects/absorb.mp3",
         "baseDamage": 75,
         "drainPercent": 0.5,
         "type": "parasite",
@@ -1572,6 +1783,7 @@
     {
         "name": "Rest",
         "description": "The user goes to sleep for two turns. This fully restores the user's HP.",
+        "soundeffect": "asset/effects/absorb.mp3",
         "baseDamage": 0,
         "type": "normal",
         "stamina": 5,
@@ -1581,6 +1793,11 @@
                 "type": "heal",
                 "target": "self",
                 "value": 999
+            },
+            {
+                "type": "statusSleep",
+                "target": "self",
+                "value": 2
             }
         ]
     },
@@ -1589,6 +1806,19 @@
         "description": "Enables the user to evade all attacks. Its chance of failing rises if it is used in succession.",
         "baseDamage": 0,
         "type": "normal",
+        "stamina": 10,
+        "category": "status",
+        "effects": [
+            {
+                "type": "protect"
+            }
+        ]
+    },
+    {
+        "name": "Symbiotic Guard",
+        "description": "Takes cover into the anemone.",
+        "baseDamage": 0,
+        "type": "aquatic",
         "stamina": 10,
         "category": "status",
         "effects": [
@@ -1649,6 +1879,7 @@
             {
                 "type": "statChangeChance",
                 "stat": "attack:1,defense:1,speed:1,power:1,resistance:1",
+                "target": "self",
                 "chance": 10
             }
         ]
@@ -1766,13 +1997,13 @@
         "baseDamage": 70,
         "accuracy": 70,
         "type": "predator",
-        "// Fits the \"Bite/Crunch\" theme\n      stamina": 15,
+        "stamina": 15,
         "category": "physical",
         "effects": [
             {
                 "type": "statusBleed",
                 "value": 3,
-                "// Standard bleed severity/duration\n          chance": 100
+                "chance": 100
             },
             {
                 "type": "statChange",

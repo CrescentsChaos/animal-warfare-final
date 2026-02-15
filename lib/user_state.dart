@@ -295,7 +295,7 @@ class UserState with ChangeNotifier {
         );
       } else {
         // Unequipping
-        organisms[organismIndex] = targetOrg.copyWith(equippedTalisman: null);
+        organisms[organismIndex] = targetOrg.copyWith(clearTalisman: true);
       }
 
       // Return old one to inventory if it existed
@@ -625,7 +625,7 @@ class UserState with ChangeNotifier {
     for (int i = 0; i < count; i++) {
       final base = fallout[Random().nextInt(fallout.length)];
       // Bosses have guaranteed better IVs (31 in all stats)
-      final spawn = isBoss
+      var spawn = isBoss
           ? CapturedOrganism.spawn(base, level: effectiveLevel).copyWith(
               individualValues: {
                 'health': 31,
@@ -637,6 +637,13 @@ class UserState with ChangeNotifier {
               },
             )
           : CapturedOrganism.spawn(base, level: effectiveLevel);
+
+      // ROGUE UPDATE: Assign random talisman (Opponents have items in Rogue mode)
+      if (Talisman.allTalismans.isNotEmpty) {
+        final randomTalisman = Talisman
+            .allTalismans[Random().nextInt(Talisman.allTalismans.length)];
+        spawn = spawn.copyWith(equippedTalisman: randomTalisman);
+      }
 
       team.add(spawn);
     }

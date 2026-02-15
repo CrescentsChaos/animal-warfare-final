@@ -117,6 +117,7 @@ class CapturedOrganism {
     Map<String, int>? individualValues,
     int? currentHealth,
     Talisman? equippedTalisman,
+    bool clearTalisman = false, // Added to allow unequipping
     List<String>? selectedMoveNames,
     Map<String, int>? moveStamina,
     Nature? nature,
@@ -134,7 +135,9 @@ class CapturedOrganism {
       baseOrganism: baseOrganism ?? this.baseOrganism,
       individualValues: individualValues ?? Map.from(this.individualValues),
       currentHealth: currentHealth ?? this.currentHealth,
-      equippedTalisman: equippedTalisman ?? this.equippedTalisman,
+      equippedTalisman: clearTalisman
+          ? null
+          : (equippedTalisman ?? this.equippedTalisman),
       selectedMoveNames: selectedMoveNames ?? List.from(this.selectedMoveNames),
       initialMoveStamina: moveStamina ?? Map.from(this.moveStamina),
       nature: nature ?? this.nature,
@@ -149,6 +152,7 @@ class CapturedOrganism {
       accuracyStage: accuracyStage ?? this.accuracyStage,
     );
   }
+
   // --- DNA Generation and Stat Calculation ---
 
   // Maximum IV value (0 to 31)
