@@ -1,19 +1,16 @@
 // lib/main_screen.dart
 
 import 'package:flutter/material.dart';
-import 'package:animal_warfare/login_screen.dart'; 
+import 'package:animal_warfare/login_screen.dart';
 import 'package:animal_warfare/profile_screen.dart';
 import 'package:animal_warfare/game_screen.dart';
 import 'package:animal_warfare/quest_screen.dart';
 import 'package:animal_warfare/local_auth_service.dart';
-import 'package:audioplayers/audioplayers.dart'; 
-import 'package:shared_preferences/shared_preferences.dart'; 
-import 'package:animal_warfare/theme.dart'; 
+import 'package:animal_warfare/theme.dart';
 
+import 'package:animal_warfare/services/audio_service.dart';
 
-import 'package:animal_warfare/audio_manager.dart';
-
-enum AuthStatus { loading, loggedIn, guest } 
+enum AuthStatus { loading, loggedIn, guest }
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -26,7 +23,7 @@ class _MainScreenState extends State<MainScreen> {
   final LocalAuthService _authService = LocalAuthService();
   AuthStatus _authStatus = AuthStatus.loading;
   UserData? _currentUser;
-  
+
   @override
   void initState() {
     super.initState();
@@ -48,35 +45,31 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Future<void> _playBackgroundMusic() async {
-    final prefs = await SharedPreferences.getInstance();
-    final isMusicEnabled = prefs.getBool('isMusicEnabled') ?? true; // Default to ON
-
-    if (isMusicEnabled) {
-      AudioManager.instance.playBackgroundMusic('audio/coastal_theme.mp3');
-    } else {
-      AudioManager.instance.stop();
-    }
+    // AudioService handles its own 'enabled' state internally
+    await AudioService.instance.playMusic('audio/coastal_theme.mp3');
   }
 
   void _navigateTo(Widget page) {
-    // Stop music via AudioManager when navigating away if necessary, 
+    // Stop music via AudioService when navigating away if necessary,
     // though the new page should handle its own music or pause it.
-    AudioManager.instance.pause();
-    
+    AudioService.instance.pauseAll();
+
     // FIX: Replace MaterialPageRoute with your custom _createFadeRoute
-    Navigator.of(context).push(
-        _createFadeRoute(page), // <--- Use the custom route here!
-    ).then((_) {
-        // This block runs AFTER the new page is POPPED (i.e., you return to the current screen)
-        _checkAuthStatus();
-        _playBackgroundMusic();
-        // Resume music when returning
-        AudioManager.instance.resume();
-    });
-}
+    Navigator.of(context)
+        .push(
+          _createFadeRoute(page), // <--- Use the custom route here!
+        )
+        .then((_) {
+          // This block runs AFTER the new page is POPPED (i.e., you return to the current screen)
+          _checkAuthStatus();
+          _playBackgroundMusic();
+          // Resume music when returning
+          AudioService.instance.resumeAll();
+        });
+  }
 
   void _handleAuthAction() {
-    _navigateTo(const LoginScreen()); 
+    _navigateTo(const LoginScreen());
   }
 
   Widget _buildThemedButton({
@@ -86,7 +79,9 @@ class _MainScreenState extends State<MainScreen> {
     required bool isPrimary,
   }) {
     // 🚨 EDITED: Use AppColors
-    final Color buttonColor = isPrimary ? AppColors.primaryButtonColor : AppColors.secondaryButtonColor;
+    final Color buttonColor = isPrimary
+        ? AppColors.primaryButtonColor
+        : AppColors.secondaryButtonColor;
     final Color textColor = isPrimary ? Colors.white : AppColors.highlightColor;
 
     return Container(
@@ -119,10 +114,12 @@ class _MainScreenState extends State<MainScreen> {
       return Scaffold(
         // 🚨 EDITED: Use AppColors for scaffold background
         backgroundColor: AppColors.secondaryButtonColor,
-        body: Center(child: CircularProgressIndicator(color: AppColors.highlightColor)),
+        body: Center(
+          child: CircularProgressIndicator(color: AppColors.highlightColor),
+        ),
       );
     }
-    
+
     return Scaffold(
       // 🚨 EDITED: Use AppColors for scaffold background
       backgroundColor: AppColors.secondaryButtonColor,
@@ -133,7 +130,7 @@ class _MainScreenState extends State<MainScreen> {
             decoration: BoxDecoration(
               color: AppColors.secondaryButtonColor,
               image: DecorationImage(
-                image: const AssetImage('assets/biomes/coastal-bg.png'), 
+                image: const AssetImage('assets/biomes/coastal-bg.png'),
                 fit: BoxFit.cover,
                 colorFilter: ColorFilter.mode(
                   Colors.black.withOpacity(0.7),
@@ -142,7 +139,7 @@ class _MainScreenState extends State<MainScreen> {
               ),
             ),
           ),
-          
+
           // Content
           Center(
             child: SingleChildScrollView(
@@ -156,11 +153,16 @@ class _MainScreenState extends State<MainScreen> {
                     'ANIMAL WARFARE',
                     textAlign: TextAlign.center,
                     // 🚨 EDITED: Use AppTextStyles.headline for the main title
-                    style: AppTextStyles.headline(context, baseSize: 32.0).copyWith(
-                      shadows: [
-                        Shadow(color: Colors.black.withOpacity(0.9), blurRadius: 4, offset: const Offset(3, 3))
-                      ],
-                    ),
+                    style: AppTextStyles.headline(context, baseSize: 32.0)
+                        .copyWith(
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withOpacity(0.9),
+                              blurRadius: 4,
+                              offset: const Offset(3, 3),
+                            ),
+                          ],
+                        ),
                   ),
                   const SizedBox(height: 50),
 
@@ -169,11 +171,13 @@ class _MainScreenState extends State<MainScreen> {
                     text: 'START GAME',
                     icon: Icons.shield,
                     onPressed: () {
-                       if (_currentUser != null) {
-                        _navigateTo(GameScreen(
-                          currentUser: _currentUser!, 
-                          authService: _authService,
-                        ));
+                      if (_currentUser != null) {
+                        _navigateTo(
+                          GameScreen(
+                            currentUser: _currentUser!,
+                            authService: _authService,
+                          ),
+                        );
                       } else {
                         // Redirect to login if a player attempts to start the game while logged out
                         _navigateTo(const LoginScreen());
@@ -187,7 +191,7 @@ class _MainScreenState extends State<MainScreen> {
                     _buildThemedButton(
                       text: 'LOGIN / REGISTER',
                       icon: Icons.login,
-                      onPressed: _handleAuthAction, 
+                      onPressed: _handleAuthAction,
                       isPrimary: false,
                     ),
 
@@ -196,7 +200,7 @@ class _MainScreenState extends State<MainScreen> {
                     _buildThemedButton(
                       text: 'PROFILE',
                       icon: Icons.person,
-                      onPressed: () => _navigateTo(const ProfileScreen()), 
+                      onPressed: () => _navigateTo(const ProfileScreen()),
                       isPrimary: false,
                     ),
 
@@ -215,11 +219,19 @@ class _MainScreenState extends State<MainScreen> {
                     'STATUS: ${_authStatus == AuthStatus.guest ? 'GUEST ACCESS' : 'PLAYER ACTIVE'}',
                     textAlign: TextAlign.center,
                     // 🚨 EDITED: Use AppTextStyles.small for subtle status text
-                    style: AppTextStyles.small(context, baseSize: 12.0, color: AppColors.highlightColor.withOpacity(0.8)).copyWith(
-                      shadows: [
-                        Shadow(color: Colors.black.withOpacity(0.5), offset: const Offset(1, 1))
-                      ]
-                    ),
+                    style:
+                        AppTextStyles.small(
+                          context,
+                          baseSize: 12.0,
+                          color: AppColors.highlightColor.withOpacity(0.8),
+                        ).copyWith(
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withOpacity(0.5),
+                              offset: const Offset(1, 1),
+                            ),
+                          ],
+                        ),
                   ),
                 ],
               ),
@@ -230,16 +242,14 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 }
+
 PageRouteBuilder _createFadeRoute(Widget page) {
   return PageRouteBuilder(
     // Reduce duration for a snappier feel
-    transitionDuration: const Duration(milliseconds: 300), 
+    transitionDuration: const Duration(milliseconds: 300),
     pageBuilder: (context, animation, secondaryAnimation) => page,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      return FadeTransition(
-        opacity: animation,
-        child: child,
-      );
+      return FadeTransition(opacity: animation, child: child);
     },
   );
 }

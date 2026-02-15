@@ -1,0 +1,1816 @@
+[
+    {
+        "name": "Death Roll",
+        "description": "The user grabs the target and spins violently, tearing and crushing at the same time.",
+        "baseDamage": 80,
+        "type": "aquatic",
+        "stamina": 5,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "defense",
+                "value": -1,
+                "chance": 40
+            }
+        ]
+    },
+    {
+        "name": "Scratch",
+        "description": "A basic attack.",
+        "baseDamage": 10,
+        "type": "normal",
+        "stamina": 35,
+        "accuracy": 100,
+        "category": "physical",
+        "effects": []
+    },
+    {
+        "name": "Headbutt",
+        "description": "A basic attack.",
+        "baseDamage": 70,
+        "type": "normal",
+        "stamina": 15,
+        "accuracy": 90,
+        "category": "physical",
+        "effects": []
+    },
+    {
+        "name": "Stomp",
+        "description": "A basic attack.",
+        "baseDamage": 65,
+        "type": "normal",
+        "stamina": 25,
+        "accuracy": 95,
+        "category": "physical",
+        "effects": []
+    },
+    {
+        "name": "Claw Swipe",
+        "description": "A basic attack.",
+        "baseDamage": 20,
+        "type": "normal",
+        "stamina": 30,
+        "category": "physical",
+        "effects": []
+    },
+    {
+        "name": "Crabhammer",
+        "description": "A basic attack.",
+        "baseDamage": 90,
+        "type": "aquatic",
+        "stamina": 10,
+        "accuracy": 90,
+        "category": "physical",
+        "critRate": 1,
+        "effects": []
+    },
+    {
+        "name": "Kick",
+        "description": "A basic attack.",
+        "baseDamage": 20,
+        "type": "normal",
+        "stamina": 30,
+        "category": "physical",
+        "effects": []
+    },
+    {
+        "name": "Vice Grip",
+        "description": "A basic attack.",
+        "baseDamage": 55,
+        "type": "normal",
+        "stamina": 30,
+        "category": "physical",
+        "effects": []
+    },
+    {
+        "name": "Slash",
+        "description": "A basic attack.",
+        "baseDamage": 30,
+        "type": "normal",
+        "critRate": 1,
+        "stamina": 20,
+        "category": "physical",
+        "effects": []
+    },
+    {
+        "name": "Peck",
+        "description": "A basic attack.",
+        "baseDamage": 10,
+        "type": "flying",
+        "stamina": 35,
+        "category": "physical",
+        "effects": []
+    },
+    {
+        "name": "Wing Flap",
+        "description": "A basic attack.",
+        "baseDamage": 15,
+        "type": "flying",
+        "stamina": 35,
+        "category": "physical",
+        "effects": []
+    },
+    {
+        "name": "Piercing Beak",
+        "description": "A strong peck attack.",
+        "baseDamage": 40,
+        "type": "flying",
+        "critRate": 1,
+        "stamina": 15,
+        "category": "physical",
+        "effects": []
+    },
+    {
+        "name": "Dive",
+        "description": "A strong wing attack.",
+        "baseDamage": 50,
+        "type": "flying",
+        "stamina": 10,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusStun",
+                "value": 1,
+                "chance": 30
+            }
+        ]
+    },
+    {
+        "name": "Sonic Slash",
+        "description": "A strong wing attack.",
+        "baseDamage": 70,
+        "type": "flying",
+        "stamina": 5,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusStun",
+                "value": 1,
+                "chance": 30
+            }
+        ]
+    },
+    {
+        "name": "Glide",
+        "description": "A strong wing attack.",
+        "baseDamage": 40,
+        "type": "flying",
+        "stamina": 20,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusStun",
+                "value": 1,
+                "chance": 20
+            }
+        ]
+    },
+    {
+        "name": "Venom Sting",
+        "description": "May poison the foe.",
+        "baseDamage": 8,
+        "type": "venomous",
+        "stamina": 25,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statusPoison",
+                "value": 3,
+                "chance": 30
+            }
+        ]
+    },
+    {
+        "name": "Chomp",
+        "description": "A basic attack.",
+        "baseDamage": 30,
+        "type": "aquatic",
+        "stamina": 25,
+        "category": "physical",
+        "effects": []
+    },
+    {
+        "name": "Venomous Fang",
+        "description": "May poison the foe.",
+        "baseDamage": 55,
+        "type": "venomous",
+        "stamina": 15,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusPoison",
+                "value": 3,
+                "chance": 50
+            }
+        ]
+    },
+    {
+        "name": "Withdraw",
+        "description": "Raises the user's defense.",
+        "baseDamage": 0,
+        "type": "armored",
+        "stamina": 10,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "defense",
+                "value": 1
+            }
+        ]
+    },
+    {
+        "name": "Titan's Wake",
+        "description": "Creates a massive displacement wave that slows all enemies.",
+        "baseDamage": 90,
+        "accuracy": 100,
+        "type": "giant",
+        "stamina": 10,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "speed",
+                "value": -2,
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Vortex Suction",
+        "description": "The user opens its massive mouth to create a vacuum. Deals damage and restores HP.",
+        "baseDamage": 65,
+        "accuracy": 95,
+        "type": "aquatic",
+        "stamina": 15,
+        "category": "special",
+        "// Whale sharks \"pull\" water rather than biting\n      drainPercent": 0.5
+    },
+    {
+        "name": "Denticle Armor",
+        "description": "The user flexes its sandpaper-thick skin, boosting defense and punishing contact.",
+        "baseDamage": 0,
+        "type": "armored",
+        "stamina": 10,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "defense",
+                "value": 2
+            },
+            {
+                "type": "statusRegen",
+                "target": "self",
+                "value": 3
+            }
+        ]
+    },
+    {
+        "name": "Colossal Tail Sweep",
+        "description": "A slow but devastating swing of the massive caudal fin.",
+        "baseDamage": 100,
+        "accuracy": 80,
+        "type": "giant",
+        "stamina": 12,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusStun",
+                "target": "opponent",
+                "value": 1,
+                "chance": 40
+            }
+        ]
+    },
+    {
+        "name": "Wide-Track Juggernaut",
+        "description": "A massive, straight-line charge. Damage scales with the user's Defense.",
+        "baseDamage": 130,
+        "accuracy": 90,
+        "type": "giant",
+        "stamina": 5,
+        "category": "physical",
+        "damageStat": "defense"
+    },
+    {
+        "name": "Mud Armor",
+        "description": "Coats the body in thick mud to boost protection.",
+        "baseDamage": 0,
+        "type": "armored",
+        "stamina": 10,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "defense",
+                "value": 2
+            }
+        ]
+    },
+    {
+        "name": "Hook-Lip Gore",
+        "description": "A surgical strike with the front horn. High critical-hit ratio.",
+        "baseDamage": 95,
+        "accuracy": 100,
+        "type": "predator",
+        "stamina": 10,
+        "category": "physical",
+        "critRate": 2
+    },
+    {
+        "name": "Blind Charge",
+        "description": "A reckless dash at anything that moves. High damage but hurts the user.",
+        "baseDamage": 110,
+        "accuracy": 85,
+        "type": "giant",
+        "stamina": 10,
+        "recoilPercent": 0.25,
+        "// 25% recoil damage\n      category": "physical"
+    },
+    {
+        "name": "Scary Face",
+        "description": "A terrifying glare that halts the opponent in their tracks.",
+        "baseDamage": 0,
+        "type": "predator",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statusFear",
+                "target": "opponent",
+                "value": 2
+            },
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "speed",
+                "value": -2
+            }
+        ]
+    },
+    {
+        "name": "Relic Echo",
+        "description": "A ghostly call from the ancient past. Ignores the target's stat changes.",
+        "baseDamage": 80,
+        "accuracy": 100,
+        "// Never misses in jungle terrain\n      type": "normal",
+        "stamina": 10,
+        "category": "special",
+        "damageStat": "power",
+        "effects": [
+            {
+                "type": "statusConfusion",
+                "target": "opponent",
+                "value": 2,
+                "chance": 30
+            }
+        ]
+    },
+    {
+        "name": "Jungle Song",
+        "description": "Emits a high-pitched vocalization that lulls the foe to sleep.",
+        "baseDamage": 0,
+        "accuracy": 60,
+        "type": "social",
+        "stamina": 8,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statusSleep",
+                "target": "opponent",
+                "value": 2
+            }
+        ]
+    },
+    {
+        "name": "Horn Leech",
+        "description": "A specialized browsing strike that restores health.",
+        "baseDamage": 75,
+        "type": "parasite",
+        "// Uses the drain logic from your code\n      stamina": 10,
+        "drainPercent": 0.5,
+        "// Heals half of damage dealt\n      category": "physical"
+    },
+    {
+        "name": "Resonating Honk",
+        "description": "Amplifies sound through the casque to disorient the foe.",
+        "baseDamage": 85,
+        "accuracy": 100,
+        "type": "social",
+        "stamina": 10,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statusConfusion",
+                "value": 2,
+                "chance": 30
+            }
+        ]
+    },
+    {
+        "name": "Sealed Nest Protection",
+        "description": "Recalls the nesting habit to temporarily boost defenses.",
+        "baseDamage": 0,
+        "type": "armored",
+        "stamina": 20,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "defense",
+                "value": 2
+            },
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "spDef",
+                "value": 2
+            }
+        ]
+    },
+    {
+        "name": "Casque Cannonade",
+        "description": "A focused blast of sonic energy. Ignores the target's Defense.",
+        "baseDamage": 100,
+        "accuracy": 95,
+        "type": "giant",
+        "stamina": 15,
+        "category": "special",
+        "damageStat": "power"
+    },
+    {
+        "name": "Head Bob Display",
+        "description": "A rhythmic dominance display that intimidates the foe.",
+        "baseDamage": 0,
+        "type": "social",
+        "stamina": 12,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "attack",
+                "value": -2
+            }
+        ]
+    },
+    {
+        "name": "Pseudo-Horn Skewer",
+        "description": "Drives the bony horn-scales into the target.",
+        "baseDamage": 90,
+        "accuracy": 100,
+        "type": "armored",
+        "stamina": 12,
+        "category": "physical",
+        "critRate": 2
+    },
+    {
+        "name": "Territorial Roar",
+        "description": "A wide-mouthed threat display that strikes fear into the foe.",
+        "baseDamage": 0,
+        "type": "social",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statusFear",
+                "target": "opponent",
+                "value": 2
+            },
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "attack",
+                "value": -2
+            }
+        ]
+    },
+    {
+        "name": "Submerge",
+        "description": "Dives underwater to dodge attacks and hydrate.",
+        "baseDamage": 0,
+        "type": "aquatic",
+        "stamina": 10,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statusStealth",
+                "target": "self",
+                "value": 1
+            },
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "defense",
+                "value": 1
+            }
+        ]
+    },
+    {
+        "name": "Megamouth Chomp",
+        "description": "A 180-degree jaw snap with 2,000 PSI of force.",
+        "baseDamage": 120,
+        "accuracy": 85,
+        "type": "predator",
+        "stamina": 20,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusBleed",
+                "value": 3,
+                "chance": 50
+            },
+            {
+                "type": "statusStun",
+                "value": 1,
+                "chance": 20
+            }
+        ]
+    },
+    {
+        "name": "Slick Skin",
+        "description": "Secretes a \"blood sweat\" that makes the user hard to grab.",
+        "baseDamage": 0,
+        "type": "normal",
+        "stamina": 12,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "speed",
+                "value": 2
+            }
+        ]
+    },
+    {
+        "name": "Shadow Wallower",
+        "description": "Vanishes into the muddy forest floor before striking from behind.",
+        "baseDamage": 85,
+        "accuracy": 95,
+        "type": "agile",
+        "stamina": 15,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusStealth",
+                "target": "self",
+                "value": 1
+            }
+        ]
+    },
+    {
+        "name": "Scent Lock",
+        "description": "Uses the tongue to lock onto the target's chemical trail. Target takes 1.2x damage.",
+        "baseDamage": 0,
+        "type": "agile",
+        "stamina": 10,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statusMarked",
+                "target": "opponent",
+                "chance": 100,
+                "value": 2
+            }
+        ]
+    },
+    {
+        "name": "Septic Bite",
+        "description": "A deep, jagged bite that causes intense bleeding.",
+        "baseDamage": 110,
+        "accuracy": 85,
+        "type": "predator",
+        "stamina": 20,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusBleed",
+                "target": "opponent",
+                "value": 4,
+                "// Higher duration for the Komodo\n          chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Arboreal Ambush",
+        "description": "Strikes from the canopy, entering stealth and dealing high damage.",
+        "baseDamage": 85,
+        "accuracy": 100,
+        "type": "agile",
+        "stamina": 15,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusStealth",
+                "target": "self",
+                "value": 1,
+                "// Sets up for the 2.0x Stealth damage multiplier on next turn\n          chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Wide Gape",
+        "description": "Displays its massive square lip to intimidate the opponent.",
+        "baseDamage": 0,
+        "type": "social",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "attack",
+                "value": -1
+            }
+        ]
+    },
+    {
+        "name": "Filter Feed",
+        "description": "The user filters the surrounding water for nutrients, clearing status and healing.",
+        "baseDamage": 0,
+        "type": "aquatic",
+        "stamina": 8,
+        "category": "status",
+        "effects": [
+            {
+                "type": "heal",
+                "target": "self",
+                "value": 40
+            }
+        ]
+    },
+    {
+        "name": "Depth Pressure",
+        "description": "Uses the weight of the ocean to crush the foe. Damage scales with Defense.",
+        "baseDamage": 80,
+        "accuracy": 100,
+        "type": "aquatic",
+        "stamina": 15,
+        "category": "physical",
+        "damageStat": "defense"
+    },
+    {
+        "name": "Abyssal Breach",
+        "description": "The whale leaps and crashes down. Power increases if the user has high HP.",
+        "baseDamage": 120,
+        "accuracy": 85,
+        "type": "aquatic",
+        "stamina": 5,
+        "category": "physical",
+        "multiplierCondition": "user_high_hp",
+        "// You can implement this logic in your battle engine\n      conditionalMultiplier": 1.5,
+        "effects": [
+            {
+                "type": "statusStun",
+                "target": "opponent",
+                "value": 1,
+                "chance": 30
+            }
+        ]
+    },
+    {
+        "name": "Event Horizon Gulp",
+        "description": "The ultimate apex move. Swallows weakened foes whole.",
+        "baseDamage": 200,
+        "// Extreme damage placeholder for OHKO feel\n      accuracy": 30,
+        "type": "predator",
+        "stamina": 5,
+        "category": "physical",
+        "customUsageText": "The whale creates a massive vacuum suction!",
+        "effects": [
+            {
+                "type": "recharge"
+            }
+        ]
+    },
+    {
+        "name": "Deep Meditation",
+        "description": "The whale enters a trance, boosting defenses and regenerating.",
+        "baseDamage": 0,
+        "type": "aquatic",
+        "stamina": 10,
+        "category": "status",
+        "effects": [
+            {
+                "type": "multiStatChange",
+                "stat": "defense:1,resistance:1"
+            },
+            {
+                "type": "statusRegen",
+                "target": "self",
+                "value": 5
+            }
+        ]
+    },
+    {
+        "name": "Blubber Shield",
+        "description": "Sacrifices health to create a massive protective barrier.",
+        "baseDamage": 0,
+        "type": "armored",
+        "stamina": 5,
+        "category": "status",
+        "effects": [
+            {
+                "type": "protect",
+                "hpCostPercent": 0.25
+            }
+        ]
+    },
+    {
+        "name": "Infrasonic Blast",
+        "description": "A sound so loud it vibrates internal organs, causing confusion.",
+        "baseDamage": 70,
+        "accuracy": 100,
+        "type": "social",
+        "// Fitting for whale song\n      stamina": 10,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statusConfusion",
+                "target": "opponent",
+                "value": 3,
+                "chance": 50
+            }
+        ]
+    },
+    {
+        "name": "Tail Whip",
+        "description": "Lowers the opponent's defense.",
+        "baseDamage": 10,
+        "type": "agile",
+        "stamina": 25,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "defense",
+                "value": -1
+            }
+        ]
+    },
+    {
+        "name": "Jet Ram",
+        "description": "A high-speed tackle using jet propulsion. High crit rate.",
+        "baseDamage": 60,
+        "type": "agile",
+        "stamina": 15,
+        "category": "physical",
+        "critRate": 1
+    },
+    {
+        "name": "Barbed Tentacle",
+        "description": "Strikes with hooked tentacles. May make the target vulnerable.",
+        "baseDamage": 55,
+        "type": "aquatic",
+        "stamina": 20,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusVulnerable",
+                "target": "opponent",
+                "value": 2,
+                "chance": 30
+            }
+        ]
+    },
+    {
+        "name": "Ink Cloud",
+        "description": "Sprays thick ink to hide and confuse the opponent.",
+        "baseDamage": 0,
+        "type": "agile",
+        "stamina": 10,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statusBlind",
+                "target": "opponent",
+                "value": 2,
+                "chance": 100
+            },
+            {
+                "type": "statusStealth",
+                "target": "self",
+                "value": 1,
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Strobe Flash",
+        "description": "Rapidly shifts skin colors to daze and stun the target.",
+        "baseDamage": 20,
+        "type": "aquatic",
+        "stamina": 15,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statusStun",
+                "target": "opponent",
+                "value": 1,
+                "chance": 70
+            }
+        ]
+    },
+    {
+        "name": "Paralyzing Sting",
+        "description": "Stinging cells that may paralyze the foe.",
+        "baseDamage": 35,
+        "type": "venomous",
+        "stamina": 20,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statusParalysis",
+                "target": "opponent",
+                "value": 3,
+                "chance": 50
+            }
+        ]
+    },
+    {
+        "name": "Biolume Flare",
+        "description": "A sudden burst of light that may blind the foe.",
+        "baseDamage": 60,
+        "type": "aquatic",
+        "stamina": 15,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statusBlind",
+                "target": "opponent",
+                "value": 1,
+                "chance": 30
+            }
+        ]
+    },
+    {
+        "name": "Drifting Tentacles",
+        "description": "Sets a stinging field that makes opponents vulnerable.",
+        "baseDamage": 0,
+        "type": "venomous",
+        "stamina": 10,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statusVulnerable",
+                "target": "opponent",
+                "value": 3,
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Osmosis",
+        "description": "Absorbs nutrients from the water to heal the user.",
+        "baseDamage": 0,
+        "type": "aquatic",
+        "stamina": 5,
+        "category": "status",
+        "effects": [
+            {
+                "type": "heal",
+                "target": "self",
+                "value": 33,
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Hypnotic Ripple",
+        "description": "Mesmerizes the target, lowering their mental resistance.",
+        "baseDamage": 20,
+        "type": "aquatic",
+        "stamina": 20,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "resistance",
+                "value": -1,
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Tentacle Snap",
+        "description": "A lightning-fast grab with tentacles that hits first.",
+        "baseDamage": 40,
+        "type": "agile",
+        "stamina": 20,
+        "priority": 1,
+        "// Moves first\n      category": "physical"
+    },
+    {
+        "name": "Hiss",
+        "description": "Lowers the opponent's attack.",
+        "baseDamage": 0,
+        "type": "venomous",
+        "stamina": 25,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "attack",
+                "value": -1
+            }
+        ]
+    },
+    {
+        "name": "Predatory Circle",
+        "description": "Lowers the opponent's defense.",
+        "baseDamage": 0,
+        "type": "predator",
+        "stamina": 25,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statusFear",
+                "value": 2,
+                "chance": 90
+            }
+        ]
+    },
+    {
+        "name": "Cavitation Strike",
+        "description": "Lowers the opponent's defense.",
+        "baseDamage": 90,
+        "type": "agile",
+        "stamina": 15,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "defense",
+                "value": -1,
+                "chance": 20
+            }
+        ]
+    },
+    {
+        "name": "Hibernate",
+        "description": "A healing nap.",
+        "baseDamage": 0,
+        "type": "burrowing",
+        "stamina": 5,
+        "category": "status",
+        "effects": [
+            {
+                "type": "heal",
+                "target": "self",
+                "value": 50
+            }
+        ]
+    },
+    {
+        "name": "Tackle",
+        "description": "A full-body charge.",
+        "baseDamage": 40,
+        "accuracy": 95,
+        "type": "giant",
+        "stamina": 35,
+        "category": "physical",
+        "effects": []
+    },
+    {
+        "name": "Pounce",
+        "description": "User pounces at the foe.",
+        "baseDamage": 60,
+        "accuracy": 85,
+        "type": "predator",
+        "stamina": 15,
+        "category": "physical",
+        "effects": []
+    },
+    {
+        "name": "Bite",
+        "description": "Bites with vicious fangs.",
+        "baseDamage": 60,
+        "type": "predator",
+        "stamina": 25,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusBleed",
+                "value": 1,
+                "chance": 10
+            }
+        ]
+    },
+    {
+        "name": "Hide",
+        "description": "User gain stealth.",
+        "baseDamage": 0,
+        "type": "predator",
+        "stamina": 25,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statusStealth",
+                "chance": 80
+            }
+        ]
+    },
+    {
+        "name": "Varanid Rake",
+        "description": "Bites with vicious fangs.",
+        "baseDamage": 30,
+        "type": "predator",
+        "stamina": 25,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusBleed",
+                "value": 1,
+                "chance": 70
+            }
+        ]
+    },
+    {
+        "name": "Crunch",
+        "description": "Bites with vicious fangs.",
+        "baseDamage": 60,
+        "type": "predator",
+        "stamina": 15,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusBleed",
+                "value": 1,
+                "chance": 30
+            }
+        ]
+    },
+    {
+        "name": "Water Gun",
+        "description": "Squirts water to attack.",
+        "baseDamage": 40,
+        "type": "aquatic",
+        "stamina": 25,
+        "category": "special",
+        "effects": []
+    },
+    {
+        "name": "Ember",
+        "description": "May burn the foe.",
+        "baseDamage": 40,
+        "type": "normal",
+        "stamina": 20,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statusBurn",
+                "value": 3,
+                "chance": 15
+            }
+        ]
+    },
+    {
+        "name": "Thunder Shock",
+        "description": "May paralyze the foe.",
+        "baseDamage": 40,
+        "type": "normal",
+        "stamina": 20,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statusParalysis",
+                "value": 3,
+                "chance": 15
+            }
+        ]
+    },
+    {
+        "name": "Sing",
+        "description": "Lulls the foe to sleep.",
+        "baseDamage": 0,
+        "accuracy": 55,
+        "type": "social",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statusSleep",
+                "value": 3,
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Rain Dance",
+        "description": "Summons rain.",
+        "baseDamage": 0,
+        "type": "aquatic",
+        "stamina": 5,
+        "category": "status",
+        "effects": [
+            {
+                "type": "weather",
+                "target": "field",
+                "stat": "rain",
+                "value": 5
+            }
+        ]
+    },
+    {
+        "name": "Sunny Day",
+        "description": "Summons harsh sunlight.",
+        "baseDamage": 0,
+        "type": "normal",
+        "stamina": 5,
+        "category": "status",
+        "effects": [
+            {
+                "type": "weather",
+                "target": "field",
+                "stat": "sun",
+                "value": 5
+            }
+        ]
+    },
+    {
+        "name": "Quick Attack",
+        "description": "Strikes first.",
+        "baseDamage": 40,
+        "priority": 1,
+        "type": "agile",
+        "stamina": 30,
+        "category": "physical",
+        "effects": []
+    },
+    {
+        "name": "Bullet Punch",
+        "description": "Strikes first.",
+        "baseDamage": 40,
+        "priority": 1,
+        "type": "agile",
+        "stamina": 30,
+        "category": "physical",
+        "effects": []
+    },
+    {
+        "name": "Dash",
+        "description": "Strikes first.",
+        "baseDamage": 50,
+        "priority": 1,
+        "type": "agile",
+        "stamina": 20,
+        "category": "physical",
+        "effects": []
+    },
+    {
+        "name": "Apex Ravage",
+        "description": "A devastating series of bites. Always causes heavy bleeding.",
+        "baseDamage": 120,
+        "accuracy": 85,
+        "type": "predator",
+        "stamina": 20,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusBleed",
+                "target": "opponent",
+                "value": 4,
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Double Slap",
+        "description": "Hits 2-5 times.",
+        "baseDamage": 15,
+        "minHits": 2,
+        "maxHits": 5,
+        "type": "social",
+        "stamina": 15,
+        "category": "physical",
+        "effects": []
+    },
+    {
+        "name": "Camoflauge",
+        "description": "Blends into the landscape. Grants Stealth.",
+        "baseDamage": 0,
+        "type": "agile",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statusStealth",
+                "target": "self",
+                "value": 3
+            }
+        ]
+    },
+    {
+        "name": "Shadow Throat-Grip",
+        "description": "A lethal strike from the shadows. High Critical-Hit ratio.",
+        "baseDamage": 90,
+        "accuracy": 95,
+        "type": "predator",
+        "stamina": 18,
+        "category": "physical",
+        "critRate": 2
+    },
+    {
+        "name": "King's Command",
+        "description": "A roar that freezes the hearts of enemies. Applies Fear and Marks the target.",
+        "baseDamage": 0,
+        "type": "social",
+        "stamina": 20,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statusFear",
+                "target": "opponent",
+                "value": 2
+            },
+            {
+                "type": "statusMarked",
+                "target": "opponent",
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Jungle Pounce",
+        "description": "A stealthy leap from the brush. Guarantees a critical hit if the user is in Stealth.",
+        "baseDamage": 90,
+        "accuracy": 100,
+        "type": "predator",
+        "stamina": 12,
+        "category": "physical",
+        "critRate": 2
+    },
+    {
+        "name": "Gigantism Crush",
+        "description": "A heavy strike that scales with the user's massive weight.",
+        "baseDamage": 130,
+        "accuracy": 80,
+        "type": "giant",
+        "stamina": 25,
+        "category": "physical",
+        "damageStat": "attack"
+    },
+    {
+        "name": "Skull-Piercer",
+        "description": "An eerie, blinding attack that confuses the target.",
+        "baseDamage": 90,
+        "accuracy": 100,
+        "type": "predator",
+        "stamina": 15,
+        "category": "physical",
+        "// Logic": "In battle_manager"
+    },
+    {
+        "name": "Savannah Sweep",
+        "description": "A sweeping claw attack that hits the legs, lowering Speed.",
+        "baseDamage": 75,
+        "accuracy": 100,
+        "type": "agile",
+        "stamina": 10,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "speed",
+                "value": -1
+            }
+        ]
+    },
+    {
+        "name": "Frost-Leap",
+        "description": "Strikes from a frozen ledge. Chance to freeze or stun the foe.",
+        "baseDamage": 85,
+        "accuracy": 100,
+        "type": "agile",
+        "stamina": 12,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusStun",
+                "target": "opponent",
+                "value": 1,
+                "chance": 30
+            }
+        ]
+    },
+    {
+        "name": "Tree-Drag Takedown",
+        "description": "Pokes the target into a vulnerable state by dragging them into the canopy.",
+        "baseDamage": 80,
+        "accuracy": 95,
+        "type": "predator",
+        "stamina": 15,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusVulnerable",
+                "target": "opponent",
+                "value": 2,
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Atlas Roar",
+        "description": "An ancient roar that boosts the user's confidence while weakening others.",
+        "baseDamage": 0,
+        "type": "social",
+        "stamina": 20,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "defense",
+                "value": 2
+            },
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "attack",
+                "value": -2
+            }
+        ]
+    },
+    {
+        "name": "Midnight Eviscerate",
+        "description": "An eerie, blinding attack that confuses the target.",
+        "baseDamage": 85,
+        "accuracy": 100,
+        "type": "agile",
+        "stamina": 12,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusBleed",
+                "target": "opponent",
+                "value": 3,
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Spectral Strike",
+        "description": "An eerie, blinding attack that confuses the target.",
+        "baseDamage": 85,
+        "accuracy": 95,
+        "type": "normal",
+        "stamina": 15,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusConfusion",
+                "target": "opponent",
+                "value": 2,
+                "chance": 40
+            }
+        ]
+    },
+    {
+        "name": "Tundra Smash",
+        "description": "Uses massive body weight to crush the foe. High chance to Stun.",
+        "baseDamage": 110,
+        "accuracy": 85,
+        "type": "giant",
+        "stamina": 18,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusStun",
+                "target": "opponent",
+                "value": 1,
+                "chance": 50
+            }
+        ]
+    },
+    {
+        "name": "Overdrive Sprint",
+        "description": "Uses extreme acceleration to strike before the opponent can react",
+        "baseDamage": 80,
+        "accuracy": 100,
+        "type": "agile",
+        "stamina": 15,
+        "category": "physical",
+        "priority": 1,
+        "effects": [
+            {
+                "type": "statusMarked",
+                "target": "opponent",
+                "chance": 30
+            }
+        ]
+    },
+    {
+        "name": "Drain Punch",
+        "description": "Heals half damage dealt.",
+        "baseDamage": 75,
+        "drainPercent": 0.5,
+        "type": "parasite",
+        "stamina": 10,
+        "category": "physical",
+        "effects": []
+    },
+    {
+        "name": "Constrict",
+        "description": "Traps and crushes the foe, dealing damage over time.",
+        "baseDamage": 35,
+        "accuracy": 90,
+        "type": "predator",
+        "stamina": 20,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusStun",
+                "value": 1,
+                "chance": 30
+            },
+            {
+                "type": "statusVulnerable",
+                "value": 2,
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Crush Grip",
+        "description": "A heavy strike that scales with the user's massive weight.",
+        "baseDamage": 100,
+        "accuracy": 100,
+        "type": "giant",
+        "stamina": 10,
+        "category": "physical",
+        "damageStat": "attack"
+    },
+    {
+        "name": "Coil",
+        "description": "The user gathers its body, boosting Attack, Defense, and Accuracy.",
+        "baseDamage": 0,
+        "type": "predator",
+        "stamina": 10,
+        "category": "status",
+        "effects": [
+            {
+                "type": "multiStatChange",
+                "stat": "attack:1,defense:1,accuracy:1"
+            }
+        ]
+    },
+    {
+        "name": "Guillotine Snap",
+        "description": "The user lies perfectly still, then snaps its beak with bone-crushing force. This move deals massive damage and has a high critical-hit ratio.",
+        "baseDamage": 130,
+        "priority": -1,
+        "type": "aquatic",
+        "stamina": 5,
+        "category": "physical",
+        "critRate": 1,
+        "accuracy": 85
+    },
+    {
+        "name": "Take Down",
+        "description": "Hurts user.",
+        "baseDamage": 90,
+        "recoilPercent": 0.25,
+        "type": "giant",
+        "stamina": 15,
+        "category": "physical",
+        "effects": []
+    },
+    {
+        "name": "Slash",
+        "description": "High crit rate.",
+        "baseDamage": 70,
+        "critRate": 1,
+        "type": "predator",
+        "stamina": 15,
+        "category": "physical",
+        "effects": []
+    },
+    {
+        "name": "Confuse Ray",
+        "description": "Confuses the foe.",
+        "baseDamage": 0,
+        "type": "normal",
+        "stamina": 10,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statusConfusion",
+                "value": 3,
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Glare",
+        "description": "Stuns the foe.",
+        "baseDamage": 0,
+        "type": "predator",
+        "stamina": 10,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statusStun",
+                "value": 1,
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Poison Jab",
+        "description": "Damage + Poison.",
+        "baseDamage": 80,
+        "type": "venomous",
+        "stamina": 15,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusPoison",
+                "value": 3,
+                "chance": 30
+            }
+        ]
+    },
+    {
+        "name": "Giga Drain",
+        "description": "A nutrient-draining attack. The user's HP is restored by half the damage taken by the target.",
+        "baseDamage": 75,
+        "drainPercent": 0.5,
+        "type": "parasite",
+        "stamina": 10,
+        "category": "special",
+        "effects": []
+    },
+    {
+        "name": "Dig",
+        "description": "The user burrows into the ground, then attacks on the next turn.",
+        "baseDamage": 80,
+        "type": "burrowing",
+        "stamina": 10,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "semiInvulnerable",
+                "stat": "underground"
+            }
+        ]
+    },
+    {
+        "name": "Rest",
+        "description": "The user goes to sleep for two turns. This fully restores the user's HP.",
+        "baseDamage": 0,
+        "type": "normal",
+        "stamina": 5,
+        "category": "status",
+        "effects": [
+            {
+                "type": "heal",
+                "target": "self",
+                "value": 999
+            }
+        ]
+    },
+    {
+        "name": "Protect",
+        "description": "Enables the user to evade all attacks. Its chance of failing rises if it is used in succession.",
+        "baseDamage": 0,
+        "type": "normal",
+        "stamina": 10,
+        "category": "status",
+        "effects": [
+            {
+                "type": "protect"
+            }
+        ]
+    },
+    {
+        "name": "Sucker Punch",
+        "description": "This move enables the user to attack first. This move fails if the target is not preparing an attack.",
+        "baseDamage": 70,
+        "priority": 1,
+        "type": "predator",
+        "stamina": 5,
+        "category": "physical",
+        "failIfTargetNotAttacking": true,
+        "effects": []
+    },
+    {
+        "name": "Shell Smash",
+        "description": "The user shatters its shell, which sharply raises Attack and Speed but lowers Defense.",
+        "baseDamage": 0,
+        "type": "armored",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "multiStatChange",
+                "target": "self",
+                "stat": "attack:2,power:2,speed:2,defense:-1,resistance:-1"
+            }
+        ]
+    },
+    {
+        "name": "Mucus Coat",
+        "description": "The covers its body with thick mucus which raises its defense and resistance.",
+        "baseDamage": 0,
+        "type": "armored",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "multiStatChange",
+                "target": "self",
+                "stat": "defense:1,resistance:1"
+            }
+        ]
+    },
+    {
+        "name": "Ancient Power",
+        "description": "The user attacks with a prehistoric power. This may also raise all the user's stats at once.",
+        "baseDamage": 60,
+        "type": "normal",
+        "stamina": 5,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statChangeChance",
+                "stat": "attack:1,defense:1,speed:1,power:1,resistance:1",
+                "chance": 10
+            }
+        ]
+    },
+    {
+        "name": "Assurance",
+        "description": "If the target has already taken some damage in the same turn, this move's power is doubled.",
+        "baseDamage": 60,
+        "type": "normal",
+        "stamina": 10,
+        "category": "physical",
+        "multiplierCondition": "target_damaged",
+        "conditionalMultiplier": 2.0,
+        "effects": []
+    },
+    {
+        "name": "Baneful Bunker",
+        "description": "In addition to protecting the user from attacks, this move also poisons any attacker that makes direct contact.",
+        "baseDamage": 0,
+        "type": "venomous",
+        "stamina": 10,
+        "category": "status",
+        "effects": [
+            {
+                "type": "protect",
+                "stat": "poison"
+            }
+        ]
+    },
+    {
+        "name": "Barb Barrage",
+        "description": "The user launches countless toxic spikes to inflict damage. This may also poison the target.",
+        "baseDamage": 60,
+        "type": "venomous",
+        "stamina": 10,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statusPoison",
+                "chance": 30
+            }
+        ],
+        "multiplierCondition": "target_poisoned",
+        "conditionalMultiplier": 2.0
+    },
+    {
+        "name": "Belly Drum",
+        "description": "The user maximizes its Attack stat in exchange for HP equal to half its max HP.",
+        "baseDamage": 0,
+        "type": "social",
+        "stamina": 10,
+        "category": "status",
+        "effects": [
+            {
+                "type": "multiStatChange",
+                "stat": "attack:6",
+                "hpCostPercent": 0.5
+            }
+        ]
+    },
+    {
+        "name": "Hyper Beam",
+        "description": "The target is attacked with a powerful beam. The user can't move on the next turn.",
+        "baseDamage": 150,
+        "type": "normal",
+        "stamina": 5,
+        "category": "special",
+        "effects": [
+            {
+                "type": "recharge"
+            }
+        ]
+    },
+    {
+        "name": "Geomancy",
+        "description": "The user absorbs energy and sharply raises its stats on the next turn.",
+        "baseDamage": 0,
+        "type": "social",
+        "stamina": 10,
+        "category": "status",
+        "effects": [
+            {
+                "type": "charge",
+                "stat": "attack:2,defense:2,speed:2"
+            }
+        ]
+    },
+    {
+        "name": "Body Press",
+        "description": "The user attacks by slamming its body into the target. The higher its Defense, the more damage it can inflict.",
+        "baseDamage": 80,
+        "type": "armored",
+        "stamina": 10,
+        "category": "physical",
+        "damageStat": "defense",
+        "effects": []
+    },
+    {
+        "name": "Bulk Up",
+        "description": "The user tenses its muscles to bulk up its body, raising both Attack and Defense stats.",
+        "baseDamage": 0,
+        "type": "normal",
+        "stamina": 20,
+        "category": "status",
+        "effects": [
+            {
+                "type": "multiStatChange",
+                "stat": "attack:1,defense:1"
+            }
+        ]
+    },
+    {
+        "name": "Crippling Bite",
+        "description": "A deep, jagged bite that causes heavy bleeding and hampers the foe's movement.",
+        "baseDamage": 70,
+        "accuracy": 70,
+        "type": "predator",
+        "// Fits the \"Bite/Crunch\" theme\n      stamina": 15,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusBleed",
+                "value": 3,
+                "// Standard bleed severity/duration\n          chance": 100
+            },
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "speed",
+                "value": -1,
+                "chance": 50
+            }
+        ]
+    },
+    {
+        "name": "Intimidate",
+        "description": "The user intimidates the foe, instilling Fear and reducing its stats by 10% for 2 turns.",
+        "baseDamage": 0,
+        "type": "predator",
+        "stamina": 10,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statusFear",
+                "target": "opponent",
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Hunter's Mark",
+        "description": "The user marks the target. The target takes 20% extra damage for 2 turns.",
+        "baseDamage": 0,
+        "type": "agile",
+        "stamina": 10,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statusMarked",
+                "target": "opponent",
+                "chance": 100
+            }
+        ]
+    }
+]

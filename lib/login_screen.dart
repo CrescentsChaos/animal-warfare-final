@@ -5,10 +5,8 @@ import 'package:provider/provider.dart';
 import 'package:animal_warfare/local_auth_service.dart';
 import 'package:animal_warfare/main_screen.dart';
 import 'package:animal_warfare/user_state.dart';
-import 'package:audioplayers/audioplayers.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:animal_warfare/audio_manager.dart';
+import 'package:animal_warfare/services/audio_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -21,24 +19,28 @@ class _LoginScreenState extends State<LoginScreen> {
   final LocalAuthService _authService = LocalAuthService();
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
   final TextEditingController _newPasswordController = TextEditingController();
-  final TextEditingController _confirmNewPasswordController = TextEditingController(); 
-  
+  final TextEditingController _confirmNewPasswordController =
+      TextEditingController();
+
   bool _isLogin = true;
   bool _isLoading = false;
   bool _showForgotPassword = false;
-  
+
   // Custom Theming
   static const Color highlightColor = Color(0xFFDAA520); // Goldenrod
-  static const Color primaryButtonColor = Color(0xFF38761D); // Bright Jungle Green
+  static const Color primaryButtonColor = Color(
+    0xFF38761D,
+  ); // Bright Jungle Green
 
   @override
   void initState() {
     super.initState();
     _playBackgroundMusic();
   }
-  
+
   @override
   void dispose() {
     _usernameController.dispose();
@@ -50,14 +52,8 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _playBackgroundMusic() async {
-    final prefs = await SharedPreferences.getInstance();
-    final isMusicEnabled = prefs.getBool('isMusicEnabled') ?? true; // Default to ON
-
-    if (isMusicEnabled) {
-      AudioManager.instance.playBackgroundMusic('audio/login_background.mp3');
-    } else {
-      AudioManager.instance.stop();
-    }
+    // AudioService handles its own 'enabled' state internally
+    await AudioService.instance.playMusic('audio/login_theme.mp3');
   }
 
   PageRouteBuilder _createFadeRoute(Widget page) {
@@ -65,10 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
       transitionDuration: const Duration(milliseconds: 400),
       pageBuilder: (context, animation, secondaryAnimation) => page,
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        return FadeTransition(
-          opacity: animation,
-          child: child,
-        );
+        return FadeTransition(opacity: animation, child: child);
       },
     );
   }
@@ -139,7 +132,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (username.isEmpty || password.isEmpty) {
       _showError('Username and password cannot be empty!');
-      setState(() { _isLoading = false; });
+      setState(() {
+        _isLoading = false;
+      });
       return;
     }
 
@@ -147,7 +142,9 @@ class _LoginScreenState extends State<LoginScreen> {
       // 🚨 NEW: Check password confirmation on registration
       if (password != confirmPassword) {
         _showError('Passwords do not match!');
-        setState(() { _isLoading = false; });
+        setState(() {
+          _isLoading = false;
+        });
         return;
       }
     }
@@ -157,11 +154,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (_isLogin) {
       success = await _authService.login(username, password);
-      message = success ? 'LOGIN SUCCESSFUL!' : 'LOGIN FAILED. Invalid credentials.';
+      message = success
+          ? 'LOGIN SUCCESSFUL!'
+          : 'LOGIN FAILED. Invalid credentials.';
     } else {
       // Use the confirmed password for registration
-      success = await _authService.register(username, password); 
-      message = success ? 'REGISTRATION SUCCESSFUL!' : 'REGISTRATION FAILED. User already exists.';
+      success = await _authService.register(username, password);
+      message = success
+          ? 'REGISTRATION SUCCESSFUL!'
+          : 'REGISTRATION FAILED. User already exists.';
     }
 
     if (mounted) {
@@ -226,7 +227,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-  
+
   // Helper function for pixel-style text fields
   Widget _buildTextField({
     required TextEditingController controller,
@@ -245,23 +246,33 @@ class _LoginScreenState extends State<LoginScreen> {
       child: TextField(
         controller: controller,
         obscureText: isPassword,
-        keyboardType: isPassword ? TextInputType.visiblePassword : TextInputType.text, 
-        style: const TextStyle(color: Colors.white, fontSize: 16, fontFamily: 'PressStart2P'),
+        keyboardType: isPassword
+            ? TextInputType.visiblePassword
+            : TextInputType.text,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 16,
+          fontFamily: 'PressStart2P',
+        ),
         decoration: InputDecoration(
           labelText: labelText,
           labelStyle: TextStyle(
-            color: highlightColor.withOpacity(0.8), 
+            color: highlightColor.withOpacity(0.8),
             fontSize: 14,
             fontFamily: 'PressStart2P',
           ),
-          prefixIcon: Icon(icon, color: highlightColor.withOpacity(0.8), size: 20),
+          prefixIcon: Icon(
+            icon,
+            color: highlightColor.withOpacity(0.8),
+            size: 20,
+          ),
           border: InputBorder.none, // Remove default underline border
           contentPadding: const EdgeInsets.symmetric(vertical: 15),
         ),
       ),
     );
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -269,7 +280,7 @@ class _LoginScreenState extends State<LoginScreen> {
         decoration: BoxDecoration(
           color: Colors.black,
           image: DecorationImage(
-            image: const AssetImage('assets/main.png'), 
+            image: const AssetImage('assets/main.png'),
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(
               Colors.black.withOpacity(0.7),
@@ -294,11 +305,15 @@ class _LoginScreenState extends State<LoginScreen> {
                     color: highlightColor,
                     fontFamily: 'PressStart2P',
                     shadows: [
-                      Shadow(color: Colors.black.withOpacity(0.9), blurRadius: 4, offset: const Offset(3, 3))
+                      Shadow(
+                        color: Colors.black.withOpacity(0.9),
+                        blurRadius: 4,
+                        offset: const Offset(3, 3),
+                      ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 40                ),
+                const SizedBox(height: 40),
 
                 if (_showForgotPassword) ...[
                   _buildTextField(
@@ -320,7 +335,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 30),
                   _isLoading
-                      ? Center(child: CircularProgressIndicator(color: primaryButtonColor))
+                      ? Center(
+                          child: CircularProgressIndicator(
+                            color: primaryButtonColor,
+                          ),
+                        )
                       : _buildActionButton(
                           title: 'RESET PASSWORD',
                           onPressed: _handleForgotPassword,
@@ -366,7 +385,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   const SizedBox(height: 30),
                   _isLoading
-                      ? Center(child: CircularProgressIndicator(color: primaryButtonColor))
+                      ? Center(
+                          child: CircularProgressIndicator(
+                            color: primaryButtonColor,
+                          ),
+                        )
                       : _buildActionButton(
                           title: _isLogin ? 'LOG IN' : 'REGISTER',
                           onPressed: _authenticate,

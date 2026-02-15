@@ -11,7 +11,7 @@ import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/crafting_screen.dart';
 import 'package:animal_warfare/battle_tab_screen.dart';
 
-import 'package:animal_warfare/audio_manager.dart';
+import 'package:animal_warfare/services/audio_service.dart';
 
 class GameScreen extends StatefulWidget {
   // FIX: ADDED: Required fields to pass down user data and service
@@ -53,12 +53,12 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _playBackgroundMusic() {
-    AudioManager.instance.playBackgroundMusic('audio/main_theme.mp3');
+    AudioService.instance.playMusic('audio/main_theme.mp3');
   }
 
   // Navigation function to pass UserData and LocalAuthService
   void _navigateTo(Widget screen) async {
-    AudioManager.instance.pause();
+    AudioService.instance.pauseAll();
     await Navigator.of(context).push(
       PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 400),
@@ -70,7 +70,7 @@ class _GameScreenState extends State<GameScreen> {
     );
 
     // Resume music when returning
-    AudioManager.instance.resume();
+    AudioService.instance.resumeAll();
 
     // 🟢 FIX: Refresh user data when returning from any screen
     final updatedUser = await widget.authService.getCurrentUser();

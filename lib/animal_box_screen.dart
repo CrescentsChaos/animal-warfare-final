@@ -6,6 +6,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:provider/provider.dart';
 import 'package:animal_warfare/models/captured_organism.dart';
 import 'package:animal_warfare/models/move.dart';
+import 'package:animal_warfare/models/talisman.dart';
 import 'package:animal_warfare/local_auth_service.dart';
 import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/theme.dart';
@@ -124,11 +125,29 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
                 isActiveAttacker: isAttacker,
                 isNarrow: MediaQuery.sizeOf(context).width < 400,
                 onTap: () => _showAnimalDetails(context, org),
-                onToggleTeam: () => userState.toggleTeamMember(originalIndex),
+                onToggleTeam: () async {
+                  final success = await userState.toggleTeamMember(
+                    originalIndex,
+                  );
+                  if (!success && context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Team is full (Max 5)!'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                },
                 onSetAsAttacker: () =>
                     userState.setActiveAttacker(originalIndex),
                 onManageMoves: () =>
                     _showMoveSelection(context, org, originalIndex),
+                onEquip: () => _showTalismanSelector(
+                  context,
+                  userState,
+                  originalIndex,
+                  org,
+                ),
                 onRelease: () =>
                     _confirmRelease(context, org, originalIndex, userState),
               );
@@ -167,6 +186,8 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
           onToggleTeam: () => userState.toggleTeamMember(originalIndex),
           onSetAsAttacker: () => userState.setActiveAttacker(originalIndex),
           onManageMoves: () => _showMoveSelection(context, org, originalIndex),
+          onEquip: () =>
+              _showTalismanSelector(context, userState, originalIndex, org),
           onRelease: () =>
               _confirmRelease(context, org, originalIndex, userState),
         );
@@ -341,6 +362,95 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
       builder: (ctx) => _MoveSelectionDialog(captured: captured, index: index),
     );
   }
+
+  void _showTalismanSelector(
+    BuildContext context,
+    UserState userState,
+    int index,
+    CapturedOrganism organism,
+  ) {
+    final craftedTalismans = userState.currentUser?.craftedTalismans ?? [];
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.secondaryButtonColor,
+      builder: (ctx) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'SELECT TALISMAN',
+                style: TextStyle(
+                  fontFamily: 'PressStart2P',
+                  fontSize: 14,
+                  color: AppColors.highlightColor,
+                ),
+              ),
+              const SizedBox(height: 16),
+              if (organism.equippedTalisman != null)
+                ListTile(
+                  leading: const Icon(Icons.remove_circle, color: Colors.red),
+                  title: const Text(
+                    'UNEQUIP',
+                    style: TextStyle(
+                      fontFamily: 'PressStart2P',
+                      fontSize: 12,
+                      color: Colors.white,
+                    ),
+                  ),
+                  onTap: () async {
+                    await userState.equipTalisman(index, null);
+                    if (ctx.mounted) Navigator.pop(ctx);
+                  },
+                ),
+              if (craftedTalismans.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 20),
+                  child: Text(
+                    'NO TALISMANS AVAILABLE',
+                    style: TextStyle(color: Colors.white38, fontSize: 12),
+                  ),
+                )
+              else
+                ...craftedTalismans.toSet().map((tid) {
+                  final t = Talisman.findById(tid);
+                  final count = craftedTalismans
+                      .where((id) => id == tid)
+                      .length;
+                  return ListTile(
+                    leading: const Icon(
+                      Icons.auto_awesome,
+                      color: AppColors.highlightColor,
+                    ),
+                    title: Text(
+                      t?.name ?? tid,
+                      style: const TextStyle(
+                        fontFamily: 'PressStart2P',
+                        fontSize: 12,
+                        color: Colors.white,
+                      ),
+                    ),
+                    subtitle: Text(
+                      'Count: x$count',
+                      style: const TextStyle(
+                        color: Colors.white54,
+                        fontSize: 10,
+                      ),
+                    ),
+                    onTap: () async {
+                      await userState.equipTalisman(index, tid);
+                      if (ctx.mounted) Navigator.pop(ctx);
+                    },
+                  );
+                }),
+            ],
+          ),
+        );
+      },
+    );
+  }
 }
 
 class _AnimalCard extends StatelessWidget {
@@ -353,6 +463,7 @@ class _AnimalCard extends StatelessWidget {
   final VoidCallback onToggleTeam;
   final VoidCallback onSetAsAttacker;
   final VoidCallback onManageMoves;
+  final VoidCallback onEquip;
   final VoidCallback onRelease;
 
   const _AnimalCard({
@@ -365,6 +476,7 @@ class _AnimalCard extends StatelessWidget {
     required this.onToggleTeam,
     required this.onSetAsAttacker,
     required this.onManageMoves,
+    required this.onEquip,
     required this.onRelease,
   });
 
@@ -451,6 +563,19 @@ class _AnimalCard extends StatelessWidget {
                         fontFamily: 'PressStart2P',
                       ),
                     ),
+                    const SizedBox(height: 4),
+                    Text(
+                      captured.equippedTalisman != null
+                          ? 'Item: ${captured.equippedTalisman!.name}'
+                          : 'No Item',
+                      style: TextStyle(
+                        color: captured.equippedTalisman != null
+                            ? AppColors.highlightColor
+                            : Colors.grey[500],
+                        fontSize: 9,
+                        fontFamily: 'PressStart2P',
+                      ),
+                    ),
                     const SizedBox(height: 8),
                     _buildActions(context),
                   ],
@@ -481,6 +606,13 @@ class _AnimalCard extends StatelessWidget {
           onPressed: onManageMoves,
           isOutlined: true,
           textColor: AppColors.highlightColor,
+        ),
+        _SmallActionBtn(
+          label: captured.equippedTalisman != null ? 'CHANGE' : 'EQUIP',
+          color: AppColors.secondaryButtonColor,
+          onPressed: onEquip,
+          isOutlined: true,
+          textColor: Colors.blueAccent,
         ),
         _SmallActionBtn(
           label: isInTeam ? 'REMOVE' : 'ADD TEAM',
@@ -605,6 +737,32 @@ class _AnimalDetailsDialog extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (captured.equippedTalisman != null) ...[
+              _buildStatHeader('HELD ITEM'),
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12.0),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.stars,
+                      size: 14,
+                      color: AppColors.highlightColor,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      captured.equippedTalisman!.name,
+                      style: const TextStyle(
+                        color: AppColors.highlightColor,
+                        fontFamily: 'PressStart2P',
+                        fontSize: 10,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(color: Colors.grey),
+            ],
             _buildStatHeader('CORE DNA (IVs)'),
             const SizedBox(height: 8),
             _buildStatRow('HP IV', ivs['health'] ?? 0),

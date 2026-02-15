@@ -1,21 +1,86 @@
-// lib/services/audio_service.dart
 import 'package:audioplayers/audioplayers.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Service for managing game audio including sound effects and background music
 class AudioService {
+  static final AudioService instance = AudioService._internal();
+  AudioService._internal();
+
   // Separate players for music and sound effects
   final AudioPlayer _musicPlayer = AudioPlayer();
   final AudioPlayer _soundPlayer = AudioPlayer();
 
   bool _isMusicEnabled = true;
   bool _isSoundEnabled = true;
+  double _musicVolume = 1.0;
+  double _soundVolume = 1.0;
   String? _currentMusicPath;
+  bool _isInitialized = false;
+  SharedPreferences? _prefs;
 
-  AudioService() {
+  bool get isMusicEnabled => _isMusicEnabled;
+  bool get isSoundEnabled => _isSoundEnabled;
+  double get musicVolume => _musicVolume;
+  double get soundVolume => _soundVolume;
+  bool get isInitialized => _isInitialized;
+
+  /// Initialize settings from SharedPreferences
+  Future<void> init() async {
+    if (_isInitialized) return;
+
+    _prefs = await SharedPreferences.getInstance();
+    _isMusicEnabled = _prefs?.getBool('isMusicEnabled') ?? true;
+    _isSoundEnabled = _prefs?.getBool('isSoundEnabled') ?? true;
+    _musicVolume = _prefs?.getDouble('musicVolume') ?? 1.0;
+    _soundVolume = _prefs?.getDouble('soundVolume') ?? 1.0;
+
+    // Context for background music: Requests audio focus
+    final musicContext = AudioContext(
+      android: AudioContextAndroid(
+        isSpeakerphoneOn: false,
+        stayAwake: false,
+        contentType: AndroidContentType.music,
+        usageType: AndroidUsageType.game,
+        audioFocus: AndroidAudioFocus.gain,
+      ),
+      iOS: AudioContextIOS(
+        category: AVAudioSessionCategory.playback,
+        options: {AVAudioSessionOptions.mixWithOthers},
+      ),
+    );
+
+    // Context for sound effects: Does NOT request audio focus, allowing it to mix
+    final sfxContext = AudioContext(
+      android: AudioContextAndroid(
+        isSpeakerphoneOn: false,
+        stayAwake: false,
+        contentType: AndroidContentType.sonification,
+        usageType: AndroidUsageType.assistanceSonification,
+        audioFocus: AndroidAudioFocus.none, // Key Fix: Don't interrupt music
+      ),
+      iOS: AudioContextIOS(
+        category: AVAudioSessionCategory.playback,
+        options: {AVAudioSessionOptions.mixWithOthers},
+      ),
+    );
+
+    // Apply specific contexts to each player
+    await _musicPlayer.setAudioContext(musicContext);
+    await _soundPlayer.setAudioContext(sfxContext);
+
     // Set music player to loop by default
     _musicPlayer.setReleaseMode(ReleaseMode.loop);
+    await _musicPlayer
+        .setVolume(_isMusicEnabled ? _musicVolume : 0.0)
+        .catchError((e) => print('Error setting initial music volume: $e'));
+
     // Sound effects should play once
     _soundPlayer.setReleaseMode(ReleaseMode.release);
+    await _soundPlayer
+        .setVolume(_isSoundEnabled ? _soundVolume : 0.0)
+        .catchError((e) => print('Error setting initial sound volume: $e'));
+
+    _isInitialized = true;
   }
 
   /// Play a sound effect once
@@ -23,7 +88,11 @@ class AudioService {
     if (!_isSoundEnabled) return;
 
     try {
-      await _soundPlayer.stop();
+      // Don't stop it first if using a separate player instance per sound is desired,
+      // but here we keep one player. Stopping might cause a glitch if called too fast.
+      // audioplayers handled rapid play calls well if source is already set,
+      // but let's just seek(0) and resume if we wanted to restart.
+      // Simplified: just play.
       await _soundPlayer.play(AssetSource(assetPath));
     } catch (e) {
       print('Error playing sound: $e');
@@ -32,21 +101,31 @@ class AudioService {
 
   /// Play background music with looping
   Future<void> playMusic(String assetPath, {bool loop = true}) async {
-    if (!_isMusicEnabled) return;
+    // If already playing this track, don't restart it (avoids stuttering)
+    if (_currentMusicPath == assetPath &&
+        (_musicPlayer.state == PlayerState.playing ||
+            _musicPlayer.state == PlayerState.paused)) {
+      if (_musicPlayer.state == PlayerState.paused) {
+        await _musicPlayer.resume();
+      }
+      return;
+    }
 
-    // Don't restart if already playing the same music
-    if (_currentMusicPath == assetPath) return;
+    _currentMusicPath = assetPath;
 
     try {
-      await _musicPlayer.stop();
-      _currentMusicPath = assetPath;
-
       if (loop) {
-        _musicPlayer.setReleaseMode(ReleaseMode.loop);
+        await _musicPlayer.setReleaseMode(ReleaseMode.loop);
       } else {
-        _musicPlayer.setReleaseMode(ReleaseMode.release);
+        await _musicPlayer.setReleaseMode(ReleaseMode.release);
       }
+    } catch (e) {
+      print('Error setting release mode: $e');
+    }
 
+    if (!_isMusicEnabled) return;
+
+    try {
       await _musicPlayer.play(AssetSource(assetPath));
     } catch (e) {
       print('Error playing music: $e');
@@ -65,25 +144,64 @@ class AudioService {
 
   /// Set music volume (0.0 to 1.0)
   Future<void> setMusicVolume(double volume) async {
-    await _musicPlayer.setVolume(volume.clamp(0.0, 1.0));
+    _musicVolume = volume.clamp(0.0, 1.0);
+    if (_isMusicEnabled) {
+      try {
+        await _musicPlayer.setVolume(_musicVolume);
+      } catch (e) {
+        print('Error setting music volume: $e');
+      }
+    }
+    // Async save, don't await to avoid stalling UI
+    _prefs?.setDouble('musicVolume', _musicVolume);
   }
 
   /// Set sound effects volume (0.0 to 1.0)
   Future<void> setSoundVolume(double volume) async {
-    await _soundPlayer.setVolume(volume.clamp(0.0, 1.0));
+    _soundVolume = volume.clamp(0.0, 1.0);
+    if (_isSoundEnabled) {
+      try {
+        await _soundPlayer.setVolume(_soundVolume);
+      } catch (e) {
+        print('Error setting sound volume: $e');
+      }
+    }
+    // Async save, don't await
+    _prefs?.setDouble('soundVolume', _soundVolume);
   }
 
   /// Enable/disable music
-  void setMusicEnabled(bool enabled) {
+  Future<void> setMusicEnabled(bool enabled) async {
     _isMusicEnabled = enabled;
-    if (!enabled) {
-      stopMusic();
+    try {
+      if (!enabled) {
+        await _musicPlayer.setVolume(0.0);
+      } else {
+        await _musicPlayer.setVolume(_musicVolume);
+        if (_currentMusicPath != null &&
+            _musicPlayer.state != PlayerState.playing) {
+          await playMusic(_currentMusicPath!);
+        }
+      }
+    } catch (e) {
+      print('Error toggling music: $e');
     }
+    _prefs?.setBool('isMusicEnabled', _isMusicEnabled);
   }
 
   /// Enable/disable sound effects
-  void setSoundEnabled(bool enabled) {
+  Future<void> setSoundEnabled(bool enabled) async {
     _isSoundEnabled = enabled;
+    try {
+      if (!enabled) {
+        await _soundPlayer.setVolume(0.0);
+      } else {
+        await _soundPlayer.setVolume(_soundVolume);
+      }
+    } catch (e) {
+      print('Error toggling sound: $e');
+    }
+    _prefs?.setBool('isSoundEnabled', _isSoundEnabled);
   }
 
   /// Get the default sound effect path based on move category
@@ -103,8 +221,12 @@ class AudioService {
   /// Pause all audio (useful when app goes to background)
   Future<void> pauseAll() async {
     try {
-      await _musicPlayer.pause();
-      await _soundPlayer.pause();
+      if (_musicPlayer.state != PlayerState.stopped) {
+        await _musicPlayer.pause();
+      }
+      if (_soundPlayer.state != PlayerState.stopped) {
+        await _soundPlayer.pause();
+      }
     } catch (e) {
       print('Error pausing audio: $e');
     }
@@ -112,17 +234,30 @@ class AudioService {
 
   /// Resume audio (useful when app returns to foreground)
   Future<void> resumeAll() async {
+    if (!_isMusicEnabled || _currentMusicPath == null) return;
     try {
-      await _musicPlayer.resume();
-      // Don't resume sound effects - they're one-shot
+      if (_musicPlayer.state == PlayerState.paused) {
+        await _musicPlayer.resume();
+      } else if (_musicPlayer.state == PlayerState.stopped ||
+          _musicPlayer.state == PlayerState.completed) {
+        // Double check it's not actually already playing (can happen with some platforms)
+        if (_musicPlayer.state != PlayerState.playing) {
+          await playMusic(_currentMusicPath!);
+        }
+      }
     } catch (e) {
       print('Error resuming audio: $e');
     }
   }
 
   /// Dispose of audio players when no longer needed
+  /// Note: The global instance should generally not be disposed.
   Future<void> dispose() async {
-    await _musicPlayer.dispose();
-    await _soundPlayer.dispose();
+    try {
+      await _musicPlayer.dispose();
+      await _soundPlayer.dispose();
+    } catch (e) {
+      print('Error disposing audio players: $e');
+    }
   }
 }

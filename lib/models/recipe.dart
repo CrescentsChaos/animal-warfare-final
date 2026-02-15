@@ -1,5 +1,4 @@
 // lib/models/recipe.dart
-import 'package:animal_warfare/models/loot_item.dart';
 import 'package:animal_warfare/models/talisman.dart';
 
 class Recipe {
@@ -20,63 +19,37 @@ class Recipe {
     Recipe(
       id: 'recipe_strength_charm',
       resultTalismanId: 'strength_charm',
-      requiredLoot: {
-        'Fur': 3,
-        'Horn': 2,
-        'Fang': 1,
-      },
+      requiredLoot: {'Fur': 3, 'Horn': 2, 'Fang': 1},
     ),
     Recipe(
       id: 'recipe_iron_ward',
       resultTalismanId: 'iron_ward',
-      requiredLoot: {
-        'Scales': 4,
-        'Shell': 2,
-      },
+      requiredLoot: {'Scales': 4, 'Shell': 2},
     ),
     Recipe(
       id: 'recipe_swift_rune',
       resultTalismanId: 'swift_rune',
-      requiredLoot: {
-        'Feather': 5,
-        'Claw': 2,
-        'Antler': 1,
-      },
+      requiredLoot: {'Feather': 5, 'Claw': 2, 'Antler': 1},
     ),
     Recipe(
       id: 'recipe_vitality_stone',
       resultTalismanId: 'vitality_stone',
-      requiredLoot: {
-        'Shell': 3,
-        'Scales': 3,
-        'Pearl': 1,
-      },
+      requiredLoot: {'Shell': 3, 'Scales': 3, 'Pearl': 1},
     ),
     Recipe(
       id: 'recipe_power_crystal',
       resultTalismanId: 'power_crystal',
-      requiredLoot: {
-        'Fang': 4,
-        'Claw': 3,
-        'Venom': 2,
-      },
+      requiredLoot: {'Fang': 4, 'Claw': 3, 'Venom': 2},
     ),
     Recipe(
       id: 'recipe_guardian_shell',
       resultTalismanId: 'guardian_shell',
-      requiredLoot: {
-        'Shell': 5,
-        'Scales': 4,
-      },
+      requiredLoot: {'Shell': 5, 'Scales': 4},
     ),
     Recipe(
       id: 'recipe_lucky_claw',
       resultTalismanId: 'lucky_claw',
-      requiredLoot: {
-        'Claw': 5,
-        'Feather': 3,
-        'Pearl': 1,
-      },
+      requiredLoot: {'Claw': 5, 'Feather': 3, 'Pearl': 1},
     ),
   ];
 

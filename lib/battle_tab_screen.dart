@@ -62,10 +62,15 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
       final captured = CapturedOrganism.spawn(randomOrganism);
 
       // Randomly assign talisman if requested
-      if (withTalismans && random.nextBool()) {
-        final randomTalisman =
-            Talisman.allTalismans[random.nextInt(Talisman.allTalismans.length)];
-        team.add(captured.copyWith(equippedTalisman: randomTalisman));
+      // Randomly assign talisman if requested (100% chance for opponents now)
+      if (withTalismans) {
+        if (Talisman.allTalismans.isNotEmpty) {
+          final randomTalisman = Talisman
+              .allTalismans[random.nextInt(Talisman.allTalismans.length)];
+          team.add(captured.copyWith(equippedTalisman: randomTalisman));
+        } else {
+          team.add(captured);
+        }
       } else {
         team.add(captured);
       }
@@ -177,6 +182,8 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
     required IconData icon,
     required VoidCallback onTap,
     required Color color,
+    VoidCallback? onSecondaryAction,
+    String? secondaryActionLabel,
   }) {
     return Card(
       elevation: 8,
@@ -216,9 +223,98 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
                 ),
                 textAlign: TextAlign.center,
               ),
+              if (onSecondaryAction != null &&
+                  secondaryActionLabel != null) ...[
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: onSecondaryAction,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red.shade900,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      side: const BorderSide(color: Colors.white24),
+                    ),
+                  ),
+                  child: Text(
+                    secondaryActionLabel,
+                    style: const TextStyle(
+                      fontFamily: 'PressStart2P',
+                      fontSize: 8,
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _confirmResetRun(BuildContext context, UserState userState) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.primaryButtonColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: AppColors.highlightColor, width: 2),
+        ),
+        title: const Text(
+          'RESET RUN?',
+          style: TextStyle(
+            color: AppColors.highlightColor,
+            fontFamily: 'PressStart2P',
+            fontSize: 16,
+          ),
+        ),
+        content: const Text(
+          'This will delete your current Roguelike progress and team forever. Are you sure?',
+          style: TextStyle(
+            color: Colors.white70,
+            fontFamily: 'PressStart2P',
+            fontSize: 10,
+            height: 1.5,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text(
+              'CANCEL',
+              style: TextStyle(
+                color: Colors.white,
+                fontFamily: 'PressStart2P',
+                fontSize: 10,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await userState.endRogueRun();
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Roguelike run reset!')),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text(
+              'RESET',
+              style: TextStyle(
+                color: Colors.white,
+                fontFamily: 'PressStart2P',
+                fontSize: 10,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -331,6 +427,10 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
                     icon: Icons.vignette,
                     color: const Color(0xFF4B0082).withOpacity(0.8), // Indigo
                     onTap: () => _startRogueLike(userState),
+                    onSecondaryAction: user.rogueLikeState.isActive
+                        ? () => _confirmResetRun(context, userState)
+                        : null,
+                    secondaryActionLabel: 'RESET RUN',
                   ),
 
                 if (user != null) const SizedBox(height: 24),
@@ -343,9 +443,7 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
                   icon: Icons.shuffle,
                   color: const Color(0xFF8B0000).withOpacity(0.8),
                   onTap: () {
-                    final playerTeam = _generateRandomTeam(
-                      withTalismans: false,
-                    );
+                    final playerTeam = _generateRandomTeam(withTalismans: true);
                     final aiTeam = _generateRandomTeam(withTalismans: true);
 
                     _startBattle(

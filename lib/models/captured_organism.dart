@@ -32,6 +32,14 @@ class CapturedOrganism {
   List<StatusEffect> statusEffects;
   final int level; // NEW: Level of the organism
 
+  // NEW: Stat Boost Persistence (for Roguelike mid-battle re-entry)
+  int attackStage;
+  int defenseStage;
+  int powerStage;
+  int resistanceStage;
+  int speedStage;
+  int accuracyStage;
+
   CapturedOrganism({
     required this.baseOrganism,
     required this.individualValues,
@@ -48,6 +56,12 @@ class CapturedOrganism {
     StatusEffect? statusEffect, // Legacy support
     String? id,
     this.level = 50, // Default level to 50
+    this.attackStage = 0,
+    this.defenseStage = 0,
+    this.powerStage = 0,
+    this.resistanceStage = 0,
+    this.speedStage = 0,
+    this.accuracyStage = 0,
   }) : id = id ?? const Uuid().v4(),
        statusEffects =
            statusEffects ?? (statusEffect != null ? [statusEffect] : []),
@@ -109,6 +123,12 @@ class CapturedOrganism {
     List<StatusEffect>? statusEffects,
     String? id,
     int? level, // Added level to copyWith
+    int? attackStage,
+    int? defenseStage,
+    int? powerStage,
+    int? resistanceStage,
+    int? speedStage,
+    int? accuracyStage,
   }) {
     return CapturedOrganism(
       baseOrganism: baseOrganism ?? this.baseOrganism,
@@ -121,6 +141,12 @@ class CapturedOrganism {
       statusEffects: statusEffects ?? List.from(this.statusEffects),
       id: id ?? this.id,
       level: level ?? this.level, // Pass level to constructor
+      attackStage: attackStage ?? this.attackStage,
+      defenseStage: defenseStage ?? this.defenseStage,
+      powerStage: powerStage ?? this.powerStage,
+      resistanceStage: resistanceStage ?? this.resistanceStage,
+      speedStage: speedStage ?? this.speedStage,
+      accuracyStage: accuracyStage ?? this.accuracyStage,
     );
   }
   // --- DNA Generation and Stat Calculation ---
@@ -318,6 +344,12 @@ class CapturedOrganism {
     'nature': nature.name,
     'statusEffects': statusEffects.map((e) => e.toJson()).toList(),
     'level': level, // Added level to toJson
+    'attackStage': attackStage,
+    'defenseStage': defenseStage,
+    'powerStage': powerStage,
+    'resistanceStage': resistanceStage,
+    'speedStage': speedStage,
+    'accuracyStage': accuracyStage,
   };
 
   /// Create CapturedOrganism from JSON
@@ -337,7 +369,7 @@ class CapturedOrganism {
 
     Talisman? talisman;
     if (json['equippedTalisman'] != null) {
-      talisman = Talisman.fromJson(
+      talisman = Talisman.fromJsonWithId(
         json['equippedTalisman'] as Map<String, dynamic>,
       );
     }
@@ -377,6 +409,12 @@ class CapturedOrganism {
                 .toList()
           : (status != null ? [status] : []),
       level: level, // Pass level to constructor
+      attackStage: json['attackStage'] as int? ?? 0,
+      defenseStage: json['defenseStage'] as int? ?? 0,
+      powerStage: json['powerStage'] as int? ?? 0,
+      resistanceStage: json['resistanceStage'] as int? ?? 0,
+      speedStage: json['speedStage'] as int? ?? 0,
+      accuracyStage: json['accuracyStage'] as int? ?? 0,
     );
   }
 }

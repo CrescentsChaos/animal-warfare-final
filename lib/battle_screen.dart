@@ -12,6 +12,7 @@ import 'package:animal_warfare/models/weather.dart';
 import 'package:animal_warfare/models/terrain.dart';
 import 'package:animal_warfare/models/loot_item.dart';
 import 'package:animal_warfare/game/battle_models.dart';
+import 'package:animal_warfare/services/audio_service.dart';
 import 'package:animal_warfare/models/organism.dart';
 import 'package:animal_warfare/models/elemental_type.dart'; // Added
 import 'package:animal_warfare/models/move.dart'; // Added
@@ -51,6 +52,12 @@ class BattleScreen extends StatelessWidget {
         opponentTeam: opponentTeam,
         isArenaBattle: isArenaBattle,
         isRogueMode: isRogueMode,
+        initialPlayerIndex: isRogueMode
+            ? Provider.of<UserState>(
+                context,
+                listen: false,
+              ).currentUser?.rogueLikeState.currentPlayerIndex
+            : null,
       ),
       child: BattleScreenContent(
         biomeName: biomeName,
@@ -115,7 +122,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
   Color _getBiomePrimaryColor() {
     final biome = widget.biomeName.toLowerCase();
     if (biome.contains('swamp')) {
-      return const Color.fromARGB(164, 43, 185, 0); // Purple
+      return const Color(0xFF2BB900); // Purple (Actually Greenish Swamp)
     }
     if (biome.contains('desert') || biome.contains('savanna')) {
       return const Color(0xFFFFC107); // Amber
@@ -142,7 +149,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
   Color _getBiomeSecondaryColor() {
     final biome = widget.biomeName.toLowerCase();
     if (biome.contains('swamp')) {
-      return const Color.fromARGB(115, 15, 129, 0); // Dark Purple
+      return const Color.fromARGB(255, 7, 58, 0); // details background
     }
     if (biome.contains('desert') || biome.contains('savanna')) {
       return const Color(0xFFFF6F00); // Dark Amber
@@ -232,6 +239,8 @@ class _BattleScreenContentState extends State<BattleScreenContent>
   late Animation<double> _playerShakeAnimation;
   late Animation<double> _opponentShakeAnimation;
   bool _isSwitchDialogShowing = false;
+  CapturedOrganism? _pendingRogueCapture;
+  BattleManager? _battleManager;
 
   @override
   void initState() {
@@ -268,6 +277,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
       userState.updateQuestProgress(widget.opponentName);
 
       final bm = Provider.of<BattleManager>(context, listen: false);
+      _battleManager = bm;
       bm.onAttack = _onAttack;
       bm.onVictory = _onVictory;
 
@@ -281,6 +291,17 @@ class _BattleScreenContentState extends State<BattleScreenContent>
   void _syncRogueState() {
     if (!mounted || !widget.isRogueMode) return;
     final bm = Provider.of<BattleManager>(context, listen: false);
+
+    // Only sync if in a stable state (waiting for input, waiting for switch, or battle end)
+    // This prevents mid-turn abuse (save-scumming) and ensures state is clean.
+    const stableStates = [
+      BattleState.waitingForInput,
+      BattleState.waitingForPlayerSwitch,
+      BattleState.battleEnd,
+    ];
+
+    if (!stableStates.contains(bm.currentState)) return;
+
     final userState = Provider.of<UserState>(context, listen: false);
     final user = userState.currentUser;
     if (user == null) return;
@@ -290,6 +311,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
       team: bm.playerTeam,
       opponentTeam: bm.opponentTeam,
       currentOpponentIndex: bm.currentOpponentIndex,
+      currentPlayerIndex: bm.currentPlayerIndex,
     );
     userState.updateRogueRunState(updatedState);
   }
@@ -298,6 +320,16 @@ class _BattleScreenContentState extends State<BattleScreenContent>
   void dispose() {
     // Remove lifecycle observer
     WidgetsBinding.instance.removeObserver(this);
+
+    // FIX: Remove BattleManager listener to prevent state leaks or post-mortem syncs
+    if (widget.isRogueMode && _battleManager != null) {
+      _battleManager!.removeListener(_syncRogueState);
+    }
+
+    // FIX: Explicitly stop music when leaving the battle screen.
+    // This prevents the battle music from persisting into the home screen
+    // or next battle (which might not start its track immediately).
+    AudioService.instance.stopMusic();
 
     _playerShakeController.dispose();
     _opponentShakeController.dispose();
@@ -535,7 +567,10 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               itemCount: bm.playerTeam.length,
               itemBuilder: (context, index) {
                 final animal = bm.playerTeam[index];
-                final battleOrg = BattleOrganism(animal);
+                final battleOrg = BattleOrganism(
+                  animal,
+                  isRogueMode: bm.isRogueMode,
+                );
                 final isCurrent = index == bm.currentPlayerIndex;
                 final isFainted = battleOrg.health <= 0;
 
@@ -543,7 +578,12 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                   enabled: !isCurrent && !isFainted,
                   onLongPress: () {
                     // Show animal details on long press
-                    _showOrganismInfo(context, battleOrg, bm: bm);
+                    _showOrganismInfo(
+                      context,
+                      battleOrg,
+                      bm: bm,
+                      isPlayer: true,
+                    );
                   },
                   leading: Opacity(
                     opacity: isFainted ? 0.5 : 1.0,
@@ -1073,7 +1113,9 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
-              base.name,
+              widget.isRogueMode
+                  ? '${base.name} LV.${organism.organism.level}'
+                  : base.name,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
@@ -1107,7 +1149,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
-              'HP: ${organism.health}/$maxHp (${(hpRatio * 100).round()}%)',
+              'HP: ${organism.health}/$maxHp (${(hpRatio * 100).toStringAsFixed(1)}%)',
               style: TextStyle(
                 color: Colors.white70,
                 fontSize: isNarrow ? 8 : 10,
@@ -1159,6 +1201,16 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                     .toList(),
               ),
             ),
+          if (organism.organism.equippedTalisman != null &&
+              organism.isItemRevealed)
+            Padding(
+              padding: const EdgeInsets.only(top: 4.0),
+              child: const Icon(
+                Icons.stars,
+                size: 10,
+                color: Colors.yellowAccent,
+              ),
+            ),
         ],
       ),
     );
@@ -1171,7 +1223,8 @@ class _BattleScreenContentState extends State<BattleScreenContent>
         children: [
           Flexible(
             child: GestureDetector(
-              onLongPress: () => _showOrganismInfo(context, organism),
+              onLongPress: () =>
+                  _showOrganismInfo(context, organism, isPlayer: false),
               child: statusBox,
             ),
           ),
@@ -1179,7 +1232,8 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           _BattleSprite(
             organism: organism,
             size: spriteSize,
-            onLongPress: () => _showOrganismInfo(context, organism),
+            onLongPress: () =>
+                _showOrganismInfo(context, organism, isPlayer: false),
             mirror: false, // Mirrored from previous State
             biomeName: widget.biomeName,
           ),
@@ -1225,7 +1279,9 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
-              base.name,
+              widget.isRogueMode
+                  ? '${base.name} LV.${organism.organism.level}'
+                  : base.name,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
@@ -1258,7 +1314,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
-              'HP: ${organism.health}/$maxHp (${(hpRatio * 100).round()}%)',
+              'HP: ${organism.health}/$maxHp (${(hpRatio * 100).toStringAsFixed(1)}%)',
               style: TextStyle(
                 color: Colors.white70,
                 fontSize: isNarrow ? 8 : 10,
@@ -1309,6 +1365,15 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                     .toList(),
               ),
             ),
+          if (organism.organism.equippedTalisman != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 4.0),
+              child: const Icon(
+                Icons.stars,
+                size: 10,
+                color: Colors.yellowAccent,
+              ),
+            ),
         ],
       ),
     );
@@ -1322,14 +1387,16 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           _BattleSprite(
             organism: organism,
             size: spriteSize,
-            onLongPress: () => _showOrganismInfo(context, organism),
+            onLongPress: () =>
+                _showOrganismInfo(context, organism, isPlayer: true),
             mirror: true, // Mirrored from previous State
             biomeName: widget.biomeName,
           ),
           const SizedBox(width: 8),
           Flexible(
             child: GestureDetector(
-              onLongPress: () => _showOrganismInfo(context, organism),
+              onLongPress: () =>
+                  _showOrganismInfo(context, organism, isPlayer: true),
               child: statusBox,
             ),
           ),
@@ -1342,6 +1409,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     BuildContext context,
     BattleOrganism bo, {
     BattleManager? bm,
+    bool isPlayer = false,
   }) {
     final base = bo.organism.baseOrganism;
     final battleManager =
@@ -1634,6 +1702,97 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               const SizedBox(height: 10),
               const Divider(color: Colors.white24, height: 1),
               const SizedBox(height: 10),
+
+              // Held Item
+              if (bo.organism.equippedTalisman != null &&
+                  (isPlayer || bo.isItemRevealed))
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10.0),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.stars,
+                        color: Colors.yellowAccent,
+                        size: 12,
+                      ),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'HELD ITEM: ',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 9,
+                          fontFamily: 'PressStart2P',
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(
+                          bo.organism.equippedTalisman!.name,
+                          style: const TextStyle(
+                            color: Colors.yellowAccent,
+                            fontSize: 9,
+                            fontFamily: 'PressStart2P',
+                            fontWeight: FontWeight.bold,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              if (bo.organism.equippedTalisman != null &&
+                  (isPlayer || bo.isItemRevealed))
+                const SizedBox(height: 10),
+              if (bo.organism.equippedTalisman != null &&
+                  (isPlayer || bo.isItemRevealed))
+                const Divider(color: Colors.white24, height: 1),
+              if (bo.organism.equippedTalisman != null &&
+                  (isPlayer || bo.isItemRevealed))
+                const SizedBox(height: 10),
+
+              // Revealed Moves (Opponent Only)
+              if (!isPlayer && bm != null) ...[
+                const SizedBox(height: 10),
+                const Divider(color: Colors.white24, height: 1),
+                const SizedBox(height: 10),
+                Text(
+                  'REVEALED MOVES',
+                  style: TextStyle(
+                    color: _getBiomeThemeColor(),
+                    fontSize: 9,
+                    fontFamily: 'PressStart2P',
+                  ),
+                ),
+                const SizedBox(height: 6),
+                if ((bm.battleStats[bo.organism.id]?.revealedMoves.isEmpty ??
+                    true))
+                  const Text(
+                    'NONE',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 9,
+                      fontFamily: 'PressStart2P',
+                    ),
+                  )
+                else
+                  ...bm.battleStats[bo.organism.id]!.revealedMoves.map((
+                    moveName,
+                  ) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 4.0),
+                      child: Text(
+                        moveName.toUpperCase(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontFamily: 'PressStart2P',
+                        ),
+                      ),
+                    );
+                  }),
+                const SizedBox(height: 10),
+                const Divider(color: Colors.white24, height: 1),
+                const SizedBox(height: 10),
+              ],
 
               // Abilities
               Text(
@@ -1976,8 +2135,15 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                   .last
                   .toUpperCase();
 
+              final isLocked =
+                  battleManager.player.isChoiceLocked &&
+                  battleManager.player.lockedMove != null &&
+                  battleManager.player.lockedMove!.name != move.name;
+
               return ElevatedButton(
-                onPressed: () => battleManager.processPlayerAction(move),
+                onPressed: isLocked
+                    ? null
+                    : () => battleManager.processPlayerAction(move),
                 onLongPress: () => _showMoveDetails(
                   context,
                   move,
@@ -1985,17 +2151,19 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                   battleManager,
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: typeColor,
-                  foregroundColor: Colors.white,
+                  backgroundColor: isLocked ? Colors.grey[700] : typeColor,
+                  foregroundColor: isLocked ? Colors.white24 : Colors.white,
                   padding: const EdgeInsets.all(4),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                     side: BorderSide(
-                      color: Colors.white.withOpacity(0.5),
+                      color: isLocked
+                          ? Colors.grey.withOpacity(0.3)
+                          : Colors.white.withOpacity(0.5),
                       width: 2,
                     ),
                   ),
-                  elevation: 2,
+                  elevation: isLocked ? 0 : 2,
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -2361,9 +2529,18 @@ class _BattleScreenContentState extends State<BattleScreenContent>
         newCapturedInstance.restoreAllStamina(); // Restore stamina on capture
 
         if (widget.isRogueMode) {
-          await userState.captureForRogueRun(newCapturedInstance);
+          final team = userState.currentUser?.rogueLikeState.team ?? [];
+          if (team.length < 5) {
+            await userState.captureForRogueRun(newCapturedInstance);
+          } else {
+            if (mounted) {
+              setState(() {
+                _pendingRogueCapture = newCapturedInstance;
+              });
+            }
+          }
         } else {
-          userState.addCapturedOrganism(newCapturedInstance);
+          await userState.addCapturedOrganism(newCapturedInstance);
         }
       }
 
@@ -2379,7 +2556,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           runTeam.removeWhere((co) => co.id == deadCreature.id);
           await userState.updateRogueTeam(runTeam);
         } else if (!widget.isArenaBattle) {
-          userState.removeCapturedOrganism(deadCreature);
+          await userState.removeCapturedOrganism(deadCreature);
         }
       }
 
@@ -2389,14 +2566,22 @@ class _BattleScreenContentState extends State<BattleScreenContent>
             battleManager.result == BattleResult.capture) {
           // Perma-death: Remove any fainted animals from the team
           final currentTeam = userState.currentUser?.rogueLikeState.team ?? [];
-          final survivingTeam = currentTeam
+          final List<CapturedOrganism> survivingTeam = currentTeam
               .where((o) => o.currentHealth > 0)
               .toList();
 
-          // Update team if anyone died
-          if (survivingTeam.length < currentTeam.length) {
-            await userState.updateRogueTeam(survivingTeam);
+          // REORDER: Move the active animal (the one that finished the battle) to the lead position
+          final activeOrg = battleManager.player.organism;
+          final activeIndexInSurviving = survivingTeam.indexWhere(
+            (o) => o.id == activeOrg.id,
+          );
+          if (activeIndexInSurviving > 0) {
+            final active = survivingTeam.removeAt(activeIndexInSurviving);
+            survivingTeam.insert(0, active);
           }
+
+          // Update team (always update to ensure the lead animal order is persisted)
+          await userState.updateRogueTeam(survivingTeam);
 
           // Increment floor
           await userState.incrementRogueFloor();
@@ -2411,14 +2596,14 @@ class _BattleScreenContentState extends State<BattleScreenContent>
       if (!widget.isRogueMode) {
         if (widget.isArenaBattle && battleManager.result == BattleResult.win) {
           moneyEarned = 1000;
-          userState.addMoney(moneyEarned);
+          await userState.addMoney(moneyEarned);
         } else if (!widget.isArenaBattle &&
             battleManager.result == BattleResult.win) {
           // Wild battle prize money
           moneyEarned = _calculateWildMoneyReward(
             battleManager.opponent.organism.baseOrganism,
           );
-          userState.addMoney(moneyEarned);
+          await userState.addMoney(moneyEarned);
         }
       }
 
@@ -2429,7 +2614,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
 
       // Handle loot drop
       if (battleManager.result == BattleResult.win && lootId != null) {
-        userState.addLoot(lootId, 1);
+        await userState.addLoot(lootId, 1);
       }
 
       if (!mounted) return;
@@ -2438,6 +2623,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
         context: context,
         barrierDismissible: false,
         builder: (ctx) => _BattleResultDialog(
+          battleManager: battleManager,
           result: battleManager.result!,
           opponentName: battleManager.opponent.organism.baseOrganism.name,
           playerName: battleManager.player.organism.baseOrganism.name,
@@ -2451,6 +2637,15 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               DeviceOrientation.portraitUp,
             ]);
             Navigator.of(ctx).pop();
+
+            if (_pendingRogueCapture != null) {
+              _showCaptureReplaceDialog(
+                context,
+                _pendingRogueCapture!,
+                userState,
+              );
+              return;
+            }
 
             if (widget.isRogueMode &&
                 (battleManager.result == BattleResult.win ||
@@ -2485,6 +2680,425 @@ class _BattleScreenContentState extends State<BattleScreenContent>
       );
     });
   }
+
+  void _showCaptureReplaceDialog(
+    BuildContext context,
+    CapturedOrganism newCapture,
+    UserState userState,
+  ) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => _CaptureReplaceDialog(
+        newCapture: newCapture,
+        currentTeam: userState.currentUser?.rogueLikeState.team ?? [],
+        themeColor: _getBiomeThemeColor(),
+        primaryColor: _getBiomePrimaryColor(),
+        secondaryColor: _getBiomeSecondaryColor(),
+        onReplace: (index) async {
+          await userState.replaceRogueTeamMember(index, newCapture);
+          if (ctx.mounted) Navigator.pop(ctx);
+          if (mounted) _finishRogueEncounter(context, userState);
+        },
+        onDiscard: () {
+          Navigator.pop(ctx);
+          if (mounted) _finishRogueEncounter(context, userState);
+        },
+      ),
+    );
+  }
+
+  void _finishRogueEncounter(BuildContext context, UserState userState) {
+    if (!mounted) return;
+
+    if (userState.currentUser?.rogueLikeState.isActive ?? false) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) {
+            final rogue = userState.currentUser!.rogueLikeState;
+            return BattleScreen(
+              playerOrganism: rogue.team[0],
+              opponentOrganism: rogue.opponentTeam![0],
+              biomeName: rogue.currentBiome ?? 'Forest',
+              playerTeam: rogue.team,
+              opponentTeam: rogue.opponentTeam,
+              battleTitle:
+                  'Rogue Floor ${rogue.floor} - ${rogue.encounterIndex + 1}/5',
+              isArenaBattle: rogue.encounterIndex == 4,
+              isRogueMode: true,
+            );
+          },
+        ),
+      );
+    } else {
+      Navigator.of(context).pop(BattleResult.capture);
+    }
+  }
+}
+
+class _CaptureReplaceDialog extends StatelessWidget {
+  final CapturedOrganism newCapture;
+  final List<CapturedOrganism> currentTeam;
+  final Color themeColor;
+  final Color primaryColor;
+  final Color secondaryColor;
+  final Function(int) onReplace;
+  final VoidCallback onDiscard;
+
+  const _CaptureReplaceDialog({
+    required this.newCapture,
+    required this.currentTeam,
+    required this.themeColor,
+    required this.primaryColor,
+    required this.secondaryColor,
+    required this.onReplace,
+    required this.onDiscard,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: secondaryColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.highlightColor, width: 3),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'TEAM FULL!',
+              style: TextStyle(
+                color: AppColors.highlightColor,
+                fontFamily: 'PressStart2P',
+                fontSize: 18,
+                shadows: [
+                  Shadow(
+                    color: Colors.black,
+                    blurRadius: 4,
+                    offset: Offset(2, 2),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Choose an animal to replace or discard the new capture.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white,
+                fontFamily: 'PressStart2P',
+                fontSize: 8,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 20),
+            _buildNewCaptureCard(),
+            const SizedBox(height: 10),
+            const Icon(
+              Icons.swap_vert,
+              color: AppColors.highlightColor,
+              size: 32,
+            ),
+            const SizedBox(height: 10),
+            SizedBox(
+              height: 300,
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: currentTeam.length,
+                itemBuilder: (context, index) {
+                  return _buildReplaceCard(context, index);
+                },
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: onDiscard,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.grey.shade800,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  side: const BorderSide(color: Colors.white24),
+                ),
+              ),
+              child: const Text(
+                'DISCARD NEW CAPTURE',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontFamily: 'PressStart2P',
+                  fontSize: 10,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNewCaptureCard() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.cyan.shade900.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.cyanAccent, width: 2),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              _buildSmallSprite(newCapture),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'NEW: ${newCapture.baseOrganism.name.toUpperCase()}',
+                      style: const TextStyle(
+                        color: Colors.cyanAccent,
+                        fontFamily: 'PressStart2P',
+                        fontSize: 10,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'LV.${newCapture.level} ${newCapture.nature.name}',
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontFamily: 'PressStart2P',
+                        fontSize: 8,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          _buildStatGrid(newCapture),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReplaceCard(BuildContext context, int index) {
+    final member = currentTeam[index];
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      color: Colors.black26,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: Colors.white10),
+      ),
+      child: InkWell(
+        onTap: () => _confirmReplacement(context, index),
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  _buildSmallSprite(member),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          member.baseOrganism.name.toUpperCase(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontFamily: 'PressStart2P',
+                            fontSize: 10,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'LV.${member.level} ${member.nature.name}',
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontFamily: 'PressStart2P',
+                            fontSize: 7,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(Icons.keyboard_arrow_right, color: Colors.white24),
+                ],
+              ),
+              const SizedBox(height: 8),
+              _buildStatComparisonGrid(member),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSmallSprite(CapturedOrganism org) {
+    return Container(
+      width: 40,
+      height: 40,
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Colors.black38,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: _BattleSprite(
+        organism: BattleOrganism(org, isRogueMode: true),
+        size: 40,
+        biomeName: 'Forest',
+      ),
+    );
+  }
+
+  Widget _buildStatGrid(CapturedOrganism org) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [
+        _buildStatItem('HP', org.maxHealth),
+        _buildStatItem('ATK', org.effectiveAttack),
+        _buildStatItem('DEF', org.effectiveDefense),
+        _buildStatItem('POW', org.effectivePower),
+        _buildStatItem('RES', org.effectiveResistance),
+        _buildStatItem('SPD', org.effectiveSpeed),
+      ],
+    );
+  }
+
+  Widget _buildStatComparisonGrid(CapturedOrganism member) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [
+        _buildStatCompItem('HP', member.maxHealth, newCapture.maxHealth),
+        _buildStatCompItem(
+          'ATK',
+          member.effectiveAttack,
+          newCapture.effectiveAttack,
+        ),
+        _buildStatCompItem(
+          'DEF',
+          member.effectiveDefense,
+          newCapture.effectiveDefense,
+        ),
+        _buildStatCompItem(
+          'POW',
+          member.effectivePower,
+          newCapture.effectivePower,
+        ),
+        _buildStatCompItem(
+          'RES',
+          member.effectiveResistance,
+          newCapture.effectiveResistance,
+        ),
+        _buildStatCompItem(
+          'SPD',
+          member.effectiveSpeed,
+          newCapture.effectiveSpeed,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatItem(String label, int value) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white54,
+            fontFamily: 'PressStart2P',
+            fontSize: 6,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          '$value',
+          style: const TextStyle(
+            color: Colors.white,
+            fontFamily: 'PressStart2P',
+            fontSize: 8,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatCompItem(String label, int current, int next) {
+    final diff = next - current;
+    Color diffColor = Colors.white70;
+    if (diff > 0) diffColor = Colors.greenAccent;
+    if (diff < 0) diffColor = Colors.redAccent;
+
+    return Column(
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white54,
+            fontFamily: 'PressStart2P',
+            fontSize: 5,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          '$current',
+          style: TextStyle(
+            color: diffColor,
+            fontFamily: 'PressStart2P',
+            fontSize: 7,
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _confirmReplacement(BuildContext context, int index) {
+    final member = currentTeam[index];
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.black,
+        title: const Text(
+          'REPLACE?',
+          style: TextStyle(
+            color: AppColors.highlightColor,
+            fontFamily: 'PressStart2P',
+            fontSize: 14,
+          ),
+        ),
+        content: Text(
+          'Really replace ${member.baseOrganism.name} with ${newCapture.baseOrganism.name}?',
+          style: const TextStyle(
+            color: Colors.white70,
+            fontFamily: 'PressStart2P',
+            fontSize: 9,
+            height: 1.5,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('CANCEL'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              onReplace(index);
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('REPLACE'),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _BattleResultDialog extends StatelessWidget {
@@ -2494,6 +3108,10 @@ class _BattleResultDialog extends StatelessWidget {
   final int moneyEarned;
   final String? lootName;
   final VoidCallback onConfirm;
+  final Color themeColor;
+  final Color primaryColor;
+  final Color secondaryColor;
+  final BattleManager battleManager;
 
   const _BattleResultDialog({
     required this.result,
@@ -2505,11 +3123,269 @@ class _BattleResultDialog extends StatelessWidget {
     required this.themeColor,
     required this.primaryColor,
     required this.secondaryColor,
+    required this.battleManager,
   });
 
-  final Color themeColor;
-  final Color primaryColor;
-  final Color secondaryColor;
+  void _showStats(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: secondaryColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: themeColor, width: 2),
+        ),
+        title: Text(
+          'BATTLE STATS',
+          style: TextStyle(
+            color: themeColor,
+            fontFamily: 'PressStart2P',
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildStatsSection('PLAYER TEAM', battleManager.playerTeam),
+                const SizedBox(height: 16),
+                _buildStatsSection('OPPONENT TEAM', battleManager.opponentTeam),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'CLOSE',
+              style: TextStyle(
+                color: themeColor,
+                fontFamily: 'PressStart2P',
+                fontSize: 10,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatsSection(String title, List<CapturedOrganism> team) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            color: Colors.white70,
+            fontFamily: 'PressStart2P',
+            fontSize: 10,
+          ),
+        ),
+        const SizedBox(height: 8),
+        ...team.map((org) {
+          final stats = battleManager.battleStats[org.id] ?? BattleStats();
+          return _buildStatRow(
+            org.name,
+            stats.totalDamageDealt,
+            stats.totalDamageTaken,
+            battleManager.playerTeam.contains(org),
+          );
+        }),
+      ],
+    );
+  }
+
+  Widget _buildStatRow(String name, int dealt, int taken, bool isPlayer) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 2),
+      padding: const EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 4,
+            child: Text(
+              name,
+              style: TextStyle(
+                color: isPlayer ? Colors.greenAccent : Colors.redAccent,
+                fontFamily: 'PressStart2P',
+                fontSize: 8,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          Expanded(
+            flex: 5,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    const Text(
+                      'D:',
+                      style: TextStyle(
+                        color: Colors.white54,
+                        fontSize: 7,
+                        fontFamily: 'PressStart2P',
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      '$dealt',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 8,
+                        fontFamily: 'PressStart2P',
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    const Text(
+                      'T:',
+                      style: TextStyle(
+                        color: Colors.white54,
+                        fontSize: 7,
+                        fontFamily: 'PressStart2P',
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      '$taken',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 8,
+                        fontFamily: 'PressStart2P',
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showMvp(BuildContext context) {
+    CapturedOrganism? mvp;
+    int maxDamage = -1;
+
+    for (final org in battleManager.playerTeam) {
+      final stats = battleManager.battleStats[org.id];
+      if (stats != null && stats.totalDamageDealt > maxDamage) {
+        maxDamage = stats.totalDamageDealt;
+        mvp = org;
+      }
+    }
+
+    if (mvp == null && battleManager.playerTeam.isNotEmpty) {
+      mvp = battleManager.playerTeam.first;
+    }
+
+    if (mvp == null) return;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: secondaryColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: Colors.amber, width: 3),
+        ),
+        title: const Column(
+          children: [
+            Icon(Icons.star, color: Colors.amber, size: 48),
+            SizedBox(height: 8),
+            Text(
+              'MVP',
+              style: TextStyle(
+                color: Colors.amber,
+                fontFamily: 'PressStart2P',
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 100,
+              height: 100,
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white10,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.amber, width: 2),
+              ),
+              child: _BattleSprite(
+                organism: BattleOrganism(mvp!, isRogueMode: true),
+                size: 80,
+                biomeName: 'forest',
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              mvp.name.toUpperCase(),
+              style: const TextStyle(
+                color: Colors.white,
+                fontFamily: 'PressStart2P',
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 12),
+            if (maxDamage > 0)
+              Text(
+                'DAMAGE DEALT: $maxDamage',
+                style: const TextStyle(
+                  color: Colors.greenAccent,
+                  fontFamily: 'PressStart2P',
+                  fontSize: 10,
+                ),
+              )
+            else
+              const Text(
+                'PARTICIPATION MEDAL',
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontFamily: 'PressStart2P',
+                  fontSize: 8,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text(
+              'NICE!',
+              style: TextStyle(
+                color: Colors.amber,
+                fontFamily: 'PressStart2P',
+                fontSize: 12,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -2598,7 +3474,7 @@ class _BattleResultDialog extends StatelessWidget {
                 children: [
                   if (moneyEarned > 0)
                     Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      padding: const EdgeInsets.only(bottom: 8.0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -2620,27 +3496,24 @@ class _BattleResultDialog extends StatelessWidget {
                       ),
                     ),
                   if (lootName != null)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(
-                            Icons.inventory_2,
-                            color: Colors.amber,
-                            size: 16,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.inventory_2,
+                          color: Colors.purpleAccent,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'LOOT: $lootName',
+                          style: const TextStyle(
+                            color: Colors.purpleAccent,
+                            fontFamily: 'PressStart2P',
+                            fontSize: 10,
                           ),
-                          const SizedBox(width: 8),
-                          Text(
-                            lootName!.toUpperCase(),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontFamily: 'PressStart2P',
-                              fontSize: 10,
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                 ],
               ),
@@ -2648,24 +3521,73 @@ class _BattleResultDialog extends StatelessWidget {
           ],
         ],
       ),
+      actionsAlignment: MainAxisAlignment.center,
       actions: [
-        Center(
-          child: ElevatedButton(
-            onPressed: onConfirm,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: primaryColor,
-              foregroundColor: Colors.white,
-              side: BorderSide(color: titleColor.withOpacity(0.5)),
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+        Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                OutlinedButton(
+                  onPressed: () => _showStats(context),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: themeColor),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                  ),
+                  child: Text(
+                    'STATS',
+                    style: TextStyle(
+                      color: themeColor,
+                      fontFamily: 'PressStart2P',
+                      fontSize: 10,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                OutlinedButton(
+                  onPressed: () => _showMvp(context),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Colors.amber),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                  ),
+                  child: const Text(
+                    'MVP',
+                    style: TextStyle(
+                      color: Colors.amber,
+                      fontFamily: 'PressStart2P',
+                      fontSize: 10,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: onConfirm,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: primaryColor,
+                foregroundColor: Colors.white,
+                side: BorderSide(color: titleColor.withOpacity(0.5)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 16,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text(
+                'CONTINUE',
+                style: TextStyle(fontFamily: 'PressStart2P', fontSize: 12),
               ),
             ),
-            child: const Text(
-              'OK',
-              style: TextStyle(fontFamily: 'PressStart2P', fontSize: 12),
-            ),
-          ),
+          ],
         ),
       ],
     );

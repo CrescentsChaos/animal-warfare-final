@@ -1,85 +1,189 @@
 // lib/models/talisman.dart
+import 'dart:convert';
+import 'package:flutter/services.dart' show rootBundle;
 
 enum TalismanEffectType {
+  // Legacy stat boost types
   attackBoost,
   defenseBoost,
   speedBoost,
   healthBoost,
   damageMultiplier,
-  resistanceBoost, // This is current 20% reduction
-  powerBoost,      // NEW: Power stat boost
-  resistanceStatBoost, // NEW: Resistance stat boost
+  resistanceBoost,
+  powerBoost,
+  resistanceStatBoost,
   critBoost,
+
+  // New Pokemon-style effect types
+  statBoost, // Generic stat boost (replaces specific ones above eventually)
+  damageBoost, // Replaces damageMultiplier
+  onTurnHeal, // Leftovers-style healing
+  choiceLock, // Choice Band/Specs/Scarf
+  oneHitSave, // Focus Sash
+  recoilDamage, // Life Orb recoil
+  blockStatusMoves, // Assault Vest
+  weaknessBoost, // Weakness Policy
+  lifesteal, // Shell Bell
+  contactDamage, // Rocky Helmet
+  conditionalHeal, // Black Sludge
+  selfStatus, // Flame Orb, Toxic Orb
+  categoryDamageBoost, // Muscle Band, Wise Glasses
+  flinchChance, // King's Rock
 }
 
 class TalismanEffect {
   final TalismanEffectType type;
   final double magnitude;
+  final String? stat; // For stat-specific effects (e.g., "attack", "speed")
+  final String? condition; // For conditional effects
+  final String? category; // For move category effects (physical/special)
+  final String? status; // For status effects
 
   const TalismanEffect({
     required this.type,
     required this.magnitude,
+    this.stat,
+    this.condition,
+    this.category,
+    this.status,
   });
+
+  factory TalismanEffect.fromJson(Map<String, dynamic> json) {
+    final typeStr = json['type'] as String;
+    TalismanEffectType type;
+
+    // Map string to enum
+    switch (typeStr) {
+      case 'stat_boost':
+        type = TalismanEffectType.statBoost;
+        break;
+      case 'damage_boost':
+        type = TalismanEffectType.damageBoost;
+        break;
+      case 'resistance_boost':
+        type = TalismanEffectType.resistanceBoost;
+        break;
+      case 'crit_boost':
+        type = TalismanEffectType.critBoost;
+        break;
+      case 'on_turn_heal':
+        type = TalismanEffectType.onTurnHeal;
+        break;
+      case 'choice_lock':
+        type = TalismanEffectType.choiceLock;
+        break;
+      case 'one_hit_save':
+        type = TalismanEffectType.oneHitSave;
+        break;
+      case 'recoil_damage':
+        type = TalismanEffectType.recoilDamage;
+        break;
+      case 'block_status_moves':
+        type = TalismanEffectType.blockStatusMoves;
+        break;
+      case 'weakness_boost':
+        type = TalismanEffectType.weaknessBoost;
+        break;
+      case 'lifesteal':
+        type = TalismanEffectType.lifesteal;
+        break;
+      case 'contact_damage':
+        type = TalismanEffectType.contactDamage;
+        break;
+      case 'conditional_heal':
+        type = TalismanEffectType.conditionalHeal;
+        break;
+      case 'self_status':
+        type = TalismanEffectType.selfStatus;
+        break;
+      case 'category_damage_boost':
+        type = TalismanEffectType.categoryDamageBoost;
+        break;
+      case 'flinch_chance':
+        type = TalismanEffectType.flinchChance;
+        break;
+      default:
+        type = TalismanEffectType.statBoost; // Fallback
+    }
+
+    return TalismanEffect(
+      type: type,
+      magnitude: (json['magnitude'] as num).toDouble(),
+      stat: json['stat'] as String?,
+      condition: json['condition'] as String?,
+      category: json['category'] as String?,
+      status: json['status'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = {
+      'type': type.toString().split('.').last,
+      'magnitude': magnitude,
+    };
+    if (stat != null) data['stat'] = stat;
+    if (condition != null) data['condition'] = condition;
+    if (category != null) data['category'] = category;
+    if (status != null) data['status'] = status;
+    return data;
+  }
 }
 
 class Talisman {
   final String id;
   final String name;
   final String description;
-  final TalismanEffect effect;
+  final List<TalismanEffect> effects;
 
   const Talisman({
     required this.id,
     required this.name,
     required this.description,
-    required this.effect,
+    required this.effects,
   });
 
-  // Predefined talismans
-  static const List<Talisman> allTalismans = [
-    Talisman(
-      id: 'strength_charm',
-      name: 'Strength Charm',
-      description: 'Increases attack power by 20%.',
-      effect: TalismanEffect(type: TalismanEffectType.attackBoost, magnitude: 1.2),
-    ),
-    Talisman(
-      id: 'iron_ward',
-      name: 'Iron Ward',
-      description: 'Increases defense by 25%.',
-      effect: TalismanEffect(type: TalismanEffectType.defenseBoost, magnitude: 1.25),
-    ),
-    Talisman(
-      id: 'swift_rune',
-      name: 'Swift Rune',
-      description: 'Increases speed by 30%.',
-      effect: TalismanEffect(type: TalismanEffectType.speedBoost, magnitude: 1.3),
-    ),
-    Talisman(
-      id: 'vitality_stone',
-      name: 'Vitality Stone',
-      description: 'Increases max health by 15%.',
-      effect: TalismanEffect(type: TalismanEffectType.healthBoost, magnitude: 1.15),
-    ),
-    Talisman(
-      id: 'power_crystal',
-      name: 'Power Crystal',
-      description: 'All attacks deal 15% more damage.',
-      effect: TalismanEffect(type: TalismanEffectType.damageMultiplier, magnitude: 1.15),
-    ),
-    Talisman(
-      id: 'guardian_shell',
-      name: 'Guardian Shell',
-      description: 'Reduces incoming damage by 20%.',
-      effect: TalismanEffect(type: TalismanEffectType.resistanceBoost, magnitude: 0.8),
-    ),
-    Talisman(
-      id: 'lucky_claw',
-      name: 'Lucky Claw',
-      description: 'Increases critical hit chance by 10%.',
-      effect: TalismanEffect(type: TalismanEffectType.critBoost, magnitude: 10.0),
-    ),
-  ];
+  // Loaded talismans list
+  static List<Talisman> allTalismans = [];
+
+  // Load talismans from JSON
+  static Future<void> loadFromJson() async {
+    try {
+      final String response = await rootBundle.loadString(
+        'assets/talismans.json',
+      );
+      final List<dynamic> data = json.decode(response);
+      allTalismans = data.map((json) => Talisman.fromJson(json)).toList();
+    } catch (e) {
+      print('Error loading talismans: $e');
+      // Fallback to empty list or hardcoded defaults
+      allTalismans = [];
+    }
+  }
+
+  factory Talisman.fromJson(Map<String, dynamic> json) {
+    final effectsJson = json['effects'];
+    if (effectsJson == null || effectsJson is! List) {
+      // If no effects list, try to lookup by ID or return default
+      return findById(json['id'] as String? ?? '') ??
+          const Talisman(
+            id: 'none',
+            name: 'None',
+            description: 'No talisman equipped',
+            effects: [],
+          );
+    }
+
+    final effects = effectsJson
+        .map((e) => TalismanEffect.fromJson(e as Map<String, dynamic>))
+        .toList();
+
+    return Talisman(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      description: json['description'] as String,
+      effects: effects,
+    );
+  }
 
   static Talisman? findById(String id) {
     try {
@@ -89,11 +193,27 @@ class Talisman {
     }
   }
 
-  Map<String, dynamic> toJson() => {
-    'id': id,
-  };
+  Map<String, dynamic> toJson() => {'id': id};
 
-  factory Talisman.fromJson(Map<String, dynamic> json) {
-    return findById(json['id'] as String) ?? allTalismans[0];
+  // For backward compatibility with old save files that only stored 'id'
+  factory Talisman.fromJsonWithId(Map<String, dynamic> json) {
+    return findById(json['id'] as String) ??
+        // Fallback to first talisman if ID not found
+        (allTalismans.isNotEmpty
+            ? allTalismans[0]
+            : const Talisman(
+                id: 'none',
+                name: 'None',
+                description: 'No talisman equipped',
+                effects: [],
+              ));
   }
+
+  // Helper getter for backward compatibility
+  TalismanEffect get effect => effects.isNotEmpty
+      ? effects.first
+      : const TalismanEffect(
+          type: TalismanEffectType.statBoost,
+          magnitude: 1.0,
+        );
 }

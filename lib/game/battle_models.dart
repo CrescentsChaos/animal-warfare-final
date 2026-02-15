@@ -8,20 +8,80 @@ import 'package:animal_warfare/models/talisman.dart';
 class BattleOrganism {
   final CapturedOrganism organism;
   final List<Ability> abilities;
-  int _health;
+  late int _health;
   int get health => _health;
   set health(int value) {
     _health = value;
-    organism.currentHealth = value;
+    if (isRogueMode) {
+      organism.currentHealth = value;
+    } else {
+      // Scale back down to the actual organism level
+      final double ratio = value / maxHealth;
+      final int actualMax = organism.maxHealth;
+      organism.currentHealth = (actualMax * ratio).round().clamp(0, actualMax);
+    }
   }
 
   // Dynamic battle stats
-  int attackStage = 0; // -6 to +6 stages
-  int defenseStage = 0;
-  int powerStage = 0; // NEW
-  int resistanceStage = 0; // NEW
-  int speedStage = 0; // Added speed stage
-  int accuracyStage = 0; // Added accuracy stage
+  int _attackStage = 0;
+  int get attackStage => _attackStage;
+  set attackStage(int value) {
+    _attackStage = value;
+    if (isRogueMode) organism.attackStage = value;
+  }
+
+  int _defenseStage = 0;
+  int get defenseStage => _defenseStage;
+  set defenseStage(int value) {
+    _defenseStage = value;
+    if (isRogueMode) organism.defenseStage = value;
+  }
+
+  int _powerStage = 0;
+  int get powerStage => _powerStage;
+  set powerStage(int value) {
+    _powerStage = value;
+    if (isRogueMode) organism.powerStage = value;
+  }
+
+  int _resistanceStage = 0;
+  int get resistanceStage => _resistanceStage;
+  set resistanceStage(int value) {
+    _resistanceStage = value;
+    if (isRogueMode) organism.resistanceStage = value;
+  }
+
+  int _speedStage = 0;
+  int get speedStage => _speedStage;
+  set speedStage(int value) {
+    _speedStage = value;
+    if (isRogueMode) organism.speedStage = value;
+  }
+
+  int _accuracyStage = 0;
+  int get accuracyStage => _accuracyStage;
+  set accuracyStage(int value) {
+    _accuracyStage = value;
+    if (isRogueMode) organism.accuracyStage = value;
+  }
+
+  /// Reset battle-specific flags (called when switching out or starting battle)
+  void resetBattleState() {
+    isChoiceLocked = false;
+    lockedMove = null;
+    isProtected = false;
+    rechargeTurn = false;
+    chargeMove = null;
+    chargingMove = null;
+    mustRecharge = false;
+    protectSuccessionCount = 0;
+    tookDamageThisTurn = false;
+    isInvulnerable = false;
+    semiInvulnerable = null;
+    damageDealtThisTurn = 0;
+    // We do NOT reset focusSashUsed here as it's typically once per battle,
+    // but choice lock DOES reset on switch in Pokemon.
+  }
 
   List<StatusEffect> _statusEffects = [];
   List<StatusEffect> get statusEffects => _statusEffects;
@@ -73,21 +133,20 @@ class BattleOrganism {
   bool tookDamageThisTurn = false;
   String? semiInvulnerable; // e.g., 'underground'
 
+  // Talisman effect tracking
+  bool isChoiceLocked = false;
+  Move? lockedMove;
+  bool focusSashUsed = false;
+  int damageDealtThisTurn = 0;
+  int totalDamageDealt = 0;
+  int totalDamageTaken = 0;
+  bool isItemRevealed = false; // For lifesteal tracking
+
   final bool isRogueMode;
   final int level;
 
   BattleOrganism(this.organism, {this.isRogueMode = false})
     : level = isRogueMode ? organism.level : 50,
-      _health =
-          (isRogueMode
-                  ? organism.currentHealth
-                  : organism.getMaxHealth(atLevel: 50))
-              .clamp(
-                0,
-                (isRogueMode
-                    ? organism.maxHealth
-                    : organism.getMaxHealth(atLevel: 50)),
-              ),
       _statusEffects = List.from(organism.statusEffects),
       abilities = organism.baseOrganism.abilities
           .split(',')
@@ -96,7 +155,30 @@ class BattleOrganism {
           .map((name) => Ability.findByName(name))
           .where((a) => a != null)
           .cast<Ability>()
-          .toList();
+          .toList(),
+      _attackStage = isRogueMode ? organism.attackStage : 0,
+      _defenseStage = isRogueMode ? organism.defenseStage : 0,
+      _powerStage = isRogueMode ? organism.powerStage : 0,
+      _resistanceStage = isRogueMode ? organism.resistanceStage : 0,
+      _speedStage = isRogueMode ? organism.speedStage : 0,
+      _accuracyStage = isRogueMode ? organism.accuracyStage : 0 {
+    // Initialize health based on boosted max health
+    // We use a ratio to ensure health is correctly scaled between the animal's
+    // actual level and the fixed level 50 baseline used in non-rogue modes.
+    final int battleMax = maxHealth;
+
+    if (isRogueMode) {
+      _health = organism.currentHealth.clamp(0, battleMax);
+    } else {
+      final int actualMax = organism.maxHealth;
+      if (organism.currentHealth >= actualMax) {
+        _health = battleMax;
+      } else {
+        final double ratio = organism.currentHealth / actualMax;
+        _health = (battleMax * ratio).round().clamp(0, battleMax);
+      }
+    }
+  }
 
   List<ElementalType>? _battleTypes;
   List<ElementalType> get types =>
@@ -142,9 +224,25 @@ class BattleOrganism {
       if (se.type == StatusEffectType.fear) attack *= 0.9;
     }
 
-    if (organism.equippedTalisman?.effect.type ==
-        TalismanEffectType.attackBoost) {
-      attack *= organism.equippedTalisman!.effect.magnitude;
+    // Apply talisman effects (multi-effect support)
+    if (organism.equippedTalisman != null) {
+      for (final effect in organism.equippedTalisman!.effects) {
+        // Legacy support
+        if (effect.type == TalismanEffectType.attackBoost) {
+          attack *= effect.magnitude;
+        }
+        // New generic stat boost
+        if (effect.type == TalismanEffectType.statBoost &&
+            effect.stat == 'attack') {
+          attack *= effect.magnitude;
+        }
+        // Choice lock boost
+        if (effect.type == TalismanEffectType.choiceLock &&
+            effect.stat == 'attack' &&
+            isChoiceLocked) {
+          attack *= effect.magnitude;
+        }
+      }
     }
     return attack.round();
   }
@@ -161,9 +259,17 @@ class BattleOrganism {
       if (se.type == StatusEffectType.fear) defense *= 0.9;
     }
 
-    if (organism.equippedTalisman?.effect.type ==
-        TalismanEffectType.defenseBoost) {
-      defense *= organism.equippedTalisman!.effect.magnitude;
+    // Apply talisman effects
+    if (organism.equippedTalisman != null) {
+      for (final effect in organism.equippedTalisman!.effects) {
+        if (effect.type == TalismanEffectType.defenseBoost) {
+          defense *= effect.magnitude;
+        }
+        if (effect.type == TalismanEffectType.statBoost &&
+            effect.stat == 'defense') {
+          defense *= effect.magnitude;
+        }
+      }
     }
     return defense.round();
   }
@@ -177,6 +283,24 @@ class BattleOrganism {
 
     for (final se in statusEffects) {
       if (se.type == StatusEffectType.fear) power *= 0.9;
+    }
+
+    // Apply talisman effects
+    if (organism.equippedTalisman != null) {
+      for (final effect in organism.equippedTalisman!.effects) {
+        if (effect.type == TalismanEffectType.powerBoost) {
+          power *= effect.magnitude;
+        }
+        if (effect.type == TalismanEffectType.statBoost &&
+            effect.stat == 'power') {
+          power *= effect.magnitude;
+        }
+        if (effect.type == TalismanEffectType.choiceLock &&
+            effect.stat == 'power' &&
+            isChoiceLocked) {
+          power *= effect.magnitude;
+        }
+      }
     }
     return power.round();
   }
@@ -193,9 +317,17 @@ class BattleOrganism {
       if (se.type == StatusEffectType.fear) resistance *= 0.9;
     }
 
-    if (organism.equippedTalisman?.effect.type ==
-        TalismanEffectType.resistanceStatBoost) {
-      resistance *= organism.equippedTalisman!.effect.magnitude;
+    // Apply talisman effects
+    if (organism.equippedTalisman != null) {
+      for (final effect in organism.equippedTalisman!.effects) {
+        if (effect.type == TalismanEffectType.resistanceStatBoost) {
+          resistance *= effect.magnitude;
+        }
+        if (effect.type == TalismanEffectType.statBoost &&
+            effect.stat == 'resistance') {
+          resistance *= effect.magnitude;
+        }
+      }
     }
     return resistance.round();
   }
@@ -207,9 +339,22 @@ class BattleOrganism {
     speed *= _getAbilityStatMultiplier('speed');
     speed *= _getStatStageMultiplier(speedStage);
 
-    if (organism.equippedTalisman?.effect.type ==
-        TalismanEffectType.speedBoost) {
-      speed *= organism.equippedTalisman!.effect.magnitude;
+    // Apply talisman effects
+    if (organism.equippedTalisman != null) {
+      for (final effect in organism.equippedTalisman!.effects) {
+        if (effect.type == TalismanEffectType.speedBoost) {
+          speed *= effect.magnitude;
+        }
+        if (effect.type == TalismanEffectType.statBoost &&
+            effect.stat == 'speed') {
+          speed *= effect.magnitude;
+        }
+        if (effect.type == TalismanEffectType.choiceLock &&
+            effect.stat == 'speed' &&
+            isChoiceLocked) {
+          speed *= effect.magnitude;
+        }
+      }
     }
 
     for (final se in statusEffects) {
@@ -225,9 +370,17 @@ class BattleOrganism {
         : organism.getMaxHealth(atLevel: 50);
     double hp = baseMax.toDouble();
 
-    if (organism.equippedTalisman?.effect.type ==
-        TalismanEffectType.healthBoost) {
-      hp *= organism.equippedTalisman!.effect.magnitude;
+    // Apply talisman effects
+    if (organism.equippedTalisman != null) {
+      for (final effect in organism.equippedTalisman!.effects) {
+        if (effect.type == TalismanEffectType.healthBoost) {
+          hp *= effect.magnitude;
+        }
+        if (effect.type == TalismanEffectType.statBoost &&
+            effect.stat == 'health') {
+          hp *= effect.magnitude;
+        }
+      }
     }
     return hp.round();
   }
@@ -256,4 +409,18 @@ class DamageResult {
   final double typeMultiplier;
   final bool isCrit;
   const DamageResult(this.damage, this.typeMultiplier, this.isCrit);
+}
+
+class BattleStats {
+  int totalDamageDealt;
+  int totalDamageTaken;
+  bool isItemRevealed;
+  final Set<String> revealedMoves;
+
+  BattleStats({
+    this.totalDamageDealt = 0,
+    this.totalDamageTaken = 0,
+    this.isItemRevealed = false,
+    Set<String>? revealedMoves,
+  }) : revealedMoves = revealedMoves ?? {};
 }

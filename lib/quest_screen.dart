@@ -22,7 +22,7 @@ class _QuestScreenState extends State<QuestScreen> {
   List<Organism> _allOrganisms = [];
   bool _isLoadingOrganisms = true;
   String _currentDialogue = "";
-  
+
   // Dialogue pools for Jeremy Wade
   final List<String> _greetings = [
     "The water holds secrets most people never see. To find a monster, you have to think like one.",
@@ -89,7 +89,9 @@ class _QuestScreenState extends State<QuestScreen> {
 
   Future<void> _loadOrganisms() async {
     try {
-      final String response = await rootBundle.loadString('assets/Organisms.json');
+      final String response = await rootBundle.loadString(
+        'assets/Organisms.json',
+      );
       final List<dynamic> data = json.decode(response);
       setState(() {
         _allOrganisms = data.map((json) => Organism.fromJson(json)).toList();
@@ -108,23 +110,35 @@ class _QuestScreenState extends State<QuestScreen> {
 
   void _generateNewQuest() {
     final userState = Provider.of<UserState>(context, listen: false);
-    
+
     // Check limit
-    final activeQuests = userState.currentUser?.activeQuests
+    final activeQuests =
+        userState.currentUser?.activeQuests
             .where((q) => q.npcId == 'jeremy_wade')
-            .toList() ?? [];
-    
+            .toList() ??
+        [];
+
     if (activeQuests.length >= 2) {
-      _updateDialogue(_questFullQuotes[Random().nextInt(_questFullQuotes.length)]);
+      _updateDialogue(
+        _questFullQuotes[Random().nextInt(_questFullQuotes.length)],
+      );
       return;
     }
 
     if (_isLoadingOrganisms || _allOrganisms.isEmpty) return;
 
     final random = Random();
-    
+
     // Refined Fish Detection based on drops
-    final fishDrops = ['fillet', 'shark fin', 'fish scales', 'stingray tail', 'roe', 'fish bone', 'caviar'];
+    final fishDrops = [
+      'fillet',
+      'shark fin',
+      'fish scales',
+      'stingray tail',
+      'roe',
+      'fish bone',
+      'caviar',
+    ];
     final fishOptions = _allOrganisms.where((o) {
       final drops = o.drops.toLowerCase();
       return fishDrops.any((drop) => drops.contains(drop));
@@ -137,13 +151,16 @@ class _QuestScreenState extends State<QuestScreen> {
     final target = targetOrg.name;
     final count = random.nextInt(5) + 3; // 3 to 7
     final baseReward = count * 50;
-    final rarityBonus = (targetOrg.rarity.toLowerCase() == 'rare' ? 100 : 0) + 
-                       (targetOrg.rarity.toLowerCase() == 'legendary' ? 300 : 0);
+    final rarityBonus =
+        (targetOrg.rarity.toLowerCase() == 'rare' ? 100 : 0) +
+        (targetOrg.rarity.toLowerCase() == 'legendary' ? 300 : 0);
     final reward = baseReward + rarityBonus + random.nextInt(50);
 
     final templatePool = _habitatQuestTemplates.entries
-        .firstWhere((e) => targetOrg.habitat.contains(e.key), 
-          orElse: () => MapEntry('General', _generalQuestTemplates))
+        .firstWhere(
+          (e) => targetOrg.habitat.contains(e.key),
+          orElse: () => MapEntry('General', _generalQuestTemplates),
+        )
         .value;
 
     final template = templatePool[random.nextInt(templatePool.length)];
@@ -162,46 +179,45 @@ class _QuestScreenState extends State<QuestScreen> {
     );
 
     userState.acceptQuest(newQuest);
-    _updateDialogue(_questAcceptedQuotes[random.nextInt(_questAcceptedQuotes.length)]);
+    _updateDialogue(
+      _questAcceptedQuotes[random.nextInt(_questAcceptedQuotes.length)],
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final userState = context.watch<UserState>();
-    
+
     return DefaultTabController(
       length: 1,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('QUEST LOG', style: TextStyle(fontFamily: 'PressStart2P', fontSize: 14)),
+          title: const Text(
+            'QUEST LOG',
+            style: TextStyle(fontFamily: 'PressStart2P', fontSize: 14),
+          ),
           backgroundColor: AppColors.secondaryButtonColor,
           bottom: const TabBar(
             isScrollable: true,
             indicatorColor: AppColors.highlightColor,
             labelStyle: TextStyle(fontFamily: 'PressStart2P', fontSize: 9),
-            tabs: [
-              Tab(text: 'River Monsters'),
-            ],
+            tabs: [Tab(text: 'River Monsters')],
           ),
         ),
         body: Container(
-          decoration: const BoxDecoration(
-            color: Color(0xFF1a1a2e),
-          ),
-          child: TabBarView(
-            children: [
-              _buildRiverMonstersTab(userState),
-            ],
-          ),
+          decoration: const BoxDecoration(color: Color(0xFF1a1a2e)),
+          child: TabBarView(children: [_buildRiverMonstersTab(userState)]),
         ),
       ),
     );
   }
 
   Widget _buildRiverMonstersTab(UserState userState) {
-    final activeQuests = userState.currentUser?.activeQuests
+    final activeQuests =
+        userState.currentUser?.activeQuests
             .where((q) => q.npcId == 'jeremy_wade')
-            .toList() ?? [];
+            .toList() ??
+        [];
 
     return Column(
       children: [
@@ -220,7 +236,7 @@ class _QuestScreenState extends State<QuestScreen> {
             ],
           ),
         ),
-        
+
         // Jeremy Wade Image - Enlarged
         Expanded(
           flex: 4,
@@ -232,7 +248,10 @@ class _QuestScreenState extends State<QuestScreen> {
               fit: BoxFit.contain,
               alignment: Alignment.bottomCenter,
               errorBuilder: (context, error, stackTrace) => const Center(
-                child: Text('Jeremy Wade NPC', style: TextStyle(color: Colors.white54)),
+                child: Text(
+                  'Jeremy Wade NPC',
+                  style: TextStyle(color: Colors.white54),
+                ),
               ),
             ),
           ),
@@ -245,7 +264,9 @@ class _QuestScreenState extends State<QuestScreen> {
             width: double.infinity,
             decoration: BoxDecoration(
               color: Colors.black.withOpacity(0.3),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(20),
+              ),
             ),
             child: Column(
               children: [
@@ -264,33 +285,47 @@ class _QuestScreenState extends State<QuestScreen> {
                       ),
                       if (activeQuests.length < 2)
                         IconButton(
-                          icon: const Icon(Icons.add_circle, color: Colors.blueAccent, size: 30),
+                          icon: const Icon(
+                            Icons.add_circle,
+                            color: Colors.blueAccent,
+                            size: 30,
+                          ),
                           onPressed: _generateNewQuest,
                         )
                       else
                         const Padding(
                           padding: EdgeInsets.all(8.0),
-                          child: Icon(Icons.lock, color: Colors.white24, size: 24),
+                          child: Icon(
+                            Icons.lock,
+                            color: Colors.white24,
+                            size: 24,
+                          ),
                         ),
                     ],
                   ),
                 ),
                 Expanded(
                   child: activeQuests.isEmpty
-                    ? const Center(
-                        child: Text(
-                          'Click the + to start a new hunt!',
-                          style: TextStyle(color: Colors.white54, fontSize: 12),
+                      ? const Center(
+                          child: Text(
+                            'Click the + to start a new hunt!',
+                            style: TextStyle(
+                              color: Colors.white54,
+                              fontSize: 12,
+                            ),
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          itemCount: activeQuests.length,
+                          itemBuilder: (context, index) {
+                            final quest = activeQuests[index];
+                            return _buildQuestCard(quest, userState);
+                          },
                         ),
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        itemCount: activeQuests.length,
-                        itemBuilder: (context, index) {
-                          final quest = activeQuests[index];
-                          return _buildQuestCard(quest, userState);
-                        },
-                      ),
                 ),
               ],
             ),
@@ -303,7 +338,8 @@ class _QuestScreenState extends State<QuestScreen> {
   Widget _buildQuestCard(Quest quest, UserState userState) {
     final progress = quest.currentCount / quest.targetCount;
     return GestureDetector(
-      onLongPress: () => _showOrganismDetails(context, quest.targetOrganismName),
+      onLongPress: () =>
+          _showOrganismDetails(context, quest.targetOrganismName),
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
@@ -312,7 +348,11 @@ class _QuestScreenState extends State<QuestScreen> {
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: AppColors.highlightColor),
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.4), blurRadius: 4, offset: const Offset(2, 2)),
+            BoxShadow(
+              color: Colors.black.withOpacity(0.4),
+              blurRadius: 4,
+              offset: const Offset(2, 2),
+            ),
           ],
         ),
         child: Column(
@@ -331,14 +371,21 @@ class _QuestScreenState extends State<QuestScreen> {
                 ),
                 Text(
                   '\$${quest.rewardMoney}',
-                  style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    color: Colors.green,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 10),
             Text(
               quest.description,
-              style: const TextStyle(color: Colors.white, fontSize: 12, height: 1.3),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                height: 1.3,
+              ),
             ),
             const SizedBox(height: 12),
             Row(
@@ -367,11 +414,15 @@ class _QuestScreenState extends State<QuestScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
                   ),
                   onPressed: () {
                     userState.claimQuestReward(quest.id);
-                    _updateDialogue("Excellent work. That's one less monster to worry about.");
+                    _updateDialogue(
+                      "Excellent work. That's one less monster to worry about.",
+                    );
                   },
                   child: const Text(
                     'CLAIM REWARD',
@@ -388,9 +439,10 @@ class _QuestScreenState extends State<QuestScreen> {
 
   void _showOrganismDetails(BuildContext context, String name) {
     if (_isLoadingOrganisms) return;
-    
+
     final userState = Provider.of<UserState>(context, listen: false);
-    final isDiscovered = userState.currentUser?.discoveredOrganisms.contains(name) ?? false;
+    final isDiscovered =
+        userState.currentUser?.discoveredOrganisms.contains(name) ?? false;
 
     final organism = _allOrganisms.firstWhere(
       (o) => o.name.toLowerCase() == name.toLowerCase(),
@@ -451,28 +503,47 @@ class _QuestScreenState extends State<QuestScreen> {
                 ),
               ),
             ),
-            _buildDetailInfo('Scientific', isDiscovered ? organism.scientificName : "???"),
+            _buildDetailInfo(
+              'Scientific',
+              isDiscovered ? organism.scientificName : "???",
+            ),
             const SizedBox(height: 8),
             const Text(
               'Habitat:',
-              style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: 11),
+              style: TextStyle(
+                color: Colors.amber,
+                fontWeight: FontWeight.bold,
+                fontSize: 11,
+              ),
             ),
             const SizedBox(height: 4),
             Wrap(
               spacing: 6,
               runSpacing: 6,
-              children: organism.habitat.split(',').map((h) => Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(color: Colors.blue.withOpacity(0.5)),
-                ),
-                child: Text(
-                  h.trim().toUpperCase(),
-                  style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
-                ),
-              )).toList(),
+              children: organism.habitat
+                  .split(',')
+                  .map(
+                    (h) => Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(color: Colors.blue.withOpacity(0.5)),
+                      ),
+                      child: Text(
+                        h.trim().toUpperCase(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  )
+                  .toList(),
             ),
             const SizedBox(height: 12),
             _buildDetailInfo('Rarity', isDiscovered ? organism.rarity : "???"),
@@ -485,8 +556,14 @@ class _QuestScreenState extends State<QuestScreen> {
                 border: Border.all(color: Colors.white10),
               ),
               child: Text(
-                isDiscovered ? organism.description : "You haven't encountered this monster in battle yet. Identify it to unlock more data.",
-                style: const TextStyle(color: Colors.white70, fontSize: 11, height: 1.4),
+                isDiscovered
+                    ? organism.description
+                    : "You haven't encountered this monster in battle yet. Identify it to unlock more data.",
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 11,
+                  height: 1.4,
+                ),
               ),
             ),
           ],
@@ -494,7 +571,14 @@ class _QuestScreenState extends State<QuestScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('CLOSE', style: TextStyle(color: Colors.white, fontFamily: 'PressStart2P', fontSize: 10)),
+            child: const Text(
+              'CLOSE',
+              style: TextStyle(
+                color: Colors.white,
+                fontFamily: 'PressStart2P',
+                fontSize: 10,
+              ),
+            ),
           ),
         ],
       ),
@@ -509,7 +593,11 @@ class _QuestScreenState extends State<QuestScreen> {
         children: [
           Text(
             '$label: ',
-            style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: 11),
+            style: const TextStyle(
+              color: Colors.amber,
+              fontWeight: FontWeight.bold,
+              fontSize: 11,
+            ),
           ),
           Expanded(
             child: Text(
@@ -555,7 +643,11 @@ class __OrganismSpriteDisplayState extends State<_OrganismSpriteDisplay> {
   }
 
   String _getLocalPath() {
-    final fileName = widget.organism.name.toLowerCase().replaceAll(' ', '_').replaceAll("'", '_').replaceAll("-", '_');
+    final fileName = widget.organism.name
+        .toLowerCase()
+        .replaceAll(' ', '_')
+        .replaceAll("'", '_')
+        .replaceAll("-", '_');
     return 'assets/sprites/$fileName.png';
   }
 
@@ -584,41 +676,48 @@ class __OrganismSpriteDisplayState extends State<_OrganismSpriteDisplay> {
     if (_imageSourceType == null) {
       return SizedBox(
         height: widget.height,
-        child: const Center(child: CircularProgressIndicator(color: AppColors.highlightColor)),
+        child: const Center(
+          child: CircularProgressIndicator(color: AppColors.highlightColor),
+        ),
       );
     }
 
     if (widget.isDiscovered) {
       if (_imageSourceType == 'local') {
         return Image.asset(
-          _imagePath, 
-          height: widget.height, 
-          width: widget.width, 
+          _imagePath,
+          height: widget.height,
+          width: widget.width,
           fit: widget.fit,
         );
       } else {
         return Image.network(
-          _imagePath, 
-          height: widget.height, 
-          width: widget.width, 
+          _imagePath,
+          height: widget.height,
+          width: widget.width,
           fit: widget.fit,
           loadingBuilder: (context, child, loadingProgress) {
             if (loadingProgress == null) return child;
             return SizedBox(
               height: widget.height,
-              child: const Center(child: CircularProgressIndicator(color: AppColors.highlightColor)),
+              child: const Center(
+                child: CircularProgressIndicator(
+                  color: AppColors.highlightColor,
+                ),
+              ),
             );
           },
-          errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image, color: Colors.red, size: 40),
+          errorBuilder: (context, error, stackTrace) =>
+              const Icon(Icons.broken_image, color: Colors.red, size: 40),
         );
       }
     } else {
-      return buildSilhouetteSprite( 
+      return buildSilhouetteSprite(
         imageUrl: _imagePath,
         silhouetteColor: widget.silhouetteColor,
         organismName: widget.organism.name,
-        height: widget.height, 
-        width: widget.width, 
+        height: widget.height,
+        width: widget.width,
         fit: widget.fit,
       );
     }
@@ -658,7 +757,7 @@ class _SpeechBubbleState extends State<SpeechBubble> {
     _timer?.cancel();
     _displayText = "";
     _currentIndex = 0;
-    
+
     _timer = Timer.periodic(const Duration(milliseconds: 30), (timer) {
       if (_currentIndex < widget.message.length) {
         setState(() {
@@ -687,7 +786,11 @@ class _SpeechBubbleState extends State<SpeechBubble> {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.blue, width: 3),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 4, offset: const Offset(2, 2)),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 4,
+            offset: const Offset(2, 2),
+          ),
         ],
       ),
       child: Column(

@@ -277,6 +277,11 @@ class Ability {
       effectType: AbilityEffectType.statusChange,
       value: 'stealth',
     ),
+    Ability(
+      name: 'Sticky Hold',
+      description: 'Prevents the organism from being forced out of battle.',
+      effectType: AbilityEffectType.none, // Handled in force-switch logic
+    ),
   ];
 
   static Ability? findByName(String name) {

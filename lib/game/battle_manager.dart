@@ -44,6 +44,23 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   late BattleOrganism player;
   late BattleOrganism opponent;
 
+  int _getStatValue(BattleOrganism org, String statName) {
+    switch (statName.toLowerCase()) {
+      case 'attack':
+        return org.currentAttack;
+      case 'defense':
+        return org.currentDefense;
+      case 'power':
+        return org.currentPower;
+      case 'resistance':
+        return org.currentResistance;
+      case 'speed':
+        return org.currentSpeed;
+      default:
+        return 1; // Fallback
+    }
+  }
+
   late List<Move> playerMoves;
   late List<Move> opponentMoves;
 
@@ -81,6 +98,14 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   bool playerMovedThisTurn = false;
   bool opponentMovedThisTurn = false;
   bool isResumingTurn = false;
+
+  // Stats Persistence
+  final Map<String, BattleStats> battleStats = {};
+
+  BattleStats _getStats(String organismId) {
+    return battleStats.putIfAbsent(organismId, () => BattleStats());
+  }
+
   Move? pendingPlayerMove;
   Move? currentTurnOpponentMove;
 
@@ -89,7 +114,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   VoidCallback? onVictory;
 
   // Audio service for battle sounds and music
-  final AudioService _audioService = AudioService();
+  final AudioService _audioService = AudioService.instance;
 
   void _addToLog(String message) {
     battleLog = message;
@@ -147,24 +172,45 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     List<CapturedOrganism>? opponentTeam,
     this.isArenaBattle = false,
     this.isRogueMode = false,
+    int? initialPlayerIndex,
   }) : playerTeam = (team?.isNotEmpty ?? false) ? team! : [initialPlayer],
        opponentTeam = (opponentTeam?.isNotEmpty ?? false)
            ? opponentTeam!
            : [opponentOrganism] {
-    // Find initial player index if it's in the team
-    int idx = playerTeam.indexOf(initialPlayer);
-    currentPlayerIndex = idx != -1 ? idx : 0;
+    // Find initial player index
+    if (initialPlayerIndex != null && initialPlayerIndex < playerTeam.length) {
+      currentPlayerIndex = initialPlayerIndex;
+    } else {
+      int idx = playerTeam.indexOf(initialPlayer);
+      currentPlayerIndex = idx != -1 ? idx : 0;
+    }
 
     // Set up opponent index
-    int oppIdx = this.opponentTeam.indexOf(opponentOrganism);
-    currentOpponentIndex = oppIdx != -1 ? oppIdx : 0;
+    if (isRogueMode) {
+      // Find first healthy opponent if the assigned one is fainted
+      if (opponentOrganism.currentHealth <= 0) {
+        int firstHealthy = this.opponentTeam.indexWhere(
+          (org) => org.currentHealth > 0,
+        );
+        currentOpponentIndex = firstHealthy != -1 ? firstHealthy : 0;
+      } else {
+        int oppIdx = this.opponentTeam.indexOf(opponentOrganism);
+        currentOpponentIndex = oppIdx != -1 ? oppIdx : 0;
+      }
+    } else {
+      int oppIdx = this.opponentTeam.indexOf(opponentOrganism);
+      currentOpponentIndex = oppIdx != -1 ? oppIdx : 0;
+    }
 
     player = BattleOrganism(playerOrganism, isRogueMode: isRogueMode);
-    opponent = BattleOrganism(opponentOrganism, isRogueMode: isRogueMode);
+    opponent = BattleOrganism(
+      this.opponentTeam[currentOpponentIndex],
+      isRogueMode: isRogueMode,
+    );
 
     // Initialize move lists
     playerMoves = _getOrganismMoves(playerOrganism);
-    opponentMoves = _getOrganismMoves(opponentOrganism);
+    opponentMoves = _getOrganismMoves(this.opponentTeam[currentOpponentIndex]);
 
     // If Rogue-like mode, trust the opponent's current health/stamina/status
     // Otherwise, for wild battles/arena, reset them to full?
@@ -201,12 +247,39 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     );
 
     // Start battle music
+    // Only play if not already playing this specific track to avoid stutter
     await _audioService.playMusic('audio/battle_default.mp3');
 
     notifyListeners();
     await Future.delayed(const Duration(milliseconds: 3000));
 
     await _initializeBattle(biomeName);
+
+    // Check if opponent is already fainted (Roguelike re-entry case where lead fainted)
+    if (opponent.health <= 0) {
+      final healthyIndex = this.opponentTeam.indexWhere(
+        (org) => org.currentHealth > 0,
+      );
+      if (healthyIndex != -1) {
+        _switchOpponentTo(healthyIndex);
+        opponentJustSwitched = true;
+      }
+    }
+
+    // Check if the starting animal is already fainted (Roguelike re-entry case)
+    if (player.health <= 0) {
+      final healthyIndex = playerTeam.indexWhere(
+        (org) => org.currentHealth > 0,
+      );
+      if (healthyIndex != -1) {
+        _addToLog(
+          '${player.organism.baseOrganism.name} is unable to fight! Choose another animal.',
+        );
+        currentState = BattleState.waitingForPlayerSwitch;
+        notifyListeners();
+        return;
+      }
+    }
 
     // Transition to waiting for input
     currentState = BattleState.waitingForInput;
@@ -397,6 +470,15 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       return;
     }
 
+    // Choice Lock Check
+    if (player.isChoiceLocked &&
+        player.lockedMove != null &&
+        player.lockedMove!.name != move.name) {
+      _addToLog('${player.organism.baseOrganism.name} is choice-locked!');
+      notifyListeners();
+      return;
+    }
+
     currentState = BattleState.playerTurn;
     notifyListeners();
 
@@ -405,8 +487,12 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     if (!isResumingTurn) {
       // Pre-calculate opponent move for priority check
-      currentTurnOpponentMove =
-          opponentMoves[Random().nextInt(opponentMoves.length)];
+      if (opponent.isChoiceLocked && opponent.lockedMove != null) {
+        currentTurnOpponentMove = opponent.lockedMove;
+      } else {
+        currentTurnOpponentMove =
+            opponentMoves[Random().nextInt(opponentMoves.length)];
+      }
 
       // Determine who goes first
       int playerPriority = move.priority;
@@ -536,7 +622,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         );
         notifyListeners();
         await Future.delayed(const Duration(milliseconds: 2000));
-        return;
+        // FIX: Allow fall-through to _finalizeTurn() to properly reset state
+        // return;
       }
       // END FIX
     }
@@ -637,6 +724,11 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     notifyListeners();
     // Trigger attack animation
     onAttack?.call(attacker);
+
+    // Track revealed move
+    final attackerStats = _getStats(attacker.organism.id);
+    attackerStats.revealedMoves.add(move.name);
+
     await Future.delayed(const Duration(milliseconds: 3000));
 
     // --- Ability Triggers: onCalculateDamage (Self) ---
@@ -711,6 +803,10 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
       if (!isSelfStatus) {
         _addToLog('${defender.organism.baseOrganism.name} protected itself!');
+        // Track revealed move
+        final attackerStats = _getStats(attacker.organism.id);
+        attackerStats.revealedMoves.add(move.name);
+
         if (move.name == 'Baneful Bunker' ||
             (move.name != 'Protect' &&
                 attacker.organism.baseOrganism.moves.contains(
@@ -738,18 +834,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       }
     }
 
-    // Determine which stats to use based on move category
-    int effectiveAttackerAtk;
-    int effectiveDefenderDef;
-
-    if (move.category == MoveCategory.special) {
-      effectiveAttackerAtk = attacker.currentPower;
-      effectiveDefenderDef = defender.currentResistance;
-    } else {
-      // Default to physical
-      effectiveAttackerAtk = attacker.currentAttack;
-      effectiveDefenderDef = defender.currentDefense;
-    }
+    // Determine which stats to use based on move properties
+    int effectiveAttackerAtk = _getStatValue(attacker, move.damageStat);
+    int effectiveDefenderDef = _getStatValue(defender, move.targetDefenseStat);
 
     // Allow the move to override EXACTLY which stat it uses for the ATTACKER
     if (move.damageStat.isNotEmpty) {
@@ -790,10 +877,13 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         bool isCrit = false;
         double critChance = 6.25; // Base 1/16 chance
 
-        // Talisman crit boost
-        if (attacker.organism.equippedTalisman?.effect.type ==
-            TalismanEffectType.critBoost) {
-          critChance += attacker.organism.equippedTalisman!.effect.magnitude;
+        // Talisman crit boost (multi-effect support)
+        if (attacker.organism.equippedTalisman != null) {
+          for (final effect in attacker.organism.equippedTalisman!.effects) {
+            if (effect.type == TalismanEffectType.critBoost) {
+              critChance += effect.magnitude;
+            }
+          }
         }
 
         // Move-specific crit rate
@@ -866,16 +956,31 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           damageCalc *= multiplier;
         }
 
-        // Talisman damage multiplier
-        if (attacker.organism.equippedTalisman?.effect.type ==
-            TalismanEffectType.damageMultiplier) {
-          damageCalc *= attacker.organism.equippedTalisman!.effect.magnitude;
+        // Talisman damage/resistance boosts (multi-effect support)
+        if (attacker.organism.equippedTalisman != null) {
+          for (final effect in attacker.organism.equippedTalisman!.effects) {
+            if (effect.type == TalismanEffectType.damageMultiplier ||
+                effect.type == TalismanEffectType.damageBoost) {
+              damageCalc *= effect.magnitude;
+            }
+            // Category-specific damage boost (Muscle Band, Wise Glasses)
+            if (effect.type == TalismanEffectType.categoryDamageBoost) {
+              if ((effect.category == 'physical' &&
+                      move.category == MoveCategory.physical) ||
+                  (effect.category == 'special' &&
+                      move.category == MoveCategory.special)) {
+                damageCalc *= effect.magnitude;
+              }
+            }
+          }
         }
 
-        // Talisman resistance boost (multiplier on incoming damage)
-        if (defender.organism.equippedTalisman?.effect.type ==
-            TalismanEffectType.resistanceBoost) {
-          damageCalc *= defender.organism.equippedTalisman!.effect.magnitude;
+        if (defender.organism.equippedTalisman != null) {
+          for (final effect in defender.organism.equippedTalisman!.effects) {
+            if (effect.type == TalismanEffectType.resistanceBoost) {
+              damageCalc *= effect.magnitude;
+            }
+          }
         }
 
         // Vulnerable Status
@@ -910,14 +1015,53 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         damageCalc *= weatherMod;
 
         // Randomness (0.9 to 1.1) and Round
-        final int finalDamage =
-            (damageCalc * (Random().nextDouble() * 0.2 + 0.9)).round();
+        // Randomness (0.9 to 1.1) and Round
+        int finalDamage = (damageCalc * (Random().nextDouble() * 0.2 + 0.9))
+            .round();
+
+        // Talisman Focus Sash (One-Hit Save)
+        if (defender.organism.equippedTalisman != null &&
+            defender.health == defender.maxHealth &&
+            finalDamage >= defender.health &&
+            !defender.focusSashUsed) {
+          for (final effect in defender.organism.equippedTalisman!.effects) {
+            if (effect.type == TalismanEffectType.oneHitSave) {
+              finalDamage = defender.health - 1;
+              defender.focusSashUsed = true;
+              defender.focusSashUsed = true;
+              defender.isItemRevealed = true;
+              _getStats(defender.organism.id).isItemRevealed = true;
+              _addToLog(
+                '${defender.organism.name} hung on using its ${defender.organism.equippedTalisman!.name}!',
+              );
+            }
+          }
+        }
 
         int oldHealth = defender.health;
         defender.health -= finalDamage;
         defender.health = defender.health.clamp(0, defender.maxHealth);
-        totalDamageDealt += finalDamage;
+        // int oldHealth = defender.health; // Removed duplicate
+        // defender.health -= finalDamage; // Removed duplicate
+        // defender.health = defender.health.clamp(0, defender.maxHealth); // Removed duplicate
+        attacker.totalDamageDealt += finalDamage;
+        defender.totalDamageTaken += finalDamage;
+
+        // Sync to persistent stats
+        final attackerStats = _getStats(attacker.organism.id);
+        final defenderStats = _getStats(defender.organism.id);
+        attackerStats.totalDamageDealt += finalDamage;
+        defenderStats.totalDamageTaken += finalDamage;
+
         defender.tookDamageThisTurn = true;
+
+        if (hits > 1) {
+          _addToLog('Hit ${i + 1}!');
+        }
+        final double dmgPct = (finalDamage / defender.maxHealth * 100);
+        _addToLog(
+          '${defender.organism.name} took $finalDamage damage (${dmgPct.toStringAsFixed(1)}%)!',
+        );
 
         if (move.drainPercent > 0 && finalDamage > 0) {
           final healAmount = (finalDamage * move.drainPercent).round();
@@ -925,8 +1069,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             0,
             attacker.maxHealth,
           );
+          final double drainPercent = (healAmount / attacker.maxHealth * 100);
           _addToLog(
-            '${attacker.organism.baseOrganism.name} drained $healAmount health!',
+            '${attacker.organism.baseOrganism.name} drained $healAmount health (${drainPercent.toStringAsFixed(1)}%)!',
           );
         }
         if (move.recoilPercent > 0 && finalDamage > 0) {
@@ -935,9 +1080,55 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             0,
             attacker.maxHealth,
           );
+          final double recoilPercent =
+              (recoilDamage / attacker.maxHealth * 100);
           _addToLog(
-            '${attacker.organism.baseOrganism.name} took $recoilDamage recoil damage!',
+            '${attacker.organism.baseOrganism.name} took $recoilDamage recoil damage (${recoilPercent.toStringAsFixed(1)}%)!',
           );
+        }
+
+        // Track damage for lifesteal
+        attacker.damageDealtThisTurn += finalDamage;
+
+        // Talisman recoil damage (Life Orb)
+        if (attacker.organism.equippedTalisman != null) {
+          for (final effect in attacker.organism.equippedTalisman!.effects) {
+            if (effect.type == TalismanEffectType.recoilDamage &&
+                finalDamage > 0) {
+              final recoilDamage = (attacker.maxHealth * effect.magnitude)
+                  .round();
+              attacker.health = (attacker.health - recoilDamage).clamp(
+                0,
+                attacker.maxHealth,
+              );
+              final double recoilPercent =
+                  (recoilDamage / attacker.maxHealth * 100);
+              attacker.isItemRevealed = true;
+              _getStats(attacker.organism.id).isItemRevealed = true;
+              _addToLog(
+                '${attacker.organism.name} is hurt by its ${attacker.organism.equippedTalisman!.name}! (${recoilPercent.toStringAsFixed(1)}%)',
+              );
+            }
+          }
+        }
+
+        // Rocky Helmet damage (contact moves only)
+        if (move.isContact && defender.organism.equippedTalisman != null) {
+          for (final effect in defender.organism.equippedTalisman!.effects) {
+            if (effect.type == TalismanEffectType.contactDamage) {
+              final contactDamage = (attacker.maxHealth * effect.magnitude)
+                  .round();
+              attacker.health = (attacker.health - contactDamage).clamp(
+                0,
+                attacker.maxHealth,
+              );
+              defender.isItemRevealed = true;
+              _getStats(defender.organism.id).isItemRevealed = true;
+              _addToLog(
+                '${attacker.organism.name} was hurt by ${defender.organism.equippedTalisman!.name}! ($contactDamage damage)',
+              );
+            }
+          }
         }
         // --- Ability Triggers: onDamageTaken ---
         for (final ab in defender.abilities) {
@@ -1019,12 +1210,6 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           }
         }
 
-        _addToLog(
-          hits > 1
-              ? 'Hit ${i + 1}!'
-              : '${defender.organism.baseOrganism.name} took $finalDamage damage!',
-        );
-
         if (typeMod > 1.0) _addToLog('It\'s super effective!');
         if (typeMod < 1.0 && typeMod > 0) {
           _addToLog('It\'s not very effective...');
@@ -1032,18 +1217,26 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         if (typeMod == 0) _addToLog('It had no effect!');
         if (isCrit) _addToLog('A critical hit!');
 
-        // Determine damage percentage
-        final damagePercent = (finalDamage / defender.maxHealth * 100)
-            .round()
-            .clamp(1, 100);
-        _appendToLog(' ($damagePercent%)');
-
         notifyListeners();
         await Future.delayed(const Duration(milliseconds: 3000));
       }
     }
     if (attacker.health > 0 && defender.health >= 0) {
       await _applyMoveEffect(attacker, defender, move.effects, move);
+
+      // Apply Choice Lock if applicable
+      if (attacker.organism.equippedTalisman != null &&
+          !attacker.isChoiceLocked) {
+        for (final effect in attacker.organism.equippedTalisman!.effects) {
+          if (effect.type == TalismanEffectType.choiceLock) {
+            attacker.isChoiceLocked = true;
+            attacker.lockedMove = move;
+            // attacker.isItemRevealed = true; // Maybe not reveal immediately on lock, but on "move blocked"?
+            // For now, let's reveal it if they are locked, so the player knows why.
+            attacker.isItemRevealed = true;
+          }
+        }
+      }
     }
 
     // Stealth removal (attacker)
@@ -1183,7 +1376,12 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     // Simple AI: Select a random move from its specific list
 
     // Simple AI: Select a random move from its specific list
-    final opponentMove = opponentMoves[Random().nextInt(opponentMoves.length)];
+    Move opponentMove;
+    if (opponent.isChoiceLocked && opponent.lockedMove != null) {
+      opponentMove = opponent.lockedMove!;
+    } else {
+      opponentMove = opponentMoves[Random().nextInt(opponentMoves.length)];
+    }
 
     if (await _canMove(opponent)) {
       await _executeTurn(opponent, player, opponentMove);
@@ -1391,8 +1589,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           final healedAmount = effect.value;
           target.health += healedAmount;
           target.health = target.health.clamp(0, target.maxHealth);
+          final double healPercent = (healedAmount / target.maxHealth * 100);
           _appendToLog(
-            '\n${target.organism.baseOrganism.name} recovered $healedAmount HP!',
+            '\n${target.organism.baseOrganism.name} recovered $healedAmount HP (${healPercent.toStringAsFixed(1)}%)!',
           );
           // Play healing sound effect
           await _audioService.playSound('audio/effects/heal.mp3');
@@ -1406,6 +1605,63 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           break;
         case MoveEffectType.semiInvulnerable:
           attacker.semiInvulnerable = effect.stat;
+          break;
+        case MoveEffectType.forceSwitch:
+          // 1. Ability Trigger: Sticky Hold (Prevention)
+          bool isSticky = target.abilities.any(
+            (ab) => ab.name == 'Sticky Hold',
+          );
+          if (isSticky) {
+            final ab = target.abilities.firstWhere(
+              (a) => a.name == 'Sticky Hold',
+            );
+            await _notifyAbilityTrigger(target, ab);
+            _addToLog(
+              '${target.organism.baseOrganism.name} anchored itself with ${ab.name}!',
+            );
+            notifyListeners();
+            await Future.delayed(const Duration(milliseconds: 2000));
+            continue;
+          }
+
+          // 2. Check if team has other members to switch to
+          final isTargetPlayer = target == player;
+          final team = isTargetPlayer ? playerTeam : opponentTeam;
+          final currentIndex = isTargetPlayer
+              ? currentPlayerIndex
+              : currentOpponentIndex;
+
+          final availableIndices = <int>[];
+          for (int i = 0; i < team.length; i++) {
+            if (i != currentIndex && team[i].currentHealth > 0) {
+              availableIndices.add(i);
+            }
+          }
+
+          if (availableIndices.isEmpty) {
+            _addToLog('But there was no one to switch with!');
+            notifyListeners();
+            await Future.delayed(const Duration(milliseconds: 2000));
+            continue;
+          }
+
+          // 3. Perform the switch
+          final nextIndex =
+              availableIndices[Random().nextInt(availableIndices.length)];
+          _addToLog('${target.organism.baseOrganism.name} was blown away!');
+          notifyListeners();
+          await Future.delayed(const Duration(milliseconds: 2000));
+
+          if (isTargetPlayer) {
+            _switchToAnimal(nextIndex);
+            // Since it's forced, we might need to handle turn flow
+            // but Whirlwind usually just ends the move effect.
+          } else {
+            _switchOpponentTo(nextIndex);
+            opponentJustSwitched = true;
+          }
+          notifyListeners();
+          await Future.delayed(const Duration(milliseconds: 2000));
           break;
         default:
           break;
@@ -1585,7 +1841,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         final poisonDamage = (target.maxHealth * 0.125).round().clamp(1, 9999);
         target.health -= poisonDamage;
         target.health = target.health.clamp(0, target.maxHealth);
-        _addToLog('${target.organism.baseOrganism.name} is hurt by poison!');
+        _addToLog(
+          '${target.organism.baseOrganism.name} is hurt by poison (12.5%)!',
+        );
         notifyListeners();
         await Future.delayed(const Duration(milliseconds: 3000));
         if (_checkBattleEnd()) return;
@@ -1593,7 +1851,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         final burnDamage = (target.maxHealth * 0.06).round().clamp(1, 9999);
         target.health -= burnDamage;
         target.health = target.health.clamp(0, target.maxHealth);
-        _addToLog('${target.organism.baseOrganism.name} is hurt by its burn!');
+        _addToLog(
+          '${target.organism.baseOrganism.name} is hurt by its burn (6.0%)!',
+        );
         notifyListeners();
         await Future.delayed(const Duration(milliseconds: 3000));
         if (_checkBattleEnd()) return;
@@ -1655,6 +1915,42 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       notifyListeners();
       await Future.delayed(const Duration(milliseconds: 3000));
     }
+
+    // Talisman effects - Leftovers healing
+    if (target.organism.equippedTalisman != null) {
+      for (final effect in target.organism.equippedTalisman!.effects) {
+        if (effect.type == TalismanEffectType.onTurnHeal) {
+          final healAmount = (target.maxHealth * effect.magnitude).round();
+          target.health += healAmount;
+          target.health = target.health.clamp(0, target.maxHealth);
+          _addToLog(
+            '${target.organism.name} restored HP with ${target.organism.equippedTalisman!.name}! ($healAmount HP)',
+          );
+          notifyListeners();
+          await Future.delayed(const Duration(milliseconds: 3000));
+        }
+      }
+    }
+
+    // Shell Bell lifesteal healing (after damage is dealt)
+    if (target.damageDealtThisTurn > 0 &&
+        target.organism.equippedTalisman != null) {
+      for (final effect in target.organism.equippedTalisman!.effects) {
+        if (effect.type == TalismanEffectType.lifesteal) {
+          final healAmount = (target.damageDealtThisTurn * effect.magnitude)
+              .round();
+          target.health += healAmount;
+          target.health = target.health.clamp(0, target.maxHealth);
+          _addToLog(
+            '${target.organism.name} restored HP with ${target.organism.equippedTalisman!.name}! ($healAmount HP)',
+          );
+          notifyListeners();
+          await Future.delayed(const Duration(milliseconds: 3000));
+        }
+      }
+    }
+    // Reset damage tracking for next turn
+    target.damageDealtThisTurn = 0;
 
     // Status Duration Decay and Recovery for ALL effects
     final List<StatusEffect> updatedEffects = [];
@@ -1796,10 +2092,13 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     notifyListeners();
     await Future.delayed(const Duration(milliseconds: 3000));
 
+    // Reset battle-specific flags for the animal being switched out
+    player.resetBattleState();
+
     _switchToAnimal(index);
     if (isForced) {
-      isResumingTurn =
-          true; // Mark as resuming so we don't start a new turn cycle
+      // FIX: Do not resume turn. Treat this as the end of the "faint" turn cycle.
+      // isResumingTurn = true;
     } else {
       playerJustSwitched = true; // Normal switch skips player's turn action
     }
@@ -1807,10 +2106,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     await Future.delayed(const Duration(milliseconds: 3000));
 
     if (isForced) {
-      // If forced switch, turn continues or waits for next round
-      currentState = BattleState.waitingForInput;
-      _addToLog('What will ${player.organism.name} do?');
-      notifyListeners();
+      // FIX: Finalize the turn so we start a FRESH turn (resetting flags, applying weather, etc.)
+      await _finalizeTurn();
       return;
     }
 
@@ -1864,7 +2161,15 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     if (index < 0 || index >= playerTeam.length) return;
     currentPlayerIndex = index;
 
+    currentPlayerIndex = index;
+
     player = BattleOrganism(playerOrganism, isRogueMode: isRogueMode);
+    // Restore persistent stats
+    final stats = _getStats(playerOrganism.id);
+    player.totalDamageDealt = stats.totalDamageDealt;
+    player.totalDamageTaken = stats.totalDamageTaken;
+    player.isItemRevealed = stats.isItemRevealed;
+
     playerMoves = _getOrganismMoves(playerOrganism);
 
     _addToLog('Go, ${player.organism.baseOrganism.name}!');
@@ -1956,9 +2261,21 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
   void _switchOpponentTo(int index) {
     if (index < 0 || index >= opponentTeam.length) return;
+
+    // Reset battle-specific flags for the opponent being switched out
+    opponent.resetBattleState();
+
     currentOpponentIndex = index;
 
-    opponent = BattleOrganism(opponentTeam[currentOpponentIndex]);
+    opponent = BattleOrganism(
+      opponentTeam[currentOpponentIndex],
+      isRogueMode: isRogueMode,
+    );
+    // Restore persistent stats
+    final stats = _getStats(opponentTeam[currentOpponentIndex].id);
+    opponent.totalDamageDealt = stats.totalDamageDealt;
+    opponent.totalDamageTaken = stats.totalDamageTaken;
+    opponent.isItemRevealed = stats.isItemRevealed;
     opponentMoves = _getOrganismMoves(opponentTeam[currentOpponentIndex]);
 
     _addToLog('Opponent sends out ${opponent.organism.baseOrganism.name}!');
@@ -2095,10 +2412,26 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   }
 
   void _cleanupStatusEffects() {
-    if (!isRogueMode) {
-      for (var captured in playerTeam) {
+    for (var captured in playerTeam) {
+      if (!isRogueMode) {
         captured.statusEffects = [];
       }
+      // Reset stat stages always at the end of a battle
+      captured.attackStage = 0;
+      captured.defenseStage = 0;
+      captured.powerStage = 0;
+      captured.resistanceStage = 0;
+      captured.speedStage = 0;
+      captured.accuracyStage = 0;
+    }
+    // Also reset stat stages for the opponent team
+    for (var opponent in opponentTeam) {
+      opponent.attackStage = 0;
+      opponent.defenseStage = 0;
+      opponent.powerStage = 0;
+      opponent.resistanceStage = 0;
+      opponent.speedStage = 0;
+      opponent.accuracyStage = 0;
     }
   }
 
@@ -2114,8 +2447,6 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
   @override
   void dispose() {
-    // Clean up audio resources
-    _audioService.dispose();
     super.dispose();
   }
 }

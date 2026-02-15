@@ -497,7 +497,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               // Dynamically build stat blocks for each quiz
               ...user.quizStats.entries.map((entry) {
                 return _buildQuizStatBlock(entry.key, entry.value);
-              }).toList(),
+              }),
 
               // Display message if no stats are available
               if (user.quizStats.isEmpty)

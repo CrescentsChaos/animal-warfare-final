@@ -1,38 +1,48 @@
-# 🐾 Animal Warfare: The "Wow" Roadmap
-Ideas to transform the game from a "text adventure" into a premium, addictive RPG experience.
+# Future Features Roadmap: Animal Warfare
 
-## ✨ 1. Visual Juiciness (The "Feel")
-Text alone is boring. We need movement and feedback.
-- **Particle System**: Add slash marks, fire sparks, or water splashes on impact.
-- **Animated Sprites**: Give animals a simple "Idle" hop (breathing) and a "Lunge" animation when attacking.
-- **Dynamic Backgrounds**: Instead of a flat color, use parallax scrolling forests, desserts, or ocean waves that change based on where the player is.
-- **Cinematic Cut-ins**: When a "Signature Move" is used, flash a zoomed-in silhouette of the animal against a high-contrast background (Persona 5 style).
-- **Damage Numbers**: Have red numbers physically "pop" out of the animal and float away when hit.
+To elevate **Animal Warfare** into a premium, industry-leading app, the following features are planned for future development. These categories focus on player retention, social engagement, and technical immersion.
 
-## ⚔️ 2. Strategic Depth
-- **Synergy Bonus**: If you have two animals of a compatible type (e.g., Sea Lion + Water Snake), unlock "Combo Moves."
-- **Held Items**: Give animals items like "Focus Sash" (survive with 1 HP) or "Battery" (boosts electric moves).
-- **Environmental Interaction**: If it's raining, Fire animals take damage every turn, and Water moves are 2x faster.
-- **Dynamic AI**: Make opponents "smarter" by switching out animals if they have a type disadvantage.
+## 🛡️ Immersive Systems
+### 1. Operations Base (The "Home" Hub)
+*   **The Idea**: A customizable military base for your animals.
+*   **Impact**: Moves the game from menu-heavy to world-immersive. Players "deploy" animals to guard facilities or train in the "Gym" for passive gains.
+*   **Premium Touch**: Use the pixel-art style to create a "Tactical map" view of the base.
 
-## 🗺️ 3. World & Exploration
-- **Top-down Overworld**: Let the player walk around a tile-based map (like classic Zelda or Pokémon) instead of just clicking buttons.
-- **Wild Encounters**: Add "Tall Grass" where wild animals jump out at you with a transition animation.
-- **NPC Quests**: Introduce characters like "The Old Hunter" who gives you unique moves for completing challenges.
-- **Base Building**: Let players create a "Terrarium" for their captured animals that produces resources over time.
+### 2. Tactical Weather & Terrain 2.0
+*   **The Idea**: Move beyond backgrounds. Add physical "Battle Hazards" (e.g., Ash Clouds reducing accuracy, High Pressure damaging non-aquatic animals).
+*   **Impact**: Elevates strategy from "strongest move" to "environmental management."
+*   **Premium Touch**: High-budget visual overlays (fog, snow, screen shakes) during events.
 
-## 🧬 4. Progression & Meta
-- **Evolution Tree**: Instead of just leveling up stats, have animals physically transform into bigger, cooler versions at Level 20/40.
-- **Move Relearning**: A "Move Tutor" UI where you can customize your animal's 4-move kit.
-- **Animal Genes**: Add "Shiny" versions or "Alpha" variants with different color palettes and boosted stats.
-- **Bestiary / Almanac**: A deep encyclopedia with lore, flavor text, and 3D-style sprite viewers.
+## 📊 Engagement & Live Ops
+### 3. "Spec-Ops" Daily Missions
+*   **The Idea**: Time-limited tactical missions with unique modifiers (e.g., "Night Op: All Nocturnal animals get +20% Speed").
+*   **Impact**: Drives daily retention and forces players to explore their full roster beyond their "main" team.
+*   **Premium Touch**: Global "Resistance" bar—community progress unlocks weekend Boss events.
 
-## 🔊 5. Audio Experience
-- **Unique Cries**: Every animal should have a unique 8-bit or high-quality sound when it enters battle.
-- **Adaptive Music**: The battle theme should get more intense (faster tempo, more bass) when your HP falls below 20%.
-- **Impact SFX**: Use different sounds for Physical vs. Special moves (a "Thud" vs. a "Zapping" sound).
+### 4. Elemental Splicing (Surgical Crafting)
+*   **The Idea**: Combine traits of different animals at the Crafting Station (e.g., Octopus + Tiger = Camouflaged Tiger).
+*   **Impact**: Unlimited player expression and unique team compositions.
+*   **Premium Touch**: Treat it as "Secret Laboratory" experiments with rare "Mutation" chances.
 
-## 🏆 6. Competitive / Social
-- **Daily Bosses**: A world boss that everyone tries to defeat, with global rewards.
-- **Seed-based Runs**: A "Roguelike" mode where you start with one random animal and see how far you can go.
-- **Online Trading**: A simple market for trading captured animals with other players.
+## 🤝 Social & Competitive
+### 5. Asymmetrical PvP (Base Raiding)
+*   **The Idea**: Set a defense team at your Base. Other players "raid" your base (fighting your AI-controlled team) for rank and materials.
+*   **Impact**: Competitive stakes without the technical overhead of real-time server-side synchronization.
+*   **Premium Touch**: Tactical rank tiers (Private, Sergeant, General) with cosmetic rewards.
+
+### 6. Global Trading Post
+*   **The Idea**: An asynchronous marketplace where players can list animals or rare materials for trade.
+*   **Impact**: Fosters a community-driven economy and helps players complete their AniDex.
+
+## 📱 Mobile-First Innovation
+### 7. AR "Recon" Mode
+*   **The Idea**: Use Augmented Reality to "scan" your real-world environment for rare military-grade animals.
+*   **Impact**: Bridges the gap between the game world and reality, similar to top-tier branded apps.
+
+### 8. Haptic Combat Feedback
+*   **The Idea**: Implement deep haptic patterns (vibrations) for specialized events: heavy impacts, critical hits, or heartbeat pulses when HP is low.
+*   **Impact**: Increases sensory immersion significantly.
+
+### 9. Branching Narrative Campaign
+*   **The Idea**: A story mode where player choices affect the "War Effort" and which biomes are accessible.
+*   **Impact**: Provides a clear sense of purpose and "endgame" goals.

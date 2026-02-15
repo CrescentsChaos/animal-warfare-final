@@ -11,6 +11,7 @@ class RogueLikeState {
   final String? currentBiome;
   final List<CapturedOrganism>? opponentTeam;
   final int currentOpponentIndex;
+  final int currentPlayerIndex;
 
   const RogueLikeState({
     this.floor = 1,
@@ -21,6 +22,7 @@ class RogueLikeState {
     this.currentBiome,
     this.opponentTeam,
     this.currentOpponentIndex = 0,
+    this.currentPlayerIndex = 0,
   });
 
   RogueLikeState copyWith({
@@ -32,6 +34,7 @@ class RogueLikeState {
     String? currentBiome,
     List<CapturedOrganism>? opponentTeam,
     int? currentOpponentIndex,
+    int? currentPlayerIndex,
   }) {
     return RogueLikeState(
       floor: floor ?? this.floor,
@@ -42,6 +45,7 @@ class RogueLikeState {
       currentBiome: currentBiome ?? this.currentBiome,
       opponentTeam: opponentTeam ?? this.opponentTeam,
       currentOpponentIndex: currentOpponentIndex ?? this.currentOpponentIndex,
+      currentPlayerIndex: currentPlayerIndex ?? this.currentPlayerIndex,
     );
   }
 
@@ -54,6 +58,7 @@ class RogueLikeState {
     'currentBiome': currentBiome,
     'opponentTeam': opponentTeam?.map((co) => co.toJson()).toList(),
     'currentOpponentIndex': currentOpponentIndex,
+    'currentPlayerIndex': currentPlayerIndex,
   };
 
   factory RogueLikeState.fromJson(
@@ -91,6 +96,7 @@ class RogueLikeState {
       currentBiome: json['currentBiome'] as String?,
       opponentTeam: opponentTeamList.isEmpty ? null : opponentTeamList,
       currentOpponentIndex: json['currentOpponentIndex'] as int? ?? 0,
+      currentPlayerIndex: json['currentPlayerIndex'] as int? ?? 0,
     );
   }
 }

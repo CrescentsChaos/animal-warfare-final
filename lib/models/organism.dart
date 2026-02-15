@@ -1,7 +1,6 @@
 // lib/models/organism.dart
 import 'package:flutter/material.dart';
 import 'package:animal_warfare/models/elemental_type.dart';
-import 'package:animal_warfare/models/loot_item.dart';
 import 'dart:math';
 
 class Organism {
@@ -49,22 +48,28 @@ class Organism {
     if (json['types'] is List) {
       typeList = List<String>.from(json['types']);
     } else if (json['types'] is String) {
-       typeList = (json['types'] as String).split(',').map((e) => e.trim()).toList();
-    } 
-    
+      typeList = (json['types'] as String)
+          .split(',')
+          .map((e) => e.trim())
+          .toList();
+    }
+
     // FALLBACK: Use 'category' if types is still empty
     if (typeList.isEmpty && json['category'] is String) {
-      typeList = (json['category'] as String).split(',').map((e) => e.trim()).toList();
+      typeList = (json['category'] as String)
+          .split(',')
+          .map((e) => e.trim())
+          .toList();
     }
 
     if (typeList.isEmpty) {
       // Final Fallback: always have at least 'normal'
-      typeList = ['normal']; 
+      typeList = ['normal'];
     }
 
     return Organism(
       name: json['name'] as String,
-      scientificName: json['scientific_name'] as String, 
+      scientificName: json['scientific_name'] as String,
       habitat: json['habitat'] as String,
       drops: json['drops'] as String,
       attack: json['attack'] as int,
@@ -87,19 +92,24 @@ class Organism {
   /// Returns a Title Case string (e.g., "Fur", "Meat").
   String? rollLootDrop() {
     if (drops.isEmpty) return null;
-    
-    final dropsList = drops.split(',').map((e) {
-      final trimmed = e.trim();
-      if (trimmed.isEmpty) return '';
-      // Simple Title Case: capitalize first letter, lowercase rest
-      return trimmed[0].toUpperCase() + trimmed.substring(1).toLowerCase();
-    }).where((e) => e.isNotEmpty).toList();
-    
+
+    final dropsList = drops
+        .split(',')
+        .map((e) {
+          final trimmed = e.trim();
+          if (trimmed.isEmpty) return '';
+          // Simple Title Case: capitalize first letter, lowercase rest
+          return trimmed[0].toUpperCase() + trimmed.substring(1).toLowerCase();
+        })
+        .where((e) => e.isNotEmpty)
+        .toList();
+
     if (dropsList.isEmpty) return null;
-    
+
     // Pick one at random
     return dropsList[Random().nextInt(dropsList.length)];
   }
+
   Organism copyWith({
     String? name,
     String? scientificName,
@@ -113,7 +123,7 @@ class Organism {
     int? speed,
     String? abilities,
     String? category,
-    String? moves, 
+    String? moves,
     String? sprite,
     String? rarity,
     String? description,
@@ -139,11 +149,11 @@ class Organism {
       types: types ?? this.types,
     );
   }
-  
+
   Map<String, dynamic> toJson() {
     return {
       'name': name,
-      'scientific_name': scientificName, 
+      'scientific_name': scientificName,
       'habitat': habitat,
       'drops': drops,
       'attack': attack,
@@ -173,20 +183,19 @@ class Organism {
   }
 }
 
-
 /// A utility function to display an image (from network OR asset) as a solid-colored silhouette.
 Widget buildSilhouetteSprite({
   required String imageUrl,
   required Color silhouetteColor,
   // Added optional organismName, though the path determination is done by the caller.
-  String? organismName, 
+  String? organismName,
   double? width,
   double? height,
   BoxFit fit = BoxFit.contain,
 }) {
-  
   // NEW LOGIC: Determine if the image should be loaded from a network or local asset
-  final isNetworkImage = imageUrl.startsWith('http') || imageUrl.startsWith('https');
+  final isNetworkImage =
+      imageUrl.startsWith('http') || imageUrl.startsWith('https');
 
   // Common error widget
   final errorWidget = Container(
@@ -211,7 +220,8 @@ Widget buildSilhouetteSprite({
             child: CircularProgressIndicator(
               color: silhouetteColor,
               value: loadingProgress.expectedTotalBytes != null
-                  ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                  ? loadingProgress.cumulativeBytesLoaded /
+                        loadingProgress.expectedTotalBytes!
                   : null,
             ),
           );
@@ -233,11 +243,11 @@ Widget buildSilhouetteSprite({
 
   // Apply the ColorFilter to the resulting Image widget
   return ColorFiltered(
-    // The ColorFilter.mode constructor is used to blend a single color 
+    // The ColorFilter.mode constructor is used to blend a single color
     // with the child widget (your image).
     colorFilter: ColorFilter.mode(
       silhouetteColor,
-      // BlendMode.srcIn uses the alpha channel of the image (the source) 
+      // BlendMode.srcIn uses the alpha channel of the image (the source)
       // and replaces the color with the filter color, creating a perfect silhouette.
       BlendMode.srcIn,
     ),

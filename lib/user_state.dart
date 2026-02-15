@@ -18,6 +18,9 @@ class UserState with ChangeNotifier {
   final LocalAuthService _authService = LocalAuthService();
   Timer? _staminaRegenTimer;
 
+  // Mutex to prevent race conditions during read-modify-write
+  Future<void> _writeLock = Future.value();
+
   UserData? get currentUser => _currentUser;
   bool get isLoggedIn => _currentUser != null;
 
@@ -27,17 +30,34 @@ class UserState with ChangeNotifier {
   }
 
   /// Ensures we have the latest user from disk, applies [update], then saves.
-  /// Prevents overwriting quiz stats (or any other data) when other screens
-  /// (e.g. quiz) have updated the file.
+  /// This method is serialized via _writeLock to prevent concurrent operations
+  /// from overwriting each other.
   Future<void> _readModifyWrite(UserData Function(UserData) update) async {
     if (_currentUser == null) return;
-    final username = _currentUser!.username;
-    final fresh = await _authService.readUserFile(username);
-    if (fresh == null) return;
-    final updated = update(fresh);
-    await _authService.updateUser(updated);
-    _currentUser = updated;
-    notifyListeners();
+
+    // Create a completer for the current operation
+    final completer = Completer<void>();
+    // Store the previous lock
+    final previousLock = _writeLock;
+    // Update the lock to the new completer's future
+    _writeLock = completer.future;
+
+    try {
+      // Wait for all previous operations to complete
+      await previousLock;
+
+      final username = _currentUser!.username;
+      final fresh = await _authService.readUserFile(username);
+      if (fresh == null) return;
+
+      final updated = update(fresh);
+      await _authService.updateUser(updated);
+      _currentUser = updated;
+      notifyListeners();
+    } finally {
+      // Complete the current operation, allowing the next one to proceed
+      completer.complete();
+    }
   }
 
   void _startStaminaRegeneration() {
@@ -71,8 +91,9 @@ class UserState with ChangeNotifier {
         ..add(newCapture);
       return u.copyWith(capturedOrganisms: list);
     });
-    if (kDebugMode)
+    if (kDebugMode) {
       print('UserState: ${newCapture.baseOrganism.name} captured and saved.');
+    }
   }
 
   Future<void> refreshCurrentUser() async => loadCurrentUser();
@@ -105,8 +126,11 @@ class UserState with ChangeNotifier {
   }
 
   /// Toggle an animal's presence in the 5-animal battle team.
-  Future<void> toggleTeamMember(int index) async {
-    if (_currentUser == null) return;
+  /// Returns true if successful, false if the team is already full.
+  Future<bool> toggleTeamMember(int index) async {
+    if (_currentUser == null) return false;
+    bool success = true;
+
     await _readModifyWrite((u) {
       if (index < 0 || index >= u.capturedOrganisms.length) return u;
       final team = List<int>.from(u.battleTeam);
@@ -115,10 +139,14 @@ class UserState with ChangeNotifier {
       } else {
         if (team.length < 5) {
           team.add(index);
+        } else {
+          success = false;
         }
       }
       return u.copyWith(battleTeam: team);
     });
+
+    return success;
   }
 
   /// Clear the entire battle team.
@@ -133,8 +161,9 @@ class UserState with ChangeNotifier {
     await _readModifyWrite((u) {
       if (u.capturedOrganisms.isEmpty ||
           index < 0 ||
-          index >= u.capturedOrganisms.length)
+          index >= u.capturedOrganisms.length) {
         return u;
+      }
 
       final list = List<CapturedOrganism>.from(u.capturedOrganisms)
         ..removeAt(index);
@@ -240,8 +269,9 @@ class UserState with ChangeNotifier {
     if (_currentUser == null) return;
 
     await _readModifyWrite((u) {
-      if (organismIndex < 0 || organismIndex >= u.capturedOrganisms.length)
+      if (organismIndex < 0 || organismIndex >= u.capturedOrganisms.length) {
         return u;
+      }
 
       final organisms = List<CapturedOrganism>.from(u.capturedOrganisms);
       final targetOrg = organisms[organismIndex];
@@ -317,8 +347,9 @@ class UserState with ChangeNotifier {
         .where((q) => q.npcId == quest.npcId)
         .length;
     if (npcQuests >= 2) {
-      if (kDebugMode)
+      if (kDebugMode) {
         print('UserState: Already have 2 quests from ${quest.npcId}');
+      }
       return;
     }
 
@@ -379,7 +410,7 @@ class UserState with ChangeNotifier {
       final organisms = LocalAuthService.getCachedOrganisms();
       if (organisms.isNotEmpty) {
         final base = organisms[Random().nextInt(organisms.length)];
-        startingTeam = [CapturedOrganism.spawn(base)];
+        startingTeam = [CapturedOrganism.spawn(base, level: 5)];
       }
     }
 
@@ -508,6 +539,20 @@ class UserState with ChangeNotifier {
     });
   }
 
+  /// Replace an organism in the rogue run team with a new capture
+  Future<void> replaceRogueTeamMember(
+    int teamIndex,
+    CapturedOrganism newCapture,
+  ) async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) {
+      if (teamIndex < 0 || teamIndex >= u.rogueLikeState.team.length) return u;
+      final team = List<CapturedOrganism>.from(u.rogueLikeState.team);
+      team[teamIndex] = newCapture;
+      return u.copyWith(rogueLikeState: u.rogueLikeState.copyWith(team: team));
+    });
+  }
+
   /// Release an organism from the rogue run team
   Future<void> releaseFromRogueRun(int index) async {
     if (_currentUser == null) return;
@@ -562,14 +607,17 @@ class UserState with ChangeNotifier {
 
     final team = <CapturedOrganism>[];
 
-    // Balanced Scaling Logic:
-    // Regular encounters: Level = 5 + (floor * 5)
-    // Boss encounters (count > 1): Slightly higher level but capped team size
+    // Infinite Scaling Logic:
+    // Regular encounters: Level = 3 + (floor - 1) * 2 + [0, 1, or 2]
+    // Boss encounters: Level = 3 + (floor - 1) * 2 + 2 (always max of floor range)
 
     bool isBoss = count > 1;
-    int effectiveLevel = 5 + (floor * 5);
+    int baseLevel = 3 + (floor - 1) * 2;
+    int effectiveLevel = isBoss
+        ? baseLevel + 2
+        : baseLevel + Random().nextInt(3);
+
     if (isBoss) {
-      effectiveLevel += 3; // Bosses are slightly higher level
       // Cap boss team size to 4 max for balance
       count = count.clamp(2, 4);
     }

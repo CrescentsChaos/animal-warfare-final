@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:animal_warfare/main_screen.dart';
-import 'package:animal_warfare/audio_manager.dart';
+import 'package:animal_warfare/services/audio_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -14,18 +14,18 @@ class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _opacityAnimation;
-  
+
   // Flag to ensure pre-caching runs only once
-  bool _assetsPrecached = false; 
+  bool _assetsPrecached = false;
 
   @override
   void initState() {
     super.initState();
-    
+
     // 🚨 MODIFIED: Set the screen to Immersive/Full-screen mode
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
-    // NEW: Initialize Audio Player and start music via AudioManager
+    // NEW: Initialize Audio Player and start music via AudioService
     _playBackgroundMusic();
 
     _animationController = AnimationController(
@@ -33,8 +33,11 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(seconds: 1),
     )..repeat(reverse: true);
 
-    _opacityAnimation = Tween(begin: 0.0, end: 1.0).animate(_animationController);
-    
+    _opacityAnimation = Tween(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(_animationController);
+
     // Listen for the first frame to precache assets
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _precacheAssets();
@@ -46,28 +49,31 @@ class _SplashScreenState extends State<SplashScreen>
     _animationController.dispose();
     super.dispose();
   }
-  
+
   void _playBackgroundMusic() {
-    AudioManager.instance.playBackgroundMusic('audio/rainforest_theme.mp3');
+    AudioService.instance.playMusic('audio/rainforest_theme.mp3');
   }
-  
+
   // Precache all necessary images and JSON data
   Future<void> _precacheAssets() async {
     if (_assetsPrecached) return;
 
-    final BuildContext? currentContext = context;
+    final BuildContext currentContext = context;
     if (currentContext == null) return;
-    
+
     // 1. Precache main assets
-    await precacheImage(const AssetImage('assets/biomes/taiga-bg.png'), currentContext);
+    await precacheImage(
+      const AssetImage('assets/biomes/taiga-bg.png'),
+      currentContext,
+    );
     await precacheImage(const AssetImage('assets/logo.png'), currentContext);
-    
+
     // 2. Precache other common assets (add any other images used in the first few screens)
     // Example: await precacheImage(const AssetImage('assets/default_avatar.png'), currentContext);
 
     // 3. Load and cache JSON data (Optional, for very fast access)
     // await rootBundle.loadString('assets/data/organisms.json');
-    
+
     _assetsPrecached = true;
   }
 
@@ -75,13 +81,13 @@ class _SplashScreenState extends State<SplashScreen>
     // 🚨 MODIFIED: Revert to default System UI visibility before navigating
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
-    // Stop the audio via AudioManager if needed, or it will be replaced by local screen music
-    
+    // Stop the audio via AudioService if needed, or it will be replaced by local screen music
+
     // ✅ FIX: Use the custom _createFadeRoute for a smooth, fade-in transition
     Navigator.of(context).pushReplacement(
-        _createFadeRoute(const MainScreen()), // <--- Use the custom route here!
+      _createFadeRoute(const MainScreen()), // <--- Use the custom route here!
     );
-}
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -111,11 +117,7 @@ class _SplashScreenState extends State<SplashScreen>
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   // Logo
-                  Image.asset(
-                    'assets/logo.png',
-                    width: 300, 
-                    height: 300,
-                  ),
+                  Image.asset('assets/logo.png', width: 300, height: 300),
                   const SizedBox(height: 80),
 
                   // Flickering "Tap to Continue" Text
@@ -145,7 +147,7 @@ class _SplashScreenState extends State<SplashScreen>
               right: 16,
               bottom: 16,
               child: Text(
-                'V 0.0.1', // Replace with a dynamic version number later
+                'V 0.1.1', // Replace with a dynamic version number later
                 style: TextStyle(
                   fontSize: 10,
                   color: Colors.white.withOpacity(0.7),
@@ -158,16 +160,14 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 }
+
 PageRouteBuilder _createFadeRoute(Widget page) {
   return PageRouteBuilder(
     // Reduce duration for a snappier feel
-    transitionDuration: const Duration(milliseconds: 300), 
+    transitionDuration: const Duration(milliseconds: 300),
     pageBuilder: (context, animation, secondaryAnimation) => page,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      return FadeTransition(
-        opacity: animation,
-        child: child,
-      );
+      return FadeTransition(opacity: animation, child: child);
     },
   );
 }

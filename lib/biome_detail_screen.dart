@@ -1,13 +1,15 @@
 // lib/biome_detail_screen.dart
 import 'package:flutter/material.dart';
+import 'dart:math'; // Import Random
 import 'package:animal_warfare/models/organism.dart';
 import 'package:animal_warfare/models/captured_organism.dart';
+import 'package:animal_warfare/models/talisman.dart'; // Import Talisman model
 import 'package:animal_warfare/battle_screen.dart'; // Ensure this is the correct path
 import 'package:animal_warfare/game/battle_manager.dart'; // Import for BattleResult enum
 import 'explore_screen.dart'; // Import to use getWeightedRandomOrganism and Organism List
 import 'package:audioplayers/audioplayers.dart'; // Audio Player Import
 import 'package:animal_warfare/local_auth_service.dart';
-import 'package:animal_warfare/audio_manager.dart';
+import 'package:animal_warfare/services/audio_service.dart';
 import 'package:animal_warfare/achievement_service.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
@@ -221,8 +223,15 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
     // 2. Generate the Wild Organism with unique DNA (the opponent)
     final wildFighter = CapturedOrganism.spawn(wildOrganism);
 
+    // Equip a random talisman (100% chance for wild encounters too)
+    if (Talisman.allTalismans.isNotEmpty) {
+      final randomTalisman =
+          Talisman.allTalismans[Random().nextInt(Talisman.allTalismans.length)];
+      wildFighter.equippedTalisman = randomTalisman;
+    }
+
     // 3. Navigate to the Battle Screen
-    AudioManager.instance.pause();
+    AudioService.instance.pauseAll();
     final Object? result = await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => BattleScreen(
@@ -233,7 +242,7 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
         ),
       ),
     );
-    AudioManager.instance.resume();
+    AudioService.instance.resumeAll();
 
     // 🚨 NEW LOGIC: Check the BattleResult
     if (result == BattleResult.capture) {
@@ -264,16 +273,16 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
 
   void _playBiomeMusic(String biomeName) {
     String musicPath = _getMusicPath(biomeName);
-    AudioManager.instance.playBackgroundMusic(musicPath);
+    AudioService.instance.playMusic(musicPath);
   }
 
   void _pauseMusic() {
-    AudioManager.instance.pause();
+    AudioService.instance.pauseAll();
   }
 
   void _stopAndDisposeMusic() {
     // No explicit dispose for singleton AudioPlayer usually, but we can stop it
-    AudioManager.instance.stop();
+    AudioService.instance.stopMusic();
   }
 
   // Helper to get the base color based on biome (More Immersive Palette)

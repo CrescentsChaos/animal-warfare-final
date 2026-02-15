@@ -1,0 +1,288 @@
+[
+  {
+    "id": "choice_band",
+    "name": "Choice Band",
+    "description": "Boosts Attack by 50%, but locks you into the first move used.",
+    "effects": [
+      {
+        "type": "choice_lock",
+        "stat": "attack",
+        "magnitude": 1.5
+      }
+    ]
+  },
+  {
+    "id": "choice_specs",
+    "name": "Choice Specs",
+    "description": "Boosts Power by 50%, but locks you into the first move used.",
+    "effects": [
+      {
+        "type": "choice_lock",
+        "stat": "power",
+        "magnitude": 1.5
+      }
+    ]
+  },
+  {
+    "id": "choice_scarf",
+    "name": "Choice Scarf",
+    "description": "Boosts Speed by 50%, but locks you into the first move used.",
+    "effects": [
+      {
+        "type": "choice_lock",
+        "stat": "speed",
+        "magnitude": 1.5
+      }
+    ]
+  },
+  {
+    "id": "leftovers",
+    "name": "Leftovers",
+    "description": "Restores 1/16 of max HP at the end of each turn.",
+    "effects": [
+      {
+        "type": "on_turn_heal",
+        "magnitude": 0.0625
+      }
+    ]
+  },
+  {
+    "id": "focus_sash",
+    "name": "Focus Sash",
+    "description": "If HP is full, survive a hit that would KO you with 1 HP (once per battle).",
+    "effects": [
+      {
+        "type": "one_hit_save",
+        "magnitude": 1.0
+      }
+    ]
+  },
+  {
+    "id": "life_orb",
+    "name": "Life Orb",
+    "description": "Boosts damage by 30%, but you take 10% recoil after each attack.",
+    "effects": [
+      {
+        "type": "damage_boost",
+        "magnitude": 1.3
+      },
+      {
+        "type": "recoil_damage",
+        "magnitude": 0.1
+      }
+    ]
+  },
+  {
+    "id": "assault_vest",
+    "name": "Assault Vest",
+    "description": "Boosts Resistance by 50%, but you cannot use status moves.",
+    "effects": [
+      {
+        "type": "stat_boost",
+        "stat": "resistance",
+        "magnitude": 1.5
+      },
+      {
+        "type": "block_status_moves",
+        "magnitude": 1.0
+      }
+    ]
+  },
+  {
+    "id": "weakness_policy",
+    "name": "Weakness Policy",
+    "description": "If hit by a super-effective move, sharply raises Attack and Power (once per battle).",
+    "effects": [
+      {
+        "type": "weakness_boost",
+        "stat": "attack,power",
+        "magnitude": 2.0
+      }
+    ]
+  },
+  {
+    "id": "shell_bell",
+    "name": "Shell Bell",
+    "description": "Restores 1/8 of damage dealt as HP.",
+    "effects": [
+      {
+        "type": "lifesteal",
+        "magnitude": 0.125
+      }
+    ]
+  },
+  {
+    "id": "rocky_helmet",
+    "name": "Rocky Helmet",
+    "description": "Damages attackers for 1/6 of their max HP when hit by contact moves.",
+    "effects": [
+      {
+        "type": "contact_damage",
+        "magnitude": 0.1667
+      }
+    ]
+  },
+  {
+    "id": "strength_charm",
+    "name": "Strength Charm",
+    "description": "Increases attack power by 20%.",
+    "effects": [
+      {
+        "type": "stat_boost",
+        "stat": "attack",
+        "magnitude": 1.2
+      }
+    ]
+  },
+  {
+    "id": "iron_ward",
+    "name": "Iron Ward",
+    "description": "Increases defense by 25%.",
+    "effects": [
+      {
+        "type": "stat_boost",
+        "stat": "defense",
+        "magnitude": 1.25
+      }
+    ]
+  },
+  {
+    "id": "swift_rune",
+    "name": "Swift Rune",
+    "description": "Increases speed by 30%.",
+    "effects": [
+      {
+        "type": "stat_boost",
+        "stat": "speed",
+        "magnitude": 1.3
+      }
+    ]
+  },
+  {
+    "id": "vitality_stone",
+    "name": "Vitality Stone",
+    "description": "Increases max health by 15%.",
+    "effects": [
+      {
+        "type": "stat_boost",
+        "stat": "health",
+        "magnitude": 1.15
+      }
+    ]
+  },
+  {
+    "id": "power_crystal",
+    "name": "Power Crystal",
+    "description": "All attacks deal 15% more damage.",
+    "effects": [
+      {
+        "type": "damage_boost",
+        "magnitude": 1.15
+      }
+    ]
+  },
+  {
+    "id": "guardian_shell",
+    "name": "Guardian Shell",
+    "description": "Reduces incoming damage by 20%.",
+    "effects": [
+      {
+        "type": "resistance_boost",
+        "magnitude": 0.8
+      }
+    ]
+  },
+  {
+    "id": "lucky_claw",
+    "name": "Lucky Claw",
+    "description": "Increases critical hit chance by 10%.",
+    "effects": [
+      {
+        "type": "crit_boost",
+        "magnitude": 10.0
+      }
+    ]
+  },
+  {
+    "id": "black_sludge",
+    "name": "Black Sludge",
+    "description": "Restores 1/16 max HP each turn for Poison types, damages others by 1/8.",
+    "effects": [
+      {
+        "type": "conditional_heal",
+        "condition": "is_poison_type",
+        "magnitude": 0.0625
+      }
+    ]
+  },
+  {
+    "id": "flame_orb",
+    "name": "Flame Orb",
+    "description": "Burns the holder at the end of the first turn.",
+    "effects": [
+      {
+        "type": "self_status",
+        "status": "burn",
+        "magnitude": 1.0
+      }
+    ]
+  },
+  {
+    "id": "toxic_orb",
+    "name": "Toxic Orb",
+    "description": "Badly poisons the holder at the end of the first turn.",
+    "effects": [
+      {
+        "type": "self_status",
+        "status": "poison",
+        "magnitude": 1.0
+      }
+    ]
+  },
+  {
+    "id": "muscle_band",
+    "name": "Muscle Band",
+    "description": "Boosts physical move damage by 10%.",
+    "effects": [
+      {
+        "type": "category_damage_boost",
+        "category": "physical",
+        "magnitude": 1.1
+      }
+    ]
+  },
+  {
+    "id": "wise_glasses",
+    "name": "Wise Glasses",
+    "description": "Boosts special move damage by 10%.",
+    "effects": [
+      {
+        "type": "category_damage_boost",
+        "category": "special",
+        "magnitude": 1.1
+      }
+    ]
+  },
+  {
+    "id": "kings_rock",
+    "name": "King's Rock",
+    "description": "10% chance to make the target flinch when dealing damage.",
+    "effects": [
+      {
+        "type": "flinch_chance",
+        "magnitude": 0.1
+      }
+    ]
+  },
+  {
+    "id": "scope_lens",
+    "name": "Scope Lens",
+    "description": "Increases critical hit chance by 12%.",
+    "effects": [
+      {
+        "type": "crit_boost",
+        "magnitude": 12.0
+      }
+    ]
+  }
+]
