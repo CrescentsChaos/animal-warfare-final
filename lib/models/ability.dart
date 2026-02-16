@@ -289,6 +289,26 @@ class Ability {
       description: 'Prevents the organism from being forced out of battle.',
       effectType: AbilityEffectType.none, // Handled in force-switch logic
     ),
+    Ability(
+      name: 'True Flight',
+      description:
+          'Grants all offensive advantages of Flying type but ignores their disadvantages.',
+      effectType: AbilityEffectType.none, // Handled in battle logic
+    ),
+    Ability(
+      name: 'Abyss Dweller',
+      description:
+          'Prevents moves that force a switch and grants immunity to Stun status.',
+      trigger: AbilityTrigger.onStatusAttempt,
+      effectType: AbilityEffectType.preventStatus,
+      value: 'stun',
+    ),
+    Ability(
+      name: 'Echolocation',
+      description:
+          'Prevents accuracy from being lowered and ignores enemy stealth effects.',
+      effectType: AbilityEffectType.none, // Handled in battle logic
+    ),
   ];
 
   static Ability? findByName(String name) {

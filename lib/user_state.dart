@@ -1,7 +1,4 @@
 // lib/user_state.dart
-// Global user state. All writes use read-modify-write from file so quiz stats
-// and other data are never overwritten by stale in-memory state.
-
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:animal_warfare/models/captured_organism.dart';
@@ -10,15 +7,12 @@ import 'package:animal_warfare/models/move.dart';
 import 'package:animal_warfare/models/quest.dart';
 import 'dart:math';
 import 'package:animal_warfare/models/rogue_like_state.dart';
-
 import 'local_auth_service.dart';
 
 class UserState with ChangeNotifier {
   UserData? _currentUser;
   final LocalAuthService _authService = LocalAuthService();
   Timer? _staminaRegenTimer;
-
-  // Mutex to prevent race conditions during read-modify-write
   Future<void> _writeLock = Future.value();
 
   UserData? get currentUser => _currentUser;
@@ -29,33 +23,21 @@ class UserState with ChangeNotifier {
     _startStaminaRegeneration();
   }
 
-  /// Ensures we have the latest user from disk, applies [update], then saves.
-  /// This method is serialized via _writeLock to prevent concurrent operations
-  /// from overwriting each other.
   Future<void> _readModifyWrite(UserData Function(UserData) update) async {
     if (_currentUser == null) return;
-
-    // Create a completer for the current operation
     final completer = Completer<void>();
-    // Store the previous lock
     final previousLock = _writeLock;
-    // Update the lock to the new completer's future
     _writeLock = completer.future;
-
     try {
-      // Wait for all previous operations to complete
       await previousLock;
-
       final username = _currentUser!.username;
       final fresh = await _authService.readUserFile(username);
       if (fresh == null) return;
-
       final updated = update(fresh);
       await _authService.updateUser(updated);
       _currentUser = updated;
       notifyListeners();
     } finally {
-      // Complete the current operation, allowing the next one to proceed
       completer.complete();
     }
   }
@@ -82,22 +64,15 @@ class UserState with ChangeNotifier {
   }
 
   Future<void> addCapturedOrganism(CapturedOrganism newCapture) async {
-    if (_currentUser == null) {
-      if (kDebugMode) print('Cannot add organism: User not logged in.');
-      return;
-    }
+    if (_currentUser == null) return;
     await _readModifyWrite((u) {
       final list = List<CapturedOrganism>.from(u.capturedOrganisms)
         ..add(newCapture);
       return u.copyWith(capturedOrganisms: list);
     });
-    if (kDebugMode) {
-      print('UserState: ${newCapture.baseOrganism.name} captured and saved.');
-    }
   }
 
   Future<void> refreshCurrentUser() async => loadCurrentUser();
-
   Future<void> loadCurrentUser() async {
     _currentUser = await _authService.getCurrentUser();
     notifyListeners();
@@ -108,14 +83,11 @@ class UserState with ChangeNotifier {
     notifyListeners();
   }
 
-  /// Decrease stamina (e.g. explore or identify). Uses read-modify-write so
-  /// quiz and other file-backed data are preserved.
   Future<void> decreaseStamina(int amount) async {
     if (_currentUser == null) return;
     await _readModifyWrite((u) => u.decreaseStamina(amount));
   }
 
-  /// Set which captured animal is used as attacker in battle. Persists via read-modify-write.
   Future<void> setActiveAttacker(int index) async {
     if (_currentUser == null) return;
     await _readModifyWrite((u) {
@@ -125,12 +97,9 @@ class UserState with ChangeNotifier {
     });
   }
 
-  /// Toggle an animal's presence in the 5-animal battle team.
-  /// Returns true if successful, false if the team is already full.
   Future<bool> toggleTeamMember(int index) async {
     if (_currentUser == null) return false;
     bool success = true;
-
     await _readModifyWrite((u) {
       if (index < 0 || index >= u.capturedOrganisms.length) return u;
       final team = List<int>.from(u.battleTeam);
@@ -145,30 +114,23 @@ class UserState with ChangeNotifier {
       }
       return u.copyWith(battleTeam: team);
     });
-
     return success;
   }
 
-  /// Clear the entire battle team.
   Future<void> clearTeam() async {
     if (_currentUser == null) return;
     await _readModifyWrite((u) => u.copyWith(battleTeam: []));
   }
 
-  /// Release (remove) a captured organism at the given index. Persists via read-modify-write.
   Future<void> releaseOrganism(int index) async {
     if (_currentUser == null) return;
     await _readModifyWrite((u) {
       if (u.capturedOrganisms.isEmpty ||
           index < 0 ||
-          index >= u.capturedOrganisms.length) {
+          index >= u.capturedOrganisms.length)
         return u;
-      }
-
       final list = List<CapturedOrganism>.from(u.capturedOrganisms)
         ..removeAt(index);
-
-      // Update active attacker index
       int newAttacker = u.activeAttackerIndex;
       if (list.isEmpty) {
         newAttacker = 0;
@@ -177,13 +139,10 @@ class UserState with ChangeNotifier {
       } else {
         newAttacker = u.activeAttackerIndex.clamp(0, list.length - 1);
       }
-
-      // Update battle team indices
       final newTeam = u.battleTeam
-          .where((i) => i != index) // Remove the released organism
-          .map((i) => i > index ? i - 1 : i) // Shift indices down
+          .where((i) => i != index)
+          .map((i) => i > index ? i - 1 : i)
           .toList();
-
       return u.copyWith(
         capturedOrganisms: list,
         activeAttackerIndex: newAttacker,
@@ -192,10 +151,8 @@ class UserState with ChangeNotifier {
     });
   }
 
-  /// Remove a specific captured organism (e.g., death in battle). Finds by matching properties.
   Future<void> removeCapturedOrganism(CapturedOrganism organism) async {
     if (_currentUser == null) return;
-    // Find the organism by matching name and IVs (unique signature)
     final index = _currentUser!.capturedOrganisms.indexWhere(
       (o) =>
           o.baseOrganism.name == organism.baseOrganism.name &&
@@ -205,12 +162,9 @@ class UserState with ChangeNotifier {
               organism.individualValues['defense'] &&
           o.individualValues['speed'] == organism.individualValues['speed'],
     );
-    if (index >= 0) {
-      await releaseOrganism(index);
-    }
+    if (index >= 0) await releaseOrganism(index);
   }
 
-  /// Add loot to inventory
   Future<void> addLoot(String lootId, int quantity) async {
     if (_currentUser == null) return;
     await _readModifyWrite((u) {
@@ -218,39 +172,29 @@ class UserState with ChangeNotifier {
       newInventory[lootId] = (newInventory[lootId] ?? 0) + quantity;
       return u.copyWith(inventory: newInventory);
     });
-    if (kDebugMode) print('UserState: Added $quantity x $lootId to inventory.');
+    if (kDebugMode) {
+      print('UserState: Added $quantity x $lootId to inventory.');
+    }
   }
 
-  /// Add money to user's wallet. Persists via read-modify-write.
   Future<void> addMoney(int amount) async {
     if (_currentUser == null) return;
     await _readModifyWrite((u) => u.addMoney(amount));
   }
 
-  /// Craft a talisman from recipe
   Future<bool> craftTalisman(
     String talismanId,
     Map<String, int> requiredLoot,
   ) async {
     if (_currentUser == null) return false;
-
-    // Check if we have enough materials
     for (final entry in requiredLoot.entries) {
-      final owned = _currentUser!.inventory[entry.key] ?? 0;
-      if (owned < entry.value) {
-        if (kDebugMode) print('UserState: Not enough ${entry.key} to craft.');
-        return false;
-      }
+      if ((_currentUser!.inventory[entry.key] ?? 0) < entry.value) return false;
     }
-
-    // Consume materials and add talisman
     await _readModifyWrite((u) {
       final newInventory = Map<String, int>.from(u.inventory);
       for (final entry in requiredLoot.entries) {
         newInventory[entry.key] = (newInventory[entry.key] ?? 0) - entry.value;
-        if (newInventory[entry.key]! <= 0) {
-          newInventory.remove(entry.key);
-        }
+        if (newInventory[entry.key]! <= 0) newInventory.remove(entry.key);
       }
       final newTalismans = List<String>.from(u.craftedTalismans)
         ..add(talismanId);
@@ -259,58 +203,36 @@ class UserState with ChangeNotifier {
         craftedTalismans: newTalismans,
       );
     });
-
-    if (kDebugMode) print('UserState: Crafted talisman $talismanId.');
     return true;
   }
 
-  /// Equip talisman to a captured organism
   Future<void> equipTalisman(int organismIndex, String? talismanId) async {
     if (_currentUser == null) return;
-
     await _readModifyWrite((u) {
-      if (organismIndex < 0 || organismIndex >= u.capturedOrganisms.length) {
+      if (organismIndex < 0 || organismIndex >= u.capturedOrganisms.length)
         return u;
-      }
-
       final organisms = List<CapturedOrganism>.from(u.capturedOrganisms);
       final targetOrg = organisms[organismIndex];
-      final oldTalismanId = targetOrg.equippedTalisman?.id;
-
-      final newCraftedTalismans = List<String>.from(u.craftedTalismans);
-
-      // If equipping a new one
+      final oldId = targetOrg.equippedTalisman?.id;
+      final newCrafted = List<String>.from(u.craftedTalismans);
       if (talismanId != null) {
-        // Check if we have it
-        final tIndex = newCraftedTalismans.indexOf(talismanId);
-        if (tIndex == -1) return u; // Don't have it
-
-        // Remove from inventory
-        newCraftedTalismans.removeAt(tIndex);
-
-        // Equip
-        final talisman = Talisman.findById(talismanId);
+        final tIndex = newCrafted.indexOf(talismanId);
+        if (tIndex == -1) return u;
+        newCrafted.removeAt(tIndex);
         organisms[organismIndex] = targetOrg.copyWith(
-          equippedTalisman: talisman,
+          equippedTalisman: Talisman.findById(talismanId),
         );
       } else {
-        // Unequipping
         organisms[organismIndex] = targetOrg.copyWith(clearTalisman: true);
       }
-
-      // Return old one to inventory if it existed
-      if (oldTalismanId != null) {
-        newCraftedTalismans.add(oldTalismanId);
-      }
-
+      if (oldId != null) newCrafted.add(oldId);
       return u.copyWith(
         capturedOrganisms: organisms,
-        craftedTalismans: newCraftedTalismans,
+        craftedTalismans: newCrafted,
       );
     });
   }
 
-  /// Update the selected moves for a captured organism.
   Future<void> updateCapturedOrganismMoves(
     int index,
     List<String> newMoves,
@@ -320,16 +242,12 @@ class UserState with ChangeNotifier {
       if (index < 0 || index >= u.capturedOrganisms.length) return u;
       final list = List<CapturedOrganism>.from(u.capturedOrganisms);
       final org = list[index];
-
-      // Initialize stamina for new moves if they weren't selected before
       final newStamina = Map<String, int>.from(org.moveStamina);
       for (final moveName in newMoves) {
         if (!newStamina.containsKey(moveName)) {
-          final move = Move.findByName(moveName);
-          newStamina[moveName] = move?.stamina ?? 20;
+          newStamina[moveName] = Move.findByName(moveName)?.stamina ?? 20;
         }
       }
-
       list[index] = org.copyWith(
         selectedMoveNames: newMoves,
         moveStamina: newStamina,
@@ -338,31 +256,21 @@ class UserState with ChangeNotifier {
     });
   }
 
-  /// Quest management methods
   Future<void> acceptQuest(Quest quest) async {
     if (_currentUser == null) return;
-
-    // Check if player already has 2 quests from this NPC
-    final npcQuests = _currentUser!.activeQuests
-        .where((q) => q.npcId == quest.npcId)
-        .length;
-    if (npcQuests >= 2) {
-      if (kDebugMode) {
-        print('UserState: Already have 2 quests from ${quest.npcId}');
-      }
+    if (_currentUser!.activeQuests
+            .where((q) => q.npcId == quest.npcId)
+            .length >=
+        2)
       return;
-    }
-
     await _readModifyWrite((u) {
       final list = List<Quest>.from(u.activeQuests)..add(quest);
       return u.copyWith(activeQuests: list);
     });
-    if (kDebugMode) print('UserState: Accepted quest ${quest.description}');
   }
 
   Future<void> updateQuestProgress(String organismName) async {
     if (_currentUser == null || _currentUser!.activeQuests.isEmpty) return;
-
     await _readModifyWrite((u) {
       final list = u.activeQuests.map((quest) {
         if (quest.status == QuestStatus.active &&
@@ -373,23 +281,18 @@ class UserState with ChangeNotifier {
       }).toList();
       return u.copyWith(activeQuests: list);
     });
-    if (kDebugMode) print('UserState: Progressed quests for $organismName');
   }
 
   Future<void> claimQuestReward(String questId) async {
     if (_currentUser == null) return;
-
     await _readModifyWrite((u) {
       final index = u.activeQuests.indexWhere((q) => q.id == questId);
       if (index == -1) return u;
-
       final quest = u.activeQuests[index];
       if (!quest.isCompleted) return u;
-
       final newList = List<Quest>.from(u.activeQuests)..removeAt(index);
       return u.addMoney(quest.rewardMoney).copyWith(activeQuests: newList);
     });
-    if (kDebugMode) print('UserState: Claimed reward for quest $questId');
   }
 
   Future<void> removeQuestById(String questId) async {
@@ -401,25 +304,18 @@ class UserState with ChangeNotifier {
     });
   }
 
-  /// Start a new Rogue-like run
   Future<void> startRogueRun({List<CapturedOrganism>? team}) async {
     if (_currentUser == null) return;
-
     List<CapturedOrganism> startingTeam = team ?? [];
     if (startingTeam.isEmpty) {
       final organisms = LocalAuthService.getCachedOrganisms();
-      if (organisms.isNotEmpty) {
-        final base = organisms[Random().nextInt(organisms.length)];
-        startingTeam = [CapturedOrganism.spawn(base, level: 5)];
-      }
+      if (organisms.isEmpty) return;
+      final base = organisms[Random().nextInt(organisms.length)];
+      startingTeam = [CapturedOrganism.spawn(base, level: 5)];
     }
-
-    // Ensure organisms are loaded for random biome selection
     await LocalAuthService.loadOrganisms();
-
     final biome = _getRandomBiome();
     final firstOpponents = _generateRogueOpponentTeam(biome, 1, 1);
-
     await _readModifyWrite(
       (u) => u.copyWith(
         rogueLikeState: u.rogueLikeState.copyWith(
@@ -435,7 +331,6 @@ class UserState with ChangeNotifier {
     );
   }
 
-  /// Update the current rogue-team
   Future<void> updateRogueTeam(List<CapturedOrganism> team) async {
     if (_currentUser == null) return;
     await _readModifyWrite(
@@ -443,66 +338,40 @@ class UserState with ChangeNotifier {
     );
   }
 
-  /// Increment the current rogue-floor or advance encounter
   Future<void> incrementRogueFloor() async {
     if (_currentUser == null) return;
-
-    // Ensure organisms are loaded
     await LocalAuthService.loadOrganisms();
-
     await _readModifyWrite((u) {
       final state = u.rogueLikeState;
       int newFloor = state.floor;
       int newEncounter = state.encounterIndex + 1;
       String? newBiome = state.currentBiome;
-
       List<CapturedOrganism> nextTeam = List.from(state.team);
-
       if (newEncounter >= 5) {
         newFloor++;
         newEncounter = 0;
         newBiome = _getRandomBiome();
-
-        // HEAL & SCALE TEAM
         nextTeam = nextTeam.map((member) {
           final int newLevel = member.level + 2;
-
-          // Create temp to get new max stats
           var upgraded = member.copyWith(level: newLevel);
-
-          // Restore stamina (mutates map)
           upgraded.restoreAllStamina();
-
           return upgraded.copyWith(
             currentHealth: upgraded.maxHealth,
-            statusEffects: [], // Clear all statuses
+            statusEffects: [],
           );
         }).toList();
       }
-
-      final isBoss = newEncounter == 4;
-      final int count = isBoss
-          ? (2 + Random().nextInt(4)).clamp(2, 5).toInt()
-          : 1;
       final newOpponents = _generateRogueOpponentTeam(
         newBiome ?? 'Forest',
-        count,
+        newEncounter == 4 ? (2 + Random().nextInt(4)).clamp(2, 5) : 1,
         newFloor,
       );
-
-      final newHighest = newFloor > state.highestFloor
-          ? newFloor
-          : state.highestFloor;
-
-      // Update best records if this is a new high floor
       int bestFloor = u.bestRogueFloor;
       List<CapturedOrganism> bestTeam = List.from(u.bestRogueTeam);
-
       if (newFloor > bestFloor) {
         bestFloor = newFloor;
         bestTeam = List.from(nextTeam);
       }
-
       return u.copyWith(
         bestRogueFloor: bestFloor,
         bestRogueTeam: bestTeam,
@@ -513,13 +382,14 @@ class UserState with ChangeNotifier {
           team: nextTeam,
           opponentTeam: newOpponents,
           currentOpponentIndex: 0,
-          highestFloor: newHighest,
+          highestFloor: newFloor > state.highestFloor
+              ? newFloor
+              : state.highestFloor,
         ),
       );
     });
   }
 
-  /// End the current rogue run
   Future<void> endRogueRun() async {
     if (_currentUser == null) return;
     await _readModifyWrite(
@@ -529,7 +399,6 @@ class UserState with ChangeNotifier {
     );
   }
 
-  /// Capture an organism specifically for the rogue run
   Future<void> captureForRogueRun(CapturedOrganism newCapture) async {
     if (_currentUser == null) return;
     await _readModifyWrite((u) {
@@ -539,7 +408,6 @@ class UserState with ChangeNotifier {
     });
   }
 
-  /// Replace an organism in the rogue run team with a new capture
   Future<void> replaceRogueTeamMember(
     int teamIndex,
     CapturedOrganism newCapture,
@@ -553,7 +421,6 @@ class UserState with ChangeNotifier {
     });
   }
 
-  /// Release an organism from the rogue run team
   Future<void> releaseFromRogueRun(int index) async {
     if (_currentUser == null) return;
     await _readModifyWrite((u) {
@@ -564,67 +431,40 @@ class UserState with ChangeNotifier {
     });
   }
 
-  /// Update the full rogue state mid-battle (for deep persistence)
   Future<void> updateRogueRunState(RogueLikeState state) async {
     if (_currentUser == null) return;
     await _readModifyWrite((u) => u.copyWith(rogueLikeState: state));
   }
 
-  /// Internal: Pick a random biome that exists in the data
   String _getRandomBiome() {
     final organisms = LocalAuthService.getCachedOrganisms();
-    List<String> biomes = [];
-
-    if (organisms.isNotEmpty) {
-      biomes = organisms
-          .expand((o) => o.habitat.split(',').map((e) => e.trim()))
-          .toSet()
-          .toList();
-    }
-
-    if (biomes.isEmpty) {
-      // Fallback biomes if data is missing, to avoid 'Forest' loop
+    List<String> biomes = organisms
+        .expand((o) => o.habitat.split(',').map((e) => e.trim()))
+        .toSet()
+        .toList();
+    if (biomes.isEmpty)
       biomes = ['Jungle', 'Desert', 'Savanna', 'River', 'Ocean', 'Mountain'];
-    }
     return biomes[Random().nextInt(biomes.length)];
   }
 
-  /// Internal: Generate an opponent team for the rogue run
   List<CapturedOrganism> _generateRogueOpponentTeam(
     String biome,
     int count,
     int floor,
   ) {
     final organisms = LocalAuthService.getCachedOrganisms();
-    final possible = organisms.where((o) {
-      final habitats = o.habitat
-          .split(',')
-          .map((e) => e.trim().toLowerCase())
-          .toList();
-      return habitats.contains(biome.toLowerCase());
-    }).toList();
-    final fallout = possible.isEmpty ? organisms : possible;
-
     final team = <CapturedOrganism>[];
-
-    // Infinite Scaling Logic:
-    // Regular encounters: Level = 3 + (floor - 1) * 2 + [0, 1, or 2]
-    // Boss encounters: Level = 3 + (floor - 1) * 2 + 2 (always max of floor range)
-
+    if (organisms.isEmpty) return team;
+    final fallout = organisms
+        .where((o) => o.habitat.toLowerCase().contains(biome.toLowerCase()))
+        .toList();
+    final pool = fallout.isEmpty ? organisms : fallout;
     bool isBoss = count > 1;
-    int baseLevel = 3 + (floor - 1) * 2;
-    int effectiveLevel = isBoss
-        ? baseLevel + 2
-        : baseLevel + Random().nextInt(3);
-
-    if (isBoss) {
-      // Cap boss team size to 4 max for balance
-      count = count.clamp(2, 4);
-    }
-
+    int effectiveLevel =
+        3 + (floor - 1) * 2 + (isBoss ? 2 : Random().nextInt(3));
+    if (isBoss) count = count.clamp(2, 4);
     for (int i = 0; i < count; i++) {
-      final base = fallout[Random().nextInt(fallout.length)];
-      // Bosses have guaranteed better IVs (31 in all stats)
+      final base = pool[Random().nextInt(pool.length)];
       var spawn = isBoss
           ? CapturedOrganism.spawn(base, level: effectiveLevel).copyWith(
               individualValues: {
@@ -637,14 +477,12 @@ class UserState with ChangeNotifier {
               },
             )
           : CapturedOrganism.spawn(base, level: effectiveLevel);
-
-      // ROGUE UPDATE: Assign random talisman (Opponents have items in Rogue mode)
       if (Talisman.allTalismans.isNotEmpty) {
-        final randomTalisman = Talisman
-            .allTalismans[Random().nextInt(Talisman.allTalismans.length)];
-        spawn = spawn.copyWith(equippedTalisman: randomTalisman);
+        spawn = spawn.copyWith(
+          equippedTalisman: Talisman
+              .allTalismans[Random().nextInt(Talisman.allTalismans.length)],
+        );
       }
-
       team.add(spawn);
     }
     return team;

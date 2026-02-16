@@ -332,6 +332,9 @@ class LocalAuthService {
   }
 
   Map<String, dynamic> _robustJsonDecode(String contents, String username) {
+    if (contents.trim().isEmpty) {
+      throw const FormatException("Empty JSON content");
+    }
     try {
       return jsonDecode(contents) as Map<String, dynamic>;
     } catch (e) {
@@ -355,6 +358,7 @@ class LocalAuthService {
         } catch (_) {
           // ignore and keep searching backwards
         }
+        if (index <= 0) break;
         index = contents.lastIndexOf('}', index - 1);
       }
       rethrow;

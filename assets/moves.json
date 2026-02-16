@@ -125,10 +125,26 @@
     {
         "name": "Sonic Slash",
         "description": "A strong wing attack.",
-        "baseDamage": 70,
+        "baseDamage": 75,
         "type": "flying",
         "stamina": 5,
         "category": "physical",
+        "effects": [
+            {
+                "type": "statusStun",
+                "value": 1,
+                "chance": 30
+            }
+        ]
+    },
+    {
+        "name": "Air Slash",
+        "description": "A strong wing attack.",
+        "baseDamage": 75,
+        "type": "flying",
+        "stamina": 5,
+        "accuracy": 95,
+        "category": "special",
         "effects": [
             {
                 "type": "statusStun",
@@ -339,7 +355,7 @@
         "description": "A surgical strike with the front horn. High critical-hit ratio.",
         "baseDamage": 95,
         "accuracy": 100,
-        "type": "predator",
+        "type": "normal",
         "stamina": 10,
         "category": "physical",
         "critRate": 2
@@ -358,7 +374,7 @@
         "name": "Scary Face",
         "description": "A terrifying glare that halts the opponent in their tracks.",
         "baseDamage": 0,
-        "type": "predator",
+        "type": "normal",
         "stamina": 15,
         "category": "status",
         "effects": [
@@ -459,7 +475,7 @@
         "description": "A specialized browsing strike that restores health.",
         "soundEffect": "audio/effects/absorb.mp3",
         "baseDamage": 75,
-        "type": "parasite",
+        "type": "grass",
         "stamina": 10,
         "drainPercent": 0.5,
         "category": "physical"
@@ -586,7 +602,7 @@
         "soundEffect": "audio/effects/chomp.mp3",
         "baseDamage": 120,
         "accuracy": 85,
-        "type": "predator",
+        "type": "normal",
         "stamina": 20,
         "category": "physical",
         "effects": [
@@ -709,7 +725,7 @@
         "name": "Tree Scramble",
         "description": "Deals damage and raises user's Speed by 1.",
         "baseDamage": 50,
-        "type": "predator",
+        "type": "normal",
         "stamina": 15,
         "category": "physical",
         "effects": [
@@ -725,7 +741,7 @@
         "name": "Arctic Maul",
         "description": "30% chance to Slow the target.",
         "baseDamage": 95,
-        "type": "predator",
+        "type": "normal",
         "stamina": 25,
         "accuracy": 85,
         "category": "physical",
@@ -742,7 +758,7 @@
         "name": "Kodiak Crush",
         "description": "High damage; reduces opponent's Defense by 1.",
         "baseDamage": 110,
-        "type": "predator",
+        "type": "normal",
         "stamina": 15,
         "accuracy": 80,
         "category": "physical",
@@ -759,7 +775,7 @@
         "name": "Claw Penetration",
         "description": "reduces opponent's Defense by 2.",
         "baseDamage": 70,
-        "type": "predator",
+        "type": "normal",
         "stamina": 15,
         "accuracy": 90,
         "category": "physical",
@@ -787,7 +803,7 @@
         "description": "Has a very high Critical Hit ratio.",
         "soundEffect": "audio/effects/chomp.mp3",
         "baseDamage": 65,
-        "type": "predator",
+        "type": "normal",
         "stamina": 20,
         "accuracy": 100,
         "category": "physical",
@@ -799,7 +815,7 @@
         "soundEffect": "audio/effects/agile.mp3",
         "baseDamage": 85,
         "accuracy": 95,
-        "type": "agile",
+        "type": "electric",
         "stamina": 15,
         "category": "physical",
         "effects": [
@@ -814,7 +830,7 @@
         "name": "Scent Lock",
         "description": "Uses the tongue to lock onto the target's chemical trail. Target takes 1.2x damage.",
         "baseDamage": 0,
-        "type": "agile",
+        "type": "electric",
         "stamina": 10,
         "category": "status",
         "effects": [
@@ -832,7 +848,7 @@
         "soundEffect": "audio/effects/chomp.mp3",
         "baseDamage": 110,
         "accuracy": 85,
-        "type": "predator",
+        "type": "normal",
         "stamina": 20,
         "category": "physical",
         "effects": [
@@ -849,7 +865,7 @@
         "description": "Strikes from the canopy, entering stealth and dealing high damage.",
         "baseDamage": 85,
         "accuracy": 100,
-        "type": "arboreal",
+        "type": "grass",
         "stamina": 15,
         "category": "physical",
         "effects": [
@@ -858,6 +874,58 @@
                 "target": "self",
                 "value": 1,
                 "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Flamethrower",
+        "description": "10% chance to burn the target.",
+        "baseDamage": 90,
+        "accuracy": 100,
+        "type": "fire",
+        "stamina": 15,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statusBurn",
+                "target": "opponent",
+                "value": 1,
+                "chance": 10
+            }
+        ]
+    },
+    {
+        "name": "Ember",
+        "description": "10% chance to burn the target.",
+        "baseDamage": 40,
+        "accuracy": 100,
+        "type": "fire",
+        "stamina": 25,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statusBurn",
+                "target": "opponent",
+                "value": 1,
+                "chance": 10
+            }
+        ]
+    },
+    {
+        "name": "Bug Buzz",
+        "description": "10% chance to lower the target's resistance.",
+        "baseDamage": 90,
+        "accuracy": 100,
+        "type": "arthropod",
+        "stamina": 10,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "resistance",
+                "value": -1,
+                "chance": 10
             }
         ]
     },
@@ -997,7 +1065,7 @@
         "description": "Lowers the opponent's defense.",
         "soundEffect": "audio/effects/agile.mp3",
         "baseDamage": 10,
-        "type": "agile",
+        "type": "electric",
         "stamina": 25,
         "category": "physical",
         "effects": [
@@ -1014,7 +1082,7 @@
         "description": "A high-speed tackle using jet propulsion. High crit rate.",
         "soundEffect": "audio/effects/agile.mp3",
         "baseDamage": 60,
-        "type": "agile",
+        "type": "electric",
         "stamina": 15,
         "category": "physical",
         "critRate": 1
@@ -1039,7 +1107,7 @@
         "name": "Ink Cloud",
         "description": "Sprays thick ink to hide and confuse the opponent.",
         "baseDamage": 0,
-        "type": "agile",
+        "type": "electric",
         "stamina": 10,
         "category": "status",
         "effects": [
@@ -1171,10 +1239,27 @@
         "description": "A lightning-fast grab with tentacles that hits first.",
         "soundEffect": "audio/effects/agile.mp3",
         "baseDamage": 40,
-        "type": "agile",
+        "type": "electric",
         "stamina": 20,
         "priority": 1,
         "category": "physical"
+    },
+    {
+        "name": "Toxic Lash",
+        "description": "A poisonous tongue slap.",
+        "soundEffect": "audio/effects/agile.mp3",
+        "baseDamage": 70,
+        "type": "poisonous",
+        "stamina": 20,
+        "priority": 1,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusPoison",
+                "value": 3,
+                "chance": 50
+            }
+        ]
     },
     {
         "name": "Hiss",
@@ -1193,10 +1278,10 @@
         ]
     },
     {
-        "name": "Predatory Circle",
+        "name": "normaly Circle",
         "description": "Lowers the opponent's defense.",
         "baseDamage": 0,
-        "type": "predator",
+        "type": "normal",
         "stamina": 25,
         "category": "status",
         "effects": [
@@ -1230,11 +1315,33 @@
         ]
     },
     {
+        "name": "Warning Colors",
+        "description": "The user shows its vibrant colors to warn.",
+        "baseDamage": 0,
+        "type": "poisonous",
+        "stamina": 20,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statusFear",
+                "value": 3,
+                "chance": 100
+            },
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "accuracy",
+                "value": -1,
+                "chance": 20
+            }
+        ]
+    },
+    {
         "name": "Cavitation Strike",
-        "description": "Lowers the opponent's defense.",
+        "description": "Chance to lowers the opponent's defense.",
         "soundEffect": "audio/effects/agile.mp3",
         "baseDamage": 90,
-        "type": "agile",
+        "type": "aquatic",
         "stamina": 15,
         "category": "physical",
         "effects": [
@@ -1243,7 +1350,7 @@
                 "target": "opponent",
                 "stat": "defense",
                 "value": -1,
-                "chance": 20
+                "chance": 10
             }
         ]
     },
@@ -1252,7 +1359,7 @@
         "description": "A healing nap.",
         "soundEffect": "audio/effects/absorb.mp3",
         "baseDamage": 0,
-        "type": "burrowing",
+        "type": "ground",
         "stamina": 5,
         "category": "status",
         "effects": [
@@ -1278,7 +1385,7 @@
         "description": "User pounces at the foe.",
         "baseDamage": 60,
         "accuracy": 85,
-        "type": "predator",
+        "type": "normal",
         "stamina": 15,
         "category": "physical",
         "effects": []
@@ -1298,7 +1405,7 @@
         "description": "Bites with vicious fangs.",
         "soundEffect": "audio/effects/chomp.mp3",
         "baseDamage": 60,
-        "type": "predator",
+        "type": "normal",
         "stamina": 25,
         "category": "physical",
         "effects": [
@@ -1313,7 +1420,7 @@
         "name": "Hide",
         "description": "User gain stealth.",
         "baseDamage": 0,
-        "type": "predator",
+        "type": "normal",
         "stamina": 25,
         "category": "status",
         "effects": [
@@ -1329,7 +1436,7 @@
         "description": "Bites with vicious fangs.",
         "soundEffect": "audio/effects/chomp.mp3",
         "baseDamage": 30,
-        "type": "predator",
+        "type": "normal",
         "stamina": 25,
         "category": "physical",
         "effects": [
@@ -1345,7 +1452,7 @@
         "description": "Bites with vicious fangs.",
         "soundEffect": "audio/effects/chomp.mp3",
         "baseDamage": 60,
-        "type": "predator",
+        "type": "normal",
         "stamina": 15,
         "category": "physical",
         "effects": [
@@ -1382,25 +1489,10 @@
         "effects": []
     },
     {
-        "name": "Ember",
-        "description": "May burn the foe.",
-        "baseDamage": 40,
-        "type": "normal",
-        "stamina": 20,
-        "category": "special",
-        "effects": [
-            {
-                "type": "statusBurn",
-                "value": 3,
-                "chance": 15
-            }
-        ]
-    },
-    {
         "name": "Thunder Shock",
         "description": "May paralyze the foe.",
         "baseDamage": 40,
-        "type": "normal",
+        "type": "electric",
         "stamina": 20,
         "category": "special",
         "effects": [
@@ -1447,7 +1539,7 @@
         "name": "Sunny Day",
         "description": "Summons harsh sunlight.",
         "baseDamage": 0,
-        "type": "normal",
+        "type": "fire",
         "stamina": 5,
         "category": "status",
         "effects": [
@@ -1465,7 +1557,7 @@
         "soundEffect": "audio/effects/agile.mp3",
         "baseDamage": 40,
         "priority": 1,
-        "type": "agile",
+        "type": "normal",
         "stamina": 30,
         "category": "physical",
         "effects": []
@@ -1476,7 +1568,7 @@
         "soundEffect": "audio/effects/agile.mp3",
         "baseDamage": 40,
         "priority": 1,
-        "type": "agile",
+        "type": "martial",
         "stamina": 30,
         "category": "physical",
         "effects": []
@@ -1487,10 +1579,19 @@
         "soundEffect": "audio/effects/agile.mp3",
         "baseDamage": 50,
         "priority": 1,
-        "type": "agile",
+        "type": "normal",
         "stamina": 20,
         "category": "physical",
         "effects": []
+    },
+    {
+        "name": "Feline Reflexes",
+        "description": "Strikes fast.",
+        "soundEffect": "audio/effects/agile.mp3",
+        "baseDamage": 70,
+        "type": "normal",
+        "stamina": 20,
+        "category": "physical"
     },
     {
         "name": "Apex Ravage",
@@ -1498,7 +1599,7 @@
         "soundEffect": "audio/effects/chomp.mp3",
         "baseDamage": 120,
         "accuracy": 85,
-        "type": "predator",
+        "type": "normal",
         "stamina": 20,
         "category": "physical",
         "effects": [
@@ -1516,7 +1617,7 @@
         "baseDamage": 15,
         "minHits": 2,
         "maxHits": 5,
-        "type": "social",
+        "type": "normal",
         "stamina": 15,
         "category": "physical",
         "effects": []
@@ -1527,7 +1628,7 @@
         "baseDamage": 45,
         "minHits": 2,
         "maxHits": 3,
-        "type": "predator",
+        "type": "normal",
         "stamina": 20,
         "accuracy": 95,
         "category": "physical"
@@ -1547,7 +1648,7 @@
         "name": "Camoflauge",
         "description": "Blends into the landscape. Grants Stealth.",
         "baseDamage": 0,
-        "type": "agile",
+        "type": "normal",
         "stamina": 15,
         "category": "status",
         "effects": [
@@ -1563,7 +1664,7 @@
         "description": "A lethal strike from the shadows. High Critical-Hit ratio.",
         "baseDamage": 90,
         "accuracy": 95,
-        "type": "predator",
+        "type": "normal",
         "stamina": 18,
         "category": "physical",
         "critRate": 2
@@ -1595,7 +1696,7 @@
         "soundEffect": "audio/effects/tiger.mp3",
         "baseDamage": 90,
         "accuracy": 100,
-        "type": "predator",
+        "type": "normal",
         "stamina": 12,
         "category": "physical",
         "critRate": 2
@@ -1612,12 +1713,21 @@
         "damageStat": "attack"
     },
     {
+        "name": "Earthquake",
+        "description": "User shakes the ground with its raw strength.",
+        "baseDamage": 100,
+        "accuracy": 100,
+        "type": "ground",
+        "stamina": 15,
+        "category": "physical"
+    },
+    {
         "name": "Skull-Piercer",
         "description": "An eerie, blinding attack that confuses the target.",
         "soundEffect": "audio/effects/tiger.mp3",
         "baseDamage": 90,
         "accuracy": 100,
-        "type": "predator",
+        "type": "normal",
         "stamina": 15,
         "category": "physical"
     },
@@ -1627,7 +1737,7 @@
         "soundEffect": "audio/effects/agile.mp3",
         "baseDamage": 75,
         "accuracy": 100,
-        "type": "agile",
+        "type": "electric",
         "stamina": 10,
         "category": "physical",
         "effects": [
@@ -1645,7 +1755,7 @@
         "soundEffect": "audio/effects/agile.mp3",
         "baseDamage": 85,
         "accuracy": 100,
-        "type": "agile",
+        "type": "ice",
         "stamina": 12,
         "category": "physical",
         "effects": [
@@ -1662,7 +1772,7 @@
         "description": "Pokes the target into a vulnerable state by dragging them into the canopy.",
         "baseDamage": 80,
         "accuracy": 95,
-        "type": "predator",
+        "type": "normal",
         "stamina": 15,
         "category": "physical",
         "effects": [
@@ -1703,7 +1813,7 @@
         "soundEffect": "audio/effects/agile.mp3",
         "baseDamage": 85,
         "accuracy": 100,
-        "type": "agile",
+        "type": "electric",
         "stamina": 12,
         "category": "physical",
         "effects": [
@@ -1756,7 +1866,7 @@
         "soundEffect": "audio/effects/cheetah.mp3",
         "baseDamage": 80,
         "accuracy": 100,
-        "type": "agile",
+        "type": "electric",
         "stamina": 15,
         "category": "physical",
         "priority": 1,
@@ -1774,7 +1884,7 @@
         "soundEffect": "audio/effects/absorb.mp3",
         "baseDamage": 75,
         "drainPercent": 0.5,
-        "type": "parasite",
+        "type": "martial",
         "stamina": 10,
         "category": "physical",
         "effects": []
@@ -1784,7 +1894,7 @@
         "description": "Traps and crushes the foe, dealing damage over time.",
         "baseDamage": 35,
         "accuracy": 90,
-        "type": "predator",
+        "type": "normal",
         "stamina": 20,
         "category": "physical",
         "effects": [
@@ -1814,7 +1924,7 @@
         "name": "Coil",
         "description": "The user gathers its body, boosting Attack, Defense, and Accuracy.",
         "baseDamage": 0,
-        "type": "predator",
+        "type": "normal",
         "stamina": 10,
         "category": "status",
         "effects": [
@@ -1852,7 +1962,7 @@
         "description": "High crit rate.",
         "baseDamage": 70,
         "critRate": 1,
-        "type": "predator",
+        "type": "normal",
         "stamina": 15,
         "category": "physical",
         "effects": []
@@ -1876,7 +1986,7 @@
         "name": "Glare",
         "description": "Stuns the foe.",
         "baseDamage": 0,
-        "type": "predator",
+        "type": "normal",
         "stamina": 10,
         "category": "status",
         "effects": [
@@ -1908,8 +2018,19 @@
         "soundEffect": "audio/effects/absorb.mp3",
         "baseDamage": 75,
         "drainPercent": 0.5,
-        "type": "parasite",
+        "type": "grass",
         "stamina": 10,
+        "category": "special",
+        "effects": []
+    },
+    {
+        "name": "Absorb",
+        "description": "A nutrient-draining attack. The user's HP is restored by half the damage taken by the target.",
+        "soundEffect": "audio/effects/absorb.mp3",
+        "baseDamage": 20,
+        "drainPercent": 0.5,
+        "type": "grass",
+        "stamina": 25,
         "category": "special",
         "effects": []
     },
@@ -1917,7 +2038,7 @@
         "name": "Dig",
         "description": "The user burrows into the ground, then attacks on the next turn.",
         "baseDamage": 80,
-        "type": "burrowing",
+        "type": "ground",
         "stamina": 10,
         "category": "physical",
         "effects": [
@@ -1983,7 +2104,7 @@
         "description": "This move enables the user to attack first. This move fails if the target is not preparing an attack.",
         "baseDamage": 70,
         "priority": 1,
-        "type": "predator",
+        "type": "normal",
         "stamina": 5,
         "category": "physical",
         "failIfTargetNotAttacking": true,
@@ -2001,6 +2122,21 @@
                 "type": "multiStatChange",
                 "target": "self",
                 "stat": "attack:2,power:2,speed:2,defense:-1,resistance:-1"
+            }
+        ]
+    },
+    {
+        "name": "Quiver Dance",
+        "description": "The user dances and raises its power, resistance and speed.",
+        "baseDamage": 0,
+        "type": "arthropod",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "multiStatChange",
+                "target": "self",
+                "stat": "power:1,resistance:1,speed:1"
             }
         ]
     },
@@ -2150,7 +2286,7 @@
         "soundEffect": "audio/effects/chomp.mp3",
         "baseDamage": 70,
         "accuracy": 70,
-        "type": "predator",
+        "type": "normal",
         "stamina": 15,
         "category": "physical",
         "effects": [
@@ -2174,7 +2310,7 @@
         "soundEffect": "audio/effects/chomp.mp3",
         "baseDamage": 50,
         "accuracy": 90,
-        "type": "predator",
+        "type": "normal",
         "stamina": 15,
         "category": "physical",
         "effects": [
@@ -2189,7 +2325,7 @@
         "name": "Intimidate",
         "description": "The user intimidates the foe, instilling Fear and reducing its stats by 10% for 2 turns.",
         "baseDamage": 0,
-        "type": "predator",
+        "type": "normal",
         "stamina": 10,
         "category": "status",
         "effects": [
@@ -2204,7 +2340,7 @@
         "name": "Hunter's Mark",
         "description": "The user marks the target. The target takes 20% extra damage for 2 turns.",
         "baseDamage": 0,
-        "type": "agile",
+        "type": "electric",
         "stamina": 10,
         "category": "status",
         "effects": [

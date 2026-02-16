@@ -1273,39 +1273,17 @@ class _AnimalBoxSpriteState extends State<_AnimalBoxSprite> {
 Color _getAnimalTypeColor(ElementalType type) {
   switch (type) {
     case ElementalType.normal:
-      return const Color(0xFFA8A878);
+      return const Color(0xFFA8A77A);
     case ElementalType.flying:
-      return const Color(0xFFA890F0);
+      return const Color(0xFFA98FF3);
     case ElementalType.aquatic:
-      return const Color(0xFF6890F0);
-    case ElementalType.arboreal:
-      return const Color(0xFF78C850);
-    case ElementalType.burrowing:
-      return const Color(0xFFE0C068);
-    case ElementalType.armored:
-      return const Color(0xFFB8B8D0);
-    case ElementalType.agile:
-      return const Color(0xFFF08030);
-    case ElementalType.venomous:
-      return const Color(0xFFA040A0);
-    case ElementalType.scavenger:
-      return const Color(0xFF705848);
-    case ElementalType.parasite:
+      return const Color.fromARGB(255, 46, 60, 255);
+    case ElementalType.ground:
+      return const Color(0xFFE2BF65);
+    case ElementalType.ice:
+      return const Color.fromARGB(255, 0, 247, 255);
+    case ElementalType.toxic:
       return const Color(0xFFA33EA1);
-    case ElementalType.poisonous:
-      return const Color(0xFFA33EA1);
-    case ElementalType.social:
-      return const Color(0xFFF95587);
-    case ElementalType.solitary:
-      return const Color(0xFF7038F8);
-    case ElementalType.prey:
-      return const Color(0xFFD685AD);
-    case ElementalType.predator:
-      return const Color(0xFFC22E28);
-    case ElementalType.tiny:
-      return const Color(0xFFEE99AC);
-    case ElementalType.giant:
-      return const Color(0xFF705848);
     case ElementalType.rock:
       return const Color.fromARGB(255, 158, 97, 5);
     case ElementalType.arthropod:
@@ -1314,5 +1292,11 @@ Color _getAnimalTypeColor(ElementalType type) {
       return const Color.fromARGB(255, 255, 251, 27);
     case ElementalType.nocturnal:
       return const Color.fromARGB(255, 39, 0, 110);
+    case ElementalType.martial:
+      return const Color.fromARGB(255, 160, 24, 0);
+    case ElementalType.fire:
+      return const Color.fromARGB(255, 226, 72, 0);
+    case ElementalType.grass:
+      return const Color.fromARGB(255, 22, 131, 0);
   }
 }

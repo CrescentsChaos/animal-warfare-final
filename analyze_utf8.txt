@@ -1,0 +1,65 @@
+Analyzing battle_manager.dart...                                
+
+   info - Unnecessary 'this.' qualifier - lib\game\battle_manager.dart:260:28 - unnecessary_this
+warning - The value of the local variable 'triggered' isn't used - lib\game\battle_manager.dart:324:12 - unused_local_variable
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:332:13 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:334:13 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:336:13 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:344:13 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:346:13 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:348:13 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:852:9 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:854:9 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:856:9 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:858:9 - curly_braces_in_flow_control_structures
+warning - The value of the local variable 'totalDamageDealt' isn't used - lib\game\battle_manager.dart:870:9 - unused_local_variable
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:1601:13 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:1603:13 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:1605:13 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:1611:13 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:1613:13 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:1615:13 - curly_braces_in_flow_control_structures
+warning - The value of the local variable 'oldStage' isn't used - lib\game\battle_manager.dart:1795:9 - unused_local_variable
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:1799:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:1801:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:1803:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:1805:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:1807:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:1828:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:1830:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:1832:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:1834:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:1836:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:2446:9 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:2448:9 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:2450:9 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:2452:9 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:2476:9 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:2479:9 - curly_braces_in_flow_control_structures
+   info - Unnecessary override - lib\game\battle_manager.dart:2561:8 - unnecessary_overrides
+
+flutter : 37 
+issues found. (ran 
+in 1.3s)
+At line:1 char:1
++ flutter analyze l
+ib\game\battle_mana
+ger.dart > 
+analyze_output.txt 
+2>& ...
++ ~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~
+    + CategoryInfo 
+             : No  
+  tSpecified: (3   
+ 7 issues found    
+. (ran in 1.3s    
+):String) [],     
+RemoteExceptio    n
+    + FullyQualifi 
+   edErrorId : Na  
+  tiveCommandErr   
+ or
+ 

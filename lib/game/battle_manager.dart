@@ -775,7 +775,13 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       if (defender.statusEffects.any(
         (se) => se.type == StatusEffectType.stealth,
       )) {
-        accuracy = (accuracy * 0.5).round();
+        // Echolocation ignores stealth evasion
+        bool attackerHasEcholocation = attacker.abilities.any(
+          (ab) => ab.name == 'Echolocation',
+        );
+        if (!attackerHasEcholocation) {
+          accuracy = (accuracy * 0.5).round();
+        }
       }
     }
 
@@ -947,7 +953,13 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         if (defender.statusEffects.any(
           (se) => se.type == StatusEffectType.stealth,
         )) {
-          damageCalc *= 2.0;
+          // Echolocation ignores stealth damage penalty
+          bool attackerHasEcholocation = attacker.abilities.any(
+            (ab) => ab.name == 'Echolocation',
+          );
+          if (!attackerHasEcholocation) {
+            damageCalc *= 2.0;
+          }
         }
 
         // Generic conditional multiplier
@@ -1008,8 +1020,39 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
         // Type Effectiveness
         double typeMod = 1.0;
+        bool attackerHasTrueFlight = attacker.abilities.any(
+          (ab) => ab.name == 'True Flight',
+        );
+        bool defenderHasTrueFlight = defender.abilities.any(
+          (ab) => ab.name == 'True Flight',
+        );
+
         for (final defType in defender.types) {
-          typeMod *= TypeChart.getEffectiveness(move.type, defType);
+          double eff = TypeChart.getEffectiveness(move.type, defType);
+
+          // --- True Flight Logic ---
+          // Defensive: Ground moves deal 0 damage to True Flight users
+          if (defenderHasTrueFlight && move.type == ElementalType.ground) {
+            eff = 0.0;
+          }
+
+          // Defensive: Removes Flying-type weaknesses (Electric, Rock, Ice)
+          if (defenderHasTrueFlight &&
+              defender.types.contains(ElementalType.flying)) {
+            if (move.type == ElementalType.electric ||
+                move.type == ElementalType.rock ||
+                move.type == ElementalType.ice) {
+              if (eff > 1.0) eff = 1.0;
+            }
+          }
+
+          // Offensive: Flying moves ignore resistances (min 1.0x effectiveness)
+          if (attackerHasTrueFlight && move.type == ElementalType.flying) {
+            if (eff < 1.0 && eff > 0) eff = 1.0;
+          }
+          // ------------------------
+
+          typeMod *= eff;
         }
         damageCalc *= typeMod;
 
@@ -1631,17 +1674,20 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           attacker.semiInvulnerable = effect.stat;
           break;
         case MoveEffectType.forceSwitch:
-          // 1. Ability Trigger: Sticky Hold (Prevention)
-          bool isSticky = target.abilities.any(
-            (ab) => ab.name == 'Sticky Hold',
+          // 1. Ability Trigger: Sticky Hold / Abyss Dweller (Prevention)
+          bool isStable = target.abilities.any(
+            (ab) => ab.name == 'Sticky Hold' || ab.name == 'Abyss Dweller',
           );
-          if (isSticky) {
+          if (isStable) {
             final ab = target.abilities.firstWhere(
-              (a) => a.name == 'Sticky Hold',
+              (a) => a.name == 'Sticky Hold' || a.name == 'Abyss Dweller',
             );
             await _notifyAbilityTrigger(target, ab);
+            String actionText = ab.name == 'Abyss Dweller'
+                ? 'remained in the depths'
+                : 'anchored itself';
             _addToLog(
-              '${target.organism.baseOrganism.name} anchored itself with ${ab.name}!',
+              '${target.organism.baseOrganism.name} $actionText with ${ab.name}!',
             );
             notifyListeners();
             await Future.delayed(const Duration(milliseconds: 2000));
@@ -1759,6 +1805,22 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       oldStage = target.speedStage;
     else if (statName == 'accuracy')
       oldStage = target.accuracyStage;
+
+    if (statName == 'accuracy' && value < 0) {
+      bool hasEcholocation = target.abilities.any(
+        (ab) => ab.name == 'Echolocation',
+      );
+      if (hasEcholocation) {
+        final ab = target.abilities.firstWhere((a) => a.name == 'Echolocation');
+        await _notifyAbilityTrigger(target, ab);
+        _addToLog(
+          '${target.organism.baseOrganism.name}\'s accuracy was protected by ${ab.name}!',
+        );
+        notifyListeners();
+        await Future.delayed(const Duration(milliseconds: 2000));
+        return;
+      }
+    }
 
     if (statName == 'attack') {
       target.attackStage = (target.attackStage + value).clamp(-6, 6);
@@ -2498,5 +2560,33 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   @override
   void dispose() {
     super.dispose();
+  }
+
+  // --- Testing Hooks ---
+  @visibleForTesting
+  Future<void> testApplyStatusEffect(
+    BattleOrganism target,
+    StatusEffectType type,
+  ) async {
+    return _applyStatusEffect(target, type, chance: 100);
+  }
+
+  @visibleForTesting
+  Future<void> testApplyMoveEffect(
+    BattleOrganism attacker,
+    BattleOrganism defender,
+    List<MoveEffect> effects,
+    Move move,
+  ) async {
+    return _applyMoveEffect(attacker, defender, effects, move);
+  }
+
+  @visibleForTesting
+  Future<void> testApplyStatChange(
+    BattleOrganism target,
+    String stat,
+    int value,
+  ) async {
+    return _applyStatChange(target, stat, value);
   }
 }

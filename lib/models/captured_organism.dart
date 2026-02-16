@@ -294,7 +294,7 @@ class CapturedOrganism {
   int get effectiveSpeed => getSpeed();
 
   /// Initializes the move selection with 4 moves from the base organism.
-  /// Uses a deterministic approach (first 4) to avoid order jitter.
+  /// Randomizes selection if more than 4 moves are available.
   void initializeDefaultMoves() {
     final allPossibleMoves = baseOrganism.moves
         .split(',')
@@ -302,21 +302,26 @@ class CapturedOrganism {
         .where((m) => m.isNotEmpty)
         .toList();
 
-    // Take the first 4 unique moves
-    final List<String> selected = [];
+    // extract unique potential moves
+    final List<String> uniqueMoves = [];
     for (final moveName in allPossibleMoves) {
-      if (!selected.contains(moveName)) {
-        selected.add(moveName);
+      if (!uniqueMoves.contains(moveName)) {
+        uniqueMoves.add(moveName);
       }
-      if (selected.length >= 4) break;
     }
+
+    // Randomize if more than 4 moves
+    if (uniqueMoves.length > 4) {
+      uniqueMoves.shuffle();
+    }
+
+    // Take the first 4 (or all if fewer)
+    selectedMoveNames = uniqueMoves.take(4).toList();
 
     // Fallback if no moves listed
-    if (selected.isEmpty) {
-      selected.add('Struggle');
+    if (selectedMoveNames.isEmpty) {
+      selectedMoveNames.add('Struggle');
     }
-
-    selectedMoveNames = selected;
 
     // Initialize stamina for these moves
     moveStamina = {};
