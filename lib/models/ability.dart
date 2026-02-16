@@ -195,6 +195,13 @@ class Ability {
       effectType: AbilityEffectType.preventStatus,
       value: 'paralysis',
     ),
+    Ability(
+      name: 'Immunity',
+      description: 'Protects the organism from poison.',
+      trigger: AbilityTrigger.onStatusAttempt,
+      effectType: AbilityEffectType.preventStatus,
+      value: 'poison',
+    ),
 
     // --- Existing/Original Abilities ---
     Ability(

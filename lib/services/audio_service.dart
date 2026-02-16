@@ -85,14 +85,9 @@ class AudioService {
 
   /// Play a sound effect once
   Future<void> playSound(String assetPath) async {
-    if (!_isSoundEnabled) return;
-
     try {
-      // Don't stop it first if using a separate player instance per sound is desired,
-      // but here we keep one player. Stopping might cause a glitch if called too fast.
-      // audioplayers handled rapid play calls well if source is already set,
-      // but let's just seek(0) and resume if we wanted to restart.
-      // Simplified: just play.
+      // Volume is controlled separately via _soundVolume and _isSoundEnabled
+      // When disabled, volume is set to 0.0, so we don't need an early return here
       await _soundPlayer.play(AssetSource(assetPath));
     } catch (e) {
       print('Error playing sound: $e');

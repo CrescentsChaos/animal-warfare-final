@@ -18,6 +18,12 @@ mixin AbilityHelpers {
 
   Future<void> _notifyAbilityTrigger(BattleOrganism user, Ability ability);
   Future<void> _applyStatChange(BattleOrganism target, String stat, int value);
+  Future<void> _applyStatusEffect(
+    BattleOrganism target,
+    StatusEffectType type, {
+    int chance,
+    int? duration,
+  });
 
   // Condition checking
   bool _checkAbilityCondition(
@@ -110,11 +116,12 @@ mixin AbilityHelpers {
         final targetOrg = target ?? org;
         final statusType = _parseStatusType(ability.value);
         if (statusType != null) {
-          final status = StatusEffect(type: statusType, duration: 0);
-          targetOrg.addStatusEffect(status);
-          _addToLog('${targetOrg.organism.name} is ${ability.value}!');
-          notifyListeners();
-          await Future.delayed(const Duration(milliseconds: 3000));
+          await _applyStatusEffect(
+            targetOrg,
+            statusType,
+            chance: (ability.chance * 100).round(),
+            duration: null, // Allow default duration logic
+          );
         }
         break;
 

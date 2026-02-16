@@ -40,6 +40,7 @@
 
 import 'dart:math';
 
+import 'package:flutter/material.dart';
 import 'package:animal_warfare/models/elemental_type.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'dart:convert';
@@ -77,6 +78,19 @@ enum MoveEffectType {
 }
 
 enum MoveCategory { physical, special, status }
+
+extension MoveCategoryExtension on MoveCategory {
+  Color get color {
+    switch (this) {
+      case MoveCategory.physical:
+        return const Color(0xFFFF4444); // Red-Orange
+      case MoveCategory.special:
+        return const Color(0xFF4488FF); // Blue
+      case MoveCategory.status:
+        return Colors.white70; // Off-white/Gray
+    }
+  }
+}
 
 // Model for the effect component of a Move
 class MoveEffect {

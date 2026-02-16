@@ -866,6 +866,19 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     for (int i = 0; i < hits; i++) {
       if (defender.health <= 0) break; // Stop if opponent fainted
 
+      // Play sound effect for each hit after the first (first already played before loop)
+      if (i > 0) {
+        String soundPath =
+            move.soundEffect ??
+            _audioService.getDefaultSoundEffect(
+              move.category.toString().split('.').last,
+            );
+        await _audioService.playSound(soundPath);
+        await Future.delayed(
+          const Duration(milliseconds: 300),
+        ); // Short delay between hits
+      }
+
       // 2. Damage Calculation (Standard Formula: (((2*Level/5 + 2) * Atk * BaseDamage / Def) / 50 + 2) * Modifiers)
       if (move.baseDamage > 0) {
         // Weather Modifiers
@@ -1038,43 +1051,54 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           }
         }
 
-        int oldHealth = defender.health;
-        defender.health -= finalDamage;
+        // Wait for attack animation and sound to register before showing HP decrease
+        await Future.delayed(const Duration(milliseconds: 500));
+
+        final int oldHealth = defender.health;
+        final int effectiveDamage = finalDamage.clamp(0, defender.health);
+        defender.health -= effectiveDamage;
         defender.health = defender.health.clamp(0, defender.maxHealth);
-        // int oldHealth = defender.health; // Removed duplicate
-        // defender.health -= finalDamage; // Removed duplicate
-        // defender.health = defender.health.clamp(0, defender.maxHealth); // Removed duplicate
-        attacker.totalDamageDealt += finalDamage;
-        defender.totalDamageTaken += finalDamage;
+
+        attacker.totalDamageDealt += effectiveDamage;
+        defender.totalDamageTaken += effectiveDamage;
 
         // Sync to persistent stats
         final attackerStats = _getStats(attacker.organism.id);
         final defenderStats = _getStats(defender.organism.id);
-        attackerStats.totalDamageDealt += finalDamage;
-        defenderStats.totalDamageTaken += finalDamage;
+        attackerStats.totalDamageDealt += effectiveDamage;
+        defenderStats.totalDamageTaken += effectiveDamage;
 
         defender.tookDamageThisTurn = true;
+
+        // Notify UI to update HP bars after HP has changed
+        notifyListeners();
 
         if (hits > 1) {
           _addToLog('Hit ${i + 1}!');
         }
-        final double dmgPct = (finalDamage / defender.maxHealth * 100);
+        final double dmgPct = (effectiveDamage / defender.maxHealth * 100);
         _addToLog(
-          '${defender.organism.name} took $finalDamage damage (${dmgPct.toStringAsFixed(1)}%)!',
+          '${defender.organism.name} took $effectiveDamage damage (${dmgPct.toStringAsFixed(1)}%)!',
         );
 
-        if (move.drainPercent > 0 && finalDamage > 0) {
-          final healAmount = (finalDamage * move.drainPercent).round();
+        if (move.drainPercent > 0 &&
+            effectiveDamage > 0 &&
+            attacker.health < attacker.maxHealth) {
+          final healAmount = (effectiveDamage * move.drainPercent).round();
           attacker.health = (attacker.health + healAmount).clamp(
             0,
             attacker.maxHealth,
           );
+
+          // Play heal sound effect
+          await _audioService.playSound('audio/effects/heal.mp3');
+
           final double drainPercent = (healAmount / attacker.maxHealth * 100);
           _addToLog(
             '${attacker.organism.baseOrganism.name} drained $healAmount health (${drainPercent.toStringAsFixed(1)}%)!',
           );
         }
-        if (move.recoilPercent > 0 && finalDamage > 0) {
+        if (move.recoilPercent > 0 && effectiveDamage > 0) {
           final recoilDamage = (finalDamage * move.recoilPercent).round();
           attacker.health = (attacker.health - recoilDamage).clamp(
             0,
@@ -1088,13 +1112,13 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         }
 
         // Track damage for lifesteal
-        attacker.damageDealtThisTurn += finalDamage;
+        attacker.damageDealtThisTurn += effectiveDamage;
 
         // Talisman recoil damage (Life Orb)
         if (attacker.organism.equippedTalisman != null) {
           for (final effect in attacker.organism.equippedTalisman!.effects) {
             if (effect.type == TalismanEffectType.recoilDamage &&
-                finalDamage > 0) {
+                effectiveDamage > 0) {
               final recoilDamage = (attacker.maxHealth * effect.magnitude)
                   .round();
               attacker.health = (attacker.health - recoilDamage).clamp(
@@ -1160,22 +1184,13 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
                 );
                 notifyListeners();
                 await Future.delayed(const Duration(milliseconds: 3000));
-              } else if (ab.effectType == AbilityEffectType.statusChange &&
-                  Random().nextDouble() < ab.chance) {
-                if (attacker.statusEffect.type == StatusEffectType.none) {
-                  await _notifyAbilityTrigger(defender, ab);
-                  attacker.addStatusEffect(
-                    StatusEffect(
-                      type: StatusEffectType.poison,
-                      duration: int.tryParse(ab.value) ?? 3,
-                    ),
-                  );
-                  _addToLog(
-                    '${attacker.organism.baseOrganism.name} was poisoned!',
-                  );
-                  notifyListeners();
-                  await Future.delayed(const Duration(milliseconds: 3000));
-                }
+              } else if (ab.effectType == AbilityEffectType.statusChange) {
+                await _applyStatusEffect(
+                  attacker,
+                  StatusEffectType.poison,
+                  chance: (ab.chance * 100).round(),
+                  duration: int.tryParse(ab.value),
+                );
               }
             }
           }
@@ -1190,22 +1205,13 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             }
 
             if (conditionMet &&
-                ab.effectType == AbilityEffectType.statusChange &&
-                Random().nextDouble() < ab.chance) {
-              if (defender.statusEffect.type == StatusEffectType.none) {
-                await _notifyAbilityTrigger(attacker, ab);
-                defender.addStatusEffect(
-                  StatusEffect(
-                    type: StatusEffectType.poison,
-                    duration: int.tryParse(ab.value) ?? 3,
-                  ),
-                );
-                _addToLog(
-                  '${defender.organism.baseOrganism.name} was poisoned!',
-                );
-                notifyListeners();
-                await Future.delayed(const Duration(milliseconds: 3000));
-              }
+                ab.effectType == AbilityEffectType.statusChange) {
+              await _applyStatusEffect(
+                defender,
+                StatusEffectType.poison,
+                chance: (ab.chance * 100).round(),
+                duration: int.tryParse(ab.value),
+              );
             }
           }
         }
@@ -1374,10 +1380,10 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     }
 
     // Simple AI: Select a random move from its specific list
-
-    // Simple AI: Select a random move from its specific list
     Move opponentMove;
-    if (opponent.isChoiceLocked && opponent.lockedMove != null) {
+    if (opponent.chargingMove != null) {
+      opponentMove = opponent.chargingMove!;
+    } else if (opponent.isChoiceLocked && opponent.lockedMove != null) {
       opponentMove = opponent.lockedMove!;
     } else {
       opponentMove = opponentMoves[Random().nextInt(opponentMoves.length)];
@@ -1390,16 +1396,87 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
   // --- Core Effect Logic ---
 
+  Future<void> _applyStatusEffect(
+    BattleOrganism target,
+    StatusEffectType type, {
+    int chance = 100,
+    int? duration,
+  }) async {
+    if (target.health <= 0) return;
+    if (type == StatusEffectType.none) return;
+
+    // 1. Ability Trigger: onStatusAttempt (Prevention)
+    for (final ab in target.abilities) {
+      if (ab.trigger == AbilityTrigger.onStatusAttempt) {
+        if (ab.effectType == AbilityEffectType.preventStatus &&
+            ab.value == type.toString().split('.').last) {
+          await _notifyAbilityTrigger(target, ab);
+          _addToLog(
+            '${target.organism.baseOrganism.name} prevented the status!',
+          );
+          notifyListeners();
+          await Future.delayed(const Duration(milliseconds: 3000));
+          return;
+        }
+      }
+    }
+
+    // 2. Chance Check
+    if (Random().nextInt(100) >= chance) return;
+
+    // 3. Terrain Checks
+    if (currentTerrain.terrain == Terrain.misty ||
+        (type == StatusEffectType.sleep &&
+            currentTerrain.terrain == Terrain.electric)) {
+      _appendToLog('\nThe terrain prevents the status condition!');
+      notifyListeners();
+      await Future.delayed(const Duration(milliseconds: 3000));
+      return;
+    }
+
+    // 4. Existing Status Check (Duplicate prevention)
+    if (target.statusEffects.any((se) => se.type == type)) return;
+
+    // 5. Apply Status
+    int finalDuration = duration ?? -1;
+    if (duration == null) {
+      if (type == StatusEffectType.sleep) {
+        finalDuration = 2 + Random().nextInt(4); // 2-5 turns
+      } else if (type == StatusEffectType.stun) {
+        finalDuration = 1;
+      } else if (type == StatusEffectType.confusion) {
+        finalDuration = 1 + Random().nextInt(3);
+      } else if (type == StatusEffectType.regen ||
+          type == StatusEffectType.blind ||
+          type == StatusEffectType.vulnerable) {
+        finalDuration = 3 + Random().nextInt(3);
+      } else if (type == StatusEffectType.fear ||
+          type == StatusEffectType.marked) {
+        finalDuration = 2;
+      }
+    }
+
+    final newStatus = StatusEffect(type: type, duration: finalDuration);
+    target.addStatusEffect(newStatus);
+    _appendToLog(
+      '\n${target.organism.baseOrganism.name} ${newStatus.startMessage}',
+    );
+    notifyListeners();
+    await Future.delayed(const Duration(milliseconds: 3000));
+  }
+
   Future<void> _applyMoveEffect(
     BattleOrganism attacker,
     BattleOrganism defender,
-    List<MoveEffect> effects, // Changed to List<MoveEffect>
+    List<MoveEffect> effects,
     Move move,
   ) async {
     for (final effect in effects) {
       if (effect.type == MoveEffectType.none) continue;
 
       final target = effect.target == 'self' ? attacker : defender;
+
+      if (target.health <= 0) continue; // Skip effects if target is fainted
 
       switch (effect.type) {
         case MoveEffectType.statusBurn:
@@ -1467,67 +1544,12 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
           if (statusType == StatusEffectType.none) continue;
 
-          // --- 2. Ability Trigger: onStatusAttempt (Prevention) ---
-          bool prevented = false;
-          for (final ab in target.abilities) {
-            if (ab.trigger == AbilityTrigger.onStatusAttempt) {
-              if (ab.effectType == AbilityEffectType.preventStatus &&
-                  ab.value == statusType.toString().split('.').last) {
-                await _notifyAbilityTrigger(target, ab);
-                _addToLog(
-                  '${target.organism.baseOrganism.name} prevented the status!',
-                );
-                notifyListeners();
-                await Future.delayed(const Duration(milliseconds: 3000));
-                prevented = true;
-                break;
-              }
-            }
-          }
-          if (prevented) continue;
-
-          // --- 3. Chance and Terrain Checks ---
-          if (Random().nextInt(100) >= effect.chance) continue;
-
-          if (currentTerrain.terrain == Terrain.misty ||
-              (effect.type == MoveEffectType.statusSleep &&
-                  currentTerrain.terrain == Terrain.electric)) {
-            _appendToLog('\nThe terrain prevents the status condition!');
-          } else {
-            // Check if already has this status if it's not stackable
-            // For now, let's just add it. Multi-status system handles it.
-
-            // Default durations: Major (Indefinite), Volatile (Fixed)
-            int duration = -1; // Default to indefinite for major statuses
-
-            if (statusType == StatusEffectType.sleep) {
-              duration = 2 + Random().nextInt(4); // 2-5 turns
-            } else if (statusType == StatusEffectType.stun)
-              duration = 1;
-            else if (statusType == StatusEffectType.regen ||
-                statusType == StatusEffectType.confusion ||
-                statusType == StatusEffectType.blind ||
-                statusType == StatusEffectType.vulnerable) {
-              duration = 3 + Random().nextInt(3);
-            } else if (statusType == StatusEffectType.fear ||
-                statusType == StatusEffectType.marked) {
-              duration = effect.value > 0
-                  ? effect.value
-                  : 2; // Use move value or default to 2
-            } else if (effect.value > 0) {
-              duration = effect.value; // Use move-defined duration if present
-            }
-
-            final newStatus = StatusEffect(
-              type: statusType,
-              duration: duration,
-              // Mapping default colors/names from StatusEffect if needed, but constructor handles it
-            );
-            target.addStatusEffect(newStatus);
-            _appendToLog(
-              '\n${target.organism.baseOrganism.name} ${newStatus.startMessage}',
-            );
-          }
+          await _applyStatusEffect(
+            target,
+            statusType,
+            chance: effect.chance,
+            duration: effect.value > 0 ? effect.value : null,
+          );
           break;
         case MoveEffectType.weather:
           if (effect.stat == 'rain') {
@@ -1586,15 +1608,17 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           attacker.isProtected = true;
           break;
         case MoveEffectType.heal:
-          final healedAmount = effect.value;
-          target.health += healedAmount;
-          target.health = target.health.clamp(0, target.maxHealth);
-          final double healPercent = (healedAmount / target.maxHealth * 100);
-          _appendToLog(
-            '\n${target.organism.baseOrganism.name} recovered $healedAmount HP (${healPercent.toStringAsFixed(1)}%)!',
-          );
-          // Play healing sound effect
-          await _audioService.playSound('audio/effects/heal.mp3');
+          if (target.health < target.maxHealth) {
+            final healedAmount = effect.value;
+            target.health += healedAmount;
+            target.health = target.health.clamp(0, target.maxHealth);
+            final double healPercent = (healedAmount / target.maxHealth * 100);
+            _appendToLog(
+              '\n${target.organism.baseOrganism.name} recovered $healedAmount HP (${healPercent.toStringAsFixed(1)}%)!',
+            );
+            // Play healing sound effect
+            await _audioService.playSound('audio/effects/heal.mp3');
+          }
           break;
         case MoveEffectType.recharge:
           attacker.rechargeTurn = true;
@@ -1866,15 +1890,19 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         await Future.delayed(const Duration(milliseconds: 3000));
         if (_checkBattleEnd()) return;
       } else if (se.type == StatusEffectType.regen) {
-        final heal = (target.maxHealth * 0.06).round().clamp(1, 9999);
-        target.health += heal;
-        target.health = target.health.clamp(0, target.maxHealth);
-        final hpPercent = (target.health / target.maxHealth * 100).round();
-        _addToLog(
-          '${target.organism.baseOrganism.name} restored a little HP. ($hpPercent%)',
-        );
-        notifyListeners();
-        await Future.delayed(const Duration(milliseconds: 3000));
+        if (target.health < target.maxHealth) {
+          final heal = (target.maxHealth * 0.06).round().clamp(1, 9999);
+          target.health += heal;
+          target.health = target.health.clamp(0, target.maxHealth);
+          final hpPercent = (target.health / target.maxHealth * 100).round();
+          _addToLog(
+            '${target.organism.baseOrganism.name} restored a little HP. ($hpPercent%)',
+          );
+          // Play healing sound effect
+          await _audioService.playSound('audio/effects/heal.mp3');
+          notifyListeners();
+          await Future.delayed(const Duration(milliseconds: 3000));
+        }
       }
     }
 
@@ -1905,19 +1933,23 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     }
 
     // Grassy Terrain Healing
-    if (currentTerrain.terrain == Terrain.grassy) {
+    if (currentTerrain.terrain == Terrain.grassy &&
+        target.health < target.maxHealth) {
       final heal = (target.maxHealth * 0.06).round();
       target.health += heal;
       target.health = target.health.clamp(0, target.maxHealth);
       _addToLog(
         '${target.organism.baseOrganism.name} is healed by the Grassy Terrain!',
       );
+      // Play healing sound effect
+      await _audioService.playSound('audio/effects/heal.mp3');
       notifyListeners();
       await Future.delayed(const Duration(milliseconds: 3000));
     }
 
     // Talisman effects - Leftovers healing
-    if (target.organism.equippedTalisman != null) {
+    if (target.organism.equippedTalisman != null &&
+        target.health < target.maxHealth) {
       for (final effect in target.organism.equippedTalisman!.effects) {
         if (effect.type == TalismanEffectType.onTurnHeal) {
           final healAmount = (target.maxHealth * effect.magnitude).round();
@@ -1926,6 +1958,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           _addToLog(
             '${target.organism.name} restored HP with ${target.organism.equippedTalisman!.name}! ($healAmount HP)',
           );
+          // Play healing sound effect
+          await _audioService.playSound('audio/effects/heal.mp3');
           notifyListeners();
           await Future.delayed(const Duration(milliseconds: 3000));
         }
@@ -1934,7 +1968,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     // Shell Bell lifesteal healing (after damage is dealt)
     if (target.damageDealtThisTurn > 0 &&
-        target.organism.equippedTalisman != null) {
+        target.organism.equippedTalisman != null &&
+        target.health < target.maxHealth) {
       for (final effect in target.organism.equippedTalisman!.effects) {
         if (effect.type == TalismanEffectType.lifesteal) {
           final healAmount = (target.damageDealtThisTurn * effect.magnitude)
@@ -1944,6 +1979,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           _addToLog(
             '${target.organism.name} restored HP with ${target.organism.equippedTalisman!.name}! ($healAmount HP)',
           );
+          // Play healing sound effect
+          await _audioService.playSound('audio/effects/heal.mp3');
           notifyListeners();
           await Future.delayed(const Duration(milliseconds: 3000));
         }
@@ -2142,6 +2179,19 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
       currentState = BattleState.waitingForInput;
       _addToLog('What will ${player.organism.name} do?');
+
+      // Automate second turn of semi-invulnerable/charging moves
+      if (player.chargingMove != null || player.rechargeTurn) {
+        Future.microtask(() async {
+          await Future.delayed(const Duration(milliseconds: 1500));
+          if (currentState == BattleState.waitingForInput &&
+              (player.chargingMove != null || player.rechargeTurn)) {
+            // Pick a move (it will be overridden or recharge will happen)
+            final Move autoMove = player.chargingMove ?? playerMoves[0];
+            await processPlayerAction(autoMove);
+          }
+        });
+      }
 
       // Reset flags for next turn
       playerMovedThisTurn = false;

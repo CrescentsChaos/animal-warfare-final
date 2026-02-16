@@ -11,6 +11,7 @@ import 'package:animal_warfare/local_auth_service.dart';
 import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/theme.dart';
 import 'package:animal_warfare/models/nature.dart';
+import 'package:animal_warfare/models/elemental_type.dart';
 
 class AnimalBoxScreen extends StatefulWidget {
   const AnimalBoxScreen({super.key});
@@ -546,13 +547,35 @@ class _AnimalCard extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      'Category: ${base.category}',
-                      style: const TextStyle(
-                        color: AppColors.highlightColor,
-                        fontSize: 9,
-                        fontFamily: 'PressStart2P',
-                      ),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 4,
+                      children: base.category.split(',').map((cat) {
+                        final typeStr = cat.trim().toLowerCase();
+                        final type = ElementalType.values.firstWhere(
+                          (e) => e.toString().split('.').last == typeStr,
+                          orElse: () => ElementalType.normal,
+                        );
+                        return Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 5,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: _getAnimalTypeColor(type),
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                          child: Text(
+                            cat.trim().toUpperCase(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 7,
+                              fontFamily: 'PressStart2P',
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        );
+                      }).toList(),
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -822,25 +845,52 @@ class _AnimalDetailsDialog extends StatelessWidget {
               final move = Move.findByName(mn);
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      mn,
-                      style: const TextStyle(
-                        fontSize: 10,
-                        fontFamily: 'PressStart2P',
-                        color: AppColors.highlightColor,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          mn,
+                          style: const TextStyle(
+                            fontSize: 10,
+                            fontFamily: 'PressStart2P',
+                            color: AppColors.highlightColor,
+                          ),
+                        ),
+                        if (move != null)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: move.category.color,
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                            child: Text(
+                              move.category.name.toUpperCase(),
+                              style: const TextStyle(
+                                fontSize: 6,
+                                fontFamily: 'PressStart2P',
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
-                    if (move != null)
+                    if (move != null) ...[
+                      const SizedBox(height: 2),
                       Text(
-                        'DMG: ${move.baseDamage}',
+                        'DMG: ${move.baseDamage} TYPE: ${move.type.name.toUpperCase()}',
                         style: const TextStyle(
-                          fontSize: 8,
+                          fontSize: 7,
                           fontFamily: 'PressStart2P',
+                          color: Colors.white70,
                         ),
                       ),
+                    ],
                   ],
                 ),
               );
@@ -1018,17 +1068,42 @@ class _MoveSelectionDialogState extends State<_MoveSelectionDialog> {
             final move = Move.findByName(moveName);
 
             return CheckboxListTile(
-              title: Text(
-                moveName,
-                style: const TextStyle(
-                  fontFamily: 'PressStart2P',
-                  fontSize: 10,
-                  color: Colors.white,
-                ),
+              title: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      moveName,
+                      style: const TextStyle(
+                        fontFamily: 'PressStart2P',
+                        fontSize: 10,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  if (move != null)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: move.category.color,
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                      child: Text(
+                        move.category.name.substring(0, 4).toUpperCase(),
+                        style: const TextStyle(
+                          fontSize: 6,
+                          fontFamily: 'PressStart2P',
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                ],
               ),
               subtitle: move != null
                   ? Text(
-                      'DMG: ${move.baseDamage}, STAMINA: ${move.stamina}',
+                      'DMG: ${move.baseDamage}, STAMINA: ${move.stamina}, TYPE: ${move.type.name.toUpperCase()}',
                       style: TextStyle(fontSize: 8, color: Colors.grey[400]),
                     )
                   : null,
@@ -1192,5 +1267,52 @@ class _AnimalBoxSpriteState extends State<_AnimalBoxSprite> {
         ),
       ),
     );
+  }
+}
+
+Color _getAnimalTypeColor(ElementalType type) {
+  switch (type) {
+    case ElementalType.normal:
+      return const Color(0xFFA8A878);
+    case ElementalType.flying:
+      return const Color(0xFFA890F0);
+    case ElementalType.aquatic:
+      return const Color(0xFF6890F0);
+    case ElementalType.arboreal:
+      return const Color(0xFF78C850);
+    case ElementalType.burrowing:
+      return const Color(0xFFE0C068);
+    case ElementalType.armored:
+      return const Color(0xFFB8B8D0);
+    case ElementalType.agile:
+      return const Color(0xFFF08030);
+    case ElementalType.venomous:
+      return const Color(0xFFA040A0);
+    case ElementalType.scavenger:
+      return const Color(0xFF705848);
+    case ElementalType.parasite:
+      return const Color(0xFFA33EA1);
+    case ElementalType.poisonous:
+      return const Color(0xFFA33EA1);
+    case ElementalType.social:
+      return const Color(0xFFF95587);
+    case ElementalType.solitary:
+      return const Color(0xFF7038F8);
+    case ElementalType.prey:
+      return const Color(0xFFD685AD);
+    case ElementalType.predator:
+      return const Color(0xFFC22E28);
+    case ElementalType.tiny:
+      return const Color(0xFFEE99AC);
+    case ElementalType.giant:
+      return const Color(0xFF705848);
+    case ElementalType.rock:
+      return const Color.fromARGB(255, 158, 97, 5);
+    case ElementalType.arthropod:
+      return const Color.fromARGB(255, 111, 207, 0);
+    case ElementalType.electric:
+      return const Color.fromARGB(255, 255, 251, 27);
+    case ElementalType.nocturnal:
+      return const Color.fromARGB(255, 39, 0, 110);
   }
 }

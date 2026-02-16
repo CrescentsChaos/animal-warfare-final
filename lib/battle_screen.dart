@@ -212,6 +212,14 @@ class _BattleScreenContentState extends State<BattleScreenContent>
         return const Color(0xFFEE99AC);
       case ElementalType.giant:
         return const Color(0xFF705848);
+      case ElementalType.rock:
+        return const Color.fromARGB(255, 158, 97, 5);
+      case ElementalType.arthropod:
+        return const Color.fromARGB(255, 111, 207, 0);
+      case ElementalType.electric:
+        return const Color.fromARGB(255, 255, 251, 27);
+      case ElementalType.nocturnal:
+        return const Color.fromARGB(255, 39, 0, 110);
     }
   }
 
@@ -1480,25 +1488,43 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                       children: base.category.toUpperCase().split(',').map((
                         cat,
                       ) {
+                        final typeStr = cat.trim().toLowerCase();
+                        final type = ElementalType.values.firstWhere(
+                          (e) => e.toString().split('.').last == typeStr,
+                          orElse: () => ElementalType.normal,
+                        );
+                        final typeColor = _getTypeColor(type);
+
                         return Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 6,
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: _getBiomePrimaryColor().withOpacity(0.4),
+                            color: typeColor,
                             borderRadius: BorderRadius.circular(4),
-                            border: Border.all(
-                              color: _getBiomeThemeColor().withOpacity(0.5),
-                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.3),
+                                blurRadius: 2,
+                                offset: const Offset(1, 1),
+                              ),
+                            ],
                           ),
                           child: Text(
-                            cat.trim(),
-                            style: TextStyle(
-                              color: _getBiomeThemeColor(),
-                              fontSize: 9,
+                            cat.trim().toUpperCase(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 8,
                               fontFamily: 'PressStart2P',
                               fontWeight: FontWeight.bold,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black45,
+                                  blurRadius: 1,
+                                  offset: Offset(0.5, 0.5),
+                                ),
+                              ],
                             ),
                           ),
                         );
@@ -1971,7 +1997,12 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     );
   }
 
-  Widget _buildDetailRow(String label, String value, Color valueColor) {
+  Widget _buildDetailRow(
+    String label,
+    String value,
+    Color valueColor, {
+    Widget? trailing,
+  }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -1983,15 +2014,18 @@ class _BattleScreenContentState extends State<BattleScreenContent>
             fontSize: 10,
           ),
         ),
-        Text(
-          value,
-          style: TextStyle(
-            color: valueColor,
-            fontFamily: 'PressStart2P',
-            fontSize: 10,
-            fontWeight: FontWeight.bold,
+        if (trailing != null)
+          trailing
+        else
+          Text(
+            value,
+            style: TextStyle(
+              color: valueColor,
+              fontFamily: 'PressStart2P',
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-        ),
       ],
     );
   }
@@ -2031,8 +2065,23 @@ class _BattleScreenContentState extends State<BattleScreenContent>
             const SizedBox(height: 8),
             _buildDetailRow(
               'CATEGORY:',
-              move.category.name.toUpperCase().split('.').last,
+              '',
               Colors.white,
+              trailing: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                decoration: BoxDecoration(
+                  color: move.category.color,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  move.category.name.toUpperCase(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 8,
+                    fontFamily: 'PressStart2P',
+                  ),
+                ),
+              ),
             ),
             const SizedBox(height: 8),
             _buildDetailRow(
@@ -2201,11 +2250,11 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                           // Category Badge
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 2,
-                              vertical: 1,
+                              horizontal: 3,
+                              vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.black26,
+                              color: move.category.color,
                               borderRadius: BorderRadius.circular(2),
                             ),
                             child: Text(
@@ -2697,10 +2746,22 @@ class _BattleScreenContentState extends State<BattleScreenContent>
         secondaryColor: _getBiomeSecondaryColor(),
         onReplace: (index) async {
           await userState.replaceRogueTeamMember(index, newCapture);
+          if (mounted) {
+            setState(() {
+              _pendingRogueCapture =
+                  null; // Clear pending capture to prevent infinite loop
+            });
+          }
           if (ctx.mounted) Navigator.pop(ctx);
           if (mounted) _finishRogueEncounter(context, userState);
         },
         onDiscard: () {
+          if (mounted) {
+            setState(() {
+              _pendingRogueCapture =
+                  null; // Clear pending capture to prevent infinite loop
+            });
+          }
           Navigator.pop(ctx);
           if (mounted) _finishRogueEncounter(context, userState);
         },
