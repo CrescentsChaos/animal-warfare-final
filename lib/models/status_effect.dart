@@ -149,6 +149,12 @@ class StatusEffect {
     }
   }
 
+  /// Returns the asset path for the status overlay image, or null if none.
+  String? get overlayAssetPath {
+    if (type == StatusEffectType.none) return null;
+    return 'assets/status_overlays/${type.name}.png';
+  }
+
   String get description {
     switch (type) {
       case StatusEffectType.poison:

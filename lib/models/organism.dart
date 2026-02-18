@@ -39,7 +39,7 @@ class Organism {
     required this.sprite,
     required this.rarity,
     required this.description,
-    this.types = const ['normal'], // Default
+    this.types = const ['basic'], // Default
   });
 
   factory Organism.fromJson(Map<String, dynamic> json) {
@@ -63,8 +63,8 @@ class Organism {
     }
 
     if (typeList.isEmpty) {
-      // Final Fallback: always have at least 'normal'
-      typeList = ['normal'];
+      // Final Fallback: always have at least 'basic'
+      typeList = ['basic'];
     }
 
     return Organism(
@@ -177,7 +177,7 @@ class Organism {
     return types.map((t) {
       return ElementalType.values.firstWhere(
         (e) => e.toString().split('.').last.toLowerCase() == t.toLowerCase(),
-        orElse: () => ElementalType.normal,
+        orElse: () => ElementalType.basic,
       );
     }).toList();
   }

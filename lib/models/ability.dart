@@ -156,6 +156,15 @@ class Ability {
       conditions: ['contact'],
     ),
     Ability(
+      name: 'Poison Skin',
+      description: 'May poison a target on contact.',
+      trigger: AbilityTrigger.onDamageTaken,
+      effectType: AbilityEffectType.statusChange,
+      value: 'poison',
+      chance: 0.5,
+      conditions: ['contact'],
+    ),
+    Ability(
       name: 'Fur Coat',
       description: 'Doubles the organism\'s Defense stat.',
       trigger: AbilityTrigger.onCalculateStat,
@@ -201,6 +210,217 @@ class Ability {
       trigger: AbilityTrigger.onStatusAttempt,
       effectType: AbilityEffectType.preventStatus,
       value: 'poison',
+    ),
+    Ability(
+      name: 'Static',
+      description: 'May paralyze a target on contact.',
+      trigger: AbilityTrigger.onDamageTaken,
+      effectType: AbilityEffectType.statusChange,
+      value: 'paralysis',
+      chance: 0.3,
+      conditions: ['contact'],
+    ),
+    Ability(
+      name: 'Flame Body',
+      description: 'May burn a target on contact.',
+      trigger: AbilityTrigger.onDamageTaken,
+      effectType: AbilityEffectType.statusChange,
+      value: 'burn',
+      chance: 0.3,
+      conditions: ['contact'],
+    ),
+    Ability(
+      name: 'Spiky Body',
+      description: 'May cause bleeding on contact.',
+      trigger: AbilityTrigger.onDamageTaken,
+      effectType: AbilityEffectType.statusChange,
+      value: 'bleed',
+      chance: 0.3,
+      conditions: ['contact'],
+    ),
+    Ability(
+      name: 'Comatose',
+      description:
+          'The organism is always asleep and cannot be inflicted with other status conditions.',
+      trigger: AbilityTrigger.onStatusAttempt,
+      effectType: AbilityEffectType.preventStatus,
+      value: 'all', // Special value for 'all' statuses
+    ),
+    Ability(
+      name: 'Competitive',
+      description:
+          'Boosts Special Attack by two stages when a stat is lowered.',
+      trigger: AbilityTrigger.onStatLoss,
+      effectType: AbilityEffectType.statChange,
+      targetStat: 'power', // Assuming 'power' is Special Attack equivalent
+      magnitude: 2,
+    ),
+    Ability(
+      name: 'Earth Eater',
+      description: 'Restores HP when hit by a Ground-type move.',
+      trigger: AbilityTrigger.onDamageTaken, // Special handling in logic
+      effectType: AbilityEffectType.none,
+    ),
+    Ability(
+      name: 'Gooey',
+      description: 'Lowers the speed of the attacker on contact.',
+      trigger: AbilityTrigger.onDamageTaken,
+      effectType: AbilityEffectType.statChange,
+      targetStat: 'speed',
+      magnitude: -1,
+      conditions: ['contact'],
+    ),
+    Ability(
+      name: 'Gorilla Tactics',
+      description:
+          'Boosts Attack but only allows the use of the first selected move.',
+      trigger: AbilityTrigger.onCalculateStat,
+      effectType: AbilityEffectType.statMultiplier,
+      targetStat: 'attack',
+      magnitude: 1.5,
+    ),
+    Ability(
+      name: 'Guard Dog',
+      description: 'Prevents the effect of Intimidate and forced switching.',
+      trigger: AbilityTrigger.onStatLoss,
+      effectType: AbilityEffectType.preventStatLoss,
+    ),
+    Ability(
+      name: 'Heatproof',
+      description: 'Halves the damage taken from Fire-type moves.',
+      trigger: AbilityTrigger.onCalculateDamage,
+      effectType: AbilityEffectType.damageMultiplier,
+      magnitude: 0.5,
+      conditions: ['type_fire'],
+    ),
+    Ability(
+      name: 'Huge Power',
+      description: 'Doubles the Attack stat.',
+      trigger: AbilityTrigger.onCalculateStat,
+      effectType: AbilityEffectType.statMultiplier,
+      targetStat: 'attack',
+      magnitude: 2.0,
+    ),
+    Ability(
+      name: 'Hustle',
+      description: 'Boosts Attack by 50% but lowers accuracy.',
+      trigger: AbilityTrigger.onCalculateStat,
+      effectType: AbilityEffectType.statMultiplier,
+      targetStat: 'attack',
+      magnitude: 1.5,
+    ),
+    Ability(
+      name: 'Hydration',
+      description:
+          'Cures status conditions at the end of the turn if it is raining.',
+      trigger: AbilityTrigger.onTurnEnd,
+      effectType: AbilityEffectType.statusChange, // Cure
+      conditions: ['weather_rain'],
+    ),
+    Ability(
+      name: 'Mimic', // Renamed Illusion
+      description: 'Disguises itself as the last animal in the party.',
+      trigger: AbilityTrigger.onEntry,
+      effectType: AbilityEffectType.none,
+    ),
+    Ability(
+      name: 'Insomnia',
+      description: 'Prevents the organism from falling asleep.',
+      trigger: AbilityTrigger.onStatusAttempt,
+      effectType: AbilityEffectType.preventStatus,
+      value: 'sleep',
+    ),
+    Ability(
+      name: 'Iron Barbs',
+      description: 'Damages the attacker on contact.',
+      trigger: AbilityTrigger.onDamageTaken,
+      effectType: AbilityEffectType.none, // Special damage logic
+      conditions: ['contact'],
+    ),
+    Ability(
+      name: 'Marvel Scale',
+      description:
+          'Boosts Defense by 50% if the organism has a status condition.',
+      trigger: AbilityTrigger.onCalculateStat,
+      effectType: AbilityEffectType.statMultiplier,
+      targetStat: 'defense',
+      magnitude: 1.5,
+      conditions: ['statused'],
+    ),
+    Ability(
+      name: 'Merciless',
+      description: 'Attacks become critical hits if the target is poisoned.',
+      trigger: AbilityTrigger.onCalculateDamage, // Crit check
+      effectType: AbilityEffectType.none,
+    ),
+    Ability(
+      name: 'Moody',
+      description:
+          'Raises one stat and lowers another at the end of every turn.',
+      trigger: AbilityTrigger.onTurnEnd,
+      effectType: AbilityEffectType.none, // Special logic
+    ),
+    Ability(
+      name: 'Multiscale',
+      description: 'Reduces damage taken when HP is full.',
+      trigger: AbilityTrigger.onCalculateDamage,
+      effectType: AbilityEffectType.damageMultiplier,
+      magnitude: 0.5,
+      conditions: ['full_hp'],
+    ),
+    Ability(
+      name: 'Natural Cure',
+      description: 'Cures status conditions upon switching out.',
+      trigger: AbilityTrigger.none, // Switch logic
+      effectType: AbilityEffectType.none,
+    ),
+    Ability(
+      name: 'No Guard',
+      description:
+          'Ensures that all moves used by or against the organism land.',
+      trigger: AbilityTrigger.none, // Accuracy logic
+      effectType: AbilityEffectType.none,
+    ),
+    Ability(
+      name: 'Overcoat',
+      description: 'Protects from weather damage and powder moves.',
+      trigger: AbilityTrigger.onDamageTaken, // And move logic
+      effectType: AbilityEffectType.none,
+    ),
+    Ability(
+      name: 'Parental Bond',
+      description: 'Allows the organism to attack twice in one turn.',
+      trigger: AbilityTrigger.onDamageDealt, // Or move execution logic
+      effectType: AbilityEffectType.none,
+    ),
+    Ability(
+      name: 'Poison Heal',
+      description:
+          'Restores HP if the organism is poisoned instead of losing HP.',
+      trigger: AbilityTrigger.onTurnEnd, // Or status damage logic
+      effectType: AbilityEffectType.none,
+    ),
+    Ability(
+      name: 'Prankster',
+      description: 'Gives priority to status moves.',
+      trigger: AbilityTrigger.onCalculatePriority,
+      effectType: AbilityEffectType.priorityBoost,
+      magnitude: 1,
+      conditions: ['move_category_status'],
+    ),
+    Ability(
+      name: 'Reckless',
+      description: 'Boosts the power of recoil moves.',
+      trigger: AbilityTrigger.onCalculateDamage,
+      effectType: AbilityEffectType.damageMultiplier,
+      magnitude: 1.2,
+      conditions: ['move_recoil'], // Needs flag in Move
+    ),
+    Ability(
+      name: 'Regenerator',
+      description: 'Restores a little HP when withdrawn from battle.',
+      trigger: AbilityTrigger.none, // Switch logic
+      effectType: AbilityEffectType.none,
     ),
 
     // --- Existing/Original Abilities ---
@@ -280,6 +500,13 @@ class Ability {
     Ability(
       name: 'Camouflage Carapace',
       description: 'In Swamp biome, user gains Stealth on entry.',
+      trigger: AbilityTrigger.onEntry,
+      effectType: AbilityEffectType.statusChange,
+      value: 'stealth',
+    ),
+    Ability(
+      name: 'Reef Camouflage',
+      description: 'In Coral Reef biome, user gains Stealth on entry.',
       trigger: AbilityTrigger.onEntry,
       effectType: AbilityEffectType.statusChange,
       value: 'stealth',

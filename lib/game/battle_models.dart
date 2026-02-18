@@ -206,6 +206,25 @@ class BattleOrganism {
       if (ability.conditions.isEmpty) {
         totalMultiplier *= ability.magnitude;
       }
+
+      // --- Batch 2 Ability Logic ---
+      if (ability.name == 'Fur Coat' && statName == 'defense') {
+        totalMultiplier *= 2.0;
+      } else if (ability.name == 'Huge Power' && statName == 'attack') {
+        totalMultiplier *= 2.0;
+      } else if (ability.name == 'Gorilla Tactics' && statName == 'attack') {
+        totalMultiplier *= 1.5;
+      } else if (ability.name == 'Hustle' && statName == 'attack') {
+        totalMultiplier *= 1.5;
+      } else if (ability.name == 'Guts' &&
+          statName == 'attack' &&
+          statusEffects.isNotEmpty) {
+        totalMultiplier *= 1.5;
+      } else if (ability.name == 'Marvel Scale' &&
+          statName == 'defense' &&
+          statusEffects.isNotEmpty) {
+        totalMultiplier *= 1.5;
+      }
     }
     return totalMultiplier;
   }

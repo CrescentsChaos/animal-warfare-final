@@ -170,7 +170,7 @@ class Move {
     this.recoilPercent = 0.0,
     this.minHits = 1,
     this.maxHits = 1,
-    this.type = ElementalType.normal, // Default
+    this.type = ElementalType.basic, // Default
     this.stamina = defaultStamina, // Default stamina
     this.category = MoveCategory.physical, // Default
     this.damageStat =
@@ -240,9 +240,9 @@ class Move {
       type: json['type'] != null
           ? ElementalType.values.firstWhere(
               (e) => e.toString().split('.').last == json['type'],
-              orElse: () => ElementalType.normal,
+              orElse: () => ElementalType.basic,
             )
-          : ElementalType.normal,
+          : ElementalType.basic,
       stamina: json['stamina'] as int? ?? defaultStamina,
       category: category,
       damageStat:

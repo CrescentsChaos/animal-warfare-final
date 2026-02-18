@@ -4,7 +4,7 @@
         "description": "The user grabs the target and spins violently, tearing and crushing at the same time.",
         "baseDamage": 80,
         "type": "aquatic",
-        "stamina": 5,
+        "stamina": 15,
         "category": "physical",
         "effects": [
             {
@@ -17,10 +17,131 @@
         ]
     },
     {
+        "name": "Aurora Beam",
+        "description": "10% chance to lower the opponent's attack.",
+        "baseDamage": 65,
+        "type": "cryo",
+        "accuracy": 100,
+        "stamina": 20,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "attack",
+                "value": -1,
+                "chance": 10
+            }
+        ]
+    },
+    {
+        "name": "Blizzard",
+        "description": "10% chance to freeze the opponent.",
+        "baseDamage": 110,
+        "type": "cryo",
+        "accuracy": 70,
+        "stamina": 8,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statusFreeze",
+                "target": "opponent",
+                "chance": 10
+            }
+        ]
+    },
+    {
+        "name": "Glacial Lance",
+        "description": "Massive damage.",
+        "baseDamage": 130,
+        "type": "cryo",
+        "accuracy": 100,
+        "stamina": 8,
+        "category": "physical",
+        "effects": []
+    },
+    {
+        "name": "Mountain Gale",
+        "description": "Massive damage.",
+        "baseDamage": 100,
+        "type": "cryo",
+        "accuracy": 85,
+        "stamina": 8,
+        "category": "physical",
+        "effects": []
+    },
+    {
+        "name": "Ice Beam",
+        "description": "10% chance to freeze the opponent.",
+        "baseDamage": 90,
+        "type": "cryo",
+        "accuracy": 100,
+        "stamina": 15,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statusFreeze",
+                "target": "opponent",
+                "chance": 10
+            }
+        ]
+    },
+    {
+        "name": "Ice Fang",
+        "description": "10% chance to freeze the opponent.",
+        "baseDamage": 65,
+        "type": "cryo",
+        "accuracy": 95,
+        "stamina": 15,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusFreeze",
+                "target": "opponent",
+                "chance": 10
+            }
+        ]
+    },
+    {
+        "name": "Sheer Cold",
+        "description": "OHKO anyone.",
+        "baseDamage": 9999,
+        "type": "cryo",
+        "accuracy": 30,
+        "stamina": 15,
+        "category": "special"
+    },
+    {
+        "name": "Powder Snow",
+        "description": "10% chance to freeze the opponent.",
+        "baseDamage": 40,
+        "type": "cryo",
+        "accuracy": 100,
+        "stamina": 25,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statusFreeze",
+                "target": "opponent",
+                "chance": 10
+            }
+        ]
+    },
+    {
+        "name": "Freeze-Dry",
+        "description": "2x damage to aquatic types.",
+        "baseDamage": 70,
+        "type": "cryo",
+        "accuracy": 100,
+        "stamina": 15,
+        "category": "special",
+        "effects": []
+    },
+    {
         "name": "Scratch",
         "description": "A basic attack.",
         "baseDamage": 10,
-        "type": "normal",
+        "type": "basic",
         "stamina": 35,
         "accuracy": 100,
         "category": "physical",
@@ -30,7 +151,7 @@
         "name": "Headbutt",
         "description": "A basic attack.",
         "baseDamage": 70,
-        "type": "normal",
+        "type": "basic",
         "stamina": 15,
         "accuracy": 90,
         "category": "physical",
@@ -40,7 +161,7 @@
         "name": "Stomp",
         "description": "A basic attack.",
         "baseDamage": 65,
-        "type": "normal",
+        "type": "basic",
         "stamina": 25,
         "accuracy": 95,
         "category": "physical",
@@ -50,7 +171,7 @@
         "name": "Claw Swipe",
         "description": "A basic attack.",
         "baseDamage": 20,
-        "type": "normal",
+        "type": "basic",
         "stamina": 30,
         "category": "physical",
         "effects": []
@@ -69,8 +190,17 @@
     {
         "name": "Kick",
         "description": "A basic attack.",
-        "baseDamage": 20,
-        "type": "normal",
+        "baseDamage": 60,
+        "type": "martial",
+        "stamina": 30,
+        "category": "physical",
+        "effects": []
+    },
+    {
+        "name": "Punch",
+        "description": "A basic attack.",
+        "baseDamage": 60,
+        "type": "martial",
         "stamina": 30,
         "category": "physical",
         "effects": []
@@ -79,7 +209,7 @@
         "name": "Vice Grip",
         "description": "A basic attack.",
         "baseDamage": 55,
-        "type": "normal",
+        "type": "basic",
         "stamina": 30,
         "category": "physical",
         "effects": []
@@ -88,7 +218,7 @@
         "name": "Slash",
         "description": "A basic attack.",
         "baseDamage": 30,
-        "type": "normal",
+        "type": "basic",
         "critRate": 1,
         "stamina": 20,
         "category": "physical",
@@ -97,7 +227,7 @@
     {
         "name": "Peck",
         "description": "A basic attack.",
-        "baseDamage": 10,
+        "baseDamage": 35,
         "type": "flying",
         "stamina": 35,
         "category": "physical",
@@ -106,7 +236,7 @@
     {
         "name": "Wing Flap",
         "description": "A basic attack.",
-        "baseDamage": 15,
+        "baseDamage": 40,
         "type": "flying",
         "stamina": 35,
         "category": "physical",
@@ -156,7 +286,7 @@
     {
         "name": "Glide",
         "description": "A strong wing attack.",
-        "baseDamage": 40,
+        "baseDamage": 60,
         "type": "flying",
         "stamina": 20,
         "category": "physical",
@@ -171,10 +301,10 @@
     {
         "name": "Venom Sting",
         "description": "May poison the foe.",
-        "baseDamage": 8,
-        "type": "venomous",
+        "baseDamage": 40,
+        "type": "toxic",
         "stamina": 25,
-        "category": "special",
+        "category": "physical",
         "effects": [
             {
                 "type": "statusPoison",
@@ -184,19 +314,10 @@
         ]
     },
     {
-        "name": "Chomp",
-        "description": "A basic attack.",
-        "baseDamage": 70,
-        "type": "aquatic",
-        "stamina": 25,
-        "category": "physical",
-        "effects": []
-    },
-    {
         "name": "Venomous Fang",
         "description": "May poison the foe.",
         "baseDamage": 65,
-        "type": "venomous",
+        "type": "toxic",
         "stamina": 15,
         "category": "physical",
         "effects": [
@@ -211,7 +332,7 @@
         "name": "Venom Spit",
         "description": "May poison the foe.",
         "baseDamage": 65,
-        "type": "venomous",
+        "type": "toxic",
         "stamina": 15,
         "category": "special",
         "effects": [
@@ -226,7 +347,7 @@
         "name": "Withdraw",
         "description": "Raises the user's defense.",
         "baseDamage": 0,
-        "type": "armored",
+        "type": "metal",
         "stamina": 10,
         "category": "status",
         "effects": [
@@ -243,7 +364,7 @@
         "description": "Creates a massive displacement wave that slows all enemies.",
         "baseDamage": 90,
         "accuracy": 100,
-        "type": "giant",
+        "type": "aquatic",
         "stamina": 10,
         "category": "physical",
         "effects": [
@@ -255,6 +376,35 @@
                 "chance": 100
             }
         ]
+    },
+    {
+        "name": "Glaciate",
+        "description": "Lowers the opponent's speed.",
+        "baseDamage": 65,
+        "accuracy": 95,
+        "type": "cryo",
+        "stamina": 10,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "speed",
+                "value": -1,
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Frost Breath",
+        "description": "Always critical hits.",
+        "baseDamage": 60,
+        "accuracy": 90,
+        "type": "cryo",
+        "stamina": 10,
+        "critRate": 3,
+        "category": "special",
+        "effects": []
     },
     {
         "name": "Vortex Suction",
@@ -280,6 +430,7 @@
     {
         "name": "Surf",
         "description": "User surfs at the edge of the water.",
+        "soundEffect": "audio/effects/surf.mp3",
         "baseDamage": 90,
         "accuracy": 100,
         "type": "aquatic",
@@ -355,7 +506,7 @@
         "description": "A surgical strike with the front horn. High critical-hit ratio.",
         "baseDamage": 95,
         "accuracy": 100,
-        "type": "normal",
+        "type": "basic",
         "stamina": 10,
         "category": "physical",
         "critRate": 2
@@ -374,7 +525,7 @@
         "name": "Scary Face",
         "description": "A terrifying glare that halts the opponent in their tracks.",
         "baseDamage": 0,
-        "type": "normal",
+        "type": "basic",
         "stamina": 15,
         "category": "status",
         "effects": [
@@ -441,7 +592,7 @@
         "description": "A ghostly call from the ancient past. Ignores the target's stat changes.",
         "baseDamage": 80,
         "accuracy": 100,
-        "type": "normal",
+        "type": "basic",
         "stamina": 10,
         "category": "special",
         "damageStat": "power",
@@ -602,7 +753,7 @@
         "soundEffect": "audio/effects/chomp.mp3",
         "baseDamage": 120,
         "accuracy": 85,
-        "type": "normal",
+        "type": "basic",
         "stamina": 20,
         "category": "physical",
         "effects": [
@@ -668,6 +819,60 @@
         ]
     },
     {
+        "name": "Icy Wind",
+        "description": "Lowers the opponent's speed.",
+        "baseDamage": 55,
+        "accuracy": 95,
+        "type": "cryo",
+        "stamina": 10,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "speed",
+                "value": -1,
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Glacial Updraft",
+        "description": "May lowers the opponent's speed.",
+        "baseDamage": 95,
+        "accuracy": 100,
+        "type": "cryo",
+        "stamina": 10,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "speed",
+                "value": -1,
+                "chance": 30
+            }
+        ]
+    },
+    {
+        "name": "Ice Hammer",
+        "description": "Lowers the user's speed.",
+        "baseDamage": 100,
+        "accuracy": 90,
+        "type": "cryo",
+        "stamina": 10,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "speed",
+                "value": -1,
+                "chance": 100
+            }
+        ]
+    },
+    {
         "name": "Venomous Barb",
         "description": "A sudden whip of the tail that may bleed and poison.",
         "soundEffect": "audio/effects/agile.mp3",
@@ -693,7 +898,7 @@
         "name": "Slick Skin",
         "description": "Secretes a \"blood sweat\" that makes the user hard to grab.",
         "baseDamage": 0,
-        "type": "normal",
+        "type": "basic",
         "stamina": 12,
         "category": "status",
         "effects": [
@@ -725,7 +930,7 @@
         "name": "Tree Scramble",
         "description": "Deals damage and raises user's Speed by 1.",
         "baseDamage": 50,
-        "type": "normal",
+        "type": "basic",
         "stamina": 15,
         "category": "physical",
         "effects": [
@@ -741,16 +946,15 @@
         "name": "Arctic Maul",
         "description": "30% chance to Slow the target.",
         "baseDamage": 95,
-        "type": "normal",
-        "stamina": 25,
+        "type": "cryo",
+        "stamina": 15,
         "accuracy": 85,
         "category": "physical",
         "effects": [
             {
-                "type": "statChange",
+                "type": "statusFreeze",
                 "target": "opponent",
-                "stat": "speed",
-                "value": -1
+                "chance": 10
             }
         ]
     },
@@ -758,7 +962,7 @@
         "name": "Kodiak Crush",
         "description": "High damage; reduces opponent's Defense by 1.",
         "baseDamage": 110,
-        "type": "normal",
+        "type": "basic",
         "stamina": 15,
         "accuracy": 80,
         "category": "physical",
@@ -775,7 +979,7 @@
         "name": "Claw Penetration",
         "description": "reduces opponent's Defense by 2.",
         "baseDamage": 70,
-        "type": "normal",
+        "type": "basic",
         "stamina": 15,
         "accuracy": 90,
         "category": "physical",
@@ -803,7 +1007,7 @@
         "description": "Has a very high Critical Hit ratio.",
         "soundEffect": "audio/effects/chomp.mp3",
         "baseDamage": 65,
-        "type": "normal",
+        "type": "basic",
         "stamina": 20,
         "accuracy": 100,
         "category": "physical",
@@ -848,7 +1052,7 @@
         "soundEffect": "audio/effects/chomp.mp3",
         "baseDamage": 110,
         "accuracy": 85,
-        "type": "normal",
+        "type": "basic",
         "stamina": 20,
         "category": "physical",
         "effects": [
@@ -882,7 +1086,7 @@
         "description": "10% chance to burn the target.",
         "baseDamage": 90,
         "accuracy": 100,
-        "type": "fire",
+        "type": "blaze",
         "stamina": 15,
         "category": "special",
         "effects": [
@@ -899,7 +1103,7 @@
         "description": "10% chance to burn the target.",
         "baseDamage": 40,
         "accuracy": 100,
-        "type": "fire",
+        "type": "blaze",
         "stamina": 25,
         "category": "special",
         "effects": [
@@ -917,7 +1121,25 @@
         "baseDamage": 90,
         "accuracy": 100,
         "type": "arthropod",
-        "stamina": 10,
+        "stamina": 15,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "resistance",
+                "value": -1,
+                "chance": 10
+            }
+        ]
+    },
+    {
+        "name": "Psychic",
+        "description": "10% chance to lower the target's resistance.",
+        "baseDamage": 90,
+        "accuracy": 100,
+        "type": "aura",
+        "stamina": 15,
         "category": "special",
         "effects": [
             {
@@ -991,6 +1213,57 @@
         ]
     },
     {
+        "name": "Dark Pulse",
+        "description": "30% chance to stun the target.",
+        "baseDamage": 80,
+        "accuracy": 100,
+        "type": "darkness",
+        "stamina": 15,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statusStun",
+                "target": "opponent",
+                "value": 1,
+                "chance": 30
+            }
+        ]
+    },
+    {
+        "name": "Icicle Crash",
+        "description": "30% chance to stun the target.",
+        "baseDamage": 85,
+        "accuracy": 90,
+        "type": "cryo",
+        "stamina": 15,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusStun",
+                "target": "opponent",
+                "value": 1,
+                "chance": 30
+            }
+        ]
+    },
+    {
+        "name": "Rock Slide",
+        "description": "30% chance to stun the target.",
+        "baseDamage": 75,
+        "accuracy": 90,
+        "type": "rock",
+        "stamina": 15,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusStun",
+                "target": "opponent",
+                "value": 1,
+                "chance": 30
+            }
+        ]
+    },
+    {
         "name": "Event Horizon Gulp",
         "description": "The ultimate apex move. Swallows weakened foes whole.",
         "soundEffect": "audio/effects/gulp.mp3",
@@ -1003,6 +1276,28 @@
         "effects": [
             {
                 "type": "recharge"
+            }
+        ]
+    },
+    {
+        "name": "Freeze Shock",
+        "description": "30% chance to cause paralysis and recharges.",
+        "soundEffect": "audio/effects/gulp.mp3",
+        "baseDamage": 140,
+        "accuracy": 90,
+        "type": "cryo",
+        "stamina": 5,
+        "category": "physical",
+        "customUsageText": "The whale creates a massive vacuum suction!",
+        "effects": [
+            {
+                "type": "recharge"
+            },
+            {
+                "type": "statusParalysis",
+                "target": "opponent",
+                "value": 1,
+                "chance": 30
             }
         ]
     },
@@ -1139,7 +1434,7 @@
         "name": "Paralyzing Sting",
         "description": "Stinging cells that may paralyze the foe.",
         "baseDamage": 35,
-        "type": "venomous",
+        "type": "toxic",
         "stamina": 20,
         "category": "special",
         "effects": [
@@ -1171,7 +1466,7 @@
         "name": "Drifting Tentacles",
         "description": "Sets a stinging field that makes opponents vulnerable.",
         "baseDamage": 0,
-        "type": "venomous",
+        "type": "toxic",
         "stamina": 10,
         "category": "status",
         "effects": [
@@ -1249,7 +1544,7 @@
         "description": "A poisonous tongue slap.",
         "soundEffect": "audio/effects/agile.mp3",
         "baseDamage": 70,
-        "type": "poisonous",
+        "type": "toxic",
         "stamina": 20,
         "priority": 1,
         "category": "physical",
@@ -1265,7 +1560,7 @@
         "name": "Hiss",
         "description": "Lowers the opponent's attack.",
         "baseDamage": 0,
-        "type": "venomous",
+        "type": "toxic",
         "stamina": 25,
         "category": "status",
         "effects": [
@@ -1278,10 +1573,10 @@
         ]
     },
     {
-        "name": "normaly Circle",
-        "description": "Lowers the opponent's defense.",
+        "name": "Predatory Circle",
+        "description": "Applies fear to the opponent.",
         "baseDamage": 0,
-        "type": "normal",
+        "type": "darkness",
         "stamina": 25,
         "category": "status",
         "effects": [
@@ -1318,7 +1613,7 @@
         "name": "Warning Colors",
         "description": "The user shows its vibrant colors to warn.",
         "baseDamage": 0,
-        "type": "poisonous",
+        "type": "toxic",
         "stamina": 20,
         "category": "status",
         "effects": [
@@ -1359,7 +1654,7 @@
         "description": "A healing nap.",
         "soundEffect": "audio/effects/absorb.mp3",
         "baseDamage": 0,
-        "type": "ground",
+        "type": "earth",
         "stamina": 5,
         "category": "status",
         "effects": [
@@ -1375,7 +1670,7 @@
         "description": "A full-body charge.",
         "baseDamage": 40,
         "accuracy": 95,
-        "type": "giant",
+        "type": "basic",
         "stamina": 35,
         "category": "physical",
         "effects": []
@@ -1385,7 +1680,7 @@
         "description": "User pounces at the foe.",
         "baseDamage": 60,
         "accuracy": 85,
-        "type": "normal",
+        "type": "basic",
         "stamina": 15,
         "category": "physical",
         "effects": []
@@ -1395,7 +1690,7 @@
         "description": "User lunges at the foe.",
         "baseDamage": 60,
         "accuracy": 85,
-        "type": "prey",
+        "type": "arthropod",
         "stamina": 15,
         "category": "physical",
         "effects": []
@@ -1405,7 +1700,7 @@
         "description": "Bites with vicious fangs.",
         "soundEffect": "audio/effects/chomp.mp3",
         "baseDamage": 60,
-        "type": "normal",
+        "type": "darkness",
         "stamina": 25,
         "category": "physical",
         "effects": [
@@ -1420,7 +1715,7 @@
         "name": "Hide",
         "description": "User gain stealth.",
         "baseDamage": 0,
-        "type": "normal",
+        "type": "basic",
         "stamina": 25,
         "category": "status",
         "effects": [
@@ -1436,7 +1731,7 @@
         "description": "Bites with vicious fangs.",
         "soundEffect": "audio/effects/chomp.mp3",
         "baseDamage": 30,
-        "type": "normal",
+        "type": "darkness",
         "stamina": 25,
         "category": "physical",
         "effects": [
@@ -1451,8 +1746,24 @@
         "name": "Crunch",
         "description": "Bites with vicious fangs.",
         "soundEffect": "audio/effects/chomp.mp3",
-        "baseDamage": 60,
-        "type": "normal",
+        "baseDamage": 80,
+        "type": "darkness",
+        "stamina": 15,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusBleed",
+                "value": 1,
+                "chance": 30
+            }
+        ]
+    },
+    {
+        "name": "Aqua Fang",
+        "description": "Bites with vicious fangs.",
+        "soundEffect": "audio/effects/chomp.mp3",
+        "baseDamage": 80,
+        "type": "aquatic",
         "stamina": 15,
         "category": "physical",
         "effects": [
@@ -1539,7 +1850,7 @@
         "name": "Sunny Day",
         "description": "Summons harsh sunlight.",
         "baseDamage": 0,
-        "type": "fire",
+        "type": "blaze",
         "stamina": 5,
         "category": "status",
         "effects": [
@@ -1557,7 +1868,7 @@
         "soundEffect": "audio/effects/agile.mp3",
         "baseDamage": 40,
         "priority": 1,
-        "type": "normal",
+        "type": "basic",
         "stamina": 30,
         "category": "physical",
         "effects": []
@@ -1568,7 +1879,29 @@
         "soundEffect": "audio/effects/agile.mp3",
         "baseDamage": 40,
         "priority": 1,
-        "type": "martial",
+        "type": "metal",
+        "stamina": 30,
+        "category": "physical",
+        "effects": []
+    },
+    {
+        "name": "Aqua Jet",
+        "description": "Strikes first.",
+        "soundEffect": "audio/effects/agile.mp3",
+        "baseDamage": 40,
+        "priority": 1,
+        "type": "aquatic",
+        "stamina": 30,
+        "category": "physical",
+        "effects": []
+    },
+    {
+        "name": "Ice Shard",
+        "description": "Strikes first.",
+        "soundEffect": "audio/effects/agile.mp3",
+        "baseDamage": 40,
+        "priority": 1,
+        "type": "cryo",
         "stamina": 30,
         "category": "physical",
         "effects": []
@@ -1579,8 +1912,8 @@
         "soundEffect": "audio/effects/agile.mp3",
         "baseDamage": 50,
         "priority": 1,
-        "type": "normal",
-        "stamina": 20,
+        "type": "basic",
+        "stamina": 15,
         "category": "physical",
         "effects": []
     },
@@ -1589,7 +1922,7 @@
         "description": "Strikes fast.",
         "soundEffect": "audio/effects/agile.mp3",
         "baseDamage": 70,
-        "type": "normal",
+        "type": "basic",
         "stamina": 20,
         "category": "physical"
     },
@@ -1599,8 +1932,8 @@
         "soundEffect": "audio/effects/chomp.mp3",
         "baseDamage": 120,
         "accuracy": 85,
-        "type": "normal",
-        "stamina": 20,
+        "type": "aquatic",
+        "stamina": 10,
         "category": "physical",
         "effects": [
             {
@@ -1617,7 +1950,7 @@
         "baseDamage": 15,
         "minHits": 2,
         "maxHits": 5,
-        "type": "normal",
+        "type": "basic",
         "stamina": 15,
         "category": "physical",
         "effects": []
@@ -1628,9 +1961,42 @@
         "baseDamage": 45,
         "minHits": 2,
         "maxHits": 3,
-        "type": "normal",
+        "type": "basic",
         "stamina": 20,
         "accuracy": 95,
+        "category": "physical"
+    },
+    {
+        "name": "Triple Axel",
+        "description": "Hits 3 times.",
+        "baseDamage": 20,
+        "minHits": 3,
+        "maxHits": 3,
+        "type": "cryo",
+        "stamina": 20,
+        "accuracy": 90,
+        "category": "physical"
+    },
+    {
+        "name": "Icicle Spear",
+        "description": "Hits 2-5 times.",
+        "baseDamage": 25,
+        "minHits": 2,
+        "maxHits": 5,
+        "type": "cryo",
+        "stamina": 20,
+        "accuracy": 100,
+        "category": "physical"
+    },
+    {
+        "name": "Bullet Seed",
+        "description": "Hits 2-5 times.",
+        "baseDamage": 25,
+        "minHits": 2,
+        "maxHits": 5,
+        "type": "grass",
+        "stamina": 20,
+        "accuracy": 100,
         "category": "physical"
     },
     {
@@ -1648,7 +2014,7 @@
         "name": "Camoflauge",
         "description": "Blends into the landscape. Grants Stealth.",
         "baseDamage": 0,
-        "type": "normal",
+        "type": "basic",
         "stamina": 15,
         "category": "status",
         "effects": [
@@ -1664,7 +2030,7 @@
         "description": "A lethal strike from the shadows. High Critical-Hit ratio.",
         "baseDamage": 90,
         "accuracy": 95,
-        "type": "normal",
+        "type": "spectral",
         "stamina": 18,
         "category": "physical",
         "critRate": 2
@@ -1696,7 +2062,7 @@
         "soundEffect": "audio/effects/tiger.mp3",
         "baseDamage": 90,
         "accuracy": 100,
-        "type": "normal",
+        "type": "basic",
         "stamina": 12,
         "category": "physical",
         "critRate": 2
@@ -1717,7 +2083,7 @@
         "description": "User shakes the ground with its raw strength.",
         "baseDamage": 100,
         "accuracy": 100,
-        "type": "ground",
+        "type": "earth",
         "stamina": 15,
         "category": "physical"
     },
@@ -1727,7 +2093,7 @@
         "soundEffect": "audio/effects/tiger.mp3",
         "baseDamage": 90,
         "accuracy": 100,
-        "type": "normal",
+        "type": "basic",
         "stamina": 15,
         "category": "physical"
     },
@@ -1755,15 +2121,14 @@
         "soundEffect": "audio/effects/agile.mp3",
         "baseDamage": 85,
         "accuracy": 100,
-        "type": "ice",
+        "type": "cryo",
         "stamina": 12,
         "category": "physical",
         "effects": [
             {
-                "type": "statusStun",
+                "type": "statusFreeze",
                 "target": "opponent",
-                "value": 1,
-                "chance": 30
+                "chance": 10
             }
         ]
     },
@@ -1772,7 +2137,7 @@
         "description": "Pokes the target into a vulnerable state by dragging them into the canopy.",
         "baseDamage": 80,
         "accuracy": 95,
-        "type": "normal",
+        "type": "basic",
         "stamina": 15,
         "category": "physical",
         "effects": [
@@ -1830,7 +2195,7 @@
         "description": "An eerie, blinding attack that confuses the target.",
         "baseDamage": 85,
         "accuracy": 95,
-        "type": "normal",
+        "type": "basic",
         "stamina": 15,
         "category": "physical",
         "effects": [
@@ -1890,11 +2255,22 @@
         "effects": []
     },
     {
+        "name": "Grave Glide",
+        "description": "Heals half damage dealt.",
+        "soundEffect": "audio/effects/absorb.mp3",
+        "baseDamage": 85,
+        "drainPercent": 0.5,
+        "type": "darkness",
+        "stamina": 10,
+        "category": "physical",
+        "effects": []
+    },
+    {
         "name": "Constrict",
         "description": "Traps and crushes the foe, dealing damage over time.",
         "baseDamage": 35,
         "accuracy": 90,
-        "type": "normal",
+        "type": "basic",
         "stamina": 20,
         "category": "physical",
         "effects": [
@@ -1924,7 +2300,7 @@
         "name": "Coil",
         "description": "The user gathers its body, boosting Attack, Defense, and Accuracy.",
         "baseDamage": 0,
-        "type": "normal",
+        "type": "basic",
         "stamina": 10,
         "category": "status",
         "effects": [
@@ -1962,7 +2338,7 @@
         "description": "High crit rate.",
         "baseDamage": 70,
         "critRate": 1,
-        "type": "normal",
+        "type": "basic",
         "stamina": 15,
         "category": "physical",
         "effects": []
@@ -1971,7 +2347,7 @@
         "name": "Confuse Ray",
         "description": "Confuses the foe.",
         "baseDamage": 0,
-        "type": "normal",
+        "type": "basic",
         "stamina": 10,
         "category": "status",
         "effects": [
@@ -1986,7 +2362,7 @@
         "name": "Glare",
         "description": "Stuns the foe.",
         "baseDamage": 0,
-        "type": "normal",
+        "type": "basic",
         "stamina": 10,
         "category": "status",
         "effects": [
@@ -2001,7 +2377,7 @@
         "name": "Poison Jab",
         "description": "Damage + Poison.",
         "baseDamage": 80,
-        "type": "venomous",
+        "type": "toxic",
         "stamina": 15,
         "category": "physical",
         "effects": [
@@ -2038,7 +2414,7 @@
         "name": "Dig",
         "description": "The user burrows into the ground, then attacks on the next turn.",
         "baseDamage": 80,
-        "type": "ground",
+        "type": "earth",
         "stamina": 10,
         "category": "physical",
         "effects": [
@@ -2053,7 +2429,7 @@
         "description": "The user goes to sleep for two turns. This fully restores the user's HP.",
         "soundEffect": "audio/effects/absorb.mp3",
         "baseDamage": 0,
-        "type": "normal",
+        "type": "basic",
         "stamina": 5,
         "category": "status",
         "effects": [
@@ -2074,7 +2450,7 @@
         "description": "Enables the user to evade all attacks. Its chance of failing rises if it is used in succession.",
         "soundEffect": "audio/effects/protect.mp3",
         "baseDamage": 0,
-        "type": "normal",
+        "type": "basic",
         "stamina": 10,
         "priority": 4,
         "category": "status",
@@ -2104,7 +2480,7 @@
         "description": "This move enables the user to attack first. This move fails if the target is not preparing an attack.",
         "baseDamage": 70,
         "priority": 1,
-        "type": "normal",
+        "type": "darkness",
         "stamina": 5,
         "category": "physical",
         "failIfTargetNotAttacking": true,
@@ -2122,6 +2498,21 @@
                 "type": "multiStatChange",
                 "target": "self",
                 "stat": "attack:2,power:2,speed:2,defense:-1,resistance:-1"
+            }
+        ]
+    },
+    {
+        "name": "Shell Shift",
+        "description": "The user shifts its shell, which raises Defense and Resistance but lowers Speed.",
+        "baseDamage": 0,
+        "type": "rock",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "multiStatChange",
+                "target": "self",
+                "stat": "speed:-1,defense:1,resistance:1"
             }
         ]
     },
@@ -2159,7 +2550,7 @@
         "name": "Ancient Power",
         "description": "The user attacks with a prehistoric power. This may also raise all the user's stats at once.",
         "baseDamage": 60,
-        "type": "normal",
+        "type": "basic",
         "stamina": 5,
         "category": "special",
         "effects": [
@@ -2175,7 +2566,7 @@
         "name": "Assurance",
         "description": "If the target has already taken some damage in the same turn, this move's power is doubled.",
         "baseDamage": 60,
-        "type": "normal",
+        "type": "basic",
         "stamina": 10,
         "category": "physical",
         "multiplierCondition": "target_damaged",
@@ -2187,7 +2578,7 @@
         "description": "In addition to protecting the user from attacks, this move also poisons any attacker that makes direct contact.",
         "soundEffect": "audio/effects/protect.mp3",
         "baseDamage": 0,
-        "type": "venomous",
+        "type": "toxic",
         "stamina": 10,
         "category": "status",
         "priority": 4,
@@ -2202,7 +2593,7 @@
         "name": "Barb Barrage",
         "description": "The user launches countless toxic spikes to inflict damage. This may also poison the target.",
         "baseDamage": 60,
-        "type": "venomous",
+        "type": "toxic",
         "stamina": 10,
         "category": "special",
         "effects": [
@@ -2233,7 +2624,7 @@
         "name": "Hyper Beam",
         "description": "The target is attacked with a powerful beam. The user can't move on the next turn.",
         "baseDamage": 150,
-        "type": "normal",
+        "type": "basic",
         "stamina": 5,
         "category": "special",
         "effects": [
@@ -2270,7 +2661,7 @@
         "name": "Bulk Up",
         "description": "The user tenses its muscles to bulk up its body, raising both Attack and Defense stats.",
         "baseDamage": 0,
-        "type": "normal",
+        "type": "basic",
         "stamina": 20,
         "category": "status",
         "effects": [
@@ -2286,7 +2677,7 @@
         "soundEffect": "audio/effects/chomp.mp3",
         "baseDamage": 70,
         "accuracy": 70,
-        "type": "normal",
+        "type": "darkness",
         "stamina": 15,
         "category": "physical",
         "effects": [
@@ -2310,7 +2701,7 @@
         "soundEffect": "audio/effects/chomp.mp3",
         "baseDamage": 50,
         "accuracy": 90,
-        "type": "normal",
+        "type": "basic",
         "stamina": 15,
         "category": "physical",
         "effects": [
@@ -2325,7 +2716,7 @@
         "name": "Intimidate",
         "description": "The user intimidates the foe, instilling Fear and reducing its stats by 10% for 2 turns.",
         "baseDamage": 0,
-        "type": "normal",
+        "type": "basic",
         "stamina": 10,
         "category": "status",
         "effects": [

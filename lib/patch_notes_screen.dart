@@ -33,26 +33,10 @@ class PatchNotesScreen extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.all(20),
           children: [
-            _buildVersionPadding('VERSION 0.1.2 (Current)'),
-            _buildNote('• Added Audio Volume & Mute Controls'),
-            _buildNote('• Added Contact Developer & Bug Report options'),
-            _buildNote('• Implemented Patch Notes section'),
-
-            const SizedBox(height: 30),
-            _buildVersionPadding('VERSION 0.1.1'),
-            _buildNote('• Fixed HP Scaling in Wild/Arena battles'),
-            _buildNote('• Improved Battle Log precision (1 decimal place)'),
-            _buildNote('• Optimized Battle Organism initialization'),
-            _buildNote(
-              '• Consolidated damage logging to remove double entries',
-            ),
-
-            const SizedBox(height: 30),
-            _buildVersionPadding('VERSION 0.1.0'),
-            _buildNote('• Initial release of Animal Warfare'),
-            _buildNote('• 100+ Unique Organisms to discover'),
-            _buildNote('• Turn-based battle system with status effects'),
-            _buildNote('• Biome-based encounters'),
+            _buildVersionPadding('VERSION 0.1.1 (Current)'),
+            _buildNote('• Changed many category names'),
+            _buildNote('• Fixed sound effects for some attacks'),
+            _buildNote('• Implemented visual status effects'),
           ],
         ),
       ),

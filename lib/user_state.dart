@@ -338,47 +338,89 @@ class UserState with ChangeNotifier {
     );
   }
 
-  Future<void> incrementRogueFloor() async {
+  Future<void> completeRogueEncounter() async {
     if (_currentUser == null) return;
     await LocalAuthService.loadOrganisms();
     await _readModifyWrite((u) {
       final state = u.rogueLikeState;
-      int newFloor = state.floor;
+      if (state.encounterIndex >= 4)
+        return u; // End of floor handled separately
+
       int newEncounter = state.encounterIndex + 1;
-      String? newBiome = state.currentBiome;
-      List<CapturedOrganism> nextTeam = List.from(state.team);
-      if (newEncounter >= 5) {
-        newFloor++;
-        newEncounter = 0;
-        newBiome = _getRandomBiome();
-        nextTeam = nextTeam.map((member) {
-          final int newLevel = member.level + 2;
-          var upgraded = member.copyWith(level: newLevel);
-          upgraded.restoreAllStamina();
-          return upgraded.copyWith(
-            currentHealth: upgraded.maxHealth,
-            statusEffects: [],
-          );
-        }).toList();
-      }
+
       final newOpponents = _generateRogueOpponentTeam(
-        newBiome ?? 'Forest',
+        state.currentBiome ?? 'Forest',
         newEncounter == 4 ? (2 + Random().nextInt(4)).clamp(2, 5) : 1,
+        state.floor,
+      );
+
+      return u.copyWith(
+        rogueLikeState: state.copyWith(
+          encounterIndex: newEncounter,
+          opponentTeam: newOpponents,
+          currentOpponentIndex: 0,
+        ),
+      );
+    });
+  }
+
+  List<String> generateBiomeOptions() {
+    final organisms = LocalAuthService.getCachedOrganisms();
+    List<String> allBiomes = organisms
+        .expand((o) => o.habitat.split(',').map((e) => e.trim()))
+        .toSet()
+        .toList();
+
+    if (allBiomes.isEmpty) {
+      allBiomes = ['Jungle', 'Desert', 'Savanna', 'River', 'Ocean', 'Mountain'];
+    }
+
+    final current = _currentUser?.rogueLikeState.currentBiome;
+    final options = allBiomes.where((b) => b != current).toList();
+    options.shuffle();
+    return options.take(2).toList();
+  }
+
+  Future<void> advanceToNextFloor(String selectedBiome) async {
+    if (_currentUser == null) return;
+    await LocalAuthService.loadOrganisms();
+    await _readModifyWrite((u) {
+      final state = u.rogueLikeState;
+      int newFloor = state.floor + 1;
+
+      // Team Upgrades
+      List<CapturedOrganism> nextTeam = state.team.map((member) {
+        final int newLevel = member.level + 2;
+        var upgraded = member.copyWith(level: newLevel);
+        upgraded.restoreAllStamina();
+        return upgraded.copyWith(
+          currentHealth: upgraded.maxHealth,
+          statusEffects: [],
+        );
+      }).toList();
+
+      final newOpponents = _generateRogueOpponentTeam(
+        selectedBiome,
+        1, // First encounter of new floor is always single
         newFloor,
       );
+
       int bestFloor = u.bestRogueFloor;
-      List<CapturedOrganism> bestTeam = List.from(u.bestRogueTeam);
+      List<CapturedOrganism> bestTeam = List<CapturedOrganism>.from(
+        u.bestRogueTeam,
+      );
       if (newFloor > bestFloor) {
         bestFloor = newFloor;
-        bestTeam = List.from(nextTeam);
+        bestTeam = List<CapturedOrganism>.from(nextTeam);
       }
+
       return u.copyWith(
         bestRogueFloor: bestFloor,
         bestRogueTeam: bestTeam,
         rogueLikeState: state.copyWith(
           floor: newFloor,
-          encounterIndex: newEncounter,
-          currentBiome: newBiome,
+          encounterIndex: 0,
+          currentBiome: selectedBiome,
           team: nextTeam,
           opponentTeam: newOpponents,
           currentOpponentIndex: 0,

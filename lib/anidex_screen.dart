@@ -421,7 +421,7 @@ class _AnidexScreenState extends State<AnidexScreen> {
                               final typeStr = cat.trim().toLowerCase();
                               final type = ElementalType.values.firstWhere(
                                 (e) => e.toString().split('.').last == typeStr,
-                                orElse: () => ElementalType.normal,
+                                orElse: () => ElementalType.basic,
                               );
                               return Container(
                                 padding: const EdgeInsets.symmetric(
@@ -789,7 +789,7 @@ class _AnidexScreenState extends State<AnidexScreen> {
           // The actual bar visualization
           Stack(
             children: [
-              // Background bar (max value)
+              // background bar (max value)
               Container(
                 height: 10,
                 decoration: BoxDecoration(
@@ -797,7 +797,7 @@ class _AnidexScreenState extends State<AnidexScreen> {
                   borderRadius: BorderRadius.circular(5),
                 ),
               ),
-              // Foreground bar (actual stat value)
+              // Foreearth bar (actual stat value)
               FractionallySizedBox(
                 widthFactor: fraction,
                 child: Container(
@@ -924,15 +924,15 @@ class _AnidexScreenState extends State<AnidexScreen> {
 
   Color _getAnimalTypeColor(ElementalType type) {
     switch (type) {
-      case ElementalType.normal:
-        return const Color(0xFFA8A77A);
+      case ElementalType.basic:
+        return const Color.fromARGB(255, 168, 168, 130);
       case ElementalType.flying:
         return const Color(0xFFA98FF3);
       case ElementalType.aquatic:
         return const Color.fromARGB(255, 46, 60, 255);
-      case ElementalType.ground:
+      case ElementalType.earth:
         return const Color(0xFFE2BF65);
-      case ElementalType.ice:
+      case ElementalType.cryo:
         return const Color.fromARGB(255, 0, 247, 255);
       case ElementalType.toxic:
         return const Color(0xFFA33EA1);
@@ -942,14 +942,24 @@ class _AnidexScreenState extends State<AnidexScreen> {
         return const Color.fromARGB(255, 111, 207, 0);
       case ElementalType.electric:
         return const Color.fromARGB(255, 255, 251, 27);
-      case ElementalType.nocturnal:
-        return const Color.fromARGB(255, 39, 0, 110);
+      case ElementalType.spectral:
+        return const Color.fromARGB(255, 91, 11, 240);
       case ElementalType.martial:
         return const Color.fromARGB(255, 160, 24, 0);
-      case ElementalType.fire:
+      case ElementalType.blaze:
         return const Color.fromARGB(255, 226, 72, 0);
       case ElementalType.grass:
         return const Color.fromARGB(255, 22, 131, 0);
+      case ElementalType.mystic:
+        return const Color.fromARGB(255, 255, 81, 162);
+      case ElementalType.darkness:
+        return const Color.fromARGB(255, 37, 36, 37);
+      case ElementalType.drake:
+        return const Color.fromARGB(255, 76, 0, 255);
+      case ElementalType.metal:
+        return const Color.fromARGB(255, 172, 168, 168);
+      case ElementalType.aura:
+        return const Color.fromARGB(255, 248, 255, 150);
     }
   }
 }

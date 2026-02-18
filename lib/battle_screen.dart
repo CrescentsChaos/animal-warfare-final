@@ -8,6 +8,8 @@ import 'package:animal_warfare/models/captured_organism.dart';
 import 'package:animal_warfare/game/battle_manager.dart';
 import 'package:animal_warfare/theme.dart';
 import 'package:animal_warfare/user_state.dart';
+import 'package:animal_warfare/rogue/rogue_hub_screen.dart';
+import 'package:animal_warfare/rogue/biome_select_screen.dart';
 import 'package:animal_warfare/models/weather.dart';
 import 'package:animal_warfare/models/terrain.dart';
 import 'package:animal_warfare/models/loot_item.dart';
@@ -16,6 +18,7 @@ import 'package:animal_warfare/services/audio_service.dart';
 import 'package:animal_warfare/models/organism.dart';
 import 'package:animal_warfare/models/elemental_type.dart'; // Added
 import 'package:animal_warfare/models/move.dart'; // Added
+import 'package:animal_warfare/models/status_effect.dart'; // Added for overlay
 import 'dart:math' as math;
 import 'dart:async';
 
@@ -178,15 +181,15 @@ class _BattleScreenContentState extends State<BattleScreenContent>
   // Helper: Get color for ElementalType
   Color _getTypeColor(ElementalType type) {
     switch (type) {
-      case ElementalType.normal:
-        return const Color(0xFFA8A77A);
+      case ElementalType.basic:
+        return const Color.fromARGB(255, 168, 168, 130);
       case ElementalType.flying:
         return const Color(0xFFA98FF3);
       case ElementalType.aquatic:
         return const Color.fromARGB(255, 46, 60, 255);
-      case ElementalType.ground:
+      case ElementalType.earth:
         return const Color(0xFFE2BF65);
-      case ElementalType.ice:
+      case ElementalType.cryo:
         return const Color.fromARGB(255, 0, 247, 255);
       case ElementalType.toxic:
         return const Color(0xFFA33EA1);
@@ -196,14 +199,24 @@ class _BattleScreenContentState extends State<BattleScreenContent>
         return const Color.fromARGB(255, 111, 207, 0);
       case ElementalType.electric:
         return const Color.fromARGB(255, 255, 251, 27);
-      case ElementalType.nocturnal:
-        return const Color.fromARGB(255, 39, 0, 110);
+      case ElementalType.spectral:
+        return const Color.fromARGB(255, 91, 11, 240);
       case ElementalType.martial:
         return const Color.fromARGB(255, 160, 24, 0);
-      case ElementalType.fire:
+      case ElementalType.blaze:
         return const Color.fromARGB(255, 226, 72, 0);
       case ElementalType.grass:
         return const Color.fromARGB(255, 22, 131, 0);
+      case ElementalType.mystic:
+        return const Color.fromARGB(255, 255, 81, 162);
+      case ElementalType.darkness:
+        return const Color.fromARGB(255, 37, 36, 37);
+      case ElementalType.drake:
+        return const Color.fromARGB(255, 76, 0, 255);
+      case ElementalType.metal:
+        return const Color.fromARGB(255, 172, 168, 168);
+      case ElementalType.aura:
+        return const Color.fromARGB(255, 248, 255, 150);
     }
   }
 
@@ -390,7 +403,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
       name = name.split(',')[0];
     }
 
-    // 2. Normalize
+    // 2. basicize
     name = name.trim().toLowerCase();
 
     // 3. Overrides/Fallbacks
@@ -1475,7 +1488,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                         final typeStr = cat.trim().toLowerCase();
                         final type = ElementalType.values.firstWhere(
                           (e) => e.toString().split('.').last == typeStr,
-                          orElse: () => ElementalType.normal,
+                          orElse: () => ElementalType.basic,
                         );
                         final typeColor = _getTypeColor(type);
 
@@ -2579,7 +2592,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
 
       // Handle loss - remove player's creature (death mechanic)
       // For Rogue-like mode, we remove from the Rogue run team
-      // For normal wild battles, we remove from user collection
+      // For basic wild battles, we remove from user collection
       if (battleManager.result == BattleResult.loss) {
         final deadCreature = battleManager.player.organism;
         if (widget.isRogueMode) {
@@ -2616,8 +2629,8 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           // Update team (always update to ensure the lead animal order is persisted)
           await userState.updateRogueTeam(survivingTeam);
 
-          // Increment floor
-          await userState.incrementRogueFloor();
+          // Increment encounter
+          await userState.completeRogueEncounter();
         } else if (battleManager.result == BattleResult.loss) {
           // LOSS IN ROGUE-LIKE: Fully reset the run and release all animals in the team
           await userState.endRogueRun();
@@ -2684,27 +2697,24 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                 (battleManager.result == BattleResult.win ||
                     battleManager.result == BattleResult.capture) &&
                 (userState.currentUser?.rogueLikeState.isActive ?? false)) {
-              // Sequence to next encounter: effectively restart this screen with new data
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(
-                  builder: (context) {
-                    final rogue = userState.currentUser!.rogueLikeState;
-                    return BattleScreen(
-                      playerOrganism:
-                          rogue.team[0], // Will be switched by BM if needed
-                      opponentOrganism: rogue.opponentTeam![0],
-                      biomeName: rogue.currentBiome ?? 'Forest',
-                      playerTeam: rogue.team,
-                      opponentTeam: rogue.opponentTeam,
-                      battleTitle:
-                          'Rogue Floor ${rogue.floor} - ${rogue.encounterIndex + 1}/5',
-                      isArenaBattle:
-                          rogue.encounterIndex == 4, // Boss is arena battle
-                      isRogueMode: true,
-                    );
-                  },
-                ),
-              );
+              final rogue = userState.currentUser!.rogueLikeState;
+
+              // Navigator logic:
+              // If end of floor (encounter 4 aka 5/5) -> Biome Select
+              // Else -> Hub Screen
+
+              if (rogue.encounterIndex == 4) {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (ctx) => const BiomeSelectScreen(),
+                  ),
+                );
+              } else {
+                // For non-boss battles, we go to the Hub
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (ctx) => const RogueHubScreen()),
+                );
+              }
             } else {
               Navigator.of(context).pop(battleManager.result);
             }
@@ -3850,6 +3860,35 @@ class _BattleSpriteState extends State<_BattleSprite>
           : imageWidget,
     );
 
+    // --- Status / Visibility Logic ---
+    final bo = widget.organism;
+    final isInvulnerable = bo.isInvulnerable;
+    final hasStealth = bo.statusEffects.any(
+      (se) => se.type == StatusEffectType.stealth,
+    );
+
+    // Primary status overlay (first non-none status)
+    final overlayStatus = bo.statusEffects.isNotEmpty
+        ? bo.statusEffects.firstWhere(
+            (se) => se.type != StatusEffectType.none,
+            orElse: () => const StatusEffect(type: StatusEffectType.none),
+          )
+        : const StatusEffect(type: StatusEffectType.none);
+    final overlayPath = overlayStatus.overlayAssetPath;
+
+    // Sprite and outline layers — hidden or faded based on state
+    final Widget spriteLayer = isInvulnerable
+        ? SizedBox(width: size, height: size)
+        : (hasStealth
+              ? Opacity(opacity: 0.35, child: enhancedImage)
+              : enhancedImage);
+
+    final Widget outlineLayer = isInvulnerable
+        ? const SizedBox.shrink()
+        : (hasStealth
+              ? Opacity(opacity: 0.35, child: outlineImage)
+              : outlineImage);
+
     return GestureDetector(
       onLongPress: widget.onLongPress,
       child: SizedBox(
@@ -3906,26 +3945,37 @@ class _BattleSpriteState extends State<_BattleSprite>
               ),
             ),
 
-            // Outline Layers (4 directions)
+            // Outline Layers (4 directions) — hidden/faded based on state
             Transform.translate(
               offset: const Offset(-outlineOffset, -outlineOffset),
-              child: outlineImage,
+              child: outlineLayer,
             ),
             Transform.translate(
               offset: const Offset(outlineOffset, -outlineOffset),
-              child: outlineImage,
+              child: outlineLayer,
             ),
             Transform.translate(
               offset: const Offset(-outlineOffset, outlineOffset),
-              child: outlineImage,
+              child: outlineLayer,
             ),
             Transform.translate(
               offset: const Offset(outlineOffset, outlineOffset),
-              child: outlineImage,
+              child: outlineLayer,
             ),
 
-            // The Sprite (Enhanced)
-            enhancedImage,
+            // The Sprite — hidden when invulnerable, faded when stealthed
+            spriteLayer,
+
+            // Status overlay image — shown on top of sprite when statused
+            if (!isInvulnerable && overlayPath != null)
+              Positioned.fill(
+                child: Image.asset(
+                  overlayPath,
+                  fit: BoxFit.contain,
+                  opacity: const AlwaysStoppedAnimation(0.85),
+                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                ),
+              ),
           ],
         ),
       ),

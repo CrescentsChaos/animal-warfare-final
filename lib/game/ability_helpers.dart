@@ -114,7 +114,7 @@ mixin AbilityHelpers {
 
       case AbilityEffectType.statusChange:
         final targetOrg = target ?? org;
-        final statusType = _parseStatusType(ability.value);
+        final statusType = parseStatusType(ability.value);
         if (statusType != null) {
           await _applyStatusEffect(
             targetOrg,
@@ -138,7 +138,7 @@ mixin AbilityHelpers {
     }
   }
 
-  StatusEffectType? _parseStatusType(String name) {
+  StatusEffectType? parseStatusType(String name) {
     final map = {
       'poison': StatusEffectType.poison,
       'burn': StatusEffectType.burn,

@@ -1,17 +1,22 @@
 enum ElementalType {
-  normal, // Fallback
+  basic, // Fallback
   flying,
   aquatic,
-  ground,
-  ice,
+  earth,
+  cryo,
   toxic,
   rock,
   arthropod,
   electric,
-  nocturnal,
+  darkness,
   martial,
-  fire,
+  blaze,
   grass,
+  mystic,
+  spectral,
+  drake,
+  metal,
+  aura,
 }
 
 class TypeChart {
@@ -19,7 +24,7 @@ class TypeChart {
     ElementalType moveType,
     ElementalType defenderType,
   ) {
-    if (moveType == ElementalType.normal) return 1.0;
+    if (moveType == ElementalType.basic) return 1.0;
 
     // Define weaknesses (Attacker -> Defender = 2.0x)
     // Define resistances (Attacker -> Defender = 0.5x)
@@ -28,31 +33,135 @@ class TypeChart {
       case ElementalType.electric:
         if (defenderType == ElementalType.flying) return 2.0;
         if (defenderType == ElementalType.aquatic) return 2.0;
-        if (defenderType == ElementalType.ground) return 0;
+        if (defenderType == ElementalType.electric) return 0.5;
+        if (defenderType == ElementalType.grass) return 0.5;
+        if (defenderType == ElementalType.drake) return 0.5;
+        if (defenderType == ElementalType.earth) return 0;
+        break;
+      case ElementalType.arthropod:
+        if (defenderType == ElementalType.grass) return 2.0;
+        if (defenderType == ElementalType.flying) return 0.5;
+        if (defenderType == ElementalType.rock) return 0.5;
+        if (defenderType == ElementalType.blaze) return 0.5;
+        if (defenderType == ElementalType.toxic) return 0.5;
+        break;
+      case ElementalType.blaze:
+        if (defenderType == ElementalType.arthropod) return 2.0;
+        if (defenderType == ElementalType.grass) return 2.0;
+        if (defenderType == ElementalType.cryo) return 2.0;
+        if (defenderType == ElementalType.blaze) return 0.5;
+        if (defenderType == ElementalType.rock) return 0.5;
+        if (defenderType == ElementalType.aquatic) return 0.5;
+        if (defenderType == ElementalType.drake) return 0.5;
         break;
       case ElementalType.rock:
         if (defenderType == ElementalType.flying) return 2.0;
         if (defenderType == ElementalType.arthropod) return 2.0;
-        if (defenderType == ElementalType.ice) return 0.5;
+        if (defenderType == ElementalType.cryo) return 2.0;
+        if (defenderType == ElementalType.earth) return 0.5;
+        if (defenderType == ElementalType.martial) return 0.5;
         break;
       case ElementalType.flying:
-        if (defenderType == ElementalType.aquatic) return 2.0; // Birds eat fish
         if (defenderType == ElementalType.arthropod) return 2.0;
-        if (defenderType == ElementalType.ground) return 0.5; // Can't reach
-        if (defenderType == ElementalType.ice) return 0.5;
+        if (defenderType == ElementalType.martial) return 2.0; // Can't reach
+        if (defenderType == ElementalType.rock) return 0.5;
+        if (defenderType == ElementalType.electric) return 0.5;
+        if (defenderType == ElementalType.cryo) return 0.5;
         break;
       case ElementalType.aquatic:
-        if (defenderType == ElementalType.ground) return 2.0;
-        if (defenderType == ElementalType.flying) return 0.5;
-        break;
-      case ElementalType.ground:
-        if (defenderType == ElementalType.ice) return 2.0; // Under armor
-        if (defenderType == ElementalType.electric) return 2.0;
-        if (defenderType == ElementalType.flying) return 0;
+        if (defenderType == ElementalType.earth) return 2.0;
+        if (defenderType == ElementalType.rock) return 2.0;
+        if (defenderType == ElementalType.blaze) return 2.0;
         if (defenderType == ElementalType.aquatic) return 0.5;
+        if (defenderType == ElementalType.grass) return 0.5;
+        if (defenderType == ElementalType.drake) return 0.5;
         break;
-      case ElementalType.ice:
-        if (defenderType == ElementalType.flying) return 2;
+      case ElementalType.metal:
+        if (defenderType == ElementalType.cryo) return 2.0;
+        if (defenderType == ElementalType.rock) return 2.0;
+        if (defenderType == ElementalType.mystic) return 2.0;
+        if (defenderType == ElementalType.aquatic) return 0.5;
+        if (defenderType == ElementalType.blaze) return 0.5;
+        if (defenderType == ElementalType.metal) return 0.5;
+        if (defenderType == ElementalType.electric) return 0.5;
+        break;
+      case ElementalType.martial:
+        if (defenderType == ElementalType.cryo) return 2.0;
+        if (defenderType == ElementalType.rock) return 2.0;
+        if (defenderType == ElementalType.basic) return 2.0;
+        if (defenderType == ElementalType.darkness) return 2.0;
+        if (defenderType == ElementalType.arthropod) return 0.5;
+        if (defenderType == ElementalType.metal) return 2.0;
+        if (defenderType == ElementalType.flying) return 0.5;
+        if (defenderType == ElementalType.toxic) return 0.5;
+        if (defenderType == ElementalType.spectral) return 0;
+        if (defenderType == ElementalType.aura) return 0.5;
+        if (defenderType == ElementalType.mystic) return 0.5;
+        break;
+      case ElementalType.basic:
+        if (defenderType == ElementalType.rock) return 0.5;
+        if (defenderType == ElementalType.metal) return 0.5;
+        if (defenderType == ElementalType.spectral) return 0;
+        break;
+      case ElementalType.earth:
+        if (defenderType == ElementalType.cryo) return 2.0; // Under armor
+        if (defenderType == ElementalType.electric) return 2.0;
+        if (defenderType == ElementalType.rock) return 2.0;
+        if (defenderType == ElementalType.toxic) return 2.0;
+        if (defenderType == ElementalType.blaze) return 2.0;
+        if (defenderType == ElementalType.flying) return 0;
+        if (defenderType == ElementalType.grass) return 0.5;
+        if (defenderType == ElementalType.arthropod) return 0.5;
+        break;
+      case ElementalType.cryo:
+        if (defenderType == ElementalType.flying) return 2.0;
+        if (defenderType == ElementalType.grass) return 2.0;
+        if (defenderType == ElementalType.drake) return 2.0;
+        if (defenderType == ElementalType.earth) return 2.0;
+        if (defenderType == ElementalType.blaze) return 0.5;
+        if (defenderType == ElementalType.aquatic) return 0.5;
+        if (defenderType == ElementalType.cryo) return 0.5;
+        break;
+      case ElementalType.darkness:
+        if (defenderType == ElementalType.mystic) return 2.0;
+        if (defenderType == ElementalType.spectral) return 2.0;
+        if (defenderType == ElementalType.darkness) return 0.5;
+        if (defenderType == ElementalType.martial) return 0.5;
+        break;
+      case ElementalType.drake:
+        if (defenderType == ElementalType.drake) return 2;
+        if (defenderType == ElementalType.mystic) return 0;
+        if (defenderType == ElementalType.metal) return 0.5;
+        break;
+      case ElementalType.aura:
+        if (defenderType == ElementalType.martial) return 2;
+        if (defenderType == ElementalType.toxic) return 2;
+        if (defenderType == ElementalType.metal) return 0.5;
+        if (defenderType == ElementalType.aura) return 0.5;
+        if (defenderType == ElementalType.darkness) return 0;
+        break;
+      case ElementalType.mystic:
+        if (defenderType == ElementalType.drake) return 2;
+        if (defenderType == ElementalType.toxic) return 0.5;
+        if (defenderType == ElementalType.martial) return 2.0;
+        if (defenderType == ElementalType.metal) return 0.5;
+        if (defenderType == ElementalType.blaze) return 0.5;
+        if (defenderType == ElementalType.darkness) return 2;
+        break;
+      case ElementalType.toxic:
+        if (defenderType == ElementalType.grass) return 2;
+        if (defenderType == ElementalType.toxic) return 0.5;
+        if (defenderType == ElementalType.mystic) return 2.0;
+        if (defenderType == ElementalType.metal) return 0;
+        if (defenderType == ElementalType.earth) return 0.5;
+        if (defenderType == ElementalType.rock) return 0.5;
+        if (defenderType == ElementalType.spectral) return 0.5;
+        break;
+      case ElementalType.spectral:
+        if (defenderType == ElementalType.spectral) return 2;
+        if (defenderType == ElementalType.aura) return 2;
+        if (defenderType == ElementalType.basic) return 0;
+        if (defenderType == ElementalType.darkness) return 0.5;
         break;
       default:
         break;
