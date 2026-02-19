@@ -41,6 +41,7 @@
         "type": "cryo",
         "accuracy": 70,
         "stamina": 8,
+        "targetCount": "multiple",
         "category": "special",
         "effects": [
             {
@@ -97,6 +98,38 @@
         "effects": [
             {
                 "type": "statusFreeze",
+                "target": "opponent",
+                "chance": 10
+            }
+        ]
+    },
+    {
+        "name": "Thunder Fang",
+        "description": "10% chance to paralyze the opponent.",
+        "baseDamage": 65,
+        "type": "electric",
+        "accuracy": 95,
+        "stamina": 15,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusParalysis",
+                "target": "opponent",
+                "chance": 10
+            }
+        ]
+    },
+    {
+        "name": "Fire Fang",
+        "description": "10% chance to burn the opponent.",
+        "baseDamage": 65,
+        "type": "fire",
+        "accuracy": 95,
+        "stamina": 15,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusBurn",
                 "target": "opponent",
                 "chance": 10
             }
@@ -215,6 +248,41 @@
         "effects": []
     },
     {
+        "name": "Crushing Pincer",
+        "description": "A basic attack.",
+        "baseDamage": 80,
+        "type": "metal",
+        "stamina": 100,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "defense",
+                "value": -1,
+                "chance": 50
+            }
+        ]
+    },
+    {
+        "name": "Nut Cracker",
+        "description": "A basic attack.",
+        "baseDamage": 100,
+        "type": "arthropod",
+        "stamina": 10,
+        "accuracy": 90,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "defense",
+                "value": -1,
+                "chance": 50
+            }
+        ]
+    },
+    {
         "name": "Slash",
         "description": "A basic attack.",
         "baseDamage": 30,
@@ -262,6 +330,21 @@
         "effects": [
             {
                 "type": "statusStun",
+                "value": 1,
+                "chance": 30
+            }
+        ]
+    },
+    {
+        "name": "Agony Sting",
+        "description": "A strong wing attack.",
+        "baseDamage": 75,
+        "type": "martial",
+        "stamina": 10,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusPoison",
                 "value": 1,
                 "chance": 30
             }
@@ -384,6 +467,7 @@
         "accuracy": 95,
         "type": "cryo",
         "stamina": 10,
+        "targetCount": "multiple",
         "category": "special",
         "effects": [
             {
@@ -435,6 +519,7 @@
         "accuracy": 100,
         "type": "aquatic",
         "stamina": 15,
+        "targetCount": "multiple",
         "category": "special"
     },
     {
@@ -711,6 +796,7 @@
         "baseDamage": 0,
         "type": "social",
         "stamina": 15,
+        "targetCount": "multiple",
         "category": "status",
         "effects": [
             {
@@ -855,6 +941,24 @@
         ]
     },
     {
+        "name": "Slime Burst",
+        "description": "Lowers the opponent's speed.",
+        "baseDamage": 980,
+        "accuracy": 100,
+        "type": "toxic",
+        "stamina": 10,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "speed",
+                "value": -1,
+                "chance": 100
+            }
+        ]
+    },
+    {
         "name": "Ice Hammer",
         "description": "Lowers the user's speed.",
         "baseDamage": 100,
@@ -930,7 +1034,7 @@
         "name": "Tree Scramble",
         "description": "Deals damage and raises user's Speed by 1.",
         "baseDamage": 50,
-        "type": "basic",
+        "type": "grass",
         "stamina": 15,
         "category": "physical",
         "effects": [
@@ -939,6 +1043,40 @@
                 "target": "self",
                 "stat": "speed",
                 "value": 1
+            }
+        ]
+    },
+    {
+        "name": "Jungle Drum",
+        "description": "The user beats its chest. This move deals damage and has a 10% chance to raise the user's Attack and Defense by one stage",
+        "baseDamage": 90,
+        "type": "martial",
+        "stamina": 15,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "multiStatChange",
+                "target": "self",
+                "stat": "attack:,defense:1",
+                "value": 1,
+                "chance": 10
+            }
+        ]
+    },
+    {
+        "name": "Bulk Up",
+        "description": "Raises the user's Attack and Defense by one stage",
+        "baseDamage": 0,
+        "type": "martial",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "multiStatChange",
+                "target": "self",
+                "stat": "attack:,defense:1",
+                "value": 1,
+                "chance": 100
             }
         ]
     },
@@ -1099,6 +1237,41 @@
         ]
     },
     {
+        "name": "Rosy Scare",
+        "description": "20% chance to confuse opponent.",
+        "baseDamage": 75,
+        "accuracy": 100,
+        "type": "mystic",
+        "stamina": 15,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statusConfusion",
+                "target": "opponent",
+                "value": 1,
+                "chance": 20
+            }
+        ]
+    },
+    {
+        "name": "Acacia Burst",
+        "description": "10% chance to boost power.",
+        "baseDamage": 90,
+        "accuracy": 100,
+        "type": "grass",
+        "stamina": 15,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "power",
+                "value": 1,
+                "chance": 10
+            }
+        ]
+    },
+    {
         "name": "Ember",
         "description": "10% chance to burn the target.",
         "baseDamage": 40,
@@ -1130,6 +1303,60 @@
                 "stat": "resistance",
                 "value": -1,
                 "chance": 10
+            }
+        ]
+    },
+    {
+        "name": "Earth Power",
+        "description": "10% chance to lower the target's resistance.",
+        "baseDamage": 90,
+        "accuracy": 100,
+        "type": "earth",
+        "stamina": 15,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "resistance",
+                "value": -1,
+                "chance": 10
+            }
+        ]
+    },
+    {
+        "name": "Moonblast",
+        "description": "10% chance to lower the target's attack.",
+        "baseDamage": 90,
+        "accuracy": 100,
+        "type": "mystic",
+        "stamina": 15,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "attack",
+                "value": -1,
+                "chance": 10
+            }
+        ]
+    },
+    {
+        "name": "Shadow Ball",
+        "description": "20% chance to lower the target's resistance.",
+        "baseDamage": 80,
+        "accuracy": 100,
+        "type": "spectral",
+        "stamina": 15,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "resistance",
+                "value": -1,
+                "chance": 20
             }
         ]
     },
@@ -1360,7 +1587,7 @@
         "description": "Lowers the opponent's defense.",
         "soundEffect": "audio/effects/agile.mp3",
         "baseDamage": 10,
-        "type": "electric",
+        "type": "basic",
         "stamina": 25,
         "category": "physical",
         "effects": [
@@ -1402,7 +1629,7 @@
         "name": "Ink Cloud",
         "description": "Sprays thick ink to hide and confuse the opponent.",
         "baseDamage": 0,
-        "type": "electric",
+        "type": "aquatic",
         "stamina": 10,
         "category": "status",
         "effects": [
@@ -1411,6 +1638,22 @@
                 "target": "opponent",
                 "value": 2,
                 "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Biolume Flash",
+        "description": "30% chance to blind the opponent.",
+        "baseDamage": 0,
+        "type": "electric",
+        "stamina": 10,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statusBlind",
+                "target": "opponent",
+                "value": 3,
+                "chance": 30
             }
         ]
     },
@@ -1696,6 +1939,16 @@
         "effects": []
     },
     {
+        "name": "Bug Bite",
+        "description": "User bites the foe.",
+        "baseDamage": 65,
+        "accuracy": 95,
+        "type": "arthropod",
+        "stamina": 15,
+        "category": "physical",
+        "effects": []
+    },
+    {
         "name": "Bite",
         "description": "Bites with vicious fangs.",
         "soundEffect": "audio/effects/chomp.mp3",
@@ -1760,7 +2013,7 @@
     },
     {
         "name": "Aqua Fang",
-        "description": "Bites with vicious fangs.",
+        "description": "Bites with vicious fangs. 30% chance to make the target bleed.",
         "soundEffect": "audio/effects/chomp.mp3",
         "baseDamage": 80,
         "type": "aquatic",
@@ -1775,8 +2028,24 @@
         ]
     },
     {
+        "name": "Shadow Fang",
+        "description": "Bites with vicious fangs. 30% chance to make the target fear.",
+        "soundEffect": "audio/effects/chomp.mp3",
+        "baseDamage": 80,
+        "type": "spectral",
+        "stamina": 15,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusFear",
+                "value": 1,
+                "chance": 30
+            }
+        ]
+    },
+    {
         "name": "Glass Teeth",
-        "description": "Bites with vicious fangs.",
+        "description": "Bites with vicious fangs. 50% chance to make the target fear.",
         "soundEffect": "audio/effects/chomp.mp3",
         "baseDamage": 80,
         "type": "aquatic",
@@ -1810,7 +2079,37 @@
             {
                 "type": "statusParalysis",
                 "value": 3,
-                "chance": 15
+                "chance": 10
+            }
+        ]
+    },
+    {
+        "name": "Thunderbolt",
+        "description": "May paralyze the foe.",
+        "baseDamage": 90,
+        "type": "electric",
+        "stamina": 20,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statusParalysis",
+                "value": 3,
+                "chance": 10
+            }
+        ]
+    },
+    {
+        "name": "Paralyzing Harpoon",
+        "description": "May paralyze the foe.",
+        "baseDamage": 90,
+        "type": "toxic",
+        "stamina": 20,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusParalysis",
+                "value": 3,
+                "chance": 30
             }
         ]
     },
@@ -1819,7 +2118,23 @@
         "description": "Lulls the foe to sleep.",
         "baseDamage": 0,
         "accuracy": 55,
-        "type": "social",
+        "type": "sound",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statusSleep",
+                "value": 3,
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Dark Void",
+        "description": "Lulls the foe to sleep.",
+        "baseDamage": 0,
+        "accuracy": 80,
+        "type": "darkness",
         "stamina": 15,
         "category": "status",
         "effects": [
@@ -1989,6 +2304,28 @@
         "category": "physical"
     },
     {
+        "name": "Spike Cannon",
+        "description": "Hits 2-5 times.",
+        "baseDamage": 25,
+        "minHits": 2,
+        "maxHits": 5,
+        "type": "basic",
+        "stamina": 20,
+        "accuracy": 100,
+        "category": "physical"
+    },
+    {
+        "name": "Pin Missile",
+        "description": "Hits 2-5 times.",
+        "baseDamage": 25,
+        "minHits": 2,
+        "maxHits": 5,
+        "type": "arthropod",
+        "stamina": 20,
+        "accuracy": 100,
+        "category": "physical"
+    },
+    {
         "name": "Bullet Seed",
         "description": "Hits 2-5 times.",
         "baseDamage": 25,
@@ -2062,10 +2399,20 @@
         "soundEffect": "audio/effects/tiger.mp3",
         "baseDamage": 90,
         "accuracy": 100,
-        "type": "basic",
+        "type": "grass",
         "stamina": 12,
         "category": "physical",
         "critRate": 2
+    },
+    {
+        "name": "Night Slash",
+        "description": "High crit rate.",
+        "baseDamage": 70,
+        "accuracy": 100,
+        "type": "darkness",
+        "stamina": 15,
+        "category": "physical",
+        "critRate": 1
     },
     {
         "name": "Gigantism Crush",
@@ -2117,7 +2464,7 @@
     },
     {
         "name": "Frost-Leap",
-        "description": "Strikes from a frozen ledge. Chance to freeze or stun the foe.",
+        "description": "Strikes from a frozen ledge. Chance to freeze the foe.",
         "soundEffect": "audio/effects/agile.mp3",
         "baseDamage": 85,
         "accuracy": 100,
@@ -2213,7 +2560,7 @@
         "soundEffect": "audio/effects/tiger.mp3",
         "baseDamage": 110,
         "accuracy": 85,
-        "type": "giant",
+        "type": "cryo",
         "stamina": 18,
         "category": "physical",
         "effects": [
@@ -2222,6 +2569,23 @@
                 "target": "opponent",
                 "value": 1,
                 "chance": 50
+            }
+        ]
+    },
+    {
+        "name": "Iron Head",
+        "description": "30% chance to stun the target.",
+        "baseDamage": 80,
+        "accuracy": 100,
+        "type": "metal",
+        "stamina": 18,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusStun",
+                "target": "opponent",
+                "value": 1,
+                "chance": 30
             }
         ]
     },
@@ -2360,14 +2724,14 @@
     },
     {
         "name": "Glare",
-        "description": "Stuns the foe.",
+        "description": "Paralyzes the foe.",
         "baseDamage": 0,
         "type": "basic",
         "stamina": 10,
         "category": "status",
         "effects": [
             {
-                "type": "statusStun",
+                "type": "statusParalysis",
                 "value": 1,
                 "chance": 100
             }
@@ -2375,7 +2739,7 @@
     },
     {
         "name": "Poison Jab",
-        "description": "Damage + Poison.",
+        "description": "30% chance to poison the target.",
         "baseDamage": 80,
         "type": "toxic",
         "stamina": 15,
@@ -2385,6 +2749,38 @@
                 "type": "statusPoison",
                 "value": 3,
                 "chance": 30
+            }
+        ]
+    },
+    {
+        "name": "Widow's Embrace",
+        "description": "Priority +1 and 30% chance to poison the target.",
+        "baseDamage": 70,
+        "type": "toxic",
+        "stamina": 15,
+        "priority": 1,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusPoison",
+                "value": 3,
+                "chance": 30
+            }
+        ]
+    },
+    {
+        "name": "Toxic",
+        "description": "100% chance to poison the target.",
+        "baseDamage": 0,
+        "type": "toxic",
+        "stamina": 15,
+        "accuracy": 90,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statusPoison",
+                "value": 3,
+                "chance": 100
             }
         ]
     },
@@ -2487,10 +2883,19 @@
         "effects": []
     },
     {
+        "name": "Brutal Swing",
+        "description": "Deals damage to the target.",
+        "baseDamage": 60,
+        "type": "darkness",
+        "stamina": 20,
+        "category": "physical",
+        "effects": []
+    },
+    {
         "name": "Shell Smash",
         "description": "The user shatters its shell, which sharply raises Attack and Speed but lowers Defense.",
         "baseDamage": 0,
-        "type": "armored",
+        "type": "metal",
         "stamina": 15,
         "category": "status",
         "effects": [
@@ -2498,6 +2903,21 @@
                 "type": "multiStatChange",
                 "target": "self",
                 "stat": "attack:2,power:2,speed:2,defense:-1,resistance:-1"
+            }
+        ]
+    },
+    {
+        "name": "Close Combat",
+        "description": "A powerful martial attack that lowers the user's defense and resistance.",
+        "baseDamage": 120,
+        "type": "martial",
+        "stamina": 15,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "multiStatChange",
+                "target": "self",
+                "stat": "defense:-1,resistance:-1"
             }
         ]
     },
@@ -2701,7 +3121,7 @@
         "soundEffect": "audio/effects/chomp.mp3",
         "baseDamage": 50,
         "accuracy": 90,
-        "type": "basic",
+        "type": "darkness",
         "stamina": 15,
         "category": "physical",
         "effects": [

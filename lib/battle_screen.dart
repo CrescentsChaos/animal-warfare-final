@@ -217,6 +217,8 @@ class _BattleScreenContentState extends State<BattleScreenContent>
         return const Color.fromARGB(255, 172, 168, 168);
       case ElementalType.aura:
         return const Color.fromARGB(255, 248, 255, 150);
+      case ElementalType.sound:
+        return const Color.fromARGB(255, 166, 70, 255);
     }
   }
 
@@ -1607,7 +1609,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                 bo.attackStage >= 0
                     ? '+${bo.attackStage}'
                     : '${bo.attackStage}',
-                Colors.orange,
+                const Color.fromARGB(255, 228, 1, 1),
               ),
               _buildStatRow(
                 'DEF',
@@ -1615,7 +1617,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                 bo.defenseStage >= 0
                     ? '+${bo.defenseStage}'
                     : '${bo.defenseStage}',
-                Colors.blue,
+                const Color.fromARGB(255, 209, 125, 0),
               ),
               _buildStatRow(
                 'PWR',
@@ -1629,13 +1631,13 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                 bo.resistanceStage >= 0
                     ? '+${bo.resistanceStage}'
                     : '${bo.resistanceStage}',
-                Colors.deepOrange,
+                const Color.fromARGB(255, 209, 212, 0),
               ),
               _buildStatRow(
                 'SPD',
                 isPlayer ? '${bo.currentSpeed}' : '???',
                 bo.speedStage >= 0 ? '+${bo.speedStage}' : '${bo.speedStage}',
-                Colors.yellow,
+                const Color.fromARGB(255, 0, 188, 235),
               ),
 
               const SizedBox(height: 10),
@@ -2665,63 +2667,70 @@ class _BattleScreenContentState extends State<BattleScreenContent>
 
       if (!mounted) return;
 
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (ctx) => _BattleResultDialog(
-          battleManager: battleManager,
-          result: battleManager.result!,
-          opponentName: battleManager.opponent.organism.baseOrganism.name,
-          playerName: battleManager.player.organism.baseOrganism.name,
-          moneyEarned: moneyEarned,
-          lootName: lootName,
-          themeColor: _getBiomeThemeColor(),
-          primaryColor: _getBiomePrimaryColor(),
-          secondaryColor: _getBiomeSecondaryColor(),
-          onConfirm: () {
-            SystemChrome.setPreferredOrientations([
-              DeviceOrientation.portraitUp,
-            ]);
-            Navigator.of(ctx).pop();
-
-            if (_pendingRogueCapture != null) {
-              _showCaptureReplaceDialog(
-                context,
-                _pendingRogueCapture!,
-                userState,
-              );
-              return;
-            }
-
-            if (widget.isRogueMode &&
-                (battleManager.result == BattleResult.win ||
-                    battleManager.result == BattleResult.capture) &&
-                (userState.currentUser?.rogueLikeState.isActive ?? false)) {
-              final rogue = userState.currentUser!.rogueLikeState;
-
-              // Navigator logic:
-              // If end of floor (encounter 4 aka 5/5) -> Biome Select
-              // Else -> Hub Screen
-
-              if (rogue.encounterIndex == 4) {
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(
-                    builder: (ctx) => const BiomeSelectScreen(),
-                  ),
-                );
-              } else {
-                // For non-boss battles, we go to the Hub
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (ctx) => const RogueHubScreen()),
-                );
-              }
-            } else {
-              Navigator.of(context).pop(battleManager.result);
-            }
-          },
-        ),
-      );
+      // FIX: Defer result dialog if we have a pending rogue capture replacement
+      if (_pendingRogueCapture != null) {
+        _showCaptureReplaceDialog(context, _pendingRogueCapture!, userState);
+      } else {
+        _showBattleResultDialog(
+          context,
+          battleManager,
+          moneyEarned,
+          lootName,
+          userState,
+        );
+      }
     });
+  }
+
+  void _showBattleResultDialog(
+    BuildContext context,
+    BattleManager battleManager,
+    int moneyEarned,
+    String? lootName,
+    UserState userState,
+  ) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => _BattleResultDialog(
+        battleManager: battleManager,
+        result: battleManager.result!,
+        opponentName: battleManager.opponent.organism.baseOrganism.name,
+        playerName: battleManager.player.organism.baseOrganism.name,
+        moneyEarned: moneyEarned,
+        lootName: lootName,
+        themeColor: _getBiomeThemeColor(),
+        primaryColor: _getBiomePrimaryColor(),
+        secondaryColor: _getBiomeSecondaryColor(),
+        onConfirm: () {
+          SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+          Navigator.of(ctx).pop();
+
+          if ((battleManager.result == BattleResult.win ||
+                  battleManager.result == BattleResult.capture) &&
+              (userState.currentUser?.rogueLikeState.isActive ?? false)) {
+            final rogue = userState.currentUser!.rogueLikeState;
+
+            // Navigator logic:
+            // If end of floor (encounter 4 aka 5/5) -> Biome Select
+            // Else -> Hub Screen
+
+            if (rogue.encounterIndex == 4) {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (ctx) => const BiomeSelectScreen()),
+              );
+            } else {
+              // For non-boss battles, we go to the Hub
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (ctx) => const RogueHubScreen()),
+              );
+            }
+          } else {
+            Navigator.of(context).pop(battleManager.result);
+          }
+        },
+      ),
+    );
   }
 
   void _showCaptureReplaceDialog(
@@ -2747,7 +2756,17 @@ class _BattleScreenContentState extends State<BattleScreenContent>
             });
           }
           if (ctx.mounted) Navigator.pop(ctx);
-          if (mounted) _finishRogueEncounter(context, userState);
+
+          if (mounted) {
+            // Show result dialog after replacement
+            _showBattleResultDialog(
+              context,
+              Provider.of<BattleManager>(context, listen: false),
+              0, // No money in rogue
+              null, // Loot handled separately or not needed to re-show
+              userState,
+            );
+          }
         },
         onDiscard: () {
           if (mounted) {
@@ -2757,37 +2776,19 @@ class _BattleScreenContentState extends State<BattleScreenContent>
             });
           }
           Navigator.pop(ctx);
-          if (mounted) _finishRogueEncounter(context, userState);
+          if (mounted) {
+            // Show result dialog after discard
+            _showBattleResultDialog(
+              context,
+              Provider.of<BattleManager>(context, listen: false),
+              0,
+              null,
+              userState,
+            );
+          }
         },
       ),
     );
-  }
-
-  void _finishRogueEncounter(BuildContext context, UserState userState) {
-    if (!mounted) return;
-
-    if (userState.currentUser?.rogueLikeState.isActive ?? false) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) {
-            final rogue = userState.currentUser!.rogueLikeState;
-            return BattleScreen(
-              playerOrganism: rogue.team[0],
-              opponentOrganism: rogue.opponentTeam![0],
-              biomeName: rogue.currentBiome ?? 'Forest',
-              playerTeam: rogue.team,
-              opponentTeam: rogue.opponentTeam,
-              battleTitle:
-                  'Rogue Floor ${rogue.floor} - ${rogue.encounterIndex + 1}/5',
-              isArenaBattle: rogue.encounterIndex == 4,
-              isRogueMode: true,
-            );
-          },
-        ),
-      );
-    } else {
-      Navigator.of(context).pop(BattleResult.capture);
-    }
   }
 }
 

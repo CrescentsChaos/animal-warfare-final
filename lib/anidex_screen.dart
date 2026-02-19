@@ -308,9 +308,10 @@ class _AnidexScreenState extends State<AnidexScreen> {
     // Stat color logic to determine the text color based on value,
     // now separate from the bar color.
     Color getStatTextColor(int stat) {
-      if (stat >= 400)
+      if (stat >= 400) {
         return Colors
             .white; // Keep white for high visibility against dark background
+      }
       if (stat >= 300) return Colors.white.withOpacity(0.9);
       // 🚨 EDITED: Use AppColors.highlightColor
       if (stat >= 200) return AppColors.highlightColor;
@@ -516,8 +517,9 @@ class _AnidexScreenState extends State<AnidexScreen> {
                                 .split(',')
                                 .map((s) => s.trim())
                                 .where((s) => s.isNotEmpty);
-                            if (abilityNames.isEmpty)
+                            if (abilityNames.isEmpty) {
                               return [const Text('No abilities.')];
+                            }
 
                             return abilityNames.map((name) {
                               final ab = Ability.findByName(name);
@@ -960,6 +962,8 @@ class _AnidexScreenState extends State<AnidexScreen> {
         return const Color.fromARGB(255, 172, 168, 168);
       case ElementalType.aura:
         return const Color.fromARGB(255, 248, 255, 150);
+      case ElementalType.sound:
+        return const Color.fromARGB(255, 166, 70, 255);
     }
   }
 }

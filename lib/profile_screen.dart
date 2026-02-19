@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:animal_warfare/local_auth_service.dart';
 import 'package:animal_warfare/edit_profile_screen.dart';
-import 'package:audioplayers/audioplayers.dart';
 import 'dart:io';
 
 // NEW IMPORT

@@ -79,6 +79,11 @@ enum MoveEffectType {
 
 enum MoveCategory { physical, special, status }
 
+/// Controls how many targets a move hits in doubles.
+/// [single] — targets one slot (default).
+/// [multiple] — hits all opponents simultaneously (75 % damage each).
+enum MoveTargetCount { single, multiple }
+
 extension MoveCategoryExtension on MoveCategory {
   Color get color {
     switch (this) {
@@ -142,6 +147,7 @@ class Move {
   final int stamina; // NEW: PP equivalent
   final MoveCategory category; // NEW: physical, special, status
   final String? customUsageText; // Custom text when using the move
+  final MoveTargetCount targetCount; // single (default) or multiple
 
   // Audio fields
   final String? soundEffect; // Optional path to sound effect file
@@ -183,6 +189,7 @@ class Move {
     this.customUsageText,
     this.soundEffect,
     this.battleMusic,
+    this.targetCount = MoveTargetCount.single,
     bool? isContact,
   }) : isContact =
            isContact ?? (category == MoveCategory.physical && baseDamage > 0);
@@ -260,6 +267,12 @@ class Move {
       soundEffect: json['soundEffect'] as String?,
       battleMusic: json['battleMusic'] as String?,
       isContact: json['isContact'] as bool?,
+      targetCount: json['targetCount'] != null
+          ? MoveTargetCount.values.firstWhere(
+              (e) => e.toString().split('.').last == json['targetCount'],
+              orElse: () => MoveTargetCount.single,
+            )
+          : MoveTargetCount.single,
     );
   }
 

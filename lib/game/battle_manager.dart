@@ -288,16 +288,17 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     // Start battle music
     // Only play if not already playing this specific track to avoid stutter
-    await _audioService.playMusic('audio/battle_default.mp3');
-
-    notifyListeners();
-    await Future.delayed(const Duration(milliseconds: 3000));
+    if (!isTesting) {
+      await _audioService.playMusic('audio/battle_default.mp3');
+      notifyListeners();
+      await Future.delayed(const Duration(milliseconds: 3000));
+    }
 
     await _initializeBattle(biomeName);
 
     // Check if opponent is already fainted (Roguelike re-entry case where lead fainted)
     if (opponent.health <= 0) {
-      final healthyIndex = this.opponentTeam.indexWhere(
+      final healthyIndex = opponentTeam.indexWhere(
         (org) => org.currentHealth > 0,
       );
       if (healthyIndex != -1) {
@@ -324,7 +325,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     // Transition to waiting for input
     currentState = BattleState.waitingForInput;
     _addToLog('What will ${player.organism.name} do?');
-    notifyListeners();
+    if (!isTesting) notifyListeners();
   }
 
   Future<void> _initializeBattle(String? biomeName) async {
@@ -783,15 +784,17 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     }
 
     // Wait 1 second before playing the sound effect as requested
-    await Future.delayed(const Duration(seconds: 1));
+    if (!isTesting) await Future.delayed(const Duration(seconds: 1));
 
     // Play move sound effect
-    String soundPath =
-        move.soundEffect ??
-        _audioService.getDefaultSoundEffect(
-          move.category.toString().split('.').last,
-        );
-    await _audioService.playSound(soundPath);
+    if (!isTesting) {
+      String soundPath =
+          move.soundEffect ??
+          _audioService.getDefaultSoundEffect(
+            move.category.toString().split('.').last,
+          );
+      await _audioService.playSound(soundPath);
+    }
 
     // Switch battle music if move has custom music
     if (move.battleMusic != null && move.battleMusic!.isNotEmpty) {
@@ -868,7 +871,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     if (Random().nextInt(100) >= accuracy) {
       _addToLog('...but it missed!');
       notifyListeners();
-      await Future.delayed(const Duration(milliseconds: 3000));
+      if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
       return;
     }
 
@@ -892,7 +895,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       if (!bypassInvulnerability) {
         _addToLog('${defender.organism.baseOrganism.name} is hidden!');
         notifyListeners();
-        await Future.delayed(const Duration(milliseconds: 3000));
+        if (!isTesting)
+          await Future.delayed(const Duration(milliseconds: 3000));
         return;
       } else {
         _addToLog(
@@ -932,7 +936,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           }
         }
         notifyListeners();
-        await Future.delayed(const Duration(milliseconds: 3000));
+        if (!isTesting)
+          await Future.delayed(const Duration(milliseconds: 3000));
         return;
       }
     }
@@ -942,7 +947,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       if (opponentMove == null || opponentMove.baseDamage == 0) {
         _addToLog('...but it failed!');
         notifyListeners();
-        await Future.delayed(const Duration(milliseconds: 3000));
+        if (!isTesting)
+          await Future.delayed(const Duration(milliseconds: 3000));
         return;
       }
     }
@@ -989,8 +995,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
       // Play sound effect for each hit after the first (first already played before loop)
       if (i > 0) {
-        if (attacker.health <= 0)
+        if (attacker.health <= 0) {
           break; // Stop if attacker fainted (e.g. from previous recoil)
+        }
         String soundPath =
             move.soundEffect ??
             _audioService.getDefaultSoundEffect(
@@ -1210,7 +1217,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             _addToLog('It had no effect!');
           }
           notifyListeners();
-          await Future.delayed(const Duration(milliseconds: 3000));
+          if (!isTesting)
+            await Future.delayed(const Duration(milliseconds: 3000));
           return; // Skip damage calculation
         }
 
@@ -1424,7 +1432,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
                   '${defender.organism.baseOrganism.name} changed its type to ${move.type.toString().split('.').last}!',
                 );
                 notifyListeners();
-                await Future.delayed(const Duration(milliseconds: 3000));
+                if (!isTesting)
+                  await Future.delayed(const Duration(milliseconds: 3000));
               } else if (ab.effectType == AbilityEffectType.statusChange) {
                 final statusType = parseStatusType(ab.value);
                 if (statusType != null) {
@@ -1471,7 +1480,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         if (isCrit) _addToLog('A critical hit!');
 
         notifyListeners();
-        await Future.delayed(const Duration(milliseconds: 3000));
+        if (!isTesting)
+          await Future.delayed(const Duration(milliseconds: 3000));
       }
     }
     if (attacker.health > 0 && defender.health >= 0) {
@@ -1503,7 +1513,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           .toList();
       _addToLog('${attacker.organism.baseOrganism.name} was revealed!');
       notifyListeners();
-      await Future.delayed(const Duration(milliseconds: 3000));
+      if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
     }
 
     // Stealth removal (defender)
@@ -1517,7 +1527,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           .toList();
       _addToLog('${defender.organism.baseOrganism.name} was revealed!');
       notifyListeners();
-      await Future.delayed(const Duration(milliseconds: 3000));
+      if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
     }
   }
 
@@ -1526,7 +1536,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       _addToLog('${org.organism.baseOrganism.name} must recharge!');
       org.mustRecharge = false; // Recharge turn is used now
       notifyListeners();
-      await Future.delayed(const Duration(milliseconds: 3000));
+      if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
       return false;
     }
     if (org.statusEffect.type == StatusEffectType.sleep) {
@@ -1534,7 +1544,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         _addToLog('${org.organism.baseOrganism.name} woke up!');
         org.clearStatusEffects(); // Clear all statuses, or just sleep? For now, clear all.
         notifyListeners();
-        await Future.delayed(const Duration(milliseconds: 3000));
+        if (!isTesting)
+          await Future.delayed(const Duration(milliseconds: 3000));
         return true;
       }
 
@@ -1560,7 +1571,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
       _addToLog('${org.organism.baseOrganism.name} is fast asleep.');
       notifyListeners();
-      await Future.delayed(const Duration(milliseconds: 3000));
+      if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
       return false;
     }
     if (org.statusEffect.type == StatusEffectType.stun) {
@@ -1568,27 +1579,28 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         '${org.organism.baseOrganism.name} is stunned and cannot move!',
       );
       notifyListeners();
-      await Future.delayed(const Duration(milliseconds: 3000));
+      if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
       // Remove only the stun status
       org.statusEffects = org.statusEffects
           .where((se) => se.type != StatusEffectType.stun)
           .toList();
       _addToLog('${org.organism.baseOrganism.name} recovered from Stun!');
       notifyListeners();
-      await Future.delayed(const Duration(milliseconds: 3000));
+      if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
       return false;
     }
     if (org.statusEffect.type == StatusEffectType.confusion) {
       _addToLog('${org.organism.baseOrganism.name} is confused!');
       notifyListeners();
-      await Future.delayed(const Duration(milliseconds: 3000));
+      if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
       if (Random().nextDouble() < 0.33) {
         _addToLog('It hurt itself in its confusion!');
         final selfDamage = (org.maxHealth * 0.15).round();
         org.health -= selfDamage;
         org.health = org.health.clamp(0, org.maxHealth);
         notifyListeners();
-        await Future.delayed(const Duration(milliseconds: 3000));
+        if (!isTesting)
+          await Future.delayed(const Duration(milliseconds: 3000));
         return false;
       }
     }
@@ -1598,12 +1610,13 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         _addToLog('${org.organism.baseOrganism.name} thawed out!');
         org.clearStatusEffects(); // Clear all statuses, or just freeze? For now, clear all.
         notifyListeners();
-        await Future.delayed(const Duration(milliseconds: 3000));
+        if (!isTesting)
+          await Future.delayed(const Duration(milliseconds: 3000));
         return true;
       }
       _addToLog('${org.organism.baseOrganism.name} is frozen solid!');
       notifyListeners();
-      await Future.delayed(const Duration(milliseconds: 3000));
+      if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
       return false;
     }
     if (org.statusEffect.type == StatusEffectType.paralysis) {
@@ -1612,7 +1625,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           '${org.organism.baseOrganism.name} is paralyzed! It can\'t move!',
         );
         notifyListeners();
-        await Future.delayed(const Duration(milliseconds: 3000));
+        if (!isTesting)
+          await Future.delayed(const Duration(milliseconds: 3000));
         return false;
       }
     }
@@ -1623,7 +1637,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     if (!isCounter) {
       _addToLog('Opponent\'s turn!');
       notifyListeners();
-      await Future.delayed(const Duration(milliseconds: 3000));
+      if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
     }
 
     // Simple AI: Select a random move from its specific list
@@ -1663,7 +1677,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             '${target.organism.baseOrganism.name} prevented the status!',
           );
           notifyListeners();
-          await Future.delayed(const Duration(milliseconds: 3000));
+          if (!isTesting)
+            await Future.delayed(const Duration(milliseconds: 3000));
           return;
         }
       }
@@ -1678,7 +1693,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             currentTerrain.terrain == Terrain.electric)) {
       _appendToLog('\nThe terrain prevents the status condition!');
       notifyListeners();
-      await Future.delayed(const Duration(milliseconds: 3000));
+      if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
       return;
     }
 
@@ -1717,7 +1732,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       '\n${target.organism.baseOrganism.name} ${newStatus.startMessage}',
     );
     notifyListeners();
-    await Future.delayed(const Duration(milliseconds: 3000));
+    if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
   }
 
   Future<void> _applyMoveEffect(
@@ -1827,21 +1842,27 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             _setTerrain(Terrain.psychic);
           break;
         case MoveEffectType.statChange:
-          await _applyStatChange(target, effect.stat, effect.value);
-          // Log is handled in _applyStatChange
+          if (Random().nextInt(100) < effect.chance) {
+            await _applyStatChange(target, effect.stat, effect.value);
+            // Log is handled in _applyStatChange
+          }
           break;
         case MoveEffectType.multiStatChange:
-          // Format stat: 'attack:1,defense:1' or similar
-          final changes = effect.stat.split(',');
-          for (final change in changes) {
-            final parts = change.split(':');
-            if (parts.length == 2) {
-              final stat = parts[0];
-              final val = int.tryParse(parts[1]) ?? 0;
-              await _applyStatChange(target, stat, val);
+          if (Random().nextInt(100) < effect.chance) {
+            // Format stat: 'attack:1,defense:1' or similar
+            final changes = effect.stat.split(',');
+            for (final change in changes) {
+              final parts = change.split(':');
+              if (parts.length == 2) {
+                final stat = parts[0];
+                final val = int.tryParse(parts[1]) ?? 0;
+                await _applyStatChange(target, stat, val);
+              }
             }
+            _addToLog(
+              '\n${target.organism.baseOrganism.name}\'s stats changed!',
+            );
           }
-          _addToLog('\n${target.organism.baseOrganism.name}\'s stats changed!');
           break;
         case MoveEffectType.statChangeChance:
           if (Random().nextInt(100) < effect.chance) {
@@ -2029,8 +2050,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           '${target.organism.baseOrganism.name}\'s accuracy was protected by ${ab.name}!',
         );
         notifyListeners();
-        if (!isTesting)
+        if (!isTesting) {
           await Future.delayed(const Duration(milliseconds: 2000));
+        }
         return;
       }
     }
@@ -2111,7 +2133,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         if (msg.isNotEmpty) {
           _addToLog(msg);
           notifyListeners();
-          await Future.delayed(const Duration(milliseconds: 3000));
+          if (!isTesting)
+            await Future.delayed(const Duration(milliseconds: 3000));
         }
       }
 
@@ -2119,7 +2142,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         _addToLog(currentWeather.endMessage);
         currentWeather = const WeatherEffect(weather: Weather.none);
         notifyListeners();
-        await Future.delayed(const Duration(milliseconds: 3000));
+        if (!isTesting)
+          await Future.delayed(const Duration(milliseconds: 3000));
       }
     }
 
@@ -2130,7 +2154,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         _addToLog(currentTerrain.endMessage);
         currentTerrain = const TerrainEffect(terrain: Terrain.none);
         notifyListeners();
-        await Future.delayed(const Duration(milliseconds: 3000));
+        if (!isTesting)
+          await Future.delayed(const Duration(milliseconds: 3000));
       }
     }
   }
@@ -2151,7 +2176,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         );
         notifyListeners();
         if (!isTesting) {
-          await Future.delayed(const Duration(milliseconds: 3000));
+          if (!isTesting)
+            await Future.delayed(const Duration(milliseconds: 3000));
         }
         return; // Status cured, skip damage processing
       }
@@ -2173,8 +2199,10 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           // Play healing sound effect
           await _audioService.playSound('audio/effects/heal.mp3');
           notifyListeners();
-          if (!isTesting)
-            await Future.delayed(const Duration(milliseconds: 3000));
+          if (!isTesting) {
+            if (!isTesting)
+              await Future.delayed(const Duration(milliseconds: 3000));
+          }
         } else {
           final poisonDamage = (target.maxHealth * 0.125).round().clamp(
             1,
@@ -2187,7 +2215,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           );
           notifyListeners();
           if (!isTesting) {
-            await Future.delayed(const Duration(milliseconds: 3000));
+            if (!isTesting)
+              await Future.delayed(const Duration(milliseconds: 3000));
           }
           if (_checkBattleEnd()) return;
         }
@@ -2199,8 +2228,10 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           '${target.organism.baseOrganism.name} is hurt by its burn (6.0%)!',
         );
         notifyListeners();
-        if (!isTesting)
-          await Future.delayed(const Duration(milliseconds: 3000));
+        if (!isTesting) {
+          if (!isTesting)
+            await Future.delayed(const Duration(milliseconds: 3000));
+        }
         if (_checkBattleEnd()) return;
       } else if (se.type == StatusEffectType.bleed) {
         final bleedDamage = (target.maxHealth * 0.125).round().clamp(1, 9999);
@@ -2208,8 +2239,10 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         target.health = target.health.clamp(0, target.maxHealth);
         _addToLog('${target.organism.baseOrganism.name} is hurt by bleeding!');
         notifyListeners();
-        if (!isTesting)
-          await Future.delayed(const Duration(milliseconds: 3000));
+        if (!isTesting) {
+          if (!isTesting)
+            await Future.delayed(const Duration(milliseconds: 3000));
+        }
         if (_checkBattleEnd()) return;
       } else if (se.type == StatusEffectType.regen) {
         if (target.health < target.maxHealth) {
@@ -2223,8 +2256,10 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           // Play healing sound effect
           await _audioService.playSound('audio/effects/heal.mp3');
           notifyListeners();
-          if (!isTesting)
-            await Future.delayed(const Duration(milliseconds: 3000));
+          if (!isTesting) {
+            if (!isTesting)
+              await Future.delayed(const Duration(milliseconds: 3000));
+          }
         }
       }
     }
@@ -2247,7 +2282,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         );
         notifyListeners();
       }
-      await Future.delayed(const Duration(milliseconds: 3000));
+      if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
     } else if (currentWeather.weather == Weather.blizzard) {
       // Overcoat Check
       bool hasOvercoat = target.abilities.any((ab) => ab.name == 'Overcoat');
@@ -2260,7 +2295,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         );
         notifyListeners();
       }
-      await Future.delayed(const Duration(milliseconds: 3000));
+      if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
     }
 
     // Grassy Terrain Healing
@@ -2275,7 +2310,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       // Play healing sound effect
       await _audioService.playSound('audio/effects/heal.mp3');
       notifyListeners();
-      await Future.delayed(const Duration(milliseconds: 3000));
+      if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
     }
 
     // Talisman effects - Leftovers healing
@@ -2292,8 +2327,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           // Play healing sound effect
           await _audioService.playSound('audio/effects/heal.mp3');
           notifyListeners();
-          if (!isTesting)
+          if (!isTesting) {
             await Future.delayed(const Duration(milliseconds: 3000));
+          }
         }
       }
     }
@@ -2314,8 +2350,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           // Play healing sound effect
           await _audioService.playSound('audio/effects/heal.mp3');
           notifyListeners();
-          if (!isTesting)
+          if (!isTesting) {
             await Future.delayed(const Duration(milliseconds: 3000));
+          }
         }
       }
     }
@@ -2338,8 +2375,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             );
           }
           notifyListeners();
-          if (!isTesting)
+          if (!isTesting) {
             await Future.delayed(const Duration(milliseconds: 3000));
+          }
           stateChanged = true;
           // Don't add to updatedEffects, effectively removing it
         } else {
@@ -2905,11 +2943,6 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   /// Resume audio (called when app returns to foreearth)
   void resumeAudio() {
     _audioService.resumeAll();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 
   // --- Testing Hooks ---

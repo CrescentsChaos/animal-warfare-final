@@ -17,6 +17,7 @@ enum ElementalType {
   drake,
   metal,
   aura,
+  sound,
 }
 
 class TypeChart {
@@ -34,9 +35,19 @@ class TypeChart {
         if (defenderType == ElementalType.flying) return 2.0;
         if (defenderType == ElementalType.aquatic) return 2.0;
         if (defenderType == ElementalType.electric) return 0.5;
+        if (defenderType == ElementalType.sound) return 2.0;
         if (defenderType == ElementalType.grass) return 0.5;
         if (defenderType == ElementalType.drake) return 0.5;
         if (defenderType == ElementalType.earth) return 0;
+        break;
+      case ElementalType.sound:
+        if (defenderType == ElementalType.flying) return 2.0;
+        if (defenderType == ElementalType.aquatic) return 2.0;
+        if (defenderType == ElementalType.aura) return 2.0;
+        if (defenderType == ElementalType.metal) return 0.5;
+        if (defenderType == ElementalType.rock) return 0.5;
+        if (defenderType == ElementalType.electric) return 0.5;
+        if (defenderType == ElementalType.spectral) return 0;
         break;
       case ElementalType.arthropod:
         if (defenderType == ElementalType.grass) return 2.0;
@@ -65,6 +76,7 @@ class TypeChart {
         if (defenderType == ElementalType.arthropod) return 2.0;
         if (defenderType == ElementalType.martial) return 2.0; // Can't reach
         if (defenderType == ElementalType.rock) return 0.5;
+        if (defenderType == ElementalType.sound) return 0.5;
         if (defenderType == ElementalType.electric) return 0.5;
         if (defenderType == ElementalType.cryo) return 0.5;
         break;
@@ -74,6 +86,7 @@ class TypeChart {
         if (defenderType == ElementalType.blaze) return 2.0;
         if (defenderType == ElementalType.aquatic) return 0.5;
         if (defenderType == ElementalType.grass) return 0.5;
+        if (defenderType == ElementalType.sound) return 0.5;
         if (defenderType == ElementalType.drake) return 0.5;
         break;
       case ElementalType.metal:
@@ -106,6 +119,7 @@ class TypeChart {
       case ElementalType.earth:
         if (defenderType == ElementalType.cryo) return 2.0; // Under armor
         if (defenderType == ElementalType.electric) return 2.0;
+        if (defenderType == ElementalType.sound) return 2.0;
         if (defenderType == ElementalType.rock) return 2.0;
         if (defenderType == ElementalType.toxic) return 2.0;
         if (defenderType == ElementalType.blaze) return 2.0;
@@ -118,6 +132,7 @@ class TypeChart {
         if (defenderType == ElementalType.grass) return 2.0;
         if (defenderType == ElementalType.drake) return 2.0;
         if (defenderType == ElementalType.earth) return 2.0;
+        if (defenderType == ElementalType.sound) return 2.0;
         if (defenderType == ElementalType.blaze) return 0.5;
         if (defenderType == ElementalType.aquatic) return 0.5;
         if (defenderType == ElementalType.cryo) return 0.5;
@@ -147,6 +162,7 @@ class TypeChart {
         if (defenderType == ElementalType.metal) return 0.5;
         if (defenderType == ElementalType.blaze) return 0.5;
         if (defenderType == ElementalType.darkness) return 2;
+        if (defenderType == ElementalType.sound) return 0.5;
         break;
       case ElementalType.toxic:
         if (defenderType == ElementalType.grass) return 2;

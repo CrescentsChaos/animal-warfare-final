@@ -1308,5 +1308,7 @@ Color _getAnimalTypeColor(ElementalType type) {
       return const Color.fromARGB(255, 172, 168, 168);
     case ElementalType.aura:
       return const Color.fromARGB(255, 248, 255, 150);
+    case ElementalType.sound:
+      return const Color.fromARGB(255, 166, 70, 255);
   }
 }

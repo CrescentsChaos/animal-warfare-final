@@ -1,5 +1,3 @@
-// lib/battle_tab_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:provider/provider.dart';
@@ -7,6 +5,7 @@ import 'package:animal_warfare/models/organism.dart';
 import 'package:animal_warfare/models/captured_organism.dart';
 import 'package:animal_warfare/models/talisman.dart';
 import 'package:animal_warfare/battle_screen.dart';
+import 'package:animal_warfare/double_battle_screen.dart';
 import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/theme.dart';
 import 'package:animal_warfare/game/battle_manager.dart'; // Import BattleResult
@@ -114,6 +113,37 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Battle ended: $result')));
+    }
+  }
+
+  void _startDoublesBattle() async {
+    final playerTeam = _generateRandomTeam();
+    final opponentTeam = _generateRandomTeam(withTalismans: true);
+
+    if (playerTeam.isEmpty || opponentTeam.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to generate teams!')),
+        );
+      }
+      return;
+    }
+
+    final result = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => DoubleBattleScreen(
+          playerTeam: playerTeam,
+          opponentTeam: opponentTeam,
+          biomeName: 'Rainforest', // Default biome for now
+          battleTitle: 'Random Doubles',
+        ),
+      ),
+    );
+
+    if (result != null && mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Doubles battle ended: $result')));
     }
   }
 
@@ -452,6 +482,16 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
                       battleTitle: 'Randoms',
                     );
                   },
+                ),
+                // Doubles Mode
+                const SizedBox(height: 24),
+                _buildModeCard(
+                  title: 'Doubles Random',
+                  description:
+                      'Two vs two! Pick targets, use spread moves, and master doubles strategy!',
+                  icon: Icons.group,
+                  color: const Color(0xFF005C4B).withOpacity(0.9),
+                  onTap: _startDoublesBattle,
                 ),
               ],
             ),

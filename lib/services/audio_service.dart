@@ -54,8 +54,8 @@ class AudioService {
       android: AudioContextAndroid(
         isSpeakerphoneOn: false,
         stayAwake: false,
-        contentType: AndroidContentType.sonification,
-        usageType: AndroidUsageType.assistanceSonification,
+        contentType: AndroidContentType.music,
+        usageType: AndroidUsageType.game,
         audioFocus: AndroidAudioFocus.none, // Key Fix: Don't interrupt music
       ),
       iOS: AudioContextIOS(

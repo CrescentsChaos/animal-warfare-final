@@ -127,8 +127,9 @@ class UserState with ChangeNotifier {
     await _readModifyWrite((u) {
       if (u.capturedOrganisms.isEmpty ||
           index < 0 ||
-          index >= u.capturedOrganisms.length)
+          index >= u.capturedOrganisms.length) {
         return u;
+      }
       final list = List<CapturedOrganism>.from(u.capturedOrganisms)
         ..removeAt(index);
       int newAttacker = u.activeAttackerIndex;
@@ -209,8 +210,9 @@ class UserState with ChangeNotifier {
   Future<void> equipTalisman(int organismIndex, String? talismanId) async {
     if (_currentUser == null) return;
     await _readModifyWrite((u) {
-      if (organismIndex < 0 || organismIndex >= u.capturedOrganisms.length)
+      if (organismIndex < 0 || organismIndex >= u.capturedOrganisms.length) {
         return u;
+      }
       final organisms = List<CapturedOrganism>.from(u.capturedOrganisms);
       final targetOrg = organisms[organismIndex];
       final oldId = targetOrg.equippedTalisman?.id;
@@ -261,8 +263,9 @@ class UserState with ChangeNotifier {
     if (_currentUser!.activeQuests
             .where((q) => q.npcId == quest.npcId)
             .length >=
-        2)
+        2) {
       return;
+    }
     await _readModifyWrite((u) {
       final list = List<Quest>.from(u.activeQuests)..add(quest);
       return u.copyWith(activeQuests: list);
@@ -343,8 +346,9 @@ class UserState with ChangeNotifier {
     await LocalAuthService.loadOrganisms();
     await _readModifyWrite((u) {
       final state = u.rogueLikeState;
-      if (state.encounterIndex >= 4)
+      if (state.encounterIndex >= 4) {
         return u; // End of floor handled separately
+      }
 
       int newEncounter = state.encounterIndex + 1;
 
@@ -484,8 +488,9 @@ class UserState with ChangeNotifier {
         .expand((o) => o.habitat.split(',').map((e) => e.trim()))
         .toSet()
         .toList();
-    if (biomes.isEmpty)
+    if (biomes.isEmpty) {
       biomes = ['Jungle', 'Desert', 'Savanna', 'River', 'Ocean', 'Mountain'];
+    }
     return biomes[Random().nextInt(biomes.length)];
   }
 

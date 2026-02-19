@@ -59,7 +59,6 @@ class _SplashScreenState extends State<SplashScreen>
     if (_assetsPrecached) return;
 
     final BuildContext currentContext = context;
-    if (currentContext == null) return;
 
     // 1. Precache main assets
     await precacheImage(

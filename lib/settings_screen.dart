@@ -340,7 +340,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Switch(
                 value: isEnabled,
                 onChanged: onToggle,
-                activeColor: highlightColor,
+                activeThumbColor: highlightColor,
               ),
             ],
           ),
