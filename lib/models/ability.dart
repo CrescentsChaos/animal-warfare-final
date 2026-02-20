@@ -433,7 +433,7 @@ class Ability {
       magnitude: 1.2,
     ),
     Ability(
-      name: 'Frenzy',
+      name: 'Cornered Beast',
       description: 'Attack is boosted by 50% when HP falls below 30%.',
       trigger: AbilityTrigger.onCalculateStat,
       effectType: AbilityEffectType.statMultiplier,
@@ -446,7 +446,21 @@ class Ability {
       description: 'Summons harsh sunlight when entering battle.',
       trigger: AbilityTrigger.onEntry,
       effectType: AbilityEffectType.weatherChange,
-      value: 'sun',
+      value: 'sunny',
+    ),
+    Ability(
+      name: 'Snow Warning',
+      description: 'Summons snowstrom when entering battle.',
+      trigger: AbilityTrigger.onEntry,
+      effectType: AbilityEffectType.weatherChange,
+      value: 'snowstorm',
+    ),
+    Ability(
+      name: 'Sand Stream',
+      description: 'Summons sandstorm when entering battle.',
+      trigger: AbilityTrigger.onEntry,
+      effectType: AbilityEffectType.weatherChange,
+      value: 'sandstorm',
     ),
     Ability(
       name: 'Electric Surge',

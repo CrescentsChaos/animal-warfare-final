@@ -2,15 +2,15 @@
 
 enum Weather {
   none,
-  clear,        // Default, no effects
-  rain,         // Water boost, Fire reduced
-  heavyRain,    // Stronger rain effects
-  snow,         // Ice boost, speed reduced
-  blizzard,     // Heavy snow + chip damage
-  fog,          // Reduced accuracy
-  heatwave,     // Fire boost, Water reduced
-  sandstorm,    // Chip damage, Rock boost
-  windstorm,    // Flying boost, accuracy down
+  clear, // Default, no effects
+  rain, // aquatic boost, Fire reduced
+  heavyRain, // Stronger rain effects
+  snowstorm, // Ice boost, speed reduced
+  blizzard, // Heavy snowstorm + chip damage
+  fog, // Reduced accuracy
+  sunny, // Fire boost, aquatic reduced
+  sandstorm, // Chip damage, Rock boost
+  windstorm, // Flying boost, accuracy down
   thunderstorm, // Electric boost, paralysis chance
 }
 
@@ -18,10 +18,7 @@ class WeatherEffect {
   final Weather weather;
   final int duration; // in turns
 
-  const WeatherEffect({
-    required this.weather,
-    this.duration = 5,
-  });
+  const WeatherEffect({required this.weather, this.duration = 5});
 
   String get description {
     switch (weather) {
@@ -31,13 +28,13 @@ class WeatherEffect {
         return 'It started to rain!';
       case Weather.heavyRain:
         return 'A downpour began!';
-      case Weather.snow:
+      case Weather.snowstorm:
         return 'It started to snow!';
       case Weather.blizzard:
         return 'A blizzard struck!';
       case Weather.fog:
         return 'Fog rolled in!';
-      case Weather.heatwave:
+      case Weather.sunny:
         return 'The temperature is scorching!';
       case Weather.sandstorm:
         return 'A sandstorm kicked up!';
@@ -55,13 +52,13 @@ class WeatherEffect {
       case Weather.rain:
       case Weather.heavyRain:
         return 'The rain stopped.';
-      case Weather.snow:
-        return 'The snow stopped.';
+      case Weather.snowstorm:
+        return 'The snowstorm stopped.';
       case Weather.blizzard:
         return 'The blizzard subsided.';
       case Weather.fog:
         return 'The fog lifted.';
-      case Weather.heatwave:
+      case Weather.sunny:
         return 'The temperature cooled down.';
       case Weather.sandstorm:
         return 'The sandstorm subsided.';
@@ -79,18 +76,20 @@ class WeatherEffect {
     switch (weather) {
       case Weather.rain:
       case Weather.heavyRain:
-        if (moveType == 'water') return weather == Weather.heavyRain ? 1.8 : 1.5;
-        if (moveType == 'fire') return weather == Weather.heavyRain ? 0.3 : 0.5;
+        if (moveType == 'aquatic')
+          return weather == Weather.heavyRain ? 1.8 : 1.5;
+        if (moveType == 'blaze')
+          return weather == Weather.heavyRain ? 0.3 : 0.5;
         break;
-      case Weather.heatwave:
-        if (moveType == 'fire') return 1.6;
-        if (moveType == 'water') return 0.4;
+      case Weather.sunny:
+        if (moveType == 'blaze') return 1.6;
+        if (moveType == 'aquatic') return 0.4;
         break;
-      case Weather.snow:
-        if (moveType == 'ice') return 1.3;
+      case Weather.snowstorm:
+        if (moveType == 'cryo') return 1.3;
         break;
       case Weather.blizzard:
-        if (moveType == 'ice') return 1.5;
+        if (moveType == 'cryo') return 1.5;
         break;
       case Weather.sandstorm:
         if (moveType == 'rock') return 1.3;

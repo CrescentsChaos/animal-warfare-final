@@ -160,10 +160,10 @@ mixin AbilityHelpers {
 
   Future<void> _setWeatherHelper(String weatherName) async {
     final weatherMap = {
-      'heatwave': Weather.heatwave,
+      'sunny': Weather.sunny,
       'rain': Weather.rain,
       'sandstorm': Weather.sandstorm,
-      'snow': Weather.snow,
+      'snowstorm': Weather.snowstorm,
       'blizzard': Weather.blizzard,
       'fog': Weather.fog,
       'windstorm': Weather.windstorm,

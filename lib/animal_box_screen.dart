@@ -1307,8 +1307,10 @@ Color _getAnimalTypeColor(ElementalType type) {
     case ElementalType.metal:
       return const Color.fromARGB(255, 172, 168, 168);
     case ElementalType.aura:
-      return const Color.fromARGB(255, 248, 255, 150);
+      return const Color.fromARGB(255, 229, 255, 79);
     case ElementalType.sound:
       return const Color.fromARGB(255, 166, 70, 255);
+    case ElementalType.holy:
+      return const Color.fromARGB(255, 255, 208, 0);
   }
 }

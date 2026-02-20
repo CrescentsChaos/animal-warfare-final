@@ -216,9 +216,11 @@ class _BattleScreenContentState extends State<BattleScreenContent>
       case ElementalType.metal:
         return const Color.fromARGB(255, 172, 168, 168);
       case ElementalType.aura:
-        return const Color.fromARGB(255, 248, 255, 150);
+        return const Color.fromARGB(255, 229, 255, 79);
       case ElementalType.sound:
         return const Color.fromARGB(255, 166, 70, 255);
+      case ElementalType.holy:
+        return const Color.fromARGB(255, 255, 208, 0);
     }
   }
 
@@ -246,6 +248,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
   late Animation<double> _playerShakeAnimation;
   late Animation<double> _opponentShakeAnimation;
   bool _isSwitchDialogShowing = false;
+  bool _isHandlingBattleEnd = false; // Prevents race condition
   CapturedOrganism? _pendingRogueCapture;
   BattleManager? _battleManager;
 
@@ -2561,6 +2564,8 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     UserState userState,
   ) {
     if (_isSwitchDialogShowing) return;
+    if (_isHandlingBattleEnd) return; // FIX: Prevent duplicate execution
+    _isHandlingBattleEnd = true;
 
     // Add delay to allow reading the final log message
     Future.delayed(const Duration(milliseconds: 2500), () async {
@@ -2712,10 +2717,8 @@ class _BattleScreenContentState extends State<BattleScreenContent>
             final rogue = userState.currentUser!.rogueLikeState;
 
             // Navigator logic:
-            // If end of floor (encounter 4 aka 5/5) -> Biome Select
-            // Else -> Hub Screen
-
-            if (rogue.encounterIndex == 4) {
+            if (rogue.encounterIndex >= 5) {
+              // 5th encounter completed -> index 5
               Navigator.of(context).pushReplacement(
                 MaterialPageRoute(builder: (ctx) => const BiomeSelectScreen()),
               );

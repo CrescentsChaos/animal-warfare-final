@@ -17,6 +17,57 @@
         ]
     },
     {
+        "name": "Swords Dance",
+        "description": "The user charges its body with energy, sharply raising its Attack stat.",
+        "baseDamage": 0,
+        "type": "metal",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "attack",
+                "value": 2,
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Nasty Plot",
+        "description": "The user charges its body with energy, sharply raising its Power stat.",
+        "baseDamage": 0,
+        "type": "darkness",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "power",
+                "value": 2,
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Agility",
+        "description": "The user charges its body with energy, sharply raising its Speed stat.",
+        "baseDamage": 0,
+        "type": "electric",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "speed",
+                "value": 2,
+                "chance": 100
+            }
+        ]
+    },
+    {
         "name": "Aurora Beam",
         "description": "10% chance to lower the opponent's attack.",
         "baseDamage": 65,
@@ -1081,6 +1132,23 @@
         ]
     },
     {
+        "name": "Dragon Dance",
+        "description": "Raises the user's Attack and Speed by one stage",
+        "baseDamage": 0,
+        "type": "drake",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "multiStatChange",
+                "target": "self",
+                "stat": "attack:,speed:1",
+                "value": 1,
+                "chance": 100
+            }
+        ]
+    },
+    {
         "name": "Arctic Maul",
         "description": "30% chance to Slow the target.",
         "baseDamage": 95,
@@ -1326,7 +1394,7 @@
     },
     {
         "name": "Moonblast",
-        "description": "10% chance to lower the target's attack.",
+        "description": "10% chance to lower the target's power.",
         "baseDamage": 90,
         "accuracy": 100,
         "type": "mystic",
@@ -1336,7 +1404,7 @@
             {
                 "type": "statChange",
                 "target": "opponent",
-                "stat": "attack",
+                "stat": "power",
                 "value": -1,
                 "chance": 10
             }
@@ -1756,6 +1824,23 @@
         ]
     },
     {
+        "name": "Recover",
+        "description": "Sits and rest.",
+        "soundEffect": "audio/effects/absorb.mp3",
+        "baseDamage": 0,
+        "type": "holy",
+        "stamina": 5,
+        "category": "status",
+        "effects": [
+            {
+                "type": "heal",
+                "target": "self",
+                "value": 50,
+                "chance": 100
+            }
+        ]
+    },
+    {
         "name": "Hypnotic Ripple",
         "description": "Mesmerizes the target, lowering their mental resistance.",
         "baseDamage": 20,
@@ -1935,8 +2020,25 @@
         "accuracy": 85,
         "type": "arthropod",
         "stamina": 15,
-        "category": "physical",
-        "effects": []
+        "category": "physical"
+    },
+    {
+        "name": "X-Scissor",
+        "description": "User slashes the foe with its claws.",
+        "baseDamage": 80,
+        "accuracy": 100,
+        "type": "arthropod",
+        "stamina": 15,
+        "category": "physical"
+    },
+    {
+        "name": "Raging Bull",
+        "description": "User charges at the foe with all its might.",
+        "baseDamage": 90,
+        "accuracy": 100,
+        "type": "basic",
+        "stamina": 10,
+        "category": "physical"
     },
     {
         "name": "Bug Bite",
@@ -1996,17 +2098,16 @@
         ]
     },
     {
-        "name": "Crunch",
-        "description": "Bites with vicious fangs.",
-        "soundEffect": "audio/effects/chomp.mp3",
-        "baseDamage": 80,
+        "name": "Nightfall Talons",
+        "description": "30% chance to make the target fear.",
+        "baseDamage": 95,
         "type": "darkness",
         "stamina": 15,
         "category": "physical",
         "effects": [
             {
-                "type": "statusBleed",
-                "value": 1,
+                "type": "statusFear",
+                "value": 3,
                 "chance": 30
             }
         ]
@@ -2172,7 +2273,39 @@
             {
                 "type": "weather",
                 "target": "field",
-                "stat": "sun",
+                "stat": "sunny",
+                "value": 5
+            }
+        ]
+    },
+    {
+        "name": "Sandstorm",
+        "description": "Summons sandstorm.",
+        "baseDamage": 0,
+        "type": "rock",
+        "stamina": 5,
+        "category": "status",
+        "effects": [
+            {
+                "type": "weather",
+                "target": "field",
+                "stat": "sandstorm",
+                "value": 5
+            }
+        ]
+    },
+    {
+        "name": "Snowstorm",
+        "description": "Summons snowstorm.",
+        "baseDamage": 0,
+        "type": "cryo",
+        "stamina": 5,
+        "category": "status",
+        "effects": [
+            {
+                "type": "weather",
+                "target": "field",
+                "stat": "snowstorm",
                 "value": 5
             }
         ]
@@ -2261,14 +2394,24 @@
     },
     {
         "name": "Double Slap",
-        "description": "Hits 2-5 times.",
-        "baseDamage": 15,
+        "description": "Hits 2 times.",
+        "baseDamage": 20,
         "minHits": 2,
-        "maxHits": 5,
-        "type": "basic",
+        "maxHits": 2,
+        "type": "martial",
         "stamina": 15,
-        "category": "physical",
-        "effects": []
+        "category": "physical"
+    },
+    {
+        "name": "Dual Wingbeat",
+        "description": "Hits 2 times.",
+        "baseDamage": 40,
+        "minHits": 2,
+        "maxHits": 2,
+        "accuracy": 90,
+        "type": "flying",
+        "stamina": 15,
+        "category": "physical"
     },
     {
         "name": "Grizzly Frenzy",
@@ -2692,7 +2835,17 @@
         "description": "Hurts user.",
         "baseDamage": 90,
         "recoilPercent": 0.25,
-        "type": "giant",
+        "type": "basic",
+        "stamina": 15,
+        "category": "physical",
+        "effects": []
+    },
+    {
+        "name": "Brave Bird",
+        "description": "Hurts user.",
+        "baseDamage": 120,
+        "recoilPercent": 0.33,
+        "type": "flying",
         "stamina": 15,
         "category": "physical",
         "effects": []
@@ -2832,7 +2985,7 @@
             {
                 "type": "heal",
                 "target": "self",
-                "value": 999
+                "value": 100
             },
             {
                 "type": "statusSleep",
@@ -3112,6 +3265,22 @@
                 "stat": "speed",
                 "value": -1,
                 "chance": 50
+            }
+        ]
+    },
+    {
+        "name": "Raptor Rend",
+        "description": "20% chance to bleed opponent.",
+        "baseDamage": 100,
+        "accuracy": 95,
+        "type": "flying",
+        "stamina": 15,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusBleed",
+                "value": 3,
+                "chance": 20
             }
         ]
     },

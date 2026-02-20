@@ -18,6 +18,7 @@ enum ElementalType {
   metal,
   aura,
   sound,
+  holy,
 }
 
 class TypeChart {
@@ -72,6 +73,14 @@ class TypeChart {
         if (defenderType == ElementalType.earth) return 0.5;
         if (defenderType == ElementalType.martial) return 0.5;
         break;
+      case ElementalType.holy:
+        if (defenderType == ElementalType.spectral) return 2.0;
+        if (defenderType == ElementalType.darkness) return 2.0;
+        if (defenderType == ElementalType.drake) return 2.0;
+        if (defenderType == ElementalType.metal) return 0.5;
+        if (defenderType == ElementalType.blaze) return 0.5;
+        if (defenderType == ElementalType.mystic) return 0.5;
+        break;
       case ElementalType.flying:
         if (defenderType == ElementalType.arthropod) return 2.0;
         if (defenderType == ElementalType.martial) return 2.0; // Can't reach
@@ -93,6 +102,7 @@ class TypeChart {
         if (defenderType == ElementalType.cryo) return 2.0;
         if (defenderType == ElementalType.rock) return 2.0;
         if (defenderType == ElementalType.mystic) return 2.0;
+        if (defenderType == ElementalType.holy) return 2.0;
         if (defenderType == ElementalType.aquatic) return 0.5;
         if (defenderType == ElementalType.blaze) return 0.5;
         if (defenderType == ElementalType.metal) return 0.5;
@@ -139,6 +149,7 @@ class TypeChart {
         break;
       case ElementalType.darkness:
         if (defenderType == ElementalType.mystic) return 2.0;
+        if (defenderType == ElementalType.holy) return 2.0;
         if (defenderType == ElementalType.spectral) return 2.0;
         if (defenderType == ElementalType.darkness) return 0.5;
         if (defenderType == ElementalType.martial) return 0.5;
@@ -166,6 +177,7 @@ class TypeChart {
         break;
       case ElementalType.toxic:
         if (defenderType == ElementalType.grass) return 2;
+        if (defenderType == ElementalType.holy) return 2;
         if (defenderType == ElementalType.toxic) return 0.5;
         if (defenderType == ElementalType.mystic) return 2.0;
         if (defenderType == ElementalType.metal) return 0;
@@ -178,6 +190,7 @@ class TypeChart {
         if (defenderType == ElementalType.aura) return 2;
         if (defenderType == ElementalType.basic) return 0;
         if (defenderType == ElementalType.darkness) return 0.5;
+        if (defenderType == ElementalType.holy) return 0;
         break;
       default:
         break;

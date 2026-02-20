@@ -346,7 +346,7 @@ class UserState with ChangeNotifier {
     await LocalAuthService.loadOrganisms();
     await _readModifyWrite((u) {
       final state = u.rogueLikeState;
-      if (state.encounterIndex >= 4) {
+      if (state.encounterIndex >= 5) {
         return u; // End of floor handled separately
       }
 
@@ -354,7 +354,9 @@ class UserState with ChangeNotifier {
 
       final newOpponents = _generateRogueOpponentTeam(
         state.currentBiome ?? 'Forest',
-        newEncounter == 4 ? (2 + Random().nextInt(4)).clamp(2, 5) : 1,
+        newEncounter == 4
+            ? (2 + Random().nextInt(4)).clamp(2, 5)
+            : 1, // Boss is at index 4 (5th fight)
         state.floor,
       );
 

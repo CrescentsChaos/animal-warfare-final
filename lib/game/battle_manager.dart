@@ -71,7 +71,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           ab.targetStat == 'speed') {
         // Chlorophyll
         if (ab.name == 'Chlorophyll' &&
-            currentWeather.weather == Weather.heatwave) {
+            currentWeather.weather == Weather.sunny) {
           speed *= ab.magnitude;
         }
         // Swift Swim
@@ -86,7 +86,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         }
         // Slush Rush
         else if (ab.name == 'Slush Rush' &&
-            (currentWeather.weather == Weather.snow ||
+            (currentWeather.weather == Weather.snowstorm ||
                 currentWeather.weather == Weather.blizzard)) {
           speed *= ab.magnitude;
         }
@@ -370,7 +370,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           if (ability.value == 'rain') {
             _setWeather(Weather.rain);
           } else if (ability.value == 'sun') {
-            _setWeather(Weather.heatwave);
+            _setWeather(Weather.sunny);
           } else if (ability.value == 'hail') {
             _setWeather(Weather.blizzard);
           } else if (ability.value == 'sandstorm') {
@@ -438,11 +438,11 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             final w = currentWeatherGlobal?.weather ?? Weather.none;
             int stageChange = 0;
 
-            if (w == Weather.heatwave) {
+            if (w == Weather.sunny) {
               stageChange = 1;
             } else if (w == Weather.rain ||
                 w == Weather.heavyRain ||
-                w == Weather.snow ||
+                w == Weather.snowstorm ||
                 w == Weather.blizzard ||
                 w == Weather.thunderstorm) {
               stageChange = -1;
@@ -502,13 +502,13 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         return 'Rain continues to fall.';
       case Weather.heavyRain:
         return 'The downpour persists!';
-      case Weather.snow:
-        return 'Snow keeps falling.';
+      case Weather.snowstorm:
+        return 'snowstorm keeps falling.';
       case Weather.blizzard:
         return 'The blizzard rages on!';
       case Weather.fog:
         return 'The fog lingers.';
-      case Weather.heatwave:
+      case Weather.sunny:
         return 'The heat is intense!';
       case Weather.sandstorm:
         return 'The sandstorm continues.';
@@ -1825,7 +1825,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           if (effect.stat == 'rain') {
             _setWeather(Weather.rain);
           } else if (effect.stat == 'sun')
-            _setWeather(Weather.heatwave);
+            _setWeather(Weather.sunny);
           else if (effect.stat == 'hail')
             _setWeather(Weather.blizzard);
           else if (effect.stat == 'sandstorm')
