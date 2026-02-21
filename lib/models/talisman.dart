@@ -29,6 +29,22 @@ enum TalismanEffectType {
   selfStatus, // Flame Orb, Toxic Orb
   categoryDamageBoost, // Muscle Band, Wise Glasses
   flinchChance, // King's Rock
+  // Accuracy/Speed
+  wideLens, // +10% accuracy
+  zoomLens, // +20% accuracy when moving second
+  quickClaw, // 20% chance to move first
+  // Air Balloon / Terrain immunity
+  airBalloon, // Immune to Earth-type moves, pops when hit
+  // White Herb
+  whiteHerb, // Restore lowered stats once
+  // Berries (consumed on use)
+  berryHealPercent, // Sitrus Berry: heal % HP when HP < threshold
+  berryHealFlat, // Oran Berry: heal flat HP when HP < threshold
+  berryCureStatus, // Lum/Rawst/Cheri etc: cure specific/all status
+  berryStatBoost, // Salac/Petaya/Liechi: +1 stat stage when HP < threshold
+  berryCritBoost, // Lansat Berry: crit boost when HP < threshold
+  berryEnigma, // Enigma Berry: heal on super-effective hit
+  berryJaboca, // Jaboca/Rowap Berry: damage attacker when hit by physical/special
 }
 
 class TalismanEffect {
@@ -38,6 +54,9 @@ class TalismanEffect {
   final String? condition; // For conditional effects
   final String? category; // For move category effects (physical/special)
   final String? status; // For status effects
+  final double threshold; // For berry HP-threshold effects (e.g. 0.5 = 50% HP)
+  final String?
+  curesStatus; // For berry_cure_status: "all", "burn", "poison", etc.
 
   const TalismanEffect({
     required this.type,
@@ -46,6 +65,8 @@ class TalismanEffect {
     this.condition,
     this.category,
     this.status,
+    this.threshold = 0.0,
+    this.curesStatus,
   });
 
   factory TalismanEffect.fromJson(Map<String, dynamic> json) {
@@ -102,6 +123,42 @@ class TalismanEffect {
       case 'flinch_chance':
         type = TalismanEffectType.flinchChance;
         break;
+      case 'wide_lens':
+        type = TalismanEffectType.wideLens;
+        break;
+      case 'zoom_lens':
+        type = TalismanEffectType.zoomLens;
+        break;
+      case 'quick_claw':
+        type = TalismanEffectType.quickClaw;
+        break;
+      case 'air_balloon':
+        type = TalismanEffectType.airBalloon;
+        break;
+      case 'white_herb':
+        type = TalismanEffectType.whiteHerb;
+        break;
+      case 'berry_heal_percent':
+        type = TalismanEffectType.berryHealPercent;
+        break;
+      case 'berry_heal_flat':
+        type = TalismanEffectType.berryHealFlat;
+        break;
+      case 'berry_cure_status':
+        type = TalismanEffectType.berryCureStatus;
+        break;
+      case 'berry_stat_boost':
+        type = TalismanEffectType.berryStatBoost;
+        break;
+      case 'berry_crit_boost':
+        type = TalismanEffectType.berryCritBoost;
+        break;
+      case 'berry_enigma':
+        type = TalismanEffectType.berryEnigma;
+        break;
+      case 'berry_jaboca':
+        type = TalismanEffectType.berryJaboca;
+        break;
       default:
         type = TalismanEffectType.statBoost; // Fallback
     }
@@ -113,6 +170,8 @@ class TalismanEffect {
       condition: json['condition'] as String?,
       category: json['category'] as String?,
       status: json['status'] as String?,
+      threshold: (json['threshold'] as num?)?.toDouble() ?? 0.0,
+      curesStatus: json['curesStatus'] as String?,
     );
   }
 
@@ -125,6 +184,8 @@ class TalismanEffect {
     if (condition != null) data['condition'] = condition;
     if (category != null) data['category'] = category;
     if (status != null) data['status'] = status;
+    if (threshold > 0) data['threshold'] = threshold;
+    if (curesStatus != null) data['curesStatus'] = curesStatus;
     return data;
   }
 }
@@ -216,4 +277,25 @@ class Talisman {
           type: TalismanEffectType.statBoost,
           magnitude: 1.0,
         );
+
+  // Returns true if this talisman is a berry (single-use)
+  bool get isBerry => effects.any(
+    (e) =>
+        e.type == TalismanEffectType.berryHealPercent ||
+        e.type == TalismanEffectType.berryHealFlat ||
+        e.type == TalismanEffectType.berryCureStatus ||
+        e.type == TalismanEffectType.berryStatBoost ||
+        e.type == TalismanEffectType.berryCritBoost ||
+        e.type == TalismanEffectType.berryEnigma ||
+        e.type == TalismanEffectType.berryJaboca,
+  );
+
+  // Returns true if this talisman is a single-use item
+  bool get isSingleUse =>
+      isBerry ||
+      effects.any(
+        (e) =>
+            e.type == TalismanEffectType.whiteHerb ||
+            e.type == TalismanEffectType.quickClaw,
+      );
 }

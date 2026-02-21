@@ -251,6 +251,8 @@ class _BattleScreenContentState extends State<BattleScreenContent>
   bool _isHandlingBattleEnd = false; // Prevents race condition
   CapturedOrganism? _pendingRogueCapture;
   BattleManager? _battleManager;
+  final LayerLink _playerLink = LayerLink();
+  final LayerLink _opponentLink = LayerLink();
 
   @override
   void initState() {
@@ -886,6 +888,9 @@ class _BattleScreenContentState extends State<BattleScreenContent>
             _AbilityPopUp(
               notification: battleManager.currentAbilityNotify!,
               themeColor: _getBiomeThemeColor(),
+              link: battleManager.currentAbilityNotify!.isPlayer
+                  ? _playerLink
+                  : _opponentLink,
             ),
         ],
       ),
@@ -1239,13 +1244,16 @@ class _BattleScreenContentState extends State<BattleScreenContent>
             ),
           ),
           const SizedBox(width: 8),
-          _BattleSprite(
-            organism: organism,
-            size: spriteSize,
-            onLongPress: () =>
-                _showOrganismInfo(context, organism, isPlayer: false),
-            mirror: false, // Mirrored from previous State
-            biomeName: widget.biomeName,
+          CompositedTransformTarget(
+            link: _opponentLink,
+            child: _BattleSprite(
+              organism: organism,
+              size: spriteSize,
+              onLongPress: () =>
+                  _showOrganismInfo(context, organism, isPlayer: false),
+              mirror: false, // Mirrored from previous State
+              biomeName: widget.biomeName,
+            ),
           ),
         ],
       ),
@@ -1394,13 +1402,16 @@ class _BattleScreenContentState extends State<BattleScreenContent>
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          _BattleSprite(
-            organism: organism,
-            size: spriteSize,
-            onLongPress: () =>
-                _showOrganismInfo(context, organism, isPlayer: true),
-            mirror: true, // Mirrored from previous State
-            biomeName: widget.biomeName,
+          CompositedTransformTarget(
+            link: _playerLink,
+            child: _BattleSprite(
+              organism: organism,
+              size: spriteSize,
+              onLongPress: () =>
+                  _showOrganismInfo(context, organism, isPlayer: true),
+              mirror: true, // Mirrored from previous State
+              biomeName: widget.biomeName,
+            ),
           ),
           const SizedBox(width: 8),
           Flexible(
@@ -2713,7 +2724,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
 
           if ((battleManager.result == BattleResult.win ||
                   battleManager.result == BattleResult.capture) &&
-              (userState.currentUser?.rogueLikeState.isActive ?? false)) {
+              widget.isRogueMode) {
             final rogue = userState.currentUser!.rogueLikeState;
 
             // Navigator logic:
@@ -4064,8 +4075,13 @@ class _TypewriterTextState extends State<TypewriterText> {
 class _AbilityPopUp extends StatefulWidget {
   final AbilityNotification notification;
   final Color themeColor;
+  final LayerLink link;
 
-  const _AbilityPopUp({required this.notification, required this.themeColor});
+  const _AbilityPopUp({
+    required this.notification,
+    required this.themeColor,
+    required this.link,
+  });
 
   @override
   State<_AbilityPopUp> createState() => _AbilityPopUpState();
@@ -4086,7 +4102,7 @@ class _AbilityPopUpState extends State<_AbilityPopUp>
     );
 
     _slideAnimation = Tween<double>(
-      begin: widget.notification.isPlayer ? -200.0 : 200.0,
+      begin: -20.0, // Smaller slide from below
       end: 0.0,
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
 
@@ -4106,19 +4122,19 @@ class _AbilityPopUpState extends State<_AbilityPopUp>
 
   @override
   Widget build(BuildContext context) {
-    return Positioned(
-      top: widget.notification.isPlayer
-          ? MediaQuery.of(context).size.height * 0.7
-          : MediaQuery.of(context).size.height * 0.25,
-      left: widget.notification.isPlayer ? 0 : null,
-      right: widget.notification.isPlayer ? null : 0,
+    return CompositedTransformFollower(
+      link: widget.link,
+      showWhenUnlinked: false,
+      offset: const Offset(0, -60), // Position above the sprite
+      targetAnchor: Alignment.topCenter,
+      followerAnchor: Alignment.bottomCenter,
       child: AnimatedBuilder(
         animation: _controller,
         builder: (context, child) {
           return Opacity(
             opacity: _opacityAnimation.value,
             child: Transform.translate(
-              offset: Offset(_slideAnimation.value, 0),
+              offset: Offset(0, _slideAnimation.value),
               child: child,
             ),
           );
@@ -4128,14 +4144,7 @@ class _AbilityPopUpState extends State<_AbilityPopUp>
           decoration: BoxDecoration(
             color: Colors.black.withOpacity(0.8),
             border: Border.all(color: widget.themeColor, width: 2),
-            borderRadius: BorderRadius.horizontal(
-              left: widget.notification.isPlayer
-                  ? Radius.zero
-                  : const Radius.circular(20),
-              right: widget.notification.isPlayer
-                  ? const Radius.circular(20)
-                  : Radius.zero,
-            ),
+            borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.5),
@@ -4145,9 +4154,7 @@ class _AbilityPopUpState extends State<_AbilityPopUp>
             ],
           ),
           child: Column(
-            crossAxisAlignment: widget.notification.isPlayer
-                ? CrossAxisAlignment.start
-                : CrossAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(

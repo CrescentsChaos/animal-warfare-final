@@ -110,9 +110,6 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
       if (battleTitle == 'Rogue-like' && result == BattleResult.win) {
         // This is handled by BattleScreen usually, but we refresh just in case
       }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Battle ended: $result')));
     }
   }
 
@@ -140,11 +137,8 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
       ),
     );
 
-    if (result != null && mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Doubles battle ended: $result')));
-    }
+    // Handle battle result if needed
+    if (result != null && mounted) {}
   }
 
   void _startRogueLike(UserState userState) async {

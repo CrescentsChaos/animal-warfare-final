@@ -239,23 +239,14 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
 
     // 🚨 NEW LOGIC: Check the BattleResult
     if (result == BattleResult.capture) {
-      // If captured, show success and keep exploring
-      _displayMessage("Capture successful! Starting new exploration...");
-
       Future.delayed(const Duration(milliseconds: 500), () {
         _startExploration();
       });
     } else if (result == BattleResult.fled) {
-      // If fled, show success and start new exploration (as requested)
-      _displayMessage("Escaped safely! Searching for new opponent...");
-
       Future.delayed(const Duration(milliseconds: 500), () {
         _startExploration();
       });
     } else if (result == BattleResult.win) {
-      // If won, show success and start new exploration
-      _displayMessage("Victory! Searching for new opponent...");
-
       Future.delayed(const Duration(milliseconds: 500), () {
         _startExploration();
       });

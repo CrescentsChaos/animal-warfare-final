@@ -13,6 +13,7 @@ import 'package:animal_warfare/game/battle_models.dart';
 import 'package:animal_warfare/models/captured_organism.dart';
 import 'package:animal_warfare/models/move.dart';
 import 'package:animal_warfare/models/elemental_type.dart';
+import 'package:animal_warfare/theme.dart';
 
 // ════════════════════════════════════════════════════════════
 // Type color helper
@@ -590,11 +591,11 @@ class _DoubleBattleViewState extends State<_DoubleBattleView> {
         decoration: BoxDecoration(
           image: DecorationImage(
             image: AssetImage(bgPath),
-            // Using fitHeight ensures it fills the vertical space
-            // without stretching individual pixels unevenly.
-            fit: BoxFit.fitHeight,
-            alignment: Alignment.center,
-            filterQuality: FilterQuality.none, // Keeps pixels sharp
+            fit: BoxFit.cover,
+            colorFilter: ColorFilter.mode(
+              Colors.black.withOpacity(0.35),
+              BlendMode.darken,
+            ),
           ),
         ),
         child: Column(
@@ -950,23 +951,22 @@ class _DoubleBattleViewState extends State<_DoubleBattleView> {
   }
 
   String _getBiomeBackground() {
-    final biome = widget.biomeName.toLowerCase();
-    if (biome.contains('swamp')) return 'assets/biomes/swamp.png';
-    if (biome.contains('desert') || biome.contains('savanna'))
-      return 'assets/biomes/desert.png';
-    if (biome.contains('snow') ||
-        biome.contains('polar') ||
-        biome.contains('tundra'))
-      return 'assets/biomes/polarpng';
-    if (biome.contains('volcano')) return 'assets/biomes/volcano.png';
-    if (biome.contains('mountain')) return 'assets/biomes/mountain.png';
-    if (biome.contains('jungle') || biome.contains('jungle'))
-      return 'assets/biomes/jungle.png';
-    if (biome.contains('ocean') ||
-        biome.contains('coastal') ||
-        biome.contains('lake'))
-      return 'assets/biomes/ocean.png';
-    return 'assets/biomes/rainforest.png'; // default
+    // Sync with BattleScreen logic
+    var name = widget.biomeName;
+    if (name.contains(',')) {
+      name = name.split(',')[0];
+    }
+    name = name.trim().toLowerCase();
+
+    // Overrides/Fallbacks
+    if (name == 'forest') return 'assets/biomes/jungle-bg.png';
+    if (name == 'rain forest' || name == 'rainforest') {
+      return 'assets/biomes/rainforest-bg.png';
+    }
+    if (name == 'grassland') return 'assets/biomes/savanna-bg.png';
+
+    final fileName = name.replaceAll(' ', '_');
+    return 'assets/biomes/$fileName-bg.png';
   }
 
   Color _getBiomeThemeColor() {
@@ -1069,37 +1069,41 @@ class _DoubleBattleViewState extends State<_DoubleBattleView> {
     DoubleBattleManager bm,
     Color themeColor,
   ) {
-    return Container(
+    return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: const Color(0xFF161B22).withOpacity(0.85),
-        border: Border(bottom: BorderSide(color: themeColor, width: 2)),
-      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            widget.battleTitle?.toUpperCase() ?? 'Random Doubles',
-            style: TextStyle(
-              fontFamily: 'PressStart2P',
-              fontSize: 10,
+            widget.battleTitle?.toUpperCase() ?? 'RANDOM DOUBLES',
+            style: AppTextStyles.headline(
+              context,
+              baseSize: 12,
               color: themeColor,
-              fontWeight: FontWeight.bold,
             ),
           ),
-          Text(
-            'TURN ${bm.currentTurn}',
-            style: const TextStyle(
-              fontFamily: 'PressStart2P',
-              fontSize: 8,
-              color: Colors.white70,
-            ),
-          ),
-          IconButton(
-            onPressed: () => _showFullLog(context, bm),
-            icon: const Icon(Icons.menu_book, color: Colors.white70, size: 18),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
+          Row(
+            children: [
+              Text(
+                'TURN ${bm.currentTurn}',
+                style: AppTextStyles.small(
+                  context,
+                  baseSize: 8,
+                  color: Colors.white70,
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                onPressed: () => _showFullLog(context, bm),
+                icon: const Icon(
+                  Icons.menu_book,
+                  color: Colors.white70,
+                  size: 18,
+                ),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+            ],
           ),
         ],
       ),
@@ -1258,17 +1262,17 @@ class _HpBar extends StatelessWidget {
         height: 50,
         padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
-          color: const Color(0xFF21262D),
+          color: Colors.black.withOpacity(0.55),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.white12),
+          border: Border.all(color: primaryColor.withOpacity(0.3), width: 2),
         ),
         child: Center(
           child: Text(
             '—',
-            style: const TextStyle(
+            style: AppTextStyles.small(
+              context,
+              baseSize: 8,
               color: Colors.white30,
-              fontFamily: 'PressStart2P',
-              fontSize: 8,
             ),
           ),
         ),
@@ -1299,23 +1303,25 @@ class _HpBar extends StatelessWidget {
         constraints: const BoxConstraints(minWidth: 160, maxWidth: 200),
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: const Color(0xFF21262D),
+          color: Colors.black.withOpacity(0.55),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isClickable
-                ? const Color(0xFF4ADE80)
-                : primaryColor.withOpacity(0.5),
-            width: isClickable ? 2 : 1,
+            color: isClickable ? const Color(0xFF4ADE80) : primaryColor,
+            width: 2,
           ),
-          boxShadow: isClickable
-              ? [
-                  BoxShadow(
-                    color: const Color(0xFF4ADE80).withOpacity(0.4),
-                    blurRadius: 8,
-                    spreadRadius: 1,
-                  ),
-                ]
-              : [],
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.4),
+              blurRadius: 6,
+              offset: const Offset(2, 2),
+            ),
+            if (isClickable)
+              BoxShadow(
+                color: const Color(0xFF4ADE80).withOpacity(0.4),
+                blurRadius: 8,
+                spreadRadius: 1,
+              ),
+          ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -1326,13 +1332,12 @@ class _HpBar extends StatelessWidget {
             FittedBox(
               fit: BoxFit.scaleDown,
               child: Text(
-                slot!.organism.baseOrganism.name,
-                style: const TextStyle(
-                  fontFamily: 'PressStart2P',
-                  fontSize: 10,
+                slot!.organism.baseOrganism.name.toUpperCase(),
+                style: AppTextStyles.body(
+                  context,
+                  baseSize: 10,
                   color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
+                ).copyWith(fontWeight: FontWeight.bold),
               ),
             ),
             const SizedBox(height: 6),
@@ -1753,10 +1758,10 @@ class _ActionPanel extends StatelessWidget {
               selectedMove?.targetCount == MoveTargetCount.multiple
                   ? 'SELECT ANY TARGET FOR AOE...'
                   : 'SELECT A TARGET FOR ${selectedMove?.name.toUpperCase()}...',
-              style: const TextStyle(
-                fontFamily: 'PressStart2P',
-                fontSize: 8,
-                color: Color(0xFF4ADE80),
+              style: AppTextStyles.small(
+                context,
+                baseSize: 8,
+                color: const Color(0xFF4ADE80),
               ),
               textAlign: TextAlign.center,
             ),
@@ -1767,9 +1772,13 @@ class _ActionPanel extends StatelessWidget {
                 backgroundColor: Colors.red.shade900,
                 foregroundColor: Colors.white,
               ),
-              child: const Text(
+              child: Text(
                 'CANCEL SELECTION',
-                style: TextStyle(fontFamily: 'PressStart2P', fontSize: 8),
+                style: AppTextStyles.small(
+                  context,
+                  baseSize: 8,
+                  color: Colors.white,
+                ),
               ),
             ),
           ],
@@ -1784,17 +1793,17 @@ class _ActionPanel extends StatelessWidget {
 
     // ── Needs switch ──
     if (bm.currentState == DoubleBattleState.waitingForSwitch) {
-      return _buildMessageBox('Select a replacement...');
+      return _buildMessageBox(context, 'Select a replacement...');
     }
 
     // ── Executing ──
     if (bm.currentState == DoubleBattleState.executing) {
-      return _buildMessageBox(bm.battleLog);
+      return _buildMessageBox(context, bm.battleLog);
     }
 
     // ── Intro ──
     if (bm.currentState == DoubleBattleState.intro) {
-      return _buildMessageBox(bm.battleLog);
+      return _buildMessageBox(context, bm.battleLog);
     }
 
     // ── Move selection ──
@@ -1804,16 +1813,28 @@ class _ActionPanel extends StatelessWidget {
         : bm.playerSlot2;
 
     if (selectingSlot == null) {
-      return _buildMessageBox('Waiting...');
+      return _buildMessageBox(context, 'Waiting...');
     }
 
     final moves = _getMoves(selectingSlot);
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-      decoration: const BoxDecoration(
-        color: Color(0xFF161B22),
-        border: Border(top: BorderSide(color: Colors.white12)),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.55),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: DoubleBattleScreen.getBiomeThemeColor(biomeName),
+          width: 2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.4),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -1822,13 +1843,12 @@ class _ActionPanel extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(bottom: 12, left: 2),
             child: Text(
-              'What will ${selectingSlot.organism.baseOrganism.name} do?',
-              style: const TextStyle(
-                fontFamily: 'PressStart2P',
-                fontSize: 10,
-                color: Color(0xFF4ADE80),
-                fontWeight: FontWeight.bold,
-              ),
+              'What will ${selectingSlot.organism.baseOrganism.name.toUpperCase()} do?',
+              style: AppTextStyles.body(
+                context,
+                baseSize: 10,
+                color: DoubleBattleScreen.getBiomeThemeColor(biomeName),
+              ).copyWith(fontWeight: FontWeight.bold),
             ),
           ),
           // 2×2 Move grid
@@ -1856,17 +1876,21 @@ class _ActionPanel extends StatelessWidget {
             child: ElevatedButton.icon(
               onPressed: onSwitchTapped,
               icon: const Icon(Icons.swap_horiz, size: 16),
-              label: const Text(
+              label: Text(
                 'SWITCH',
-                style: TextStyle(fontFamily: 'PressStart2P', fontSize: 9),
+                style: AppTextStyles.small(
+                  context,
+                  baseSize: 9,
+                  color: Colors.white,
+                ),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF21262D),
+                backgroundColor: Colors.white.withOpacity(0.1),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
-                  side: const BorderSide(color: Colors.white24),
+                  side: const BorderSide(color: Colors.white24, width: 1.5),
                 ),
               ),
             ),
@@ -1882,24 +1906,33 @@ class _ActionPanel extends StatelessWidget {
 
   // Target dialog removed in favor of interactive targeting
 
-  Widget _buildMessageBox(String msg) {
+  Widget _buildMessageBox(BuildContext context, String msg) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
-      margin: const EdgeInsets.all(12),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFF161B22),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.white12),
+        color: Colors.black.withOpacity(0.55),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: DoubleBattleScreen.getBiomeThemeColor(biomeName),
+          width: 2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.4),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Text(
-        msg.isNotEmpty ? msg : '...',
-        style: const TextStyle(
-          fontFamily: 'PressStart2P',
-          fontSize: 9,
+        msg.isNotEmpty ? msg.toUpperCase() : '...',
+        style: AppTextStyles.body(
+          context,
+          baseSize: 9,
           color: Colors.white,
-          height: 1.5,
-        ),
+        ).copyWith(height: 1.5),
       ),
     );
   }
@@ -1912,12 +1945,11 @@ class _ActionPanel extends StatelessWidget {
         children: [
           Text(
             won ? '🎉 YOU WIN!' : '💀 YOU LOST',
-            style: TextStyle(
-              fontFamily: 'PressStart2P',
-              fontSize: 16,
+            style: AppTextStyles.headline(
+              context,
+              baseSize: 16,
               color: won ? const Color(0xFF4ADE80) : Colors.red.shade400,
-              fontWeight: FontWeight.bold,
-            ),
+            ).copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
           ElevatedButton(
@@ -1930,12 +1962,12 @@ class _ActionPanel extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            child: const Text(
+            child: Text(
               'BACK TO MENU',
-              style: TextStyle(
-                fontFamily: 'PressStart2P',
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
+              style: AppTextStyles.small(
+                context,
+                baseSize: 10,
+                color: Colors.black,
               ),
             ),
           ),

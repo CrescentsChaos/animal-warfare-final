@@ -8,6 +8,11 @@ import 'package:animal_warfare/models/talisman.dart';
 class BattleOrganism {
   final CapturedOrganism organism;
   final List<Ability> abilities;
+
+  String get name => isOpponent
+      ? 'Foe ${organism.baseOrganism.name}'
+      : organism.baseOrganism.name;
+
   late int _health;
   int get health => _health;
   set health(int value) {
@@ -79,8 +84,8 @@ class BattleOrganism {
     isInvulnerable = false;
     semiInvulnerable = null;
     damageDealtThisTurn = 0;
-    // We do NOT reset focusSashUsed here as it's typically once per battle,
-    // but choice lock DOES reset on switch in Pokemon.
+    // We do NOT reset focusSashUsed or talismanConsumed here as they are
+    // once per battle. Choice lock DOES reset on switch in Pokemon.
   }
 
   List<StatusEffect> _statusEffects = [];
@@ -141,27 +146,33 @@ class BattleOrganism {
   int totalDamageDealt = 0;
   int totalDamageTaken = 0;
   bool isItemRevealed = false; // For lifesteal tracking
+  bool talismanConsumed = false; // Berry/single-use item consumed this battle
+  double critBoostFromBerry = 0.0; // Lansat Berry crit% boost
 
   final bool isRogueMode;
+  final bool isOpponent;
   final int level;
 
-  BattleOrganism(this.organism, {this.isRogueMode = false})
-    : level = isRogueMode ? organism.level : 50,
-      _statusEffects = List.from(organism.statusEffects),
-      abilities = organism.baseOrganism.abilities
-          .split(',')
-          .map((s) => s.trim())
-          .where((s) => s.isNotEmpty)
-          .map((name) => Ability.findByName(name))
-          .where((a) => a != null)
-          .cast<Ability>()
-          .toList(),
-      _attackStage = isRogueMode ? organism.attackStage : 0,
-      _defenseStage = isRogueMode ? organism.defenseStage : 0,
-      _powerStage = isRogueMode ? organism.powerStage : 0,
-      _resistanceStage = isRogueMode ? organism.resistanceStage : 0,
-      _speedStage = isRogueMode ? organism.speedStage : 0,
-      _accuracyStage = isRogueMode ? organism.accuracyStage : 0 {
+  BattleOrganism(
+    this.organism, {
+    this.isRogueMode = false,
+    this.isOpponent = false,
+  }) : level = isRogueMode ? organism.level : 50,
+       _statusEffects = List.from(organism.statusEffects),
+       abilities = organism.baseOrganism.abilities
+           .split(',')
+           .map((s) => s.trim())
+           .where((s) => s.isNotEmpty)
+           .map((name) => Ability.findByName(name))
+           .where((a) => a != null)
+           .cast<Ability>()
+           .toList(),
+       _attackStage = isRogueMode ? organism.attackStage : 0,
+       _defenseStage = isRogueMode ? organism.defenseStage : 0,
+       _powerStage = isRogueMode ? organism.powerStage : 0,
+       _resistanceStage = isRogueMode ? organism.resistanceStage : 0,
+       _speedStage = isRogueMode ? organism.speedStage : 0,
+       _accuracyStage = isRogueMode ? organism.accuracyStage : 0 {
     // Initialize health based on boosted max health
     // We use a ratio to ensure health is correctly scaled between the animal's
     // actual level and the fixed level 50 baseline used in non-rogue modes.

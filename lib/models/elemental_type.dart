@@ -185,14 +185,24 @@ class TypeChart {
         if (defenderType == ElementalType.rock) return 0.5;
         if (defenderType == ElementalType.spectral) return 0.5;
         break;
+      case ElementalType.grass:
+        if (defenderType == ElementalType.aquatic) return 2.0;
+        if (defenderType == ElementalType.earth) return 2.0;
+        if (defenderType == ElementalType.rock) return 2.0;
+        if (defenderType == ElementalType.blaze) return 0.5;
+        if (defenderType == ElementalType.grass) return 0.5;
+        if (defenderType == ElementalType.toxic) return 0.5;
+        if (defenderType == ElementalType.flying) return 0.5;
+        if (defenderType == ElementalType.arthropod) return 0.5;
+        if (defenderType == ElementalType.metal) return 0.5;
+        if (defenderType == ElementalType.drake) return 0.5;
+        break;
       case ElementalType.spectral:
         if (defenderType == ElementalType.spectral) return 2;
         if (defenderType == ElementalType.aura) return 2;
         if (defenderType == ElementalType.basic) return 0;
         if (defenderType == ElementalType.darkness) return 0.5;
         if (defenderType == ElementalType.holy) return 0;
-        break;
-      default:
         break;
     }
     return 1.0;
