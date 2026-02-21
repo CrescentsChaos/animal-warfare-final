@@ -1,0 +1,21 @@
+,
+{
+    "name": "Knock Off",
+    "description": "Knocks off the opponent's held item, dealing 50% more damage if they are holding one.",
+    "type": "darkness",
+    "category": "physical",
+    "power": 65,
+    "accuracy": 100,
+    "pp": 20,
+    "effects": []
+},
+{
+    "name": "Acrobatics",
+    "description": "Deals double damage if the user is not holding an item.",
+    "type": "flying",
+    "category": "physical",
+    "power": 55,
+    "accuracy": 100,
+    "pp": 15,
+    "effects": []
+}

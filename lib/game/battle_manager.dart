@@ -145,6 +145,14 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   final List<String> playerHazards = [];
   final List<String> opponentHazards = [];
 
+  // Screen Turn Counters
+  int playerLightScreenTurns = 0;
+  int playerReflectTurns = 0;
+  int playerAuroraVeilTurns = 0;
+  int opponentLightScreenTurns = 0;
+  int opponentReflectTurns = 0;
+  int opponentAuroraVeilTurns = 0;
+
   BattleStats _getStats(String organismId) {
     return battleStats.putIfAbsent(organismId, () => BattleStats());
   }
@@ -152,6 +160,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   Move? pendingPlayerMove;
   Move? currentTurnOpponentMove;
   Move? lastOpponentAction; // For UI/Testing persistence
+
+  bool _isProcessingHits = false;
 
   // Callbacks for UI
   Function(BattleOrganism)? onAttack;
@@ -252,10 +262,15 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       isRogueMode: isRogueMode,
       isOpponent: false,
     );
+    player.revealedMoves.addAll(_getStats(playerOrganism.id).revealedMoves);
+
     opponent = BattleOrganism(
       this.opponentTeam[currentOpponentIndex],
       isRogueMode: isRogueMode,
       isOpponent: true,
+    );
+    opponent.revealedMoves.addAll(
+      _getStats(this.opponentTeam[currentOpponentIndex].id).revealedMoves,
     );
 
     // Initialize move lists
@@ -432,15 +447,21 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           }
           break;
         case AbilityEffectType.none:
-          if (ability.name == 'Mimic') {
-            triggered = true;
-            await _notifyAbilityTrigger(user, ability);
-            _addToLog(
-              '${user.organism.baseOrganism.name} creates an illusion!',
-            );
-            notifyListeners();
-            if (!isTesting)
-              await Future.delayed(const Duration(milliseconds: 3000));
+          if (ability.name == 'Mimic' || ability.name == 'Mimicry') {
+            final team = user == player ? playerTeam : opponentTeam;
+            CapturedOrganism? disguiseTarget;
+            for (int i = team.length - 1; i >= 0; i--) {
+              if (team[i] != user.organism && team[i].currentHealth > 0) {
+                disguiseTarget = team[i];
+                break;
+              }
+            }
+            if (disguiseTarget != null) {
+              triggered = true;
+              user.isDisguised = true;
+              user.disguisedAs = disguiseTarget;
+              // Deliberately skipping _notifyAbilityTrigger and _addToLog to keep the disguise secret!
+            }
           }
           break;
         default:
@@ -482,6 +503,10 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       abilityName: ability.name,
       isPlayer: isPlayer,
     );
+
+    // Track that the ability has been revealed
+    user.isAbilityRevealed = true;
+    _getStats(user.organism.id).isAbilityRevealed = true;
 
     _addToLog("${user.organism.baseOrganism.name}'s ${ability.name}!");
     notifyListeners();
@@ -847,6 +872,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       }
     }
 
+    attacker.lastMove = move;
+
     // recharging move stamina
     if (attacker.organism.moveStamina.containsKey(move.name)) {
       attacker.organism.moveStamina[move.name] =
@@ -889,6 +916,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     // Track revealed move
     final attackerStats = _getStats(attacker.organism.id);
     attackerStats.revealedMoves.add(move.name);
+    attacker.revealedMoves.add(move.name);
 
     if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
 
@@ -1019,6 +1047,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         // Track revealed move
         final attackerStats = _getStats(attacker.organism.id);
         attackerStats.revealedMoves.add(move.name);
+        attacker.revealedMoves.add(move.name);
 
         if (move.name == 'Baneful Bunker' ||
             (move.name != 'Protect' &&
@@ -1269,6 +1298,28 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           }
         }
 
+        // --- Screens (Damage Reduction) ---
+        final dLightScreen = defender.isOpponent
+            ? opponentLightScreenTurns
+            : playerLightScreenTurns;
+        final dReflect = defender.isOpponent
+            ? opponentReflectTurns
+            : playerReflectTurns;
+        final dAuroraVeil = defender.isOpponent
+            ? opponentAuroraVeilTurns
+            : playerAuroraVeilTurns;
+
+        if (dAuroraVeil > 0) {
+          damageCalc *= 0.5;
+        } else {
+          if (move.category == MoveCategory.physical && dReflect > 0) {
+            damageCalc *= 0.5;
+          }
+          if (move.category == MoveCategory.special && dLightScreen > 0) {
+            damageCalc *= 0.5;
+          }
+        }
+
         // Check if attacker fainted from Rocky Helmet/Talisman before dealing damage
         if (attacker.health <= 0) break;
 
@@ -1459,6 +1510,17 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         defenderStats.totalDamageTaken += effectiveDamage;
 
         defender.tookDamageThisTurn = true;
+
+        // Break Disguise (Mimic/Illusion)
+        if (defender.isDisguised && effectiveDamage > 0) {
+          defender.isDisguised = false;
+          defender.disguisedAs = null;
+          defender.isAbilityRevealed = true;
+          _getStats(defender.organism.id).isAbilityRevealed = true;
+          _addToLog(
+            '${defender.organism.baseOrganism.name}\'s illusion wore off!',
+          );
+        }
 
         // Knock Off side effect
         if (move.name == 'Knock Off' &&
@@ -1984,7 +2046,17 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       } else if (type == StatusEffectType.fear ||
           type == StatusEffectType.marked) {
         finalDuration = 2;
-      } else if (type == StatusEffectType.poison ||
+      } else if (type == StatusEffectType.taunt) {
+        finalDuration = 3;
+        target.tauntTurns = 3;
+      } else if (type == StatusEffectType.encore) {
+        finalDuration = 3;
+        target.encoreTurns = 3;
+      } else if (type == StatusEffectType.imprison) {
+        finalDuration = -1;
+        target.isImprisoning = true;
+      } else if (type == StatusEffectType.soaked ||
+          type == StatusEffectType.poison ||
           type == StatusEffectType.burn ||
           type == StatusEffectType.bleed ||
           type == StatusEffectType.paralysis ||
@@ -2150,6 +2222,77 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             _addToLog(
               '\n${target.organism.baseOrganism.name}\'s stats increased!',
             );
+          }
+          break;
+        case MoveEffectType.forceSwitchSelf:
+        case MoveEffectType.damageAndSwitchSelf:
+          // We mark that a switch is needed for the attacker
+          if (attacker.isOpponent) {
+            // AI switch handling usually happens at turn end or immediately
+            // For now, let's signal that a switch is required
+            if (opponentTeam.any(
+              (org) => org.currentHealth > 0 && org != opponent.organism,
+            )) {
+              _addToLog(
+                '${attacker.organism.baseOrganism.name} is switching out!',
+              );
+              currentState = BattleState
+                  .waitingForPlayerSwitch; // Reuse state or create new if needed
+              // Actually we need a specific way to handle forced switches mid-turn
+            }
+          } else {
+            if (playerTeam.any(
+              (org) => org.currentHealth > 0 && org != player.organism,
+            )) {
+              _addToLog(
+                '${attacker.organism.baseOrganism.name} is switching out!',
+              );
+              currentState = BattleState.waitingForPlayerSwitch;
+            }
+          }
+          break;
+        case MoveEffectType.cureTeamStatus:
+          final team = attacker.isOpponent ? opponentTeam : playerTeam;
+          for (final org in team) {
+            org.statusEffects.clear();
+          }
+          _addToLog(
+            '${attacker.organism.baseOrganism.name} cured its team\'s status!',
+          );
+          break;
+        case MoveEffectType.changeType:
+          if (effect.stat == 'water') {
+            target.battleTypes = [ElementalType.aquatic];
+            _addToLog(
+              '${target.organism.baseOrganism.name} was soaked in water!',
+            );
+          }
+          break;
+        case MoveEffectType.setScreen:
+          final turns = effect.value > 0 ? effect.value : 5;
+          if (effect.stat == 'reflect') {
+            if (attacker.isOpponent)
+              opponentReflectTurns = turns;
+            else
+              playerReflectTurns = turns;
+            _addToLog('A reflecting wall rose up!');
+          } else if (effect.stat == 'light_screen') {
+            if (attacker.isOpponent)
+              opponentLightScreenTurns = turns;
+            else
+              playerLightScreenTurns = turns;
+            _addToLog('A shimmering screen rose up!');
+          } else if (effect.stat == 'aurora_veil') {
+            if (currentWeather.weather == Weather.snowstorm ||
+                currentWeather.weather == Weather.blizzard) {
+              if (attacker.isOpponent)
+                opponentAuroraVeilTurns = turns;
+              else
+                playerAuroraVeilTurns = turns;
+              _addToLog('An aurora veil rose up!');
+            } else {
+              _addToLog('But it failed!');
+            }
           }
           break;
         case MoveEffectType.protect:
@@ -2502,6 +2645,37 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           await Future.delayed(const Duration(milliseconds: 3000));
       }
     }
+
+    // Screens
+    if (playerReflectTurns > 0) {
+      playerReflectTurns--;
+      if (playerReflectTurns == 0) _addToLog('Your team\'s Reflect wore off!');
+    }
+    if (playerLightScreenTurns > 0) {
+      playerLightScreenTurns--;
+      if (playerLightScreenTurns == 0)
+        _addToLog('Your team\'s Light Screen wore off!');
+    }
+    if (playerAuroraVeilTurns > 0) {
+      playerAuroraVeilTurns--;
+      if (playerAuroraVeilTurns == 0)
+        _addToLog('Your team\'s Aurora Veil wore off!');
+    }
+    if (opponentReflectTurns > 0) {
+      opponentReflectTurns--;
+      if (opponentReflectTurns == 0)
+        _addToLog('The opposing team\'s Reflect wore off!');
+    }
+    if (opponentLightScreenTurns > 0) {
+      opponentLightScreenTurns--;
+      if (opponentLightScreenTurns == 0)
+        _addToLog('The opposing team\'s Light Screen wore off!');
+    }
+    if (opponentAuroraVeilTurns > 0) {
+      opponentAuroraVeilTurns--;
+      if (opponentAuroraVeilTurns == 0)
+        _addToLog('The opposing team\'s Aurora Veil wore off!');
+    }
   }
 
   Future<void> _applyTurnEffects(BattleOrganism target) async {
@@ -2691,6 +2865,12 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     for (final se in target.statusEffects) {
       if (se.duration > 0 && se.type != StatusEffectType.sleep) {
         final newDuration = max(0, se.duration - 1);
+
+        // --- Taunt/Encore decrement ---
+        if (se.type == StatusEffectType.taunt) target.tauntTurns = newDuration;
+        if (se.type == StatusEffectType.encore)
+          target.encoreTurns = newDuration;
+
         if (newDuration == 0) {
           if (se.type == StatusEffectType.stealth) {
             _addToLog('${target.organism.baseOrganism.name} was revealed!');
@@ -3015,6 +3195,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     player.totalDamageDealt = stats.totalDamageDealt;
     player.totalDamageTaken = stats.totalDamageTaken;
     player.isItemRevealed = stats.isItemRevealed;
+    player.revealedMoves.addAll(stats.revealedMoves);
 
     playerMoves = _getOrganismMoves(playerOrganism);
     _addToLog('Go, ${player.organism.baseOrganism.name}!');
@@ -3133,12 +3314,14 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     opponent = BattleOrganism(
       opponentTeam[currentOpponentIndex],
       isRogueMode: isRogueMode,
+      isOpponent: true,
     );
     // Restore persistent stats
     final stats = _getStats(opponentTeam[currentOpponentIndex].id);
     opponent.totalDamageDealt = stats.totalDamageDealt;
     opponent.totalDamageTaken = stats.totalDamageTaken;
     opponent.isItemRevealed = stats.isItemRevealed;
+    opponent.revealedMoves.addAll(stats.revealedMoves);
     opponentMoves = _getOrganismMoves(opponentTeam[currentOpponentIndex]);
 
     _addToLog('${opponent.name} enters the field!');
@@ -3359,16 +3542,57 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   // BERRY HELPER METHODS
   // =====================================================================
 
+  List<Move> getValidMoves(BattleOrganism org) {
+    List<Move> moves = org.isOpponent ? opponentMoves : playerMoves;
+    List<Move> validMoves = List.from(moves);
+    final other = org.isOpponent ? player : opponent;
+
+    // 1. Encore
+    if (org.encoreTurns > 0 && org.lastMove != null) {
+      if (moves.any((m) => m.name == org.lastMove!.name)) {
+        return [moves.firstWhere((m) => m.name == org.lastMove!.name)];
+      }
+    }
+
+    // 2. Taunt
+    if (org.tauntTurns > 0) {
+      validMoves = validMoves
+          .where((m) => m.category != MoveCategory.status)
+          .toList();
+    }
+
+    // 3. Imprison
+    if (other.isImprisoning) {
+      final otherMoves = org.isOpponent ? playerMoves : opponentMoves;
+      validMoves = validMoves
+          .where((m) => !otherMoves.any((om) => om.name == m.name))
+          .toList();
+    }
+
+    // 4. Choice Lock
+    if (org.isChoiceLocked && org.lockedMove != null) {
+      validMoves = validMoves
+          .where((m) => m.name == org.lockedMove!.name)
+          .toList();
+    }
+
+    return validMoves;
+  }
+
   Move pickOpponentMove() {
     if (opponent.chargingMove != null) return opponent.chargingMove!;
-    if (opponent.isChoiceLocked && opponent.lockedMove != null) {
-      return opponent.lockedMove!;
+
+    final validMoves = getValidMoves(opponent);
+
+    if (validMoves.isEmpty) {
+      // Struggle fallback
+      return Move.findOrCreate('Struggle');
     }
 
     double bestScore = -double.infinity;
-    Move bestMove = opponentMoves[0];
+    Move bestMove = validMoves[0];
 
-    for (final move in opponentMoves) {
+    for (final move in validMoves) {
       final score = scoreMove(move, opponent, player);
       if (score > bestScore) {
         bestScore = score;
@@ -3469,7 +3693,11 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         if (teammate.currentHealth <= 0) continue;
 
         // "Ghost" evaluation of teammate
-        final tempOrg = BattleOrganism(teammate, isRogueMode: isRogueMode);
+        final tempOrg = BattleOrganism(
+          teammate,
+          isRogueMode: isRogueMode,
+          isOpponent: true,
+        );
         final teammateMoves = _getOrganismMoves(teammate);
 
         double teammateMaxScore = -double.infinity;

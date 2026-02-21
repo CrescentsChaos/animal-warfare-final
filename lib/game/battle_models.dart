@@ -70,6 +70,11 @@ class BattleOrganism {
     if (isRogueMode) organism.accuracyStage = value;
   }
 
+  int tauntTurns = 0;
+  int encoreTurns = 0;
+  Move? lastMove;
+  bool isImprisoning = false;
+
   /// Reset battle-specific flags (called when switching out or starting battle)
   void resetBattleState() {
     isChoiceLocked = false;
@@ -84,6 +89,12 @@ class BattleOrganism {
     isInvulnerable = false;
     semiInvulnerable = null;
     damageDealtThisTurn = 0;
+    tauntTurns = 0;
+    encoreTurns = 0;
+    // lastMove resets on switch or start of battle?
+    // In Pokemon lastMove is cleared on switch.
+    lastMove = null;
+    isImprisoning = false;
     // We do NOT reset focusSashUsed or talismanConsumed here as they are
     // once per battle. Choice lock DOES reset on switch in Pokemon.
   }
@@ -148,6 +159,37 @@ class BattleOrganism {
   bool isItemRevealed = false; // For lifesteal tracking
   bool talismanConsumed = false; // Berry/single-use item consumed this battle
   double critBoostFromBerry = 0.0; // Lansat Berry crit% boost
+
+  // Disguise (Mimic/Illusion) state
+  bool isDisguised = false;
+  CapturedOrganism? disguisedAs;
+
+  // Ability state
+  bool isAbilityRevealed = false;
+
+  String get displaySprite => isDisguised && disguisedAs != null
+      ? disguisedAs!.baseOrganism.sprite
+      : organism.baseOrganism.sprite;
+
+  String get displayBaseName => isDisguised && disguisedAs != null
+      ? disguisedAs!.baseOrganism.name
+      : organism.baseOrganism.name;
+
+  String get displayName => isDisguised && disguisedAs != null
+      ? (isOpponent
+            ? 'Foe ${disguisedAs!.baseOrganism.name}'
+            : disguisedAs!.baseOrganism.name)
+      : name;
+
+  String get displayCategory => isDisguised && disguisedAs != null
+      ? disguisedAs!.baseOrganism.category
+      : organism.baseOrganism.category;
+
+  List<String> get displayTypes => isDisguised && disguisedAs != null
+      ? disguisedAs!.baseOrganism.types
+      : organism.baseOrganism.types;
+
+  final Set<String> revealedMoves = {};
 
   final bool isRogueMode;
   final bool isOpponent;
@@ -450,12 +492,14 @@ class BattleStats {
   int totalDamageDealt;
   int totalDamageTaken;
   bool isItemRevealed;
+  bool isAbilityRevealed;
   final Set<String> revealedMoves;
 
   BattleStats({
     this.totalDamageDealt = 0,
     this.totalDamageTaken = 0,
     this.isItemRevealed = false,
+    this.isAbilityRevealed = false,
     Set<String>? revealedMoves,
   }) : revealedMoves = revealedMoves ?? {};
 }

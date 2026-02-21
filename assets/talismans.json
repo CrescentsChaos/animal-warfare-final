@@ -103,7 +103,7 @@
   {
     "id": "shell_bell",
     "name": "Shell Bell",
-    "description": "Restores 1/8 of damage dealt as HP.",
+    "description": "Restores 1/8 of damage dealt as HP immediately after attacking.",
     "effects": [
       {
         "type": "lifesteal",
@@ -282,6 +282,350 @@
       {
         "type": "crit_boost",
         "magnitude": 12.0
+      }
+    ]
+  },
+  {
+    "id": "wide_lens",
+    "name": "Wide Lens",
+    "description": "Increases move accuracy by 10%.",
+    "effects": [
+      {
+        "type": "wide_lens",
+        "magnitude": 1.1
+      }
+    ]
+  },
+  {
+    "id": "zoom_lens",
+    "name": "Zoom Lens",
+    "description": "Increases accuracy by 20% when moving after the opponent.",
+    "effects": [
+      {
+        "type": "zoom_lens",
+        "magnitude": 1.2
+      }
+    ]
+  },
+  {
+    "id": "quick_claw",
+    "name": "Quick Claw",
+    "description": "20% chance to move first regardless of speed.",
+    "effects": [
+      {
+        "type": "quick_claw",
+        "magnitude": 0.2
+      }
+    ]
+  },
+  {
+    "id": "air_balloon",
+    "name": "Air Balloon",
+    "description": "Immune to Earth-type moves. Pops when hit by any attack.",
+    "effects": [
+      {
+        "type": "air_balloon",
+        "magnitude": 1.0
+      }
+    ]
+  },
+  {
+    "id": "white_herb",
+    "name": "White Herb",
+    "description": "Restores any lowered stats once, then is consumed.",
+    "effects": [
+      {
+        "type": "white_herb",
+        "magnitude": 1.0
+      }
+    ]
+  },
+  {
+    "id": "sitrus_berry",
+    "name": "Sitrus Berry",
+    "description": "Restores 25% HP when HP falls below 50% (consumed on use).",
+    "effects": [
+      {
+        "type": "berry_heal_percent",
+        "magnitude": 0.25,
+        "threshold": 0.5
+      }
+    ]
+  },
+  {
+    "id": "oran_berry",
+    "name": "Oran Berry",
+    "description": "Restores 10 HP when HP falls below 50% (consumed on use).",
+    "effects": [
+      {
+        "type": "berry_heal_flat",
+        "magnitude": 10.0,
+        "threshold": 0.5
+      }
+    ]
+  },
+  {
+    "id": "lum_berry",
+    "name": "Lum Berry",
+    "description": "Cures any status condition (consumed on use).",
+    "effects": [
+      {
+        "type": "berry_cure_status",
+        "curesStatus": "all",
+        "magnitude": 1.0
+      }
+    ]
+  },
+  {
+    "id": "rawst_berry",
+    "name": "Rawst Berry",
+    "description": "Cures Burn (consumed on use).",
+    "effects": [
+      {
+        "type": "berry_cure_status",
+        "curesStatus": "burn",
+        "magnitude": 1.0
+      }
+    ]
+  },
+  {
+    "id": "cheri_berry",
+    "name": "Cheri Berry",
+    "description": "Cures Paralysis (consumed on use).",
+    "effects": [
+      {
+        "type": "berry_cure_status",
+        "curesStatus": "paralysis",
+        "magnitude": 1.0
+      }
+    ]
+  },
+  {
+    "id": "chesto_berry",
+    "name": "Chesto Berry",
+    "description": "Cures Sleep (consumed on use).",
+    "effects": [
+      {
+        "type": "berry_cure_status",
+        "curesStatus": "sleep",
+        "magnitude": 1.0
+      }
+    ]
+  },
+  {
+    "id": "pecha_berry",
+    "name": "Pecha Berry",
+    "description": "Cures Poison (consumed on use).",
+    "effects": [
+      {
+        "type": "berry_cure_status",
+        "curesStatus": "poison",
+        "magnitude": 1.0
+      }
+    ]
+  },
+  {
+    "id": "aspear_berry",
+    "name": "Aspear Berry",
+    "description": "Cures Freeze (consumed on use).",
+    "effects": [
+      {
+        "type": "berry_cure_status",
+        "curesStatus": "freeze",
+        "magnitude": 1.0
+      }
+    ]
+  },
+  {
+    "id": "salac_berry",
+    "name": "Salac Berry",
+    "description": "Sharply raises Speed when HP falls below 25% (consumed on use).",
+    "effects": [
+      {
+        "type": "berry_stat_boost",
+        "stat": "speed",
+        "magnitude": 1.0,
+        "threshold": 0.25
+      }
+    ]
+  },
+  {
+    "id": "petaya_berry",
+    "name": "Petaya Berry",
+    "description": "Sharply raises Power when HP falls below 25% (consumed on use).",
+    "effects": [
+      {
+        "type": "berry_stat_boost",
+        "stat": "power",
+        "magnitude": 1.0,
+        "threshold": 0.25
+      }
+    ]
+  },
+  {
+    "id": "liechi_berry",
+    "name": "Liechi Berry",
+    "description": "Sharply raises Attack when HP falls below 25% (consumed on use).",
+    "effects": [
+      {
+        "type": "berry_stat_boost",
+        "stat": "attack",
+        "magnitude": 1.0,
+        "threshold": 0.25
+      }
+    ]
+  },
+  {
+    "id": "lansat_berry",
+    "name": "Lansat Berry",
+    "description": "Boosts critical hit chance by 25% when HP falls below 25% (consumed on use).",
+    "effects": [
+      {
+        "type": "berry_crit_boost",
+        "magnitude": 25.0,
+        "threshold": 0.25
+      }
+    ]
+  },
+  {
+    "id": "enigma_berry",
+    "name": "Enigma Berry",
+    "description": "Restores 25% HP when hit by a super-effective move (consumed on use).",
+    "effects": [
+      {
+        "type": "berry_enigma",
+        "magnitude": 0.25
+      }
+    ]
+  },
+  {
+    "id": "jaboca_berry",
+    "name": "Jaboca Berry",
+    "description": "Damages attacker by 1/8 max HP when hit by a physical move (consumed on use).",
+    "effects": [
+      {
+        "type": "berry_jaboca",
+        "category": "physical",
+        "magnitude": 0.125
+      }
+    ]
+  },
+  {
+    "id": "rowap_berry",
+    "name": "Rowap Berry",
+    "description": "Damages attacker by 1/8 max HP when hit by a special move (consumed on use).",
+    "effects": [
+      {
+        "type": "berry_jaboca",
+        "category": "special",
+        "magnitude": 0.125
+      }
+    ]
+  },
+  {
+    "id": "power_herb",
+    "name": "Power Herb",
+    "description": "Allows a two-turn move to execute in one turn (consumed on use).",
+    "effects": [
+      {
+        "type": "power_herb",
+        "magnitude": 1.0
+      }
+    ]
+  },
+  {
+    "id": "occa_berry",
+    "name": "Occa Berry",
+    "description": "Reduces damage from a super-effective Fire-type move by 50% (consumed on use).",
+    "effects": [
+      {
+        "type": "berry_type_resist",
+        "stat": "fire",
+        "magnitude": 0.5
+      }
+    ]
+  },
+  {
+    "id": "passho_berry",
+    "name": "Passho Berry",
+    "description": "Reduces damage from a super-effective Water/Aquatic-type move by 50% (consumed on use).",
+    "effects": [
+      {
+        "type": "berry_type_resist",
+        "stat": "aquatic",
+        "magnitude": 0.5
+      }
+    ]
+  },
+  {
+    "id": "wacan_berry",
+    "name": "Wacan Berry",
+    "description": "Reduces damage from a super-effective Electric-type move by 50% (consumed on use).",
+    "effects": [
+      {
+        "type": "berry_type_resist",
+        "stat": "electric",
+        "magnitude": 0.5
+      }
+    ]
+  },
+  {
+    "id": "rindo_berry",
+    "name": "Rindo Berry",
+    "description": "Reduces damage from a super-effective Grass/Flora-type move by 50% (consumed on use).",
+    "effects": [
+      {
+        "type": "berry_type_resist",
+        "stat": "flora",
+        "magnitude": 0.5
+      }
+    ]
+  },
+  {
+    "id": "yache_berry",
+    "name": "Yache Berry",
+    "description": "Reduces damage from a super-effective Ice/Cryo-type move by 50% (consumed on use).",
+    "effects": [
+      {
+        "type": "berry_type_resist",
+        "stat": "cryo",
+        "magnitude": 0.5
+      }
+    ]
+  },
+  {
+    "id": "shuca_berry",
+    "name": "Shuca Berry",
+    "description": "Reduces damage from a super-effective Ground/Earth-type move by 50% (consumed on use).",
+    "effects": [
+      {
+        "type": "berry_type_resist",
+        "stat": "earth",
+        "magnitude": 0.5
+      }
+    ]
+  },
+  {
+    "id": "coba_berry",
+    "name": "Coba Berry",
+    "description": "Reduces damage from a super-effective Flying-type move by 50% (consumed on use).",
+    "effects": [
+      {
+        "type": "berry_type_resist",
+        "stat": "flying",
+        "magnitude": 0.5
+      }
+    ]
+  },
+  {
+    "id": "payapa_berry",
+    "name": "Payapa Berry",
+    "description": "Reduces damage from a super-effective Psychic-type move by 50% (consumed on use).",
+    "effects": [
+      {
+        "type": "berry_type_resist",
+        "stat": "psychic",
+        "magnitude": 0.5
       }
     ]
   }

@@ -457,7 +457,6 @@
         "effects": [
             {
                 "type": "statusPoison",
-                "value": 3,
                 "chance": 90
             }
         ]
@@ -1597,18 +1596,13 @@
         ]
     },
     {
-        "name": "Deep Meditation",
-        "description": "The whale enters a trance, boosting defenses and regenerating.",
-        "soundEffect": "audio/effects/whale.mp3",
+        "name": "Aqua Ring",
+        "description": "User regenerates health over time.",
         "baseDamage": 0,
         "type": "aquatic",
         "stamina": 10,
         "category": "status",
         "effects": [
-            {
-                "type": "multiStatChange",
-                "stat": "defense:1,resistance:1"
-            },
             {
                 "type": "statusRegen",
                 "target": "self",
@@ -2041,6 +2035,15 @@
         "category": "physical"
     },
     {
+        "name": "Megahorn",
+        "description": "User charges at the foe with all its might.",
+        "baseDamage": 120,
+        "accuracy": 90,
+        "type": "arthropod",
+        "stamina": 10,
+        "category": "physical"
+    },
+    {
         "name": "Bug Bite",
         "description": "User bites the foe.",
         "baseDamage": 65,
@@ -2176,6 +2179,21 @@
         "type": "electric",
         "stamina": 20,
         "category": "special",
+        "effects": [
+            {
+                "type": "statusParalysis",
+                "value": 3,
+                "chance": 10
+            }
+        ]
+    },
+    {
+        "name": "Body Slam",
+        "description": "May paralyze the foe.",
+        "baseDamage": 90,
+        "type": "basic",
+        "stamina": 20,
+        "category": "physical",
         "effects": [
             {
                 "type": "statusParalysis",
@@ -2403,6 +2421,17 @@
         "category": "physical"
     },
     {
+        "name": "Waterfowl Dance",
+        "description": "Hits 4 times.",
+        "baseDamage": 25,
+        "minHits": 4,
+        "maxHits": 4,
+        "accuracy": 90,
+        "type": "flying",
+        "stamina": 10,
+        "category": "physical"
+    },
+    {
         "name": "Dual Wingbeat",
         "description": "Hits 2 times.",
         "baseDamage": 40,
@@ -2491,7 +2520,7 @@
         "effects": []
     },
     {
-        "name": "Camoflauge",
+        "name": "Camouflage",
         "description": "Blends into the landscape. Grants Stealth.",
         "baseDamage": 0,
         "type": "basic",
@@ -2501,7 +2530,8 @@
             {
                 "type": "statusStealth",
                 "target": "self",
-                "value": 3
+                "value": 3,
+                "chance": 90
             }
         ]
     },
@@ -2932,7 +2962,6 @@
         "effects": [
             {
                 "type": "statusPoison",
-                "value": 3,
                 "chance": 100
             }
         ]
@@ -2978,7 +3007,7 @@
         "description": "The user goes to sleep for two turns. This fully restores the user's HP.",
         "soundEffect": "audio/effects/absorb.mp3",
         "baseDamage": 0,
-        "type": "basic",
+        "type": "aura",
         "stamina": 5,
         "category": "status",
         "effects": [
@@ -3123,7 +3152,7 @@
         "name": "Ancient Power",
         "description": "The user attacks with a prehistoric power. This may also raise all the user's stats at once.",
         "baseDamage": 60,
-        "type": "basic",
+        "type": "rock",
         "stamina": 5,
         "category": "special",
         "effects": [
@@ -3388,5 +3417,240 @@
                 "stat": "airborne"
             }
         ]
+    },
+    {
+        "name": "Spikes",
+        "description": "Sets a trap of spikes around the opposing team, which damages enemies that switch into battle.",
+        "baseDamage": 0,
+        "type": "earth",
+        "stamina": 20,
+        "category": "status",
+        "effects": [
+            {
+                "type": "setHazard",
+                "target": "opponent",
+                "stat": "spikes",
+                "value": 1,
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Stealth Rock",
+        "description": "Sets pointed stones around the opposing team, which damages enemies that switch into battle.",
+        "baseDamage": 0,
+        "type": "rock",
+        "stamina": 20,
+        "category": "status",
+        "effects": [
+            {
+                "type": "setHazard",
+                "target": "opponent",
+                "stat": "stealth_rock",
+                "value": 1,
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Toxic Spikes",
+        "description": "Sets poisonous spikes around the opposing team, which poisons enemies that switch into battle.",
+        "baseDamage": 0,
+        "type": "toxic",
+        "stamina": 20,
+        "category": "status",
+        "effects": [
+            {
+                "type": "setHazard",
+                "target": "opponent",
+                "stat": "toxic_spikes",
+                "value": 1,
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Sticky Web",
+        "description": "Sets a sticky net around the opposing team, which lowers the Speed of enemies that switch into battle.",
+        "baseDamage": 0,
+        "type": "bug",
+        "stamina": 20,
+        "category": "status",
+        "effects": [
+            {
+                "type": "setHazard",
+                "target": "opponent",
+                "stat": "sticky_web",
+                "value": -1,
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Knock Off",
+        "description": "Knocks off the opponent's held item, dealing 50% more damage if they are holding one.",
+        "type": "darkness",
+        "category": "physical",
+        "power": 65,
+        "accuracy": 100,
+        "pp": 20,
+        "effects": []
+    },
+    {
+        "name": "Acrobatics",
+        "description": "Deals double damage if the user is not holding an item.",
+        "type": "flying",
+        "category": "physical",
+        "power": 55,
+        "accuracy": 100,
+        "pp": 15,
+        "effects": []
+    },
+    {
+        "name": "Teleport",
+        "description": "The user switches out to another healthy member of the team.",
+        "baseDamage": 0,
+        "accuracy": 100,
+        "effects": [
+            {
+                "type": "forceSwitchSelf",
+                "target": "self"
+            }
+        ],
+        "type": "mystic",
+        "category": "status"
+    },
+    {
+        "name": "U-turn",
+        "description": "After making its attack, the user rushes back to switch with a teammate.",
+        "baseDamage": 70,
+        "accuracy": 100,
+        "effects": [
+            {
+                "type": "damageAndSwitchSelf",
+                "target": "self"
+            }
+        ],
+        "type": "arthropod",
+        "category": "physical"
+    },
+    {
+        "name": "Taunt",
+        "description": "The target is taunted into a rage that allows it to use only attack moves.",
+        "baseDamage": 0,
+        "accuracy": 100,
+        "effects": [
+            {
+                "type": "statusTaunt",
+                "target": "opponent"
+            }
+        ],
+        "type": "darkness",
+        "category": "status"
+    },
+    {
+        "name": "Encore",
+        "description": "The target is forced to repeat its last move for 3 turns.",
+        "baseDamage": 0,
+        "accuracy": 100,
+        "effects": [
+            {
+                "type": "statusEncore",
+                "target": "opponent"
+            }
+        ],
+        "type": "basic",
+        "category": "status"
+    },
+    {
+        "name": "Imprison",
+        "description": "If the opponent knows any of the user's moves, those moves become unusable.",
+        "baseDamage": 0,
+        "accuracy": 100,
+        "effects": [
+            {
+                "type": "statusImprison",
+                "target": "self"
+            }
+        ],
+        "type": "mystic",
+        "category": "status"
+    },
+    {
+        "name": "Soak",
+        "description": "The user shoots a torrent of water that changes the target's type to Aquatic.",
+        "baseDamage": 0,
+        "accuracy": 100,
+        "effects": [
+            {
+                "type": "changeType",
+                "target": "opponent",
+                "stat": "water"
+            }
+        ],
+        "type": "aquatic",
+        "category": "status"
+    },
+    {
+        "name": "Aromatherapy",
+        "description": "The user releases a soothing scent that heals all status conditions for its team.",
+        "baseDamage": 0,
+        "accuracy": 100,
+        "effects": [
+            {
+                "type": "cureTeamStatus",
+                "target": "self"
+            }
+        ],
+        "type": "grass",
+        "category": "status"
+    },
+    {
+        "name": "Light Screen",
+        "description": "A wondrous wall of light is put up to reduce damage from special attacks.",
+        "baseDamage": 0,
+        "accuracy": 100,
+        "effects": [
+            {
+                "type": "setScreen",
+                "target": "field",
+                "stat": "light_screen",
+                "value": 5
+            }
+        ],
+        "type": "holy",
+        "category": "status"
+    },
+    {
+        "name": "Reflect",
+        "description": "A wondrous wall of light is put up to reduce damage from physical attacks.",
+        "baseDamage": 0,
+        "accuracy": 100,
+        "effects": [
+            {
+                "type": "setScreen",
+                "target": "field",
+                "stat": "reflect",
+                "value": 5
+            }
+        ],
+        "type": "earth",
+        "category": "status"
+    },
+    {
+        "name": "Aurora Veil",
+        "description": "This move, which can only be used in snow, reduces damage from both physical and special attacks.",
+        "baseDamage": 0,
+        "accuracy": 100,
+        "effects": [
+            {
+                "type": "setScreen",
+                "target": "field",
+                "stat": "aurora_veil",
+                "value": 5
+            }
+        ],
+        "type": "cryo",
+        "category": "status"
     }
 ]

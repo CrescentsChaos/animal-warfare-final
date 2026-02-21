@@ -76,6 +76,11 @@ enum MoveEffectType {
   statChangeChance,
   forceSwitch,
   setHazard,
+  forceSwitchSelf, // Teleport
+  damageAndSwitchSelf, // U-turn
+  cureTeamStatus, // Aromatherapy
+  changeType, // Soak
+  setScreen, // Reflect, Light Screen, etc
 }
 
 enum MoveCategory { physical, special, status }

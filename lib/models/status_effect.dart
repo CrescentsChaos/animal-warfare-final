@@ -21,6 +21,10 @@ enum StatusEffectType {
   stealthRock, // Hazard: Type-based damage on switch-in
   toxicSpikes, // Hazard: Poison on switch-in
   stickyWeb, // Hazard: Lower speed on switch-in
+  taunt, // Cannot use status moves
+  encore, // Must repeat last move
+  imprison, // Cannot use moves known by the user
+  soaked, // Type changed to Aquatic
 }
 
 class StatusEffect {
@@ -86,6 +90,14 @@ class StatusEffect {
         return 'Toxic Spikes';
       case StatusEffectType.stickyWeb:
         return 'Sticky Web';
+      case StatusEffectType.taunt:
+        return 'Taunt';
+      case StatusEffectType.encore:
+        return 'Encore';
+      case StatusEffectType.imprison:
+        return 'Imprison';
+      case StatusEffectType.soaked:
+        return 'Soaked';
       default:
         return 'None';
     }
@@ -129,6 +141,14 @@ class StatusEffect {
         return 'was poisoned by Toxic Spikes!';
       case StatusEffectType.stickyWeb:
         return 'was caught in a Sticky Web!';
+      case StatusEffectType.taunt:
+        return 'fell for the taunt!';
+      case StatusEffectType.encore:
+        return 'received an encore!';
+      case StatusEffectType.imprison:
+        return 'was imprisoned!';
+      case StatusEffectType.soaked:
+        return 'was soaked in water!';
       default:
         return '';
     }
@@ -213,6 +233,14 @@ class StatusEffect {
         return 'Poisons incoming animals.';
       case StatusEffectType.stickyWeb:
         return 'Lowers the speed of incoming animals.';
+      case StatusEffectType.taunt:
+        return 'Prevents the use of status moves.';
+      case StatusEffectType.encore:
+        return 'Forces the same move to be repeated.';
+      case StatusEffectType.imprison:
+        return 'Prevents the use of moves known by the user.';
+      case StatusEffectType.soaked:
+        return 'Changes the type to Aquatic.';
       default:
         return 'No current effect.';
     }

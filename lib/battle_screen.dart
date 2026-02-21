@@ -1489,7 +1489,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
             borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
           ),
           child: Text(
-            base.name,
+            bo.displayName,
             style: TextStyle(
               color: _getBiomeThemeColor(),
               fontSize: 18,
@@ -1525,50 +1525,50 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                     child: Wrap(
                       spacing: 4.0,
                       runSpacing: 4.0,
-                      children: base.category.toUpperCase().split(',').map((
-                        cat,
-                      ) {
-                        final typeStr = cat.trim().toLowerCase();
-                        final type = ElementalType.values.firstWhere(
-                          (e) => e.toString().split('.').last == typeStr,
-                          orElse: () => ElementalType.basic,
-                        );
-                        final typeColor = _getTypeColor(type);
+                      children: bo.displayCategory.toUpperCase().split(',').map(
+                        (cat) {
+                          final typeStr = cat.trim().toLowerCase();
+                          final type = ElementalType.values.firstWhere(
+                            (e) => e.toString().split('.').last == typeStr,
+                            orElse: () => ElementalType.basic,
+                          );
+                          final typeColor = _getTypeColor(type);
 
-                        return Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: typeColor,
-                            borderRadius: BorderRadius.circular(4),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.3),
-                                blurRadius: 2,
-                                offset: const Offset(1, 1),
-                              ),
-                            ],
-                          ),
-                          child: Text(
-                            cat.trim().toUpperCase(),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 8,
-                              fontFamily: 'PressStart2P',
-                              fontWeight: FontWeight.bold,
-                              shadows: [
-                                Shadow(
-                                  color: Colors.black45,
-                                  blurRadius: 1,
-                                  offset: Offset(0.5, 0.5),
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: typeColor,
+                              borderRadius: BorderRadius.circular(4),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.3),
+                                  blurRadius: 2,
+                                  offset: const Offset(1, 1),
                                 ),
                               ],
                             ),
-                          ),
-                        );
-                      }).toList(),
+                            child: Text(
+                              cat.trim().toUpperCase(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 8,
+                                fontFamily: 'PressStart2P',
+                                fontWeight: FontWeight.bold,
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.black45,
+                                    blurRadius: 1,
+                                    offset: Offset(0.5, 0.5),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ).toList(),
                     ),
                   ),
                 ],
@@ -1589,7 +1589,9 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                       ),
                     ),
                     Text(
-                      bo.organism.nature.name.toUpperCase(),
+                      isPlayer
+                          ? bo.organism.nature.name.toUpperCase()
+                          : 'UNKNOWN',
                       style: TextStyle(
                         color: _getBiomeThemeColor(),
                         fontSize: 9,
@@ -1816,7 +1818,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                 const SizedBox(height: 10),
 
               // Revealed Moves (Opponent Only)
-              if (!isPlayer && bm != null) ...[
+              if (!isPlayer) ...[
                 const SizedBox(height: 10),
                 const Divider(color: Colors.white24, height: 1),
                 const SizedBox(height: 10),
@@ -1829,7 +1831,10 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                   ),
                 ),
                 const SizedBox(height: 6),
-                if ((bm.battleStats[bo.organism.id]?.revealedMoves.isEmpty ??
+                if ((battleManager
+                        .battleStats[bo.organism.id]
+                        ?.revealedMoves
+                        .isEmpty ??
                     true))
                   const Text(
                     'NONE',
@@ -1840,21 +1845,20 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                     ),
                   )
                 else
-                  ...bm.battleStats[bo.organism.id]!.revealedMoves.map((
-                    moveName,
-                  ) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 4.0),
-                      child: Text(
-                        moveName.toUpperCase(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 9,
-                          fontFamily: 'PressStart2P',
-                        ),
-                      ),
-                    );
-                  }),
+                  ...battleManager.battleStats[bo.organism.id]!.revealedMoves
+                      .map((moveName) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 4.0),
+                          child: Text(
+                            moveName.toUpperCase(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 9,
+                              fontFamily: 'PressStart2P',
+                            ),
+                          ),
+                        );
+                      }),
                 const SizedBox(height: 10),
                 const Divider(color: Colors.white24, height: 1),
                 const SizedBox(height: 10),
@@ -1870,34 +1874,48 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                 ),
               ),
               const SizedBox(height: 6),
-              ...bo.abilities.map(
-                (ab) => Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        ab.name.toUpperCase(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontFamily: 'PressStart2P',
-                          fontWeight: FontWeight.bold,
+              if (!isPlayer && !bo.isAbilityRevealed)
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 8.0),
+                  child: Text(
+                    '???',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontFamily: 'PressStart2P',
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                )
+              else
+                ...bo.abilities.map(
+                  (ab) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          ab.name.toUpperCase(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontFamily: 'PressStart2P',
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        ab.description,
-                        style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 9,
-                          height: 1.5,
+                        const SizedBox(height: 4),
+                        Text(
+                          ab.description,
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 9,
+                            height: 1.5,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
         ),
@@ -2224,13 +2242,13 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                   .last
                   .toUpperCase();
 
-              final isLocked =
-                  battleManager.player.isChoiceLocked &&
-                  battleManager.player.lockedMove != null &&
-                  battleManager.player.lockedMove!.name != move.name;
+              final validMoves = battleManager.getValidMoves(
+                battleManager.player,
+              );
+              final isValid = validMoves.any((m) => m.name == move.name);
 
               return ElevatedButton(
-                onPressed: isLocked
+                onPressed: !isValid
                     ? null
                     : () => battleManager.processPlayerAction(move),
                 onLongPress: () => _showMoveDetails(
@@ -2240,19 +2258,19 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                   battleManager,
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: isLocked ? Colors.grey[700] : typeColor,
-                  foregroundColor: isLocked ? Colors.white24 : Colors.white,
+                  backgroundColor: !isValid ? Colors.grey[700] : typeColor,
+                  foregroundColor: !isValid ? Colors.white24 : Colors.white,
                   padding: const EdgeInsets.all(4),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                     side: BorderSide(
-                      color: isLocked
+                      color: !isValid
                           ? Colors.grey.withOpacity(0.3)
                           : Colors.white.withOpacity(0.5),
                       width: 2,
                     ),
                   ),
-                  elevation: isLocked ? 0 : 2,
+                  elevation: !isValid ? 0 : 2,
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -3741,16 +3759,14 @@ class _BattleSpriteState extends State<_BattleSprite>
   @override
   void didUpdateWidget(_BattleSprite oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.organism.organism.baseOrganism.name !=
-            oldWidget.organism.organism.baseOrganism.name ||
-        widget.organism.organism.baseOrganism.sprite !=
-            oldWidget.organism.organism.baseOrganism.sprite) {
+    if (widget.organism.displayBaseName != oldWidget.organism.displayBaseName ||
+        widget.organism.displaySprite != oldWidget.organism.displaySprite) {
       _determineImageSource();
     }
   }
 
   String _getLocalPath() {
-    final fileName = widget.organism.organism.baseOrganism.name
+    final fileName = widget.organism.displayBaseName
         .toString()
         .toLowerCase()
         .replaceAll(' ', '_')
@@ -3773,7 +3789,7 @@ class _BattleSpriteState extends State<_BattleSprite>
       if (mounted) {
         setState(() {
           _imageSourceType = 'network';
-          _imagePath = widget.organism.organism.baseOrganism.sprite;
+          _imagePath = widget.organism.displaySprite;
         });
       }
     }
