@@ -75,6 +75,7 @@ enum MoveEffectType {
   semiInvulnerable,
   statChangeChance,
   forceSwitch,
+  setHazard,
 }
 
 enum MoveCategory { physical, special, status }

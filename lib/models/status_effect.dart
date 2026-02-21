@@ -17,6 +17,10 @@ enum StatusEffectType {
   fear, // Reduces all stats by 10%
   marked, // Takes 20% extra damage
   stealth, // 50% evasion, 2x damage dealt/taken, removed on hit/attack
+  spikes, // Hazard: Damage on switch-in
+  stealthRock, // Hazard: Type-based damage on switch-in
+  toxicSpikes, // Hazard: Poison on switch-in
+  stickyWeb, // Hazard: Lower speed on switch-in
 }
 
 class StatusEffect {
@@ -74,6 +78,14 @@ class StatusEffect {
         return 'Marked';
       case StatusEffectType.stealth:
         return 'Stealth';
+      case StatusEffectType.spikes:
+        return 'Spikes';
+      case StatusEffectType.stealthRock:
+        return 'Stealth Rock';
+      case StatusEffectType.toxicSpikes:
+        return 'Toxic Spikes';
+      case StatusEffectType.stickyWeb:
+        return 'Sticky Web';
       default:
         return 'None';
     }
@@ -109,6 +121,14 @@ class StatusEffect {
         return 'was marked for death!';
       case StatusEffectType.stealth:
         return 'became hidden in the shadows!';
+      case StatusEffectType.spikes:
+        return 'was hurt by Spikes!';
+      case StatusEffectType.stealthRock:
+        return 'was hurt by Stealth Rock!';
+      case StatusEffectType.toxicSpikes:
+        return 'was poisoned by Toxic Spikes!';
+      case StatusEffectType.stickyWeb:
+        return 'was caught in a Sticky Web!';
       default:
         return '';
     }
@@ -185,6 +205,14 @@ class StatusEffect {
         return 'Takes 20% extra damage for 2 turns.';
       case StatusEffectType.stealth:
         return '50% evasion. 2x damage dealt and taken. Removed on attack or hit.';
+      case StatusEffectType.spikes:
+        return 'Deals damage to incoming animals.';
+      case StatusEffectType.stealthRock:
+        return 'Deals type-effective damage to incoming animals.';
+      case StatusEffectType.toxicSpikes:
+        return 'Poisons incoming animals.';
+      case StatusEffectType.stickyWeb:
+        return 'Lowers the speed of incoming animals.';
       default:
         return 'No current effect.';
     }

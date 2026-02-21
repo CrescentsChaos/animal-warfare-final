@@ -369,6 +369,11 @@ class BattleOrganism {
     speed *= _getAbilityStatMultiplier('speed');
     speed *= _getStatStageMultiplier(speedStage);
 
+    // Unburden: doubles speed if item is consumed
+    if (talismanConsumed && abilities.any((a) => a.name == 'Unburden')) {
+      speed *= 2.0;
+    }
+
     // Apply talisman effects
     if (organism.equippedTalisman != null) {
       for (final effect in organism.equippedTalisman!.effects) {

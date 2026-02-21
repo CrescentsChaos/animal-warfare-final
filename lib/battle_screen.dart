@@ -1220,10 +1220,24 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               organism.isItemRevealed)
             Padding(
               padding: const EdgeInsets.only(top: 4.0),
-              child: const Icon(
-                Icons.stars,
-                size: 10,
-                color: Colors.yellowAccent,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  const Icon(Icons.stars, size: 10, color: Colors.yellowAccent),
+                  if (organism.talismanConsumed)
+                    const Padding(
+                      padding: EdgeInsets.only(left: 4.0),
+                      child: Text(
+                        '(Used)',
+                        style: TextStyle(
+                          color: Colors.white60,
+                          fontSize: 8,
+                          fontFamily: 'PressStart2P',
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
         ],
@@ -1386,10 +1400,23 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           if (organism.organism.equippedTalisman != null)
             Padding(
               padding: const EdgeInsets.only(top: 4.0),
-              child: const Icon(
-                Icons.stars,
-                size: 10,
-                color: Colors.yellowAccent,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.stars, size: 10, color: Colors.yellowAccent),
+                  if (organism.talismanConsumed)
+                    const Padding(
+                      padding: EdgeInsets.only(left: 4.0),
+                      child: Text(
+                        '(Used)',
+                        style: TextStyle(
+                          color: Colors.white60,
+                          fontSize: 8,
+                          fontFamily: 'PressStart2P',
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
         ],
@@ -4125,9 +4152,9 @@ class _AbilityPopUpState extends State<_AbilityPopUp>
     return CompositedTransformFollower(
       link: widget.link,
       showWhenUnlinked: false,
-      offset: const Offset(0, -60), // Position above the sprite
-      targetAnchor: Alignment.topCenter,
-      followerAnchor: Alignment.bottomCenter,
+      offset: Offset.zero,
+      targetAnchor: Alignment.center,
+      followerAnchor: Alignment.center,
       child: AnimatedBuilder(
         animation: _controller,
         builder: (context, child) {

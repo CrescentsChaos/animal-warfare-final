@@ -83,6 +83,7 @@ class TypeChart {
         break;
       case ElementalType.flying:
         if (defenderType == ElementalType.arthropod) return 2.0;
+        if (defenderType == ElementalType.grass) return 2.0;
         if (defenderType == ElementalType.martial) return 2.0; // Can't reach
         if (defenderType == ElementalType.rock) return 0.5;
         if (defenderType == ElementalType.sound) return 0.5;

@@ -45,6 +45,8 @@ enum TalismanEffectType {
   berryCritBoost, // Lansat Berry: crit boost when HP < threshold
   berryEnigma, // Enigma Berry: heal on super-effective hit
   berryJaboca, // Jaboca/Rowap Berry: damage attacker when hit by physical/special
+  powerHerb, // Bypass charging turn once
+  berryTypeResist, // Reduce damage from super-effective hit of specific type
 }
 
 class TalismanEffect {
@@ -158,6 +160,12 @@ class TalismanEffect {
         break;
       case 'berry_jaboca':
         type = TalismanEffectType.berryJaboca;
+        break;
+      case 'power_herb':
+        type = TalismanEffectType.powerHerb;
+        break;
+      case 'berry_type_resist':
+        type = TalismanEffectType.berryTypeResist;
         break;
       default:
         type = TalismanEffectType.statBoost; // Fallback
@@ -296,6 +304,8 @@ class Talisman {
       effects.any(
         (e) =>
             e.type == TalismanEffectType.whiteHerb ||
-            e.type == TalismanEffectType.quickClaw,
+            e.type == TalismanEffectType.quickClaw ||
+            e.type == TalismanEffectType.powerHerb ||
+            e.type == TalismanEffectType.berryTypeResist,
       );
 }

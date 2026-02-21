@@ -550,6 +550,18 @@ class Ability {
           'Prevents accuracy from being lowered and ignores enemy stealth effects.',
       effectType: AbilityEffectType.none, // Handled in battle logic
     ),
+    Ability(
+      name: 'Harvest',
+      description:
+          'May create a new Berry to replace one the organism has already used.',
+      trigger: AbilityTrigger.onTurnEnd,
+    ),
+    Ability(
+      name: 'Unburden',
+      description:
+          'Doubles the Speed stat if the organism\'s held item is used or lost.',
+      trigger: AbilityTrigger.onCalculateStat,
+    ),
   ];
 
   static Ability? findByName(String name) {

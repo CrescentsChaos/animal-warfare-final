@@ -294,36 +294,84 @@ class CapturedOrganism {
   int get effectiveSpeed => getSpeed();
 
   /// Initializes the move selection with 4 moves from the base organism.
-  /// Randomizes selection if more than 4 moves are available.
+  /// Randomizes selection if more than 4 moves are available, favoring a balanced set.
   void initializeDefaultMoves() {
-    final allPossibleMoves = baseOrganism.moves
+    final allPossibleMoveNames = baseOrganism.moves
         .split(',')
         .map((m) => m.trim())
         .where((m) => m.isNotEmpty)
+        .toSet()
         .toList();
 
-    // extract unique potential moves
-    final List<String> uniqueMoves = [];
-    for (final moveName in allPossibleMoves) {
-      if (!uniqueMoves.contains(moveName)) {
-        uniqueMoves.add(moveName);
+    if (allPossibleMoveNames.isEmpty) {
+      selectedMoveNames = ['Struggle'];
+      _initializeStamina();
+      return;
+    }
+
+    if (allPossibleMoveNames.length <= 4) {
+      selectedMoveNames = allPossibleMoveNames;
+      _initializeStamina();
+      return;
+    }
+
+    // Balanced selection logic
+    final List<Move> moves = allPossibleMoveNames
+        .map((name) => Move.findByName(name))
+        .whereType<Move>()
+        .toList();
+
+    // 1. Determine primary stat orientation
+    final isPhysical = getAttack() >= getPower();
+
+    // 2. Categorize moves
+    final List<Move> mandatoryAttacks =
+        []; // Primary category STAB (if we had STAB) or just primary damage
+    final List<Move> secondaryAttacks = []; // Special if physical, etc.
+    final List<Move> utilityMoves = []; // Status, Heal, etc.
+
+    for (final m in moves) {
+      if (m.category == MoveCategory.status || m.baseDamage == 0) {
+        utilityMoves.add(m);
+      } else if (isPhysical && m.category == MoveCategory.physical) {
+        mandatoryAttacks.add(m);
+      } else if (!isPhysical && m.category == MoveCategory.special) {
+        mandatoryAttacks.add(m);
+      } else {
+        secondaryAttacks.add(m);
       }
     }
 
-    // Randomize if more than 4 moves
-    if (uniqueMoves.length > 4) {
-      uniqueMoves.shuffle();
+    // 3. Select balanced set
+    final List<String> result = [];
+    final rng = Random();
+
+    // Always try to take 1-2 mandatory attacks
+    mandatoryAttacks.shuffle(rng);
+    for (int i = 0; i < min(2, mandatoryAttacks.length); i++) {
+      result.add(mandatoryAttacks[i].name);
     }
 
-    // Take the first 4 (or all if fewer)
-    selectedMoveNames = uniqueMoves.take(4).toList();
-
-    // Fallback if no moves listed
-    if (selectedMoveNames.isEmpty) {
-      selectedMoveNames.add('Struggle');
+    // Try to take 1 utility move
+    if (utilityMoves.isNotEmpty) {
+      utilityMoves.shuffle(rng);
+      result.add(utilityMoves.first.name);
     }
 
-    // Initialize stamina for these moves
+    // Fill the rest from remaining moves
+    final remainingPool = moves.where((m) => !result.contains(m.name)).toList();
+    remainingPool.shuffle(rng);
+
+    while (result.length < 4 && remainingPool.isNotEmpty) {
+      result.add(remainingPool.removeAt(0).name);
+    }
+
+    // Fallback if logic somehow failed to fill 4 (e.g. only 3 unique moves)
+    selectedMoveNames = result.take(4).toList();
+    _initializeStamina();
+  }
+
+  void _initializeStamina() {
     moveStamina = {};
     for (final moveName in selectedMoveNames) {
       final move = Move.findByName(moveName);
