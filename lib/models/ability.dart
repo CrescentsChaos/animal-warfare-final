@@ -564,13 +564,13 @@ class Ability {
     ),
   ];
 
+  static const List<Ability> _allAbilitiesList = allAbilities;
+
+  static final Map<String, Ability> _byName = {
+    for (final a in _allAbilitiesList) a.name.toLowerCase(): a,
+  };
+
   static Ability? findByName(String name) {
-    try {
-      return allAbilities.firstWhere(
-        (a) => a.name.toLowerCase() == name.toLowerCase(),
-      );
-    } catch (_) {
-      return null;
-    }
+    return _byName[name.toLowerCase()];
   }
 }

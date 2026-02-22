@@ -251,10 +251,7 @@ class Move {
       minHits: json['minHits'] as int? ?? 1,
       maxHits: json['maxHits'] as int? ?? 1,
       type: json['type'] != null
-          ? ElementalType.values.firstWhere(
-              (e) => e.toString().split('.').last == json['type'],
-              orElse: () => ElementalType.basic,
-            )
+          ? ElementalTypeX.fromString(json['type'] as String)
           : ElementalType.basic,
       stamina: json['stamina'] as int? ?? defaultStamina,
       category: category,
@@ -285,6 +282,8 @@ class Move {
   static List<Move> _allMoves = [];
   static List<Move> get allMoves => _allMoves;
 
+  static final Map<String, Move> _byName = {};
+
   /// Loads moves from the JSON asset file.
   static Future<void> loadFromJson() async {
     try {
@@ -294,6 +293,10 @@ class Move {
         _allMoves = data
             .map((m) => Move.fromJson(m as Map<String, dynamic>))
             .toList();
+        _byName.clear();
+        for (final m in _allMoves) {
+          _byName[m.name.toLowerCase()] = m;
+        }
         print('Loaded ${_allMoves.length} moves from JSON.');
       }
     } catch (e) {
@@ -302,12 +305,7 @@ class Move {
   }
 
   static Move? findByName(String name) {
-    final trimmedName = name.trim().toLowerCase();
-    try {
-      return _allMoves.firstWhere((m) => m.name.toLowerCase() == trimmedName);
-    } catch (_) {
-      return null;
-    }
+    return _byName[name.trim().toLowerCase()];
   }
 
   /// Create a move by name. If not in the predefined list, returns a move with

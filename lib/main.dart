@@ -10,6 +10,8 @@ import 'package:animal_warfare/services/audio_service.dart';
 import 'package:animal_warfare/models/talisman.dart';
 import 'package:animal_warfare/models/move.dart';
 
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 void main() async {
   // 1. Ensure Flutter bindings are initialized first
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,10 +39,9 @@ void main() async {
     debugPrint("Firebase Initialization Error: $e");
   }
 
-  // 4. 🚨 CRITICAL FIX: Wrap the application with the UserState Provider
+  // 4. Wrap the application with the UserState Provider
   runApp(
     ChangeNotifierProvider(
-      // This is where the UserState is created and starts loading data/timers.
       create: (context) => UserState()..loadCurrentUser(),
       child: const MyApp(),
     ),
@@ -79,18 +80,29 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Animal Warfare',
-      theme: ThemeData(
-        fontFamily: 'PressStart2P',
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.deepPurple,
-          brightness: Brightness.dark,
-        ),
-        scaffoldBackgroundColor: Colors.black,
-        useMaterial3: true,
-      ),
-      home: const SplashScreen(),
+    return ScreenUtilInit(
+      designSize: const Size(
+        400,
+        800,
+      ), // Reference bounds based on previous logic and modern devices.
+      minTextAdapt: true,
+      splitScreenMode: true,
+      builder: (_, child) {
+        return MaterialApp(
+          title: 'Animal Warfare',
+          theme: ThemeData(
+            fontFamily: 'PressStart2P',
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: Colors.deepPurple,
+              brightness: Brightness.dark,
+            ),
+            scaffoldBackgroundColor: Colors.black,
+            useMaterial3: true,
+          ),
+          home: child,
+        );
+      },
+      child: const SplashScreen(),
     );
   }
 }

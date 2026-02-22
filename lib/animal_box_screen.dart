@@ -12,6 +12,7 @@ import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/theme.dart';
 import 'package:animal_warfare/models/nature.dart';
 import 'package:animal_warfare/models/elemental_type.dart';
+import 'dart:async';
 
 class AnimalBoxScreen extends StatefulWidget {
   const AnimalBoxScreen({super.key});
@@ -24,6 +25,7 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   String? _selectedCategory;
+  Timer? _debounce;
 
   static const List<String> _predefinedCategories = [
     "Earth",
@@ -50,6 +52,7 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _searchController.dispose();
     super.dispose();
   }
@@ -129,7 +132,9 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
                 isInTeam: isInTeam,
                 isActiveAttacker: isAttacker,
                 isNarrow: MediaQuery.sizeOf(context).width < 400,
-                onTap: () => _showAnimalDetails(context, org),
+                isNew:
+                    captured.length > 3 && originalIndex >= captured.length - 3,
+                onTap: () => _showAnimalDetails(context, org, originalIndex),
                 onToggleTeam: () async {
                   final success = await userState.toggleTeamMember(
                     originalIndex,
@@ -187,7 +192,8 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
           isInTeam: true,
           isActiveAttacker: isAttacker,
           isNarrow: MediaQuery.sizeOf(context).width < 400,
-          onTap: () => _showAnimalDetails(context, org),
+          isNew: false,
+          onTap: () => _showAnimalDetails(context, org, originalIndex),
           onToggleTeam: () => userState.toggleTeamMember(originalIndex),
           onSetAsAttacker: () => userState.setActiveAttacker(originalIndex),
           onManageMoves: () => _showMoveSelection(context, org, originalIndex),
@@ -209,7 +215,12 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
           Expanded(
             child: TextField(
               controller: _searchController,
-              onChanged: (val) => setState(() => _searchQuery = val),
+              onChanged: (val) {
+                if (_debounce?.isActive ?? false) _debounce!.cancel();
+                _debounce = Timer(const Duration(milliseconds: 300), () {
+                  setState(() => _searchQuery = val);
+                });
+              },
               style: const TextStyle(
                 color: Colors.white,
                 fontFamily: 'PressStart2P',
@@ -277,15 +288,20 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.pets, size: 80, color: Colors.grey[600]),
+          Icon(
+            Icons.catching_pokemon_outlined,
+            size: 80,
+            color: Colors.grey[700],
+          ),
           const SizedBox(height: 16),
           Text(
-            'No animals captured yet.',
+            'The wild remains untamed.\nNo monsters captured yet.',
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 12,
               color: Colors.grey[400],
               fontFamily: 'PressStart2P',
+              height: 1.5,
             ),
           ),
         ],
@@ -300,10 +316,10 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.groups, size: 80, color: Colors.grey[600]),
+            Icon(Icons.shield_outlined, size: 80, color: Colors.grey[700]),
             const SizedBox(height: 16),
             Text(
-              'Your team is empty.\nGo to "Box" and add some animals to your team (Max 5).',
+              'Your vanguard is empty.\nDraft up to 5 monsters to your team from the Box.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 12,
@@ -350,10 +366,14 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
     }
   }
 
-  void _showAnimalDetails(BuildContext context, CapturedOrganism captured) {
+  void _showAnimalDetails(
+    BuildContext context,
+    CapturedOrganism captured,
+    int index,
+  ) {
     showDialog(
       context: context,
-      builder: (ctx) => _AnimalDetailsDialog(captured: captured),
+      builder: (ctx) => _AnimalDetailsDialog(captured: captured, index: index),
     );
   }
 
@@ -464,6 +484,7 @@ class _AnimalCard extends StatelessWidget {
   final bool isInTeam;
   final bool isActiveAttacker;
   final bool isNarrow;
+  final bool isNew;
   final VoidCallback onTap;
   final VoidCallback onToggleTeam;
   final VoidCallback onSetAsAttacker;
@@ -477,6 +498,7 @@ class _AnimalCard extends StatelessWidget {
     required this.isInTeam,
     required this.isActiveAttacker,
     required this.isNarrow,
+    this.isNew = false,
     required this.onTap,
     required this.onToggleTeam,
     required this.onSetAsAttacker,
@@ -490,125 +512,188 @@ class _AnimalCard extends StatelessWidget {
     final base = captured.baseOrganism;
     final spriteSize = isNarrow ? 80.0 : 100.0;
 
-    return Card(
+    List<BoxShadow>? rarityGlow;
+    if (base.rarity.toLowerCase() == 'legendary') {
+      rarityGlow = [
+        BoxShadow(
+          color: Colors.orange.withOpacity(0.5),
+          blurRadius: 10,
+          spreadRadius: 2,
+        ),
+      ];
+    } else if (base.rarity.toLowerCase() == 'mythical') {
+      rarityGlow = [
+        BoxShadow(
+          color: Colors.purple.withOpacity(0.5),
+          blurRadius: 10,
+          spreadRadius: 2,
+        ),
+      ];
+    } else if (base.rarity.toLowerCase() == 'epic' ||
+        base.rarity.toLowerCase() == 'elite') {
+      rarityGlow = [
+        BoxShadow(
+          color: Colors.purpleAccent.withOpacity(0.3),
+          blurRadius: 8,
+          spreadRadius: 1,
+        ),
+      ];
+    }
+
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      color: Colors.grey[850],
-      shape: RoundedRectangleBorder(
+      decoration: BoxDecoration(
+        color: Colors.grey[850],
         borderRadius: BorderRadius.circular(8),
-        side: BorderSide(
+        boxShadow:
+            rarityGlow ??
+            [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+        border: Border.all(
           color: isActiveAttacker
               ? AppColors.highlightColor
               : (isInTeam ? Colors.blue[300]! : Colors.grey[700]!),
           width: isActiveAttacker || isInTeam ? 2 : 1,
         ),
       ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            children: [
-              _AnimalBoxSprite(organism: base, size: spriteSize),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            base.name,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                              fontFamily: 'PressStart2P',
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(8),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                Hero(
+                  tag: 'animal_box_sprite_$index',
+                  child: _AnimalBoxSprite(organism: base, size: spriteSize),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              base.name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                                fontFamily: 'PressStart2P',
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                        if (isInTeam)
-                          Container(
-                            margin: const EdgeInsets.only(left: 8),
+                          if (isNew)
+                            Container(
+                              margin: const EdgeInsets.only(left: 8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.red[600],
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: const Text(
+                                'NEW',
+                                style: TextStyle(
+                                  fontSize: 8,
+                                  fontFamily: 'PressStart2P',
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          if (isInTeam)
+                            Container(
+                              margin: const EdgeInsets.only(left: 8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.blue[800],
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: const Text(
+                                'TEAM',
+                                style: TextStyle(
+                                  fontSize: 8,
+                                  fontFamily: 'PressStart2P',
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 4,
+                        children: base.category.split(',').map((cat) {
+                          final typeStr = cat.trim().toLowerCase();
+                          final type = ElementalType.values.firstWhere(
+                            (e) => e.toString().split('.').last == typeStr,
+                            orElse: () => ElementalType.basic,
+                          );
+                          return Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
+                              horizontal: 5,
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.blue[800],
-                              borderRadius: BorderRadius.circular(4),
+                              color: _getAnimalTypeColor(type),
+                              borderRadius: BorderRadius.circular(3),
                             ),
-                            child: const Text(
-                              'TEAM',
-                              style: TextStyle(
-                                fontSize: 8,
-                                fontFamily: 'PressStart2P',
+                            child: Text(
+                              cat.trim().toUpperCase(),
+                              style: const TextStyle(
                                 color: Colors.white,
+                                fontSize: 7,
+                                fontFamily: 'PressStart2P',
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 4,
-                      children: base.category.split(',').map((cat) {
-                        final typeStr = cat.trim().toLowerCase();
-                        final type = ElementalType.values.firstWhere(
-                          (e) => e.toString().split('.').last == typeStr,
-                          orElse: () => ElementalType.basic,
-                        );
-                        return Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 5,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: _getAnimalTypeColor(type),
-                            borderRadius: BorderRadius.circular(3),
-                          ),
-                          child: Text(
-                            cat.trim().toUpperCase(),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 7,
-                              fontFamily: 'PressStart2P',
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'HP: ${(captured.getMaxHealth(atLevel: 50) * (captured.currentHealth / captured.maxHealth)).round()}/${captured.getMaxHealth(atLevel: 50)}',
-                      style: TextStyle(
-                        color: Colors.grey[400],
-                        fontSize: 10,
-                        fontFamily: 'PressStart2P',
+                          );
+                        }).toList(),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      captured.equippedTalisman != null
-                          ? 'Item: ${captured.equippedTalisman!.name}'
-                          : 'No Item',
-                      style: TextStyle(
-                        color: captured.equippedTalisman != null
-                            ? AppColors.highlightColor
-                            : Colors.grey[500],
-                        fontSize: 9,
-                        fontFamily: 'PressStart2P',
+                      const SizedBox(height: 4),
+                      Text(
+                        'HP: ${(captured.getMaxHealth(atLevel: 50) * (captured.currentHealth / captured.maxHealth)).round()}/${captured.getMaxHealth(atLevel: 50)}',
+                        style: TextStyle(
+                          color: Colors.grey[400],
+                          fontSize: 10,
+                          fontFamily: 'PressStart2P',
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    _buildActions(context),
-                  ],
+                      const SizedBox(height: 4),
+                      Text(
+                        captured.equippedTalisman != null
+                            ? 'Item: ${captured.equippedTalisman!.name}'
+                            : 'No Item',
+                        style: TextStyle(
+                          color: captured.equippedTalisman != null
+                              ? AppColors.highlightColor
+                              : Colors.grey[500],
+                          fontSize: 9,
+                          fontFamily: 'PressStart2P',
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      _buildActions(context),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -715,8 +800,9 @@ class _SmallActionBtn extends StatelessWidget {
 
 class _AnimalDetailsDialog extends StatelessWidget {
   final CapturedOrganism captured;
+  final int index;
 
-  const _AnimalDetailsDialog({required this.captured});
+  const _AnimalDetailsDialog({required this.captured, required this.index});
 
   @override
   Widget build(BuildContext context) {
@@ -731,7 +817,10 @@ class _AnimalDetailsDialog extends StatelessWidget {
         color: AppColors.secondaryButtonColor,
         child: Row(
           children: [
-            _AnimalBoxSprite(organism: base, size: 60),
+            Hero(
+              tag: 'animal_box_sprite_$index',
+              child: _AnimalBoxSprite(organism: base, size: 60),
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(

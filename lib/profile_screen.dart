@@ -15,6 +15,7 @@ import 'package:animal_warfare/achievement_screen.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 // END NEW IMPORTS
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 // ------------------------------------------------------------------
 // FIX: Define the missing _createFadeRoute function here.
@@ -62,19 +63,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _loadUserProfile();
     _loadOrganisms();
   }
-
-  // ADDED: Utility function for responsive font size
-  double _responsiveFontSize(BuildContext context, double baseSize) {
-    // Get the screen width
-    final screenWidth = MediaQuery.of(context).size.width;
-    // Define a reference width (e.g., 400 pixels for a typical phone)
-    const double referenceWidth = 400.0;
-    // Calculate a scaling factor
-    final double scaleFactor = screenWidth / referenceWidth;
-    // Apply the scaling factor to the base size
-    return baseSize * scaleFactor;
-  }
-  // END ADDED
 
   // ... (Other methods remain unchanged)
 
@@ -143,10 +131,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           // MODIFIED: Use TextStyle instead of const TextStyle
           color: Colors.white,
           fontFamily: 'PressStart2P',
-          fontSize: _responsiveFontSize(
-            context,
-            14,
-          ), // MODIFIED: Responsive font size
+          fontSize: 14.sp, // MODIFIED: Responsive font size
         ),
       ),
     );
@@ -210,7 +195,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               style: TextStyle(
                 color: highlightColor,
                 fontFamily: 'PressStart2P',
-                fontSize: _responsiveFontSize(context, 12),
+                fontSize: 12.sp,
               ),
             ),
           ),
@@ -222,7 +207,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               style: TextStyle(
                 color: Colors.white,
                 fontFamily: 'PressStart2P',
-                fontSize: _responsiveFontSize(context, 12),
+                fontSize: 12.sp,
               ),
             ),
           ),
@@ -255,10 +240,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               // MODIFIED: Use TextStyle instead of const TextStyle
               color: highlightColor,
               fontFamily: 'PressStart2P',
-              fontSize: _responsiveFontSize(
-                context,
-                12,
-              ), // MODIFIED: Responsive font size
+              fontSize: 12.sp, // MODIFIED: Responsive font size
             ),
           ),
           const SizedBox(height: 10),
@@ -284,7 +266,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               style: TextStyle(
                 color: Colors.white70,
                 fontFamily: 'PressStart2P',
-                fontSize: _responsiveFontSize(context, 10),
+                fontSize: 10.sp,
               ),
             ),
           ),
@@ -296,7 +278,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               style: TextStyle(
                 color: color,
                 fontFamily: 'PressStart2P',
-                fontSize: _responsiveFontSize(context, 10),
+                fontSize: 10.sp,
               ),
             ),
           ),
@@ -311,7 +293,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final appBarTextStyle = TextStyle(
       color: highlightColor,
       fontFamily: 'PressStart2P',
-      fontSize: _responsiveFontSize(context, 16),
+      fontSize: 16.sp,
     );
     // END MODIFIED
 
@@ -430,7 +412,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   '--- BEST ROGUE RUN ---',
                   style: TextStyle(
                     color: highlightColor.withOpacity(0.8),
-                    fontSize: _responsiveFontSize(context, 10),
+                    fontSize: 10.sp,
                     fontFamily: 'PressStart2P',
                   ),
                 ),
@@ -441,7 +423,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   'FINAL TEAM:',
                   style: TextStyle(
                     color: Colors.white70,
-                    fontSize: _responsiveFontSize(context, 8),
+                    fontSize: 8.sp,
                     fontFamily: 'PressStart2P',
                   ),
                 ),
@@ -484,10 +466,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 '--- BATTLE QUIZ STATS ---',
                 style: TextStyle(
                   color: highlightColor.withOpacity(0.8),
-                  fontSize: _responsiveFontSize(
-                    context,
-                    10,
-                  ), // MODIFIED: Responsive font size
+                  fontSize: 10.sp, // MODIFIED: Responsive font size
                   fontFamily: 'PressStart2P',
                 ),
               ),
@@ -505,10 +484,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.white.withOpacity(0.6),
-                    fontSize: _responsiveFontSize(
-                      context,
-                      12,
-                    ), // MODIFIED: Responsive font size
+                    fontSize: 12.sp, // MODIFIED: Responsive font size
                     fontFamily: 'PressStart2P',
                   ),
                 ),

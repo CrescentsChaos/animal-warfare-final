@@ -9,7 +9,10 @@ import 'package:provider/provider.dart';
 import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/models/quest.dart';
 import 'package:animal_warfare/models/organism.dart';
+import 'package:animal_warfare/widgets/organism_sprite_widget.dart';
 import 'package:animal_warfare/theme.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class QuestScreen extends StatefulWidget {
   const QuestScreen({super.key});
@@ -808,9 +811,9 @@ class _SpeechBubbleState extends State<SpeechBubble> {
           Text(
             _displayText,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: GoogleFonts.robotoMono(
               color: Colors.black,
-              fontSize: 11,
+              fontSize: 11.sp,
               height: 1.4,
               fontWeight: FontWeight.w500,
             ),

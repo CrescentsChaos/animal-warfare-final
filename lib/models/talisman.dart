@@ -213,6 +213,7 @@ class Talisman {
 
   // Loaded talismans list
   static List<Talisman> allTalismans = [];
+  static final Map<String, Talisman> _byId = {};
 
   // Load talismans from JSON
   static Future<void> loadFromJson() async {
@@ -222,10 +223,15 @@ class Talisman {
       );
       final List<dynamic> data = json.decode(response);
       allTalismans = data.map((json) => Talisman.fromJson(json)).toList();
+      _byId.clear();
+      for (final t in allTalismans) {
+        _byId[t.id] = t;
+      }
     } catch (e) {
       print('Error loading talismans: $e');
       // Fallback to empty list or hardcoded defaults
       allTalismans = [];
+      _byId.clear();
     }
   }
 
@@ -255,11 +261,7 @@ class Talisman {
   }
 
   static Talisman? findById(String id) {
-    try {
-      return allTalismans.firstWhere((talisman) => talisman.id == id);
-    } catch (e) {
-      return null;
-    }
+    return _byId[id];
   }
 
   Map<String, dynamic> toJson() => {'id': id};

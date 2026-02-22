@@ -8,6 +8,14 @@ import 'package:animal_warfare/services/audio_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:animal_warfare/patch_notes_screen.dart'; // We will create this next
+import 'dart:io';
+import 'dart:convert';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:path_provider/path_provider.dart';
+
+import 'package:file_picker/file_picker.dart';
+import 'package:provider/provider.dart';
+import 'package:animal_warfare/user_state.dart';
 
 class SettingsScreen extends StatefulWidget {
   // Required fields based on your existing screen structure
@@ -161,6 +169,130 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  Future<void> _exportSaveData() async {
+    setState(() => _isLoading = true);
+    try {
+      Directory? downloadDir;
+
+      if (Platform.isAndroid) {
+        var status = await Permission.storage.status;
+        if (!status.isGranted) {
+          await Permission.storage.request();
+        }
+
+        downloadDir = Directory('/storage/emulated/0/Download');
+        if (!await downloadDir.exists()) {
+          downloadDir = await getExternalStorageDirectory();
+        }
+      } else {
+        downloadDir = await getDownloadsDirectory();
+      }
+
+      if (downloadDir != null) {
+        final String username = widget.currentUser.username;
+        final String fileName = 'animal_warfare_save_$username.json';
+        final File file = File('${downloadDir.path}/$fileName');
+
+        final String jsonData = jsonEncode(widget.currentUser.toJson());
+        await file.writeAsString(jsonData);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Saved to Downloads/$fileName',
+                style: const TextStyle(
+                  fontFamily: 'PressStart2P',
+                  fontSize: 10,
+                ),
+              ),
+              backgroundColor: primaryButtonColor,
+            ),
+          );
+        }
+      } else {
+        throw Exception('Could not find Downloads directory');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Export failed: $e',
+              style: const TextStyle(fontFamily: 'PressStart2P', fontSize: 10),
+            ),
+            backgroundColor: Colors.red.shade700,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _importSaveData() async {
+    setState(() => _isLoading = true);
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
+
+      if (result != null && result.files.single.path != null) {
+        File file = File(result.files.single.path!);
+        String jsonString = await file.readAsString();
+
+        bool success = await widget.authService.importUser(jsonString);
+
+        if (success) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Save data imported successfully!',
+                  style: TextStyle(fontFamily: 'PressStart2P', fontSize: 10),
+                ),
+                backgroundColor: primaryButtonColor,
+              ),
+            );
+
+            // Refresh the global application state
+            await Provider.of<UserState>(
+              context,
+              listen: false,
+            ).refreshCurrentUser();
+
+            // Return to Main Menu to force full reload
+            Navigator.of(context).pushAndRemoveUntil(
+              _createFadeRoute(const MainScreen()),
+              (route) => false,
+            );
+          }
+        } else {
+          throw Exception('Invalid save file format.');
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Import failed: $e',
+              style: const TextStyle(fontFamily: 'PressStart2P', fontSize: 10),
+            ),
+            backgroundColor: Colors.red.shade700,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -250,6 +382,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                   const SizedBox(height: 40),
                   _buildSectionTitle('ACCOUNT'),
+                  _buildThemedButton(
+                    text: 'IMPORT SAVE DATA',
+                    icon: Icons.file_upload,
+                    onPressed: _importSaveData,
+                  ),
+                  const SizedBox(height: 10),
+                  _buildThemedButton(
+                    text: 'EXPORT SAVE DATA',
+                    icon: Icons.save_alt,
+                    onPressed: _exportSaveData,
+                  ),
+                  const SizedBox(height: 10),
                   _buildThemedButton(
                     text: 'LOGOUT',
                     icon: Icons.exit_to_app,

@@ -4,12 +4,14 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:animal_warfare/models/organism.dart';
+import 'package:animal_warfare/widgets/organism_sprite_widget.dart';
 import 'package:animal_warfare/models/ability.dart';
 import 'package:animal_warfare/local_auth_service.dart';
 import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/theme.dart';
 import 'package:provider/provider.dart';
 import 'package:animal_warfare/models/elemental_type.dart';
+import 'dart:async';
 
 class AnidexScreen extends StatefulWidget {
   // User data must be passed to check discovery status
@@ -30,6 +32,7 @@ class _AnidexScreenState extends State<AnidexScreen> {
   List<Organism> _allOrganisms = [];
   List<Organism> _searchResults = [];
   final TextEditingController _searchController = TextEditingController();
+  Timer? _debounce;
 
   // Helper to check if organism is discovered
   bool _isDiscovered(BuildContext context, Organism organism) {
@@ -50,6 +53,7 @@ class _AnidexScreenState extends State<AnidexScreen> {
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     super.dispose();
@@ -105,17 +109,10 @@ class _AnidexScreenState extends State<AnidexScreen> {
   }
 
   void _onSearchChanged() {
-    final query = _searchController.text.trim().toLowerCase();
-
-    if (query.isEmpty) {
-      // Autocomplete removal: Only clear search results if query is empty
-      setState(() {
-        _searchResults = [];
-      });
-      return;
-    }
-
-    // Autocomplete removal: The logic to find and set suggestion is removed.
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      _performSearch();
+    });
   }
 
   void _performSearch() {
@@ -209,25 +206,49 @@ class _AnidexScreenState extends State<AnidexScreen> {
 
     if (_searchResults.isEmpty && _searchController.text.isNotEmpty) {
       return Center(
-        // 🚨 EDITED: Use AppTextStyles.body
-        child: Text(
-          'NO ANIMALS FOUND.',
-          textAlign: TextAlign.center,
-          style: AppTextStyles.body(context, baseSize: 14, color: Colors.red),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.search_off,
+              size: 80,
+              color: Colors.red.withOpacity(0.5),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'NO SIGNAL DETECTED.\nThe beast eludes you...',
+              textAlign: TextAlign.center,
+              style: AppTextStyles.body(
+                context,
+                baseSize: 12,
+                color: Colors.red,
+              ).copyWith(height: 1.5),
+            ),
+          ],
         ),
       );
     }
     if (_searchResults.isEmpty) {
       return Center(
-        // 🚨 EDITED: Use AppTextStyles.body
-        child: Text(
-          'SEARCH FOR AN ANIMAL TO BEGIN.',
-          textAlign: TextAlign.center,
-          style: AppTextStyles.body(
-            context,
-            baseSize: 14,
-            color: AppColors.highlightColor,
-          ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.travel_explore,
+              size: 80,
+              color: AppColors.highlightColor.withOpacity(0.5),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'AWAITING INPUT.\nSearch the database to uncover classified data.',
+              textAlign: TextAlign.center,
+              style: AppTextStyles.body(
+                context,
+                baseSize: 12,
+                color: AppColors.highlightColor,
+              ).copyWith(height: 1.5),
+            ),
+          ],
         ),
       );
     }
@@ -260,40 +281,102 @@ class _AnidexScreenState extends State<AnidexScreen> {
         : 'Status: UNDISCOVERED';
     final Color titleColor = isDiscovered ? Colors.white : Colors.grey.shade600;
 
-    return Card(
-      // 🚨 EDITED: Use AppColors.secondaryButtonColor
-      color: AppColors.secondaryButtonColor.withOpacity(0.9),
-      elevation: 5,
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      child: ListTile(
-        leading: Icon(
-          isDiscovered ? Icons.pets : Icons.question_mark_rounded,
-          // 🚨 EDITED: Use AppColors.highlightColor
-          color: isDiscovered ? AppColors.highlightColor : Colors.grey.shade800,
-        ),
-        title: Text(
-          titleText,
-          // 🚨 EDITED: Use AppTextStyles.body
-          // The context is now available here
-          style: AppTextStyles.body(context, baseSize: 16, color: titleColor),
-        ),
-        subtitle: Text(
-          subtitleText,
-          // 🚨 EDITED: Use AppTextStyles.small
-          // The context is now available here
-          style: AppTextStyles.small(
-            context,
-            baseSize: 12,
-            color: AppColors.highlightColor,
+    List<BoxShadow>? rarityGlow;
+    if (isDiscovered) {
+      if (organism.rarity.toLowerCase() == 'legendary') {
+        rarityGlow = [
+          BoxShadow(
+            color: Colors.orange.withOpacity(0.5),
+            blurRadius: 10,
+            spreadRadius: 2,
           ),
+        ];
+      } else if (organism.rarity.toLowerCase() == 'mythical') {
+        rarityGlow = [
+          BoxShadow(
+            color: Colors.purple.withOpacity(0.5),
+            blurRadius: 10,
+            spreadRadius: 2,
+          ),
+        ];
+      } else if (organism.rarity.toLowerCase() == 'epic' ||
+          organism.rarity.toLowerCase() == 'elite') {
+        rarityGlow = [
+          BoxShadow(
+            color: Colors.purpleAccent.withOpacity(0.3),
+            blurRadius: 8,
+            spreadRadius: 1,
+          ),
+        ];
+      }
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.secondaryButtonColor.withOpacity(0.9),
+        borderRadius: BorderRadius.circular(8),
+        boxShadow:
+            rarityGlow ??
+            [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: ListTile(
+          leading: isDiscovered
+              ? Hero(
+                  tag: 'anidex_sprite_${organism.name}',
+                  child: SizedBox(
+                    width: 40,
+                    height: 40,
+                    child: _OrganismSpriteDisplay(
+                      organism: organism,
+                      isDiscovered: isDiscovered,
+                      silhouetteColor: Colors.black,
+                    ),
+                  ),
+                )
+              : Icon(Icons.question_mark_rounded, color: Colors.grey.shade800),
+          title: Text(
+            titleText,
+            style: AppTextStyles.body(context, baseSize: 16, color: titleColor),
+          ),
+          subtitle: Text(
+            subtitleText,
+            style: AppTextStyles.small(
+              context,
+              baseSize: 12,
+              color: AppColors.highlightColor,
+            ),
+          ),
+          trailing: isDiscovered
+              ? const Icon(Icons.chevron_right, color: AppColors.highlightColor)
+              : Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: const Text(
+                    'UNDISCOVERED',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 8,
+                      fontFamily: 'PressStart2P',
+                    ),
+                  ),
+                ),
+          onTap: () => _showOrganismDetails(context, organism),
         ),
-        // 🚨 EDITED: Use AppColors.highlightColor
-        trailing: const Icon(
-          Icons.chevron_right,
-          color: AppColors.highlightColor,
-        ),
-        // 💡 FIX: Pass 'context' to the _showOrganismDetails function.
-        onTap: () => _showOrganismDetails(context, organism),
       ),
     );
   }
@@ -611,13 +694,16 @@ class _AnidexScreenState extends State<AnidexScreen> {
               borderRadius: BorderRadius.circular(8),
             ),
             // START MODIFIED IMAGE LOADING BLOCK
-            child: _OrganismSpriteDisplay(
-              organism: organism,
-              isDiscovered: isDiscovered,
-              silhouetteColor: Colors.black, // Use black for the silhouette
-              height: 200,
-              width: 400,
-              fit: BoxFit.contain,
+            child: Hero(
+              tag: 'anidex_sprite_${organism.name}',
+              child: _OrganismSpriteDisplay(
+                organism: organism,
+                isDiscovered: isDiscovered,
+                silhouetteColor: Colors.black, // Use black for the silhouette
+                height: 200,
+                width: 400,
+                fit: BoxFit.contain,
+              ),
             ),
             // END MODIFIED IMAGE LOADING BLOCK
           ),

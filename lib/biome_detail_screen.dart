@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 // Import Random
 import 'package:animal_warfare/models/organism.dart';
+import 'package:animal_warfare/widgets/organism_sprite_widget.dart';
 import 'package:animal_warfare/models/captured_organism.dart';
 // Import Talisman model
 import 'package:animal_warfare/battle_screen.dart'; // Ensure this is the correct path

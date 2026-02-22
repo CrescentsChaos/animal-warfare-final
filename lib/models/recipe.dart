@@ -53,12 +53,12 @@ class Recipe {
     ),
   ];
 
+  static final Map<String, Recipe> _byId = {
+    for (final r in allRecipes) r.id: r,
+  };
+
   static Recipe? findById(String id) {
-    try {
-      return allRecipes.firstWhere((recipe) => recipe.id == id);
-    } catch (e) {
-      return null;
-    }
+    return _byId[id];
   }
 
   /// Check if player has enough materials to craft this recipe

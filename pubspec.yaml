@@ -43,6 +43,9 @@ dependencies:
   provider: ^6.1.5+1 
   url_launcher: ^6.3.0
   package_info_plus: ^8.0.0
+  file_picker: ^8.0.7
+  flutter_screenutil: ^5.9.3
+  google_fonts: ^8.0.2
 
 dev_dependencies:
   flutter_test:

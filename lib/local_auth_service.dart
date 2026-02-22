@@ -480,6 +480,35 @@ class LocalAuthService {
     return true;
   }
 
+  /// Import user data from a JSON string, write it to disk, and set it as the active user.
+  Future<bool> importUser(String jsonContent) async {
+    try {
+      final data = _robustJsonDecode(jsonContent, 'imported_user');
+      final username = data['username'] as String?;
+
+      if (username == null || username.isEmpty) {
+        if (kDebugMode)
+          print("ERROR: Imported JSON is missing a valid username.");
+        return false;
+      }
+
+      final organisms = await loadOrganisms();
+      final userData = UserData.fromJson(
+        data,
+        allOrganisms: organisms.isEmpty ? null : organisms,
+      );
+
+      await _writeUserFile(userData);
+      await _saveCurrentUserName(username);
+
+      if (kDebugMode) print("DEBUG: Import successful for $username.");
+      return true;
+    } catch (e) {
+      if (kDebugMode) print("ERROR: Failed to import user: $e");
+      return false;
+    }
+  }
+
   Future<void> _saveCurrentUserName(String username) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_currentKey, username);

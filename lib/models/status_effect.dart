@@ -1,4 +1,5 @@
 // lib/models/status_effect.dart
+
 import 'package:flutter/material.dart';
 
 enum StatusEffectType {

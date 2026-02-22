@@ -5,59 +5,79 @@ import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:animal_warfare/local_auth_service.dart';
 import 'package:animal_warfare/models/organism.dart';
+import 'package:animal_warfare/widgets/organism_sprite_widget.dart';
 import 'package:animal_warfare/theme.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 enum QuizType {
   scientificToCommon,
   commonToScientific,
-  spriteToName, 
+  spriteToName,
   spriteToScientific,
-  silhouetteToName, 
+  silhouetteToName,
   silhouetteToScientific,
 }
 
 extension QuizTypeExtension on QuizType {
   String get displayName {
     switch (this) {
-      case QuizType.scientificToCommon: return 'Scientific to Name';
-      case QuizType.commonToScientific: return 'Name to Scientific';
-      case QuizType.spriteToName: return 'Sprite to Name';
-      case QuizType.spriteToScientific: return 'Sprite to Scientific';
-      case QuizType.silhouetteToName: return 'Silhouette to Name';
-      case QuizType.silhouetteToScientific: return 'Silhouette to Scientific';
+      case QuizType.scientificToCommon:
+        return 'Scientific to Name';
+      case QuizType.commonToScientific:
+        return 'Name to Scientific';
+      case QuizType.spriteToName:
+        return 'Sprite to Name';
+      case QuizType.spriteToScientific:
+        return 'Sprite to Scientific';
+      case QuizType.silhouetteToName:
+        return 'Silhouette to Name';
+      case QuizType.silhouetteToScientific:
+        return 'Silhouette to Scientific';
     }
   }
 
   String get description {
     switch (this) {
-      case QuizType.scientificToCommon: return 'Identify by Latin names';
-      case QuizType.commonToScientific: return 'Learn the biology';
-      case QuizType.spriteToName: return 'Visual identification';
-      case QuizType.spriteToScientific: return 'Advanced recognition';
-      case QuizType.silhouetteToName: return 'Shadow challenge';
-      case QuizType.silhouetteToScientific: return 'Expert biology';
+      case QuizType.scientificToCommon:
+        return 'Identify by Latin names';
+      case QuizType.commonToScientific:
+        return 'Learn the biology';
+      case QuizType.spriteToName:
+        return 'Visual identification';
+      case QuizType.spriteToScientific:
+        return 'Advanced recognition';
+      case QuizType.silhouetteToName:
+        return 'Shadow challenge';
+      case QuizType.silhouetteToScientific:
+        return 'Expert biology';
     }
   }
 
   IconData get icon {
     switch (this) {
-      case QuizType.scientificToCommon: return Icons.biotech;
-      case QuizType.commonToScientific: return Icons.sort_by_alpha;
-      case QuizType.spriteToName: return Icons.image;
-      case QuizType.spriteToScientific: return Icons.image_search;
-      case QuizType.silhouetteToName: return Icons.hide_image;
-      case QuizType.silhouetteToScientific: return Icons.visibility_off;
+      case QuizType.scientificToCommon:
+        return Icons.biotech;
+      case QuizType.commonToScientific:
+        return Icons.sort_by_alpha;
+      case QuizType.spriteToName:
+        return Icons.image;
+      case QuizType.spriteToScientific:
+        return Icons.image_search;
+      case QuizType.silhouetteToName:
+        return Icons.hide_image;
+      case QuizType.silhouetteToScientific:
+        return Icons.visibility_off;
     }
   }
 }
 
 class QuizGameScreen extends StatefulWidget {
   final QuizType quizType;
-  final UserData currentUser; 
+  final UserData currentUser;
   final LocalAuthService authService;
 
   const QuizGameScreen({
-    super.key, 
+    super.key,
     required this.quizType,
     required this.currentUser,
     required this.authService,
@@ -81,7 +101,7 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
   late UserData _currentUser;
 
   // 🔴 REMOVED: Soft hardcoded colors
-  
+
   static const int _numberOfOptions = 4;
   static const int _delayAfterAnswerSeconds = 2; // Faster transition
 
@@ -90,17 +110,10 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
     super.initState();
     // 🟢 NEW: Initialize local user data
     _currentUser = widget.currentUser;
-    
+
     _loadOrganisms().then((_) {
       _startNewQuestion();
     });
-  }
-
-  double _responsiveFontSize(BuildContext context, double baseSize) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    const double referenceWidth = 400.0;
-    final double scaleFactor = screenWidth / referenceWidth;
-    return baseSize * scaleFactor;
   }
 
   Future<void> _loadOrganisms() async {
@@ -108,15 +121,18 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
     try {
       final String response = await rootBundle.loadString(assetPath);
       final List<dynamic> animalsData = json.decode(response);
-      
-      _allOrganisms = animalsData.map((json) => Organism.fromJson(json)).toList();
-      setState(() { _isLoading = false; });
-      
+
+      _allOrganisms = animalsData
+          .map((json) => Organism.fromJson(json))
+          .toList();
+      setState(() {
+        _isLoading = false;
+      });
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading data: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading data: $e')));
       }
     }
   }
@@ -145,7 +161,7 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
       do {
         decoyIndex = random.nextInt(quizSource.length);
       } while (usedIndices.contains(decoyIndex));
-      
+
       usedIndices.add(decoyIndex);
       options.add(quizSource[decoyIndex]);
     }
@@ -172,7 +188,7 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
         return organism.scientificName;
     }
   }
-  
+
   String _getQuestionText(Organism organism) {
     switch (widget.quizType) {
       case QuizType.scientificToCommon:
@@ -197,21 +213,20 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
     });
 
     final bool isCorrect = answer == _correctAnswer;
-    
+
     // 🟢 FIX: Update quiz stats using the CURRENT local user data
     await widget.authService.updateQuizStats(
       _currentUser.username,
       widget.quizType.name,
       isCorrect,
     );
-    
+
     // 🟢 CRITICAL FIX: Immediately refresh the local user data after updating
     final updatedUser = await widget.authService.getCurrentUser();
     if (updatedUser != null && mounted) {
       setState(() {
         _currentUser = updatedUser;
       });
-      
     }
 
     Future.delayed(const Duration(seconds: _delayAfterAnswerSeconds), () {
@@ -221,17 +236,20 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
     });
   }
 
-  bool get usesImageQuestion => 
-      widget.quizType == QuizType.spriteToName || 
+  bool get usesImageQuestion =>
+      widget.quizType == QuizType.spriteToName ||
       widget.quizType == QuizType.spriteToScientific ||
-      widget.quizType == QuizType.silhouetteToName || 
+      widget.quizType == QuizType.silhouetteToName ||
       widget.quizType == QuizType.silhouetteToScientific;
 
   Widget _buildAnswerButton(Organism option) {
     final answerText = _getAnswerText(option);
-    
+
     bool isCorrect = _isAnswered && answerText == _correctAnswer;
-    bool isWrong = _isAnswered && answerText == _selectedAnswer && answerText != _correctAnswer;
+    bool isWrong =
+        _isAnswered &&
+        answerText == _selectedAnswer &&
+        answerText != _correctAnswer;
 
     Color borderColor = AppColors.highlightColor.withOpacity(0.5);
     Color textColor = Colors.white;
@@ -269,7 +287,7 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
               style: TextStyle(
                 color: textColor,
                 fontFamily: 'PressStart2P',
-                fontSize: _responsiveFontSize(context, 10),
+                fontSize: 10.sp,
                 height: 1.5,
               ),
             ),
@@ -281,17 +299,17 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
 
   Widget _buildQuestionWidget() {
     final questionOrganism = _currentQuestion!;
-    
+
     if (usesImageQuestion) {
-      final bool isSilhouetteQuizType = 
-          widget.quizType == QuizType.silhouetteToName || 
+      final bool isSilhouetteQuizType =
+          widget.quizType == QuizType.silhouetteToName ||
           widget.quizType == QuizType.silhouetteToScientific;
-          
+
       bool displaySilhouette = isSilhouetteQuizType;
       if (_isAnswered && _selectedAnswer == _correctAnswer) {
-          displaySilhouette = false;
+        displaySilhouette = false;
       }
-      
+
       return Column(
         children: [
           Padding(
@@ -341,21 +359,26 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
     if (_currentQuestion == null) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('QUIZ'), 
+          title: const Text('QUIZ'),
           backgroundColor: Colors.transparent,
           elevation: 0,
           titleTextStyle: AppTextStyles.headline(context, baseSize: 16),
         ),
         backgroundColor: AppColors.secondaryButtonColor,
         body: Center(
-          child: Text('NOT ENOUGH ANIMALS DISCOVERED.', 
+          child: Text(
+            'NOT ENOUGH ANIMALS DISCOVERED.',
             textAlign: TextAlign.center,
-              style: AppTextStyles.body(context, baseSize: 12, color: AppColors.wrongRed),
+            style: AppTextStyles.body(
+              context,
+              baseSize: 12,
+              color: AppColors.wrongRed,
+            ),
           ),
         ),
       );
     }
-    
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -371,7 +394,7 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
         decoration: BoxDecoration(
           color: AppColors.secondaryButtonColor,
           image: DecorationImage(
-            image: const AssetImage('assets/biomes/savanna-bg.png'), 
+            image: const AssetImage('assets/biomes/savanna-bg.png'),
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(
               Colors.black.withOpacity(0.7),
@@ -384,11 +407,8 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
               children: [
-                Expanded(
-                  flex: 3,
-                  child: Center(child: _buildQuestionWidget()),
-                ),
-                
+                Expanded(flex: 3, child: Center(child: _buildQuestionWidget())),
+
                 Expanded(
                   flex: 4,
                   child: GridView.count(
@@ -396,7 +416,9 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     childAspectRatio: 1.5,
-                    children: _currentOptions!.map((org) => _buildAnswerButton(org)).toList(),
+                    children: _currentOptions!
+                        .map((org) => _buildAnswerButton(org))
+                        .toList(),
                   ),
                 ),
 
@@ -404,11 +426,16 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
                   Padding(
                     padding: const EdgeInsets.only(bottom: 24),
                     child: Text(
-                      _selectedAnswer == _correctAnswer ? 'EXCELLENT! + XP' : 'WRONG! THE ANSWER IS:\n$_correctAnswer'.toUpperCase(),
+                      _selectedAnswer == _correctAnswer
+                          ? 'EXCELLENT! + XP'
+                          : 'WRONG! THE ANSWER IS:\n$_correctAnswer'
+                                .toUpperCase(),
                       textAlign: TextAlign.center,
                       style: AppTextStyles.small(
                         context,
-                        color: _selectedAnswer == _correctAnswer ? AppColors.correctGreen : AppColors.wrongRed,
+                        color: _selectedAnswer == _correctAnswer
+                            ? AppColors.correctGreen
+                            : AppColors.wrongRed,
                       ),
                     ),
                   ),
@@ -447,16 +474,21 @@ class __QuizSpriteDisplayState extends State<_QuizSpriteDisplay> {
     super.initState();
     _determineImageSource();
   }
-  
+
   String _getLocalPath() {
-    final fileName = widget.organism.name.toLowerCase().replaceAll(' ', '_').replaceAll('-', '_').replaceAll("'", '_');
+    final fileName = widget.organism.name
+        .toLowerCase()
+        .replaceAll(' ', '_')
+        .replaceAll('-', '_')
+        .replaceAll("'", '_');
     return 'assets/sprites/$fileName.png';
   }
-  
+
   @override
   void didUpdateWidget(covariant _QuizSpriteDisplay oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.organism.name != widget.organism.name || oldWidget.showSilhouette != widget.showSilhouette) {
+    if (oldWidget.organism.name != widget.organism.name ||
+        oldWidget.showSilhouette != widget.showSilhouette) {
       _imageSourceType = null;
       _determineImageSource();
     }
@@ -464,7 +496,7 @@ class __QuizSpriteDisplayState extends State<_QuizSpriteDisplay> {
 
   Future<void> _determineImageSource() async {
     final localPath = _getLocalPath();
-    
+
     try {
       await rootBundle.load(localPath);
       if (mounted) {
@@ -488,49 +520,53 @@ class __QuizSpriteDisplayState extends State<_QuizSpriteDisplay> {
     if (_imageSourceType == null) {
       return SizedBox(
         height: widget.height,
-        child: const Center(child: CircularProgressIndicator(color: Colors.white)),
+        child: const Center(
+          child: CircularProgressIndicator(color: Colors.white),
+        ),
       );
     }
-    
+
     final String source = _imagePath;
     Widget imageWidget;
-    
+
     if (widget.showSilhouette) {
-      imageWidget = buildSilhouetteSprite( 
-        imageUrl: source, 
+      imageWidget = buildSilhouetteSprite(
+        imageUrl: source,
         silhouetteColor: Colors.black,
         organismName: widget.organism.name,
-        height: widget.height, 
-        width: widget.width, 
+        height: widget.height,
+        width: widget.width,
         fit: BoxFit.contain,
       );
     } else {
       if (_imageSourceType == 'local') {
         imageWidget = Image.asset(
-          source, 
-          height: widget.height, 
-          width: widget.width, 
+          source,
+          height: widget.height,
+          width: widget.width,
           fit: BoxFit.contain,
         );
       } else {
         imageWidget = Image.network(
-          source, 
-          height: widget.height, 
-          width: widget.width, 
+          source,
+          height: widget.height,
+          width: widget.width,
           fit: BoxFit.contain,
           loadingBuilder: (context, child, loadingProgress) {
             if (loadingProgress == null) return child;
             return SizedBox(
               height: widget.height,
-              child: const Center(child: CircularProgressIndicator(color: Colors.white)),
+              child: const Center(
+                child: CircularProgressIndicator(color: Colors.white),
+              ),
             );
           },
-          errorBuilder: (context, error, stackTrace) => 
-            const Icon(Icons.broken_image, color: Colors.red, size: 80),
+          errorBuilder: (context, error, stackTrace) =>
+              const Icon(Icons.broken_image, color: Colors.red, size: 80),
         );
       }
     }
-    
+
     return Container(
       height: widget.height,
       width: widget.width,
@@ -538,10 +574,7 @@ class __QuizSpriteDisplayState extends State<_QuizSpriteDisplay> {
       decoration: BoxDecoration(
         color: Colors.black.withOpacity(0.4),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: AppColors.highlightColor, 
-          width: 2,
-        ),
+        border: Border.all(color: AppColors.highlightColor, width: 2),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.5),
