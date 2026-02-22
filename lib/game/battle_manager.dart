@@ -273,15 +273,26 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       _getStats(this.opponentTeam[currentOpponentIndex].id).revealedMoves,
     );
 
+    // Fix 2: Guard against isRogueMode construction-site mismatch.
+    // If this fires, the caller forgot to pass isRogueMode: true, which would
+    // cause the health setter to ratio-scale instead of using raw HP values.
+    assert(
+      player.isRogueMode == isRogueMode,
+      '[BattleManager] CRITICAL: player.isRogueMode mismatch! '
+      'HP will be scaled incorrectly. Ensure isRogueMode is forwarded correctly.',
+    );
+    assert(
+      opponent.isRogueMode == isRogueMode,
+      '[BattleManager] CRITICAL: opponent.isRogueMode mismatch! '
+      'HP will be scaled incorrectly. Ensure isRogueMode is forwarded correctly.',
+    );
+
     // Initialize move lists
     playerMoves = _getOrganismMoves(playerOrganism);
     opponentMoves = _getOrganismMoves(this.opponentTeam[currentOpponentIndex]);
 
-    // If Rogue-like mode, trust the opponent's current health/stamina/status
-    // Otherwise, for wild battles/arena, reset them to full?
-    // Actually, capturing generic wild animals usually spawns a fresh one.
-    // But for Rogue-like, we pass the specific instance from UserState.
-    // So we should respect its current state.
+    // If Rogue-like mode, trust the opponent's current health/stamina/status.
+    // For wild battles/arena, ensure a clean slate.
     if (isRogueMode) {
       opponent.health = opponentOrganism.currentHealth;
       if (opponentOrganism.statusEffects.isNotEmpty) {
@@ -289,10 +300,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       } else {
         opponent.clearStatusEffects();
       }
-      // Ensure stamina is also synced if we track it on opponent (we don't effectively yet for AI)
     } else {
-      // Standard wild/arena: ensure full health start
-      // (Though usually spawn() creates them full health anyway)
+      // Standard wild/arena: ensure full health start.
       opponent.health = opponent.maxHealth;
     }
 
@@ -307,6 +316,16 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   }
 
   Future<void> _initializeSequence(String? biomeName) async {
+    // Fix 4: Restore all move stamina at the start of every non-rogue battle.
+    // Rogue mode intentionally carries depleted stamina between encounters.
+    // Randoms mode uses spawn() so stamina is always fresh.
+    // VS AI uses the player's saved team which may have depleted stamina.
+    if (!isRogueMode) {
+      for (final member in playerTeam) {
+        member.restoreAllStamina();
+      }
+    }
+
     _addToLog('A wild ${opponent.name} appeared! Go, ${player.name}!');
 
     // Start battle music
@@ -686,13 +705,14 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         }
       }
 
-      // Reset flags for a new complete turn cycle
+      // Reset per-turn damage flags for a new complete turn cycle.
+      // Fix 1: opponentJustSwitched / playerJustSwitched are NOT reset here.
+      // They must survive until _finalizeTurn clears them, otherwise the
+      // opponent-turn skip check (lines below) sees a stale false value.
       playerMovedThisTurn = false;
       opponentMovedThisTurn = false;
       player.tookDamageThisTurn = false;
       opponent.tookDamageThisTurn = false;
-      opponentJustSwitched = false;
-      playerJustSwitched = false;
     } else {
       // If resuming, we need to know who was supposed to go first originally,
       // or simply rely on the moved flags.
@@ -3056,6 +3076,29 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     if (currentState != BattleState.waitingForInput && !isForced) return;
     if (index < 0 || index >= playerTeam.length) return;
     if (index == currentPlayerIndex) return;
+
+    // Fix 3: Deadlock guard for forced switches.
+    // If the UI sends an invalid (fainted) target while forced, either redirect
+    // to a healthy fallback or trigger a loss rather than hanging forever.
+    if (isForced && playerTeam[index].currentHealth <= 0) {
+      final fallback = playerTeam.indexWhere(
+        (org) =>
+            org.currentHealth > 0 &&
+            playerTeam.indexOf(org) != currentPlayerIndex,
+      );
+      if (fallback == -1) {
+        // No healthy animals remain — force a loss.
+        _result = BattleResult.loss;
+        _addToLog('Your whole team is defeated. You blacked out!');
+        _cleanupStatusEffects();
+        currentState = BattleState.battleEnd;
+        notifyListeners();
+        return;
+      }
+      // Redirect to the first healthy animal.
+      return switchAnimal(fallback);
+    }
+
     if (playerTeam[index].currentHealth <= 0) return;
 
     // Arena Trap Check (Prevention)
@@ -3165,9 +3208,13 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         });
       }
 
-      // Reset flags for next turn
+      // Reset flags for next turn.
+      // Fix 1: Clear switch flags here (end of turn) not at start of processPlayerAction,
+      // so they remain valid throughout the entire turn execution.
       playerMovedThisTurn = false;
       opponentMovedThisTurn = false;
+      opponentJustSwitched = false;
+      playerJustSwitched = false;
       isResumingTurn = false;
       currentTurnOpponentMove = null;
 

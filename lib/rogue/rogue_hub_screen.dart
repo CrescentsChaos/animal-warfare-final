@@ -4,6 +4,7 @@ import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/models/captured_organism.dart';
 import 'package:animal_warfare/battle_screen.dart';
 import 'package:animal_warfare/rogue/move_manage_screen.dart';
+import 'package:animal_warfare/data/biome_data.dart';
 
 class RogueHubScreen extends StatelessWidget {
   const RogueHubScreen({super.key});
@@ -14,13 +15,17 @@ class RogueHubScreen extends StatelessWidget {
     final rogueState = userState.currentUser?.rogueLikeState;
 
     if (rogueState == null || !rogueState.isActive) {
-      // Fallback if state is invalid
-      Future.microtask(() => Navigator.pop(context));
+      // Gracefully redirect to the previous screen once the frame is settled.
+      // Using addPostFrameCallback avoids "setState during build" warnings.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (context.mounted) Navigator.pop(context);
+      });
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    final String biomeName = rogueState.currentBiome ?? 'Forest';
-    final Color themeColor = _scanBiomeColor(biomeName);
+    final String biomeName = rogueState.currentBiome ?? 'Jungle';
+    // Fix 4: Delegate colour lookup to the central BiomeData registry.
+    final Color themeColor = BiomeData.colorFor(biomeName);
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -71,7 +76,7 @@ class RogueHubScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     SizedBox(
-                      height: 140, // Height for team cards
+                      height: 140,
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
                         itemCount: rogueState.team.length,
@@ -164,10 +169,7 @@ class RogueHubScreen extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (ctx) => MoveManageScreen(
-              organismIndex: index,
-              // We pass the rogue team index
-            ),
+            builder: (ctx) => MoveManageScreen(organismIndex: index),
           ),
         );
       },
@@ -182,7 +184,6 @@ class RogueHubScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Sprite could go here if available via asset
             Image.asset(
               'assets/sprites/${member.baseOrganism.name.toLowerCase().replaceAll(' ', '_').replaceAll('-', '_').replaceAll("'", "_")}.png',
               width: 48,
@@ -271,49 +272,22 @@ class RogueHubScreen extends StatelessWidget {
         .push(
           MaterialPageRoute(
             builder: (context) {
-              // If we are at encounter 0, it means we just started or changed floors
-              // The opponents are already generated in userState.incrementRogueFloor/advanceToNextFloor
-
               return BattleScreen(
-                playerOrganism: rogue.team[0], // First member starts
-                opponentOrganism: rogue
-                    .opponentTeam![0], // Match logic matches logic in USerState
+                playerOrganism: rogue.team[0],
+                opponentOrganism: rogue.opponentTeam![0],
                 biomeName: rogue.currentBiome ?? 'Forest',
                 playerTeam: rogue.team,
                 opponentTeam: rogue.opponentTeam,
                 battleTitle:
                     'Rogue Floor ${rogue.floor} - ${rogue.encounterIndex + 1}/5',
-                isArenaBattle: rogue.encounterIndex == 4, // Boss logic
+                isArenaBattle: rogue.encounterIndex == 4,
                 isRogueMode: true,
               );
             },
           ),
         )
         .then((_) {
-          // Refresh state when coming back?
-          // State is provided cleanly via Provider, so UI updates automatically if UserState notifies listeners.
+          // Provider-driven state updates automatically via notifyListeners().
         });
-  }
-
-  Color _scanBiomeColor(String biome) {
-    switch (biome.toLowerCase()) {
-      case 'forest':
-        return Colors.greenAccent;
-      case 'desert':
-        return Colors.orangeAccent;
-      case 'ocean':
-        return Colors.cyanAccent;
-      case 'mountain':
-        return Colors.grey;
-      case 'volcano':
-        return Colors.redAccent;
-      case 'swamp':
-        return Colors.purpleAccent;
-      case 'plains':
-        return Colors.lightGreenAccent;
-      // Add more as needed
-      default:
-        return Colors.white;
-    }
   }
 }

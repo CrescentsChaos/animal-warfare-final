@@ -11,22 +11,16 @@ class BiomeSelectScreen extends StatefulWidget {
 }
 
 class _BiomeSelectScreenState extends State<BiomeSelectScreen> {
-  List<String>? _options;
+  late List<String> _options;
   bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _generateOptions();
-    });
-  }
-
-  void _generateOptions() {
+    // generateBiomeOptions is synchronous — call directly to avoid
+    // the one-frame CircularProgressIndicator flash ("ghost" state).
     final userState = Provider.of<UserState>(context, listen: false);
-    setState(() {
-      _options = userState.generateBiomeOptions();
-    });
+    _options = userState.generateBiomeOptions();
   }
 
   Future<void> _selectBiome(String biome) async {
@@ -36,25 +30,15 @@ class _BiomeSelectScreenState extends State<BiomeSelectScreen> {
     await userState.advanceToNextFloor(biome);
 
     if (!mounted) return;
-    // Replace this screen with RogueHubScreen (clearing back stack up to here)
-    Navigator.of(context).pushAndRemoveUntil(
+    // Use pushReplacement instead of pushAndRemoveUntil so the Main Menu
+    // (and any screens below BiomeSelectScreen) remain in the nav stack.
+    Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (ctx) => const RogueHubScreen()),
-      (route) => false, // Clears everything? Maybe just pushReplacement.
-      // Actually RogueHub is the "home" of the run.
-      // User might want to go back to main menu?
-      // Let's just pushReplacement for now.
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_options == null) {
-      return const Scaffold(
-        backgroundColor: Colors.black,
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
@@ -91,7 +75,7 @@ class _BiomeSelectScreenState extends State<BiomeSelectScreen> {
                 const SizedBox(height: 48),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: _options!.map((biome) {
+                  children: _options.map((biome) {
                     return Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12.0),
                       child: _buildBiomeCard(biome),

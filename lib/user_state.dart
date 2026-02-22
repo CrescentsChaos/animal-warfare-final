@@ -353,7 +353,7 @@ class UserState with ChangeNotifier {
       int newEncounter = state.encounterIndex + 1;
 
       final newOpponents = _generateRogueOpponentTeam(
-        state.currentBiome ?? 'Forest',
+        state.currentBiome ?? 'Jungle',
         newEncounter == 4
             ? (2 + Random().nextInt(4)).clamp(2, 5)
             : 1, // Boss is at index 4 (5th fight)
@@ -378,7 +378,29 @@ class UserState with ChangeNotifier {
         .toList();
 
     if (allBiomes.isEmpty) {
-      allBiomes = ['Jungle', 'Desert', 'Savanna', 'River', 'Ocean', 'Mountain'];
+      allBiomes = [
+        'Volcano',
+        'Cave',
+        'Coastal',
+        'Coral Reef',
+        'Deep Sea',
+        'Frozen Ocean',
+        'Kelp Forest',
+        'Swamp',
+        'Lake',
+        'Mangrove',
+        'Polar',
+        'Rainforest',
+        'Taiga',
+        'Tundra',
+        'Urban',
+        'Jungle',
+        'Desert',
+        'Savanna',
+        'River',
+        'Ocean',
+        'Mountain',
+      ];
     }
 
     final current = _currentUser?.rogueLikeState.currentBiome;
@@ -491,7 +513,29 @@ class UserState with ChangeNotifier {
         .toSet()
         .toList();
     if (biomes.isEmpty) {
-      biomes = ['Jungle', 'Desert', 'Savanna', 'River', 'Ocean', 'Mountain'];
+      biomes = [
+        'Volcano',
+        'Cave',
+        'Coastal',
+        'Coral Reef',
+        'Deep Sea',
+        'Frozen Ocean',
+        'Kelp Forest',
+        'Swamp',
+        'Lake',
+        'Mangrove',
+        'Polar',
+        'Rainforest',
+        'Taiga',
+        'Tundra',
+        'Urban',
+        'Jungle',
+        'Desert',
+        'Savanna',
+        'River',
+        'Ocean',
+        'Mountain',
+      ];
     }
     return biomes[Random().nextInt(biomes.length)];
   }

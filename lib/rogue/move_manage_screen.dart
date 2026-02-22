@@ -91,7 +91,15 @@ class _MoveManageScreenState extends State<MoveManageScreen> {
     for (final m in _selectedMoves) {
       if (!newStamina.containsKey(m)) {
         final moveData = Move.findByName(m);
-        newStamina[m] = moveData?.stamina ?? 20;
+        if (moveData == null) {
+          // Move name not found in the database — could be a typo or renamed move.
+          // Skip rather than writing a corrupt default stamina value.
+          debugPrint(
+            '[MoveManage] WARNING: Move "$m" not found in database – skipping stamina entry',
+          );
+          continue;
+        }
+        newStamina[m] = moveData.stamina;
       }
     }
 
