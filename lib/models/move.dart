@@ -44,6 +44,7 @@ import 'package:flutter/material.dart';
 import 'package:animal_warfare/models/elemental_type.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'dart:convert';
+import 'package:animal_warfare/models/weather.dart';
 
 // Enum for the type of effect a move can apply
 enum MoveEffectType {
@@ -134,6 +135,25 @@ class MoveEffect {
       chance: json['chance'] as int? ?? 100,
       hpCostPercent: (json['hpCostPercent'] as num?)?.toDouble() ?? 0.0,
     );
+  }
+
+  // Helper to map string stat to Weather enum
+  Weather get weather {
+    switch (stat.toLowerCase()) {
+      case 'rain':
+        return Weather.rain;
+      case 'sun':
+      case 'sunny':
+        return Weather.sunny;
+      case 'sandstorm':
+        return Weather.sandstorm;
+      case 'hail':
+      case 'snow':
+      case 'snowstorm':
+        return Weather.hail;
+      default:
+        return Weather.none;
+    }
   }
 }
 

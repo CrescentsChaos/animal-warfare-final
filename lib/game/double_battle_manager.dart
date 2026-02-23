@@ -10,6 +10,10 @@ import 'package:animal_warfare/models/captured_organism.dart';
 import 'package:animal_warfare/models/move.dart';
 import 'package:animal_warfare/models/elemental_type.dart';
 import 'package:animal_warfare/models/status_effect.dart';
+import 'package:animal_warfare/models/weather.dart';
+import 'package:animal_warfare/models/terrain.dart';
+import 'package:animal_warfare/game/ai_decision_engine.dart';
+import 'package:animal_warfare/game/player_history.dart';
 import 'package:animal_warfare/game/battle_models.dart';
 import 'package:animal_warfare/services/audio_service.dart';
 
@@ -98,6 +102,9 @@ class DoubleBattleManager extends ChangeNotifier {
 
   final bool isRogueMode;
   final bool isTesting;
+
+  final PlayerHistory playerHistory = PlayerHistory();
+  TeamArchetype opponentArchetype = TeamArchetype.balanced;
   final AudioService _audio = AudioService.instance;
   bool _disposed = false;
 
@@ -122,8 +129,12 @@ class DoubleBattleManager extends ChangeNotifier {
     required List<CapturedOrganism> opponentTeam,
     this.isRogueMode = false,
     this.isTesting = false,
+    TeamArchetype? opponentArchetype,
   }) : playerTeam = List.from(playerTeam),
        opponentTeam = List.from(opponentTeam) {
+    if (opponentArchetype != null) {
+      this.opponentArchetype = opponentArchetype;
+    }
     _init();
   }
 
@@ -251,28 +262,126 @@ class DoubleBattleManager extends ChangeNotifier {
   }
 
   List<SlotAction> _pickAiActions() {
-    final rng = Random();
     final actions = <SlotAction>[];
 
+    // Context preparation
+    final aiTeamBO = opponentTeam
+        .map(
+          (org) =>
+              BattleOrganism(org, isRogueMode: isRogueMode, isOpponent: true),
+        )
+        .toList();
+    final playerTeamBO = playerTeam
+        .map(
+          (org) =>
+              BattleOrganism(org, isRogueMode: isRogueMode, isOpponent: false),
+        )
+        .toList();
+
     for (final aiSlot in [opponentSlot1, opponentSlot2]) {
-      if (aiSlot == null) continue;
+      if (aiSlot == null || aiSlot.health <= 0) continue;
+
       final moves = _getMovesFor(aiSlot);
-      final move = moves[rng.nextInt(moves.length)];
-      final target = _randomValidTargetForAi(move);
-      actions.add(SlotAction.move(move, target));
+      double bestScore = -double.infinity;
+      SlotAction? bestAction;
+
+      for (final move in moves) {
+        final targets = _getPossibleTargetsForAi(move);
+        for (final target in targets) {
+          final defender = _resolveTarget(target);
+          if (defender == null && move.targetCount != MoveTargetCount.multiple)
+            continue;
+
+          // Evaluation target for multi-target moves (pick the most relevant one, typically slot 1 or 2)
+          final evaluationDefender =
+              defender ?? playerSlot1 ?? playerSlot2 ?? playerTeamBO[0];
+
+          final damageResult = calculateDamage(
+            aiSlot,
+            evaluationDefender,
+            move,
+            multiTargetPenalty: move.targetCount == MoveTargetCount.multiple
+                ? 0.75
+                : 1.0,
+          );
+
+          final score = AIDecisionEngine.calculateMoveScore(
+            move: move,
+            attacker: aiSlot,
+            defender: evaluationDefender,
+            damageResult: damageResult,
+            targetHazards: const [], // TODO: Implement hazards in Doubles
+            currentEffect: const WeatherEffect(weather: Weather.none),
+            currentTerrain: const TerrainEffect(terrain: Terrain.none),
+            aiTeam: aiTeamBO,
+            playerTeam: playerTeamBO,
+            playerHistory: playerHistory,
+            archetype: opponentArchetype,
+          );
+
+          if (score > bestScore) {
+            bestScore = score;
+            bestAction = SlotAction.move(move, target);
+          }
+        }
+      }
+
+      if (bestAction != null) {
+        actions.add(bestAction);
+      } else if (moves.isNotEmpty) {
+        // Fallback to first move if no score found
+        actions.add(SlotAction.move(moves[0], DoubleTarget.playerSlot1));
+      }
     }
     return actions;
   }
 
-  DoubleTarget _randomValidTargetForAi(Move move) {
+  List<DoubleTarget> _getPossibleTargetsForAi(Move move) {
     if (move.targetCount == MoveTargetCount.multiple) {
-      return DoubleTarget.allOpponents;
+      return [DoubleTarget.allOpponents];
     }
     final alive = <DoubleTarget>[];
-    if (playerSlot1 != null) alive.add(DoubleTarget.playerSlot1);
-    if (playerSlot2 != null) alive.add(DoubleTarget.playerSlot2);
-    if (alive.isEmpty) return DoubleTarget.playerSlot1;
-    return alive[Random().nextInt(alive.length)];
+    if (playerSlot1 != null && playerSlot1!.health > 0)
+      alive.add(DoubleTarget.playerSlot1);
+    if (playerSlot2 != null && playerSlot2!.health > 0)
+      alive.add(DoubleTarget.playerSlot2);
+    return alive.isNotEmpty ? alive : [DoubleTarget.playerSlot1];
+  }
+
+  DamageResult calculateDamage(
+    BattleOrganism attacker,
+    BattleOrganism defender,
+    Move move, {
+    double multiTargetPenalty = 1.0,
+  }) {
+    if (move.baseDamage == 0) return const DamageResult(0, 1.0, false);
+
+    final atkStat = move.category == MoveCategory.special
+        ? attacker.currentPower
+        : attacker.currentAttack;
+    final defStat = move.category == MoveCategory.special
+        ? defender.currentResistance
+        : defender.currentDefense;
+
+    double dmg =
+        ((2 * attacker.level / 5 + 2) * move.baseDamage * atkStat / defStat) /
+            50 +
+        2;
+
+    // Type effectiveness
+    double typeMod = 1.0;
+    for (final defType in defender.types) {
+      typeMod *= TypeChart.getEffectiveness(move.type, defType);
+    }
+    dmg *= typeMod;
+
+    // STAB
+    if (attacker.types.contains(move.type)) dmg *= 1.5;
+
+    // Multi-target penalty
+    dmg *= multiTargetPenalty;
+
+    return DamageResult(dmg.round().clamp(1, 99999), typeMod, false);
   }
 
   List<Move> _getMovesFor(BattleOrganism org) {
@@ -383,6 +492,9 @@ class DoubleBattleManager extends ChangeNotifier {
     final attacker = entry.attacker;
 
     if (entry.action.type == SlotActionType.switchMon) {
+      if (entry.isPlayer) {
+        playerHistory.recordSwitch(entry.action.switchBenchIndex!);
+      }
       final benchIdx = entry.action.switchBenchIndex!;
       final newOrg = BattleOrganism(playerTeam[benchIdx]);
       playerBench.remove(benchIdx);
@@ -409,6 +521,10 @@ class DoubleBattleManager extends ChangeNotifier {
 
     final move = entry.action.move!;
     final target = entry.action.target!;
+
+    if (entry.isPlayer) {
+      playerHistory.recordMove(move);
+    }
 
     attacker.organism.moveStamina[move.name] =
         ((attacker.organism.moveStamina[move.name] ?? move.stamina) - 1).clamp(
@@ -495,17 +611,14 @@ class DoubleBattleManager extends ChangeNotifier {
     }
 
     // ── Damage calculation ──
-    final atkStat = move.category == MoveCategory.special
-        ? attacker.currentPower
-        : attacker.currentAttack;
-    final defStat = move.category == MoveCategory.special
-        ? defender.currentResistance
-        : defender.currentDefense;
-
-    double dmg =
-        ((2 * attacker.level / 5 + 2) * move.baseDamage * atkStat / defStat) /
-            50 +
-        2;
+    final damageResult = calculateDamage(
+      attacker,
+      defender,
+      move,
+      multiTargetPenalty: multiTargetPenalty,
+    );
+    double dmg = damageResult.damage.toDouble();
+    double typeMod = damageResult.typeMultiplier;
 
     // Crit
     final critRoll = Random().nextDouble() * 100;
@@ -522,19 +635,6 @@ class DoubleBattleManager extends ChangeNotifier {
 
     // Random variance [0.85–1.0]
     dmg *= 0.85 + (Random().nextDouble() * 0.15);
-
-    // Type effectiveness
-    double typeMod = 1.0;
-    for (final defType in defender.types) {
-      typeMod *= TypeChart.getEffectiveness(move.type, defType);
-    }
-    dmg *= typeMod;
-
-    // STAB
-    if (attacker.types.contains(move.type)) dmg *= 1.5;
-
-    // Multi-target penalty (0.75× in doubles)
-    dmg *= multiTargetPenalty;
 
     // Apply damage
     final finalDmg = dmg.round().clamp(1, 99999);
@@ -795,6 +895,7 @@ class DoubleBattleManager extends ChangeNotifier {
 
   /// Called from UI when the player picks a bench mon to send into [slotNumber].
   Future<void> confirmSwitch(int benchTeamIndex, int slotNumber) async {
+    playerHistory.recordSwitch(benchTeamIndex);
     final bo = BattleOrganism(playerTeam[benchTeamIndex]);
     playerBench.remove(benchTeamIndex);
 

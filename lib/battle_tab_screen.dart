@@ -3,14 +3,14 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:provider/provider.dart';
 import 'package:animal_warfare/models/organism.dart';
 import 'package:animal_warfare/models/captured_organism.dart';
-import 'package:animal_warfare/models/talisman.dart';
 import 'package:animal_warfare/battle_screen.dart';
 import 'package:animal_warfare/double_battle_screen.dart';
 import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/theme.dart';
-import 'package:animal_warfare/game/battle_manager.dart'; // Import BattleResult
+import 'package:animal_warfare/game/battle_manager.dart';
+import 'package:animal_warfare/game/archetype_teams.dart';
+import 'package:animal_warfare/game/ai_decision_engine.dart';
 import 'dart:convert';
-import 'dart:math';
 
 class BattleTabScreen extends StatefulWidget {
   const BattleTabScreen({super.key});
@@ -49,39 +49,23 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
     }
   }
 
-  List<CapturedOrganism> _generateRandomTeam({bool withTalismans = false}) {
-    if (_allOrganisms.isEmpty) return [];
-
-    final random = Random();
-    final List<CapturedOrganism> team = [];
-
-    for (int i = 0; i < 5; i++) {
-      final randomOrganism =
-          _allOrganisms[random.nextInt(_allOrganisms.length)];
-      final captured = CapturedOrganism.spawn(randomOrganism);
-
-      // Randomly assign talisman if requested
-      // Randomly assign talisman if requested (100% chance for opponents now)
-      if (withTalismans) {
-        if (Talisman.allTalismans.isNotEmpty) {
-          final randomTalisman = Talisman
-              .allTalismans[random.nextInt(Talisman.allTalismans.length)];
-          team.add(captured.copyWith(equippedTalisman: randomTalisman));
-        } else {
-          team.add(captured);
-        }
-      } else {
-        team.add(captured);
-      }
+  ArchetypeResult _generateRandomTeam({bool withTalismans = false}) {
+    if (_allOrganisms.isEmpty) {
+      return ArchetypeResult(archetype: null, archetypeName: 'Chaos', team: []);
     }
 
-    return team;
+    return ArchetypeTeamBuilder.build(
+      _allOrganisms,
+      withTalismans: withTalismans,
+      allowChaos: true,
+    );
   }
 
   void _startBattle({
     required List<CapturedOrganism> playerTeam,
     required List<CapturedOrganism> opponentTeam,
     required String battleTitle,
+    TeamArchetype? opponentArchetype,
   }) async {
     if (playerTeam.isEmpty || opponentTeam.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -101,9 +85,18 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
           opponentTeam: opponentTeam,
           battleTitle: battleTitle,
           isArenaBattle: true,
+          opponentArchetype: opponentArchetype,
         ),
       ),
     );
+
+    // Post-battle healing for non-Rogue modes
+    if (mounted && battleTitle != 'Rogue-like') {
+      for (final organism in playerTeam) {
+        organism.currentHealth = organism.maxHealth;
+        organism.restoreAllStamina();
+      }
+    }
 
     // Handle battle result if needed
     if (result != null && mounted) {
@@ -114,8 +107,11 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
   }
 
   void _startDoublesBattle() async {
-    final playerTeam = _generateRandomTeam();
-    final opponentTeam = _generateRandomTeam(withTalismans: true);
+    final playerRes = _generateRandomTeam();
+    final opponentRes = _generateRandomTeam(withTalismans: true);
+
+    final playerTeam = playerRes.team;
+    final opponentTeam = opponentRes.team;
 
     if (playerTeam.isEmpty || opponentTeam.isEmpty) {
       if (mounted) {
@@ -133,9 +129,18 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
           opponentTeam: opponentTeam,
           biomeName: 'Rainforest', // Default biome for now
           battleTitle: 'Random Doubles',
+          opponentArchetype: opponentRes.archetype,
         ),
       ),
     );
+
+    // Post-battle healing for non-Rogue modes
+    if (mounted) {
+      for (final organism in playerTeam) {
+        organism.currentHealth = organism.maxHealth;
+        organism.restoreAllStamina();
+      }
+    }
 
     // Handle battle result if needed
     if (result != null && mounted) {}
@@ -149,8 +154,11 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
       // Continue existing run
       final playerTeam = user.rogueLikeState.team;
       var opponentTeam = user.rogueLikeState.opponentTeam ?? [];
+      TeamArchetype? archetype;
       if (opponentTeam.isEmpty) {
-        opponentTeam = _generateRandomTeam(withTalismans: true);
+        final res = _generateRandomTeam(withTalismans: true);
+        opponentTeam = res.team;
+        archetype = res.archetype;
       }
 
       await Navigator.of(context).push(
@@ -164,6 +172,7 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
             battleTitle: 'Rogue Floor ${user.rogueLikeState.floor}',
             isArenaBattle: true,
             isRogueMode: true,
+            opponentArchetype: archetype,
           ),
         ),
       );
@@ -179,9 +188,12 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
       if (updatedUser == null || !updatedUser.rogueLikeState.isActive) return;
 
       final playerTeam = updatedUser.rogueLikeState.team;
+      final opponentRes = _generateRandomTeam(withTalismans: true);
       final opponentTeam =
-          updatedUser.rogueLikeState.opponentTeam ??
-          _generateRandomTeam(withTalismans: true);
+          updatedUser.rogueLikeState.opponentTeam ?? opponentRes.team;
+      final archetype = updatedUser.rogueLikeState.opponentTeam != null
+          ? null
+          : opponentRes.archetype;
 
       await Navigator.of(context).push(
         MaterialPageRoute(
@@ -194,6 +206,7 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
             battleTitle: 'Rogue Floor 1',
             isArenaBattle: false,
             isRogueMode: true,
+            opponentArchetype: archetype,
           ),
         ),
       );
@@ -428,12 +441,13 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
                     }
 
                     final playerTeam = user.teamOrganisms;
-                    final aiTeam = _generateRandomTeam(withTalismans: true);
+                    final aiRes = _generateRandomTeam(withTalismans: true);
 
                     _startBattle(
                       playerTeam: playerTeam,
-                      opponentTeam: aiTeam,
+                      opponentTeam: aiRes.team,
                       battleTitle: 'vs AI',
+                      opponentArchetype: aiRes.archetype,
                     );
                   },
                 ),
@@ -467,13 +481,14 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
                   icon: Icons.shuffle,
                   color: const Color(0xFF8B0000).withOpacity(0.8),
                   onTap: () {
-                    final playerTeam = _generateRandomTeam(withTalismans: true);
-                    final aiTeam = _generateRandomTeam(withTalismans: true);
+                    final playerRes = _generateRandomTeam(withTalismans: true);
+                    final aiRes = _generateRandomTeam(withTalismans: true);
 
                     _startBattle(
-                      playerTeam: playerTeam,
-                      opponentTeam: aiTeam,
+                      playerTeam: playerRes.team,
+                      opponentTeam: aiRes.team,
                       battleTitle: 'Randoms',
+                      opponentArchetype: aiRes.archetype,
                     );
                   },
                 ),

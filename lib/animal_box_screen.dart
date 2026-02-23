@@ -10,6 +10,7 @@ import 'package:animal_warfare/models/talisman.dart';
 import 'package:animal_warfare/local_auth_service.dart';
 import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/theme.dart';
+import 'package:animal_warfare/widgets/item_icon.dart';
 import 'package:animal_warfare/models/nature.dart';
 import 'package:animal_warfare/models/elemental_type.dart';
 import 'dart:async';
@@ -675,17 +676,28 @@ class _AnimalCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        captured.equippedTalisman != null
-                            ? 'Item: ${captured.equippedTalisman!.name}'
-                            : 'No Item',
-                        style: TextStyle(
-                          color: captured.equippedTalisman != null
-                              ? AppColors.highlightColor
-                              : Colors.grey[500],
-                          fontSize: 9,
-                          fontFamily: 'PressStart2P',
-                        ),
+                      Row(
+                        children: [
+                          if (captured.equippedTalisman != null) ...[
+                            ItemIcon(
+                              itemName: captured.equippedTalisman!.name,
+                              size: 14,
+                            ),
+                            const SizedBox(width: 4),
+                          ],
+                          Text(
+                            captured.equippedTalisman != null
+                                ? captured.equippedTalisman!.name
+                                : 'No Item',
+                            style: TextStyle(
+                              color: captured.equippedTalisman != null
+                                  ? AppColors.highlightColor
+                                  : Colors.grey[500],
+                              fontSize: 9,
+                              fontFamily: 'PressStart2P',
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 8),
                       _buildActions(context),

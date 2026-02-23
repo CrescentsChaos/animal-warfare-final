@@ -80,10 +80,9 @@ class BattleOrganism {
     isChoiceLocked = false;
     lockedMove = null;
     isProtected = false;
-    rechargeTurn = false;
+    mustRecharge = false;
     chargeMove = null;
     chargingMove = null;
-    mustRecharge = false;
     protectSuccessionCount = 0;
     tookDamageThisTurn = false;
     isInvulnerable = false;
@@ -140,7 +139,7 @@ class BattleOrganism {
   // New flags for complex moves
   bool isInvulnerable = false;
   bool isProtected = false;
-  bool rechargeTurn = false; // For Hyper Beam etc
+  // Removed rechargeTurn in favor of mustRecharge
   Move? chargeMove; // For Solar Beam etc
   String? chargeStatChanges; // Stat changes to apply after charge
   Move? chargingMove; // The move currently being charged
@@ -193,6 +192,7 @@ class BattleOrganism {
 
   final bool isRogueMode;
   final bool isOpponent;
+  bool get isPlayer => !isOpponent;
   final int level;
 
   BattleOrganism(

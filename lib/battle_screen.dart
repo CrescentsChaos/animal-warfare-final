@@ -1,5 +1,6 @@
 // lib/battle_screen.dart
 
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'
     show rootBundle, SystemChrome, DeviceOrientation;
@@ -16,11 +17,14 @@ import 'package:animal_warfare/models/loot_item.dart';
 import 'package:animal_warfare/game/battle_models.dart';
 import 'package:animal_warfare/services/audio_service.dart';
 import 'package:animal_warfare/models/organism.dart';
+import 'package:animal_warfare/game/ai_decision_engine.dart';
 import 'package:animal_warfare/models/elemental_type.dart'; // Added
 import 'package:animal_warfare/models/move.dart'; // Added
 import 'package:animal_warfare/models/status_effect.dart'; // Added for overlay
 import 'dart:math' as math;
 import 'dart:async';
+import 'package:animal_warfare/widgets/weather_overlay.dart';
+import 'package:animal_warfare/widgets/item_icon.dart';
 
 class BattleScreen extends StatelessWidget {
   final CapturedOrganism playerOrganism;
@@ -31,6 +35,7 @@ class BattleScreen extends StatelessWidget {
   final bool isArenaBattle;
   final List<CapturedOrganism>? opponentTeam;
   final bool isRogueMode;
+  final TeamArchetype? opponentArchetype;
 
   const BattleScreen({
     super.key,
@@ -42,6 +47,7 @@ class BattleScreen extends StatelessWidget {
     this.isArenaBattle = false,
     this.opponentTeam,
     this.isRogueMode = false,
+    this.opponentArchetype,
   });
 
   @override
@@ -55,6 +61,7 @@ class BattleScreen extends StatelessWidget {
         opponentTeam: opponentTeam,
         isArenaBattle: isArenaBattle,
         isRogueMode: isRogueMode,
+        opponentArchetype: opponentArchetype,
         initialPlayerIndex: isRogueMode
             ? Provider.of<UserState>(
                 context,
@@ -253,6 +260,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
   BattleManager? _battleManager;
   final LayerLink _playerLink = LayerLink();
   final LayerLink _opponentLink = LayerLink();
+  final List<_IndicatorData> _indicators = [];
 
   @override
   void initState() {
@@ -291,6 +299,9 @@ class _BattleScreenContentState extends State<BattleScreenContent>
       final bm = Provider.of<BattleManager>(context, listen: false);
       _battleManager = bm;
       bm.onAttack = _onAttack;
+      bm.onDamage = _onDamage;
+      bm.onHeal = _onHeal;
+      bm.onStatChange = _onStatChange;
       bm.onVictory = _onVictory;
 
       // Sync rogue state mid-battle
@@ -384,6 +395,46 @@ class _BattleScreenContentState extends State<BattleScreenContent>
       // Opponent attacks
       _opponentShakeController.forward(from: 0);
     }
+  }
+
+  void _onDamage(BattleOrganism target, int amount) {
+    if (!mounted) return;
+    _addIndicator("-$amount", Colors.redAccent, target.isPlayer);
+  }
+
+  void _onHeal(BattleOrganism target, int amount) {
+    if (!mounted) return;
+    _addIndicator("+$amount", Colors.greenAccent, target.isPlayer);
+  }
+
+  void _onStatChange(BattleOrganism target, String stat, int value) {
+    if (!mounted) return;
+    final direction = value > 0 ? "↑" : "↓";
+    final color = value > 0 ? Colors.cyanAccent : Colors.orangeAccent;
+    final absVal = value.abs();
+    final bonus = absVal > 1 ? (absVal == 2 ? "!!" : "!!!") : "";
+    _addIndicator(
+      "${stat.toUpperCase()} $direction$bonus",
+      color,
+      target.isPlayer,
+    );
+  }
+
+  void _addIndicator(String text, Color color, bool isPlayer) {
+    final id = DateTime.now().millisecondsSinceEpoch + Random().nextInt(1000);
+    setState(() {
+      _indicators.add(
+        _IndicatorData(id: id, text: text, color: color, isPlayer: isPlayer),
+      );
+    });
+
+    Future.delayed(const Duration(milliseconds: 2000), () {
+      if (mounted) {
+        setState(() {
+          _indicators.removeWhere((i) => i.id == id);
+        });
+      }
+    });
   }
 
   void _onVictory() {
@@ -689,6 +740,9 @@ class _BattleScreenContentState extends State<BattleScreenContent>
 
     // Initialize/Update listener
     battleManager.onAttack = _onAttack;
+    battleManager.onDamage = _onDamage;
+    battleManager.onHeal = _onHeal;
+    battleManager.onStatChange = _onStatChange;
 
     return Scaffold(
       body: Stack(
@@ -705,6 +759,8 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               ),
             ),
           ),
+          // Weather Overlay
+          WeatherOverlay(weather: battleManager.currentWeather.weather),
           SafeArea(
             child: OrientationBuilder(
               builder: (context, orientation) {
@@ -745,6 +801,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                                       battleManager.opponent,
                                       overlayColor,
                                       isNarrow,
+                                      battleManager.opponentHazards,
                                     ),
                                   ),
                                   const SizedBox(height: 2),
@@ -763,6 +820,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                                       battleManager.player,
                                       overlayColor,
                                       isNarrow,
+                                      battleManager.playerHazards,
                                     ),
                                   ),
                                 ],
@@ -834,6 +892,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                               battleManager.opponent,
                               overlayColor,
                               isNarrow,
+                              battleManager.opponentHazards,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -848,6 +907,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                               battleManager.player,
                               overlayColor,
                               isNarrow,
+                              battleManager.playerHazards,
                             ),
                           ),
                           const SizedBox(height: 1),
@@ -892,6 +952,14 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                   ? _playerLink
                   : _opponentLink,
             ),
+          // Floating Indicators
+          ..._indicators.map(
+            (ind) => _FloatingIndicatorWidget(
+              key: ValueKey(ind.id),
+              data: ind,
+              link: ind.isPlayer ? _playerLink : _opponentLink,
+            ),
+          ),
         ],
       ),
     );
@@ -1096,6 +1164,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     BattleOrganism organism,
     Color barColor,
     bool isNarrow,
+    List<String> hazards, // Added
   ) {
     final base = organism.organism.baseOrganism;
     final maxHp = organism.maxHealth;
@@ -1224,7 +1293,10 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  const Icon(Icons.stars, size: 10, color: Colors.yellowAccent),
+                  ItemIcon(
+                    itemName: organism.organism.equippedTalisman!.name,
+                    size: 14,
+                  ),
                   if (organism.talismanConsumed)
                     const Padding(
                       padding: EdgeInsets.only(left: 4.0),
@@ -1260,13 +1332,45 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           const SizedBox(width: 8),
           CompositedTransformTarget(
             link: _opponentLink,
-            child: _BattleSprite(
-              organism: organism,
-              size: spriteSize,
-              onLongPress: () =>
-                  _showOrganismInfo(context, organism, isPlayer: false),
-              mirror: false, // Mirrored from previous State
-              biomeName: widget.biomeName,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 500),
+              transitionBuilder: (Widget child, Animation<double> animation) {
+                final inAnimation = CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.easeOutBack,
+                );
+                final outAnimation = CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.easeInBack,
+                );
+
+                if (child.key == ValueKey(organism.organism.id)) {
+                  // Switch In
+                  return ScaleTransition(
+                    scale: inAnimation,
+                    child: FadeTransition(opacity: inAnimation, child: child),
+                  );
+                } else {
+                  // Switch Out
+                  return SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(0, 0.5),
+                      end: Offset.zero,
+                    ).animate(outAnimation),
+                    child: FadeTransition(opacity: outAnimation, child: child),
+                  );
+                }
+              },
+              child: _BattleSprite(
+                key: ValueKey(organism.organism.id),
+                organism: organism,
+                size: spriteSize,
+                onLongPress: () =>
+                    _showOrganismInfo(context, organism, isPlayer: false),
+                mirror: false, // Mirrored from previous State
+                biomeName: widget.biomeName,
+                hazards: hazards,
+              ),
             ),
           ),
         ],
@@ -1279,6 +1383,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     BattleOrganism organism,
     Color barColor,
     bool isNarrow,
+    List<String> hazards, // Added
   ) {
     final base = organism.organism.baseOrganism;
     final maxHp = organism.maxHealth;
@@ -1403,7 +1508,10 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.stars, size: 10, color: Colors.yellowAccent),
+                  ItemIcon(
+                    itemName: organism.organism.equippedTalisman!.name,
+                    size: 14,
+                  ),
                   if (organism.talismanConsumed)
                     const Padding(
                       padding: EdgeInsets.only(left: 4.0),
@@ -1431,13 +1539,45 @@ class _BattleScreenContentState extends State<BattleScreenContent>
         children: [
           CompositedTransformTarget(
             link: _playerLink,
-            child: _BattleSprite(
-              organism: organism,
-              size: spriteSize,
-              onLongPress: () =>
-                  _showOrganismInfo(context, organism, isPlayer: true),
-              mirror: true, // Mirrored from previous State
-              biomeName: widget.biomeName,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 500),
+              transitionBuilder: (Widget child, Animation<double> animation) {
+                final inAnimation = CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.easeOutBack,
+                );
+                final outAnimation = CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.easeInBack,
+                );
+
+                if (child.key == ValueKey(organism.organism.id)) {
+                  // Switch In
+                  return ScaleTransition(
+                    scale: inAnimation,
+                    child: FadeTransition(opacity: inAnimation, child: child),
+                  );
+                } else {
+                  // Switch Out
+                  return SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(0, 0.5),
+                      end: Offset.zero,
+                    ).animate(outAnimation),
+                    child: FadeTransition(opacity: outAnimation, child: child),
+                  );
+                }
+              },
+              child: _BattleSprite(
+                key: ValueKey(organism.organism.id),
+                organism: organism,
+                size: spriteSize,
+                onLongPress: () =>
+                    _showOrganismInfo(context, organism, isPlayer: true),
+                mirror: true,
+                biomeName: widget.biomeName,
+                hazards: hazards,
+              ),
             ),
           ),
           const SizedBox(width: 8),
@@ -1778,10 +1918,9 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                   padding: const EdgeInsets.only(bottom: 10.0),
                   child: Row(
                     children: [
-                      const Icon(
-                        Icons.stars,
-                        color: Colors.yellowAccent,
-                        size: 12,
+                      ItemIcon(
+                        itemName: bo.organism.equippedTalisman!.name,
+                        size: 16,
                       ),
                       const SizedBox(width: 8),
                       const Text(
@@ -2218,125 +2357,125 @@ class _BattleScreenContentState extends State<BattleScreenContent>
             ),
           ),
           const SizedBox(height: 4),
-          GridView.count(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: 2,
-            mainAxisSpacing: 4,
-            crossAxisSpacing: 4,
-            childAspectRatio: isNarrow
-                ? 3.4
-                : (MediaQuery.of(context).orientation == Orientation.landscape
-                      ? 4.2
-                      : 3.6),
-            children: battleManager.playerMoves.map((move) {
-              final typeColor = _getTypeColor(move.type);
-              final effectiveness = _calculateMoveEffectiveness(
-                move,
-                battleManager.opponent,
-              );
-              final effectivenessText = _getEffectivenessText(effectiveness);
-              final categoryText = move.category
-                  .toString()
-                  .split('.')
-                  .last
-                  .toUpperCase();
-
-              final validMoves = battleManager.getValidMoves(
-                battleManager.player,
-              );
-              final isValid = validMoves.any((m) => m.name == move.name);
-
-              return ElevatedButton(
-                onPressed: !isValid
-                    ? null
-                    : () => battleManager.processPlayerAction(move),
-                onLongPress: () => _showMoveDetails(
-                  context,
-                  move,
-                  _getBiomeThemeColor(),
-                  battleManager,
-                ),
+          if (battleManager.player.mustRecharge ||
+              battleManager.player.chargingMove != null)
+            SizedBox(
+              width: double.infinity,
+              height: isNarrow ? 60 : 80,
+              child: ElevatedButton(
+                onPressed: () {
+                  final move =
+                      battleManager.player.chargingMove ??
+                      battleManager.playerMoves[0];
+                  battleManager.processPlayerAction(move);
+                },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: !isValid ? Colors.grey[700] : typeColor,
-                  foregroundColor: !isValid ? Colors.white24 : Colors.white,
-                  padding: const EdgeInsets.all(4),
+                  backgroundColor: _getBiomeThemeColor(),
+                  foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    side: BorderSide(
-                      color: !isValid
-                          ? Colors.grey.withOpacity(0.3)
-                          : Colors.white.withOpacity(0.5),
-                      width: 2,
-                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    side: const BorderSide(color: Colors.white, width: 2),
                   ),
-                  elevation: !isValid ? 0 : 2,
+                  elevation: 4,
                 ),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Move Name
-                    Expanded(
-                      flex: 2,
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.center,
-                        child: Text(
-                          move.name,
-                          style: TextStyle(
-                            fontSize: isNarrow ? 9 : 11,
-                            fontFamily: 'PressStart2P',
-                            fontWeight: FontWeight.bold,
-                            shadows: [
-                              const Shadow(
-                                blurRadius: 2,
-                                color: Colors.black54,
-                                offset: Offset(1, 1),
-                              ),
-                            ],
-                          ),
-                        ),
+                    Text(
+                      battleManager.player.mustRecharge
+                          ? 'RECHARGE'
+                          : 'CONTINUE',
+                      style: TextStyle(
+                        fontSize: isNarrow ? 12 : 16,
+                        fontFamily: 'PressStart2P',
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
+                    if (battleManager.player.chargingMove != null) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        battleManager.player.chargingMove!.name.toUpperCase(),
+                        style: TextStyle(
+                          fontSize: isNarrow ? 8 : 10,
+                          fontFamily: 'PressStart2P',
+                          color: Colors.white.withOpacity(0.9),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            )
+          else
+            GridView.count(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisCount: 2,
+              mainAxisSpacing: 4,
+              crossAxisSpacing: 4,
+              childAspectRatio: isNarrow
+                  ? 3.4
+                  : (MediaQuery.of(context).orientation == Orientation.landscape
+                        ? 4.2
+                        : 3.6),
+              children: battleManager.playerMoves.map((move) {
+                final typeColor = _getTypeColor(move.type);
+                final effectiveness = _calculateMoveEffectiveness(
+                  move,
+                  battleManager.opponent,
+                );
+                final effectivenessText = _getEffectivenessText(effectiveness);
+                final categoryText = move.category
+                    .toString()
+                    .split('.')
+                    .last
+                    .toUpperCase();
 
-                    // Category & Stamina Row
-                    Expanded(
-                      flex: 1,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          // Category Badge
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 3,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: move.category.color,
-                              borderRadius: BorderRadius.circular(2),
-                            ),
-                            child: Text(
-                              categoryText.substring(0, 4), // PHYS, SPEC, STAT
-                              style: const TextStyle(
-                                fontSize: 6, // Very small
-                                fontFamily: 'PressStart2P',
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                          // Stamina
-                          Text(
-                            '${battleManager.playerOrganism.moveStamina[move.name] ?? 0}/${move.stamina}',
+                final validMoves = battleManager.getValidMoves(
+                  battleManager.player,
+                );
+                final isValid = validMoves.any((m) => m.name == move.name);
+
+                return ElevatedButton(
+                  onPressed: !isValid
+                      ? null
+                      : () => battleManager.processPlayerAction(move),
+                  onLongPress: () => _showMoveDetails(
+                    context,
+                    move,
+                    _getBiomeThemeColor(),
+                    battleManager,
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: !isValid ? Colors.grey[700] : typeColor,
+                    foregroundColor: !isValid ? Colors.white24 : Colors.white,
+                    padding: const EdgeInsets.all(4),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      side: BorderSide(
+                        color: !isValid
+                            ? Colors.grey.withOpacity(0.3)
+                            : Colors.white.withOpacity(0.5),
+                        width: 2,
+                      ),
+                    ),
+                    elevation: !isValid ? 0 : 2,
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Move Name
+                      Expanded(
+                        flex: 2,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.center,
+                          child: Text(
+                            move.name,
                             style: TextStyle(
-                              fontSize: isNarrow ? 7 : 8,
+                              fontSize: isNarrow ? 9 : 11,
                               fontFamily: 'PressStart2P',
-                              color:
-                                  (battleManager.playerOrganism.moveStamina[move
-                                              .name] ??
-                                          0) >
-                                      0
-                                  ? Colors.white
-                                  : Colors.redAccent,
+                              fontWeight: FontWeight.bold,
                               shadows: [
                                 const Shadow(
                                   blurRadius: 2,
@@ -2346,45 +2485,99 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                               ],
                             ),
                           ),
-                        ],
+                        ),
                       ),
-                    ),
 
-                    // Effectiveness (if applicable)
-                    if (move.category != MoveCategory.status &&
-                        effectivenessText.isNotEmpty)
+                      // Category & Stamina Row
                       Expanded(
                         flex: 1,
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Container(
-                            margin: const EdgeInsets.only(top: 2),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 4,
-                              vertical: 1,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            // Category Badge
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 3,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: move.category.color,
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                              child: Text(
+                                categoryText.substring(
+                                  0,
+                                  4,
+                                ), // PHYS, SPEC, STAT
+                                style: const TextStyle(
+                                  fontSize: 6, // Very small
+                                  fontFamily: 'PressStart2P',
+                                  color: Colors.white,
+                                ),
+                              ),
                             ),
-                            decoration: BoxDecoration(
-                              color: Colors.black45,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              effectivenessText,
-                              style: const TextStyle(
-                                fontSize: 7,
+                            // Stamina
+                            Text(
+                              '${battleManager.playerOrganism.moveStamina[move.name] ?? 0}/${move.stamina}',
+                              style: TextStyle(
+                                fontSize: isNarrow ? 7 : 8,
                                 fontFamily: 'PressStart2P',
-                                color: Colors.yellowAccent,
+                                color:
+                                    (battleManager
+                                                .playerOrganism
+                                                .moveStamina[move.name] ??
+                                            0) >
+                                        0
+                                    ? Colors.white
+                                    : Colors.redAccent,
+                                shadows: [
+                                  const Shadow(
+                                    blurRadius: 2,
+                                    color: Colors.black54,
+                                    offset: Offset(1, 1),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Effectiveness (if applicable)
+                      if (move.category != MoveCategory.status &&
+                          effectivenessText.isNotEmpty)
+                        Expanded(
+                          flex: 1,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Container(
+                              margin: const EdgeInsets.only(top: 2),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                                vertical: 1,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.black45,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                effectivenessText,
+                                style: const TextStyle(
+                                  fontSize: 7,
+                                  fontFamily: 'PressStart2P',
+                                  color: Colors.yellowAccent,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      )
-                    else
-                      const Spacer(flex: 1),
-                  ],
-                ),
-              );
-            }).toList(),
-          ),
+                        )
+                      else
+                        const Spacer(flex: 1),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
           const SizedBox(height: 6),
           Row(
             children: [
@@ -3069,6 +3262,7 @@ class _CaptureReplaceDialog extends StatelessWidget {
         organism: BattleOrganism(org, isRogueMode: true),
         size: 40,
         biomeName: 'Forest',
+        hazards: const [],
       ),
     );
   }
@@ -3451,6 +3645,7 @@ class _BattleResultDialog extends StatelessWidget {
                 organism: BattleOrganism(mvp!, isRogueMode: true),
                 size: 80,
                 biomeName: 'forest',
+                hazards: const [],
               ),
             ),
             const SizedBox(height: 16),
@@ -3714,27 +3909,33 @@ class _BattleSprite extends StatefulWidget {
   final double size;
   final VoidCallback? onLongPress;
   final bool mirror;
+  final String biomeName;
+  final List<String> hazards;
 
   const _BattleSprite({
+    super.key,
     required this.organism,
     required this.size,
     this.onLongPress,
     this.mirror = false,
     required this.biomeName,
+    required this.hazards,
   });
-
-  final String biomeName;
 
   @override
   State<_BattleSprite> createState() => _BattleSpriteState();
 }
 
 class _BattleSpriteState extends State<_BattleSprite>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   String? _imageSourceType;
   late String _imagePath;
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
+  late AnimationController _bounceController;
+  late Animation<double> _bounceAnimation;
+  late AnimationController _entryController;
+  late Animation<double> _entryAnimation;
 
   @override
   void initState() {
@@ -3748,11 +3949,34 @@ class _BattleSpriteState extends State<_BattleSprite>
     _pulseAnimation = Tween<double>(begin: 0.4, end: 0.8).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
+
+    _bounceController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
+
+    _bounceAnimation = Tween<double>(begin: 0, end: -8).animate(
+      CurvedAnimation(parent: _bounceController, curve: Curves.easeInOut),
+    );
+
+    _entryController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+
+    _entryAnimation = CurvedAnimation(
+      parent: _entryController,
+      curve: Curves.elasticOut,
+    );
+
+    _entryController.forward();
   }
 
   @override
   void dispose() {
     _pulseController.dispose();
+    _bounceController.dispose();
+    _entryController.dispose();
     super.dispose();
   }
 
@@ -3762,6 +3986,8 @@ class _BattleSpriteState extends State<_BattleSprite>
     if (widget.organism.displayBaseName != oldWidget.organism.displayBaseName ||
         widget.organism.displaySprite != oldWidget.organism.displaySprite) {
       _determineImageSource();
+      _entryController.reset();
+      _entryController.forward();
     }
   }
 
@@ -3793,6 +4019,87 @@ class _BattleSpriteState extends State<_BattleSprite>
         });
       }
     }
+  }
+
+  Widget _buildHazards() {
+    if (widget.hazards.isEmpty) return const SizedBox.shrink();
+
+    // Group hazards by type
+    final hazardCounts = <String, int>{};
+    for (final h in widget.hazards) {
+      hazardCounts[h] = (hazardCounts[h] ?? 0) + 1;
+    }
+
+    final children = <Widget>[];
+
+    for (final entry in hazardCounts.entries) {
+      final hazard = entry.key;
+      final count = entry.value;
+
+      String assetPath = '';
+      if (hazard == 'stealth_rock')
+        assetPath = 'assets/stealth_rock.png';
+      else if (hazard == 'spikes')
+        assetPath = 'assets/spikes.png';
+      else if (hazard == 'toxic_spikes')
+        assetPath = 'assets/toxic_spikes.png';
+      else if (hazard == 'sticky_web')
+        assetPath = 'assets/sticky_web.png';
+
+      if (assetPath.isEmpty) continue;
+
+      // Render stack of sprites for stackable hazards
+      for (int i = 0; i < count; i++) {
+        // Offset each layer slightly to the top-right
+        final double offset = i * 4.0;
+        children.add(
+          Positioned(
+            top: -offset,
+            left: offset,
+            width: widget.size,
+            height: widget.size,
+            child: Image.asset(assetPath, fit: BoxFit.contain),
+          ),
+        );
+      }
+
+      // Add a count badge if count > 1
+      if (count > 1) {
+        children.add(
+          Positioned(
+            right: 4,
+            bottom: 4,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.85),
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(color: Colors.amber, width: 1.5),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.5),
+                    blurRadius: 2,
+                    offset: const Offset(1, 1),
+                  ),
+                ],
+              ),
+              child: Text(
+                'x$count',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  fontFamily:
+                      'PressStart2P', // Use game font if possible or monospace
+                ),
+              ),
+            ),
+          ),
+        );
+      }
+    }
+
+    return Stack(clipBehavior: Clip.none, children: children);
   }
 
   @override
@@ -4004,25 +4311,57 @@ class _BattleSpriteState extends State<_BattleSprite>
             ),
 
             // Outline Layers (4 directions) — hidden/faded based on state
-            Transform.translate(
-              offset: const Offset(-outlineOffset, -outlineOffset),
-              child: outlineLayer,
-            ),
-            Transform.translate(
-              offset: const Offset(outlineOffset, -outlineOffset),
-              child: outlineLayer,
-            ),
-            Transform.translate(
-              offset: const Offset(-outlineOffset, outlineOffset),
-              child: outlineLayer,
-            ),
-            Transform.translate(
-              offset: const Offset(outlineOffset, outlineOffset),
-              child: outlineLayer,
+            AnimatedBuilder(
+              animation: Listenable.merge([
+                _bounceController,
+                _entryController,
+              ]),
+              builder: (context, child) {
+                return Transform.scale(
+                  scale: _entryAnimation.value,
+                  child: Transform.translate(
+                    offset: Offset(0, _bounceAnimation.value),
+                    child: Stack(
+                      children: [
+                        Transform.translate(
+                          offset: const Offset(-outlineOffset, -outlineOffset),
+                          child: outlineLayer,
+                        ),
+                        Transform.translate(
+                          offset: const Offset(outlineOffset, -outlineOffset),
+                          child: outlineLayer,
+                        ),
+                        Transform.translate(
+                          offset: const Offset(-outlineOffset, outlineOffset),
+                          child: outlineLayer,
+                        ),
+                        Transform.translate(
+                          offset: const Offset(outlineOffset, outlineOffset),
+                          child: outlineLayer,
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
 
             // The Sprite — hidden when invulnerable, faded when stealthed
-            spriteLayer,
+            AnimatedBuilder(
+              animation: Listenable.merge([
+                _bounceController,
+                _entryController,
+              ]),
+              builder: (context, child) {
+                return Transform.scale(
+                  scale: _entryAnimation.value,
+                  child: Transform.translate(
+                    offset: Offset(0, _bounceAnimation.value),
+                    child: spriteLayer,
+                  ),
+                );
+              },
+            ),
 
             // Status overlay image — shown on top of sprite when statused
             if (!isInvulnerable && overlayPath != null)
@@ -4034,6 +4373,9 @@ class _BattleSpriteState extends State<_BattleSprite>
                   errorBuilder: (_, __, ___) => const SizedBox.shrink(),
                 ),
               ),
+
+            // Hazards on TOP
+            _buildHazards(),
           ],
         ),
       ),
@@ -4214,11 +4556,118 @@ class _AbilityPopUpState extends State<_AbilityPopUp>
                 style: TextStyle(
                   color: widget.themeColor,
                   fontSize: 14,
-                  fontFamily: 'PressStart2P',
                   fontWeight: FontWeight.bold,
+                  fontFamily: 'PressStart2P',
+                  letterSpacing: 1.2,
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _IndicatorData {
+  final int id;
+  final String text;
+  final Color color;
+  final bool isPlayer;
+
+  _IndicatorData({
+    required this.id,
+    required this.text,
+    required this.color,
+    required this.isPlayer,
+  });
+}
+
+class _FloatingIndicatorWidget extends StatefulWidget {
+  final _IndicatorData data;
+  final LayerLink link;
+
+  const _FloatingIndicatorWidget({
+    super.key,
+    required this.data,
+    required this.link,
+  });
+
+  @override
+  State<_FloatingIndicatorWidget> createState() =>
+      _FloatingIndicatorWidgetState();
+}
+
+class _FloatingIndicatorWidgetState extends State<_FloatingIndicatorWidget>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<Offset> _positionAnimation;
+  late Animation<double> _opacityAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    );
+
+    _positionAnimation = Tween<Offset>(
+      begin: const Offset(0, 0),
+      end: const Offset(0, -60), // Float upwards
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
+
+    _opacityAnimation = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.0), weight: 20),
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.0), weight: 60),
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.0), weight: 20),
+    ]).animate(_controller);
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CompositedTransformFollower(
+      link: widget.link,
+      showWhenUnlinked: false,
+      offset: Offset.zero,
+      targetAnchor: Alignment.center,
+      followerAnchor: Alignment.center,
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          return Opacity(
+            opacity: _opacityAnimation.value,
+            child: Transform.translate(
+              offset: _positionAnimation.value,
+              child: child,
+            ),
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          child: Text(
+            widget.data.text,
+            style: TextStyle(
+              color: widget.data.color,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'PressStart2P',
+              shadows: const [
+                Shadow(
+                  color: Colors.black,
+                  blurRadius: 4,
+                  offset: Offset(2, 2),
+                ),
+              ],
+            ),
           ),
         ),
       ),

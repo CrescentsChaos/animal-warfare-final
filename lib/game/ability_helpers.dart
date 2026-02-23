@@ -5,6 +5,7 @@ import 'package:animal_warfare/models/terrain.dart';
 import 'package:animal_warfare/models/status_effect.dart';
 import 'package:animal_warfare/models/move.dart';
 import 'package:animal_warfare/game/battle_models.dart';
+import 'package:animal_warfare/models/talisman.dart';
 
 mixin AbilityHelpers {
   // Required properties/methods from BattleManager
@@ -12,13 +13,22 @@ mixin AbilityHelpers {
   set currentWeather(WeatherEffect value);
   TerrainEffect get currentTerrain;
   set currentTerrain(TerrainEffect value);
+  int get weatherTurnsLeft;
+  set weatherTurnsLeft(int value);
+  int get terrainTurnsLeft;
+  set terrainTurnsLeft(int value);
 
-  void _addToLog(String message);
+  void addToLog(String message);
   void notifyListeners();
 
-  Future<void> _notifyAbilityTrigger(BattleOrganism user, Ability ability);
-  Future<void> _applyStatChange(BattleOrganism target, String stat, int value);
-  Future<void> _applyStatusEffect(
+  Future<void> notifyAbilityTrigger(BattleOrganism user, Ability ability);
+  Future<void> applyStatChange(
+    BattleOrganism target,
+    String stat,
+    int value, {
+    BattleOrganism? source,
+  });
+  Future<void> applyStatusEffect(
     BattleOrganism target,
     StatusEffectType type, {
     int chance,
@@ -100,15 +110,16 @@ mixin AbilityHelpers {
     BattleOrganism? target,
     Move? move,
   }) async {
-    await _notifyAbilityTrigger(org, ability);
+    await notifyAbilityTrigger(org, ability);
 
     switch (ability.effectType) {
       case AbilityEffectType.statChange:
         final targetOrg = target ?? org;
-        await _applyStatChange(
+        await applyStatChange(
           targetOrg,
           ability.targetStat,
           ability.magnitude.round(),
+          source: org,
         );
         break;
 
@@ -116,7 +127,7 @@ mixin AbilityHelpers {
         final targetOrg = target ?? org;
         final statusType = parseStatusType(ability.value);
         if (statusType != null) {
-          await _applyStatusEffect(
+          await applyStatusEffect(
             targetOrg,
             statusType,
             chance: (ability.chance * 100).round(),
@@ -126,11 +137,11 @@ mixin AbilityHelpers {
         break;
 
       case AbilityEffectType.weatherChange:
-        await _setWeatherHelper(ability.value);
+        await setWeatherHelper(ability.value, org);
         break;
 
       case AbilityEffectType.terrainChange:
-        await _setTerrainHelper(ability.value);
+        await setTerrainHelper(ability.value);
         break;
 
       default:
@@ -158,13 +169,32 @@ mixin AbilityHelpers {
     return map[name.toLowerCase()];
   }
 
-  Future<void> _setWeatherHelper(String weatherName) async {
+  int getWeatherDuration(BattleOrganism org, Weather w) {
+    if (org.organism.equippedTalisman != null && !org.talismanConsumed) {
+      for (final effect in org.organism.equippedTalisman!.effects) {
+        if (effect.type == TalismanEffectType.weatherDuration &&
+            effect.stat != null) {
+          final stats = effect.stat!.split(',');
+          final weatherName = w.name.toLowerCase();
+          if (stats.any((s) => s.trim().toLowerCase() == weatherName)) {
+            return effect.magnitude.toInt();
+          }
+        }
+      }
+    }
+    return 5;
+  }
+
+  Future<void> setWeatherHelper(
+    String weatherName, [
+    BattleOrganism? org,
+  ]) async {
     final weatherMap = {
       'sunny': Weather.sunny,
       'rain': Weather.rain,
       'sandstorm': Weather.sandstorm,
       'snowstorm': Weather.snowstorm,
-      'blizzard': Weather.blizzard,
+      'hail': Weather.hail,
       'fog': Weather.fog,
       'windstorm': Weather.windstorm,
       'thunderstorm': Weather.thunderstorm,
@@ -172,14 +202,21 @@ mixin AbilityHelpers {
 
     final weather = weatherMap[weatherName.toLowerCase()];
     if (weather != null) {
-      currentWeather = WeatherEffect(weather: weather, duration: 5);
-      _addToLog(currentWeather.description);
+      // Don't reset if already active and has turns left
+      if (currentWeather.weather == weather && weatherTurnsLeft > 0) {
+        return;
+      }
+
+      final duration = org != null ? getWeatherDuration(org, weather) : 5;
+      currentWeather = WeatherEffect(weather: weather, duration: duration);
+      weatherTurnsLeft = duration; // Sync turns left
+      addToLog(currentWeather.description);
       notifyListeners();
       await Future.delayed(const Duration(milliseconds: 3000));
     }
   }
 
-  Future<void> _setTerrainHelper(String terrainName) async {
+  Future<void> setTerrainHelper(String terrainName) async {
     final terrainMap = {
       'electric': Terrain.electric,
       'grassy': Terrain.grassy,
@@ -189,8 +226,14 @@ mixin AbilityHelpers {
 
     final terrain = terrainMap[terrainName.toLowerCase()];
     if (terrain != null) {
+      // Don't reset if already active and has turns left
+      if (currentTerrain.terrain == terrain && terrainTurnsLeft > 0) {
+        return;
+      }
+
       currentTerrain = TerrainEffect(terrain: terrain, duration: 5);
-      _addToLog(currentTerrain.description);
+      terrainTurnsLeft = 5; // Sync turns left
+      addToLog(currentTerrain.description);
       notifyListeners();
       await Future.delayed(const Duration(milliseconds: 3000));
     }

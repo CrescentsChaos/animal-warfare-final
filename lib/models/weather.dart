@@ -6,7 +6,7 @@ enum Weather {
   rain, // aquatic boost, Fire reduced
   heavyRain, // Stronger rain effects
   snowstorm, // Ice boost, speed reduced
-  blizzard, // Heavy snowstorm + chip damage
+  hail, // Chip damage for all except Cryo
   fog, // Reduced accuracy
   sunny, // Fire boost, aquatic reduced
   sandstorm, // Chip damage, Rock boost
@@ -30,8 +30,8 @@ class WeatherEffect {
         return 'A downpour began!';
       case Weather.snowstorm:
         return 'It started to snow!';
-      case Weather.blizzard:
-        return 'A blizzard struck!';
+      case Weather.hail:
+        return 'It started to hail!';
       case Weather.fog:
         return 'Fog rolled in!';
       case Weather.sunny:
@@ -54,8 +54,8 @@ class WeatherEffect {
         return 'The rain stopped.';
       case Weather.snowstorm:
         return 'The snowstorm stopped.';
-      case Weather.blizzard:
-        return 'The blizzard subsided.';
+      case Weather.hail:
+        return 'The hail subsided.';
       case Weather.fog:
         return 'The fog lifted.';
       case Weather.sunny:
@@ -88,7 +88,7 @@ class WeatherEffect {
       case Weather.snowstorm:
         if (moveType == 'cryo') return 1.3;
         break;
-      case Weather.blizzard:
+      case Weather.hail:
         if (moveType == 'cryo') return 1.5;
         break;
       case Weather.sandstorm:
@@ -111,7 +111,7 @@ class WeatherEffect {
     switch (weather) {
       case Weather.fog:
         return 0.7;
-      case Weather.blizzard:
+      case Weather.hail:
       case Weather.sandstorm:
         return 0.85;
       case Weather.windstorm:

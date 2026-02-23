@@ -628,5 +628,53 @@
         "magnitude": 0.5
       }
     ]
+  },
+  {
+    "id": "damp_rock",
+    "name": "Damp Rock",
+    "description": "Extends the duration of Rain from 5 turns to 8 turns.",
+    "effects": [
+      {
+        "type": "weather_duration",
+        "stat": "rain",
+        "magnitude": 8.0
+      }
+    ]
+  },
+  {
+    "id": "heat_rock",
+    "name": "Heat Rock",
+    "description": "Extends the duration of Sun from 5 turns to 8 turns.",
+    "effects": [
+      {
+        "type": "weather_duration",
+        "stat": "sunny",
+        "magnitude": 8.0
+      }
+    ]
+  },
+  {
+    "id": "smooth_rock",
+    "name": "Smooth Rock",
+    "description": "Extends the duration of Sandstorm from 5 turns to 8 turns.",
+    "effects": [
+      {
+        "type": "weather_duration",
+        "stat": "sandstorm",
+        "magnitude": 8.0
+      }
+    ]
+  },
+  {
+    "id": "icy_rock",
+    "name": "Icy Rock",
+    "description": "Extends the duration of Snow/Blizzard from 5 turns to 8 turns.",
+    "effects": [
+      {
+        "type": "weather_duration",
+        "stat": "snowstorm,blizzard",
+        "magnitude": 8.0
+      }
+    ]
   }
 ]

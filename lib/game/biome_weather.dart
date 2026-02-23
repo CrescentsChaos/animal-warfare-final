@@ -58,7 +58,6 @@ class BiomeWeatherTable {
         return {Weather.clear: 70, Weather.sunny: 20, Weather.rain: 10};
 
       case 'ocean':
-      case 'deep sea':
         return {
           Weather.rain: 40,
           Weather.heavyRain: 30,
@@ -68,7 +67,7 @@ class BiomeWeatherTable {
 
       case 'polar':
       case 'frozen ocean':
-        return {Weather.snowstorm: 50, Weather.blizzard: 30, Weather.clear: 20};
+        return {Weather.snowstorm: 50, Weather.hail: 30, Weather.clear: 20};
 
       case 'rainforest':
       case 'jungle':
@@ -103,18 +102,23 @@ class BiomeWeatherTable {
         return {
           Weather.snowstorm: 40,
           Weather.clear: 30,
-          Weather.blizzard: 20,
+          Weather.hail: 20,
           Weather.fog: 10,
         };
 
       case 'urban':
-        return {Weather.clear: 70, Weather.rain: 20, Weather.fog: 10};
+        return {
+          Weather.clear: 70,
+          Weather.rain: 15,
+          Weather.fog: 10,
+          Weather.thunderstorm: 5,
+        };
 
       case 'volcano':
         return {Weather.sunny: 60, Weather.clear: 30, Weather.sandstorm: 10};
 
       case 'tundra':
-        return {Weather.snowstorm: 50, Weather.blizzard: 30, Weather.clear: 20};
+        return {Weather.snowstorm: 50, Weather.hail: 30, Weather.clear: 20};
 
       case 'coral reef':
       case 'kelp forest':

@@ -47,6 +47,7 @@ enum TalismanEffectType {
   berryJaboca, // Jaboca/Rowap Berry: damage attacker when hit by physical/special
   powerHerb, // Bypass charging turn once
   berryTypeResist, // Reduce damage from super-effective hit of specific type
+  weatherDuration, // Extend weather duration (Damp Rock, etc.)
 }
 
 class TalismanEffect {
@@ -167,6 +168,9 @@ class TalismanEffect {
       case 'berry_type_resist':
         type = TalismanEffectType.berryTypeResist;
         break;
+      case 'weather_duration':
+        type = TalismanEffectType.weatherDuration;
+        break;
       default:
         type = TalismanEffectType.statBoost; // Fallback
     }
@@ -232,6 +236,16 @@ class Talisman {
       // Fallback to empty list or hardcoded defaults
       allTalismans = [];
       _byId.clear();
+    }
+  }
+
+  static Talisman? findByName(String name) {
+    try {
+      return allTalismans.firstWhere(
+        (t) => t.name.toLowerCase() == name.toLowerCase(),
+      );
+    } catch (_) {
+      return null;
     }
   }
 

@@ -14,6 +14,7 @@ import 'package:animal_warfare/models/captured_organism.dart';
 import 'package:animal_warfare/models/move.dart';
 import 'package:animal_warfare/models/elemental_type.dart';
 import 'package:animal_warfare/theme.dart';
+import 'package:animal_warfare/game/ai_decision_engine.dart';
 
 // ════════════════════════════════════════════════════════════
 // Type color helper
@@ -71,6 +72,7 @@ class DoubleBattleScreen extends StatelessWidget {
   final List<CapturedOrganism> opponentTeam;
   final String biomeName;
   final String? battleTitle;
+  final TeamArchetype? opponentArchetype;
 
   const DoubleBattleScreen({
     super.key,
@@ -78,6 +80,7 @@ class DoubleBattleScreen extends StatelessWidget {
     required this.opponentTeam,
     required this.biomeName,
     this.battleTitle,
+    this.opponentArchetype,
   });
 
   @override
@@ -86,6 +89,7 @@ class DoubleBattleScreen extends StatelessWidget {
       create: (_) => DoubleBattleManager(
         playerTeam: playerTeam,
         opponentTeam: opponentTeam,
+        opponentArchetype: opponentArchetype,
       ),
       child: _DoubleBattleView(biomeName: biomeName, battleTitle: battleTitle),
     );
