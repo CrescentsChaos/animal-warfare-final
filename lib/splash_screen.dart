@@ -62,7 +62,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     // 1. Precache main assets
     await precacheImage(
-      const AssetImage('assets/biomes/taiga-bg.png'),
+      const AssetImage('assets/biomes/rainforest-bg.png'),
       currentContext,
     );
     await precacheImage(const AssetImage('assets/logo.png'), currentContext);
