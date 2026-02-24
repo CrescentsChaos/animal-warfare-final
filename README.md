@@ -26,7 +26,7 @@ A feature-rich **Flutter-based mobile application** that immerses players in a b
 
 **Animal Warfare** seamlessly blends education with entertainment, offering players a unique monster-battler experience grounded in real biology. The game features:
 
-- **200+ Real Organisms** with scientific names and realistic habitat distributions
+- **2000+ Real Organisms** with scientific names and realistic habitat distributions
 - **Strategic Turn-Based Combat** with elemental types, abilities, and tactical depth
 - **Biome-Based Exploration** across diverse real-world ecosystems with environmental mechanics
 - **Retro Aesthetic** with pixel-art sprites, PressStart2P typography, and high-contrast UI
