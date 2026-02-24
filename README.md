@@ -40,13 +40,13 @@ A feature-rich **Flutter-based mobile application** that immerses players in a b
 ### 🌍 **Dynamic Biome Exploration**
 Venture into meticulously crafted real-world biomes and discover organisms based on scientific habitat data.
 
-- **Multiple Biome Types**: Swamp, Desert, Rainforest, Ocean, Savanna, Urban, Arctic, Mountains, and more
+- **Multiple Biome Types**: Swamp, Desert, Rainforest, Ocean, Savanna, Urban, Polar, Mountains, and more
 - **Unique Visual Theming**: Each biome features custom color palettes, background artwork, and atmospheric design
 - **Dynamic Audio**: Biome-specific ambient music and environmental sound effects
 - **Weighted Encounter System**: Discover organisms based on:
   - **Rarity Tiers**: Common → Uncommon → Rare → Epic → Legendary → Mythical
   - **Habitat Distribution**: Realistic species spawn probabilities based on biome ecosystem data
-  - **Time-based Spawning**: Diurnal/nocturnal organisms appear dynamically
+  - **Time-based Spawning**: Diurnal/nocturnal organisms appear dynamically (Not-implemented)
 
 ### ⚔️ **Strategic Turn-Based Battle System**
 Engage in deep tactical combat with multi-layered strategic mechanics.
@@ -55,11 +55,11 @@ Engage in deep tactical combat with multi-layered strategic mechanics.
 - **Turn-Based Mechanics**: Simultaneous speed-stat resolution for dramatic moments
 - **Team Composition**: Deploy customized teams of captured organisms for maximum synergy
 - **Individual Values (IVs)**: Every captured organism has unique stats:
-  - Health (HP)
+  - Health
   - Attack
   - Defense
-  - Special Attack
-  - Special Defense
+  - Power
+  - Resistance
   - Speed
 - **Move System**: 
   - 4-move limit per organism
@@ -75,17 +75,17 @@ Engage in deep tactical combat with multi-layered strategic mechanics.
   - In-battle passive triggers (stat changes, status immunities, damage reduction)
   - Ability synergy opportunities for advanced players
 - **Status Effects**: 
-  - Poison, Burn, Freeze, Sleep, Paralysis, and custom status conditions
+  - Poison, Burn, Bleed, Freeze, Sleep, Paralysis, and custom status conditions
   - Visual status overlays and gameplay impact
   - Recovery through moves and items
 
 ### 🧬 **Advanced Battle Mechanics**
 
 **Environmental Interactions:**
-- **Weather Systems**: Rain, Hail, Harsh Sunlight, Sandstorm with mechanical effects
-  - Type-specific advantages (Water in Rain, Fire in Sunlight)
+- **Weather Systems**: Rain, Hail, Sunny, Sandstorm with mechanical effects
+  - Type-specific advantages (Water in Rain, Fire in Sunny)
   - Damage modifications and accuracy changes
-- **Terrain Effects**: Grassland, Electric, Psychic, Misty terrain modifications
+- **Terrain Effects**: Grassy, Electric, Psychic, Misty terrain modifications
   - Speed bonuses, stat changes, type coverage advantages
 - **Damage Calculations**: Accurate stat-based formulas with critical hit system
 - **Strategy Depth**: 
@@ -121,8 +121,8 @@ Engage in deep tactical combat with multi-layered strategic mechanics.
 - Move type and category information
 
 **Team Building:**
-- 6-slot party system for exploration and combat
-- Drag-and-drop interface for team arrangement
+- 5-slot party system for exploration and combat
+- Drag-and-drop interface for team arrangement (Not implemented)
 - Auto-generated suggested teams based on synergy
 - Battle-ready team verification
 
@@ -139,7 +139,7 @@ Track your collection progress with the integrated creature encyclopedia:
   - Rarity classification
 - **Search & Filter**: Find organisms by:
   - Name or scientific name
-  - Type
+  - Type/Category
   - Rarity
   - Habitat/Biome
   - Ability
@@ -772,11 +772,11 @@ Conditions:
 ## 📈 Project Statistics
 
 - **Lines of Code**: 10,000+
-- **Creatures**: 200+ real organisms
+- **Creatures**: 2000+ real organisms
 - **Moves**: 100+ unique attacks
 - **Abilities**: 50+ creature abilities
 - **Talismans**: 50+ collectable items
-- **Biomes**: 8+ unique environments
+- **Biomes**: 10+ unique environments
 - **Platforms Supported**: Android, iOS, Web
 
 ---
