@@ -5,13 +5,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 // --- 1. COLOR CONSTANTS ---
 class AppColors {
   // Primary App Colors (Retro/Military Theme)
-  static const Color primaryButtonColor = Color(
-    0xFF38761D,
-  ); // Bright Jungle Green
-  static const Color secondaryButtonColor = Color(
-    0xFF1E3F2A,
-  ); // Deep Forest Green
-  static const Color highlightColor = Color(0xFFDAA520); // Goldenrod
+  static const Color primaryButtonColor = Color(0xFF1B301B); // Tactical Forest
+  static const Color secondaryButtonColor = Color(0xFF0A0C0A); // Tactical Black
+  static const Color highlightColor = Color(0xFFC5A059); // Muted Gold
 
   // Individual Battle Stat Colors (Used in Anidex)
   static const Color statHealthColor = Color(0xFFC6FF00); // Lime

@@ -58,10 +58,20 @@ void main() {
         magnitude: 1.2,
       );
 
-      final attacker = CapturedOrganism.spawn(base, level: 50);
-      final defender = CapturedOrganism.spawn(base, level: 50);
+      final ivs = {
+        'health': 31,
+        'attack': 31,
+        'defense': 31,
+        'power': 31,
+        'resistance': 31,
+        'speed': 31,
+      };
+      final attacker = CapturedOrganism.spawn(base, level: 50, ivs: ivs);
+      final defender = CapturedOrganism.spawn(base, level: 50, ivs: ivs);
 
+      attacker.moveStamina[punchMove.name] = 10;
       final manager = BattleManager(attacker, defender, isTesting: true);
+      manager.ignoreRandom = true;
       manager.currentState = BattleState.waitingForInput;
 
       // Without Iron Fist
@@ -70,8 +80,8 @@ void main() {
 
       // With Iron Fist
       defender.health = defender.maxHealth;
-      attacker.abilities.clear();
-      attacker.abilities.add(ironFist);
+      manager.player.abilities.clear();
+      manager.player.abilities.add(ironFist);
       await manager.processPlayerAction(punchMove);
       final damageWith = defender.maxHealth - defender.health;
 
@@ -99,10 +109,20 @@ void main() {
         magnitude: 1.5,
       );
 
-      final attacker = CapturedOrganism.spawn(base, level: 50);
-      final defender = CapturedOrganism.spawn(base, level: 50);
+      final ivs = {
+        'health': 31,
+        'attack': 31,
+        'defense': 31,
+        'power': 31,
+        'resistance': 31,
+        'speed': 31,
+      };
+      final attacker = CapturedOrganism.spawn(base, level: 50, ivs: ivs);
+      final defender = CapturedOrganism.spawn(base, level: 50, ivs: ivs);
 
+      attacker.moveStamina[biteMove.name] = 10;
       final manager = BattleManager(attacker, defender, isTesting: true);
+      manager.ignoreRandom = true;
       manager.currentState = BattleState.waitingForInput;
 
       // Without Strong Jaw
@@ -111,8 +131,8 @@ void main() {
 
       // With Strong Jaw
       defender.health = defender.maxHealth;
-      attacker.abilities.clear();
-      attacker.abilities.add(strongJaw);
+      manager.player.abilities.clear();
+      manager.player.abilities.add(strongJaw);
       await manager.processPlayerAction(biteMove);
       final damageWith = defender.maxHealth - defender.health;
 
@@ -140,10 +160,20 @@ void main() {
         magnitude: 1.3,
       );
 
-      final attacker = CapturedOrganism.spawn(base, level: 50);
-      final defender = CapturedOrganism.spawn(base, level: 50);
+      final ivs = {
+        'health': 31,
+        'attack': 31,
+        'defense': 31,
+        'power': 31,
+        'resistance': 31,
+        'speed': 31,
+      };
+      final attacker = CapturedOrganism.spawn(base, level: 50, ivs: ivs);
+      final defender = CapturedOrganism.spawn(base, level: 50, ivs: ivs);
 
+      attacker.moveStamina[contactMove.name] = 10;
       final manager = BattleManager(attacker, defender, isTesting: true);
+      manager.ignoreRandom = true;
       manager.currentState = BattleState.waitingForInput;
 
       // Without Tough Claws
@@ -152,8 +182,8 @@ void main() {
 
       // With Tough Claws
       defender.health = defender.maxHealth;
-      attacker.abilities.clear();
-      attacker.abilities.add(toughClaws);
+      manager.player.abilities.clear();
+      manager.player.abilities.add(toughClaws);
       await manager.processPlayerAction(contactMove);
       final damageWith = defender.maxHealth - defender.health;
 
@@ -179,10 +209,20 @@ void main() {
         effectType: AbilityEffectType.none,
       );
 
-      final attacker = CapturedOrganism.spawn(base, level: 50);
-      final defender = CapturedOrganism.spawn(base, level: 50);
+      final ivs = {
+        'health': 31,
+        'attack': 31,
+        'defense': 31,
+        'power': 31,
+        'resistance': 31,
+        'speed': 31,
+      };
+      final attacker = CapturedOrganism.spawn(base, level: 50, ivs: ivs);
+      final defender = CapturedOrganism.spawn(base, level: 50, ivs: ivs);
 
+      attacker.moveStamina[move.name] = 10;
       final manager = BattleManager(attacker, defender, isTesting: true);
+      manager.ignoreRandom = true;
       manager.currentState = BattleState.waitingForInput;
       manager.opponentReflectTurns = 5;
 
@@ -192,7 +232,7 @@ void main() {
 
       // With Infiltrator
       defender.health = defender.maxHealth;
-      attacker.abilities.add(infiltrator);
+      manager.player.abilities.add(infiltrator);
       await manager.processPlayerAction(move);
       final damageWithInfiltrator = defender.maxHealth - defender.health;
 
@@ -222,13 +262,23 @@ void main() {
         effectType: AbilityEffectType.none,
       );
 
-      final attacker = CapturedOrganism.spawn(base, level: 50);
-      final defender = CapturedOrganism.spawn(base, level: 50);
+      final ivs = {
+        'health': 31,
+        'attack': 31,
+        'defense': 31,
+        'power': 31,
+        'resistance': 31,
+        'speed': 31,
+      };
+      final attacker = CapturedOrganism.spawn(base, level: 50, ivs: ivs);
+      final defender = CapturedOrganism.spawn(base, level: 50, ivs: ivs);
 
+      attacker.moveStamina[contactMove.name] = 10;
       final manager = BattleManager(attacker, defender, isTesting: true);
+      manager.ignoreRandom = true;
       manager.currentState = BattleState.waitingForInput;
       manager.opponent.isProtected = true;
-      attacker.abilities.add(unseenFist);
+      manager.player.abilities.add(unseenFist);
 
       await manager.processPlayerAction(contactMove);
 
@@ -254,20 +304,29 @@ void main() {
       );
 
       int successes = 0;
-      int iterations = 40;
+      int iterations = 100;
 
       for (int i = 0; i < iterations; i++) {
-        final attacker = CapturedOrganism.spawn(base, level: 50);
-        final defender = CapturedOrganism.spawn(base, level: 50);
+        final ivs = {
+          'health': 31,
+          'attack': 31,
+          'defense': 31,
+          'power': 31,
+          'resistance': 31,
+          'speed': 31,
+        };
+        final attacker = CapturedOrganism.spawn(base, level: 50, ivs: ivs);
+        final defender = CapturedOrganism.spawn(base, level: 50, ivs: ivs);
+        attacker.moveStamina[move.name] = 10;
         final manager = BattleManager(attacker, defender, isTesting: true);
         manager.currentState = BattleState.waitingForInput;
-        attacker.abilities.add(superLuck);
+        manager.player.abilities.add(superLuck);
 
         await manager.processPlayerAction(move);
         final damage = defender.maxHealth - defender.health;
 
-        // Base damage ~22 at level 50. Crit ~33.
-        if (damage >= 30) {
+        // Base damage ~22 at level 50. Max non-crit is ~22. Min crit is ~28.
+        if (damage > 23) {
           successes++;
         }
       }
@@ -302,17 +361,30 @@ void main() {
           description: 'Boosts punch.',
           trigger: AbilityTrigger.onCalculateDamage,
           effectType: AbilityEffectType.statMultiplier,
+          magnitude: 1.2,
         );
 
-        final attackerOrg = CapturedOrganism.spawn(base, level: 50);
-        attackerOrg.abilities = [ironFist];
-        final defenderOrg = CapturedOrganism.spawn(base, level: 50);
+        final ivs = {
+          'health': 31,
+          'attack': 31,
+          'defense': 31,
+          'power': 31,
+          'resistance': 31,
+          'speed': 31,
+        };
+        final attackerOrg = CapturedOrganism.spawn(base, level: 50, ivs: ivs);
+        final defenderOrg = CapturedOrganism.spawn(base, level: 50, ivs: ivs);
+
+        attackerOrg.moveStamina[normalMove.name] = 10;
+        attackerOrg.moveStamina[punchMove.name] = 10;
 
         final manager = BattleManager(
           attackerOrg,
           defenderOrg,
           isTesting: true,
         );
+        manager.player.abilities.clear();
+        manager.player.abilities.add(ironFist);
 
         final normalScore = manager.scoreMove(
           normalMove,

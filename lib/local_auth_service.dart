@@ -27,9 +27,6 @@ class UserData {
   final List<String> completedAchievements;
   final List<CapturedOrganism> capturedOrganisms;
 
-  /// Index into [capturedOrganisms] for the animal used as attacker in battle. 0 if none chosen.
-  final int activeAttackerIndex;
-
   /// Inventory: map from loot_id to quantity
   final Map<String, int> inventory;
 
@@ -60,7 +57,6 @@ class UserData {
     List<String>? discoveredOrganisms,
     List<String>? completedAchievements,
     List<CapturedOrganism>? capturedOrganisms,
-    int? activeAttackerIndex,
     Map<String, int>? inventory,
     List<String>? craftedTalismans,
     List<Quest>? activeQuests,
@@ -74,7 +70,6 @@ class UserData {
        discoveredOrganisms = discoveredOrganisms ?? [],
        completedAchievements = completedAchievements ?? [],
        capturedOrganisms = capturedOrganisms ?? [],
-       activeAttackerIndex = activeAttackerIndex ?? 0,
        inventory = inventory ?? {},
        craftedTalismans = craftedTalismans ?? [],
        activeQuests = activeQuests ?? [],
@@ -92,7 +87,6 @@ class UserData {
     List<String>? discoveredOrganisms,
     List<String>? completedAchievements,
     List<CapturedOrganism>? capturedOrganisms,
-    int? activeAttackerIndex,
     Map<String, int>? inventory,
     List<String>? craftedTalismans,
     List<Quest>? activeQuests,
@@ -115,7 +109,6 @@ class UserData {
       completedAchievements:
           completedAchievements ?? this.completedAchievements,
       capturedOrganisms: capturedOrganisms ?? this.capturedOrganisms,
-      activeAttackerIndex: activeAttackerIndex ?? this.activeAttackerIndex,
       inventory: inventory ?? this.inventory,
       craftedTalismans: craftedTalismans ?? this.craftedTalismans,
       activeQuests: activeQuests ?? this.activeQuests,
@@ -126,13 +119,6 @@ class UserData {
       accountLevel: accountLevel ?? this.accountLevel,
       accountXP: accountXP ?? this.accountXP,
     );
-  }
-
-  /// The captured organism currently set as battle attacker, or null if none/invalid.
-  CapturedOrganism? get activeAttacker {
-    if (capturedOrganisms.isEmpty) return null;
-    final i = activeAttackerIndex.clamp(0, capturedOrganisms.length - 1);
-    return capturedOrganisms[i];
   }
 
   /// The 5 animals in the battle team
@@ -198,7 +184,6 @@ class UserData {
     'discoveredOrganisms': discoveredOrganisms,
     'completedAchievements': completedAchievements,
     'capturedOrganisms': capturedOrganisms.map((co) => co.toJson()).toList(),
-    'activeAttackerIndex': activeAttackerIndex,
     'inventory': inventory,
     'craftedTalismans': craftedTalismans,
     'activeQuests': activeQuests.map((q) => q.toJson()).toList(),
@@ -260,7 +245,6 @@ class UserData {
               .toList() ??
           [],
       capturedOrganisms: capturedList,
-      activeAttackerIndex: json['activeAttackerIndex'] as int? ?? 0,
       inventory: json['inventory'] != null
           ? Map<String, int>.from(json['inventory'] as Map)
           : {},
@@ -480,6 +464,7 @@ class LocalAuthService {
         password: password,
         discoveredOrganisms: [],
         completedAchievements: [],
+        inventory: {'capture_net': 10},
       ),
     );
     return await login(username, password);

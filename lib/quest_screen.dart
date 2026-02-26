@@ -667,8 +667,17 @@ class __OrganismSpriteDisplayState extends State<_OrganismSpriteDisplay> {
     } catch (e) {
       if (mounted) {
         setState(() {
+          String spriteUrl = widget.organism.sprite;
           _imageSourceType = 'network';
-          _imagePath = widget.organism.sprite;
+
+          // 🚨 FIX: Remove 'file:///' prefix if present
+          if (spriteUrl.startsWith('file:///')) {
+            spriteUrl = spriteUrl.replaceFirst('file:///', '');
+            if (spriteUrl.startsWith('assets/')) {
+              _imageSourceType = 'local';
+            }
+          }
+          _imagePath = spriteUrl;
         });
       }
     }

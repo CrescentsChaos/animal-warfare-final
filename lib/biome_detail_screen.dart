@@ -15,6 +15,8 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:provider/provider.dart';
 import 'package:animal_warfare/user_state.dart';
 import 'dart:async';
+import 'package:animal_warfare/theme.dart';
+import 'package:animal_warfare/shop_screen.dart';
 
 class BiomeDetailScreen extends StatefulWidget {
   final String biomeName;
@@ -202,11 +204,13 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
       return;
     }
     CapturedOrganism playerFighter;
-    if (user.capturedOrganisms.isEmpty) {
+    if (user.teamOrganisms.isNotEmpty) {
+      playerFighter = user.teamOrganisms.first;
+    } else if (user.capturedOrganisms.isNotEmpty) {
+      playerFighter = user.capturedOrganisms.first;
+    } else {
       _displayMessage("You have no organisms! Prepare to fight as Human!");
       playerFighter = CapturedOrganism.spawn(HUMAN_ORGANISM);
-    } else {
-      playerFighter = user.activeAttacker ?? user.capturedOrganisms.first;
     }
     final wildFighter = CapturedOrganism.spawn(
       wildOrganism,
@@ -450,19 +454,7 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
     final biome = widget.biomeName.toLowerCase();
     final team = _currentUser.teamOrganisms;
     String? requiredMove;
-    if (biome.contains('river') ||
-        biome.contains('lake') ||
-        biome.contains('coastal') ||
-        biome.contains('ocean') ||
-        biome.contains('coral') ||
-        biome.contains('kelp forest') ||
-        biome.contains('mangrove') ||
-        biome.contains('swamp') ||
-        biome.contains('frozen ocean')) {
-      requiredMove = 'Surf';
-    } else if (biome.contains('jungle') || biome.contains('rainforest')) {
-      requiredMove = 'Cut';
-    } else if (biome.contains('deep sea')) {
+    if (biome.contains('deep sea')) {
       requiredMove = 'Dive';
     } else if (biome.contains('mountain') || biome.contains('cave')) {
       requiredMove = 'Rock Smash';
@@ -547,6 +539,12 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
         widget.biomeName,
         widget.allOrganisms,
         accountLevel: userState.currentUser?.accountLevel ?? 1,
+        inventory: userState.currentUser?.inventory ?? {},
+        teamMoveNames:
+            userState.currentUser?.teamOrganisms
+                .expand((o) => o.selectedMoveNames)
+                .toList() ??
+            [],
       );
       if (mounted) {
         setState(() {
@@ -634,7 +632,18 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
           fontFamily: 'PressStart2P',
           fontSize: 14,
         ),
-        actions: [_buildStaminaBarIcon(context)],
+        actions: [
+          IconButton(
+            icon: Icon(Icons.shopping_cart, color: AppColors.highlightColor),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ShopScreen(biome: widget.biomeName),
+              ),
+            ),
+          ),
+          _buildStaminaBarIcon(context),
+        ],
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -929,35 +938,6 @@ class __OrganismSpriteDisplayState extends State<_OrganismSpriteDisplay> {
     return 'assets/sprites/$fileName.png';
   }
 
-  /// Resume audio (useful when app returns to foreground)
-  Future<void> resumeAll() async {
-    if (!_isMusicEnabled || _currentMusicPath == null) return;
-    try {
-      if (_musicPlayer.state == PlayerState.paused) {
-        await _musicPlayer.resume();
-      } else if (_musicPlayer.state == PlayerState.stopped ||
-          _musicPlayer.state == PlayerState.completed) {
-        // Double check it's not actually already playing (can happen with some platforms)
-        if (_musicPlayer.state != PlayerState.playing) {
-          await playMusic(_currentMusicPath!);
-        }
-      }
-    } catch (e) {
-      print('Error resuming audio: $e');
-    }
-  }
-
-  /// Stop all audio
-  Future<void> stopAll() async {
-    try {
-      await _musicPlayer.stop();
-      await _soundPlayer.stop();
-      _currentMusicPath = null;
-    } catch (e) {
-      print('Error stopping all audio: $e');
-    }
-  }
-
   @override
   void didUpdateWidget(covariant _OrganismSpriteDisplay oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -971,17 +951,28 @@ class __OrganismSpriteDisplayState extends State<_OrganismSpriteDisplay> {
     final localPath = _getLocalPath();
     try {
       await rootBundle.load(localPath);
-      if (mounted)
+      if (mounted) {
         setState(() {
           _imageSourceType = 'local';
           _imagePath = localPath;
         });
+      }
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         setState(() {
+          String spriteUrl = widget.organism.sprite;
           _imageSourceType = 'network';
-          _imagePath = widget.organism.sprite;
+
+          // 🚨 FIX: Remove 'file:///' prefix if present
+          if (spriteUrl.startsWith('file:///')) {
+            spriteUrl = spriteUrl.replaceFirst('file:///', '');
+            if (spriteUrl.startsWith('assets/')) {
+              _imageSourceType = 'local';
+            }
+          }
+          _imagePath = spriteUrl;
         });
+      }
     }
   }
 

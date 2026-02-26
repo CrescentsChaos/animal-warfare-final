@@ -7,6 +7,7 @@ import 'package:animal_warfare/game_screen.dart';
 import 'package:animal_warfare/quest_screen.dart';
 import 'package:animal_warfare/local_auth_service.dart';
 import 'package:animal_warfare/theme.dart';
+import 'package:animal_warfare/shop_screen.dart';
 
 import 'package:animal_warfare/services/audio_service.dart';
 
@@ -210,6 +211,15 @@ class _MainScreenState extends State<MainScreen> {
                       text: 'QUESTS',
                       icon: Icons.assignment,
                       onPressed: () => _navigateTo(const QuestScreen()),
+                      isPrimary: false,
+                    ),
+
+                  // SHOP Button
+                  if (_authStatus == AuthStatus.loggedIn)
+                    _buildThemedButton(
+                      text: 'SHOP',
+                      icon: Icons.shopping_bag,
+                      onPressed: () => _navigateTo(const ShopScreen()),
                       isPrimary: false,
                     ),
 

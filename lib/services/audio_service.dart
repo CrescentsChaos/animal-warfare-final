@@ -235,13 +235,23 @@ class AudioService {
         await _musicPlayer.resume();
       } else if (_musicPlayer.state == PlayerState.stopped ||
           _musicPlayer.state == PlayerState.completed) {
-        // Double check it's not actually already playing (can happen with some platforms)
         if (_musicPlayer.state != PlayerState.playing) {
           await playMusic(_currentMusicPath!);
         }
       }
     } catch (e) {
       print('Error resuming audio: $e');
+    }
+  }
+
+  /// Stop all audio
+  Future<void> stopAll() async {
+    try {
+      await _musicPlayer.stop();
+      await _soundPlayer.stop();
+      _currentMusicPath = null;
+    } catch (e) {
+      print('Error stopping all audio: $e');
     }
   }
 

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:animal_warfare/models/captured_organism.dart';
+import 'package:animal_warfare/models/organism.dart';
 import 'package:animal_warfare/models/move.dart';
 
 import 'package:animal_warfare/models/ability.dart';
@@ -49,23 +50,6 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
   late BattleOrganism player;
   late BattleOrganism opponent;
-
-  int _getStatValue(BattleOrganism org, String statName) {
-    switch (statName.toLowerCase()) {
-      case 'attack':
-        return org.currentAttack;
-      case 'defense':
-        return org.currentDefense;
-      case 'power':
-        return org.currentPower;
-      case 'resistance':
-        return org.currentResistance;
-      case 'speed':
-        return _getEffectiveSpeed(org);
-      default:
-        return 1; // Fallback
-    }
-  }
 
   int _getEffectiveSpeed(BattleOrganism org) {
     double speed = org.currentSpeed.toDouble();
@@ -132,6 +116,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   int terrainTurnsLeft = 0;
 
   BattleState currentState = BattleState.intro;
+  bool isCapturing = false;
+  int captureShakeCount = 0;
   String battleLog = ''; // Current/Latest message
   AbilityNotification? currentAbilityNotify;
 
@@ -158,6 +144,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   bool playerMovedThisTurn = false;
   bool opponentMovedThisTurn = false;
   bool isResumingTurn = false;
+  bool ignoreRandom = false; // For deterministic tests
 
   // Stats Persistence
   final Map<String, BattleStats> battleStats = {};
@@ -198,11 +185,13 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   Completer<void>? _switchCompleter;
 
   // Callbacks for UI
-  Function(BattleOrganism)? onAttack;
+  Function(BattleOrganism, Move)? onAttack;
   Function(BattleOrganism, int)? onDamage;
   Function(BattleOrganism, int)? onHeal;
   Function(BattleOrganism, String, int)? onStatChange;
   VoidCallback? onVictory;
+  Future<void> Function(BattleOrganism killer, BattleOrganism victim)?
+  onOpponentFainted;
 
   // Audio service for battle sounds and music
   final AudioService _audioService = AudioService.instance;
@@ -302,6 +291,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       playerOrganism,
       isRogueMode: isRogueMode,
       isOpponent: false,
+      atLevel: isArenaBattle ? 50 : null,
     );
     player.revealedMoves.addAll(_getStats(playerOrganism.id).revealedMoves);
 
@@ -309,6 +299,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       this.opponentTeam[currentOpponentIndex],
       isRogueMode: isRogueMode,
       isOpponent: true,
+      atLevel: isArenaBattle ? 50 : null,
     );
     opponent.revealedMoves.addAll(
       _getStats(this.opponentTeam[currentOpponentIndex].id).revealedMoves,
@@ -369,16 +360,28 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       await _audioService.playMusic('audio/battle_default.mp3');
     }
 
-    // If player has a team (>1 member) and it's not rogue mode, let them choose their lead.
-    final hasTeam = playerTeam.length > 1;
-    if (hasTeam && !isRogueMode && !isTesting) {
-      addToLog('Choose your lead animal!');
-      currentState = BattleState.choosingLead;
-      notifyListeners();
-      // Wait for setLeadAnimal to be called by the UI
-      _switchCompleter = Completer<void>();
-      await _switchCompleter!.future;
-      _switchCompleter = null;
+    // If player has NO animals at all, they must fight themselves (Trainer Combat)
+    if (playerTeam.isEmpty) {
+      final trainer = _createTrainerOrganism();
+      playerTeam.add(trainer);
+      currentPlayerIndex = 0;
+      player = BattleOrganism(
+        trainer,
+        isRogueMode: isRogueMode,
+        isOpponent: false,
+      );
+      playerMoves = _getOrganismMoves(trainer);
+      addToLog('You have no animals! You must defend yourself!');
+    } else {
+      // Automatic lead: index 0
+      currentPlayerIndex = 0;
+      final lead = playerTeam[currentPlayerIndex];
+      player = BattleOrganism(
+        lead,
+        isRogueMode: isRogueMode,
+        isOpponent: false,
+      );
+      playerMoves = _getOrganismMoves(lead);
     }
 
     addToLog('A wild ${opponent.name} appeared! Go, ${player.name}!');
@@ -1015,7 +1018,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     notifyListeners();
     // Trigger attack animation
-    onAttack?.call(attacker);
+    onAttack?.call(attacker, move);
 
     // Track revealed move
     final attackerStats = _getStats(attacker.organism.id);
@@ -3090,45 +3093,116 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
   // --- Capture and Run Logic ---
 
-  Future<void> attemptCapture() async {
+  Future<void> attemptCapture({String netId = 'capture_net'}) async {
     if (currentState != BattleState.waitingForInput) return;
 
     currentState = BattleState.applyingEffects;
-    addToLog('Throwing a Capture Net...');
+    isCapturing = true;
+    captureShakeCount = 0;
+
+    String netName = 'Capture Net';
+    double netMultiplier = 1.0;
+
+    if (netId == 'great_net') {
+      netName = 'Great Net';
+      netMultiplier = 1.5;
+    } else if (netId == 'ultra_net') {
+      netName = 'Ultra Net';
+      netMultiplier = 2.0;
+    }
+
+    addToLog('Throwing a $netName...');
     notifyListeners();
     if (!isTesting) await Future.delayed(const Duration(seconds: 1));
 
     final hpRatio = opponent.health / opponent.maxHealth;
     final baseChance = 0.50;
     final hpBonus = (1.0 - hpRatio) * 0.50;
+    double captureChance = (baseChance + hpBonus) * netMultiplier;
 
-    double captureChance = baseChance + hpBonus;
-
-    // 🚨 FIX: Reverting to baseOrganism
     if (opponent.organism.baseOrganism.rarity.toLowerCase() == 'epic') {
       captureChance *= 0.7;
+    } else if (opponent.organism.baseOrganism.rarity.toLowerCase() ==
+        'legendary') {
+      captureChance *= 0.4;
+    } else if (opponent.organism.baseOrganism.rarity.toLowerCase() ==
+        'mythical') {
+      captureChance *= 0.1;
     }
 
-    if (Random().nextDouble() < captureChance) {
+    // 3 Shakes logic
+    bool success = true;
+    for (int i = 1; i <= 3; i++) {
+      captureShakeCount = i;
+      notifyListeners();
+      if (!isTesting) await Future.delayed(const Duration(milliseconds: 1000));
+
+      // Each shake is a partial roll of the capture chance
+      // We use pow(captureChance, 1/3) to make the total probability equal to captureChance
+      if (Random().nextDouble() > pow(captureChance.clamp(0.01, 0.99), 1 / 3)) {
+        success = false;
+        break;
+      }
+    }
+
+    if (success) {
       opponent.organism.currentHealth = opponent.health;
       _result = BattleResult.capture;
-      // 🚨 FIX: Reverting to baseOrganism
       addToLog('Success! ${opponent.organism.baseOrganism.name} was captured!');
+      _cleanupStatusEffects();
+      currentState = BattleState.battleEnd;
+      notifyListeners(); // Ensure UI sees success for sprite disappearance
     } else {
       _result = null;
-      addToLog('The capture failed! Opponent is still fighting.');
+      addToLog('The capture failed! Opponent broke free!');
       currentState = BattleState.opponentTurn;
       if (!isTesting) await Future.delayed(const Duration(seconds: 1));
       await _processOpponentTurn(isCounter: false);
     }
 
-    if (result == BattleResult.capture) {
-      _cleanupStatusEffects();
-      currentState = BattleState.battleEnd;
-      notifyListeners();
-    } else if (currentState == BattleState.opponentTurn) {
+    isCapturing = false;
+    notifyListeners();
+
+    if (currentState == BattleState.opponentTurn) {
       await _finalizeTurn();
     }
+  }
+
+  CapturedOrganism _createTrainerOrganism() {
+    final base = Organism(
+      name: 'Trainer',
+      scientificName: 'Homo sapiens',
+      habitat: 'Urban',
+      drops: '',
+      attack: 40,
+      defense: 40,
+      power: 40,
+      resistance: 40,
+      health: 100,
+      speed: 40,
+      abilities: 'Inner Focus',
+      category: 'Human',
+      moves: 'Punch,Kick,Defend,Focus',
+      sprite: 'assets/sprites/trainer_human.png',
+      rarity: 'Common',
+      description: 'A human trainer forced to defend themselves.',
+      types: ['basic'],
+    );
+
+    return CapturedOrganism(
+      baseOrganism: base,
+      individualValues: {
+        'health': 15,
+        'attack': 15,
+        'defense': 15,
+        'power': 15,
+        'resistance': 15,
+        'speed': 15,
+      },
+      currentHealth: 100,
+      level: 10, // Default level for trainer
+      selectedMoveNames: ['Punch', 'Kick', 'Defend', 'Focus'],
+    );
   }
 
   Future<void> attemptRun() async {
@@ -3195,6 +3269,10 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   Future<void> switchAnimal(int index) async {
     bool isForced = currentState == BattleState.waitingForPlayerSwitch;
     if (currentState != BattleState.waitingForInput && !isForced) return;
+
+    // Fix: Immediately transition state and notify so UI knows we are processing
+    currentState = BattleState.applyingEffects;
+    notifyListeners();
 
     // Record player switch for AI history
     playerHistory.recordSwitch(index);
@@ -3263,9 +3341,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       return;
     }
 
-    currentState = BattleState.applyingEffects;
     addToLog('Come back, ${player.organism.baseOrganism.name}!');
-    notifyListeners();
     if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
 
     // Reset battle-specific flags for the animal being switched out
@@ -3511,6 +3587,21 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           addToLog(
             'Opponent\'s ${opponent.organism.baseOrganism.name} fainted!',
           );
+
+          // Award XP for defeating this opponent animal
+          if (lastBlowOrganismId != null) {
+            // playerTeam is CapturedOrganism, so we need to find the BattleOrganism if it's currently out
+            // but for XP awarding, we just need the killer and the victim.
+            // onOpponentFainted will handle the logic.
+            final killerBO = player.organism.id == lastBlowOrganismId
+                ? player
+                : BattleOrganism(
+                    playerTeam.firstWhere((o) => o.id == lastBlowOrganismId),
+                  );
+
+            onOpponentFainted?.call(killerBO, opponent);
+          }
+
           _switchOpponentTo(nextOpponentHealthy);
           opponentJustSwitched = true; // Prevent immediate attack
           return false; // Battle continues
@@ -3521,6 +3612,16 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         addToLog(
           'Opponent\'s ${opponent.organism.baseOrganism.name} fainted! You won the arena battle!',
         );
+
+        // Award XP for final opponent
+        if (lastBlowOrganismId != null) {
+          final killerBO = player.organism.id == lastBlowOrganismId
+              ? player
+              : BattleOrganism(
+                  playerTeam.firstWhere((o) => o.id == lastBlowOrganismId),
+                );
+          onOpponentFainted?.call(killerBO, opponent);
+        }
         _cleanupStatusEffects();
         currentState = BattleState.battleEnd;
         onVictory?.call();
@@ -3530,6 +3631,16 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
       // WILD BATTLE: Single opponent defeat
       _result = BattleResult.win;
+
+      // Award XP for defeating the wild animal
+      if (lastBlowOrganismId != null) {
+        final killerBO = player.organism.id == lastBlowOrganismId
+            ? player
+            : BattleOrganism(
+                playerTeam.firstWhere((o) => o.id == lastBlowOrganismId),
+              );
+        onOpponentFainted?.call(killerBO, opponent);
+      }
 
       // Roll for loot (only in wild battles, not Rogue-like)
       if (!isRogueMode) {
@@ -3648,9 +3759,11 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           (se) => se.type == StatusEffectType.poison,
         )) {
       isCrit = true;
-    } else if (Random().nextDouble() * 100 < critChance) {
+    } else if (!ignoreRandom && Random().nextDouble() * 100 < critChance) {
       isCrit = true;
     }
+
+    if (ignoreRandom) isCrit = false;
 
     // Battle Armor / Shell Armor blocks crits
     if (defender.abilities.any(
@@ -3707,7 +3820,12 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     // 3. Core Damage Formula
     double damageCalc =
-        ((2 * attacker.level / 5 + 2) * baseDamage * atk / def) / 50 + 2;
+        ((2 * attacker.level / 5 + (ignoreRandom ? 0 : 2)) *
+                baseDamage *
+                atk /
+                def) /
+            50 +
+        (ignoreRandom ? 0 : 2);
 
     // 4. Multipliers
     if (isCrit) damageCalc *= 1.5;
@@ -3809,7 +3927,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       damageCalc *= stabBonus;
     }
 
-    // Ability Multipliers
+    // Ability Multipliers - Only apply if not already handled in stats (e.g. Iron Fist, Strong Jaw)
     for (final ab in attacker.abilities) {
       if (ab.name == 'Iron Fist' && move.isPunch) damageCalc *= ab.magnitude;
       if (ab.name == 'Strong Jaw' && move.isBite) damageCalc *= ab.magnitude;
@@ -3826,8 +3944,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             (attacker.isOpponent && playerMovedThisTurn);
         if (movingLast) damageCalc *= 1.3;
       }
-      if (ab.name == 'Guts' && attacker.statusEffects.isNotEmpty)
-        damageCalc *= 1.5;
+      // Note: Guts is handled in BattleOrganism.currentAttack
     }
 
     for (final ab in defender.abilities) {
@@ -3934,6 +4051,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     // Final variation
     if (!ignoreRandom) {
+      // Random Variance (0.85 to 1.0)
       damageCalc *= (0.85 + (Random().nextDouble() * 0.15));
     }
 

@@ -1,0 +1,46 @@
+﻿00:00 +0: loading C:/Users/USER/dev/animal_warfare/test/abilities_new_test.dart
+00:00 +0: New Abilities Tests Iron Fist boosts punching moves
+00:00 +0 -1: New Abilities Tests Iron Fist boosts punching moves [E]
+  Expected: a numeric value within <0.15> of <1.2>
+    Actual: <2.3214285714285716>
+     Which:  differs by <1.1214285714285717>
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test\abilities_new_test.dart 89:7                   main.<fn>.<fn>
+  
+00:00 +0 -1: New Abilities Tests Strong Jaw boosts biting moves
+00:00 +0 -2: New Abilities Tests Strong Jaw boosts biting moves [E]
+  Expected: a numeric value within <0.2> of <1.5>
+    Actual: <2.393939393939394>
+     Which:  differs by <0.893939393939394>
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test\abilities_new_test.dart 140:7                  main.<fn>.<fn>
+  
+00:00 +0 -2: New Abilities Tests Tough Claws boosts contact moves
+00:00 +0 -3: New Abilities Tests Tough Claws boosts contact moves [E]
+  Expected: a numeric value within <0.15> of <1.3>
+    Actual: <2.8947368421052633>
+     Which:  differs by <1.5947368421052632>
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test\abilities_new_test.dart 191:7                  main.<fn>.<fn>
+  
+00:00 +0 -3: New Abilities Tests Infiltrator bypasses Reflect
+00:00 +0 -4: New Abilities Tests Infiltrator bypasses Reflect [E]
+  Expected: a numeric value within <0.3> of <2.0>
+    Actual: <3.111111111111111>
+     Which:  differs by <1.1111111111111112>
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test\abilities_new_test.dart 240:7                  main.<fn>.<fn>
+  
+00:00 +0 -4: New Abilities Tests Unseen Fist bypasses Protect
+00:00 +1 -4: New Abilities Tests Super Luck increases crit rate
+Crits with Super Luck in 100 runs: 100
+00:00 +2 -4: New Abilities Tests AI Synergy Tests AI prefers Iron Fist moves
+00:00 +3 -4: Some tests failed.

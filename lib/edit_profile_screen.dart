@@ -1,7 +1,11 @@
+// lib/edit_profile_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:animal_warfare/local_auth_service.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:animal_warfare/theme.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -20,44 +24,28 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   String? _selectedGender;
   bool _isLoading = true;
 
-  // Custom retro/military colors
-  static const Color primaryButtonColor = Color(0xFF38761D);
-  static const Color secondaryButtonColor = Color(0xFF1E3F2A);
-  static const Color highlightColor = Color(0xFFDAA520);
-
   @override
   void initState() {
     super.initState();
     _loadUserProfile();
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
   Future<void> _loadUserProfile() async {
     final user = await _authService.getCurrentUser();
-    if (user != null) {
-      _usernameController.text = user.username;
-      _selectedGender = user.gender != 'N/A' ? user.gender : null;
-
-      if (user.avatar.isNotEmpty && user.avatar != 'default') {
-        try {
+    if (user != null && mounted) {
+      setState(() {
+        _currentUser = user;
+        _usernameController.text = user.username;
+        _selectedGender = user.gender != 'N/A' ? user.gender : null;
+        if (user.avatar.isNotEmpty && user.avatar != 'default') {
           final file = File(user.avatar);
-          if (await file.exists()) {
+          if (file.existsSync()) {
             _pickedAvatarFile = file;
           }
-        } catch (e) {
-          debugPrint('Error loading avatar file: $e');
         }
-      }
+        _isLoading = false;
+      });
     }
-
-    setState(() {
-      _currentUser = user;
-      _isLoading = false;
-    });
   }
 
   Future<void> _pickImage() async {
@@ -65,19 +53,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       source: ImageSource.gallery,
       imageQuality: 50,
     );
-
-    if (image != null) {
-      setState(() {
-        _pickedAvatarFile = File(image.path);
-      });
+    if (image != null && mounted) {
+      setState(() => _pickedAvatarFile = File(image.path));
     }
   }
 
   Future<void> _saveProfile() async {
     if (_currentUser == null || _isLoading) return;
+    setState(() => _isLoading = true);
 
     final newAvatarPath = _pickedAvatarFile?.path ?? _currentUser!.avatar;
-
     await _authService.updateProfile(
       _currentUser!.username,
       avatar: newAvatarPath,
@@ -86,224 +71,230 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profile Updated Successfully!')),
+        const SnackBar(content: Text('Identity Updated Successfully')),
       );
-      Navigator.of(context).pop();
+      Navigator.pop(context);
     }
-  }
-
-  // --- UI Helpers ---
-
-  Widget _buildThemedButton({
-    required String text,
-    required VoidCallback onPressed,
-  }) {
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      decoration: BoxDecoration(
-        color: primaryButtonColor,
-        border: Border.all(color: highlightColor, width: 2.0),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.4),
-            offset: const Offset(4, 4),
-            blurRadius: 0,
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onPressed,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text(
-              text,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontFamily: 'PressStart2P',
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String labelText,
-    required IconData icon,
-    bool enabled = true,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: secondaryButtonColor.withOpacity(0.8),
-        border: Border.all(color: highlightColor.withOpacity(0.6), width: 1),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      margin: const EdgeInsets.only(bottom: 16),
-      child: TextField(
-        controller: controller,
-        enabled: enabled,
-        style: const TextStyle(color: Colors.white, fontSize: 14),
-        decoration: InputDecoration(
-          labelText: labelText,
-          labelStyle: TextStyle(
-            color: highlightColor.withOpacity(0.8),
-            fontSize: 12,
-            fontFamily: 'PressStart2P',
-          ),
-          prefixIcon: Icon(
-            icon,
-            color: highlightColor.withOpacity(0.8),
-            size: 18,
-          ),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(vertical: 10),
-        ),
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('EDIT PROFILE'),
-        backgroundColor: secondaryButtonColor,
-        foregroundColor: highlightColor,
-        titleTextStyle: const TextStyle(
-          fontFamily: 'PressStart2P',
-          fontSize: 18,
-        ),
-      ),
-      // **FIXED: Use the same background color for Scaffold and added ColorFilter.**
-      backgroundColor:
-          secondaryButtonColor, // Matches AppBar and text field backgrounds
+      backgroundColor: AppColors.secondaryButtonColor,
+      appBar: AppBar(title: const Text('EDIT IDENTITY'), elevation: 0),
       body: Container(
-        width: MediaQuery.of(context).size.width,
-        height: MediaQuery.of(context).size.height,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/profile.png'),
+            image: const AssetImage('assets/main.png'),
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(
-              Colors.black54,
+              Colors.black.withValues(alpha: 0.85),
               BlendMode.darken,
-            ), // Adjust opacity
+            ),
           ),
         ),
         child: _isLoading
-            ? Center(child: CircularProgressIndicator(color: highlightColor))
+            ? const Center(
+                child: CircularProgressIndicator(
+                  color: AppColors.highlightColor,
+                ),
+              )
             : SingleChildScrollView(
-                padding: const EdgeInsets.all(24.0),
+                padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 24.h),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    // 1. AVATAR (Select from Gallery)
-                    GestureDetector(
-                      onTap: _pickImage,
-                      child: CircleAvatar(
-                        radius: 80,
-                        backgroundColor: highlightColor.withOpacity(0.2),
-                        backgroundImage: _pickedAvatarFile != null
-                            ? FileImage(_pickedAvatarFile!) as ImageProvider
-                            : null,
-                        child: _pickedAvatarFile == null
-                            ? Icon(
-                                Icons.add_a_photo,
-                                size: 50,
-                                color: highlightColor,
-                              )
-                            : null,
-                      ),
+                  children: [
+                    _buildAvatarSelector(),
+                    SizedBox(height: 40.h),
+                    _buildSectionHeader('BIOMETRIC DATA'),
+                    SizedBox(height: 20.h),
+                    _buildDisabledField(
+                      'USERNAME',
+                      _usernameController.text,
+                      Icons.lock,
                     ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Tap to Change Avatar',
-                      style: TextStyle(
-                        color: highlightColor,
-                        fontSize: 10,
-                        fontFamily: 'PressStart2P',
-                      ),
-                    ),
-                    const SizedBox(height: 40),
-
-                    // 2. USERNAME (Read-only)
-                    _buildTextField(
-                      controller: _usernameController,
-                      labelText: 'USERNAME',
-                      icon: Icons.person,
-                      enabled: false,
-                    ),
-
-                    // 3. GENDER (Dropdown)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: secondaryButtonColor.withOpacity(0.8),
-                        border: Border.all(
-                          color: highlightColor.withOpacity(0.6),
-                          width: 1,
-                        ),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          isExpanded: true,
-                          value: _selectedGender,
-                          hint: Text(
-                            'GENDER',
-                            style: TextStyle(
-                              color: highlightColor.withOpacity(0.8),
-                              fontSize: 12,
-                              fontFamily: 'PressStart2P',
-                            ),
-                          ),
-                          dropdownColor: secondaryButtonColor.withOpacity(0.9),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontFamily: 'PressStart2P',
-                          ),
-                          icon: Icon(
-                            Icons.arrow_drop_down,
-                            color: highlightColor.withOpacity(0.8),
-                          ),
-                          items: const [
-                            DropdownMenuItem(
-                              value: 'Male',
-                              child: Text('MALE'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'Female',
-                              child: Text('FEMALE'),
-                            ),
-                          ],
-                          onChanged: (String? newValue) {
-                            setState(() {
-                              _selectedGender = newValue;
-                            });
-                          },
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 40),
-
-                    // 4. SAVE PROFILE BUTTON
-                    _buildThemedButton(
-                      text: 'SAVE CHANGES',
-                      onPressed: _saveProfile,
-                    ),
+                    SizedBox(height: 16.h),
+                    _buildGenderSelector(),
+                    SizedBox(height: 60.h),
+                    _buildSaveButton(),
                   ],
                 ),
               ),
+      ),
+    );
+  }
+
+  Widget _buildAvatarSelector() {
+    return Column(
+      children: [
+        Stack(
+          children: [
+            Container(
+              width: 140.w,
+              height: 140.w,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.highlightColor, width: 4),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.highlightColor.withValues(alpha: 0.2),
+                    blurRadius: 20,
+                    spreadRadius: 5,
+                  ),
+                ],
+                image: _pickedAvatarFile != null
+                    ? DecorationImage(
+                        image: FileImage(_pickedAvatarFile!),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
+              ),
+              child: _pickedAvatarFile == null
+                  ? Icon(
+                      Icons.person,
+                      size: 70.w,
+                      color: AppColors.highlightColor.withOpacity(0.5),
+                    )
+                  : null,
+            ),
+            Positioned(
+              bottom: 0,
+              right: 0,
+              child: GestureDetector(
+                onTap: _pickImage,
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: const BoxDecoration(
+                    color: AppColors.highlightColor,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.camera_alt,
+                    color: Colors.black,
+                    size: 20,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 16.h),
+        Text(
+          'UPDATE AVATAR',
+          style: TextStyle(
+            fontFamily: 'PressStart2P',
+            fontSize: 8.sp,
+            color: AppColors.highlightColor,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Row(
+      children: [
+        Container(width: 3.w, height: 14.h, color: AppColors.highlightColor),
+        SizedBox(width: 12.w),
+        Text(
+          title,
+          style: TextStyle(
+            fontFamily: 'PressStart2P',
+            fontSize: 9.sp,
+            color: Colors.white70,
+            letterSpacing: 1,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDisabledField(String label, String value, IconData icon) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.white24, size: 18.w),
+          SizedBox(width: 16.w),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  color: Colors.white24,
+                  fontSize: 8.sp,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: 4.h),
+              Text(
+                value.toUpperCase(),
+                style: TextStyle(
+                  color: Colors.white54,
+                  fontSize: 13.sp,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGenderSelector() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.highlightColor.withOpacity(0.3)),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          isExpanded: true,
+          value: _selectedGender,
+          dropdownColor: AppColors.secondaryButtonColor,
+          hint: Text(
+            'SELECT GENDER',
+            style: TextStyle(color: Colors.white24, fontSize: 11.sp),
+          ),
+          icon: const Icon(
+            Icons.keyboard_arrow_down,
+            color: AppColors.highlightColor,
+          ),
+          style: TextStyle(color: Colors.white, fontSize: 13.sp),
+          items: [
+            'MALE',
+            'FEMALE',
+            'OTHER',
+          ].map((g) => DropdownMenuItem(value: g, child: Text(g))).toList(),
+          onChanged: (val) => setState(() => _selectedGender = val),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSaveButton() {
+    return ElevatedButton(
+      onPressed: _saveProfile,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppColors.highlightColor,
+        foregroundColor: Colors.black,
+        padding: EdgeInsets.symmetric(vertical: 18.h),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        minimumSize: Size(double.infinity, 54.h),
+        elevation: 8,
+        shadowColor: AppColors.highlightColor.withOpacity(0.4),
+      ),
+      child: const Text(
+        'SYNCHRONIZE DATA',
+        style: TextStyle(fontFamily: 'PressStart2P', fontSize: 12),
       ),
     );
   }

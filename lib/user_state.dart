@@ -88,15 +88,6 @@ class UserState with ChangeNotifier {
     await _readModifyWrite((u) => u.decreaseStamina(amount));
   }
 
-  Future<void> setActiveAttacker(int index) async {
-    if (_currentUser == null) return;
-    await _readModifyWrite((u) {
-      if (u.capturedOrganisms.isEmpty) return u;
-      final i = index.clamp(0, u.capturedOrganisms.length - 1);
-      return u.copyWith(activeAttackerIndex: i);
-    });
-  }
-
   Future<bool> toggleTeamMember(int index) async {
     if (_currentUser == null) return false;
     bool success = true;
@@ -122,6 +113,19 @@ class UserState with ChangeNotifier {
     await _readModifyWrite((u) => u.copyWith(battleTeam: []));
   }
 
+  Future<void> reorderBattleTeam(int oldIndex, int newIndex) async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) {
+      final team = List<int>.from(u.battleTeam);
+      if (oldIndex < newIndex) {
+        newIndex -= 1;
+      }
+      final int item = team.removeAt(oldIndex);
+      team.insert(newIndex, item);
+      return u.copyWith(battleTeam: team);
+    });
+  }
+
   Future<void> releaseOrganism(int index) async {
     if (_currentUser == null) return;
     await _readModifyWrite((u) {
@@ -132,23 +136,11 @@ class UserState with ChangeNotifier {
       }
       final list = List<CapturedOrganism>.from(u.capturedOrganisms)
         ..removeAt(index);
-      int newAttacker = u.activeAttackerIndex;
-      if (list.isEmpty) {
-        newAttacker = 0;
-      } else if (index <= u.activeAttackerIndex) {
-        newAttacker = (u.activeAttackerIndex - 1).clamp(0, list.length - 1);
-      } else {
-        newAttacker = u.activeAttackerIndex.clamp(0, list.length - 1);
-      }
       final newTeam = u.battleTeam
           .where((i) => i != index)
           .map((i) => i > index ? i - 1 : i)
           .toList();
-      return u.copyWith(
-        capturedOrganisms: list,
-        activeAttackerIndex: newAttacker,
-        battleTeam: newTeam,
-      );
+      return u.copyWith(capturedOrganisms: list, battleTeam: newTeam);
     });
   }
 
@@ -659,12 +651,12 @@ class UserState with ChangeNotifier {
   }) async {
     if (_currentUser == null) return {};
 
-    // XP constants - ACCELERATED
-    final baseXP = defeatedLevel * 40; // Doubled animal battle XP
-    final accountXPShare = (defeatedLevel * 20).clamp(
-      20,
-      1000,
-    ); // Quadrupled account XP
+    // XP constants - SUPER ACCELERATED
+    final baseXP = defeatedLevel * 60; // Increased animal battle XP
+    final accountXPShare = (defeatedLevel * 100).clamp(
+      100,
+      10000,
+    ); // Significantly increased account XP
 
     Map<String, dynamic> results = {
       'accountLeveledUp': false,
@@ -698,13 +690,27 @@ class UserState with ChangeNotifier {
       // Update Account XP
       int newAccountXP = u.accountXP + accountXPShare;
       int newAccountLevel = u.accountLevel;
+      bool accountLeveledUp = false;
 
-      // Account XP formula: (level^2) * 100 - ACCELERATED
+      // Account XP formula: (level^2) * 100
       int xpForNextAccountLevel(int l) => (l * l) * 100;
 
       while (newAccountXP >= xpForNextAccountLevel(newAccountLevel + 1)) {
         newAccountLevel++;
+        accountLeveledUp = true;
         results['accountLeveledUp'] = true;
+      }
+
+      // If account leveled up, refresh ALL animals to see if they can now level up
+      if (accountLeveledUp) {
+        for (int i = 0; i < organisms.length; i++) {
+          final org = organisms[i];
+          final xpResult = org.gainXP(0, newAccountLevel);
+          if (xpResult['leveledUp'] as bool) {
+            results['animalLeveledUp'][org.id] = true;
+            organisms[i] = org.copyWith(level: xpResult['level'] as int);
+          }
+        }
       }
 
       return u.copyWith(

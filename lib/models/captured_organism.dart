@@ -30,8 +30,9 @@ class CapturedOrganism {
 
   final Nature nature;
   List<StatusEffect> statusEffects;
-  final int level; // NEW: Level of the organism
-  final int xp; // NEW: Experience points
+  final int initialLevel; // NEW: Level at capture/spawn
+  int level; // Actual derived level
+  int xp; // Cumulative experience points
 
   // NEW: Stat Boost Persistence (for Roguelike mid-battle re-entry)
   int attackStage;
@@ -41,6 +42,8 @@ class CapturedOrganism {
   int speedStage;
   int accuracyStage;
   int evasionStage;
+  final bool isAlpha;
+  final bool isShiny;
 
   CapturedOrganism({
     required this.baseOrganism,
@@ -57,8 +60,9 @@ class CapturedOrganism {
     List<StatusEffect>? statusEffects,
     StatusEffect? statusEffect, // Legacy support
     String? id,
-    this.level = 50, // Default level to 50
-    this.xp = 0,
+    this.initialLevel = 1,
+    this.level = 1,
+    this.xp = 1,
     this.attackStage = 0,
     this.defenseStage = 0,
     this.powerStage = 0,
@@ -66,6 +70,8 @@ class CapturedOrganism {
     this.speedStage = 0,
     this.accuracyStage = 0,
     this.evasionStage = 0,
+    this.isAlpha = false,
+    this.isShiny = false,
   }) : id = id ?? const Uuid().v4(),
        statusEffects =
            statusEffects ?? (statusEffect != null ? [statusEffect] : []),
@@ -121,8 +127,6 @@ class CapturedOrganism {
   set health(int value) => currentHealth = value;
   List<String> get abilities =>
       baseOrganism.abilities.split(',').map((e) => e.trim()).toList();
-  bool get isAlpha => false; // Placeholder for tests
-  bool get isShiny => false; // Placeholder for tests
 
   CapturedOrganism copyWith({
     Organism? baseOrganism,
@@ -135,7 +139,8 @@ class CapturedOrganism {
     Nature? nature,
     List<StatusEffect>? statusEffects,
     String? id,
-    int? level, // Added level to copyWith
+    int? initialLevel,
+    int? level,
     int? xp,
     int? attackStage,
     int? defenseStage,
@@ -144,6 +149,8 @@ class CapturedOrganism {
     int? speedStage,
     int? accuracyStage,
     int? evasionStage,
+    bool? isAlpha,
+    bool? isShiny,
   }) {
     return CapturedOrganism(
       baseOrganism: baseOrganism ?? this.baseOrganism,
@@ -157,7 +164,8 @@ class CapturedOrganism {
       nature: nature ?? this.nature,
       statusEffects: statusEffects ?? List.from(this.statusEffects),
       id: id ?? this.id,
-      level: level ?? this.level, // Pass level to constructor
+      initialLevel: initialLevel ?? this.initialLevel,
+      level: level ?? this.level,
       xp: xp ?? this.xp,
       attackStage: attackStage ?? this.attackStage,
       defenseStage: defenseStage ?? this.defenseStage,
@@ -166,6 +174,8 @@ class CapturedOrganism {
       speedStage: speedStage ?? this.speedStage,
       accuracyStage: accuracyStage ?? this.accuracyStage,
       evasionStage: evasionStage ?? this.evasionStage,
+      isAlpha: isAlpha ?? this.isAlpha,
+      isShiny: isShiny ?? this.isShiny,
     );
   }
 
@@ -177,25 +187,33 @@ class CapturedOrganism {
   /// Awards XP to the organism, handles level ups and account level capping.
   /// Returns a map with 'leveledUp' (bool) and 'xp' (int) and 'level' (int).
   Map<String, dynamic> gainXP(int amount, int accountLevelCap) {
-    int currentXP = xp + amount;
-    int currentLevel = level;
+    int newXP = xp + amount;
     bool leveledUp = false;
 
-    while (currentLevel < accountLevelCap &&
-        currentXP >= xpForLevel(currentLevel + 1)) {
-      currentLevel++;
+    // Calculate level from total XP
+    int levelFromXP = 1;
+    while (newXP >= xpForLevel(levelFromXP + 1)) {
+      levelFromXP++;
+    }
+
+    // New logic: level = max(initialLevel, min(accountLevelCap, levelFromXP))
+    int newLevel = max(initialLevel, min(accountLevelCap, levelFromXP));
+
+    if (newLevel > level) {
       leveledUp = true;
     }
 
-    // If we reached the cap, we pause XP gain at the threshold of the next level.
-    if (currentLevel >= accountLevelCap) {
-      int capXP = xpForLevel(currentLevel + 1) - 1;
-      if (currentXP > capXP) {
-        currentXP = capXP;
-      }
-    }
+    return {'xp': newXP, 'level': newLevel, 'leveledUp': leveledUp};
+  }
 
-    return {'xp': currentXP, 'level': currentLevel, 'leveledUp': leveledUp};
+  /// Returns the percentage of XP gained towards the next level (0.0 to 1.0).
+  double get xpRatio {
+    int currentLevelXP = xpForLevel(level);
+    int nextLevelXP = xpForLevel(level + 1);
+    int progress = xp - currentLevelXP;
+    int totalNeeded = nextLevelXP - currentLevelXP;
+    if (totalNeeded <= 0) return 0.0;
+    return (progress / totalNeeded).clamp(0.0, 1.0);
   }
 
   // --- DNA Generation and Stat Calculation ---
@@ -210,6 +228,7 @@ class CapturedOrganism {
     Organism base, {
     int? level,
     int accountLevel = 1,
+    Map<String, int>? ivs,
   }) {
     final rng = Random();
 
@@ -217,29 +236,52 @@ class CapturedOrganism {
     int wildLevel =
         level ?? (accountLevel + (rng.nextInt(5) - 2)).clamp(1, 100);
 
-    final ivs = {
-      'health': rng.nextInt(maxIV + 1), // 0 to 31
-      'attack': rng.nextInt(maxIV + 1),
-      'defense': rng.nextInt(maxIV + 1),
-      'power': rng.nextInt(maxIV + 1),
-      'resistance': rng.nextInt(maxIV + 1),
-      'speed': rng.nextInt(maxIV + 1),
-    };
+    // ROLL FOR SHINY AND ALPHA
+    final isShinyRoll = rng.nextInt(100) == 0; // 1/100
+    final isAlphaRoll = rng.nextInt(20) == 0; // 1/20
+
+    final Map<String, int> actualIvs =
+        ivs ??
+        {
+          'health': rng.nextInt(maxIV + 1),
+          'attack': rng.nextInt(maxIV + 1),
+          'defense': rng.nextInt(maxIV + 1),
+          'power': rng.nextInt(maxIV + 1),
+          'resistance': rng.nextInt(maxIV + 1),
+          'speed': rng.nextInt(maxIV + 1),
+        };
+
+    // Apply Stat Bonuses
+    if (isAlphaRoll) {
+      // Alphas: all IVs >= 15, at least two are 31
+      actualIvs.updateAll((k, v) => max(15, v));
+      final keys = actualIvs.keys.toList()..shuffle(rng);
+      actualIvs[keys[0]] = 31;
+      actualIvs[keys[1]] = 31;
+    } else if (isShinyRoll) {
+      // Shinies: at least one is 31
+      final keys = actualIvs.keys.toList()..shuffle(rng);
+      actualIvs[keys[0]] = 31;
+    }
 
     // Calculate initial max HP
     final maxHp = calculateStat(
       'health',
       base.health,
-      ivs['health']!,
+      actualIvs['health']!,
       level: wildLevel,
     );
 
     final spawn = CapturedOrganism(
       baseOrganism: base,
-      individualValues: ivs,
+      individualValues: actualIvs,
       currentHealth: maxHp, // Starts with full health
       nature: Nature.getRandom(),
-      level: wildLevel, // Pass level to constructor
+      initialLevel: wildLevel,
+      level: wildLevel,
+      xp: xpForLevel(wildLevel),
+      isAlpha: isAlphaRoll,
+      isShiny: isShinyRoll,
     );
 
     // Explicitly initialize moves now so they are set in stone
@@ -247,36 +289,23 @@ class CapturedOrganism {
     return spawn;
   }
 
-  // Stat calculation formula: BaseStat + (IV / 2) + Constant
-  // The 'IV/2' makes the IVs noticeable but not overwhelmingly dominant.
+  // Stat calculation: Pokémon-inspired formula.
+  // HP:    floor((Base * 2 + IV) * Level / 100) + Level + 10
+  // Other: floor((Base * 2 + IV) * Level / 100) + 5
+  // This ensures stats grow meaningfully at every level (not too flat at low
+  // levels, not too explosive at high levels) and Level 50 matches the
+  // balanced "mid-game" baseline.
   static int calculateStat(
     String statName,
     int baseStat,
     int iv, {
-    int level = 50, // Default level for static calculation
+    int level = 50,
   }) {
-    // Standard Formula: ((Base * 2 + IV + (EV/4)) * Level / 100) + N
-    // But since we don't have EVs yet and statConstant was 10.
-    // Let's adapt closer to standard Pokemon formula logic but simplified.
-    // HP: ((Base + IV) * 2 * Level / 100) + Level + 10
-    // Others: ((Base + IV) * 2 * Level / 100) + 5
-
-    // Using simple version for balance continuity with previous logic if level was 50-ish?
-    // Old formula was (Base + IV/2)*2 + 10.
-    // If we assume old logic was "Level 50", let's make it scale linearly.
-
-    final double levelMultiplier = level / 50.0;
-
+    final int base = ((baseStat * 2 + iv) * level / 100).floor();
     if (statName == 'health') {
-      // HP Formula: (Base + IV/2) * 2 * Multiplier + Constant (scaled?)
-      // Keeping it simple so it doesn't break balance:
-      return ((baseStat + (iv / 2).floor()) * 2 * levelMultiplier).floor() +
-          statConstant +
-          level;
+      return base + level + 10;
     }
-    // Other Stats Formula: (Base + IV/2) * Multiplier + Constant
-    return ((baseStat + (iv / 2).floor()) * levelMultiplier).floor() +
-        statConstant;
+    return base + 5;
   }
 
   // --- Getters for Effective Stats ---
@@ -454,8 +483,9 @@ class CapturedOrganism {
     'moveStamina': moveStamina,
     'nature': nature.name,
     'statusEffects': statusEffects.map((e) => e.toJson()).toList(),
-    'level': level, // Added level to toJson
-    'xp': xp, // Added xp to toJson
+    'level': level,
+    'xp': xp,
+    'initialLevel': initialLevel,
     'attackStage': attackStage,
     'defenseStage': defenseStage,
     'powerStage': powerStage,
@@ -463,6 +493,8 @@ class CapturedOrganism {
     'speedStage': speedStage,
     'accuracyStage': accuracyStage,
     'evasionStage': evasionStage,
+    'isAlpha': isAlpha,
+    'isShiny': isShiny,
   };
 
   /// Create CapturedOrganism from JSON
@@ -521,8 +553,9 @@ class CapturedOrganism {
                 .map((e) => StatusEffect.fromJson(e as Map<String, dynamic>))
                 .toList()
           : (status != null ? [status] : []),
-      level: level, // Pass level to constructor
-      xp: json['xp'] as int? ?? 0, // Pass xp to constructor
+      level: level,
+      xp: json['xp'] as int? ?? 0,
+      initialLevel: json['initialLevel'] as int? ?? level,
       attackStage: json['attackStage'] as int? ?? 0,
       defenseStage: json['defenseStage'] as int? ?? 0,
       powerStage: json['powerStage'] as int? ?? 0,
@@ -530,6 +563,8 @@ class CapturedOrganism {
       speedStage: json['speedStage'] as int? ?? 0,
       accuracyStage: json['accuracyStage'] as int? ?? 0,
       evasionStage: json['evasionStage'] as int? ?? 0,
+      isAlpha: json['isAlpha'] as bool? ?? false,
+      isShiny: json['isShiny'] as bool? ?? false,
     );
   }
 }

@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 enum ElementalType {
   basic, // Fallback
   flying,
@@ -28,6 +30,51 @@ extension ElementalTypeX on ElementalType {
 
   static ElementalType fromString(String s) =>
       _nameMap[s.toLowerCase()] ?? ElementalType.basic;
+
+  Color get color {
+    switch (this) {
+      case ElementalType.blaze:
+        return Colors.orange;
+      case ElementalType.aquatic:
+        return Colors.blue;
+      case ElementalType.grass:
+        return Colors.green;
+      case ElementalType.electric:
+        return Colors.yellow;
+      case ElementalType.cryo:
+        return Colors.cyan;
+      case ElementalType.martial:
+        return Colors.redAccent;
+      case ElementalType.toxic:
+        return Colors.purple;
+      case ElementalType.earth:
+        return Colors.brown;
+      case ElementalType.flying:
+        return Colors.lightBlueAccent;
+      case ElementalType.mystic:
+        return Colors.pinkAccent;
+      case ElementalType.arthropod:
+        return Colors.lightGreen;
+      case ElementalType.rock:
+        return Colors.grey;
+      case ElementalType.darkness:
+        return Colors.indigo;
+      case ElementalType.spectral:
+        return Colors.deepPurpleAccent;
+      case ElementalType.metal:
+        return Colors.blueGrey;
+      case ElementalType.aura:
+        return Colors.teal;
+      case ElementalType.sound:
+        return Colors.deepOrange;
+      case ElementalType.holy:
+        return Colors.amber;
+      case ElementalType.drake:
+        return Colors.deepPurple;
+      default:
+        return Colors.white70;
+    }
+  }
 }
 
 class TypeChart {

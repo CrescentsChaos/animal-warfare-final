@@ -13,6 +13,7 @@ import 'package:animal_warfare/theme.dart';
 import 'package:animal_warfare/widgets/item_icon.dart';
 import 'package:animal_warfare/models/nature.dart';
 import 'package:animal_warfare/models/elemental_type.dart';
+import 'package:animal_warfare/widgets/animal_summary_screen.dart';
 import 'dart:async';
 
 class AnimalBoxScreen extends StatefulWidget {
@@ -182,13 +183,10 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
               final org = entry.value;
               final originalIndex = entry.key;
               final isInTeam = user.battleTeam.contains(originalIndex);
-              final isAttacker = user.activeAttackerIndex == originalIndex;
-
               return _AnimalCard(
                 captured: org,
                 index: originalIndex,
                 isInTeam: isInTeam,
-                isActiveAttacker: isAttacker,
                 isNarrow: MediaQuery.sizeOf(context).width < 400,
                 isNew:
                     captured.length > 3 && originalIndex >= captured.length - 3,
@@ -206,8 +204,6 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
                     );
                   }
                 },
-                onSetAsAttacker: () =>
-                    userState.setActiveAttacker(originalIndex),
                 onManageMoves: () =>
                     _showMoveSelection(context, org, originalIndex),
                 onEquip: () => _showTalismanSelector(
@@ -232,28 +228,29 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
       return _buildEmptyTeamState();
     }
 
-    return ListView.builder(
+    return ReorderableListView.builder(
       padding: const EdgeInsets.all(12),
       itemCount: teamIndices.length,
+      onReorder: (oldIndex, newIndex) {
+        userState.reorderBattleTeam(oldIndex, newIndex);
+      },
       itemBuilder: (context, index) {
         final originalIndex = teamIndices[index];
         if (originalIndex < 0 ||
             originalIndex >= user.capturedOrganisms.length) {
-          return const SizedBox.shrink();
+          return SizedBox.shrink(key: ValueKey('empty_team_$index'));
         }
         final org = user.capturedOrganisms[originalIndex];
-        final isAttacker = user.activeAttackerIndex == originalIndex;
 
         return _AnimalCard(
+          key: ValueKey('team_card_$originalIndex'),
           captured: org,
           index: originalIndex,
           isInTeam: true,
-          isActiveAttacker: isAttacker,
           isNarrow: MediaQuery.sizeOf(context).width < 400,
           isNew: false,
           onTap: () => _showAnimalDetails(context, org, originalIndex),
           onToggleTeam: () => userState.toggleTeamMember(originalIndex),
-          onSetAsAttacker: () => userState.setActiveAttacker(originalIndex),
           onManageMoves: () => _showMoveSelection(context, org, originalIndex),
           onEquip: () =>
               _showTalismanSelector(context, userState, originalIndex, org),
@@ -540,26 +537,23 @@ class _AnimalCard extends StatelessWidget {
   final CapturedOrganism captured;
   final int index;
   final bool isInTeam;
-  final bool isActiveAttacker;
   final bool isNarrow;
   final bool isNew;
   final VoidCallback onTap;
   final VoidCallback onToggleTeam;
-  final VoidCallback onSetAsAttacker;
   final VoidCallback onManageMoves;
   final VoidCallback onEquip;
   final VoidCallback onRelease;
 
   const _AnimalCard({
+    super.key,
     required this.captured,
     required this.index,
     required this.isInTeam,
-    required this.isActiveAttacker,
     required this.isNarrow,
     this.isNew = false,
     required this.onTap,
     required this.onToggleTeam,
-    required this.onSetAsAttacker,
     required this.onManageMoves,
     required this.onEquip,
     required this.onRelease,
@@ -613,10 +607,8 @@ class _AnimalCard extends StatelessWidget {
               ),
             ],
         border: Border.all(
-          color: isActiveAttacker
-              ? AppColors.highlightColor
-              : (isInTeam ? Colors.blue[300]! : Colors.grey[700]!),
-          width: isActiveAttacker || isInTeam ? 2 : 1,
+          color: isInTeam ? Colors.blue[300]! : Colors.grey[700]!,
+          width: isInTeam ? 2 : 1,
         ),
       ),
       child: Material(
@@ -756,7 +748,7 @@ class _AnimalCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'HP: ${(captured.getMaxHealth(atLevel: 50) * (captured.currentHealth / captured.maxHealth)).round()}/${captured.getMaxHealth(atLevel: 50)}',
+                        'HP: ${captured.currentHealth}/${captured.maxHealth}',
                         style: TextStyle(
                           color: Colors.grey[400],
                           fontSize: 10,
@@ -806,13 +798,6 @@ class _AnimalCard extends StatelessWidget {
       runSpacing: 6,
       children: [
         _SmallActionBtn(
-          label: isActiveAttacker ? 'ACTIVE' : 'ATTACK',
-          color: isActiveAttacker
-              ? AppColors.highlightColor
-              : AppColors.primaryButtonColor,
-          onPressed: isActiveAttacker ? null : onSetAsAttacker,
-        ),
-        _SmallActionBtn(
           label: 'MOVES',
           color: AppColors.secondaryButtonColor,
           onPressed: onManageMoves,
@@ -830,6 +815,23 @@ class _AnimalCard extends StatelessWidget {
           label: isInTeam ? 'REMOVE' : 'ADD TEAM',
           color: isInTeam ? Colors.blue[700]! : Colors.blue[400]!,
           onPressed: onToggleTeam,
+        ),
+        _SmallActionBtn(
+          label: 'SUMMARY',
+          color: AppColors.secondaryButtonColor,
+          onPressed: () => Navigator.push(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (_, __, ___) =>
+                  AnimalSummaryScreen(captured: captured),
+              transitionsBuilder: (_, animation, __, child) {
+                return FadeTransition(opacity: animation, child: child);
+              },
+              transitionDuration: const Duration(milliseconds: 250),
+            ),
+          ),
+          isOutlined: true,
+          textColor: Colors.orange,
         ),
         _SmallActionBtn(
           label: 'RELEASE',

@@ -4,17 +4,15 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:animal_warfare/models/organism.dart';
-import 'package:animal_warfare/widgets/organism_sprite_widget.dart';
-import 'package:animal_warfare/models/ability.dart';
 import 'package:animal_warfare/local_auth_service.dart';
 import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/theme.dart';
 import 'package:provider/provider.dart';
 import 'package:animal_warfare/models/elemental_type.dart';
-import 'dart:async';
+import 'package:animal_warfare/models/shop_item.dart';
+import 'package:animal_warfare/widgets/anidex_details_sheet.dart'; // Added
 
 class AnidexScreen extends StatefulWidget {
-  // User data must be passed to check discovery status
   final UserData currentUser;
   final LocalAuthService authService;
 
@@ -28,628 +26,924 @@ class AnidexScreen extends StatefulWidget {
   State<AnidexScreen> createState() => _AnidexScreenState();
 }
 
-class _AnidexScreenState extends State<AnidexScreen> {
+class _AnidexScreenState extends State<AnidexScreen>
+    with TickerProviderStateMixin {
   List<Organism> _allOrganisms = [];
-  List<Organism> _searchResults = [];
-  final TextEditingController _searchController = TextEditingController();
-  Timer? _debounce;
+  List<Organism> _filteredOrganisms = [];
+  List<ShopItem> _allItems = [];
 
-  // Helper to check if organism is discovered
-  bool _isDiscovered(BuildContext context, Organism organism) {
-    // Retrieve the UserData from the Provider without listening
-    // (the Consumer around the search results list will handle rebuilding)
-    final userState = Provider.of<UserState>(context, listen: false);
-    // Use null-aware operator if currentUser can be null
-    return userState.currentUser?.discoveredOrganisms.contains(organism.name) ??
-        false;
-  }
+  // Filter Collections
+  List<String> _allBiomes = [];
+  List<String> _allAbilities = [];
+  List<String> _allMoves = [];
+  List<String> _allDrops = [];
+  List<String> _allCategories = [];
+
+  final TextEditingController _searchController = TextEditingController();
+  late TabController _tabController;
+  final ScrollController _scrollController = ScrollController();
+
+  // Pagination
+  static const int _pageSize = 20;
+  int _visibleCount = _pageSize;
+
+  // Filter State
+  String? _selectedCategory1;
+  String? _selectedCategory2;
+  String? _selectedBiome;
+  String? _selectedAbility;
+  String? _selectedMove;
+  String? _selectedDrop;
+  String _sortBy = 'NAME';
+  bool _isAscending = true;
+
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _loadOrganisms();
-    _searchController.addListener(_onSearchChanged);
+    _tabController = TabController(length: 2, vsync: this);
+    _scrollController.addListener(_onScroll);
+    _loadData();
+    _searchController.addListener(() {
+      _applyFilters();
+      _resetScroll();
+    });
   }
 
   @override
   void dispose() {
-    _debounce?.cancel();
-    _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
+    _tabController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
-  // --- Helper function to get color based on rarity ---
-  Color _getRarityColor(String rarity) {
-    switch (rarity.toLowerCase()) {
-      case 'common':
-        return const Color.fromARGB(255, 188, 188, 188).withOpacity(0.8);
-      case 'uncommon':
-        return const Color.fromARGB(255, 117, 210, 117);
-      case 'rare':
-        return Colors.blueAccent;
-      case 'epic':
-      case 'elite': // Added for completeness
-        return const Color.fromARGB(255, 169, 20, 195);
-      case 'legendary':
-        return Colors.orange;
-      case 'mythical':
-        return const Color.fromARGB(255, 229, 18, 131);
-      default:
-        return Colors.grey;
-    }
-  }
-
-  // --- Data Loading & Search Logic ---
-  Future<void> _loadOrganisms() async {
-    const String assetPath = 'assets/Organisms.json';
-    try {
-      final String response = await rootBundle.loadString(assetPath);
-      final List<dynamic> animalsData = json.decode(response);
-
-      setState(() {
-        _allOrganisms = animalsData
-            .map((json) => Organism.fromJson(json))
-            .toList();
-        _searchResults = [];
-      });
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          // 🚨 EDITED: Use AppTextStyles.small for SnackBar content
-          SnackBar(
-            content: Text(
-              'Error loading data. Check JSON format and asset path. Error: $e',
-              style: AppTextStyles.small(context, color: Colors.white),
-            ),
-          ),
-        );
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      if (_visibleCount < _filteredOrganisms.length) {
+        setState(() {
+          _visibleCount += _pageSize;
+        });
       }
     }
   }
 
-  void _onSearchChanged() {
-    if (_debounce?.isActive ?? false) _debounce!.cancel();
-    _debounce = Timer(const Duration(milliseconds: 300), () {
-      _performSearch();
-    });
-  }
-
-  void _performSearch() {
-    final query = _searchController.text.trim().toLowerCase();
-
-    // Autocomplete removal: Logic for handling _autocompleteSuggestion is removed.
-
-    if (query.isEmpty) {
-      setState(() {
-        _searchResults = [];
-      });
-      return;
+  void _resetScroll() {
+    if (_scrollController.hasClients) {
+      _scrollController.jumpTo(0);
     }
-
     setState(() {
-      _searchResults = _allOrganisms
-          .where(
-            (org) =>
-                org.name.toLowerCase().contains(query) ||
-                org.scientificName.toLowerCase().contains(query),
-          )
-          .toList();
-
-      // FIX: Sort by name descending (Z-A)
-      _searchResults.sort((a, b) => a.name.compareTo(b.name));
+      _visibleCount = _pageSize;
     });
   }
 
-  // --- UI Builders ---
-  Widget _buildSearchBar() {
-    // ... (unchanged)
-    return Container(
-      padding: const EdgeInsets.only(bottom: 20),
-      // Autocomplete removal: Stack and the autocomplete overlay Text widget are removed.
-      child: TextField(
-        controller: _searchController,
-        // 🚨 EDITED: Use AppTextStyles.body
-        style: AppTextStyles.body(context, baseSize: 16, color: Colors.white),
-        decoration: InputDecoration(
-          hintText: 'Search Animal Name...',
-          // 🚨 EDITED: Use AppTextStyles.body
-          hintStyle: AppTextStyles.body(
-            context,
-            baseSize: 16,
-            color: Colors.white.withOpacity(0.5),
-          ),
-          filled: true,
-          // 🚨 EDITED: Use AppColors.secondaryButtonColor
-          fillColor: AppColors.secondaryButtonColor.withOpacity(0.8),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(4.0),
-            // 🚨 EDITED: Use AppColors.highlightColor
-            borderSide: const BorderSide(
-              color: AppColors.highlightColor,
-              width: 2.0,
+  Future<void> _loadData() async {
+    setState(() => _isLoading = true);
+    try {
+      final String response = await rootBundle.loadString(
+        'assets/Organisms.json',
+      );
+      final List<dynamic> animalsData = json.decode(response);
+      _allOrganisms = animalsData.map((j) => Organism.fromJson(j)).toList();
+      _allItems = await ShopItem.loadAll();
+
+      _allBiomes =
+          _allOrganisms
+              .map((o) => o.habitat)
+              .expand((h) => h.split(',').map((s) => s.trim()))
+              .where((s) => s.isNotEmpty)
+              .toSet()
+              .toList()
+            ..sort();
+      _allAbilities =
+          _allOrganisms
+              .map((o) => o.abilities)
+              .expand((a) => a.split(',').map((s) => s.trim()))
+              .where((s) => s.isNotEmpty)
+              .toSet()
+              .toList()
+            ..sort();
+      _allMoves =
+          _allOrganisms
+              .map((o) => o.moves)
+              .expand((m) => m.split(',').map((s) => s.trim()))
+              .where((s) => s.isNotEmpty)
+              .toSet()
+              .toList()
+            ..sort();
+      _allDrops =
+          _allOrganisms
+              .map((o) => o.drops)
+              .expand((d) => d.split(',').map((s) => s.trim()))
+              .where((s) => s.isNotEmpty)
+              .toSet()
+              .toList()
+            ..sort();
+      _allCategories =
+          ElementalType.values.map((e) => e.name.toUpperCase()).toList()
+            ..sort();
+
+      _applyFilters();
+    } catch (e) {
+      debugPrint('Error loading anidex data: $e');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  void _applyFilters() {
+    final query = _searchController.text.toLowerCase();
+
+    _filteredOrganisms = _allOrganisms.where((org) {
+      if (query.isNotEmpty &&
+          !org.name.toLowerCase().contains(query) &&
+          !org.scientificName.toLowerCase().contains(query)) {
+        return false;
+      }
+      if (_selectedCategory1 != null &&
+          !org.category.toUpperCase().contains(_selectedCategory1!)) {
+        return false;
+      }
+      if (_selectedCategory2 != null &&
+          !org.category.toUpperCase().contains(_selectedCategory2!)) {
+        return false;
+      }
+      if (_selectedBiome != null && !org.habitat.contains(_selectedBiome!)) {
+        return false;
+      }
+      if (_selectedAbility != null &&
+          !org.abilities.contains(_selectedAbility!)) {
+        return false;
+      }
+      if (_selectedMove != null && !org.moves.contains(_selectedMove!)) {
+        return false;
+      }
+      if (_selectedDrop != null && !org.drops.contains(_selectedDrop!)) {
+        return false;
+      }
+      return true;
+    }).toList();
+
+    _filteredOrganisms.sort((a, b) {
+      int result = 0;
+      switch (_sortBy) {
+        case 'HEALTH':
+          result = b.health.compareTo(a.health);
+          break;
+        case 'ATTACK':
+          result = b.attack.compareTo(a.attack);
+          break;
+        case 'DEFENSE':
+          result = b.defense.compareTo(a.defense);
+          break;
+        case 'POWER':
+          result = b.power.compareTo(a.power);
+          break;
+        case 'RESISTANCE':
+          result = b.resistance.compareTo(a.resistance);
+          break;
+        case 'SPEED':
+          result = b.speed.compareTo(a.speed);
+          break;
+        default:
+          result = a.name.compareTo(b.name);
+          break;
+      }
+      return _isAscending ? result : -result;
+    });
+
+    if (mounted) setState(() {});
+  }
+
+  bool _isDiscovered(Organism organism) {
+    final userState = Provider.of<UserState>(context, listen: false);
+    return userState.currentUser?.discoveredOrganisms.contains(organism.name) ??
+        false;
+  }
+
+  bool _isCaptured(Organism organism) {
+    final userState = Provider.of<UserState>(context, listen: false);
+    return userState.currentUser?.capturedOrganisms.any(
+          (co) => co.name == organism.name,
+        ) ??
+        false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.secondaryButtonColor,
+      appBar: AppBar(
+        title: const Text('DATABASE'),
+        bottom: TabBar(
+          controller: _tabController,
+          indicatorColor: AppColors.highlightColor,
+          labelStyle: const TextStyle(fontFamily: 'PressStart2P', fontSize: 10),
+          tabs: const [
+            Tab(text: 'ANIMALS'),
+            Tab(text: 'ITEMS'),
+          ],
+        ),
+        actions: [
+          Builder(
+            builder: (context) => IconButton(
+              icon: const Icon(Icons.tune, color: AppColors.highlightColor),
+              onPressed: () => Scaffold.of(context).openEndDrawer(),
             ),
           ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(4.0),
-            // 🚨 EDITED: Use AppColors.highlightColor
-            borderSide: const BorderSide(
-              color: AppColors.highlightColor,
-              width: 3.0,
+        ],
+      ),
+      endDrawer: _buildFilterDrawer(),
+      body: Container(
+        decoration: BoxDecoration(
+          color: AppColors.secondaryButtonColor,
+          image: DecorationImage(
+            image: const AssetImage('assets/main.png'),
+            fit: BoxFit.cover,
+            colorFilter: ColorFilter.mode(
+              Colors.black.withOpacity(0.85),
+              BlendMode.darken,
             ),
-          ),
-          suffixIcon: IconButton(
-            // 🚨 EDITED: Use AppColors.highlightColor
-            icon: const Icon(Icons.search, color: AppColors.highlightColor),
-            onPressed: _performSearch,
-          ),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 12,
-            vertical: 15,
           ),
         ),
-        onSubmitted: (_) => _performSearch(),
+        child: Column(
+          children: [
+            _buildStickySearchBar(),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _isLoading
+                      ? const Center(
+                          child: CircularProgressIndicator(
+                            color: AppColors.highlightColor,
+                          ),
+                        )
+                      : _buildAnimalsGrid(),
+                  _isLoading
+                      ? const Center(
+                          child: CircularProgressIndicator(
+                            color: AppColors.highlightColor,
+                          ),
+                        )
+                      : _buildItemsGrid(),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildResultList() {
-    if (_allOrganisms.isEmpty) {
-      // 🚨 EDITED: Use AppTextStyles.small
-      return Center(
-        child: Text(
-          'Loading Data...',
-          style: AppTextStyles.small(context, color: AppColors.highlightColor),
+  Widget _buildStickySearchBar() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.5),
+        border: const Border(bottom: BorderSide(color: Colors.white10)),
+      ),
+      child: TextField(
+        controller: _searchController,
+        style: const TextStyle(color: Colors.white, fontSize: 12),
+        decoration: InputDecoration(
+          hintText: 'SEARCH SYSTEM...',
+          hintStyle: TextStyle(
+            color: Colors.white.withOpacity(0.3),
+            fontSize: 10,
+            fontFamily: 'PressStart2P',
+          ),
+          prefixIcon: const Icon(
+            Icons.search,
+            size: 18,
+            color: AppColors.highlightColor,
+          ),
+          filled: true,
+          fillColor: Colors.white.withOpacity(0.05),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide.none,
+          ),
+          contentPadding: const EdgeInsets.symmetric(vertical: 0),
         ),
-      );
-    }
+      ),
+    );
+  }
 
-    if (_searchResults.isEmpty && _searchController.text.isNotEmpty) {
+  Widget _buildAnimalsGrid() {
+    if (_filteredOrganisms.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.search_off,
-              size: 80,
-              color: Colors.red.withOpacity(0.5),
-            ),
+            const Icon(Icons.search_off, size: 48, color: Colors.white24),
             const SizedBox(height: 16),
             Text(
-              'NO SIGNAL DETECTED.\nThe beast eludes you...',
-              textAlign: TextAlign.center,
+              'NO MATCHING DATA',
               style: AppTextStyles.body(
                 context,
                 baseSize: 12,
-                color: Colors.red,
-              ).copyWith(height: 1.5),
-            ),
-          ],
-        ),
-      );
-    }
-    if (_searchResults.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.travel_explore,
-              size: 80,
-              color: AppColors.highlightColor.withOpacity(0.5),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'AWAITING INPUT.\nSearch the database to uncover classified data.',
-              textAlign: TextAlign.center,
-              style: AppTextStyles.body(
-                context,
-                baseSize: 12,
-                color: AppColors.highlightColor,
-              ).copyWith(height: 1.5),
+                color: Colors.white38,
+              ),
             ),
           ],
         ),
       );
     }
 
-    return ListView.builder(
-      // FIX: Use the list with current search results
-      itemCount: _searchResults.length,
+    final displayList = _filteredOrganisms.take(_visibleCount).toList();
+
+    return GridView.builder(
+      controller: _scrollController,
+      padding: const EdgeInsets.all(16),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 0.75,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+      ),
+      itemCount:
+          displayList.length +
+          (_visibleCount < _filteredOrganisms.length ? 1 : 0),
       itemBuilder: (context, index) {
-        final organism = _searchResults[index];
-
-        // 💡 FIX: Pass the 'context' to the _buildOrganismTile function.
-        return _buildOrganismTile(context, organism);
+        if (index == displayList.length) {
+          return const Center(
+            child: CircularProgressIndicator(color: AppColors.highlightColor),
+          );
+        }
+        final org = displayList[index];
+        final discovered = _isDiscovered(org);
+        final captured = _isCaptured(org);
+        return _buildAnimalCard(org, discovered, captured);
       },
     );
   }
 
-  // lib/anidex_screen.dart
-
-  // ... (inside _AnidexScreenState)
-
-  // 💡 FIX: Add 'BuildContext context' as the first argument
-  Widget _buildOrganismTile(BuildContext context, Organism organism) {
-    // 💡 FIX: Pass 'context' to the _isDiscovered helper function
-    final bool isDiscovered = _isDiscovered(context, organism);
-
-    // Conditional display for title/subtitle if not discovered
-    final String titleText = isDiscovered ? organism.name.toUpperCase() : '???';
-    final String subtitleText = isDiscovered
-        ? 'Rarity: ${organism.rarity}'
-        : 'Status: UNDISCOVERED';
-    final Color titleColor = isDiscovered ? Colors.white : Colors.grey.shade600;
-
-    List<BoxShadow>? rarityGlow;
-    if (isDiscovered) {
-      if (organism.rarity.toLowerCase() == 'legendary') {
-        rarityGlow = [
-          BoxShadow(
-            color: Colors.orange.withOpacity(0.5),
-            blurRadius: 10,
-            spreadRadius: 2,
+  Widget _buildAnimalCard(Organism org, bool discovered, bool captured) {
+    final rarityColor = _getRarityColor(org.rarity);
+    return InkWell(
+      onTap: () =>
+          AnidexDetailsSheet.show(context, org, showScaledStats: false),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.4),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: discovered ? rarityColor.withOpacity(0.4) : Colors.white10,
+            width: 1.5,
           ),
-        ];
-      } else if (organism.rarity.toLowerCase() == 'mythical') {
-        rarityGlow = [
-          BoxShadow(
-            color: Colors.purple.withOpacity(0.5),
-            blurRadius: 10,
-            spreadRadius: 2,
-          ),
-        ];
-      } else if (organism.rarity.toLowerCase() == 'epic' ||
-          organism.rarity.toLowerCase() == 'elite') {
-        rarityGlow = [
-          BoxShadow(
-            color: Colors.purpleAccent.withOpacity(0.3),
-            blurRadius: 8,
-            spreadRadius: 1,
-          ),
-        ];
-      }
-    }
-
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(
-        color: AppColors.secondaryButtonColor.withOpacity(0.9),
-        borderRadius: BorderRadius.circular(8),
-        boxShadow:
-            rarityGlow ??
-            [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.3),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: ListTile(
-          leading: isDiscovered
-              ? Hero(
-                  tag: 'anidex_sprite_${organism.name}',
-                  child: SizedBox(
-                    width: 40,
-                    height: 40,
-                    child: _OrganismSpriteDisplay(
-                      organism: organism,
-                      isDiscovered: isDiscovered,
-                      silhouetteColor: Colors.black,
-                    ),
-                  ),
-                )
-              : Icon(Icons.question_mark_rounded, color: Colors.grey.shade800),
-          title: Text(
-            titleText,
-            style: AppTextStyles.body(context, baseSize: 16, color: titleColor),
-          ),
-          subtitle: Text(
-            subtitleText,
-            style: AppTextStyles.small(
-              context,
-              baseSize: 12,
-              color: AppColors.highlightColor,
-            ),
-          ),
-          trailing: isDiscovered
-              ? const Icon(Icons.chevron_right, color: AppColors.highlightColor)
-              : Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.5),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: const Text(
-                    'UNDISCOVERED',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 8,
-                      fontFamily: 'PressStart2P',
-                    ),
+        ),
+        child: Column(
+          children: [
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                child: Hero(
+                  tag: 'anidex_sprite_${org.name}',
+                  child: _OrganismSpriteDisplay(
+                    organism: org,
+                    isDiscovered: discovered,
+                    isCaptured: captured,
+                    silhouetteColor: Colors.black,
                   ),
                 ),
-          onTap: () => _showOrganismDetails(context, organism),
+              ),
+            ),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: discovered
+                    ? rarityColor.withOpacity(0.1)
+                    : Colors.black26,
+                borderRadius: const BorderRadius.vertical(
+                  bottom: Radius.circular(11),
+                ),
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    discovered ? org.name.toUpperCase() : 'SILHOUETTE',
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontFamily: 'PressStart2P',
+                      fontSize: 8,
+                      color: discovered ? Colors.white : Colors.white24,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    discovered
+                        ? (captured ? org.rarity.toUpperCase() : 'GRAYSCALE')
+                        : 'UNIDENTIFIED',
+                    style: TextStyle(
+                      color: discovered
+                          ? (captured ? rarityColor : Colors.grey)
+                          : Colors.white10,
+                      fontSize: 6,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  // ------------------------------------------------------------------
-  // Immersive Modal Bottom Sheet for Details
-  // ------------------------------------------------------------------
-  void _showOrganismDetails(BuildContext context, Organism organism) {
-    // Check discovery status once
-    final bool isDiscovered = _isDiscovered(context, organism);
+  Widget _buildItemsGrid() {
+    final query = _searchController.text.toLowerCase();
+    final items = _allItems
+        .where(
+          (it) =>
+              it.name.toLowerCase().contains(query) ||
+              it.category.toLowerCase().contains(query),
+        )
+        .toList();
 
-    // Stat color logic to determine the text color based on value,
-    // now separate from the bar color.
-    Color getStatTextColor(int stat) {
-      if (stat >= 400) {
-        return Colors
-            .white; // Keep white for high visibility against dark background
-      }
-      if (stat >= 300) return Colors.white.withOpacity(0.9);
-      // 🚨 EDITED: Use AppColors.highlightColor
-      if (stat >= 200) return AppColors.highlightColor;
-      return Colors.blueGrey;
+    if (items.isEmpty) {
+      return Center(
+        child: Text(
+          'NO ITEMS MATCH',
+          style: AppTextStyles.body(
+            context,
+            baseSize: 10,
+            color: Colors.white24,
+          ),
+        ),
+      );
     }
 
-    final rarityColor = _getRarityColor(organism.rarity); // Get color once
+    return GridView.builder(
+      padding: const EdgeInsets.all(16),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        childAspectRatio: 0.75,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+      ),
+      itemCount: items.length,
+      itemBuilder: (context, index) {
+        final item = items[index];
+        final spritePath =
+            'assets/items/${item.name.toLowerCase().replaceAll(' ', '-')}.png';
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (BuildContext context) {
-        return DraggableScrollableSheet(
-          initialChildSize: 0.9,
-          minChildSize: 0.5,
-          maxChildSize: 0.95,
-          expand: false,
-          builder: (_, controller) {
-            return Container(
-              decoration: BoxDecoration(
-                // 🚨 EDITED: Use AppColors.secondaryButtonColor
-                color: AppColors.secondaryButtonColor.withOpacity(0.95),
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(20),
-                ),
-                border: Border.all(color: rarityColor, width: 3.0),
-              ),
-              child: ListView(
-                controller: controller,
-                padding: const EdgeInsets.all(0),
-                children: <Widget>[
-                  // 1. Header Section (Image, Name, Rarity)
-                  _buildDetailsHeader(
-                    organism,
-                    rarityColor,
-                    isDiscovered,
-                  ), // UPDATED: Pass discovery status
-                  // 2. Main Content
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20.0,
-                      vertical: 10.0,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Discovery Status Message
-                        if (!isDiscovered)
-                          Column(
-                            children: [
-                              _buildSectionTitle('CLASSIFIED DATA'),
-                              const SizedBox(height: 10),
-                              Text(
-                                'ANIMAL IDENTIFICATION REQUIRED. DATA BLOCKED.',
-                                textAlign: TextAlign.center,
-                                // 🚨 EDITED: Use AppTextStyles.body
-                                style: AppTextStyles.body(
-                                  context,
-                                  baseSize: 14,
-                                  color: Colors.red.shade400,
-                                ),
-                              ),
-                              const Divider(color: Colors.red),
-                              const SizedBox(height: 10),
-                            ],
-                          ),
-
-                        // Description/Brief
-                        _buildSectionTitle('MISSION BRIEF'),
-                        const SizedBox(height: 5),
-                        Text(
-                          isDiscovered
-                              ? organism.description
-                              : 'Description is classified until identification.',
-                          // 🚨 EDITED: Use AppTextStyles.small
-                          style: AppTextStyles.small(
-                            context,
-                            baseSize: 12,
-                            color: Colors.white70,
-                          ),
-                        ),
-
-                        // General Details
-                        // 🚨 EDITED: Use AppColors.highlightColor
-                        const Divider(color: AppColors.highlightColor),
-
-                        // FIX: Rarity remains visible as a general, non-classified detail.
-                        _buildDetailRow(
-                          'Rarity:',
-                          organism.rarity,
-                          isRarity: true,
-                        ),
-
-                        // 🟢 MOVED: Habitat row to outside the conditional block
-                        _buildDetailRow('Habitat:', organism.habitat),
-
-                        // Conditional Details (Stats and classified info)
-                        if (isDiscovered) ...[
-                          // This block only runs IF discovered.
-                          _buildDetailRow('Drops:', organism.drops),
-                          _buildSectionTitle('ANIMAL CLASSIFICATION'),
-                          const SizedBox(height: 5),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: organism.category.split(',').map((cat) {
-                              final typeStr = cat.trim().toLowerCase();
-                              final type = ElementalType.values.firstWhere(
-                                (e) => e.toString().split('.').last == typeStr,
-                                orElse: () => ElementalType.basic,
-                              );
-                              return Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: _getAnimalTypeColor(type),
-                                  borderRadius: BorderRadius.circular(4),
-                                  border: Border.all(
-                                    color: Colors.white.withOpacity(0.3),
-                                    width: 1,
-                                  ),
-                                ),
-                                child: Text(
-                                  cat.trim().toUpperCase(),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 10,
-                                    fontFamily: 'PressStart2P',
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                          const SizedBox(height: 10),
-
-                          // Stats Section
-                          // 🚨 EDITED: Use AppColors.highlightColor
-                          const Divider(color: AppColors.highlightColor),
-                          // Removed ' (MAX: 500)'
-                          _buildSectionTitle('BATTLE STATS'),
-
-                          // Stat bars with specific colors and glow
-                          _buildStatBar(
-                            'HEALTH',
-                            organism.health,
-                            500,
-                            getStatTextColor(organism.health),
-                            // 🚨 EDITED: Use AppColors.statHealthColor
-                            const Color.fromARGB(255, 51, 255, 0),
-                          ),
-                          _buildStatBar(
-                            'ATTACK',
-                            organism.attack,
-                            150,
-                            getStatTextColor(organism.attack),
-                            // 🚨 EDITED: Use AppColors.statAttackColor
-                            AppColors.statAttackColor,
-                          ),
-                          _buildStatBar(
-                            'DEFENSE',
-                            organism.defense,
-                            150,
-                            getStatTextColor(organism.defense),
-                            // 🚨 EDITED: Use AppColors.statDefenseColor
-                            const Color.fromARGB(255, 255, 187, 0),
-                          ),
-                          _buildStatBar(
-                            'POWER',
-                            organism.power,
-                            150,
-                            getStatTextColor(organism.power),
-                            // 🚨 EDITED: Use AppColors.statPowerColor
-                            AppColors.statPowerColor,
-                          ),
-                          _buildStatBar(
-                            'RESISTANCE',
-                            organism.resistance,
-                            150,
-                            getStatTextColor(organism.resistance),
-                            // 🚨 EDITED: Use AppColors.statResistanceStatColor
-                            const Color.fromARGB(255, 224, 221, 0),
-                          ),
-                          _buildStatBar(
-                            'SPEED',
-                            organism.speed,
-                            120,
-                            getStatTextColor(organism.speed),
-                            // 🚨 EDITED: Use AppColors.statSpeedColor
-                            AppColors.statSpeedColor,
-                          ),
-
-                          // Abilities and Moves
-                          // 🚨 EDITED: Use AppColors.highlightColor
-                          const Divider(color: AppColors.highlightColor),
-                          _buildSectionTitle('ABILITIES'),
-                          // --- Multi-Ability Support: Display all abilities ---
-                          ...(() {
-                            final abilityNames = organism.abilities
-                                .split(',')
-                                .map((s) => s.trim())
-                                .where((s) => s.isNotEmpty);
-                            if (abilityNames.isEmpty) {
-                              return [const Text('No abilities.')];
-                            }
-
-                            return abilityNames.map((name) {
-                              final ab = Ability.findByName(name);
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 8.0,
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      ab?.name.toUpperCase() ??
-                                          name.toUpperCase(),
-                                      style: AppTextStyles.body(
-                                        context,
-                                        baseSize: 14,
-                                        color: AppColors.highlightColor,
-                                      ).copyWith(fontWeight: FontWeight.bold),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      ab?.description ??
-                                          'No description available.',
-                                      style: AppTextStyles.small(
-                                        context,
-                                        baseSize: 12,
-                                        color: Colors.white70,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }).toList();
-                          })(),
-
-                          // 🚨 EDITED: Use AppColors.highlightColor
-                          const Divider(color: AppColors.highlightColor),
-                          _buildSectionTitle('COMBAT MOVES'),
-                          // NEW: Chip/Tag style for moves
-                          _buildMovesChips(organism.moves),
-                        ],
-
-                        const SizedBox(height: 50),
-                      ],
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.4),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: AppColors.highlightColor.withOpacity(0.15),
+            ),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Image.asset(
+                    spritePath,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, _, __) => Icon(
+                      _getItemIcon(item.category),
+                      color: _getItemColor(item.category),
+                      size: 28,
                     ),
                   ),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                child: Text(
+                  item.name.replaceAll('_', ' ').toUpperCase(),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 7,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '${item.price}G',
+                style: const TextStyle(
+                  color: AppColors.highlightColor,
+                  fontSize: 7,
+                  fontFamily: 'PressStart2P',
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildFilterDrawer() {
+    return Drawer(
+      backgroundColor: AppColors.secondaryButtonColor,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildDrawerHeader(),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(20),
+              children: [
+                _buildFilterLabel('SORT BY'),
+                _buildSortOptions(),
+                const SizedBox(height: 24),
+                _buildSearchableFilter(
+                  'BIOME',
+                  _selectedBiome,
+                  _allBiomes,
+                  (v) => setState(() => _selectedBiome = v),
+                ),
+                _buildSearchableFilter(
+                  'CATEGORY 1',
+                  _selectedCategory1,
+                  _allCategories,
+                  (v) => setState(() => _selectedCategory1 = v),
+                ),
+                _buildSearchableFilter(
+                  'CATEGORY 2',
+                  _selectedCategory2,
+                  _allCategories,
+                  (v) => setState(() => _selectedCategory2 = v),
+                ),
+                _buildSearchableFilter(
+                  'ABILITY',
+                  _selectedAbility,
+                  _allAbilities,
+                  (v) => setState(() => _selectedAbility = v),
+                ),
+                _buildSearchableFilter(
+                  'MOVE',
+                  _selectedMove,
+                  _allMoves,
+                  (v) => setState(() => _selectedMove = v),
+                ),
+                _buildSearchableFilter(
+                  'DROP',
+                  _selectedDrop,
+                  _allDrops,
+                  (v) => setState(() => _selectedDrop = v),
+                ),
+              ],
+            ),
+          ),
+          _buildDrawerFooter(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDrawerHeader() {
+    return Container(
+      height: 120,
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.3),
+        border: const Border(bottom: BorderSide(color: Colors.white10)),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'FILTERS',
+            style: TextStyle(
+              fontFamily: 'PressStart2P',
+              fontSize: 14,
+              color: AppColors.highlightColor,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'REFINE DATABASE ENTRIES',
+            style: TextStyle(fontSize: 8, color: Colors.white.withOpacity(0.4)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDrawerFooter() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      color: Colors.black.withOpacity(0.2),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextButton(
+              onPressed: () {
+                setState(() {
+                  _selectedCategory1 = null;
+                  _selectedCategory2 = null;
+                  _selectedBiome = null;
+                  _selectedAbility = null;
+                  _selectedMove = null;
+                  _selectedDrop = null;
+                  _sortBy = 'NAME';
+                  _isAscending = true;
+                });
+                _applyFilters();
+              },
+              child: const Text(
+                'RESET',
+                style: TextStyle(
+                  color: Colors.white54,
+                  fontSize: 10,
+                  fontFamily: 'PressStart2P',
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            flex: 2,
+            child: ElevatedButton(
+              onPressed: () {
+                _applyFilters();
+                _resetScroll();
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.highlightColor,
+              ),
+              child: const Text(
+                'APPLY',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 10,
+                  fontFamily: 'PressStart2P',
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterLabel(String label) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12.0),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontFamily: 'PressStart2P',
+          fontSize: 10,
+          color: Colors.white54,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSortOptions() {
+    final options = [
+      'NAME',
+      'HEALTH',
+      'ATTACK',
+      'DEFENSE',
+      'POWER',
+      'RESISTANCE',
+      'SPEED',
+    ];
+
+    return Column(
+      children: [
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: options.map((opt) {
+            final isSelected = _sortBy == opt;
+            return ChoiceChip(
+              label: Text(opt.toUpperCase()),
+              selected: isSelected,
+              onSelected: (v) {
+                if (v) setState(() => _sortBy = opt);
+              },
+              backgroundColor: Colors.white10,
+              selectedColor: AppColors.highlightColor.withOpacity(0.2),
+              labelStyle: TextStyle(
+                color: isSelected ? AppColors.highlightColor : Colors.white54,
+                fontSize: 9,
+              ),
+              side: BorderSide(
+                color: isSelected ? AppColors.highlightColor : Colors.white12,
+              ),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            const Text(
+              'ORDER: ',
+              style: TextStyle(
+                color: Colors.white54,
+                fontSize: 8,
+                fontFamily: 'PressStart2P',
+              ),
+            ),
+            InkWell(
+              onTap: () {
+                setState(() => _isAscending = !_isAscending);
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white10,
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(color: Colors.white12),
+                ),
+                child: Row(
+                  children: [
+                    Text(
+                      _isAscending ? 'ASCENDING' : 'DESCENDING',
+                      style: const TextStyle(
+                        color: AppColors.highlightColor,
+                        fontSize: 8,
+                        fontFamily: 'PressStart2P',
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      _isAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                      color: AppColors.highlightColor,
+                      size: 12,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSearchableFilter(
+    String label,
+    String? current,
+    List<String> items,
+    Function(String?) onSelected,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildFilterLabel(label),
+          InkWell(
+            onTap: () => _showSelectionDialog(label, items, onSelected),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.white10,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.white12),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      current ?? 'ALL',
+                      style: TextStyle(
+                        color: current == null ? Colors.white24 : Colors.white,
+                        fontSize: 11,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const Icon(
+                    Icons.arrow_right_alt,
+                    color: AppColors.highlightColor,
+                    size: 16,
+                  ),
                 ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSelectionDialog(
+    String title,
+    List<String> items,
+    Function(String?) onSelected,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        String query = "";
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            final filtered = items
+                .where((i) => i.toLowerCase().contains(query.toLowerCase()))
+                .toList();
+            return AlertDialog(
+              backgroundColor: AppColors.secondaryButtonColor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(
+                  color: AppColors.highlightColor.withOpacity(0.3),
+                ),
+              ),
+              title: Text(
+                title,
+                style: const TextStyle(
+                  fontFamily: 'PressStart2P',
+                  fontSize: 12,
+                  color: AppColors.highlightColor,
+                ),
+              ),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      autofocus: true,
+                      style: const TextStyle(color: Colors.white, fontSize: 12),
+                      decoration: InputDecoration(
+                        hintText: 'SEARCH...',
+                        hintStyle: const TextStyle(
+                          color: Colors.white24,
+                          fontSize: 10,
+                        ),
+                        prefixIcon: const Icon(
+                          Icons.search,
+                          size: 18,
+                          color: Colors.white54,
+                        ),
+                        filled: true,
+                        fillColor: Colors.black26,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      onChanged: (v) => setDialogState(() => query = v),
+                    ),
+                    const SizedBox(height: 12),
+                    Flexible(
+                      child: ListView.builder(
+                        itemCount: filtered.length + 1,
+                        itemBuilder: (context, index) {
+                          if (index == 0) {
+                            return ListTile(
+                              title: const Text(
+                                'ALL (NONE)',
+                                style: TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 12,
+                                ),
+                              ),
+                              onTap: () {
+                                onSelected(null);
+                                Navigator.pop(context);
+                              },
+                            );
+                          }
+                          final item = filtered[index - 1];
+                          return ListTile(
+                            title: Text(
+                              item.toUpperCase(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                              ),
+                            ),
+                            onTap: () {
+                              onSelected(item);
+                              Navigator.pop(context);
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           },
@@ -658,423 +952,58 @@ class _AnidexScreenState extends State<AnidexScreen> {
     );
   }
 
-  // --- HELPER: Immersive Header ---
-  Widget _buildDetailsHeader(
-    Organism organism,
-    Color rarityColor,
-    bool isDiscovered,
-  ) {
-    // Conditional values
-    final String nameText = isDiscovered
-        ? organism.name.toUpperCase()
-        : 'CLASSIFIED ANIMAL';
-    final String scientificNameText = isDiscovered
-        ? organism.scientificName
-        : '[Redacted]';
-    final Color nameColor = isDiscovered ? rarityColor : Colors.grey.shade600;
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: rarityColor.withOpacity(0.4),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        // 🚨 EDITED: Use AppColors.highlightColor
-        border: const Border(
-          bottom: BorderSide(color: AppColors.highlightColor, width: 3.0),
-        ),
-      ),
-      child: Column(
-        children: [
-          // Image/Sprite
-          Container(
-            padding: const EdgeInsets.all(8),
-            margin: const EdgeInsets.only(bottom: 10),
-            decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 41, 48, 68).withOpacity(0.5),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            // START MODIFIED IMAGE LOADING BLOCK
-            child: Hero(
-              tag: 'anidex_sprite_${organism.name}',
-              child: _OrganismSpriteDisplay(
-                organism: organism,
-                isDiscovered: isDiscovered,
-                silhouetteColor: Colors.black, // Use black for the silhouette
-                height: 200,
-                width: 400,
-                fit: BoxFit.contain,
-              ),
-            ),
-            // END MODIFIED IMAGE LOADING BLOCK
-          ),
-          // Name
-          Text(
-            nameText,
-            textAlign: TextAlign.center,
-            // 🚨 EDITED: Use AppTextStyles.headline
-            style: AppTextStyles.headline(
-              context,
-              baseSize: 18,
-              color: nameColor,
-            ).copyWith(height: 1.2),
-          ),
-          // Scientific Name
-          Text(
-            scientificNameText,
-            // 🚨 EDITED: Use AppTextStyles.small
-            style: AppTextStyles.small(
-              context,
-              baseSize: 10,
-              color: nameColor,
-            ).copyWith(fontStyle: FontStyle.italic),
-          ),
-          // Drag handle for modal
-          const SizedBox(height: 10),
-          Container(
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              // 🚨 EDITED: Use AppColors.highlightColor
-              color: AppColors.highlightColor.withOpacity(0.5),
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // --- HELPER: Section Title ---
-  Widget _buildSectionTitle(String title) {
-    // ... (unchanged)
-    return Padding(
-      padding: const EdgeInsets.only(top: 15.0, bottom: 8.0),
-      child: Text(
-        title.toUpperCase(),
-        // 🚨 EDITED: Use AppTextStyles.body
-        style:
-            AppTextStyles.body(
-              context,
-              baseSize: 14,
-              color: AppColors.highlightColor,
-            ).copyWith(
-              decoration: TextDecoration.underline,
-              decorationColor: AppColors.highlightColor,
-              decorationThickness: 2,
-            ),
-      ),
-    );
-  }
-
-  // --- HELPER: Row with Expanded (General Details) ---
-  Widget _buildDetailRow(
-    String label,
-    String value, {
-    bool isHighlight = false,
-    Color? statColor,
-    bool isScientificName = false,
-    bool isRarity = false,
-  }) {
-    // Determine text color and style
-    // 🚨 EDITED: Use AppColors.primaryButtonColor
-    Color textColor =
-        statColor ??
-        (isHighlight ? AppColors.primaryButtonColor : Colors.white);
-
-    if (isRarity) {
-      textColor = _getRarityColor(value); // Use rarity color for rarity value
+  Color _getRarityColor(String rarity) {
+    switch (rarity.toLowerCase()) {
+      case 'common':
+        return Colors.grey;
+      case 'uncommon':
+        return const Color(0xFF2ECC71);
+      case 'rare':
+        return Colors.blueAccent;
+      case 'epic':
+        return Colors.purpleAccent;
+      case 'legendary':
+        return Colors.orangeAccent;
+      case 'mythical':
+        return Colors.pinkAccent;
+      default:
+        return Colors.white;
     }
-
-    FontStyle fontStyle = isScientificName
-        ? FontStyle.italic
-        : FontStyle.normal; // Italic for scientific name
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 🚨 EDITED: Use AppTextStyles.small
-          Text(
-            label,
-            style: AppTextStyles.small(
-              context,
-              baseSize: 12,
-              color: Colors.white,
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              textAlign: TextAlign.right,
-              // 🚨 EDITED: Use AppTextStyles.small
-              style:
-                  AppTextStyles.small(
-                    context,
-                    baseSize: 12,
-                    color: textColor,
-                  ).copyWith(
-                    fontStyle: fontStyle, // Apply font style
-                  ),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
-  // --- MODIFIED HELPER: Horizontal Stat Bar with Glow ---
-  // Note: Only called if isDiscovered is true in _showOrganismDetails, so no conditional logic needed here.
-  Widget _buildStatBar(
-    String label,
-    int statValue,
-    double maxStat,
-    Color statTextColor,
-    Color barColor,
-  ) {
-    // Ensure the fraction is between 0.0 and 1.0
-    double fraction = (statValue / maxStat).clamp(0.0, 1.0);
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // 🚨 EDITED: Use AppTextStyles.small
-              Text(
-                label,
-                style: AppTextStyles.small(
-                  context,
-                  baseSize: 10,
-                  color: Colors.white,
-                ),
-              ),
-              Text(
-                statValue.toString(),
-                // 🚨 EDITED: Use AppTextStyles.small
-                style:
-                    AppTextStyles.small(
-                      context,
-                      baseSize: 10,
-                      color: barColor,
-                    ).copyWith(
-                      shadows: [
-                        // Add a slight glow/shadow to the number too
-                        Shadow(
-                          blurRadius: 2.0,
-                          color: barColor.withOpacity(0.8),
-                        ),
-                      ],
-                    ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          // The actual bar visualization
-          Stack(
-            children: [
-              // background bar (max value)
-              Container(
-                height: 10,
-                decoration: BoxDecoration(
-                  color: Colors.grey.withOpacity(0.3),
-                  borderRadius: BorderRadius.circular(5),
-                ),
-              ),
-              // Foreearth bar (actual stat value)
-              FractionallySizedBox(
-                widthFactor: fraction,
-                child: Container(
-                  height: 10,
-                  decoration: BoxDecoration(
-                    color: barColor, // Specific stat color
-                    borderRadius: BorderRadius.circular(5),
-                    boxShadow: [
-                      // Glow Effect
-                      BoxShadow(
-                        color: barColor.withOpacity(0.8),
-                        blurRadius: 8, // Stronger blur for glow
-                        spreadRadius: 2, // Slight spread
-                      ),
-                      BoxShadow(
-                        // Inner shadow for intense glow
-                        color: barColor,
-                        blurRadius: 4,
-                        spreadRadius: 0,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  // --- MODIFIED HELPER: Multi-line detail block (for Abilities) ---
-  Widget _buildTextDetail(String value) {
-    // ... (unchanged)
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      // 🚨 EDITED: Use AppTextStyles.body
-      child: Text(
-        value,
-        style: AppTextStyles.body(context, baseSize: 14, color: Colors.white70),
-      ),
-    );
-  }
-
-  // --- NEW HELPER: Moves displayed as chips/tags ---
-  Widget _buildMovesChips(String moves) {
-    // Split the comma-separated string into a list of move names
-    List<String> moveList = moves
-        .split(',')
-        .map((e) => e.trim())
-        .where((e) => e.isNotEmpty)
-        .toList();
-
-    return Padding(
-      padding: const EdgeInsets.only(top: 4.0, bottom: 8.0),
-      child: Wrap(
-        spacing: 8.0, // horizontal spacing
-        runSpacing: 8.0, // vertical spacing
-        children: moveList.map((move) {
-          return Chip(
-            padding: const EdgeInsets.all(8.0),
-            // 🚨 EDITED: Use AppColors.primaryButtonColor
-            backgroundColor: AppColors.primaryButtonColor.withOpacity(0.8),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10.0),
-              // 🚨 EDITED: Use AppColors.highlightColor
-              side: const BorderSide(
-                color: AppColors.highlightColor,
-                width: 1.0,
-              ),
-            ),
-            label: Text(
-              move.toUpperCase(),
-              // 🚨 EDITED: Use AppTextStyles.small
-              style: AppTextStyles.small(
-                context,
-                baseSize: 10,
-                color: Colors.white,
-              ),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // 🚨 EDITED: Scaffold background color is handled by ThemeData/Container below
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('ANIMAL INDEX'),
-        // 🚨 EDITED: Use AppColors.secondaryButtonColor and AppColors.highlightColor (though ThemeData should handle this, repeating for safety)
-        backgroundColor: AppColors.secondaryButtonColor,
-        titleTextStyle: AppTextStyles.headline(
-          context,
-          baseSize: 16.0,
-          color: AppColors.highlightColor,
-        ),
-      ),
-      body: Container(
-        decoration: BoxDecoration(
-          // 🚨 EDITED: Use AppColors.secondaryButtonColor
-          color: AppColors.secondaryButtonColor,
-          image: DecorationImage(
-            image: const AssetImage('assets/main.png'),
-            fit: BoxFit.cover,
-            colorFilter: ColorFilter.mode(
-              Colors.black.withOpacity(0.7),
-              BlendMode.darken,
-            ),
-          ),
-        ),
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: <Widget>[
-            _buildSearchBar(),
-            Expanded(child: _buildResultList()),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Color _getAnimalTypeColor(ElementalType type) {
-    switch (type) {
-      case ElementalType.basic:
-        return const Color.fromARGB(255, 168, 168, 130);
-      case ElementalType.flying:
-        return const Color(0xFFA98FF3);
-      case ElementalType.aquatic:
-        return const Color.fromARGB(255, 46, 60, 255);
-      case ElementalType.earth:
-        return const Color(0xFFE2BF65);
-      case ElementalType.cryo:
-        return const Color.fromARGB(255, 0, 247, 255);
-      case ElementalType.toxic:
-        return const Color(0xFFA33EA1);
-      case ElementalType.rock:
-        return const Color.fromARGB(255, 158, 97, 5);
-      case ElementalType.arthropod:
-        return const Color.fromARGB(255, 111, 207, 0);
-      case ElementalType.electric:
-        return const Color.fromARGB(255, 255, 251, 27);
-      case ElementalType.spectral:
-        return const Color.fromARGB(255, 91, 11, 240);
-      case ElementalType.martial:
-        return const Color.fromARGB(255, 160, 24, 0);
-      case ElementalType.blaze:
-        return const Color.fromARGB(255, 226, 72, 0);
-      case ElementalType.grass:
-        return const Color.fromARGB(255, 22, 131, 0);
-      case ElementalType.mystic:
-        return const Color.fromARGB(255, 255, 81, 162);
-      case ElementalType.darkness:
-        return const Color.fromARGB(255, 37, 36, 37);
-      case ElementalType.drake:
-        return const Color.fromARGB(255, 76, 0, 255);
-      case ElementalType.metal:
-        return const Color.fromARGB(255, 172, 168, 168);
-      case ElementalType.aura:
-        return const Color.fromARGB(255, 229, 255, 79);
-      case ElementalType.sound:
-        return const Color.fromARGB(255, 166, 70, 255);
-      case ElementalType.holy:
-        return const Color.fromARGB(255, 255, 208, 0);
+  IconData _getItemIcon(String cat) {
+    if (cat.contains('rod')) {
+      return Icons.anchor;
     }
+    if (cat.contains('talisman')) {
+      return Icons.auto_awesome;
+    }
+    return Icons.inventory_2;
+  }
+
+  Color _getItemColor(String cat) {
+    if (cat.contains('rod')) {
+      return Colors.blueAccent;
+    }
+    if (cat.contains('talisman')) {
+      return Colors.purpleAccent;
+    }
+    return Colors.grey.shade400;
   }
 }
 
-// ----------------------------------------------------------------------
-// NEW WIDGET: _OrganismSpriteDisplay
-// Handles the local asset check and network fallback for the Anidex screen.
-// ----------------------------------------------------------------------
 class _OrganismSpriteDisplay extends StatefulWidget {
   final Organism organism;
   final bool isDiscovered;
+  final bool isCaptured;
   final Color silhouetteColor;
-  final double height;
-  final double width;
-  final BoxFit fit;
 
   const _OrganismSpriteDisplay({
+    super.key,
     required this.organism,
     required this.isDiscovered,
+    required this.isCaptured,
     required this.silhouetteColor,
-    this.height = 200,
-    this.width = 400,
-    this.fit = BoxFit.contain,
   });
 
   @override
@@ -1082,59 +1011,53 @@ class _OrganismSpriteDisplay extends StatefulWidget {
 }
 
 class __OrganismSpriteDisplayState extends State<_OrganismSpriteDisplay> {
-  // null initially, 'local' if found, 'network' if not found locally
-  String? _imageSourceType;
-
-  // The determined path/url to use
-  late String _imagePath;
+  String? _imagePath;
+  bool _isLocal = true;
 
   @override
   void initState() {
     super.initState();
-    _determineImageSource();
+    _initPath();
   }
 
-  // Helper to construct the local path
-  String _getLocalPath() {
-    // Organism name logic: lowercase and replace spaces with underscores.
+  @override
+  void didUpdateWidget(_OrganismSpriteDisplay oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.organism.name != widget.organism.name) {
+      _initPath();
+    }
+  }
+
+  void _initPath() async {
+    // 🚨 RESET: Always start assuming local to prevent state leakage from previous network errors
+    setState(() {
+      _isLocal = true;
+      _imagePath = null;
+    });
+
     final fileName = widget.organism.name
         .toLowerCase()
         .replaceAll(' ', '_')
         .replaceAll("'", '_')
         .replaceAll("-", '_');
-    return 'assets/sprites/$fileName.png';
-  }
-
-  @override
-  void didUpdateWidget(covariant _OrganismSpriteDisplay oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.organism.name != widget.organism.name) {
-      // Reset state if the organism changes
-      _imageSourceType = null;
-      _determineImageSource();
-    }
-  }
-
-  Future<void> _determineImageSource() async {
-    final localPath = _getLocalPath();
-
-    // 1. Try to load the local asset
+    final local = 'assets/sprites/$fileName.png';
     try {
-      // Use rootBundle.load to check for existence without rendering
-      await rootBundle.load(localPath);
-      // If load succeeds, the asset exists
+      await rootBundle.load(local);
+      if (mounted) setState(() => _imagePath = local);
+    } catch (_) {
       if (mounted) {
         setState(() {
-          _imageSourceType = 'local';
-          _imagePath = localPath;
-        });
-      }
-    } catch (e) {
-      // 2. If load fails (asset not found), fallback to network
-      if (mounted) {
-        setState(() {
-          _imageSourceType = 'network';
-          _imagePath = widget.organism.sprite; // Network URL
+          _isLocal = false;
+          String spriteUrl = widget.organism.sprite;
+          // 🚨 FIX: Remove 'file:///' prefix if present (it breaks Image.network)
+          if (spriteUrl.startsWith('file:///')) {
+            spriteUrl = spriteUrl.replaceFirst('file:///', '');
+            // If it starts with 'assets/', it's actually a local path mistakenly prefixed
+            if (spriteUrl.startsWith('assets/')) {
+              _isLocal = true;
+            }
+          }
+          _imagePath = spriteUrl;
         });
       }
     }
@@ -1142,120 +1065,51 @@ class __OrganismSpriteDisplayState extends State<_OrganismSpriteDisplay> {
 
   @override
   Widget build(BuildContext context) {
-    if (_imageSourceType == null) {
-      // Show a simple loading indicator while determining the source
-      return SizedBox(
-        height: widget.height,
-        // 🚨 EDITED: Use AppColors.highlightColor
-        child: const Center(
-          child: CircularProgressIndicator(color: AppColors.highlightColor),
-        ),
+    if (_imagePath == null)
+      return const Center(
+        child: CircularProgressIndicator(color: Colors.white12),
       );
-    }
 
-    final String source = _imagePath;
+    Widget imgWidget = _isLocal
+        ? Image.asset(_imagePath!, fit: BoxFit.contain)
+        : Image.network(_imagePath!, fit: BoxFit.contain);
 
     if (widget.isDiscovered) {
-      final imageWidget = _imageSourceType == 'local'
-          ? Image.asset(
-              source,
-              height: widget.height,
-              width: widget.width,
-              fit: widget.fit,
-            )
-          : Image.network(
-              source,
-              height: widget.height,
-              width: widget.width,
-              fit: widget.fit,
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) return child;
-                return SizedBox(
-                  height: widget.height,
-                  child: const Center(
-                    child: CircularProgressIndicator(
-                      color: AppColors.highlightColor,
-                    ),
-                  ),
-                );
-              },
-              errorBuilder: (context, error, stackTrace) =>
-                  const Icon(Icons.broken_image, color: Colors.red, size: 80),
-            );
-
-      // --- SPRITE OUTLINE LOGIC ---
-      final spriteOutlineColor = Colors.black.withOpacity(0.8);
-      const double outlineOffset = 1.0;
-
-      final outlineImage = ColorFiltered(
-        colorFilter: ColorFilter.mode(spriteOutlineColor, BlendMode.srcIn),
-        child: imageWidget,
-      );
-
-      return SizedBox(
-        height: widget.height,
-        width: widget.width,
-        child: Stack(
-          alignment: Alignment.center,
-          clipBehavior: Clip.none,
-          children: [
-            // Outline Layers (4 directions)
-            Transform.translate(
-              offset: const Offset(-outlineOffset, -outlineOffset),
-              child: outlineImage,
-            ),
-            Transform.translate(
-              offset: const Offset(outlineOffset, -outlineOffset),
-              child: outlineImage,
-            ),
-            Transform.translate(
-              offset: const Offset(-outlineOffset, outlineOffset),
-              child: outlineImage,
-            ),
-            Transform.translate(
-              offset: const Offset(outlineOffset, outlineOffset),
-              child: outlineImage,
-            ),
-
-            // Saturation Boost (matching battle_screen)
-            ColorFiltered(
-              colorFilter: const ColorFilter.matrix(<double>[
-                1.12,
-                0,
-                0,
-                0,
-                0,
-                0,
-                1.12,
-                0,
-                0,
-                0,
-                0,
-                0,
-                1.12,
-                0,
-                0,
-                0,
-                0,
-                0,
-                1,
-                0,
-              ]),
-              child: imageWidget,
-            ),
-          ],
-        ),
-      );
-    } else {
-      // Undiscovered: Silhouette
-      return buildSilhouetteSprite(
-        imageUrl: source,
-        silhouetteColor: widget.silhouetteColor,
-        organismName: widget.organism.name,
-        height: widget.height,
-        width: widget.width,
-        fit: widget.fit,
-      );
+      if (!widget.isCaptured) {
+        // Identified but not Captured -> Grayscale
+        return ColorFiltered(
+          colorFilter: const ColorFilter.matrix(<double>[
+            0.2126,
+            0.7152,
+            0.0722,
+            0,
+            0,
+            0.2126,
+            0.7152,
+            0.0722,
+            0,
+            0,
+            0.2126,
+            0.7152,
+            0.0722,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+          ]),
+          child: imgWidget,
+        );
+      }
+      return imgWidget;
     }
+
+    // Undiscovered -> Silhouette
+    return ColorFiltered(
+      colorFilter: ColorFilter.mode(widget.silhouetteColor, BlendMode.srcIn),
+      child: imgWidget,
+    );
   }
 }

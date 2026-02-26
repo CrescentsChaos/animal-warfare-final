@@ -37,9 +37,16 @@ Organism? getWeightedRandomOrganism(
   String biomeName,
   List<Organism> allOrganisms, {
   int accountLevel = 1,
+  Map<String, int> inventory = const {},
+  List<String> teamMoveNames = const [],
 }) {
   // Normalize the selected biome name for case-insensitive search
   final String searchBiome = biomeName.toLowerCase();
+
+  final hasOldRod = inventory.containsKey('old_rod');
+  final hasGoodRod = inventory.containsKey('good_rod');
+  final hasSuperRod = inventory.containsKey('super_rod');
+  final hasSurf = teamMoveNames.contains('Surf');
 
   // 1. Filter organisms by biome and rarity gate
   final biomeOrganisms = allOrganisms.where((org) {
@@ -52,6 +59,37 @@ Organism? getWeightedRandomOrganism(
     if (rarity == 'epic' && accountLevel < 40) return false;
     if (rarity == 'rare' && accountLevel < 20) return false;
     if (rarity == 'uncommon' && accountLevel < 10) return false;
+
+    // Fishing Logic
+    // If the animal is aquatic (based on category or habitat) and drops fish-related items,
+    // require the appropriate fishing rod unless the player has Surf.
+    final categories = org.category.toLowerCase();
+    final habitat = org.habitat.toLowerCase();
+    final drops = org.drops.toLowerCase();
+
+    final isAquatic =
+        categories.contains('aquatic') ||
+        habitat.contains('river') ||
+        habitat.contains('lake') ||
+        habitat.contains('ocean') ||
+        habitat.contains('coastal') ||
+        habitat.contains('swamp') ||
+        habitat.contains('coral') ||
+        habitat.contains('mangrove');
+
+    final isFishDrop = drops.contains('fillet') || drops.contains('shark fin');
+
+    if (isAquatic && isFishDrop && !hasSurf) {
+      if (rarity == 'common') {
+        if (!hasOldRod && !hasGoodRod && !hasSuperRod) return false;
+      } else if (rarity == 'uncommon' || rarity == 'rare') {
+        if (!hasGoodRod && !hasSuperRod) return false;
+      } else if (rarity == 'epic' ||
+          rarity == 'mythical' ||
+          rarity == 'legendary') {
+        if (!hasSuperRod) return false;
+      }
+    }
 
     return true;
   }).toList();

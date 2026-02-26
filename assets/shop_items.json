@@ -1,0 +1,112 @@
+[
+    {
+        "id": "old_rod",
+        "name": "Old Rod",
+        "description": "A basic fishing rod. Enables spawning of common fishes in aquatic biomes.",
+        "price": 500,
+        "category": "rod"
+    },
+    {
+        "id": "good_rod",
+        "name": "Good Rod",
+        "description": "A decent fishing rod. Enables spawning of uncommon and rare fishes.",
+        "price": 2500,
+        "category": "rod"
+    },
+    {
+        "id": "super_rod",
+        "name": "Super Rod",
+        "description": "The best fishing rod. Enables spawning of epic and mythical fishes.",
+        "price": 10000,
+        "category": "rod"
+    },
+    {
+        "id": "sitrus_berry",
+        "name": "Sitrus Berry",
+        "description": "Restores 25% HP when HP falls below 50%.",
+        "price": 200,
+        "category": "talisman"
+    },
+    {
+        "id": "lum_berry",
+        "name": "Lum Berry",
+        "description": "Cures any status condition.",
+        "price": 300,
+        "category": "talisman"
+    },
+    {
+        "id": "leftovers",
+        "name": "Leftovers",
+        "description": "Restores a small amount of HP every turn.",
+        "price": 5000,
+        "category": "talisman"
+    },
+    {
+        "id": "life_orb",
+        "name": "Life Orb",
+        "description": "Boosts damage but drains some HP each attack.",
+        "price": 8000,
+        "category": "talisman"
+    },
+    {
+        "id": "focus_sash",
+        "name": "Focus Sash",
+        "description": "Prevents a 1-hit KO if at full HP.",
+        "price": 4000,
+        "category": "talisman"
+    },
+    {
+        "id": "choice_band",
+        "name": "Choice Band",
+        "description": "Greatly boosts Attack but locks you into one move.",
+        "price": 7500,
+        "category": "talisman"
+    },
+    {
+        "id": "choice_specs",
+        "name": "Choice Specs",
+        "description": "Greatly boosts Power but locks you into one move.",
+        "price": 7500,
+        "category": "talisman"
+    },
+    {
+        "id": "choice_scarf",
+        "name": "Choice Scarf",
+        "description": "Greatly boosts Speed but locks you into one move.",
+        "price": 7500,
+        "category": "talisman"
+    },
+    {
+        "id": "rare_fillet",
+        "name": "Rare Fillet",
+        "description": "A high-quality fish fillet.",
+        "price": 1000,
+        "category": "ingredient",
+        "biomes": [
+            "Ocean",
+            "River",
+            "Lake"
+        ]
+    },
+    {
+        "id": "capture_net",
+        "name": "Capture Net",
+        "description": "A basic net for capturing wild animals. Standard success rate.",
+        "price": 100,
+        "category": "capture_item"
+    },
+    {
+        "id": "great_net",
+        "name": "Great Net",
+        "description": "A high-quality net that provides a 1.5x catch rate.",
+        "price": 500,
+        "category": "capture_item"
+    },
+    {
+        "id": "ultra_net",
+        "name": "Ultra Net",
+        "description": "An elite net with a 2.0x catch rate, perfect for rare finds.",
+        "price": 1500,
+        "category": "capture_item"
+    }
+]

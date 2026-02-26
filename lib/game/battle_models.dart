@@ -17,14 +17,7 @@ class BattleOrganism {
   int get health => _health;
   set health(int value) {
     _health = value;
-    if (isRogueMode) {
-      organism.currentHealth = value;
-    } else {
-      // Scale back down to the actual organism level
-      final double ratio = value / maxHealth;
-      final int actualMax = organism.maxHealth;
-      organism.currentHealth = (actualMax * ratio).round().clamp(0, actualMax);
-    }
+    organism.currentHealth = value;
   }
 
   // Dynamic battle stats
@@ -108,6 +101,20 @@ class BattleOrganism {
     futureSightTurns = 0;
     futureSightDamage = 0;
     rolloutMove = null;
+  }
+
+  /// Refreshes stats after a level-up or level change
+  void recalculateStats() {
+    if (_atLevel == null) {
+      int prevMax = maxHealth;
+      level = organism.level;
+      int newMax = maxHealth;
+
+      // Heel the difference so current percentage is somewhat maintained or just add health
+      if (newMax > prevMax) {
+        _health += (newMax - prevMax);
+      }
+    }
   }
 
   List<StatusEffect> _statusEffects = [];
@@ -217,13 +224,16 @@ class BattleOrganism {
   final bool isRogueMode;
   final bool isOpponent;
   bool get isPlayer => !isOpponent;
-  final int level;
+  int level;
+  final int? _atLevel;
 
   BattleOrganism(
     this.organism, {
     this.isRogueMode = false,
     this.isOpponent = false,
-  }) : level = isRogueMode ? organism.level : 50,
+    int? atLevel,
+  }) : _atLevel = atLevel,
+       level = atLevel ?? organism.level,
        _statusEffects = List.from(organism.statusEffects),
        abilities = organism.baseOrganism.abilities
            .split(',')
@@ -236,25 +246,10 @@ class BattleOrganism {
        _attackStage = isRogueMode ? organism.attackStage : 0,
        _defenseStage = isRogueMode ? organism.defenseStage : 0,
        _powerStage = isRogueMode ? organism.powerStage : 0,
-       _resistanceStage = isRogueMode ? organism.resistanceStage : 0,
        _speedStage = isRogueMode ? organism.speedStage : 0,
        _accuracyStage = isRogueMode ? organism.accuracyStage : 0 {
-    // Initialize health based on boosted max health
-    // We use a ratio to ensure health is correctly scaled between the animal's
-    // actual level and the fixed level 50 baseline used in non-rogue modes.
     final int battleMax = maxHealth;
-
-    if (isRogueMode) {
-      _health = organism.currentHealth.clamp(0, battleMax);
-    } else {
-      final int actualMax = organism.maxHealth;
-      if (organism.currentHealth >= actualMax) {
-        _health = battleMax;
-      } else {
-        final double ratio = organism.currentHealth / actualMax;
-        _health = (battleMax * ratio).round().clamp(0, battleMax);
-      }
-    }
+    _health = organism.currentHealth.clamp(0, battleMax);
   }
 
   List<ElementalType>? _battleTypes;
@@ -280,7 +275,10 @@ class BattleOrganism {
 
       // Skip hardcoded conditional checks for now as they depend on BattleManager global state
       // We will properly implement this with the new trigger system
-      if (ability.conditions.isEmpty) {
+      if (ability.conditions.isEmpty &&
+          ability.name != 'Iron Fist' &&
+          ability.name != 'Strong Jaw' &&
+          ability.name != 'Tough Claws') {
         totalMultiplier *= ability.magnitude;
       }
 
@@ -307,11 +305,7 @@ class BattleOrganism {
   }
 
   int get currentAttack {
-    double attack =
-        (isRogueMode
-                ? organism.effectiveAttack
-                : organism.getAttack(atLevel: 50))
-            .toDouble();
+    double attack = organism.getAttack(atLevel: level).toDouble();
     attack *= _getStatStageMultiplier(attackStage);
     attack *= _getAbilityStatMultiplier('attack');
 
@@ -344,9 +338,7 @@ class BattleOrganism {
   }
 
   int get currentDefense {
-    int baseDefense = isRogueMode
-        ? organism.effectiveDefense
-        : organism.getDefense(atLevel: 50);
+    int baseDefense = organism.getDefense(atLevel: level);
     double defense = (baseDefense * _getStatStageMultiplier(defenseStage))
         .toDouble();
     defense *= _getAbilityStatMultiplier('defense');
@@ -371,9 +363,7 @@ class BattleOrganism {
   }
 
   int get currentPower {
-    double power =
-        (isRogueMode ? organism.effectivePower : organism.getPower(atLevel: 50))
-            .toDouble();
+    double power = organism.getPower(atLevel: level).toDouble();
     power *= _getStatStageMultiplier(powerStage);
     power *= _getAbilityStatMultiplier('power');
 
@@ -402,9 +392,7 @@ class BattleOrganism {
   }
 
   int get currentResistance {
-    int baseRes = isRogueMode
-        ? organism.effectiveResistance
-        : organism.getResistance(atLevel: 50);
+    int baseRes = organism.getResistance(atLevel: level);
     double resistance = (baseRes * _getStatStageMultiplier(resistanceStage))
         .toDouble();
     resistance *= _getAbilityStatMultiplier('resistance');
@@ -429,9 +417,7 @@ class BattleOrganism {
   }
 
   int get currentSpeed {
-    double speed =
-        (isRogueMode ? organism.effectiveSpeed : organism.getSpeed(atLevel: 50))
-            .toDouble();
+    double speed = organism.getSpeed(atLevel: level).toDouble();
     speed *= _getAbilityStatMultiplier('speed');
     speed *= _getStatStageMultiplier(speedStage);
 
@@ -466,9 +452,7 @@ class BattleOrganism {
   }
 
   int get maxHealth {
-    int baseMax = isRogueMode
-        ? organism.maxHealth
-        : organism.getMaxHealth(atLevel: 50);
+    int baseMax = organism.getMaxHealth(atLevel: level);
     double hp = baseMax.toDouble();
 
     // Apply talisman effects

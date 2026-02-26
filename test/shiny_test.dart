@@ -30,17 +30,18 @@ void main() {
       );
     });
 
-    test('CapturedOrganism.spawn has ~10% alpha rate', () {
+    test('CapturedOrganism.spawn has ~5% alpha rate', () {
       int alphaCount = 0;
-      const count = 1000;
+      const count = 2000;
       for (int i = 0; i < count; i++) {
         final org = CapturedOrganism.spawn(base);
         if (org.isAlpha) alphaCount++;
       }
 
       print('Alpha count: $alphaCount / $count');
-      expect(alphaCount, greaterThan(70));
-      expect(alphaCount, lessThan(130));
+      // ~100 expected
+      expect(alphaCount, greaterThan(60));
+      expect(alphaCount, lessThan(140));
     });
 
     test('isAlpha persistence in JSON', () {

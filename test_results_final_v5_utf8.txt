@@ -1,0 +1,11 @@
+﻿00:00 +0: loading C:/Users/USER/dev/animal_warfare/test/abilities_new_test.dart
+00:00 +0 -1: loading C:/Users/USER/dev/animal_warfare/test/abilities_new_test.dart [E]
+  Failed to load "C:/Users/USER/dev/animal_warfare/test/abilities_new_test.dart":
+  Compilation failed for testPath=C:/Users/USER/dev/animal_warfare/test/abilities_new_test.dart: lib/models/captured_organism.dart:277:37: Error: Undefined name 'levelMultiplier'.
+        return ((baseStat + iv) * 2 * levelMultiplier).floor() + level + 10;
+                                      ^^^^^^^^^^^^^^^
+  lib/models/captured_organism.dart:280:31: Error: Undefined name 'levelMultiplier'.
+      return ((baseStat + iv) * levelMultiplier).floor();
+                                ^^^^^^^^^^^^^^^
+  .
+00:00 +0 -1: Some tests failed.

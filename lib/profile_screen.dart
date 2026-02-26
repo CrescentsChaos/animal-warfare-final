@@ -4,32 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:animal_warfare/local_auth_service.dart';
 import 'package:animal_warfare/edit_profile_screen.dart';
 import 'dart:io';
-
-// NEW IMPORT
-import 'package:animal_warfare/settings_screen.dart';
-// ADDED
-import 'package:animal_warfare/achievement_screen.dart';
-// END NEW IMPORT
-
-// START NEW IMPORTS for Anidex Stat
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
-// END NEW IMPORTS
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
-// ------------------------------------------------------------------
-// FIX: Define the missing _createFadeRoute function here.
-// ------------------------------------------------------------------
-PageRouteBuilder _createFadeRoute(Widget page) {
-  return PageRouteBuilder(
-    transitionDuration: const Duration(milliseconds: 400),
-    pageBuilder: (context, animation, secondaryAnimation) => page,
-    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      return FadeTransition(opacity: animation, child: child);
-    },
-  );
-}
-// ------------------------------------------------------------------
+import 'package:animal_warfare/theme.dart';
+import 'package:animal_warfare/settings_screen.dart';
+import 'package:animal_warfare/achievement_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -40,22 +20,9 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final LocalAuthService _authService = LocalAuthService();
-
   UserData? _currentUser;
   bool _isLoading = true;
-
-  // START NEW: Organism list for total count
   List<dynamic> _allOrganisms = [];
-  // END NEW
-
-  // Custom retro/military colors (Copied from other screens for consistency)
-  static const Color primaryButtonColor = Color(
-    0xFF38761D,
-  ); // Bright Jungle Green
-  static const Color secondaryButtonColor = Color(
-    0xFF1E3F2A,
-  ); // Deep Forest Green
-  static const Color highlightColor = Color(0xFFDAA520); // Goldenrod
 
   @override
   void initState() {
@@ -64,319 +31,50 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _loadOrganisms();
   }
 
-  // ... (Other methods remain unchanged)
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
   Future<void> _loadOrganisms() async {
     const String assetPath = 'assets/Organisms.json';
     try {
       final String response = await rootBundle.loadString(assetPath);
-      setState(() {
-        _allOrganisms = json.decode(response);
-      });
+      if (mounted) {
+        setState(() {
+          _allOrganisms = json.decode(response);
+        });
+      }
     } catch (e) {
       debugPrint('Error loading Organisms.json: $e');
-      setState(() {
-        _allOrganisms = [];
-      });
     }
   }
 
   Future<void> _loadUserProfile() async {
     UserData? user = await _authService.getCurrentUser();
-
-    // START NEW: Check for an existing avatar file
     if (user != null && user.avatar.isNotEmpty && user.avatar != 'default') {
-      // Attempt to load the file to ensure it exists
       File avatarFile = File(user.avatar);
-      if (await avatarFile.exists()) {
-        // Avatar file exists, update user object with the path
-        user = user.copyWith(avatar: avatarFile.path);
-      } else {
-        // File not found, reset to default
+      if (!(await avatarFile.exists())) {
         user = user.copyWith(avatar: 'default');
       }
     }
-    // END NEW
-
-    setState(() {
-      _currentUser = user;
-      _isLoading = false;
-    });
-  }
-
-  // Reusable button widget for consistency
-  Widget _buildThemedButton({
-    required String text,
-    required VoidCallback onPressed,
-  }) {
-    return ElevatedButton(
-      onPressed: onPressed,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: primaryButtonColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(5.0),
-          side: const BorderSide(color: highlightColor, width: 2.0),
-        ),
-        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-        minimumSize: const Size(double.infinity, 50),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          // MODIFIED: Use TextStyle instead of const TextStyle
-          color: Colors.white,
-          fontFamily: 'PressStart2P',
-          fontSize: 14.sp, // MODIFIED: Responsive font size
-        ),
-      ),
-    );
-  }
-
-  void _navigateToEditScreen() {
-    if (_currentUser != null) {
-      Navigator.of(
-        context,
-      ).push(_createFadeRoute(const EditProfileScreen())).then((_) {
-        // Reload profile when returning from the edit screen
-        _loadUserProfile();
+    if (mounted) {
+      setState(() {
+        _currentUser = user;
+        _isLoading = false;
       });
     }
   }
 
-  // NEW: Navigation function for the Settings Screen
-  void _navigateToSettingsScreen() {
-    if (_currentUser != null) {
-      Navigator.of(context).push(
-        _createFadeRoute(
-          SettingsScreen(currentUser: _currentUser!, authService: _authService),
-        ),
-      );
-    }
-  }
-
-  // ADDED: Navigation function for the Achievements Screen
-  void _navigateToAchievementsScreen() {
-    if (_currentUser != null) {
-      Navigator.of(context).push(
-        _createFadeRoute(
-          AchievementsScreen(
-            currentUser: _currentUser!,
-            allOrganisms: _allOrganisms,
-            authService: _authService, // ADDED: Pass the auth service
-          ),
-        ),
-      );
-    }
-  }
-  // END NEW
-
-  // MODIFIED: Wrapped Text widgets in Flexible/Expanded to fix overflow
-  Widget _buildProfileDetail(String label, String value) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10.0),
-      padding: const EdgeInsets.all(10.0),
-      decoration: BoxDecoration(
-        color: secondaryButtonColor.withOpacity(0.8),
-        border: Border.all(color: highlightColor, width: 1.0),
-        borderRadius: BorderRadius.circular(5.0),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: <Widget>[
-          Flexible(
-            // WRAPPED IN FLEXIBLE
-            child: Text(
-              '$label:',
-              style: TextStyle(
-                color: highlightColor,
-                fontFamily: 'PressStart2P',
-                fontSize: 12.sp,
-              ),
-            ),
-          ),
-          Expanded(
-            // WRAPPED IN EXPANDED
-            child: Text(
-              value.toUpperCase(),
-              textAlign: TextAlign.right,
-              style: TextStyle(
-                color: Colors.white,
-                fontFamily: 'PressStart2P',
-                fontSize: 12.sp,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAccountProgress(UserData user) {
-    final nextLevelXP = (user.accountLevel + 1) * (user.accountLevel + 1) * 100;
-    final progress = (user.accountXP / nextLevelXP).clamp(0.0, 1.0);
-
-    return Container(
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: secondaryButtonColor.withOpacity(0.8),
-        border: Border.all(color: highlightColor, width: 2.0),
-        borderRadius: BorderRadius.circular(5.0),
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'ACCOUNT LEVEL: ${user.accountLevel}',
-                style: TextStyle(
-                  color: highlightColor,
-                  fontFamily: 'PressStart2P',
-                  fontSize: 12.sp,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'RANK: ${user.rankName}',
-                style: TextStyle(
-                  color: user.rankColor,
-                  fontFamily: 'PressStart2P',
-                  fontSize: 13.sp,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '${((progress * 100)).toStringAsFixed(0)}%',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontFamily: 'PressStart2P',
-                  fontSize: 10.sp,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: progress,
-              backgroundColor: Colors.black26,
-              color: highlightColor,
-              minHeight: 12,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '${user.accountXP} / $nextLevelXP XP',
-            style: TextStyle(
-              color: Colors.white54,
-              fontFamily: 'PressStart2P',
-              fontSize: 8.sp,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuizStatBlock(String quizName, Map<String, dynamic> stats) {
-    final attempts = stats['attempts'] as int? ?? 0;
-    final correct = stats['correct'] as int? ?? 0;
-    final accuracy = attempts > 0
-        ? ((correct / attempts) * 100).toStringAsFixed(1)
-        : '0.0';
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10.0),
-      padding: const EdgeInsets.all(10.0),
-      decoration: BoxDecoration(
-        color: primaryButtonColor.withOpacity(0.8),
-        border: Border.all(color: highlightColor, width: 1.0),
-        borderRadius: BorderRadius.circular(5.0),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            quizName.toUpperCase(),
-            style: TextStyle(
-              // MODIFIED: Use TextStyle instead of const TextStyle
-              color: highlightColor,
-              fontFamily: 'PressStart2P',
-              fontSize: 12.sp, // MODIFIED: Responsive font size
-            ),
-          ),
-          const SizedBox(height: 10),
-          _buildDetailRow('ATTEMPTS', attempts.toString(), Colors.white),
-          _buildDetailRow('CORRECT', correct.toString(), Colors.white),
-          _buildDetailRow('ACCURACY', '$accuracy%', highlightColor),
-        ],
-      ),
-    );
-  }
-
-  // MODIFIED: Wrapped Text widgets in Flexible/Expanded to fix overflow
-  Widget _buildDetailRow(String label, String value, Color color) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Flexible(
-            // WRAPPED IN FLEXIBLE
-            child: Text(
-              '$label:',
-              style: TextStyle(
-                color: Colors.white70,
-                fontFamily: 'PressStart2P',
-                fontSize: 10.sp,
-              ),
-            ),
-          ),
-          Expanded(
-            // WRAPPED IN EXPANDED
-            child: Text(
-              value,
-              textAlign: TextAlign.right,
-              style: TextStyle(
-                color: color,
-                fontFamily: 'PressStart2P',
-                fontSize: 10.sp,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+  void _navigateToEditScreen() {
+    Navigator.of(context)
+        .push(
+          MaterialPageRoute(builder: (context) => const EditProfileScreen()),
+        )
+        .then((_) => _loadUserProfile());
   }
 
   @override
   Widget build(BuildContext context) {
-    // MODIFIED: Added for the AppBar title
-    final appBarTextStyle = TextStyle(
-      color: highlightColor,
-      fontFamily: 'PressStart2P',
-      fontSize: 16.sp,
-    );
-    // END MODIFIED
-
     if (_isLoading || _currentUser == null) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('PROFILE'),
-          backgroundColor: secondaryButtonColor,
-          titleTextStyle: appBarTextStyle, // MODIFIED: Use responsive style
-        ),
-        body: Container(
-          color: secondaryButtonColor,
-          child: const Center(
-            child: CircularProgressIndicator(color: highlightColor),
-          ),
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(color: AppColors.highlightColor),
         ),
       );
     }
@@ -384,188 +82,489 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final user = _currentUser!;
     final totalCount = _allOrganisms.length;
     final discoveredCount = user.discoveredOrganisms.length;
-    final anidexStat = totalCount > 0
-        ? '$discoveredCount / $totalCount'
-        : '0 / 0';
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('PROFILE'),
-        backgroundColor: secondaryButtonColor,
-        titleTextStyle: appBarTextStyle, // MODIFIED: Use responsive style
-      ),
-      body: Container(
-        decoration: BoxDecoration(
-          color: secondaryButtonColor,
-          image: DecorationImage(
-            image: const AssetImage('assets/main.png'),
-            fit: BoxFit.cover,
-            colorFilter: ColorFilter.mode(
-              Colors.black.withOpacity(0.7),
-              BlendMode.darken,
+      backgroundColor: AppColors.secondaryButtonColor,
+      body: CustomScrollView(
+        slivers: [
+          _buildSliverAppBar(user),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildStatRow(user, discoveredCount, totalCount),
+                  SizedBox(height: 32.h),
+                  _buildSectionHeader('ACCOUNT PROGRESS'),
+                  SizedBox(height: 16.h),
+                  _buildProgressCard(user),
+                  SizedBox(height: 32.h),
+                  _buildSectionHeader('UTILITIES'),
+                  SizedBox(height: 16.h),
+                  _buildUtilityGrid(),
+                  if (user.bestRogueFloor > 0) ...[
+                    SizedBox(height: 32.h),
+                    _buildSectionHeader('ROGUE RECORDS'),
+                    SizedBox(height: 16.h),
+                    _buildRogueCard(user),
+                  ],
+                  SizedBox(height: 32.h),
+                  _buildSectionHeader('BATTLE QUIZ ANALYTICS'),
+                  SizedBox(height: 16.h),
+                  _buildQuizStats(user),
+                  SizedBox(height: 60.h),
+                ],
+              ),
             ),
           ),
-        ),
-        padding: const EdgeInsets.all(20.0),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              // 1. AVATAR (Same logic as edit_profile_screen)
-              Center(
-                child: Container(
-                  width: 120,
-                  height: 120,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSliverAppBar(UserData user) {
+    return SliverAppBar(
+      expandedHeight: 280.h,
+      pinned: true,
+      backgroundColor: AppColors.secondaryButtonColor,
+      flexibleSpace: FlexibleSpaceBar(
+        background: Stack(
+          alignment: Alignment.center,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: const AssetImage('assets/main.png'),
+                  fit: BoxFit.cover,
+                  colorFilter: ColorFilter.mode(
+                    Colors.black.withValues(alpha: 0.75),
+                    BlendMode.darken,
+                  ),
+                ),
+              ),
+            ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(height: 40.h),
+                _buildAvatar(user),
+                SizedBox(height: 16.h),
+                Text(
+                  user.username.toUpperCase(),
+                  style: AppTextStyles.headline(
+                    context,
+                    baseSize: 14,
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 12.w,
+                    vertical: 4.h,
+                  ),
                   decoration: BoxDecoration(
-                    color: primaryButtonColor.withOpacity(0.9),
-                    border: Border.all(color: highlightColor, width: 4.0),
-                    borderRadius: BorderRadius.circular(60.0),
-                    image: user.avatar.isNotEmpty && user.avatar != 'default'
-                        ? DecorationImage(
-                            image: FileImage(File(user.avatar)),
-                            fit: BoxFit.cover,
-                          )
-                        : null,
+                    color: user.rankColor.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: user.rankColor, width: 1),
                   ),
-                  child: user.avatar.isEmpty || user.avatar == 'default'
-                      ? const Center(
-                          child: Icon(
-                            Icons.person,
-                            color: highlightColor,
-                            size: 60,
-                          ),
-                        )
-                      : null,
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // 2. PROFILE DETAILS
-              _buildProfileDetail('USERNAME', user.username),
-              _buildProfileDetail('GENDER', user.gender),
-              _buildProfileDetail('GOLD', '${user.money} G'),
-
-              const SizedBox(height: 20),
-              // Account Rank & XP
-              _buildAccountProgress(user),
-
-              // START NEW: Anidex Stat
-              if (totalCount > 0)
-                _buildProfileDetail('ANIMALS IDENTIFIED', anidexStat),
-
-              // END NEW
-              const SizedBox(height: 40),
-
-              // 4. EDIT PROFILE BUTTON
-              _buildThemedButton(
-                text: 'EDIT PROFILE',
-                onPressed: _navigateToEditScreen,
-              ),
-
-              // NEW: SETTINGS BUTTON
-              const SizedBox(height: 20),
-              _buildThemedButton(
-                text: 'SETTINGS',
-                onPressed: _navigateToSettingsScreen,
-              ),
-              // END NEW
-
-              // ADDED: ACHIEVEMENTS BUTTON
-              const SizedBox(height: 20),
-              _buildThemedButton(
-                text: 'ACHIEVEMENTS',
-                onPressed: _navigateToAchievementsScreen,
-              ),
-              // END ADDED
-
-              // NEW: BEST ROGRE RUN SECTION
-              if (user.bestRogueFloor > 0) ...[
-                const SizedBox(height: 40),
-                Text(
-                  '--- BEST ROGUE RUN ---',
-                  style: TextStyle(
-                    color: highlightColor.withOpacity(0.8),
-                    fontSize: 10.sp,
-                    fontFamily: 'PressStart2P',
-                  ),
-                ),
-                const SizedBox(height: 10),
-                _buildProfileDetail('HIGHEST FLOOR', '${user.bestRogueFloor}'),
-                const SizedBox(height: 10),
-                Text(
-                  'FINAL TEAM:',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 8.sp,
-                    fontFamily: 'PressStart2P',
-                  ),
-                ),
-                const SizedBox(height: 10),
-                SizedBox(
-                  height: 48,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: user.bestRogueTeam.map((animal) {
-                      final fileName = animal.name
-                          .toLowerCase()
-                          .replaceAll(' ', '_')
-                          .replaceAll("'", '_')
-                          .replaceAll('-', '_');
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: Tooltip(
-                          message: animal.name,
-                          child: Image.asset(
-                            'assets/sprites/$fileName.png',
-                            width: 40,
-                            errorBuilder: (_, __, ___) => const Icon(
-                              Icons.pets,
-                              color: Colors.white,
-                              size: 24,
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
+                  child: Text(
+                    user.rankName.toUpperCase(),
+                    style: TextStyle(
+                      color: user.rankColor,
+                      fontFamily: 'PressStart2P',
+                      fontSize: 7.sp,
+                    ),
                   ),
                 ),
               ],
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.settings, color: Colors.white70),
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) =>
+                  SettingsScreen(currentUser: user, authService: _authService),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 
-              // END NEW
-              const SizedBox(height: 40),
+  Widget _buildAvatar(UserData user) {
+    return Container(
+      width: 100.w,
+      height: 100.w,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: AppColors.highlightColor, width: 3),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.highlightColor.withValues(alpha: 0.3),
+            blurRadius: 15,
+            spreadRadius: 2,
+          ),
+        ],
+        image: user.avatar.isNotEmpty && user.avatar != 'default'
+            ? DecorationImage(
+                image: FileImage(File(user.avatar)),
+                fit: BoxFit.cover,
+              )
+            : null,
+      ),
+      child: user.avatar == 'default'
+          ? Icon(Icons.person, size: 50.w, color: AppColors.highlightColor)
+          : null,
+    );
+  }
 
-              // START: QUIZ STATS SECTION
+  Widget _buildStatRow(UserData user, int discovered, int total) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        _buildMiniStat(
+          'GOLD',
+          '${user.money}',
+          Icons.monetization_on,
+          Colors.amber,
+        ),
+        _buildMiniStat(
+          'LEVEL',
+          '${user.accountLevel}',
+          Icons.trending_up,
+          Colors.blueAccent,
+        ),
+        _buildMiniStat(
+          'IDEX',
+          '$discovered/$total',
+          Icons.pets,
+          const Color(0xFF2ECC71),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMiniStat(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
+    return Container(
+      width: 100.w,
+      padding: EdgeInsets.symmetric(vertical: 12.h),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 20.w),
+          SizedBox(height: 8.h),
+          Text(
+            value,
+            style: AppTextStyles.headline(
+              context,
+              baseSize: 10,
+              color: Colors.white,
+            ),
+          ),
+          SizedBox(height: 4.h),
+          Text(
+            label,
+            style: TextStyle(color: Colors.white38, fontSize: 8.sp),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Row(
+      children: [
+        Container(width: 4.w, height: 16.h, color: AppColors.highlightColor),
+        SizedBox(width: 12.w),
+        Text(
+          title,
+          style: TextStyle(
+            fontFamily: 'PressStart2P',
+            fontSize: 10.sp,
+            color: AppColors.highlightColor,
+            letterSpacing: 1.5,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProgressCard(UserData user) {
+    final currentLevelXP = user.accountLevel * user.accountLevel * 100;
+    final nextLevelXP = (user.accountLevel + 1) * (user.accountLevel + 1) * 100;
+    final progress =
+        ((user.accountXP - currentLevelXP) / (nextLevelXP - currentLevelXP))
+            .clamp(0.0, 1.0);
+
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
               Text(
-                '--- BATTLE QUIZ STATS ---',
+                'XP PROGRESS',
                 style: TextStyle(
-                  color: highlightColor.withOpacity(0.8),
-                  fontSize: 10.sp, // MODIFIED: Responsive font size
+                  color: Colors.white70,
+                  fontSize: 9.sp,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                '${(progress * 100).toStringAsFixed(0)}%',
+                style: TextStyle(
+                  color: AppColors.highlightColor,
+                  fontSize: 9.sp,
                   fontFamily: 'PressStart2P',
                 ),
               ),
-              const SizedBox(height: 20),
-
-              // Dynamically build stat blocks for each quiz
-              ...user.quizStats.entries.map((entry) {
-                return _buildQuizStatBlock(entry.key, entry.value);
-              }),
-
-              // Display message if no stats are available
-              if (user.quizStats.isEmpty)
-                Text(
-                  'No quiz data found. Go play!',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.6),
-                    fontSize: 12.sp, // MODIFIED: Responsive font size
-                    fontFamily: 'PressStart2P',
-                  ),
-                ),
-
-              // END: QUIZ STATS SECTION
-              const SizedBox(height: 40),
             ],
           ),
+          SizedBox(height: 12.h),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 12.h,
+              backgroundColor: Colors.white.withOpacity(0.05),
+              color: AppColors.highlightColor,
+            ),
+          ),
+          SizedBox(height: 12.h),
+          Center(
+            child: Text(
+              '${user.accountXP} / $nextLevelXP XP',
+              style: TextStyle(
+                color: Colors.white38,
+                fontSize: 10.sp,
+                letterSpacing: 1,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUtilityGrid() {
+    return GridView.count(
+      crossAxisCount: 2,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      mainAxisSpacing: 12.w,
+      crossAxisSpacing: 12.w,
+      childAspectRatio: 2.5,
+      children: [
+        _buildIconButton('EDIT PROFILE', Icons.edit, _navigateToEditScreen),
+        _buildIconButton(
+          'ACHIEVES',
+          Icons.emoji_events,
+          _navigateToAchievementsScreen,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildIconButton(String label, IconData icon, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white10),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: AppColors.highlightColor, size: 18.w),
+            SizedBox(width: 12.w),
+            Text(
+              label,
+              style: TextStyle(
+                fontFamily: 'PressStart2P',
+                fontSize: 7.sp,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRogueCard(UserData user) {
+    return Container(
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.purple.withOpacity(0.1),
+            Colors.black.withOpacity(0.3),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.purple.withOpacity(0.2)),
+      ),
+      child: Column(
+        children: [
+          _buildDataRow('MAX FLOOR', '${user.bestRogueFloor}', highlight: true),
+          SizedBox(height: 16.h),
+          SizedBox(
+            height: 40.h,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              shrinkWrap: true,
+              children: user.bestRogueTeam.map((animal) {
+                final fileName = animal.name
+                    .toLowerCase()
+                    .replaceAll(' ', '_')
+                    .replaceAll("'", '_')
+                    .replaceAll('-', '_');
+                return Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4.w),
+                  child: Image.asset(
+                    'assets/sprites/$fileName.png',
+                    width: 32.h,
+                    errorBuilder: (_, __, ___) =>
+                        const Icon(Icons.pets, color: Colors.white24),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuizStats(UserData user) {
+    if (user.quizStats.isEmpty) {
+      return Center(
+        child: Text(
+          'NO COMBAT ANALYTICS AVAILABLE',
+          style: TextStyle(
+            color: Colors.white24,
+            fontSize: 8.sp,
+            fontFamily: 'PressStart2P',
+          ),
+        ),
+      );
+    }
+    return Column(
+      children: user.quizStats.entries.map((entry) {
+        final attempts = entry.value['attempts'] as int? ?? 0;
+        final correct = entry.value['correct'] as int? ?? 0;
+        final accuracy = attempts > 0 ? (correct / attempts) : 0.0;
+        return Container(
+          margin: EdgeInsets.only(bottom: 12.h),
+          padding: EdgeInsets.all(16.w),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.03),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withOpacity(0.05)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                entry.key.toUpperCase(),
+                style: TextStyle(
+                  color: AppColors.highlightColor,
+                  fontSize: 9.sp,
+                  fontFamily: 'PressStart2P',
+                ),
+              ),
+              SizedBox(height: 12.h),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildStatPill(
+                    'ACC:',
+                    '${(accuracy * 100).toStringAsFixed(1)}%',
+                    Colors.blue,
+                  ),
+                  _buildStatPill('TRIAL:', '$attempts', Colors.orange),
+                  _buildStatPill('WIN:', '$correct', const Color(0xFF2ECC71)),
+                ],
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildStatPill(String label, String value, Color color) {
+    return Row(
+      children: [
+        Text(
+          label,
+          style: TextStyle(color: Colors.white38, fontSize: 8.sp),
+        ),
+        SizedBox(width: 4.w),
+        Text(
+          value,
+          style: TextStyle(
+            color: color,
+            fontSize: 9.sp,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDataRow(String label, String value, {bool highlight = false}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(color: Colors.white38, fontSize: 10.sp),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            color: highlight ? AppColors.highlightColor : Colors.white,
+            fontSize: 11.sp,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _navigateToAchievementsScreen() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => AchievementsScreen(
+          currentUser: _currentUser!,
+          allOrganisms: _allOrganisms,
+          authService: _authService,
         ),
       ),
     );
