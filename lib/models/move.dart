@@ -82,6 +82,15 @@ enum MoveEffectType {
   cureTeamStatus, // Aromatherapy
   changeType, // Soak
   setScreen, // Reflect, Light Screen, etc
+  trickRoom,
+  tailwind,
+  perishSong,
+  finalGambit,
+  substitute,
+  rollout,
+  iceBall,
+  defenseCurl,
+  futureSight,
 }
 
 enum MoveCategory { physical, special, status }
@@ -216,6 +225,8 @@ class Move {
     this.soundEffect,
     this.battleMusic,
     this.targetCount = MoveTargetCount.single,
+    this.isPunch = false,
+    this.isBite = false,
     bool? isContact,
   }) : isContact =
            isContact ?? (category == MoveCategory.physical && baseDamage > 0);
@@ -290,6 +301,8 @@ class Move {
       soundEffect: json['soundEffect'] as String?,
       battleMusic: json['battleMusic'] as String?,
       isContact: json['isContact'] as bool?,
+      isPunch: json['isPunch'] as bool? ?? false,
+      isBite: json['isBite'] as bool? ?? false,
       targetCount: json['targetCount'] != null
           ? MoveTargetCount.values.firstWhere(
               (e) => e.toString().split('.').last == json['targetCount'],
@@ -298,6 +311,9 @@ class Move {
           : MoveTargetCount.single,
     );
   }
+
+  final bool isPunch;
+  final bool isBite;
 
   static List<Move> _allMoves = [];
   static List<Move> get allMoves => _allMoves;
@@ -325,7 +341,14 @@ class Move {
   }
 
   static Move? findByName(String name) {
-    return _byName[name.trim().toLowerCase()];
+    final lowerName = name.trim().toLowerCase();
+    if (_byName.containsKey(lowerName)) return _byName[lowerName];
+    // Fallback for tests or dynamic moves
+    try {
+      return _allMoves.firstWhere((m) => m.name.toLowerCase() == lowerName);
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Create a move by name. If not in the predefined list, returns a move with

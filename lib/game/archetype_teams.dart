@@ -138,15 +138,28 @@ class ArchetypeTeamBuilder {
     var eligible = candidates.where((c) => _filter(archetype, c)).toList();
     if (eligible.length < teamSize) eligible = candidates; // fallback
 
-    // 3. Score candidates by archetype fit
-    eligible.sort(
-      (a, b) => _score(archetype, b).compareTo(_score(archetype, a)),
-    );
+    // 3. Score candidates by archetype fit for weighted selection
+    final scoredEligible = eligible.map((c) {
+      double s = _score(archetype, c);
+      if (s <= 0) s = 1; // base weight for any eligible animal
+      return MapEntry(c, s);
+    }).toList();
 
-    // 4. Pick top N (variety among top scores)
-    final topN = eligible.take(min(15, eligible.length)).toList()
-      ..shuffle(_rng);
-    final picked = topN.take(teamSize).toList();
+    // 4. Pick randomly using weights to ensure variety while favoring better fits
+    final picked = <_OrgCandidate>[];
+    for (int i = 0; i < teamSize && scoredEligible.isNotEmpty; i++) {
+      double totalWeight = scoredEligible.fold(0.0, (sum, e) => sum + e.value);
+      double r = _rng.nextDouble() * totalWeight;
+
+      for (int j = 0; j < scoredEligible.length; j++) {
+        r -= scoredEligible[j].value;
+        if (r <= 0) {
+          picked.add(scoredEligible[j].key);
+          scoredEligible.removeAt(j);
+          break;
+        }
+      }
+    }
 
     // 5. Build CapturedOrganisms with archetype-tuned movesets
     var team = picked.map((c) {

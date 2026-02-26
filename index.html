@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bio-Dex Relational Engine</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="mobile-header">
+        <div class="brand">BIO-ARCHIVE</div>
+        <button class="menu-toggle" onclick="App.toggleMenu()">☰</button>
+    </header>
+
+    <aside id="sidebar">
+        <div class="brand hide-mobile">BIO-ARCHIVE</div>
+        
+        <div class="filter-group">
+            <label>GLOBAL SEARCH</label>
+            <input type="text" id="q" placeholder="Search..." oninput="App.filter()">
+            <small class="tip">Search names or abilities</small>
+        </div>
+
+        <div class="filter-group">
+            <label>REGION FILTER</label>
+            <select id="hab" onchange="App.filter()">
+                <option value="">All Habitats</option>
+                <option value="Urban">Urban</option>
+                <option value="Jungle">Jungle</option>
+                <option value="Ocean">Ocean</option>
+                <option value="Desert">Desert</option>
+                <option value="River">River</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label>VIEW MODE</label>
+            <div class="btn-stack">
+                <button class="btn-nav active" id="btn-org" onclick="App.setMode('organisms')">ORGANISMS</button>
+                <button class="btn-nav" id="btn-item" onclick="App.setMode('talismans')">ITEMS</button>
+            </div>
+        </div>
+        
+        <button class="close-sidebar hide-desktop" onclick="App.toggleMenu()">CLOSE MENU</button>
+    </aside>
+
+    <main>
+        <div id="grid" class="grid"></div>
+        <div class="pagination">
+            <button class="p-btn" onclick="App.paginate(-1)">PREV</button>
+            <span id="pageTxt">Page 1</span>
+            <button class="p-btn" onclick="App.paginate(1)">NEXT</button>
+        </div>
+    </main>
+
+    <div id="modal" class="modal-overlay" onclick="App.closeModal()">
+        <div class="modal-content" id="modal-ui" onclick="event.stopPropagation()"></div>
+    </div>
+
+    <script>
+        const App = {
+            db: { orgs: [], moves: {}, items: [], abilities: {} },
+            filtered: [],
+            mode: 'organisms',
+            page: 0,
+            limit: 12,
+
+            async start() {
+                try {
+                    const [o1, o2, m, t, a] = await Promise.all([
+                        fetch('assets/Organisms.json').then(r => r.json()),
+                        fetch('assets/Organisms2.json').then(r => r.json()),
+                        fetch('assets/moves.json').then(r => r.json()),
+                        fetch('assets/talismans.json').then(r => r.json()),
+                        fetch('assets/abilities.json').then(r => r.json())
+                    ]);
+
+                    this.db.orgs = [...o1, ...o2];
+                    this.db.items = t;
+                    
+                    m.forEach(move => this.db.moves[move.name.toLowerCase()] = move);
+                    a.forEach(abil => this.db.abilities[abil.name.toLowerCase()] = abil);
+
+                    this.filter();
+                } catch (e) {
+                    console.error("Database Connection Error", e);
+                }
+            },
+
+            getSpritePath(name, type) {
+                const clean = name.toLowerCase().replace(/[']/g, '').replace(/[^a-z0-9]/g, '_').replace(/_{2,}/g, '_');
+                return type === 'organisms' ? `assets/sprites/${clean}.png` : `assets/items/${clean}.png`;
+            },
+
+            filter() {
+                const query = document.getElementById('q').value.toLowerCase();
+                const habitat = document.getElementById('hab').value;
+                const source = this.mode === 'organisms' ? this.db.orgs : this.db.items;
+
+                this.filtered = source.filter(x => {
+                    const mName = x.name.toLowerCase().includes(query);
+                    const mHab = !habitat || (x.habitat && x.habitat.includes(habitat));
+                    const mAbil = x.abilities ? x.abilities.toLowerCase().includes(query) : false;
+                    return (mName || mAbil) && mHab;
+                });
+                this.page = 0;
+                this.render();
+            },
+
+            render() {
+                const start = this.page * this.limit;
+                const slice = this.filtered.slice(start, start + this.limit);
+                const grid = document.getElementById('grid');
+
+                grid.innerHTML = slice.map(item => `
+                    <div class="card" onclick="App.showDetail('${item.name}')">
+                        <img src="${this.getSpritePath(item.name, this.mode)}" 
+                             onerror="this.src='https://via.placeholder.com/150/161b22/58a6ff?text=BIO'">
+                        <div class="card-info">
+                            <span class="rarity-tag">${item.rarity || 'ITEM'}</span>
+                            <h3>${item.name}</h3>
+                            <div class="card-traits">${item.abilities ? item.abilities.split(',').join(' • ') : ''}</div>
+                        </div>
+                    </div>
+                `).join('');
+                document.getElementById('pageTxt').innerText = `Page ${this.page + 1} of ${Math.ceil(this.filtered.length / this.limit)}`;
+            },
+
+            showDetail(name) {
+                const ui = document.getElementById('modal-ui');
+                document.body.style.overflow = 'hidden'; // Prevent scroll
+
+                if (this.mode === 'organisms') {
+                    const o = this.db.orgs.find(x => x.name === name);
+                    const moveKeys = o.moves.split(',').map(m => m.trim());
+                    const abilKeys = o.abilities.split(',').map(a => a.trim());
+
+                    ui.innerHTML = `
+                        <div class="m-side">
+                            <img src="${this.getSpritePath(o.name, 'organisms')}" class="m-img">
+                            <h2>${o.name}</h2>
+                            <p class="sci-name">${o.scientific_name}</p>
+                            <div class="stat-container">
+                                ${['Health','Attack','Defense','Power','Speed'].map(s => this.renderStat(s, o[s.toLowerCase()])).join('')}
+                            </div>
+                        </div>
+                        <div class="m-body">
+                            <h3>Biological Description</h3>
+                            <p>${o.description}</p>
+                            <h3>Abilities</h3>
+                            <div class="ability-grid">
+                                ${abilKeys.map(aName => {
+                                    const ad = this.db.abilities[aName.toLowerCase()] || { description: "Passive trait.", trigger: "Passive" };
+                                    return `
+                                        <div class="ability-card">
+                                            <div class="ability-header"><strong>${aName}</strong><span class="trigger-tag"> (${ad.trigger})</span></div>
+                                            <p>${ad.description}</p>
+                                        </div>`;
+                                }).join('')}
+                            </div>
+                            <h3>Combat Moves</h3>
+                            <div class="move-list">
+                                ${moveKeys.map(mName => {
+                                    const md = this.db.moves[mName.toLowerCase()] || { description: "Basic move.", baseDamage: 0, stamina: 0, accuracy: 100 };
+                                    return `
+                                        <div class="move-item">
+                                            <div class="m-header"><strong>${mName}</strong> <span class="m-type">${md.type || 'basic'}</span></div>
+                                            <div class="m-metrics">DMG: ${md.baseDamage} | STA: ${md.stamina} | ACC: ${md.accuracy}%</div>
+                                            <p>${md.description}</p>
+                                        </div>`;
+                                }).join('')}
+                            </div>
+                        </div>`;
+                } else {
+                    const t = this.db.items.find(x => x.name === name);
+                    ui.innerHTML = `
+                        <div class="m-side"><img src="${this.getSpritePath(t.name, 'items')}" class="m-img"></div>
+                        <div class="m-body">
+                            <h1>${t.name}</h1>
+                            <p class="item-desc">${t.description}</p>
+                            <h3>Modifiers</h3>
+                            ${t.effects.map(e => `<div class="move-item">Effect: <b>${e.type}</b> | Stat: <b>${e.stat}</b> | Mag: <b>${e.magnitude}x</b></div>`).join('')}
+                        </div>`;
+                }
+                document.getElementById('modal').style.display = 'flex';
+            },
+
+            renderStat(label, val) {
+                return `
+                    <div class="stat-row">
+                        <div class="stat-meta"><span>${label}</span><span>${val}</span></div>
+                        <div class="stat-bg"><div class="stat-fill" style="width:${(val/180)*100}%"></div></div>
+                    </div>`;
+            },
+
+            setMode(m) { 
+                this.mode = m; 
+                document.querySelectorAll('.btn-nav').forEach(b => b.classList.remove('active'));
+                document.getElementById(m === 'organisms' ? 'btn-org' : 'btn-item').classList.add('active');
+                this.filter(); 
+            },
+
+            paginate(dir) { 
+                const newP = this.page + dir;
+                if(newP >= 0 && newP * this.limit < this.filtered.length) { this.page = newP; this.render(); }
+            },
+
+            closeModal() { 
+                document.getElementById('modal').style.display = 'none'; 
+                document.body.style.overflow = 'auto';
+            },
+
+            toggleMenu() {
+                document.getElementById('sidebar').classList.toggle('open');
+            }
+        };
+
+        App.start();
+    </script>
+</body>
+</html>

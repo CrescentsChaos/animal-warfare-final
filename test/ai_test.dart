@@ -102,7 +102,7 @@ void main() {
 
     test('Opponent switches when at severe disadvantage', () async {
       final playerOrg = CapturedOrganism.spawn(
-        base.copyWith(types: ['aquatic']),
+        base.copyWith(types: ['aquatic'], moves: 'Water Gun'),
       );
 
       final currentOpponent = CapturedOrganism.spawn(
@@ -110,7 +110,6 @@ void main() {
       );
 
       // Teammate is Grass (Good Matchup vs Water)
-      // Use a move name that might yield better base damage or just ensure it's not Struggle
       final teammate = CapturedOrganism.spawn(
         base.copyWith(types: ['grass'], moves: 'Leaf Blade'),
       );
@@ -184,7 +183,7 @@ void main() {
 
     test('AI switch cooldown prevents immediate re-switch', () async {
       final playerOrg = CapturedOrganism.spawn(
-        base.copyWith(types: ['aquatic']),
+        base.copyWith(types: ['aquatic'], moves: 'Water Gun'),
       );
       final currentOpponent = CapturedOrganism.spawn(
         base.copyWith(types: ['blaze'], moves: 'Ember'),
@@ -249,6 +248,16 @@ void main() {
       manager.currentState = BattleState.waitingForInput;
       // Change player to arthropod so Blaze (teammate 0) is super effective
       manager.player.battleTypes = [ElementalType.arthropod];
+      // Also give a SE move to player to force teammate 1 (Grass) to want to switch
+      playerOrg.selectedMoveNames = ['Leech Life'];
+      Move.allMoves.add(
+        const Move(
+          name: 'Leech Life',
+          description: '',
+          baseDamage: 80,
+          type: ElementalType.arthropod,
+        ),
+      );
 
       await manager.processPlayerAction(dummyMove);
       expect(

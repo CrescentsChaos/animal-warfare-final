@@ -1,6 +1,7 @@
 // lib/battle_screen.dart
 
 import 'dart:math';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'
     show rootBundle, SystemChrome, DeviceOrientation;
@@ -24,6 +25,7 @@ import 'package:animal_warfare/models/status_effect.dart'; // Added for overlay
 import 'dart:math' as math;
 import 'dart:async';
 import 'package:animal_warfare/widgets/weather_overlay.dart';
+import 'package:animal_warfare/widgets/terrain_overlay.dart';
 import 'package:animal_warfare/widgets/item_icon.dart';
 
 class BattleScreen extends StatelessWidget {
@@ -255,7 +257,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
   late Animation<double> _playerShakeAnimation;
   late Animation<double> _opponentShakeAnimation;
   bool _isSwitchDialogShowing = false;
-  bool _isHandlingBattleEnd = false; // Prevents race condition
+  bool _isHandlingBattleEnd = false;
   CapturedOrganism? _pendingRogueCapture;
   BattleManager? _battleManager;
   final LayerLink _playerLink = LayerLink();
@@ -308,7 +310,27 @@ class _BattleScreenContentState extends State<BattleScreenContent>
       if (widget.isRogueMode) {
         bm.addListener(_syncRogueState);
       }
+      bm.addListener(_handleStateTriggers);
     });
+  }
+
+  void _handleStateTriggers() {
+    if (!mounted) return;
+    final bm = Provider.of<BattleManager>(context, listen: false);
+
+    if (bm.currentState == BattleState.choosingLead &&
+        !_isSwitchDialogShowing) {
+      _showPartyScreen(
+        context,
+        bm,
+        title: 'CHOOSE YOUR LEAD!',
+        isForced: true,
+        isLeadSelection: true,
+      );
+    } else if (bm.currentState == BattleState.waitingForPlayerSwitch &&
+        !_isSwitchDialogShowing) {
+      _showPartyScreen(context, bm, isForced: true);
+    }
   }
 
   void _syncRogueState() {
@@ -345,8 +367,11 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     WidgetsBinding.instance.removeObserver(this);
 
     // FIX: Remove BattleManager listener to prevent state leaks or post-mortem syncs
-    if (widget.isRogueMode && _battleManager != null) {
-      _battleManager!.removeListener(_syncRogueState);
+    if (_battleManager != null) {
+      if (widget.isRogueMode) {
+        _battleManager!.removeListener(_syncRogueState);
+      }
+      _battleManager!.removeListener(_handleStateTriggers);
     }
 
     // FIX: Explicitly stop music when leaving the battle screen.
@@ -478,241 +503,315 @@ class _BattleScreenContentState extends State<BattleScreenContent>
 
   void _showBattleLog(BuildContext context, BattleManager battleManager) {
     final isNarrow = MediaQuery.sizeOf(context).width < 400;
+    final themeColor = _getBiomeThemeColor();
+    final primaryColor = _getBiomePrimaryColor();
+    final secondaryColor = _getBiomeSecondaryColor();
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      barrierColor: Colors.black54,
       builder: (ctx) => DraggableScrollableSheet(
         initialChildSize: isNarrow ? 0.7 : 0.5,
         minChildSize: 0.3,
         maxChildSize: 0.95,
-        builder: (_, scrollController) => Container(
-          decoration: BoxDecoration(
-            color: _getBiomeSecondaryColor(),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-            border: Border.all(color: _getBiomeThemeColor(), width: 2),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.5),
-                blurRadius: 12,
-                offset: const Offset(0, -4),
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 12,
-                  horizontal: 16,
+        builder: (_, scrollController) => ClipRRect(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+            child: Container(
+              decoration: BoxDecoration(
+                color: secondaryColor.withOpacity(0.85),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(24),
                 ),
-                decoration: BoxDecoration(
-                  color: _getBiomePrimaryColor().withOpacity(0.5),
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(14),
+                border: Border.all(
+                  color: themeColor.withOpacity(0.5),
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.5),
+                    blurRadius: 20,
+                    spreadRadius: 5,
                   ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'BATTLE LOG',
-                      style: AppTextStyles.headline(
-                        context,
-                        baseSize: 14,
-                        color: _getBiomeThemeColor(),
+                ],
+              ),
+              child: Column(
+                children: [
+                  // HandleBar for DraggableSheet
+                  Center(
+                    child: Container(
+                      margin: const EdgeInsets.only(top: 12),
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(2),
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white),
-                      onPressed: () => Navigator.pop(ctx),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          primaryColor.withOpacity(0.6),
+                          Colors.transparent,
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
                     ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: ListView.builder(
-                  controller: scrollController,
-                  padding: const EdgeInsets.all(16),
-                  // Reverse order of turns (Latest turn first)
-                  itemCount: battleManager.turnHistory.length,
-                  itemBuilder: (_, i) {
-                    final turnIndex = battleManager.turnHistory.length - 1 - i;
-                    final turn = battleManager.turnHistory[turnIndex];
-
-                    if (turn.logEntries.isEmpty) return const SizedBox.shrink();
-
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        // Turn Header
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8.0),
-                          child: Center(
-                            child: Text(
-                              '--- TURN ${turn.turnNumber} ---',
-                              style: TextStyle(
-                                color: _getBiomeThemeColor(),
-                                fontSize: 12,
-                                fontFamily: 'PressStart2P',
-                                fontWeight: FontWeight.bold,
-                              ),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.history_edu,
+                              color: themeColor,
+                              size: 20,
                             ),
-                          ),
+                            const SizedBox(width: 12),
+                            Text(
+                              'BATTLE LOG',
+                              style:
+                                  AppTextStyles.headline(
+                                    context,
+                                    baseSize: 16,
+                                    color: Colors.white,
+                                  ).copyWith(
+                                    letterSpacing: 2.0,
+                                    shadows: [
+                                      Shadow(
+                                        color: themeColor.withOpacity(0.8),
+                                        blurRadius: 8,
+                                      ),
+                                    ],
+                                  ),
+                            ),
+                          ],
                         ),
-                        // Log Entries for this turn (Chronological)
-                        ...turn.logEntries.map(
-                          (entry) => Padding(
-                            padding: const EdgeInsets.only(bottom: 6),
+                        Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () => Navigator.pop(ctx),
+                            borderRadius: BorderRadius.circular(20),
                             child: Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 8,
-                              ),
+                              padding: const EdgeInsets.all(4),
                               decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.4),
-                                borderRadius: BorderRadius.circular(6),
-                                border: Border.all(color: Colors.grey.shade800),
-                              ),
-                              child: Text(
-                                entry,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: isNarrow ? 10 : 12,
-                                  fontFamily: 'PressStart2P',
-                                  height: 1.4,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.2),
                                 ),
+                              ),
+                              child: const Icon(
+                                Icons.close,
+                                color: Colors.white,
+                                size: 18,
                               ),
                             ),
                           ),
                         ),
                       ],
-                    );
-                  },
-                ),
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView.builder(
+                      controller: scrollController,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      // Reverse order of turns (Latest turn first)
+                      itemCount: battleManager.turnHistory.length,
+                      itemBuilder: (_, i) {
+                        final turnIndex =
+                            battleManager.turnHistory.length - 1 - i;
+                        final turn = battleManager.turnHistory[turnIndex];
+
+                        if (turn.logEntries.isEmpty)
+                          return const SizedBox.shrink();
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Turn Header with Gradient Underscore
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(0, 16, 0, 12),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: themeColor.withOpacity(0.2),
+                                      borderRadius: BorderRadius.circular(4),
+                                      border: Border.all(
+                                        color: themeColor.withOpacity(0.4),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      'TURN ${turn.turnNumber}',
+                                      style: TextStyle(
+                                        color: themeColor,
+                                        fontSize: 10,
+                                        fontFamily: 'PressStart2P',
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 1.2,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Container(
+                                      height: 1,
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            themeColor.withOpacity(0.5),
+                                            Colors.transparent,
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            // Log Entries for this turn (Chronological)
+                            ...turn.logEntries.map(
+                              (entry) => Padding(
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child: Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 12,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Colors.black.withOpacity(0.4),
+                                        Colors.black.withOpacity(0.2),
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color: Colors.white.withOpacity(0.05),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 4),
+                                        child: Icon(
+                                          Icons.arrow_right,
+                                          size: 16,
+                                          color: themeColor.withOpacity(0.7),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          entry,
+                                          style: TextStyle(
+                                            color: Colors.white.withOpacity(
+                                              0.95,
+                                            ),
+                                            fontSize: isNarrow ? 10 : 11,
+                                            fontFamily: 'PressStart2P',
+                                            height: 1.6,
+                                            shadows: [
+                                              const Shadow(
+                                                color: Colors.black,
+                                                offset: Offset(1, 1),
+                                                blurRadius: 2,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Future<void> _showSwitchDialog(BuildContext context, BattleManager bm) {
-    // START FIX: Prevent dismissal if switch is forced
-    final bool isForced = bm.currentState == BattleState.waitingForPlayerSwitch;
-    return showDialog(
+  Future<void> _showPartyScreen(
+    BuildContext context,
+    BattleManager bm, {
+    String title = 'SELECT ANIMAL',
+    bool isForced = false,
+    bool isLeadSelection = false,
+  }) {
+    _isSwitchDialogShowing = true;
+    return showModalBottomSheet(
       context: context,
-      barrierDismissible: !isForced,
+      isScrollControlled: true,
+      isDismissible: !isForced,
+      enableDrag: !isForced,
+      backgroundColor: Colors.transparent,
+      useSafeArea: true,
       builder: (ctx) => PopScope(
         canPop: !isForced,
-        child: AlertDialog(
-          backgroundColor: _getBiomeSecondaryColor(),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: _getBiomeThemeColor(), width: 2),
-          ),
-          title: Text(
-            'SELECT ANIMAL',
-            style: AppTextStyles.headline(
-              context,
-              baseSize: 14,
-              color: _getBiomeThemeColor(),
-            ),
-          ),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: bm.playerTeam.length,
-              itemBuilder: (context, index) {
-                final animal = bm.playerTeam[index];
-                final battleOrg = BattleOrganism(
-                  animal,
-                  isRogueMode: bm.isRogueMode,
-                );
-                final isCurrent = index == bm.currentPlayerIndex;
-                final isFainted = battleOrg.health <= 0;
-
-                return ListTile(
-                  enabled: !isCurrent && !isFainted,
-                  onLongPress: () {
-                    // Show animal details on long press
-                    _showOrganismInfo(
-                      context,
-                      battleOrg,
-                      bm: bm,
-                      isPlayer: true,
-                    );
-                  },
-                  leading: Opacity(
-                    opacity: isFainted ? 0.5 : 1.0,
-                    child: Image.asset(
-                      'assets/sprites/${animal.name.toLowerCase().replaceAll(' ', '_').replaceAll('-', '_').replaceAll("'", "_")}.png',
-                      width: 40,
-                      errorBuilder: (_, __, ___) =>
-                          const Icon(Icons.pets, color: Colors.white),
-                    ),
-                  ),
-                  title: Text(
-                    animal.name,
-                    style: TextStyle(
-                      color: isCurrent
-                          ? _getBiomeThemeColor()
-                          : (isFainted ? Colors.grey : Colors.white),
-                      fontFamily: 'PressStart2P',
-                      fontSize: 10,
-                    ),
-                  ),
-                  subtitle: Text(
-                    'HP: ${battleOrg.health}/${battleOrg.maxHealth}',
-                    style: TextStyle(
-                      color: isFainted ? Colors.red : Colors.green,
-                      fontFamily: 'PressStart2P',
-                      fontSize: 8,
-                    ),
-                  ),
-                  trailing: isCurrent
-                      ? Icon(Icons.check_circle, color: _getBiomeThemeColor())
-                      : (isFainted
-                            ? const Text(
-                                'FAINTED',
-                                style: TextStyle(
-                                  color: Colors.red,
-                                  fontSize: 8,
-                                  fontFamily: 'PressStart2P',
-                                ),
-                              )
-                            : null),
-                  onTap: (!isCurrent && !isFainted)
-                      ? () {
-                          Navigator.pop(ctx);
-                          bm.switchAnimal(index);
-                        }
-                      : null,
-                );
-              },
-            ),
-          ),
-          actions: [
-            if (bm.currentState != BattleState.waitingForPlayerSwitch)
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text(
-                  'CANCEL',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontFamily: 'PressStart2P',
-                    fontSize: 10,
-                  ),
-                ),
-              ),
-          ],
+        onPopInvoked: (_) {
+          _isSwitchDialogShowing = false;
+        },
+        child: _PartyScreenDialog(
+          bm: bm,
+          title: title,
+          isForced: isForced,
+          isLeadSelection: isLeadSelection,
+          themeColor: _getBiomeThemeColor(),
+          primaryColor: _getBiomePrimaryColor(),
+          onDismiss: () => _isSwitchDialogShowing = false,
+          onShowSummary: (bo) {
+            _showOrganismInfo(context, bo, bm: bm, isPlayer: true);
+          },
+          onSelect: (index) {
+            Navigator.pop(ctx);
+            _isSwitchDialogShowing = false;
+            if (isLeadSelection) {
+              bm.setLeadAnimal(index);
+            } else {
+              bm.switchAnimal(index);
+            }
+          },
         ),
       ),
+    ).whenComplete(() => _isSwitchDialogShowing = false);
+  }
+
+  // Keep for compatibility but redirect to new screen
+  Future<void> _showSwitchDialog(BuildContext context, BattleManager bm) {
+    return _showPartyScreen(
+      context,
+      bm,
+      isForced: bm.currentState == BattleState.waitingForPlayerSwitch,
     );
   }
 
@@ -724,16 +823,6 @@ class _BattleScreenContentState extends State<BattleScreenContent>
 
     if (battleManager.currentState == BattleState.battleEnd) {
       _handleBattleEnd(context, battleManager, userState);
-    }
-
-    if (battleManager.currentState == BattleState.waitingForPlayerSwitch &&
-        !_isSwitchDialogShowing) {
-      _isSwitchDialogShowing = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _showSwitchDialog(context, battleManager).then((_) {
-          _isSwitchDialogShowing = false;
-        });
-      });
     }
 
     final overlayColor = Colors.black.withOpacity(0.55);
@@ -759,8 +848,18 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               ),
             ),
           ),
+          if (battleManager.trickRoomTurns > 0) const _TrickRoomOverlay(),
           // Weather Overlay
           WeatherOverlay(weather: battleManager.currentWeather.weather),
+          // Terrain Overlay
+          if (battleManager.currentTerrain.terrain != Terrain.none)
+            TerrainOverlay(terrain: battleManager.currentTerrain.terrain),
+          // Tailwind Overlay
+          TailwindOverlay(
+            isActive:
+                battleManager.playerTailwindTurns > 0 ||
+                battleManager.opponentTailwindTurns > 0,
+          ),
           SafeArea(
             child: OrientationBuilder(
               builder: (context, orientation) {
@@ -1045,58 +1144,206 @@ class _BattleScreenContentState extends State<BattleScreenContent>
   }
 
   Widget _buildFieldEffects(BuildContext context, BattleManager bm) {
-    if (bm.currentWeather.weather == Weather.none &&
-        bm.currentTerrain.terrain == Terrain.none) {
+    final hasGlobal =
+        bm.currentWeather.weather != Weather.none ||
+        bm.currentTerrain.terrain != Terrain.none ||
+        bm.trickRoomTurns > 0;
+
+    final hasPlayerSide =
+        bm.playerTailwindTurns > 0 ||
+        bm.playerReflectTurns > 0 ||
+        bm.playerLightScreenTurns > 0 ||
+        bm.playerAuroraVeilTurns > 0;
+
+    final hasOpponentSide =
+        bm.opponentTailwindTurns > 0 ||
+        bm.opponentReflectTurns > 0 ||
+        bm.opponentLightScreenTurns > 0 ||
+        bm.opponentAuroraVeilTurns > 0;
+
+    if (!hasGlobal && !hasPlayerSide && !hasOpponentSide) {
       return const SizedBox.shrink();
     }
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        if (bm.currentWeather.weather != Weather.none)
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 4),
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: Colors.blue.withOpacity(0.6),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.white70),
-            ),
-            child: Text(
-              bm.currentWeather.weather
-                  .toString()
-                  .split('.')
-                  .last
-                  .toUpperCase(),
-              style: const TextStyle(
-                color: Colors.white,
-                fontFamily: 'PressStart2P',
-                fontSize: 10,
+
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 8),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (hasGlobal)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 4,
+                runSpacing: 4,
+                children: [
+                  if (bm.currentWeather.weather != Weather.none)
+                    _buildWeatherIndicator(bm.currentWeather.weather),
+                  if (bm.currentTerrain.terrain != Terrain.none)
+                    _buildTerrainIndicator(bm.currentTerrain.terrain),
+                  if (bm.trickRoomTurns > 0)
+                    _buildEffectIndicator(
+                      'TRICK ROOM (${bm.trickRoomTurns})',
+                      Colors.deepPurple.shade700,
+                      Icons.architecture,
+                    ),
+                ],
               ),
             ),
-          ),
-        if (bm.currentTerrain.terrain != Terrain.none)
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 4),
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: Colors.purple.withOpacity(0.6),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.white70),
+          if (hasPlayerSide || hasOpponentSide)
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 2,
+                    runSpacing: 2,
+                    children: [
+                      if (bm.playerTailwindTurns > 0)
+                        _buildEffectIndicator(
+                          'TWIND (${bm.playerTailwindTurns})',
+                          Colors.lightBlue,
+                          Icons.air,
+                        ),
+                      if (bm.playerReflectTurns > 0)
+                        _buildEffectIndicator(
+                          'REFL (${bm.playerReflectTurns})',
+                          Colors.orange,
+                          Icons.shield,
+                        ),
+                      if (bm.playerLightScreenTurns > 0)
+                        _buildEffectIndicator(
+                          'L.SCR (${bm.playerLightScreenTurns})',
+                          Colors.yellow.shade700,
+                          Icons.wb_sunny,
+                        ),
+                      if (bm.playerAuroraVeilTurns > 0)
+                        _buildEffectIndicator(
+                          'AURV (${bm.playerAuroraVeilTurns})',
+                          Colors.cyan,
+                          Icons.star,
+                        ),
+                    ],
+                  ),
+                ),
+                if (hasPlayerSide && hasOpponentSide)
+                  Container(
+                    width: 1,
+                    height: 16,
+                    color: Colors.white24,
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                  ),
+                Expanded(
+                  child: Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 2,
+                    runSpacing: 2,
+                    children: [
+                      if (bm.opponentTailwindTurns > 0)
+                        _buildEffectIndicator(
+                          'FOE TWIND (${bm.opponentTailwindTurns})',
+                          Colors.lightBlue.shade800,
+                          Icons.air,
+                        ),
+                      if (bm.opponentReflectTurns > 0)
+                        _buildEffectIndicator(
+                          'FOE REFL (${bm.opponentReflectTurns})',
+                          Colors.orange.shade800,
+                          Icons.shield,
+                        ),
+                      if (bm.opponentLightScreenTurns > 0)
+                        _buildEffectIndicator(
+                          'FOE L.SCR (${bm.opponentLightScreenTurns})',
+                          Colors.yellow.shade900,
+                          Icons.wb_sunny,
+                        ),
+                      if (bm.opponentAuroraVeilTurns > 0)
+                        _buildEffectIndicator(
+                          'FOE AURV (${bm.opponentAuroraVeilTurns})',
+                          Colors.cyan.shade800,
+                          Icons.star,
+                        ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            child: Text(
-              bm.currentTerrain.terrain
-                  .toString()
-                  .split('.')
-                  .last
-                  .toUpperCase(),
-              style: const TextStyle(
-                color: Colors.white,
-                fontFamily: 'PressStart2P',
-                fontSize: 10,
-              ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWeatherIndicator(Weather weather) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      decoration: BoxDecoration(
+        color: Colors.blue.withOpacity(0.7),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: Colors.white70),
+      ),
+      child: Text(
+        weather.toString().split('.').last.toUpperCase(),
+        style: const TextStyle(
+          color: Colors.white,
+          fontFamily: 'PressStart2P',
+          fontSize: 9,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTerrainIndicator(Terrain terrain) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      decoration: BoxDecoration(
+        color: Colors.purple.withOpacity(0.7),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: Colors.white70),
+      ),
+      child: Text(
+        terrain.toString().split('.').last.toUpperCase(),
+        style: const TextStyle(
+          color: Colors.white,
+          fontFamily: 'PressStart2P',
+          fontSize: 9,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEffectIndicator(String text, Color color, IconData icon) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 1, vertical: 1),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.85),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: Colors.white.withOpacity(0.5)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 2,
+            offset: const Offset(1, 1),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: Colors.white, size: 9),
+          const SizedBox(width: 3),
+          Text(
+            text,
+            style: const TextStyle(
+              color: Colors.white,
+              fontFamily: 'PressStart2P',
+              fontSize: 8.5,
             ),
           ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -1822,6 +2069,18 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                 bo.speedStage >= 0 ? '+${bo.speedStage}' : '${bo.speedStage}',
                 const Color.fromARGB(255, 0, 188, 235),
               ),
+              if (!isPlayer)
+                Padding(
+                  padding: const EdgeInsets.only(left: 48.0, bottom: 4.0),
+                  child: Text(
+                    'EST. RANGE: ${((CapturedOrganism.calculateStat('speed', base.speed, 0, level: bo.organism.level)) * 0.9).round()} - ${((CapturedOrganism.calculateStat('speed', base.speed, 31, level: bo.organism.level)) * 1.1).round()}',
+                    style: const TextStyle(
+                      color: Colors.white54,
+                      fontSize: 7,
+                      fontFamily: 'PressStart2P',
+                    ),
+                  ),
+                ),
 
               const SizedBox(height: 10),
               const Divider(color: Colors.white24, height: 1),
@@ -1918,10 +2177,6 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                   padding: const EdgeInsets.only(bottom: 10.0),
                   child: Row(
                     children: [
-                      ItemIcon(
-                        itemName: bo.organism.equippedTalisman!.name,
-                        size: 16,
-                      ),
                       const SizedBox(width: 8),
                       const Text(
                         'HELD ITEM: ',
@@ -1930,6 +2185,10 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                           fontSize: 9,
                           fontFamily: 'PressStart2P',
                         ),
+                      ),
+                      ItemIcon(
+                        itemName: bo.organism.equippedTalisman!.name,
+                        size: 16,
                       ),
                       Expanded(
                         child: Text(
@@ -1986,18 +2245,88 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                 else
                   ...battleManager.battleStats[bo.organism.id]!.revealedMoves
                       .map((moveName) {
+                        final move = Move.findByName(moveName);
+                        final curStam = bo.organism.moveStamina[moveName] ?? 0;
+                        final maxStam = move?.stamina ?? 0;
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 4.0),
-                          child: Text(
-                            moveName.toUpperCase(),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 9,
-                              fontFamily: 'PressStart2P',
-                            ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                moveName.toUpperCase(),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 9,
+                                  fontFamily: 'PressStart2P',
+                                ),
+                              ),
+                              Text(
+                                '$curStam/$maxStam',
+                                style: TextStyle(
+                                  color: curStam == 0
+                                      ? Colors.red
+                                      : (curStam < maxStam / 2
+                                            ? Colors.orange
+                                            : Colors.white70),
+                                  fontSize: 8,
+                                  fontFamily: 'PressStart2P',
+                                ),
+                              ),
+                            ],
                           ),
                         );
                       }),
+                const SizedBox(height: 10),
+                const Divider(color: Colors.white24, height: 1),
+                const SizedBox(height: 10),
+              ] else ...[
+                // Player Moves
+                const SizedBox(height: 10),
+                const Divider(color: Colors.white24, height: 1),
+                const SizedBox(height: 10),
+                Text(
+                  'MOVES',
+                  style: TextStyle(
+                    color: _getBiomeThemeColor(),
+                    fontSize: 9,
+                    fontFamily: 'PressStart2P',
+                  ),
+                ),
+                const SizedBox(height: 6),
+                ...bo.organism.selectedMoveNames.map((moveName) {
+                  final move = Move.findByName(moveName);
+                  final curStam = bo.organism.moveStamina[moveName] ?? 0;
+                  final maxStam = move?.stamina ?? 0;
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 4.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          moveName.toUpperCase(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 9,
+                            fontFamily: 'PressStart2P',
+                          ),
+                        ),
+                        Text(
+                          '$curStam/$maxStam',
+                          style: TextStyle(
+                            color: curStam == 0
+                                ? Colors.red
+                                : (curStam < maxStam / 2
+                                      ? Colors.orange
+                                      : Colors.white70),
+                            fontSize: 8,
+                            fontFamily: 'PressStart2P',
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
                 const SizedBox(height: 10),
                 const Divider(color: Colors.white24, height: 1),
                 const SizedBox(height: 10),
@@ -4277,31 +4606,31 @@ class _BattleSpriteState extends State<_BattleSprite>
                   animation: _pulseAnimation,
                   builder: (context, child) {
                     return Container(
-                      width: size * 1.3, // Extended width
+                      width: size * 1.3,
                       height: size * 0.9,
                       decoration: BoxDecoration(
-                        shape: BoxShape.circle, // Oval due to width > height
+                        shape: BoxShape.circle,
                         border: Border.all(
                           color: platformOutlineColor,
-                          width: 3, // Thicker outline
+                          width: 3,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.4),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
+                            color: Colors.black.withOpacity(0.5),
+                            blurRadius: 10,
+                            offset: const Offset(0, 6),
                           ),
                         ],
                         gradient: RadialGradient(
                           center: Alignment.center,
-                          radius: 0.8,
+                          radius: 0.9,
                           colors: [
+                            platformColor, // Solid center
                             platformColor.withOpacity(
-                              _pulseAnimation.value * 0.5,
-                            ), // Fading middle
-                            platformColor.withOpacity(0.9), // Solid edge
+                              0.92,
+                            ), // Barely faded edge
                           ],
-                          stops: const [0.2, 1.0],
+                          stops: const [0.3, 1.0],
                         ),
                       ),
                     );
@@ -4376,11 +4705,156 @@ class _BattleSpriteState extends State<_BattleSprite>
 
             // Hazards on TOP
             _buildHazards(),
+
+            // Protection Screens Overlay
+            _ScreenShieldOverlay(organism: widget.organism, size: size),
           ],
         ),
       ),
     );
   }
+}
+
+class _ScreenShieldOverlay extends StatefulWidget {
+  final BattleOrganism organism;
+  final double size;
+  const _ScreenShieldOverlay({required this.organism, required this.size});
+
+  @override
+  State<_ScreenShieldOverlay> createState() => _ScreenShieldOverlayState();
+}
+
+class _ScreenShieldOverlayState extends State<_ScreenShieldOverlay>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 3),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bm = Provider.of<BattleManager>(context);
+    final isPlayer = widget.organism.isPlayer;
+
+    final hasReflect = isPlayer
+        ? bm.playerReflectTurns > 0
+        : bm.opponentReflectTurns > 0;
+    final hasLightScreen = isPlayer
+        ? bm.playerLightScreenTurns > 0
+        : bm.opponentLightScreenTurns > 0;
+    final hasAuroraVeil = isPlayer
+        ? bm.playerAuroraVeilTurns > 0
+        : bm.opponentAuroraVeilTurns > 0;
+
+    if (!hasReflect && !hasLightScreen && !hasAuroraVeil)
+      return const SizedBox.shrink();
+
+    final List<Widget> shields = [];
+
+    if (hasAuroraVeil) {
+      shields.add(
+        CustomPaint(
+          painter: _ShieldPainter(
+            color: Colors.cyanAccent.withOpacity(0.75),
+            progress: _controller.value,
+            scale: 1.1,
+          ),
+        ),
+      );
+    }
+    if (hasReflect) {
+      shields.add(
+        CustomPaint(
+          painter: _ShieldPainter(
+            color: Colors.orangeAccent.withOpacity(0.75),
+            progress: _controller.value,
+            offset: hasAuroraVeil ? 2.0 : 0.0,
+          ),
+        ),
+      );
+    }
+    if (hasLightScreen) {
+      shields.add(
+        CustomPaint(
+          painter: _ShieldPainter(
+            color: Colors.yellowAccent.withOpacity(0.75),
+            progress: _controller.value,
+            scale: hasReflect || hasAuroraVeil ? 0.9 : 1.0,
+          ),
+        ),
+      );
+    }
+
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Positioned.fill(child: Stack(children: shields));
+      },
+    );
+  }
+}
+
+class _ShieldPainter extends CustomPainter {
+  final Color color;
+  final double progress;
+
+  final double scale;
+  final double offset;
+
+  _ShieldPainter({
+    required this.color,
+    required this.progress,
+    this.scale = 1.0,
+    this.offset = 0.0,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color.withOpacity(
+        color.opacity * (0.6 + 0.4 * math.sin(progress * 2 * math.pi)),
+      )
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.0;
+
+    final path = Path();
+    final centerX = size.width / 2 + offset;
+    final centerY = size.height / 2 + offset;
+    final radius = size.width * 0.48 * scale;
+
+    for (int i = 0; i < 6; i++) {
+      double angle = i * math.pi / 3;
+      double x = centerX + radius * math.cos(angle);
+      double y = centerY + radius * math.sin(angle);
+      if (i == 0)
+        path.moveTo(x, y);
+      else
+        path.lineTo(x, y);
+    }
+    path.close();
+
+    canvas.drawPath(path, paint);
+
+    final fillPaint = Paint()
+      ..color = color.withOpacity(color.opacity * 0.15)
+      ..style = PaintingStyle.fill;
+    canvas.drawPath(path, fillPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _ShieldPainter oldDelegate) => true;
 }
 
 class TypewriterText extends StatefulWidget {
@@ -4524,44 +4998,53 @@ class _AbilityPopUpState extends State<_AbilityPopUp>
             ),
           );
         },
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.8),
-            border: Border.all(color: widget.themeColor, width: 2),
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.5),
-                blurRadius: 10,
-                offset: const Offset(4, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                "${widget.notification.animalName}'S",
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 10,
-                  fontFamily: 'PressStart2P',
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 240),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.85),
+              border: Border.all(color: widget.themeColor, width: 2),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.5),
+                  blurRadius: 10,
+                  offset: const Offset(4, 4),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                widget.notification.abilityName.toUpperCase(),
-                style: TextStyle(
-                  color: widget.themeColor,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'PressStart2P',
-                  letterSpacing: 1.2,
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "${widget.notification.animalName}'S",
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 9,
+                    fontFamily: 'PressStart2P',
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 6),
+                Text(
+                  widget.notification.abilityName.toUpperCase(),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: widget.themeColor,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'PressStart2P',
+                    letterSpacing: 1.0,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -4652,12 +5135,18 @@ class _FloatingIndicatorWidgetState extends State<_FloatingIndicatorWidget>
           );
         },
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.6),
+            borderRadius: BorderRadius.circular(6),
+          ),
           child: Text(
             widget.data.text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: widget.data.color,
-              fontSize: 16,
+              fontSize: 13,
               fontWeight: FontWeight.bold,
               fontFamily: 'PressStart2P',
               shadows: const [
@@ -4667,6 +5156,478 @@ class _FloatingIndicatorWidgetState extends State<_FloatingIndicatorWidget>
                   offset: Offset(2, 2),
                 ),
               ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TrickRoomOverlay extends StatefulWidget {
+  const _TrickRoomOverlay();
+
+  @override
+  State<_TrickRoomOverlay> createState() => _TrickRoomOverlayState();
+}
+
+class _TrickRoomOverlayState extends State<_TrickRoomOverlay>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 4),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          return Container(
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                colors: [
+                  Colors.deepPurple.withOpacity(0.2 + _controller.value * 0.2),
+                  Colors.deepPurple.withOpacity(0.5 + _controller.value * 0.3),
+                ],
+                center: Alignment.center,
+                radius: 1.2,
+              ),
+            ),
+            child: CustomPaint(
+              painter: _TrickRoomPainter(progress: _controller.value),
+              size: Size.infinite,
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _TrickRoomPainter extends CustomPainter {
+  final double progress;
+
+  _TrickRoomPainter({required this.progress});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.cyanAccent.withOpacity(0.2 + progress * 0.2)
+      ..strokeWidth = 2.0
+      ..style = PaintingStyle.stroke;
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, size.width, size.height),
+      Paint()..color = Colors.deepPurple.withOpacity(0.1),
+    );
+
+    final step = 50.0;
+    for (double x = 0; x < size.width; x += step) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
+    }
+    for (double y = 0; y < size.height; y += step) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _TrickRoomPainter oldDelegate) =>
+      oldDelegate.progress != progress;
+}
+
+// ============================================================
+// GBA-Style Party Screen Dialog
+// ============================================================
+
+class _PartyScreenDialog extends StatelessWidget {
+  final BattleManager bm;
+  final String title;
+  final bool isForced;
+  final bool isLeadSelection;
+  final Color themeColor;
+  final Color primaryColor;
+  final VoidCallback onDismiss;
+  final void Function(int index) onSelect;
+  final void Function(BattleOrganism bo) onShowSummary;
+
+  const _PartyScreenDialog({
+    required this.bm,
+    required this.title,
+    required this.isForced,
+    required this.isLeadSelection,
+    required this.themeColor,
+    required this.primaryColor,
+    required this.onDismiss,
+    required this.onSelect,
+    required this.onShowSummary,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final team = bm.playerTeam;
+    final currentIndex = bm.currentPlayerIndex;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A2A1A),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        border: Border.all(color: themeColor.withOpacity(0.8), width: 2),
+      ),
+      padding: const EdgeInsets.fromLTRB(12, 16, 12, 8),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Handle bar
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                color: Colors.white30,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          // Title
+          Text(
+            title,
+            style: TextStyle(
+              fontFamily: 'PressStart2P',
+              fontSize: 11,
+              color: themeColor,
+              letterSpacing: 1.2,
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Party grid — 2 columns
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 2.6,
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
+            ),
+            itemCount: team.length,
+            itemBuilder: (context, index) {
+              final animal = team[index];
+              final bo = BattleOrganism(animal, isRogueMode: bm.isRogueMode);
+              final isCurrent = index == currentIndex && !isLeadSelection;
+              final isFainted = bo.health <= 0;
+              final hpRatio = (bo.health / bo.maxHealth).clamp(0.0, 1.0);
+              final hpColor = hpRatio > 0.5
+                  ? const Color(0xFF4CAF50)
+                  : hpRatio > 0.2
+                  ? Colors.orange
+                  : Colors.red;
+              final canSelect = !isFainted && (!isCurrent || isLeadSelection);
+
+              String? statusLabel;
+              Color statusColor = Colors.red;
+              if (isFainted) {
+                statusLabel = 'FNT';
+                statusColor = const Color(0xFFB00020);
+              } else if (animal.statusEffects.isNotEmpty) {
+                final se = animal.statusEffects.first;
+                statusLabel = se.name.toUpperCase().substring(
+                  0,
+                  math.min(3, se.name.length),
+                );
+                statusColor = se.color;
+              }
+
+              return GestureDetector(
+                onTap: () {
+                  _showSelectionMenu(context, bo, index, canSelect);
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  decoration: BoxDecoration(
+                    color: isFainted
+                        ? const Color(0xFF2A2A2A)
+                        : isCurrent
+                        ? primaryColor.withOpacity(0.35)
+                        : const Color(0xFF2C4A2C),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: isCurrent
+                          ? themeColor
+                          : canSelect
+                          ? Colors.white24
+                          : Colors.white12,
+                      width: isCurrent ? 2 : 1,
+                    ),
+                    boxShadow: isCurrent
+                        ? [
+                            BoxShadow(
+                              color: themeColor.withOpacity(0.5),
+                              blurRadius: 8,
+                              spreadRadius: 1,
+                            ),
+                          ]
+                        : null,
+                  ),
+                  child: Opacity(
+                    opacity: isFainted ? 0.55 : 1.0,
+                    child: Row(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(4),
+                          child: Image.asset(
+                            'assets/sprites/${animal.name.toLowerCase().replaceAll(' ', '_').replaceAll('-', '_').replaceAll("'", '_')}.png',
+                            width: 44,
+                            height: 44,
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, __, ___) => const Icon(
+                              Icons.pets,
+                              color: Colors.white54,
+                              size: 36,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 5,
+                              horizontal: 4,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        animal.name,
+                                        style: TextStyle(
+                                          fontFamily: 'PressStart2P',
+                                          fontSize: 7.5,
+                                          color: isFainted
+                                              ? Colors.white38
+                                              : Colors.white,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        maxLines: 1,
+                                      ),
+                                    ),
+                                    if (statusLabel != null)
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 4,
+                                          vertical: 1,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: statusColor,
+                                          borderRadius: BorderRadius.circular(
+                                            3,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          statusLabel,
+                                          style: const TextStyle(
+                                            fontFamily: 'PressStart2P',
+                                            fontSize: 6,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(3),
+                                  child: LinearProgressIndicator(
+                                    value: hpRatio,
+                                    backgroundColor: Colors.grey[800],
+                                    color: hpColor,
+                                    minHeight: 6,
+                                  ),
+                                ),
+                                const SizedBox(height: 3),
+                                Text(
+                                  '${bo.health}/ ${bo.maxHealth}',
+                                  style: TextStyle(
+                                    fontFamily: 'PressStart2P',
+                                    fontSize: 6.5,
+                                    color: isFainted
+                                        ? Colors.white30
+                                        : Colors.white70,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 10),
+          // Bottom prompt bar
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0F1A0F),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.white12),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.catching_pokemon, color: themeColor, size: 16),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    isLeadSelection ? 'Choose your lead!' : 'Choose a Pokémon.',
+                    style: const TextStyle(
+                      fontFamily: 'PressStart2P',
+                      fontSize: 9,
+                      color: Colors.white70,
+                    ),
+                  ),
+                ),
+                if (!isForced)
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      onDismiss();
+                    },
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      backgroundColor: Colors.white12,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                    ),
+                    child: const Text(
+                      'CANCEL',
+                      style: TextStyle(
+                        fontFamily: 'PressStart2P',
+                        fontSize: 8,
+                        color: Colors.white70,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 4),
+        ],
+      ),
+    );
+  }
+
+  void _showSelectionMenu(
+    BuildContext context,
+    BattleOrganism bo,
+    int index,
+    bool canSelect,
+  ) {
+    showDialog(
+      context: context,
+      builder: (ctx) => Center(
+        child: Container(
+          width: 200,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1A1A1A),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: themeColor, width: 2),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                bo.name.toUpperCase(),
+                style: TextStyle(
+                  fontFamily: 'PressStart2P',
+                  fontSize: 10,
+                  color: themeColor,
+                ),
+              ),
+              const SizedBox(height: 16),
+              _buildMenuButton(
+                context,
+                label: 'SUMMARY',
+                icon: Icons.info_outline,
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  onShowSummary(bo);
+                },
+              ),
+              const SizedBox(height: 8),
+              _buildMenuButton(
+                context,
+                label: isLeadSelection ? 'CHOOSE LEAD' : 'SEND OUT',
+                icon: Icons.flash_on,
+                enabled: canSelect,
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  onSelect(index);
+                },
+              ),
+              const SizedBox(height: 8),
+              _buildMenuButton(
+                context,
+                label: 'CANCEL',
+                icon: Icons.close,
+                onPressed: () => Navigator.pop(ctx),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMenuButton(
+    BuildContext context, {
+    required String label,
+    required IconData icon,
+    required VoidCallback onPressed,
+    bool enabled = true,
+  }) {
+    return SizedBox(
+      width: double.infinity,
+      child: Opacity(
+        opacity: enabled ? 1.0 : 0.5,
+        child: ElevatedButton.icon(
+          onPressed: enabled ? onPressed : null,
+          icon: Icon(icon, size: 14, color: Colors.white),
+          label: Text(
+            label,
+            style: const TextStyle(
+              fontFamily: 'PressStart2P',
+              fontSize: 8,
+              color: Colors.white,
+            ),
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF2C2C2C),
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
             ),
           ),
         ),

@@ -70,10 +70,18 @@ class BattleOrganism {
     if (isRogueMode) organism.accuracyStage = value;
   }
 
+  int _evasionStage = 0;
+  int get evasionStage => _evasionStage;
+  set evasionStage(int value) {
+    _evasionStage = value;
+    if (isRogueMode) organism.evasionStage = value;
+  }
+
   int tauntTurns = 0;
   int encoreTurns = 0;
   Move? lastMove;
   bool isImprisoning = false;
+  Move? rolloutMove;
 
   /// Reset battle-specific flags (called when switching out or starting battle)
   void resetBattleState() {
@@ -90,12 +98,16 @@ class BattleOrganism {
     damageDealtThisTurn = 0;
     tauntTurns = 0;
     encoreTurns = 0;
-    // lastMove resets on switch or start of battle?
-    // In Pokemon lastMove is cleared on switch.
     lastMove = null;
     isImprisoning = false;
-    // We do NOT reset focusSashUsed or talismanConsumed here as they are
-    // once per battle. Choice lock DOES reset on switch in Pokemon.
+
+    // Advanced move state reset
+    substituteHealth = 0;
+    rolloutTurnCount = 0;
+    usedDefenseCurl = false;
+    futureSightTurns = 0;
+    futureSightDamage = 0;
+    rolloutMove = null;
   }
 
   List<StatusEffect> _statusEffects = [];
@@ -165,6 +177,18 @@ class BattleOrganism {
 
   // Ability state
   bool isAbilityRevealed = false;
+
+  // New state variables for advanced mechanics
+  int? perishTurnCount;
+  bool isTrapped = false; // For trapping effects like Mean Look
+
+  // Advanced move state
+  int substituteHealth = 0;
+  int rolloutTurnCount = 0;
+  bool usedDefenseCurl = false;
+  int futureSightTurns = 0;
+  int futureSightDamage = 0;
+  BattleOrganism? futureSightUser; // The attacker who used Future Sight
 
   String get displaySprite => isDisguised && disguisedAs != null
       ? disguisedAs!.baseOrganism.sprite

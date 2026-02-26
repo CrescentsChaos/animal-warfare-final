@@ -565,5 +565,163 @@
         "description": "Protects from Grass-type moves and boosts Attack when hit by one.",
         "trigger": "onDamageTaken",
         "effectType": "none"
+    },
+    {
+        "name": "Infiltrator",
+        "description": "Bypasses technical screens like Reflect and Light Screen.",
+        "trigger": "onCalculateDamage",
+        "effectType": "none"
+    },
+    {
+        "name": "Unseen Fist",
+        "description": "Contact moves skip protection.",
+        "trigger": "onCalculateDamage",
+        "effectType": "none"
+    },
+    {
+        "name": "Iron Fist",
+        "description": "Boosts the power of punching moves by 20%.",
+        "trigger": "onCalculateDamage",
+        "effectType": "statMultiplier",
+        "magnitude": 1.2,
+        "conditions": [
+            "punch"
+        ]
+    },
+    {
+        "name": "Strong Jaw",
+        "description": "Boosts the power of biting moves by 50%.",
+        "trigger": "onCalculateDamage",
+        "effectType": "statMultiplier",
+        "magnitude": 1.5,
+        "conditions": [
+            "bite"
+        ]
+    },
+    {
+        "name": "Tough Claws",
+        "description": "Boosts the power of contact moves by 30%.",
+        "trigger": "onCalculateDamage",
+        "effectType": "statMultiplier",
+        "magnitude": 1.3,
+        "conditions": [
+            "contact"
+        ]
+    },
+    {
+        "name": "Super Luck",
+        "description": "Increases the critical hit ratio.",
+        "trigger": "onCalculateDamage",
+        "effectType": "none"
+    },
+    {
+        "name": "Stakeout",
+        "description": "Doubles the damage dealt to the target's replacement if the target switches out.",
+        "trigger": "onCalculateDamage",
+        "effectType": "damageMultiplier",
+        "magnitude": 2.0
+    },
+    {
+        "name": "Cheek Pouch",
+        "description": "Restores 33% HP when a Berry is consumed.",
+        "trigger": "none",
+        "effectType": "none"
+    },
+    {
+        "name": "Gluttony",
+        "description": "Eats Berries at 50% HP instead of 25%.",
+        "trigger": "none",
+        "effectType": "none"
+    },
+    {
+        "name": "Aftermath",
+        "description": "Damages the attacker for 25% of their HP if knocked out by a contact move.",
+        "trigger": "onDamageTaken",
+        "effectType": "none"
+    },
+    {
+        "name": "Analytic",
+        "description": "Boosts move power by 30% if moving last in the turn.",
+        "trigger": "onCalculateDamage",
+        "effectType": "damageMultiplier",
+        "magnitude": 1.3
+    },
+    {
+        "name": "Magnet Pull",
+        "description": "Prevents Metal type opponents from escaping.",
+        "trigger": "none",
+        "effectType": "none"
+    },
+    {
+        "name": "Armor Tail",
+        "description": "Prevents opponents from using priority moves against them.",
+        "trigger": "none",
+        "effectType": "none"
+    },
+    {
+        "name": "Dazzling",
+        "description": "Prevents opponents from using priority moves against them.",
+        "trigger": "none",
+        "effectType": "none"
+    },
+    {
+        "name": "Queenly Majesty",
+        "description": "Prevents opponents from using priority moves against them.",
+        "trigger": "none",
+        "effectType": "none"
+    },
+    {
+        "name": "Moxie",
+        "description": "Boosts Attack by 1 stage when knocking out an opponent.",
+        "trigger": "none",
+        "effectType": "none"
+    },
+    {
+        "name": "Chilling Neigh",
+        "description": "Boosts Attack by 1 stage when knocking out an opponent.",
+        "trigger": "none",
+        "effectType": "none"
+    },
+    {
+        "name": "Beast Boost",
+        "description": "Boosts highest stat by 1 stage when knocking out an opponent.",
+        "trigger": "none",
+        "effectType": "none"
+    },
+    {
+        "name": "Compound Eyes",
+        "description": "Boosts accuracy by 30%.",
+        "trigger": "none",
+        "effectType": "none"
+    },
+    {
+        "name": "Tinted Lens",
+        "description": "Doubles the power of \"not very effective\" moves.",
+        "trigger": "onCalculateDamage",
+        "effectType": "none"
+    },
+    {
+        "name": "Corrosion",
+        "description": "Can poison Poison and Steel (Metal) types.",
+        "trigger": "none",
+        "effectType": "none"
+    },
+    {
+        "name": "Cud Chew",
+        "description": "Applies the berry's effect twice immediately.",
+        "trigger": "none",
+        "effectType": "none"
+    },
+    {
+        "name": "Damp",
+        "description": "Prevents the use of self-destructing moves.",
+        "trigger": "none",
+        "effectType": "none"
+    },
+    {
+        "name": "Dry Skin",
+        "description": "Heals HP in rain, takes damage in sun. Water heals 25% HP, Fire does 25% more damage.",
+        "trigger": "none",
+        "effectType": "none"
     }
 ]

@@ -501,6 +501,44 @@ class UserState with ChangeNotifier {
     });
   }
 
+  Future<void> swapRogueTalismans(int indexA, int indexB) async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) {
+      final team = List<CapturedOrganism>.from(u.rogueLikeState.team);
+      if (indexA < 0 ||
+          indexA >= team.length ||
+          indexB < 0 ||
+          indexB >= team.length)
+        return u;
+
+      final tA = team[indexA].equippedTalisman;
+      final tB = team[indexB].equippedTalisman;
+
+      team[indexA] = team[indexA].copyWith(
+        equippedTalisman: tB,
+        clearTalisman: tB == null,
+      );
+      team[indexB] = team[indexB].copyWith(
+        equippedTalisman: tA,
+        clearTalisman: tA == null,
+      );
+
+      return u.copyWith(rogueLikeState: u.rogueLikeState.copyWith(team: team));
+    });
+  }
+
+  Future<void> removeRogueTalisman(int index) async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) {
+      final team = List<CapturedOrganism>.from(u.rogueLikeState.team);
+      if (index < 0 || index >= team.length) return u;
+
+      team[index] = team[index].copyWith(clearTalisman: true);
+
+      return u.copyWith(rogueLikeState: u.rogueLikeState.copyWith(team: team));
+    });
+  }
+
   Future<void> updateRogueRunState(RogueLikeState state) async {
     if (_currentUser == null) return;
     await _readModifyWrite((u) => u.copyWith(rogueLikeState: state));

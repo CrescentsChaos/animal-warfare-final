@@ -1,0 +1,574 @@
+﻿Analyzing battle_manager.dart...
+
+  error - battle_manager.dart:4:8 - Target of URI doesn't exist: 'package:flutter/foundation.dart'. Try creating the file referenced by the URI, or try using a URI for a file that does exist. - uri_does_not_exist
+  error - battle_manager.dart:5:8 - Target of URI doesn't exist: 'package:animal_warfare/models/captured_organism.dart'. Try creating the file referenced by the URI, or try using a URI for a file that does exist. - uri_does_not_exist
+  error - battle_manager.dart:6:8 - Target of URI doesn't exist: 'package:animal_warfare/models/move.dart'. Try creating the file referenced by the URI, or try using a URI for a file that does exist. - uri_does_not_exist
+  error - battle_manager.dart:8:8 - Target of URI doesn't exist: 'package:animal_warfare/models/ability.dart'. Try creating the file referenced by the URI, or try using a URI for a file that does exist. - uri_does_not_exist
+  error - battle_manager.dart:9:8 - Target of URI doesn't exist: 'package:animal_warfare/models/weather.dart'. Try creating the file referenced by the URI, or try using a URI for a file that does exist. - uri_does_not_exist
+  error - battle_manager.dart:10:8 - Target of URI doesn't exist: 'package:animal_warfare/models/terrain.dart'. Try creating the file referenced by the URI, or try using a URI for a file that does exist. - uri_does_not_exist
+  error - battle_manager.dart:11:8 - Target of URI doesn't exist: 'package:animal_warfare/models/status_effect.dart'. Try creating the file referenced by the URI, or try using a URI for a file that does exist. - uri_does_not_exist
+  error - battle_manager.dart:12:8 - Target of URI doesn't exist: 'package:animal_warfare/models/talisman.dart'. Try creating the file referenced by the URI, or try using a URI for a file that does exist. - uri_does_not_exist
+  error - battle_manager.dart:13:8 - Target of URI doesn't exist: 'package:animal_warfare/models/elemental_type.dart'. Try creating the file referenced by the URI, or try using a URI for a file that does exist. - uri_does_not_exist
+  error - battle_manager.dart:14:8 - Target of URI doesn't exist: 'package:animal_warfare/game/biome_weather.dart'. Try creating the file referenced by the URI, or try using a URI for a file that does exist. - uri_does_not_exist
+  error - battle_manager.dart:15:8 - Target of URI doesn't exist: 'package:animal_warfare/game/battle_models.dart'. Try creating the file referenced by the URI, or try using a URI for a file that does exist. - uri_does_not_exist
+  error - battle_manager.dart:16:8 - Target of URI doesn't exist: 'package:animal_warfare/game/ability_helpers.dart'. Try creating the file referenced by the URI, or try using a URI for a file that does exist. - uri_does_not_exist
+  error - battle_manager.dart:17:8 - Target of URI doesn't exist: 'package:animal_warfare/services/audio_service.dart'. Try creating the file referenced by the URI, or try using a URI for a file that does exist. - uri_does_not_exist
+  error - battle_manager.dart:18:8 - Target of URI doesn't exist: 'package:animal_warfare/game/ai_decision_engine.dart'. Try creating the file referenced by the URI, or try using a URI for a file that does exist. - uri_does_not_exist
+  error - battle_manager.dart:19:8 - Target of URI doesn't exist: 'package:animal_warfare/game/player_history.dart'. Try creating the file referenced by the URI, or try using a URI for a file that does exist. - uri_does_not_exist
+  error - battle_manager.dart:41:29 - Mixin can only be applied to class. - mixin_with_non_class_superclass
+  error - battle_manager.dart:41:49 - Classes can only mix in mixins and classes. - mixin_of_non_class
+  error - battle_manager.dart:42:14 - The name 'CapturedOrganism' isn't a type, so it can't be used as a type argument. Try correcting the name to an existing type, or defining a type named 'CapturedOrganism'. - non_type_as_type_argument
+  error - battle_manager.dart:44:9 - Undefined class 'CapturedOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'CapturedOrganism'. - undefined_class
+  error - battle_manager.dart:48:3 - Undefined class 'CapturedOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'CapturedOrganism'. - undefined_class
+  error - battle_manager.dart:50:8 - Undefined class 'BattleOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'BattleOrganism'. - undefined_class
+  error - battle_manager.dart:51:8 - Undefined class 'BattleOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'BattleOrganism'. - undefined_class
+  error - battle_manager.dart:53:21 - Undefined class 'BattleOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'BattleOrganism'. - undefined_class
+  error - battle_manager.dart:70:26 - Undefined class 'BattleOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'BattleOrganism'. - undefined_class
+  error - battle_manager.dart:83:25 - Undefined name 'AbilityTrigger'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:86:39 - Undefined name 'Weather'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:89:39 - Undefined name 'Weather'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:92:39 - Undefined name 'Weather'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:95:40 - Undefined name 'Weather'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:96:43 - Undefined name 'Weather'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:99:39 - Undefined name 'Terrain'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:118:13 - The name 'Move' isn't a type, so it can't be used as a type argument. Try correcting the name to an existing type, or defining a type named 'Move'. - non_type_as_type_argument
+  error - battle_manager.dart:119:13 - The name 'Move' isn't a type, so it can't be used as a type argument. Try correcting the name to an existing type, or defining a type named 'Move'. - non_type_as_type_argument
+  error - battle_manager.dart:123:3 - Undefined class 'WeatherEffect'. Try changing the name to the name of an existing class, or creating a class with the name 'WeatherEffect'. - undefined_class
+  error - battle_manager.dart:123:40 - The name 'WeatherEffect' isn't a class. Try correcting the name to match an existing class. - creation_with_non_type
+  error - battle_manager.dart:123:63 - Undefined name 'Weather'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:125:3 - Undefined class 'TerrainEffect'. Try changing the name to the name of an existing class, or creating a class with the name 'TerrainEffect'. - undefined_class
+  error - battle_manager.dart:125:40 - The name 'TerrainEffect' isn't a class. Try correcting the name to match an existing class. - creation_with_non_type
+  error - battle_manager.dart:125:63 - Undefined name 'Terrain'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:127:10 - Undefined class 'WeatherEffect'. Try changing the name to the name of an existing class, or creating a class with the name 'WeatherEffect'. - undefined_class
+  error - battle_manager.dart:128:10 - Undefined class 'TerrainEffect'. Try changing the name to the name of an existing class, or creating a class with the name 'TerrainEffect'. - undefined_class
+  error - battle_manager.dart:136:3 - Undefined class 'AbilityNotification'. Try changing the name to the name of an existing class, or creating a class with the name 'AbilityNotification'. - undefined_class
+  error - battle_manager.dart:140:14 - The name 'BattleTurn' isn't a type, so it can't be used as a type argument. Try correcting the name to an existing type, or defining a type named 'BattleTurn'. - non_type_as_type_argument
+  error - battle_manager.dart:149:8 - The name 'CapturedOrganism' isn't a type, so it can't be used as a type argument. Try correcting the name to an existing type, or defining a type named 'CapturedOrganism'. - non_type_as_type_argument
+  error - battle_manager.dart:160:21 - The name 'BattleStats' isn't a type, so it can't be used as a type argument. Try correcting the name to an existing type, or defining a type named 'BattleStats'. - non_type_as_type_argument
+  error - battle_manager.dart:178:9 - Undefined class 'PlayerHistory'. Try changing the name to the name of an existing class, or creating a class with the name 'PlayerHistory'. - undefined_class
+  error - battle_manager.dart:178:39 - The method 'PlayerHistory' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'PlayerHistory'. - undefined_method
+  error - battle_manager.dart:179:3 - Undefined class 'TeamArchetype'. Try changing the name to the name of an existing class, or creating a class with the name 'TeamArchetype'. - undefined_class
+  error - battle_manager.dart:179:37 - Undefined name 'TeamArchetype'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:184:3 - Undefined class 'BattleStats'. Try changing the name to the name of an existing class, or creating a class with the name 'BattleStats'. - undefined_class
+  error - battle_manager.dart:185:54 - The method 'BattleStats' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'BattleStats'. - undefined_method
+  error - battle_manager.dart:188:3 - Undefined class 'Move'. Try changing the name to the name of an existing class, or creating a class with the name 'Move'. - undefined_class
+  error - battle_manager.dart:189:3 - Undefined class 'Move'. Try changing the name to the name of an existing class, or creating a class with the name 'Move'. - undefined_class
+  error - battle_manager.dart:190:3 - Undefined class 'Move'. Try changing the name to the name of an existing class, or creating a class with the name 'Move'. - undefined_class
+  error - battle_manager.dart:198:12 - Undefined class 'BattleOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'BattleOrganism'. - undefined_class
+  error - battle_manager.dart:199:12 - Undefined class 'BattleOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'BattleOrganism'. - undefined_class
+  error - battle_manager.dart:200:12 - Undefined class 'BattleOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'BattleOrganism'. - undefined_class
+  error - battle_manager.dart:201:12 - Undefined class 'BattleOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'BattleOrganism'. - undefined_class
+  error - battle_manager.dart:202:3 - Undefined class 'VoidCallback'. Try changing the name to the name of an existing class, or creating a class with the name 'VoidCallback'. - undefined_class
+  error - battle_manager.dart:205:9 - Undefined class 'AudioService'. Try changing the name to the name of an existing class, or creating a class with the name 'AudioService'. - undefined_class
+  error - battle_manager.dart:205:38 - Undefined name 'AudioService'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:210:23 - The method 'BattleTurn' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'BattleTurn'. - undefined_method
+  error - battle_manager.dart:229:48 - The method 'BattleTurn' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'BattleTurn'. - undefined_method
+  error - battle_manager.dart:236:8 - The name 'Move' isn't a type, so it can't be used as a type argument. Try correcting the name to an existing type, or defining a type named 'Move'. - non_type_as_type_argument
+  error - battle_manager.dart:236:32 - Undefined class 'CapturedOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'CapturedOrganism'. - undefined_class
+  error - battle_manager.dart:237:16 - The name 'Move' isn't a type, so it can't be used as a type argument. Try correcting the name to an existing type, or defining a type named 'Move'. - non_type_as_type_argument
+  error - battle_manager.dart:246:17 - Undefined name 'Move'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:250:17 - Undefined name 'Move'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:256:5 - Undefined class 'CapturedOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'CapturedOrganism'. - undefined_class
+  error - battle_manager.dart:259:10 - The name 'CapturedOrganism' isn't a type, so it can't be used as a type argument. Try correcting the name to an existing type, or defining a type named 'CapturedOrganism'. - non_type_as_type_argument
+  error - battle_manager.dart:260:10 - The name 'CapturedOrganism' isn't a type, so it can't be used as a type argument. Try correcting the name to an existing type, or defining a type named 'CapturedOrganism'. - non_type_as_type_argument
+  error - battle_manager.dart:265:5 - Undefined class 'TeamArchetype'. Try changing the name to the name of an existing class, or creating a class with the name 'TeamArchetype'. - undefined_class
+  error - battle_manager.dart:286:24 - The property 'currentHealth' can't be unconditionally accessed because the receiver can be 'null'. Try making the access conditional (using '?.') or adding a null check to the target ('!'). - unchecked_use_of_nullable_value
+  error - battle_manager.dart:298:14 - The method 'BattleOrganism' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'BattleOrganism'. - undefined_method
+  error - battle_manager.dart:305:16 - The method 'BattleOrganism' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'BattleOrganism'. - undefined_method
+  error - battle_manager.dart:347:21 - The method 'BattleTurn' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'BattleTurn'. - undefined_method
+  error - battle_manager.dart:374:7 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:384:7 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:393:22 - The property 'currentHealth' can't be unconditionally accessed because the receiver can be 'null'. Try making the access conditional (using '?.') or adding a null check to the target ('!'). - unchecked_use_of_nullable_value
+  error - battle_manager.dart:404:22 - The property 'currentHealth' can't be unconditionally accessed because the receiver can be 'null'. Try making the access conditional (using '?.') or adding a null check to the target ('!'). - unchecked_use_of_nullable_value
+  error - battle_manager.dart:409:9 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:417:21 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:429:16 - The method 'BattleOrganism' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'BattleOrganism'. - undefined_method
+  error - battle_manager.dart:437:5 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:446:28 - Undefined name 'BiomeWeatherTable'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:449:27 - Undefined name 'Weather'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:449:59 - Undefined name 'Weather'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:453:28 - Undefined name 'BiomeWeatherTable'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:456:27 - Undefined name 'Terrain'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:470:5 - Undefined class 'BattleOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'BattleOrganism'. - undefined_class
+  error - battle_manager.dart:471:5 - Undefined class 'BattleOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'BattleOrganism'. - undefined_class
+  error - battle_manager.dart:475:30 - Undefined name 'AbilityTrigger'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:479:14 - Undefined name 'AbilityEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:480:17 - Undefined class 'Weather'. Try changing the name to the name of an existing class, or creating a class with the name 'Weather'. - undefined_class
+  error - battle_manager.dart:484:19 - The method 'setWeatherHelper' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'setWeatherHelper'. - undefined_method
+  error - battle_manager.dart:487:14 - Undefined name 'AbilityEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:490:17 - The method 'setTerrainHelper' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'setTerrainHelper'. - undefined_method
+  error - battle_manager.dart:492:14 - Undefined name 'AbilityEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:501:11 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:504:14 - Undefined name 'AbilityEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:509:21 - The name 'StatusEffect' isn't a class. Try correcting the name to match an existing class. - creation_with_non_type
+  error - battle_manager.dart:509:40 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:512:13 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:520:21 - The name 'StatusEffect' isn't a class. Try correcting the name to match an existing class. - creation_with_non_type
+  error - battle_manager.dart:520:40 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:523:13 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:528:14 - Undefined name 'AbilityEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:531:13 - Undefined class 'CapturedOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'CapturedOrganism'. - undefined_class
+  error - battle_manager.dart:548:56 - Undefined name 'Weather'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:551:22 - Undefined name 'Weather'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:553:29 - Undefined name 'Weather'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:554:22 - Undefined name 'Weather'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:555:22 - Undefined name 'Weather'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:556:22 - Undefined name 'Weather'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:557:22 - Undefined name 'Weather'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:565:15 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:576:5 - Undefined class 'BattleOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'BattleOrganism'. - undefined_class
+  error - battle_manager.dart:577:5 - Undefined class 'Ability'. Try changing the name to the name of an existing class, or creating a class with the name 'Ability'. - undefined_class
+  error - battle_manager.dart:580:28 - The method 'AbilityNotification' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'AbilityNotification'. - undefined_method
+  error - battle_manager.dart:591:5 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:595:5 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:598:20 - Undefined class 'Weather'. Try changing the name to the name of an existing class, or creating a class with the name 'Weather'. - undefined_class
+  error - battle_manager.dart:600:22 - The method 'WeatherEffect' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'WeatherEffect'. - undefined_method
+  error - battle_manager.dart:606:20 - Undefined class 'Terrain'. Try changing the name to the name of an existing class, or creating a class with the name 'Terrain'. - undefined_class
+  error - battle_manager.dart:608:22 - The method 'TerrainEffect' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'TerrainEffect'. - undefined_method
+  error - battle_manager.dart:614:3 - Undefined class 'Weather'. Try changing the name to the name of an existing class, or creating a class with the name 'Weather'. - undefined_class
+  error - battle_manager.dart:616:14 - Undefined name 'Weather'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:619:23 - Undefined name 'Weather'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:622:14 - Undefined name 'Weather'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:628:12 - Undefined name 'Weather'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:630:12 - Undefined name 'Weather'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:632:12 - Undefined name 'Weather'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:634:12 - Undefined name 'Weather'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:636:12 - Undefined name 'Weather'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:638:12 - Undefined name 'Weather'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:640:12 - Undefined name 'Weather'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:642:12 - Undefined name 'Weather'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:644:12 - Undefined name 'Weather'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:653:36 - Undefined class 'Move'. Try changing the name to the name of an existing class, or creating a class with the name 'Move'. - undefined_class
+  error - battle_manager.dart:663:7 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:672:7 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:677:5 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:688:35 - The method 'Move' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'Move'. - undefined_method
+  error - battle_manager.dart:713:26 - Undefined name 'ElementalType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:714:29 - A value of type 'double' can't be assigned to a variable of type 'int'. Try changing the type of the variable, or casting the right-hand type to 'int'. - invalid_assignment
+  error - battle_manager.dart:720:46 - Undefined name 'ElementalType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:721:31 - A value of type 'double' can't be assigned to a variable of type 'int'. Try changing the type of the variable, or casting the right-hand type to 'int'. - invalid_assignment
+  error - battle_manager.dart:727:56 - Undefined name 'MoveCategory'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:728:29 - A value of type 'double' can't be assigned to a variable of type 'int'. Try changing the type of the variable, or casting the right-hand type to 'int'. - invalid_assignment
+  error - battle_manager.dart:733:50 - Undefined name 'MoveCategory'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:734:31 - A value of type 'double' can't be assigned to a variable of type 'int'. Try changing the type of the variable, or casting the right-hand type to 'int'. - invalid_assignment
+  error - battle_manager.dart:741:30 - Undefined name 'TalismanEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:749:30 - Undefined name 'TalismanEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:876:9 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:891:5 - Undefined class 'BattleOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'BattleOrganism'. - undefined_class
+  error - battle_manager.dart:892:5 - Undefined class 'BattleOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'BattleOrganism'. - undefined_class
+  error - battle_manager.dart:893:5 - Undefined class 'Move'. Try changing the name to the name of an existing class, or creating a class with the name 'Move'. - undefined_class
+  error - battle_manager.dart:894:5 - Undefined class 'Move'. Try changing the name to the name of an existing class, or creating a class with the name 'Move'. - undefined_class
+  error - battle_manager.dart:905:23 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:906:23 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:907:29 - The name 'MoveEffect' isn't a class. Try correcting the name to match an existing class. - creation_with_non_type
+  error - battle_manager.dart:907:46 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:910:32 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:916:32 - Undefined name 'TalismanEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:957:36 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:962:11 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:1007:5 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:1020:25 - Undefined name 'AbilityTrigger'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1032:26 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1041:41 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1053:30 - Undefined name 'TalismanEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1055:37 - Undefined name 'TalismanEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1090:28 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1104:7 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:1128:9 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:1140:28 - Undefined name 'MoveCategory'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1164:21 - The name 'MoveEffect' isn't a class. Try correcting the name to match an existing class. - creation_with_non_type
+  error - battle_manager.dart:1164:38 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1168:9 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:1179:9 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:1257:32 - Undefined name 'TalismanEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1275:34 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1309:26 - Undefined name 'ElementalType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1342:30 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1349:30 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1366:45 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1372:45 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1382:32 - Undefined name 'TalismanEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1383:32 - Undefined name 'TalismanEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1387:32 - Undefined name 'TalismanEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1389:40 - Undefined name 'MoveCategory'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1391:40 - Undefined name 'MoveCategory'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1400:32 - Undefined name 'TalismanEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1420:32 - Undefined name 'MoveCategory'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1423:32 - Undefined name 'MoveCategory'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1432:43 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1437:43 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1454:43 - Undefined name 'ElementalType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1473:11 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:1483:32 - Undefined name 'TalismanEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1487:24 - Undefined name 'TypeChart'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1492:28 - Undefined name 'ElementalType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1498:39 - Undefined name 'ElementalType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1499:30 - Undefined name 'ElementalType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1500:30 - Undefined name 'ElementalType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1501:30 - Undefined name 'ElementalType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1507:53 - Undefined name 'ElementalType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1520:33 - Undefined name 'TalismanEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1568:37 - Undefined name 'ElementalType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1586:32 - Undefined name 'TalismanEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1652:32 - Undefined name 'TalismanEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1660:11 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:1667:9 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:1717:32 - Undefined name 'TalismanEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1730:17 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:1747:32 - Undefined name 'TalismanEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1760:15 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:1774:32 - Undefined name 'TalismanEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1775:51 - Undefined name 'MoveCategory'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1790:17 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:1808:32 - Undefined name 'TalismanEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1833:32 - Undefined name 'TalismanEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1854:29 - Undefined name 'AbilityTrigger'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1867:36 - Undefined name 'AbilityEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1874:43 - Undefined name 'AbilityEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1880:17 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:1883:43 - Undefined name 'AbilityEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1884:36 - The method 'parseStatusType' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'parseStatusType'. - undefined_method
+  error - battle_manager.dart:1903:29 - Undefined name 'AbilityTrigger'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1910:34 - Undefined name 'AbilityEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1911:34 - The method 'parseStatusType' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'parseStatusType'. - undefined_method
+  error - battle_manager.dart:1934:9 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:1946:30 - Undefined name 'TalismanEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1960:26 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1962:48 - Undefined name 'MoveCategory'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1964:37 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1967:7 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:1974:26 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1978:37 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1981:7 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:1986:25 - Undefined class 'BattleOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'BattleOrganism'. - undefined_class
+  error - battle_manager.dart:1990:7 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:1994:34 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:1998:9 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:2007:34 - Undefined name 'AbilityEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2008:29 - The name 'Ability' isn't a class. Try correcting the name to match an existing class. - creation_with_non_type
+  error - battle_manager.dart:2017:24 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2025:7 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:2029:34 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2031:7 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:2035:37 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2038:7 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:2042:34 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2044:7 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:2051:9 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:2057:34 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2062:9 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:2068:7 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:2072:34 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2077:9 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:2090:5 - Undefined class 'Move'. Try changing the name to the name of an existing class, or creating a class with the name 'Move'. - undefined_class
+  error - battle_manager.dart:2101:5 - Undefined class 'BattleOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'BattleOrganism'. - undefined_class
+  error - battle_manager.dart:2102:5 - Undefined class 'StatusEffectType'. Try changing the name to the name of an existing class, or creating a class with the name 'StatusEffectType'. - undefined_class
+  error - battle_manager.dart:2108:17 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2112:25 - Undefined name 'AbilityTrigger'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2113:30 - Undefined name 'AbilityEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2120:11 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:2129:35 - Undefined name 'Terrain'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2130:18 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2131:39 - Undefined name 'Terrain'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2133:7 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:2144:19 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2146:26 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2148:26 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2150:26 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2151:19 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2152:19 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2154:26 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2155:19 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2157:26 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2160:26 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2163:26 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2166:26 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2167:19 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2168:19 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2169:19 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2170:19 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2171:19 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2172:19 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2177:23 - The method 'StatusEffect' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'StatusEffect'. - undefined_method
+  error - battle_manager.dart:2182:5 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:2191:5 - Undefined class 'BattleOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'BattleOrganism'. - undefined_class
+  error - battle_manager.dart:2192:5 - Undefined class 'BattleOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'BattleOrganism'. - undefined_class
+  error - battle_manager.dart:2193:10 - The name 'MoveEffect' isn't a type, so it can't be used as a type argument. Try correcting the name to an existing type, or defining a type named 'MoveEffect'. - non_type_as_type_argument
+  error - battle_manager.dart:2194:5 - Undefined class 'Move'. Try changing the name to the name of an existing class, or creating a class with the name 'Move'. - undefined_class
+  error - battle_manager.dart:2197:26 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2204:14 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2205:14 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2206:14 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2207:14 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2208:14 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2209:14 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2210:14 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2211:14 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2212:14 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2213:14 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2214:14 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2215:14 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2216:14 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2217:14 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2219:11 - Undefined class 'StatusEffectType'. Try changing the name to the name of an existing class, or creating a class with the name 'StatusEffectType'. - undefined_class
+  error - battle_manager.dart:2221:18 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2222:28 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2224:18 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2225:28 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2227:18 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2228:28 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2230:18 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2231:28 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2233:18 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2234:28 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2236:18 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2237:28 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2239:18 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2240:28 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2242:18 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2243:28 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2245:18 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2246:28 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2248:18 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2249:28 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2251:18 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2252:28 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2254:18 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2255:28 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2257:18 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2258:28 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2260:18 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2261:28 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2264:28 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2267:29 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2276:14 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2277:17 - The method 'setWeatherHelper' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'setWeatherHelper'. - undefined_method
+  error - battle_manager.dart:2284:14 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2285:17 - The method 'setTerrainHelper' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'setTerrainHelper'. - undefined_method
+  error - battle_manager.dart:2287:14 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2298:14 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2315:14 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2331:14 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2332:14 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2344:15 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:2355:28 - The property 'currentHealth' can't be unconditionally accessed because the receiver can be 'null'. Try making the access conditional (using '?.') or adding a null check to the target ('!'). - unchecked_use_of_nullable_value
+  error - battle_manager.dart:2362:15 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:2370:14 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2379:14 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2381:35 - Undefined name 'ElementalType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2387:14 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2402:43 - Undefined name 'Weather'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2403:43 - Undefined name 'Weather'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2414:14 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2417:14 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2437:14 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2440:14 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2446:35 - Undefined name 'TalismanEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2468:14 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2492:14 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2495:14 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2511:13 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:2533:13 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:2543:11 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:2555:11 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:2559:14 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2565:14 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2574:14 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2585:14 - Undefined name 'MoveEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2601:9 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:2607:5 - Undefined class 'BattleOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'BattleOrganism'. - undefined_class
+  error - battle_manager.dart:2610:5 - Undefined class 'BattleOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'BattleOrganism'. - undefined_class
+  error - battle_manager.dart:2615:27 - Undefined name 'AbilityTrigger'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2616:30 - Undefined name 'AbilityEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2646:5 - Undefined class 'BattleOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'BattleOrganism'. - undefined_class
+  error - battle_manager.dart:2649:5 - Undefined class 'BattleOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'BattleOrganism'. - undefined_class
+  error - battle_manager.dart:2677:9 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:2738:7 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:2747:28 - Undefined name 'TalismanEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2762:7 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:2771:27 - Undefined name 'AbilityTrigger'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2772:30 - Undefined name 'AbilityEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2790:37 - Undefined name 'Weather'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2794:11 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:2802:32 - The name 'WeatherEffect' isn't a class. Try correcting the name to match an existing class. - creation_with_non_type
+  error - battle_manager.dart:2802:55 - Undefined name 'Weather'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2803:9 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:2814:32 - The name 'TerrainEffect' isn't a class. Try correcting the name to match an existing class. - creation_with_non_type
+  error - battle_manager.dart:2814:55 - Undefined name 'Terrain'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2815:9 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:2853:34 - Undefined class 'BattleOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'BattleOrganism'. - undefined_class
+  error - battle_manager.dart:2857:16 - The name 'StatusEffect' isn't a type, so it can't be used as a type argument. Try correcting the name to an existing type, or defining a type named 'StatusEffect'. - non_type_as_type_argument
+  error - battle_manager.dart:2860:35 - Undefined name 'Weather'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2867:9 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:2876:22 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2891:11 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:2906:11 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:2913:29 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2920:9 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:2926:29 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2931:9 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:2937:29 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2948:11 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:2963:35 - Undefined name 'Weather'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2976:9 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:2979:42 - Undefined name 'Weather'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:2990:9 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:2996:35 - Undefined name 'Terrain'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:3006:7 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:3014:28 - Undefined name 'TalismanEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:3023:11 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:3038:16 - The name 'StatusEffect' isn't a type, so it can't be used as a type argument. Try correcting the name to an existing type, or defining a type named 'StatusEffect'. - non_type_as_type_argument
+  error - battle_manager.dart:3042:41 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:3046:24 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:3047:24 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:3051:26 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:3058:11 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:3080:7 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:3119:39 - Undefined name 'Weather'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:3132:11 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:3148:5 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:3178:7 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:3189:5 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:3197:27 - The name 'Ability' isn't a class. Try correcting the name to match an existing class. - creation_with_non_type
+  error - battle_manager.dart:3208:7 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:3217:7 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:3243:17 - The property 'currentHealth' can't be unconditionally accessed because the receiver can be 'null'. Try making the access conditional (using '?.') or adding a null check to the target ('!'). - unchecked_use_of_nullable_value
+  error - battle_manager.dart:3252:9 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:3263:32 - Undefined name 'ElementalType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:3271:27 - The name 'Ability' isn't a class. Try correcting the name to match an existing class. - creation_with_non_type
+  error - battle_manager.dart:3279:7 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:3286:5 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:3314:7 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:3326:5 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:3362:23 - The method 'BattleTurn' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'BattleTurn'. - undefined_method
+  error - battle_manager.dart:3443:5 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:3446:34 - Undefined class 'BattleOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'BattleOrganism'. - undefined_class
+  error - battle_manager.dart:3458:7 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:3467:14 - The method 'BattleOrganism' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'BattleOrganism'. - undefined_method
+  error - battle_manager.dart:3484:5 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:3493:22 - The property 'currentHealth' can't be unconditionally accessed because the receiver can be 'null'. Try making the access conditional (using '?.') or adding a null check to the target ('!'). - unchecked_use_of_nullable_value
+  error - battle_manager.dart:3501:9 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:3512:7 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:3519:24 - The property 'currentHealth' can't be unconditionally accessed because the receiver can be 'null'. Try making the access conditional (using '?.') or adding a null check to the target ('!'). - unchecked_use_of_nullable_value
+  error - battle_manager.dart:3539:9 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:3564:7 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:3592:16 - The method 'BattleOrganism' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'BattleOrganism'. - undefined_method
+  error - battle_manager.dart:3613:5 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:3616:3 - Undefined class 'DamageResult'. Try changing the name to the name of an existing class, or creating a class with the name 'DamageResult'. - undefined_class
+  error - battle_manager.dart:3617:5 - Undefined class 'BattleOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'BattleOrganism'. - undefined_class
+  error - battle_manager.dart:3618:5 - Undefined class 'BattleOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'BattleOrganism'. - undefined_class
+  error - battle_manager.dart:3619:5 - Undefined class 'Move'. Try changing the name to the name of an existing class, or creating a class with the name 'Move'. - undefined_class
+  error - battle_manager.dart:3621:44 - The name 'DamageResult' isn't a class. Try correcting the name to match an existing class. - creation_with_non_type
+  error - battle_manager.dart:3634:9 - Undefined name 'TalismanEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:3653:33 - Undefined name 'MoveCategory'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:3656:33 - Undefined name 'MoveCategory'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:3661:35 - Undefined name 'Weather'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:3663:26 - Undefined name 'MoveCategory'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:3686:26 - Undefined name 'MoveCategory'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:3707:32 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:3720:26 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:3725:26 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:3730:26 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:3735:26 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:3756:35 - Undefined name 'MoveCategory'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:3758:35 - Undefined name 'MoveCategory'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:3766:18 - Undefined name 'TypeChart'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:3785:29 - The name 'Ability' isn't a class. Try correcting the name to match an existing class. - creation_with_non_type
+  error - battle_manager.dart:3791:12 - The method 'DamageResult' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'DamageResult'. - undefined_method
+  error - battle_manager.dart:3829:3 - Undefined name 'visibleForTesting' used as an annotation. Try defining the name or importing it from another library. - undefined_annotation
+  error - battle_manager.dart:3831:5 - Undefined class 'BattleOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'BattleOrganism'. - undefined_class
+  error - battle_manager.dart:3832:5 - Undefined class 'StatusEffectType'. Try changing the name to the name of an existing class, or creating a class with the name 'StatusEffectType'. - undefined_class
+  error - battle_manager.dart:3837:3 - Undefined name 'visibleForTesting' used as an annotation. Try defining the name or importing it from another library. - undefined_annotation
+  error - battle_manager.dart:3839:5 - Undefined class 'BattleOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'BattleOrganism'. - undefined_class
+  error - battle_manager.dart:3840:5 - Undefined class 'BattleOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'BattleOrganism'. - undefined_class
+  error - battle_manager.dart:3841:10 - The name 'MoveEffect' isn't a type, so it can't be used as a type argument. Try correcting the name to an existing type, or defining a type named 'MoveEffect'. - non_type_as_type_argument
+  error - battle_manager.dart:3842:5 - Undefined class 'Move'. Try changing the name to the name of an existing class, or creating a class with the name 'Move'. - undefined_class
+  error - battle_manager.dart:3847:3 - Undefined name 'visibleForTesting' used as an annotation. Try defining the name or importing it from another library. - undefined_annotation
+  error - battle_manager.dart:3849:5 - Undefined class 'BattleOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'BattleOrganism'. - undefined_class
+  error - battle_manager.dart:3856:3 - Undefined name 'visibleForTesting' used as an annotation. Try defining the name or importing it from another library. - undefined_annotation
+  error - battle_manager.dart:3858:5 - Undefined class 'BattleOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'BattleOrganism'. - undefined_class
+  error - battle_manager.dart:3859:5 - Undefined class 'BattleOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'BattleOrganism'. - undefined_class
+  error - battle_manager.dart:3860:5 - Undefined class 'Move'. Try changing the name to the name of an existing class, or creating a class with the name 'Move'. - undefined_class
+  error - battle_manager.dart:3866:3 - Undefined name 'visibleForTesting' used as an annotation. Try defining the name or importing it from another library. - undefined_annotation
+  error - battle_manager.dart:3867:37 - Undefined class 'BattleOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'BattleOrganism'. - undefined_class
+  error - battle_manager.dart:3875:8 - The name 'Move' isn't a type, so it can't be used as a type argument. Try correcting the name to an existing type, or defining a type named 'Move'. - non_type_as_type_argument
+  error - battle_manager.dart:3875:28 - Undefined class 'BattleOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'BattleOrganism'. - undefined_class
+  error - battle_manager.dart:3876:10 - The name 'Move' isn't a type, so it can't be used as a type argument. Try correcting the name to an existing type, or defining a type named 'Move'. - non_type_as_type_argument
+  error - battle_manager.dart:3877:10 - The name 'Move' isn't a type, so it can't be used as a type argument. Try correcting the name to an existing type, or defining a type named 'Move'. - non_type_as_type_argument
+  error - battle_manager.dart:3882:30 - The property 'name' can't be unconditionally accessed because the receiver can be 'null'. Try making the access conditional (using '?.') or adding a null check to the target ('!'). - unchecked_use_of_nullable_value
+  error - battle_manager.dart:3883:43 - The property 'name' can't be unconditionally accessed because the receiver can be 'null'. Try making the access conditional (using '?.') or adding a null check to the target ('!'). - unchecked_use_of_nullable_value
+  error - battle_manager.dart:3890:27 - The property 'category' can't be unconditionally accessed because the receiver can be 'null'. Try making the access conditional (using '?.') or adding a null check to the target ('!'). - unchecked_use_of_nullable_value
+  error - battle_manager.dart:3890:39 - Undefined name 'MoveCategory'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:3898:52 - The property 'name' can't be unconditionally accessed because the receiver can be 'null'. Try making the access conditional (using '?.') or adding a null check to the target ('!'). - unchecked_use_of_nullable_value
+  error - battle_manager.dart:3898:62 - The property 'name' can't be unconditionally accessed because the receiver can be 'null'. Try making the access conditional (using '?.') or adding a null check to the target ('!'). - unchecked_use_of_nullable_value
+  error - battle_manager.dart:3905:27 - The property 'name' can't be unconditionally accessed because the receiver can be 'null'. Try making the access conditional (using '?.') or adding a null check to the target ('!'). - unchecked_use_of_nullable_value
+  error - battle_manager.dart:3917:30 - The property 'name' can't be unconditionally accessed because the receiver can be 'null'. Try making the access conditional (using '?.') or adding a null check to the target ('!'). - unchecked_use_of_nullable_value
+  error - battle_manager.dart:3918:43 - The property 'name' can't be unconditionally accessed because the receiver can be 'null'. Try making the access conditional (using '?.') or adding a null check to the target ('!'). - unchecked_use_of_nullable_value
+  error - battle_manager.dart:3923:30 - The property 'name' can't be unconditionally accessed because the receiver can be 'null'. Try making the access conditional (using '?.') or adding a null check to the target ('!'). - unchecked_use_of_nullable_value
+  error - battle_manager.dart:3924:43 - The property 'name' can't be unconditionally accessed because the receiver can be 'null'. Try making the access conditional (using '?.') or adding a null check to the target ('!'). - unchecked_use_of_nullable_value
+  error - battle_manager.dart:3934:3 - Undefined class 'Move'. Try changing the name to the name of an existing class, or creating a class with the name 'Move'. - undefined_class
+  error - battle_manager.dart:3941:14 - Undefined name 'Move'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:3948:15 - The method 'BattleOrganism' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'BattleOrganism'. - undefined_method
+  error - battle_manager.dart:3954:15 - The method 'BattleOrganism' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'BattleOrganism'. - undefined_method
+  error - battle_manager.dart:3959:5 - Undefined class 'Move'. Try changing the name to the name of an existing class, or creating a class with the name 'Move'. - undefined_class
+  error - battle_manager.dart:3978:28 - Undefined class 'Move'. Try changing the name to the name of an existing class, or creating a class with the name 'Move'. - undefined_class
+  error - battle_manager.dart:3986:5 - Undefined class 'Move'. Try changing the name to the name of an existing class, or creating a class with the name 'Move'. - undefined_class
+  error - battle_manager.dart:3987:5 - Undefined class 'BattleOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'BattleOrganism'. - undefined_class
+  error - battle_manager.dart:3988:5 - Undefined class 'BattleOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'BattleOrganism'. - undefined_class
+  error - battle_manager.dart:3989:10 - The name 'BattleOrganism' isn't a type, so it can't be used as a type argument. Try correcting the name to an existing type, or defining a type named 'BattleOrganism'. - non_type_as_type_argument
+  error - battle_manager.dart:3990:10 - The name 'BattleOrganism' isn't a type, so it can't be used as a type argument. Try correcting the name to an existing type, or defining a type named 'BattleOrganism'. - non_type_as_type_argument
+  error - battle_manager.dart:3993:12 - Undefined name 'AIDecisionEngine'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:4012:62 - The property 'currentHealth' can't be unconditionally accessed because the receiver can be 'null'. Try making the access conditional (using '?.') or adding a null check to the target ('!'). - unchecked_use_of_nullable_value
+  error - battle_manager.dart:4024:15 - The method 'BattleOrganism' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'BattleOrganism'. - undefined_method
+  error - battle_manager.dart:4030:24 - The property 'organism' can't be unconditionally accessed because the receiver can be 'null'. Try making the access conditional (using '?.') or adding a null check to the target ('!'). - unchecked_use_of_nullable_value
+  error - battle_manager.dart:4030:67 - The property 'health' can't be unconditionally accessed because the receiver can be 'null'. Try making the access conditional (using '?.') or adding a null check to the target ('!'). - unchecked_use_of_nullable_value
+  error - battle_manager.dart:4036:22 - Undefined name 'AIDecisionEngine'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:4065:56 - The property 'id' can't be unconditionally accessed because the receiver can be 'null'. Try making the access conditional (using '?.') or adding a null check to the target ('!'). - unchecked_use_of_nullable_value
+  error - battle_manager.dart:4073:42 - Undefined class 'BattleOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'BattleOrganism'. - undefined_class
+  error - battle_manager.dart:4082:26 - Undefined name 'TalismanEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:4092:9 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:4097:33 - Undefined name 'TalismanEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:4107:9 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:4118:42 - Undefined class 'BattleOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'BattleOrganism'. - undefined_class
+  error - battle_manager.dart:4128:26 - Undefined name 'TalismanEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:4140:9 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:4145:33 - Undefined name 'TalismanEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:4153:9 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:4163:42 - Undefined class 'BattleOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'BattleOrganism'. - undefined_class
+  error - battle_manager.dart:4170:26 - Undefined name 'TalismanEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:4181:33 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:4183:33 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:4185:33 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:4187:33 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:4189:33 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:4191:33 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:4193:33 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:4207:35 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:4209:35 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:4211:35 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:4213:35 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:4215:35 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:4217:35 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:4219:35 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:4231:9 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:4241:5 - Undefined class 'BattleOrganism'. Try changing the name to the name of an existing class, or creating a class with the name 'BattleOrganism'. - undefined_class
+  error - battle_manager.dart:4248:32 - Undefined name 'ElementalType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:4280:20 - Undefined name 'TypeChart'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:4281:11 - Undefined name 'ElementalType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:4285:22 - Undefined name 'TypeChart'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:4286:13 - Undefined name 'ElementalType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:4297:35 - Undefined name 'ElementalType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:4302:45 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:4304:45 - Undefined name 'StatusEffectType'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - battle_manager.dart:4311:7 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+  error - battle_manager.dart:4318:7 - The method 'notifyListeners' isn't defined for the type 'BattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'notifyListeners'. - undefined_method
+warning - battle_manager.dart:123:17 - The field doesn't override an inherited getter or setter. Try updating this class to match the superclass, or removing the override annotation. - override_on_non_overriding_member
+warning - battle_manager.dart:125:17 - The field doesn't override an inherited getter or setter. Try updating this class to match the superclass, or removing the override annotation. - override_on_non_overriding_member
+warning - battle_manager.dart:130:7 - The field doesn't override an inherited getter or setter. Try updating this class to match the superclass, or removing the override annotation. - override_on_non_overriding_member
+warning - battle_manager.dart:132:7 - The field doesn't override an inherited getter or setter. Try updating this class to match the superclass, or removing the override annotation. - override_on_non_overriding_member
+warning - battle_manager.dart:192:8 - The value of the field '_isProcessingHits' isn't used. Try removing the field, or using it. - unused_field
+warning - battle_manager.dart:477:12 - The value of the local variable 'triggered' isn't used. Try removing the variable or using it. - unused_local_variable
+warning - battle_manager.dart:1221:9 - The value of the local variable 'totalDamageDealt' isn't used. Try removing the variable or using it. - unused_local_variable
+warning - battle_manager.dart:2651:9 - The value of the local variable 'oldStage' isn't used. Try removing the variable or using it. - unused_local_variable
+
+570 issues found.

@@ -39,6 +39,7 @@ class CapturedOrganism {
   int resistanceStage;
   int speedStage;
   int accuracyStage;
+  int evasionStage;
 
   CapturedOrganism({
     required this.baseOrganism,
@@ -62,6 +63,7 @@ class CapturedOrganism {
     this.resistanceStage = 0,
     this.speedStage = 0,
     this.accuracyStage = 0,
+    this.evasionStage = 0,
   }) : id = id ?? const Uuid().v4(),
        statusEffects =
            statusEffects ?? (statusEffect != null ? [statusEffect] : []),
@@ -130,6 +132,7 @@ class CapturedOrganism {
     int? resistanceStage,
     int? speedStage,
     int? accuracyStage,
+    int? evasionStage,
   }) {
     return CapturedOrganism(
       baseOrganism: baseOrganism ?? this.baseOrganism,
@@ -150,6 +153,7 @@ class CapturedOrganism {
       resistanceStage: resistanceStage ?? this.resistanceStage,
       speedStage: speedStage ?? this.speedStage,
       accuracyStage: accuracyStage ?? this.accuracyStage,
+      evasionStage: evasionStage ?? this.evasionStage,
     );
   }
 
@@ -407,6 +411,7 @@ class CapturedOrganism {
     'resistanceStage': resistanceStage,
     'speedStage': speedStage,
     'accuracyStage': accuracyStage,
+    'evasionStage': evasionStage,
   };
 
   /// Create CapturedOrganism from JSON
@@ -472,6 +477,7 @@ class CapturedOrganism {
       resistanceStage: json['resistanceStage'] as int? ?? 0,
       speedStage: json['speedStage'] as int? ?? 0,
       accuracyStage: json['accuracyStage'] as int? ?? 0,
+      evasionStage: json['evasionStage'] as int? ?? 0,
     );
   }
 }

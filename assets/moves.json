@@ -146,6 +146,24 @@
         "accuracy": 95,
         "stamina": 15,
         "category": "physical",
+        "isBite": true,
+        "effects": [
+            {
+                "type": "statusFreeze",
+                "target": "opponent",
+                "chance": 10
+            }
+        ]
+    },
+    {
+        "name": "Ice Punch",
+        "description": "10% chance to freeze the opponent.",
+        "baseDamage": 75,
+        "type": "cryo",
+        "accuracy": 95,
+        "stamina": 15,
+        "category": "physical",
+        "isPunch": true,
         "effects": [
             {
                 "type": "statusFreeze",
@@ -162,6 +180,7 @@
         "accuracy": 95,
         "stamina": 15,
         "category": "physical",
+        "isBite": true,
         "effects": [
             {
                 "type": "statusParalysis",
@@ -178,6 +197,7 @@
         "accuracy": 95,
         "stamina": 15,
         "category": "physical",
+        "isBite": true,
         "effects": [
             {
                 "type": "statusBurn",
@@ -287,6 +307,7 @@
         "type": "martial",
         "stamina": 30,
         "category": "physical",
+        "isPunch": true,
         "effects": []
     },
     {
@@ -454,6 +475,7 @@
         "type": "toxic",
         "stamina": 15,
         "category": "physical",
+        "isBite": true,
         "effects": [
             {
                 "type": "statusPoison",
@@ -682,7 +704,7 @@
         "description": "The user releases a chemical spray from its scent glands. Guaranteed to cause Fear and heavily reduce Accuracy.",
         "baseDamage": 45,
         "accuracy": 100,
-        "type": "prey",
+        "type": "toxic",
         "stamina": 25,
         "category": "special",
         "effects": [
@@ -771,7 +793,7 @@
         "description": "Amplifies sound through the casque to disorient the foe.",
         "baseDamage": 85,
         "accuracy": 100,
-        "type": "social",
+        "type": "sound",
         "stamina": 10,
         "category": "special",
         "effects": [
@@ -786,7 +808,7 @@
         "name": "Sealed Nest Protection",
         "description": "Recalls the nesting habit to temporarily boost defenses.",
         "baseDamage": 0,
-        "type": "armored",
+        "type": "metal",
         "stamina": 20,
         "category": "status",
         "effects": [
@@ -809,7 +831,7 @@
         "description": "A focused blast of sonic energy. Ignores the target's Defense.",
         "baseDamage": 100,
         "accuracy": 95,
-        "type": "giant",
+        "type": "rock",
         "stamina": 15,
         "category": "special",
         "damageStat": "power"
@@ -818,7 +840,7 @@
         "name": "Head Bob Display",
         "description": "A rhythmic dominance display that intimidates the foe.",
         "baseDamage": 0,
-        "type": "social",
+        "type": "martial",
         "stamina": 12,
         "category": "status",
         "effects": [
@@ -835,7 +857,7 @@
         "description": "Drives the bony horn-scales into the target.",
         "baseDamage": 90,
         "accuracy": 100,
-        "type": "armored",
+        "type": "rock",
         "stamina": 12,
         "category": "physical",
         "critRate": 2
@@ -844,7 +866,7 @@
         "name": "Territorial Roar",
         "description": "A wide-mouthed threat display that strikes fear into the foe.",
         "baseDamage": 0,
-        "type": "social",
+        "type": "sound",
         "stamina": 15,
         "targetCount": "multiple",
         "category": "status",
@@ -1141,7 +1163,7 @@
             {
                 "type": "multiStatChange",
                 "target": "self",
-                "stat": "attack:,speed:1",
+                "stat": "attack:1,speed:1",
                 "value": 1,
                 "chance": 100
             }
@@ -1212,7 +1234,8 @@
         "description": "Has a very high Critical Hit ratio.",
         "soundEffect": "audio/effects/chomp.mp3",
         "baseDamage": 65,
-        "type": "basic",
+        "type": "darkness",
+        "isBite": true,
         "stamina": 20,
         "accuracy": 100,
         "category": "physical",
@@ -1259,6 +1282,7 @@
         "accuracy": 85,
         "type": "basic",
         "stamina": 20,
+        "isBite": true,
         "category": "physical",
         "effects": [
             {
@@ -1835,6 +1859,23 @@
         ]
     },
     {
+        "name": "Shore Up",
+        "description": "Sits and rest.",
+        "soundEffect": "audio/effects/absorb.mp3",
+        "baseDamage": 0,
+        "type": "earth",
+        "stamina": 5,
+        "category": "status",
+        "effects": [
+            {
+                "type": "heal",
+                "target": "self",
+                "value": 50,
+                "chance": 100
+            }
+        ]
+    },
+    {
         "name": "Hypnotic Ripple",
         "description": "Mesmerizes the target, lowering their mental resistance.",
         "baseDamage": 20,
@@ -2049,6 +2090,7 @@
         "baseDamage": 65,
         "accuracy": 95,
         "type": "arthropod",
+        "isBite": true,
         "stamina": 15,
         "category": "physical",
         "effects": []
@@ -2061,13 +2103,17 @@
         "type": "darkness",
         "stamina": 25,
         "category": "physical",
-        "effects": [
-            {
-                "type": "statusBleed",
-                "value": 1,
-                "chance": 10
-            }
-        ]
+        "isBite": true
+    },
+    {
+        "name": "Crunch",
+        "description": "Bites with vicious fangs.",
+        "soundEffect": "audio/effects/chomp.mp3",
+        "baseDamage": 80,
+        "type": "darkness",
+        "stamina": 25,
+        "category": "physical",
+        "isBite": true
     },
     {
         "name": "Hide",
@@ -2090,6 +2136,7 @@
         "soundEffect": "audio/effects/chomp.mp3",
         "baseDamage": 30,
         "type": "darkness",
+        "isBite": true,
         "stamina": 25,
         "category": "physical",
         "effects": [
@@ -2123,6 +2170,7 @@
         "type": "aquatic",
         "stamina": 15,
         "category": "physical",
+        "isBite": true,
         "effects": [
             {
                 "type": "statusBleed",
@@ -2138,6 +2186,7 @@
         "baseDamage": 80,
         "type": "spectral",
         "stamina": 15,
+        "isBite": true,
         "category": "physical",
         "effects": [
             {
@@ -2154,6 +2203,7 @@
         "baseDamage": 80,
         "type": "aquatic",
         "stamina": 15,
+        "isBite": true,
         "category": "physical",
         "effects": [
             {
@@ -2343,6 +2393,7 @@
         "name": "Bullet Punch",
         "description": "Strikes first.",
         "soundEffect": "audio/effects/agile.mp3",
+        "isPunch": true,
         "baseDamage": 40,
         "priority": 1,
         "type": "metal",
@@ -2398,6 +2449,7 @@
         "soundEffect": "audio/effects/chomp.mp3",
         "baseDamage": 120,
         "accuracy": 85,
+        "isBite": true,
         "type": "aquatic",
         "stamina": 10,
         "category": "physical",
@@ -2784,6 +2836,7 @@
         "name": "Drain Punch",
         "description": "Heals half damage dealt.",
         "soundEffect": "audio/effects/absorb.mp3",
+        "isPunch": true,
         "baseDamage": 75,
         "drainPercent": 0.5,
         "type": "martial",
@@ -3039,6 +3092,57 @@
         ]
     },
     {
+        "name": "Synthesis",
+        "description": "Sits and rest.",
+        "soundEffect": "audio/effects/absorb.mp3",
+        "baseDamage": 0,
+        "type": "grass",
+        "stamina": 5,
+        "category": "status",
+        "effects": [
+            {
+                "type": "heal",
+                "target": "self",
+                "value": 50,
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Morning Sun",
+        "description": "Sits and rest.",
+        "soundEffect": "audio/effects/absorb.mp3",
+        "baseDamage": 0,
+        "type": "blaze",
+        "stamina": 5,
+        "category": "status",
+        "effects": [
+            {
+                "type": "heal",
+                "target": "self",
+                "value": 50,
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Moonlight",
+        "description": "Sits and rest.",
+        "soundEffect": "audio/effects/absorb.mp3",
+        "baseDamage": 0,
+        "type": "aura",
+        "stamina": 5,
+        "category": "status",
+        "effects": [
+            {
+                "type": "heal",
+                "target": "self",
+                "value": 50,
+                "chance": 100
+            }
+        ]
+    },
+    {
         "name": "Symbiotic Guard",
         "description": "Takes cover into the anemone.",
         "soundEffect": "audio/effects/protect.mp3",
@@ -3057,6 +3161,7 @@
         "name": "Sucker Punch",
         "description": "This move enables the user to attack first. This move fails if the target is not preparing an attack.",
         "baseDamage": 70,
+        "isPunch": true,
         "priority": 1,
         "type": "darkness",
         "stamina": 5,
@@ -3236,6 +3341,22 @@
         ]
     },
     {
+        "name": "Hyper Voice",
+        "description": "The target is attacked with a powerful sonic blast.",
+        "baseDamage": 90,
+        "type": "sound",
+        "stamina": 15,
+        "category": "special"
+    },
+    {
+        "name": "Honking Havoc",
+        "description": "The user lets out a series of deafening honks that shake the ground.",
+        "baseDamage": 120,
+        "type": "sound",
+        "stamina": 5,
+        "category": "special"
+    },
+    {
         "name": "Geomancy",
         "description": "The user absorbs energy and sharply raises its stats on the next turn.",
         "baseDamage": 0,
@@ -3253,7 +3374,7 @@
         "name": "Body Press",
         "description": "The user attacks by slamming its body into the target. The higher its Defense, the more damage it can inflict.",
         "baseDamage": 80,
-        "type": "armored",
+        "type": "martial",
         "stamina": 10,
         "category": "physical",
         "damageStat": "defense",
@@ -3281,6 +3402,7 @@
         "accuracy": 70,
         "type": "darkness",
         "stamina": 15,
+        "isBite": true,
         "category": "physical",
         "effects": [
             {
@@ -3319,6 +3441,7 @@
         "soundEffect": "audio/effects/chomp.mp3",
         "baseDamage": 50,
         "accuracy": 90,
+        "isBite": true,
         "type": "darkness",
         "stamina": 15,
         "category": "physical",
@@ -3521,20 +3644,6 @@
         "category": "status"
     },
     {
-        "name": "U-turn",
-        "description": "After making its attack, the user rushes back to switch with a teammate.",
-        "baseDamage": 70,
-        "accuracy": 100,
-        "effects": [
-            {
-                "type": "damageAndSwitchSelf",
-                "target": "self"
-            }
-        ],
-        "type": "arthropod",
-        "category": "physical"
-    },
-    {
         "name": "Taunt",
         "description": "The target is taunted into a rage that allows it to use only attack moves.",
         "baseDamage": 0,
@@ -3652,5 +3761,199 @@
         ],
         "type": "cryo",
         "category": "status"
+    },
+    {
+        "name": "Facade",
+        "description": "This move's power is doubled if the user is poisoned, burned, or paralyzed.",
+        "baseDamage": 70,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 20,
+        "category": "physical"
+    },
+    {
+        "name": "Tailwind",
+        "description": "The user summons a turbulent whirlwind that ups the Speed stat of it and its allies for four turns.",
+        "baseDamage": 0,
+        "type": "aerial",
+        "accuracy": 100,
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "tailwind",
+                "target": "field",
+                "value": 4
+            }
+        ]
+    },
+    {
+        "name": "Perish Song",
+        "description": "Any animal that hears this song will faint in three turns unless it switches out of battle.",
+        "baseDamage": 0,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 5,
+        "category": "status",
+        "effects": [
+            {
+                "type": "perishSong",
+                "target": "field",
+                "value": 3
+            }
+        ]
+    },
+    {
+        "name": "Final Gambit",
+        "description": "The user faints to inflict damage on the target equal to the user's current HP.",
+        "baseDamage": 0,
+        "type": "brawl",
+        "accuracy": 100,
+        "stamina": 5,
+        "category": "special",
+        "effects": [
+            {
+                "type": "finalGambit",
+                "target": "opponent"
+            }
+        ]
+    },
+    {
+        "name": "Trick Room",
+        "description": "The user creates a bizarre area in which slower animals move first for five turns.",
+        "baseDamage": 0,
+        "type": "psionic",
+        "accuracy": 100,
+        "stamina": 5,
+        "category": "status",
+        "effects": [
+            {
+                "type": "trickRoom",
+                "target": "field",
+                "value": 5
+            }
+        ]
+    },
+    {
+        "name": "U-turn",
+        "description": "After making its attack, the user rushes back to switch places with a party animal in waiting.",
+        "baseDamage": 70,
+        "type": "arthropod",
+        "accuracy": 100,
+        "stamina": 20,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "damageAndSwitchSelf",
+                "target": "self"
+            }
+        ]
+    },
+    {
+        "name": "Flip Turn",
+        "description": "After making its attack, the user rushes back to switch places with a party animal in waiting.",
+        "baseDamage": 70,
+        "type": "aquatic",
+        "accuracy": 100,
+        "stamina": 20,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "damageAndSwitchSelf",
+                "target": "self"
+            }
+        ]
+    },
+    {
+        "name": "Volt Switch",
+        "description": "After making its attack, the user rushes back to switch places with a party animal in waiting.",
+        "baseDamage": 70,
+        "type": "electric",
+        "accuracy": 100,
+        "stamina": 20,
+        "category": "special",
+        "effects": [
+            {
+                "type": "damageAndSwitchSelf",
+                "target": "self"
+            }
+        ]
+    },
+    {
+        "name": "Substitute",
+        "description": "The user creates a substitute for itself using some of its HP. The substitute protects the user from damage and status conditions.",
+        "baseDamage": 0,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "status",
+        "effects": [
+            {
+                "type": "substitute",
+                "target": "self"
+            }
+        ]
+    },
+    {
+        "name": "Rollout",
+        "description": "The user continually rolls into the target over five turns. It becomes stronger each time it hits.",
+        "baseDamage": 30,
+        "accuracy": 90,
+        "type": "rock",
+        "stamina": 20,
+        "category": "physical",
+        "isContact": true,
+        "effects": [
+            {
+                "type": "rollout",
+                "target": "self"
+            }
+        ]
+    },
+    {
+        "name": "Ice Ball",
+        "description": "The user continually rolls into the target over five turns. It becomes stronger each time it hits.",
+        "baseDamage": 30,
+        "accuracy": 90,
+        "type": "cryo",
+        "stamina": 20,
+        "category": "physical",
+        "isContact": true,
+        "effects": [
+            {
+                "type": "iceBall",
+                "target": "self"
+            }
+        ]
+    },
+    {
+        "name": "Defense Curl",
+        "description": "The user curls up to conceal weak spots and raise its Defense stat. Powers up Rollout and Ice Ball.",
+        "baseDamage": 0,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 40,
+        "category": "status",
+        "effects": [
+            {
+                "type": "defenseCurl",
+                "target": "self"
+            }
+        ]
+    },
+    {
+        "name": "Future Sight",
+        "description": "Two turns after this move is used, a concentrated attack of psychic energy hits the target.",
+        "baseDamage": 0,
+        "accuracy": 100,
+        "type": "aura",
+        "stamina": 10,
+        "category": "special",
+        "effects": [
+            {
+                "type": "futureSight",
+                "target": "opponent"
+            }
+        ]
     }
 ]

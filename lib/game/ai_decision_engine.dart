@@ -44,6 +44,10 @@ class AIDecisionEngine {
     PlayerHistory? playerHistory,
     List<String>? lastUsedMoves, // Last few moves used by the AI for diversity
     TeamArchetype archetype = TeamArchetype.balanced,
+    bool isTrickRoomActive = false,
+    bool targetHasReflect = false,
+    bool targetHasLightScreen = false,
+    bool targetHasAuroraVeil = false,
   }) {
     double score = 0.0;
 
@@ -61,6 +65,13 @@ class AIDecisionEngine {
         if (currentTerrain.terrain.name.toLowerCase() ==
             effect.stat.toLowerCase()) {
           score -= 600; // Heavily penalize setting the same terrain
+        }
+      }
+      if (effect.type == MoveEffectType.trickRoom) {
+        if (isTrickRoomActive) {
+          // Generally bad to turn it off unless the AI is fast or TR is about to end?
+          // For now, penalize toggling it off to prevent "spam"
+          score -= 800;
         }
       }
     }
@@ -415,6 +426,40 @@ class AIDecisionEngine {
       }
     }
 
+    // ──────────────────────────────────────────────
+    // Ability Synergy Scoring
+    // ──────────────────────────────────────────────
+    final hasIronFist = attacker.abilities.any((ab) => ab.name == 'Iron Fist');
+    final hasStrongJaw = attacker.abilities.any(
+      (ab) => ab.name == 'Strong Jaw',
+    );
+    final hasToughClaws = attacker.abilities.any(
+      (ab) => ab.name == 'Tough Claws',
+    );
+    final hasSuperLuck = attacker.abilities.any(
+      (ab) => ab.name == 'Super Luck',
+    );
+    final hasInfiltrator = attacker.abilities.any(
+      (ab) => ab.name == 'Infiltrator',
+    );
+    final hasUnseenFist = attacker.abilities.any(
+      (ab) => ab.name == 'Unseen Fist',
+    );
+
+    if (move.isPunch && hasIronFist) score += 30;
+    if (move.isBite && hasStrongJaw) score += 40;
+    if (move.isContact && hasToughClaws) score += 35;
+    if (hasSuperLuck && move.baseDamage > 0) score += 20;
+
+    if (hasInfiltrator &&
+        (targetHasReflect || targetHasLightScreen || targetHasAuroraVeil)) {
+      score += 150;
+    }
+
+    if (hasUnseenFist && move.isContact && defender.isProtected) {
+      score += 200;
+    }
+
     // Apply a small random jitter to prevent completely deterministic behavior
     score += Random().nextDouble() * 10.0;
 
@@ -666,7 +711,11 @@ class AIDecisionEngine {
           'Trick Room',
         );
         if (hasTRMove && move.name == 'Trick Room') {
-          score += 500; // Always try to set TR first turn
+          if (!isTrickRoomActive) {
+            score += 500; // Always try to set TR first turn
+          } else {
+            score -= 600; // Don't turn it off if we are a TR team!
+          }
         }
         // Under TR, slow mons are \"fast\" — prize heavy-damage moves
         if (move.baseDamage > 0) score += 80;
@@ -713,7 +762,7 @@ class AIDecisionEngine {
     if (isFacingOHKO && isSlower) {
       forcedToSwitch = true; // We will die before moving. Need to switch.
     } else if (ourExpectedDmg < opponent.health * 0.15 &&
-        opponentExpectedDmg > activeMon.maxHealth * 0.4) {
+        opponentExpectedDmg > activeMon.maxHealth * 0.15) {
       // Bad matchup: We do very little, they hit us hard.
       forcedToSwitch = true;
     }
