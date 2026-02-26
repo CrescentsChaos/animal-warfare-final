@@ -446,33 +446,38 @@ class _HailPainter extends CustomPainter {
     final random = math.Random(42);
     const pelletCount = 60;
 
+    final paint = Paint()..color = Colors.white;
+    final glintPaint = Paint()..color = Colors.lightBlueAccent.withAlpha(180);
+
     for (int i = 0; i < pelletCount; i++) {
       final initialX = random.nextDouble() * size.width;
       final initialY = random.nextDouble() * size.height;
-      final speed = 15.0 + random.nextDouble() * 20.0;
-      final sizePellet = 2.0 + random.nextDouble() * 3.0;
+      final speed = 25.0 + random.nextDouble() * 30.0; // Faster bombardment
+      final sizePellet = 4.0 + random.nextDouble() * 6.0; // Larger crystals
 
-      double yPos = (initialY + progress * speed * 20) % size.height;
-      double xPos = (initialX + progress * 5 * 20) % size.width; // Slight drift
+      double yPos = (initialY + progress * speed * 30) % size.height;
+      double xPos =
+          (initialX + progress * 8 * 30) % size.width; // Sharper drift
 
-      // Draw ice pellet (irregular circle/diamond)
-      final rect = Rect.fromCenter(
-        center: Offset(xPos, yPos),
-        width: sizePellet,
-        height: sizePellet,
-      );
+      // Draw diamond/crystalline shape
+      final path = Path();
+      path.moveTo(xPos, yPos - sizePellet); // Top
+      path.lineTo(xPos + sizePellet / 1.5, yPos); // Right
+      path.lineTo(xPos, yPos + sizePellet); // Bottom
+      path.lineTo(xPos - sizePellet / 1.5, yPos); // Left
+      path.close();
 
-      canvas.drawOval(rect, Paint()..color = Colors.white.withOpacity(0.9));
+      canvas.drawPath(path, paint..color = Colors.white.withOpacity(0.9));
 
-      // Add a tiny shadow/glint for "ice" look
-      canvas.drawOval(
-        Rect.fromCenter(
-          center: Offset(xPos - 0.5, yPos - 0.5),
-          width: sizePellet * 0.5,
-          height: sizePellet * 0.5,
-        ),
-        Paint()..color = Colors.lightBlueAccent.withAlpha(150),
-      );
+      // Add a crystalline glint/shadow
+      final glintPath = Path();
+      glintPath.moveTo(xPos, yPos - sizePellet * 0.5);
+      glintPath.lineTo(xPos + sizePellet * 0.3, yPos);
+      glintPath.lineTo(xPos, yPos + sizePellet * 0.5);
+      glintPath.lineTo(xPos - sizePellet * 0.3, yPos);
+      glintPath.close();
+
+      canvas.drawPath(glintPath, glintPaint);
     }
   }
 

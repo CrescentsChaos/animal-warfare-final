@@ -216,6 +216,74 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Widget _buildAccountProgress(UserData user) {
+    final nextLevelXP = (user.accountLevel + 1) * (user.accountLevel + 1) * 100;
+    final progress = (user.accountXP / nextLevelXP).clamp(0.0, 1.0);
+
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: secondaryButtonColor.withOpacity(0.8),
+        border: Border.all(color: highlightColor, width: 2.0),
+        borderRadius: BorderRadius.circular(5.0),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'ACCOUNT LEVEL: ${user.accountLevel}',
+                style: TextStyle(
+                  color: highlightColor,
+                  fontFamily: 'PressStart2P',
+                  fontSize: 12.sp,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'RANK: ${user.rankName}',
+                style: TextStyle(
+                  color: user.rankColor,
+                  fontFamily: 'PressStart2P',
+                  fontSize: 13.sp,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '${((progress * 100)).toStringAsFixed(0)}%',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontFamily: 'PressStart2P',
+                  fontSize: 10.sp,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: progress,
+              backgroundColor: Colors.black26,
+              color: highlightColor,
+              minHeight: 12,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '${user.accountXP} / $nextLevelXP XP',
+            style: TextStyle(
+              color: Colors.white54,
+              fontFamily: 'PressStart2P',
+              fontSize: 8.sp,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildQuizStatBlock(String quizName, Map<String, dynamic> stats) {
     final attempts = stats['attempts'] as int? ?? 0;
     final correct = stats['correct'] as int? ?? 0;
@@ -375,6 +443,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
               // 2. PROFILE DETAILS
               _buildProfileDetail('USERNAME', user.username),
               _buildProfileDetail('GENDER', user.gender),
+              _buildProfileDetail('GOLD', '${user.money} G'),
+
+              const SizedBox(height: 20),
+              // Account Rank & XP
+              _buildAccountProgress(user),
 
               // START NEW: Anidex Stat
               if (totalCount > 0)

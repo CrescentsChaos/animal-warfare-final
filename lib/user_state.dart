@@ -183,6 +183,35 @@ class UserState with ChangeNotifier {
     await _readModifyWrite((u) => u.addMoney(amount));
   }
 
+  /// Fully heals all animals in the current team (HP, Status, Stamina).
+  Future<void> fullyHealTeam() async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) {
+      final teamIndices = u.battleTeam;
+      final organisms = List<CapturedOrganism>.from(u.capturedOrganisms);
+      for (final index in teamIndices) {
+        if (index >= 0 && index < organisms.length) {
+          final org = organisms[index];
+          // Restore HP
+          int maxHp = org.maxHealth;
+          // Restore Stamina
+          final Map<String, int> fullStamina = {};
+          for (final moveName in org.selectedMoveNames) {
+            final move = Move.findByName(moveName);
+            fullStamina[moveName] = move?.stamina ?? Move.defaultStamina;
+          }
+
+          organisms[index] = org.copyWith(
+            currentHealth: maxHp,
+            statusEffects: [],
+            moveStamina: fullStamina,
+          );
+        }
+      }
+      return u.copyWith(capturedOrganisms: organisms);
+    });
+  }
+
   Future<bool> craftTalisman(
     String talismanId,
     Map<String, int> requiredLoot,
@@ -617,6 +646,75 @@ class UserState with ChangeNotifier {
       team.add(spawn);
     }
     return team;
+  }
+
+  /// Awards XP after a battle.
+  /// [defeatedLevel] is the level of the opponent animal.
+  /// [killerId] is the unique ID of the animal that landed the final blow.
+  /// [teamIds] are the unique IDs of all animals in the player's team.
+  Future<Map<String, dynamic>> awardBattleXP({
+    required int defeatedLevel,
+    required String? killerId,
+    required List<String> teamIds,
+  }) async {
+    if (_currentUser == null) return {};
+
+    // XP constants - ACCELERATED
+    final baseXP = defeatedLevel * 40; // Doubled animal battle XP
+    final accountXPShare = (defeatedLevel * 20).clamp(
+      20,
+      1000,
+    ); // Quadrupled account XP
+
+    Map<String, dynamic> results = {
+      'accountLeveledUp': false,
+      'animalLeveledUp': <String, bool>{},
+      'gainedAnimalXP': baseXP,
+      'gainedAccountXP': accountXPShare,
+    };
+
+    await _readModifyWrite((u) {
+      final organisms = List<CapturedOrganism>.from(u.capturedOrganisms);
+      final int accountLevel = u.accountLevel;
+
+      // Update animals
+      for (int i = 0; i < organisms.length; i++) {
+        final org = organisms[i];
+        if (teamIds.contains(org.id)) {
+          int share = (org.id == killerId) ? baseXP : (baseXP / 2).floor();
+          if (share > 0) {
+            final xpResult = org.gainXP(share, accountLevel);
+            if (xpResult['leveledUp'] as bool) {
+              results['animalLeveledUp'][org.id] = true;
+            }
+            organisms[i] = org.copyWith(
+              xp: xpResult['xp'] as int,
+              level: xpResult['level'] as int,
+            );
+          }
+        }
+      }
+
+      // Update Account XP
+      int newAccountXP = u.accountXP + accountXPShare;
+      int newAccountLevel = u.accountLevel;
+
+      // Account XP formula: (level^2) * 100 - ACCELERATED
+      int xpForNextAccountLevel(int l) => (l * l) * 100;
+
+      while (newAccountXP >= xpForNextAccountLevel(newAccountLevel + 1)) {
+        newAccountLevel++;
+        results['accountLeveledUp'] = true;
+      }
+
+      return u.copyWith(
+        capturedOrganisms: organisms,
+        accountXP: newAccountXP,
+        accountLevel: newAccountLevel,
+      );
+    });
+
+    return results;
   }
 
   @override

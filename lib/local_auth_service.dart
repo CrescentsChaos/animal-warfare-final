@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:animal_warfare/models/captured_organism.dart';
@@ -19,7 +20,7 @@ class UserData {
   final String password;
   final String avatar;
   final String gender;
-  final int money;
+  final int money; // Currency
   final int stamina;
   final Map<String, dynamic> quizStats;
   final List<String> discoveredOrganisms;
@@ -45,6 +46,8 @@ class UserData {
   /// NEW: Best records for Rogue-like
   final int bestRogueFloor;
   final List<CapturedOrganism> bestRogueTeam;
+  final int accountLevel;
+  final int accountXP;
 
   UserData({
     required this.username,
@@ -65,6 +68,8 @@ class UserData {
     RogueLikeState? rogueLikeState,
     this.bestRogueFloor = 0,
     this.bestRogueTeam = const [],
+    this.accountLevel = 1,
+    this.accountXP = 0,
   }) : quizStats = quizStats ?? {},
        discoveredOrganisms = discoveredOrganisms ?? [],
        completedAchievements = completedAchievements ?? [],
@@ -95,6 +100,8 @@ class UserData {
     RogueLikeState? rogueLikeState,
     int? bestRogueFloor,
     List<CapturedOrganism>? bestRogueTeam,
+    int? accountLevel,
+    int? accountXP,
   }) {
     return UserData(
       username: username ?? this.username,
@@ -116,6 +123,8 @@ class UserData {
       rogueLikeState: rogueLikeState ?? this.rogueLikeState,
       bestRogueFloor: bestRogueFloor ?? this.bestRogueFloor,
       bestRogueTeam: bestRogueTeam ?? this.bestRogueTeam,
+      accountLevel: accountLevel ?? this.accountLevel,
+      accountXP: accountXP ?? this.accountXP,
     );
   }
 
@@ -132,6 +141,30 @@ class UserData {
         .where((index) => index >= 0 && index < capturedOrganisms.length)
         .map((index) => capturedOrganisms[index])
         .toList();
+  }
+
+  String get rankName {
+    if (accountLevel >= 100) return 'MYTHICAL';
+    if (accountLevel >= 80) return 'EMERALD';
+    if (accountLevel >= 70) return 'DIAMOND';
+    if (accountLevel >= 60) return 'PLATINUM';
+    if (accountLevel >= 50) return 'MASTER';
+    if (accountLevel >= 40) return 'GOLD';
+    if (accountLevel >= 30) return 'SILVER';
+    if (accountLevel >= 20) return 'BRONZE';
+    return 'ROOKIE';
+  }
+
+  Color get rankColor {
+    if (accountLevel >= 100) return Colors.redAccent;
+    if (accountLevel >= 80) return Colors.greenAccent;
+    if (accountLevel >= 70) return Colors.cyanAccent;
+    if (accountLevel >= 60) return Colors.blueGrey;
+    if (accountLevel >= 50) return const Color(0xFFDAA520); // Master Gold
+    if (accountLevel >= 40) return Colors.orangeAccent;
+    if (accountLevel >= 30) return Colors.white70;
+    if (accountLevel >= 20) return Colors.brown;
+    return Colors.grey;
   }
 
   UserData decreaseStamina(int amount) {
@@ -173,6 +206,8 @@ class UserData {
     'rogueLikeState': rogueLikeState.toJson(),
     'bestRogueFloor': bestRogueFloor,
     'bestRogueTeam': bestRogueTeam.map((co) => co.toJson()).toList(),
+    'accountLevel': accountLevel,
+    'accountXP': accountXP,
   };
 
   factory UserData.fromJson(
@@ -211,6 +246,7 @@ class UserData {
       password: json['password'] as String? ?? '',
       avatar: json['avatar'] as String? ?? 'default',
       gender: json['gender'] as String? ?? 'Select Gender',
+      money: json['money'] as int? ?? 1000,
       stamina: json['stamina'] as int? ?? 100,
       quizStats: (json['quizStats'] as Map<String, dynamic>?) ?? {},
       discoveredOrganisms:
@@ -261,6 +297,8 @@ class UserData {
           })
           .whereType<CapturedOrganism>()
           .toList(),
+      accountLevel: json['accountLevel'] as int? ?? 1,
+      accountXP: json['accountXP'] as int? ?? 0,
     );
   }
 }

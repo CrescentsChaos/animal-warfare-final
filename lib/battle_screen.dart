@@ -3224,17 +3224,30 @@ class _BattleScreenContentState extends State<BattleScreenContent>
       }
 
       // Arena battle prize money (not for rogue mode usually, or different rewards)
+      Map<String, dynamic> xpResults = {};
       if (!widget.isRogueMode) {
-        if (widget.isArenaBattle && battleManager.result == BattleResult.win) {
-          moneyEarned = 1000;
-          await userState.addMoney(moneyEarned);
-        } else if (!widget.isArenaBattle &&
-            battleManager.result == BattleResult.win) {
-          // Wild battle prize money
-          moneyEarned = _calculateWildMoneyReward(
-            battleManager.opponent.organism.baseOrganism,
+        // Fully heal team after battle in exploration/arena
+        await userState.fullyHealTeam();
+
+        if (battleManager.result == BattleResult.win ||
+            battleManager.result == BattleResult.capture) {
+          // Award XP
+          xpResults = await userState.awardBattleXP(
+            defeatedLevel: battleManager.opponent.organism.level,
+            killerId: battleManager.lastBlowOrganismId,
+            teamIds: battleManager.playerTeam.map((o) => o.id).toList(),
           );
-          await userState.addMoney(moneyEarned);
+
+          if (widget.isArenaBattle) {
+            moneyEarned = 1000;
+            await userState.addMoney(moneyEarned);
+          } else {
+            // Wild battle prize money
+            moneyEarned = _calculateWildMoneyReward(
+              battleManager.opponent.organism.baseOrganism,
+            );
+            await userState.addMoney(moneyEarned);
+          }
         }
       }
 
@@ -3260,6 +3273,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           moneyEarned,
           lootName,
           userState,
+          xpResults: xpResults,
         );
       }
     });
@@ -3270,8 +3284,9 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     BattleManager battleManager,
     int moneyEarned,
     String? lootName,
-    UserState userState,
-  ) {
+    UserState userState, {
+    Map<String, dynamic> xpResults = const {},
+  }) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -3285,6 +3300,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
         themeColor: _getBiomeThemeColor(),
         primaryColor: _getBiomePrimaryColor(),
         secondaryColor: _getBiomeSecondaryColor(),
+        xpResults: xpResults,
         onConfirm: () {
           SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
           Navigator.of(ctx).pop();
@@ -3750,6 +3766,7 @@ class _BattleResultDialog extends StatelessWidget {
   final Color primaryColor;
   final Color secondaryColor;
   final BattleManager battleManager;
+  final Map<String, dynamic> xpResults;
 
   const _BattleResultDialog({
     required this.result,
@@ -3762,6 +3779,7 @@ class _BattleResultDialog extends StatelessWidget {
     required this.primaryColor,
     required this.secondaryColor,
     required this.battleManager,
+    this.xpResults = const {},
   });
 
   void _showStats(BuildContext context) {
@@ -4100,7 +4118,7 @@ class _BattleResultDialog extends StatelessWidget {
               height: 1.5,
             ),
           ),
-          if (moneyEarned > 0 || lootName != null) ...[
+          if (moneyEarned > 0 || lootName != null || xpResults.isNotEmpty) ...[
             const SizedBox(height: 24),
             Container(
               padding: const EdgeInsets.all(12),
@@ -4111,6 +4129,81 @@ class _BattleResultDialog extends StatelessWidget {
               ),
               child: Column(
                 children: [
+                  if (xpResults.isNotEmpty) ...[
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.stars,
+                          color: Colors.blueAccent,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '+${xpResults['gainedAccountXP']} ACCOUNT XP',
+                          style: const TextStyle(
+                            color: Colors.blueAccent,
+                            fontFamily: 'PressStart2P',
+                            fontSize: 10,
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (xpResults['accountLeveledUp'] == true)
+                      const Padding(
+                        padding: EdgeInsets.only(top: 8, bottom: 8),
+                        child: Text(
+                          'ACCOUNT LEVEL UP!',
+                          style: TextStyle(
+                            color: Colors.orangeAccent,
+                            fontFamily: 'PressStart2P',
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'TEAM GAINED XP',
+                      style: TextStyle(
+                        color: Colors.greenAccent.withOpacity(0.8),
+                        fontFamily: 'PressStart2P',
+                        fontSize: 8,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    // Check for animal level ups
+                    ...() {
+                      final leveledUp =
+                          (xpResults['animalLeveledUp'] as Map<String, bool>?)
+                              ?.entries
+                              .where((e) => e.value)
+                              .toList() ??
+                          [];
+                      if (leveledUp.isEmpty) return [const SizedBox.shrink()];
+                      return [
+                        const SizedBox(height: 4),
+                        ...leveledUp.map((e) {
+                          final org = battleManager.playerTeam.firstWhere(
+                            (o) => o.id == e.key,
+                            orElse: () => battleManager.playerTeam.first,
+                          );
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: Text(
+                              '${org.name} LEVELED UP!',
+                              style: const TextStyle(
+                                color: Colors.yellowAccent,
+                                fontFamily: 'PressStart2P',
+                                fontSize: 8,
+                              ),
+                            ),
+                          );
+                        }),
+                      ];
+                    }(),
+                    const Divider(color: Colors.white10, height: 16),
+                  ],
                   if (moneyEarned > 0)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 8.0),

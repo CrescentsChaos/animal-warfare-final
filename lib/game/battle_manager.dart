@@ -141,6 +141,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   BattleResult? _result;
   BattleResult? get result => _result;
 
+  /// NEW: Tracks which animal uniquely landed the final blow for XP awarding.
+  String? lastBlowOrganismId;
+
   // LOOT DROP
   String? _droppedLoot;
   String? get droppedLoot => _droppedLoot;
@@ -1180,6 +1183,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             ], move);
           }
         }
+        if (move.name == 'Rollout' || move.name == 'Ice Ball') {
+          attacker.rolloutTurnCount = 0;
+        }
         notifyListeners();
         if (!isTesting)
           await Future.delayed(const Duration(milliseconds: 3000));
@@ -1196,24 +1202,6 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           await Future.delayed(const Duration(milliseconds: 3000));
         return;
       }
-    }
-
-    // Determine which stats to use based on move properties
-    int effectiveAttackerAtk = _getStatValue(attacker, move.damageStat);
-    int effectiveDefenderDef = _getStatValue(defender, move.targetDefenseStat);
-
-    // Allow the move to override EXACTLY which stat it uses for the ATTACKER
-    if (move.damageStat.isNotEmpty) {
-      if (move.damageStat == 'attack') {
-        effectiveAttackerAtk = attacker.currentAttack;
-      } else if (move.damageStat == 'power')
-        effectiveAttackerAtk = attacker.currentPower;
-      else if (move.damageStat == 'defense')
-        effectiveAttackerAtk = attacker.currentDefense;
-      else if (move.damageStat == 'resistance')
-        effectiveAttackerAtk = attacker.currentResistance;
-      else if (move.damageStat == 'speed')
-        effectiveAttackerAtk = attacker.currentSpeed;
     }
 
     // Note: If we added moves that target a specific defense (like Psyshock),
@@ -1253,451 +1241,19 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           ); // Short delay between hits
       }
 
-      // 2. Damage Calculation (Standard Formula: (((2*Level/5 + 2) * Atk * BaseDamage / Def) / 50 + 2) * Modifiers)
+      // 2. Damage Calculation
       if (move.baseDamage > 0) {
-        // Weather Modifiers
-        double weatherMod = currentWeather.getDamageMultiplier(
-          move.type.toString().split('.').last,
-        );
-
-        // Critical Hit Logic
-        bool isCrit = false;
-        double critChance = 6.25; // Base 1/16 chance
-
-        // Talisman crit boost (multi-effect support)
-        if (attacker.organism.equippedTalisman != null) {
-          for (final effect in attacker.organism.equippedTalisman!.effects) {
-            if (effect.type == TalismanEffectType.critBoost) {
-              critChance += effect.magnitude;
-            }
-          }
-        }
-
-        // Super Luck crit boost
-        if (attacker.abilities.any((ab) => ab.name == 'Super Luck')) {
-          // Increase crit stage by 1. Base is 6.25% (1/16).
-          // Stage 1: 12.5% (1/8), Stage 2: 50% (1/2), Stage 3: 100%.
-          // We can simplify this by mapping critChance to stages or just increasing it.
-          if (critChance <= 6.25) {
-            critChance = 12.5;
-          } else if (critChance <= 12.5) {
-            critChance = 50.0;
-          } else {
-            critChance = 100.0;
-          }
-        }
-
-        // Move-specific crit rate
-        if (move.critRate == 1) critChance = 12.5; // 1/8
-        if (move.critRate == 2) critChance = 50.0; // 1/2
-        if (move.critRate >= 3) critChance = 100.0; // Guaranteed crit
-
-        if (Random().nextDouble() * 100 < critChance) {
-          isCrit = true;
-        }
-
-        // Merciless Check
-        if (attacker.abilities.any((ab) => ab.name == 'Merciless') &&
-            (defender.statusEffects.any(
-              (se) => se.type == StatusEffectType.poison,
-            ))) {
-          isCrit = true;
-        }
-
-        // Battle Armor check
-        bool hasBattleArmor = false;
-        for (final ab in defender.abilities) {
-          if (ab.name == 'Battle Armor') hasBattleArmor = true;
-        }
-        if (hasBattleArmor) {
-          isCrit = false;
-        }
-
-        // Core Damage Formula
-        int currentBaseDamage = move.baseDamage;
-
-        // Rollout / Ice Ball stacking
-        if (move.name == 'Rollout' || move.name == 'Ice Ball') {
-          // Power doubles each turn: 30, 60, 120, 240, 480
-          currentBaseDamage =
-              move.baseDamage * (1 << (attacker.rolloutTurnCount));
-          if (attacker.usedDefenseCurl) {
-            currentBaseDamage *= 2;
-          }
-          attacker.rolloutTurnCount++;
-          if (attacker.rolloutTurnCount >= 5) {
-            attacker.rolloutTurnCount = 0; // Reset after 5 turns
-          }
-        }
-
-        double damageCalc =
-            ((2 * attacker.level / 5 + 2) *
-                    currentBaseDamage *
-                    effectiveAttackerAtk /
-                    effectiveDefenderDef) /
-                50 +
-            2;
-
-        if (isCrit) {
-          damageCalc *= 1.5;
-        }
-
-        // Random variance (0.85 to 1.0)
-        double random = 0.85 + (Random().nextDouble() * 0.15);
-        damageCalc *= random;
-
-        damageCalc *= weatherMod;
-
-        // Heatproof Check
-        if (move.type == ElementalType.blaze) {
-          for (final ab in defender.abilities) {
-            if (ab.name == 'Heatproof') {
-              damageCalc *= ab.magnitude;
-            }
-          }
-        }
-
-        // Multiscale Check
-        if (defender.health == defender.maxHealth) {
-          for (final ab in defender.abilities) {
-            if (ab.name == 'Multiscale') {
-              damageCalc *= ab.magnitude;
-            }
-          }
-        }
-
-        // Reckless Check
-        if (move.recoilPercent > 0) {
-          for (final ab in attacker.abilities) {
-            if (ab.name == 'Reckless') {
-              damageCalc *= ab.magnitude;
-            }
-          }
-        }
-
-        // Iron Fist Check
-        if (move.isPunch) {
-          for (final ab in attacker.abilities) {
-            if (ab.name == 'Iron Fist') {
-              damageCalc *= ab.magnitude;
-            }
-          }
-        }
-
-        // Strong Jaw Check
-        if (move.isBite) {
-          for (final ab in attacker.abilities) {
-            if (ab.name == 'Strong Jaw') {
-              damageCalc *= ab.magnitude;
-            }
-          }
-        }
-
-        // Tough Claws Check
-        if (move.isContact) {
-          for (final ab in attacker.abilities) {
-            if (ab.name == 'Tough Claws') {
-              damageCalc *= ab.magnitude;
-            }
-          }
-        }
+        final damageResult = calculateDamage(attacker, defender, move);
+        double damageCalc = damageResult.damage.toDouble();
+        bool isCrit = damageResult.isCrit;
+        double typeMod = damageResult.typeMultiplier;
 
         // Parental Bond 2nd hit damage reduction
         if (hasParentalBond && i == 1) {
           damageCalc *= 0.25;
         }
 
-        // Stealth damage bonus (2x damage addressed in effect removal below)
-        if (attacker.statusEffects.any(
-          (se) => se.type == StatusEffectType.stealth,
-        )) {
-          damageCalc *= 2.0;
-        }
-
-        // Stealth damage taken penalty (2x damage)
-        if (defender.statusEffects.any(
-          (se) => se.type == StatusEffectType.stealth,
-        )) {
-          // Echolocation ignores stealth damage penalty
-          bool attackerHasEcholocation = attacker.abilities.any(
-            (ab) => ab.name == 'Echolocation',
-          );
-          if (!attackerHasEcholocation) {
-            damageCalc *= 2.0;
-          }
-        }
-
-        // Stakeout
-        if ((defender.isPlayer ? playerJustSwitched : opponentJustSwitched) &&
-            attacker.abilities.any((ab) => ab.name == 'Stakeout')) {
-          damageCalc *= 2.0;
-        }
-
-        // Analytic
-        bool movingLast = false;
-        if (attacker.isPlayer && opponentMovedThisTurn) movingLast = true;
-        if (attacker.isOpponent && playerMovedThisTurn) movingLast = true;
-        if (attacker.abilities.any((ab) => ab.name == 'Analytic') &&
-            movingLast) {
-          damageCalc *= 1.3;
-        }
-
-        // Dry Skin (Damage from fire)
-        if (move.type == ElementalType.blaze &&
-            defender.abilities.any((ab) => ab.name == 'Dry Skin')) {
-          damageCalc *= 1.25;
-        }
-
-        // Water Absorb / Dry Skin (Heal from water)
-        if (move.type == ElementalType.aquatic &&
-            defender.abilities.any(
-              (ab) => ab.name == 'Dry Skin' || ab.name == 'Water Absorb',
-            )) {
-          final heal = (defender.maxHealth * 0.25).round();
-          defender.health = (defender.health + heal).clamp(
-            0,
-            defender.maxHealth,
-          );
-          addToLog(
-            '${defender.organism.baseOrganism.name} restored HP due to its ability!',
-          );
-          notifyListeners();
-          if (!isTesting)
-            await Future.delayed(const Duration(milliseconds: 1500));
-          return; // Immune, exit early
-        }
-
-        // Generic conditional multiplier
-        if (move.multiplierCondition.isNotEmpty) {
-          double multiplier = 1.0;
-          final condition = move.multiplierCondition.toLowerCase();
-
-          if (condition == 'target_poisoned' &&
-              defender.statusEffect.type == StatusEffectType.poison) {
-            multiplier = move.conditionalMultiplier;
-          } else if (condition == 'target_damaged' &&
-              defender.tookDamageThisTurn) {
-            multiplier = move.conditionalMultiplier;
-          } else if (condition == 'target_statused' &&
-              defender.statusEffect.type != StatusEffectType.none) {
-            multiplier = move.conditionalMultiplier;
-          }
-
-          damageCalc *= multiplier;
-        }
-
-        // Talisman damage/resistance boosts (multi-effect support)
-        if (attacker.organism.equippedTalisman != null) {
-          for (final effect in attacker.organism.equippedTalisman!.effects) {
-            if (effect.type == TalismanEffectType.damageMultiplier ||
-                effect.type == TalismanEffectType.damageBoost) {
-              damageCalc *= effect.magnitude;
-            }
-            // Category-specific damage boost (Muscle Band, Wise Glasses)
-            if (effect.type == TalismanEffectType.categoryDamageBoost) {
-              if ((effect.category == 'physical' &&
-                      move.category == MoveCategory.physical) ||
-                  (effect.category == 'special' &&
-                      move.category == MoveCategory.special)) {
-                damageCalc *= effect.magnitude;
-              }
-            }
-          }
-        }
-
-        if (defender.organism.equippedTalisman != null) {
-          for (final effect in defender.organism.equippedTalisman!.effects) {
-            if (effect.type == TalismanEffectType.resistanceBoost) {
-              damageCalc *= effect.magnitude;
-            }
-          }
-        }
-
-        // --- Screens (Damage Reduction) ---
-        final dLightScreen = defender.isOpponent
-            ? opponentLightScreenTurns
-            : playerLightScreenTurns;
-        final dReflect = defender.isOpponent
-            ? opponentReflectTurns
-            : playerReflectTurns;
-        final dAuroraVeil = defender.isOpponent
-            ? opponentAuroraVeilTurns
-            : playerAuroraVeilTurns;
-
-        bool attackerHasInfiltrator = attacker.abilities.any(
-          (ab) => ab.name == 'Infiltrator',
-        );
-
-        if (!attackerHasInfiltrator) {
-          if (dAuroraVeil > 0) {
-            damageCalc *= 0.5;
-          } else {
-            if (move.category == MoveCategory.physical && dReflect > 0) {
-              damageCalc *= 0.5;
-            }
-            if (move.category == MoveCategory.special && dLightScreen > 0) {
-              damageCalc *= 0.5;
-            }
-          }
-        }
-
-        // Check if attacker fainted from Rocky Helmet/Talisman before dealing damage
-        if (attacker.health <= 0) break;
-
-        // Vulnerable Status
-        if (defender.statusEffect.type == StatusEffectType.vulnerable) {
-          damageCalc *= 1.3; // Take 30% more damage
-        }
-
-        // Marked Status
-        if (defender.statusEffect.type == StatusEffectType.marked) {
-          damageCalc *= 1.2; // Take 20% more damage
-        }
-
-        // Type Effectiveness
-        double typeMod = 1.0;
-        bool attackerHasTrueFlight = attacker.abilities.any(
-          (ab) => ab.name == 'True Flight',
-        );
-        bool defenderHasTrueFlight = defender.abilities.any(
-          (ab) => ab.name == 'True Flight',
-        );
-
-        // --- Earth Eater (Absorption) ---
-        bool hasEarthEater = defender.abilities.any(
-          (ab) => ab.name == 'Earth Eater',
-        );
-        if (hasEarthEater && move.type == ElementalType.earth) {
-          final ab = defender.abilities.firstWhere(
-            (a) => a.name == 'Earth Eater',
-          );
-          await notifyAbilityTrigger(defender, ab);
-          addToLog('${defender.organism.baseOrganism.name} ate the earth!');
-
-          if (defender.health < defender.maxHealth) {
-            final healAmount = (defender.maxHealth * 0.25).round();
-            defender.health = (defender.health + healAmount).clamp(
-              0,
-              defender.maxHealth,
-            );
-            onHeal?.call(defender, healAmount);
-            addToLog('${defender.organism.baseOrganism.name} restored HP!');
-            await _audioService.playSound('audio/effects/heal.mp3');
-          } else {
-            addToLog('It had no effect!');
-          }
-          notifyListeners();
-          if (!isTesting)
-            await Future.delayed(const Duration(milliseconds: 3000));
-          return; // Skip damage calculation
-        }
-
-        bool defenderHasAirBalloon =
-            defender.organism.equippedTalisman != null &&
-            !defender.talismanConsumed &&
-            defender.organism.equippedTalisman!.effects.any(
-              (e) => e.type == TalismanEffectType.airBalloon,
-            );
-
-        for (final defType in defender.types) {
-          double eff = TypeChart.getEffectiveness(move.type, defType);
-
-          // --- True Flight / Air Balloon Logic ---
-          // Defensive: earth moves deal 0 damage to True Flight users or Air Balloon holders
-          if ((defenderHasTrueFlight || defenderHasAirBalloon) &&
-              move.type == ElementalType.earth) {
-            eff = 0.0;
-          }
-
-          // Defensive: Removes Flying-type weaknesses (Electric, Rock, Ice)
-          if (defenderHasTrueFlight &&
-              defender.types.contains(ElementalType.flying)) {
-            if (move.type == ElementalType.electric ||
-                move.type == ElementalType.rock ||
-                move.type == ElementalType.cryo) {
-              if (eff > 1.0) eff = 1.0;
-            }
-          }
-
-          // Offensive: Flying moves ignore resistances (min 1.0x effectiveness)
-          if (attackerHasTrueFlight && move.type == ElementalType.flying) {
-            if (eff < 1.0 && eff > 0) eff = 1.0;
-          }
-          // ------------------------
-          typeMod *= eff;
-        }
-
-        if (typeMod < 1.0 &&
-            attacker.abilities.any((ab) => ab.name == 'Tinted Lens')) {
-          typeMod *= 2.0;
-        }
-
-        damageCalc *= typeMod;
-
-        // Weakness Berry Check
-        if (typeMod > 1.0 &&
-            defender.organism.equippedTalisman != null &&
-            !defender.talismanConsumed) {
-          for (final bEffect in defender.organism.equippedTalisman!.effects) {
-            if (bEffect.type == TalismanEffectType.berryTypeResist) {
-              final moveTypeName = move.type
-                  .toString()
-                  .split('.')
-                  .last
-                  .toLowerCase();
-              if (bEffect.stat == moveTypeName) {
-                damageCalc *= bEffect.magnitude;
-                defender.talismanConsumed = true;
-                defender.isItemRevealed = true;
-                _getStats(defender.organism.id).isItemRevealed = true;
-                addToLog(
-                  'The ${defender.organism.equippedTalisman!.name} weakened the damage to ${defender.organism.name}!',
-                );
-                break;
-              }
-            }
-          }
-        }
-
-        // STAB (Same Type Attack Bonus)
-        if (attacker.types.contains(move.type)) {
-          damageCalc *= 1.5;
-          // Adaptability boost
-          if (attacker.abilities.any((ab) => ab.name == 'Adaptability')) {
-            damageCalc *=
-                (2.0 / 1.5); // Adaptability makes STAB 2x instead of 1.5x
-          }
-        }
-
-        // Acrobatics Boost
-        if (move.name == 'Acrobatics') {
-          if (attacker.organism.equippedTalisman == null ||
-              attacker.talismanConsumed) {
-            damageCalc *= 2.0;
-          }
-        }
-
-        // Knock Off Boost
-        if (move.name == 'Knock Off') {
-          if (defender.organism.equippedTalisman != null &&
-              !defender.talismanConsumed) {
-            damageCalc *= 1.5;
-          }
-        }
-
-        // Freeze-Dry special case: 2x against Aquatic
-        if (move.name == 'Freeze-Dry' &&
-            defender.types.contains(ElementalType.aquatic)) {
-          damageCalc *= 2.0;
-        }
-
-        // Weather Modifiers
-        damageCalc *= weatherMod;
-
-        // Randomness (0.9 to 1.1) and Round
-        // Randomness (0.9 to 1.1) and Round
-        int finalDamage = (damageCalc * (Random().nextDouble() * 0.2 + 0.9))
-            .round();
+        int finalDamage = damageCalc.round();
 
         // Talisman Focus Sash (One-Hit Save)
         if (defender.organism.equippedTalisman != null &&
@@ -1725,10 +1281,12 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
         final int effectiveDamage = finalDamage.clamp(0, defender.health);
         final int oldHealth = defender.health;
+        bool substituteTookDamage = false;
 
         if (defender.substituteHealth > 0) {
           final int subDamage = finalDamage.clamp(0, defender.substituteHealth);
           defender.substituteHealth -= subDamage;
+          substituteTookDamage = true;
           addToLog('The substitute took damage for ${defender.name}!');
           if (defender.substituteHealth <= 0) {
             defender.substituteHealth = 0;
@@ -1739,6 +1297,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           defender.health = defender.health.clamp(0, defender.maxHealth);
           if (effectiveDamage > 0) {
             onDamage?.call(defender, effectiveDamage);
+            if (defender.health <= 0 && attacker.isPlayer) {
+              lastBlowOrganismId = attacker.organism.id;
+            }
           }
         }
 
@@ -1778,6 +1339,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           }
           // Aftermath
           if (move.isContact &&
+              defender.substituteHealth <= 0 &&
               defender.abilities.any((ab) => ab.name == 'Aftermath') &&
               !attacker.abilities.any((ab) => ab.name == 'Damp')) {
             final damage = (attacker.maxHealth * 0.25).round();
@@ -1837,6 +1399,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
         // Air Balloon Pop
         if (effectiveDamage > 0 &&
+            !substituteTookDamage &&
             defender.organism.equippedTalisman != null &&
             !defender.talismanConsumed &&
             defender.organism.equippedTalisman!.effects.any(
@@ -2019,7 +1582,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         if (attacker.health <= 0) break;
 
         // Rocky Helmet damage (contact moves only)
-        if (move.isContact && defender.organism.equippedTalisman != null) {
+        if (move.isContact &&
+            defender.substituteHealth <= 0 &&
+            defender.organism.equippedTalisman != null) {
           for (final effect in defender.organism.equippedTalisman!.effects) {
             if (effect.type == TalismanEffectType.contactDamage) {
               final contactDamage = (attacker.maxHealth * effect.magnitude)
@@ -2178,6 +1743,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     if (org.mustRecharge) {
       addToLog('${org.organism.baseOrganism.name} must recharge!');
       org.mustRecharge = false; // Recharge turn is used now
+      org.rolloutTurnCount = 0;
       notifyListeners();
       if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
       return false;
@@ -2213,12 +1779,14 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       org.statusEffects = updatedStatuses;
 
       addToLog('${org.organism.baseOrganism.name} is fast asleep.');
+      org.rolloutTurnCount = 0;
       notifyListeners();
       if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
       return false;
     }
     if (org.statusEffect.type == StatusEffectType.stun) {
       addToLog('${org.organism.baseOrganism.name} is stunned and cannot move!');
+      org.rolloutTurnCount = 0;
       notifyListeners();
       if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
       // Remove only the stun status
@@ -2239,6 +1807,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         final selfDamage = (org.maxHealth * 0.15).round();
         org.health -= selfDamage;
         org.health = org.health.clamp(0, org.maxHealth);
+        org.rolloutTurnCount = 0;
         notifyListeners();
         if (!isTesting)
           await Future.delayed(const Duration(milliseconds: 3000));
@@ -2256,6 +1825,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         return true;
       }
       addToLog('${org.organism.baseOrganism.name} is frozen solid!');
+      org.rolloutTurnCount = 0;
       notifyListeners();
       if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
       return false;
@@ -2265,6 +1835,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         addToLog(
           '${org.organism.baseOrganism.name} is paralyzed! It can\'t move!',
         );
+        org.rolloutTurnCount = 0;
         notifyListeners();
         if (!isTesting)
           await Future.delayed(const Duration(milliseconds: 3000));
@@ -2851,6 +2422,14 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     int value, {
     BattleOrganism? source,
   }) async {
+    // Substitute blocks stat reductions from opponents
+    if (value < 0 &&
+        source != null &&
+        source != target &&
+        target.substituteHealth > 0) {
+      return;
+    }
+
     // --- Ability Trigger: onStatLoss (Prevention) ---
     if (value < 0) {
       for (final ab in target.abilities) {
@@ -3054,34 +2633,73 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         organism.futureSightTurns--;
         if (organism.futureSightTurns == 0) {
           final user = organism.futureSightUser;
-          if (user != null && user.health > 0) {
+          if (user != null) {
             addToLog('The future sight attack hit ${organism.name}!');
             // Calculate damage now
             // Future Sight is 120 power, special (power), typeless/neutral usually
-            // but in Gen 5+ it takes on user's stats and calculates against defender.
-            final int atk = user.currentPower;
-            final int def = organism.currentResistance;
-            double damage =
-                ((2 * user.level / 5 + 2) * 120 * atk / def) / 50 + 2;
-
-            // Apply it as indirect/direct damage
-            int finalDamage = damage.round().clamp(0, organism.health);
-
-            if (organism.substituteHealth > 0) {
-              final int subDamage = finalDamage.clamp(
-                0,
-                organism.substituteHealth,
+            if (organism.isProtected) {
+              addToLog(
+                '${organism.name} protected itself from the foreseen attack!',
               );
-              organism.substituteHealth -= subDamage;
-              addToLog('The substitute took damage for ${organism.name}!');
-              if (organism.substituteHealth <= 0) {
-                organism.substituteHealth = 0;
-                addToLog('${organism.name}\'s substitute broke!');
-              }
             } else {
-              organism.health -= finalDamage;
+              // Future Sight is 120 power, special (power), Aura type (Gen 5+)
+              final int atk = user.currentPower;
+              final int def = organism.currentResistance;
+              double damage =
+                  ((2 * user.level / 5 + 2) * 120 * atk / def) / 50 + 2;
+
+              // Type Effectiveness
+              double typeMod = 1.0;
+              for (final defType in organism.types) {
+                typeMod *= TypeChart.getEffectiveness(
+                  ElementalType.aura,
+                  defType,
+                );
+              }
+              damage *= typeMod;
+
+              // STAB
+              if (user.types.contains(ElementalType.aura)) {
+                damage *= 1.5;
+              }
+
+              // Critical Hit (1/16 chance)
+              bool isCrit = Random().nextDouble() < 0.0625;
+              if (isCrit) {
+                damage *= 1.5;
+              }
+
+              // Apply it as indirect/direct damage
+              int finalDamage = damage.round().clamp(0, organism.health);
+
+              if (isCrit && finalDamage > 0) {
+                addToLog('A critical hit!');
+              }
+
+              if (typeMod > 1.0) {
+                addToLog("It's super effective!");
+              } else if (typeMod > 0 && typeMod < 1.0) {
+                addToLog("It's not very effective...");
+              } else if (typeMod == 0) {
+                addToLog('It had no effect...');
+              }
+
               if (finalDamage > 0) {
-                onDamage?.call(organism, finalDamage);
+                if (organism.substituteHealth > 0) {
+                  final int subDamage = finalDamage.clamp(
+                    0,
+                    organism.substituteHealth,
+                  );
+                  organism.substituteHealth -= subDamage;
+                  addToLog('The substitute took damage for ${organism.name}!');
+                  if (organism.substituteHealth <= 0) {
+                    organism.substituteHealth = 0;
+                    addToLog('${organism.name}\'s substitute broke!');
+                  }
+                } else {
+                  organism.health -= finalDamage;
+                  onDamage?.call(organism, finalDamage);
+                }
               }
             }
             notifyListeners();
@@ -3251,7 +2869,10 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       // Overcoat Check & Type Immunities (Metal, Earth, Rock)
       bool hasOvercoat = target.abilities.any((ab) => ab.name == 'Overcoat');
       bool isImmune = target.types.any(
-        (t) => t == ElementalType.metal || t == ElementalType.earth || t == ElementalType.rock,
+        (t) =>
+            t == ElementalType.metal ||
+            t == ElementalType.earth ||
+            t == ElementalType.rock,
       );
       if (!hasOvercoat && !isImmune) {
         final damage = (target.maxHealth * 0.06).round().clamp(1, 9999);
@@ -3824,8 +3445,14 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   Future<void> _switchToAnimal(int index) async {
     if (index < 0 || index >= playerTeam.length) return;
     currentPlayerIndex = index;
+    final playerOrganism = playerTeam[currentPlayerIndex];
+
+    final int fsTurns = player.futureSightTurns;
+    final BattleOrganism? fsUser = player.futureSightUser;
 
     player = BattleOrganism(playerOrganism, isRogueMode: isRogueMode);
+    player.futureSightTurns = fsTurns;
+    player.futureSightUser = fsUser;
     // Restore persistent stats
     final stats = _getStats(playerOrganism.id);
     player.totalDamageDealt = stats.totalDamageDealt;
@@ -3950,11 +3577,16 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     currentOpponentIndex = index;
 
+    final int fsTurns = opponent.futureSightTurns;
+    final BattleOrganism? fsUser = opponent.futureSightUser;
+
     opponent = BattleOrganism(
       opponentTeam[currentOpponentIndex],
       isRogueMode: isRogueMode,
       isOpponent: true,
     );
+    opponent.futureSightTurns = fsTurns;
+    opponent.futureSightUser = fsUser;
     // Restore persistent stats
     final stats = _getStats(opponentTeam[currentOpponentIndex].id);
     opponent.totalDamageDealt = stats.totalDamageDealt;
@@ -3982,22 +3614,19 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   }) {
     if (move.baseDamage <= 0) return const DamageResult(0, 1.0, false);
 
-    // Weather Modifiers
-    double weatherMod = currentWeather.getDamageMultiplier(
-      move.type.toString().split('.').last,
-    );
-
-    // Critical Hit Logic
     bool isCrit = false;
-    double critChance = 6.25; // Base 1/16 chance
+    double critChance = 6.25;
 
     // Talisman crit boost
-    if (attacker.organism.equippedTalisman?.effect.type ==
-        TalismanEffectType.critBoost) {
-      critChance += attacker.organism.equippedTalisman!.effect.magnitude;
+    if (attacker.organism.equippedTalisman != null) {
+      for (final effect in attacker.organism.equippedTalisman!.effects) {
+        if (effect.type == TalismanEffectType.critBoost) {
+          critChance += effect.magnitude;
+        }
+      }
     }
 
-    // Super Luck crit boost
+    // Ability crit boosts (Super Luck)
     if (attacker.abilities.any((ab) => ab.name == 'Super Luck')) {
       if (critChance <= 6.25) {
         critChance = 12.5;
@@ -4009,20 +3638,28 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     }
 
     // Move-specific crit rate
-    if (move.critRate == 1) critChance = 12.5; // 1/8
-    if (move.critRate == 2) critChance = 50.0; // 1/2
-    if (move.critRate >= 3) critChance = 100.0; // Guaranteed crit
+    if (move.critRate == 1) critChance = 12.5;
+    if (move.critRate == 2) critChance = 50.0;
+    if (move.critRate >= 3) critChance = 100.0;
 
-    if (Random().nextDouble() * 100 < critChance) {
+    // Merciless Ability: Guaranteed crit against poisoned targets
+    if (attacker.abilities.any((ab) => ab.name == 'Merciless') &&
+        defender.statusEffects.any(
+          (se) => se.type == StatusEffectType.poison,
+        )) {
+      isCrit = true;
+    } else if (Random().nextDouble() * 100 < critChance) {
       isCrit = true;
     }
 
-    // Battle Armor check
-    if (defender.abilities.any((ab) => ab.name == 'Battle Armor')) {
+    // Battle Armor / Shell Armor blocks crits
+    if (defender.abilities.any(
+      (ab) => ab.name == 'Battle Armor' || ab.name == 'Shell Armor',
+    )) {
       isCrit = false;
     }
 
-    // Stats
+    // 1. Determine Stats (Atk/Def or Power/Res)
     int atk = (move.category == MoveCategory.special)
         ? attacker.currentPower
         : attacker.currentAttack;
@@ -4030,107 +3667,251 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         ? defender.currentResistance
         : defender.currentDefense;
 
-    // Snowstorm Defense Buff (1.5x)
-    if (currentWeather.weather == Weather.snowstorm &&
-        defender.types.contains(ElementalType.cryo) &&
-        move.category == MoveCategory.physical) {
-      def = (def * 1.5).round();
-    }
-
     // Stat overrides
     if (move.damageStat.isNotEmpty) {
-      if (move.damageStat == 'attack') {
-        atk = attacker.currentAttack;
-      } else if (move.damageStat == 'power')
-        atk = attacker.currentPower;
-      else if (move.damageStat == 'defense')
-        atk = attacker.currentDefense;
-      else if (move.damageStat == 'resistance')
-        atk = attacker.currentResistance;
-      else if (move.damageStat == 'speed')
-        atk = attacker.currentSpeed;
-    }
-
-    // Core Damage Formula
-    double damageCalc =
-        ((2 * attacker.level / 5 + 2) * move.baseDamage * atk / def) / 50 + 2;
-
-    // Guts: 1.5x Attack if attacker has status
-    if (move.category == MoveCategory.physical &&
-        attacker.statusEffects.isNotEmpty) {
-      bool hasGuts = attacker.abilities.any((ab) => ab.name == 'Guts');
-      if (hasGuts) {
-        damageCalc *= 1.5;
+      switch (move.damageStat) {
+        case 'attack':
+          atk = attacker.currentAttack;
+          break;
+        case 'power':
+          atk = attacker.currentPower;
+          break;
+        case 'defense':
+          atk = attacker.currentDefense;
+          break;
+        case 'resistance':
+          atk = attacker.currentResistance;
+          break;
+        case 'speed':
+          atk = attacker.currentSpeed;
+          break;
       }
     }
 
-    // Iron Fist: 1.2x boost for punching moves
-    if (move.isPunch &&
-        attacker.abilities.any((ab) => ab.name == 'Iron Fist')) {
-      damageCalc *= 1.2;
+    // 2. Base Damage Substitutions
+    int baseDamage = move.baseDamage;
+
+    // Acrobatics Boost (2x if no item or consumed)
+    if (move.name == 'Acrobatics') {
+      if (attacker.organism.equippedTalisman == null ||
+          attacker.talismanConsumed) {
+        baseDamage *= 2;
+      }
     }
 
-    // Strong Jaw: 1.5x boost for biting moves
-    if (move.isBite &&
-        attacker.abilities.any((ab) => ab.name == 'Strong Jaw')) {
-      damageCalc *= 1.5;
+    // Rollout/Ice Ball stacking
+    if (move.name == 'Rollout' || move.name == 'Ice Ball') {
+      baseDamage *= (1 << attacker.rolloutTurnCount);
+      if (attacker.usedDefenseCurl) baseDamage *= 2;
     }
 
-    // Tough Claws: 1.3x boost for contact moves
-    if (move.isContact &&
-        attacker.abilities.any((ab) => ab.name == 'Tough Claws')) {
-      damageCalc *= 1.3;
-    }
+    // 3. Core Damage Formula
+    double damageCalc =
+        ((2 * attacker.level / 5 + 2) * baseDamage * atk / def) / 50 + 2;
 
+    // 4. Multipliers
     if (isCrit) damageCalc *= 1.5;
 
-    // Random variance (0.85 to 1.0)
-    if (!ignoreRandom) {
-      damageCalc *= (0.85 + (Random().nextDouble() * 0.15));
+    // Weather Modifiers
+    double weatherMod = currentWeather.getDamageMultiplier(
+      move.type.toString().split('.').last.toLowerCase(),
+    );
+    damageCalc *= weatherMod;
+
+    // Snowstorm Cryo Physical Defense Buff
+    if (currentWeather.weather == Weather.snowstorm &&
+        defender.types.contains(ElementalType.cryo) &&
+        move.category == MoveCategory.physical) {
+      damageCalc *= (1 / 1.5);
     }
 
-    damageCalc *= weatherMod;
+    // Type Effectiveness
+    double typeMod = 1.0;
+    bool attackerHasTrueFlight = attacker.abilities.any(
+      (ab) => ab.name == 'True Flight',
+    );
+    bool defenderHasTrueFlight = defender.abilities.any(
+      (ab) => ab.name == 'True Flight',
+    );
+    bool defenderHasAirBalloon =
+        defender.organism.equippedTalisman != null &&
+        !defender.talismanConsumed &&
+        defender.organism.equippedTalisman!.effects.any(
+          (e) => e.type == TalismanEffectType.airBalloon,
+        );
+
+    for (final defType in defender.types) {
+      double eff = TypeChart.getEffectiveness(move.type, defType);
+
+      // Earth Eater / True Flight / Air Balloon Earth Immunity
+      if (move.type == ElementalType.earth) {
+        if (defender.abilities.any((ab) => ab.name == 'Earth Eater') ||
+            defenderHasTrueFlight ||
+            defenderHasAirBalloon) {
+          eff = 0.0;
+        }
+      }
+
+      // Water Absorb / Dry Skin Water Immunity
+      if (move.type == ElementalType.aquatic &&
+          defender.abilities.any(
+            (ab) => ab.name == 'Water Absorb' || ab.name == 'Dry Skin',
+          )) {
+        eff = 0.0;
+      }
+
+      // True Flight defensive perks (Min 1.0 effectiveness for weaknesses)
+      if (defenderHasTrueFlight &&
+          defender.types.contains(ElementalType.flying)) {
+        if (move.type == ElementalType.electric ||
+            move.type == ElementalType.rock ||
+            move.type == ElementalType.cryo) {
+          if (eff > 1.0) eff = 1.0;
+        }
+      }
+
+      // True Flight offensive perks (Avoid resistance)
+      if (attackerHasTrueFlight && move.type == ElementalType.flying) {
+        if (eff < 1.0 && eff > 0) eff = 1.0;
+      }
+
+      typeMod *= eff;
+    }
+
+    // Tinted Lens
+    if (typeMod < 1.0 &&
+        attacker.abilities.any((ab) => ab.name == 'Tinted Lens')) {
+      typeMod *= 2.0;
+    }
+
+    damageCalc *= typeMod;
+
+    // Weakness Berry
+    if (typeMod > 1.0 &&
+        defender.organism.equippedTalisman != null &&
+        !defender.talismanConsumed) {
+      final moveTypeName = move.type.toString().split('.').last.toLowerCase();
+      for (final bEffect in defender.organism.equippedTalisman!.effects) {
+        if (bEffect.type == TalismanEffectType.berryTypeResist &&
+            bEffect.stat == moveTypeName) {
+          damageCalc *= bEffect.magnitude;
+          break;
+        }
+      }
+    }
+
+    // STAB
+    if (attacker.types.contains(move.type)) {
+      double stabBonus = 1.5;
+      if (attacker.abilities.any((ab) => ab.name == 'Adaptability')) {
+        stabBonus = 2.0;
+      }
+      damageCalc *= stabBonus;
+    }
+
+    // Ability Multipliers
+    for (final ab in attacker.abilities) {
+      if (ab.name == 'Iron Fist' && move.isPunch) damageCalc *= ab.magnitude;
+      if (ab.name == 'Strong Jaw' && move.isBite) damageCalc *= ab.magnitude;
+      if (ab.name == 'Tough Claws' && move.isContact)
+        damageCalc *= ab.magnitude;
+      if (ab.name == 'Reckless' && move.recoilPercent > 0)
+        damageCalc *= ab.magnitude;
+      if (ab.name == 'Stakeout' &&
+          (defender.isPlayer ? playerJustSwitched : opponentJustSwitched))
+        damageCalc *= 2.0;
+      if (ab.name == 'Analytic') {
+        bool movingLast =
+            (attacker.isPlayer && opponentMovedThisTurn) ||
+            (attacker.isOpponent && playerMovedThisTurn);
+        if (movingLast) damageCalc *= 1.3;
+      }
+      if (ab.name == 'Guts' && attacker.statusEffects.isNotEmpty)
+        damageCalc *= 1.5;
+    }
+
+    for (final ab in defender.abilities) {
+      if (ab.name == 'Heatproof' && move.type == ElementalType.blaze)
+        damageCalc *= ab.magnitude;
+      if (ab.name == 'Multiscale' && defender.health == defender.maxHealth)
+        damageCalc *= ab.magnitude;
+      if (ab.name == 'Dry Skin' && move.type == ElementalType.blaze)
+        damageCalc *= 1.25;
+      if (ab.name == 'Fur Coat' && move.category == MoveCategory.physical)
+        damageCalc *= 0.5;
+    }
+
+    // Move-specific Multipliers
+    if (move.name == 'Facad' && attacker.statusEffects.isNotEmpty)
+      damageCalc *= 2.0;
+    if (move.name == 'Knock Off' &&
+        defender.organism.equippedTalisman != null &&
+        !defender.talismanConsumed)
+      damageCalc *= 1.5;
+    if (move.name == 'Freeze-Dry' &&
+        defender.types.contains(ElementalType.aquatic))
+      damageCalc *= 2.0;
+    if (move.name == 'Final Gambit') damageCalc = attacker.health.toDouble();
 
     // Conditionals
     if (move.multiplierCondition.isNotEmpty) {
-      double multiplier = 1.0;
       final condition = move.multiplierCondition.toLowerCase();
       if (condition == 'target_poisoned' &&
           defender.statusEffects.any(
             (se) => se.type == StatusEffectType.poison,
           )) {
-        multiplier = move.conditionalMultiplier;
-      } else if (condition == 'target_damaged' && defender.tookDamageThisTurn)
-        multiplier = move.conditionalMultiplier;
-      else if (condition == 'target_statused' &&
-          defender.statusEffects.isNotEmpty)
-        multiplier = move.conditionalMultiplier;
-      damageCalc *= multiplier;
+        damageCalc *= move.conditionalMultiplier;
+      } else if (condition == 'target_damaged' && defender.tookDamageThisTurn) {
+        damageCalc *= move.conditionalMultiplier;
+      } else if (condition == 'target_statused' &&
+          defender.statusEffects.isNotEmpty) {
+        damageCalc *= move.conditionalMultiplier;
+      }
     }
 
-    // Status modifiers
+    // Status Modifiers
     if (defender.statusEffects.any(
       (se) => se.type == StatusEffectType.vulnerable,
-    )) {
+    ))
       damageCalc *= 1.3;
-    }
-    if (defender.statusEffects.any(
-      (se) => se.type == StatusEffectType.marked,
-    )) {
+    if (defender.statusEffects.any((se) => se.type == StatusEffectType.marked))
       damageCalc *= 1.2;
-    }
-    if (attacker.statusEffects.any(
-      (se) => se.type == StatusEffectType.stealth,
-    )) {
+    if (attacker.statusEffects.any((se) => se.type == StatusEffectType.stealth))
       damageCalc *= 2.0;
-    }
     if (defender.statusEffects.any(
       (se) => se.type == StatusEffectType.stealth,
     )) {
-      damageCalc *= 2.0;
+      if (!attacker.abilities.any((ab) => ab.name == 'Echolocation'))
+        damageCalc *= 2.0;
     }
 
-    // Screen effects (Reflect, Light Screen, Aurora Veil)
+    // Talisman Multipliers
+    if (attacker.organism.equippedTalisman != null) {
+      for (final effect in attacker.organism.equippedTalisman!.effects) {
+        if (effect.type == TalismanEffectType.damageMultiplier ||
+            effect.type == TalismanEffectType.damageBoost) {
+          damageCalc *= effect.magnitude;
+        }
+        if (effect.type == TalismanEffectType.categoryDamageBoost) {
+          if ((effect.category == 'physical' &&
+                  move.category == MoveCategory.physical) ||
+              (effect.category == 'special' &&
+                  move.category == MoveCategory.special)) {
+            damageCalc *= effect.magnitude;
+          }
+        }
+      }
+    }
+
+    if (defender.organism.equippedTalisman != null) {
+      for (final effect in defender.organism.equippedTalisman!.effects) {
+        if (effect.type == TalismanEffectType.resistanceBoost) {
+          damageCalc *= effect.magnitude;
+        }
+      }
+    }
+
+    // Screens
     final bool hasAuroraVeil = defender.isPlayer
         ? playerAuroraVeilTurns > 0
         : opponentAuroraVeilTurns > 0;
@@ -4141,57 +3922,21 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         ? playerLightScreenTurns > 0
         : opponentLightScreenTurns > 0;
 
-    if (!isCrit) {
-      final bool attackerHasInfiltrator = attacker.abilities.any(
-        (ab) => ab.name == 'Infiltrator',
-      );
-
-      if (!attackerHasInfiltrator) {
-        if (hasAuroraVeil) {
-          damageCalc *= 0.5;
-        } else if (move.category == MoveCategory.physical && hasReflect) {
-          damageCalc *= 0.5;
-        } else if (move.category == MoveCategory.special && hasLightScreen) {
-          damageCalc *= 0.5;
-        }
+    if (!isCrit && !attacker.abilities.any((ab) => ab.name == 'Infiltrator')) {
+      if (hasAuroraVeil) {
+        damageCalc *= 0.5;
+      } else if (move.category == MoveCategory.physical && hasReflect) {
+        damageCalc *= 0.5;
+      } else if (move.category == MoveCategory.special && hasLightScreen) {
+        damageCalc *= 0.5;
       }
     }
 
-    // Type Effectiveness
-    double typeMod = 1.0;
-    for (final defType in defender.types) {
-      typeMod *= TypeChart.getEffectiveness(move.type, defType);
+    // Final variation
+    if (!ignoreRandom) {
+      damageCalc *= (0.85 + (Random().nextDouble() * 0.15));
     }
 
-    if (typeMod < 1.0 &&
-        attacker.abilities.any((ab) => ab.name == 'Tinted Lens')) {
-      typeMod *= 2.0;
-    }
-
-    damageCalc *= typeMod;
-
-    // Facade: Double damage if attacker has status
-    if (move.name == 'Facade' && attacker.statusEffects.isNotEmpty) {
-      damageCalc *= 2.0;
-    }
-
-    // Final Gambit: Damage equals user's current HP
-    if (move.name == 'Final Gambit') {
-      damageCalc = attacker.health.toDouble();
-    }
-
-    // STAB
-    if (attacker.types.contains(move.type)) {
-      double stabBonus = 1.5;
-      final adaptability = attacker.abilities.firstWhere(
-        (ab) => ab.name == 'Adaptability',
-        orElse: () => const Ability(name: '', description: ''),
-      );
-      if (adaptability.name.isNotEmpty) stabBonus = adaptability.magnitude;
-      damageCalc *= stabBonus;
-    }
-
-    // Finalness: No randomness after this point in this method
     return DamageResult(damageCalc.round(), typeMod, isCrit);
   }
 
@@ -4285,6 +4030,13 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     if (org.encoreTurns > 0 && org.lastMove != null) {
       if (moves.any((m) => m.name == org.lastMove!.name)) {
         return [moves.firstWhere((m) => m.name == org.lastMove!.name)];
+      }
+    }
+
+    // Rollout/Ice Ball Lock
+    if (org.rolloutTurnCount > 0 && org.rolloutMove != null) {
+      if (moves.any((m) => m.name == org.rolloutMove!.name)) {
+        return [moves.firstWhere((m) => m.name == org.rolloutMove!.name)];
       }
     }
 
@@ -4455,6 +4207,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       targetHasAuroraVeil: defender.isPlayer
           ? playerAuroraVeilTurns > 0
           : opponentAuroraVeilTurns > 0,
+      targetHasSubstitute: defender.substituteHealth > 0,
     );
   }
 

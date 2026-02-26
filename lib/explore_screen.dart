@@ -5,14 +5,14 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:animal_warfare/models/organism.dart'; // Must import the model
-import 'biome_detail_screen.dart'; 
+import 'biome_detail_screen.dart';
 import 'package:animal_warfare/local_auth_service.dart'; // ADDED: Import service
 
 // --- Biome Spawning Logic (Uses Organism.habitat and Organism.rarity) ---
 
 /// Maps rarity string to a weight integer. Higher weight means higher probability.
 int _getRarityWeight(String rarity) {
-// ... (Logic remains the same)
+  // ... (Logic remains the same)
   switch (rarity.toLowerCase()) {
     case 'common':
       return 150;
@@ -27,28 +27,41 @@ int _getRarityWeight(String rarity) {
     case 'mythical':
       return 1;
     default:
-      return 1; 
+      return 1;
   }
 }
 
-/// Selects a random organism from the biome by filtering on Organism.habitat 
-/// and weighting by Organism.rarity.
-Organism? getWeightedRandomOrganism(String biomeName, List<Organism> allOrganisms) {
-// ... (Logic remains the same)
+/// Selects a random organism from the biome by filtering on Organism.habitat
+/// and weighting by Organism.rarity. Respects account level rarity gates.
+Organism? getWeightedRandomOrganism(
+  String biomeName,
+  List<Organism> allOrganisms, {
+  int accountLevel = 1,
+}) {
   // Normalize the selected biome name for case-insensitive search
   final String searchBiome = biomeName.toLowerCase();
 
-  // 1. Filter organisms by biome
-  final biomeOrganisms = allOrganisms.where(
-    (org) => org.habitat.toLowerCase().contains(searchBiome)
-  ).toList();
+  // 1. Filter organisms by biome and rarity gate
+  final biomeOrganisms = allOrganisms.where((org) {
+    if (!org.habitat.toLowerCase().contains(searchBiome)) return false;
+
+    // Rarity Gates
+    final rarity = org.rarity.toLowerCase();
+    if (rarity == 'mythical' && accountLevel < 100) return false;
+    if (rarity == 'legendary' && accountLevel < 50) return false;
+    if (rarity == 'epic' && accountLevel < 40) return false;
+    if (rarity == 'rare' && accountLevel < 20) return false;
+    if (rarity == 'uncommon' && accountLevel < 10) return false;
+
+    return true;
+  }).toList();
 
   if (biomeOrganisms.isEmpty) return null;
 
   // 2. Calculate total weight
   final totalWeight = biomeOrganisms.fold<int>(
-    0, 
-    (sum, org) => sum + _getRarityWeight(org.rarity)
+    0,
+    (sum, org) => sum + _getRarityWeight(org.rarity),
   );
 
   // If total weight is 0 (shouldn't happen with default weight of 1), return null
@@ -66,7 +79,7 @@ Organism? getWeightedRandomOrganism(String biomeName, List<Organism> allOrganism
     }
     randomWeight -= weight;
   }
-  
+
   // Fallback (should not be reached if totalWeight > 0)
   return biomeOrganisms[random.nextInt(biomeOrganisms.length)];
 }
@@ -77,8 +90,8 @@ Organism? getWeightedRandomOrganism(String biomeName, List<Organism> allOrganism
 
 class ExploreScreen extends StatefulWidget {
   // ADDED: Required fields to pass down user data and service
-  final UserData currentUser; 
-  final LocalAuthService authService; 
+  final UserData currentUser;
+  final LocalAuthService authService;
 
   const ExploreScreen({
     super.key,
@@ -92,8 +105,8 @@ class ExploreScreen extends StatefulWidget {
 
 class _ExploreScreenState extends State<ExploreScreen> {
   // Define colors
-  static const Color secondaryButtonColor = Color(0xFF1E3F2A); 
-  static const Color highlightColor = Color(0xFFDAA520); 
+  static const Color secondaryButtonColor = Color(0xFF1E3F2A);
+  static const Color highlightColor = Color(0xFFDAA520);
 
   List<Organism> _allOrganisms = [];
   List<String> biomes = [];
@@ -111,16 +124,20 @@ class _ExploreScreenState extends State<ExploreScreen> {
     try {
       final String response = await rootBundle.loadString(assetPath);
       final List<dynamic> animalsData = json.decode(response);
-      
-      final loadedOrganisms = animalsData.map((json) => Organism.fromJson(json)).toList();
-      
+
+      final loadedOrganisms = animalsData
+          .map((json) => Organism.fromJson(json))
+          .toList();
+
       // Extract unique biomes
       final uniqueBiomes = loadedOrganisms
           .map((o) => o.habitat)
-          .expand((habitatString) => habitatString.split(',').map((h) => h.trim()))
+          .expand(
+            (habitatString) => habitatString.split(',').map((h) => h.trim()),
+          )
           .toSet()
           .toList();
-      
+
       // Sort biomes alphabetically
       uniqueBiomes.sort();
 
@@ -131,9 +148,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
       });
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading data: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading data: $e')));
       }
       setState(() {
         _isLoading = false;
@@ -185,8 +202,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
                 colorBlendMode: BlendMode.darken,
                 color: Colors.black.withOpacity(0.5),
                 errorBuilder: (context, error, stackTrace) => Container(
-                  color: Colors.black26, 
-                  child: const Center(child: Icon(Icons.broken_image, color: Colors.red)),
+                  color: Colors.black26,
+                  child: const Center(
+                    child: Icon(Icons.broken_image, color: Colors.red),
+                  ),
                 ),
               ),
             ),
@@ -204,8 +223,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
                       color: Colors.black,
                       blurRadius: 4.0,
                       offset: Offset(2, 2),
-                    )
-                  ]
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -222,16 +241,16 @@ class _ExploreScreenState extends State<ExploreScreen> {
         title: const Text('EXPLORE BIOMES'),
         backgroundColor: secondaryButtonColor,
         titleTextStyle: const TextStyle(
-          color: highlightColor, 
-          fontFamily: 'PressStart2P', 
-          fontSize: 16
+          color: highlightColor,
+          fontFamily: 'PressStart2P',
+          fontSize: 16,
         ),
       ),
       body: Container(
         decoration: BoxDecoration(
           color: secondaryButtonColor,
           image: DecorationImage(
-            image: const AssetImage('assets/main.png'), 
+            image: const AssetImage('assets/main.png'),
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(
               Colors.black.withOpacity(0.7),
@@ -240,14 +259,14 @@ class _ExploreScreenState extends State<ExploreScreen> {
           ),
         ),
         padding: const EdgeInsets.all(10.0),
-        child: _isLoading 
+        child: _isLoading
             ? const Center(
-                child: CircularProgressIndicator(color: highlightColor)
+                child: CircularProgressIndicator(color: highlightColor),
               )
             : GridView.builder(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2, 
-                  childAspectRatio: 1.5, 
+                  crossAxisCount: 2,
+                  childAspectRatio: 1.5,
                   crossAxisSpacing: 10,
                   mainAxisSpacing: 10,
                 ),

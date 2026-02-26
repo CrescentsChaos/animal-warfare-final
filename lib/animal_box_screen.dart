@@ -82,14 +82,71 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
               return const Center(child: Text('Not logged in.'));
             }
 
-            return TabBarView(
+            return Column(
               children: [
-                _buildBoxView(user, userState),
-                _buildTeamView(user, userState),
+                _buildAccountHeader(user),
+                Expanded(
+                  child: TabBarView(
+                    children: [
+                      _buildBoxView(user, userState),
+                      _buildTeamView(user, userState),
+                    ],
+                  ),
+                ),
               ],
             );
           },
         ),
+      ),
+    );
+  }
+
+  Widget _buildAccountHeader(UserData user) {
+    final nextLevelXP = (user.accountLevel + 1) * (user.accountLevel + 1) * 100;
+    final progress = (user.accountXP / nextLevelXP).clamp(0.0, 1.0);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.secondaryButtonColor,
+        border: Border(
+          bottom: BorderSide(color: AppColors.highlightColor.withOpacity(0.3)),
+        ),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'ACCOUNT RANK: ${user.accountLevel}',
+                style: const TextStyle(
+                  fontFamily: 'PressStart2P',
+                  fontSize: 10,
+                  color: AppColors.highlightColor,
+                ),
+              ),
+              Text(
+                '${user.accountXP} / $nextLevelXP XP',
+                style: const TextStyle(
+                  fontFamily: 'PressStart2P',
+                  fontSize: 8,
+                  color: Colors.white70,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: progress,
+              backgroundColor: Colors.white10,
+              color: Colors.blueAccent,
+              minHeight: 6,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -665,6 +722,37 @@ class _AnimalCard extends StatelessWidget {
                             ),
                           );
                         }).toList(),
+                      ),
+                      const SizedBox(height: 4),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Text(
+                            'LV.${captured.level}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 9,
+                              fontFamily: 'PressStart2P',
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(2),
+                              child: LinearProgressIndicator(
+                                value:
+                                    (captured.xp /
+                                            CapturedOrganism.xpForLevel(
+                                              captured.level + 1,
+                                            ))
+                                        .clamp(0.0, 1.0),
+                                backgroundColor: Colors.white10,
+                                color: Colors.greenAccent,
+                                minHeight: 4,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 4),
                       Text(

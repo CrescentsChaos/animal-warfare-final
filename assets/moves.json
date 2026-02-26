@@ -595,6 +595,62 @@
         "category": "special"
     },
     {
+        "name": "Cut",
+        "description": "User cuts through obstacles.",
+        "baseDamage": 50,
+        "type": "basic",
+        "stamina": 30,
+        "accuracy": 95,
+        "category": "physical",
+        "effects": []
+    },
+    {
+        "name": "Rock Smash",
+        "description": "User smashes hard rocks.",
+        "baseDamage": 40,
+        "type": "martial",
+        "stamina": 15,
+        "accuracy": 100,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "defense",
+                "value": -1,
+                "chance": 50
+            }
+        ]
+    },
+    {
+        "name": "Dive",
+        "description": "User dives deep underwater.",
+        "baseDamage": 80,
+        "type": "aquatic",
+        "stamina": 10,
+        "accuracy": 100,
+        "category": "physical",
+        "effects": []
+    },
+    {
+        "name": "Flash",
+        "description": "User emits a bright burst of light.",
+        "baseDamage": 0,
+        "type": "electric",
+        "stamina": 30,
+        "accuracy": 100,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "accuracy",
+                "value": -1,
+                "chance": 100
+            }
+        ]
+    },
+    {
         "name": "Denticle Armor",
         "description": "The user flexes its sandpaper-thick skin, boosting defense and punishing contact.",
         "baseDamage": 0,
@@ -3384,13 +3440,14 @@
         "name": "Bulk Up",
         "description": "The user tenses its muscles to bulk up its body, raising both Attack and Defense stats.",
         "baseDamage": 0,
-        "type": "basic",
+        "type": "martial",
         "stamina": 20,
         "category": "status",
         "effects": [
             {
                 "type": "multiStatChange",
-                "stat": "attack:1,defense:1"
+                "stat": "attack:1,defense:1",
+                "target": "self"
             }
         ]
     },
@@ -3614,9 +3671,9 @@
         "description": "Knocks off the opponent's held item, dealing 50% more damage if they are holding one.",
         "type": "darkness",
         "category": "physical",
-        "power": 65,
+        "baseDamage": 65,
         "accuracy": 100,
-        "pp": 20,
+        "stamina": 20,
         "effects": []
     },
     {
@@ -3624,9 +3681,9 @@
         "description": "Deals double damage if the user is not holding an item.",
         "type": "flying",
         "category": "physical",
-        "power": 55,
+        "baseDamage": 55,
         "accuracy": 100,
-        "pp": 15,
+        "stamina": 15,
         "effects": []
     },
     {
@@ -3775,7 +3832,7 @@
         "name": "Tailwind",
         "description": "The user summons a turbulent whirlwind that ups the Speed stat of it and its allies for four turns.",
         "baseDamage": 0,
-        "type": "aerial",
+        "type": "flying",
         "accuracy": 100,
         "stamina": 15,
         "category": "status",

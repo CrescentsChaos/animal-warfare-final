@@ -74,14 +74,27 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
       return;
     }
 
+    // Arena auto-scaling: Scale player team to Level 50 if not Rogue
+    List<CapturedOrganism> effectivePlayerTeam = playerTeam;
+    if (battleTitle != 'Rogue-like' && !battleTitle.startsWith('Rogue Floor')) {
+      effectivePlayerTeam = playerTeam
+          .map(
+            (o) => o.copyWith(
+              level: 50,
+              currentHealth: o.getMaxHealth(atLevel: 50),
+            ),
+          )
+          .toList();
+    }
+
     // Pick first animal from each team as the initial fighters
     final result = await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => BattleScreen(
-          playerOrganism: playerTeam[0],
+          playerOrganism: effectivePlayerTeam[0],
           opponentOrganism: opponentTeam[0],
           biomeName: 'Battle Arena',
-          playerTeam: playerTeam,
+          playerTeam: effectivePlayerTeam,
           opponentTeam: opponentTeam,
           battleTitle: battleTitle,
           isArenaBattle: true,
@@ -122,10 +135,18 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
       return;
     }
 
+    // Arena auto-scaling: Scale player team to Level 50
+    final effectivePlayerTeam = playerTeam
+        .map(
+          (o) =>
+              o.copyWith(level: 50, currentHealth: o.getMaxHealth(atLevel: 50)),
+        )
+        .toList();
+
     final result = await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => DoubleBattleScreen(
-          playerTeam: playerTeam,
+          playerTeam: effectivePlayerTeam,
           opponentTeam: opponentTeam,
           biomeName: 'Rainforest', // Default biome for now
           battleTitle: 'Random Doubles',

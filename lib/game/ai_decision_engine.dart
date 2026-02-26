@@ -48,6 +48,7 @@ class AIDecisionEngine {
     bool targetHasReflect = false,
     bool targetHasLightScreen = false,
     bool targetHasAuroraVeil = false,
+    bool targetHasSubstitute = false,
   }) {
     double score = 0.0;
 
@@ -160,7 +161,10 @@ class AIDecisionEngine {
           effect.type.toString().contains('statChange');
 
       if (isStatusOrStat && effect.target == 'opponent') {
-        if (defender.statusEffects.isEmpty) {
+        if (targetHasSubstitute) {
+          score -=
+              100; // Penalize heavily as substitute blocks most status/debuffs
+        } else if (defender.statusEffects.isEmpty) {
           score += 40; // High value to cripple a fresh opponent
 
           if (typeMultiplier < 1.0) {
@@ -466,9 +470,7 @@ class AIDecisionEngine {
     // ──────────────────────────────────────────────
     // Team Archetype Scoring — Deep Behavioral Logic
     // ──────────────────────────────────────────────
-    final isStabMove = attacker.types.contains(
-      move.type.toString().split('.').last,
-    );
+    final isStabMove = attacker.types.contains(move.type);
     final dealsBigDamage = expectedDamage > defender.maxHealth * 0.5;
 
     switch (archetype) {
@@ -748,6 +750,11 @@ class AIDecisionEngine {
     estimateOurDamage,
   }) {
     if (bench.isEmpty) return SwitchDecision(false, null);
+
+    // Cannot switch if locked into Rollout or Ice Ball
+    if (activeMon.rolloutTurnCount > 0) {
+      return SwitchDecision(false, null);
+    }
 
     final activeHpRatio = activeMon.health / activeMon.maxHealth;
     final opponentExpectedDmg = estimateOpponentDamage(opponent, activeMon);
