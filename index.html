@@ -90,7 +90,8 @@
 
             getSpritePath(name, type) {
                 const clean = name.toLowerCase().replace(/[']/g, '').replace(/[^a-z0-9]/g, '_').replace(/_{2,}/g, '_');
-                return type === 'organisms' ? `assets/sprites/${clean}.png` : `assets/items/${clean}.png`;
+                const clean2 = name.toLowerCase().replace(/[']/g, '').replace(/[^a-z0-9]/g, '-').replace(/_{2,}/g, '_');
+                return type === 'organisms' ? `assets/sprites/${clean}.png` : `assets/items/${clean2}.png`;
             },
 
             filter() {
@@ -154,7 +155,7 @@
                                     const ad = this.db.abilities[aName.toLowerCase()] || { description: "Passive trait.", trigger: "Passive" };
                                     return `
                                         <div class="ability-card">
-                                            <div class="ability-header"><strong>${aName}</strong><span class="trigger-tag"> (${ad.trigger})</span></div>
+                                            <div class="ability-header"><strong>${aName}</strong><span class="trigger-tag">(${ad.trigger})</span></div>
                                             <p>${ad.description}</p>
                                         </div>`;
                                 }).join('')}
