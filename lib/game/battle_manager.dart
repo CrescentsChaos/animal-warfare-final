@@ -3622,7 +3622,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     if (player.health <= 0) {
       // Check if team has more healthy animals
       final nextHealthyIndex = playerTeam.indexWhere(
-        (org) => org.currentHealth > 0,
+        (org) =>
+            org.currentHealth > 0 &&
+            playerTeam.indexOf(org) != currentPlayerIndex,
       );
 
       if (nextHealthyIndex != -1) {

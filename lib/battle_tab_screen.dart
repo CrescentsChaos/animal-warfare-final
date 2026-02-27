@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:provider/provider.dart';
+import 'package:animal_warfare/rogue/rogue_starter_select_screen.dart';
+import 'package:animal_warfare/rogue/rogue_hub_screen.dart';
 import 'package:animal_warfare/models/organism.dart';
 import 'package:animal_warfare/models/captured_organism.dart';
 import 'package:animal_warfare/battle_screen.dart';
@@ -173,64 +175,25 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
 
     if (user.rogueLikeState.isActive) {
       // Continue existing run
-      final playerTeam = user.rogueLikeState.team;
-      var opponentTeam = user.rogueLikeState.opponentTeam ?? [];
-      TeamArchetype? archetype;
-      if (opponentTeam.isEmpty) {
-        final res = _generateRandomTeam(withTalismans: true);
-        opponentTeam = res.team;
-        archetype = res.archetype;
-      }
-
-      await Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => BattleScreen(
-            playerOrganism: playerTeam[0],
-            opponentOrganism: opponentTeam[0],
-            biomeName: user.rogueLikeState.currentBiome ?? 'Forest',
-            playerTeam: playerTeam,
-            opponentTeam: opponentTeam,
-            battleTitle: 'Rogue Floor ${user.rogueLikeState.floor}',
-            isArenaBattle: true,
-            isRogueMode: true,
-            opponentArchetype: archetype,
-          ),
-        ),
-      );
+      Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (context) => const RogueHubScreen()));
     } else {
-      // Start new run
-      // Start new run with random starter
-      await userState.startRogueRun(); // Generates random starter
-
-      if (!mounted) return;
-
-      // Refresh user reference to get the new rogue state
-      final updatedUser = userState.currentUser;
-      if (updatedUser == null || !updatedUser.rogueLikeState.isActive) return;
-
-      final playerTeam = updatedUser.rogueLikeState.team;
-      final opponentRes = _generateRandomTeam(withTalismans: true);
-      final opponentTeam =
-          updatedUser.rogueLikeState.opponentTeam ?? opponentRes.team;
-      final archetype = updatedUser.rogueLikeState.opponentTeam != null
-          ? null
-          : opponentRes.archetype;
-
-      await Navigator.of(context).push(
+      // Start new run with starter choice
+      // Just a pick or let select?
+      // Actually RogueHubScreen handles null state maybe?
+      // No, let's use the new screen.
+      final success = await Navigator.of(context).push<bool>(
         MaterialPageRoute(
-          builder: (context) => BattleScreen(
-            playerOrganism: playerTeam[0],
-            opponentOrganism: opponentTeam[0],
-            biomeName: updatedUser.rogueLikeState.currentBiome ?? 'Forest',
-            playerTeam: playerTeam,
-            opponentTeam: opponentTeam,
-            battleTitle: 'Rogue Floor 1',
-            isArenaBattle: false,
-            isRogueMode: true,
-            opponentArchetype: archetype,
-          ),
+          builder: (context) => RogueStarterSelectScreen(biome: 'Jungle'),
         ),
       );
+
+      if (success == true && mounted) {
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (context) => const RogueHubScreen()));
+      }
     }
   }
 

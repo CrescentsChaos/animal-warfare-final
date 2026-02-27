@@ -6,10 +6,45 @@ import 'package:animal_warfare/battle_screen.dart';
 import 'package:animal_warfare/rogue/move_manage_screen.dart';
 import 'package:animal_warfare/data/biome_data.dart';
 import 'package:animal_warfare/models/talisman.dart';
+import 'package:animal_warfare/rogue/rogue_reward_dialog.dart';
 import 'dart:math' as math;
 
-class RogueHubScreen extends StatelessWidget {
+class RogueHubScreen extends StatefulWidget {
   const RogueHubScreen({super.key});
+
+  @override
+  State<RogueHubScreen> createState() => _RogueHubScreenState();
+}
+
+class _RogueHubScreenState extends State<RogueHubScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _checkForRewards();
+  }
+
+  void _checkForRewards() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final userState = Provider.of<UserState>(context, listen: false);
+      final rewards = userState.currentUser?.rogueLikeState.pendingRewards;
+
+      if (rewards != null && rewards.isNotEmpty) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (ctx) => RogueRewardDialog(
+            rewards: rewards,
+            biome:
+                userState.currentUser?.rogueLikeState.currentBiome ?? 'Jungle',
+            onSelect: (reward) {
+              userState.claimRogueReward(reward);
+            },
+          ),
+        );
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,6 +90,11 @@ class RogueHubScreen extends StatelessWidget {
 
               // Status Bar
               _buildStatusBar(rogueState.team, themeColor),
+
+              const SizedBox(height: 12),
+
+              // Inventory Summary
+              _buildInventoryBar(rogueState.inventory, themeColor),
 
               const Expanded(
                 child: Padding(
@@ -272,25 +312,86 @@ class RogueHubScreen extends StatelessWidget {
     );
   }
 
-  void _startNextBattle(BuildContext context, UserState userState) {
-    final rogue = userState.currentUser!.rogueLikeState;
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) {
-          return BattleScreen(
-            playerOrganism: rogue.team[0],
-            opponentOrganism: rogue.opponentTeam![0],
-            biomeName: rogue.currentBiome ?? 'Forest',
-            playerTeam: rogue.team,
-            opponentTeam: rogue.opponentTeam,
-            battleTitle:
-                'Rogue Floor ${rogue.floor} - ${rogue.encounterIndex + 1}/5',
-            isArenaBattle: rogue.encounterIndex == 4,
-            isRogueMode: true,
-          );
-        },
+  Widget _buildInventoryBar(Map<String, int> inventory, Color themeColor) {
+    final items = inventory.entries.where((e) => e.value > 0).toList();
+    if (items.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'RUN INVENTORY',
+            style: TextStyle(
+              fontFamily: 'PressStart2P',
+              color: Colors.white.withOpacity(0.5),
+              fontSize: 8,
+            ),
+          ),
+          const SizedBox(height: 10),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: items
+                  .map((e) => _buildInventoryItem(e.key, e.value, themeColor))
+                  .toList(),
+            ),
+          ),
+        ],
       ),
     );
+  }
+
+  Widget _buildInventoryItem(String id, int count, Color themeColor) {
+    String label = id.replaceAll('_', ' ').toUpperCase();
+    if (id == 'capture_net') label = 'NET';
+
+    return Container(
+      margin: const EdgeInsets.only(right: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: themeColor.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.shopping_bag_outlined, size: 12, color: themeColor),
+          const SizedBox(width: 6),
+          Text(
+            '$label x$count',
+            style: const TextStyle(
+              fontFamily: 'PressStart2P',
+              fontSize: 7,
+              color: Colors.white70,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _startNextBattle(BuildContext context, UserState userState) async {
+    final rogue = userState.currentUser!.rogueLikeState;
+    if (rogue.team.isEmpty || (rogue.opponentTeam?.isEmpty ?? true)) return;
+
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => BattleScreen(
+          playerOrganism: rogue.team[0],
+          opponentOrganism: rogue.opponentTeam![0],
+          playerTeam: rogue.team,
+          opponentTeam: rogue.opponentTeam,
+          isRogueMode: true,
+          biomeName: rogue.currentBiome ?? 'Jungle',
+          battleTitle:
+              'Rogue Floor ${rogue.floor} - ${rogue.encounterIndex + 1}/5',
+          isArenaBattle: rogue.encounterIndex == 4,
+        ),
+      ),
+    );
+    if (mounted) _checkForRewards();
   }
 }
 

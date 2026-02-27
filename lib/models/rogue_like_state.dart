@@ -12,6 +12,8 @@ class RogueLikeState {
   final List<CapturedOrganism>? opponentTeam;
   final int currentOpponentIndex;
   final int currentPlayerIndex;
+  final Map<String, int> inventory;
+  final List<RogueReward>? pendingRewards;
 
   const RogueLikeState({
     this.floor = 1,
@@ -23,6 +25,8 @@ class RogueLikeState {
     this.opponentTeam,
     this.currentOpponentIndex = 0,
     this.currentPlayerIndex = 0,
+    this.inventory = const {},
+    this.pendingRewards,
   });
 
   RogueLikeState copyWith({
@@ -35,6 +39,8 @@ class RogueLikeState {
     List<CapturedOrganism>? opponentTeam,
     int? currentOpponentIndex,
     int? currentPlayerIndex,
+    Map<String, int>? inventory,
+    List<RogueReward>? pendingRewards,
   }) {
     return RogueLikeState(
       floor: floor ?? this.floor,
@@ -46,6 +52,8 @@ class RogueLikeState {
       opponentTeam: opponentTeam ?? this.opponentTeam,
       currentOpponentIndex: currentOpponentIndex ?? this.currentOpponentIndex,
       currentPlayerIndex: currentPlayerIndex ?? this.currentPlayerIndex,
+      inventory: inventory ?? this.inventory,
+      pendingRewards: pendingRewards ?? this.pendingRewards,
     );
   }
 
@@ -59,6 +67,8 @@ class RogueLikeState {
     'opponentTeam': opponentTeam?.map((co) => co.toJson()).toList(),
     'currentOpponentIndex': currentOpponentIndex,
     'currentPlayerIndex': currentPlayerIndex,
+    'inventory': inventory,
+    'pendingRewards': pendingRewards?.map((r) => r.toJson()).toList(),
   };
 
   factory RogueLikeState.fromJson(
@@ -87,6 +97,10 @@ class RogueLikeState {
             .whereType<CapturedOrganism>()
             .toList();
 
+    final List<RogueReward> rewardList = (json['pendingRewards'] as List? ?? [])
+        .map((rJson) => RogueReward.fromJson(rJson as Map<String, dynamic>))
+        .toList();
+
     return RogueLikeState(
       floor: json['floor'] as int? ?? 1,
       team: teamList,
@@ -97,6 +111,32 @@ class RogueLikeState {
       opponentTeam: opponentTeamList.isEmpty ? null : opponentTeamList,
       currentOpponentIndex: json['currentOpponentIndex'] as int? ?? 0,
       currentPlayerIndex: json['currentPlayerIndex'] as int? ?? 0,
+      inventory: Map<String, int>.from(json['inventory'] ?? {}),
+      pendingRewards: rewardList.isEmpty ? null : rewardList,
+    );
+  }
+}
+
+enum RogueRewardType { item, fullHeal, cureStatus, captureItems, premium }
+
+class RogueReward {
+  final RogueRewardType type;
+  final String? itemId;
+  final String label;
+
+  const RogueReward({required this.type, this.itemId, required this.label});
+
+  Map<String, dynamic> toJson() => {
+    'type': type.index,
+    'itemId': itemId,
+    'label': label,
+  };
+
+  factory RogueReward.fromJson(Map<String, dynamic> json) {
+    return RogueReward(
+      type: RogueRewardType.values[json['type'] as int],
+      itemId: json['itemId'] as String?,
+      label: json['label'] as String? ?? '',
     );
   }
 }

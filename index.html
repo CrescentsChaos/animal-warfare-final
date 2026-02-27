@@ -1,223 +1,648 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bio-Dex Relational Engine</title>
+    <title>ANIDEX — Animal Warfare Database</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
+    <!-- Mobile Header -->
     <header class="mobile-header">
-        <div class="brand">BIO-ARCHIVE</div>
-        <button class="menu-toggle" onclick="App.toggleMenu()">☰</button>
+        <span class="brand-pixel">ANIDEX</span>
+        <div class="mobile-actions">
+            <button class="icon-btn" onclick="App.toggleFilter()" title="Filters">&#9776;</button>
+        </div>
     </header>
 
+    <!-- Sidebar / Filter Panel -->
     <aside id="sidebar">
-        <div class="brand hide-mobile">BIO-ARCHIVE</div>
-        
-        <div class="filter-group">
-            <label>GLOBAL SEARCH</label>
-            <input type="text" id="q" placeholder="Search..." oninput="App.filter()">
-            <small class="tip">Search names or abilities</small>
-        </div>
-
-        <div class="filter-group">
-            <label>REGION FILTER</label>
-            <select id="hab" onchange="App.filter()">
-                <option value="">All Habitats</option>
-                <option value="Urban">Urban</option>
-                <option value="Jungle">Jungle</option>
-                <option value="Ocean">Ocean</option>
-                <option value="Desert">Desert</option>
-                <option value="River">River</option>
-            </select>
-        </div>
-
-        <div class="filter-group">
-            <label>VIEW MODE</label>
-            <div class="btn-stack">
-                <button class="btn-nav active" id="btn-org" onclick="App.setMode('organisms')">ORGANISMS</button>
-                <button class="btn-nav" id="btn-item" onclick="App.setMode('talismans')">ITEMS</button>
+        <div class="sidebar-inner">
+            <div class="sidebar-brand">
+                <span class="brand-pixel">ANIDEX</span>
+                <span class="sidebar-subtitle">ANIMAL WARFARE DATABASE</span>
             </div>
+
+            <!-- Search Bar -->
+            <div class="filter-section">
+                <div class="filter-label">SEARCH</div>
+                <div class="search-wrap">
+                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8" />
+                        <path d="m21 21-4.35-4.35" />
+                    </svg>
+                    <input type="text" id="q" placeholder="Search name, ability..." oninput="App.filter()">
+                </div>
+            </div>
+
+            <!-- Tab Switch -->
+            <div class="filter-section">
+                <div class="filter-label">VIEW MODE</div>
+                <div class="tab-switch">
+                    <button class="tab-btn active" id="btn-animals" onclick="App.setMode('animals')">ANIMALS</button>
+                    <button class="tab-btn" id="btn-items" onclick="App.setMode('items')">ITEMS</button>
+                </div>
+            </div>
+
+            <!-- Animal Filters (shown only in animals mode) -->
+            <div id="animal-filters">
+                <div class="filter-section">
+                    <div class="filter-label">BIOME</div>
+                    <select id="flt-biome" onchange="App.filter()">
+                        <option value="">All Biomes</option>
+                    </select>
+                </div>
+
+                <div class="filter-section">
+                    <div class="filter-label">CATEGORY 1</div>
+                    <select id="flt-cat1" onchange="App.filter()">
+                        <option value="">All Categories</option>
+                    </select>
+                </div>
+
+                <div class="filter-section">
+                    <div class="filter-label">CATEGORY 2</div>
+                    <select id="flt-cat2" onchange="App.filter()">
+                        <option value="">All Categories</option>
+                    </select>
+                </div>
+
+                <div class="filter-section">
+                    <div class="filter-label">RARITY</div>
+                    <select id="flt-rarity" onchange="App.filter()">
+                        <option value="">All Rarities</option>
+                        <option value="Common">Common</option>
+                        <option value="Uncommon">Uncommon</option>
+                        <option value="Rare">Rare</option>
+                        <option value="Epic">Epic</option>
+                        <option value="Legendary">Legendary</option>
+                        <option value="Mythical">Mythical</option>
+                    </select>
+                </div>
+
+                <div class="filter-section">
+                    <div class="filter-label">ABILITY</div>
+                    <select id="flt-ability" onchange="App.filter()">
+                        <option value="">All Abilities</option>
+                    </select>
+                </div>
+
+                <div class="filter-section">
+                    <div class="filter-label">MOVE</div>
+                    <select id="flt-move" onchange="App.filter()">
+                        <option value="">All Moves</option>
+                    </select>
+                </div>
+
+                <div class="filter-section">
+                    <div class="filter-label">DROP</div>
+                    <select id="flt-drop" onchange="App.filter()">
+                        <option value="">All Drops</option>
+                    </select>
+                </div>
+
+                <div class="filter-section">
+                    <div class="filter-label">SORT BY</div>
+                    <div class="sort-chips" id="sort-chips">
+                        <button class="sort-chip active" data-sort="name" onclick="App.setSort('name')">NAME</button>
+                        <button class="sort-chip" data-sort="health" onclick="App.setSort('health')">HP</button>
+                        <button class="sort-chip" data-sort="attack" onclick="App.setSort('attack')">ATK</button>
+                        <button class="sort-chip" data-sort="defense" onclick="App.setSort('defense')">DEF</button>
+                        <button class="sort-chip" data-sort="power" onclick="App.setSort('power')">PWR</button>
+                        <button class="sort-chip" data-sort="resistance"
+                            onclick="App.setSort('resistance')">RES</button>
+                        <button class="sort-chip" data-sort="speed" onclick="App.setSort('speed')">SPD</button>
+                    </div>
+                    <button class="order-btn" id="order-btn" onclick="App.toggleOrder()">
+                        <span id="order-label">ASCENDING</span>
+                        <span id="order-icon">↑</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Items filter -->
+            <div id="item-filters" style="display:none;">
+                <div class="filter-section">
+                    <div class="filter-label">ITEM CATEGORY</div>
+                    <select id="flt-item-cat" onchange="App.filterItems()">
+                        <option value="">All Categories</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="reset-btn" onclick="App.reset()">RESET ALL FILTERS</button>
         </div>
-        
-        <button class="close-sidebar hide-desktop" onclick="App.toggleMenu()">CLOSE MENU</button>
     </aside>
 
+    <div id="sidebar-overlay" class="sidebar-overlay" onclick="App.toggleFilter()"></div>
+
+    <!-- Main Content -->
     <main>
+        <div class="main-header">
+            <div class="result-count" id="result-count">Loading...</div>
+        </div>
+
         <div id="grid" class="grid"></div>
-        <div class="pagination">
-            <button class="p-btn" onclick="App.paginate(-1)">PREV</button>
-            <span id="pageTxt">Page 1</span>
-            <button class="p-btn" onclick="App.paginate(1)">NEXT</button>
+
+        <!-- Infinite scroll sentinel -->
+        <div id="sentinel" style="height:1px;"></div>
+        <div id="loading-more" class="loading-more" style="display:none;">
+            <div class="loading-spinner"></div>
         </div>
     </main>
 
+    <!-- Detail Modal -->
     <div id="modal" class="modal-overlay" onclick="App.closeModal()">
-        <div class="modal-content" id="modal-ui" onclick="event.stopPropagation()"></div>
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="App.closeModal()">✕</button>
+            <div id="modal-content"></div>
+        </div>
     </div>
 
     <script>
         const App = {
-            db: { orgs: [], moves: {}, items: [], abilities: {} },
+            db: { orgs: [], orgs2: [], moves: {}, items: [], abilities: {} },
             filtered: [],
-            mode: 'organisms',
-            page: 0,
-            limit: 12,
+            displayedCount: 0,
+            batchSize: 24,
+            mode: 'animals',
+            sortBy: 'name',
+            ascending: true,
+            observer: null,
 
             async start() {
                 try {
                     const [o1, o2, m, t, a] = await Promise.all([
-                        fetch('assets/Organisms.json').then(r => r.json()),
-                        fetch('assets/Organisms2.json').then(r => r.json()),
-                        fetch('assets/moves.json').then(r => r.json()),
-                        fetch('assets/talismans.json').then(r => r.json()),
-                        fetch('assets/abilities.json').then(r => r.json())
+                        fetch('assets/Organisms.json').then(r => r.json()).catch(() => []),
+                        fetch('assets/Organisms2.json').then(r => r.json()).catch(() => []),
+                        fetch('assets/moves.json').then(r => r.json()).catch(() => []),
+                        fetch('assets/talismans.json').then(r => r.json()).catch(() => []),
+                        fetch('assets/abilities.json').then(r => r.json()).catch(() => [])
                     ]);
 
-                    this.db.orgs = [...o1, ...o2];
-                    this.db.items = t;
-                    
-                    m.forEach(move => this.db.moves[move.name.toLowerCase()] = move);
-                    a.forEach(abil => this.db.abilities[abil.name.toLowerCase()] = abil);
+                    this.db.orgs = [...(o1 || []), ...(o2 || [])];
+                    this.db.items = t || [];
+                    (m || []).forEach(mv => this.db.moves[mv.name.toLowerCase()] = mv);
+                    (a || []).forEach(ab => this.db.abilities[ab.name.toLowerCase()] = ab);
 
+                    this.populateFilters();
                     this.filter();
+                    this.setupObserver();
                 } catch (e) {
-                    console.error("Database Connection Error", e);
+                    console.error('Failed to load data', e);
+                    document.getElementById('grid').innerHTML = '<div class="empty-state"><p>⚠️ Failed to load data. Open via a local server or file server.</p></div>';
                 }
             },
 
-            getSpritePath(name, type) {
-                const clean = name.toLowerCase().replace(/[']/g, '').replace(/[^a-z0-9]/g, '_').replace(/_{2,}/g, '_');
-                const clean2 = name.toLowerCase().replace(/[']/g, '').replace(/[^a-z0-9]/g, '-').replace(/_{2,}/g, '_');
-                return type === 'organisms' ? `assets/sprites/${clean}.png` : `assets/items/${clean2}.png`;
+            populateFilters() {
+                const orgs = this.db.orgs;
+
+                // Biomes
+                const biomes = [...new Set(orgs.flatMap(o => (o.habitat || '').split(',').map(s => s.trim()).filter(Boolean)))].sort();
+                this._populate('flt-biome', biomes);
+
+                // Categories (types)
+                const cats = [...new Set(orgs.flatMap(o => (o.category || '').split(',').map(s => s.trim()).filter(Boolean)))].sort();
+                this._populate('flt-cat1', cats);
+                this._populate('flt-cat2', cats);
+
+                // Abilities
+                const abilities = [...new Set(orgs.flatMap(o => (o.abilities || '').split(',').map(s => s.trim()).filter(Boolean)))].sort();
+                this._populate('flt-ability', abilities);
+
+                // Moves
+                const moves = [...new Set(orgs.flatMap(o => (o.moves || '').split(',').map(s => s.trim()).filter(Boolean)))].sort();
+                this._populate('flt-move', moves);
+
+                // Drops
+                const drops = [...new Set(orgs.flatMap(o => (o.drops || '').split(',').map(s => s.trim()).filter(Boolean)))].sort();
+                this._populate('flt-drop', drops);
+
+                // Item categories
+                const itemCats = [...new Set(this.db.items.map(i => i.category || '').filter(Boolean))].sort();
+                this._populate('flt-item-cat', itemCats);
+            },
+
+            _populate(id, values) {
+                const sel = document.getElementById(id);
+                if (!sel) return;
+                const defaultOpt = sel.options[0].text;
+                const defaultVal = sel.options[0].value;
+                sel.innerHTML = `<option value="${defaultVal}">${defaultOpt}</option>`;
+                values.forEach(v => {
+                    const opt = document.createElement('option');
+                    opt.value = v;
+                    opt.textContent = v.toUpperCase();
+                    sel.appendChild(opt);
+                });
             },
 
             filter() {
-                const query = document.getElementById('q').value.toLowerCase();
-                const habitat = document.getElementById('hab').value;
-                const source = this.mode === 'organisms' ? this.db.orgs : this.db.items;
+                if (this.mode === 'items') { this.filterItems(); return; }
+                const q = document.getElementById('q').value.toLowerCase();
+                const biome = document.getElementById('flt-biome').value;
+                const cat1 = document.getElementById('flt-cat1').value;
+                const cat2 = document.getElementById('flt-cat2').value;
+                const rarity = document.getElementById('flt-rarity').value;
+                const ability = document.getElementById('flt-ability').value;
+                const move = document.getElementById('flt-move').value;
+                const drop = document.getElementById('flt-drop').value;
 
-                this.filtered = source.filter(x => {
-                    const mName = x.name.toLowerCase().includes(query);
-                    const mHab = !habitat || (x.habitat && x.habitat.includes(habitat));
-                    const mAbil = x.abilities ? x.abilities.toLowerCase().includes(query) : false;
-                    return (mName || mAbil) && mHab;
+                this.filtered = this.db.orgs.filter(o => {
+                    if (q && !o.name.toLowerCase().includes(q) &&
+                        !(o.scientific_name || '').toLowerCase().includes(q) &&
+                        !(o.abilities || '').toLowerCase().includes(q)) return false;
+                    if (biome && !(o.habitat || '').includes(biome)) return false;
+                    if (cat1 && !(o.category || '').toUpperCase().includes(cat1.toUpperCase())) return false;
+                    if (cat2 && !(o.category || '').toUpperCase().includes(cat2.toUpperCase())) return false;
+                    if (rarity && (o.rarity || '').toLowerCase() !== rarity.toLowerCase()) return false;
+                    if (ability && !(o.abilities || '').includes(ability)) return false;
+                    if (move && !(o.moves || '').includes(move)) return false;
+                    if (drop && !(o.drops || '').includes(drop)) return false;
+                    return true;
                 });
-                this.page = 0;
-                this.render();
+
+                // Sort
+                this.filtered.sort((a, b) => {
+                    let r = 0;
+                    switch (this.sortBy) {
+                        case 'health': r = (b.health || 0) - (a.health || 0); break;
+                        case 'attack': r = (b.attack || 0) - (a.attack || 0); break;
+                        case 'defense': r = (b.defense || 0) - (a.defense || 0); break;
+                        case 'power': r = (b.power || 0) - (a.power || 0); break;
+                        case 'resistance': r = (b.resistance || 0) - (a.resistance || 0); break;
+                        case 'speed': r = (b.speed || 0) - (a.speed || 0); break;
+                        default: r = (a.name || '').localeCompare(b.name || ''); break;
+                    }
+                    return this.ascending ? r : -r;
+                });
+
+                this.displayedCount = 0;
+                document.getElementById('grid').innerHTML = '';
+                document.getElementById('result-count').textContent = `${this.filtered.length} ANIMALS FOUND`;
+                this.renderMore();
             },
 
-            render() {
-                const start = this.page * this.limit;
-                const slice = this.filtered.slice(start, start + this.limit);
-                const grid = document.getElementById('grid');
+            filterItems() {
+                const q = document.getElementById('q').value.toLowerCase();
+                const cat = document.getElementById('flt-item-cat').value;
 
-                grid.innerHTML = slice.map(item => `
-                    <div class="card" onclick="App.showDetail('${item.name}')">
-                        <img src="${this.getSpritePath(item.name, this.mode)}" 
-                             onerror="this.src='https://via.placeholder.com/150/161b22/58a6ff?text=BIO'">
-                        <div class="card-info">
-                            <span class="rarity-tag">${item.rarity || 'ITEM'}</span>
-                            <h3>${item.name}</h3>
-                            <div class="card-traits">${item.abilities ? item.abilities.split(',').join(' • ') : ''}</div>
-                        </div>
+                const items = this.db.items.filter(i => {
+                    if (q && !i.name.toLowerCase().includes(q) && !(i.category || '').toLowerCase().includes(q)) return false;
+                    if (cat && (i.category || '') !== cat) return false;
+                    return true;
+                });
+
+                const grid = document.getElementById('grid');
+                grid.innerHTML = '';
+                document.getElementById('result-count').textContent = `${items.length} ITEMS FOUND`;
+
+                items.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'card item-card';
+                    card.onclick = () => this.showItemDetail(item);
+                    const imgSrc = `assets/items/${(item.name || '').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}.png`;
+                    card.innerHTML = `
+                    <div class="card-sprite-wrap item-sprite-wrap">
+                        <img src="${imgSrc}" alt="${item.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                        <div class="sprite-fallback" style="display:none">📦</div>
                     </div>
-                `).join('');
-                document.getElementById('pageTxt').innerText = `Page ${this.page + 1} of ${Math.ceil(this.filtered.length / this.limit)}`;
+                    <div class="card-body">
+                        <div class="card-type-row">
+                            <span class="type-badge" style="background:var(--accent-dim);color:var(--accent)">${(item.category || 'item').toUpperCase()}</span>
+                        </div>
+                        <div class="card-name">${(item.name || '').replace(/_/g, ' ').toUpperCase()}</div>
+                        <div class="card-sub">${item.price ? item.price + 'G' : ''}</div>
+                    </div>`;
+                    grid.appendChild(card);
+                });
+            },
+
+            renderMore() {
+                const slice = this.filtered.slice(this.displayedCount, this.displayedCount + this.batchSize);
+                const grid = document.getElementById('grid');
+                slice.forEach(org => {
+                    grid.appendChild(this.buildAnimalCard(org));
+                });
+                this.displayedCount += slice.length;
+                document.getElementById('loading-more').style.display =
+                    this.displayedCount < this.filtered.length ? 'flex' : 'none';
+            },
+
+            buildAnimalCard(org) {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.onclick = () => this.showDetail(org.name);
+
+                const spriteSrc = this.getSpritePath(org.name);
+                const rarity = (org.rarity || 'common').toLowerCase();
+                const rarityColor = this.rarityColor(rarity);
+                const types = (org.category || 'basic').split(',').map(s => s.trim()).filter(Boolean);
+
+                card.innerHTML = `
+                <div class="card-sprite-wrap" style="border-bottom:2px solid ${rarityColor}22">
+                    <img src="${spriteSrc}" alt="${org.name}"
+                         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                    <div class="sprite-fallback" style="display:none">🦎</div>
+                    <div class="card-rarity-tag" style="background:${rarityColor};color:#000">${rarity.toUpperCase()}</div>
+                </div>
+                <div class="card-body">
+                    <div class="card-type-row">
+                        ${types.slice(0, 2).map(t => `<span class="type-badge type-${t.toLowerCase()}">${t.toUpperCase()}</span>`).join('')}
+                    </div>
+                    <div class="card-name">${org.name.toUpperCase()}</div>
+                    <div class="card-sub">${org.scientific_name || ''}</div>
+                    <div class="card-stats-mini">
+                        <span title="Health">❤ ${org.health || 0}</span>
+                        <span title="Attack">⚡ ${org.attack || 0}</span>
+                        <span title="Speed">💨 ${org.speed || 0}</span>
+                    </div>
+                </div>`;
+                return card;
+            },
+
+            setupObserver() {
+                this.observer = new IntersectionObserver(entries => {
+                    if (entries[0].isIntersecting && this.mode === 'animals') {
+                        this.renderMore();
+                    }
+                }, { rootMargin: '200px' });
+                this.observer.observe(document.getElementById('sentinel'));
+            },
+
+            getSpritePath(name) {
+                const clean = name.toLowerCase().replace(/'/g, '').replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_');
+                return `assets/sprites/${clean}.png`;
+            },
+
+            rarityColor(rarity) {
+                const map = {
+                    common: '#8b949e', uncommon: '#2ecc71', rare: '#3399ff',
+                    epic: '#aa55cc', legendary: '#ff9933', mythical: '#ff55aa'
+                };
+                return map[rarity] || '#8b949e';
+            },
+
+            typeColor(type) {
+                const map = {
+                    basic: '#aaaa99', blaze: '#ff4422', aquatic: '#3399ff', grass: '#77cc55',
+                    electric: '#ffcc33', cryo: '#aaddff', martial: '#cc3344', toxic: '#aa55aa',
+                    earth: '#aa8855', flying: '#99ccff', mystic: '#ff66aa', arthropod: '#88aa44',
+                    rock: '#bbaa66', darkness: '#5566aa', spectral: '#9966ff', metal: '#7799aa',
+                    aura: '#44aaaa', sound: '#ff7733', holy: '#ffcc44', drake: '#7744aa'
+                };
+                return map[type.toLowerCase()] || '#888';
             },
 
             showDetail(name) {
-                const ui = document.getElementById('modal-ui');
-                document.body.style.overflow = 'hidden'; // Prevent scroll
+                const org = this.db.orgs.find(x => x.name === name);
+                if (!org) return;
 
-                if (this.mode === 'organisms') {
-                    const o = this.db.orgs.find(x => x.name === name);
-                    const moveKeys = o.moves.split(',').map(m => m.trim());
-                    const abilKeys = o.abilities.split(',').map(a => a.trim());
+                const rarity = (org.rarity || 'common').toLowerCase();
+                const rarityColor = this.rarityColor(rarity);
+                const types = (org.category || 'basic').split(',').map(s => s.trim()).filter(Boolean);
+                const abilities = (org.abilities || '').split(',').map(s => s.trim()).filter(Boolean);
+                const moves = (org.moves || '').split(',').map(s => s.trim()).filter(Boolean);
+                const drops = (org.drops || '').split(',').map(s => s.trim()).filter(Boolean);
+                const biomes = (org.habitat || '').split(',').map(s => s.trim()).filter(Boolean);
+                const spriteSrc = this.getSpritePath(org.name);
 
-                    ui.innerHTML = `
-                        <div class="m-side">
-                            <img src="${this.getSpritePath(o.name, 'organisms')}" class="m-img">
-                            <h2>${o.name}</h2>
-                            <p class="sci-name">${o.scientific_name}</p>
-                            <div class="stat-container">
-                                ${['Health','Attack','Defense','Power','Speed'].map(s => this.renderStat(s, o[s.toLowerCase()])).join('')}
-                            </div>
+                const stats = [
+                    { label: 'HEALTH', key: 'health', color: '#e74c3c', icon: '❤', max: 500 },
+                    { label: 'ATTACK', key: 'attack', color: '#e67e22', icon: '⚡', max: 200 },
+                    { label: 'DEFENSE', key: 'defense', color: '#3498db', icon: '🛡', max: 200 },
+                    { label: 'POWER', key: 'power', color: '#9b59b6', icon: '✨', max: 200 },
+                    { label: 'RESISTANCE', key: 'resistance', color: '#1abc9c', icon: '🧠', max: 200 },
+                    { label: 'SPEED', key: 'speed', color: '#f39c12', icon: '💨', max: 200 },
+                ];
+
+                const statsHTML = stats.map(s => {
+                    const val = org[s.key] || 0;
+                    const pct = Math.min(100, (val / s.max) * 100);
+                    return `<div class="detail-stat-row">
+                    <div class="detail-stat-meta">
+                        <span class="detail-stat-label">${s.icon} ${s.label}</span>
+                        <span class="detail-stat-val" style="color:${s.color}">${val}</span>
+                    </div>
+                    <div class="stat-track">
+                        <div class="stat-bar" style="width:${pct}%;background:${s.color}"></div>
+                    </div>
+                </div>`;
+                }).join('');
+
+                const abilitiesHTML = abilities.map(aName => {
+                    const ab = this.db.abilities[aName.toLowerCase()] || {};
+                    return `<div class="detail-ability-card">
+                    <div class="ability-name">⚡ ${aName.toUpperCase()}</div>
+                    <div class="ability-desc">${ab.description || 'Passive trait — effects unknown.'}</div>
+                </div>`;
+                }).join('') || '<p class="dim">No abilities listed.</p>';
+
+                const movesHTML = moves.length ? `
+                <table class="move-table">
+                    <thead>
+                        <tr><th>MOVE</th><th>TYPE</th><th>PWR</th><th>ACC</th><th>PP</th></tr>
+                    </thead>
+                    <tbody>
+                        ${moves.map(mName => {
+                    const md = this.db.moves[mName.toLowerCase()] || {};
+                    const tc = this.typeColor(md.type || 'basic');
+                    return `<tr onclick="App.showMoveDetail('${mName.replace(/'/g, "\\'")}')">
+                                <td class="move-name">${mName}</td>
+                                <td><span class="type-badge type-${(md.type || 'basic').toLowerCase()}">${(md.type || 'basic').toUpperCase()}</span></td>
+                                <td class="move-val">${md.baseDamage || '—'}</td>
+                                <td class="move-val">${md.accuracy || '100'}</td>
+                                <td class="move-val">${md.stamina || '—'}</td>
+                            </tr>`;
+                }).join('')}
+                    </tbody>
+                </table>` : '<p class="dim">No moves listed.</p>';
+
+                const biomesHTML = biomes.map(b => {
+                    const bname = b.toLowerCase().replace(/\s+/g, '_');
+                    return `<div class="biome-chip">
+                    <img src="assets/biomes/${bname}.png" alt="${b}" onerror="this.style.display='none'">
+                    <span>${b.toUpperCase()}</span>
+                </div>`;
+                }).join('') || '<span class="dim">Unknown</span>';
+
+                const dropsHTML = drops.length
+                    ? drops.map(d => `<span class="drop-tag">${d}</span>`).join('')
+                    : '<span class="dim">No drops</span>';
+
+                document.getElementById('modal-content').innerHTML = `
+                <div class="detail-header" style="background:linear-gradient(135deg, ${rarityColor}22 0%, transparent 60%)">
+                    <div class="detail-sprite-wrap">
+                        <img src="${spriteSrc}" alt="${org.name}"
+                             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                        <div class="sprite-fallback" style="display:none;font-size:5rem">🦎</div>
+                    </div>
+                    <div class="detail-intro">
+                        <div class="type-row">
+                            ${types.map(t => `<span class="type-badge type-${t.toLowerCase()}">${t.toUpperCase()}</span>`).join('')}
                         </div>
-                        <div class="m-body">
-                            <h3>Biological Description</h3>
-                            <p>${o.description}</p>
-                            <h3>Abilities</h3>
-                            <div class="ability-grid">
-                                ${abilKeys.map(aName => {
-                                    const ad = this.db.abilities[aName.toLowerCase()] || { description: "Passive trait.", trigger: "Passive" };
-                                    return `
-                                        <div class="ability-card">
-                                            <div class="ability-header"><strong>${aName}</strong><span class="trigger-tag">(${ad.trigger})</span></div>
-                                            <p>${ad.description}</p>
-                                        </div>`;
-                                }).join('')}
-                            </div>
-                            <h3>Combat Moves</h3>
-                            <div class="move-list">
-                                ${moveKeys.map(mName => {
-                                    const md = this.db.moves[mName.toLowerCase()] || { description: "Basic move.", baseDamage: 0, stamina: 0, accuracy: 100 };
-                                    return `
-                                        <div class="move-item">
-                                            <div class="m-header"><strong>${mName}</strong> <span class="m-type">${md.type || 'basic'}</span></div>
-                                            <div class="m-metrics">DMG: ${md.baseDamage} | STA: ${md.stamina} | ACC: ${md.accuracy}%</div>
-                                            <p>${md.description}</p>
-                                        </div>`;
-                                }).join('')}
-                            </div>
-                        </div>`;
-                } else {
-                    const t = this.db.items.find(x => x.name === name);
-                    ui.innerHTML = `
-                        <div class="m-side"><img src="${this.getSpritePath(t.name, 'items')}" class="m-img"></div>
-                        <div class="m-body">
-                            <h1>${t.name}</h1>
-                            <p class="item-desc">${t.description}</p>
-                            <h3>Modifiers</h3>
-                            ${t.effects.map(e => `<div class="move-item">Effect: <b>${e.type}</b> | Stat: <b>${e.stat}</b> | Mag: <b>${e.magnitude}x</b></div>`).join('')}
-                        </div>`;
-                }
-                document.getElementById('modal').style.display = 'flex';
+                        <h2 class="detail-name">${org.name.toUpperCase()}</h2>
+                        <div class="detail-sciname">${org.scientific_name || ''}</div>
+                        <span class="rarity-pill" style="background:${rarityColor}22;color:${rarityColor};border-color:${rarityColor}55">${rarity.toUpperCase()}</span>
+                    </div>
+                </div>
+
+                <div class="detail-body">
+                    <div class="detail-section">
+                        <div class="detail-section-title">📋 MISSION BRIEF</div>
+                        <p class="detail-desc">${org.description || 'No field data available.'}</p>
+                    </div>
+
+                    <div class="detail-section">
+                        <div class="detail-section-title">📊 BASE STATS</div>
+                        ${statsHTML}
+                        <div class="total-stat">BST: ${(org.health || 0) + (org.attack || 0) + (org.defense || 0) + (org.power || 0) + (org.resistance || 0) + (org.speed || 0)}</div>
+                    </div>
+
+                    <div class="detail-section">
+                        <div class="detail-section-title">🗺 HABITAT SIGNATURES</div>
+                        <div class="biome-row">${biomesHTML}</div>
+                    </div>
+
+                    <div class="detail-section">
+                        <div class="detail-section-title">⚡ SYSTEM CAPABILITIES</div>
+                        ${abilitiesHTML}
+                    </div>
+
+                    <div class="detail-section">
+                        <div class="detail-section-title">⚔ COMBAT ARCHIVE</div>
+                        ${movesHTML}
+                    </div>
+
+                    <div class="detail-section">
+                        <div class="detail-section-title">🎁 LOOT DROPS</div>
+                        <div class="drops-row">${dropsHTML}</div>
+                    </div>
+                </div>`;
+
+                document.getElementById('modal').classList.add('open');
+                document.body.style.overflow = 'hidden';
             },
 
-            renderStat(label, val) {
-                return `
-                    <div class="stat-row">
-                        <div class="stat-meta"><span>${label}</span><span>${val}</span></div>
-                        <div class="stat-bg"><div class="stat-fill" style="width:${(val/180)*100}%"></div></div>
-                    </div>`;
+            showMoveDetail(mName) {
+                const md = this.db.moves[mName.toLowerCase()];
+                if (!md) return;
+                const tc = this.typeColor(md.type || 'basic');
+                const content = document.getElementById('modal-content');
+                const existing = content.innerHTML;
+
+                const overlay = document.createElement('div');
+                overlay.className = 'move-overlay';
+                overlay.innerHTML = `
+                <div class="move-detail-card">
+                    <button class="close-move-overlay" onclick="this.parentElement.parentElement.remove()">✕</button>
+                    <div class="move-detail-name">${mName.toUpperCase()}</div>
+                    <span class="type-badge type-${(md.type || 'basic').toLowerCase()}">${(md.type || 'basic').toUpperCase()}</span>
+                    <div class="move-detail-stats">
+                        <div class="mds-row"><span>POWER</span><b>${md.baseDamage || '—'}</b></div>
+                        <div class="mds-row"><span>ACCURACY</span><b>${md.accuracy || '100'}%</b></div>
+                        <div class="mds-row"><span>PP (STAMINA)</span><b>${md.stamina || '—'}</b></div>
+                        <div class="mds-row"><span>CATEGORY</span><b>${md.category || '—'}</b></div>
+                    </div>
+                    <p class="move-detail-desc">${md.description || 'No description.'}</p>
+                </div>`;
+                overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+                document.getElementById('modal-content').appendChild(overlay);
             },
 
-            setMode(m) { 
-                this.mode = m; 
-                document.querySelectorAll('.btn-nav').forEach(b => b.classList.remove('active'));
-                document.getElementById(m === 'organisms' ? 'btn-org' : 'btn-item').classList.add('active');
-                this.filter(); 
+            showItemDetail(item) {
+                const imgSrc = `assets/items/${(item.name || '').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}.png`;
+                const effectsHTML = (item.effects || []).map(e =>
+                    `<div class="detail-ability-card">
+                    <div class="ability-name">${e.type?.toUpperCase() || 'EFFECT'}</div>
+                    <div class="ability-desc">Stat: <b>${e.stat || '—'}</b> | Magnitude: <b>${e.magnitude || '—'}x</b></div>
+                </div>`).join('') || '<p class="dim">No effects listed.</p>';
+
+                document.getElementById('modal-content').innerHTML = `
+                <div class="detail-header">
+                    <div class="detail-sprite-wrap">
+                        <img src="${imgSrc}" alt="${item.name}" onerror="this.style.display='none'">
+                    </div>
+                    <div class="detail-intro">
+                        <span class="type-badge" style="background:var(--accent-dim);color:var(--accent)">${(item.category || 'item').toUpperCase()}</span>
+                        <h2 class="detail-name">${(item.name || '').replace(/_/g, ' ').toUpperCase()}</h2>
+                        <div class="detail-sciname">${item.price ? '💰 ' + item.price + 'G' : ''}</div>
+                    </div>
+                </div>
+                <div class="detail-body">
+                    <div class="detail-section">
+                        <div class="detail-section-title">📋 DESCRIPTION</div>
+                        <p class="detail-desc">${item.description || 'No description.'}</p>
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-section-title">⚡ MODIFIERS</div>
+                        ${effectsHTML}
+                    </div>
+                </div>`;
+
+                document.getElementById('modal').classList.add('open');
+                document.body.style.overflow = 'hidden';
             },
 
-            paginate(dir) { 
-                const newP = this.page + dir;
-                if(newP >= 0 && newP * this.limit < this.filtered.length) { this.page = newP; this.render(); }
+            setMode(m) {
+                this.mode = m;
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.getElementById(m === 'animals' ? 'btn-animals' : 'btn-items').classList.add('active');
+                document.getElementById('animal-filters').style.display = m === 'animals' ? '' : 'none';
+                document.getElementById('item-filters').style.display = m === 'items' ? '' : 'none';
+                this.filter();
             },
 
-            closeModal() { 
-                document.getElementById('modal').style.display = 'none'; 
-                document.body.style.overflow = 'auto';
+            setSort(s) {
+                this.sortBy = s;
+                document.querySelectorAll('.sort-chip').forEach(c => {
+                    c.classList.toggle('active', c.dataset.sort === s);
+                });
+                this.filter();
             },
 
-            toggleMenu() {
+            toggleOrder() {
+                this.ascending = !this.ascending;
+                document.getElementById('order-label').textContent = this.ascending ? 'ASCENDING' : 'DESCENDING';
+                document.getElementById('order-icon').textContent = this.ascending ? '↑' : '↓';
+                this.filter();
+            },
+
+            reset() {
+                document.getElementById('q').value = '';
+                ['flt-biome', 'flt-cat1', 'flt-cat2', 'flt-rarity', 'flt-ability', 'flt-move', 'flt-drop', 'flt-item-cat'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.selectedIndex = 0;
+                });
+                this.sortBy = 'name';
+                this.ascending = true;
+                document.querySelectorAll('.sort-chip').forEach(c => c.classList.toggle('active', c.dataset.sort === 'name'));
+                document.getElementById('order-label').textContent = 'ASCENDING';
+                document.getElementById('order-icon').textContent = '↑';
+                this.filter();
+            },
+
+            closeModal() {
+                document.getElementById('modal').classList.remove('open');
+                document.body.style.overflow = '';
+            },
+
+            toggleFilter() {
                 document.getElementById('sidebar').classList.toggle('open');
+                document.getElementById('sidebar-overlay').classList.toggle('active');
             }
         };
 
         App.start();
     </script>
 </body>
+
 </html>
