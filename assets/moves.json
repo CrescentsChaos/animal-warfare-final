@@ -992,7 +992,8 @@
             },
             {
                 "type": "statusConfusion",
-                "target": "opponent"
+                "target": "opponent",
+                "value": 3
             }
         ]
     },

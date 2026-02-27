@@ -116,6 +116,7 @@ class BattleOrganism {
     statsLoweredThisTurn = false;
     isMiracleEyed = false;
     shellTrapTriggered = false;
+    lastMoveName = null;
   }
 
   /// Refreshes stats after a level-up or level change
@@ -228,6 +229,7 @@ class BattleOrganism {
   bool statsLoweredThisTurn = false;
   bool isMiracleEyed = false;
   bool shellTrapTriggered = false;
+  String? lastMoveName;
 
   String get displaySprite => isDisguised && disguisedAs != null
       ? disguisedAs!.baseOrganism.sprite

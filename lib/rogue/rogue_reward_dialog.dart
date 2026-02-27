@@ -185,7 +185,7 @@ class RogueRewardDialog extends StatelessWidget {
       case RogueRewardType.fullHeal:
         return 'Heal all animals to 100% HP';
       case RogueRewardType.singleHeal:
-        return 'Fully heal your most injured animal';
+        return 'Fully heal a chosen animal';
       case RogueRewardType.cureStatus:
         return 'Restore all moves stamina';
       case RogueRewardType.captureItems:

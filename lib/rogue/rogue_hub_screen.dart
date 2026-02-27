@@ -9,6 +9,8 @@ import 'package:animal_warfare/models/talisman.dart';
 import 'package:animal_warfare/rogue/rogue_reward_dialog.dart';
 import 'package:animal_warfare/widgets/animal_summary_screen.dart';
 import 'package:animal_warfare/models/nature.dart';
+import 'package:animal_warfare/models/rogue_like_state.dart';
+import 'package:animal_warfare/rogue/biome_select_screen.dart';
 
 class RogueHubScreen extends StatefulWidget {
   const RogueHubScreen({super.key});
@@ -38,8 +40,17 @@ class _RogueHubScreenState extends State<RogueHubScreen> {
             rewards: rewards,
             biome:
                 userState.currentUser?.rogueLikeState.currentBiome ?? 'Jungle',
-            onSelect: (reward) {
-              userState.claimRogueReward(reward);
+            onSelect: (reward) async {
+              if (reward.type == RogueRewardType.singleHeal) {
+                final targetIndex = await _showAnimalSelection(context);
+                if (targetIndex != null) {
+                  userState.claimRogueReward(
+                    reward.copyWith(targetIndex: targetIndex),
+                  );
+                }
+              } else {
+                userState.claimRogueReward(reward);
+              }
             },
           ),
         );
@@ -67,6 +78,77 @@ class _RogueHubScreenState extends State<RogueHubScreen> {
     if (hour >= 6 && hour < 18) return 'day';
     if (hour >= 18 && hour < 21) return 'evening';
     return 'night';
+  }
+
+  void _advanceFloor(BuildContext context) {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => const BiomeSelectScreen()));
+  }
+
+  Future<int?> _showAnimalSelection(BuildContext context) async {
+    final userState = Provider.of<UserState>(context, listen: false);
+    final team = userState.currentUser?.rogueLikeState.team ?? [];
+
+    return showDialog<int>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF151515),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: Colors.white10),
+        ),
+        title: const Text(
+          'CHOOSE ANIMAL TO HEAL',
+          style: TextStyle(
+            fontFamily: 'PressStart2P',
+            fontSize: 10,
+            color: Colors.white,
+          ),
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: team.length,
+            itemBuilder: (context, index) {
+              final member = team[index];
+              final hpRatio = member.currentHealth / member.maxHealth;
+              return ListTile(
+                leading: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Image.asset(member.baseOrganism.sprite),
+                ),
+                title: Text(
+                  member.baseOrganism.name.toUpperCase(),
+                  style: const TextStyle(
+                    fontFamily: 'PressStart2P',
+                    fontSize: 9,
+                    color: Colors.white,
+                  ),
+                ),
+                subtitle: Text(
+                  'HP: ${member.currentHealth}/${member.maxHealth}',
+                  style: TextStyle(
+                    fontFamily: 'PressStart2P',
+                    fontSize: 7,
+                    color: hpRatio < 0.3
+                        ? Colors.redAccent
+                        : Colors.greenAccent,
+                  ),
+                ),
+                onTap: () => Navigator.of(ctx).pop(index),
+              );
+            },
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -152,11 +234,19 @@ class _RogueHubScreenState extends State<RogueHubScreen> {
                     children: [
                       _buildActionButton(
                         context,
-                        label: 'START NEXT BATTLE',
-                        icon: Icons.flash_on,
-                        color: Colors.redAccent,
+                        label: rogueState.encounterIndex >= 5
+                            ? 'ADVANCE TO NEXT FLOOR'
+                            : 'START NEXT BATTLE',
+                        icon: rogueState.encounterIndex >= 5
+                            ? Icons.arrow_forward
+                            : Icons.flash_on,
+                        color: rogueState.encounterIndex >= 5
+                            ? Colors.greenAccent
+                            : Colors.redAccent,
                         isPrimary: true,
-                        onPressed: () => _startNextBattle(context, userState),
+                        onPressed: () => rogueState.encounterIndex >= 5
+                            ? _advanceFloor(context)
+                            : _startNextBattle(context, userState),
                       ),
                       const SizedBox(height: 12),
                       _buildActionButton(

@@ -461,14 +461,19 @@ class UserState with ChangeNotifier {
 
       int newEncounter = state.encounterIndex + 1;
 
-      final newOpponents = _generateRogueOpponentTeam(
-        state.currentBiome ?? 'Jungle',
-        newEncounter == 4
-            ? (2 + math.Random().nextInt(4)).clamp(2, 5)
-            : 1, // Boss is at index 4 (5th fight)
-        state.floor,
-        encounterIndex: newEncounter,
-      );
+      // If we just finished the 5th battle (newEncounter == 5),
+      // we don't generate a new opponent team for a 6th battle.
+      List<CapturedOrganism>? newOpponents = state.opponentTeam;
+      if (newEncounter < 5) {
+        newOpponents = _generateRogueOpponentTeam(
+          state.currentBiome ?? 'Jungle',
+          newEncounter == 4
+              ? (2 + math.Random().nextInt(4)).clamp(2, 5)
+              : 1, // Boss is at index 4 (5th fight)
+          state.floor,
+          encounterIndex: newEncounter,
+        );
+      }
 
       // Generate rewards after every battle
       final rewards = _generateRogueRewards(state.floor, newEncounter == 5);
@@ -550,7 +555,9 @@ class UserState with ChangeNotifier {
     for (final type in selectedTypes) {
       switch (type) {
         case RogueRewardType.item:
-          final allTalismans = Talisman.allTalismans;
+          final allTalismans = Talisman.allTalismans
+              .where((t) => t.id != 'none' && t.effects.isNotEmpty)
+              .toList();
           if (allTalismans.isNotEmpty) {
             final randomTalisman =
                 allTalismans[random.nextInt(allTalismans.length)];
@@ -642,19 +649,26 @@ class UserState with ChangeNotifier {
               .toList();
           break;
         case RogueRewardType.singleHeal:
-          // Heal the animal with lowest HP %
+          // Heal the chosen animal or the one with lowest HP %
           if (team.isNotEmpty) {
-            int lowestIndex = 0;
-            double lowestRatio = 1.1;
-            for (int i = 0; i < team.length; i++) {
-              final ratio = team[i].currentHealth / team[i].maxHealth;
-              if (ratio < lowestRatio) {
-                lowestRatio = ratio;
-                lowestIndex = i;
+            int targetIdx;
+            if (reward.targetIndex != null &&
+                reward.targetIndex! >= 0 &&
+                reward.targetIndex! < team.length) {
+              targetIdx = reward.targetIndex!;
+            } else {
+              targetIdx = 0;
+              double lowestRatio = 1.1;
+              for (int i = 0; i < team.length; i++) {
+                final ratio = team[i].currentHealth / team[i].maxHealth;
+                if (ratio < lowestRatio) {
+                  lowestRatio = ratio;
+                  targetIdx = i;
+                }
               }
             }
-            team[lowestIndex] = team[lowestIndex].copyWith(
-              currentHealth: team[lowestIndex].maxHealth,
+            team[targetIdx] = team[targetIdx].copyWith(
+              currentHealth: team[targetIdx].maxHealth,
             );
           }
           break;
@@ -1000,10 +1014,10 @@ class UserState with ChangeNotifier {
 
       int level;
       if (isBoss) {
-        level = maxPlayerLevel;
+        level = maxPlayerLevel + 2;
       } else {
         // Normal encounters: 1-2 levels lower
-        level = maxPlayerLevel - (1 + random.nextInt(2));
+        level = maxPlayerLevel - (random.nextInt(2));
       }
 
       // Ensure level is at least 1
@@ -1096,23 +1110,26 @@ class UserState with ChangeNotifier {
       // Update Roguelike Team if active
       if (u.rogueLikeState.isActive) {
         final rogueTeam = List<CapturedOrganism>.from(u.rogueLikeState.team);
-        bool rogueUpdated = false;
         for (int j = 0; j < rogueTeam.length; j++) {
-          final rogueOrg = rogueTeam[j];
-          final updatedOrg = organisms.firstWhere(
-            (o) => o.id == rogueOrg.id,
-            orElse: () => rogueOrg,
-          );
-          if (updatedOrg != rogueOrg) {
-            rogueTeam[j] = updatedOrg;
-            rogueUpdated = true;
+          final org = rogueTeam[j];
+          if (teamIds.contains(org.id)) {
+            int share = (org.id == killerId) ? baseXP : (baseXP / 2).floor();
+            if (share > 0) {
+              final xpResult = org.gainXP(share, effectiveCap);
+              if (xpResult['leveledUp'] as bool) {
+                results['animalLeveledUp'][org.id] = true;
+              }
+              rogueTeam[j] = org.copyWith(
+                xp: xpResult['xp'] as int,
+                level: xpResult['level'] as int,
+                satisfaction: math.min(255, org.satisfaction + 2),
+              );
+            }
           }
         }
-        if (rogueUpdated) {
-          u = u.copyWith(
-            rogueLikeState: u.rogueLikeState.copyWith(team: rogueTeam),
-          );
-        }
+        u = u.copyWith(
+          rogueLikeState: u.rogueLikeState.copyWith(team: rogueTeam),
+        );
       }
 
       return u.copyWith(

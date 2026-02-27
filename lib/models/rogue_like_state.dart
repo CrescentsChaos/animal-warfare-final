@@ -135,19 +135,38 @@ class RogueReward {
   final String? itemId;
   final String label;
   final int? count;
+  final int? targetIndex; // For singleHeal choice
 
   const RogueReward({
     required this.type,
     this.itemId,
     required this.label,
     this.count,
+    this.targetIndex,
   });
+
+  RogueReward copyWith({
+    RogueRewardType? type,
+    String? itemId,
+    String? label,
+    int? count,
+    int? targetIndex,
+  }) {
+    return RogueReward(
+      type: type ?? this.type,
+      itemId: itemId ?? this.itemId,
+      label: label ?? this.label,
+      count: count ?? this.count,
+      targetIndex: targetIndex ?? this.targetIndex,
+    );
+  }
 
   Map<String, dynamic> toJson() => {
     'type': type.index,
     'itemId': itemId,
     'label': label,
     'count': count,
+    'targetIndex': targetIndex,
   };
 
   factory RogueReward.fromJson(Map<String, dynamic> json) {
@@ -156,6 +175,7 @@ class RogueReward {
       itemId: json['itemId'] as String?,
       label: json['label'] as String? ?? '',
       count: json['count'] as int?,
+      targetIndex: json['targetIndex'] as int?,
     );
   }
 }

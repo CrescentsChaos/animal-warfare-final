@@ -841,6 +841,14 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         }
       }
 
+      // Grassy Glide Priority
+      if (currentTerrain.terrain == Terrain.grassy) {
+        if (activeMove.name == 'Grassy Glide') playerPriority += 1;
+        if (currentTurnOpponentMove!.name == 'Grassy Glide') {
+          opponentPriority += 1;
+        }
+      }
+
       bool playerQuickClawTriggered = false;
       if (player.organism.equippedTalisman != null &&
           player.organism.equippedTalisman!.effects.any(
@@ -1033,24 +1041,26 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       return;
     }
 
-    // --- NEW: Gigaton Hammer Double Use Check ---
+    // --- Move Failure Conditions ---
+
+    // Gigaton Hammer: Can't use twice in a row
     if (move.name == 'Gigaton Hammer' &&
-        attacker.lastMove?.name == 'Gigaton Hammer') {
-      addToLog('But it failed! (Cannot use Gigaton Hammer twice in a row)');
+        attacker.lastMoveName == 'Gigaton Hammer') {
+      addToLog('But it failed! ${attacker.name} can\'t use its hammer again!');
       notifyListeners();
       if (!isTesting) await Future.delayed(const Duration(milliseconds: 2000));
       return;
     }
 
-    // --- NEW: First Impression Check ---
+    // First Impression: Only works on first turn out
     if (move.name == 'First Impression' && !attacker.isFirstTurnOutOfBall) {
-      addToLog('But it failed! (Can only be used on the first turn)');
+      addToLog('But it failed! ${attacker.name} is no longer impressed.');
       notifyListeners();
       if (!isTesting) await Future.delayed(const Duration(milliseconds: 2000));
       return;
     }
 
-    // --- NEW: Focus Punch Check ---
+    // Focus Punch: Fails if hit
     if (move.name == 'Focus Punch' && attacker.focusPunchFailed) {
       addToLog('${attacker.name} lost its focus and couldn\'t move!');
       notifyListeners();
@@ -1058,25 +1068,26 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       return;
     }
 
-    // --- NEW: Shell Trap Check ---
+    // Shell Trap: Fails if not triggered
     if (move.name == 'Shell Trap' && !attacker.shellTrapTriggered) {
-      addToLog('But it failed! (The shell trap wasn\'t triggered)');
+      addToLog('${attacker.name}\'s shell trap didn\'t go off!');
       notifyListeners();
       if (!isTesting) await Future.delayed(const Duration(milliseconds: 2000));
       return;
     }
 
-    // --- NEW: Last Resort Check ---
+    // Last Resort: Only after using all other moves
     if (move.name == 'Last Resort') {
-      final allMoves = _getOrganismMoves(attacker.organism);
-      final otherMoves = allMoves
-          .where((m) => m.name != 'Last Resort')
+      final otherKnownMoves = attacker.organism.selectedMoveNames
+          .where((m) => m != 'Last Resort')
           .toList();
-      bool allUsed =
-          otherMoves.isNotEmpty &&
-          otherMoves.every((m) => attacker.movesUsedInBattle.contains(m.name));
-      if (!allUsed) {
-        addToLog('But it failed! (Must use all other moves first)');
+      bool allOthersUsed =
+          otherKnownMoves.isNotEmpty &&
+          otherKnownMoves.every((m) => attacker.movesUsedInBattle.contains(m));
+      if (!allOthersUsed) {
+        addToLog(
+          'But it failed! ${attacker.name} is not ready for the last resort.',
+        );
         notifyListeners();
         if (!isTesting)
           await Future.delayed(const Duration(milliseconds: 2000));
@@ -1250,6 +1261,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     final attackerStats = _getStats(attacker.organism.id);
     attackerStats.revealedMoves.add(move.name);
     attacker.revealedMoves.add(move.name);
+    attacker.movesUsedInBattle.add(move.name);
 
     if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
 
@@ -1273,7 +1285,10 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         attacker.abilities.any((ab) => ab.name == 'No Guard') ||
         defender.abilities.any((ab) => ab.name == 'No Guard');
 
-    if (targetIsMarked || hasNoGuard) {
+    if (targetIsMarked ||
+        hasNoGuard ||
+        move.name == 'Kowtow Cleave' ||
+        defender.glaiveRushVulnerable) {
       accuracy = 100;
     } else {
       if (attacker.statusEffect.type == StatusEffectType.blind) {
@@ -1343,6 +1358,12 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       }
     } else if (Random().nextInt(100) >= accuracy) {
       addToLog('...but it missed!');
+      if (move.name == 'High Jump Kick') {
+        final recoilDamage = (attacker.maxHealth / 2).round();
+        attacker.health -= recoilDamage;
+        addToLog('${attacker.name} kept going and crashed!');
+        _checkBattleEnd();
+      }
       notifyListeners();
       if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
       return;
@@ -1396,7 +1417,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         (ab) => ab.name == 'Unseen Fist',
       );
 
-      if (!(move.isContact && attackerHasUnseenFist)) {
+      if (!(move.isContact && attackerHasUnseenFist) &&
+          move.name != 'Feint' &&
+          move.name != 'Mighty Cleave') {
         // Detect moves that penetrate Protect (Feint, etc.) - bypassing for now
         // But No Guard allows hitting through Protect? In some gens yes, some no.
         // Gen 4-5 yes, Gen 6+ no (except for dynamic punch glitch?).
@@ -2430,15 +2453,6 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             }
           }
           break;
-        case MoveEffectType.cureTeamStatus:
-          final team = attacker.isOpponent ? opponentTeam : playerTeam;
-          for (final org in team) {
-            org.statusEffects.clear();
-          }
-          addToLog(
-            '${attacker.organism.baseOrganism.name} cured its team\'s status!',
-          );
-          break;
         case MoveEffectType.changeType:
           if (effect.stat == 'water') {
             target.battleTypes = [ElementalType.aquatic];
@@ -2650,6 +2664,39 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           defender.perishTurnCount = effect.value > 0 ? effect.value : 3;
           addToLog('All animals hearing the song will faint in three turns!');
           break;
+        case MoveEffectType.cureTeamStatus:
+          final team = attacker.isPlayer ? playerTeam : opponentTeam;
+          for (final org in team) {
+            org.statusEffects.clear();
+          }
+          addToLog('A soothing bell chimed, healing the team\'s status!');
+          break;
+        case MoveEffectType.healingWish:
+          attacker.health = 0;
+          healingWishPending = true;
+          addToLog(
+            '${attacker.name} fainted to grant a wish to its successor!',
+          );
+          _checkBattleEnd();
+          break;
+        case MoveEffectType.wish:
+          attacker.wishTurns = 2;
+          attacker.wishHealAmount = (attacker.maxHealth / 2).round();
+          addToLog('${attacker.name} made a wish!');
+          break;
+        case MoveEffectType.healBlock:
+          target.healBlockTurns = 5;
+          addToLog('${target.name} was blocked from healing!');
+          break;
+        case MoveEffectType.miracleEye:
+          target.isMiracleEyed = true;
+          target.evasionStage = 0;
+          addToLog('${target.name} was identified by Miracle Eye!');
+          break;
+        case MoveEffectType.gravity:
+          gravityTurns = 5;
+          addToLog('Gravity intensified!');
+          break;
         case MoveEffectType.substitute:
           if (attacker.substituteHealth > 0) {
             addToLog('${attacker.name} already has a substitute!');
@@ -2675,8 +2722,6 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           } else {
             defender.futureSightTurns = 3;
             defender.futureSightUser = attacker;
-            // Pre-calculate damage now? Pokemon Gen 5+ uses stats at time of resolution.
-            // We'll calculate it when it hits for simplicity and accuracy to modern gens.
             addToLog('${attacker.name} foresaw an attack!');
           }
           break;
@@ -2732,25 +2777,6 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             addToLog('But it failed! Not enough HP.');
           }
           break;
-        case MoveEffectType.gravity:
-          gravityTurns = effect.value > 0 ? effect.value : 5;
-          addToLog('Gravity intensified!');
-          break;
-        case MoveEffectType.healingWish:
-          attacker.health = 0;
-          healingWishPending = true;
-          addToLog('${attacker.name} fainted to grant a wish!');
-          _checkBattleEnd();
-          break;
-        case MoveEffectType.wish:
-          attacker.wishTurns = 2;
-          attacker.wishHealAmount = (attacker.maxHealth * 0.5).round();
-          addToLog('${attacker.name} made a wish!');
-          break;
-        case MoveEffectType.healBlock:
-          defender.healBlockTurns = effect.value > 0 ? effect.value : 5;
-          addToLog('${defender.name} was blocked from healing!');
-          break;
         case MoveEffectType.memento:
           attacker.health = 0;
           await applyStatChange(defender, 'attack', -2, source: attacker);
@@ -2780,11 +2806,6 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           await applyStatChange(attacker, 'defense', 1);
           attacker.chargeMove = move;
           break;
-        case MoveEffectType.miracleEye:
-          defender.evasionStage = 0;
-          defender.isMiracleEyed = true;
-          addToLog('${defender.name} was identified by Miracle Eye!');
-          break;
         case MoveEffectType.payDay:
           addToLog('Coins were scattered everywhere!');
           break;
@@ -2803,8 +2824,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         _appendToLog(
           '\n${attacker.organism.baseOrganism.name} cut its own HP!',
         );
-        notifyListeners();
       }
+      attacker.lastMoveName = move.name;
     }
   }
 
@@ -2861,22 +2882,6 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     int value, {
     BattleOrganism? source,
   }) async {
-    int oldStage = 0;
-    if (statName == 'attack') {
-      oldStage = target.attackStage;
-    } else if (statName == 'defense')
-      oldStage = target.defenseStage;
-    else if (statName == 'power')
-      oldStage = target.powerStage;
-    else if (statName == 'resistance')
-      oldStage = target.resistanceStage;
-    else if (statName == 'speed')
-      oldStage = target.speedStage;
-    else if (statName == 'accuracy')
-      oldStage = target.accuracyStage;
-    else if (statName == 'evasion')
-      oldStage = target.evasionStage;
-
     if (statName == 'accuracy' && value < 0) {
       bool hasEcholocation = target.abilities.any(
         (ab) => ab.name == 'Echolocation',
@@ -3559,6 +3564,13 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         }
       }
     }
+
+    // Reset turn-based flags
+    target.isFirstTurnOutOfBall = false;
+    target.statsLoweredThisTurn = false;
+    target.shellTrapTriggered = false;
+    target.focusPunchFailed = false;
+    target.tookDamageThisTurn = false;
   }
 
   // --- Capture and Run Logic ---
@@ -3619,6 +3631,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       opponent.organism.currentHealth = opponent.health;
       _result = BattleResult.capture;
       addToLog('Success! ${opponent.organism.baseOrganism.name} was captured!');
+      // Award XP for capture
+      onOpponentFainted?.call(player, opponent);
       _cleanupStatusEffects();
       currentState = BattleState.battleEnd;
       notifyListeners(); // Ensure UI sees success for sprite disappearance
@@ -4063,6 +4077,15 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     playerMoves = _getOrganismMoves(playerOrganism);
     addToLog('Go, ${player.organism.baseOrganism.name}!');
 
+    if (healingWishPending) {
+      healingWishPending = false;
+      player.health = player.maxHealth;
+      player.clearStatusEffects();
+      addToLog('${player.name} had its wish granted by the fallen friend!');
+      notifyListeners();
+      if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+    }
+
     // Trigger Entrance Ability
     await _checkEntranceAbility(player, opponent, biomeName);
 
@@ -4234,6 +4257,15 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     addToLog('${opponent.name} enters the field!');
 
+    if (healingWishPending) {
+      healingWishPending = false;
+      opponent.health = opponent.maxHealth;
+      opponent.clearStatusEffects();
+      addToLog('${opponent.name} had its wish granted by the fallen friend!');
+      notifyListeners();
+      if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+    }
+
     // Trigger Entrance Ability
     await _checkEntranceAbility(opponent, player, biomeName);
 
@@ -4249,6 +4281,19 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     Move move, {
     bool ignoreRandom = false,
   }) {
+    if (move.name == 'Counter') {
+      if (attacker.lastPhysicalDamageTaken > 0) {
+        return DamageResult(attacker.lastPhysicalDamageTaken * 2, 1.0, false);
+      }
+      return const DamageResult(0, 1.0, false);
+    }
+    if (move.name == 'Mirror Coat') {
+      if (attacker.lastSpecialDamageTaken > 0) {
+        return DamageResult(attacker.lastSpecialDamageTaken * 2, 1.0, false);
+      }
+      return const DamageResult(0, 1.0, false);
+    }
+
     if (move.baseDamage <= 0) return const DamageResult(0, 1.0, false);
 
     bool isCrit = false;
@@ -4305,6 +4350,11 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     int def = (move.category == MoveCategory.special)
         ? defender.currentResistance
         : defender.currentDefense;
+
+    // Psyshock: Special move targets Physical Defense
+    if (move.name == 'Psyshock') {
+      def = defender.currentDefense;
+    }
 
     // Stat overrides
     if (move.damageStat.isNotEmpty) {
@@ -4489,9 +4539,27 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     // 4. Multipliers
     if (isCrit) damageCalc *= 1.5;
 
+    // Lash Out
+    if (move.name == 'Lash Out' && attacker.statsLoweredThisTurn) {
+      damageCalc *= 2.0;
+    }
+
+    // Hex
+    if (move.name == 'Hex' && defender.statusEffects.isNotEmpty) {
+      damageCalc *= 2.0;
+    }
+
+    ElementalType moveType = move.type;
+    if (move.name == 'Hidden Power') {
+      final types = ElementalType.values
+          .where((t) => t != ElementalType.basic)
+          .toList();
+      moveType = types[attacker.organism.id.hashCode % types.length];
+    }
+
     // Weather Modifiers
     double weatherMod = currentWeather.getDamageMultiplier(
-      move.type.toString().split('.').last.toLowerCase(),
+      moveType.toString().split('.').last.toLowerCase(),
     );
     damageCalc *= weatherMod;
 
@@ -4518,10 +4586,10 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         );
 
     for (final defType in defender.types) {
-      double eff = TypeChart.getEffectiveness(move.type, defType);
+      double eff = TypeChart.getEffectiveness(moveType, defType);
 
       // Earth Eater / True Flight / Air Balloon Earth Immunity
-      if (move.type == ElementalType.earth) {
+      if (moveType == ElementalType.earth) {
         if (defender.abilities.any((ab) => ab.name == 'Earth Eater')) {
           eff = 0.0;
         } else if (gravityTurns > 0) {
@@ -4535,14 +4603,14 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       }
 
       // Miracle Eye: Psychic hits Dark
-      if (move.type == ElementalType.mystic &&
+      if (moveType == ElementalType.aura &&
           defType == ElementalType.darkness &&
           defender.isMiracleEyed) {
         eff = 1.0;
       }
 
       // Water Absorb / Dry Skin Water Immunity
-      if (move.type == ElementalType.aquatic &&
+      if (moveType == ElementalType.aquatic &&
           defender.abilities.any(
             (ab) => ab.name == 'Water Absorb' || ab.name == 'Dry Skin',
           )) {
@@ -4552,15 +4620,15 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       // True Flight defensive perks (Min 1.0 effectiveness for weaknesses)
       if (defenderHasTrueFlight &&
           defender.types.contains(ElementalType.flying)) {
-        if (move.type == ElementalType.electric ||
-            move.type == ElementalType.rock ||
-            move.type == ElementalType.cryo) {
+        if (moveType == ElementalType.electric ||
+            moveType == ElementalType.rock ||
+            moveType == ElementalType.cryo) {
           if (eff > 1.0) eff = 1.0;
         }
       }
 
       // True Flight offensive perks (Avoid resistance)
-      if (attackerHasTrueFlight && move.type == ElementalType.flying) {
+      if (attackerHasTrueFlight && moveType == ElementalType.flying) {
         if (eff < 1.0 && eff > 0) eff = 1.0;
       }
 

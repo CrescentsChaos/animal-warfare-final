@@ -10,7 +10,7 @@ import 'package:animal_warfare/models/captured_organism.dart';
 import 'package:animal_warfare/game/battle_manager.dart';
 import 'package:animal_warfare/theme.dart';
 import 'package:animal_warfare/user_state.dart';
-import 'package:animal_warfare/battle_tab_screen.dart';
+import 'package:animal_warfare/main_screen.dart';
 import 'package:animal_warfare/rogue/biome_select_screen.dart';
 import 'package:animal_warfare/models/weather.dart';
 import 'package:animal_warfare/models/terrain.dart';
@@ -3772,16 +3772,15 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               (battleManager.result == BattleResult.loss ||
                   battleManager.result == BattleResult.fled)) {
             // Roguelike defeat/forfeit: clean up and go to Arena menu
-            await userState
-                .endRogueRun(); // MOVE: Clear run here instead of _handleBattleEnd
+            await userState.endRogueRun();
             if (!context.mounted) return;
 
+            // Use a single pushAndRemoveUntil to reset the stack stably.
+            // We'll return to MainScreen. Chaining multiple pushes on a
+            // cleaning context causes soft-locks (black screens).
             Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(builder: (ctx) => const MainScreen()),
               (route) => false,
-            );
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (ctx) => const BattleTabScreen()),
             );
           } else if ((battleManager.result == BattleResult.win ||
                   battleManager.result == BattleResult.capture) &&
