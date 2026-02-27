@@ -214,14 +214,17 @@ class CapturedOrganism {
     int newXP = xp + amount;
     bool leveledUp = false;
 
+    int effectiveCap = max(initialLevel, accountLevelCap);
+    int maxAllowedXP = xpForLevel(effectiveCap + 1) - 1;
+    newXP = min(newXP, maxAllowedXP);
+
     // Calculate level from total XP
     int levelFromXP = 1;
     while (newXP >= xpForLevel(levelFromXP + 1)) {
       levelFromXP++;
     }
 
-    // New logic: level = max(initialLevel, min(accountLevelCap, levelFromXP))
-    int newLevel = max(initialLevel, min(accountLevelCap, levelFromXP));
+    int newLevel = levelFromXP;
 
     if (newLevel > level) {
       leveledUp = true;

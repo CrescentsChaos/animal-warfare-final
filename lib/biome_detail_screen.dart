@@ -40,25 +40,6 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
     with WidgetsBindingObserver {
   static const Color highlightColor = Color(0xFFDAA520);
 
-  static final Organism HUMAN_ORGANISM = Organism(
-    name: 'Human',
-    scientificName: 'Homo sapiens',
-    habitat: 'Everywhere',
-    drops: 'N/A',
-    attack: 100,
-    defense: 100,
-    power: 0,
-    resistance: 100,
-    health: 100,
-    speed: 50,
-    abilities: 'None',
-    category: 'Human',
-    moves: 'Punch, Kick, Uppercut, Jab',
-    sprite: 'https://i.imgur.com/your_human_sprite.png',
-    rarity: 'Common',
-    description: 'The dominant species.',
-  );
-
   Organism? _currentEncounter;
   bool _isExploring = false;
   bool _isNameRevealed = false;
@@ -210,7 +191,10 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
       playerFighter = user.capturedOrganisms.first;
     } else {
       _displayMessage("You have no organisms! Prepare to fight as Human!");
-      playerFighter = CapturedOrganism.spawn(HUMAN_ORGANISM);
+      playerFighter = CapturedOrganism.spawn(
+        Organism.HUMAN_ORGANISM.copyWith(name: user.username),
+        level: user.accountLevel,
+      );
     }
     final wildFighter = CapturedOrganism.spawn(
       wildOrganism,
@@ -224,6 +208,7 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
           opponentOrganism: wildFighter,
           biomeName: widget.biomeName,
           playerTeam: user.teamOrganisms,
+          timeOfDay: _getTimeOfDay(),
         ),
       ),
     );

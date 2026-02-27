@@ -20,6 +20,7 @@ class Organism {
   final String rarity;
   final String description;
   final List<String> types; // NEW: Supports multiple types
+  final double weight; // NEW: Weight in kg
 
   Organism({
     required this.name,
@@ -39,6 +40,7 @@ class Organism {
     required this.rarity,
     required this.description,
     this.types = const ['basic'], // Default
+    this.weight = 1.0, // Default 1.0 kg
   });
 
   factory Organism.fromJson(Map<String, dynamic> json) {
@@ -84,6 +86,7 @@ class Organism {
       rarity: (json['rarity'] as String? ?? 'Common'),
       description: (json['description'] as String? ?? ''),
       types: typeList,
+      weight: (json['weight'] as num? ?? 1.0).toDouble(),
     );
   }
 
@@ -127,6 +130,7 @@ class Organism {
     String? rarity,
     String? description,
     List<String>? types,
+    double? weight,
   }) {
     return Organism(
       name: name ?? this.name,
@@ -146,6 +150,7 @@ class Organism {
       rarity: rarity ?? this.rarity,
       description: description ?? this.description,
       types: types ?? this.types,
+      weight: weight ?? this.weight,
     );
   }
 
@@ -168,6 +173,7 @@ class Organism {
       'rarity': rarity,
       'description': description,
       'types': types,
+      'weight': weight,
     };
   }
 
@@ -209,4 +215,24 @@ class Organism {
         return 1;
     }
   }
+
+  static final Organism HUMAN_ORGANISM = Organism(
+    name: 'Human',
+    scientificName: 'Homo sapiens',
+    habitat: 'Everywhere',
+    drops: 'N/A',
+    attack: 100,
+    defense: 100,
+    power: 0,
+    resistance: 100,
+    health: 100,
+    speed: 50,
+    abilities: 'None',
+    category: 'Human',
+    moves: 'Punch, Kick, Uppercut, Jab',
+    sprite: 'https://i.imgur.com/your_human_sprite.png',
+    rarity: 'Common',
+    description: 'The dominant species.',
+    weight: 70.0,
+  );
 }

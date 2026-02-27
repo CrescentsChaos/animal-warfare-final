@@ -7,7 +7,8 @@ import 'package:animal_warfare/rogue/move_manage_screen.dart';
 import 'package:animal_warfare/data/biome_data.dart';
 import 'package:animal_warfare/models/talisman.dart';
 import 'package:animal_warfare/rogue/rogue_reward_dialog.dart';
-import 'dart:math' as math;
+import 'package:animal_warfare/widgets/animal_summary_screen.dart';
+import 'package:animal_warfare/models/nature.dart';
 
 class RogueHubScreen extends StatefulWidget {
   const RogueHubScreen({super.key});
@@ -46,6 +47,28 @@ class _RogueHubScreenState extends State<RogueHubScreen> {
     });
   }
 
+  String _getAssetPath(String biomeName) {
+    var name = biomeName;
+    if (name.contains(',')) {
+      name = name.split(',')[0];
+    }
+    name = name.trim().toLowerCase();
+    if (name == 'forest') return 'assets/biomes/jungle-bg.png';
+    if (name == 'rain forest' || name == 'rainforest') {
+      return 'assets/biomes/rainforest-bg.png';
+    }
+    if (name == 'grassland') return 'assets/biomes/savanna-bg.png';
+    final fileName = name.replaceAll(' ', '_');
+    return 'assets/biomes/$fileName-bg.png';
+  }
+
+  String _getTimeOfDay() {
+    final hour = DateTime.now().hour;
+    if (hour >= 6 && hour < 18) return 'day';
+    if (hour >= 18 && hour < 21) return 'evening';
+    return 'night';
+  }
+
   @override
   Widget build(BuildContext context) {
     final userState = Provider.of<UserState>(context);
@@ -66,14 +89,19 @@ class _RogueHubScreenState extends State<RogueHubScreen> {
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage(
-              'assets/backgrounds/${biomeName.toLowerCase()}.png',
-            ),
+            image: AssetImage(_getAssetPath(biomeName)),
             fit: BoxFit.cover,
-            colorFilter: ColorFilter.mode(
-              Colors.black.withOpacity(0.75),
-              BlendMode.darken,
-            ),
+            colorFilter: _getTimeOfDay() == 'day'
+                ? ColorFilter.mode(
+                    Colors.black.withOpacity(0.75),
+                    BlendMode.darken,
+                  )
+                : ColorFilter.mode(
+                    _getTimeOfDay() == 'evening'
+                        ? Colors.orangeAccent.withOpacity(0.3)
+                        : Colors.indigo[900]!.withOpacity(0.5),
+                    BlendMode.darken,
+                  ),
           ),
         ),
         child: SafeArea(
@@ -387,7 +415,7 @@ class _RogueHubScreenState extends State<RogueHubScreen> {
           biomeName: rogue.currentBiome ?? 'Jungle',
           battleTitle:
               'Rogue Floor ${rogue.floor} - ${rogue.encounterIndex + 1}/5',
-          isArenaBattle: rogue.encounterIndex == 4,
+          timeOfDay: _getTimeOfDay(),
         ),
       ),
     );
@@ -403,10 +431,20 @@ class _RogueTeamList extends StatelessWidget {
     final userState = Provider.of<UserState>(context);
     final team = userState.currentUser?.rogueLikeState.team ?? [];
 
-    return ListView.builder(
+    return ReorderableListView.builder(
       padding: const EdgeInsets.symmetric(vertical: 20),
       itemCount: team.length,
+      onReorder: (oldIndex, newIndex) {
+        if (oldIndex < newIndex) {
+          newIndex -= 1;
+        }
+        final newList = List<CapturedOrganism>.from(team);
+        final item = newList.removeAt(oldIndex);
+        newList.insert(newIndex, item);
+        userState.updateRogueTeam(newList);
+      },
       itemBuilder: (context, index) => _RogueTeamCard(
+        key: ValueKey(team[index].id),
         member: team[index],
         index: index,
         teamCount: team.length,
@@ -421,6 +459,7 @@ class _RogueTeamCard extends StatelessWidget {
   final int teamCount;
 
   const _RogueTeamCard({
+    super.key,
     required this.member,
     required this.index,
     required this.teamCount,
@@ -500,6 +539,7 @@ class _RogueTeamCard extends StatelessWidget {
                                 fontSize: 10,
                               ),
                             ),
+                            const Spacer(),
                             Text(
                               'LV.${member.level}',
                               style: TextStyle(
@@ -507,6 +547,12 @@ class _RogueTeamCard extends StatelessWidget {
                                 color: themeColor,
                                 fontSize: 9,
                               ),
+                            ),
+                            const SizedBox(width: 8),
+                            const Icon(
+                              Icons.drag_indicator,
+                              color: Colors.white24,
+                              size: 16,
                             ),
                           ],
                         ),
@@ -584,7 +630,18 @@ class _RogueTeamCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                // Manage button
+                // Action buttons
+                _buildSmallAction(
+                  context,
+                  'SUMMARY',
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (ctx) => AnimalSummaryScreen(captured: member),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
                 _buildSmallAction(
                   context,
                   'MANAGE',
@@ -647,6 +704,22 @@ class _RogueTeamCard extends StatelessWidget {
               const SizedBox(height: 24),
               _buildLargeOption(
                 ctx,
+                label: 'VIEW SUMMARY',
+                icon: Icons.info_outline,
+                color: Colors.orangeAccent.withOpacity(0.8),
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (ctx) => AnimalSummaryScreen(captured: member),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 12),
+              _buildLargeOption(
+                ctx,
                 label: 'MANAGE MOVES',
                 icon: Icons.edit_note,
                 onPressed: () {
@@ -659,6 +732,16 @@ class _RogueTeamCard extends StatelessWidget {
                   ).then((_) {
                     // Update trigger already active via provider
                   });
+                },
+              ),
+              const SizedBox(height: 12),
+              _buildLargeOption(
+                ctx,
+                label: 'GIVE ITEM',
+                icon: Icons.add_circle_outline,
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  _showItemSelection(context);
                 },
               ),
               const SizedBox(height: 12),
@@ -690,6 +773,24 @@ class _RogueTeamCard extends StatelessWidget {
               const SizedBox(height: 24),
               _buildLargeOption(
                 ctx,
+                label: 'USE NATURE MINT',
+                icon: Icons.spa,
+                enabled:
+                    (Provider.of<UserState>(context, listen: false)
+                            .currentUser
+                            ?.rogueLikeState
+                            .inventory['nature_mint'] ??
+                        0) >
+                    0,
+                color: Colors.greenAccent.withOpacity(0.8),
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  _showNatureSelection(context);
+                },
+              ),
+              const SizedBox(height: 12),
+              _buildLargeOption(
+                ctx,
                 label: 'CANCEL',
                 icon: Icons.close,
                 onPressed: () => Navigator.pop(ctx),
@@ -698,6 +799,100 @@ class _RogueTeamCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  void _showNatureSelection(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF151515),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        final natures = Nature.allNatures;
+        return DraggableScrollableSheet(
+          initialChildSize: 0.7,
+          minChildSize: 0.5,
+          maxChildSize: 0.9,
+          expand: false,
+          builder: (_, controller) => Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              children: [
+                const Text(
+                  'SELECT NEW NATURE',
+                  style: TextStyle(
+                    fontFamily: 'PressStart2P',
+                    fontSize: 12,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                const Text(
+                  'Consumes 1 Nature Mint',
+                  style: TextStyle(
+                    fontFamily: 'PressStart2P',
+                    fontSize: 8,
+                    color: Colors.white54,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Expanded(
+                  child: ListView.builder(
+                    controller: controller,
+                    itemCount: natures.length,
+                    itemBuilder: (context, i) {
+                      final n = natures[i];
+                      final isNeutral = n.increasedStat == n.decreasedStat;
+                      return ListTile(
+                        title: Text(
+                          n.name,
+                          style: const TextStyle(
+                            fontFamily: 'PressStart2P',
+                            fontSize: 10,
+                            color: Colors.white,
+                          ),
+                        ),
+                        subtitle: Text(
+                          isNeutral
+                              ? 'Neutral'
+                              : '+${n.increasedStat.name.toUpperCase()} / -${n.decreasedStat.name.toUpperCase()}',
+                          style: TextStyle(
+                            fontFamily: 'PressStart2P',
+                            fontSize: 6,
+                            color: isNeutral ? Colors.white38 : Colors.amber,
+                          ),
+                        ),
+                        onTap: () {
+                          Navigator.pop(ctx);
+                          Provider.of<UserState>(
+                            context,
+                            listen: false,
+                          ).changeRogueAnimalNature(index, n);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                '${member.name}\'s nature changed to ${n.name}!',
+                                style: const TextStyle(
+                                  fontFamily: 'PressStart2P',
+                                  fontSize: 8,
+                                ),
+                              ),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -796,6 +991,85 @@ class _RogueTeamCard extends StatelessWidget {
                 },
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showItemSelection(BuildContext context) {
+    final userState = Provider.of<UserState>(context, listen: false);
+    final inv = userState.currentUser!.rogueLikeState.inventory;
+
+    final talismanIds = inv.keys
+        .where((id) => Talisman.findById(id) != null)
+        .toList();
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF151515),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(20.0),
+              child: Text(
+                'GIVE ITEM...',
+                style: TextStyle(
+                  fontFamily: 'PressStart2P',
+                  fontSize: 12,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            if (talismanIds.isEmpty)
+              const Padding(
+                padding: EdgeInsets.all(40.0),
+                child: Text(
+                  'NO ITEMS IN POCKET',
+                  style: TextStyle(
+                    fontFamily: 'PressStart2P',
+                    fontSize: 8,
+                    color: Colors.white24,
+                  ),
+                ),
+              )
+            else
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: talismanIds.length,
+                  itemBuilder: (context, idx) {
+                    final tid = talismanIds[idx];
+                    final talisman = Talisman.findById(tid)!;
+                    final count = inv[tid];
+                    return ListTile(
+                      title: Text(
+                        '${talisman.name.toUpperCase()} x$count',
+                        style: const TextStyle(
+                          fontFamily: 'PressStart2P',
+                          fontSize: 9,
+                          color: Colors.white,
+                        ),
+                      ),
+                      subtitle: Text(
+                        talisman.description,
+                        style: const TextStyle(
+                          fontFamily: 'PressStart2P',
+                          fontSize: 7,
+                          color: Colors.white54,
+                          height: 1.5,
+                        ),
+                      ),
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        userState.equipRogueTalisman(index, tid);
+                      },
+                    );
+                  },
+                ),
+              ),
           ],
         ),
       ),

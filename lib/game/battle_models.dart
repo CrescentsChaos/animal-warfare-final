@@ -101,6 +101,21 @@ class BattleOrganism {
     futureSightTurns = 0;
     futureSightDamage = 0;
     rolloutMove = null;
+    throatChopTurns = 0;
+    clampingTurns = 0;
+    isFirstTurnOutOfBall = true;
+    wishTurns = 0;
+    wishHealAmount = 0;
+    healBlockTurns = 0;
+    glaiveRushVulnerable = false;
+    shellTrapActive = false;
+    movesUsedInBattle.clear();
+    lastPhysicalDamageTaken = 0;
+    lastSpecialDamageTaken = 0;
+    focusPunchFailed = false;
+    statsLoweredThisTurn = false;
+    isMiracleEyed = false;
+    shellTrapTriggered = false;
   }
 
   /// Refreshes stats after a level-up or level change
@@ -188,6 +203,9 @@ class BattleOrganism {
   // New state variables for advanced mechanics
   int? perishTurnCount;
   bool isTrapped = false; // For trapping effects like Mean Look
+  int throatChopTurns = 0;
+  int clampingTurns = 0;
+  bool isFirstTurnOutOfBall = true;
 
   // Advanced move state
   int substituteHealth = 0;
@@ -196,6 +214,20 @@ class BattleOrganism {
   int futureSightTurns = 0;
   int futureSightDamage = 0;
   BattleOrganism? futureSightUser; // The attacker who used Future Sight
+
+  // Advanced Move States
+  int wishTurns = 0;
+  int wishHealAmount = 0;
+  int healBlockTurns = 0;
+  bool glaiveRushVulnerable = false;
+  bool shellTrapActive = false;
+  final Set<String> movesUsedInBattle = {};
+  int lastPhysicalDamageTaken = 0;
+  int lastSpecialDamageTaken = 0;
+  bool focusPunchFailed = false;
+  bool statsLoweredThisTurn = false;
+  bool isMiracleEyed = false;
+  bool shellTrapTriggered = false;
 
   String get displaySprite => isDisguised && disguisedAs != null
       ? disguisedAs!.baseOrganism.sprite

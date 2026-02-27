@@ -70,7 +70,11 @@ void main() {
       final defender = CapturedOrganism.spawn(base, level: 50, ivs: ivs);
 
       attacker.moveStamina[punchMove.name] = 10;
+      defender.moveStamina['Idle'] = 10;
       final manager = BattleManager(attacker, defender, isTesting: true);
+      manager.opponentMoves = [
+        Move(name: 'Idle', description: '', baseDamage: 0),
+      ];
       manager.ignoreRandom = true;
       manager.currentState = BattleState.waitingForInput;
 
@@ -121,7 +125,11 @@ void main() {
       final defender = CapturedOrganism.spawn(base, level: 50, ivs: ivs);
 
       attacker.moveStamina[biteMove.name] = 10;
+      defender.moveStamina['Idle'] = 10;
       final manager = BattleManager(attacker, defender, isTesting: true);
+      manager.opponentMoves = [
+        Move(name: 'Idle', description: '', baseDamage: 0),
+      ];
       manager.ignoreRandom = true;
       manager.currentState = BattleState.waitingForInput;
 
@@ -172,7 +180,11 @@ void main() {
       final defender = CapturedOrganism.spawn(base, level: 50, ivs: ivs);
 
       attacker.moveStamina[contactMove.name] = 10;
+      defender.moveStamina['Idle'] = 10;
       final manager = BattleManager(attacker, defender, isTesting: true);
+      manager.opponentMoves = [
+        Move(name: 'Idle', description: '', baseDamage: 0),
+      ];
       manager.ignoreRandom = true;
       manager.currentState = BattleState.waitingForInput;
 
@@ -221,7 +233,11 @@ void main() {
       final defender = CapturedOrganism.spawn(base, level: 50, ivs: ivs);
 
       attacker.moveStamina[move.name] = 10;
+      defender.moveStamina['Idle'] = 10;
       final manager = BattleManager(attacker, defender, isTesting: true);
+      manager.opponentMoves = [
+        Move(name: 'Idle', description: '', baseDamage: 0),
+      ];
       manager.ignoreRandom = true;
       manager.currentState = BattleState.waitingForInput;
       manager.opponentReflectTurns = 5;
@@ -274,7 +290,11 @@ void main() {
       final defender = CapturedOrganism.spawn(base, level: 50, ivs: ivs);
 
       attacker.moveStamina[contactMove.name] = 10;
+      defender.moveStamina['Idle'] = 10;
       final manager = BattleManager(attacker, defender, isTesting: true);
+      manager.opponentMoves = [
+        Move(name: 'Idle', description: '', baseDamage: 0),
+      ];
       manager.ignoreRandom = true;
       manager.currentState = BattleState.waitingForInput;
       manager.opponent.isProtected = true;
@@ -318,7 +338,11 @@ void main() {
         final attacker = CapturedOrganism.spawn(base, level: 50, ivs: ivs);
         final defender = CapturedOrganism.spawn(base, level: 50, ivs: ivs);
         attacker.moveStamina[move.name] = 10;
+        defender.moveStamina['Idle'] = 10;
         final manager = BattleManager(attacker, defender, isTesting: true);
+        manager.opponentMoves = [
+          Move(name: 'Idle', description: '', baseDamage: 0),
+        ];
         manager.currentState = BattleState.waitingForInput;
         manager.player.abilities.add(superLuck);
 
@@ -377,12 +401,16 @@ void main() {
 
         attackerOrg.moveStamina[normalMove.name] = 10;
         attackerOrg.moveStamina[punchMove.name] = 10;
+        defenderOrg.moveStamina['Idle'] = 10;
 
         final manager = BattleManager(
           attackerOrg,
           defenderOrg,
           isTesting: true,
         );
+        manager.opponentMoves = [
+          Move(name: 'Idle', description: '', baseDamage: 0),
+        ];
         manager.player.abilities.clear();
         manager.player.abilities.add(ironFist);
 

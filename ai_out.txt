@@ -1,0 +1,46 @@
+00:00 +0: loading C:/Users/USER/dev/animal_warfare/test/ai_test.dart
+00:00 +0: Opponent AI Tests Opponent chooses super-effective move
+00:00 +1: Opponent AI Tests Opponent switches when at severe disadvantage
+00:00 +1 -1: Opponent AI Tests Opponent switches when at severe disadvantage [E]
+  Expected: 'Switch'
+    Actual: 'Ember'
+     Which: is different.
+            Expected: Switch
+              Actual: Ember
+                      ^
+             Differ at offset 0
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test\ai_test.dart 144:7                             main.<fn>.<fn>
+  
+00:00 +1 -1: Opponent AI Tests Opponent name in logs includes Foe prefix
+00:00 +2 -1: Opponent AI Tests AI switch cooldown prevents immediate re-switch
+00:00 +2 -2: Opponent AI Tests AI switch cooldown prevents immediate re-switch [E]
+  Expected: <1>
+    Actual: <0>
+  Should switch on first turn
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test\ai_test.dart 212:7                             main.<fn>.<fn>
+  
+00:00 +2 -2: Opponent AI Tests Ability notification triggers for Flame Body on contact
+00:00 +3 -2: Opponent AI Tests Opponent uses own moves after switching in (isOpponent regression)
+BATTLE LOG: A wild Foe Test appeared! Go, Test!
+Foe Test used Ember!
+Test took 19 damage (100.0%)!
+What will Test do?
+Your Test fainted! Your whole team is defeated.
+00:00 +3 -3: Opponent AI Tests Opponent uses own moves after switching in (isOpponent regression) [E]
+  Expected: contains 'Leaf Blade'
+    Actual: ['Ember']
+     Which: does not contain 'Leaf Blade'
+  Switched-in opponent should have its own moves
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test\ai_test.dart 345:9                             main.<fn>.<fn>
+  
+00:00 +3 -3: Opponent AI Tests Opponent revealed moves are tracked when used
+00:00 +4 -3: Some tests failed.

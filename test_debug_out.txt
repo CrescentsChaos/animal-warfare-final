@@ -1,0 +1,8 @@
+00:00 +0: loading C:/Users/USER/dev/animal_warfare/test/test_debug.dart
+00:00 +0: debug
+Damage without Iron Fist: 44
+State after first turn: BattleState.waitingForInput
+Damage with Iron Fist: 89
+State after second turn: BattleState.battleEnd
+Ratio: 2.02
+00:00 +0 -1: Some tests failed.

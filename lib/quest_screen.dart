@@ -9,7 +9,9 @@ import 'package:provider/provider.dart';
 import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/models/quest.dart';
 import 'package:animal_warfare/models/organism.dart';
+import 'package:animal_warfare/models/captured_organism.dart';
 import 'package:animal_warfare/widgets/organism_sprite_widget.dart';
+import 'package:animal_warfare/widgets/animal_summary_screen.dart';
 import 'package:animal_warfare/theme.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -152,10 +154,12 @@ class _QuestScreenState extends State<QuestScreen> {
 
     final targetOrg = options[random.nextInt(options.length)];
     final target = targetOrg.name;
-    final count = random.nextInt(5) + 3; // 3 to 7
-    final baseReward = count * 50;
+    final count = random.nextInt(2) + 1; // 1 to 3
+    final baseReward = count * 100;
     final rarityBonus =
+        (targetOrg.rarity.toLowerCase() == 'uncommon' ? 50 : 0) +
         (targetOrg.rarity.toLowerCase() == 'rare' ? 100 : 0) +
+        (targetOrg.rarity.toLowerCase() == 'epic' ? 200 : 0) +
         (targetOrg.rarity.toLowerCase() == 'legendary' ? 300 : 0);
     final reward = baseReward + rarityBonus + random.nextInt(50);
 
@@ -433,9 +437,208 @@ class _QuestScreenState extends State<QuestScreen> {
                   ),
                 ),
               ),
+            ] else if (quest.category == 'River Monsters') ...[
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                height: 36,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blueAccent,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                  onPressed: () =>
+                      _showSubmissionDialog(context, quest, userState),
+                  child: const Text(
+                    'SUBMIT ANIMAL',
+                    style: TextStyle(fontFamily: 'PressStart2P', fontSize: 8),
+                  ),
+                ),
+              ),
             ],
           ],
         ),
+      ),
+    );
+  }
+
+  void _showSubmissionDialog(
+    BuildContext context,
+    Quest quest,
+    UserState userState,
+  ) {
+    final targetSpecies = quest.targetOrganismName;
+    final userOrganisms =
+        userState.currentUser?.capturedOrganisms
+            .where((o) => o.baseOrganism.name == targetSpecies)
+            .toList() ??
+        [];
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return AlertDialog(
+              backgroundColor: AppColors.secondaryButtonColor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+                side: const BorderSide(color: Colors.blueAccent, width: 2),
+              ),
+              title: Text(
+                'SUBMIT $targetSpecies',
+                style: const TextStyle(
+                  fontFamily: 'PressStart2P',
+                  fontSize: 10,
+                  color: Colors.white,
+                ),
+              ),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Select an animal to give to Jeremy. \n(This will release the animal!)',
+                      style: TextStyle(color: Colors.white70, fontSize: 11),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    if (userOrganisms.isEmpty)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 20),
+                        child: Text(
+                          'You have no animals of this species.',
+                          style: TextStyle(color: Colors.white38, fontSize: 10),
+                        ),
+                      )
+                    else
+                      Flexible(
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: userOrganisms.length,
+                          itemBuilder: (context, index) {
+                            final org = userOrganisms[index];
+                            return Card(
+                              color: Colors.black26,
+                              margin: const EdgeInsets.only(bottom: 8),
+                              child: ListTile(
+                                leading: _OrganismSpriteDisplay(
+                                  organism: org.baseOrganism,
+                                  isDiscovered: true,
+                                  silhouetteColor: Colors.black,
+                                  height: 40,
+                                  width: 40,
+                                ),
+                                title: Text(
+                                  org.name,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  'Lv.${org.level}',
+                                  style: const TextStyle(
+                                    color: Colors.white54,
+                                    fontSize: 10,
+                                  ),
+                                ),
+                                trailing: IconButton(
+                                  icon: const Icon(
+                                    Icons.info_outline,
+                                    color: Colors.cyan,
+                                  ),
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            AnimalSummaryScreen(captured: org),
+                                      ),
+                                    );
+                                  },
+                                ),
+                                onTap: () {
+                                  _confirmSubmission(
+                                    context,
+                                    quest,
+                                    org,
+                                    userState,
+                                  );
+                                },
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    'CANCEL',
+                    style: TextStyle(color: Colors.white54, fontSize: 10),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _confirmSubmission(
+    BuildContext context,
+    Quest quest,
+    CapturedOrganism org,
+    UserState userState,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.black87,
+        title: const Text(
+          'ARE YOU SURE?',
+          style: TextStyle(
+            color: Colors.redAccent,
+            fontFamily: 'PressStart2P',
+            fontSize: 10,
+          ),
+        ),
+        content: Text(
+          'Submit ${org.name} to Jeremy?\nYou will lose this animal forever.',
+          style: const TextStyle(color: Colors.white70, fontSize: 12),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('NO', style: TextStyle(color: Colors.white)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+            onPressed: () {
+              // Close both dialogs
+              Navigator.pop(context); // Close confirm
+              Navigator.pop(context); // Close selection list
+
+              userState.submitQuestAnimal(quest.id, org);
+              _updateDialogue(
+                "A fine specimen. I'll make sure it's handled with care.",
+              );
+            },
+            child: const Text(
+              'YES, SUBMIT',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
       ),
     );
   }

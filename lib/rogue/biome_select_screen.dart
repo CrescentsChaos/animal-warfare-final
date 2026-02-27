@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:animal_warfare/user_state.dart';
-import 'package:animal_warfare/rogue/rogue_hub_screen.dart';
 
 class BiomeSelectScreen extends StatefulWidget {
   const BiomeSelectScreen({super.key});
@@ -30,11 +29,7 @@ class _BiomeSelectScreenState extends State<BiomeSelectScreen> {
     await userState.advanceToNextFloor(biome);
 
     if (!mounted) return;
-    // Use pushReplacement instead of pushAndRemoveUntil so the Main Menu
-    // (and any screens below BiomeSelectScreen) remain in the nav stack.
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (ctx) => const RogueHubScreen()),
-    );
+    Navigator.of(context).pop();
   }
 
   @override

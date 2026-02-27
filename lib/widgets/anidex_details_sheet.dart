@@ -6,6 +6,7 @@ import 'package:animal_warfare/models/move.dart';
 import 'package:animal_warfare/models/elemental_type.dart';
 import 'package:animal_warfare/models/captured_organism.dart';
 import 'package:animal_warfare/user_state.dart';
+import 'package:animal_warfare/widgets/type_matchup_sheet.dart';
 import 'package:animal_warfare/theme.dart';
 
 class AnidexDetailsSheet {
@@ -59,6 +60,10 @@ class AnidexDetailsSheet {
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
                     if (!isDiscovered) ...[_buildClassifiedBanner()],
+                    if (isDiscovered) ...[
+                      _buildMatchupButton(context, organism),
+                      const SizedBox(height: 24),
+                    ],
                     _buildFieldIntel(organism),
                     const SizedBox(height: 32),
                     _buildPremiumDescription(organism, isDiscovered),
@@ -960,6 +965,40 @@ class AnidexDetailsSheet {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  static Widget _buildMatchupButton(BuildContext context, Organism org) {
+    return InkWell(
+      onTap: () => TypeMatchupSheet.show(context, org.elementalTypes),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.highlightColor.withOpacity(0.3)),
+        ),
+        child: Row(
+          children: const [
+            Icon(
+              Icons.shield_outlined,
+              color: AppColors.highlightColor,
+              size: 20,
+            ),
+            SizedBox(width: 16),
+            Text(
+              'VIEW DEFENSIVE MATCHUPS',
+              style: TextStyle(
+                color: AppColors.highlightColor,
+                fontFamily: 'PressStart2P',
+                fontSize: 8,
+              ),
+            ),
+            Spacer(),
+            Icon(Icons.chevron_right, color: Colors.white24),
+          ],
+        ),
       ),
     );
   }

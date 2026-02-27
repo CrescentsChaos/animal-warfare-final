@@ -85,6 +85,8 @@ void main() {
 
       // Inject moves
       manager.opponentMoves = [fireMove, waterMove];
+      opponentOrg.moveStamina['Ember'] = 10;
+      opponentOrg.moveStamina['Water Gun'] = 10;
 
       // Dummy player action
       final dummyMove = Move(name: 'Idle', description: '', baseDamage: 0);
@@ -123,7 +125,6 @@ void main() {
       );
       manager.currentState = BattleState.waitingForInput;
 
-      // Current opponent moves (bad: Fire vs Water)
       manager.opponentMoves = [
         Move(
           name: 'Ember',
@@ -132,15 +133,7 @@ void main() {
           type: ElementalType.blaze,
         ),
       ];
-
-      manager.opponentMoves = [
-        Move(
-          name: 'Ember',
-          description: '',
-          baseDamage: 40,
-          type: ElementalType.blaze,
-        ),
-      ];
+      currentOpponent.moveStamina['Ember'] = 10;
 
       // Start turn
       final dummyMove = Move(name: 'Idle', description: '', baseDamage: 0);
@@ -165,6 +158,7 @@ void main() {
         type: ElementalType.blaze,
       );
       manager.opponentMoves = [fireMove];
+      opponentOrg.moveStamina['Ember'] = 10;
       // Wait for intro sequence to settle
       await Future.delayed(Duration.zero);
       manager.currentState = BattleState.waitingForInput;
@@ -208,6 +202,7 @@ void main() {
           type: ElementalType.blaze,
         ),
       ];
+      currentOpponent.moveStamina['Ember'] = 10;
 
       final dummyMove = Move(name: 'Idle', description: '', baseDamage: 0);
       playerOrg.moveStamina['Idle'] = 10;
@@ -324,6 +319,8 @@ void main() {
 
         final playerOrg = CapturedOrganism.spawn(base);
         playerOrg.moveStamina['Scratch'] = 10;
+        opp1.moveStamina['Ember'] = 10;
+        opp2.moveStamina['Leaf Blade'] = 10;
 
         final manager = BattleManager(
           playerOrg,
@@ -361,6 +358,7 @@ void main() {
     test('Opponent revealed moves are tracked when used', () async {
       final playerOrg = CapturedOrganism.spawn(base);
       final opp1 = CapturedOrganism.spawn(base.copyWith(moves: 'Ember'));
+      opp1.moveStamina['Ember'] = 10;
 
       final fireMove = Move(
         name: 'Ember',

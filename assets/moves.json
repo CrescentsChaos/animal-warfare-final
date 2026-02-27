@@ -173,6 +173,23 @@
         ]
     },
     {
+        "name": "Fire Punch",
+        "description": "10% chance to burn the opponent.",
+        "baseDamage": 75,
+        "type": "blaze",
+        "accuracy": 95,
+        "stamina": 15,
+        "category": "physical",
+        "isPunch": true,
+        "effects": [
+            {
+                "type": "statusBurn",
+                "target": "opponent",
+                "chance": 10
+            }
+        ]
+    },
+    {
         "name": "Thunder Fang",
         "description": "10% chance to paralyze the opponent.",
         "baseDamage": 65,
@@ -193,7 +210,7 @@
         "name": "Fire Fang",
         "description": "10% chance to burn the opponent.",
         "baseDamage": 65,
-        "type": "fire",
+        "type": "blaze",
         "accuracy": 95,
         "stamina": 15,
         "category": "physical",
@@ -211,6 +228,24 @@
         "description": "OHKO anyone.",
         "baseDamage": 9999,
         "type": "cryo",
+        "accuracy": 30,
+        "stamina": 15,
+        "category": "special"
+    },
+    {
+        "name": "Typhoon",
+        "description": "OHKO anyone.",
+        "baseDamage": 9999,
+        "type": "flying",
+        "accuracy": 30,
+        "stamina": 15,
+        "category": "special"
+    },
+    {
+        "name": "Tsunami",
+        "description": "OHKO anyone.",
+        "baseDamage": 9999,
+        "type": "aquatic",
         "accuracy": 30,
         "stamina": 15,
         "category": "special"
@@ -735,6 +770,23 @@
         "category": "physical"
     },
     {
+        "name": "Hurricane",
+        "description": "The user wraps its opponent in a fierce wind. It may also confuse the target.",
+        "baseDamage": 110,
+        "type": "flying",
+        "accuracy": 70,
+        "stamina": 10,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statusConfusion",
+                "target": "opponent",
+                "value": 2,
+                "chance": 30
+            }
+        ]
+    },
+    {
         "name": "Scary Face",
         "description": "A terrifying glare that halts the opponent in their tracks.",
         "baseDamage": 0,
@@ -877,7 +929,7 @@
             {
                 "type": "statChange",
                 "target": "self",
-                "stat": "spDef",
+                "stat": "resistance",
                 "value": 2
             }
         ]
@@ -897,7 +949,7 @@
         "description": "A rhythmic dominance display that intimidates the foe.",
         "baseDamage": 0,
         "type": "martial",
-        "stamina": 12,
+        "stamina": 10,
         "category": "status",
         "effects": [
             {
@@ -905,6 +957,42 @@
                 "target": "opponent",
                 "stat": "attack",
                 "value": -2
+            }
+        ]
+    },
+    {
+        "name": "Feather Dance",
+        "description": "Drops opponent's speed by 2.",
+        "baseDamage": 0,
+        "type": "flying",
+        "stamina": 10,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "speed",
+                "value": -2
+            }
+        ]
+    },
+    {
+        "name": "Swagger",
+        "description": "Raises opponent's attack but confuses them too.",
+        "baseDamage": 0,
+        "type": "darkness",
+        "stamina": 10,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "attack",
+                "value": 1
+            },
+            {
+                "type": "statusConfusion",
+                "target": "opponent"
             }
         ]
     },
@@ -2519,6 +2607,16 @@
         ]
     },
     {
+        "name": "Double-Edge",
+        "description": "A reckless, life-risking tackle. This also damages the user quite a lot.",
+        "baseDamage": 120,
+        "accuracy": 100,
+        "type": "basic",
+        "stamina": 15,
+        "recoilPercent": 0.33,
+        "category": "physical"
+    },
+    {
         "name": "Double Slap",
         "description": "Hits 2 times.",
         "baseDamage": 20,
@@ -2823,7 +2921,7 @@
         "description": "An eerie, blinding attack that confuses the target.",
         "baseDamage": 85,
         "accuracy": 95,
-        "type": "basic",
+        "type": "spectral",
         "stamina": 15,
         "category": "physical",
         "effects": [
@@ -2854,6 +2952,23 @@
         ]
     },
     {
+        "name": "Iron Defense",
+        "description": "The user hardens its body's surface like iron, sharply raising its Defense stat.",
+        "baseDamage": 0,
+        "type": "metal",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "defense",
+                "value": 2,
+                "chance": 100
+            }
+        ]
+    },
+    {
         "name": "Iron Head",
         "description": "30% chance to stun the target.",
         "baseDamage": 80,
@@ -2867,6 +2982,23 @@
                 "target": "opponent",
                 "value": 1,
                 "chance": 30
+            }
+        ]
+    },
+    {
+        "name": "Calm Mind",
+        "description": "The user focuses its mind to raise both its Power and Resistance stats.",
+        "baseDamage": 0,
+        "type": "aura",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "multiStatChange",
+                "target": "self",
+                "stat": "power:1,resistance:1",
+                "value": 1,
+                "chance": 100
             }
         ]
     },
@@ -2910,37 +3042,6 @@
         "stamina": 10,
         "category": "physical",
         "effects": []
-    },
-    {
-        "name": "Constrict",
-        "description": "Traps and crushes the foe, dealing damage over time.",
-        "baseDamage": 35,
-        "accuracy": 90,
-        "type": "basic",
-        "stamina": 20,
-        "category": "physical",
-        "effects": [
-            {
-                "type": "statusStun",
-                "value": 1,
-                "chance": 30
-            },
-            {
-                "type": "statusVulnerable",
-                "value": 2,
-                "chance": 100
-            }
-        ]
-    },
-    {
-        "name": "Crush Grip",
-        "description": "A heavy strike that scales with the user's massive weight.",
-        "baseDamage": 100,
-        "accuracy": 100,
-        "type": "giant",
-        "stamina": 10,
-        "category": "physical",
-        "damageStat": "attack"
     },
     {
         "name": "Coil",
@@ -3397,11 +3498,33 @@
         ]
     },
     {
+        "name": "Giga Impact",
+        "description": "The target is attacked with a powerful impact. The user can't move on the next turn.",
+        "baseDamage": 150,
+        "type": "basic",
+        "stamina": 5,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "recharge"
+            }
+        ]
+    },
+    {
         "name": "Hyper Voice",
         "description": "The target is attacked with a powerful sonic blast.",
         "baseDamage": 90,
         "type": "sound",
         "stamina": 15,
+        "category": "special"
+    },
+    {
+        "name": "Boomburst",
+        "description": "The target is attacked with a powerful sound wave.",
+        "baseDamage": 140,
+        "type": "sound",
+        "stamina": 10,
+        "accuracy": 100,
         "category": "special"
     },
     {
@@ -3852,6 +3975,7 @@
         "accuracy": 100,
         "stamina": 5,
         "category": "status",
+        "isSoundBased": true,
         "effects": [
             {
                 "type": "perishSong",
@@ -3864,7 +3988,7 @@
         "name": "Final Gambit",
         "description": "The user faints to inflict damage on the target equal to the user's current HP.",
         "baseDamage": 0,
-        "type": "brawl",
+        "type": "martial",
         "accuracy": 100,
         "stamina": 5,
         "category": "special",
@@ -4010,6 +4134,871 @@
             {
                 "type": "futureSight",
                 "target": "opponent"
+            }
+        ]
+    },
+    {
+        "name": "Eruption",
+        "description": "The user attacks by erupting with fury. The higher the user's HP, the greater the move's power.",
+        "baseDamage": 150,
+        "type": "blaze",
+        "accuracy": 100,
+        "stamina": 5,
+        "category": "special",
+        "effects": [
+            {
+                "type": "hpRatioDamage"
+            }
+        ]
+    },
+    {
+        "name": "Heavy Slam",
+        "description": "The user slams into the target with its heavy body. The more the user outweighs the target, the greater the move's power.",
+        "baseDamage": 1,
+        "type": "metal",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "weightDamage"
+            }
+        ]
+    },
+    {
+        "name": "Magnitude",
+        "description": "The user attacks by shaking the ground with a random magnitude. The power varies with the magnitude.",
+        "baseDamage": 1,
+        "type": "earth",
+        "accuracy": 100,
+        "stamina": 30,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "magnitude"
+            }
+        ]
+    },
+    {
+        "name": "Defog",
+        "description": "A strong wind blows away the target's barriers such as Reflect and Light Screen. This also lowers the target's evasiveness.",
+        "baseDamage": 0,
+        "type": "flying",
+        "accuracy": 100,
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "defog",
+                "target": "opponent"
+            }
+        ]
+    },
+    {
+        "name": "Acupressure",
+        "description": "The user applies pressure to its own body, sharply raising one of its stats at random.",
+        "baseDamage": 0,
+        "type": "aura",
+        "accuracy": 100,
+        "stamina": 30,
+        "category": "status",
+        "effects": [
+            {
+                "type": "acupressure",
+                "target": "self"
+            }
+        ]
+    },
+    {
+        "name": "Metronome",
+        "description": "The user waggles a finger and stimulates its brain into randomly using nearly any move.",
+        "baseDamage": 0,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "status",
+        "effects": [
+            {
+                "type": "metronome",
+                "target": "self"
+            }
+        ]
+    },
+    {
+        "name": "Anchor Shot",
+        "description": "The user entangles the target with its anchor chain while attacking. The target becomes unable to flee.",
+        "baseDamage": 80,
+        "type": "metal",
+        "accuracy": 100,
+        "stamina": 20,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "trapIndices",
+                "target": "opponent"
+            }
+        ]
+    },
+    {
+        "name": "Fire Spin",
+        "description": "The target becomes trapped within a fierce vortex of fire that rages for two to five turns.",
+        "baseDamage": 35,
+        "type": "blaze",
+        "accuracy": 85,
+        "stamina": 15,
+        "category": "special",
+        "effects": [
+            {
+                "type": "clamping",
+                "target": "opponent"
+            }
+        ]
+    },
+    {
+        "name": "Sand Tomb",
+        "description": "The user traps the target inside a harshly raging sandstorm for two to five turns. Traps the opponent.",
+        "baseDamage": 35,
+        "type": "earth",
+        "accuracy": 85,
+        "stamina": 15,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "clamping",
+                "target": "opponent"
+            }
+        ]
+    },
+    {
+        "name": "Assist",
+        "description": "The user hurries and uses a random move from among those known by other animals in its party.",
+        "baseDamage": 0,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 20,
+        "category": "status",
+        "effects": [
+            {
+                "type": "assist",
+                "target": "self"
+            }
+        ]
+    },
+    {
+        "name": "Belch",
+        "description": "The user lets out a damaging belch at the target. The user must eat a Berry/Talisman to use this move.",
+        "baseDamage": 120,
+        "type": "toxic",
+        "accuracy": 90,
+        "stamina": 10,
+        "category": "special",
+        "effects": [
+            {
+                "type": "belch"
+            }
+        ]
+    },
+    {
+        "name": "Fishious Rend",
+        "description": "The user rends the target with its hard gills. Its power is doubled if the user moves before the target.",
+        "baseDamage": 85,
+        "type": "aquatic",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "moveFirstBoost"
+            }
+        ]
+    },
+    {
+        "name": "Bolt Beak",
+        "description": "The user stabs the target with its electrified beak. Its power is doubled if the user moves before the target.",
+        "baseDamage": 85,
+        "type": "electric",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "moveFirstBoost"
+            }
+        ]
+    },
+    {
+        "name": "Chilly Reception",
+        "description": "The user tells a chillingly bad joke before switching places with a party animal in waiting. This also summons a snowstorm.",
+        "baseDamage": 0,
+        "type": "cryo",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "status",
+        "effects": [
+            {
+                "type": "weather",
+                "target": "field",
+                "stat": "snow"
+            },
+            {
+                "type": "forceSwitchSelf"
+            }
+        ]
+    },
+    {
+        "name": "Copycat",
+        "description": "The user mimics the last move used by a source other than itself. It fails if no move has been used yet.",
+        "baseDamage": 0,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 20,
+        "category": "status",
+        "effects": [
+            {
+                "type": "copycat"
+            }
+        ]
+    },
+    {
+        "name": "Throat Chop",
+        "description": "The user attacks the target's throat, preventing the target from using sound-based moves for two turns.",
+        "baseDamage": 80,
+        "type": "darkness",
+        "accuracy": 100,
+        "stamina": 15,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "throatChop",
+                "target": "opponent"
+            }
+        ]
+    },
+    {
+        "name": "Fake Out",
+        "description": "This attack hits first and stuns the target. It only works the first turn the user is in battle.",
+        "baseDamage": 40,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 30,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusStun",
+                "value": 1,
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "False Swipe",
+        "description": "A restrained attack that prevents the target from fainting. The target is left with at least 1 HP.",
+        "baseDamage": 40,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 40,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "falseSwipe"
+            }
+        ]
+    },
+    {
+        "name": "Fillet Away",
+        "description": "The user sharply raises its Attack, Power, and Speed stats by cutting off its own meat and reducing its own HP by half of its max HP.",
+        "baseDamage": 0,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "status",
+        "effects": [
+            {
+                "type": "filletAway"
+            }
+        ]
+    },
+    {
+        "name": "Constrict",
+        "description": "Traps and crushes the foe, dealing damage over time.",
+        "baseDamage": 35,
+        "accuracy": 100,
+        "type": "basic",
+        "stamina": 20,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "clamping",
+                "target": "opponent"
+            }
+        ]
+    },
+    {
+        "name": "Crush Grip",
+        "description": "The user crushes the target with immense force. The more HP the target has, the greater the move's power.",
+        "baseDamage": 120,
+        "type": "giant",
+        "accuracy": 100,
+        "stamina": 5,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "hpRatioDamage"
+            }
+        ]
+    },
+    {
+        "name": "Boomburst",
+        "description": "The user attacks everything around it with the tremendous power of a terrible explosive sound.",
+        "baseDamage": 140,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "special",
+        "isSoundBased": true
+    },
+    {
+        "name": "First Impression",
+        "description": "Although this move has great power, it only works the first turn the user is in battle.",
+        "baseDamage": 90,
+        "type": "arthropod",
+        "accuracy": 100,
+        "stamina": 10,
+        "priority": 2,
+        "category": "physical",
+        "isContact": true
+    },
+    {
+        "name": "Flail",
+        "description": "The user flails about aimlessly to attack. The less HP the user has, the greater the move's power.",
+        "baseDamage": 1,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 15,
+        "category": "physical",
+        "isContact": true,
+        "effects": [
+            {
+                "type": "flailDamage"
+            }
+        ]
+    },
+    {
+        "name": "Focus Punch",
+        "description": "The user focuses its mind before launching a punch. This move fails if the user is hit before it is used.",
+        "baseDamage": 150,
+        "type": "martial",
+        "accuracy": 100,
+        "stamina": 20,
+        "priority": -3,
+        "category": "physical",
+        "isContact": true,
+        "isPunch": true
+    },
+    {
+        "name": "Return",
+        "description": "This attack move's power is higher the greater the user's friendship (satisfaction) with its Trainer.",
+        "baseDamage": 102,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 20,
+        "category": "physical",
+        "isContact": true,
+        "effects": [
+            {
+                "type": "happinessDamage"
+            }
+        ]
+    },
+    {
+        "name": "Frustration",
+        "description": "This attack move's power is higher the less the user's friendship (satisfaction) with its Trainer.",
+        "baseDamage": 102,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 20,
+        "category": "physical",
+        "isContact": true,
+        "effects": [
+            {
+                "type": "happinessDamage"
+            }
+        ]
+    },
+    {
+        "name": "Gigaton Hammer",
+        "description": "The user swings a giant hammer with incredible force. This move can't be used twice in a row.",
+        "baseDamage": 160,
+        "type": "metal",
+        "accuracy": 100,
+        "stamina": 5,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "gigatonHammer"
+            }
+        ]
+    },
+    {
+        "name": "Glaive Rush",
+        "description": "The user throws its entire body into a reckless charge. Attacks from the opponent will deal double damage until the user's next turn.",
+        "baseDamage": 120,
+        "type": "dragon",
+        "accuracy": 100,
+        "stamina": 5,
+        "category": "physical",
+        "isContact": true,
+        "effects": [
+            {
+                "type": "glaiveRush"
+            }
+        ]
+    },
+    {
+        "name": "Grass Knot",
+        "description": "The user snares the target with grass and trips it. The heavier the target, the greater the move's power.",
+        "baseDamage": 1,
+        "type": "nature",
+        "accuracy": 100,
+        "stamina": 20,
+        "category": "special",
+        "effects": [
+            {
+                "type": "weightOpponentDamage"
+            }
+        ]
+    },
+    {
+        "name": "Low Kick",
+        "description": "A powerful low kick that makes the target fall over. The heavier the target, the greater the move's power.",
+        "baseDamage": 1,
+        "type": "martial",
+        "accuracy": 100,
+        "stamina": 20,
+        "category": "physical",
+        "isContact": true,
+        "effects": [
+            {
+                "type": "weightOpponentDamage"
+            }
+        ]
+    },
+    {
+        "name": "Grassy Glide",
+        "description": "The user glides on the ground to hit the target. This move always goes first on Grassy Terrain.",
+        "baseDamage": 70,
+        "type": "nature",
+        "accuracy": 100,
+        "stamina": 20,
+        "category": "physical",
+        "isContact": true,
+        "effects": [
+            {
+                "type": "grassyGlide"
+            }
+        ]
+    },
+    {
+        "name": "Gravity",
+        "description": "Gravity is intensified for five turns, making Flying-type animals and those with Levitate vulnerable to Ground-type moves.",
+        "baseDamage": 0,
+        "type": "psionic",
+        "accuracy": 100,
+        "stamina": 5,
+        "category": "status",
+        "effects": [
+            {
+                "type": "gravity",
+                "target": "field",
+                "value": 5
+            }
+        ]
+    },
+    {
+        "name": "Gyro Ball",
+        "description": "The user tackles the target with a high-speed spin. The slower the user compared to the target, the greater the move's power.",
+        "baseDamage": 1,
+        "type": "metal",
+        "accuracy": 100,
+        "stamina": 5,
+        "category": "physical",
+        "isContact": true,
+        "effects": [
+            {
+                "type": "gyroBallDamage"
+            }
+        ]
+    },
+    {
+        "name": "Hard Press",
+        "description": "The user crushes the target with its entire body. The more HP the target has, the greater the move's power.",
+        "baseDamage": 100,
+        "type": "metal",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "physical",
+        "isContact": true,
+        "effects": [
+            {
+                "type": "hpRatioDamage"
+            }
+        ]
+    },
+    {
+        "name": "Skull Bash",
+        "description": "The user tucks in its head to raise its Defense stat on the first turn, then rams the target on the next turn.",
+        "baseDamage": 130,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "physical",
+        "isContact": true,
+        "effects": [
+            {
+                "type": "skullBash",
+                "target": "self"
+            }
+        ]
+    },
+    {
+        "name": "Heal Bell",
+        "description": "The user makes a soothing bell chime to heal the status conditions of all the party animals.",
+        "baseDamage": 0,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 5,
+        "category": "status",
+        "effects": [
+            {
+                "type": "cureTeamStatus",
+                "target": "self"
+            }
+        ]
+    },
+    {
+        "name": "Healing Wish",
+        "description": "The user faints. In return, the replacement animal will have its HP fully restored and its status conditions cured.",
+        "baseDamage": 0,
+        "type": "psionic",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "status",
+        "effects": [
+            {
+                "type": "healingWish",
+                "target": "self"
+            }
+        ]
+    },
+    {
+        "name": "Wish",
+        "description": "The user makes a wish. At the end of the next turn, the user's HP is restored by half its max HP.",
+        "baseDamage": 0,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "status",
+        "effects": [
+            {
+                "type": "wish",
+                "target": "self"
+            }
+        ]
+    },
+    {
+        "name": "Hex",
+        "description": "This relentless attack deals double damage to a target affected by a status condition.",
+        "baseDamage": 65,
+        "type": "ghastly",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "special",
+        "effects": [
+            {
+                "type": "hexDamage"
+            }
+        ]
+    },
+    {
+        "name": "Hidden Power",
+        "description": "A unique attack that varies in type depending on the animal using it.",
+        "baseDamage": 60,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 15,
+        "category": "special",
+        "effects": [
+            {
+                "type": "hiddenPower"
+            }
+        ]
+    },
+    {
+        "name": "High Jump Kick",
+        "description": "The user jumps high, then strikes with a knee kick. If this move misses, the user takes damage instead.",
+        "baseDamage": 130,
+        "type": "martial",
+        "accuracy": 90,
+        "stamina": 10,
+        "category": "physical",
+        "isContact": true,
+        "effects": [
+            {
+                "type": "highJumpKick"
+            }
+        ]
+    },
+    {
+        "name": "Heal Block",
+        "description": "For five turns, the user prevents the opposing team from using any move, Ability, or held item that recovers HP.",
+        "baseDamage": 0,
+        "type": "psionic",
+        "accuracy": 100,
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "healBlock",
+                "target": "opponent",
+                "value": 5
+            }
+        ]
+    },
+    {
+        "name": "Jungle Healing",
+        "description": "The user becomes one with the jungle, restoring its own HP and curing its status conditions.",
+        "baseDamage": 0,
+        "type": "nature",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "status",
+        "isSoundBased": true,
+        "effects": [
+            {
+                "type": "jungleHealing",
+                "target": "self",
+                "value": 25
+            }
+        ]
+    },
+    {
+        "name": "Kowtow Cleave",
+        "description": "The user slashes the target after making a deep bow. This move never misses.",
+        "baseDamage": 85,
+        "type": "darkness",
+        "accuracy": 0,
+        "stamina": 10,
+        "category": "physical",
+        "isContact": true
+    },
+    {
+        "name": "Ceaseless Edge",
+        "description": "The user slashes the target with its shell blade. This move also leaves sharp shell splinters as Spikes around the target's feet.",
+        "baseDamage": 65,
+        "type": "darkness",
+        "accuracy": 90,
+        "stamina": 15,
+        "category": "physical",
+        "isContact": true,
+        "effects": [
+            {
+                "type": "setHazard",
+                "target": "opponent",
+                "stat": "spikes"
+            }
+        ]
+    },
+    {
+        "name": "Lash Out",
+        "description": "The user lashes out with all its spite. This move's power is doubled if the user's stats were lowered during the turn.",
+        "baseDamage": 75,
+        "type": "darkness",
+        "accuracy": 100,
+        "stamina": 5,
+        "category": "physical",
+        "isContact": true
+    },
+    {
+        "name": "Last Resort",
+        "description": "This move can be used only after the user has used all the other moves it knows.",
+        "baseDamage": 140,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 5,
+        "category": "physical",
+        "isContact": true,
+        "effects": [
+            {
+                "type": "lastResort"
+            }
+        ]
+    },
+    {
+        "name": "Mean Look",
+        "description": "The user pins the target with a dark, arresting look to prevent the target from fleeing or switching out.",
+        "baseDamage": 0,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 5,
+        "category": "status",
+        "effects": [
+            {
+                "type": "trapIndices",
+                "target": "opponent"
+            }
+        ]
+    },
+    {
+        "name": "Block",
+        "description": "The user blocks the target's way with arms spread wide to prevent escape.",
+        "baseDamage": 0,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 5,
+        "category": "status",
+        "effects": [
+            {
+                "type": "trapIndices",
+                "target": "opponent"
+            }
+        ]
+    },
+    {
+        "name": "Memento",
+        "description": "The user faints. In return, the target's Attack and Power stats are harshly lowered.",
+        "baseDamage": 0,
+        "type": "darkness",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "status",
+        "effects": [
+            {
+                "type": "memento",
+                "target": "opponent"
+            }
+        ]
+    },
+    {
+        "name": "Meteor Beam",
+        "description": "The user gathers space energy to raise its Power stat on the first turn, then blasts the target on the next turn.",
+        "baseDamage": 120,
+        "type": "rock",
+        "accuracy": 90,
+        "stamina": 10,
+        "category": "special",
+        "effects": [
+            {
+                "type": "meteorBeam",
+                "target": "self"
+            }
+        ]
+    },
+    {
+        "name": "Mighty Cleave",
+        "description": "The user slashes with its stone-hard horn. This move can hit through protecting moves.",
+        "baseDamage": 95,
+        "type": "rock",
+        "accuracy": 100,
+        "stamina": 5,
+        "category": "physical",
+        "isContact": true
+    },
+    {
+        "name": "Mind Blown",
+        "description": "The user attacks everything around it by letting its own head explode. The user takes damage equal to half of its max HP.",
+        "baseDamage": 150,
+        "type": "blaze",
+        "accuracy": 100,
+        "stamina": 5,
+        "category": "special",
+        "effects": [
+            {
+                "type": "mindBlown"
+            }
+        ]
+    },
+    {
+        "name": "Miracle Eye",
+        "description": "The user makes Dark-type animals susceptible to Psionic-type moves. This also resets the target's evasiveness to normal.",
+        "baseDamage": 0,
+        "type": "psionic",
+        "accuracy": 100,
+        "stamina": 40,
+        "category": "status",
+        "effects": [
+            {
+                "type": "miracleEye",
+                "target": "opponent"
+            }
+        ]
+    },
+    {
+        "name": "Counter",
+        "description": "A retaliation move that counters any physical attack, inflicting double the damage taken.",
+        "baseDamage": 1,
+        "type": "martial",
+        "accuracy": 100,
+        "stamina": 20,
+        "priority": -5,
+        "category": "physical",
+        "isContact": true,
+        "effects": [
+            {
+                "type": "counter"
+            }
+        ]
+    },
+    {
+        "name": "Mirror Coat",
+        "description": "A retaliation move that counters any special attack, inflicting double the damage taken.",
+        "baseDamage": 1,
+        "type": "psionic",
+        "accuracy": 100,
+        "stamina": 20,
+        "priority": -5,
+        "category": "special",
+        "effects": [
+            {
+                "type": "mirrorCoat"
+            }
+        ]
+    },
+    {
+        "name": "Pay Day",
+        "description": "Numerous coins are hurled at the target to inflict damage. Money is earned after the battle.",
+        "baseDamage": 40,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 20,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "payDay"
+            }
+        ]
+    },
+    {
+        "name": "Psyshock",
+        "description": "The user materializes an odd psychic wave to attack the target. This move deals physical damage.",
+        "baseDamage": 80,
+        "type": "psionic",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "special",
+        "targetDefenseStat": "defense"
+    },
+    {
+        "name": "Shell Trap",
+        "description": "The user sets a trap with its shell. If the user is hit by a physical attack, the trap explodes and deals massive damage.",
+        "baseDamage": 150,
+        "type": "blaze",
+        "accuracy": 100,
+        "stamina": 5,
+        "priority": -3,
+        "category": "special",
+        "effects": [
+            {
+                "type": "shellTrap"
             }
         ]
     }

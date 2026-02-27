@@ -41,6 +41,7 @@ class RogueLikeState {
     int? currentPlayerIndex,
     Map<String, int>? inventory,
     List<RogueReward>? pendingRewards,
+    bool clearPendingRewards = false,
   }) {
     return RogueLikeState(
       floor: floor ?? this.floor,
@@ -53,7 +54,9 @@ class RogueLikeState {
       currentOpponentIndex: currentOpponentIndex ?? this.currentOpponentIndex,
       currentPlayerIndex: currentPlayerIndex ?? this.currentPlayerIndex,
       inventory: inventory ?? this.inventory,
-      pendingRewards: pendingRewards ?? this.pendingRewards,
+      pendingRewards: clearPendingRewards
+          ? null
+          : (pendingRewards ?? this.pendingRewards),
     );
   }
 
@@ -117,19 +120,34 @@ class RogueLikeState {
   }
 }
 
-enum RogueRewardType { item, fullHeal, cureStatus, captureItems, premium }
+enum RogueRewardType {
+  item,
+  fullHeal,
+  singleHeal, // Added
+  cureStatus,
+  captureItems,
+  natureMint, // Added
+  premium,
+}
 
 class RogueReward {
   final RogueRewardType type;
   final String? itemId;
   final String label;
+  final int? count;
 
-  const RogueReward({required this.type, this.itemId, required this.label});
+  const RogueReward({
+    required this.type,
+    this.itemId,
+    required this.label,
+    this.count,
+  });
 
   Map<String, dynamic> toJson() => {
     'type': type.index,
     'itemId': itemId,
     'label': label,
+    'count': count,
   };
 
   factory RogueReward.fromJson(Map<String, dynamic> json) {
@@ -137,6 +155,7 @@ class RogueReward {
       type: RogueRewardType.values[json['type'] as int],
       itemId: json['itemId'] as String?,
       label: json['label'] as String? ?? '',
+      count: json['count'] as int?,
     );
   }
 }

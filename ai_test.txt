@@ -1,0 +1,70 @@
+00:00 +0: loading C:/Users/USER/dev/animal_warfare/test/ai_test.dart
+00:00 +0: Opponent AI Tests Opponent chooses super-effective move
+00:00 +0 -1: Opponent AI Tests Opponent chooses super-effective move [E]
+  Expected: 'Ember'
+    Actual: 'Struggle'
+     Which: is different.
+            Expected: Ember
+              Actual: Struggle
+                      ^
+             Differ at offset 0
+  Opponent should choose super-effective Fire move against Grass
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test\ai_test.dart 95:7                              main.<fn>.<fn>
+  
+00:00 +0 -1: Opponent AI Tests Opponent switches when at severe disadvantage
+00:00 +0 -2: Opponent AI Tests Opponent switches when at severe disadvantage [E]
+  Expected: 'Switch'
+    Actual: 'Struggle'
+     Which: is different.
+            Expected: Switch
+              Actual: Struggle
+                       ^
+             Differ at offset 1
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test\ai_test.dart 151:7                             main.<fn>.<fn>
+  
+00:00 +0 -2: Opponent AI Tests Opponent name in logs includes Foe prefix
+00:00 +0 -3: Opponent AI Tests Opponent name in logs includes Foe prefix [E]
+  Expected: contains 'used Ember'
+    Actual: 'A wild Foe Test appeared! Go, Test! | What will Test do? | Test used Idle! | Foe Test used Struggle! | Test took 4 damage (30.8%)! | What will Test do?'
+     Which: does not contain 'used Ember'
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test\ai_test.dart 180:7                             main.<fn>.<fn>
+  
+00:00 +0 -3: Opponent AI Tests AI switch cooldown prevents immediate re-switch
+00:00 +0 -4: Opponent AI Tests AI switch cooldown prevents immediate re-switch [E]
+  Expected: <1>
+    Actual: <0>
+  Should switch on first turn
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test\ai_test.dart 217:7                             main.<fn>.<fn>
+  
+00:00 +0 -4: Opponent AI Tests Ability notification triggers for Flame Body on contact
+00:00 +1 -4: Opponent AI Tests Opponent uses own moves after switching in (isOpponent regression)
+BATTLE LOG: A wild Foe Test appeared! Go, Test!
+Foe Test used Ember!
+Test took 13 damage (100.0%)!
+What will Test do?
+A critical hit!
+Your Test fainted! Your whole team is defeated.
+00:00 +1 -5: Opponent AI Tests Opponent uses own moves after switching in (isOpponent regression) [E]
+  Expected: contains 'Leaf Blade'
+    Actual: ['Ember']
+     Which: does not contain 'Leaf Blade'
+  Switched-in opponent should have its own moves
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test\ai_test.dart 348:9                             main.<fn>.<fn>
+  
+00:00 +1 -5: Opponent AI Tests Opponent revealed moves are tracked when used
+00:00 +2 -5: Some tests failed.

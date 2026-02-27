@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/models/captured_organism.dart';
 import 'package:animal_warfare/data/biome_data.dart';
+import 'package:animal_warfare/widgets/animal_summary_screen.dart';
 
 class RogueStarterSelectScreen extends StatefulWidget {
   final String biome;
@@ -35,7 +36,10 @@ class _RogueStarterSelectScreenState extends State<RogueStarterSelectScreen> {
     setState(() => _isStarting = true);
 
     final userState = Provider.of<UserState>(context, listen: false);
-    await userState.startRogueRun(starter: _options![_selectedIndex!]);
+    await userState.startRogueRun(
+      starter: _options![_selectedIndex!],
+      biome: widget.biome,
+    );
 
     if (mounted) {
       Navigator.pop(context, true); // Success
@@ -158,6 +162,62 @@ class _RogueStarterSelectScreenState extends State<RogueStarterSelectScreen> {
                                       'DEF',
                                       org.getDefense(),
                                       themeColor,
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Wrap(
+                                      spacing: 4,
+                                      runSpacing: 4,
+                                      children: org.selectedMoveNames.map((
+                                        move,
+                                      ) {
+                                        return Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 6,
+                                            vertical: 3,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white10,
+                                            borderRadius: BorderRadius.circular(
+                                              4,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            move.toUpperCase(),
+                                            style: const TextStyle(
+                                              fontFamily: 'PressStart2P',
+                                              color: Colors.white70,
+                                              fontSize: 6,
+                                            ),
+                                          ),
+                                        );
+                                      }).toList(),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    TextButton.icon(
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (ctx) =>
+                                                AnimalSummaryScreen(
+                                                  captured: org,
+                                                ),
+                                          ),
+                                        );
+                                      },
+                                      icon: const Icon(
+                                        Icons.info_outline,
+                                        size: 14,
+                                        color: Colors.orangeAccent,
+                                      ),
+                                      label: const Text(
+                                        'SUMMARY',
+                                        style: TextStyle(
+                                          fontFamily: 'PressStart2P',
+                                          fontSize: 8,
+                                          color: Colors.orangeAccent,
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ),

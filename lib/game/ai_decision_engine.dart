@@ -751,8 +751,12 @@ class AIDecisionEngine {
   }) {
     if (bench.isEmpty) return SwitchDecision(false, null);
 
-    // Cannot switch if locked into Rollout or Ice Ball
-    if (activeMon.rolloutTurnCount > 0) {
+    // Cannot switch if locked into Rollout/Ice Ball, recharging, or semi-invulnerable
+    if (activeMon.rolloutTurnCount > 0 ||
+        activeMon.mustRecharge ||
+        activeMon.semiInvulnerable != null ||
+        activeMon.isInvulnerable ||
+        activeMon.chargingMove != null) {
       return SwitchDecision(false, null);
     }
 

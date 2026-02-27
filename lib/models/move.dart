@@ -91,6 +91,45 @@ enum MoveEffectType {
   iceBall,
   defenseCurl,
   futureSight,
+  metronome,
+  acupressure,
+  assist,
+  copycat,
+  magnitude,
+  trapIndices,
+  clamping,
+  defog,
+  throatChop,
+  filletAway,
+  falseSwipe,
+  belch,
+  moveFirstBoost,
+  weightDamage,
+  hpRatioDamage,
+  flailDamage,
+  happinessDamage,
+  gigatonHammer,
+  glaiveRush,
+  weightOpponentDamage,
+  grassyGlide,
+  gravity,
+  gyroBallDamage,
+  skullBash,
+  healingWish,
+  wish,
+  healBlock,
+  hexDamage,
+  highJumpKick,
+  jungleHealing,
+  lastResort,
+  memento,
+  meteorBeam,
+  mindBlown,
+  miracleEye,
+  counter,
+  mirrorCoat,
+  payDay,
+  shellTrap,
 }
 
 enum MoveCategory { physical, special, status }
@@ -227,11 +266,13 @@ class Move {
     this.targetCount = MoveTargetCount.single,
     this.isPunch = false,
     this.isBite = false,
+    this.isSoundBased = false,
     bool? isContact,
   }) : isContact =
            isContact ?? (category == MoveCategory.physical && baseDamage > 0);
 
   final bool isContact;
+  final bool isSoundBased;
 
   // Compatibility getter
   MoveEffect get effect => effects.isNotEmpty
@@ -303,6 +344,7 @@ class Move {
       isContact: json['isContact'] as bool?,
       isPunch: json['isPunch'] as bool? ?? false,
       isBite: json['isBite'] as bool? ?? false,
+      isSoundBased: json['isSoundBased'] as bool? ?? false,
       targetCount: json['targetCount'] != null
           ? MoveTargetCount.values.firstWhere(
               (e) => e.toString().split('.').last == json['targetCount'],

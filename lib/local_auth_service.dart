@@ -45,6 +45,7 @@ class UserData {
   final List<CapturedOrganism> bestRogueTeam;
   final int accountLevel;
   final int accountXP;
+  final Map<String, Map<String, int>> speciesStats;
 
   UserData({
     required this.username,
@@ -66,6 +67,7 @@ class UserData {
     this.bestRogueTeam = const [],
     this.accountLevel = 1,
     this.accountXP = 0,
+    Map<String, Map<String, int>>? speciesStats,
   }) : quizStats = quizStats ?? {},
        discoveredOrganisms = discoveredOrganisms ?? [],
        completedAchievements = completedAchievements ?? [],
@@ -74,7 +76,8 @@ class UserData {
        craftedTalismans = craftedTalismans ?? [],
        activeQuests = activeQuests ?? [],
        battleTeam = battleTeam ?? [],
-       rogueLikeState = rogueLikeState ?? const RogueLikeState();
+       rogueLikeState = rogueLikeState ?? const RogueLikeState(),
+       speciesStats = speciesStats ?? {};
 
   UserData copyWith({
     String? username,
@@ -96,6 +99,7 @@ class UserData {
     List<CapturedOrganism>? bestRogueTeam,
     int? accountLevel,
     int? accountXP,
+    Map<String, Map<String, int>>? speciesStats,
   }) {
     return UserData(
       username: username ?? this.username,
@@ -118,6 +122,7 @@ class UserData {
       bestRogueTeam: bestRogueTeam ?? this.bestRogueTeam,
       accountLevel: accountLevel ?? this.accountLevel,
       accountXP: accountXP ?? this.accountXP,
+      speciesStats: speciesStats ?? this.speciesStats,
     );
   }
 
@@ -193,6 +198,7 @@ class UserData {
     'bestRogueTeam': bestRogueTeam.map((co) => co.toJson()).toList(),
     'accountLevel': accountLevel,
     'accountXP': accountXP,
+    'speciesStats': speciesStats,
   };
 
   factory UserData.fromJson(
@@ -283,6 +289,14 @@ class UserData {
           .toList(),
       accountLevel: json['accountLevel'] as int? ?? 1,
       accountXP: json['accountXP'] as int? ?? 0,
+      speciesStats:
+          (json['speciesStats'] as Map?)?.map(
+            (k, v) => MapEntry(
+              k as String,
+              (v as Map).map((ki, vi) => MapEntry(ki as String, vi as int)),
+            ),
+          ) ??
+          {},
     );
   }
 }

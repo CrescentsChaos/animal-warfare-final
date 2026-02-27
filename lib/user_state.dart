@@ -298,13 +298,59 @@ class UserState with ChangeNotifier {
     if (_currentUser == null || _currentUser!.activeQuests.isEmpty) return;
     await _readModifyWrite((u) {
       final list = u.activeQuests.map((quest) {
+        // Fix: Skip "River Monsters" category for automatic updates
         if (quest.status == QuestStatus.active &&
+            quest.category != 'River Monsters' &&
             quest.targetOrganismName == organismName) {
           return quest.copyWith(currentCount: quest.currentCount + 1);
         }
         return quest;
       }).toList();
       return u.copyWith(activeQuests: list);
+    });
+  }
+
+  Future<void> submitQuestAnimal(
+    String questId,
+    CapturedOrganism organism,
+  ) async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) {
+      final index = u.activeQuests.indexWhere((q) => q.id == questId);
+      if (index == -1) return u;
+      final quest = u.activeQuests[index];
+
+      if (quest.status != QuestStatus.active) return u;
+      if (quest.targetOrganismName != organism.baseOrganism.name) return u;
+
+      final newList = u.activeQuests.map((q) {
+        if (q.id == questId) {
+          return q.copyWith(currentCount: q.currentCount + 1);
+        }
+        return q;
+      }).toList();
+
+      // Release the animal
+      final newCaptured = List<CapturedOrganism>.from(u.capturedOrganisms)
+        ..removeWhere((o) => o.id == organism.id);
+
+      // Re-map team indices since list changed
+      final currentTeamIds = u.battleTeam
+          .map((idx) => u.capturedOrganisms[idx].id)
+          .where((id) => id != organism.id)
+          .toList();
+
+      final updatedTeamIndices = <int>[];
+      for (final id in currentTeamIds) {
+        final newIdx = newCaptured.indexWhere((o) => o.id == id);
+        if (newIdx != -1) updatedTeamIndices.add(newIdx);
+      }
+
+      return u.copyWith(
+        activeQuests: newList,
+        capturedOrganisms: newCaptured,
+        battleTeam: updatedTeamIndices,
+      );
     });
   }
 
@@ -329,12 +375,12 @@ class UserState with ChangeNotifier {
     });
   }
 
-  Future<void> startRogueRun({CapturedOrganism? starter}) async {
+  Future<void> startRogueRun({CapturedOrganism? starter, String? biome}) async {
     if (_currentUser == null) return;
 
     // Clear any existing run
     await LocalAuthService.loadOrganisms();
-    final biome = _getRandomBiome();
+    final selectedBiome = biome ?? getRandomBiome();
 
     // Default inventory: 5 capture nets
     Map<String, int> initialInventory = {'capture_net': 5};
@@ -344,14 +390,23 @@ class UserState with ChangeNotifier {
       startingTeam = [starter];
     }
 
+    final opponents = _generateRogueOpponentTeam(
+      selectedBiome,
+      1, // 1st battle usually 1 enemy
+      1, // floor 1
+      encounterIndex: 0,
+      playerTeamOverride: startingTeam,
+    );
+
     await _readModifyWrite(
       (u) => u.copyWith(
         rogueLikeState: RogueLikeState(
           floor: 1,
           encounterIndex: 0,
-          currentBiome: biome,
+          currentBiome: selectedBiome,
           inventory: initialInventory,
           team: startingTeam,
+          opponentTeam: opponents,
           isActive: true,
           highestFloor: u.rogueLikeState.highestFloor,
         ),
@@ -366,17 +421,23 @@ class UserState with ChangeNotifier {
     final pool = organisms
         .where((o) => o.habitat.toLowerCase().contains(biome.toLowerCase()))
         .toList();
+    // Pool already excludes human since human habitat is "Everywhere" and we usually search for specific biomes
+    // or pool defaults to everything discovered.
+    // Ensure Human is explicitly excluded if it sneaks in.
     final selectionPool = pool.isEmpty ? organisms : pool;
 
     final options = <CapturedOrganism>[];
     final random = math.Random();
 
     // Try to pick 3 balanced starters (around level 5)
-    while (options.length < 3) {
+    while (options.length < 3 && options.length < selectionPool.length) {
       final base = selectionPool[random.nextInt(selectionPool.length)];
+      if (base.name == 'Human') continue;
       if (options.any((o) => o.baseOrganism.name == base.name)) continue;
 
-      options.add(CapturedOrganism.spawn(base, level: 5));
+      options.add(
+        CapturedOrganism.spawn(base, level: 1),
+      ); // Starter level set to 1
     }
 
     return options;
@@ -425,6 +486,7 @@ class UserState with ChangeNotifier {
 
   List<RogueReward> _generateRogueRewards(int floor, bool isPremium) {
     final rewards = <RogueReward>[];
+    final random = math.Random();
 
     if (isPremium) {
       // Special premium rewards after 5th battle
@@ -436,8 +498,8 @@ class UserState with ChangeNotifier {
       );
       rewards.add(
         const RogueReward(
-          type: RogueRewardType.premium,
-          label: 'ULTRA HEAL PACK',
+          type: RogueRewardType.natureMint,
+          label: 'MYSTICAL NATURE MINT',
         ),
       );
       rewards.add(
@@ -449,30 +511,79 @@ class UserState with ChangeNotifier {
       return rewards;
     }
 
-    // Normal rewards: pick 3 different types
-    final types =
-        RogueRewardType.values
-            .where((t) => t != RogueRewardType.premium)
-            .toList()
-          ..shuffle();
+    // Normal rewards: pick 3 different types with weighting
+    // Weights: Item: 2, FullHeal: 1, SingleHeal: 3, CureStatus: 1, CaptureItems: 3
+    final weightMap = <RogueRewardType, int>{
+      RogueRewardType.item: 2,
+      RogueRewardType.fullHeal: 1,
+      RogueRewardType.singleHeal: 4,
+      RogueRewardType.cureStatus: 1,
+      RogueRewardType.captureItems: 4,
+      RogueRewardType.natureMint: 1,
+    };
 
-    for (int i = 0; i < 3; i++) {
-      final type = types[i];
+    final availableTypes = RogueRewardType.values
+        .where((t) => t != RogueRewardType.premium && weightMap.containsKey(t))
+        .toList();
+
+    Set<RogueRewardType> selectedTypes = {};
+    while (selectedTypes.length < 3 &&
+        selectedTypes.length < availableTypes.length) {
+      // Weighted selection
+      int totalWeight = 0;
+      weightMap.forEach((type, weight) {
+        if (!selectedTypes.contains(type)) totalWeight += weight;
+      });
+
+      int r = random.nextInt(totalWeight);
+      int current = 0;
+      for (var type in weightMap.keys) {
+        if (selectedTypes.contains(type)) continue;
+        current += weightMap[type]!;
+        if (r < current) {
+          selectedTypes.add(type);
+          break;
+        }
+      }
+    }
+
+    for (final type in selectedTypes) {
       switch (type) {
         case RogueRewardType.item:
-          rewards.add(
-            const RogueReward(
-              type: RogueRewardType.item,
-              label: 'RANDOM TALISMAN',
-              itemId: 'random_talisman',
-            ),
-          );
+          final allTalismans = Talisman.allTalismans;
+          if (allTalismans.isNotEmpty) {
+            final randomTalisman =
+                allTalismans[random.nextInt(allTalismans.length)];
+            rewards.add(
+              RogueReward(
+                type: RogueRewardType.item,
+                label: 'TALISMAN: ${randomTalisman.name.toUpperCase()}',
+                itemId: randomTalisman.id,
+              ),
+            );
+          } else {
+            rewards.add(
+              const RogueReward(
+                type: RogueRewardType.item,
+                label: 'LUCKY CHARM',
+                itemId: 'lucky_charm',
+              ),
+            );
+          }
           break;
         case RogueRewardType.fullHeal:
           rewards.add(
             const RogueReward(
               type: RogueRewardType.fullHeal,
               label: 'FULL TEAM HEAL',
+            ),
+          );
+          break;
+        case RogueRewardType.singleHeal:
+          rewards.add(
+            const RogueReward(
+              type: RogueRewardType.singleHeal,
+              label: 'SINGLE ANIMAL HEAL',
             ),
           );
           break;
@@ -485,11 +596,23 @@ class UserState with ChangeNotifier {
           );
           break;
         case RogueRewardType.captureItems:
+          // Random 1-3 nets
+          final count = 1 + random.nextInt(3);
+          rewards.add(
+            RogueReward(
+              type: RogueRewardType.captureItems,
+              label: '$count' + (count == 1 ? ' CAPTURE NET' : ' CAPTURE NETS'),
+              itemId: 'capture_net',
+              count: count,
+            ),
+          );
+          break;
+        case RogueRewardType.natureMint:
           rewards.add(
             const RogueReward(
-              type: RogueRewardType.captureItems,
-              label: '5x CAPTURE NETS',
-              itemId: 'capture_net',
+              type: RogueRewardType.natureMint,
+              label: 'NATURE MINT',
+              itemId: 'nature_mint',
             ),
           );
           break;
@@ -509,23 +632,43 @@ class UserState with ChangeNotifier {
 
       switch (reward.type) {
         case RogueRewardType.item:
-          // For now, just a placeholder or add a specific item
-          inventory['talisman_random'] =
-              (inventory['talisman_random'] ?? 0) + 1;
+          if (reward.itemId != null) {
+            inventory[reward.itemId!] = (inventory[reward.itemId!] ?? 0) + 1;
+          }
           break;
         case RogueRewardType.fullHeal:
           team = team
               .map((org) => org.copyWith(currentHealth: org.maxHealth))
               .toList();
           break;
+        case RogueRewardType.singleHeal:
+          // Heal the animal with lowest HP %
+          if (team.isNotEmpty) {
+            int lowestIndex = 0;
+            double lowestRatio = 1.1;
+            for (int i = 0; i < team.length; i++) {
+              final ratio = team[i].currentHealth / team[i].maxHealth;
+              if (ratio < lowestRatio) {
+                lowestRatio = ratio;
+                lowestIndex = i;
+              }
+            }
+            team[lowestIndex] = team[lowestIndex].copyWith(
+              currentHealth: team[lowestIndex].maxHealth,
+            );
+          }
+          break;
         case RogueRewardType.cureStatus:
           team = team.map((org) => org..restoreAllStamina()).toList();
           break;
         case RogueRewardType.captureItems:
-          inventory['capture_net'] = (inventory['capture_net'] ?? 0) + 5;
+          inventory['capture_net'] =
+              (inventory['capture_net'] ?? 0) + (reward.count ?? 1);
+          break;
+        case RogueRewardType.natureMint:
+          inventory['nature_mint'] = (inventory['nature_mint'] ?? 0) + 1;
           break;
         case RogueRewardType.premium:
-          // Handle premium
           inventory['premium_token'] = (inventory['premium_token'] ?? 0) + 1;
           break;
       }
@@ -534,7 +677,7 @@ class UserState with ChangeNotifier {
         rogueLikeState: state.copyWith(
           inventory: inventory,
           team: team,
-          pendingRewards: null, // Clear after claiming
+          clearPendingRewards: true,
         ),
       );
     });
@@ -601,6 +744,7 @@ class UserState with ChangeNotifier {
         selectedBiome,
         1, // First encounter of new floor is always single
         newFloor,
+        playerTeamOverride: nextTeam,
       );
 
       int bestFloor = u.bestRogueFloor;
@@ -705,12 +849,84 @@ class UserState with ChangeNotifier {
   Future<void> removeRogueTalisman(int index) async {
     if (_currentUser == null) return;
     await _readModifyWrite((u) {
-      final team = List<CapturedOrganism>.from(u.rogueLikeState.team);
+      final state = u.rogueLikeState;
+      final team = List<CapturedOrganism>.from(state.team);
       if (index < 0 || index >= team.length) return u;
+
+      final old = team[index].equippedTalisman;
+      final inv = Map<String, int>.from(state.inventory);
+      if (old != null) {
+        inv[old.id] = (inv[old.id] ?? 0) + 1;
+      }
 
       team[index] = team[index].copyWith(clearTalisman: true);
 
-      return u.copyWith(rogueLikeState: u.rogueLikeState.copyWith(team: team));
+      return u.copyWith(
+        rogueLikeState: state.copyWith(team: team, inventory: inv),
+      );
+    });
+  }
+
+  Future<void> changeRogueAnimalNature(int index, Nature newNature) async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) {
+      final state = u.rogueLikeState;
+      final team = List<CapturedOrganism>.from(state.team);
+      if (index < 0 || index >= team.length) return u;
+
+      final inventory = Map<String, int>.from(state.inventory);
+      final mintCount = inventory['nature_mint'] ?? 0;
+
+      if (mintCount > 0) {
+        inventory['nature_mint'] = mintCount - 1;
+        team[index] = team[index].copyWith(nature: newNature);
+        return u.copyWith(
+          rogueLikeState: state.copyWith(team: team, inventory: inventory),
+        );
+      }
+      return u;
+    });
+  }
+
+  Future<void> equipRogueTalisman(int teamIndex, String talismanId) async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) {
+      final state = u.rogueLikeState;
+      final team = List<CapturedOrganism>.from(state.team);
+      if (teamIndex < 0 || teamIndex >= team.length) return u;
+
+      final talisman = Talisman.findById(talismanId);
+      if (talisman == null) return u;
+
+      final inv = Map<String, int>.from(state.inventory);
+      if ((inv[talismanId] ?? 0) <= 0) return u;
+
+      // Return old item to inventory if any
+      final old = team[teamIndex].equippedTalisman;
+      if (old != null) {
+        inv[old.id] = (inv[old.id] ?? 0) + 1;
+      }
+
+      // Take from inventory
+      inv[talismanId] = inv[talismanId]! - 1;
+      if (inv[talismanId] == 0) inv.remove(talismanId);
+
+      team[teamIndex] = team[teamIndex].copyWith(equippedTalisman: talisman);
+
+      return u.copyWith(
+        rogueLikeState: state.copyWith(team: team, inventory: inv),
+      );
+    });
+  }
+
+  Future<void> addRogueLoot(String itemId, int amount) async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) {
+      final state = u.rogueLikeState;
+      final inv = Map<String, int>.from(state.inventory);
+      inv[itemId] = (inv[itemId] ?? 0) + amount;
+      if (inv[itemId]! <= 0) inv.remove(itemId);
+      return u.copyWith(rogueLikeState: state.copyWith(inventory: inv));
     });
   }
 
@@ -719,7 +935,7 @@ class UserState with ChangeNotifier {
     await _readModifyWrite((u) => u.copyWith(rogueLikeState: state));
   }
 
-  String _getRandomBiome() {
+  String getRandomBiome() {
     final organisms = LocalAuthService.getCachedOrganisms();
     List<String> biomes = organisms
         .expand((o) => o.habitat.split(',').map((e) => e.trim()))
@@ -758,6 +974,7 @@ class UserState with ChangeNotifier {
     int count,
     int floor, {
     int encounterIndex = 0,
+    List<CapturedOrganism>? playerTeamOverride,
   }) {
     final organisms = LocalAuthService.getCachedOrganisms();
     if (organisms.isEmpty) return [];
@@ -767,13 +984,31 @@ class UserState with ChangeNotifier {
         .toList();
     final selectionPool = pool.isEmpty ? organisms : pool;
 
+    // Get player's highest level to cap opponent scaling
+    final playerTeam =
+        playerTeamOverride ?? _currentUser?.rogueLikeState.team ?? [];
+    final maxPlayerLevel = playerTeam.isNotEmpty
+        ? playerTeam.map((o) => o.level).reduce(math.max)
+        : 1;
+
     final team = <CapturedOrganism>[];
     final random = math.Random();
+    bool isBoss = encounterIndex == 4;
+
     for (int i = 0; i < count; i++) {
       final base = selectionPool[random.nextInt(selectionPool.length)];
-      // Improved scaling: base level 5, +8 per floor, +2 per encounter in floor
-      final level =
-          5 + (floor - 1) * 8 + (encounterIndex * 2) + random.nextInt(3);
+
+      int level;
+      if (isBoss) {
+        level = maxPlayerLevel;
+      } else {
+        // Normal encounters: 1-2 levels lower
+        level = maxPlayerLevel - (1 + random.nextInt(2));
+      }
+
+      // Ensure level is at least 1
+      level = math.max(1, level);
+
       team.add(CapturedOrganism.spawn(base, level: level));
     }
     return team;
@@ -787,8 +1022,11 @@ class UserState with ChangeNotifier {
     required int defeatedLevel,
     required String? killerId,
     required List<String> teamIds,
+    int? levelCap, // Optional cap
   }) async {
     if (_currentUser == null) return {};
+
+    final effectiveCap = levelCap ?? _currentUser!.accountLevel;
 
     // XP constants - SUPER ACCELERATED
     final baseXP = defeatedLevel * 60; // Increased animal battle XP
@@ -806,7 +1044,6 @@ class UserState with ChangeNotifier {
 
     await _readModifyWrite((u) {
       final organisms = List<CapturedOrganism>.from(u.capturedOrganisms);
-      final int accountLevel = u.accountLevel;
 
       // Update animals
       for (int i = 0; i < organisms.length; i++) {
@@ -814,7 +1051,7 @@ class UserState with ChangeNotifier {
         if (teamIds.contains(org.id)) {
           int share = (org.id == killerId) ? baseXP : (baseXP / 2).floor();
           if (share > 0) {
-            final xpResult = org.gainXP(share, accountLevel);
+            final xpResult = org.gainXP(share, effectiveCap);
             if (xpResult['leveledUp'] as bool) {
               results['animalLeveledUp'][org.id] = true;
             }
@@ -848,11 +1085,33 @@ class UserState with ChangeNotifier {
       if (accountLeveledUp) {
         for (int i = 0; i < organisms.length; i++) {
           final org = organisms[i];
-          final xpResult = org.gainXP(0, newAccountLevel);
+          final xpResult = org.gainXP(0, effectiveCap);
           if (xpResult['leveledUp'] as bool) {
             results['animalLeveledUp'][org.id] = true;
             organisms[i] = org.copyWith(level: xpResult['level'] as int);
           }
+        }
+      }
+
+      // Update Roguelike Team if active
+      if (u.rogueLikeState.isActive) {
+        final rogueTeam = List<CapturedOrganism>.from(u.rogueLikeState.team);
+        bool rogueUpdated = false;
+        for (int j = 0; j < rogueTeam.length; j++) {
+          final rogueOrg = rogueTeam[j];
+          final updatedOrg = organisms.firstWhere(
+            (o) => o.id == rogueOrg.id,
+            orElse: () => rogueOrg,
+          );
+          if (updatedOrg != rogueOrg) {
+            rogueTeam[j] = updatedOrg;
+            rogueUpdated = true;
+          }
+        }
+        if (rogueUpdated) {
+          u = u.copyWith(
+            rogueLikeState: u.rogueLikeState.copyWith(team: rogueTeam),
+          );
         }
       }
 
@@ -864,6 +1123,42 @@ class UserState with ChangeNotifier {
     });
 
     return results;
+  }
+
+  /// Records wins/losses for all animals involved in a battle.
+  Future<void> recordMatchResults({
+    required List<String> playerSpecies,
+    required List<String> opponentSpecies,
+    required bool playerWon,
+  }) async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) {
+      final newStats = Map<String, Map<String, int>>.from(
+        u.speciesStats.map((k, v) => MapEntry(k, Map<String, int>.from(v))),
+      );
+
+      // Helper to update stats
+      void update(String species, bool won) {
+        final existing = newStats[species] ?? {'matches': 0, 'wins': 0};
+        newStats[species] = {
+          'matches': (existing['matches'] ?? 0) + 1,
+          'wins': (existing['wins'] ?? 0) + (won ? 1 : 0),
+        };
+      }
+
+      // Track unique species in the team for that match
+      final pUnique = playerSpecies.toSet();
+      final oUnique = opponentSpecies.toSet();
+
+      for (final species in pUnique) {
+        update(species, playerWon);
+      }
+      for (final species in oUnique) {
+        update(species, !playerWon);
+      }
+
+      return u.copyWith(speciesStats: newStats);
+    });
   }
 
   /// Awards KV (Kill Values) to the killer animal after defeating an opponent.

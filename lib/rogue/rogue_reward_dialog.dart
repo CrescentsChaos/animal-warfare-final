@@ -165,10 +165,14 @@ class RogueRewardDialog extends StatelessWidget {
         return Icons.auto_awesome;
       case RogueRewardType.fullHeal:
         return Icons.favorite;
+      case RogueRewardType.singleHeal:
+        return Icons.favorite_border;
       case RogueRewardType.cureStatus:
         return Icons.bolt;
       case RogueRewardType.captureItems:
         return Icons.catching_pokemon;
+      case RogueRewardType.natureMint:
+        return Icons.spa;
       case RogueRewardType.premium:
         return Icons.workspace_premium;
     }
@@ -180,10 +184,14 @@ class RogueRewardDialog extends StatelessWidget {
         return 'Gain a random talisman';
       case RogueRewardType.fullHeal:
         return 'Heal all animals to 100% HP';
+      case RogueRewardType.singleHeal:
+        return 'Fully heal your most injured animal';
       case RogueRewardType.cureStatus:
         return 'Restore all moves stamina';
       case RogueRewardType.captureItems:
-        return 'Receive 5x Capture Nets';
+        return 'Receive highly valuable capture nets';
+      case RogueRewardType.natureMint:
+        return 'Change the nature of any animal';
       case RogueRewardType.premium:
         return 'Exceptional high-tier reward';
     }

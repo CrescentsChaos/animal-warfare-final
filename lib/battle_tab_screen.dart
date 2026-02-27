@@ -12,6 +12,7 @@ import 'package:animal_warfare/theme.dart';
 import 'package:animal_warfare/game/battle_manager.dart';
 import 'package:animal_warfare/game/archetype_teams.dart';
 import 'package:animal_warfare/game/ai_decision_engine.dart';
+import 'package:animal_warfare/ranked_screen.dart';
 import 'dart:convert';
 
 class BattleTabScreen extends StatefulWidget {
@@ -183,9 +184,10 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
       // Just a pick or let select?
       // Actually RogueHubScreen handles null state maybe?
       // No, let's use the new screen.
+      final firstBiome = userState.getRandomBiome();
       final success = await Navigator.of(context).push<bool>(
         MaterialPageRoute(
-          builder: (context) => RogueStarterSelectScreen(biome: 'Jungle'),
+          builder: (context) => RogueStarterSelectScreen(biome: firstBiome),
         ),
       );
 
@@ -485,6 +487,24 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
                   icon: Icons.group,
                   color: const Color(0xFF005C4B).withOpacity(0.9),
                   onTap: _startDoublesBattle,
+                ),
+
+                const SizedBox(height: 24),
+                // Rankings
+                _buildModeCard(
+                  title: 'RANKINGS',
+                  description:
+                      'Check winrates and global ranks for every animal species!',
+                  icon: Icons.emoji_events,
+                  color: Colors.amber.shade900.withOpacity(0.8),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const RankedScreen(),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
