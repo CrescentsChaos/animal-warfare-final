@@ -239,6 +239,14 @@ class Ability {
       conditions: ['contact'],
     ),
     Ability(
+      name: 'Thick Fat',
+      description: 'Halves the damage taken from Blaze and Cryo-type moves.',
+      trigger: AbilityTrigger.onCalculateDamage,
+      effectType: AbilityEffectType.damageMultiplier,
+      magnitude: 0.5,
+      conditions: ['type_fire', 'type_ice'], // We'll handle this in calculation
+    ),
+    Ability(
       name: 'Comatose',
       description:
           'The organism is always asleep and cannot be inflicted with other status conditions.',

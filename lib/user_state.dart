@@ -5,6 +5,8 @@ import 'package:animal_warfare/models/captured_organism.dart';
 import 'package:animal_warfare/models/talisman.dart';
 import 'package:animal_warfare/models/move.dart';
 import 'package:animal_warfare/models/quest.dart';
+import 'package:animal_warfare/models/organism.dart';
+import 'package:animal_warfare/models/nature.dart';
 import 'dart:math';
 import 'package:animal_warfare/models/rogue_like_state.dart';
 import 'local_auth_service.dart';
@@ -682,6 +684,10 @@ class UserState with ChangeNotifier {
             organisms[i] = org.copyWith(
               xp: xpResult['xp'] as int,
               level: xpResult['level'] as int,
+              satisfaction: min(
+                255,
+                org.satisfaction + 2,
+              ), // Increase satisfaction on victory
             );
           }
         }
@@ -721,6 +727,114 @@ class UserState with ChangeNotifier {
     });
 
     return results;
+  }
+
+  /// Awards KV (Kill Values) to the killer animal after defeating an opponent.
+  /// The KV stat is determined by the defeated animal's highest base stat.
+  Future<void> awardKV(String? killerId, Organism defeatedOrganism) async {
+    if (_currentUser == null || killerId == null) return;
+    final statKey = defeatedOrganism.highestBaseStat;
+    final kvAmount = Organism.kvYield(defeatedOrganism.rarity);
+
+    await _readModifyWrite((u) {
+      final organisms = List<CapturedOrganism>.from(u.capturedOrganisms);
+      for (int i = 0; i < organisms.length; i++) {
+        final org = organisms[i];
+        if (org.id == killerId) {
+          final currentKVs = Map<String, int>.from(org.killValues);
+          final currentTotal = currentKVs.values.fold(0, (s, v) => s + v);
+          final currentStat = currentKVs[statKey] ?? 0;
+          // Check caps
+          if (currentTotal < CapturedOrganism.maxTotalKV &&
+              currentStat < CapturedOrganism.maxStatKV) {
+            final remaining = CapturedOrganism.maxTotalKV - currentTotal;
+            final statRemaining = CapturedOrganism.maxStatKV - currentStat;
+            final award = [
+              kvAmount,
+              remaining,
+              statRemaining,
+            ].reduce((a, b) => a < b ? a : b);
+            currentKVs[statKey] = currentStat + award;
+            organisms[i] = org.copyWith(
+              killValues: currentKVs,
+              satisfaction: min(
+                255,
+                org.satisfaction + 1,
+              ), // Minor satisfaction boost for KO
+            );
+          }
+          break;
+        }
+      }
+      return u.copyWith(capturedOrganisms: organisms);
+    });
+  }
+
+  /// Applies a mint item to change an animal's nature.
+  /// Consumes 1 mint from inventory. Format of mintId: 'adamant_mint'
+  Future<bool> applyMint(int orgIndex, String mintId) async {
+    if (_currentUser == null) return false;
+    // Check user has the mint
+    if ((_currentUser!.inventory[mintId] ?? 0) <= 0) return false;
+    // Derive nature name from mint id (e.g. 'adamant_mint' -> 'Adamant')
+    final natureName = mintId
+        .replaceAll('_mint', '')
+        .split('_')
+        .map((w) => w[0].toUpperCase() + w.substring(1))
+        .join(' ');
+    final nature = Nature.findByName(natureName);
+    bool success = false;
+    await _readModifyWrite((u) {
+      if (orgIndex < 0 || orgIndex >= u.capturedOrganisms.length) return u;
+      final inventory = Map<String, int>.from(u.inventory);
+      inventory[mintId] = (inventory[mintId] ?? 1) - 1;
+      if (inventory[mintId]! <= 0) inventory.remove(mintId);
+      final organisms = List<CapturedOrganism>.from(u.capturedOrganisms);
+      organisms[orgIndex] = organisms[orgIndex].copyWith(nature: nature);
+      success = true;
+      return u.copyWith(capturedOrganisms: organisms, inventory: inventory);
+    });
+    return success;
+  }
+
+  /// Applies a berry item to an animal to reduce KVs and increase satisfaction.
+  Future<bool> applyBerry(int orgIndex, String berryId) async {
+    if (_currentUser == null) return false;
+    // Check user has the berry
+    if ((_currentUser!.inventory[berryId] ?? 0) <= 0) return false;
+
+    bool success = false;
+    await _readModifyWrite((u) {
+      if (orgIndex < 0 || orgIndex >= u.capturedOrganisms.length) return u;
+      final inventory = Map<String, int>.from(u.inventory);
+      inventory[berryId] = (inventory[berryId] ?? 1) - 1;
+      if (inventory[berryId]! <= 0) inventory.remove(berryId);
+
+      final organisms = List<CapturedOrganism>.from(u.capturedOrganisms);
+      // We must modify a copy or just call the method if it's mutable (CapturedOrganism is mutable in this codebase)
+      // but to follow the copyWith pattern safely:
+      final updatedOrg = organisms[orgIndex].copyWith();
+      updatedOrg.applyBerry(berryId);
+      organisms[orgIndex] = updatedOrg;
+
+      success = true;
+      return u.copyWith(capturedOrganisms: organisms, inventory: inventory);
+    });
+    return success;
+  }
+
+  /// Manually reduces KV of a specific stat.
+  Future<void> reduceKV(int orgIndex, String statKey, int amount) async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) {
+      if (orgIndex < 0 || orgIndex >= u.capturedOrganisms.length) return u;
+      final organisms = List<CapturedOrganism>.from(u.capturedOrganisms);
+      final org = organisms[orgIndex];
+      final currentKVs = Map<String, int>.from(org.killValues);
+      currentKVs[statKey] = max(0, (currentKVs[statKey] ?? 0) - amount);
+      organisms[orgIndex] = org.copyWith(killValues: currentKVs);
+      return u.copyWith(capturedOrganisms: organisms);
+    });
   }
 
   @override

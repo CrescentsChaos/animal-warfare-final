@@ -108,5 +108,523 @@
         "description": "An elite net with a 2.0x catch rate, perfect for rare finds.",
         "price": 1500,
         "category": "capture_item"
+    },
+    {
+        "id": "assault_vest",
+        "name": "Assault Vest",
+        "description": "Boosts Resistance by 50%, but you cannot use status moves.",
+        "price": 7000,
+        "category": "talisman"
+    },
+    {
+        "id": "weakness_policy",
+        "name": "Weakness Policy",
+        "description": "If hit by a super-effective move, sharply raises Attack and Power (once per battle).",
+        "price": 5000,
+        "category": "talisman"
+    },
+    {
+        "id": "shell_bell",
+        "name": "Shell Bell",
+        "description": "Restores 1/8 of damage dealt as HP immediately after attacking.",
+        "price": 4500,
+        "category": "talisman"
+    },
+    {
+        "id": "rocky_helmet",
+        "name": "Rocky Helmet",
+        "description": "Damages attackers for 1/6 of their max HP when hit by contact moves.",
+        "price": 5000,
+        "category": "talisman"
+    },
+    {
+        "id": "strength_charm",
+        "name": "Strength Charm",
+        "description": "Increases attack power by 20%.",
+        "price": 3000,
+        "category": "talisman"
+    },
+    {
+        "id": "iron_ward",
+        "name": "Iron Ward",
+        "description": "Increases defense by 25%.",
+        "price": 3000,
+        "category": "talisman"
+    },
+    {
+        "id": "swift_rune",
+        "name": "Swift Rune",
+        "description": "Increases speed by 30%.",
+        "price": 3000,
+        "category": "talisman"
+    },
+    {
+        "id": "vitality_stone",
+        "name": "Vitality Stone",
+        "description": "Increases max health by 15%.",
+        "price": 3000,
+        "category": "talisman"
+    },
+    {
+        "id": "power_crystal",
+        "name": "Power Crystal",
+        "description": "All attacks deal 15% more damage.",
+        "price": 3500,
+        "category": "talisman"
+    },
+    {
+        "id": "guardian_shell",
+        "name": "Guardian Shell",
+        "description": "Reduces incoming damage by 20%.",
+        "price": 3500,
+        "category": "talisman"
+    },
+    {
+        "id": "lucky_claw",
+        "name": "Lucky Claw",
+        "description": "Increases critical hit chance by 10%.",
+        "price": 2500,
+        "category": "talisman"
+    },
+    {
+        "id": "black_sludge",
+        "name": "Black Sludge",
+        "description": "Restores 1/16 max HP each turn for Poison types, damages others by 1/8.",
+        "price": 5000,
+        "category": "talisman"
+    },
+    {
+        "id": "flame_orb",
+        "name": "Flame Orb",
+        "description": "Burns the holder at the end of the first turn.",
+        "price": 2000,
+        "category": "talisman"
+    },
+    {
+        "id": "toxic_orb",
+        "name": "Toxic Orb",
+        "description": "Badly poisons the holder at the end of the first turn.",
+        "price": 2000,
+        "category": "talisman"
+    },
+    {
+        "id": "muscle_band",
+        "name": "Muscle Band",
+        "description": "Boosts physical move damage by 10%.",
+        "price": 4000,
+        "category": "talisman"
+    },
+    {
+        "id": "wise_glasses",
+        "name": "Wise Glasses",
+        "description": "Boosts special move damage by 10%.",
+        "price": 4000,
+        "category": "talisman"
+    },
+    {
+        "id": "kings_rock",
+        "name": "King's Rock",
+        "description": "10% chance to make the target flinch when dealing damage.",
+        "price": 5000,
+        "category": "talisman"
+    },
+    {
+        "id": "scope_lens",
+        "name": "Scope Lens",
+        "description": "Increases critical hit chance by 12%.",
+        "price": 4000,
+        "category": "talisman"
+    },
+    {
+        "id": "wide_lens",
+        "name": "Wide Lens",
+        "description": "Increases move accuracy by 10%.",
+        "price": 2500,
+        "category": "talisman"
+    },
+    {
+        "id": "zoom_lens",
+        "name": "Zoom Lens",
+        "description": "Increases accuracy by 20% when moving after the opponent.",
+        "price": 2500,
+        "category": "talisman"
+    },
+    {
+        "id": "quick_claw",
+        "name": "Quick Claw",
+        "description": "20% chance to move first regardless of speed.",
+        "price": 4000,
+        "category": "talisman"
+    },
+    {
+        "id": "air_balloon",
+        "name": "Air Balloon",
+        "description": "Immune to Earth-type moves. Pops when hit by any attack.",
+        "price": 3000,
+        "category": "talisman"
+    },
+    {
+        "id": "white_herb",
+        "name": "White Herb",
+        "description": "Restores any lowered stats once, then is consumed.",
+        "price": 2500,
+        "category": "talisman"
+    },
+    {
+        "id": "oran_berry",
+        "name": "Oran Berry",
+        "description": "Restores 10 HP when HP falls below 50% (consumed on use).",
+        "price": 100,
+        "category": "talisman"
+    },
+    {
+        "id": "rawst_berry",
+        "name": "Rawst Berry",
+        "description": "Cures Burn (consumed on use).",
+        "price": 200,
+        "category": "talisman"
+    },
+    {
+        "id": "cheri_berry",
+        "name": "Cheri Berry",
+        "description": "Cures Paralysis (consumed on use).",
+        "price": 200,
+        "category": "talisman"
+    },
+    {
+        "id": "chesto_berry",
+        "name": "Chesto Berry",
+        "description": "Cures Sleep (consumed on use).",
+        "price": 200,
+        "category": "talisman"
+    },
+    {
+        "id": "pecha_berry",
+        "name": "Pecha Berry",
+        "description": "Cures Poison (consumed on use).",
+        "price": 200,
+        "category": "talisman"
+    },
+    {
+        "id": "aspear_berry",
+        "name": "Aspear Berry",
+        "description": "Cures Freeze (consumed on use).",
+        "price": 200,
+        "category": "talisman"
+    },
+    {
+        "id": "salac_berry",
+        "name": "Salac Berry",
+        "description": "Sharply raises Speed when HP falls below 25% (consumed on use).",
+        "price": 600,
+        "category": "talisman"
+    },
+    {
+        "id": "petaya_berry",
+        "name": "Petaya Berry",
+        "description": "Sharply raises Power when HP falls below 25% (consumed on use).",
+        "price": 600,
+        "category": "talisman"
+    },
+    {
+        "id": "liechi_berry",
+        "name": "Liechi Berry",
+        "description": "Sharply raises Attack when HP falls below 25% (consumed on use).",
+        "price": 600,
+        "category": "talisman"
+    },
+    {
+        "id": "lansat_berry",
+        "name": "Lansat Berry",
+        "description": "Boosts critical hit chance by 25% when HP falls below 25% (consumed on use).",
+        "price": 800,
+        "category": "talisman"
+    },
+    {
+        "id": "enigma_berry",
+        "name": "Enigma Berry",
+        "description": "Restores 25% HP when hit by a super-effective move (consumed on use).",
+        "price": 1000,
+        "category": "talisman"
+    },
+    {
+        "id": "jaboca_berry",
+        "name": "Jaboca Berry",
+        "description": "Damages attacker by 1/8 max HP when hit by a physical move (consumed on use).",
+        "price": 800,
+        "category": "talisman"
+    },
+    {
+        "id": "rowap_berry",
+        "name": "Rowap Berry",
+        "description": "Damages attacker by 1/8 max HP when hit by a special move (consumed on use).",
+        "price": 800,
+        "category": "talisman"
+    },
+    {
+        "id": "power_herb",
+        "name": "Power Herb",
+        "description": "Allows a two-turn move to execute in one turn (consumed on use).",
+        "price": 3000,
+        "category": "talisman"
+    },
+    {
+        "id": "occa_berry",
+        "name": "Occa Berry",
+        "description": "Reduces damage from a super-effective Fire-type move by 50% (consumed on use).",
+        "price": 400,
+        "category": "talisman"
+    },
+    {
+        "id": "passho_berry",
+        "name": "Passho Berry",
+        "description": "Reduces damage from a super-effective Water/Aquatic-type move by 50% (consumed on use).",
+        "price": 400,
+        "category": "talisman"
+    },
+    {
+        "id": "wacan_berry",
+        "name": "Wacan Berry",
+        "description": "Reduces damage from a super-effective Electric-type move by 50% (consumed on use).",
+        "price": 400,
+        "category": "talisman"
+    },
+    {
+        "id": "rindo_berry",
+        "name": "Rindo Berry",
+        "description": "Reduces damage from a super-effective Grass/Flora-type move by 50% (consumed on use).",
+        "price": 400,
+        "category": "talisman"
+    },
+    {
+        "id": "yache_berry",
+        "name": "Yache Berry",
+        "description": "Reduces damage from a super-effective Ice/Cryo-type move by 50% (consumed on use).",
+        "price": 400,
+        "category": "talisman"
+    },
+    {
+        "id": "shuca_berry",
+        "name": "Shuca Berry",
+        "description": "Reduces damage from a super-effective Ground/Earth-type move by 50% (consumed on use).",
+        "price": 400,
+        "category": "talisman"
+    },
+    {
+        "id": "coba_berry",
+        "name": "Coba Berry",
+        "description": "Reduces damage from a super-effective Flying-type move by 50% (consumed on use).",
+        "price": 400,
+        "category": "talisman"
+    },
+    {
+        "id": "payapa_berry",
+        "name": "Payapa Berry",
+        "description": "Reduces damage from a super-effective Psychic-type move by 50% (consumed on use).",
+        "price": 400,
+        "category": "talisman"
+    },
+    {
+        "id": "damp_rock",
+        "name": "Damp Rock",
+        "description": "Extends the duration of Rain from 5 turns to 8 turns.",
+        "price": 3000,
+        "category": "talisman"
+    },
+    {
+        "id": "heat_rock",
+        "name": "Heat Rock",
+        "description": "Extends the duration of Sun from 5 turns to 8 turns.",
+        "price": 3000,
+        "category": "talisman"
+    },
+    {
+        "id": "smooth_rock",
+        "name": "Smooth Rock",
+        "description": "Extends the duration of Sandstorm from 5 turns to 8 turns.",
+        "price": 3000,
+        "category": "talisman"
+    },
+    {
+        "id": "icy_rock",
+        "name": "Icy Rock",
+        "description": "Extends the duration of Snow/Blizzard from 5 turns to 8 turns.",
+        "price": 3000,
+        "category": "talisman"
+    },
+    {
+        "id": "hardy_mint",
+        "name": "Hardy Mint",
+        "description": "Changes the animal's nature to Hardy (neutral).",
+        "price": 3000,
+        "category": "mint"
+    },
+    {
+        "id": "lonely_mint",
+        "name": "Lonely Mint",
+        "description": "Changes nature to Lonely (+Attack, -Defense).",
+        "price": 3000,
+        "category": "mint"
+    },
+    {
+        "id": "adamant_mint",
+        "name": "Adamant Mint",
+        "description": "Changes nature to Adamant (+Attack, -Power).",
+        "price": 3000,
+        "category": "mint"
+    },
+    {
+        "id": "naughty_mint",
+        "name": "Naughty Mint",
+        "description": "Changes nature to Naughty (+Attack, -Resistance).",
+        "price": 3000,
+        "category": "mint"
+    },
+    {
+        "id": "brave_mint",
+        "name": "Brave Mint",
+        "description": "Changes nature to Brave (+Attack, -Speed).",
+        "price": 3000,
+        "category": "mint"
+    },
+    {
+        "id": "bold_mint",
+        "name": "Bold Mint",
+        "description": "Changes nature to Bold (+Defense, -Attack).",
+        "price": 3000,
+        "category": "mint"
+    },
+    {
+        "id": "docile_mint",
+        "name": "Docile Mint",
+        "description": "Changes nature to Docile (neutral).",
+        "price": 3000,
+        "category": "mint"
+    },
+    {
+        "id": "impish_mint",
+        "name": "Impish Mint",
+        "description": "Changes nature to Impish (+Defense, -Power).",
+        "price": 3000,
+        "category": "mint"
+    },
+    {
+        "id": "lax_mint",
+        "name": "Lax Mint",
+        "description": "Changes nature to Lax (+Defense, -Resistance).",
+        "price": 3000,
+        "category": "mint"
+    },
+    {
+        "id": "relaxed_mint",
+        "name": "Relaxed Mint",
+        "description": "Changes nature to Relaxed (+Defense, -Speed).",
+        "price": 3000,
+        "category": "mint"
+    },
+    {
+        "id": "modest_mint",
+        "name": "Modest Mint",
+        "description": "Changes nature to Modest (+Power, -Attack).",
+        "price": 3000,
+        "category": "mint"
+    },
+    {
+        "id": "mild_mint",
+        "name": "Mild Mint",
+        "description": "Changes nature to Mild (+Power, -Defense).",
+        "price": 3000,
+        "category": "mint"
+    },
+    {
+        "id": "bashful_mint",
+        "name": "Bashful Mint",
+        "description": "Changes nature to Bashful (neutral).",
+        "price": 3000,
+        "category": "mint"
+    },
+    {
+        "id": "rash_mint",
+        "name": "Rash Mint",
+        "description": "Changes nature to Rash (+Power, -Resistance).",
+        "price": 3000,
+        "category": "mint"
+    },
+    {
+        "id": "quiet_mint",
+        "name": "Quiet Mint",
+        "description": "Changes nature to Quiet (+Power, -Speed).",
+        "price": 3000,
+        "category": "mint"
+    },
+    {
+        "id": "calm_mint",
+        "name": "Calm Mint",
+        "description": "Changes nature to Calm (+Resistance, -Attack).",
+        "price": 3000,
+        "category": "mint"
+    },
+    {
+        "id": "gentle_mint",
+        "name": "Gentle Mint",
+        "description": "Changes nature to Gentle (+Resistance, -Defense).",
+        "price": 3000,
+        "category": "mint"
+    },
+    {
+        "id": "careful_mint",
+        "name": "Careful Mint",
+        "description": "Changes nature to Careful (+Resistance, -Power).",
+        "price": 3000,
+        "category": "mint"
+    },
+    {
+        "id": "quirky_mint",
+        "name": "Quirky Mint",
+        "description": "Changes nature to Quirky (neutral).",
+        "price": 3000,
+        "category": "mint"
+    },
+    {
+        "id": "sassy_mint",
+        "name": "Sassy Mint",
+        "description": "Changes nature to Sassy (+Resistance, -Speed).",
+        "price": 3000,
+        "category": "mint"
+    },
+    {
+        "id": "timid_mint",
+        "name": "Timid Mint",
+        "description": "Changes nature to Timid (+Speed, -Attack).",
+        "price": 3000,
+        "category": "mint"
+    },
+    {
+        "id": "hasty_mint",
+        "name": "Hasty Mint",
+        "description": "Changes nature to Hasty (+Speed, -Defense).",
+        "price": 3000,
+        "category": "mint"
+    },
+    {
+        "id": "jolly_mint",
+        "name": "Jolly Mint",
+        "description": "Changes nature to Jolly (+Speed, -Power).",
+        "price": 3000,
+        "category": "mint"
+    },
+    {
+        "id": "naive_mint",
+        "name": "Naive Mint",
+        "description": "Changes nature to Naive (+Speed, -Resistance).",
+        "price": 3000,
+        "category": "mint"
+    },
+    {
+        "id": "serious_mint",
+        "name": "Serious Mint",
+        "description": "Changes nature to Serious (neutral).",
+        "price": 3000,
+        "category": "mint"
     }
 ]

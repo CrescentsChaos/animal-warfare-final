@@ -426,7 +426,7 @@ class _AnidexScreenState extends State<AnidexScreen>
               child: Column(
                 children: [
                   Text(
-                    discovered ? org.name.toUpperCase() : 'SILHOUETTE',
+                    discovered ? org.name.toUpperCase() : '???',
                     textAlign: TextAlign.center,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

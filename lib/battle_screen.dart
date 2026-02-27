@@ -57,22 +57,23 @@ class BattleScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) => BattleManager(
-        playerOrganism,
-        opponentOrganism,
-        biomeName: biomeName,
-        team: playerTeam,
-        opponentTeam: opponentTeam,
-        isArenaBattle: isArenaBattle,
-        isRogueMode: isRogueMode,
-        opponentArchetype: opponentArchetype,
-        initialPlayerIndex: isRogueMode
-            ? Provider.of<UserState>(
-                context,
-                listen: false,
-              ).currentUser?.rogueLikeState.currentPlayerIndex
-            : null,
-      ),
+      create: (context) {
+        final userState = Provider.of<UserState>(context, listen: false);
+        return BattleManager(
+          playerOrganism,
+          opponentOrganism,
+          biomeName: biomeName,
+          team: playerTeam,
+          opponentTeam: opponentTeam,
+          isArenaBattle: isArenaBattle,
+          isRogueMode: isRogueMode,
+          opponentArchetype: opponentArchetype,
+          accountLevel: userState.currentUser?.accountLevel ?? 100,
+          initialPlayerIndex: isRogueMode
+              ? userState.currentUser?.rogueLikeState.currentPlayerIndex
+              : null,
+        );
+      },
       child: BattleScreenContent(
         biomeName: biomeName,
         opponentName: opponentOrganism.baseOrganism.name,
@@ -577,6 +578,12 @@ class _BattleScreenContentState extends State<BattleScreenContent>
 
     if (!mounted) return;
 
+    // Award KV (Kill Values) to the killer animal
+    if (killer.isPlayer) {
+      await userState.awardKV(killer.organism.id, victim.organism.baseOrganism);
+    }
+    if (!mounted) return;
+
     setState(() {
       // Merge results
       _cumulativeXPResults['gainedAnimalXP'] =
@@ -1023,260 +1030,281 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     battleManager.onHeal = _onHeal;
     battleManager.onStatChange = _onStatChange;
 
-    return Scaffold(
-      body: Transform.translate(
-        offset: Offset(_screenShakeX, _screenShakeY),
-        child: Stack(
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage(_getAssetPath(widget.biomeName)),
-                  fit: BoxFit.cover,
-                  colorFilter: ColorFilter.mode(
-                    Colors.black.withOpacity(0.35),
-                    BlendMode.darken,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+
+        // If in waiting for input and it's an exploration fight, act as run
+        if (battleManager.currentState == BattleState.waitingForInput &&
+            !widget.isArenaBattle &&
+            !widget.isRogueMode) {
+          await battleManager.attemptRun();
+        }
+      },
+      child: Scaffold(
+        body: Transform.translate(
+          offset: Offset(_screenShakeX, _screenShakeY),
+          child: Stack(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage(_getAssetPath(widget.biomeName)),
+                    fit: BoxFit.cover,
+                    colorFilter: ColorFilter.mode(
+                      Colors.black.withOpacity(0.35),
+                      BlendMode.darken,
+                    ),
                   ),
                 ),
               ),
-            ),
-            if (battleManager.trickRoomTurns > 0) const _TrickRoomOverlay(),
-            // Weather Overlay
-            WeatherOverlay(weather: battleManager.currentWeather.weather),
-            // Terrain Overlay
-            if (battleManager.currentTerrain.terrain != Terrain.none)
-              TerrainOverlay(terrain: battleManager.currentTerrain.terrain),
-            // Tailwind Overlay
-            TailwindOverlay(
-              isActive:
-                  battleManager.playerTailwindTurns > 0 ||
-                  battleManager.opponentTailwindTurns > 0,
-            ),
-            SafeArea(
-              child: OrientationBuilder(
-                builder: (context, orientation) {
-                  final isLandscape = orientation == Orientation.landscape;
+              if (battleManager.trickRoomTurns > 0) const _TrickRoomOverlay(),
+              // Weather Overlay
+              WeatherOverlay(weather: battleManager.currentWeather.weather),
+              // Terrain Overlay
+              if (battleManager.currentTerrain.terrain != Terrain.none)
+                TerrainOverlay(terrain: battleManager.currentTerrain.terrain),
+              // Tailwind Overlay
+              TailwindOverlay(
+                isActive:
+                    battleManager.playerTailwindTurns > 0 ||
+                    battleManager.opponentTailwindTurns > 0,
+              ),
+              SafeArea(
+                child: OrientationBuilder(
+                  builder: (context, orientation) {
+                    final isLandscape = orientation == Orientation.landscape;
 
-                  if (isLandscape) {
-                    return Column(
-                      children: [
-                        _buildHeader(context, battleManager, overlayColor),
-                        Expanded(
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Left side: Animal Statuses and Sprites
-                              Expanded(
-                                flex: 5,
-                                child: Column(
-                                  children: [
-                                    _buildFieldEffects(context, battleManager),
-                                    if (widget.isArenaBattle)
-                                      _buildOpponentTeamIndicator(
+                    if (isLandscape) {
+                      return Column(
+                        children: [
+                          _buildHeader(context, battleManager, overlayColor),
+                          Expanded(
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Left side: Animal Statuses and Sprites
+                                Expanded(
+                                  flex: 5,
+                                  child: Column(
+                                    children: [
+                                      _buildFieldEffects(
                                         context,
                                         battleManager,
                                       ),
-                                    const SizedBox(height: 2),
-                                    AnimatedBuilder(
-                                      animation: _opponentShakeAnimation,
-                                      builder: (context, child) =>
-                                          Transform.translate(
-                                            offset: Offset(
-                                              _opponentShakeAnimation.value,
-                                              0,
+                                      if (widget.isArenaBattle)
+                                        _buildOpponentTeamIndicator(
+                                          context,
+                                          battleManager,
+                                        ),
+                                      const SizedBox(height: 2),
+                                      AnimatedBuilder(
+                                        animation: _opponentShakeAnimation,
+                                        builder: (context, child) =>
+                                            Transform.translate(
+                                              offset: Offset(
+                                                _opponentShakeAnimation.value,
+                                                0,
+                                              ),
+                                              child: child,
                                             ),
-                                            child: child,
-                                          ),
-                                      child: _buildOpponentStatus(
-                                        context,
-                                        battleManager.opponent,
-                                        overlayColor,
-                                        isNarrow,
-                                        battleManager.opponentHazards,
-                                        battleManager,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    AnimatedBuilder(
-                                      animation: _playerShakeAnimation,
-                                      builder: (context, child) =>
-                                          Transform.translate(
-                                            offset: Offset(
-                                              _playerShakeAnimation.value,
-                                              0,
-                                            ),
-                                            child: child,
-                                          ),
-                                      child: _buildPlayerStatus(
-                                        context,
-                                        battleManager.player,
-                                        overlayColor,
-                                        isNarrow,
-                                        battleManager.playerHazards,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              // Right side: Logs and Controls
-                              Expanded(
-                                flex: 4,
-                                child: Column(
-                                  children: [
-                                    if (battleManager.currentState ==
-                                        BattleState.waitingForInput) ...[
-                                      _buildMessageBox(
-                                        context,
-                                        battleManager.battleLog,
-                                        isNarrow,
-                                        expanded: false,
-                                      ),
-                                      Expanded(
-                                        child: SingleChildScrollView(
-                                          child: _buildActionControls(
-                                            context,
-                                            battleManager,
-                                            overlayColor,
-                                            isNarrow,
-                                            userState,
-                                          ),
+                                        child: _buildOpponentStatus(
+                                          context,
+                                          battleManager.opponent,
+                                          overlayColor,
+                                          isNarrow,
+                                          battleManager.opponentHazards,
+                                          battleManager,
                                         ),
                                       ),
-                                    ] else
-                                      Expanded(
-                                        child: _buildMessageBox(
+                                      const SizedBox(height: 2),
+                                      AnimatedBuilder(
+                                        animation: _playerShakeAnimation,
+                                        builder: (context, child) =>
+                                            Transform.translate(
+                                              offset: Offset(
+                                                _playerShakeAnimation.value,
+                                                0,
+                                              ),
+                                              child: child,
+                                            ),
+                                        child: _buildPlayerStatus(
+                                          context,
+                                          battleManager.player,
+                                          overlayColor,
+                                          isNarrow,
+                                          battleManager.playerHazards,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                // Right side: Logs and Controls
+                                Expanded(
+                                  flex: 4,
+                                  child: Column(
+                                    children: [
+                                      if (battleManager.currentState ==
+                                          BattleState.waitingForInput) ...[
+                                        _buildMessageBox(
                                           context,
                                           battleManager.battleLog,
                                           isNarrow,
-                                          expanded: true,
+                                          expanded: false,
                                         ),
+                                        Expanded(
+                                          child: SingleChildScrollView(
+                                            child: _buildActionControls(
+                                              context,
+                                              battleManager,
+                                              overlayColor,
+                                              isNarrow,
+                                              userState,
+                                            ),
+                                          ),
+                                        ),
+                                      ] else
+                                        Expanded(
+                                          child: _buildMessageBox(
+                                            context,
+                                            battleManager.battleLog,
+                                            isNarrow,
+                                            expanded: true,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      );
+                    }
+
+                    // Portrait layout
+                    return Column(
+                      children: [
+                        _buildHeader(context, battleManager, overlayColor),
+                        const SizedBox(height: 2),
+                        _buildFieldEffects(context, battleManager),
+                        if (widget.isArenaBattle)
+                          _buildOpponentTeamIndicator(context, battleManager),
+                        const SizedBox(height: 2),
+                        Expanded(
+                          child: Column(
+                            children: [
+                              AnimatedBuilder(
+                                animation: _opponentShakeAnimation,
+                                builder: (context, child) =>
+                                    Transform.translate(
+                                      offset: Offset(
+                                        _opponentShakeAnimation.value,
+                                        0,
                                       ),
-                                  ],
+                                      child: child,
+                                    ),
+                                child: _buildOpponentStatus(
+                                  context,
+                                  battleManager.opponent,
+                                  overlayColor,
+                                  isNarrow,
+                                  battleManager.opponentHazards,
+                                  battleManager,
                                 ),
                               ),
+                              const SizedBox(height: 4),
+                              AnimatedBuilder(
+                                animation: _playerShakeAnimation,
+                                builder: (context, child) =>
+                                    Transform.translate(
+                                      offset: Offset(
+                                        _playerShakeAnimation.value,
+                                        0,
+                                      ),
+                                      child: child,
+                                    ),
+                                child: _buildPlayerStatus(
+                                  context,
+                                  battleManager.player,
+                                  overlayColor,
+                                  isNarrow,
+                                  battleManager.playerHazards,
+                                ),
+                              ),
+                              const SizedBox(height: 1),
+                              if (battleManager.currentState ==
+                                  BattleState.waitingForInput) ...[
+                                _buildMessageBox(
+                                  context,
+                                  battleManager.battleLog,
+                                  isNarrow,
+                                  expanded: false,
+                                ),
+                                _buildActionControls(
+                                  context,
+                                  battleManager,
+                                  overlayColor,
+                                  isNarrow,
+                                  userState,
+                                ),
+                              ] else
+                                Expanded(
+                                  child: _buildMessageBox(
+                                    context,
+                                    battleManager.battleLog,
+                                    isNarrow,
+                                    expanded: true,
+                                  ),
+                                ),
                             ],
                           ),
                         ),
                       ],
                     );
-                  }
-
-                  // Portrait layout
-                  return Column(
-                    children: [
-                      _buildHeader(context, battleManager, overlayColor),
-                      const SizedBox(height: 2),
-                      _buildFieldEffects(context, battleManager),
-                      if (widget.isArenaBattle)
-                        _buildOpponentTeamIndicator(context, battleManager),
-                      const SizedBox(height: 2),
-                      Expanded(
-                        child: Column(
-                          children: [
-                            AnimatedBuilder(
-                              animation: _opponentShakeAnimation,
-                              builder: (context, child) => Transform.translate(
-                                offset: Offset(
-                                  _opponentShakeAnimation.value,
-                                  0,
-                                ),
-                                child: child,
-                              ),
-                              child: _buildOpponentStatus(
-                                context,
-                                battleManager.opponent,
-                                overlayColor,
-                                isNarrow,
-                                battleManager.opponentHazards,
-                                battleManager,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            AnimatedBuilder(
-                              animation: _playerShakeAnimation,
-                              builder: (context, child) => Transform.translate(
-                                offset: Offset(_playerShakeAnimation.value, 0),
-                                child: child,
-                              ),
-                              child: _buildPlayerStatus(
-                                context,
-                                battleManager.player,
-                                overlayColor,
-                                isNarrow,
-                                battleManager.playerHazards,
-                              ),
-                            ),
-                            const SizedBox(height: 1),
-                            if (battleManager.currentState ==
-                                BattleState.waitingForInput) ...[
-                              _buildMessageBox(
-                                context,
-                                battleManager.battleLog,
-                                isNarrow,
-                                expanded: false,
-                              ),
-                              _buildActionControls(
-                                context,
-                                battleManager,
-                                overlayColor,
-                                isNarrow,
-                                userState,
-                              ),
-                            ] else
-                              Expanded(
-                                child: _buildMessageBox(
-                                  context,
-                                  battleManager.battleLog,
-                                  isNarrow,
-                                  expanded: true,
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  );
-                },
+                  },
+                ),
               ),
-            ),
-            // Ability Pop-up Overlay
-            if (battleManager.currentAbilityNotify != null)
-              _AbilityPopUp(
-                notification: battleManager.currentAbilityNotify!,
-                themeColor: _getBiomeThemeColor(),
-                link: battleManager.currentAbilityNotify!.isPlayer
-                    ? _playerLink
-                    : _opponentLink,
+              // Ability Pop-up Overlay
+              if (battleManager.currentAbilityNotify != null)
+                _AbilityPopUp(
+                  notification: battleManager.currentAbilityNotify!,
+                  themeColor: _getBiomeThemeColor(),
+                  link: battleManager.currentAbilityNotify!.isPlayer
+                      ? _playerLink
+                      : _opponentLink,
+                ),
+              if (battleManager.isCapturing)
+                CaptureNetOverlay(
+                  shakeCount: battleManager.captureShakeCount,
+                  isSuccess: battleManager.result == BattleResult.capture,
+                  isFailed:
+                      battleManager.result == null &&
+                      battleManager.currentState == BattleState.opponentTurn,
+                  link: _opponentLink,
+                  onComplete: () {},
+                ),
+              // Floating Indicators
+              ..._indicators.map(
+                (ind) => _FloatingIndicatorWidget(
+                  key: ValueKey(ind.id),
+                  data: ind,
+                  link: ind.isPlayer ? _playerLink : _opponentLink,
+                ),
               ),
-            if (battleManager.isCapturing)
-              CaptureNetOverlay(
-                shakeCount: battleManager.captureShakeCount,
-                isSuccess: battleManager.result == BattleResult.capture,
-                isFailed:
-                    battleManager.result == null &&
-                    battleManager.currentState == BattleState.opponentTurn,
-                link: _opponentLink,
-                onComplete: () {},
+              // Move Animation Overlays
+              ..._moveAnims.map(
+                (anim) => _MoveAnimationOverlay(
+                  key: ValueKey(anim.id),
+                  data: anim,
+                  playerLink: _playerLink,
+                  opponentLink: _opponentLink,
+                  getTypeColor: _getTypeColor,
+                ),
               ),
-            // Floating Indicators
-            ..._indicators.map(
-              (ind) => _FloatingIndicatorWidget(
-                key: ValueKey(ind.id),
-                data: ind,
-                link: ind.isPlayer ? _playerLink : _opponentLink,
-              ),
-            ),
-            // Move Animation Overlays
-            ..._moveAnims.map(
-              (anim) => _MoveAnimationOverlay(
-                key: ValueKey(anim.id),
-                data: anim,
-                playerLink: _playerLink,
-                opponentLink: _opponentLink,
-                getTypeColor: _getTypeColor,
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -2995,165 +3023,187 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                   : (MediaQuery.of(context).orientation == Orientation.landscape
                         ? 4.2
                         : 3.6),
-              children: battleManager.playerMoves.map((move) {
-                final typeColor = _getTypeColor(move.type);
-                final effectiveness = _calculateMoveEffectiveness(
-                  move,
-                  battleManager.opponent,
-                );
-                final effectivenessText = _getEffectivenessText(effectiveness);
-                final categoryText = move.category
-                    .toString()
-                    .split('.')
-                    .last
-                    .toUpperCase();
+              children:
+                  (battleManager.getValidMoves(battleManager.player).isEmpty
+                          ? [Move.findOrCreate('Struggle')]
+                          : battleManager.playerMoves)
+                      .map((move) {
+                        final typeColor = _getTypeColor(move.type);
+                        final effectiveness = _calculateMoveEffectiveness(
+                          move,
+                          battleManager.opponent,
+                        );
+                        final effectivenessText = _getEffectivenessText(
+                          effectiveness,
+                        );
+                        final categoryText = move.category
+                            .toString()
+                            .split('.')
+                            .last
+                            .toUpperCase();
 
-                final validMoves = battleManager.getValidMoves(
-                  battleManager.player,
-                );
-                final isValid = validMoves.any((m) => m.name == move.name);
+                        final validMoves = battleManager.getValidMoves(
+                          battleManager.player,
+                        );
+                        final isValid = validMoves.any(
+                          (m) => m.name == move.name,
+                        );
 
-                return ElevatedButton(
-                  onPressed: !isValid
-                      ? null
-                      : () => battleManager.processPlayerAction(move),
-                  onLongPress: () => _showMoveDetails(
-                    context,
-                    move,
-                    _getBiomeThemeColor(),
-                    battleManager,
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: !isValid ? Colors.grey[700] : typeColor,
-                    foregroundColor: !isValid ? Colors.white24 : Colors.white,
-                    padding: const EdgeInsets.all(4),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      side: BorderSide(
-                        color: !isValid
-                            ? Colors.grey.withOpacity(0.3)
-                            : Colors.white.withOpacity(0.5),
-                        width: 2,
-                      ),
-                    ),
-                    elevation: !isValid ? 0 : 2,
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Move Name
-                      Expanded(
-                        flex: 2,
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          alignment: Alignment.center,
-                          child: Text(
-                            move.name,
-                            style: TextStyle(
-                              fontSize: isNarrow ? 9 : 11,
-                              fontFamily: 'PressStart2P',
-                              fontWeight: FontWeight.bold,
-                              shadows: [
-                                const Shadow(
-                                  blurRadius: 2,
-                                  color: Colors.black54,
-                                  offset: Offset(1, 1),
-                                ),
-                              ],
-                            ),
+                        final isSuggested =
+                            battleManager.suggestedMoveName == move.name;
+                        return ElevatedButton(
+                          onPressed: !isValid
+                              ? null
+                              : () => battleManager.processPlayerAction(move),
+                          onLongPress: () => _showMoveDetails(
+                            context,
+                            move,
+                            _getBiomeThemeColor(),
+                            battleManager,
                           ),
-                        ),
-                      ),
-
-                      // Category & Stamina Row
-                      Expanded(
-                        flex: 1,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            // Category Badge
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 3,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: move.category.color,
-                                borderRadius: BorderRadius.circular(2),
-                              ),
-                              child: Text(
-                                categoryText.substring(
-                                  0,
-                                  4,
-                                ), // PHYS, SPEC, STAT
-                                style: const TextStyle(
-                                  fontSize: 6, // Very small
-                                  fontFamily: 'PressStart2P',
-                                  color: Colors.white,
-                                ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: !isValid
+                                ? Colors.grey[700]
+                                : typeColor,
+                            foregroundColor: !isValid
+                                ? Colors.white24
+                                : Colors.white,
+                            padding: const EdgeInsets.all(4),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              side: BorderSide(
+                                color: !isValid
+                                    ? Colors.grey.withOpacity(0.3)
+                                    : (isSuggested
+                                          ? Colors.yellowAccent
+                                          : Colors.white.withOpacity(0.5)),
+                                width: isSuggested ? 3 : 2,
                               ),
                             ),
-                            // Stamina
-                            Text(
-                              '${battleManager.playerOrganism.moveStamina[move.name] ?? 0}/${move.stamina}',
-                              style: TextStyle(
-                                fontSize: isNarrow ? 7 : 8,
-                                fontFamily: 'PressStart2P',
-                                color:
-                                    (battleManager
-                                                .playerOrganism
-                                                .moveStamina[move.name] ??
-                                            0) >
-                                        0
-                                    ? Colors.white
-                                    : Colors.redAccent,
-                                shadows: [
-                                  const Shadow(
-                                    blurRadius: 2,
-                                    color: Colors.black54,
-                                    offset: Offset(1, 1),
+                            elevation: isSuggested ? 12 : (!isValid ? 0 : 2),
+                            shadowColor: isSuggested
+                                ? Colors.yellowAccent
+                                : Colors.black,
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              // Move Name
+                              Expanded(
+                                flex: 2,
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    move.name,
+                                    style: TextStyle(
+                                      fontSize: isNarrow ? 9 : 11,
+                                      fontFamily: 'PressStart2P',
+                                      fontWeight: FontWeight.bold,
+                                      shadows: [
+                                        const Shadow(
+                                          blurRadius: 2,
+                                          color: Colors.black54,
+                                          offset: Offset(1, 1),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      // Effectiveness (if applicable)
-                      if (move.category != MoveCategory.status &&
-                          effectivenessText.isNotEmpty)
-                        Expanded(
-                          flex: 1,
-                          child: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Container(
-                              margin: const EdgeInsets.only(top: 2),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 4,
-                                vertical: 1,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.black45,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                effectivenessText,
-                                style: const TextStyle(
-                                  fontSize: 7,
-                                  fontFamily: 'PressStart2P',
-                                  color: Colors.yellowAccent,
                                 ),
                               ),
-                            ),
+
+                              // Category & Stamina Row
+                              Expanded(
+                                flex: 1,
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    // Category Badge
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 3,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: move.category.color,
+                                        borderRadius: BorderRadius.circular(2),
+                                      ),
+                                      child: Text(
+                                        categoryText.substring(
+                                          0,
+                                          4,
+                                        ), // PHYS, SPEC, STAT
+                                        style: const TextStyle(
+                                          fontSize: 6, // Very small
+                                          fontFamily: 'PressStart2P',
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                    // Stamina
+                                    Text(
+                                      '${battleManager.playerOrganism.moveStamina[move.name] ?? 0}/${move.stamina}',
+                                      style: TextStyle(
+                                        fontSize: isNarrow ? 7 : 8,
+                                        fontFamily: 'PressStart2P',
+                                        color:
+                                            (battleManager
+                                                        .playerOrganism
+                                                        .moveStamina[move
+                                                        .name] ??
+                                                    0) >
+                                                0
+                                            ? Colors.white
+                                            : Colors.redAccent,
+                                        shadows: [
+                                          const Shadow(
+                                            blurRadius: 2,
+                                            color: Colors.black54,
+                                            offset: Offset(1, 1),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              // Effectiveness (if applicable)
+                              if (move.category != MoveCategory.status &&
+                                  effectivenessText.isNotEmpty)
+                                Expanded(
+                                  flex: 1,
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Container(
+                                      margin: const EdgeInsets.only(top: 2),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 4,
+                                        vertical: 1,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.black45,
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Text(
+                                        effectivenessText,
+                                        style: const TextStyle(
+                                          fontSize: 7,
+                                          fontFamily: 'PressStart2P',
+                                          color: Colors.yellowAccent,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              else
+                                const Spacer(flex: 1),
+                            ],
                           ),
-                        )
-                      else
-                        const Spacer(flex: 1),
-                    ],
-                  ),
-                );
-              }).toList(),
+                        );
+                      })
+                      .toList(),
             ),
           const SizedBox(height: 6),
           Row(

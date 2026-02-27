@@ -41,6 +41,7 @@ enum BattleResult {
 // --- BattleManager: The Core State Machine ---
 class BattleManager extends ChangeNotifier with AbilityHelpers {
   final List<CapturedOrganism> playerTeam;
+  final int accountLevel;
   int currentPlayerIndex = 0;
   final CapturedOrganism opponentOrganism;
   final bool isTesting;
@@ -179,6 +180,11 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   Move? currentTurnOpponentMove;
   Move? lastOpponentAction; // For UI/Testing persistence
 
+  // Suggestion logic
+  Timer? _suggestionTimer;
+  String? suggestedMoveName;
+  bool suggestionProcessed = false;
+
   bool _isProcessingHits = false;
 
   /// Completer used to pause U-turn/Volt Switch mid-turn until player selects a new animal.
@@ -252,6 +258,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     List<CapturedOrganism>? opponentTeam,
     this.isArenaBattle = false,
     this.isRogueMode = false,
+    this.accountLevel = 100, // Default to max if not provided
     int? initialPlayerIndex,
     this.isTesting = false,
     TeamArchetype? opponentArchetype,
@@ -444,6 +451,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     if (_switchCompleter != null && !_switchCompleter!.isCompleted) {
       _switchCompleter!.complete();
     }
+    _startSuggestionTimer();
   }
 
   Future<void> _initializeBattle(String? biomeName) async {
@@ -658,6 +666,50 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
   Future<void> processPlayerAction(Move move) async {
     if (currentState != BattleState.waitingForInput) return;
+
+    _stopSuggestionTimer();
+
+    // Disobedience logic
+    bool disobeyed = false;
+    final lvlDiff = playerOrganism.level - accountLevel;
+    if (lvlDiff > 0 && !isArenaBattle) {
+      // higher level = higher disobedience chance
+      final disChance = (lvlDiff * 0.1).clamp(0.0, 0.8);
+      if (Random().nextDouble() < disChance) {
+        disobeyed = true;
+      }
+    } else if (playerOrganism.satisfaction < 100) {
+      // low satisfaction disobedience
+      final disChance = ((100 - playerOrganism.satisfaction) / 200).clamp(
+        0.0,
+        0.5,
+      );
+      if (Random().nextDouble() < disChance) {
+        disobeyed = true;
+      }
+    }
+
+    if (disobeyed) {
+      addToLog('${player.name} is loafing around and wouldn\'t listen!');
+      notifyListeners();
+      if (!isTesting) await Future.delayed(const Duration(milliseconds: 2000));
+      // End turn or pick random move? Usually in Pokemon it just misses.
+      // Let's end the player's action turn.
+      currentState = BattleState.opponentTurn;
+      notifyListeners();
+      await _processOpponentTurn(isCounter: false);
+      await _finalizeTurn();
+      return;
+    }
+
+    // Check if player disobeyed suggestion
+    if (suggestedMoveName != null && move.name != suggestedMoveName) {
+      // Small satisfaction penalty for ignoring suggestion
+      playerOrganism.satisfaction = max(0, playerOrganism.satisfaction - 3);
+      addToLog(
+        '${player.name} seems slightly annoyed by the mismatching command.',
+      );
+    }
 
     Move activeMove = move;
 
@@ -905,6 +957,15 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     Move move, {
     Move? opponentMove,
   }) async {
+    // 0. Handle Recharge Penalty
+    if (attacker.mustRecharge) {
+      attacker.mustRecharge = false;
+      addToLog('${attacker.name} must recharge!');
+      notifyListeners();
+      if (!isTesting) await Future.delayed(const Duration(milliseconds: 2000));
+      return;
+    }
+
     // 1. Multi-turn logical handling
     if (attacker.chargingMove != null) {
       move = attacker.chargingMove!;
@@ -3270,6 +3331,13 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     bool isForced = currentState == BattleState.waitingForPlayerSwitch;
     if (currentState != BattleState.waitingForInput && !isForced) return;
 
+    // Prevent switching during two-turn moves
+    if (player.chargingMove != null) {
+      addToLog('Cannot switch while ${player.name} is charging a move!');
+      notifyListeners();
+      return;
+    }
+
     // Fix: Immediately transition state and notify so UI knows we are processing
     currentState = BattleState.applyingEffects;
     notifyListeners();
@@ -3948,26 +4016,38 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     }
 
     for (final ab in defender.abilities) {
-      if (ab.name == 'Heatproof' && move.type == ElementalType.blaze)
+      if (ab.name == 'Heatproof' && move.type == ElementalType.blaze) {
         damageCalc *= ab.magnitude;
-      if (ab.name == 'Multiscale' && defender.health == defender.maxHealth)
+      }
+      if (ab.name == 'Multiscale' && defender.health == defender.maxHealth) {
         damageCalc *= ab.magnitude;
-      if (ab.name == 'Dry Skin' && move.type == ElementalType.blaze)
+      }
+      if (ab.name == 'Dry Skin' && move.type == ElementalType.blaze) {
         damageCalc *= 1.25;
-      if (ab.name == 'Fur Coat' && move.category == MoveCategory.physical)
+      }
+      if (ab.name == 'Fur Coat' && move.category == MoveCategory.physical) {
         damageCalc *= 0.5;
+      }
+      if (ab.name == 'Thick Fat' &&
+          (move.type == ElementalType.blaze ||
+              move.type == ElementalType.cryo)) {
+        damageCalc *= 0.5;
+      }
     }
 
     // Move-specific Multipliers
-    if (move.name == 'Facad' && attacker.statusEffects.isNotEmpty)
+    if (move.name == 'Facade' && attacker.statusEffects.isNotEmpty) {
       damageCalc *= 2.0;
+    }
     if (move.name == 'Knock Off' &&
         defender.organism.equippedTalisman != null &&
-        !defender.talismanConsumed)
+        !defender.talismanConsumed) {
       damageCalc *= 1.5;
+    }
     if (move.name == 'Freeze-Dry' &&
-        defender.types.contains(ElementalType.aquatic))
+        defender.types.contains(ElementalType.aquatic)) {
       damageCalc *= 2.0;
+    }
     if (move.name == 'Final Gambit') damageCalc = attacker.health.toDouble();
 
     // Conditionals
@@ -3989,17 +4069,25 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     // Status Modifiers
     if (defender.statusEffects.any(
       (se) => se.type == StatusEffectType.vulnerable,
-    ))
+    )) {
       damageCalc *= 1.3;
-    if (defender.statusEffects.any((se) => se.type == StatusEffectType.marked))
+    }
+    if (defender.statusEffects.any(
+      (se) => se.type == StatusEffectType.marked,
+    )) {
       damageCalc *= 1.2;
-    if (attacker.statusEffects.any((se) => se.type == StatusEffectType.stealth))
+    }
+    if (attacker.statusEffects.any(
+      (se) => se.type == StatusEffectType.stealth,
+    )) {
       damageCalc *= 2.0;
+    }
     if (defender.statusEffects.any(
       (se) => se.type == StatusEffectType.stealth,
     )) {
-      if (!attacker.abilities.any((ab) => ab.name == 'Echolocation'))
+      if (!attacker.abilities.any((ab) => ab.name == 'Echolocation')) {
         damageCalc *= 2.0;
+      }
     }
 
     // Talisman Multipliers
@@ -4231,6 +4319,25 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         validMoves = [
           validMoves.firstWhere((m) => m.name == org.lockedMove!.name),
         ];
+      }
+    }
+
+    // 9. Move Stamina check
+    // If a move has 0 stamina, it's not valid.
+    validMoves = validMoves.where((m) {
+      final stamina = org.organism.moveStamina[m.name] ?? 0;
+      return stamina > 0;
+    }).toList();
+
+    // 10. Assault Vest (Block status moves)
+    if (org.organism.equippedTalisman != null && !org.talismanConsumed) {
+      final hasVestLock = org.organism.equippedTalisman!.effects.any(
+        (e) => e.type == TalismanEffectType.blockStatusMoves,
+      );
+      if (hasVestLock) {
+        validMoves = validMoves
+            .where((m) => m.category != MoveCategory.status)
+            .toList();
       }
     }
 
@@ -4703,6 +4810,72 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       for (final h in hazardsToRemove) {
         hazards.removeWhere((element) => element == h);
       }
+      notifyListeners();
+    }
+  }
+
+  void _startSuggestionTimer() {
+    _stopSuggestionTimer();
+    suggestedMoveName = null;
+    suggestionProcessed = false;
+
+    if (currentState == BattleState.waitingForInput) {
+      _suggestionTimer = Timer(const Duration(seconds: 20), () {
+        if (currentState == BattleState.waitingForInput &&
+            !suggestionProcessed) {
+          _suggestMove();
+        }
+      });
+    }
+  }
+
+  void _stopSuggestionTimer() {
+    _suggestionTimer?.cancel();
+    _suggestionTimer = null;
+  }
+
+  void _suggestMove() {
+    final validMoves = getValidMoves(player);
+    if (validMoves.isEmpty) return;
+
+    // Use scoreMove which prepares all necessary AI context
+    double bestScore = -double.infinity;
+    Move? bestMove;
+
+    for (final move in validMoves) {
+      final score = scoreMove(
+        move,
+        player,
+        opponent,
+        aiTeam: playerTeam
+            .map(
+              (org) => BattleOrganism(
+                org,
+                isRogueMode: isRogueMode,
+                isOpponent: false,
+              ),
+            )
+            .toList(),
+        playerTeam: opponentTeam
+            .map(
+              (org) => BattleOrganism(
+                org,
+                isRogueMode: isRogueMode,
+                isOpponent: true,
+              ),
+            )
+            .toList(),
+      );
+      if (score > bestScore) {
+        bestScore = score;
+        bestMove = move;
+      }
+    }
+
+    if (bestMove != null) {
+      suggestedMoveName = bestMove.name;
+      suggestionProcessed = true;
+      addToLog('${player.name} suggests using ${bestMove.name}!');
       notifyListeners();
     }
   }

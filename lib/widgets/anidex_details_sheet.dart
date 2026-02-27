@@ -225,7 +225,7 @@ class AnidexDetailsSheet {
               ),
               const SizedBox(height: 24),
               Text(
-                discovered ? org.name.toUpperCase() : 'SILHOUETTE',
+                discovered ? org.name.toUpperCase() : '???',
                 style: AppTextStyles.headline(
                   context,
                   baseSize: 14,
@@ -236,7 +236,7 @@ class AnidexDetailsSheet {
               Text(
                 discovered
                     ? org.scientificName.toUpperCase()
-                    : 'CODE: [IDENTIFICATION REQUIRED]',
+                    : 'CODE: [UNKNOWN]',
                 style: TextStyle(
                   color: color.withOpacity(0.5),
                   fontSize: 10,
@@ -263,7 +263,7 @@ class AnidexDetailsSheet {
                 ),
                 child: Text(
                   discovered
-                      ? (isCaptured ? org.rarity.toUpperCase() : 'GRAYSCALE')
+                      ? (isCaptured ? org.rarity.toUpperCase() : 'UNIDENTIFIED')
                       : 'UNIDENTIFIED',
                   style: TextStyle(
                     color: discovered

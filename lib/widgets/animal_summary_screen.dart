@@ -38,6 +38,7 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
   static const _tabs = [
     ('INFO', Icons.person_outline),
     ('STATS', Icons.bar_chart),
+    ('KV', Icons.fitness_center),
     ('DNA', Icons.biotech_outlined),
     ('MOVES', Icons.flash_on_outlined),
   ];
@@ -108,6 +109,7 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
                   children: [
                     _buildInfoTab(base),
                     _buildStatsTab(),
+                    _buildKVTab(),
                     _buildDNATab(),
                     _buildMovesTab(base),
                   ],
@@ -204,16 +206,20 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          base.name.toUpperCase(),
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w900,
-                            color: Colors.white,
-                            letterSpacing: 1.5,
-                            fontFamily: 'PressStart2P',
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            base.name.toUpperCase(),
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                              letterSpacing: 1.5,
+                              fontFamily: 'PressStart2P',
+                            ),
+                            maxLines: 1,
                           ),
-                          maxLines: 2,
                         ),
                         const SizedBox(height: 4),
                         Text(
@@ -475,6 +481,10 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
           ('RARITY', base.rarity),
         ]),
         const SizedBox(height: 24),
+        _sectionHeader('SATISFACTION'),
+        const SizedBox(height: 12),
+        _buildSatisfactionMeter(),
+        const SizedBox(height: 24),
         _sectionHeader('HABITAT'),
         const SizedBox(height: 10),
         _descCard(
@@ -501,7 +511,7 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
       mainAxisSpacing: 10,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      childAspectRatio: 2.8,
+      childAspectRatio: 3.2,
       children: data.map((entry) => _infoGridCell(entry.$1, entry.$2)).toList(),
     );
   }
@@ -631,7 +641,7 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
           nature.getMultiplier('defense'),
         ),
         _statRow(
-          'SP.ATK',
+          'POWER',
           '$curPwr',
           curPwr,
           l50Pwr,
@@ -639,7 +649,7 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
           nature.getMultiplier('power'),
         ),
         _statRow(
-          'SP.DEF',
+          'RESISTANCE',
           '$curRes',
           curRes,
           l50Res,
@@ -709,7 +719,7 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
           Row(
             children: [
               SizedBox(
-                width: 58,
+                width: 80,
                 child: Text(
                   label,
                   style: const TextStyle(
@@ -868,8 +878,8 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
       ('HP', ivs['health'] ?? 0, AppColors.statHealthColor),
       ('Attack', ivs['attack'] ?? 0, AppColors.statAttackColor),
       ('Defense', ivs['defense'] ?? 0, AppColors.statDefenseColor),
-      ('Sp. Atk', ivs['power'] ?? 0, AppColors.statPowerColor),
-      ('Sp. Def', ivs['resistance'] ?? 0, AppColors.statResistanceStatColor),
+      ('Power', ivs['power'] ?? 0, AppColors.statPowerColor),
+      ('Resistance', ivs['resistance'] ?? 0, AppColors.statResistanceStatColor),
       ('Speed', ivs['speed'] ?? 0, AppColors.statSpeedColor),
     ];
     final total = data.fold(0, (s, e) => s + e.$2);
@@ -885,7 +895,7 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
-        _sectionHeader('GENETIC VALUES (IVs)'),
+        _sectionHeader('GENETIC VALUES'),
         const SizedBox(height: 14),
         ...data.map((e) => _ivRow(e.$1, e.$2, e.$3)),
         const SizedBox(height: 16),
@@ -910,7 +920,7 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'TOTAL IV SCORE',
+                    'TOTAL GV SCORE',
                     style: TextStyle(
                       fontFamily: 'PressStart2P',
                       fontSize: 7,
@@ -953,7 +963,7 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
         ),
         const SizedBox(height: 16),
         _descCard(
-          'IVs (Individual Values) represent this specimen\'s unique genetic potential. Perfect IVs (31) in each stat are extremely rare.',
+          'GV (Genetic Values) represent this specimen\'s unique genetic potential. Perfect GVs (31) in each stat are extremely rare.',
           icon: Icons.info_outline,
         ),
       ],
@@ -977,7 +987,7 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
       child: Row(
         children: [
           SizedBox(
-            width: 72,
+            width: 85,
             child: Text(
               label,
               style: const TextStyle(
@@ -1197,6 +1207,245 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
               fontFamily: 'PressStart2P',
               fontSize: 9,
               color: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─── KV TAB ───────────────────────────────────────────────────────────────
+
+  Widget _buildKVTab() {
+    final kvs = _current.killValues;
+    final statData = [
+      ('HP', 'health', AppColors.statHealthColor),
+      ('Attack', 'attack', AppColors.statAttackColor),
+      ('Defense', 'defense', AppColors.statDefenseColor),
+      ('Power', 'power', AppColors.statPowerColor),
+      ('Resistance', 'resistance', AppColors.statResistanceStatColor),
+      ('Speed', 'speed', AppColors.statSpeedColor),
+    ];
+
+    final total = _current.totalKV;
+    const maxTotal = CapturedOrganism.maxTotalKV;
+    const maxStat = CapturedOrganism.maxStatKV;
+
+    return ListView(
+      padding: const EdgeInsets.all(20),
+      children: [
+        _sectionHeader('KILL VALUES (KV)'),
+        const SizedBox(height: 8),
+        _descCard(
+          'Defeat animals to earn KV (Kill Values). Each 4 KV = +1 effective stat point. Max 252 per stat, 510 total.',
+          icon: Icons.info_outline,
+        ),
+        const SizedBox(height: 16),
+        ...statData.map((entry) {
+          final label = entry.$1;
+          final key = entry.$2;
+          final color = entry.$3;
+          final kv = kvs[key] ?? 0;
+          final bonus = (kv / 4).floor();
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    SizedBox(
+                      width: 76,
+                      child: Text(
+                        label,
+                        style: const TextStyle(
+                          fontFamily: 'PressStart2P',
+                          fontSize: 7,
+                          color: Colors.white54,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      '$kv / $maxStat',
+                      style: TextStyle(
+                        fontFamily: 'PressStart2P',
+                        fontSize: 9,
+                        color: kv >= maxStat
+                            ? Colors.amberAccent
+                            : Colors.white,
+                        fontWeight: kv >= maxStat
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                      ),
+                    ),
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: color.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: color.withOpacity(0.3)),
+                      ),
+                      child: Text(
+                        '+$bonus stat',
+                        style: TextStyle(
+                          fontFamily: 'PressStart2P',
+                          fontSize: 6,
+                          color: color,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 5),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: (kv / maxStat).clamp(0.0, 1.0),
+                    minHeight: 8,
+                    color: kv >= maxStat ? Colors.amberAccent : color,
+                    backgroundColor: Colors.white.withOpacity(0.06),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+        const SizedBox(height: 16),
+        // Total KV bar
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                _primaryTypeColor.withOpacity(0.12),
+                _primaryTypeColor.withOpacity(0.04),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: _primaryTypeColor.withOpacity(0.25)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.fitness_center,
+                    color: _primaryTypeColor,
+                    size: 16,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'TOTAL KV',
+                    style: TextStyle(
+                      fontFamily: 'PressStart2P',
+                      fontSize: 8,
+                      color: Colors.white54,
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    '$total / $maxTotal',
+                    style: TextStyle(
+                      fontFamily: 'PressStart2P',
+                      fontSize: 10,
+                      color: _primaryTypeColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: (total / maxTotal).clamp(0.0, 1.0),
+                  minHeight: 10,
+                  color: _primaryTypeColor,
+                  backgroundColor: Colors.white.withOpacity(0.06),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSatisfactionMeter() {
+    final s = _current.satisfaction;
+    final perc = (s / 255).clamp(0.0, 1.0);
+    Color color = Colors.redAccent;
+    String label = 'Disobedient';
+    if (s >= 200) {
+      color = Colors.greenAccent;
+      label = 'Loyal';
+    } else if (s >= 150) {
+      color = Colors.blueAccent;
+      label = 'Friendly';
+    } else if (s >= 100) {
+      color = Colors.yellowAccent;
+      label = 'Neutral';
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A1A2E),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.favorite, color: color, size: 16),
+                  const SizedBox(width: 8),
+                  Text(
+                    'SATISFACTION',
+                    style: TextStyle(
+                      fontFamily: 'PressStart2P',
+                      fontSize: 8,
+                      color: Colors.white.withOpacity(0.5),
+                    ),
+                  ),
+                ],
+              ),
+              Text(
+                label.toUpperCase(),
+                style: TextStyle(
+                  fontFamily: 'PressStart2P',
+                  fontSize: 8,
+                  color: color,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: LinearProgressIndicator(
+              value: perc,
+              minHeight: 12,
+              backgroundColor: Colors.white.withOpacity(0.05),
+              color: color,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '$s / 255',
+            style: TextStyle(
+              fontFamily: 'PressStart2P',
+              fontSize: 7,
+              color: Colors.white38,
             ),
           ),
         ],

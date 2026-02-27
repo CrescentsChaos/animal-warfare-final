@@ -175,4 +175,38 @@ class Organism {
   List<ElementalType> get elementalTypes {
     return types.map((t) => ElementalTypeX.fromString(t)).toList();
   }
+
+  /// Returns the name of the stat with the highest base value.
+  /// Used by the KV system to determine which KV to award on kill.
+  String get highestBaseStat {
+    final stats = {
+      'health': health,
+      'attack': attack,
+      'defense': defense,
+      'power': power,
+      'resistance': resistance,
+      'speed': speed,
+    };
+    return stats.entries.reduce((a, b) => a.value >= b.value ? a : b).key;
+  }
+
+  /// Returns KV yield based on rarity.
+  static int kvYield(String rarity) {
+    switch (rarity.toLowerCase()) {
+      case 'common':
+        return 1;
+      case 'uncommon':
+        return 2;
+      case 'rare':
+        return 3;
+      case 'epic':
+        return 5;
+      case 'legendary':
+        return 8;
+      case 'mythical':
+        return 12;
+      default:
+        return 1;
+    }
+  }
 }

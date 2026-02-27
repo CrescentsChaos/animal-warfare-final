@@ -28,7 +28,7 @@ class CapturedOrganism {
   List<String> selectedMoveNames;
   Map<String, int> moveStamina; // current stamina for each selected move
 
-  final Nature nature;
+  Nature nature;
   List<StatusEffect> statusEffects;
   final int initialLevel; // NEW: Level at capture/spawn
   int level; // Actual derived level
@@ -44,6 +44,14 @@ class CapturedOrganism {
   int evasionStage;
   final bool isAlpha;
   final bool isShiny;
+
+  // KV system: Kill Values earned by defeating animals (like Pokémon EVs)
+  // Max 252 per stat, 510 total. Each 4 KVs = +1 effective stat point.
+  Map<String, int>
+  killValues; // 'health', 'attack', 'defense', 'power', 'resistance', 'speed'
+
+  // NEW: Satisfaction (0-255), affects obedience
+  int satisfaction;
 
   CapturedOrganism({
     required this.baseOrganism,
@@ -72,7 +80,19 @@ class CapturedOrganism {
     this.evasionStage = 0,
     this.isAlpha = false,
     this.isShiny = false,
+    Map<String, int>? killValues,
+    this.satisfaction = 120,
   }) : id = id ?? const Uuid().v4(),
+       killValues =
+           killValues ??
+           {
+             'health': 0,
+             'attack': 0,
+             'defense': 0,
+             'power': 0,
+             'resistance': 0,
+             'speed': 0,
+           },
        statusEffects =
            statusEffects ?? (statusEffect != null ? [statusEffect] : []),
        moveStamina = initialMoveStamina != null
@@ -151,6 +171,8 @@ class CapturedOrganism {
     int? evasionStage,
     bool? isAlpha,
     bool? isShiny,
+    Map<String, int>? killValues,
+    int? satisfaction,
   }) {
     return CapturedOrganism(
       baseOrganism: baseOrganism ?? this.baseOrganism,
@@ -176,6 +198,8 @@ class CapturedOrganism {
       evasionStage: evasionStage ?? this.evasionStage,
       isAlpha: isAlpha ?? this.isAlpha,
       isShiny: isShiny ?? this.isShiny,
+      killValues: killValues ?? Map.from(this.killValues),
+      satisfaction: satisfaction ?? this.satisfaction,
     );
   }
 
@@ -300,12 +324,14 @@ class CapturedOrganism {
     int baseStat,
     int iv, {
     int level = 50,
+    int kv = 0,
   }) {
+    final int kvBonus = (kv / 4).floor();
     final int base = ((baseStat * 2 + iv) * level / 100).floor();
     if (statName == 'health') {
-      return base + level + 10;
+      return base + level + 10 + kvBonus;
     }
-    return base + 5;
+    return base + 5 + kvBonus;
   }
 
   // --- Getters for Effective Stats ---
@@ -315,6 +341,7 @@ class CapturedOrganism {
     baseOrganism.health,
     individualValues['health']!,
     level: atLevel ?? level,
+    kv: killValues['health'] ?? 0,
   );
 
   int getAttack({int? atLevel}) =>
@@ -323,6 +350,7 @@ class CapturedOrganism {
                 baseOrganism.attack,
                 individualValues['attack']!,
                 level: atLevel ?? level,
+                kv: killValues['attack'] ?? 0,
               ) *
               nature.getMultiplier('attack'))
           .round();
@@ -333,6 +361,7 @@ class CapturedOrganism {
                 baseOrganism.defense,
                 individualValues['defense']!,
                 level: atLevel ?? level,
+                kv: killValues['defense'] ?? 0,
               ) *
               nature.getMultiplier('defense'))
           .round();
@@ -343,6 +372,7 @@ class CapturedOrganism {
                 baseOrganism.power,
                 individualValues['power']!,
                 level: atLevel ?? level,
+                kv: killValues['power'] ?? 0,
               ) *
               nature.getMultiplier('power'))
           .round();
@@ -353,6 +383,7 @@ class CapturedOrganism {
                 baseOrganism.resistance,
                 individualValues['resistance']!,
                 level: atLevel ?? level,
+                kv: killValues['resistance'] ?? 0,
               ) *
               nature.getMultiplier('resistance'))
           .round();
@@ -363,6 +394,7 @@ class CapturedOrganism {
                 baseOrganism.speed,
                 individualValues['speed']!,
                 level: atLevel ?? level,
+                kv: killValues['speed'] ?? 0,
               ) *
               nature.getMultiplier('speed'))
           .round();
@@ -495,6 +527,8 @@ class CapturedOrganism {
     'evasionStage': evasionStage,
     'isAlpha': isAlpha,
     'isShiny': isShiny,
+    'killValues': killValues,
+    'satisfaction': satisfaction,
   };
 
   /// Create CapturedOrganism from JSON
@@ -565,6 +599,52 @@ class CapturedOrganism {
       evasionStage: json['evasionStage'] as int? ?? 0,
       isAlpha: json['isAlpha'] as bool? ?? false,
       isShiny: json['isShiny'] as bool? ?? false,
+      killValues: json['killValues'] != null
+          ? Map<String, int>.from(json['killValues'] as Map)
+          : null,
+      satisfaction: json['satisfaction'] as int? ?? 120,
     );
   }
+
+  /// Reduces KV points for a specific stat and increases satisfaction.
+  /// Used by specialized berries (Pomeg, Kelpsy, etc.).
+  void applyBerry(String berryId) {
+    String? statKey;
+    switch (berryId.toLowerCase()) {
+      case 'pomeg_berry':
+        statKey = 'health';
+        break;
+      case 'kelpsy_berry':
+        statKey = 'attack';
+        break;
+      case 'qualot_berry':
+        statKey = 'defense';
+        break;
+      case 'hondew_berry':
+        statKey = 'power';
+        break;
+      case 'grepa_berry':
+        statKey = 'resistance';
+        break;
+      case 'tamato_berry':
+        statKey = 'speed';
+        break;
+    }
+
+    if (statKey != null) {
+      final current = killValues[statKey] ?? 0;
+      // Reduce by 10 (standard Pokémon value is lower but let's be generous)
+      killValues[statKey] = max(0, current - 10);
+    }
+
+    // Always increase satisfaction by a bit (max 255)
+    satisfaction = min(255, satisfaction + 10);
+  }
+
+  /// Returns the total KV points across all stats.
+  int get totalKV => killValues.values.fold(0, (sum, v) => sum + v);
+
+  /// Max allowed total KVs (510 like Pokémon EVs)
+  static const int maxTotalKV = 510;
+  static const int maxStatKV = 252;
 }
