@@ -3592,150 +3592,165 @@ class _BattleScreenContentState extends State<BattleScreenContent>
 
     // Add delay to allow reading the final log message
     Future.delayed(const Duration(milliseconds: 2500), () async {
-      if (!mounted) return;
+      try {
+        if (!mounted) {
+          _isHandlingBattleEnd = false;
+          return;
+        }
 
-      int moneyEarned = 0;
+        int moneyEarned = 0;
 
-      // Handle capture - add organism to collection
-      if (battleManager.result == BattleResult.capture) {
-        final wildOpponent = battleManager.opponent.organism;
-        final newCapturedInstance = wildOpponent.copyWith(
-          currentHealth: wildOpponent.maxHealth, // Heal to full on capture
-        );
-        newCapturedInstance.restoreAllStamina(); // Restore stamina on capture
+        // Handle capture - add organism to collection
+        if (battleManager.result == BattleResult.capture) {
+          final wildOpponent = battleManager.opponent.organism;
+          final newCapturedInstance = wildOpponent.copyWith(
+            currentHealth: wildOpponent.maxHealth, // Heal to full on capture
+          );
+          newCapturedInstance.restoreAllStamina(); // Restore stamina on capture
 
-        if (widget.isRogueMode) {
-          final team = userState.currentUser?.rogueLikeState.team ?? [];
-          if (team.length < 5) {
-            await userState.captureForRogueRun(newCapturedInstance);
+          if (widget.isRogueMode) {
+            final team = userState.currentUser?.rogueLikeState.team ?? [];
+            if (team.length < 5) {
+              await userState.captureForRogueRun(newCapturedInstance);
+            } else {
+              if (mounted) {
+                setState(() {
+                  _pendingRogueCapture = newCapturedInstance;
+                });
+              }
+            }
           } else {
-            if (mounted) {
-              setState(() {
-                _pendingRogueCapture = newCapturedInstance;
-              });
+            await userState.addCapturedOrganism(newCapturedInstance);
+            // Award XP on capture
+            await _onOpponentFainted(
+              battleManager.player,
+              battleManager.opponent,
+            );
+          }
+        }
+
+        // Handle death mechanic for non-Arena, non-Rogue battles
+        if (!widget.isArenaBattle && !widget.isRogueMode) {
+          final playerTeam = List<CapturedOrganism>.from(
+            battleManager.playerTeam,
+          );
+          for (final org in playerTeam) {
+            if (org.currentHealth <= 0) {
+              await userState.removeCapturedOrganism(org);
             }
           }
-        } else {
-          await userState.addCapturedOrganism(newCapturedInstance);
-          // Award XP on capture
-          await _onOpponentFainted(
-            battleManager.player,
-            battleManager.opponent,
-          );
         }
-      }
 
-      // Handle death mechanic for non-Arena, non-Rogue battles
-      if (!widget.isArenaBattle && !widget.isRogueMode) {
-        final playerTeam = List<CapturedOrganism>.from(
-          battleManager.playerTeam,
-        );
-        for (final org in playerTeam) {
-          if (org.currentHealth <= 0) {
-            await userState.removeCapturedOrganism(org);
-          }
-        }
-      }
+        // Rogue-like specific progression
+        if (widget.isRogueMode) {
+          if (battleManager.result == BattleResult.win ||
+              battleManager.result == BattleResult.capture) {
+            // Perma-death: Remove any fainted animals from the team
+            final currentTeam =
+                userState.currentUser?.rogueLikeState.team ?? [];
+            final List<CapturedOrganism> survivingTeam = currentTeam
+                .where((o) => o.currentHealth > 0)
+                .toList();
 
-      // Rogue-like specific progression
-      if (widget.isRogueMode) {
-        if (battleManager.result == BattleResult.win ||
-            battleManager.result == BattleResult.capture) {
-          // Perma-death: Remove any fainted animals from the team
-          final currentTeam = userState.currentUser?.rogueLikeState.team ?? [];
-          final List<CapturedOrganism> survivingTeam = currentTeam
-              .where((o) => o.currentHealth > 0)
-              .toList();
-
-          // REORDER: Move the active animal (the one that finished the battle) to the lead position
-          final activeOrg = battleManager.player.organism;
-          final activeIndexInSurviving = survivingTeam.indexWhere(
-            (o) => o.id == activeOrg.id,
-          );
-          if (activeIndexInSurviving > 0) {
-            final active = survivingTeam.removeAt(activeIndexInSurviving);
-            survivingTeam.insert(0, active);
-          }
-
-          // Update team (always update to ensure the lead animal order is persisted)
-          await userState.updateRogueTeam(survivingTeam);
-
-          // Increment encounter
-          await userState.completeRogueEncounter();
-        }
-      }
-
-      // Arena battle prize money (not for rogue mode usually, or different rewards)
-      Map<String, dynamic> xpResults =
-          _cumulativeXPResults; // Use cumulative results
-      if (!widget.isRogueMode) {
-        // Fully heal team after battle in exploration/arena
-        await userState.fullyHealTeam();
-
-        if (battleManager.result == BattleResult.win ||
-            battleManager.result == BattleResult.capture) {
-          // XP is now awarded via onOpponentFainted callback
-
-          if (widget.isArenaBattle) {
-            moneyEarned = 1000;
-            await userState.addMoney(moneyEarned);
-          } else {
-            // Wild battle prize money
-            moneyEarned = _calculateWildMoneyReward(
-              battleManager.opponent.organism.baseOrganism,
+            // REORDER: Move the active animal (the one that finished the battle) to the lead position
+            final activeOrg = battleManager.player.organism;
+            final activeIndexInSurviving = survivingTeam.indexWhere(
+              (o) => o.id == activeOrg.id,
             );
-            await userState.addMoney(moneyEarned);
+            if (activeIndexInSurviving > 0) {
+              final active = survivingTeam.removeAt(activeIndexInSurviving);
+              survivingTeam.insert(0, active);
+            }
+
+            // Update team (always update to ensure the lead animal order is persisted)
+            await userState.updateRogueTeam(survivingTeam);
+
+            // Increment encounter
+            await userState.completeRogueEncounter();
           }
         }
-      }
 
-      final String? lootId = battleManager.droppedLoot;
-      final String? lootName = lootId != null
-          ? LootItem.findById(lootId).name
-          : null;
+        // Arena battle prize money (not for rogue mode usually, or different rewards)
+        Map<String, dynamic> xpResults =
+            _cumulativeXPResults; // Use cumulative results
+        if (!widget.isRogueMode) {
+          // Fully heal team after battle in exploration/arena
+          await userState.fullyHealTeam();
 
-      // Handle loot drop
-      if (battleManager.result == BattleResult.win && lootId != null) {
-        await userState.addLoot(lootId, 1);
-      }
+          if (battleManager.result == BattleResult.win ||
+              battleManager.result == BattleResult.capture) {
+            // XP is now awarded via onOpponentFainted callback
 
-      if (!mounted) return;
+            if (widget.isArenaBattle) {
+              moneyEarned = 1000;
+              await userState.addMoney(moneyEarned);
+            } else {
+              // Wild battle prize money
+              moneyEarned = _calculateWildMoneyReward(
+                battleManager.opponent.organism.baseOrganism,
+              );
+              await userState.addMoney(moneyEarned);
+            }
+          }
+        }
 
-      // Record match results for winrate system (for all decisive outcomes)
-      final decisiveResult = battleManager.result;
-      if (decisiveResult == BattleResult.win ||
-          decisiveResult == BattleResult.capture ||
-          decisiveResult == BattleResult.loss) {
-        final playerSpecies = battleManager.playerTeam
-            .map((o) => o.baseOrganism.name)
-            .toList();
-        final opponentSpecies = widget.opponentFullTeam != null
-            ? widget.opponentFullTeam!.map((o) => o.baseOrganism.name).toList()
-            : [battleManager.opponent.organism.baseOrganism.name];
-        final playerWon = decisiveResult != BattleResult.loss;
-        unawaited(
-          userState.recordMatchResults(
-            playerSpecies: playerSpecies,
-            opponentSpecies: opponentSpecies,
-            playerWon: playerWon,
-          ),
-        );
-      }
+        final String? lootId = battleManager.droppedLoot;
+        final String? lootName = lootId != null
+            ? LootItem.findById(lootId).name
+            : null;
 
-      // FIX: For a loss, always show the result dialog immediately.
-      // Only defer for a pending rogue capture (win/capture cases).
-      if (_pendingRogueCapture != null &&
-          battleManager.result != BattleResult.loss) {
-        _showCaptureReplaceDialog(context, _pendingRogueCapture!, userState);
-      } else {
-        _showBattleResultDialog(
-          context,
-          battleManager,
-          moneyEarned,
-          lootName,
-          userState,
-          xpResults: xpResults,
-        );
+        // Handle loot drop
+        if (battleManager.result == BattleResult.win && lootId != null) {
+          await userState.addLoot(lootId, 1);
+        }
+
+        if (!mounted) return;
+
+        // Record match results for winrate system (for all decisive outcomes)
+        final decisiveResult = battleManager.result;
+        if (decisiveResult == BattleResult.win ||
+            decisiveResult == BattleResult.capture ||
+            decisiveResult == BattleResult.loss) {
+          final playerSpecies = battleManager.playerTeam
+              .map((o) => o.baseOrganism.name)
+              .toList();
+          final opponentSpecies = widget.opponentFullTeam != null
+              ? widget.opponentFullTeam!
+                    .map((o) => o.baseOrganism.name)
+                    .toList()
+              : [battleManager.opponent.organism.baseOrganism.name];
+          final playerWon = decisiveResult != BattleResult.loss;
+          unawaited(
+            userState.recordMatchResults(
+              playerSpecies: playerSpecies,
+              opponentSpecies: opponentSpecies,
+              playerWon: playerWon,
+            ),
+          );
+        }
+
+        // Show result dialog
+        if (_pendingRogueCapture != null &&
+            battleManager.result != BattleResult.loss) {
+          _showCaptureReplaceDialog(context, _pendingRogueCapture!, userState);
+        } else {
+          _showBattleResultDialog(
+            context,
+            battleManager,
+            moneyEarned,
+            lootName,
+            userState,
+            xpResults: xpResults,
+          );
+        }
+      } catch (e) {
+        debugPrint('Error during battle end handling: $e');
+        // Safety fallback to ensure the UI doesn't stay stuck
+        if (mounted) {
+          _showBattleResultDialog(context, battleManager, 0, null, userState);
+        }
+      } finally {
+        _isHandlingBattleEnd = false;
       }
     });
   }
@@ -5380,6 +5395,7 @@ class _BattleSpriteState extends State<_BattleSprite>
     final hasStealth = bo.statusEffects.any(
       (se) => se.type == StatusEffectType.stealth,
     );
+    final isSubstituteActive = bo.substituteHealth > 0;
 
     // Primary status overlay (first non-none status)
     final overlayStatus = bo.statusEffects.isNotEmpty
@@ -5390,12 +5406,43 @@ class _BattleSpriteState extends State<_BattleSprite>
         : const StatusEffect(type: StatusEffectType.none);
     final overlayPath = overlayStatus.overlayAssetPath;
 
+    // Prepare grayscaled or normal sprite
+    Widget processedSprite = enhancedImage;
+    if (isSubstituteActive) {
+      processedSprite = ColorFiltered(
+        // Grayscale matrix
+        colorFilter: const ColorFilter.matrix(<double>[
+          0.2126,
+          0.7152,
+          0.0722,
+          0,
+          0,
+          0.2126,
+          0.7152,
+          0.0722,
+          0,
+          0,
+          0.2126,
+          0.7152,
+          0.0722,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+        ]),
+        child: enhancedImage,
+      );
+    }
+
     // Sprite and outline layers — hidden or faded based on state
     final Widget spriteLayer = (isInvulnerable || widget.hideAnimal)
         ? SizedBox(width: size, height: size)
         : (hasStealth
-              ? Opacity(opacity: 0.35, child: enhancedImage)
-              : enhancedImage);
+              ? Opacity(opacity: 0.35, child: processedSprite)
+              : processedSprite);
 
     final Widget outlineLayer = (isInvulnerable || widget.hideAnimal)
         ? const SizedBox.shrink()

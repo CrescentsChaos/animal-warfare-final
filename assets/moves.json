@@ -1264,6 +1264,22 @@
         ]
     },
     {
+        "name": "Antler Charge",
+        "description": "Deals damage and raises user's Speed by 1.",
+        "baseDamage": 50,
+        "type": "basic",
+        "stamina": 15,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "speed",
+                "value": 1
+            }
+        ]
+    },
+    {
         "name": "Jungle Drum",
         "description": "The user beats its chest. This move deals damage and has a 10% chance to raise the user's Attack and Defense by one stage",
         "baseDamage": 90,

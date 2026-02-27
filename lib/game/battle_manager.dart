@@ -1007,7 +1007,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     Move? opponentMove,
   }) async {
     // 1. Multi-turn logical handling
-    if (attacker.chargingMove != null) {
+    bool wasCharging = attacker.chargingMove != null;
+    if (wasCharging) {
       move = attacker.chargingMove!;
       attacker.chargingMove = null;
       attacker.semiInvulnerable = null;
@@ -1148,7 +1149,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       move = actualMove;
     }
 
-    if (move.isMultiTurn) {
+    if (move.isMultiTurn && !wasCharging) {
       final chargeEffect = move.effects.firstWhere(
         (e) =>
             e.type == MoveEffectType.charge ||
