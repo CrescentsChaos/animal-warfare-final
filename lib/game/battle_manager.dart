@@ -3107,6 +3107,17 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       }
     }
 
+    // Gravity
+    if (gravityTurns > 0) {
+      gravityTurns--;
+      if (gravityTurns == 0) {
+        addToLog('Gravity returned to normal!');
+        notifyListeners();
+        if (!isTesting)
+          await Future.delayed(const Duration(milliseconds: 3000));
+      }
+    }
+
     // Terrain
     if (terrainTurnsLeft > 0) {
       terrainTurnsLeft--;
@@ -3153,6 +3164,47 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
   Future<void> _applyTurnEffects(BattleOrganism target) async {
     if (target.health <= 0) return;
+
+    // Reset per-turn flags
+    target.shellTrapActive = false;
+    target.shellTrapTriggered = false;
+    target.statsLoweredThisTurn = false;
+    target.focusPunchFailed = false;
+
+    // Glaive Rush Vulnerability Decay
+    if (target.glaiveRushVulnerable) {
+      target.glaiveRushVulnerable = false;
+    }
+
+    // Wish Logic
+    if (target.wishTurns > 0) {
+      target.wishTurns--;
+      if (target.wishTurns == 0) {
+        if (target.health > 0 &&
+            target.health < target.maxHealth &&
+            target.healBlockTurns == 0) {
+          final heal = target.wishHealAmount;
+          target.health += heal;
+          target.health = target.health.clamp(0, target.maxHealth);
+          addToLog('${target.name}\'s wish came true!');
+          onHeal?.call(target, heal);
+          notifyListeners();
+          if (!isTesting)
+            await Future.delayed(const Duration(milliseconds: 1500));
+        }
+      }
+    }
+
+    // Heal Block Decay
+    if (target.healBlockTurns > 0) {
+      target.healBlockTurns--;
+      if (target.healBlockTurns == 0) {
+        addToLog('${target.name}\'s heal block wore off!');
+        notifyListeners();
+        if (!isTesting)
+          await Future.delayed(const Duration(milliseconds: 1500));
+      }
+    }
 
     // Status Damage & Healing (Iterate over all active effects)
     final List<StatusEffect> currentEffects = List.from(target.statusEffects);
@@ -3848,6 +3900,18 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     await _processOpponentTurn(isCounter: false);
 
     await _finalizeTurn();
+  }
+
+  void _handleTurnStart(BattleOrganism attacker, Move? move) {
+    if (move == null) return;
+    if (move.name == 'Focus Punch') {
+      attacker.focusPunchFailed = false;
+      addToLog('${attacker.name} is tightening its focus!');
+    } else if (move.name == 'Shell Trap') {
+      attacker.shellTrapTriggered = false;
+      attacker.shellTrapActive = true;
+      addToLog('${attacker.name} set a shell trap!');
+    }
   }
 
   Future<void> _finalizeTurn() async {
