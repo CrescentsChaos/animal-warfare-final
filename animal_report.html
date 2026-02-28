@@ -460,6 +460,10 @@
                     return { ...o, bst, role, score, weaks, resists, immunes, defNorm, mvs, abs: apps };
                 });
 
+                // Sort and assign global rank
+                organisms.sort((a, b) => b.score - a.score);
+                organisms.forEach((o, i) => o.globalRank = i + 1);
+
                 const rf = document.getElementById('roleFilter');
                 ['👑 Apex Predator', '🏛️ Titan', '💥 Glass Cannon', '⚡ Speedster', '⚔️ Sweeper', '🛡️ Wall', '🛡️ Tank', '🐂 Bruiser', '⚖️ Balanced'].forEach(r => {
                     const opt = document.createElement('option'); opt.value = r; opt.innerText = r; rf.appendChild(opt);
@@ -487,7 +491,8 @@
                 return true;
             });
 
-            filtered.sort((a, b) => b.score - a.score);
+            // Maintain global rank order
+            filtered.sort((a, b) => a.globalRank - b.globalRank);
             render();
         }
 
@@ -505,7 +510,7 @@
                 const types = (o.category || '').split(',').map(t => t.trim()).filter(t => t);
 
                 tr.innerHTML = `
-                    <td><div class="rank-badge">#${start + i + 1}</div></td>
+                    <td><div class="rank-badge">#${o.globalRank}</div></td>
                     <td>
                         <div class="anim-row">
                             <img class="anim-sprite" src="assets/sprites/${cleanName}.png" onerror="this.src='assets/sprites/default.png'">
