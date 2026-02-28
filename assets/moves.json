@@ -3586,7 +3586,7 @@
         "name": "Assurance",
         "description": "If the target has already taken some damage in the same turn, this move's power is doubled.",
         "baseDamage": 60,
-        "type": "basic",
+        "type": "darkness",
         "stamina": 10,
         "category": "physical",
         "multiplierCondition": "target_damaged",

@@ -914,7 +914,7 @@
     {
         "abilities": "Reef Titan",
         "attack": 110,
-        "category": "Aquatic",
+        "category": "Aquatic,Martial",
         "defense": 90,
         "description": "Enormous and wide-mouthed, it ambushes prey in reefs. Despite its bulk, it is a surprisingly stealthy hunter.",
         "drops": "Fillet",
@@ -928,12 +928,12 @@
         "scientific_name": "Epinephelus lanceolatus",
         "speed": 38,
         "sprite": "https://i.postimg.cc/Gt7PBxH3/giant-grouper.png",
-        "weight": 1
+        "weight": 338
     },
     {
         "abilities": "Reef Titan",
         "attack": 115,
-        "category": "Aquatic",
+        "category": "Aquatic,Metal",
         "defense": 95,
         "description": "A reef giant reaching over 700 pounds. Known to boom underwater with low grunts to claim territory.",
         "drops": "Fillet",
@@ -4505,7 +4505,7 @@
     {
         "abilities": "Festive Flurry",
         "attack": 35,
-        "category": "Predator, Aquatic, Tiny",
+        "category": "Aquatic",
         "defense": 30,
         "description": "A striking surgeonfish of the Indo-Pacific, recognized by its bold blue and yellow horizontal stripes. Highly territorial, it grazes on algae along reef slopes and uses its sharp caudal spines for defense.",
         "drops": "Fillet",
@@ -5453,9 +5453,9 @@
         "weight": 1
     },
     {
-        "abilities": "Speed Burst",
+        "abilities": "Speed Boost",
         "attack": 65,
-        "category": "Predator, Aquatic, Solitary, Agile",
+        "category": "Aquatic, Metal",
         "defense": 45,
         "description": "A fast, slender predator of tropical and subtropical oceans. Wahoos feed on fish and squid, relying on their exceptional speed and agility to capture prey.",
         "drops": "Fillet",
@@ -6025,13 +6025,13 @@
     {
         "abilities": "Ambush Predator",
         "attack": 70,
-        "category": "Aquatic",
+        "category": "Aquatic,Arthropod",
         "defense": 65,
         "description": "A small to medium-sized reef-dwelling fish found in tropical Indo-Pacific oceans. Honeycomb Groupers are ambush predators, feeding on smaller fish and crustaceans, using their camouflage and bursts of speed to strike prey.",
         "drops": "Fillet",
         "habitat": "Coral Reef,Coastal",
         "health": 75,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Crunch, Waterfall, Earthquake, Aqua Tail, Ice Fang, Power Whip, Scale Shot, Stone Edge, Outrage, Substitute, Rest, Aqua Fang, Dragon Dance",
         "name": "Honeycomb Grouper",
         "power": 60,
         "rarity": "Uncommon",
@@ -6039,7 +6039,7 @@
         "scientific_name": "Epinephelus merra",
         "speed": 60,
         "sprite": "https://i.postimg.cc/fLY06x2K/Honeycomb-Grouper.png",
-        "weight": 1
+        "weight": 0.72
     },
     {
         "abilities": "Solid Rock",
@@ -6788,7 +6788,7 @@
         "category": "Aquatic, Toxic",
         "defense": 82,
         "description": "A medium-sized stingray found in coastal waters, estuaries, and occasionally rivers along the western Atlantic. Recognizable by its diamond-shaped body and venomous tail spine, the Atlantic Stingray feeds on small invertebrates buried in the sand.",
-        "drops": "Fillet",
+        "drops": "Ray Fin, Fillet, Poison Barb",
         "habitat": "River, Coastal",
         "health": 80,
         "moves": "Camouflage,Venomous Barb,Dive,Vaccum Gulp",
@@ -6807,7 +6807,7 @@
         "category": "Aquatic, Toxic",
         "defense": 95,
         "description": "A striking freshwater stingray native to the Xingu River in Brazil, the Black Diamond Stingray is prized for its black body covered in brilliant white spots. It feeds on crustaceans, mollusks, and small fish, using stealth and sudden strikes to capture prey.",
-        "drops": "Fillet",
+        "drops": "Ray Fin, Fillet, Poison Barb",
         "habitat": "River",
         "health": 95,
         "moves": "Camouflage,Venomous Barb,Dive,Vaccum Gulp",
@@ -6826,7 +6826,7 @@
         "category": "Aquatic, Toxic",
         "defense": 110,
         "description": "The largest freshwater stingray in the world, the Giant Whiptail Stingray can grow over 5 meters across and weigh several hundred kilograms. Found in Southeast Asian rivers, it is a bottom-dweller that feeds on fish, crustaceans, and mollusks, using its immense size and whip-like tail for defense.",
-        "drops": "Fillet",
+        "drops": "Ray Fin, Fillet, Poison Barb",
         "habitat": "River, Lake",
         "health": 130,
         "moves": "Camouflage,Venomous Barb,Dive,Vaccum Gulp",
@@ -6845,7 +6845,7 @@
         "category": "Aquatic, Toxic",
         "defense": 88,
         "description": "A freshwater stingray found in the Pearl River system of China. This medium-sized stingray prefers sandy or muddy bottoms and feeds on crustaceans, mollusks, and small fish. Its patterned body allows it to blend into the riverbed for ambush hunting.",
-        "drops": "Fillet",
+        "drops": "Ray Fin, Fillet, Poison Barb",
         "habitat": "River, Lake",
         "health": 88,
         "moves": "Camouflage,Venomous Barb,Dive,Vaccum Gulp",
@@ -7928,7 +7928,7 @@
         "category": "Aquatic, Flying",
         "defense": 95,
         "description": "A large ray inhabiting coral reefs and coastal waters of the Indo-Pacific. Reef Manta Rays feed on plankton and small fish while gliding gracefully, using size to deter predators.",
-        "drops": "Fillet",
+        "drops": "Ray Fin, Fillet",
         "habitat": "Coral Reef, Coastal",
         "health": 120,
         "moves": "Dive,Surf,Cephalic Flip,Vaccum Gulp\r\n",
@@ -7947,7 +7947,7 @@
         "category": "Aquatic, Flying",
         "defense": 110,
         "description": "The largest species of manta ray, found in open oceans worldwide. Feeds on plankton and small fish, using massive size to dominate its territory.",
-        "drops": "Fillet",
+        "drops": "Ray Fin, Fillet",
         "habitat": "Ocean, Coastal",
         "health": 135,
         "moves": "Dive,Surf,Cephalic Flip,Vaccum Gulp",
@@ -7963,10 +7963,10 @@
     {
         "abilities": "Glide Leap",
         "attack": 65,
-        "category": "Giant, Aquatic, Solitary",
+        "category": "Aquatic",
         "defense": 60,
         "description": "A ray species inhabiting coral reefs and coastal areas of the Indo-Pacific. Feeds on crustaceans and small fish, using gliding movements to ambush prey.",
-        "drops": "Fillet",
+        "drops": "Ray Fin, Fillet",
         "habitat": "Coral Reef, Coastal",
         "health": 85,
         "moves": "Peck,Fly,Roost,Glide,Waterfowl Dance,Ice Beam, Psychic, Hydro Pump, Hidden Power, Rain Dance, Nasty Plot, Power Gem, Chilling Water, Future Sight, Focus Blast, Psych Up, Boomburst",
@@ -7982,10 +7982,10 @@
     {
         "abilities": "Ambush Predator",
         "attack": 70,
-        "category": "Giant, Aquatic, Solitary",
+        "category": "Aquatic",
         "defense": 65,
         "description": "A large ray found in tropical and subtropical reefs. White-spotted Eagle Rays feed on mollusks and crustaceans, using powerful tail strikes and gliding to hunt.",
-        "drops": "Fillet",
+        "drops": "Ray Fin, Fillet",
         "habitat": "Coral Reef, Coastal",
         "health": 90,
         "moves": "Tackle,Scratch,Piercing Beak,Peck",
@@ -10585,7 +10585,7 @@
     {
         "abilities": "Quick Sprint",
         "attack": 70,
-        "category": "Prey, Social, Agile",
+        "category": "Basic",
         "defense": 65,
         "description": "A swift antelope known for its leaping ability and large herds",
         "drops": "Impala Horn",
@@ -10800,7 +10800,7 @@
         "drops": "Venom Sac",
         "habitat": "Savanna",
         "health": 70,
-        "moves": "Tackle,Crunch,Bite,Venomous Fang",
+        "moves": "Bite, Glare, Brutal Swing, Leech Life, Haze, Toxic, Rock Slide, Fire Fang, Thunder Fang, Ice Fang, Venomous Fang, Protect, Crunch, Dig, Body Slam, Rock Tomb, Giga Drain, Knock Off, Hyper Beam, Mud Shot, Sludge Bomb, Giga Impact, Earthquake, Poison Jab, Iron Tail, Dark Pulse, Gunk Shot, Coil, Dragon Tail",
         "name": "Black Mamba",
         "power": 70,
         "rarity": "Epic",
@@ -15265,7 +15265,7 @@
         "drops": "Venison, Antler, Fur",
         "habitat": "Jungle",
         "health": 80,
-        "moves": "Antler Charge,Dash,Kick,Leap",
+        "moves": "Horn Leech, Bullet Seed, Megahorn, Double-Edge, Close Combat, Superpower, Wild Charge, High Jump Kick, Rest, Swords Dance, Return",
         "name": "Axis Deer",
         "power": 65,
         "rarity": "Uncommon",
@@ -15303,7 +15303,7 @@
         "drops": "Antler",
         "habitat": "Taiga",
         "health": 100,
-        "moves": "Antler Charge,Stomp,Ram,Dash",
+        "moves": "Antler Charge,Psyshield Bash, Zen Headbutt, Double-Edge, Wild Charge, Megahorn, Rest, High Horsepower, Hyper Voice, Mystical Fire, Calm Mind, Psychic, Thrash, Trick Room",
         "name": "Elk",
         "power": 84,
         "rarity": "Uncommon",
@@ -15360,7 +15360,7 @@
         "drops": "Venison, Antler, Fur",
         "habitat": "Tundra",
         "health": 95,
-        "moves": "Antler Charge,Stomp,Ram,Dash",
+        "moves": "Antler Charge,Psyshield Bash, Zen Headbutt, Double-Edge, Wild Charge, Megahorn, Rest, High Horsepower, Hyper Voice, Mystical Fire, Calm Mind, Psychic, Thrash, Trick Room",
         "name": "Reindeer",
         "power": 74,
         "rarity": "Uncommon",
@@ -19537,7 +19537,7 @@
         "category": "Aquatic, Toxic",
         "defense": 85,
         "description": "Decorated with eye-like spots, it blends into sandy riverbeds. It hunts small fish and crustaceans in South America.",
-        "drops": "Venom Barb",
+        "drops": "Ray Fin, Fillet, Poison Barb",
         "habitat": "River",
         "health": 87,
         "moves": "Camouflage,Venomous Barb,Dive,Vaccum Gulp",
@@ -24873,7 +24873,7 @@
     {
         "abilities": "Camouflage",
         "attack": 115,
-        "category": "Aquatic, Predator",
+        "category": "Aquatic",
         "defense": 135,
         "description": "The Warty Prowfish has rough bumpy skin that mimics coral. It ambushes prey while blending into rocky reefs.",
         "drops": "Fillet",
@@ -24892,7 +24892,7 @@
     {
         "abilities": "Camouflage",
         "attack": 110,
-        "category": "Aquatic, Predator",
+        "category": "Aquatic",
         "defense": 125,
         "description": "The Whiskered Prowfish sports fleshy whiskers that sense movement. It is rarely seen due to its perfect camouflage.",
         "drops": "Fillet",
@@ -25481,7 +25481,7 @@
     {
         "abilities": "Camouflage",
         "attack": 60,
-        "category": "Aquatic, Predator",
+        "category": "Aquatic",
         "defense": 55,
         "description": "The Matted Filefish has rough skin that blends with coral textures. It moves slowly but can dart quickly to escape threats.",
         "drops": "Fillet",
@@ -26182,23 +26182,23 @@
         "weight": 1
     },
     {
-        "abilities": "Infect",
-        "attack": 80,
-        "category": "Microbe, Predator",
+        "abilities": "Contrary",
+        "attack": 92,
+        "category": "Aura, Darkness",
         "defense": 20,
         "description": "This microscopic organism invades neural tissue of warm-blooded hosts. It thrives in warm stagnant waters with poor circulation.",
         "drops": "Cell Sample",
         "habitat": "Swamp, River",
         "health": 60,
-        "moves": "Absorb, Divide, Swim, Invade",
+        "moves": "Superpower, Psycho Cut, Shadow Sneak, Night Slash, Hypnosis, Psycho Boost, Destiny Bond, Payback, Reflect, Light Screen, Trick Room, Skill Swap",
         "name": "Brain-eating Amoeba",
-        "power": 83,
+        "power": 98,
         "rarity": "Epic",
-        "resistance": 12,
+        "resistance": 120,
         "scientific_name": "Naegleria fowleri",
-        "speed": 10,
+        "speed": 88,
         "sprite": "https://i.postimg.cc/mgpr2wJW/Brain-eating-Amoeba.png",
-        "weight": 1
+        "weight": 2e-12
     },
     {
         "abilities": "Nectar Sense",
@@ -27878,7 +27878,7 @@
         "category": "Predator, Aquatic, Flatfish",
         "defense": 65,
         "description": "The clearnose skate has translucent patches near its snout, helping it sense motion in murky water. It feeds on small crustaceans and fish.",
-        "drops": "Cartilage",
+        "drops": "Ray Fin, Fillet",
         "habitat": "Coastal, Ocean",
         "health": 85,
         "moves": "Glide, Slam, Spin, Dash",
@@ -27894,10 +27894,10 @@
     {
         "abilities": "Electrosense",
         "attack": 68,
-        "category": "Predator, Aquatic",
+        "category": "Aquatic",
         "defense": 55,
         "description": "The Pacific eagle ray soars gracefully through warm coastal waters. It uses electrosensory organs to locate buried prey.",
-        "drops": "Cartilage",
+        "drops": "Ray Fin, Fillet",
         "habitat": "Coastal, Ocean",
         "health": 85,
         "moves": "Glide, Slam, Dash, Tail Whip",
@@ -28106,7 +28106,7 @@
         "category": "Aquatic, Toxic",
         "defense": 90,
         "description": "The round stingray is a small but potent venomous ray. It buries itself in sand to ambush small crustaceans.",
-        "drops": "Venom Barb",
+        "drops": "Ray Fin, Fillet, Poison Barb",
         "habitat": "Coastal",
         "health": 78,
         "moves": "Camouflage,Venomous Barb,Dive,Vaccum Gulp",
@@ -32511,7 +32511,7 @@
     {
         "abilities": "Silent Flight",
         "attack": 42,
-        "category": "Predator, Flying, Solitary, Nocturnal",
+        "category": "Flying, Darkness",
         "defense": 30,
         "description": "The Feline Owlet Nightjar is a secretive nocturnal bird found in New Guineas forests. Its large eyes and silent flight make it a master of the night.",
         "drops": "Feather",
@@ -33499,13 +33499,13 @@
     {
         "abilities": "Ambush Hunter",
         "attack": 75,
-        "category": "Aquatic",
+        "category": "Aquatic, Grass",
         "defense": 80,
         "description": "The gag grouper is a large reef predator found along the western Atlantic. It hides near structures to ambush smaller fish and crustaceans with explosive speed.",
         "drops": "Fish Fillet",
         "habitat": "Coastal, Ocean",
         "health": 105,
-        "moves": "Bite, Charge, Lurk, Dash",
+        "moves": "Crunch, Waterfall, Earthquake, Aqua Tail, Ice Fang, Power Whip, Scale Shot, Stone Edge, Outrage, Substitute, Rest, Aqua Fang, Dragon Dance",
         "name": "Gag Grouper",
         "power": 85,
         "rarity": "Uncommon",
@@ -33513,7 +33513,7 @@
         "scientific_name": "Mycteroperca microlepis",
         "speed": 62,
         "sprite": "https://i.postimg.cc/xdCt6C6f/Gag_Grouper.png",
-        "weight": 1
+        "weight": 25
     },
     {
         "abilities": "Reef Dash",
@@ -33594,13 +33594,13 @@
     {
         "abilities": "Color Burst",
         "attack": 70,
-        "category": "Aquatic",
+        "category": "Aquatic,Mystic",
         "defense": 65,
         "description": "The strawberry grouper is a vivid red reef fish covered in pink and white spots. It ambushes prey from coral crevices and changes color to communicate.",
         "drops": "Fish Fillet",
         "habitat": "Coral Reef, Coastal",
         "health": 82,
-        "moves": "Bite, Ambush, Dash, Flare",
+        "moves": "Crunch, Waterfall, Earthquake, Aqua Tail, Ice Fang, Power Whip, Scale Shot, Stone Edge, Outrage, Substitute, Rest, Aqua Fang, Dragon Dance",
         "name": "Strawberry Grouper",
         "power": 74,
         "rarity": "Uncommon",
@@ -33608,7 +33608,7 @@
         "scientific_name": "Cephalopholis spiloparaea",
         "speed": 50,
         "sprite": "https://i.postimg.cc/P5Pkwt1r/Strawberry_Grouper.png",
-        "weight": 1
+        "weight": 2.5
     },
     {
         "abilities": "Filter Feed",
@@ -35057,13 +35057,13 @@
     {
         "abilities": "Ambush",
         "attack": 80,
-        "category": "Aquatic",
+        "category": "Aquatic, Electric",
         "defense": 60,
         "description": "The Blue Spotted Grouper is a skilled ambush predator on coral reefs. It hides among rocks before striking unsuspecting fish.",
         "drops": "Fillet",
         "habitat": "Coral Reef, Ocean",
         "health": 88,
-        "moves": "Bite, Stalk, Lunge, Tail Strike",
+        "moves": "Crunch, Waterfall, Earthquake, Aqua Tail, Ice Fang, Power Whip, Scale Shot, Stone Edge, Outrage, Substitute, Rest, Aqua Fang, Dragon Dance",
         "name": "Blue Spotted Grouper",
         "power": 76,
         "rarity": "Rare",
@@ -35071,7 +35071,7 @@
         "scientific_name": "Cephalopholis argus",
         "speed": 70,
         "sprite": "https://i.postimg.cc/262G5tHt/Blue_Spotted_Grouper.png",
-        "weight": 1
+        "weight": 16
     },
     {
         "abilities": "Poison Spine",
@@ -35114,13 +35114,13 @@
     {
         "abilities": "Ambush",
         "attack": 85,
-        "category": "Aquatic",
+        "category": "Aquatic,Basic",
         "defense": 60,
         "description": "The Panther Grouper is a solitary predator of reef fish. It hides motionless until prey comes close, then strikes with speed.",
         "drops": "Fillet",
         "habitat": "Coral Reef, Ocean",
         "health": 98,
-        "moves": "Bite, Stalk, Lunge, Tail Strike",
+        "moves": "Crunch, Waterfall, Earthquake, Aqua Tail, Ice Fang, Power Whip, Scale Shot, Stone Edge, Outrage, Substitute, Rest, Aqua Fang, Dragon Dance",
         "name": "Panther Grouper",
         "power": 89,
         "rarity": "Rare",
@@ -35128,7 +35128,7 @@
         "scientific_name": "Cromileptes altivelis",
         "speed": 78,
         "sprite": "https://i.postimg.cc/C1m7K2vQ/Panther_Grouper.png",
-        "weight": 1
+        "weight": 4.5
     },
     {
         "abilities": "Regenerator, Natural Cure",
@@ -35190,7 +35190,7 @@
     {
         "abilities": "Echolocation",
         "attack": 20,
-        "category": "Flying,Social",
+        "category": "Flying",
         "defense": 25,
         "description": "The Black Nest Swiftlet builds edible nests inside caves. It navigates using echolocation and forages in groups.",
         "drops": "Edible Nest",
@@ -35209,7 +35209,7 @@
     {
         "abilities": "Echolocation",
         "attack": 20,
-        "category": "Flying,Social",
+        "category": "Flying",
         "defense": 25,
         "description": "The Edible Nest Swiftlet constructs nests harvested for human consumption. It uses echolocation to maneuver in dark cave environments.",
         "drops": "Edible Nest",
@@ -35228,7 +35228,7 @@
     {
         "abilities": "Echolocation",
         "attack": 20,
-        "category": "Flying,Social",
+        "category": "Flying",
         "defense": 25,
         "description": "The Himalayan Swiftlet lives in mountainous caves building edible nests. It forages for insects in the air using precise flight skills.",
         "drops": "Edible Nest",
@@ -35247,7 +35247,7 @@
     {
         "abilities": "Echolocation",
         "attack": 20,
-        "category": "Flying,Social",
+        "category": "Blaze, Flying",
         "defense": 25,
         "description": "The Volcano Swiftlet thrives in caves near volcanic slopes. It uses echolocation to navigate smoke and ash-filled skies.",
         "drops": "Edible Nest",
@@ -35266,7 +35266,7 @@
     {
         "abilities": "Echolocation",
         "attack": 20,
-        "category": "Flying,Social",
+        "category": "Flying",
         "defense": 25,
         "description": "The White Nest Swiftlet builds nests inside dark caves. It relies on group foraging and echolocation to survive.",
         "drops": "Edible Nest",
@@ -36843,13 +36843,13 @@
     {
         "abilities": "Ambush",
         "attack": 70,
-        "category": "Aquatic",
+        "category": "Aquatic, Darkness",
         "defense": 65,
         "description": "The sixblotch grouper is a large reef predator with bold banding. It waits near structure before engulfing prey whole.",
         "drops": "Fillet",
         "habitat": "Coral Reef",
         "health": 80,
-        "moves": "Punch, Kick, Bite, Lunge",
+        "moves": "Crunch, Waterfall, Earthquake, Aqua Tail, Ice Fang, Power Whip, Scale Shot, Stone Edge, Outrage, Substitute, Rest, Aqua Fang, Dragon Dance",
         "name": "Sixblotch Grouper",
         "power": 61,
         "rarity": "Rare",
@@ -36857,7 +36857,7 @@
         "scientific_name": "Epinephelus sexfasciatus",
         "speed": 68,
         "sprite": "https://i.postimg.cc/GmKSD2hk/Sixblotch_Grouper.png",
-        "weight": 1
+        "weight": 5.5
     },
     {
         "abilities": "Territorial",
@@ -36900,13 +36900,13 @@
     {
         "abilities": "Dominance",
         "attack": 85,
-        "category": "Aquatic",
+        "category": "Aquatic, Blaze",
         "defense": 70,
         "description": "The black saddle coral grouper is a powerful reef hunter with striking coloration. It dominates large territories and targets sizable prey.",
         "drops": "Fillet",
         "habitat": "Coral Reef",
         "health": 95,
-        "moves": "Punch, Kick, Bite, Lunge",
+        "moves": "Crunch, Waterfall, Earthquake, Aqua Tail, Ice Fang, Power Whip, Scale Shot, Stone Edge, Outrage, Substitute, Rest, Aqua Fang, Dragon Dance",
         "name": "Black Saddle Coral Grouper",
         "power": 83,
         "rarity": "Epic",
@@ -36914,7 +36914,7 @@
         "scientific_name": "Plectropomus laevis",
         "speed": 72,
         "sprite": "https://i.postimg.cc/9XybTMJ6/Black_Saddle_Coral_Grouper.png",
-        "weight": 1
+        "weight": 63
     },
     {
         "abilities": "Schooling",
@@ -37033,13 +37033,13 @@
     {
         "abilities": "Stealth",
         "attack": 75,
-        "category": "Aquatic",
+        "category": "Aquatic, Spectral",
         "defense": 65,
         "description": "The misty grouper is a deep reef predator with muted coloration. It relies on stealth to surprise passing prey.",
         "drops": "Fillet",
         "habitat": "Coral Reef",
         "health": 110,
-        "moves": "Punch, Kick, Bite, Lunge",
+        "moves": "Crunch, Waterfall, Earthquake, Aqua Tail, Ice Fang, Power Whip, Scale Shot, Stone Edge, Outrage, Substitute, Rest, Aqua Fang, Dragon Dance",
         "name": "Misty Grouper",
         "power": 67,
         "rarity": "Rare",
@@ -37047,7 +37047,7 @@
         "scientific_name": "Epinephelus mystacinus",
         "speed": 42,
         "sprite": "https://i.postimg.cc/zGP6wYyL/Misty_Grouper.png",
-        "weight": 1
+        "weight": 81
     },
     {
         "abilities": "Endurance",
@@ -37090,13 +37090,13 @@
     {
         "abilities": "Apex",
         "attack": 95,
-        "category": "Aquatic",
+        "category": "Aquatic, Rock",
         "defense": 80,
         "description": "The Warsaw grouper is a massive deep water predator reaching enormous sizes. Few animals challenge it once fully grown.",
         "drops": "Fillet",
         "habitat": "Deep Sea",
         "health": 115,
-        "moves": "Punch, Kick, Bite, Lunge",
+        "moves": "Crunch, Waterfall, Earthquake, Aqua Tail, Ice Fang, Power Whip, Scale Shot, Stone Edge, Outrage, Substitute, Rest, Aqua Fang, Dragon Dance",
         "name": "Warsaw Grouper",
         "power": 95,
         "rarity": "Legendary",
@@ -37104,7 +37104,7 @@
         "scientific_name": "Hyporthodus nigritus",
         "speed": 30,
         "sprite": "https://i.postimg.cc/cL527Gv0/Warsaw_Grouper.png",
-        "weight": 1
+        "weight": 175.6
     },
     {
         "abilities": "Dancer",
@@ -37188,7 +37188,7 @@
         "category": "Aquatic, Toxic",
         "defense": 78,
         "description": "The bluespot stingray is recognized by its vivid blue markings. It uses venomous spines for defense while feeding on bottom dwelling prey.",
-        "drops": "Spine, Meat",
+        "drops": "Ray Fin, Fillet, Poison Barb",
         "habitat": "Coral Reef",
         "health": 85,
         "moves": "Camouflage,Venomous Barb,Dive,Vaccum Gulp",
@@ -37546,13 +37546,13 @@
     {
         "abilities": "Ambush",
         "attack": 85,
-        "category": "Aquatic",
+        "category": "Aquatic,Aura",
         "defense": 70,
         "description": "The humpback grouper is a heavily built reef predator with slow deliberate movement. It relies on surprise to capture prey.",
         "drops": "Fillet",
         "habitat": "Coral Reef",
         "health": 98,
-        "moves": "Punch, Kick, Bite, Lunge",
+        "moves": "Crunch, Waterfall, Earthquake, Aqua Tail, Ice Fang, Power Whip, Scale Shot, Stone Edge, Outrage, Substitute, Rest, Aqua Fang, Dragon Dance",
         "name": "Humpback Grouper",
         "power": 92,
         "rarity": "Epic",
@@ -37560,7 +37560,7 @@
         "scientific_name": "Cromileptes altivelis",
         "speed": 45,
         "sprite": "https://i.postimg.cc/3xYRkttb/Humpback_Grouper.png",
-        "weight": 1
+        "weight": 4.5
     },
     {
         "abilities": "Schooling",
