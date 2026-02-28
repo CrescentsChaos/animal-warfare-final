@@ -856,7 +856,11 @@ else if ((atk >= 120 || pwr >= 120) && (hp + def + res <= 180)) role='💥 Glass
             <script>
                 let RAW = [];
                 fetch('assets/Organisms.json').then(res => res.json()).then(data => {
-                    RAW = data.map(o => {
+                    RAW = data.filter(o => {
+                        let hp = o.health || 0; let atk = o.attack || 0; let def = o.defense || 0;
+                        let pwr = o.power || 0; let res = o.resistance || 0; let spd = o.speed || 0;
+                        return hp <= 300 && atk <= 300 && def <= 300 && pwr <= 300 && res <= 300 && spd <= 300;
+                    }).map(o => {
                         let hp = o.health || 0; let atk = o.attack || 0; let def = o.defense || 0;
                         let pwr = o.power || 0; let res = o.resistance || 0; let spd = o.speed || 0;
                         let bst = hp + atk + def + pwr + res + spd;
@@ -942,11 +946,9 @@ else if ((atk >= 120 || pwr >= 120) && (hp + def + res <= 180)) role='💥 Glass
                 // ─── ROW BUILDER ─────────────────────────────────────────────────────────────
                 function buildRow(a) {
                     // Sprite
-                    let spriteSrc = '';
-                    if (a.sprite) {
-                        const parts = a.sprite.split('/');
-                        spriteSrc = 'assets/sprites/' + parts[parts.length - 1];
-                    }
+                    let spriteName = a.name.replace(/[\s\-']/g, '_').toLowerCase() + '.png';
+                    let spriteSrc = 'assets/sprites/' + spriteName;
+
                     const spriteHtml = spriteSrc
                         ? `<img src="${spriteSrc}" alt="${a.name}" loading="lazy" onerror="this.style.display='none'">`
                         : `<div class="sp-ph"></div>`;
