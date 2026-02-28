@@ -141,6 +141,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   int? lastOpponentSwitchTurn;
   bool opponentJustSwitched = false;
   bool playerJustSwitched = false;
+  int lastPlayerFaintTurn = -1;
+  int lastOpponentFaintTurn = -1;
 
   bool playerMovedThisTurn = false;
   bool opponentMovedThisTurn = false;
@@ -1149,6 +1151,72 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       move = actualMove;
     }
 
+    if (move.name == 'Focus Energy') {
+      attacker.focusEnergyActive = true;
+      addToLog('${attacker.name} is getting pumped!');
+      notifyListeners();
+      if (!isTesting) await Future.delayed(const Duration(milliseconds: 2000));
+      return;
+    }
+
+    if (move.name == 'Laser Focus') {
+      attacker.laserFocusTurns = 2; // Active this turn and next
+      addToLog('${attacker.name} is concentrating intensely!');
+      notifyListeners();
+      if (!isTesting) await Future.delayed(const Duration(milliseconds: 2000));
+      return;
+    }
+
+    if (move.name == 'Whirlwind' || move.name == 'Roar') {
+      if (defender.isPlayer) {
+        if (isArenaBattle || isRogueMode) {
+          final healthyIndex = playerTeam.indexWhere(
+            (org) => org.currentHealth > 0 && org != defender.organism,
+          );
+          if (healthyIndex != -1) {
+            addToLog('${defender.name} was blown away!');
+            currentState = BattleState.waitingForPlayerSwitch;
+            notifyListeners();
+            if (!isTesting)
+              await Future.delayed(const Duration(milliseconds: 2000));
+            return;
+          }
+        } else {
+          // Wild battle ends
+          addToLog('${defender.name} was blown away! The battle ended.');
+          _result = BattleResult.fled;
+          currentState = BattleState.battleEnd;
+          notifyListeners();
+          return;
+        }
+      } else {
+        if (isArenaBattle || isRogueMode) {
+          final healthyIndex = opponentTeam.indexWhere(
+            (org) => org.currentHealth > 0 && org != defender.organism,
+          );
+          if (healthyIndex != -1) {
+            addToLog('${defender.name} was blown away!');
+            _switchOpponentTo(healthyIndex);
+            opponentJustSwitched = true;
+            notifyListeners();
+            if (!isTesting)
+              await Future.delayed(const Duration(milliseconds: 2000));
+            return;
+          }
+        } else {
+          addToLog('${defender.name} was blown away! The battle ended.');
+          _result = BattleResult.fled;
+          currentState = BattleState.battleEnd;
+          notifyListeners();
+          return;
+        }
+      }
+      addToLog('But it failed!');
+      notifyListeners();
+      if (!isTesting) await Future.delayed(const Duration(milliseconds: 2000));
+      return;
+    }
+
     if (move.isMultiTurn && !wasCharging) {
       final chargeEffect = move.effects.firstWhere(
         (e) =>
@@ -1158,9 +1226,19 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       );
 
       if (chargeEffect.type != MoveEffectType.none) {
-        // Power Herb check
+        // Solar Beam / Blade skip charge in sun
+        bool isSolarMove =
+            move.name == 'Solar Beam' || move.name == 'Solar Blade';
+        bool isSunny = currentWeather.weather == Weather.sunny;
         bool skipCharge = false;
-        if (attacker.organism.equippedTalisman != null &&
+
+        if (isSolarMove && isSunny) {
+          skipCharge = true;
+        }
+
+        // Power Herb check
+        if (!skipCharge &&
+            attacker.organism.equippedTalisman != null &&
             !attacker.talismanConsumed) {
           for (final effect in attacker.organism.equippedTalisman!.effects) {
             if (effect.type == TalismanEffectType.powerHerb) {
@@ -1196,6 +1274,11 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             case 'Bounce':
               chargeMessage =
                   '${attacker.organism.baseOrganism.name} bounced into the air!';
+              break;
+            case 'Solar Beam':
+            case 'Solar Blade':
+              chargeMessage =
+                  '${attacker.organism.baseOrganism.name} absorbed light!';
               break;
             default:
               chargeMessage =
@@ -1289,6 +1372,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     if (targetIsMarked ||
         hasNoGuard ||
         move.name == 'Kowtow Cleave' ||
+        move.name == 'Smart Strike' ||
         defender.glaiveRushVulnerable) {
       accuracy = 100;
     } else {
@@ -1322,7 +1406,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       }
 
       // Evasion stage modifier
-      if (defender.evasionStage != 0) {
+      if (defender.evasionStage != 0 && move.name != 'Sacred Sword') {
         double evasionMultiplier = 1.0;
         // Standard Pokemon evasion formula: 3/(3+stage) for positive, (3-stage)/3 for negative
         if (defender.evasionStage > 0) {
@@ -1554,6 +1638,38 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         } else if (move.category == MoveCategory.special) {
           defender.lastSpecialDamageTaken = effectiveDamage;
           defender.lastPhysicalDamageTaken = 0;
+        }
+
+        if (move.name == 'Brick Break' || move.name == 'Psychic Fangs') {
+          if (defender.isPlayer) {
+            if (playerReflectTurns > 0 ||
+                playerLightScreenTurns > 0 ||
+                playerAuroraVeilTurns > 0) {
+              playerReflectTurns = 0;
+              playerLightScreenTurns = 0;
+              playerAuroraVeilTurns = 0;
+              addToLog('${attacker.name} shattered the team\'s protection!');
+              notifyListeners();
+              if (!isTesting) {
+                await Future.delayed(const Duration(milliseconds: 1000));
+              }
+            }
+          } else {
+            if (opponentReflectTurns > 0 ||
+                opponentLightScreenTurns > 0 ||
+                opponentAuroraVeilTurns > 0) {
+              opponentReflectTurns = 0;
+              opponentLightScreenTurns = 0;
+              opponentAuroraVeilTurns = 0;
+              addToLog(
+                '${attacker.name} shattered the opposing team\'s protection!',
+              );
+              notifyListeners();
+              if (!isTesting) {
+                await Future.delayed(const Duration(milliseconds: 1000));
+              }
+            }
+          }
         }
 
         if (defender.substituteHealth > 0) {
@@ -2034,6 +2150,28 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     attacker.isFirstTurnOutOfBall = false;
     lastMoveUsedGlobal = move;
     attacker.movesUsedInBattle.add(move.name);
+
+    // Scale Shot Stat Changes
+    if (move.name == 'Scale Shot' && defender.tookDamageThisTurn) {
+      await applyStatChange(attacker, 'defense', -1);
+      await applyStatChange(attacker, 'speed', 1);
+    }
+
+    // Thrash/Outrage/Petal Dance Lock
+    if ((move.name == 'Thrash' ||
+            move.name == 'Outrage' ||
+            move.name == 'Petal Dance') &&
+        defender.tookDamageThisTurn) {
+      if (attacker.thrashTurnCount == 0) {
+        attacker.thrashTurnCount = 2 + Random().nextInt(2); // 2-3 turns
+        attacker.thrashMove = move;
+      }
+      attacker.thrashTurnCount--;
+      if (attacker.thrashTurnCount == 0) {
+        await applyStatusEffect(attacker, StatusEffectType.confusion);
+        attacker.thrashMove = null;
+      }
+    }
   }
 
   Future<bool> _canMove(BattleOrganism org) async {
@@ -4056,6 +4194,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         opponent.isInvulnerable = false;
         opponent.semiInvulnerable = null;
       }
+
+      if (player.laserFocusTurns > 0) player.laserFocusTurns--;
+      if (opponent.laserFocusTurns > 0) opponent.laserFocusTurns--;
     }
     notifyListeners();
   }
@@ -4120,6 +4261,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
   bool _checkBattleEnd() {
     if (player.health <= 0) {
+      lastPlayerFaintTurn = currentTurn;
       // Check if team has more healthy animals
       final nextHealthyIndex = playerTeam.indexWhere(
         (org) =>
@@ -4147,6 +4289,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       return true;
     }
     if (opponent.health <= 0) {
+      lastOpponentFaintTurn = currentTurn;
       // ARENA BATTLE: Check if opponent has more animals
       if (isArenaBattle) {
         final nextOpponentHealthy = opponentTeam.indexWhere(
@@ -4345,6 +4488,14 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     if (move.critRate == 2) critChance = 50.0;
     if (move.critRate >= 3) critChance = 100.0;
 
+    if (attacker.focusEnergyActive) {
+      if (critChance < 50.0) critChance = 50.0;
+    }
+
+    if (attacker.laserFocusTurns > 0) {
+      critChance = 100.0;
+    }
+
     // Merciless Ability: Guaranteed crit against poisoned targets
     if (attacker.abilities.any((ab) => ab.name == 'Merciless') &&
         defender.statusEffects.any(
@@ -4364,6 +4515,17 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       isCrit = false;
     }
 
+    if (move.name == 'Endeavor') {
+      if (defender.health > attacker.health) {
+        return DamageResult(defender.health - attacker.health, 1.0, false);
+      }
+      return const DamageResult(0, 1.0, false);
+    }
+
+    if (move.name == 'Nature\'s Madness') {
+      return DamageResult(max(1, (defender.health / 2).floor()), 1.0, false);
+    }
+
     // 1. Determine Stats (Atk/Def or Power/Res)
     int atk = (move.category == MoveCategory.special)
         ? attacker.currentPower
@@ -4371,6 +4533,10 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     int def = (move.category == MoveCategory.special)
         ? defender.currentResistance
         : defender.currentDefense;
+
+    if (move.name == 'Sacred Sword') {
+      def = defender.organism.getDefense(atLevel: defender.level);
+    }
 
     // Psyshock: Special move targets Physical Defense
     if (move.name == 'Psyshock') {
@@ -4538,6 +4704,21 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     if (move.name == 'Acrobatics') {
       if (attacker.organism.equippedTalisman == null ||
           attacker.talismanConsumed) {
+        baseDamage *= 2;
+      }
+    }
+
+    if (move.name == 'Retaliate') {
+      int lastFaint = attacker.isPlayer
+          ? lastPlayerFaintTurn
+          : lastOpponentFaintTurn;
+      if (lastFaint == currentTurn - 1 && lastFaint != -1) {
+        baseDamage *= 2;
+      }
+    }
+
+    if (move.name == 'Brine') {
+      if (defender.health <= (defender.maxHealth / 2)) {
         baseDamage *= 2;
       }
     }
@@ -4966,6 +5147,15 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     return _applyTurnEffects(target);
   }
 
+  @visibleForTesting
+  Future<void> testExecuteTurn(
+    BattleOrganism attacker,
+    BattleOrganism defender,
+    Move move,
+  ) async {
+    return _executeTurn(attacker, defender, move);
+  }
+
   // =====================================================================
   // BERRY HELPER METHODS
   // =====================================================================
@@ -4987,6 +5177,11 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       if (moves.any((m) => m.name == org.rolloutMove!.name)) {
         return [moves.firstWhere((m) => m.name == org.rolloutMove!.name)];
       }
+    }
+
+    // Thrash/Outrage/Petal Dance Lock
+    if (org.thrashTurnCount > 0 && org.thrashMove != null) {
+      return [org.thrashMove!];
     }
 
     // 2. Taunt
@@ -5090,6 +5285,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   Move pickOpponentMove() {
     if (opponent.rolloutTurnCount > 0 && opponent.rolloutMove != null) {
       return opponent.rolloutMove!;
+    }
+    if (opponent.thrashTurnCount > 0 && opponent.thrashMove != null) {
+      return opponent.thrashMove!;
     }
     if (opponent.chargingMove != null) return opponent.chargingMove!;
 

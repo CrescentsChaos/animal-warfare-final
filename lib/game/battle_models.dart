@@ -101,6 +101,10 @@ class BattleOrganism {
     futureSightTurns = 0;
     futureSightDamage = 0;
     rolloutMove = null;
+    laserFocusTurns = 0;
+    focusEnergyActive = false;
+    thrashTurnCount = 0;
+    thrashMove = null;
     throatChopTurns = 0;
     clampingTurns = 0;
     isFirstTurnOutOfBall = true;
@@ -215,6 +219,10 @@ class BattleOrganism {
   int futureSightTurns = 0;
   int futureSightDamage = 0;
   BattleOrganism? futureSightUser; // The attacker who used Future Sight
+  int laserFocusTurns = 0;
+  bool focusEnergyActive = false;
+  int thrashTurnCount = 0;
+  Move? thrashMove;
 
   // Advanced Move States
   int wishTurns = 0;

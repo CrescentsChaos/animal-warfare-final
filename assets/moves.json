@@ -192,6 +192,38 @@
         ]
     },
     {
+        "name": "Scald",
+        "description": "30% chance to burn the opponent.",
+        "baseDamage": 80,
+        "type": "aquatic",
+        "accuracy": 100,
+        "stamina": 15,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statusBurn",
+                "target": "opponent",
+                "chance": 30
+            }
+        ]
+    },
+    {
+        "name": "Will-o-Wisp",
+        "description": "Burns the opponent.",
+        "baseDamage": 0,
+        "type": "blaze",
+        "accuracy": 85,
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statusBurn",
+                "target": "opponent",
+                "chance": 100
+            }
+        ]
+    },
+    {
         "name": "Thunder Fang",
         "description": "10% chance to paralyze the opponent.",
         "baseDamage": 65,
@@ -244,13 +276,40 @@
         "category": "special"
     },
     {
-        "name": "Tsunami",
+        "name": "Guillotine",
         "description": "OHKO anyone.",
         "baseDamage": 9999,
-        "type": "aquatic",
+        "type": "basic",
         "accuracy": 30,
         "stamina": 15,
-        "category": "special"
+        "category": "physical"
+    },
+    {
+        "name": "Horn Drill",
+        "description": "OHKO anyone.",
+        "baseDamage": 9999,
+        "type": "basic",
+        "accuracy": 30,
+        "stamina": 15,
+        "category": "physical"
+    },
+    {
+        "name": "Guillotine",
+        "description": "OHKO anyone.",
+        "baseDamage": 9999,
+        "type": "basic",
+        "accuracy": 30,
+        "stamina": 15,
+        "category": "physical"
+    },
+    {
+        "name": "Fissure",
+        "description": "OHKO anyone.",
+        "baseDamage": 9999,
+        "type": "earth",
+        "accuracy": 30,
+        "stamina": 15,
+        "category": "physical"
     },
     {
         "name": "Powder Snow",
@@ -393,13 +452,31 @@
     },
     {
         "name": "Slash",
-        "description": "A basic attack.",
-        "baseDamage": 30,
+        "description": "High crit rate.",
+        "baseDamage": 70,
         "type": "basic",
         "critRate": 1,
         "stamina": 20,
-        "category": "physical",
-        "effects": []
+        "category": "physical"
+    },
+    {
+        "name": "Drill Run",
+        "description": "High crit rate.",
+        "baseDamage": 80,
+        "type": "earth",
+        "critRate": 1,
+        "stamina": 20,
+        "category": "physical"
+    },
+    {
+        "name": "Psycho Cut",
+        "description": "High crit rate.",
+        "baseDamage": 70,
+        "type": "aura",
+        "critRate": 1,
+        "stamina": 20,
+        "accuracy": 100,
+        "category": "physical"
     },
     {
         "name": "Peck",
@@ -407,17 +484,7 @@
         "baseDamage": 35,
         "type": "flying",
         "stamina": 35,
-        "category": "physical",
-        "effects": []
-    },
-    {
-        "name": "Wing Flap",
-        "description": "A basic attack.",
-        "baseDamage": 40,
-        "type": "flying",
-        "stamina": 35,
-        "category": "physical",
-        "effects": []
+        "category": "physical"
     },
     {
         "name": "Piercing Beak",
@@ -426,8 +493,7 @@
         "type": "flying",
         "critRate": 1,
         "stamina": 15,
-        "category": "physical",
-        "effects": []
+        "category": "physical"
     },
     {
         "name": "Sonic Slash",
@@ -603,6 +669,24 @@
                 "stat": "attack",
                 "value": -1,
                 "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Play Rough",
+        "description": "May lower foes attack",
+        "baseDamage": 90,
+        "accuracy": 90,
+        "type": "mystic",
+        "stamina": 20,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "attack",
+                "value": -1,
+                "chance": 10
             }
         ]
     },
@@ -1026,6 +1110,22 @@
         ]
     },
     {
+        "name": "Leaf Storm",
+        "description": "Drops user's power by 2.",
+        "baseDamage": 130,
+        "type": "grass",
+        "stamina": 10,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "power",
+                "value": -2
+            }
+        ]
+    },
+    {
         "name": "Swagger",
         "description": "Raises opponent's attack but confuses them too.",
         "baseDamage": 0,
@@ -1374,8 +1474,23 @@
                 "type": "multiStatChange",
                 "target": "self",
                 "stat": "attack:1,speed:1",
-                "value": 1,
                 "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Splash",
+        "description": "May raise the user's Attack and Speed by two stage",
+        "baseDamage": 0,
+        "type": "aquatic",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "multiStatChange",
+                "target": "self",
+                "stat": "attack:2,speed:2",
+                "chance": 10
             }
         ]
     },
@@ -1539,6 +1654,15 @@
         ]
     },
     {
+        "name": "Power Gem",
+        "description": "10% chance to burn the target.",
+        "baseDamage": 80,
+        "accuracy": 100,
+        "type": "rock",
+        "stamina": 20,
+        "category": "special"
+    },
+    {
         "name": "Rosy Scare",
         "description": "20% chance to confuse opponent.",
         "baseDamage": 75,
@@ -1653,6 +1777,24 @@
         "baseDamage": 80,
         "accuracy": 100,
         "type": "spectral",
+        "stamina": 15,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "resistance",
+                "value": -1,
+                "chance": 20
+            }
+        ]
+    },
+    {
+        "name": "Energy Ball",
+        "description": "20% chance to lower the target's resistance.",
+        "baseDamage": 80,
+        "accuracy": 100,
+        "type": "grass",
         "stamina": 15,
         "category": "special",
         "effects": [
@@ -1784,6 +1926,23 @@
         "baseDamage": 75,
         "accuracy": 90,
         "type": "rock",
+        "stamina": 15,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusStun",
+                "target": "opponent",
+                "value": 1,
+                "chance": 30
+            }
+        ]
+    },
+    {
+        "name": "Waterfall",
+        "description": "20% chance to stun the target.",
+        "baseDamage": 80,
+        "accuracy": 100,
+        "type": "aquatic",
         "stamina": 15,
         "category": "physical",
         "effects": [
@@ -2557,6 +2716,70 @@
         ]
     },
     {
+        "name": "Grassy Terrain",
+        "description": "Summons grassy terrain.",
+        "baseDamage": 0,
+        "type": "grass",
+        "stamina": 5,
+        "category": "status",
+        "effects": [
+            {
+                "type": "terrain",
+                "target": "field",
+                "stat": "grassy",
+                "value": 5
+            }
+        ]
+    },
+    {
+        "name": "Misty Terrain",
+        "description": "Summons misty terrain.",
+        "baseDamage": 0,
+        "type": "mystic",
+        "stamina": 5,
+        "category": "status",
+        "effects": [
+            {
+                "type": "terrain",
+                "target": "field",
+                "stat": "misty",
+                "value": 5
+            }
+        ]
+    },
+    {
+        "name": "Electric Terrain",
+        "description": "Summons electric terrain.",
+        "baseDamage": 0,
+        "type": "electric",
+        "stamina": 5,
+        "category": "status",
+        "effects": [
+            {
+                "type": "terrain",
+                "target": "field",
+                "stat": "electric",
+                "value": 5
+            }
+        ]
+    },
+    {
+        "name": "Psychic Terrain",
+        "description": "Summons psychic terrain.",
+        "baseDamage": 0,
+        "type": "aura",
+        "stamina": 5,
+        "category": "status",
+        "effects": [
+            {
+                "type": "terrain",
+                "target": "field",
+                "stat": "psychic",
+                "value": 5
+            }
+        ]
+    },
+    {
         "name": "Sunny Day",
         "description": "Summons harsh sunlight.",
         "soundEffect": "audio/effects/sunny_day.mp3",
@@ -2614,8 +2837,36 @@
         "priority": 1,
         "type": "basic",
         "stamina": 30,
-        "category": "physical",
-        "effects": []
+        "category": "physical"
+    },
+    {
+        "name": "Accelerock",
+        "description": "Strikes first.",
+        "soundEffect": "audio/effects/agile.mp3",
+        "baseDamage": 40,
+        "priority": 1,
+        "type": "rock",
+        "stamina": 30,
+        "category": "physical"
+    },
+    {
+        "name": "Horn Attack",
+        "description": "Horn poke.",
+        "baseDamage": 65,
+        "type": "basic",
+        "stamina": 30,
+        "accuracy": 100,
+        "category": "physical"
+    },
+    {
+        "name": "Extreme Speed",
+        "description": "Strikes first.",
+        "soundEffect": "audio/effects/agile.mp3",
+        "baseDamage": 80,
+        "priority": 2,
+        "type": "basic",
+        "stamina": 30,
+        "category": "physical"
     },
     {
         "name": "Bullet Punch",
@@ -2887,6 +3138,16 @@
         "critRate": 1
     },
     {
+        "name": "Stone Edge",
+        "description": "High crit rate.",
+        "baseDamage": 100,
+        "accuracy": 80,
+        "type": "rock",
+        "stamina": 15,
+        "category": "physical",
+        "critRate": 1
+    },
+    {
         "name": "Gigantism Crush",
         "description": "A heavy strike that scales with the user's massive weight.",
         "soundEffect": "audio/effects/tiger.mp3",
@@ -2895,7 +3156,7 @@
         "type": "giant",
         "stamina": 25,
         "category": "physical",
-        "damageStat": "attack"
+        "damageStat": "health"
     },
     {
         "name": "Earthquake",
@@ -2908,6 +3169,15 @@
         "category": "physical"
     },
     {
+        "name": "High Horsepower",
+        "description": "A powerful kick attack.",
+        "baseDamage": 95,
+        "accuracy": 95,
+        "type": "earth",
+        "stamina": 20,
+        "category": "physical"
+    },
+    {
         "name": "Skull-Piercer",
         "description": "An eerie, blinding attack that confuses the target.",
         "soundEffect": "audio/effects/tiger.mp3",
@@ -2916,6 +3186,58 @@
         "type": "basic",
         "stamina": 15,
         "category": "physical"
+    },
+    {
+        "name": "Bulldoze",
+        "description": "Lowers foes Speed.",
+        "baseDamage": 60,
+        "accuracy": 100,
+        "type": "earth",
+        "stamina": 20,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "speed",
+                "value": -1
+            }
+        ]
+    },
+    {
+        "name": "Iron Tail",
+        "description": "May lower foes defense.",
+        "baseDamage": 100,
+        "accuracy": 75,
+        "type": "metal",
+        "stamina": 15,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "defense",
+                "value": -1,
+                "chance": 30
+            }
+        ]
+    },
+    {
+        "name": "Rock Tomb",
+        "description": "Lowers foes Speed.",
+        "baseDamage": 60,
+        "accuracy": 90,
+        "type": "rock",
+        "stamina": 20,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "speed",
+                "value": -1
+            }
+        ]
     },
     {
         "name": "Savannah Sweep",
@@ -2931,6 +3253,23 @@
                 "type": "statChange",
                 "target": "opponent",
                 "stat": "speed",
+                "value": -1
+            }
+        ]
+    },
+    {
+        "name": "Sand Attack",
+        "description": "Lowers foes accuracy.",
+        "baseDamage": 0,
+        "accuracy": 100,
+        "type": "earth",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "accuracy",
                 "value": -1
             }
         ]
@@ -3096,7 +3435,7 @@
         "baseDamage": 80,
         "accuracy": 100,
         "type": "metal",
-        "stamina": 18,
+        "stamina": 15,
         "category": "physical",
         "effects": [
             {
@@ -3106,6 +3445,15 @@
                 "chance": 30
             }
         ]
+    },
+    {
+        "name": "Strength",
+        "description": "Deals regular damage.",
+        "baseDamage": 80,
+        "accuracy": 100,
+        "type": "basic",
+        "stamina": 15,
+        "category": "physical"
     },
     {
         "name": "Calm Mind",
@@ -3121,6 +3469,22 @@
                 "stat": "power:1,resistance:1",
                 "value": 1,
                 "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Work Up",
+        "description": "Raise attack and power.",
+        "baseDamage": 0,
+        "type": "basic",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "multiStatChange",
+                "target": "self",
+                "stat": "attack:1,power:1",
+                "value": 1
             }
         ]
     },
@@ -3201,6 +3565,15 @@
         "stamina": 15,
         "category": "physical",
         "effects": []
+    },
+    {
+        "name": "Head Smash",
+        "description": "Hurts user with half of the damage dealt.",
+        "baseDamage": 150,
+        "recoilPercent": 0.5,
+        "type": "rock",
+        "stamina": 5,
+        "category": "physical"
     },
     {
         "name": "Brave Bird",
@@ -3372,7 +3745,22 @@
         "soundEffect": "audio/effects/protect.mp3",
         "baseDamage": 0,
         "type": "basic",
-        "stamina": 10,
+        "stamina": 5,
+        "priority": 4,
+        "category": "status",
+        "effects": [
+            {
+                "type": "protect"
+            }
+        ]
+    },
+    {
+        "name": "Detect",
+        "description": "Enables the user to evade all attacks. Its chance of failing rises if it is used in succession.",
+        "soundEffect": "audio/effects/protect.mp3",
+        "baseDamage": 0,
+        "type": "martial",
+        "stamina": 5,
         "priority": 4,
         "category": "status",
         "effects": [
@@ -3499,6 +3887,51 @@
         ]
     },
     {
+        "name": "Headlong Rush",
+        "description": "A powerful earth attack that lowers the user's defense and resistance.",
+        "baseDamage": 120,
+        "type": "earth",
+        "stamina": 15,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "multiStatChange",
+                "target": "self",
+                "stat": "defense:-1,resistance:-1"
+            }
+        ]
+    },
+    {
+        "name": "Armor Cannon",
+        "description": "A powerful blaze attack that lowers the user's defense and resistance.",
+        "baseDamage": 120,
+        "type": "blaze",
+        "stamina": 15,
+        "category": "special",
+        "effects": [
+            {
+                "type": "multiStatChange",
+                "target": "self",
+                "stat": "defense:-1,resistance:-1"
+            }
+        ]
+    },
+    {
+        "name": "Dragon Ascent",
+        "description": "A powerful aerial attack that lowers the user's defense and resistance.",
+        "baseDamage": 120,
+        "type": "flying",
+        "stamina": 15,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "multiStatChange",
+                "target": "self",
+                "stat": "defense:-1,resistance:-1"
+            }
+        ]
+    },
+    {
         "name": "Liquidation",
         "description": "20% chance to drop foes defense.",
         "baseDamage": 85,
@@ -3550,6 +3983,21 @@
         ]
     },
     {
+        "name": "Noble Roar",
+        "description": "Lowers foes attack and power.",
+        "baseDamage": 0,
+        "type": "sound",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "multiStatChange",
+                "target": "opponent",
+                "stat": "attack:-1,power:-1"
+            }
+        ]
+    },
+    {
         "name": "Quiver Dance",
         "description": "The user dances and raises its power, resistance and speed.",
         "baseDamage": 0,
@@ -3576,6 +4024,23 @@
                 "type": "multiStatChange",
                 "target": "self",
                 "stat": "defense:1,resistance:1"
+            }
+        ]
+    },
+    {
+        "name": "Metal Sound",
+        "description": "Lowers foes resistance by 2.",
+        "baseDamage": 0,
+        "type": "sound",
+        "stamina": 15,
+        "accuracy": 85,
+        "category": "status",
+        "effects": [
+            {
+                "type": "StatChange",
+                "target": "opponent",
+                "stat": "resistance",
+                "value": -2
             }
         ]
     },
@@ -4354,8 +4819,24 @@
     {
         "name": "Eruption",
         "description": "The user attacks by erupting with fury. The higher the user's HP, the greater the move's power.",
+        "soundEffect": "audio/effects/eruption.mp3",
         "baseDamage": 150,
         "type": "blaze",
+        "accuracy": 100,
+        "stamina": 5,
+        "category": "special",
+        "effects": [
+            {
+                "type": "hpRatioDamage"
+            }
+        ]
+    },
+    {
+        "name": "Water Spout",
+        "description": "The user attacks by spouting water. The higher the user's HP, the greater the move's power.",
+        "soundEffect": "audio/effects/water_spout.mp3",
+        "baseDamage": 150,
+        "type": "aquatic",
         "accuracy": 100,
         "stamina": 5,
         "category": "special",
@@ -4698,6 +5179,21 @@
         ]
     },
     {
+        "name": "Reversal",
+        "description": "The less HP the user has, the greater the move's power.",
+        "baseDamage": 1,
+        "type": "martial",
+        "accuracy": 100,
+        "stamina": 15,
+        "category": "physical",
+        "isContact": true,
+        "effects": [
+            {
+                "type": "flailDamage"
+            }
+        ]
+    },
+    {
         "name": "Focus Punch",
         "description": "The user focuses its mind before launching a punch. This move fails if the user is hit before it is used.",
         "baseDamage": 150,
@@ -4772,7 +5268,7 @@
         "name": "Grass Knot",
         "description": "The user snares the target with grass and trips it. The heavier the target, the greater the move's power.",
         "baseDamage": 1,
-        "type": "nature",
+        "type": "grass",
         "accuracy": 100,
         "stamina": 20,
         "category": "special",
@@ -4801,7 +5297,7 @@
         "name": "Grassy Glide",
         "description": "The user glides on the ground to hit the target. This move always goes first on Grassy Terrain.",
         "baseDamage": 70,
-        "type": "nature",
+        "type": "grass",
         "accuracy": 100,
         "stamina": 20,
         "category": "physical",
@@ -4816,7 +5312,7 @@
         "name": "Gravity",
         "description": "Gravity is intensified for five turns, making Flying-type animals and those with Levitate vulnerable to Ground-type moves.",
         "baseDamage": 0,
-        "type": "psionic",
+        "type": "aura",
         "accuracy": 100,
         "stamina": 5,
         "category": "status",
@@ -4893,7 +5389,7 @@
         "name": "Healing Wish",
         "description": "The user faints. In return, the replacement animal will have its HP fully restored and its status conditions cured.",
         "baseDamage": 0,
-        "type": "psionic",
+        "type": "aura",
         "accuracy": 100,
         "stamina": 10,
         "category": "status",
@@ -4966,7 +5462,7 @@
         "name": "Heal Block",
         "description": "For five turns, the user prevents the opposing team from using any move, Ability, or held item that recovers HP.",
         "baseDamage": 0,
-        "type": "psionic",
+        "type": "aura",
         "accuracy": 100,
         "stamina": 15,
         "category": "status",
@@ -4982,7 +5478,7 @@
         "name": "Jungle Healing",
         "description": "The user becomes one with the jungle, restoring its own HP and curing its status conditions.",
         "baseDamage": 0,
-        "type": "nature",
+        "type": "grass",
         "accuracy": 100,
         "stamina": 10,
         "category": "status",
@@ -5133,9 +5629,9 @@
     },
     {
         "name": "Miracle Eye",
-        "description": "The user makes Dark-type animals susceptible to Psionic-type moves. This also resets the target's evasiveness to normal.",
+        "description": "The user makes Dark-type animals susceptible to aura-type moves. This also resets the target's evasiveness to normal.",
         "baseDamage": 0,
-        "type": "psionic",
+        "type": "aura",
         "accuracy": 100,
         "stamina": 40,
         "category": "status",
@@ -5166,7 +5662,7 @@
         "name": "Mirror Coat",
         "description": "A retaliation move that counters any special attack, inflicting double the damage taken.",
         "baseDamage": 1,
-        "type": "psionic",
+        "type": "aura",
         "accuracy": 100,
         "stamina": 20,
         "priority": -5,
@@ -5195,7 +5691,7 @@
         "name": "Psyshock",
         "description": "The user materializes an odd psychic wave to attack the target. This move deals physical damage.",
         "baseDamage": 80,
-        "type": "psionic",
+        "type": "aura",
         "accuracy": 100,
         "stamina": 10,
         "category": "special",
@@ -5215,5 +5711,205 @@
                 "type": "shellTrap"
             }
         ]
+    },
+    {
+        "name": "Sacred Sword",
+        "description": "Ignores the target's stat changes.",
+        "baseDamage": 90,
+        "type": "martial",
+        "accuracy": 100,
+        "stamina": 15,
+        "category": "physical",
+        "effects": []
+    },
+    {
+        "name": "Smart Strike",
+        "description": "Never misses.",
+        "baseDamage": 70,
+        "type": "metal",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "physical",
+        "effects": []
+    },
+    {
+        "name": "Retaliate",
+        "description": "Power doubles if a teammate fainted the previous turn.",
+        "baseDamage": 70,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 5,
+        "category": "physical",
+        "effects": []
+    },
+    {
+        "name": "Laser Focus",
+        "description": "Guarantees a critical hit next turn.",
+        "baseDamage": 0,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 30,
+        "category": "status",
+        "effects": []
+    },
+    {
+        "name": "Whirlwind",
+        "description": "Forces the target to switch.",
+        "baseDamage": 0,
+        "type": "flying",
+        "accuracy": 100,
+        "stamina": 20,
+        "category": "status",
+        "priority": -6,
+        "effects": []
+    },
+    {
+        "name": "Roar",
+        "description": "Forces the target to switch.",
+        "baseDamage": 0,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 20,
+        "category": "status",
+        "priority": -6,
+        "effects": []
+    },
+    {
+        "name": "Endeavor",
+        "description": "Reduces the target's HP to equal the user's HP.",
+        "baseDamage": 1,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 5,
+        "category": "physical",
+        "effects": []
+    },
+    {
+        "name": "Solar Beam",
+        "description": "Charges Turn 1, hits Turn 2. No charge in sunlight.",
+        "baseDamage": 120,
+        "type": "nature",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "special",
+        "effects": []
+    },
+    {
+        "name": "Solar Blade",
+        "description": "Charges Turn 1, hits Turn 2. No charge in sunlight.",
+        "baseDamage": 125,
+        "type": "nature",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "physical",
+        "effects": []
+    },
+    {
+        "name": "Nature's Madness",
+        "description": "Halves the target's current HP.",
+        "baseDamage": 1,
+        "type": "mystic",
+        "accuracy": 90,
+        "stamina": 10,
+        "category": "special",
+        "effects": []
+    },
+    {
+        "name": "Focus Energy",
+        "description": "Increases critical hit ratio.",
+        "baseDamage": 0,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 30,
+        "category": "status",
+        "effects": []
+    },
+    {
+        "name": "Brick Break",
+        "description": "Destroys Light Screen and Reflect.",
+        "baseDamage": 75,
+        "type": "martial",
+        "accuracy": 100,
+        "stamina": 15,
+        "category": "physical",
+        "effects": []
+    },
+    {
+        "name": "Thrash",
+        "description": "Rampages for 2-3 turns then becomes confused.",
+        "baseDamage": 120,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "physical",
+        "effects": []
+    },
+    {
+        "name": "Outrage",
+        "description": "Rampages for 2-3 turns then becomes confused.",
+        "baseDamage": 120,
+        "type": "draconic",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "physical",
+        "effects": []
+    },
+    {
+        "name": "Petal Dance",
+        "description": "Rampages for 2-3 turns then becomes confused.",
+        "baseDamage": 120,
+        "type": "nature",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "special",
+        "effects": []
+    },
+    {
+        "name": "Brine",
+        "description": "Power doubles if target HP is 50% or less.",
+        "baseDamage": 65,
+        "type": "aquatic",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "special",
+        "effects": []
+    },
+    {
+        "name": "Scale Shot",
+        "description": "Hits 2-5 times. Drops Defense, raises Speed.",
+        "baseDamage": 25,
+        "type": "draconic",
+        "accuracy": 90,
+        "stamina": 20,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "multiHit",
+                "minHits": 2,
+                "maxHits": 5
+            }
+        ]
+    },
+    {
+        "name": "Psychic Fangs",
+        "description": "Destroys Light Screen and Reflect.",
+        "baseDamage": 85,
+        "type": "aura",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "physical",
+        "isBite": true,
+        "effects": []
+    },
+    {
+        "name": "Snipe Shot",
+        "description": "High critical hit ratio.",
+        "baseDamage": 80,
+        "type": "aquatic",
+        "accuracy": 100,
+        "stamina": 15,
+        "category": "special",
+        "critRate": 1,
+        "effects": []
     }
 ]
