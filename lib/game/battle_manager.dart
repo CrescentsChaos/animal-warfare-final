@@ -1222,7 +1222,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       final chargeEffect = move.effects.firstWhere(
         (e) =>
             e.type == MoveEffectType.charge ||
-            e.type == MoveEffectType.semiInvulnerable,
+            e.type == MoveEffectType.semiInvulnerable ||
+            e.type == MoveEffectType.meteorBeam ||
+            e.type == MoveEffectType.skullBash,
         orElse: () => const MoveEffect(type: MoveEffectType.none),
       );
 
@@ -1281,11 +1283,26 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
               chargeMessage =
                   '${attacker.organism.baseOrganism.name} absorbed light!';
               break;
+            case 'Meteor Beam':
+              chargeMessage =
+                  '${attacker.organism.baseOrganism.name} is overflowing with space energy!';
+              break;
+            case 'Skull Bash':
+              chargeMessage =
+                  '${attacker.organism.baseOrganism.name} tucked in its head!';
+              break;
             default:
               chargeMessage =
                   '${attacker.organism.baseOrganism.name} is preparing an attack!';
           }
           addToLog(chargeMessage);
+
+          // Apply first-turn effects (for Meteor Beam/Skull Bash)
+          if (chargeEffect.type == MoveEffectType.meteorBeam) {
+            await applyStatChange(attacker, 'power', 1);
+          } else if (chargeEffect.type == MoveEffectType.skullBash) {
+            await applyStatChange(attacker, 'defense', 1);
+          }
           attacker.chargingMove = move;
           attacker.chargeStatChanges = chargeEffect.stat;
           if (chargeEffect.type == MoveEffectType.semiInvulnerable) {
@@ -1507,7 +1524,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
       if (!(move.isContact && attackerHasUnseenFist) &&
           move.name != 'Feint' &&
-          move.name != 'Mighty Cleave') {
+          move.name != 'Mighty Cleave' &&
+          move.name != 'Snipe Shot') {
         // Detect moves that penetrate Protect (Feint, etc.) - bypassing for now
         // But No Guard allows hitting through Protect? In some gens yes, some no.
         // Gen 4-5 yes, Gen 6+ no (except for dynamic punch glitch?).
@@ -2618,7 +2636,38 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           break;
         case MoveEffectType.setScreen:
           final turns = effect.value > 0 ? effect.value : 5;
-          if (effect.stat == 'reflect') {
+          if (effect.stat == 'break') {
+            // Brick Break / Psychic Fangs: shatter opponent screens
+            bool broke = false;
+            if (attacker.isOpponent) {
+              if (playerReflectTurns > 0) {
+                playerReflectTurns = 0;
+                broke = true;
+              }
+              if (playerLightScreenTurns > 0) {
+                playerLightScreenTurns = 0;
+                broke = true;
+              }
+              if (playerAuroraVeilTurns > 0) {
+                playerAuroraVeilTurns = 0;
+                broke = true;
+              }
+            } else {
+              if (opponentReflectTurns > 0) {
+                opponentReflectTurns = 0;
+                broke = true;
+              }
+              if (opponentLightScreenTurns > 0) {
+                opponentLightScreenTurns = 0;
+                broke = true;
+              }
+              if (opponentAuroraVeilTurns > 0) {
+                opponentAuroraVeilTurns = 0;
+                broke = true;
+              }
+            }
+            if (broke) addToLog('${attacker.name} shattered the barrier!');
+          } else if (effect.stat == 'reflect') {
             if (attacker.isOpponent) {
               opponentReflectTurns = turns;
             } else {
@@ -2961,12 +3010,10 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           _checkBattleEnd();
           break;
         case MoveEffectType.meteorBeam:
-          await applyStatChange(attacker, 'power', 1);
-          attacker.chargeMove = move;
+          // Boost handled in _executeTurn on first turn
           break;
         case MoveEffectType.skullBash:
-          await applyStatChange(attacker, 'defense', 1);
-          attacker.chargeMove = move;
+          // Boost handled in _executeTurn on first turn
           break;
         case MoveEffectType.payDay:
           addToLog('Coins were scattered everywhere!');
@@ -4757,11 +4804,72 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     }
 
     ElementalType moveType = move.type;
-    if (move.name == 'Hidden Power') {
+
+    // Weather Ball
+    if (move.effects.any((e) => e.type == MoveEffectType.weatherBall)) {
+      if (currentWeather.weather != Weather.none) {
+        baseDamage *= 2;
+        switch (currentWeather.weather) {
+          case Weather.rain:
+          case Weather.heavyRain:
+          case Weather.thunderstorm:
+            moveType = ElementalType.aquatic;
+            break;
+          case Weather.sunny:
+            moveType = ElementalType.blaze;
+            break;
+          case Weather.sandstorm:
+            moveType = ElementalType.rock;
+            break;
+          case Weather.hail:
+          case Weather.snowstorm:
+            moveType = ElementalType.cryo;
+            break;
+          default:
+            break;
+        }
+      }
+    }
+
+    // Hidden Power
+    if (move.effects.any((e) => e.type == MoveEffectType.hiddenPower) ||
+        move.name == 'Hidden Power') {
+      int typeIndex = 0;
+      final stats = [
+        'health',
+        'attack',
+        'defense',
+        'speed',
+        'power',
+        'resistance',
+      ];
+      for (int k = 0; k < stats.length; k++) {
+        if ((attacker.organism.individualValues[stats[k]] ?? 0) % 2 != 0) {
+          typeIndex += (1 << k);
+        }
+      }
       final types = ElementalType.values
           .where((t) => t != ElementalType.basic)
           .toList();
-      moveType = types[attacker.organism.id.hashCode % types.length];
+      moveType = types[(typeIndex * types.length / 64).floor()];
+    }
+
+    // Multi-Attack
+    if (move.effects.any((e) => e.type == MoveEffectType.multiAttack)) {
+      final item = attacker.organism.equippedTalisman;
+      if (item != null && item.id.endsWith('_memory')) {
+        final part = item.id.split('_').first;
+        moveType = _getTypeFromItemName(part);
+      }
+    }
+
+    // Judgement
+    if (move.effects.any((e) => e.type == MoveEffectType.judgement)) {
+      final item = attacker.organism.equippedTalisman;
+      if (item != null && item.id.endsWith('_plate')) {
+        final part = item.id.split('_').first;
+        moveType = _getTypeFromItemName(part);
+      }
     }
 
     // Weather Modifiers
@@ -5835,6 +5943,64 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           true; // Still mark as processed to avoid re-suggesting
       // No log message for failed suggestion, as it's an internal AI issue
       notifyListeners();
+    }
+  }
+
+  ElementalType _getTypeFromItemName(String name) {
+    switch (name.toLowerCase()) {
+      case 'fire':
+      case 'flame':
+        return ElementalType.blaze;
+      case 'water':
+      case 'splash':
+        return ElementalType.aquatic;
+      case 'grass':
+      case 'meadow':
+        return ElementalType.grass;
+      case 'electric':
+      case 'zap':
+        return ElementalType.electric;
+      case 'ice':
+      case 'icicle':
+        return ElementalType.cryo;
+      case 'ground':
+      case 'earth':
+        return ElementalType.earth;
+      case 'rock':
+      case 'stone':
+        return ElementalType.rock;
+      case 'flying':
+      case 'sky':
+        return ElementalType.flying;
+      case 'poison':
+      case 'toxic':
+        return ElementalType.toxic;
+      case 'dark':
+      case 'dread':
+        return ElementalType.darkness;
+      case 'fairy':
+      case 'pixie':
+        return ElementalType.mystic;
+      case 'fighting':
+      case 'fist':
+        return ElementalType.martial;
+      case 'steel':
+      case 'iron':
+        return ElementalType.metal;
+      case 'dragon':
+      case 'draco':
+        return ElementalType.drake;
+      case 'ghost':
+      case 'spooky':
+        return ElementalType.spectral;
+      case 'psychic':
+      case 'mind':
+        return ElementalType.aura;
+      case 'bug':
+      case 'insect':
+        return ElementalType.arthropod;
+      default:
+        return ElementalType.basic;
     }
   }
 }

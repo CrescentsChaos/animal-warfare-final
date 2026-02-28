@@ -679,7 +679,7 @@
         "accuracy": 90,
         "type": "mystic",
         "stamina": 20,
-        "category": "special",
+        "category": "physical",
         "effects": [
             {
                 "type": "statChange",
@@ -2446,7 +2446,16 @@
         "accuracy": 100,
         "type": "basic",
         "stamina": 10,
-        "category": "physical"
+        "category": "physical",
+        "effects": [
+            {
+                "type": "setScreen",
+                "target": "opponent",
+                "stat": "break",
+                "value": 0,
+                "chance": 100
+            }
+        ]
     },
     {
         "name": "Megahorn",
@@ -5253,7 +5262,7 @@
         "name": "Glaive Rush",
         "description": "The user throws its entire body into a reckless charge. Attacks from the opponent will deal double damage until the user's next turn.",
         "baseDamage": 120,
-        "type": "dragon",
+        "type": "drake",
         "accuracy": 100,
         "stamina": 5,
         "category": "physical",
@@ -5589,21 +5598,6 @@
         ]
     },
     {
-        "name": "Meteor Beam",
-        "description": "The user gathers space energy to raise its Power stat on the first turn, then blasts the target on the next turn.",
-        "baseDamage": 120,
-        "type": "rock",
-        "accuracy": 90,
-        "stamina": 10,
-        "category": "special",
-        "effects": [
-            {
-                "type": "meteorBeam",
-                "target": "self"
-            }
-        ]
-    },
-    {
         "name": "Mighty Cleave",
         "description": "The user slashes with its stone-hard horn. This move can hit through protecting moves.",
         "baseDamage": 95,
@@ -5713,130 +5707,270 @@
         ]
     },
     {
+        "name": "Meteor Beam",
+        "description": "A two-turn move. Raises Power on the first turn, then attacks on the second.",
+        "baseDamage": 120,
+        "type": "rock",
+        "accuracy": 90,
+        "stamina": 10,
+        "category": "special",
+        "isMultiTurn": true,
+        "effects": [
+            {
+                "type": "meteorBeam",
+                "target": "self"
+            }
+        ]
+    },
+    {
+        "name": "Weather Ball",
+        "description": "Changes type and doubles power in weather.",
+        "baseDamage": 50,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 20,
+        "category": "special",
+        "effects": [
+            {
+                "type": "weatherBall",
+                "target": "opponent"
+            }
+        ]
+    },
+    {
+        "name": "Hidden Power",
+        "description": "A move that changes type based on the user's IVs.",
+        "baseDamage": 60,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 15,
+        "category": "special",
+        "effects": [
+            {
+                "type": "hiddenPower"
+            }
+        ]
+    },
+    {
+        "name": "Multi-Attack",
+        "description": "Changes type based on the held Memory talisman.",
+        "baseDamage": 120,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "multiAttack"
+            }
+        ]
+    },
+    {
+        "name": "Judgement",
+        "description": "Changes type based on the held Plate talisman.",
+        "baseDamage": 100,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "special",
+        "effects": [
+            {
+                "type": "judgement"
+            }
+        ]
+    },
+    {
         "name": "Sacred Sword",
-        "description": "Ignores the target's stat changes.",
+        "description": "A slash attack that ignores target's Defense and Evasion stat changes.",
         "baseDamage": 90,
         "type": "martial",
         "accuracy": 100,
         "stamina": 15,
         "category": "physical",
-        "effects": []
+        "targetDefenseStat": "defense",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "ignoreDefenseStages",
+                "value": 0,
+                "chance": 100
+            }
+        ]
     },
     {
         "name": "Smart Strike",
-        "description": "Never misses.",
+        "description": "The user stabs the target with a sharp horn. This attack never misses.",
         "baseDamage": 70,
         "type": "metal",
-        "accuracy": 100,
-        "stamina": 10,
+        "accuracy": 0,
+        "stamina": 20,
         "category": "physical",
         "effects": []
     },
     {
         "name": "Retaliate",
-        "description": "Power doubles if a teammate fainted the previous turn.",
+        "description": "If a teammate fainted last turn, this move's power doubles.",
         "baseDamage": 70,
         "type": "basic",
         "accuracy": 100,
-        "stamina": 5,
+        "stamina": 10,
         "category": "physical",
+        "multiplierCondition": "teammate_fainted_last_turn",
+        "conditionalMultiplier": 2.0,
         "effects": []
     },
     {
         "name": "Laser Focus",
-        "description": "Guarantees a critical hit next turn.",
+        "description": "The user concentrates intensely. The user's next move always results in a critical hit.",
         "baseDamage": 0,
         "type": "basic",
         "accuracy": 100,
-        "stamina": 30,
+        "stamina": 15,
         "category": "status",
         "effects": []
     },
     {
         "name": "Whirlwind",
-        "description": "Forces the target to switch.",
+        "description": "The target is blown away, and a different Pokémon is dragged out. In the wild, the battle ends.",
         "baseDamage": 0,
         "type": "flying",
         "accuracy": 100,
         "stamina": 20,
         "category": "status",
         "priority": -6,
-        "effects": []
+        "effects": [
+            {
+                "type": "forceSwitch",
+                "target": "opponent",
+                "chance": 100
+            }
+        ]
     },
     {
         "name": "Roar",
-        "description": "Forces the target to switch.",
+        "description": "The user frightens the target with loud noise. In the wild, the battle ends.",
         "baseDamage": 0,
         "type": "basic",
         "accuracy": 100,
         "stamina": 20,
         "category": "status",
         "priority": -6,
-        "effects": []
+        "isSoundBased": true,
+        "effects": [
+            {
+                "type": "forceSwitch",
+                "target": "opponent",
+                "chance": 100
+            }
+        ]
     },
     {
         "name": "Endeavor",
-        "description": "Reduces the target's HP to equal the user's HP.",
+        "description": "Reduces the target's HP to the same level as the user's current HP.",
         "baseDamage": 1,
         "type": "basic",
         "accuracy": 100,
         "stamina": 5,
         "category": "physical",
-        "effects": []
+        "multiplierCondition": "target_damaged",
+        "effects": [
+            {
+                "type": "hpRatioDamage",
+                "target": "opponent",
+                "stat": "endeavor",
+                "value": 0,
+                "chance": 100
+            }
+        ]
     },
     {
         "name": "Solar Beam",
-        "description": "Charges Turn 1, hits Turn 2. No charge in sunlight.",
+        "description": "On the first turn the user absorbs sunlight; on the second, it unleashes a beam. Skips the charge in sun.",
         "baseDamage": 120,
         "type": "grass",
         "accuracy": 100,
         "stamina": 10,
         "category": "special",
-        "effects": []
+        "isMultiTurn": true,
+        "effects": [
+            {
+                "type": "charge",
+                "target": "self",
+                "stat": "",
+                "value": 0,
+                "chance": 100
+            }
+        ]
     },
     {
         "name": "Solar Blade",
-        "description": "Charges Turn 1, hits Turn 2. No charge in sunlight.",
+        "description": "On the first turn the user gathers light; on the second, it unleashes a blade. Skips the charge in sun.",
         "baseDamage": 125,
         "type": "grass",
         "accuracy": 100,
         "stamina": 10,
         "category": "physical",
-        "effects": []
+        "isMultiTurn": true,
+        "effects": [
+            {
+                "type": "charge",
+                "target": "self",
+                "stat": "",
+                "value": 0,
+                "chance": 100
+            }
+        ]
     },
     {
         "name": "Nature's Madness",
-        "description": "Halves the target's current HP.",
+        "description": "The user halves the target's HP.",
         "baseDamage": 1,
         "type": "mystic",
         "accuracy": 90,
         "stamina": 10,
         "category": "special",
-        "effects": []
+        "effects": [
+            {
+                "type": "hpRatioDamage",
+                "target": "opponent",
+                "stat": "half_hp",
+                "value": 2,
+                "chance": 100
+            }
+        ]
     },
     {
         "name": "Focus Energy",
-        "description": "Increases critical hit ratio.",
+        "description": "The user takes a deep breath and focuses, raising its critical-hit ratio greatly.",
         "baseDamage": 0,
         "type": "basic",
         "accuracy": 100,
-        "stamina": 30,
+        "stamina": 15,
         "category": "status",
         "effects": []
     },
     {
         "name": "Brick Break",
-        "description": "Destroys Light Screen and Reflect.",
+        "description": "The user attacks with a swift chop. This attack shatters Reflect and Light Screen barriers.",
         "baseDamage": 75,
         "type": "martial",
         "accuracy": 100,
         "stamina": 15,
         "category": "physical",
-        "effects": []
+        "effects": [
+            {
+                "type": "setScreen",
+                "target": "opponent",
+                "stat": "break",
+                "value": 0,
+                "chance": 100
+            }
+        ]
     },
     {
         "name": "Thrash",
-        "description": "Rampages for 2-3 turns then becomes confused.",
+        "description": "The user rampages and attacks for 2–3 turns. The user then becomes confused.",
         "baseDamage": 120,
         "type": "basic",
         "accuracy": 100,
@@ -5846,7 +5980,7 @@
     },
     {
         "name": "Outrage",
-        "description": "Rampages for 2-3 turns then becomes confused.",
+        "description": "The user rampages and attacks for 2–3 turns. The user then becomes confused.",
         "baseDamage": 120,
         "type": "drake",
         "accuracy": 100,
@@ -5856,7 +5990,7 @@
     },
     {
         "name": "Petal Dance",
-        "description": "Rampages for 2-3 turns then becomes confused.",
+        "description": "The user attacks for 2–3 turns using petals, then becomes confused.",
         "baseDamage": 120,
         "type": "grass",
         "accuracy": 100,
@@ -5866,44 +6000,51 @@
     },
     {
         "name": "Brine",
-        "description": "Power doubles if target HP is 50% or less.",
+        "description": "If the target's HP is half or less, this move's power doubles.",
         "baseDamage": 65,
         "type": "aquatic",
         "accuracy": 100,
-        "stamina": 10,
+        "stamina": 20,
         "category": "special",
+        "multiplierCondition": "target_hp_below_50",
+        "conditionalMultiplier": 2.0,
         "effects": []
     },
     {
         "name": "Scale Shot",
-        "description": "Hits 2-5 times. Drops Defense, raises Speed.",
+        "description": "Attacks 2–5 times. Raises user's Speed and lowers user's Defense at the end.",
         "baseDamage": 25,
         "type": "drake",
         "accuracy": 90,
         "stamina": 20,
         "category": "physical",
+        "minHits": 2,
+        "maxHits": 5,
+        "effects": []
+    },
+    {
+        "name": "Psychic Fangs",
+        "description": "The user bites the target with psychic power. This attack shatters screens.",
+        "baseDamage": 85,
+        "type": "aura",
+        "accuracy": 100,
+        "stamina": 15,
+        "category": "physical",
+        "isContact": true,
+        "isBite": true,
         "effects": [
             {
-                "type": "multiHit",
-                "minHits": 2,
-                "maxHits": 5
+                "type": "setScreen",
+                "target": "opponent",
+                "stat": "break",
+                "value": 0,
+                "chance": 100
             }
         ]
     },
     {
-        "name": "Psychic Fangs",
-        "description": "Destroys Light Screen and Reflect.",
-        "baseDamage": 85,
-        "type": "aura",
-        "accuracy": 100,
-        "stamina": 10,
-        "category": "physical",
-        "isBite": true,
-        "effects": []
-    },
-    {
         "name": "Snipe Shot",
-        "description": "High critical hit ratio.",
+        "description": "Ignores the effects of the target's protection and abilities that redirect moves. High critical-hit ratio.",
         "baseDamage": 80,
         "type": "aquatic",
         "accuracy": 100,

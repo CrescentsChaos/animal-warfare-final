@@ -676,5 +676,311 @@
         "magnitude": 8.0
       }
     ]
+  },
+  {
+    "id": "flame_plate",
+    "name": "Flame Plate",
+    "description": "A stone tablet that boosts Blaze-type moves.",
+    "effects": [
+      {
+        "type": "damage_boost",
+        "stat": "blaze",
+        "magnitude": 1.2
+      }
+    ]
+  },
+  {
+    "id": "splash_plate",
+    "name": "Splash Plate",
+    "description": "A stone tablet that boosts Aquatic-type moves.",
+    "effects": [
+      {
+        "type": "damage_boost",
+        "stat": "aquatic",
+        "magnitude": 1.2
+      }
+    ]
+  },
+  {
+    "id": "meadow_plate",
+    "name": "Meadow Plate",
+    "description": "A stone tablet that boosts Grass-type moves.",
+    "effects": [
+      {
+        "type": "damage_boost",
+        "stat": "grass",
+        "magnitude": 1.2
+      }
+    ]
+  },
+  {
+    "id": "zap_plate",
+    "name": "Zap Plate",
+    "description": "A stone tablet that boosts Electric-type moves.",
+    "effects": [
+      {
+        "type": "damage_boost",
+        "stat": "electric",
+        "magnitude": 1.2
+      }
+    ]
+  },
+  {
+    "id": "icicle_plate",
+    "name": "Icicle Plate",
+    "description": "A stone tablet that boosts Cryo-type moves.",
+    "effects": [
+      {
+        "type": "damage_boost",
+        "stat": "cryo",
+        "magnitude": 1.2
+      }
+    ]
+  },
+  {
+    "id": "earth_plate",
+    "name": "Earth Plate",
+    "description": "A stone tablet that boosts Earth-type moves.",
+    "effects": [
+      {
+        "type": "damage_boost",
+        "stat": "earth",
+        "magnitude": 1.2
+      }
+    ]
+  },
+  {
+    "id": "stone_plate",
+    "name": "Stone Plate",
+    "description": "A stone tablet that boosts Rock-type moves.",
+    "effects": [
+      {
+        "type": "damage_boost",
+        "stat": "rock",
+        "magnitude": 1.2
+      }
+    ]
+  },
+  {
+    "id": "sky_plate",
+    "name": "Sky Plate",
+    "description": "A stone tablet that boosts Flying-type moves.",
+    "effects": [
+      {
+        "type": "damage_boost",
+        "stat": "flying",
+        "magnitude": 1.2
+      }
+    ]
+  },
+  {
+    "id": "toxic_plate",
+    "name": "Toxic Plate",
+    "description": "A stone tablet that boosts Toxic-type moves.",
+    "effects": [
+      {
+        "type": "damage_boost",
+        "stat": "toxic",
+        "magnitude": 1.2
+      }
+    ]
+  },
+  {
+    "id": "dread_plate",
+    "name": "Dread Plate",
+    "description": "A stone tablet that boosts Darkness-type moves.",
+    "effects": [
+      {
+        "type": "damage_boost",
+        "stat": "darkness",
+        "magnitude": 1.2
+      }
+    ]
+  },
+  {
+    "id": "pixie_plate",
+    "name": "Pixie Plate",
+    "description": "A stone tablet that boosts Mystic-type moves.",
+    "effects": [
+      {
+        "type": "damage_boost",
+        "stat": "mystic",
+        "magnitude": 1.2
+      }
+    ]
+  },
+  {
+    "id": "fist_plate",
+    "name": "Fist Plate",
+    "description": "A stone tablet that boosts Martial-type moves.",
+    "effects": [
+      {
+        "type": "damage_boost",
+        "stat": "martial",
+        "magnitude": 1.2
+      }
+    ]
+  },
+  {
+    "id": "iron_plate",
+    "name": "Iron Plate",
+    "description": "A stone tablet that boosts Metal-type moves.",
+    "effects": [
+      {
+        "type": "damage_boost",
+        "stat": "metal",
+        "magnitude": 1.2
+      }
+    ]
+  },
+  {
+    "id": "draco_plate",
+    "name": "Draco Plate",
+    "description": "A stone tablet that boosts Drake-type moves.",
+    "effects": [
+      {
+        "type": "damage_boost",
+        "stat": "drake",
+        "magnitude": 1.2
+      }
+    ]
+  },
+  {
+    "id": "spooky_plate",
+    "name": "Spooky Plate",
+    "description": "A stone tablet that boosts Spectral-type moves.",
+    "effects": [
+      {
+        "type": "damage_boost",
+        "stat": "spectral",
+        "magnitude": 1.2
+      }
+    ]
+  },
+  {
+    "id": "mind_plate",
+    "name": "Mind Plate",
+    "description": "A stone tablet that boosts Aura-type moves.",
+    "effects": [
+      {
+        "type": "damage_boost",
+        "stat": "aura",
+        "magnitude": 1.2
+      }
+    ]
+  },
+  {
+    "id": "insect_plate",
+    "name": "Insect Plate",
+    "description": "A stone tablet that boosts Arthropod-type moves.",
+    "effects": [
+      {
+        "type": "damage_boost",
+        "stat": "arthropod",
+        "magnitude": 1.2
+      }
+    ]
+  },
+  {
+    "id": "fire_memory",
+    "name": "Fire Memory",
+    "description": "A memory disk that contains Blaze-type data.",
+    "effects": []
+  },
+  {
+    "id": "water_memory",
+    "name": "Water Memory",
+    "description": "A memory disk that contains Aquatic-type data.",
+    "effects": []
+  },
+  {
+    "id": "grass_memory",
+    "name": "Grass Memory",
+    "description": "A memory disk that contains Grass-type data.",
+    "effects": []
+  },
+  {
+    "id": "electric_memory",
+    "name": "Electric Memory",
+    "description": "A memory disk that contains Electric-type data.",
+    "effects": []
+  },
+  {
+    "id": "ice_memory",
+    "name": "Ice Memory",
+    "description": "A memory disk that contains Cryo-type data.",
+    "effects": []
+  },
+  {
+    "id": "ground_memory",
+    "name": "Ground Memory",
+    "description": "A memory disk that contains Earth-type data.",
+    "effects": []
+  },
+  {
+    "id": "rock_memory",
+    "name": "Rock Memory",
+    "description": "A memory disk that contains Rock-type data.",
+    "effects": []
+  },
+  {
+    "id": "flying_memory",
+    "name": "Flying Memory",
+    "description": "A memory disk that contains Flying-type data.",
+    "effects": []
+  },
+  {
+    "id": "poison_memory",
+    "name": "Poison Memory",
+    "description": "A memory disk that contains Toxic-type data.",
+    "effects": []
+  },
+  {
+    "id": "dark_memory",
+    "name": "Dark Memory",
+    "description": "A memory disk that contains Darkness-type data.",
+    "effects": []
+  },
+  {
+    "id": "fairy_memory",
+    "name": "Fairy Memory",
+    "description": "A memory disk that contains Mystic-type data.",
+    "effects": []
+  },
+  {
+    "id": "fighting_memory",
+    "name": "Fighting Memory",
+    "description": "A memory disk that contains Martial-type data.",
+    "effects": []
+  },
+  {
+    "id": "steel_memory",
+    "name": "Steel Memory",
+    "description": "A memory disk that contains Metal-type data.",
+    "effects": []
+  },
+  {
+    "id": "dragon_memory",
+    "name": "Dragon Memory",
+    "description": "A memory disk that contains Drake-type data.",
+    "effects": []
+  },
+  {
+    "id": "ghost_memory",
+    "name": "Ghost Memory",
+    "description": "A memory disk that contains Spectral-type data.",
+    "effects": []
+  },
+  {
+    "id": "psychic_memory",
+    "name": "Psychic Memory",
+    "description": "A memory disk that contains Aura-type data.",
+    "effects": []
+  },
+  {
+    "id": "bug_memory",
+    "name": "Bug Memory",
+    "description": "A memory disk that contains Arthropod-type data.",
+    "effects": []
   }
 ]

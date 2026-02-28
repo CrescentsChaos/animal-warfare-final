@@ -130,6 +130,10 @@ enum MoveEffectType {
   mirrorCoat,
   payDay,
   shellTrap,
+  weatherBall,
+  hiddenPower,
+  multiAttack,
+  judgement,
 }
 
 enum MoveCategory { physical, special, status }
@@ -284,7 +288,9 @@ class Move {
     (e) =>
         e.type == MoveEffectType.charge ||
         e.type == MoveEffectType.recharge ||
-        e.type == MoveEffectType.semiInvulnerable,
+        e.type == MoveEffectType.semiInvulnerable ||
+        e.type == MoveEffectType.meteorBeam ||
+        e.type == MoveEffectType.skullBash,
   );
 
   // Constructor for loading Move from JSON
