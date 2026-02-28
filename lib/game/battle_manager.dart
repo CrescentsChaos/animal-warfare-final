@@ -1008,6 +1008,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     Move move, {
     Move? opponentMove,
   }) async {
+    defender.tookDamageThisTurn = false;
     // 1. Multi-turn logical handling
     bool wasCharging = attacker.chargingMove != null;
     if (wasCharging) {
@@ -1441,7 +1442,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           await Future.delayed(const Duration(milliseconds: 3000));
         return;
       }
-    } else if (Random().nextInt(100) >= accuracy) {
+    } else if (Random().nextInt(100) >= accuracy && !ignoreRandom) {
       addToLog('...but it missed!');
       if (move.name == 'High Jump Kick') {
         final recoilDamage = (attacker.maxHealth / 2).round();
@@ -1559,7 +1560,11 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     // Multi-Hit Loop
     int hits = 1;
     if (move.maxHits > 1) {
-      hits = move.minHits + Random().nextInt(move.maxHits - move.minHits + 1);
+      if (ignoreRandom) {
+        hits = move.minHits;
+      } else {
+        hits = move.minHits + Random().nextInt(move.maxHits - move.minHits + 1);
+      }
     }
 
     // Parental Bond Check
