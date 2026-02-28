@@ -2395,7 +2395,6 @@
         "accuracy": 100,
         "category": "physical",
         "critRate": 1
-        ]
     },
     {
         "name": "Shadow Fang",
@@ -3492,15 +3491,15 @@
         "baseDamage": 85,
         "type": "aquatic",
         "stamina": 15,
-        "accuracy ":100,
+        "accuracy ": 100,
         "category": "physical",
         "effects": [
             {
                 "type": "StatChange",
                 "target": "opponent",
                 "stat": "defense",
-                "value":-1,
-                "chance":20
+                "value": -1,
+                "chance": 20
             }
         ]
     },
@@ -3510,7 +3509,7 @@
         "baseDamage": 90,
         "type": "aquatic",
         "stamina": 15,
-        "accuracy ":85,
+        "accuracy ": 85,
         "category": "special",
         "effects": [
             {
@@ -3518,7 +3517,7 @@
                 "target": "opponent",
                 "stat": "accuracy",
                 "value": -1,
-                "chance":30
+                "chance": 30
             }
         ]
     },
