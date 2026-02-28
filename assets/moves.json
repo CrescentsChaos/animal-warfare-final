@@ -568,6 +568,42 @@
         ]
     },
     {
+        "name": "Bubblebeam",
+        "description": "10% chance to drop foes speed",
+        "baseDamage": 65,
+        "accuracy": 100,
+        "type": "aquatic",
+        "stamina": 20,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "speed",
+                "value": -1,
+                "chance": 10
+            }
+        ]
+    },
+    {
+        "name": "Chilling Water",
+        "description": "Lowers foes attack",
+        "baseDamage": 50,
+        "accuracy": 100,
+        "type": "aquatic",
+        "stamina": 20,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "attack",
+                "value": -1,
+                "chance": 100
+            }
+        ]
+    },
+    {
         "name": "Glaciate",
         "description": "Lowers the opponent's speed.",
         "baseDamage": 65,
@@ -627,6 +663,16 @@
         "type": "aquatic",
         "stamina": 15,
         "targetCount": "multiple",
+        "category": "special"
+    },
+    {
+        "name": "Hydro Pump",
+        "description": "User pumps high pressure water at foe.",
+        "soundEffect": "audio/effects/surf.mp3",
+        "baseDamage": 110,
+        "accuracy": 80,
+        "type": "aquatic",
+        "stamina": 15,
         "category": "special"
     },
     {
@@ -2341,6 +2387,17 @@
         ]
     },
     {
+        "name": "Aqua Cutter",
+        "description": "High critical rate water attack.",
+        "baseDamage": 70,
+        "type": "aquatic",
+        "stamina": 20,
+        "accuracy": 100,
+        "category": "physical",
+        "critRate": 1
+        ]
+    },
+    {
         "name": "Shadow Fang",
         "description": "Bites with vicious fangs. 30% chance to make the target fear.",
         "soundEffect": "audio/effects/chomp.mp3",
@@ -2570,8 +2627,17 @@
         "priority": 1,
         "type": "aquatic",
         "stamina": 30,
-        "category": "physical",
-        "effects": []
+        "category": "physical"
+    },
+    {
+        "name": "Jet Punch",
+        "description": "Strikes first.",
+        "soundEffect": "audio/effects/agile.mp3",
+        "baseDamage": 60,
+        "priority": 1,
+        "type": "aquatic",
+        "stamina": 15,
+        "category": "physical"
     },
     {
         "name": "Ice Shard",
@@ -2857,6 +2923,34 @@
                 "value": -1
             }
         ]
+    },
+    {
+        "name": "Aqua Step",
+        "description": "User toys with the foe with fluid on its feet which increases its speed.",
+        "soundEffect": "audio/effects/agile.mp3",
+        "baseDamage": 80,
+        "accuracy": 100,
+        "type": "aquatic",
+        "stamina": 10,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "speed",
+                "value": 1
+            }
+        ]
+    },
+    {
+        "name": "Aqua Tail",
+        "description": "User slaps foe with aquatic tail.",
+        "soundEffect": "audio/effects/agile.mp3",
+        "baseDamage": 90,
+        "accuracy": 90,
+        "type": "aquatic",
+        "stamina": 10,
+        "category": "physical"
     },
     {
         "name": "Frost-Leap",
@@ -3205,6 +3299,16 @@
         "effects": []
     },
     {
+        "name": "Bouncy Bubble",
+        "description": "The user's HP is restored by half the damage taken by the target.",
+        "soundEffect": "audio/effects/absorb.mp3",
+        "baseDamage": 90,
+        "drainPercent": 0.5,
+        "type": "aquatic",
+        "stamina": 15,
+        "category": "special"
+    },
+    {
         "name": "Absorb",
         "description": "A nutrient-draining attack. The user's HP is restored by half the damage taken by the target.",
         "soundEffect": "audio/effects/absorb.mp3",
@@ -3383,6 +3487,42 @@
         ]
     },
     {
+        "name": "Liquidation",
+        "description": "20% chance to drop foes defense.",
+        "baseDamage": 85,
+        "type": "aquatic",
+        "stamina": 15,
+        "accuracy ":100,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "StatChange",
+                "target": "opponent",
+                "stat": "defense",
+                "value":-1,
+                "chance":20
+            }
+        ]
+    },
+    {
+        "name": "Muddy Water",
+        "description": "30% chance to drop foes accuracy.",
+        "baseDamage": 90,
+        "type": "aquatic",
+        "stamina": 15,
+        "accuracy ":85,
+        "category": "special",
+        "effects": [
+            {
+                "type": "StatChange",
+                "target": "opponent",
+                "stat": "accuracy",
+                "value": -1,
+                "chance":30
+            }
+        ]
+    },
+    {
         "name": "Shell Shift",
         "description": "The user shifts its shell, which raises Defense and Resistance but lowers Speed.",
         "baseDamage": 0,
@@ -3504,6 +3644,45 @@
     {
         "name": "Hyper Beam",
         "description": "The target is attacked with a powerful beam. The user can't move on the next turn.",
+        "baseDamage": 150,
+        "type": "basic",
+        "stamina": 5,
+        "category": "special",
+        "effects": [
+            {
+                "type": "recharge"
+            }
+        ]
+    },
+    {
+        "name": "Hydro Cannon",
+        "description": "The target is attacked with a powerful water cannon. The user can't move on the next turn.",
+        "baseDamage": 150,
+        "type": "aquatic",
+        "stamina": 5,
+        "category": "special",
+        "effects": [
+            {
+                "type": "recharge"
+            }
+        ]
+    },
+    {
+        "name": "Blast Burn",
+        "description": "The target is attacked with a powerful blast. The user can't move on the next turn.",
+        "baseDamage": 150,
+        "type": "blaze",
+        "stamina": 5,
+        "category": "special",
+        "effects": [
+            {
+                "type": "recharge"
+            }
+        ]
+    },
+    {
+        "name": "Frenzy Plant",
+        "description": "The target is attacked with a powerful man-eater plants. The user can't move on the next turn.",
         "baseDamage": 150,
         "type": "basic",
         "stamina": 5,
