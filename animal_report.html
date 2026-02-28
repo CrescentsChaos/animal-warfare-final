@@ -1,991 +1,1039 @@
-﻿let RAW = [];
-fetch('assets/Organisms.json').then(res => res.json()).then(data => {
-RAW = data.map(o => {
-let hp = o.health || 0; let atk = o.attack || 0; let def = o.defense || 0;
-let pwr = o.power || 0; let res = o.resistance || 0; let spd = o.speed || 0;
-let bst = hp + atk + def + pwr + res + spd;
-let cats = (o.category || '').split(',').map(s=>s.trim());
-let mvs = (o.moves || '').split(',').map(s=>s.trim());
-let abs = (o.abilities || '').split(',').map(s=>s.trim());
-let role = '⚖️ Balanced';
-if (bst >= 550 && (atk >= 130 || pwr >= 130)) role = '👑 Apex Predator';
-else if (hp >= 130 && (def + res >= 180)) role = '🏛️ Titan';
-else if ((atk >= 120 || pwr >= 120) && (hp + def + res <= 180)) role='💥 Glass Cannon' ; else if (spd>= 115) role = '⚡
-    Speedster';
-    else if ((atk >= 110 || pwr >= 110) && spd >= 90) role = '⚔️ Sweeper';
-    else if (def + res >= 220) role = '🛡️ Wall';
-    else if (hp >= 100 && (def + res >= 160)) role = '🛡️ Tank';
-    else if ((atk >= 100 || pwr >= 100) && spd <= 75) role='🐂 Bruiser' ; return { name: o.name, rarity: (o.rarity
-        || 'Common' ).toLowerCase(), rarityD: o.rarity || 'Common' , cats: o.category || '' , catList: cats, abs: abs,
-        mvs: mvs, sprite: o.sprite, role: role, hp: hp, atk: atk, def: def, pwr: pwr, res: res, spd: spd, bst: bst,
-        defNorm: 50, weaks: [], resists: [], immunes: [] }; }); <!DOCTYPE html>
-        <html lang="en">
-
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width,initial-scale=1">
-            <title>Animal Warfare &#8211; Rankings | Anidex</title>
-            <meta name="description"
-                content="Complete Animal Warfare rankings with roles, stats, type defense, and scores for all 2,185 animals.">
-            <link rel="preconnect" href="https://fonts.googleapis.com">
-            <link
-                href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&amp;family=Press+Start+2P&amp;display=swap"
-                rel="stylesheet">
-            <style>
-                :root {
-                    --bg-root: #080c10;
-                    --bg-card: #0f1923;
-                    --bg-sidebar: #0a0f14;
-                    --accent: #4cffb3;
-                    --accent2: #f97316;
-                    --text-primary: #e2e8f0;
-                    --text-muted: #6b7280;
-                    --text-dim: #374151;
-                    --border: #1a2535;
-                    --font-pixel: 'Press Start 2P', monospace;
-                    --font-body: 'Inter', system-ui, sans-serif;
-                }
-
-                * {
-                    box-sizing: border-box;
-                    margin: 0;
-                    padding: 0
-                }
-
-                html {
-                    scroll-behavior: smooth
-                }
-
-                body {
-                    background: var(--bg-root);
-                    color: var(--text-primary);
-                    font-family: var(--font-body);
-                    min-height: 100vh;
-                    padding: 0
-                }
-
-                /* NAV BAR */
-                .nav-bar {
-                    display: flex;
-                    align-items: center;
-                    gap: 16px;
-                    padding: 14px 24px;
-                    background: rgba(10, 15, 20, .97);
-                    backdrop-filter: blur(12px);
-                    border-bottom: 1px solid var(--border);
-                    position: sticky;
-                    top: 0;
-                    z-index: 100;
-                }
-
-                .nav-logo {
-                    font-family: var(--font-pixel);
-                    font-size: 11px;
-                    color: var(--accent);
-                    letter-spacing: .05em;
-                    text-decoration: none;
-                    transition: color .2s
-                }
-
-                .nav-logo:hover {
-                    color: #fff
-                }
-
-                .nav-sep {
-                    color: #1a2535;
-                    font-size: 20px
-                }
-
-                .nav-title {
-                    font-family: var(--font-pixel);
-                    font-size: 9px;
-                    color: var(--text-primary);
-                    letter-spacing: .04em
-                }
-
-                .nav-back {
-                    margin-left: auto;
-                    display: inline-flex;
-                    align-items: center;
-                    gap: 6px;
-                    font-size: 11px;
-                    font-weight: 600;
-                    color: var(--text-muted);
-                    text-decoration: none;
-                    padding: 6px 14px;
-                    border-radius: 8px;
-                    border: 1px solid var(--border);
-                    transition: all .2s;
-                }
-
-                .nav-back:hover {
-                    color: var(--accent);
-                    border-color: var(--accent);
-                    background: rgba(76, 255, 179, .06)
-                }
-
-                /* LAYOUT */
-                .page-wrap {
-                    display: flex;
-                    gap: 0;
-                    min-height: calc(100vh - 53px)
-                }
-
-                /* SIDEBAR */
-                .sidebar {
-                    width: 224px;
-                    flex-shrink: 0;
-                    background: var(--bg-sidebar);
-                    border-right: 1px solid var(--border);
-                    padding: 20px 14px;
-                    position: sticky;
-                    top: 53px;
-                    height: calc(100vh - 53px);
-                    overflow-y: auto;
-                }
-
-                .sidebar h3 {
-                    font-family: var(--font-pixel);
-                    font-size: 8px;
-                    color: var(--accent);
-                    letter-spacing: .06em;
-                    margin-bottom: 14px;
-                    padding-bottom: 10px;
-                    border-bottom: 1px solid var(--border);
-                }
-
-                .filter-label {
-                    font-size: 10px;
-                    font-weight: 600;
-                    color: var(--text-muted);
-                    margin: 14px 0 5px;
-                    text-transform: uppercase;
-                    letter-spacing: .06em
-                }
-
-                .sb-input {
-                    width: 100%;
-                    background: #060a0f;
-                    border: 1px solid var(--border);
-                    color: var(--text-primary);
-                    padding: 8px 10px;
-                    border-radius: 9px;
-                    font-size: 11px;
-                    font-family: inherit;
-                    transition: border .2s, box-shadow .2s;
-                }
-
-                .sb-input::placeholder {
-                    color: var(--text-dim)
-                }
-
-                .sb-input:focus {
-                    outline: none;
-                    border-color: var(--accent);
-                    box-shadow: 0 0 0 3px rgba(76, 255, 179, .12)
-                }
-
-                .sb-select {
-                    width: 100%;
-                    background: #060a0f;
-                    border: 1px solid var(--border);
-                    color: var(--text-primary);
-                    padding: 8px 10px;
-                    border-radius: 9px;
-                    font-size: 11px;
-                    font-family: inherit;
-                    cursor: pointer;
-                    appearance: auto;
-                }
-
-                .sb-select:focus {
-                    outline: none;
-                    border-color: var(--accent)
-                }
-
-                /* Sort grid */
-                .sort-grid {
-                    display: grid;
-                    grid-template-columns: 1fr 1fr;
-                    gap: 5px;
-                    margin-top: 4px
-                }
-
-                .sbtn {
-                    background: #060a0f;
-                    border: 1px solid var(--border);
-                    color: var(--text-muted);
-                    padding: 6px 4px;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    font-size: 10px;
-                    font-family: inherit;
-                    text-align: center;
-                    transition: all .2s;
-                }
-
-                .sbtn:hover {
-                    border-color: var(--accent);
-                    color: var(--accent)
-                }
-
-                .sbtn.on {
-                    background: var(--accent);
-                    color: #000;
-                    border-color: var(--accent);
-                    font-weight: 700
-                }
-
-                /* Legend */
-                .legend-section {
-                    margin-top: 18px;
-                    padding-top: 14px;
-                    border-top: 1px solid var(--border)
-                }
-
-                .legend-head {
-                    font-size: 9px;
-                    font-weight: 700;
-                    color: var(--text-muted);
-                    text-transform: uppercase;
-                    letter-spacing: .06em;
-                    margin-bottom: 8px
-                }
-
-                .legend-item {
-                    display: flex;
-                    align-items: flex-start;
-                    gap: 5px;
-                    font-size: 9.5px;
-                    color: var(--text-muted);
-                    margin-bottom: 5px;
-                    line-height: 1.4
-                }
-
-                /* Count */
-                #cnt {
-                    font-size: 10px;
-                    color: var(--text-dim);
-                    margin-top: 14px;
-                    padding-top: 12px;
-                    border-top: 1px solid var(--border)
-                }
-
-                /* MAIN */
-                .main-content {
-                    flex: 1;
-                    min-width: 0;
-                    padding: 0 18px 24px
-                }
-
-                /* Header strip */
-                .content-header {
-                    padding: 16px 0 14px;
-                    border-bottom: 1px solid var(--border);
-                    margin-bottom: 14px
-                }
-
-                .content-header h1 {
-                    font-family: var(--font-pixel);
-                    font-size: 12px;
-                    color: var(--text-primary);
-                    line-height: 1.6;
-                    margin-bottom: 6px;
-                }
-
-                .content-header h1 .acc {
-                    color: var(--accent)
-                }
-
-                .content-meta {
-                    font-size: 11px;
-                    color: var(--text-muted)
-                }
-
-                .content-meta b {
-                    color: var(--accent)
-                }
-
-                /* Pager */
-                .pager {
-                    display: flex;
-                    gap: 4px;
-                    margin: 10px 0;
-                    flex-wrap: wrap;
-                    align-items: center
-                }
-
-                .pager button {
-                    background: #060a0f;
-                    border: 1px solid var(--border);
-                    color: var(--text-muted);
-                    padding: 5px 12px;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    font-size: 11px;
-                    font-family: inherit;
-                    transition: all .2s;
-                }
-
-                .pager button:hover {
-                    border-color: var(--accent);
-                    color: var(--accent)
-                }
-
-                .pager button.active {
-                    background: var(--accent);
-                    color: #000;
-                    border-color: var(--accent);
-                    font-weight: 700
-                }
-
-                .pager button:disabled {
-                    opacity: .25;
-                    cursor: not-allowed
-                }
-
-                #pginfo {
-                    font-size: 10px;
-                    color: var(--text-dim);
-                    margin-left: 8px
-                }
-
-                /* TABLE */
-                .table-wrap {
-                    overflow-x: auto;
-                    border-radius: 14px;
-                    border: 1px solid var(--border);
-                    background: var(--bg-card);
-                    margin-bottom: 12px
-                }
-
-                table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    font-size: 12px
-                }
-
-                thead th {
-                    background: #0a0f14;
-                    color: var(--text-muted);
-                    text-align: left;
-                    padding: 10px 14px;
-                    font-size: 8px;
-                    font-weight: 700;
-                    text-transform: uppercase;
-                    letter-spacing: .08em;
-                    border-bottom: 1px solid var(--border);
-                    font-family: var(--font-pixel);
-                }
-
-                tbody tr {
-                    border-bottom: 1px solid var(--border);
-                    transition: background .15s
-                }
-
-                tbody tr:hover {
-                    background: rgba(76, 255, 179, .04)
-                }
-
-                td {
-                    padding: 10px 14px;
-                    vertical-align: middle
-                }
-
-                /* RANK */
-                .rk {
-                    font-family: var(--font-pixel);
-                    font-size: 12px;
-                    color: var(--accent);
-                    width: 58px;
-                    text-align: center;
-                    white-space: nowrap
-                }
-
-                .rk small {
-                    display: block;
-                    font-size: 8px;
-                    color: var(--text-dim);
-                    font-weight: 400;
-                    line-height: 1.4;
-                    font-family: var(--font-body);
-                    margin-top: 2px
-                }
-
-                /* SPRITE */
-                .sp img {
-                    width: 52px;
-                    height: 52px;
-                    object-fit: contain;
-                    border-radius: 10px;
-                    border: 1px solid var(--border);
-                    background: #060a0f;
-                    display: block;
-                    image-rendering: pixelated
-                }
-
-                .sp-ph {
-                    width: 52px;
-                    height: 52px;
-                    background: #060a0f;
-                    border-radius: 10px;
-                    border: 1px solid var(--border)
-                }
-
-                /* NAME */
-                .nm {
-                    font-size: 13px;
-                    font-weight: 700;
-                    color: var(--text-primary);
-                    margin-bottom: 4px;
-                    line-height: 1.3
-                }
-
-                .chips {
-                    display: flex;
-                    flex-wrap: wrap;
-                    gap: 3px;
-                    margin-top: 4px
-                }
-
-                .chip {
-                    padding: 2px 8px;
-                    border-radius: 20px;
-                    font-size: 9.5px;
-                    white-space: nowrap;
-                    font-weight: 500
-                }
-
-                .cty {
-                    background: rgba(76, 255, 179, .08);
-                    color: var(--accent);
-                    border: 1px solid rgba(76, 255, 179, .18)
-                }
-
-                .cab {
-                    background: rgba(99, 179, 237, .08);
-                    color: #63b3ed;
-                    border: 1px solid rgba(99, 179, 237, .18)
-                }
-
-                .cmv {
-                    background: rgba(167, 139, 250, .06);
-                    color: #a78bfa;
-                    border: 1px solid rgba(167, 139, 250, .18);
-                    font-size: 9px
-                }
-
-                /* RARITY */
-                .rar {
-                    padding: 3px 10px;
-                    border-radius: 20px;
-                    font-weight: 700;
-                    white-space: nowrap;
-                    font-family: var(--font-pixel);
-                    font-size: 7px;
-                    letter-spacing: .02em;
-                    display: inline-block
-                }
-
-                .rar-common {
-                    background: rgba(156, 163, 175, .12);
-                    color: #9ca3af;
-                    border: 1px solid rgba(156, 163, 175, .25)
-                }
-
-                .rar-uncommon {
-                    background: rgba(52, 211, 153, .12);
-                    color: #34d399;
-                    border: 1px solid rgba(52, 211, 153, .25)
-                }
-
-                .rar-rare {
-                    background: rgba(96, 165, 250, .12);
-                    color: #60a5fa;
-                    border: 1px solid rgba(96, 165, 250, .25)
-                }
-
-                .rar-epic {
-                    background: rgba(167, 139, 250, .12);
-                    color: #a78bfa;
-                    border: 1px solid rgba(167, 139, 250, .25)
-                }
-
-                .rar-legendary {
-                    background: rgba(251, 191, 36, .12);
-                    color: #fbbf24;
-                    border: 1px solid rgba(251, 191, 36, .25)
-                }
-
-                .rar-mythical {
-                    background: rgba(236, 72, 153, .12);
-                    color: #ec4899;
-                    border: 1px solid rgba(236, 72, 153, .25)
-                }
-
-                /* ROLE */
-                .role {
-                    padding: 4px 10px;
-                    border-radius: 20px;
-                    font-size: 10px;
-                    font-weight: 700;
-                    white-space: nowrap;
-                    display: inline-block
-                }
-
-                .role-apex {
-                    background: rgba(251, 191, 36, .15);
-                    color: #fbbf24;
-                    border: 1px solid rgba(251, 191, 36, .3)
-                }
-
-                .role-titan {
-                    background: rgba(167, 139, 250, .15);
-                    color: #c4b5fd;
-                    border: 1px solid rgba(167, 139, 250, .3)
-                }
-
-                .role-glass {
-                    background: rgba(249, 115, 22, .15);
-                    color: #fb923c;
-                    border: 1px solid rgba(249, 115, 22, .3)
-                }
-
-                .role-sweeper {
-                    background: rgba(239, 68, 68, .15);
-                    color: #f87171;
-                    border: 1px solid rgba(239, 68, 68, .3)
-                }
-
-                .role-speedster {
-                    background: rgba(6, 182, 212, .15);
-                    color: #22d3ee;
-                    border: 1px solid rgba(6, 182, 212, .3)
-                }
-
-                .role-bruiser {
-                    background: rgba(234, 88, 12, .15);
-                    color: #f97316;
-                    border: 1px solid rgba(234, 88, 12, .3)
-                }
-
-                .role-wall {
-                    background: rgba(14, 165, 233, .15);
-                    color: #38bdf8;
-                    border: 1px solid rgba(14, 165, 233, .3)
-                }
-
-                .role-tank {
-                    background: rgba(20, 184, 166, .15);
-                    color: #2dd4bf;
-                    border: 1px solid rgba(20, 184, 166, .3)
-                }
-
-                .role-balanced {
-                    background: rgba(76, 255, 179, .08);
-                    color: #4cffb3;
-                    border: 1px solid rgba(76, 255, 179, .2)
-                }
-
-                /* STATS */
-                .sg {
-                    display: grid;
-                    grid-template-columns: 28px 1fr 28px;
-                    gap: 2px 6px;
-                    align-items: center;
-                    font-size: 10px;
-                    min-width: 190px
-                }
-
-                .sg b {
-                    color: var(--text-dim);
-                    font-size: 7.5px;
-                    font-weight: 700;
-                    text-align: right;
-                    font-family: var(--font-pixel)
-                }
-
-                .sg .v {
-                    color: var(--text-muted);
-                    font-variant-numeric: tabular-nums;
-                    font-size: 11px
-                }
-
-                .bw {
-                    background: rgba(255, 255, 255, .06);
-                    border-radius: 3px;
-                    height: 6px;
-                    overflow: hidden
-                }
-
-                .bb {
-                    height: 100%;
-                    border-radius: 3px
-                }
-
-                /* TYPE DEFENSE */
-                .def-cell {
-                    min-width: 185px
-                }
-
-                .dp {
-                    display: inline-flex;
-                    align-items: center;
-                    padding: 3px 10px;
-                    border-radius: 20px;
-                    font-size: 10px;
-                    font-weight: 700;
-                    margin-bottom: 5px
-                }
-
-                .dp-norm {
-                    background: rgba(76, 255, 179, .1);
-                    color: var(--accent);
-                    border: 1px solid rgba(76, 255, 179, .2)
-                }
-
-                .dp-bad {
-                    background: rgba(239, 68, 68, .1);
-                    color: #f87171;
-                    border: 1px solid rgba(239, 68, 68, .2)
-                }
-
-                .dp-good {
-                    background: rgba(52, 211, 153, .1);
-                    color: #34d399;
-                    border: 1px solid rgba(52, 211, 153, .2)
-                }
-
-                .wk-wrap,
-                .rs-wrap,
-                .im-wrap {
-                    display: flex;
-                    flex-wrap: wrap;
-                    gap: 2px;
-                    margin-top: 2px
-                }
-
-                .cwk {
-                    background: rgba(239, 68, 68, .12);
-                    color: #fca5a5;
-                    border: 1px solid rgba(127, 29, 29, .4);
-                    padding: 2px 7px;
-                    border-radius: 10px;
-                    font-size: 9px
-                }
-
-                .crs {
-                    background: rgba(52, 211, 153, .10);
-                    color: #86efac;
-                    border: 1px solid rgba(20, 83, 45, .5);
-                    padding: 2px 7px;
-                    border-radius: 10px;
-                    font-size: 9px
-                }
-
-                .cim {
-                    background: rgba(99, 102, 241, .10);
-                    color: #a5b4fc;
-                    border: 1px solid rgba(46, 42, 106, .5);
-                    padding: 2px 7px;
-                    border-radius: 10px;
-                    font-size: 9px
-                }
-
-                /* SCORE */
-                .sc-cell {
-                    width: 130px;
-                    text-align: center
-                }
-
-                .sc-n {
-                    font-family: var(--font-pixel);
-                    font-size: 13px;
-                    color: var(--accent);
-                    line-height: 1.2
-                }
-
-                .sc-bw {
-                    background: rgba(255, 255, 255, .06);
-                    border-radius: 4px;
-                    height: 5px;
-                    width: 100px;
-                    margin: 5px auto 4px
-                }
-
-                .sc-bb {
-                    height: 100%;
-                    border-radius: 4px;
-                    background: linear-gradient(90deg, var(--accent), #60a5fa)
-                }
-
-                .sc-bst {
-                    font-size: 10px;
-                    color: var(--text-dim)
-                }
-
-                /* Scrollbar */
-                ::-webkit-scrollbar {
-                    width: 6px;
-                    height: 6px
-                }
-
-                ::-webkit-scrollbar-track {
-                    background: var(--bg-root)
-                }
-
-                ::-webkit-scrollbar-thumb {
-                    background: #1a2535;
-                    border-radius: 3px
-                }
-
-                ::-webkit-scrollbar-thumb:hover {
-                    background: #243040
-                }
-            </style>
-        </head>
-
-        <body>
-
-            <!-- NAV BAR -->
-            <nav class="nav-bar">
-                <a class="nav-logo" href="index.html">&#127894; ANIDEX</a>
-                <span class="nav-sep">|</span>
-                <span class="nav-title">RANKINGS</span>
-                <a class="nav-back" href="index.html">&#8592; Back to Anidex</a>
-            </nav>
-
-            <div class="page-wrap">
-
-                <!-- SIDEBAR -->
-                <aside class="sidebar">
-                    <h3>&#9881; FILTERS</h3>
-
-                    <div class="filter-label">Search</div>
-                    <input class="sb-input" id="qry" placeholder="Name, type, ability, move&#8230;"
-                        oninput="doSearch()">
-
-                    <div class="filter-label">Rarity</div>
-                    <select class="sb-select" id="rarF" onchange="doSearch()">
-                        <option value="">All Rarities</option>
-                        <option value="common">Common</option>
-                        <option value="uncommon">Uncommon</option>
-                        <option value="rare">Rare</option>
-                        <option value="epic">Epic</option>
-                        <option value="legendary">Legendary</option>
-                        <option value="mythical">Mythical</option>
-                    </select>
-
-                    <div class="filter-label">Role</div>
-                    <select class="sb-select" id="rolF" onchange="doSearch()">
-                        <option value="">All Roles</option>
-                        <option value="&#128081; Apex Predator">&#128081; Apex Predator</option>
-                        <option value="&#127983;&#65039; Titan">&#127983;&#65039; Titan</option>
-                        <option value="&#128165; Glass Cannon">&#128165; Glass Cannon</option>
-                        <option value="&#9876;&#65039; Sweeper">&#9876;&#65039; Sweeper</option>
-                        <option value="&#9889; Speedster">&#9889; Speedster</option>
-                        <option value="&#128002; Bruiser">&#128002; Bruiser</option>
-                        <option value="&#128737;&#65039; Tank">&#128737;&#65039; Tank</option>
-                        <option value="&#128737;&#65039; Wall">&#128737;&#65039; Wall</option>
-                        <option value="&#9878;&#65039; Balanced">&#9878;&#65039; Balanced</option>
-                    </select>
-
-                    <div class="filter-label">Sort By</div>
-                    <div class="sort-grid">
-                        <button class="sbtn on" data-k="score" onclick="doSort(this)">Score</button>
-                        <button class="sbtn" data-k="bst" onclick="doSort(this)">BST</button>
-                        <button class="sbtn" data-k="atk" onclick="doSort(this)">ATK</button>
-                        <button class="sbtn" data-k="pwr" onclick="doSort(this)">PWR</button>
-                        <button class="sbtn" data-k="def" onclick="doSort(this)">DEF</button>
-                        <button class="sbtn" data-k="res" onclick="doSort(this)">RES</button>
-                        <button class="sbtn" data-k="hp" onclick="doSort(this)">HP</button>
-                        <button class="sbtn" data-k="spd" onclick="doSort(this)">SPD</button>
-                        <button class="sbtn" data-k="defNorm" onclick="doSort(this)">Typing</button>
-                    </div>
-
-                    <div class="legend-section">
-                        <div class="legend-head">Roles Guide</div>
-                        <div class="legend-item">&#128081; Apex &#8212; dominant BST + offense</div>
-                        <div class="legend-item">&#127983;&#65039; Titan &#8212; extreme bulk/HP</div>
-                        <div class="legend-item">&#128165; Glass Cannon &#8212; huge ATK, frail</div>
-                        <div class="legend-item">&#9876;&#65039; Sweeper &#8212; offense + speed</div>
-                        <div class="legend-item">&#9889; Speedster &#8212; SPD &gt; 115</div>
-                        <div class="legend-item">&#128002; Bruiser &#8212; heavy, slow offense</div>
-                        <div class="legend-item">&#128737;&#65039; Wall &#8212; pure bulk</div>
-                        <div class="legend-item">&#128737;&#65039; Tank &#8212; balanced bulk</div>
-                        <div class="legend-item">&#9878;&#65039; Balanced &#8212; no extreme stats</div>
-                    </div>
-
-                    <div id="cnt">Loading&#8230;</div>
-                </aside>
-
-                <!-- MAIN -->
-                <main class="main-content">
-                    <div class="content-header">
-                        <h1>&#127894; <span class="acc">Animal Warfare</span> &#8212; Full Rankings</h1>
-                        <div class="content-meta">
-                            Generated 2026-02-22 &nbsp;&#183;&nbsp; 2,185 animals ranked &nbsp;&#183;&nbsp;
-                            <b>Score:</b> Improvised (BST 75% &#183; Type Defense 15% &#183; Moves 10%)
-                        </div>
-                    </div>
-
-                    <div class="pager" id="tp"></div>
-                    <span id="pginfo"></span>
-
-                    <div class="table-wrap">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th style="width:58px;text-align:center">Rank</th>
-                                    <th style="width:58px"></th>
-                                    <th>Animal / Types / Abilities / Moves</th>
-                                    <th>Rarity</th>
-                                    <th>Role</th>
-                                    <th>Stats</th>
-                                    <th>Type Defense</th>
-                                    <th style="width:130px;text-align:center">Score</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tb"></tbody>
-                        </table>
-                    </div>
-
-                    <div class="pager" id="bp"></div>
-                </main>
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Animal Warfare &#8211; Rankings | Anidex</title>
+    <meta name="description"
+        content="Complete Animal Warfare rankings with roles, stats, type defense, and scores for all 2,185 animals.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&amp;family=Press+Start+2P&amp;display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-root: #080c10;
+            --bg-card: #0f1923;
+            --bg-sidebar: #0a0f14;
+            --accent: #4cffb3;
+            --accent2: #f97316;
+            --text-primary: #e2e8f0;
+            --text-muted: #6b7280;
+            --text-dim: #374151;
+            --border: #1a2535;
+            --font-pixel: 'Press Start 2P', monospace;
+            --font-body: 'Inter', system-ui, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+
+        html {
+            scroll-behavior: smooth
+        }
+
+        body {
+            background: var(--bg-root);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            min-height: 100vh;
+            padding: 0
+        }
+
+        /* NAV BAR */
+        .nav-bar {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 14px 24px;
+            background: rgba(10, 15, 20, .97);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-logo {
+            font-family: var(--font-pixel);
+            font-size: 11px;
+            color: var(--accent);
+            letter-spacing: .05em;
+            text-decoration: none;
+            transition: color .2s
+        }
+
+        .nav-logo:hover {
+            color: #fff
+        }
+
+        .nav-sep {
+            color: #1a2535;
+            font-size: 20px
+        }
+
+        .nav-title {
+            font-family: var(--font-pixel);
+            font-size: 9px;
+            color: var(--text-primary);
+            letter-spacing: .04em
+        }
+
+        .nav-back {
+            margin-left: auto;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 6px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            transition: all .2s;
+        }
+
+        .nav-back:hover {
+            color: var(--accent);
+            border-color: var(--accent);
+            background: rgba(76, 255, 179, .06)
+        }
+
+        /* LAYOUT */
+        .page-wrap {
+            display: flex;
+            gap: 0;
+            min-height: calc(100vh - 53px)
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 224px;
+            flex-shrink: 0;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            padding: 20px 14px;
+            position: sticky;
+            top: 53px;
+            height: calc(100vh - 53px);
+            overflow-y: auto;
+        }
+
+        .sidebar h3 {
+            font-family: var(--font-pixel);
+            font-size: 8px;
+            color: var(--accent);
+            letter-spacing: .06em;
+            margin-bottom: 14px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .filter-label {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin: 14px 0 5px;
+            text-transform: uppercase;
+            letter-spacing: .06em
+        }
+
+        .sb-input {
+            width: 100%;
+            background: #060a0f;
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 8px 10px;
+            border-radius: 9px;
+            font-size: 11px;
+            font-family: inherit;
+            transition: border .2s, box-shadow .2s;
+        }
+
+        .sb-input::placeholder {
+            color: var(--text-dim)
+        }
+
+        .sb-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(76, 255, 179, .12)
+        }
+
+        .sb-select {
+            width: 100%;
+            background: #060a0f;
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 8px 10px;
+            border-radius: 9px;
+            font-size: 11px;
+            font-family: inherit;
+            cursor: pointer;
+            appearance: auto;
+        }
+
+        .sb-select:focus {
+            outline: none;
+            border-color: var(--accent)
+        }
+
+        /* Sort grid */
+        .sort-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+            margin-top: 4px
+        }
+
+        .sbtn {
+            background: #060a0f;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 6px 4px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 10px;
+            font-family: inherit;
+            text-align: center;
+            transition: all .2s;
+        }
+
+        .sbtn:hover {
+            border-color: var(--accent);
+            color: var(--accent)
+        }
+
+        .sbtn.on {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+            font-weight: 700
+        }
+
+        /* Legend */
+        .legend-section {
+            margin-top: 18px;
+            padding-top: 14px;
+            border-top: 1px solid var(--border)
+        }
+
+        .legend-head {
+            font-size: 9px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            margin-bottom: 8px
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 5px;
+            font-size: 9.5px;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+            line-height: 1.4
+        }
+
+        /* Count */
+        #cnt {
+            font-size: 10px;
+            color: var(--text-dim);
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border)
+        }
+
+        /* MAIN */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            padding: 0 18px 24px
+        }
+
+        /* Header strip */
+        .content-header {
+            padding: 16px 0 14px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 14px
+        }
+
+        .content-header h1 {
+            font-family: var(--font-pixel);
+            font-size: 12px;
+            color: var(--text-primary);
+            line-height: 1.6;
+            margin-bottom: 6px;
+        }
+
+        .content-header h1 .acc {
+            color: var(--accent)
+        }
+
+        .content-meta {
+            font-size: 11px;
+            color: var(--text-muted)
+        }
+
+        .content-meta b {
+            color: var(--accent)
+        }
+
+        /* Pager */
+        .pager {
+            display: flex;
+            gap: 4px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+            align-items: center
+        }
+
+        .pager button {
+            background: #060a0f;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 5px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 11px;
+            font-family: inherit;
+            transition: all .2s;
+        }
+
+        .pager button:hover {
+            border-color: var(--accent);
+            color: var(--accent)
+        }
+
+        .pager button.active {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+            font-weight: 700
+        }
+
+        .pager button:disabled {
+            opacity: .25;
+            cursor: not-allowed
+        }
+
+        #pginfo {
+            font-size: 10px;
+            color: var(--text-dim);
+            margin-left: 8px
+        }
+
+        /* TABLE */
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            margin-bottom: 12px
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px
+        }
+
+        thead th {
+            background: #0a0f14;
+            color: var(--text-muted);
+            text-align: left;
+            padding: 10px 14px;
+            font-size: 8px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            border-bottom: 1px solid var(--border);
+            font-family: var(--font-pixel);
+        }
+
+        tbody tr {
+            border-bottom: 1px solid var(--border);
+            transition: background .15s
+        }
+
+        tbody tr:hover {
+            background: rgba(76, 255, 179, .04)
+        }
+
+        td {
+            padding: 10px 14px;
+            vertical-align: middle
+        }
+
+        /* RANK */
+        .rk {
+            font-family: var(--font-pixel);
+            font-size: 12px;
+            color: var(--accent);
+            width: 58px;
+            text-align: center;
+            white-space: nowrap
+        }
+
+        .rk small {
+            display: block;
+            font-size: 8px;
+            color: var(--text-dim);
+            font-weight: 400;
+            line-height: 1.4;
+            font-family: var(--font-body);
+            margin-top: 2px
+        }
+
+        /* SPRITE */
+        .sp img {
+            width: 52px;
+            height: 52px;
+            object-fit: contain;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: #060a0f;
+            display: block;
+            image-rendering: pixelated
+        }
+
+        .sp-ph {
+            width: 52px;
+            height: 52px;
+            background: #060a0f;
+            border-radius: 10px;
+            border: 1px solid var(--border)
+        }
+
+        /* NAME */
+        .nm {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            line-height: 1.3
+        }
+
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3px;
+            margin-top: 4px
+        }
+
+        .chip {
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 9.5px;
+            white-space: nowrap;
+            font-weight: 500
+        }
+
+        .cty {
+            background: rgba(76, 255, 179, .08);
+            color: var(--accent);
+            border: 1px solid rgba(76, 255, 179, .18)
+        }
+
+        .cab {
+            background: rgba(99, 179, 237, .08);
+            color: #63b3ed;
+            border: 1px solid rgba(99, 179, 237, .18)
+        }
+
+        .cmv {
+            background: rgba(167, 139, 250, .06);
+            color: #a78bfa;
+            border: 1px solid rgba(167, 139, 250, .18);
+            font-size: 9px
+        }
+
+        /* RARITY */
+        .rar {
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-weight: 700;
+            white-space: nowrap;
+            font-family: var(--font-pixel);
+            font-size: 7px;
+            letter-spacing: .02em;
+            display: inline-block
+        }
+
+        .rar-common {
+            background: rgba(156, 163, 175, .12);
+            color: #9ca3af;
+            border: 1px solid rgba(156, 163, 175, .25)
+        }
+
+        .rar-uncommon {
+            background: rgba(52, 211, 153, .12);
+            color: #34d399;
+            border: 1px solid rgba(52, 211, 153, .25)
+        }
+
+        .rar-rare {
+            background: rgba(96, 165, 250, .12);
+            color: #60a5fa;
+            border: 1px solid rgba(96, 165, 250, .25)
+        }
+
+        .rar-epic {
+            background: rgba(167, 139, 250, .12);
+            color: #a78bfa;
+            border: 1px solid rgba(167, 139, 250, .25)
+        }
+
+        .rar-legendary {
+            background: rgba(251, 191, 36, .12);
+            color: #fbbf24;
+            border: 1px solid rgba(251, 191, 36, .25)
+        }
+
+        .rar-mythical {
+            background: rgba(236, 72, 153, .12);
+            color: #ec4899;
+            border: 1px solid rgba(236, 72, 153, .25)
+        }
+
+        /* ROLE */
+        .role {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 700;
+            white-space: nowrap;
+            display: inline-block
+        }
+
+        .role-apex {
+            background: rgba(251, 191, 36, .15);
+            color: #fbbf24;
+            border: 1px solid rgba(251, 191, 36, .3)
+        }
+
+        .role-titan {
+            background: rgba(167, 139, 250, .15);
+            color: #c4b5fd;
+            border: 1px solid rgba(167, 139, 250, .3)
+        }
+
+        .role-glass {
+            background: rgba(249, 115, 22, .15);
+            color: #fb923c;
+            border: 1px solid rgba(249, 115, 22, .3)
+        }
+
+        .role-sweeper {
+            background: rgba(239, 68, 68, .15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, .3)
+        }
+
+        .role-speedster {
+            background: rgba(6, 182, 212, .15);
+            color: #22d3ee;
+            border: 1px solid rgba(6, 182, 212, .3)
+        }
+
+        .role-bruiser {
+            background: rgba(234, 88, 12, .15);
+            color: #f97316;
+            border: 1px solid rgba(234, 88, 12, .3)
+        }
+
+        .role-wall {
+            background: rgba(14, 165, 233, .15);
+            color: #38bdf8;
+            border: 1px solid rgba(14, 165, 233, .3)
+        }
+
+        .role-tank {
+            background: rgba(20, 184, 166, .15);
+            color: #2dd4bf;
+            border: 1px solid rgba(20, 184, 166, .3)
+        }
+
+        .role-balanced {
+            background: rgba(76, 255, 179, .08);
+            color: #4cffb3;
+            border: 1px solid rgba(76, 255, 179, .2)
+        }
+
+        /* STATS */
+        .sg {
+            display: grid;
+            grid-template-columns: 28px 1fr 28px;
+            gap: 2px 6px;
+            align-items: center;
+            font-size: 10px;
+            min-width: 190px
+        }
+
+        .sg b {
+            color: var(--text-dim);
+            font-size: 7.5px;
+            font-weight: 700;
+            text-align: right;
+            font-family: var(--font-pixel)
+        }
+
+        .sg .v {
+            color: var(--text-muted);
+            font-variant-numeric: tabular-nums;
+            font-size: 11px
+        }
+
+        .bw {
+            background: rgba(255, 255, 255, .06);
+            border-radius: 3px;
+            height: 6px;
+            overflow: hidden
+        }
+
+        .bb {
+            height: 100%;
+            border-radius: 3px
+        }
+
+        /* TYPE DEFENSE */
+        .def-cell {
+            min-width: 185px
+        }
+
+        .dp {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 700;
+            margin-bottom: 5px
+        }
+
+        .dp-norm {
+            background: rgba(76, 255, 179, .1);
+            color: var(--accent);
+            border: 1px solid rgba(76, 255, 179, .2)
+        }
+
+        .dp-bad {
+            background: rgba(239, 68, 68, .1);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, .2)
+        }
+
+        .dp-good {
+            background: rgba(52, 211, 153, .1);
+            color: #34d399;
+            border: 1px solid rgba(52, 211, 153, .2)
+        }
+
+        .wk-wrap,
+        .rs-wrap,
+        .im-wrap {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2px;
+            margin-top: 2px
+        }
+
+        .cwk {
+            background: rgba(239, 68, 68, .12);
+            color: #fca5a5;
+            border: 1px solid rgba(127, 29, 29, .4);
+            padding: 2px 7px;
+            border-radius: 10px;
+            font-size: 9px
+        }
+
+        .crs {
+            background: rgba(52, 211, 153, .10);
+            color: #86efac;
+            border: 1px solid rgba(20, 83, 45, .5);
+            padding: 2px 7px;
+            border-radius: 10px;
+            font-size: 9px
+        }
+
+        .cim {
+            background: rgba(99, 102, 241, .10);
+            color: #a5b4fc;
+            border: 1px solid rgba(46, 42, 106, .5);
+            padding: 2px 7px;
+            border-radius: 10px;
+            font-size: 9px
+        }
+
+        /* SCORE */
+        .sc-cell {
+            width: 130px;
+            text-align: center
+        }
+
+        .sc-n {
+            font-family: var(--font-pixel);
+            font-size: 13px;
+            color: var(--accent);
+            line-height: 1.2
+        }
+
+        .sc-bw {
+            background: rgba(255, 255, 255, .06);
+            border-radius: 4px;
+            height: 5px;
+            width: 100px;
+            margin: 5px auto 4px
+        }
+
+        .sc-bb {
+            height: 100%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, var(--accent), #60a5fa)
+        }
+
+        .sc-bst {
+            font-size: 10px;
+            color: var(--text-dim)
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-root)
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #1a2535;
+            border-radius: 3px
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #243040
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAV BAR -->
+    <nav class="nav-bar">
+        <a class="nav-logo" href="index.html">&#127894; ANIDEX</a>
+        <span class="nav-sep">|</span>
+        <span class="nav-title">RANKINGS</span>
+        <a class="nav-back" href="index.html">&#8592; Back to Anidex</a>
+    </nav>
+
+    <div class="page-wrap">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <h3>&#9881; FILTERS</h3>
+
+            <div class="filter-label">Search</div>
+            <input class="sb-input" id="qry" placeholder="Name, type, ability, move&#8230;" oninput="doSearch()">
+
+            <div class="filter-label">Rarity</div>
+            <select class="sb-select" id="rarF" onchange="doSearch()">
+                <option value="">All Rarities</option>
+                <option value="common">Common</option>
+                <option value="uncommon">Uncommon</option>
+                <option value="rare">Rare</option>
+                <option value="epic">Epic</option>
+                <option value="legendary">Legendary</option>
+                <option value="mythical">Mythical</option>
+            </select>
+
+            <div class="filter-label">Role</div>
+            <select class="sb-select" id="rolF" onchange="doSearch()">
+                <option value="">All Roles</option>
+                <option value="&#128081; Apex Predator">&#128081; Apex Predator</option>
+                <option value="&#127983;&#65039; Titan">&#127983;&#65039; Titan</option>
+                <option value="&#128165; Glass Cannon">&#128165; Glass Cannon</option>
+                <option value="&#9876;&#65039; Sweeper">&#9876;&#65039; Sweeper</option>
+                <option value="&#9889; Speedster">&#9889; Speedster</option>
+                <option value="&#128002; Bruiser">&#128002; Bruiser</option>
+                <option value="&#128737;&#65039; Tank">&#128737;&#65039; Tank</option>
+                <option value="&#128737;&#65039; Wall">&#128737;&#65039; Wall</option>
+                <option value="&#9878;&#65039; Balanced">&#9878;&#65039; Balanced</option>
+            </select>
+
+            <div class="filter-label">Sort By</div>
+            <div class="sort-grid">
+                <button class="sbtn on" data-k="score" onclick="doSort(this)">Score</button>
+                <button class="sbtn" data-k="bst" onclick="doSort(this)">BST</button>
+                <button class="sbtn" data-k="atk" onclick="doSort(this)">ATK</button>
+                <button class="sbtn" data-k="pwr" onclick="doSort(this)">PWR</button>
+                <button class="sbtn" data-k="def" onclick="doSort(this)">DEF</button>
+                <button class="sbtn" data-k="res" onclick="doSort(this)">RES</button>
+                <button class="sbtn" data-k="hp" onclick="doSort(this)">HP</button>
+                <button class="sbtn" data-k="spd" onclick="doSort(this)">SPD</button>
+                <button class="sbtn" data-k="defNorm" onclick="doSort(this)">Typing</button>
             </div>
-            <script>
-                let RAW = [];
-                fetch('assets/Organisms.json').then(res => res.json()).then(data => {
-                    RAW = data.filter(o => {
-                        let hp = o.health || 0; let atk = o.attack || 0; let def = o.defense || 0;
-                        let pwr = o.power || 0; let res = o.resistance || 0; let spd = o.speed || 0;
-                        return hp <= 300 && atk <= 300 && def <= 300 && pwr <= 300 && res <= 300 && spd <= 300;
-                    }).map(o => {
-                        let hp = o.health || 0; let atk = o.attack || 0; let def = o.defense || 0;
-                        let pwr = o.power || 0; let res = o.resistance || 0; let spd = o.speed || 0;
-                        let bst = hp + atk + def + pwr + res + spd;
-                        let cats = (o.category || '').split(',').map(s => s.trim());
-                        let mvs = (o.moves || '').split(',').map(s => s.trim());
-                        let abs = (o.abilities || '').split(',').map(s => s.trim());
-                        let role = '⚖️ Balanced';
-                        if (bst >= 550 && (atk >= 130 || pwr >= 130)) role = '👑 Apex Predator';
-                        else if (hp >= 130 && (def + res >= 180)) role = '🏛️ Titan';
-                        else if ((atk >= 120 || pwr >= 120) && (hp + def + res <= 180)) role = '💥 Glass Cannon';
-                        else if (spd >= 115) role = '⚡ Speedster';
-                        else if ((atk >= 110 || pwr >= 110) && spd >= 90) role = '⚔️ Sweeper';
-                        else if (def + res >= 220) role = '🛡️ Wall';
-                        else if (hp >= 100 && (def + res >= 160)) role = '🛡️ Tank';
-                        else if ((atk >= 100 || pwr >= 100) && spd <= 75) role = '🐂 Bruiser';
-                        return {
-                            name: o.name, rarity: (o.rarity || 'Common').toLowerCase(), rarityD: o.rarity || 'Common',
-                            cats: o.category || '', catList: cats, abs: abs, mvs: mvs, sprite: o.sprite,
-                            role: role, hp: hp, atk: atk, def: def, pwr: pwr, res: res, spd: spd, bst: bst,
-                            defNorm: 50, weaks: [], resists: [], immunes: []
-                        };
-                    });
 
-                    // ─── INIT ────────────────────────────────────────────────────────────────────
-                    RAW.forEach(a => {
-                        let statScore = (a.bst / 700) * 75;
-                        let defScore = (a.defNorm || 50) * 0.15;
-                        let moveScore = Math.min(10, (a.mvs ? a.mvs.length : 0));
-                        a.score = statScore + defScore + moveScore;
-                    });
-                    sorted = [...RAW].sort((a, b) => b.score - a.score);
-                    sorted.forEach((a, index) => { a.rank = index + 1; });
-                    filtered = [...sorted];
-                    render();
-                }).catch(err => console.error("Failed to load Organisms.json", err));
+            <div class="legend-section">
+                <div class="legend-head">Roles Guide</div>
+                <div class="legend-item">&#128081; Apex &#8212; dominant BST + offense</div>
+                <div class="legend-item">&#127983;&#65039; Titan &#8212; extreme bulk/HP</div>
+                <div class="legend-item">&#128165; Glass Cannon &#8212; huge ATK, frail</div>
+                <div class="legend-item">&#9876;&#65039; Sweeper &#8212; offense + speed</div>
+                <div class="legend-item">&#9889; Speedster &#8212; SPD &gt; 115</div>
+                <div class="legend-item">&#128002; Bruiser &#8212; heavy, slow offense</div>
+                <div class="legend-item">&#128737;&#65039; Wall &#8212; pure bulk</div>
+                <div class="legend-item">&#128737;&#65039; Tank &#8212; balanced bulk</div>
+                <div class="legend-item">&#9878;&#65039; Balanced &#8212; no extreme stats</div>
+            </div>
 
+            <div id="cnt">Loading&#8230;</div>
+        </aside>
 
-                // ─── CONFIG ─────────────────────────────────────────────────────────────────
-                const PER_PAGE = 50;
-                let sorted = [], filtered = [], P = 0, sortKey = 'score', sortAsc = false;
+        <!-- MAIN -->
+        <main class="main-content">
+            <div class="content-header">
+                <h1>&#127894; <span class="acc">Animal Warfare</span> &#8212; Full Rankings</h1>
+                <div class="content-meta">
+                    Generated 2026-02-22 &nbsp;&#183;&nbsp; 2,185 animals ranked &nbsp;&#183;&nbsp;
+                    <b>Score:</b> Improvised (BST 75% &#183; Type Defense 15% &#183; Moves 10%)
+                </div>
+            </div>
 
-                // ─── COLOUR HELPERS ──────────────────────────────────────────────────────────
-                function rarClass(r) {
-                    const m = {
-                        common: 'rar-common', uncommon: 'rar-uncommon', rare: 'rar-rare',
-                        epic: 'rar-epic', legendary: 'rar-legendary', mythical: 'rar-mythical'
-                    };
-                    return m[r] || 'rar-common';
+            <div class="pager" id="tp"></div>
+            <span id="pginfo"></span>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width:58px;text-align:center">Rank</th>
+                            <th style="width:58px"></th>
+                            <th>Animal / Types / Abilities / Moves</th>
+                            <th>Rarity</th>
+                            <th>Role</th>
+                            <th>Stats</th>
+                            <th>Type Defense</th>
+                            <th style="width:130px;text-align:center">Score</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tb"></tbody>
+                </table>
+            </div>
+
+            <div class="pager" id="bp"></div>
+        </main>
+    </div>
+    <script>
+        // ─── TYPE EFFECTIVENESS MAP ───────────────────────────────────────
+        const TYPE_CHART = {
+            "Mammal": { weakTo: ["Reptile", "Bug"], resists: [], immuneTo: [] },
+            "Bird": { weakTo: ["Electric", "Ice", "Rock"], resists: ["Bug", "Plant"], immuneTo: ["Ground"] },
+            "Reptile": { weakTo: ["Ice", "Magic"], resists: ["Mammal", "Fire", "Electric", "Poison"], immuneTo: [] },
+            "Amphibian": { weakTo: ["Plant", "Electric"], resists: ["Water", "Fire", "Ice", "Steel"], immuneTo: [] },
+            "Fish": { weakTo: ["Electric", "Plant"], resists: ["Water", "Fire", "Ice", "Steel"], immuneTo: [] },
+            "Bug": { weakTo: ["Bird", "Fire", "Rock"], resists: ["Plant", "Ground"], immuneTo: [] },
+            "Invertebrate": { weakTo: ["Electric", "Plant"], resists: ["Water"], immuneTo: [] },
+            "Plant": { weakTo: ["Fire", "Ice", "Poison", "Bug", "Bird"], resists: ["Water", "Electric", "Plant", "Ground"], immuneTo: [] },
+            "Fungus": { weakTo: ["Fire", "Ice"], resists: ["Plant", "Poison", "Water", "Electric", "Ground", "Fighting"], immuneTo: [] },
+            "Fire": { weakTo: ["Water", "Ground", "Rock"], resists: ["Fire", "Plant", "Ice", "Bug", "Steel", "Fairy"], immuneTo: [] },
+            "Water": { weakTo: ["Electric", "Plant"], resists: ["Water", "Fire", "Ice", "Steel"], immuneTo: [] },
+            "Electric": { weakTo: ["Ground"], resists: ["Electric", "Bird", "Steel"], immuneTo: [] },
+            "Ice": { weakTo: ["Fire", "Fighting", "Rock", "Steel"], resists: ["Ice"], immuneTo: [] },
+            "Fighting": { weakTo: ["Bird", "Psychic", "Fairy"], resists: ["Bug", "Rock", "Dark"], immuneTo: [] },
+            "Poison": { weakTo: ["Ground", "Psychic"], resists: ["Plant", "Fighting", "Poison", "Bug", "Fairy"], immuneTo: [] },
+            "Ground": { weakTo: ["Water", "Plant", "Ice"], resists: ["Poison", "Rock"], immuneTo: ["Electric"] },
+            "Rock": { weakTo: ["Water", "Plant", "Fighting", "Ground", "Steel"], resists: ["Normal", "Fire", "Poison", "Bird"], immuneTo: [] },
+            "Psychic": { weakTo: ["Bug", "Ghost", "Dark"], resists: ["Fighting", "Psychic"], immuneTo: [] },
+            "Ghost": { weakTo: ["Ghost", "Dark"], resists: ["Poison", "Bug"], immuneTo: ["Normal", "Fighting"] },
+            "Magic": { weakTo: ["Poison", "Steel"], resists: ["Fighting", "Bug", "Dark"], immuneTo: ["Reptile"] },
+            "Steel": { weakTo: ["Fire", "Fighting", "Ground"], resists: ["Normal", "Plant", "Ice", "Bird", "Psychic", "Bug", "Rock", "Reptile", "Steel", "Fairy"], immuneTo: ["Poison"] },
+            "Dark": { weakTo: ["Fighting", "Bug", "Fairy"], resists: ["Ghost", "Dark"], immuneTo: ["Psychic"] },
+            "Normal": { weakTo: ["Fighting"], resists: [], immuneTo: ["Ghost"] },
+            "Dinosaur": { weakTo: ["Ice", "Fighting", "Ground"], resists: ["Fire", "Water", "Electric", "Plant"], immuneTo: [] },
+            "Fairy": { weakTo: ["Poison", "Steel"], resists: ["Fighting", "Bug", "Dark"], immuneTo: ["Reptile"] }
+        };
+
+        let RAW = [];
+        fetch('assets/Organisms.json').then(res => res.json()).then(data => {
+            RAW = data.filter(o => {
+                let hp = o.health || 0; let atk = o.attack || 0; let def = o.defense || 0;
+                let pwr = o.power || 0; let res = o.resistance || 0; let spd = o.speed || 0;
+                return hp <= 300 && atk <= 300 && def <= 300 && pwr <= 300 && res <= 300 && spd <= 300;
+            }).map(o => {
+                let hp = o.health || 0; let atk = o.attack || 0; let def = o.defense || 0;
+                let pwr = o.power || 0; let res = o.resistance || 0; let spd = o.speed || 0;
+                let bst = hp + atk + def + pwr + res + spd;
+                let cats = (o.category || '').split(',').map(s => s.trim());
+                let mvs = (o.moves || '').split(',').map(s => s.trim());
+                let abs = (o.abilities || '').split(',').map(s => s.trim());
+
+                // Calculate type multipliers
+                let typeMults = {};
+                for (const cat of cats) {
+                    const chart = TYPE_CHART[cat];
+                    if (!chart) continue;
+                    for (const type of chart.weakTo) {
+                        typeMults[type] = (typeMults[type] || 1) * 2;
+                    }
+                    for (const type of chart.resists) {
+                        typeMults[type] = (typeMults[type] || 1) * 0.5;
+                    }
+                    for (const type of chart.immuneTo) {
+                        typeMults[type] = 0;
+                    }
                 }
-                function roleClass(role) {
-                    if (role.includes('Apex')) return 'role-apex';
-                    if (role.includes('Titan')) return 'role-titan';
-                    if (role.includes('Glass')) return 'role-glass';
-                    if (role.includes('Sweeper')) return 'role-sweeper';
-                    if (role.includes('Speedster')) return 'role-speedster';
-                    if (role.includes('Bruiser')) return 'role-bruiser';
-                    if (role.includes('Wall')) return 'role-wall';
-                    if (role.includes('Tank')) return 'role-tank';
-                    return 'role-balanced';
+
+                let weaks = [];
+                let resists = [];
+                let immunes = [];
+                let defTotal = 0;
+                let typeCount = 0;
+
+                // Process the multipliers
+                for (const type in typeMults) {
+                    if (typeMults[type] > 1) {
+                        weaks.push(type);
+                    } else if (typeMults[type] === 0) {
+                        immunes.push(type);
+                    } else if (typeMults[type] < 1) {
+                        resists.push(type);
+                    }
                 }
 
-                // Stat-bar colour: HP=teal, ATK=red, DEF=blue, PWR=purple, RES=yellow, SPD=green
-                const STAT_COLORS = {
-                    hp: '#4cffb3', atk: '#f87171', def: '#60a5fa',
-                    pwr: '#a78bfa', res: '#fbbf24', spd: '#34d399'
+                // Calculate defNorm (a normalized defense score)
+                // A completely neutral type chart would be 50. Weaknesses subtract, resistances/immunities add.
+                let defNorm = 50 - (weaks.length * 5) + (resists.length * 3) + (immunes.length * 7);
+                // clamp between 0 and 100
+                defNorm = Math.max(0, Math.min(100, defNorm));
+
+                let role = '⚖️ Balanced';
+                if (bst >= 550 && (atk >= 130 || pwr >= 130)) role = '👑 Apex Predator';
+                else if (hp >= 130 && (def + res >= 180)) role = '🏛️ Titan';
+                else if ((atk >= 120 || pwr >= 120) && (hp + def + res <= 180)) role = '💥 Glass Cannon';
+                else if (spd >= 115) role = '⚡ Speedster';
+                else if ((atk >= 110 || pwr >= 110) && spd >= 90) role = '⚔️ Sweeper';
+                else if (def + res >= 220) role = '🛡️ Wall';
+                else if (hp >= 100 && (def + res >= 160)) role = '🛡️ Tank';
+                else if ((atk >= 100 || pwr >= 100) && spd <= 75) role = '🐂 Bruiser';
+                return {
+                    name: o.name, rarity: (o.rarity || 'Common').toLowerCase(), rarityD: o.rarity || 'Common',
+                    cats: o.category || '', catList: cats, abs: abs, mvs: mvs, sprite: o.sprite,
+                    role: role, hp: hp, atk: atk, def: def, pwr: pwr, res: res, spd: spd, bst: bst,
+                    defNorm: defNorm, weaks: weaks, resists: resists, immunes: immunes
                 };
-                const STAT_MAX = { hp: 300, atk: 300, def: 300, pwr: 300, res: 300, spd: 300 };
+            });
 
-                function statBar(label, val, max) {
-                    const pct = Math.min(100, Math.round(val / max * 100));
-                    const color = STAT_COLORS[label.toLowerCase()] || '#6b7280';
-                    return `<b>${label.toUpperCase()}</b>
+            // ─── INIT ────────────────────────────────────────────────────────────────────
+            RAW.forEach(a => {
+                let statScore = (a.bst / 700) * 75;
+                let defScore = (a.defNorm || 50) * 0.15;
+                let moveScore = Math.min(10, (a.mvs ? a.mvs.length : 0));
+                a.score = statScore + defScore + moveScore;
+            });
+            sorted = [...RAW].sort((a, b) => b.score - a.score);
+            sorted.forEach((a, index) => { a.rank = index + 1; });
+            filtered = [...sorted];
+            render();
+        }).catch(err => console.error("Failed to load Organisms.json", err));
+
+
+        // ─── CONFIG ─────────────────────────────────────────────────────────────────
+        const PER_PAGE = 50;
+        let sorted = [], filtered = [], P = 0, sortKey = 'score', sortAsc = false;
+
+        // ─── COLOUR HELPERS ──────────────────────────────────────────────────────────
+        function rarClass(r) {
+            const m = {
+                common: 'rar-common', uncommon: 'rar-uncommon', rare: 'rar-rare',
+                epic: 'rar-epic', legendary: 'rar-legendary', mythical: 'rar-mythical'
+            };
+            return m[r] || 'rar-common';
+        }
+        function roleClass(role) {
+            if (role.includes('Apex')) return 'role-apex';
+            if (role.includes('Titan')) return 'role-titan';
+            if (role.includes('Glass')) return 'role-glass';
+            if (role.includes('Sweeper')) return 'role-sweeper';
+            if (role.includes('Speedster')) return 'role-speedster';
+            if (role.includes('Bruiser')) return 'role-bruiser';
+            if (role.includes('Wall')) return 'role-wall';
+            if (role.includes('Tank')) return 'role-tank';
+            return 'role-balanced';
+        }
+
+        // Stat-bar colour: HP=teal, ATK=red, DEF=blue, PWR=purple, RES=yellow, SPD=green
+        const STAT_COLORS = {
+            hp: '#4cffb3', atk: '#f87171', def: '#60a5fa',
+            pwr: '#a78bfa', res: '#fbbf24', spd: '#34d399'
+        };
+        const STAT_MAX = { hp: 300, atk: 300, def: 300, pwr: 300, res: 300, spd: 300 };
+
+        function statBar(label, val, max) {
+            const pct = Math.min(100, Math.round(val / max * 100));
+            const color = STAT_COLORS[label.toLowerCase()] || '#6b7280';
+            return `<b>${label.toUpperCase()}</b>
           <div class="bw"><div class="bb" style="width:${pct}%;background:${color}"></div></div>
           <span class="v">${val}</span>`;
-                }
+        }
 
-                function defPillClass(n) {
-                    if (n >= 80) return 'dp-good';
-                    if (n <= 45) return 'dp-bad';
-                    return 'dp-norm';
-                }
+        function defPillClass(n) {
+            if (n >= 80) return 'dp-good';
+            if (n <= 45) return 'dp-bad';
+            return 'dp-norm';
+        }
 
-                // ─── ROW BUILDER ─────────────────────────────────────────────────────────────
-                function buildRow(a) {
-                    // Sprite
-                    let spriteName = a.name.replace(/[\s\-']/g, '_').toLowerCase() + '.png';
-                    let spriteSrc = 'assets/sprites/' + spriteName;
+        // ─── ROW BUILDER ─────────────────────────────────────────────────────────────
+        function buildRow(a) {
+            // Sprite
+            let spriteName = a.name.replace(/[\s\-']/g, '_').toLowerCase() + '.png';
+            let spriteSrc = 'assets/sprites/' + spriteName;
 
-                    const spriteHtml = spriteSrc
-                        ? `<img src="${spriteSrc}" alt="${a.name}" loading="lazy" onerror="this.style.display='none'">`
-                        : `<div class="sp-ph"></div>`;
+            const spriteHtml = spriteSrc
+                ? `<img src="${spriteSrc}" alt="${a.name}" loading="lazy" onerror="this.style.display='none'">`
+                : `<div class="sp-ph"></div>`;
 
-                    // Type chips
-                    const typeChips = (a.catList || []).map(t =>
-                        `<span class="chip cty">${t}</span>`).join('');
+            // Type chips
+            const typeChips = (a.catList || []).map(t =>
+                `<span class="chip cty">${t}</span>`).join('');
 
-                    // Ability chips
-                    const abChips = (a.abs || []).map(ab =>
-                        `<span class="chip cab">${ab}</span>`).join('');
+            // Ability chips
+            const abChips = (a.abs || []).map(ab =>
+                `<span class="chip cab">${ab}</span>`).join('');
 
-                    // Move chips (show first 6 + overflow count)
-                    const mvs = a.mvs || [];
-                    const showMvs = mvs.slice(0, 6);
-                    const extra = mvs.length - 6;
-                    const mvChips = showMvs.map(m => `<span class="chip cmv">${m}</span>`).join('') +
-                        (extra > 0 ? `<span class="chip cmv">+${extra} more</span>` : '');
+            // Move chips (show first 6 + overflow count)
+            const mvs = a.mvs || [];
+            const showMvs = mvs.slice(0, 6);
+            const extra = mvs.length - 6;
+            const mvChips = showMvs.map(m => `<span class="chip cmv">${m}</span>`).join('') +
+                (extra > 0 ? `<span class="chip cmv">+${extra} more</span>` : '');
 
-                    // Stats
-                    const statKeys = ['hp', 'atk', 'def', 'pwr', 'res', 'spd'];
-                    const statRows = statKeys.map(k => statBar(k, a[k] || 0, STAT_MAX[k])).join('');
+            // Stats
+            const statKeys = ['hp', 'atk', 'def', 'pwr', 'res', 'spd'];
+            const statRows = statKeys.map(k => statBar(k, a[k] || 0, STAT_MAX[k])).join('');
 
-                    // Type defense
-                    const dpClass = defPillClass(a.defNorm || 50);
-                    const weakHtml = (a.weaks || []).map(w =>
-                        `<span class="cwk">${w}</span>`).join('');
-                    const resHtml = (a.resists || []).map(r =>
-                        `<span class="crs">${r}</span>`).join('');
-                    const immHtml = (a.immunes || []).map(i =>
-                        `<span class="cim">${i}</span>`).join('');
+            // Type defense
+            const dpClass = defPillClass(a.defNorm || 50);
+            const weakHtml = (a.weaks || []).map(w =>
+                `<span class="cwk">${w}</span>`).join('');
+            const resHtml = (a.resists || []).map(r =>
+                `<span class="crs">${r}</span>`).join('');
+            const immHtml = (a.immunes || []).map(i =>
+                `<span class="cim">${i}</span>`).join('');
 
-                    // Score bar
-                    const scoreMax = 99.9;
-                    const scorePct = Math.min(100, Math.round((a.score / scoreMax) * 100));
+            // Score bar
+            const scoreMax = 99.9;
+            const scorePct = Math.min(100, Math.round((a.score / scoreMax) * 100));
 
-                    return `<tr>
+            return `<tr>
     <td><div class="rk">#${a.rank}<small>${a.rarityD}</small></div></td>
     <td class="sp">${spriteHtml}</td>
     <td>
@@ -1014,100 +1062,100 @@ else if ((atk >= 120 || pwr >= 120) && (hp + def + res <= 180)) role='💥 Glass
       <div class="sc-bst">BST ${a.bst}</div>
     </td>
   </tr>`;
+        }
+
+        // ─── PAGINATION ──────────────────────────────────────────────────────────────
+        function buildPager(containerId) {
+            const cont = document.getElementById(containerId);
+            if (!cont) return;
+            const pages = Math.ceil(filtered.length / PER_PAGE);
+            if (pages <= 1) { cont.innerHTML = ''; return; }
+
+            const btns = [];
+            // Prev
+            btns.push(`<button onclick="goPage(${P - 1})" ${P === 0 ? 'disabled' : ''}>&#8592;</button>`);
+
+            // Page number buttons (smart window)
+            let lo = Math.max(0, P - 2), hi = Math.min(pages - 1, P + 2);
+            if (lo > 0) btns.push(`<button onclick="goPage(0)">1</button><span style="color:var(--text-dim)">…</span>`);
+            for (let i = lo; i <= hi; i++) {
+                btns.push(`<button class="${i === P ? 'active' : ''}" onclick="goPage(${i})">${i + 1}</button>`);
+            }
+            if (hi < pages - 1) btns.push(`<span style="color:var(--text-dim)">…</span><button onclick="goPage(${pages - 1})">${pages}</button>`);
+
+            // Next
+            btns.push(`<button onclick="goPage(${P + 1})" ${P === pages - 1 ? 'disabled' : ''}>&#8594;</button>`);
+
+            cont.innerHTML = btns.join('');
+            const info = document.getElementById('pginfo');
+            if (info) info.textContent = `Page ${P + 1} of ${pages} · ${filtered.length} results`;
+        }
+
+        function goPage(n) {
+            const pages = Math.ceil(filtered.length / PER_PAGE);
+            P = Math.max(0, Math.min(pages - 1, n));
+            render();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ─── RENDER ──────────────────────────────────────────────────────────────────
+        function render() {
+            const start = P * PER_PAGE;
+            const slice = filtered.slice(start, start + PER_PAGE);
+            document.getElementById('tb').innerHTML = slice.map(buildRow).join('');
+            buildPager('tp');
+            buildPager('bp');
+            const cnt = document.getElementById('cnt');
+            if (cnt) cnt.textContent = filtered.length.toLocaleString() + ' animals';
+        }
+
+        // ─── SORT ────────────────────────────────────────────────────────────────────
+        function doSort(btn) {
+            const k = btn.getAttribute('data-k');
+            if (k === sortKey) { sortAsc = !sortAsc; }
+            else { sortKey = k; sortAsc = false; }
+            document.querySelectorAll('.sbtn').forEach(b => b.classList.remove('on'));
+            btn.classList.add('on');
+            applySort();
+            P = 0;
+            render();
+        }
+
+        function applySort() {
+            sorted.sort((a, b) => {
+                let av = a[sortKey] ?? 0, bv = b[sortKey] ?? 0;
+                return sortAsc ? av - bv : bv - av;
+            });
+            filtered = [...sorted];
+            applyFilters();
+        }
+
+        // ─── SEARCH / FILTER ─────────────────────────────────────────────────────────
+        function doSearch() {
+            P = 0;
+            applyFilters();
+            render();
+        }
+
+        function applyFilters() {
+            const q = (document.getElementById('qry')?.value || '').toLowerCase().trim();
+            const rar = (document.getElementById('rarF')?.value || '').toLowerCase();
+            const rol = (document.getElementById('rolF')?.value || '').toLowerCase();
+
+            filtered = sorted.filter(a => {
+                if (rar && a.rarity !== rar) return false;
+                if (rol && a.role.toLowerCase() !== rol) return false;
+                if (q) {
+                    const hay = [a.name, a.cats, ...(a.abs || []), ...(a.mvs || []), a.role].join(' ').toLowerCase();
+                    if (!hay.includes(q)) return false;
                 }
+                return true;
+            });
+        }
 
-                // ─── PAGINATION ──────────────────────────────────────────────────────────────
-                function buildPager(containerId) {
-                    const cont = document.getElementById(containerId);
-                    if (!cont) return;
-                    const pages = Math.ceil(filtered.length / PER_PAGE);
-                    if (pages <= 1) { cont.innerHTML = ''; return; }
+        // Initialization is now handled within the fetch callback above.
 
-                    const btns = [];
-                    // Prev
-                    btns.push(`<button onclick="goPage(${P - 1})" ${P === 0 ? 'disabled' : ''}>&#8592;</button>`);
+    </script>
+</body>
 
-                    // Page number buttons (smart window)
-                    let lo = Math.max(0, P - 2), hi = Math.min(pages - 1, P + 2);
-                    if (lo > 0) btns.push(`<button onclick="goPage(0)">1</button><span style="color:var(--text-dim)">…</span>`);
-                    for (let i = lo; i <= hi; i++) {
-                        btns.push(`<button class="${i === P ? 'active' : ''}" onclick="goPage(${i})">${i + 1}</button>`);
-                    }
-                    if (hi < pages - 1) btns.push(`<span style="color:var(--text-dim)">…</span><button onclick="goPage(${pages - 1})">${pages}</button>`);
-
-                    // Next
-                    btns.push(`<button onclick="goPage(${P + 1})" ${P === pages - 1 ? 'disabled' : ''}>&#8594;</button>`);
-
-                    cont.innerHTML = btns.join('');
-                    const info = document.getElementById('pginfo');
-                    if (info) info.textContent = `Page ${P + 1} of ${pages} · ${filtered.length} results`;
-                }
-
-                function goPage(n) {
-                    const pages = Math.ceil(filtered.length / PER_PAGE);
-                    P = Math.max(0, Math.min(pages - 1, n));
-                    render();
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                }
-
-                // ─── RENDER ──────────────────────────────────────────────────────────────────
-                function render() {
-                    const start = P * PER_PAGE;
-                    const slice = filtered.slice(start, start + PER_PAGE);
-                    document.getElementById('tb').innerHTML = slice.map(buildRow).join('');
-                    buildPager('tp');
-                    buildPager('bp');
-                    const cnt = document.getElementById('cnt');
-                    if (cnt) cnt.textContent = filtered.length.toLocaleString() + ' animals';
-                }
-
-                // ─── SORT ────────────────────────────────────────────────────────────────────
-                function doSort(btn) {
-                    const k = btn.getAttribute('data-k');
-                    if (k === sortKey) { sortAsc = !sortAsc; }
-                    else { sortKey = k; sortAsc = false; }
-                    document.querySelectorAll('.sbtn').forEach(b => b.classList.remove('on'));
-                    btn.classList.add('on');
-                    applySort();
-                    P = 0;
-                    render();
-                }
-
-                function applySort() {
-                    sorted.sort((a, b) => {
-                        let av = a[sortKey] ?? 0, bv = b[sortKey] ?? 0;
-                        return sortAsc ? av - bv : bv - av;
-                    });
-                    filtered = [...sorted];
-                    applyFilters();
-                }
-
-                // ─── SEARCH / FILTER ─────────────────────────────────────────────────────────
-                function doSearch() {
-                    P = 0;
-                    applyFilters();
-                    render();
-                }
-
-                function applyFilters() {
-                    const q = (document.getElementById('qry')?.value || '').toLowerCase().trim();
-                    const rar = (document.getElementById('rarF')?.value || '').toLowerCase();
-                    const rol = (document.getElementById('rolF')?.value || '').toLowerCase();
-
-                    filtered = sorted.filter(a => {
-                        if (rar && a.rarity !== rar) return false;
-                        if (rol && a.role.toLowerCase() !== rol) return false;
-                        if (q) {
-                            const hay = [a.name, a.cats, ...(a.abs || []), ...(a.mvs || []), a.role].join(' ').toLowerCase();
-                            if (!hay.includes(q)) return false;
-                        }
-                        return true;
-                    });
-                }
-
-                // Initialization is now handled within the fetch callback above.
-
-            </script>
-        </body>
-
-        </html>
+</html>
