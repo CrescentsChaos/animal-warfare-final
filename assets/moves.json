@@ -125,6 +125,7 @@
     {
         "name": "Ice Beam",
         "description": "10% chance to freeze the opponent.",
+        "soundEffect": "audio/effects/ice_beam.mp3",
         "baseDamage": 90,
         "type": "cryo",
         "accuracy": 100,
@@ -141,6 +142,7 @@
     {
         "name": "Ice Fang",
         "description": "10% chance to freeze the opponent.",
+        "soundEffect": "audio/effects/ice_fang.mp3",
         "baseDamage": 65,
         "type": "cryo",
         "accuracy": 95,
@@ -460,6 +462,7 @@
     {
         "name": "Air Slash",
         "description": "A strong wing attack.",
+        "soundEffect": "audio/effects/air_slash.mp3",
         "baseDamage": 75,
         "type": "flying",
         "stamina": 5,
@@ -735,7 +738,7 @@
         "name": "Denticle Armor",
         "description": "The user flexes its sandpaper-thick skin, boosting defense and punishing contact.",
         "baseDamage": 0,
-        "type": "armored",
+        "type": "metal",
         "stamina": 10,
         "category": "status",
         "effects": [
@@ -783,7 +786,7 @@
         "name": "Mud Armor",
         "description": "Coats the body in thick mud to boost protection.",
         "baseDamage": 0,
-        "type": "armored",
+        "type": "earth",
         "stamina": 10,
         "category": "status",
         "effects": [
@@ -1102,7 +1105,7 @@
         "soundEffect": "audio/effects/chomp.mp3",
         "baseDamage": 120,
         "accuracy": 85,
-        "type": "basic",
+        "type": "aquatic",
         "stamina": 20,
         "category": "physical",
         "effects": [
@@ -1520,6 +1523,7 @@
     {
         "name": "Flamethrower",
         "description": "10% chance to burn the target.",
+        "soundEffect": "audio/effects/flamethrower.mp3",
         "baseDamage": 90,
         "accuracy": 100,
         "type": "blaze",
@@ -1572,6 +1576,7 @@
     {
         "name": "Ember",
         "description": "10% chance to burn the target.",
+        "soundEffect": "audio/effects/ember.mp3",
         "baseDamage": 40,
         "accuracy": 100,
         "type": "blaze",
@@ -1589,6 +1594,7 @@
     {
         "name": "Bug Buzz",
         "description": "10% chance to lower the target's resistance.",
+        "soundEffect": "audio/effects/bug_buzz.mp3",
         "baseDamage": 90,
         "accuracy": 100,
         "type": "arthropod",
@@ -1607,6 +1613,7 @@
     {
         "name": "Earth Power",
         "description": "10% chance to lower the target's resistance.",
+        "soundEffect": "audio/effects/flamethrower.mp3",
         "baseDamage": 90,
         "accuracy": 100,
         "type": "earth",
@@ -1847,7 +1854,7 @@
         "soundEffect": "audio/effects/protect.mp3",
         "priority": 4,
         "baseDamage": 0,
-        "type": "armored",
+        "type": "aquatic",
         "stamina": 5,
         "category": "status",
         "effects": [
@@ -2472,6 +2479,7 @@
     {
         "name": "Thunderbolt",
         "description": "May paralyze the foe.",
+        "soundEffect": "audio/effects/thunderbolt.mp3",
         "baseDamage": 90,
         "type": "electric",
         "stamina": 20,
@@ -2534,6 +2542,7 @@
     {
         "name": "Rain Dance",
         "description": "Summons rain.",
+        "soundEffect": "audio/effects/rain_dance.mp3",
         "baseDamage": 0,
         "type": "aquatic",
         "stamina": 5,
@@ -2550,6 +2559,7 @@
     {
         "name": "Sunny Day",
         "description": "Summons harsh sunlight.",
+        "soundEffect": "audio/effects/sunny_day.mp3",
         "baseDamage": 0,
         "type": "blaze",
         "stamina": 5,
@@ -2566,6 +2576,7 @@
     {
         "name": "Sandstorm",
         "description": "Summons sandstorm.",
+        "soundEffect": "audio/effects/sandstorm.mp3",
         "baseDamage": 0,
         "type": "rock",
         "stamina": 5,
@@ -2889,6 +2900,7 @@
     {
         "name": "Earthquake",
         "description": "User shakes the ground with its raw strength.",
+        "soundEffect": "audio/effects/earthquake.mp3",
         "baseDamage": 100,
         "accuracy": 100,
         "type": "earth",
@@ -3193,6 +3205,7 @@
     {
         "name": "Brave Bird",
         "description": "Hurts user.",
+        "soundEffect": "audio/effects/brave_bird.mp3",
         "baseDamage": 120,
         "recoilPercent": 0.33,
         "type": "flying",
@@ -3555,7 +3568,7 @@
         "name": "Mucus Coat",
         "description": "The covers its body with thick mucus which raises its defense and resistance.",
         "baseDamage": 0,
-        "type": "armored",
+        "type": "aquatic",
         "stamina": 15,
         "category": "status",
         "effects": [
@@ -3643,6 +3656,7 @@
     {
         "name": "Hyper Beam",
         "description": "The target is attacked with a powerful beam. The user can't move on the next turn.",
+        "soundEffect": "audio/effects/hyper_beam.mp3",
         "baseDamage": 150,
         "type": "basic",
         "stamina": 5,
@@ -3695,6 +3709,7 @@
     {
         "name": "Giga Impact",
         "description": "The target is attacked with a powerful impact. The user can't move on the next turn.",
+        "soundEffect": "audio/effects/giga_impact.mp3",
         "baseDamage": 150,
         "type": "basic",
         "stamina": 5,
@@ -3919,6 +3934,7 @@
     {
         "name": "Spikes",
         "description": "Sets a trap of spikes around the opposing team, which damages enemies that switch into battle.",
+        "soundEffect": "audio/effects/spikes.mp3",
         "baseDamage": 0,
         "type": "earth",
         "stamina": 20,
@@ -3936,6 +3952,7 @@
     {
         "name": "Stealth Rock",
         "description": "Sets pointed stones around the opposing team, which damages enemies that switch into battle.",
+        "soundEffect": "audio/effects/stealth_rock.mp3",
         "baseDamage": 0,
         "type": "rock",
         "stamina": 20,
@@ -3953,6 +3970,7 @@
     {
         "name": "Toxic Spikes",
         "description": "Sets poisonous spikes around the opposing team, which poisons enemies that switch into battle.",
+        "soundEffect": "audio/effects/spikes.mp3",
         "baseDamage": 0,
         "type": "toxic",
         "stamina": 20,
@@ -3971,7 +3989,7 @@
         "name": "Sticky Web",
         "description": "Sets a sticky net around the opposing team, which lowers the Speed of enemies that switch into battle.",
         "baseDamage": 0,
-        "type": "bug",
+        "type": "arthropod",
         "stamina": 20,
         "category": "status",
         "effects": [
@@ -4197,8 +4215,9 @@
     {
         "name": "Trick Room",
         "description": "The user creates a bizarre area in which slower animals move first for five turns.",
+        "soundEffect": "audio/effects/trick_room.mp3",
         "baseDamage": 0,
-        "type": "psionic",
+        "type": "aura",
         "accuracy": 100,
         "stamina": 5,
         "category": "status",
