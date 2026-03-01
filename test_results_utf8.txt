@@ -1,46 +1,28 @@
-﻿00:00 +0: loading C:/Users/USER/dev/animal_warfare/test/abilities_new_test.dart
-00:00 +0: New Abilities Tests Iron Fist boosts punching moves
-00:00 +0 -1: New Abilities Tests Iron Fist boosts punching moves [E]
-  Expected: a numeric value within <0.15> of <1.2>
-    Actual: <2.225806451612903>
-     Which:  differs by <1.025806451612903>
+﻿00:00 +0: loading C:/Users/USER/dev/animal_warfare/test/new_moves_test.dart
+00:00 +0: New Moves Comprehensive Tests Sacred Sword ignores defense stages
+00:00 +0 -1: New Moves Comprehensive Tests Sacred Sword ignores defense stages [E]
+  Expected: <59>
+    Actual: <54>
   
   package:matcher                                     expect
   package:flutter_test/src/widget_tester.dart 473:18  expect
-  test\abilities_new_test.dart 80:7                   main.<fn>.<fn>
+  test\new_moves_test.dart 188:7                      main.<fn>.<fn>
   
-00:00 +0 -1: New Abilities Tests Strong Jaw boosts biting moves
-00:00 +0 -2: New Abilities Tests Strong Jaw boosts biting moves [E]
-  Expected: a numeric value within <0.2> of <1.5>
-    Actual: <2.5714285714285716>
-     Which:  differs by <1.0714285714285716>
-  
-  package:matcher                                     expect
-  package:flutter_test/src/widget_tester.dart 473:18  expect
-  test\abilities_new_test.dart 122:7                  main.<fn>.<fn>
-  
-00:00 +0 -2: New Abilities Tests Tough Claws boosts contact moves
-00:00 +0 -3: New Abilities Tests Tough Claws boosts contact moves [E]
-  Expected: a numeric value within <0.15> of <1.3>
-    Actual: <1.8269230769230769>
-     Which:  differs by <0.5269230769230768>
-  
-  package:matcher                                     expect
-  package:flutter_test/src/widget_tester.dart 473:18  expect
-  test\abilities_new_test.dart 164:7                  main.<fn>.<fn>
-  
-00:00 +0 -3: New Abilities Tests Infiltrator bypasses Reflect
-00:00 +0 -4: New Abilities Tests Infiltrator bypasses Reflect [E]
-  Expected: a numeric value within <0.3> of <2.0>
-    Actual: <2.875>
-     Which:  differs by <0.875>
-  
-  package:matcher                                     expect
-  package:flutter_test/src/widget_tester.dart 473:18  expect
-  test\abilities_new_test.dart 204:7                  main.<fn>.<fn>
-  
-00:00 +0 -4: New Abilities Tests Unseen Fist bypasses Protect
-00:00 +1 -4: New Abilities Tests Super Luck increases crit rate
-Crits with Super Luck in 100 runs: 100
-00:00 +2 -4: New Abilities Tests AI Synergy Tests AI prefers Iron Fist moves
-00:00 +3 -4: Some tests failed.
+00:00 +0 -1: New Moves Comprehensive Tests Smart Strike never misses
+00:00 +1 -1: New Moves Comprehensive Tests Retaliate doubles damage if teammate fainted last turn
+00:00 +2 -1: New Moves Comprehensive Tests Endeavor equalizes HP
+00:00 +3 -1: New Moves Comprehensive Tests Nature's Madness deals 50% current HP
+00:00 +4 -1: New Moves Comprehensive Tests Brine doubles power at low HP
+00:00 +5 -1: New Moves Comprehensive Tests Solar Beam skips charge in sun
+00:00 +6 -1: New Moves Comprehensive Tests Laser Focus guaranteed crit
+00:00 +7 -1: New Moves Comprehensive Tests Brick Break shatters screens
+00:00 +8 -1: New Moves Comprehensive Tests Scale Shot lowers Defense, raises Speed
+Error playing sound: MissingPluginException(No implementation found for method getTemporaryDirectory on channel plugins.flutter.io/path_provider)
+00:00 +9 -1: New Moves Comprehensive Tests Thrash locks user
+00:00 +10 -1: New Moves Comprehensive Tests Whirlwind forces switch in Arena Battle
+00:00 +11 -1: New Moves Comprehensive Tests Meteor Beam takes two turns and boosts Power
+00:00 +12 -1: New Moves Comprehensive Tests Weather Ball changes type and doubles power in weather
+00:00 +13 -1: New Moves Comprehensive Tests Hidden Power changes type based on IVs
+00:00 +14 -1: New Moves Comprehensive Tests Multi-Attack changes type based on Memory talisman
+00:00 +15 -1: New Moves Comprehensive Tests Judgement changes type based on Plate talisman
+00:00 +16 -1: Some tests failed.

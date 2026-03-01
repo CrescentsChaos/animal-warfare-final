@@ -1,0 +1,17 @@
+00:00 +0: loading C:/Users/USER/dev/animal_warfare/test/new_moves_test.dart
+test/new_moves_test.dart:333:9: Error: No named parameter with the name 'isMultiTurn'.
+        isMultiTurn: true,
+        ^^^^^^^^^^^
+lib/models/move.dart:245:9: Context: Found this candidate, but the arguments don't match.
+  const Move({
+        ^^^^
+00:00 +0 -1: loading C:/Users/USER/dev/animal_warfare/test/new_moves_test.dart [E]
+  Failed to load "C:/Users/USER/dev/animal_warfare/test/new_moves_test.dart":
+  Compilation failed for testPath=C:/Users/USER/dev/animal_warfare/test/new_moves_test.dart: test/new_moves_test.dart:333:9: Error: No named parameter with the name 'isMultiTurn'.
+          isMultiTurn: true,
+          ^^^^^^^^^^^
+  lib/models/move.dart:245:9: Context: Found this candidate, but the arguments don't match.
+    const Move({
+          ^^^^
+  .
+00:00 +0 -1: Some tests failed.

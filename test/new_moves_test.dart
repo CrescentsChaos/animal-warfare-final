@@ -178,12 +178,14 @@ void main() {
         manager.player,
         manager.opponent,
         sacredSword,
+        ignoreRandom: true,
       );
       manager.opponent.defenseStage = 0;
       final res2 = manager.calculateDamage(
         manager.player,
         manager.opponent,
         sacredSword,
+        ignoreRandom: true,
       );
       expect(res.damage, equals(res2.damage));
     });
@@ -330,7 +332,6 @@ void main() {
         baseDamage: 120,
         type: ElementalType.rock,
         category: MoveCategory.special,
-        isMultiTurn: true,
         effects: const [MoveEffect(type: MoveEffectType.meteorBeam)],
       );
 

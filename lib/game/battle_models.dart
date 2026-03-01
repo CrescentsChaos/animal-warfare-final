@@ -237,6 +237,8 @@ class BattleOrganism {
   bool statsLoweredThisTurn = false;
   bool isMiracleEyed = false;
   bool shellTrapTriggered = false;
+  bool helpingHandBoosted = false;
+  bool isFollowMeTarget = false;
   String? lastMoveName;
 
   String get displaySprite => isDisguised && disguisedAs != null
