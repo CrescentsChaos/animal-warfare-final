@@ -140,8 +140,8 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            primaryColor.withOpacity(0.85),
-            primaryColor.withOpacity(0.3),
+            primaryColor.withValues(alpha: 0.85),
+            primaryColor.withValues(alpha: 0.3),
             const Color(0xFF0D0D1A),
           ],
           stops: const [0.0, 0.6, 1.0],
@@ -226,7 +226,7 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
                           base.scientificName,
                           style: TextStyle(
                             fontSize: 10,
-                            color: Colors.white.withOpacity(0.55),
+                            color: Colors.white.withValues(alpha: 0.55),
                             fontStyle: FontStyle.italic,
                           ),
                           maxLines: 1,
@@ -258,7 +258,7 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
                                   style: TextStyle(
                                     fontFamily: 'PressStart2P',
                                     fontSize: 7,
-                                    color: Colors.white.withOpacity(0.5),
+                                    color: Colors.white.withValues(alpha: 0.5),
                                   ),
                                 ),
                                 Text(
@@ -268,7 +268,7 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
                                   style: TextStyle(
                                     fontFamily: 'PressStart2P',
                                     fontSize: 6,
-                                    color: Colors.white.withOpacity(0.5),
+                                    color: Colors.white.withValues(alpha: 0.5),
                                   ),
                                 ),
                               ],
@@ -279,8 +279,10 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
                               child: LinearProgressIndicator(
                                 value: xpProgress,
                                 minHeight: 5,
-                                backgroundColor: Colors.white.withOpacity(0.15),
-                                color: primaryColor.withOpacity(0.9),
+                                backgroundColor: Colors.white.withValues(
+                                  alpha: 0.15,
+                                ),
+                                color: primaryColor.withValues(alpha: 0.9),
                               ),
                             ),
                           ],
@@ -315,12 +317,12 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: onPressed != null
-                ? color.withOpacity(0.25)
-                : Colors.white.withOpacity(0.05),
+                ? color.withValues(alpha: 0.25)
+                : Colors.white.withValues(alpha: 0.05),
             border: Border.all(
               color: onPressed != null
-                  ? color.withOpacity(0.5)
-                  : Colors.white.withOpacity(0.1),
+                  ? color.withValues(alpha: 0.5)
+                  : Colors.white.withValues(alpha: 0.1),
             ),
           ),
           child: Icon(
@@ -338,12 +340,14 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [color, color.withOpacity(0.6)],
+          colors: [color, color.withValues(alpha: 0.6)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: color.withOpacity(0.4), blurRadius: 8)],
+        boxShadow: [
+          BoxShadow(color: color.withValues(alpha: 0.4), blurRadius: 8),
+        ],
       ),
       child: Text(
         'LV.${_current.level}',
@@ -361,9 +365,9 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: Colors.amber.withOpacity(0.15),
+        color: Colors.amber.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: Colors.amber.withOpacity(0.4)),
+        border: Border.all(color: Colors.amber.withValues(alpha: 0.4)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -389,7 +393,7 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
     final party = widget.party!;
     return Container(
       height: 60,
-      color: Colors.black.withOpacity(0.5),
+      color: Colors.black.withValues(alpha: 0.5),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -406,12 +410,12 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
                 color: isSelected
-                    ? primaryColor.withOpacity(0.25)
-                    : Colors.white.withOpacity(0.05),
+                    ? primaryColor.withValues(alpha: 0.25)
+                    : Colors.white.withValues(alpha: 0.05),
                 border: Border.all(
                   color: isSelected
                       ? primaryColor
-                      : Colors.white.withOpacity(0.1),
+                      : Colors.white.withValues(alpha: 0.1),
                   width: isSelected ? 2 : 1,
                 ),
               ),
@@ -475,6 +479,7 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
         _infoGrid([
           ('NAME', base.name),
           ('NATURE', _current.nature.name),
+          ('PRISM TYPE', _current.teraType?.name.toUpperCase() ?? 'NONE'),
           ('LEVEL', '${_current.level}'),
           ('XP', '${_current.xp}'),
           ('NEXT LV.', _current.level >= 100 ? '-' : '${_xpToNext()} XP'),
@@ -522,7 +527,7 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1A1A2E),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.white.withOpacity(0.07)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -533,16 +538,18 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
             style: TextStyle(
               fontFamily: 'PressStart2P',
               fontSize: 6,
-              color: Colors.white.withOpacity(0.4),
+              color: Colors.white.withValues(alpha: 0.4),
             ),
           ),
           const SizedBox(height: 3),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: 'PressStart2P',
               fontSize: 9,
-              color: Colors.white,
+              color: label == 'TERA TYPE' && value != 'NONE'
+                  ? ElementalTypeX.fromString(value).color
+                  : Colors.white,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -558,7 +565,7 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1A1A2E),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.07)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -570,7 +577,7 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
               text,
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
                 height: 1.6,
               ),
             ),
@@ -689,7 +696,7 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
           style: TextStyle(
             fontFamily: 'PressStart2P',
             fontSize: 7,
-            color: Colors.white.withOpacity(0.5),
+            color: Colors.white.withValues(alpha: 0.5),
           ),
         ),
       ],
@@ -758,8 +765,8 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
                 LinearProgressIndicator(
                   value: l50Perc,
                   minHeight: 10,
-                  backgroundColor: Colors.white.withOpacity(0.06),
-                  color: Colors.white.withOpacity(0.18),
+                  backgroundColor: Colors.white.withValues(alpha: 0.06),
+                  color: Colors.white.withValues(alpha: 0.18),
                 ),
                 // current level bar
                 LinearProgressIndicator(
@@ -786,7 +793,7 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
       return Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.04),
+          color: Colors.white.withValues(alpha: 0.04),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Row(
@@ -808,9 +815,9 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: primaryColor.withOpacity(0.07),
+        color: primaryColor.withValues(alpha: 0.07),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: primaryColor.withOpacity(0.2)),
+        border: Border.all(color: primaryColor.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
@@ -905,12 +912,12 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                quality.$2.withOpacity(0.15),
-                quality.$2.withOpacity(0.05),
+                quality.$2.withValues(alpha: 0.15),
+                quality.$2.withValues(alpha: 0.05),
               ],
             ),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: quality.$2.withOpacity(0.35)),
+            border: Border.all(color: quality.$2.withValues(alpha: 0.35)),
           ),
           child: Row(
             children: [
@@ -924,7 +931,7 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
                     style: TextStyle(
                       fontFamily: 'PressStart2P',
                       fontSize: 7,
-                      color: Colors.white.withOpacity(0.5),
+                      color: Colors.white.withValues(alpha: 0.5),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -946,7 +953,7 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
                   vertical: 5,
                 ),
                 decoration: BoxDecoration(
-                  color: quality.$2.withOpacity(0.2),
+                  color: quality.$2.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -1004,7 +1011,7 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
                 value: iv / 31.0,
                 minHeight: 8,
                 color: ivColor,
-                backgroundColor: Colors.white.withOpacity(0.06),
+                backgroundColor: Colors.white.withValues(alpha: 0.06),
               ),
             ),
           ),
@@ -1057,7 +1064,7 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
             decoration: BoxDecoration(
               color: const Color(0xFF1A1A2E),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white.withOpacity(0.07)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.07)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1119,8 +1126,8 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
                                   value: ppPerc.clamp(0.0, 1.0),
                                   minHeight: 5,
                                   color: ppColor,
-                                  backgroundColor: Colors.white.withOpacity(
-                                    0.08,
+                                  backgroundColor: Colors.white.withValues(
+                                    alpha: 0.08,
                                   ),
                                 ),
                               ),
@@ -1143,9 +1150,11 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
             margin: const EdgeInsets.only(bottom: 10),
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: _primaryTypeColor.withOpacity(0.07),
+              color: _primaryTypeColor.withValues(alpha: 0.07),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: _primaryTypeColor.withOpacity(0.2)),
+              border: Border.all(
+                color: _primaryTypeColor.withValues(alpha: 0.2),
+              ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1170,7 +1179,7 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
                     ab!.description,
                     style: TextStyle(
                       fontSize: 11,
-                      color: Colors.white.withOpacity(0.65),
+                      color: Colors.white.withValues(alpha: 0.65),
                       height: 1.5,
                     ),
                   ),
@@ -1187,7 +1196,7 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.07),
+        color: Colors.white.withValues(alpha: 0.07),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Column(
@@ -1197,7 +1206,7 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
             style: TextStyle(
               fontFamily: 'PressStart2P',
               fontSize: 6,
-              color: Colors.white.withOpacity(0.4),
+              color: Colors.white.withValues(alpha: 0.4),
             ),
           ),
           const SizedBox(height: 2),
@@ -1285,9 +1294,9 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: color.withOpacity(0.15),
+                        color: color.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: color.withOpacity(0.3)),
+                        border: Border.all(color: color.withValues(alpha: 0.3)),
                       ),
                       child: Text(
                         '+$bonus stat',
@@ -1307,7 +1316,7 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
                     value: (kv / maxStat).clamp(0.0, 1.0),
                     minHeight: 8,
                     color: kv >= maxStat ? Colors.amberAccent : color,
-                    backgroundColor: Colors.white.withOpacity(0.06),
+                    backgroundColor: Colors.white.withValues(alpha: 0.06),
                   ),
                 ),
               ],
@@ -1321,12 +1330,14 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                _primaryTypeColor.withOpacity(0.12),
-                _primaryTypeColor.withOpacity(0.04),
+                _primaryTypeColor.withValues(alpha: 0.12),
+                _primaryTypeColor.withValues(alpha: 0.04),
               ],
             ),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: _primaryTypeColor.withOpacity(0.25)),
+            border: Border.all(
+              color: _primaryTypeColor.withValues(alpha: 0.25),
+            ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1366,7 +1377,7 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
                   value: (total / maxTotal).clamp(0.0, 1.0),
                   minHeight: 10,
                   color: _primaryTypeColor,
-                  backgroundColor: Colors.white.withOpacity(0.06),
+                  backgroundColor: Colors.white.withValues(alpha: 0.06),
                 ),
               ),
             ],
@@ -1397,7 +1408,7 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
       decoration: BoxDecoration(
         color: const Color(0xFF1A1A2E),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [
@@ -1413,7 +1424,7 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
                     style: TextStyle(
                       fontFamily: 'PressStart2P',
                       fontSize: 8,
-                      color: Colors.white.withOpacity(0.5),
+                      color: Colors.white.withValues(alpha: 0.5),
                     ),
                   ),
                 ],
@@ -1435,7 +1446,7 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
             child: LinearProgressIndicator(
               value: perc,
               minHeight: 12,
-              backgroundColor: Colors.white.withOpacity(0.05),
+              backgroundColor: Colors.white.withValues(alpha: 0.05),
               color: color,
             ),
           ),
@@ -1485,9 +1496,9 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
       decoration: BoxDecoration(
-        color: c.withOpacity(0.2),
+        color: c.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: c.withOpacity(0.5)),
+        border: Border.all(color: c.withValues(alpha: 0.5)),
       ),
       child: Text(
         type.name.toUpperCase(),
@@ -1513,50 +1524,7 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
 
   // ─── TYPE COLORS ──────────────────────────────────────────────────────────
 
-  Color _typeColor(ElementalType type) {
-    switch (type) {
-      case ElementalType.basic:
-        return const Color(0xFFA8A878);
-      case ElementalType.flying:
-        return const Color(0xFFA98FF3);
-      case ElementalType.aquatic:
-        return const Color(0xFF6890F0);
-      case ElementalType.earth:
-        return const Color(0xFFE2BF65);
-      case ElementalType.cryo:
-        return const Color(0xFF98D8D8);
-      case ElementalType.toxic:
-        return const Color(0xFFA33EA1);
-      case ElementalType.rock:
-        return const Color(0xFFB8A038);
-      case ElementalType.arthropod:
-        return const Color(0xFFA8B820);
-      case ElementalType.electric:
-        return const Color(0xFFF8D030);
-      case ElementalType.spectral:
-        return const Color(0xFF705898);
-      case ElementalType.martial:
-        return const Color(0xFFC03028);
-      case ElementalType.blaze:
-        return const Color(0xFFF08030);
-      case ElementalType.grass:
-        return const Color(0xFF78C850);
-      case ElementalType.mystic:
-        return const Color(0xFFEE99AC);
-      case ElementalType.darkness:
-        return const Color(0xFF705848);
-      case ElementalType.drake:
-        return const Color(0xFF7038F8);
-      case ElementalType.metal:
-        return const Color(0xFFB8B8D0);
-      case ElementalType.aura:
-        return const Color(0xFFF0F560);
-      case ElementalType.sound:
-        return const Color(0xFF9966CC);
-      case ElementalType.holy:
-        return const Color(0xFFFFD700);
-    }
-  }
+  Color _typeColor(ElementalType type) => type.color;
 }
 
 // ── SPRITE WIDGET ──────────────────────────────────────────────────────────────

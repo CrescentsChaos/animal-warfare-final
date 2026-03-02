@@ -33,46 +33,46 @@ extension ElementalTypeX on ElementalType {
 
   Color get color {
     switch (this) {
-      case ElementalType.blaze:
-        return Colors.orange;
-      case ElementalType.aquatic:
-        return Colors.blue;
-      case ElementalType.grass:
-        return Colors.green;
-      case ElementalType.electric:
-        return Colors.yellow;
-      case ElementalType.cryo:
-        return Colors.cyan;
-      case ElementalType.martial:
-        return Colors.redAccent;
-      case ElementalType.toxic:
-        return Colors.purple;
-      case ElementalType.earth:
-        return Colors.brown;
+      case ElementalType.basic:
+        return const Color.fromARGB(255, 168, 168, 130);
       case ElementalType.flying:
-        return Colors.lightBlueAccent;
-      case ElementalType.mystic:
-        return Colors.pinkAccent;
-      case ElementalType.arthropod:
-        return Colors.lightGreen;
+        return const Color(0xFFA98FF3);
+      case ElementalType.aquatic:
+        return const Color.fromARGB(255, 46, 60, 255);
+      case ElementalType.earth:
+        return const Color(0xFFE2BF65);
+      case ElementalType.cryo:
+        return const Color.fromARGB(255, 0, 247, 255);
+      case ElementalType.toxic:
+        return const Color(0xFFA33EA1);
       case ElementalType.rock:
-        return Colors.grey;
-      case ElementalType.darkness:
-        return Colors.indigo;
+        return const Color.fromARGB(255, 158, 97, 5);
+      case ElementalType.arthropod:
+        return const Color.fromARGB(255, 111, 207, 0);
+      case ElementalType.electric:
+        return const Color.fromARGB(255, 255, 251, 27);
       case ElementalType.spectral:
-        return Colors.deepPurpleAccent;
-      case ElementalType.metal:
-        return Colors.blueGrey;
-      case ElementalType.aura:
-        return Colors.teal;
-      case ElementalType.sound:
-        return Colors.deepOrange;
-      case ElementalType.holy:
-        return Colors.amber;
+        return const Color.fromARGB(255, 91, 11, 240);
+      case ElementalType.martial:
+        return const Color.fromARGB(255, 160, 24, 0);
+      case ElementalType.blaze:
+        return const Color.fromARGB(255, 226, 72, 0);
+      case ElementalType.grass:
+        return const Color.fromARGB(255, 22, 131, 0);
+      case ElementalType.mystic:
+        return const Color.fromARGB(255, 255, 81, 162);
+      case ElementalType.darkness:
+        return const Color.fromARGB(255, 37, 36, 37);
       case ElementalType.drake:
-        return Colors.deepPurple;
-      default:
-        return Colors.white70;
+        return const Color.fromARGB(255, 76, 0, 255);
+      case ElementalType.metal:
+        return const Color.fromARGB(255, 172, 168, 168);
+      case ElementalType.aura:
+        return const Color.fromARGB(255, 229, 255, 79);
+      case ElementalType.sound:
+        return const Color.fromARGB(255, 166, 70, 255);
+      case ElementalType.holy:
+        return const Color.fromARGB(255, 255, 208, 0);
     }
   }
 }

@@ -96,7 +96,7 @@ class _MainScreenState extends State<MainScreen> {
           style: AppTextStyles.body(context, baseSize: 16.0, color: textColor),
         ),
         style: ElevatedButton.styleFrom(
-          backgroundColor: buttonColor.withOpacity(0.9),
+          backgroundColor: buttonColor.withValues(alpha: 0.9),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(5.0),
             // 🚨 EDITED: Use AppColors.highlightColor
@@ -134,7 +134,7 @@ class _MainScreenState extends State<MainScreen> {
                 image: const AssetImage('assets/biomes/coastal-bg.png'),
                 fit: BoxFit.cover,
                 colorFilter: ColorFilter.mode(
-                  Colors.black.withOpacity(0.7),
+                  Colors.black.withValues(alpha: 0.7),
                   BlendMode.darken,
                 ),
               ),
@@ -158,7 +158,7 @@ class _MainScreenState extends State<MainScreen> {
                         .copyWith(
                           shadows: [
                             Shadow(
-                              color: Colors.black.withOpacity(0.9),
+                              color: Colors.black.withValues(alpha: 0.9),
                               blurRadius: 4,
                               offset: const Offset(3, 3),
                             ),
@@ -233,11 +233,11 @@ class _MainScreenState extends State<MainScreen> {
                         AppTextStyles.small(
                           context,
                           baseSize: 12.0,
-                          color: AppColors.highlightColor.withOpacity(0.8),
+                          color: AppColors.highlightColor.withValues(alpha: 0.8),
                         ).copyWith(
                           shadows: [
                             Shadow(
-                              color: Colors.black.withOpacity(0.5),
+                              color: Colors.black.withValues(alpha: 0.5),
                               offset: const Offset(1, 1),
                             ),
                           ],

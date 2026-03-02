@@ -37,7 +37,7 @@ class AnidexDetailsSheet {
             borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.8),
+                color: Colors.black.withValues(alpha: 0.8),
                 blurRadius: 40,
                 offset: const Offset(0, -10),
               ),
@@ -199,7 +199,7 @@ class AnidexDetailsSheet {
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [color.withOpacity(0.2), Colors.transparent],
+              colors: [color.withValues(alpha: 0.2), Colors.transparent],
             ),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
           ),
@@ -214,7 +214,7 @@ class AnidexDetailsSheet {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
-                    colors: [color.withOpacity(0.3), Colors.transparent],
+                    colors: [color.withValues(alpha: 0.3), Colors.transparent],
                   ),
                 ),
                 child: Hero(
@@ -243,7 +243,7 @@ class AnidexDetailsSheet {
                     ? org.scientificName.toUpperCase()
                     : 'CODE: [UNKNOWN]',
                 style: TextStyle(
-                  color: color.withOpacity(0.5),
+                  color: color.withValues(alpha: 0.5),
                   fontSize: 10,
                   letterSpacing: 2,
                   fontWeight: FontWeight.bold,
@@ -257,12 +257,12 @@ class AnidexDetailsSheet {
                 ),
                 decoration: BoxDecoration(
                   color: discovered
-                      ? (isCaptured ? color.withOpacity(0.2) : Colors.white10)
+                      ? (isCaptured ? color.withValues(alpha: 0.2) : Colors.white10)
                       : Colors.white10,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: discovered
-                        ? (isCaptured ? color.withOpacity(0.4) : Colors.white24)
+                        ? (isCaptured ? color.withValues(alpha: 0.4) : Colors.white24)
                         : Colors.white10,
                   ),
                 ),
@@ -292,9 +292,9 @@ class AnidexDetailsSheet {
       padding: const EdgeInsets.all(20),
       margin: const EdgeInsets.only(bottom: 24),
       decoration: BoxDecoration(
-        color: Colors.red.withOpacity(0.1),
+        color: Colors.red.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.redAccent.withOpacity(0.3)),
+        border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
       ),
       child: const Row(
         children: [
@@ -350,7 +350,7 @@ class AnidexDetailsSheet {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: AppColors.highlightColor.withOpacity(0.3),
+                          color: AppColors.highlightColor.withValues(alpha: 0.3),
                           width: 1,
                         ),
                       ),
@@ -362,7 +362,7 @@ class AnidexDetailsSheet {
                             Image.asset(
                               assetPath,
                               fit: BoxFit.cover,
-                              color: Colors.black.withOpacity(0.5),
+                              color: Colors.black.withValues(alpha: 0.5),
                               colorBlendMode: BlendMode.darken,
                               errorBuilder: (context, error, stackTrace) =>
                                   Container(
@@ -412,7 +412,7 @@ class AnidexDetailsSheet {
               ? org.description
               : 'NO FIELD DATA AVAILABLE FOR THIS SPECIMEN.',
           style: TextStyle(
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
             fontSize: 14,
             height: 1.6,
             letterSpacing: 0.5,
@@ -562,7 +562,7 @@ class AnidexDetailsSheet {
                     fontWeight: FontWeight.bold,
                     fontFamily: 'PressStart2P',
                     shadows: [
-                      Shadow(color: color.withOpacity(0.5), blurRadius: 4),
+                      Shadow(color: color.withValues(alpha: 0.5), blurRadius: 4),
                     ],
                   ),
                 ),
@@ -577,7 +577,7 @@ class AnidexDetailsSheet {
                 child: LinearProgressIndicator(
                   value: basePerc,
                   color: Colors.white38,
-                  backgroundColor: Colors.white.withOpacity(0.05),
+                  backgroundColor: Colors.white.withValues(alpha: 0.05),
                   minHeight: 12,
                 ),
               ),
@@ -586,7 +586,7 @@ class AnidexDetailsSheet {
                   borderRadius: BorderRadius.circular(4),
                   child: LinearProgressIndicator(
                     value: currentPerc,
-                    color: color.withOpacity(0.7),
+                    color: color.withValues(alpha: 0.7),
                     backgroundColor: Colors.transparent,
                     minHeight: 12,
                   ),
@@ -614,9 +614,9 @@ class AnidexDetailsSheet {
             margin: const EdgeInsets.only(bottom: 12),
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.03),
+              color: Colors.white.withValues(alpha: 0.03),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white.withOpacity(0.05)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -643,7 +643,7 @@ class AnidexDetailsSheet {
                 Text(
                   ab?.description ?? 'EFFECTS UNKNOWN FOR THIS SUBSYSTEM.',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.4),
+                    color: Colors.white.withValues(alpha: 0.4),
                     fontSize: 11,
                     height: 1.5,
                   ),
@@ -673,9 +673,9 @@ class AnidexDetailsSheet {
         const SizedBox(height: 16),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.02),
+            color: Colors.white.withValues(alpha: 0.02),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white.withOpacity(0.05)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           ),
           child: Column(
             children: [
@@ -746,7 +746,7 @@ class AnidexDetailsSheet {
                     decoration: BoxDecoration(
                       border: Border(
                         bottom: BorderSide(
-                          color: Colors.white.withOpacity(0.05),
+                          color: Colors.white.withValues(alpha: 0.05),
                         ),
                       ),
                     ),
@@ -828,12 +828,12 @@ class AnidexDetailsSheet {
                                 decoration: BoxDecoration(
                                   color: _getTypeColor(
                                     move.type,
-                                  ).withOpacity(0.2),
+                                  ).withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(4),
                                   border: Border.all(
                                     color: _getTypeColor(
                                       move.type,
-                                    ).withOpacity(0.5),
+                                    ).withValues(alpha: 0.5),
                                   ),
                                 ),
                                 child: Text(
@@ -975,9 +975,9 @@ class AnidexDetailsSheet {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.highlightColor.withOpacity(0.3)),
+          border: Border.all(color: AppColors.highlightColor.withValues(alpha: 0.3)),
         ),
         child: Row(
           children: const [

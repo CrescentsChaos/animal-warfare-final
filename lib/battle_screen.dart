@@ -30,7 +30,6 @@ import 'package:animal_warfare/widgets/terrain_overlay.dart';
 import 'package:animal_warfare/widgets/item_icon.dart';
 import 'package:animal_warfare/widgets/anidex_details_sheet.dart';
 import 'package:animal_warfare/widgets/type_matchup_sheet.dart';
-import 'package:animal_warfare/main_screen.dart';
 
 class BattleScreen extends StatelessWidget {
   final CapturedOrganism playerOrganism;
@@ -703,17 +702,17 @@ class _BattleScreenContentState extends State<BattleScreenContent>
             filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
             child: Container(
               decoration: BoxDecoration(
-                color: secondaryColor.withOpacity(0.85),
+                color: secondaryColor.withValues(alpha: 0.85),
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(24),
                 ),
                 border: Border.all(
-                  color: themeColor.withOpacity(0.5),
+                  color: themeColor.withValues(alpha: 0.5),
                   width: 1.5,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.5),
+                    color: Colors.black.withValues(alpha: 0.5),
                     blurRadius: 20,
                     spreadRadius: 5,
                   ),
@@ -728,7 +727,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                       width: 40,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.3),
+                        color: Colors.white.withValues(alpha: 0.3),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -738,7 +737,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          primaryColor.withOpacity(0.6),
+                          primaryColor.withValues(alpha: 0.6),
                           Colors.transparent,
                         ],
                         begin: Alignment.topCenter,
@@ -767,7 +766,9 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                                     letterSpacing: 2.0,
                                     shadows: [
                                       Shadow(
-                                        color: themeColor.withOpacity(0.8),
+                                        color: themeColor.withValues(
+                                          alpha: 0.8,
+                                        ),
                                         blurRadius: 8,
                                       ),
                                     ],
@@ -785,7 +786,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: Colors.white.withOpacity(0.2),
+                                  color: Colors.white.withValues(alpha: 0.2),
                                 ),
                               ),
                               child: const Icon(
@@ -830,10 +831,12 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                                       vertical: 4,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: themeColor.withOpacity(0.2),
+                                      color: themeColor.withValues(alpha: 0.2),
                                       borderRadius: BorderRadius.circular(4),
                                       border: Border.all(
-                                        color: themeColor.withOpacity(0.4),
+                                        color: themeColor.withValues(
+                                          alpha: 0.4,
+                                        ),
                                         width: 1,
                                       ),
                                     ),
@@ -855,7 +858,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                                       decoration: BoxDecoration(
                                         gradient: LinearGradient(
                                           colors: [
-                                            themeColor.withOpacity(0.5),
+                                            themeColor.withValues(alpha: 0.5),
                                             Colors.transparent,
                                           ],
                                         ),
@@ -878,15 +881,17 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                                   decoration: BoxDecoration(
                                     gradient: LinearGradient(
                                       colors: [
-                                        Colors.black.withOpacity(0.4),
-                                        Colors.black.withOpacity(0.2),
+                                        Colors.black.withValues(alpha: 0.4),
+                                        Colors.black.withValues(alpha: 0.2),
                                       ],
                                       begin: Alignment.topLeft,
                                       end: Alignment.bottomRight,
                                     ),
                                     borderRadius: BorderRadius.circular(10),
                                     border: Border.all(
-                                      color: Colors.white.withOpacity(0.05),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.05,
+                                      ),
                                       width: 1,
                                     ),
                                   ),
@@ -899,7 +904,9 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                                         child: Icon(
                                           Icons.arrow_right,
                                           size: 16,
-                                          color: themeColor.withOpacity(0.7),
+                                          color: themeColor.withValues(
+                                            alpha: 0.7,
+                                          ),
                                         ),
                                       ),
                                       const SizedBox(width: 8),
@@ -907,8 +914,8 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                                         child: Text(
                                           entry,
                                           style: TextStyle(
-                                            color: Colors.white.withOpacity(
-                                              0.95,
+                                            color: Colors.white.withValues(
+                                              alpha: 0.95,
                                             ),
                                             fontSize: isNarrow ? 10 : 11,
                                             fontFamily: 'PressStart2P',
@@ -1044,7 +1051,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
 
     // Moved _handleBattleEnd to _handleStateTriggers (listener) to avoid build-phase side effects.
 
-    final overlayColor = Colors.black.withOpacity(0.55);
+    final overlayColor = Colors.black.withValues(alpha: 0.55);
 
     // Initialize/Update listener
     battleManager.onAttack = _onAttack;
@@ -1077,13 +1084,13 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                     colorFilter:
                         widget.timeOfDay == 'day' || widget.timeOfDay == null
                         ? ColorFilter.mode(
-                            Colors.black.withOpacity(0.35),
+                            Colors.black.withValues(alpha: 0.35),
                             BlendMode.darken,
                           )
                         : ColorFilter.mode(
                             widget.timeOfDay == 'evening'
-                                ? Colors.orangeAccent.withOpacity(0.3)
-                                : Colors.indigo[900]!.withOpacity(0.5),
+                                ? Colors.orangeAccent.withValues(alpha: 0.3)
+                                : Colors.indigo[900]!.withValues(alpha: 0.5),
                             BlendMode.darken,
                           ),
                   ),
@@ -1555,7 +1562,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(
-        color: Colors.blue.withOpacity(0.7),
+        color: Colors.blue.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(6),
         border: Border.all(color: Colors.white70),
       ),
@@ -1574,7 +1581,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(
-        color: Colors.purple.withOpacity(0.7),
+        color: Colors.purple.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(6),
         border: Border.all(color: Colors.white70),
       ),
@@ -1594,12 +1601,12 @@ class _BattleScreenContentState extends State<BattleScreenContent>
       margin: const EdgeInsets.symmetric(horizontal: 1, vertical: 1),
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.85),
+        color: color.withValues(alpha: 0.85),
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: Colors.white.withOpacity(0.5)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.5)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 2,
             offset: const Offset(1, 1),
           ),
@@ -1710,7 +1717,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
         border: Border.all(color: _getBiomeThemeColor(), width: 2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.4),
+            color: Colors.black.withValues(alpha: 0.4),
             blurRadius: 6,
             offset: const Offset(2, 2),
           ),
@@ -1931,7 +1938,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
         border: Border.all(color: _getBiomeThemeColor(), width: 2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.4),
+            color: Colors.black.withValues(alpha: 0.4),
             blurRadius: 6,
             offset: const Offset(2, 2),
           ),
@@ -2149,7 +2156,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                _getBiomePrimaryColor().withOpacity(0.8),
+                _getBiomePrimaryColor().withValues(alpha: 0.8),
                 _getBiomeSecondaryColor(),
               ],
               begin: Alignment.topLeft,
@@ -2213,7 +2220,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                               borderRadius: BorderRadius.circular(4),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.3),
+                                  color: Colors.black.withValues(alpha: 0.3),
                                   blurRadius: 2,
                                   offset: const Offset(1, 1),
                                 ),
@@ -2243,6 +2250,50 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                 ],
               ),
               const SizedBox(height: 10),
+
+              // Tera Type
+              if (bo.organism.teraType != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10.0),
+                  child: Row(
+                    children: [
+                      const Text(
+                        'TERA TYPE: ',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 9,
+                          fontFamily: 'PressStart2P',
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: bo.organism.teraType!.color,
+                          borderRadius: BorderRadius.circular(4),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.3),
+                              blurRadius: 2,
+                              offset: const Offset(1, 1),
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          bo.organism.teraType!.name.toUpperCase(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 8,
+                            fontFamily: 'PressStart2P',
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
 
               // Nature
               Padding(
@@ -2276,9 +2327,11 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.3),
+                  color: Colors.black.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.green.withOpacity(0.3)),
+                  border: Border.all(
+                    color: Colors.green.withValues(alpha: 0.3),
+                  ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -2386,7 +2439,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.grey.withOpacity(0.3),
+                        color: Colors.grey.withValues(alpha: 0.3),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: const Text(
@@ -2427,7 +2480,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                                     vertical: 2,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: se.color.withOpacity(0.5),
+                                    color: se.color.withValues(alpha: 0.5),
                                     borderRadius: BorderRadius.circular(4),
                                     border: Border.all(color: se.color),
                                   ),
@@ -2578,6 +2631,9 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                 const SizedBox(height: 6),
                 ...bo.organism.selectedMoveNames.map((moveName) {
                   final move = Move.findByName(moveName);
+                  final displayType = move != null
+                      ? (bm?.getDisplayType(bo, move) ?? move.type)
+                      : ElementalType.basic;
                   final curStam = bo.organism.moveStamina[moveName] ?? 0;
                   final maxStam = move?.stamina ?? 0;
                   return Padding(
@@ -2585,13 +2641,36 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          moveName.toUpperCase(),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 9,
-                            fontFamily: 'PressStart2P',
-                          ),
+                        Row(
+                          children: [
+                            Text(
+                              moveName.toUpperCase(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 9,
+                                fontFamily: 'PressStart2P',
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: _getTypeColor(displayType),
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                              child: Text(
+                                displayType.name.toUpperCase().substring(0, 3),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 6,
+                                  fontFamily: 'PressStart2P',
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                         Text(
                           '$curStam/$maxStam',
@@ -2718,7 +2797,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             style: TextButton.styleFrom(
-              backgroundColor: _getBiomePrimaryColor().withOpacity(0.3),
+              backgroundColor: _getBiomePrimaryColor().withValues(alpha: 0.3),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             ),
             child: Text(
@@ -2801,12 +2880,12 @@ class _BattleScreenContentState extends State<BattleScreenContent>
       child: Container(
         padding: EdgeInsets.all(isNarrow ? 10 : 16),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.85),
+          color: Colors.black.withValues(alpha: 0.85),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: _getBiomeThemeColor(), width: 2),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.black.withValues(alpha: 0.5),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -2912,8 +2991,8 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           children: [
             _buildDetailRow(
               'TYPE:',
-              move.type.name.toUpperCase(),
-              _getTypeColor(move.type),
+              bm.getDisplayType(bm.player, move).name.toUpperCase(),
+              _getTypeColor(bm.getDisplayType(bm.player, move)),
             ),
             const SizedBox(height: 8),
             _buildDetailRow(
@@ -2986,7 +3065,8 @@ class _BattleScreenContentState extends State<BattleScreenContent>
         battleManager.player.mustRecharge ||
         battleManager.player.chargingMove != null ||
         battleManager.player.semiInvulnerable != null ||
-        battleManager.player.isInvulnerable;
+        battleManager.player.isInvulnerable ||
+        battleManager.isProcessing;
 
     return Container(
       margin: EdgeInsets.fromLTRB(
@@ -3002,7 +3082,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
         border: Border.all(color: _getBiomeThemeColor(), width: 2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.4),
+            color: Colors.black.withValues(alpha: 0.4),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -3061,7 +3141,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                         style: TextStyle(
                           fontSize: isNarrow ? 8 : 10,
                           fontFamily: 'PressStart2P',
-                          color: Colors.white.withOpacity(0.9),
+                          color: Colors.white.withValues(alpha: 0.9),
                         ),
                       ),
                     ],
@@ -3086,7 +3166,11 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                           ? [Move.findOrCreate('Struggle')]
                           : battleManager.playerMoves)
                       .map((move) {
-                        final typeColor = _getTypeColor(move.type);
+                        final displayType = battleManager.getDisplayType(
+                          battleManager.player,
+                          move,
+                        );
+                        final typeColor = _getTypeColor(displayType);
                         final effectiveness = _calculateMoveEffectiveness(
                           move,
                           battleManager.opponent,
@@ -3131,10 +3215,12 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                               borderRadius: BorderRadius.circular(8),
                               side: BorderSide(
                                 color: !isValid
-                                    ? Colors.grey.withOpacity(0.3)
+                                    ? Colors.grey.withValues(alpha: 0.3)
                                     : (isSuggested
                                           ? Colors.yellowAccent
-                                          : Colors.white.withOpacity(0.5)),
+                                          : Colors.white.withValues(
+                                              alpha: 0.5,
+                                            )),
                                 width: isSuggested ? 3 : 2,
                               ),
                             ),
@@ -3177,6 +3263,27 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
+                                    // Type Badge
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 3,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.black26,
+                                        borderRadius: BorderRadius.circular(2),
+                                      ),
+                                      child: Text(
+                                        displayType.name
+                                            .toUpperCase()
+                                            .substring(0, 3),
+                                        style: const TextStyle(
+                                          fontSize: 6,
+                                          fontFamily: 'PressStart2P',
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
                                     // Category Badge
                                     Container(
                                       padding: const EdgeInsets.symmetric(
@@ -3201,17 +3308,20 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                                     ),
                                     // Stamina
                                     Text(
-                                      '${battleManager.playerOrganism.moveStamina[move.name] ?? 0}/${move.stamina}',
+                                      move.isTitanizeMove
+                                          ? '99/99'
+                                          : '${battleManager.playerOrganism.moveStamina[move.name] ?? 0}/${move.stamina}',
                                       style: TextStyle(
                                         fontSize: isNarrow ? 7 : 8,
                                         fontFamily: 'PressStart2P',
                                         color:
-                                            (battleManager
-                                                        .playerOrganism
-                                                        .moveStamina[move
-                                                        .name] ??
-                                                    0) >
-                                                0
+                                            (move.isTitanizeMove ||
+                                                (battleManager
+                                                            .playerOrganism
+                                                            .moveStamina[move
+                                                            .name] ??
+                                                        0) >
+                                                    0)
                                             ? Colors.white
                                             : Colors.redAccent,
                                         shadows: [
@@ -3263,6 +3373,118 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                       })
                       .toList(),
             ),
+          // ============================================================
+          // GIMMICK BUTTONS: Titanize and Prismorph
+          // ============================================================
+          Builder(
+            builder: (context) {
+              final bm = battleManager;
+              final p = bm.player;
+              final canTitanize =
+                  !p.hasTitanizedThisBattle &&
+                  !p.hasPrismorphedThisBattle &&
+                  !bm.isProcessing;
+              final canPrismorph =
+                  !bm.playerPrismorphUsed &&
+                  !p.hasPrismorphedThisBattle &&
+                  p.organism.teraType != null &&
+                  !bm.isProcessing;
+              // If gimmick is done AND not currently active, hide entirely
+              if (!canTitanize &&
+                  !p.isTitanized &&
+                  !canPrismorph &&
+                  !p.isPrismorphed) {
+                return const SizedBox.shrink();
+              }
+              return Padding(
+                padding: const EdgeInsets.only(top: 6.0),
+                child: Row(
+                  children: [
+                    if (canTitanize || p.isTitanized)
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          icon: const Text('⚡', style: TextStyle(fontSize: 16)),
+                          label: Text(
+                            p.isTitanized
+                                ? 'TITANIZED (${p.titanizeTurnsLeft})'
+                                : 'TITANIZE',
+                            style: TextStyle(
+                              fontFamily: 'PressStart2P',
+                              fontSize: isNarrow ? 7 : 9,
+                            ),
+                          ),
+                          onPressed: canTitanize
+                              ? () => bm.activateTitanize(isPlayer: true)
+                              : null,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: p.isTitanized
+                                ? const Color(0xFFCC0000)
+                                : const Color(0xFF880000),
+                            foregroundColor: Colors.white,
+                            disabledBackgroundColor: const Color(
+                              0xFFCC0000,
+                            ).withValues(alpha: 0.5),
+                            disabledForegroundColor: Colors.white54,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              side: BorderSide(
+                                color: p.isTitanized
+                                    ? Colors.redAccent
+                                    : Colors.red.withValues(alpha: 0.6),
+                                width: 2,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    if ((canTitanize || p.isTitanized) &&
+                        (canPrismorph || p.isPrismorphed))
+                      const SizedBox(width: 4),
+                    if (canPrismorph || p.isPrismorphed)
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          icon: const Text(
+                            '💎',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                          label: Text(
+                            p.isPrismorphed
+                                ? 'PRISMORPH [${p.organism.teraType?.name ?? '?'}]'
+                                : 'PRISMORPH',
+                            style: TextStyle(
+                              fontFamily: 'PressStart2P',
+                              fontSize: isNarrow ? 7 : 9,
+                            ),
+                          ),
+                          onPressed: canPrismorph
+                              ? () => bm.activatePrismorph(isPlayer: true)
+                              : null,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: p.isPrismorphed
+                                ? const Color(0xFF7B00D4)
+                                : const Color(0xFF4A0080),
+                            foregroundColor: Colors.white,
+                            disabledBackgroundColor: const Color(
+                              0xFF7B00D4,
+                            ).withValues(alpha: 0.5),
+                            disabledForegroundColor: Colors.white54,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              side: BorderSide(
+                                color: p.isPrismorphed
+                                    ? Colors.purpleAccent
+                                    : Colors.purple.withValues(alpha: 0.6),
+                                width: 2,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            },
+          ),
           const SizedBox(height: 6),
           Row(
             children: [
@@ -3689,8 +3911,19 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               moneyEarned = _calculateWildMoneyReward(
                 battleManager.opponent.organism.baseOrganism,
               );
-              await userState.addMoney(moneyEarned);
             }
+
+            // Amulet Coin
+            bool hasAmuletCoin = battleManager.playerTeam.any(
+              (org) =>
+                  org.equippedTalisman != null &&
+                  org.equippedTalisman!.name == 'Amulet Coin',
+            );
+            if (hasAmuletCoin) {
+              moneyEarned *= 2;
+            }
+
+            await userState.addMoney(moneyEarned);
           }
         }
 
@@ -3787,16 +4020,16 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               (battleManager.result == BattleResult.loss ||
                   battleManager.result == BattleResult.fled)) {
             // Roguelike defeat/forfeit: clean up and go to Arena menu
-            await userState.endRogueRun();
-            if (!context.mounted) return;
 
-            // Use a single pushAndRemoveUntil to reset the stack stably.
-            // We'll return to MainScreen. Chaining multiple pushes on a
-            // cleaning context causes soft-locks (black screens).
+            // FIX: Use a single pushAndRemoveUntil to reset the stack stably BEFORE ending the run.
+            // Chaining multiple pushes on a cleaning context causes soft-locks (black screens).
+            // By navigating first, the underlying RogueHubScreen isn't suddenly left without a Rogue state.
             Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(builder: (ctx) => const MainScreen()),
               (route) => false,
             );
+
+            await userState.endRogueRun();
           } else if ((battleManager.result == BattleResult.win ||
                   battleManager.result == BattleResult.capture) &&
               widget.isRogueMode) {
@@ -3932,7 +4165,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
       builder: (ctx) => Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: _getBiomeSecondaryColor().withOpacity(0.95),
+          color: _getBiomeSecondaryColor().withValues(alpha: 0.95),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           border: Border.all(color: _getBiomeThemeColor(), width: 2),
         ),
@@ -4111,7 +4344,7 @@ class _CaptureReplaceDialog extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.cyan.shade900.withOpacity(0.5),
+        color: Colors.cyan.shade900.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.cyanAccent, width: 2),
       ),
@@ -4481,7 +4714,7 @@ class _BattleResultDialog extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 2),
       padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.3),
+        color: Colors.black.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Row(
@@ -4560,7 +4793,7 @@ class _BattleResultDialog extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.3),
+        color: Colors.black.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: Colors.white10),
       ),
@@ -4819,7 +5052,7 @@ class _BattleResultDialog extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.4),
+                    color: Colors.black.withValues(alpha: 0.4),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: Colors.white10),
                   ),
@@ -4862,7 +5095,7 @@ class _BattleResultDialog extends StatelessWidget {
                         Text(
                           'TEAM GAINED XP',
                           style: TextStyle(
-                            color: Colors.greenAccent.withOpacity(0.8),
+                            color: Colors.greenAccent.withValues(alpha: 0.8),
                             fontFamily: 'PressStart2P',
                             fontSize: 8,
                           ),
@@ -5045,7 +5278,7 @@ class _BattleResultDialog extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: primaryColor,
                 foregroundColor: Colors.white,
-                side: BorderSide(color: titleColor.withOpacity(0.5)),
+                side: BorderSide(color: titleColor.withValues(alpha: 0.5)),
                 padding: const EdgeInsets.symmetric(
                   horizontal: 32,
                   vertical: 16,
@@ -5236,12 +5469,12 @@ class _BattleSpriteState extends State<_BattleSprite>
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.85),
+                color: Colors.black.withValues(alpha: 0.85),
                 borderRadius: BorderRadius.circular(4),
                 border: Border.all(color: Colors.amber, width: 1.5),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.5),
+                    color: Colors.black.withValues(alpha: 0.5),
                     blurRadius: 2,
                     offset: const Offset(1, 1),
                   ),
@@ -5379,7 +5612,7 @@ class _BattleSpriteState extends State<_BattleSprite>
     );
 
     // Sprite Outline Logic
-    final spriteOutlineColor = Colors.black.withOpacity(0.8);
+    final spriteOutlineColor = Colors.black.withValues(alpha: 0.8);
     const double outlineOffset = 1.0;
 
     final outlineImage = ColorFiltered(
@@ -5437,6 +5670,60 @@ class _BattleSpriteState extends State<_BattleSprite>
       );
     }
 
+    // Gimmick Visuals
+    // Gimmick Visuals (Shaders/Tints only, scaling handled in group)
+    if (bo.isTitanized) {
+      processedSprite = Stack(
+        alignment: Alignment.center,
+        children: [
+          processedSprite,
+          // Red shimmer overlay
+          Positioned.fill(
+            child: ColorFiltered(
+              colorFilter: const ColorFilter.mode(
+                Color(0x44FF1111), // Translucent red
+                BlendMode.srcATop,
+              ),
+              child: processedSprite,
+            ),
+          ),
+        ],
+      );
+    }
+    // Prismorph: rainbow/crystal shimmer overlay
+    else if (bo.isPrismorphed) {
+      final baseSprite = processedSprite;
+      processedSprite = Stack(
+        alignment: Alignment.center,
+        children: [
+          baseSprite,
+          // Prismatic shimmer (animated gradient overlay)
+          Positioned.fill(
+            child: AnimatedBuilder(
+              animation: _pulseAnimation,
+              builder: (context, _) {
+                return ShaderMask(
+                  blendMode: BlendMode.srcATop,
+                  shaderCallback: (bounds) {
+                    return LinearGradient(
+                      colors: const [
+                        Color(0x55FF00FF), // Magenta
+                        Color(0x5500FFFF), // Cyan
+                        Color(0x55FF00FF), // Magenta
+                      ],
+                      stops: [0.0, _pulseAnimation.value.clamp(0.0, 1.0), 1.0],
+                      tileMode: TileMode.mirror,
+                    ).createShader(bounds);
+                  },
+                  child: baseSprite,
+                );
+              },
+            ),
+          ),
+        ],
+      );
+    }
+
     // Sprite and outline layers — hidden or faded based on state
     final Widget spriteLayer = (isInvulnerable || widget.hideAnimal)
         ? SizedBox(width: size, height: size)
@@ -5449,6 +5736,10 @@ class _BattleSpriteState extends State<_BattleSprite>
         : (hasStealth
               ? Opacity(opacity: 0.35, child: outlineImage)
               : outlineImage);
+
+    final isTitanized = bo.isTitanized;
+    final titanScale = isTitanized ? 2.0 : 1.0;
+    final titanYOffset = isTitanized ? -size * 0.25 : 0.0;
 
     return GestureDetector(
       onLongPress: widget.onLongPress,
@@ -5465,9 +5756,7 @@ class _BattleSpriteState extends State<_BattleSprite>
               child: Transform(
                 transform: Matrix4.identity()
                   ..setEntry(3, 2, 0.001) // perspective
-                  ..rotateX(
-                    1.1,
-                  ), // slightly less flattened rotation for visibility
+                  ..rotateX(1.1),
                 alignment: Alignment.center,
                 child: AnimatedBuilder(
                   animation: _pulseAnimation,
@@ -5483,7 +5772,7 @@ class _BattleSpriteState extends State<_BattleSprite>
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.5),
+                            color: Colors.black.withValues(alpha: 0.5),
                             blurRadius: 10,
                             offset: const Offset(0, 6),
                           ),
@@ -5492,10 +5781,8 @@ class _BattleSpriteState extends State<_BattleSprite>
                           center: Alignment.center,
                           radius: 0.9,
                           colors: [
-                            platformColor, // Solid center
-                            platformColor.withOpacity(
-                              0.92,
-                            ), // Barely faded edge
+                            platformColor,
+                            platformColor.withValues(alpha: 0.92),
                           ],
                           stops: const [0.3, 1.0],
                         ),
@@ -5506,19 +5793,20 @@ class _BattleSpriteState extends State<_BattleSprite>
               ),
             ),
 
-            // Outline Layers (4 directions) — hidden/faded based on state
+            // Outline and Sprite Group (Scaled Together)
             AnimatedBuilder(
               animation: Listenable.merge([
                 _bounceController,
                 _entryController,
               ]),
               builder: (context, child) {
-                return Transform.scale(
-                  scale: _entryAnimation.value,
-                  child: Transform.translate(
-                    offset: Offset(0, _bounceAnimation.value),
+                return Transform.translate(
+                  offset: Offset(0, _bounceAnimation.value + titanYOffset),
+                  child: Transform.scale(
+                    scale: _entryAnimation.value * titanScale,
                     child: Stack(
                       children: [
+                        // Outline Layer
                         Transform.translate(
                           offset: const Offset(-outlineOffset, -outlineOffset),
                           child: outlineLayer,
@@ -5535,25 +5823,11 @@ class _BattleSpriteState extends State<_BattleSprite>
                           offset: const Offset(outlineOffset, outlineOffset),
                           child: outlineLayer,
                         ),
+
+                        // Sprite Layer — hidden when invulnerable, faded when stealthed
+                        spriteLayer,
                       ],
                     ),
-                  ),
-                );
-              },
-            ),
-
-            // The Sprite — hidden when invulnerable, faded when stealthed
-            AnimatedBuilder(
-              animation: Listenable.merge([
-                _bounceController,
-                _entryController,
-              ]),
-              builder: (context, child) {
-                return Transform.scale(
-                  scale: _entryAnimation.value,
-                  child: Transform.translate(
-                    offset: Offset(0, _bounceAnimation.value),
-                    child: spriteLayer,
                   ),
                 );
               },
@@ -5562,11 +5836,17 @@ class _BattleSpriteState extends State<_BattleSprite>
             // Status overlay image — shown on top of sprite when statused
             if (!isInvulnerable && overlayPath != null)
               Positioned.fill(
-                child: Image.asset(
-                  overlayPath,
-                  fit: BoxFit.contain,
-                  opacity: const AlwaysStoppedAnimation(0.85),
-                  errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                child: Transform.translate(
+                  offset: Offset(0, titanYOffset),
+                  child: Transform.scale(
+                    scale: titanScale,
+                    child: Image.asset(
+                      overlayPath,
+                      fit: BoxFit.contain,
+                      opacity: const AlwaysStoppedAnimation(0.85),
+                      errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                    ),
+                  ),
                 ),
               ),
 
@@ -5634,7 +5914,7 @@ class _ScreenShieldOverlayState extends State<_ScreenShieldOverlay>
       shields.add(
         CustomPaint(
           painter: _ShieldPainter(
-            color: Colors.cyanAccent.withOpacity(0.75),
+            color: Colors.cyanAccent.withValues(alpha: 0.75),
             progress: _controller.value,
             scale: 1.1,
           ),
@@ -5645,7 +5925,7 @@ class _ScreenShieldOverlayState extends State<_ScreenShieldOverlay>
       shields.add(
         CustomPaint(
           painter: _ShieldPainter(
-            color: Colors.orangeAccent.withOpacity(0.75),
+            color: Colors.orangeAccent.withValues(alpha: 0.75),
             progress: _controller.value,
             offset: hasAuroraVeil ? 2.0 : 0.0,
           ),
@@ -5656,7 +5936,7 @@ class _ScreenShieldOverlayState extends State<_ScreenShieldOverlay>
       shields.add(
         CustomPaint(
           painter: _ShieldPainter(
-            color: Colors.yellowAccent.withOpacity(0.75),
+            color: Colors.yellowAccent.withValues(alpha: 0.75),
             progress: _controller.value,
             scale: hasReflect || hasAuroraVeil ? 0.9 : 1.0,
           ),
@@ -5690,8 +5970,8 @@ class _ShieldPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = color.withOpacity(
-        color.opacity * (0.6 + 0.4 * math.sin(progress * 2 * math.pi)),
+      ..color = color.withValues(
+        alpha: color.a * (0.6 + 0.4 * math.sin(progress * 2 * math.pi)),
       )
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3.0;
@@ -5715,7 +5995,7 @@ class _ShieldPainter extends CustomPainter {
     canvas.drawPath(path, paint);
 
     final fillPaint = Paint()
-      ..color = color.withOpacity(color.opacity * 0.15)
+      ..color = color.withValues(alpha: color.a * 0.15)
       ..style = PaintingStyle.fill;
     canvas.drawPath(path, fillPaint);
   }
@@ -5870,12 +6150,12 @@ class _AbilityPopUpState extends State<_AbilityPopUp>
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.85),
+              color: Colors.black.withValues(alpha: 0.85),
               border: Border.all(color: widget.themeColor, width: 2),
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.5),
+                  color: Colors.black.withValues(alpha: 0.5),
                   blurRadius: 10,
                   offset: const Offset(4, 4),
                 ),
@@ -6004,7 +6284,7 @@ class _FloatingIndicatorWidgetState extends State<_FloatingIndicatorWidget>
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.6),
+            color: Colors.black.withValues(alpha: 0.6),
             borderRadius: BorderRadius.circular(6),
           ),
           child: Text(
@@ -6067,8 +6347,12 @@ class _TrickRoomOverlayState extends State<_TrickRoomOverlay>
             decoration: BoxDecoration(
               gradient: RadialGradient(
                 colors: [
-                  Colors.deepPurple.withOpacity(0.2 + _controller.value * 0.2),
-                  Colors.deepPurple.withOpacity(0.5 + _controller.value * 0.3),
+                  Colors.deepPurple.withValues(
+                    alpha: 0.2 + _controller.value * 0.2,
+                  ),
+                  Colors.deepPurple.withValues(
+                    alpha: 0.5 + _controller.value * 0.3,
+                  ),
                 ],
                 center: Alignment.center,
                 radius: 1.2,
@@ -6093,12 +6377,12 @@ class _TrickRoomPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.cyanAccent.withOpacity(0.2 + progress * 0.2)
+      ..color = Colors.cyanAccent.withValues(alpha: 0.2 + progress * 0.2)
       ..strokeWidth = 2.0
       ..style = PaintingStyle.stroke;
     canvas.drawRect(
       Rect.fromLTWH(0, 0, size.width, size.height),
-      Paint()..color = Colors.deepPurple.withOpacity(0.1),
+      Paint()..color = Colors.deepPurple.withValues(alpha: 0.1),
     );
 
     final step = 50.0;
@@ -6151,7 +6435,7 @@ class _PartyScreenDialog extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF1A2A1A),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        border: Border.all(color: themeColor.withOpacity(0.8), width: 2),
+        border: Border.all(color: themeColor.withValues(alpha: 0.8), width: 2),
       ),
       padding: const EdgeInsets.fromLTRB(12, 16, 12, 8),
       child: Column(
@@ -6228,7 +6512,7 @@ class _PartyScreenDialog extends StatelessWidget {
                     color: isFainted
                         ? const Color(0xFF2A2A2A)
                         : isCurrent
-                        ? primaryColor.withOpacity(0.35)
+                        ? primaryColor.withValues(alpha: 0.35)
                         : const Color(0xFF2C4A2C),
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
@@ -6242,7 +6526,7 @@ class _PartyScreenDialog extends StatelessWidget {
                     boxShadow: isCurrent
                         ? [
                             BoxShadow(
-                              color: themeColor.withOpacity(0.5),
+                              color: themeColor.withValues(alpha: 0.5),
                               blurRadius: 8,
                               spreadRadius: 1,
                             ),
@@ -6317,6 +6601,44 @@ class _PartyScreenDialog extends StatelessWidget {
                                   ],
                                 ),
                                 const SizedBox(height: 4),
+                                if (animal.teraType != null)
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 4.0),
+                                    child: Row(
+                                      children: [
+                                        const Text(
+                                          'PRISM:',
+                                          style: TextStyle(
+                                            fontFamily: 'PressStart2P',
+                                            fontSize: 6,
+                                            color: Colors.white60,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 3,
+                                            vertical: 1,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: animal.teraType!.color,
+                                            borderRadius: BorderRadius.circular(
+                                              2,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            animal.teraType!.name.toUpperCase(),
+                                            style: const TextStyle(
+                                              fontFamily: 'PressStart2P',
+                                              fontSize: 5,
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(3),
                                   child: LinearProgressIndicator(
@@ -6680,7 +7002,10 @@ class _GlowPainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final paint = Paint()
       ..shader = RadialGradient(
-        colors: [color.withOpacity(intensity), color.withOpacity(0)],
+        colors: [
+          color.withValues(alpha: intensity),
+          color.withValues(alpha: 0),
+        ],
       ).createShader(Rect.fromCircle(center: center, radius: 50));
     canvas.drawCircle(center, 50, paint);
   }
@@ -6720,7 +7045,7 @@ class _PhysicalHitPainter extends CustomPainter {
     switch (type) {
       // Basic — plain X-slash slashes
       case ElementalType.basic:
-        paint.color = color.withOpacity(fade);
+        paint.color = color.withValues(alpha: fade);
         paint.strokeWidth = 6 * (1 - p * 0.5);
         paint.style = PaintingStyle.stroke;
         _drawSlash(canvas, cx, cy, 50 * p, paint);
@@ -6728,7 +7053,7 @@ class _PhysicalHitPainter extends CustomPainter {
 
       // Flying — feather-arc sweep
       case ElementalType.flying:
-        paint.color = color.withOpacity(fade);
+        paint.color = color.withValues(alpha: fade);
         final r = 55.0 * p;
         canvas.drawArc(
           Rect.fromCircle(center: Offset(cx, cy), radius: r),
@@ -6747,7 +7072,7 @@ class _PhysicalHitPainter extends CustomPainter {
           canvas.drawCircle(
             Offset(dx, dy),
             5 * fade,
-            Paint()..color = color.withOpacity(fade * 0.8),
+            Paint()..color = color.withValues(alpha: fade * 0.8),
           );
         }
         break;
@@ -6767,7 +7092,7 @@ class _PhysicalHitPainter extends CustomPainter {
           paint
             ..style = PaintingStyle.stroke
             ..strokeWidth = 5
-            ..color = color.withOpacity(fade),
+            ..color = color.withValues(alpha: fade),
         );
         break;
 
@@ -6781,11 +7106,11 @@ class _PhysicalHitPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = 4.0 - i
-              ..color = color.withOpacity(fade * (1.0 - i * 0.25)),
+              ..color = color.withValues(alpha: fade * (1.0 - i * 0.25)),
           );
         }
         // Ground crack lines
-        paint.color = color.withOpacity(fade);
+        paint.color = color.withValues(alpha: fade);
         paint.strokeWidth = 3;
         paint.style = PaintingStyle.stroke;
         for (int i = 0; i < 6; i++) {
@@ -6817,14 +7142,17 @@ class _PhysicalHitPainter extends CustomPainter {
             ..lineTo(base1.dx, base1.dy)
             ..lineTo(base2.dx, base2.dy)
             ..close();
-          canvas.drawPath(path, Paint()..color = color.withOpacity(fade * 0.9));
+          canvas.drawPath(
+            path,
+            Paint()..color = color.withValues(alpha: fade * 0.9),
+          );
         }
         break;
 
       // Toxic — splat blob
       case ElementalType.toxic:
         final r = 40.0 * p;
-        paint.color = color.withOpacity(fade * 0.85);
+        paint.color = color.withValues(alpha: fade * 0.85);
         canvas.drawCircle(Offset(cx, cy), r, paint);
         // Droplets
         for (int i = 0; i < 5; i++) {
@@ -6833,7 +7161,7 @@ class _PhysicalHitPainter extends CustomPainter {
           canvas.drawCircle(
             Offset(cx + cos(angle) * dr, cy + sin(angle) * dr),
             8 * p * fade,
-            Paint()..color = color.withOpacity(fade * 0.6),
+            Paint()..color = color.withValues(alpha: fade * 0.6),
           );
         }
         break;
@@ -6851,7 +7179,7 @@ class _PhysicalHitPainter extends CustomPainter {
             width: (8 + rand.nextDouble() * 8) * (1 - p * 0.3),
             height: (8 + rand.nextDouble() * 8) * (1 - p * 0.3),
           );
-          canvas.drawRect(rect, Paint()..color = color.withOpacity(fade));
+          canvas.drawRect(rect, Paint()..color = color.withValues(alpha: fade));
         }
         break;
 
@@ -6862,7 +7190,7 @@ class _PhysicalHitPainter extends CustomPainter {
           ..strokeWidth = 5
           ..strokeCap = StrokeCap.round;
         for (int i = -1; i <= 1; i++) {
-          paint.color = color.withOpacity(fade);
+          paint.color = color.withValues(alpha: fade);
           final ox = cx + i * 18.0;
           canvas.drawLine(
             Offset(ox - 10, cy - 35 * p),
@@ -6885,7 +7213,7 @@ class _PhysicalHitPainter extends CustomPainter {
             ..style = PaintingStyle.stroke
             ..strokeWidth = 7
             ..strokeJoin = StrokeJoin.round
-            ..color = color.withOpacity(fade),
+            ..color = color.withValues(alpha: fade),
         );
         // Inner bright core
         canvas.drawPath(
@@ -6893,7 +7221,7 @@ class _PhysicalHitPainter extends CustomPainter {
           Paint()
             ..style = PaintingStyle.stroke
             ..strokeWidth = 3
-            ..color = Colors.white.withOpacity(fade * 0.8),
+            ..color = Colors.white.withValues(alpha: fade * 0.8),
         );
         break;
 
@@ -6904,7 +7232,7 @@ class _PhysicalHitPainter extends CustomPainter {
           ..strokeWidth = 4;
         for (int i = 0; i < 3; i++) {
           final r2 = (20 + i * 12) * p;
-          paint.color = color.withOpacity(fade * (1 - i * 0.2));
+          paint.color = color.withValues(alpha: fade * (1 - i * 0.2));
           final sweepAngle = pi * 2 * p;
           canvas.drawArc(
             Rect.fromCircle(center: Offset(cx, cy), radius: r2),
@@ -6920,7 +7248,7 @@ class _PhysicalHitPainter extends CustomPainter {
           40 * p,
           Paint()
             ..style = PaintingStyle.fill
-            ..color = color.withOpacity(fade * 0.3),
+            ..color = color.withValues(alpha: fade * 0.3),
         );
         break;
 
@@ -6933,10 +7261,16 @@ class _PhysicalHitPainter extends CustomPainter {
           Paint()
             ..style = PaintingStyle.stroke
             ..strokeWidth = 4
-            ..color = color.withOpacity(fade),
+            ..color = color.withValues(alpha: fade),
         );
         // 5-pointed star
-        _drawStar(canvas, Offset(cx, cy), 40 * p, 5, color.withOpacity(fade));
+        _drawStar(
+          canvas,
+          Offset(cx, cy),
+          40 * p,
+          5,
+          color.withValues(alpha: fade),
+        );
         break;
 
       // Blaze — fire burst
@@ -6953,7 +7287,7 @@ class _PhysicalHitPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = 4 + rand2.nextDouble() * 4
-              ..color = color.withOpacity(fade * 0.9),
+              ..color = color.withValues(alpha: fade * 0.9),
           );
         }
         // Core glow
@@ -6962,7 +7296,7 @@ class _PhysicalHitPainter extends CustomPainter {
           18 * p,
           Paint()
             ..style = PaintingStyle.fill
-            ..color = Colors.white.withOpacity(fade * 0.6),
+            ..color = Colors.white.withValues(alpha: fade * 0.6),
         );
         break;
 
@@ -6984,7 +7318,7 @@ class _PhysicalHitPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = 6
-              ..color = color.withOpacity(fade * 0.9),
+              ..color = color.withValues(alpha: fade * 0.9),
           );
         }
         break;
@@ -7002,7 +7336,7 @@ class _PhysicalHitPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = 3
-              ..color = color.withOpacity(fade * (0.6 + i * 0.1)),
+              ..color = color.withValues(alpha: fade * (0.6 + i * 0.1)),
           );
         }
         break;
@@ -7020,7 +7354,7 @@ class _PhysicalHitPainter extends CustomPainter {
             ),
             Paint()
               ..style = PaintingStyle.fill
-              ..color = color.withOpacity(fade * (0.4 - i * 0.05)),
+              ..color = color.withValues(alpha: fade * (0.4 - i * 0.05)),
           );
         }
         break;
@@ -7033,7 +7367,7 @@ class _PhysicalHitPainter extends CustomPainter {
           ..strokeWidth = 6
           ..strokeCap = StrokeCap.round;
         for (int i = -1; i <= 1; i++) {
-          paint.color = color.withOpacity(fade);
+          paint.color = color.withValues(alpha: fade);
           final ox = cx + i * 22.0;
           canvas.drawLine(
             Offset(ox - 15, cy - 40 * p),
@@ -7047,7 +7381,7 @@ class _PhysicalHitPainter extends CustomPainter {
           30 * p,
           Paint()
             ..style = PaintingStyle.fill
-            ..color = color.withOpacity(fade * 0.4),
+            ..color = color.withValues(alpha: fade * 0.4),
         );
         break;
 
@@ -7058,12 +7392,12 @@ class _PhysicalHitPainter extends CustomPainter {
           Offset(cx, cy),
           50 * p,
           6,
-          color.withOpacity(fade * 0.8),
+          color.withValues(alpha: fade * 0.8),
         );
         canvas.drawCircle(
           Offset(cx, cy),
           15 * p,
-          Paint()..color = Colors.white.withOpacity(fade * 0.9),
+          Paint()..color = Colors.white.withValues(alpha: fade * 0.9),
         );
         break;
 
@@ -7077,7 +7411,7 @@ class _PhysicalHitPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = 3
-              ..color = color.withOpacity(fade * (0.9 - i * 0.15)),
+              ..color = color.withValues(alpha: fade * (0.9 - i * 0.15)),
           );
         }
         break;
@@ -7089,7 +7423,7 @@ class _PhysicalHitPainter extends CustomPainter {
           ..strokeWidth = 4;
         for (int i = 0; i < 5; i++) {
           final r6 = (15 + i * 16) * p;
-          paint.color = color.withOpacity(fade * (1 - i * 0.15));
+          paint.color = color.withValues(alpha: fade * (1 - i * 0.15));
           canvas.drawArc(
             Rect.fromCircle(center: Offset(cx, cy), radius: r6),
             -pi * 0.7,
@@ -7109,13 +7443,13 @@ class _PhysicalHitPainter extends CustomPainter {
           Paint()
             ..style = PaintingStyle.stroke
             ..strokeWidth = 5
-            ..color = color.withOpacity(fade),
+            ..color = color.withValues(alpha: fade),
         );
         // Radiant cross
         paint
           ..style = PaintingStyle.stroke
           ..strokeWidth = 5
-          ..color = Colors.white.withOpacity(fade);
+          ..color = Colors.white.withValues(alpha: fade);
         canvas.drawLine(
           Offset(cx, cy - 50 * p),
           Offset(cx, cy + 50 * p),
@@ -7230,12 +7564,12 @@ class _SpecialHitPainter extends CustomPainter {
         canvas.drawCircle(
           Offset(bx, by),
           r,
-          paint..color = color.withOpacity(fade * 0.85),
+          paint..color = color.withValues(alpha: fade * 0.85),
         );
         canvas.drawCircle(
           Offset(bx, by),
           r * 0.6,
-          Paint()..color = Colors.white.withOpacity(fade * 0.4),
+          Paint()..color = Colors.white.withValues(alpha: fade * 0.4),
         );
         if (impactPhase > 0) {
           // Splash
@@ -7245,7 +7579,7 @@ class _SpecialHitPainter extends CustomPainter {
             canvas.drawCircle(
               Offset(cx + cos(angle) * dist, cy + sin(angle) * dist),
               5 * (1 - impactPhase),
-              Paint()..color = color.withOpacity(fade * 0.7),
+              Paint()..color = color.withValues(alpha: fade * 0.7),
             );
           }
         }
@@ -7261,7 +7595,7 @@ class _SpecialHitPainter extends CustomPainter {
             width: 28,
             height: 24,
           );
-          canvas.drawRect(rect, paint..color = color.withOpacity(fade));
+          canvas.drawRect(rect, paint..color = color.withValues(alpha: fade));
         } else {
           // Fragment explosion
           final rand = Random(7);
@@ -7273,7 +7607,10 @@ class _SpecialHitPainter extends CustomPainter {
               width: 8 * (1 - impactPhase),
               height: 8 * (1 - impactPhase),
             );
-            canvas.drawRect(frag, Paint()..color = color.withOpacity(fade));
+            canvas.drawRect(
+              frag,
+              Paint()..color = color.withValues(alpha: fade),
+            );
           }
         }
         break;
@@ -7290,14 +7627,14 @@ class _SpecialHitPainter extends CustomPainter {
           ..close();
         canvas.drawPath(
           shardPath,
-          paint..color = color.withOpacity(fade * 0.9),
+          paint..color = color.withValues(alpha: fade * 0.9),
         );
         canvas.drawPath(
           shardPath,
           Paint()
             ..style = PaintingStyle.stroke
             ..strokeWidth = 2
-            ..color = Colors.white.withOpacity(fade * 0.5),
+            ..color = Colors.white.withValues(alpha: fade * 0.5),
         );
         if (impactPhase > 0) {
           for (int i = 0; i < 6; i++) {
@@ -7309,7 +7646,7 @@ class _SpecialHitPainter extends CustomPainter {
               Paint()
                 ..style = PaintingStyle.stroke
                 ..strokeWidth = 3
-                ..color = color.withOpacity(fade * 0.8),
+                ..color = color.withValues(alpha: fade * 0.8),
             );
           }
         }
@@ -7322,14 +7659,14 @@ class _SpecialHitPainter extends CustomPainter {
           canvas.drawCircle(
             Offset(bx + i * 8.0, cy - i * 5.0),
             (12 + i * 5) * (1 - p * 0.3),
-            Paint()..color = color.withOpacity(fade * (0.7 - i * 0.15)),
+            Paint()..color = color.withValues(alpha: fade * (0.7 - i * 0.15)),
           );
         }
         if (impactPhase > 0) {
           canvas.drawCircle(
             Offset(cx, cy),
             impactPhase * 50,
-            Paint()..color = color.withOpacity(fade * 0.35),
+            Paint()..color = color.withValues(alpha: fade * 0.35),
           );
         }
         break;
@@ -7341,14 +7678,14 @@ class _SpecialHitPainter extends CustomPainter {
         canvas.drawCircle(
           Offset(bx, by),
           14,
-          paint..color = color.withOpacity(fade),
+          paint..color = color.withValues(alpha: fade),
         );
         if (impactPhase > 0) {
           // Dust cloud
           canvas.drawCircle(
             Offset(cx, cy),
             impactPhase * 40,
-            Paint()..color = color.withOpacity(fade * 0.3),
+            Paint()..color = color.withValues(alpha: fade * 0.3),
           );
         }
         break;
@@ -7362,7 +7699,7 @@ class _SpecialHitPainter extends CustomPainter {
           ..lineTo(bx - 5, cy)
           ..lineTo(bx, cy + 6)
           ..close();
-        canvas.drawPath(path, paint..color = color.withOpacity(fade));
+        canvas.drawPath(path, paint..color = color.withValues(alpha: fade));
         break;
 
       // Electric — lightning bolt projectile
@@ -7378,14 +7715,14 @@ class _SpecialHitPainter extends CustomPainter {
           Paint()
             ..style = PaintingStyle.stroke
             ..strokeWidth = 6
-            ..color = color.withOpacity(fade),
+            ..color = color.withValues(alpha: fade),
         );
         canvas.drawPath(
           zap,
           Paint()
             ..style = PaintingStyle.stroke
             ..strokeWidth = 2.5
-            ..color = Colors.white.withOpacity(fade * 0.9),
+            ..color = Colors.white.withValues(alpha: fade * 0.9),
         );
         if (impactPhase > 0) {
           for (int i = 0; i < 8; i++) {
@@ -7397,7 +7734,7 @@ class _SpecialHitPainter extends CustomPainter {
               Paint()
                 ..style = PaintingStyle.stroke
                 ..strokeWidth = 3
-                ..color = color.withOpacity(fade * 0.9),
+                ..color = color.withValues(alpha: fade * 0.9),
             );
           }
         }
@@ -7409,18 +7746,18 @@ class _SpecialHitPainter extends CustomPainter {
         canvas.drawCircle(
           Offset(bx, cy),
           20,
-          paint..color = color.withOpacity(fade * 0.9),
+          paint..color = color.withValues(alpha: fade * 0.9),
         );
         canvas.drawCircle(
           Offset(bx - 5, cy - 5),
           8,
-          Paint()..color = Colors.deepPurple.withOpacity(fade * 0.5),
+          Paint()..color = Colors.deepPurple.withValues(alpha: fade * 0.5),
         );
         if (impactPhase > 0) {
           canvas.drawCircle(
             Offset(cx, cy),
             impactPhase * 55,
-            Paint()..color = color.withOpacity(fade * 0.25),
+            Paint()..color = color.withValues(alpha: fade * 0.25),
           );
         }
         break;
@@ -7436,12 +7773,12 @@ class _SpecialHitPainter extends CustomPainter {
         canvas.drawCircle(
           Offset(bx, cy),
           20 - travelPhase * 4,
-          paint..color = color.withOpacity(fade),
+          paint..color = color.withValues(alpha: fade),
         );
         canvas.drawCircle(
           Offset(bx, cy),
           10 - travelPhase * 3,
-          Paint()..color = Colors.yellow.withOpacity(fade * 0.8),
+          Paint()..color = Colors.yellow.withValues(alpha: fade * 0.8),
         );
         // Flame trail
         final trailCells = 4;
@@ -7450,7 +7787,7 @@ class _SpecialHitPainter extends CustomPainter {
           canvas.drawCircle(
             Offset(tx, cy),
             (8 - i * 1.5) * (1 - travelPhase * 0.5),
-            Paint()..color = color.withOpacity(fade * (0.6 - i * 0.1)),
+            Paint()..color = color.withValues(alpha: fade * (0.6 - i * 0.1)),
           );
         }
         if (impactPhase > 0) {
@@ -7458,12 +7795,12 @@ class _SpecialHitPainter extends CustomPainter {
           canvas.drawCircle(
             Offset(cx, cy),
             impactPhase * 50,
-            paint..color = color.withOpacity(fade * 0.5),
+            paint..color = color.withValues(alpha: fade * 0.5),
           );
           canvas.drawCircle(
             Offset(cx, cy),
             impactPhase * 30,
-            Paint()..color = Colors.yellow.withOpacity(fade * 0.7),
+            Paint()..color = Colors.yellow.withValues(alpha: fade * 0.7),
           );
         }
         break;
@@ -7475,14 +7812,14 @@ class _SpecialHitPainter extends CustomPainter {
           ..moveTo(bx, cy - 14)
           ..quadraticBezierTo(bx + 20, cy, bx, cy + 14)
           ..quadraticBezierTo(bx - 20, cy, bx, cy - 14);
-        canvas.drawPath(leafPath, paint..color = color.withOpacity(fade));
+        canvas.drawPath(leafPath, paint..color = color.withValues(alpha: fade));
         canvas.drawLine(
           Offset(bx - 10, cy),
           Offset(bx + 10, cy),
           Paint()
             ..style = PaintingStyle.stroke
             ..strokeWidth = 1.5
-            ..color = Colors.white.withOpacity(fade * 0.5),
+            ..color = Colors.white.withValues(alpha: fade * 0.5),
         );
         break;
 
@@ -7496,7 +7833,7 @@ class _SpecialHitPainter extends CustomPainter {
           canvas.drawCircle(
             Offset(tx + cos(angle) * 8, cy + sin(angle) * 8),
             (10 - i * 1.5),
-            Paint()..color = color.withOpacity(fade * (0.8 - i * 0.1)),
+            Paint()..color = color.withValues(alpha: fade * (0.8 - i * 0.1)),
           );
         }
         if (impactPhase > 0) {
@@ -7508,7 +7845,7 @@ class _SpecialHitPainter extends CustomPainter {
                 cy + sin(angle) * impactPhase * 45,
               ),
               8 * (1 - impactPhase),
-              Paint()..color = color.withOpacity(fade * 0.9),
+              Paint()..color = color.withValues(alpha: fade * 0.9),
             );
           }
         }
@@ -7524,14 +7861,14 @@ class _SpecialHitPainter extends CustomPainter {
               width: 20.0,
               height: 30.0,
             ),
-            Paint()..color = color.withOpacity(fade * (0.7 - i * 0.15)),
+            Paint()..color = color.withValues(alpha: fade * (0.7 - i * 0.15)),
           );
         }
         if (impactPhase > 0) {
           canvas.drawCircle(
             Offset(cx, cy),
             impactPhase * 50,
-            Paint()..color = color.withOpacity(fade * 0.3),
+            Paint()..color = color.withValues(alpha: fade * 0.3),
           );
         }
         break;
@@ -7547,18 +7884,18 @@ class _SpecialHitPainter extends CustomPainter {
         );
         canvas.drawRect(
           beamRect,
-          paint..color = color.withOpacity(fade * 0.85),
+          paint..color = color.withValues(alpha: fade * 0.85),
         );
         // Core
         canvas.drawRect(
           Rect.fromLTWH(beamRect.left, cy - 4, beamRect.width, 8),
-          Paint()..color = Colors.white.withOpacity(fade * 0.5),
+          Paint()..color = Colors.white.withValues(alpha: fade * 0.5),
         );
         if (impactPhase > 0) {
           canvas.drawCircle(
             Offset(cx, cy),
             impactPhase * 55,
-            paint..color = color.withOpacity(fade * 0.5),
+            paint..color = color.withValues(alpha: fade * 0.5),
           );
         }
         break;
@@ -7574,14 +7911,14 @@ class _SpecialHitPainter extends CustomPainter {
           Offset.zero,
           18,
           6,
-          color.withOpacity(fade * 0.9),
+          color.withValues(alpha: fade * 0.9),
         );
         canvas.restore();
         if (impactPhase > 0) {
           canvas.drawCircle(
             Offset(cx, cy),
             impactPhase * 45,
-            paint..color = color.withOpacity(fade * 0.4),
+            paint..color = color.withValues(alpha: fade * 0.4),
           );
         }
         break;
@@ -7593,14 +7930,14 @@ class _SpecialHitPainter extends CustomPainter {
           canvas.drawCircle(
             Offset(bx, cy),
             (18 - i * 4) * (0.8 + sin(travelPhase * pi * 4 + i) * 0.2),
-            Paint()..color = color.withOpacity(fade * (0.9 - i * 0.2)),
+            Paint()..color = color.withValues(alpha: fade * (0.9 - i * 0.2)),
           );
         }
         if (impactPhase > 0) {
           canvas.drawCircle(
             Offset(cx, cy),
             impactPhase * 50,
-            paint..color = color.withOpacity(fade * 0.4),
+            paint..color = color.withValues(alpha: fade * 0.4),
           );
         }
         break;
@@ -7615,7 +7952,7 @@ class _SpecialHitPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = 3
-              ..color = color.withOpacity(fade * (0.9 - i * 0.15)),
+              ..color = color.withValues(alpha: fade * (0.9 - i * 0.15)),
           );
         }
         if (impactPhase > 0) {
@@ -7627,7 +7964,7 @@ class _SpecialHitPainter extends CustomPainter {
               Paint()
                 ..style = PaintingStyle.stroke
                 ..strokeWidth = 3
-                ..color = color.withOpacity(fade * (0.8 - i * 0.12)),
+                ..color = color.withValues(alpha: fade * (0.8 - i * 0.12)),
             );
           }
         }
@@ -7637,16 +7974,19 @@ class _SpecialHitPainter extends CustomPainter {
       case ElementalType.holy:
         final beamW = travelPhase * 65;
         final beamRect = Rect.fromLTWH(cx - beamW, cy - 10, beamW, 20);
-        canvas.drawRect(beamRect, paint..color = color.withOpacity(fade * 0.6));
+        canvas.drawRect(
+          beamRect,
+          paint..color = color.withValues(alpha: fade * 0.6),
+        );
         canvas.drawRect(
           Rect.fromLTWH(cx - beamW, cy - 4, beamW, 8),
-          Paint()..color = Colors.white.withOpacity(fade * 0.8),
+          Paint()..color = Colors.white.withValues(alpha: fade * 0.8),
         );
         if (impactPhase > 0) {
           canvas.drawCircle(
             Offset(cx, cy),
             impactPhase * 55,
-            paint..color = color.withOpacity(fade * 0.5),
+            paint..color = color.withValues(alpha: fade * 0.5),
           );
           // Cross burst
           canvas.drawLine(
@@ -7655,7 +7995,7 @@ class _SpecialHitPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = 4
-              ..color = Colors.white.withOpacity(fade * 0.8),
+              ..color = Colors.white.withValues(alpha: fade * 0.8),
           );
           canvas.drawLine(
             Offset(cx, cy - impactPhase * 50),
@@ -7663,7 +8003,7 @@ class _SpecialHitPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = 4
-              ..color = Colors.white.withOpacity(fade * 0.8),
+              ..color = Colors.white.withValues(alpha: fade * 0.8),
           );
         }
         break;
@@ -7683,18 +8023,18 @@ class _SpecialHitPainter extends CustomPainter {
     canvas.drawCircle(
       Offset(bx, cy),
       18 * (1 - impact * 0.6),
-      Paint()..color = color.withOpacity(fade * 0.9),
+      Paint()..color = color.withValues(alpha: fade * 0.9),
     );
     canvas.drawCircle(
       Offset(bx, cy),
       10 * (1 - impact * 0.6),
-      Paint()..color = Colors.white.withOpacity(fade * 0.5),
+      Paint()..color = Colors.white.withValues(alpha: fade * 0.5),
     );
     if (impact > 0) {
       canvas.drawCircle(
         Offset(cx, cy),
         impact * 50,
-        Paint()..color = color.withOpacity(fade * 0.4),
+        Paint()..color = color.withValues(alpha: fade * 0.4),
       );
     }
   }
@@ -7715,7 +8055,10 @@ class _SpecialHitPainter extends CustomPainter {
       ..lineTo(bx - 16, cy)
       ..lineTo(bx, cy + 6)
       ..close();
-    canvas.drawPath(path, Paint()..color = color.withOpacity(fade * 0.85));
+    canvas.drawPath(
+      path,
+      Paint()..color = color.withValues(alpha: fade * 0.85),
+    );
     if (impact > 0) {
       for (int i = 0; i < 6; i++) {
         final angle = pi * 2 * i / 6;
@@ -7725,7 +8068,7 @@ class _SpecialHitPainter extends CustomPainter {
           Paint()
             ..style = PaintingStyle.stroke
             ..strokeWidth = 3
-            ..color = color.withOpacity(fade * 0.8),
+            ..color = color.withValues(alpha: fade * 0.8),
         );
       }
     }
@@ -7791,7 +8134,7 @@ class _StatusEffectPainter extends CustomPainter {
           canvas.drawCircle(
             Offset(ox, oy),
             8 + i * 2.0,
-            paint..color = color.withOpacity(fadeOut * 0.7),
+            paint..color = color.withValues(alpha: fadeOut * 0.7),
           );
         }
         break;
@@ -7805,7 +8148,7 @@ class _StatusEffectPainter extends CustomPainter {
           canvas.drawCircle(
             Offset(ox, oy),
             3 + rand.nextDouble() * 4,
-            paint..color = color.withOpacity(fadeOut * 0.8),
+            paint..color = color.withValues(alpha: fadeOut * 0.8),
           );
         }
         break;
@@ -7821,7 +8164,7 @@ class _StatusEffectPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = 2.5
-              ..color = color.withOpacity(fadeOut),
+              ..color = color.withValues(alpha: fadeOut),
           );
           // Mini cross
           canvas.drawLine(
@@ -7833,7 +8176,7 @@ class _StatusEffectPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = 2
-              ..color = color.withOpacity(fadeOut * 0.7),
+              ..color = color.withValues(alpha: fadeOut * 0.7),
           );
         }
         break;
@@ -7852,7 +8195,7 @@ class _StatusEffectPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = 3
-              ..color = color.withOpacity(fadeOut),
+              ..color = color.withValues(alpha: fadeOut),
           );
         }
         break;
@@ -7867,7 +8210,7 @@ class _StatusEffectPainter extends CustomPainter {
               width: 20,
               height: 30,
             ),
-            paint..color = color.withOpacity(fadeOut * 0.5),
+            paint..color = color.withValues(alpha: fadeOut * 0.5),
           );
         }
         break;
@@ -7880,7 +8223,7 @@ class _StatusEffectPainter extends CustomPainter {
           canvas.drawCircle(
             Offset(cx + cos(angle) * dist, riseY + sin(angle) * dist * 0.4),
             5 * fadeOut,
-            paint..color = color.withOpacity(fadeOut),
+            paint..color = color.withValues(alpha: fadeOut),
           );
         }
         break;
@@ -7899,7 +8242,7 @@ class _StatusEffectPainter extends CustomPainter {
             ..quadraticBezierTo(lx - 8, ly, lx, ly - 8);
           canvas.drawPath(
             leafPath,
-            paint..color = color.withOpacity(fadeOut * 0.8),
+            paint..color = color.withValues(alpha: fadeOut * 0.8),
           );
         }
         break;
@@ -7911,7 +8254,7 @@ class _StatusEffectPainter extends CustomPainter {
           canvas.drawCircle(
             Offset(cx + cos(angle) * 30, riseY + sin(angle) * 20),
             12 * fadeOut,
-            paint..color = color.withOpacity(fadeOut * 0.6),
+            paint..color = color.withValues(alpha: fadeOut * 0.6),
           );
         }
         break;
@@ -7926,7 +8269,7 @@ class _StatusEffectPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = 3
-              ..color = color.withOpacity(fadeOut * (0.9 - i * 0.2)),
+              ..color = color.withValues(alpha: fadeOut * (0.9 - i * 0.2)),
           );
         }
         break;
@@ -7942,7 +8285,7 @@ class _StatusEffectPainter extends CustomPainter {
               riseY + sin(angle + p * pi * 2) * r * 0.5,
             ),
             4,
-            paint..color = color.withOpacity(fadeOut * 0.8),
+            paint..color = color.withValues(alpha: fadeOut * 0.8),
           );
         }
         break;
@@ -7956,7 +8299,7 @@ class _StatusEffectPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = 2.5
-              ..color = color.withOpacity(fadeOut * (0.8 - i * 0.2)),
+              ..color = color.withValues(alpha: fadeOut * (0.8 - i * 0.2)),
           );
         }
         break;

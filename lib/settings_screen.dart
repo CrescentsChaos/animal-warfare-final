@@ -119,7 +119,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: secondaryButtonColor.withOpacity(0.95),
+          backgroundColor: secondaryButtonColor.withValues(alpha: 0.95),
           title: const Text(
             'CONFIRM LOGOUT',
             style: TextStyle(
@@ -312,7 +312,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             image: const AssetImage('assets/main.png'),
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(
-              Colors.black.withOpacity(0.7),
+              Colors.black.withValues(alpha: 0.7),
               BlendMode.darken,
             ),
           ),
@@ -464,7 +464,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       margin: const EdgeInsets.only(bottom: 10.0),
       padding: const EdgeInsets.all(12.0),
       decoration: BoxDecoration(
-        color: primaryButtonColor.withOpacity(0.8),
+        color: primaryButtonColor.withValues(alpha: 0.8),
         border: Border.all(color: highlightColor, width: 2),
         borderRadius: BorderRadius.circular(5.0),
       ),

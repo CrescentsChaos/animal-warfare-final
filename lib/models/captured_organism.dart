@@ -6,6 +6,7 @@ import 'package:animal_warfare/models/talisman.dart';
 import 'package:animal_warfare/models/move.dart';
 import 'package:animal_warfare/models/nature.dart';
 import 'package:animal_warfare/models/status_effect.dart';
+import 'package:animal_warfare/models/elemental_type.dart';
 
 // Represents an individual instance of a captured or wild organism.
 // This is the model that holds the unique DNA (IVs).
@@ -53,6 +54,12 @@ class CapturedOrganism {
   // NEW: Satisfaction (0-255), affects obedience
   int satisfaction;
 
+  // NEW: Single Active Ability
+  String activeAbilityName;
+
+  // Tera type for Prismorph gimmick (null = no tera type)
+  ElementalType? teraType;
+
   CapturedOrganism({
     required this.baseOrganism,
     required this.individualValues,
@@ -82,7 +89,14 @@ class CapturedOrganism {
     this.isShiny = false,
     Map<String, int>? killValues,
     this.satisfaction = 120,
-  }) : id = id ?? const Uuid().v4(),
+    String? activeAbilityName,
+    this.teraType,
+  }) : activeAbilityName =
+           activeAbilityName ??
+           (baseOrganism.abilities.split(',').first.trim().isEmpty
+               ? 'None'
+               : baseOrganism.abilities.split(',').first.trim()),
+       id = id ?? const Uuid().v4(),
        killValues =
            killValues ??
            {
@@ -145,8 +159,7 @@ class CapturedOrganism {
   // Compatibility getters for tests
   int get health => currentHealth;
   set health(int value) => currentHealth = value;
-  List<String> get abilities =>
-      baseOrganism.abilities.split(',').map((e) => e.trim()).toList();
+  List<String> get abilities => [activeAbilityName];
 
   CapturedOrganism copyWith({
     Organism? baseOrganism,
@@ -173,6 +186,9 @@ class CapturedOrganism {
     bool? isShiny,
     Map<String, int>? killValues,
     int? satisfaction,
+    String? activeAbilityName,
+    ElementalType? teraType,
+    bool clearTeraType = false,
   }) {
     return CapturedOrganism(
       baseOrganism: baseOrganism ?? this.baseOrganism,
@@ -200,7 +216,13 @@ class CapturedOrganism {
       isShiny: isShiny ?? this.isShiny,
       killValues: killValues ?? Map.from(this.killValues),
       satisfaction: satisfaction ?? this.satisfaction,
+      activeAbilityName: activeAbilityName ?? this.activeAbilityName,
+      teraType: clearTeraType ? null : (teraType ?? this.teraType),
     );
+  }
+
+  CapturedOrganism changeAbility(String abilityName) {
+    return copyWith(activeAbilityName: abilityName);
   }
 
   // --- XP and Leveling Logic ---
@@ -256,6 +278,7 @@ class CapturedOrganism {
     int? level,
     int accountLevel = 1,
     Map<String, int>? ivs,
+    String? ability,
   }) {
     final rng = Random();
 
@@ -309,6 +332,26 @@ class CapturedOrganism {
       xp: xpForLevel(wildLevel),
       isAlpha: isAlphaRoll,
       isShiny: isShinyRoll,
+      activeAbilityName: ability,
+      // Every animal has a Tera Type.
+      // 10% chance to roll a "unique" tera type that is NOT one of the animal's base types.
+      // 90% chance to roll one of its base types.
+      teraType: () {
+        final baseTypes = base.elementalTypes;
+        if (rng.nextInt(10) == 0) {
+          final candidates = ElementalType.values
+              .where((t) => !baseTypes.contains(t))
+              .toList();
+          if (candidates.isNotEmpty) {
+            return candidates[rng.nextInt(candidates.length)];
+          }
+        }
+        // Fallback or 90% case: pick from base types
+        if (baseTypes.isNotEmpty) {
+          return baseTypes[rng.nextInt(baseTypes.length)];
+        }
+        return ElementalType.basic; // Absolute fallback
+      }(),
     );
 
     // Explicitly initialize moves now so they are set in stone
@@ -532,6 +575,8 @@ class CapturedOrganism {
     'isShiny': isShiny,
     'killValues': killValues,
     'satisfaction': satisfaction,
+    'activeAbilityName': activeAbilityName,
+    'teraType': teraType?.name,
   };
 
   /// Create CapturedOrganism from JSON
@@ -606,6 +651,10 @@ class CapturedOrganism {
           ? Map<String, int>.from(json['killValues'] as Map)
           : null,
       satisfaction: json['satisfaction'] as int? ?? 120,
+      activeAbilityName: json['activeAbilityName'] as String?,
+      teraType: json['teraType'] != null
+          ? ElementalTypeX.fromString(json['teraType'] as String)
+          : null,
     );
   }
 

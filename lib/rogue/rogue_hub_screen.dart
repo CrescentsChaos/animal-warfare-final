@@ -119,7 +119,7 @@ class _RogueHubScreenState extends State<RogueHubScreen> {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.05),
+                    color: Colors.white.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Image.asset(member.baseOrganism.sprite),
@@ -175,13 +175,13 @@ class _RogueHubScreenState extends State<RogueHubScreen> {
             fit: BoxFit.cover,
             colorFilter: _getTimeOfDay() == 'day'
                 ? ColorFilter.mode(
-                    Colors.black.withOpacity(0.75),
+                    Colors.black.withValues(alpha: 0.75),
                     BlendMode.darken,
                   )
                 : ColorFilter.mode(
                     _getTimeOfDay() == 'evening'
-                        ? Colors.orangeAccent.withOpacity(0.3)
-                        : Colors.indigo[900]!.withOpacity(0.5),
+                        ? Colors.orangeAccent.withValues(alpha: 0.3)
+                        : Colors.indigo[900]!.withValues(alpha: 0.5),
                     BlendMode.darken,
                   ),
           ),
@@ -221,10 +221,10 @@ class _RogueHubScreenState extends State<RogueHubScreen> {
                   decoration: BoxDecoration(
                     color: Colors.black87,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: themeColor.withOpacity(0.5)),
+                    border: Border.all(color: themeColor.withValues(alpha: 0.5)),
                     boxShadow: [
                       BoxShadow(
-                        color: themeColor.withOpacity(0.2),
+                        color: themeColor.withValues(alpha: 0.2),
                         blurRadius: 15,
                         spreadRadius: 2,
                       ),
@@ -271,7 +271,7 @@ class _RogueHubScreenState extends State<RogueHubScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.8),
+        color: Colors.black.withValues(alpha: 0.8),
         border: const Border(bottom: BorderSide(color: Colors.white12)),
       ),
       child: Row(
@@ -284,7 +284,7 @@ class _RogueHubScreenState extends State<RogueHubScreen> {
                 'RUN PROGRESS',
                 style: TextStyle(
                   fontFamily: 'PressStart2P',
-                  color: themeColor.withOpacity(0.7),
+                  color: themeColor.withValues(alpha: 0.7),
                   fontSize: 10,
                 ),
               ),
@@ -306,7 +306,7 @@ class _RogueHubScreenState extends State<RogueHubScreen> {
                         boxShadow: i == encounterIndex
                             ? [
                                 BoxShadow(
-                                  color: Colors.white.withOpacity(0.5),
+                                  color: Colors.white.withValues(alpha: 0.5),
                                   blurRadius: 4,
                                 ),
                               ]
@@ -324,7 +324,7 @@ class _RogueHubScreenState extends State<RogueHubScreen> {
                 'FLOOR',
                 style: TextStyle(
                   fontFamily: 'PressStart2P',
-                  color: themeColor.withOpacity(0.7),
+                  color: themeColor.withValues(alpha: 0.7),
                   fontSize: 10,
                 ),
               ),
@@ -365,7 +365,7 @@ class _RogueHubScreenState extends State<RogueHubScreen> {
                 'TEAM VITALITY',
                 style: TextStyle(
                   fontFamily: 'PressStart2P',
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withValues(alpha: 0.7),
                   fontSize: 8,
                 ),
               ),
@@ -443,7 +443,7 @@ class _RogueHubScreenState extends State<RogueHubScreen> {
             'RUN INVENTORY',
             style: TextStyle(
               fontFamily: 'PressStart2P',
-              color: Colors.white.withOpacity(0.5),
+              color: Colors.white.withValues(alpha: 0.5),
               fontSize: 8,
             ),
           ),
@@ -469,9 +469,9 @@ class _RogueHubScreenState extends State<RogueHubScreen> {
       margin: const EdgeInsets.only(right: 12),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: themeColor.withOpacity(0.3)),
+        border: Border.all(color: themeColor.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -573,7 +573,7 @@ class _RogueTeamCard extends StatelessWidget {
         color: Colors.black54,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isFainted ? Colors.red.withOpacity(0.5) : Colors.white12,
+          color: isFainted ? Colors.red.withValues(alpha: 0.5) : Colors.white12,
           width: 1.5,
         ),
       ),
@@ -590,7 +590,7 @@ class _RogueTeamCard extends StatelessWidget {
                   width: 90,
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: themeColor.withOpacity(0.1),
+                    color: themeColor.withValues(alpha: 0.1),
                     border: const Border(
                       right: BorderSide(color: Colors.white10),
                     ),
@@ -693,7 +693,7 @@ class _RogueTeamCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.03),
+              color: Colors.white.withValues(alpha: 0.03),
               border: const Border(top: BorderSide(color: Colors.white10)),
             ),
             child: Row(
@@ -796,7 +796,7 @@ class _RogueTeamCard extends StatelessWidget {
                 ctx,
                 label: 'VIEW SUMMARY',
                 icon: Icons.info_outline,
-                color: Colors.orangeAccent.withOpacity(0.8),
+                color: Colors.orangeAccent.withValues(alpha: 0.8),
                 onPressed: () {
                   Navigator.pop(ctx);
                   Navigator.push(
@@ -851,7 +851,7 @@ class _RogueTeamCard extends StatelessWidget {
                 label: 'REMOVE ITEM',
                 icon: Icons.delete_outline,
                 enabled: member.equippedTalisman != null,
-                color: Colors.redAccent.withOpacity(0.8),
+                color: Colors.redAccent.withValues(alpha: 0.8),
                 onPressed: () {
                   Navigator.pop(ctx);
                   Provider.of<UserState>(
@@ -872,7 +872,7 @@ class _RogueTeamCard extends StatelessWidget {
                             .inventory['nature_mint'] ??
                         0) >
                     0,
-                color: Colors.greenAccent.withOpacity(0.8),
+                color: Colors.greenAccent.withValues(alpha: 0.8),
                 onPressed: () {
                   Navigator.pop(ctx);
                   _showNatureSelection(context);

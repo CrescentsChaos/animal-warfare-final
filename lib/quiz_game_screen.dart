@@ -251,18 +251,18 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
         answerText == _selectedAnswer &&
         answerText != _correctAnswer;
 
-    Color borderColor = AppColors.highlightColor.withOpacity(0.5);
+    Color borderColor = AppColors.highlightColor.withValues(alpha: 0.5);
     Color textColor = Colors.white;
-    Color bgColor = Colors.black.withOpacity(0.3);
+    Color bgColor = Colors.black.withValues(alpha: 0.3);
 
     if (isCorrect) {
       borderColor = AppColors.correctGreen;
       textColor = AppColors.correctGreen;
-      bgColor = AppColors.correctGreen.withOpacity(0.1);
+      bgColor = AppColors.correctGreen.withValues(alpha: 0.1);
     } else if (isWrong) {
       borderColor = AppColors.wrongRed;
       textColor = AppColors.wrongRed;
-      bgColor = AppColors.wrongRed.withOpacity(0.1);
+      bgColor = AppColors.wrongRed.withValues(alpha: 0.1);
     }
 
     return AnimatedContainer(
@@ -332,7 +332,7 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
       return Container(
         padding: const EdgeInsets.all(32),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.4),
+          color: Colors.black.withValues(alpha: 0.4),
           borderRadius: BorderRadius.circular(4),
           border: Border.all(color: AppColors.highlightColor, width: 2),
         ),
@@ -397,7 +397,7 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
             image: const AssetImage('assets/biomes/savanna-bg.png'),
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(
-              Colors.black.withOpacity(0.7),
+              Colors.black.withValues(alpha: 0.7),
               BlendMode.darken,
             ),
           ),
@@ -572,12 +572,12 @@ class __QuizSpriteDisplayState extends State<_QuizSpriteDisplay> {
       width: widget.width,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.4),
+        color: Colors.black.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: AppColors.highlightColor, width: 2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.5),
+            color: Colors.black.withValues(alpha: 0.5),
             offset: const Offset(4, 4),
             blurRadius: 0,
           ),

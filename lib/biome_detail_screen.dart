@@ -245,9 +245,9 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
     final timeStr = "$hour:$minute";
     final isNight = _getTimeOfDay() == 'night';
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.only(left: 8),
+      alignment: Alignment.centerLeft,
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.5),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: _biomeHighlightColor, width: 1),
       ),
@@ -561,35 +561,38 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
           if (user == null) return const SizedBox.shrink();
           final progress = user.stamina / 100;
           return Container(
-            width: 90,
-            margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-            padding: const EdgeInsets.symmetric(horizontal: 4),
+            width: 100,
+            height: 24,
+            margin: const EdgeInsets.only(right: 8),
             decoration: BoxDecoration(
               border: Border.all(color: _biomeHighlightColor, width: 2),
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(12),
               color: _biomeDarkColor,
             ),
+            clipBehavior: Clip.antiAlias,
             child: Stack(
               children: [
                 FractionallySizedBox(
                   widthFactor: progress,
                   child: Container(
                     decoration: BoxDecoration(
-                      color: user.stamina > 25
-                          ? Colors.greenAccent[400]
-                          : Colors.redAccent,
-                      borderRadius: BorderRadius.circular(2),
+                      gradient: LinearGradient(
+                        colors: user.stamina > 25
+                            ? [Colors.greenAccent, Colors.green]
+                            : [Colors.redAccent, Colors.red],
+                      ),
                     ),
                   ),
                 ),
                 Center(
                   child: Text(
                     '${user.stamina}/100',
-                    style: TextStyle(
-                      color: user.stamina > 50 ? Colors.black : Colors.white,
+                    style: const TextStyle(
+                      color: Colors.white,
                       fontFamily: 'PressStart2P',
-                      fontSize: 8,
+                      fontSize: 7,
                       fontWeight: FontWeight.bold,
+                      shadows: [Shadow(color: Colors.black, blurRadius: 2)],
                     ),
                   ),
                 ),
@@ -605,18 +608,16 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          children: [
-            Expanded(child: Text(widget.biomeName.toUpperCase())),
-            _buildClock(),
-          ],
-        ),
+        centerTitle: true,
+        title: Text(widget.biomeName.toUpperCase()),
         backgroundColor: _biomeDarkColor,
         titleTextStyle: TextStyle(
           color: _biomeHighlightColor,
           fontFamily: 'PressStart2P',
           fontSize: 14,
         ),
+        leading: _buildClock(),
+        leadingWidth: 100,
         actions: [
           IconButton(
             icon: Icon(Icons.shopping_cart, color: AppColors.highlightColor),
@@ -638,13 +639,13 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
             fit: BoxFit.cover,
             colorFilter: _getTimeOfDay() == 'day'
                 ? ColorFilter.mode(
-                    _biomeDarkColor.withOpacity(0.5),
+                    _biomeDarkColor.withValues(alpha: 0.5),
                     BlendMode.darken,
                   )
                 : ColorFilter.mode(
                     _getTimeOfDay() == 'evening'
-                        ? Colors.orangeAccent.withOpacity(0.3)
-                        : Colors.indigo[900]!.withOpacity(0.5),
+                        ? Colors.orangeAccent.withValues(alpha: 0.3)
+                        : Colors.indigo[900]!.withValues(alpha: 0.5),
                     BlendMode.darken,
                   ),
           ),
@@ -667,7 +668,7 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
                         fontSize: 18,
                         shadows: [
                           Shadow(
-                            color: _biomeHighlightColor.withOpacity(0.5),
+                            color: _biomeHighlightColor.withValues(alpha: 0.5),
                             blurRadius: 5.0,
                             offset: const Offset(1, 1),
                           ),
@@ -709,177 +710,208 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
 
   Widget _buildEncounterResultCard(Organism organism) {
     final bool isNameVisible = _isDiscovered(organism) || _isNameRevealed;
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20.0),
-      decoration: BoxDecoration(
-        color: _biomeDarkColor.withOpacity(0.8),
-        border: Border.all(color: _rarityHighlightColor, width: 3),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: _rarityHighlightColor.withOpacity(0.5),
-            blurRadius: 10,
-            spreadRadius: 3,
-          ),
-        ],
+    return Card(
+      elevation: 12,
+      shadowColor: _rarityHighlightColor.withValues(alpha: 0.6),
+      color: _biomeDarkColor.withValues(alpha: 0.9),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: BorderSide(color: _rarityHighlightColor, width: 3),
       ),
-      child: Column(
-        children: [
-          Text(
-            isNameVisible ? 'ENCOUNTER:' : 'UNKNOWN ANIMAL DETECTED:',
-            style: TextStyle(
-              color: Colors.white,
-              fontFamily: 'PressStart2P',
-              fontSize: 14,
-              shadows: [
-                Shadow(
-                  color: _rarityHighlightColor.withOpacity(0.8),
-                  blurRadius: 8.0,
-                ),
-              ],
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              isNameVisible ? 'ENCOUNTER' : 'UNKNOWN ANIMAL',
+              style: TextStyle(
+                color: Colors.white,
+                fontFamily: 'PressStart2P',
+                fontSize: 12,
+                letterSpacing: 2.0,
+                shadows: [
+                  Shadow(color: _rarityHighlightColor, blurRadius: 10.0),
+                ],
+              ),
             ),
-          ),
-          Text(
-            organism.rarity.toUpperCase(),
-            style: TextStyle(
-              color: _getRarityColor(organism.rarity),
-              fontFamily: 'PressStart2P',
-              fontSize: 20,
-              shadows: [
-                Shadow(
-                  color: _getRarityHighlightColor(
-                    organism.rarity,
-                  ).withOpacity(0.8),
-                  blurRadius: 10.0,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 10),
-          Divider(color: _rarityHighlightColor, thickness: 2),
-          const SizedBox(height: 10),
-          _OrganismSpriteDisplay(
-            organism: organism,
-            isNameVisible: isNameVisible,
-            silhouetteColor: Colors.black,
-            height: 200,
-            fit: BoxFit.contain,
-          ),
-          const SizedBox(height: 12),
-          if (isNameVisible)
+            const SizedBox(height: 8),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               decoration: BoxDecoration(
-                color: _biomeBaseColor.withOpacity(0.4),
-                borderRadius: BorderRadius.circular(4),
-                border: Border.all(color: _biomeHighlightColor),
+                color: _rarityHighlightColor.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                organism.name.toUpperCase(),
+                organism.rarity.toUpperCase(),
                 style: TextStyle(
-                  color: _biomeHighlightColor,
+                  color: _getRarityColor(organism.rarity),
                   fontFamily: 'PressStart2P',
                   fontSize: 16,
-                ),
-              ),
-            )
-          else
-            ElevatedButton(
-              onPressed: () => _revealName(organism),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _biomeHighlightColor.withOpacity(0.8),
-                shape: const StadiumBorder(
-                  side: BorderSide(color: Colors.black, width: 2),
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 15,
-                ),
-              ),
-              child: Text(
-                'IDENTIFY',
-                style: TextStyle(
-                  color: _biomeDarkColor,
-                  fontFamily: 'PressStart2P',
-                  fontSize: 14,
+                  shadows: [
+                    Shadow(
+                      color: _getRarityHighlightColor(
+                        organism.rarity,
+                      ).withValues(alpha: 0.6),
+                      blurRadius: 8.0,
+                    ),
+                  ],
                 ),
               ),
             ),
-          const SizedBox(height: 30),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: isNameVisible
-                      ? () => _onEncounterFound(organism)
-                      : () => _displayMessage(
-                          "You cannot fight an unidentified animal!",
-                        ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: isNameVisible
-                        ? _rarityHighlightColor
-                        : Colors.grey.shade600,
-                    shape: const StadiumBorder(
-                      side: BorderSide(color: Colors.black, width: 3),
-                    ),
+            const SizedBox(height: 16),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 220),
+              child: _OrganismSpriteDisplay(
+                organism: organism,
+                isNameVisible: isNameVisible,
+                silhouetteColor: Colors.black.withValues(alpha: 0.8),
+                height: 200,
+                fit: BoxFit.contain,
+              ),
+            ),
+            const SizedBox(height: 16),
+            if (isNameVisible)
+              Container(
+                margin: const EdgeInsets.only(bottom: 24),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      _biomeBaseColor.withValues(alpha: 0.6),
+                      _biomeDarkColor,
+                    ],
                   ),
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: _biomeHighlightColor, width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: _biomeHighlightColor.withValues(alpha: 0.3),
+                      blurRadius: 6,
+                    ),
+                  ],
+                ),
+                child: Text(
+                  organism.name.toUpperCase(),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontFamily: 'PressStart2P',
+                    fontSize: 18,
+                    shadows: const [
+                      Shadow(
+                        color: Colors.black,
+                        offset: Offset(2, 2),
+                        blurRadius: 2,
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else ...[
+              ElevatedButton.icon(
+                onPressed: () => _revealName(organism),
+                icon: const Icon(
+                  Icons.psychology,
+                  color: Colors.black,
+                  size: 18,
+                ),
+                label: const Text(
+                  'IDENTIFY',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontFamily: 'PressStart2P',
+                    fontSize: 12,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _biomeHighlightColor,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 16,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: const BorderSide(color: Colors.black, width: 2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+            ],
+            Row(
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: ElevatedButton(
+                    onPressed: isNameVisible
+                        ? () => _onEncounterFound(organism)
+                        : () => _displayMessage(
+                            "You cannot fight an unidentified animal!",
+                          ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isNameVisible
+                          ? _rarityHighlightColor
+                          : Colors.grey.shade800,
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      elevation: 8,
+                    ),
                     child: Text(
                       isNameVisible ? 'FIGHT' : 'LOCKED',
                       style: const TextStyle(
-                        color: Colors.black,
+                        fontFamily: 'PressStart2P',
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  flex: 2,
+                  child: ElevatedButton(
+                    onPressed: _startExploration,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black26,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        side: BorderSide(color: Colors.white24, width: 2),
+                      ),
+                    ),
+                    child: const Text(
+                      'RUN',
+                      style: TextStyle(
                         fontFamily: 'PressStart2P',
                         fontSize: 14,
                       ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: _startExploration,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _biomeDarkColor.withOpacity(0.8),
-                    shape: StadiumBorder(
-                      side: BorderSide(color: _biomeHighlightColor, width: 2),
-                    ),
-                  ),
-                  child: Text(
-                    'RUN',
-                    style: TextStyle(
-                      color: _biomeHighlightColor,
-                      fontFamily: 'PressStart2P',
-                      fontSize: 14,
-                    ),
-                  ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            GestureDetector(
+              onTap: _startExploration,
+              child: Text(
+                'SKIP & CONTINUE EXPLORING',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.5),
+                  fontFamily: 'PressStart2P',
+                  fontSize: 7,
+                  letterSpacing: 1.0,
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: _startExploration,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _biomeDarkColor.withOpacity(0.7),
-              shape: StadiumBorder(
-                side: BorderSide(color: _rarityHighlightColor, width: 2),
-              ),
-              padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
             ),
-            child: Text(
-              'EXPLORE',
-              style: TextStyle(
-                color: _rarityHighlightColor,
-                fontFamily: 'PressStart2P',
-                fontSize: 14,
-              ),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

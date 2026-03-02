@@ -65,7 +65,7 @@ class _TailwindPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withOpacity(0.15)
+      ..color = Colors.white.withValues(alpha: 0.15)
       ..strokeWidth = 1.0
       ..strokeCap = StrokeCap.round;
 
@@ -181,7 +181,7 @@ class _MistyTerrainPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withOpacity(0.2)
+      ..color = Colors.white.withValues(alpha: 0.2)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 15);
 
     // Glowing mist on ground
@@ -200,7 +200,7 @@ class _MistyTerrainPainter extends CustomPainter {
       canvas.drawCircle(
         Offset(x, y),
         2 + math.sin(progress * 10 + i) * 1,
-        Paint()..color = Colors.white.withOpacity(opacity),
+        Paint()..color = Colors.white.withValues(alpha: opacity),
       );
     }
   }
@@ -219,7 +219,7 @@ class _ElectricTerrainPainter extends CustomPainter {
     final random = math.Random((progress * 20).floor());
     if (random.nextDouble() < 0.2) {
       final paint = Paint()
-        ..color = Colors.yellowAccent.withOpacity(0.3)
+        ..color = Colors.yellowAccent.withValues(alpha: 0.3)
         ..strokeWidth = 2
         ..style = PaintingStyle.stroke;
 
@@ -241,7 +241,7 @@ class _ElectricTerrainPainter extends CustomPainter {
     // Electric hum (ground glow)
     canvas.drawRect(
       Rect.fromLTWH(0, size.height * 0.8, size.width, size.height * 0.2),
-      Paint()..color = Colors.yellow.withOpacity(0.1),
+      Paint()..color = Colors.yellow.withValues(alpha: 0.1),
     );
   }
 
@@ -258,7 +258,7 @@ class _GrassyTerrainPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     canvas.drawRect(
       Rect.fromLTWH(0, size.height * 0.7, size.width, size.height * 0.3),
-      Paint()..color = Colors.green.withOpacity(0.15),
+      Paint()..color = Colors.green.withValues(alpha: 0.15),
     );
 
     // Rising leaves
@@ -270,7 +270,7 @@ class _GrassyTerrainPainter extends CustomPainter {
       final y = ((rand.nextDouble() - progress * 0.2) % 1.0) * size.height;
 
       if (y > size.height * 0.5) {
-        final leafPaint = Paint()..color = Colors.greenAccent.withOpacity(0.3);
+        final leafPaint = Paint()..color = Colors.greenAccent.withValues(alpha: 0.3);
         canvas.drawOval(
           Rect.fromCenter(center: Offset(x, y), width: 8, height: 4),
           leafPaint,
@@ -292,11 +292,11 @@ class _PsychicTerrainPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     canvas.drawRect(
       Offset.zero & size,
-      Paint()..color = Colors.indigo.withOpacity(0.1),
+      Paint()..color = Colors.indigo.withValues(alpha: 0.1),
     );
 
     final paint = Paint()
-      ..color = Colors.deepPurple.withOpacity(0.2)
+      ..color = Colors.deepPurple.withValues(alpha: 0.2)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 30);
 
     for (int i = 0; i < 5; i++) {

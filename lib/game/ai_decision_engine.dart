@@ -26,6 +26,17 @@ enum TeamArchetype {
   defensiveCore, // 42: Bulk up and rotate tanks
   setupSweeper, // 43: Setup move then sweep
   trickRoom, // 44: Set Trick Room; slow heavy attackers sweep
+  tailwindSpeed, // 45: Set Tailwind; outspeed everything
+  dualScreens, // 46: Set Reflect/Light Screen; minimize damage
+  prioritySweeper, // 47: Focus on priority moves (Aqua Jet/Bullet Punch)
+  perishTrapper, // 48: Trap and use Perish Song
+  gimmickyAssist, // 49: Metronome/Assist/Copycat chaos
+  criticalFocus, // 50: High crit rate moves/items
+  recoilReckless, // 51: Focus on high-damage recoil moves
+  restLoop, // 52: Rest/Sleep Talk/Snore
+  evasionBuffer, // 53: Double Team/Minimize (Annoying)
+  bulkyBruiser, // 54: High HP/Attack but slow
+  toxicStall, // 55: Focus purely on Toxic/Protect
 }
 
 class AIDecisionEngine {
@@ -719,7 +730,7 @@ class AIDecisionEngine {
             score -= 600; // Don't turn it off if we are a TR team!
           }
         }
-        // Under TR, slow mons are \"fast\" — prize heavy-damage moves
+        // Under TR, slow mons are "fast" — prize heavy-damage moves
         if (move.baseDamage > 0) score += 80;
         if (move.baseDamage > 100) score += 60;
         if (isStabMove) score += 40;
@@ -729,6 +740,93 @@ class AIDecisionEngine {
         // Status moves are only good on the setup turn
         if (move.category == MoveCategory.status && move.name != 'Trick Room')
           score -= 60;
+        break;
+
+      case TeamArchetype.tailwindSpeed:
+        final hasTailwind = attacker.organism.selectedMoveNames.contains(
+          'Tailwind',
+        );
+        if (hasTailwind && move.name == 'Tailwind') {
+          score += 500;
+        }
+        if (move.baseDamage > 0) score += 40;
+        if (isFaster) score += 40;
+        break;
+
+      case TeamArchetype.dualScreens:
+        if (move.name == 'Reflect' ||
+            move.name == 'Light Screen' ||
+            move.name == 'Aurora Veil') {
+          score += 400;
+        }
+        if (move.baseDamage > 0) score += 30;
+        break;
+
+      case TeamArchetype.prioritySweeper:
+        if (move.priority > 0) {
+          score += 150;
+          if (canKO) score += 200;
+        }
+        if (move.baseDamage > 80) score += 40;
+        break;
+
+      case TeamArchetype.perishTrapper:
+        if (move.name == 'Perish Song') score += 500;
+        if (move.effects.any((e) => e.type == MoveEffectType.trapIndices))
+          score += 300;
+        if (move.name == 'Protect') score += 100;
+        break;
+
+      case TeamArchetype.gimmickyAssist:
+        if (move.name == 'Metronome' ||
+            move.name == 'Assist' ||
+            move.name == 'Copycat') {
+          score += 500;
+        }
+        score += Random().nextDouble() * 50; // Extra chaos
+        break;
+
+      case TeamArchetype.criticalFocus:
+        if (move.critRate > 0) score += 100;
+        if (move.name == 'Focus Energy') score += 200;
+        break;
+
+      case TeamArchetype.recoilReckless:
+        if (move.recoilPercent > 0) score += 150;
+        if (move.baseDamage > 100) score += 80;
+        break;
+
+      case TeamArchetype.restLoop:
+        if (move.name == 'Rest') {
+          if (attackerHpRatio < 0.4)
+            score += 400;
+          else
+            score -= 100;
+        }
+        if (move.name == 'Sleep Talk' || move.name == 'Snore') {
+          final isAsleep = attacker.statusEffects.any(
+            (se) => se.type == StatusEffectType.sleep,
+          );
+          score += isAsleep ? 500 : -100;
+        }
+        break;
+
+      case TeamArchetype.evasionBuffer:
+        if (move.name == 'Double Team' || move.name == 'Minimize') score += 300;
+        if (move.baseDamage > 0 && canKO) score += 100;
+        break;
+
+      case TeamArchetype.bulkyBruiser:
+        if (move.baseDamage > 80) score += 60;
+        if (attacker.maxHealth > 120) score += 30;
+        if (move.priority > 0) score += 40;
+        break;
+
+      case TeamArchetype.toxicStall:
+        if (move.name == 'Toxic') score += 300;
+        if (move.name == 'Protect') score += 200;
+        if (move.effects.any((e) => e.type == MoveEffectType.heal))
+          score += 150;
         break;
     }
 

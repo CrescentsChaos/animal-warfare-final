@@ -165,7 +165,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     vertical: 4.h,
                   ),
                   decoration: BoxDecoration(
-                    color: user.rankColor.withOpacity(0.2),
+                    color: user.rankColor.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(color: user.rankColor, width: 1),
                   ),
@@ -348,7 +348,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: LinearProgressIndicator(
               value: progress,
               minHeight: 12.h,
-              backgroundColor: Colors.white.withOpacity(0.05),
+              backgroundColor: Colors.white.withValues(alpha: 0.05),
               color: AppColors.highlightColor,
             ),
           ),
@@ -393,7 +393,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       borderRadius: BorderRadius.circular(12),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: Colors.white10),
         ),
@@ -422,12 +422,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Colors.purple.withOpacity(0.1),
-            Colors.black.withOpacity(0.3),
+            Colors.purple.withValues(alpha: 0.1),
+            Colors.black.withValues(alpha: 0.3),
           ],
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.purple.withOpacity(0.2)),
+        border: Border.all(color: Colors.purple.withValues(alpha: 0.2)),
       ),
       child: Column(
         children: [
@@ -483,9 +483,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           margin: EdgeInsets.only(bottom: 12.h),
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.03),
+            color: Colors.white.withValues(alpha: 0.03),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white.withOpacity(0.05)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

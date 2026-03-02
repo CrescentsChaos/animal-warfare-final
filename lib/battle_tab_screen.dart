@@ -380,7 +380,7 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
             end: Alignment.bottomCenter,
             colors: [
               AppColors.secondaryButtonColor,
-              AppColors.primaryButtonColor.withOpacity(0.3),
+              AppColors.primaryButtonColor.withValues(alpha: 0.3),
             ],
           ),
         ),
@@ -413,7 +413,7 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
                   description:
                       'Battle with your team against a randomized AI team with items!',
                   icon: Icons.psychology,
-                  color: AppColors.primaryButtonColor.withOpacity(0.8),
+                  color: AppColors.primaryButtonColor.withValues(alpha: 0.8),
                   onTap: () {
                     if (user == null || user.battleTeam.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -449,7 +449,7 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
                         ? 'CONTINUE: Resume your high-stakes run!'
                         : 'START: Randomized floors. Permadeath. High rewards! Record: Floor ${user.rogueLikeState.highestFloor}',
                     icon: Icons.vignette,
-                    color: const Color(0xFF4B0082).withOpacity(0.8), // Indigo
+                    color: const Color(0xFF4B0082).withValues(alpha: 0.8), // Indigo
                     onTap: () => _startRogueLike(userState),
                     onSecondaryAction: user.rogueLikeState.isActive
                         ? () => _confirmResetRun(context, userState)
@@ -465,7 +465,7 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
                   description:
                       'Both teams are completely randomized. Pure chaos!',
                   icon: Icons.shuffle,
-                  color: const Color(0xFF8B0000).withOpacity(0.8),
+                  color: const Color(0xFF8B0000).withValues(alpha: 0.8),
                   onTap: () {
                     final playerRes = _generateRandomTeam(withTalismans: true);
                     final aiRes = _generateRandomTeam(withTalismans: true);
@@ -485,7 +485,7 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
                   description:
                       'Two vs two! Pick targets, use spread moves, and master doubles strategy!',
                   icon: Icons.group,
-                  color: const Color(0xFF005C4B).withOpacity(0.9),
+                  color: const Color(0xFF005C4B).withValues(alpha: 0.9),
                   onTap: _startDoublesBattle,
                 ),
 
@@ -496,7 +496,7 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
                   description:
                       'Check winrates and global ranks for every animal species!',
                   icon: Icons.emoji_events,
-                  color: Colors.amber.shade900.withOpacity(0.8),
+                  color: Colors.amber.shade900.withValues(alpha: 0.8),
                   onTap: () {
                     Navigator.push(
                       context,

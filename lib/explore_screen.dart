@@ -223,7 +223,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
       onTap: () => _navigateToBiomeDetail(context, biomeName), // UPDATED
       child: Container(
         decoration: BoxDecoration(
-          color: secondaryButtonColor.withOpacity(0.8),
+          color: secondaryButtonColor.withValues(alpha: 0.8),
           borderRadius: BorderRadius.circular(8.0),
           border: Border.all(color: highlightColor, width: 2),
         ),
@@ -238,7 +238,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                 fit: BoxFit.cover,
                 // Darken the image for better text readability
                 colorBlendMode: BlendMode.darken,
-                color: Colors.black.withOpacity(0.5),
+                color: Colors.black.withValues(alpha: 0.5),
                 errorBuilder: (context, error, stackTrace) => Container(
                   color: Colors.black26,
                   child: const Center(
@@ -291,7 +291,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
             image: const AssetImage('assets/main.png'),
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(
-              Colors.black.withOpacity(0.7),
+              Colors.black.withValues(alpha: 0.7),
               BlendMode.darken,
             ),
           ),

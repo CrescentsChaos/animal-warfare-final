@@ -77,7 +77,7 @@ PageRouteBuilder createCloudTransitionRoute(Widget page) {
                       repeat: ImageRepeat.repeatX,
                       alignment: Alignment.centerLeft,
                       // Use BlendMode.screen or another mode to help with transparency/white clouds
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                       colorBlendMode: BlendMode.modulate,
                       // Fallback text if image isn't found
                       errorBuilder: (context, error, stackTrace) => const Center(
@@ -96,7 +96,7 @@ PageRouteBuilder createCloudTransitionRoute(Widget page) {
                         fit: BoxFit.cover,
                         repeat: ImageRepeat.repeatX,
                         alignment: Alignment.centerRight,
-                        color: Colors.white.withOpacity(0.5),
+                        color: Colors.white.withValues(alpha: 0.5),
                         colorBlendMode: BlendMode.modulate,
                       ),
                     ),

@@ -20,7 +20,7 @@ class QuizScreen extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.5),
+            color: Colors.black.withValues(alpha: 0.5),
             offset: const Offset(2, 2),
             blurRadius: 0,
           ),
@@ -38,9 +38,9 @@ class QuizScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.black.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(4),
-                    border: Border.all(color: AppColors.highlightColor.withOpacity(0.4)),
+                    border: Border.all(color: AppColors.highlightColor.withValues(alpha: 0.4)),
                   ),
                   child: Icon(type.icon, color: AppColors.highlightColor, size: 24),
                 ),
@@ -88,7 +88,7 @@ class QuizScreen extends StatelessWidget {
       backgroundColor: AppColors.secondaryButtonColor,
       appBar: AppBar(
         title: const Text('QUIZ LAB'),
-        backgroundColor: Colors.black.withOpacity(0.3),
+        backgroundColor: Colors.black.withValues(alpha: 0.3),
         elevation: 0,
         titleTextStyle: AppTextStyles.headline(context, baseSize: 16),
         centerTitle: true,
@@ -102,7 +102,7 @@ class QuizScreen extends StatelessWidget {
             image: const AssetImage('assets/biomes/savanna-bg.png'), 
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(
-              Colors.black.withOpacity(0.6),
+              Colors.black.withValues(alpha: 0.6),
               BlendMode.darken,
             ),
           ),

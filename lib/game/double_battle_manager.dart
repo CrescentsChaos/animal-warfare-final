@@ -16,6 +16,7 @@ import 'package:animal_warfare/game/ai_decision_engine.dart';
 import 'package:animal_warfare/game/player_history.dart';
 import 'package:animal_warfare/game/battle_models.dart';
 import 'package:animal_warfare/services/audio_service.dart';
+import 'package:animal_warfare/models/talisman.dart';
 
 // ──────────────────────────────────────────────
 // Enums
@@ -107,6 +108,14 @@ class DoubleBattleManager extends ChangeNotifier {
   TeamArchetype opponentArchetype = TeamArchetype.balanced;
   final AudioService _audio = AudioService.instance;
   bool _disposed = false;
+  bool _isProcessing = false;
+  bool get isProcessing => _isProcessing;
+
+  // GIMMICK USAGE TRACKING (Side-level)
+  bool playerTitanizeUsed = false;
+  bool playerPrismorphUsed = false;
+  bool opponentTitanizeUsed = false;
+  bool opponentPrismorphUsed = false;
 
   @override
   void dispose() {
@@ -163,6 +172,7 @@ class DoubleBattleManager extends ChangeNotifier {
         playerTeam[playerIdx1],
         isRogueMode: isRogueMode,
       );
+      _checkMimic(playerSlot1!);
     } else {
       playerIdx1 = -1;
       playerSlot1 = null;
@@ -173,6 +183,7 @@ class DoubleBattleManager extends ChangeNotifier {
         playerTeam[playerIdx2],
         isRogueMode: isRogueMode,
       );
+      _checkMimic(playerSlot2!);
     } else {
       playerIdx2 = -1;
       playerSlot2 = null;
@@ -184,6 +195,7 @@ class DoubleBattleManager extends ChangeNotifier {
         opponentTeam[opponentIdx1],
         isRogueMode: isRogueMode,
       );
+      _checkMimic(opponentSlot1!);
     } else {
       opponentIdx1 = -1;
       opponentSlot1 = null;
@@ -194,6 +206,7 @@ class DoubleBattleManager extends ChangeNotifier {
         opponentTeam[opponentIdx2],
         isRogueMode: isRogueMode,
       );
+      _checkMimic(opponentSlot2!);
     } else {
       opponentIdx2 = -1;
       opponentSlot2 = null;
@@ -228,6 +241,20 @@ class DoubleBattleManager extends ChangeNotifier {
   }
 
   Future<void> submitAction(Move move, DoubleTarget target) async {
+    if (_isProcessing) return;
+    _isProcessing = true;
+    notifyListeners();
+
+    // Thrash Lock enforcement
+    final attacker = currentState == DoubleBattleState.selectingForSlot1
+        ? playerSlot1
+        : playerSlot2;
+    if (attacker != null &&
+        attacker.thrashTurnCount > 0 &&
+        attacker.thrashMove != null) {
+      move = attacker.thrashMove!;
+    }
+
     final action = SlotAction.move(move, target);
     if (currentState == DoubleBattleState.selectingForSlot1) {
       pendingAction1 = action;
@@ -245,6 +272,10 @@ class DoubleBattleManager extends ChangeNotifier {
   }
 
   Future<void> submitSwitch(int benchIndex) async {
+    if (_isProcessing) return;
+    _isProcessing = true;
+    notifyListeners();
+
     final action = SlotAction.switchMon(benchIndex);
     if (currentState == DoubleBattleState.selectingForSlot1) {
       pendingAction1 = action;
@@ -253,10 +284,14 @@ class DoubleBattleManager extends ChangeNotifier {
         _addLog('What will ${_slotName(playerSlot2)} do?');
         notifyListeners();
       } else {
+        currentState = DoubleBattleState.executing;
+        notifyListeners();
         await _executeAllActions();
       }
     } else if (currentState == DoubleBattleState.selectingForSlot2) {
       pendingAction2 = action;
+      currentState = DoubleBattleState.executing;
+      notifyListeners();
       await _executeAllActions();
     }
   }
@@ -278,10 +313,25 @@ class DoubleBattleManager extends ChangeNotifier {
         )
         .toList();
 
-    for (final aiSlot in [opponentSlot1, opponentSlot2]) {
+    for (int i = 0; i < 2; i++) {
+      final aiSlot = i == 0 ? opponentSlot1 : opponentSlot2;
       if (aiSlot == null || aiSlot.health <= 0) continue;
 
-      final moves = _getMovesFor(aiSlot);
+      // AI GIMMICK TRIGGER: 60% HP
+      if (aiSlot.health < aiSlot.maxHealth * 0.6) {
+        if (!opponentTitanizeUsed &&
+            !aiSlot.hasTitanizedThisBattle &&
+            !aiSlot.hasPrismorphedThisBattle) {
+          activateTitanize(isPlayer: false, slotIdx: i == 0 ? 1 : 2);
+        } else if (!opponentPrismorphUsed &&
+            !aiSlot.hasTitanizedThisBattle &&
+            !aiSlot.hasPrismorphedThisBattle) {
+          activatePrismorph(isPlayer: false, slotIdx: i == 0 ? 1 : 2);
+        }
+      }
+
+      // Re-fetch moves after potential gimmick activation
+      final moves = getMovesFor(aiSlot);
       double bestScore = -double.infinity;
       SlotAction? bestAction;
 
@@ -348,6 +398,87 @@ class DoubleBattleManager extends ChangeNotifier {
     return alive.isNotEmpty ? alive : [DoubleTarget.playerSlot1];
   }
 
+  void _checkMimic(BattleOrganism org) {
+    if (org.abilities.any((a) => a.name == 'Mimic' || a.name == 'Mimicry')) {
+      final team = (org == playerSlot1 || org == playerSlot2)
+          ? playerTeam
+          : opponentTeam;
+      CapturedOrganism? disguiseTarget;
+      // Start from the end of the party
+      for (int i = team.length - 1; i >= 0; i--) {
+        if (team[i] != org.organism && team[i].currentHealth > 0) {
+          disguiseTarget = team[i];
+          break;
+        }
+      }
+      if (disguiseTarget != null) {
+        org.isDisguised = true;
+        org.disguisedAs = disguiseTarget;
+      }
+    }
+  }
+
+  ElementalType getDisplayType(BattleOrganism attacker, Move move) {
+    // This logic should ideally be shared, but since DoubleBattleManager
+    // is separate, we'll implement a concise version here.
+    ElementalType moveType = move.type;
+
+    // Weather Ball
+    if (move.name == 'Weather Ball' ||
+        move.effects.any((e) => e.type == MoveEffectType.weatherBall)) {
+      // In DoubleBattleManager we don't have a currentWeather object like in BattleManager?
+      // Let's check the fields. (Actually, DoubleBattleManager seems to lack weather state)
+      // I will implement based on field if it exists, otherwise return base.
+    }
+
+    // Hidden Power
+    if (move.name == 'Hidden Power' ||
+        move.effects.any((e) => e.type == MoveEffectType.hiddenPower)) {
+      int typeIndex = 0;
+      final stats = [
+        'health',
+        'attack',
+        'defense',
+        'speed',
+        'power',
+        'resistance',
+      ];
+      for (int k = 0; k < stats.length; k++) {
+        if ((attacker.organism.individualValues[stats[k]] ?? 0) % 2 != 0) {
+          typeIndex += (1 << k);
+        }
+      }
+      final types = ElementalType.values
+          .where((t) => t != ElementalType.basic)
+          .toList();
+      moveType = types[(typeIndex * types.length / 64).floor()];
+    }
+
+    // Multi-Attack / Judgement
+    if (move.name == 'Multi-Attack' ||
+        move.name == 'Judgement' ||
+        move.effects.any((e) => e.type == MoveEffectType.multiAttack) ||
+        move.effects.any((e) => e.type == MoveEffectType.judgement)) {
+      final item = attacker.organism.equippedTalisman;
+      if (item != null) {
+        if (item.id.endsWith('_memory') || item.id.endsWith('_plate')) {
+          final part = item.id.split('_').first;
+          moveType = _getTypeFromItemName(part);
+        }
+      }
+    }
+
+    if (move.name == 'Revelation Dance') {
+      moveType = attacker.types.first;
+    }
+
+    return moveType;
+  }
+
+  ElementalType _getTypeFromItemName(String name) {
+    return ElementalTypeX.fromString(name);
+  }
+
   DamageResult calculateDamage(
     BattleOrganism attacker,
     BattleOrganism defender,
@@ -368,15 +499,41 @@ class DoubleBattleManager extends ChangeNotifier {
             50 +
         2;
 
+    // Use dynamic move type
+    final moveType = getDisplayType(attacker, move);
+
     // Type effectiveness
     double typeMod = 1.0;
     for (final defType in defender.types) {
-      typeMod *= TypeChart.getEffectiveness(move.type, defType);
+      typeMod *= TypeChart.getEffectiveness(moveType, defType);
     }
     dmg *= typeMod;
 
+    // Gem Boost
+    if (attacker.organism.equippedTalisman != null &&
+        !attacker.talismanConsumed) {
+      for (final effect in attacker.organism.equippedTalisman!.effects) {
+        if (effect.type == TalismanEffectType.gemBoost &&
+            effect.stat == moveType.toString().split('.').last.toLowerCase()) {
+          dmg *= effect.magnitude;
+        }
+      }
+    }
+
+    // Expert Belt
+    if (typeMod > 1.0 &&
+        attacker.organism.equippedTalisman != null &&
+        !attacker.talismanConsumed) {
+      for (final effect in attacker.organism.equippedTalisman!.effects) {
+        if (effect.type == TalismanEffectType.damageBoost &&
+            effect.condition == 'super_effective') {
+          dmg *= effect.magnitude;
+        }
+      }
+    }
+
     // STAB
-    if (attacker.types.contains(move.type)) dmg *= 1.5;
+    if (attacker.types.contains(moveType)) dmg *= 1.5;
 
     // Multi-target penalty
     dmg *= multiTargetPenalty;
@@ -384,7 +541,10 @@ class DoubleBattleManager extends ChangeNotifier {
     return DamageResult(dmg.round().clamp(1, 99999), typeMod, false);
   }
 
-  List<Move> _getMovesFor(BattleOrganism org) {
+  List<Move> getMovesFor(BattleOrganism org) {
+    if (org.isTitanized) {
+      return _buildMaxMoveSet(org);
+    }
     if (org.organism.selectedMoveNames.isEmpty) {
       org.organism.initializeDefaultMoves();
     }
@@ -395,7 +555,56 @@ class DoubleBattleManager extends ChangeNotifier {
     return moves;
   }
 
+  List<Move> _buildMaxMoveSet(BattleOrganism org) {
+    // We need to get the "base" moves first
+    if (org.organism.selectedMoveNames.isEmpty) {
+      org.organism.initializeDefaultMoves();
+    }
+    final baseMoves = org.organism.selectedMoveNames
+        .map((n) => Move.findOrCreate(n))
+        .toList();
+    if (baseMoves.isEmpty) baseMoves.add(Move.findOrCreate('Struggle'));
+
+    final usedTypes = <ElementalType>{};
+    final result = <Move>{}; // use Set to avoid duplicates
+    bool hasStatusMove = false;
+
+    for (final m in baseMoves) {
+      if (m.category == MoveCategory.status) {
+        hasStatusMove = true;
+      } else if (!usedTypes.contains(m.type)) {
+        usedTypes.add(m.type);
+        // Find the max move matching this type
+        final maxMove = Move.allMoves.firstWhere(
+          (mv) =>
+              mv.isTitanizeMove &&
+              mv.type == m.type &&
+              mv.category != MoveCategory.status,
+          orElse: () {
+            final fallback = Move.allMoves.firstWhere(
+              (mv) => mv.isTitanizeMove && mv.name == 'Max Strike',
+              orElse: () => m,
+            );
+            return fallback.copyWith(isTitanizeMove: true);
+          },
+        );
+        result.add(maxMove);
+      }
+    }
+    if (hasStatusMove || result.isEmpty) {
+      final guard = Move.allMoves.firstWhere(
+        (mv) => mv.name == 'Max Guard',
+        orElse: () => Move.findOrCreate('Max Guard'),
+      );
+      result.add(guard.copyWith(isTitanizeMove: true));
+    }
+    return result.toList();
+  }
+
   Future<void> _executeAllActions() async {
+    // Before processing, check for any pending gimmick activations for player
+    // (In reality, they are triggered by buttons that call the methods below)
+
     currentState = DoubleBattleState.executing;
     notifyListeners();
 
@@ -486,6 +695,8 @@ class DoubleBattleManager extends ChangeNotifier {
     if (!_isBattleOver()) {
       _transitionToSelection();
     }
+    _isProcessing = false;
+    notifyListeners();
   }
 
   Future<void> _executeAction(_ActionEntry entry) async {
@@ -497,6 +708,7 @@ class DoubleBattleManager extends ChangeNotifier {
       }
       final benchIdx = entry.action.switchBenchIndex!;
       final newOrg = BattleOrganism(playerTeam[benchIdx]);
+      _checkMimic(newOrg);
       playerBench.remove(benchIdx);
 
       // Return old mon to bench if it didn't faint (manual switch)
@@ -597,8 +809,31 @@ class DoubleBattleManager extends ChangeNotifier {
     required double multiTargetPenalty,
   }) async {
     // Accuracy check
-    if (Random().nextInt(100) >= move.accuracy) {
+    int accuracy = move.accuracy;
+    if (defender.organism.equippedTalisman != null &&
+        !defender.talismanConsumed) {
+      for (final effect in defender.organism.equippedTalisman!.effects) {
+        if (effect.stat == 'evasion') {
+          accuracy = (accuracy * (1.0 / effect.magnitude)).round();
+        }
+      }
+    }
+
+    if (Random().nextInt(100) >= accuracy) {
       _addLog('...but it missed!');
+
+      // Blunder Policy: Speed boost on miss
+      if (attacker.organism.equippedTalisman != null &&
+          !attacker.talismanConsumed) {
+        for (final effect in attacker.organism.equippedTalisman!.effects) {
+          if (effect.type == TalismanEffectType.missStatBoost) {
+            attacker.talismanConsumed = true;
+            attacker.isItemRevealed = true;
+            await _applyStatChange(attacker, effect.stat ?? 'speed', 2);
+          }
+        }
+      }
+
       notifyListeners();
       return;
     }
@@ -636,9 +871,47 @@ class DoubleBattleManager extends ChangeNotifier {
     // Random variance [0.85–1.0]
     dmg *= 0.85 + (Random().nextDouble() * 0.15);
 
-    // Apply damage
+    // Apply damage (Only once!)
     final finalDmg = dmg.round().clamp(1, 99999);
     defender.health = (defender.health - finalDmg).clamp(0, defender.maxHealth);
+
+    // Break Disguise (Mimic/Illusion)
+    if (defender.isDisguised && finalDmg > 0) {
+      defender.isDisguised = false;
+      defender.disguisedAs = null;
+      defender.isAbilityRevealed = true;
+      _addLog('${defender.organism.baseOrganism.name}\'s illusion wore off!');
+    }
+
+    // Consume Gem
+    if (attacker.organism.equippedTalisman != null &&
+        !attacker.talismanConsumed) {
+      for (final effect in attacker.organism.equippedTalisman!.effects) {
+        if (effect.type == TalismanEffectType.gemBoost &&
+            effect.stat == move.type.toString().split('.').last.toLowerCase()) {
+          attacker.talismanConsumed = true;
+          _addLog(
+            'The ${attacker.organism.equippedTalisman!.name} strengthened ${attacker.organism.baseOrganism.name}\'s power!',
+          );
+          break;
+        }
+      }
+    }
+
+    // Absorb Bulb: Power boost when hit by Aquatic
+    if (defender.organism.equippedTalisman != null &&
+        !defender.talismanConsumed &&
+        finalDmg > 0 &&
+        move.type == ElementalType.aquatic) {
+      for (final effect in defender.organism.equippedTalisman!.effects) {
+        if (effect.stat == 'power' && effect.condition == 'hit_by_aquatic') {
+          defender.talismanConsumed = true;
+          defender.isItemRevealed = true;
+          await _applyStatChange(defender, 'power', 1);
+        }
+      }
+    }
+
     defender.tookDamageThisTurn = true;
 
     if (typeMod > 1.0) _addLog('It\'s super effective!');
@@ -648,7 +921,16 @@ class DoubleBattleManager extends ChangeNotifier {
 
     // Drain
     if (move.drainPercent > 0) {
-      final heal = (finalDmg * move.drainPercent).round();
+      double drainMult = move.drainPercent;
+      if (attacker.organism.equippedTalisman != null &&
+          !attacker.talismanConsumed) {
+        for (final effect in attacker.organism.equippedTalisman!.effects) {
+          if (effect.type == TalismanEffectType.drainBoost) {
+            drainMult *= effect.magnitude;
+          }
+        }
+      }
+      final heal = (finalDmg * drainMult).round();
       attacker.health = (attacker.health + heal).clamp(0, attacker.maxHealth);
       _addLog('${attacker.organism.baseOrganism.name} absorbed energy!');
     }
@@ -662,6 +944,25 @@ class DoubleBattleManager extends ChangeNotifier {
 
     // Apply secondary effects
     await _applyEffects(attacker, defender, move);
+
+    // Thrash/Outrage/Petal Dance Lock
+    if (move.effects.any((e) => e.type == MoveEffectType.thrash) &&
+        defender.health >= 0 &&
+        defender.tookDamageThisTurn) {
+      if (attacker.thrashTurnCount == 0) {
+        attacker.thrashTurnCount = 2 + Random().nextInt(2); // 2-3 turns
+        attacker.thrashMove = move;
+      }
+      attacker.thrashTurnCount--;
+      if (attacker.thrashTurnCount <= 0) {
+        _applyStatus(
+          attacker,
+          const StatusEffect(type: StatusEffectType.confusion),
+        );
+        attacker.thrashMove = null;
+        attacker.thrashTurnCount = 0;
+      }
+    }
 
     notifyListeners();
     if (!isTesting) await Future.delayed(const Duration(milliseconds: 800));
@@ -750,7 +1051,11 @@ class DoubleBattleManager extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _applyStatChange(BattleOrganism org, String stat, int stages) {
+  Future<void> _applyStatChange(
+    BattleOrganism org,
+    String stat,
+    int stages,
+  ) async {
     switch (stat.toLowerCase()) {
       case 'attack':
         org.attackStage = (org.attackStage + stages).clamp(-6, 6);
@@ -789,6 +1094,17 @@ class DoubleBattleManager extends ChangeNotifier {
 
   Future<void> _applyEndOfTurnEffects() async {
     for (final slot in _allActiveSlots()) {
+      if (slot.health <= 0) continue;
+
+      // Titanize duration check
+      if (slot.isTitanized) {
+        slot.titanizeTurnsLeft--;
+        if (slot.titanizeTurnsLeft <= 0) {
+          _revertTitanize(slot);
+        }
+      }
+
+      // Poison / Burn damage
       for (final se in List<StatusEffect>.from(slot.statusEffects)) {
         switch (se.type) {
           case StatusEffectType.poison:
@@ -812,6 +1128,37 @@ class DoubleBattleManager extends ChangeNotifier {
       }
       // Reset per-turn flags
       slot.tookDamageThisTurn = false;
+
+      // Binding Band / Clamping damage
+      if (slot.clampingTurns > 0) {
+        slot.clampingTurns--;
+        double trapMult = 1.0;
+        // Search for a source that is still on the field
+        final source = _allActiveSlots().firstWhere(
+          (s) =>
+              s != slot &&
+              s.organism.equippedTalisman != null &&
+              !s.talismanConsumed &&
+              s.organism.equippedTalisman!.effects.any(
+                (e) => e.type == TalismanEffectType.bindingBandBoost,
+              ),
+          orElse: () => slot, // dummy
+        );
+
+        if (source != slot) {
+          trapMult = 1.5;
+          source.isItemRevealed = true;
+        }
+
+        final damage = (slot.maxHealth * 0.125 * trapMult).round().clamp(
+          1,
+          99999,
+        );
+        slot.health = (slot.health - damage).clamp(0, slot.maxHealth);
+        _addLog(
+          '${slot.organism.baseOrganism.name} is hurt by the clamping effect!',
+        );
+      }
     }
     notifyListeners();
   }
@@ -859,6 +1206,7 @@ class DoubleBattleManager extends ChangeNotifier {
       final nextIdx = _popBench(opponentBench);
       opponentIdx1 = nextIdx;
       opponentSlot1 = BattleOrganism(opponentTeam[nextIdx]);
+      _checkMimic(opponentSlot1!);
       _addLog(
         'Opponent sent out ${opponentSlot1!.organism.baseOrganism.name}!',
       );
@@ -869,6 +1217,7 @@ class DoubleBattleManager extends ChangeNotifier {
       final nextIdx = _popBench(opponentBench);
       opponentIdx2 = nextIdx;
       opponentSlot2 = BattleOrganism(opponentTeam[nextIdx]);
+      _checkMimic(opponentSlot2!);
       _addLog(
         'Opponent sent out ${opponentSlot2!.organism.baseOrganism.name}!',
       );
@@ -895,18 +1244,26 @@ class DoubleBattleManager extends ChangeNotifier {
 
   /// Called from UI when the player picks a bench mon to send into [slotNumber].
   Future<void> confirmSwitch(int benchTeamIndex, int slotNumber) async {
+    currentState =
+        DoubleBattleState.executing; // Prevent UI loops while processing
+    notifyListeners();
+
     playerHistory.recordSwitch(benchTeamIndex);
-    final bo = BattleOrganism(playerTeam[benchTeamIndex]);
+    final newOrg = BattleOrganism(
+      playerTeam[benchTeamIndex],
+      isRogueMode: isRogueMode,
+    );
+    _checkMimic(newOrg);
     playerBench.remove(benchTeamIndex);
 
     if (slotNumber == 1) {
       playerIdx1 = benchTeamIndex;
-      playerSlot1 = bo;
+      playerSlot1 = newOrg;
     } else {
       playerIdx2 = benchTeamIndex;
-      playerSlot2 = bo;
+      playerSlot2 = newOrg;
     }
-    _addLog('Go, ${bo.organism.baseOrganism.name}!');
+    _addLog('Go, ${newOrg.organism.baseOrganism.name}!');
     switchNeededSlot = null;
     notifyListeners();
     if (!isTesting) await Future.delayed(const Duration(milliseconds: 1000));
@@ -967,7 +1324,21 @@ class DoubleBattleManager extends ChangeNotifier {
     ].whereType<BattleOrganism>().toList();
   }
 
-  int _effectiveSpeed(BattleOrganism org) => org.currentSpeed;
+  int _effectiveSpeed(BattleOrganism org) {
+    double speed = org.currentSpeed.toDouble();
+
+    // Custap Berry: Priority boost (simulated with large speed boost at low HP)
+    if (org.organism.equippedTalisman != null && !org.talismanConsumed) {
+      for (final effect in org.organism.equippedTalisman!.effects) {
+        if (effect.type == TalismanEffectType.priorityLowHp &&
+            org.health <= org.maxHealth * effect.threshold) {
+          speed *= 100.0;
+        }
+      }
+    }
+
+    return speed.round();
+  }
 
   String _slotName(BattleOrganism? slot) =>
       slot?.organism.baseOrganism.name ?? '---';
@@ -976,6 +1347,101 @@ class DoubleBattleManager extends ChangeNotifier {
     battleLog = msg;
     if (turnHistory.isEmpty) turnHistory.add(BattleTurn(currentTurn));
     turnHistory.last.logEntries.add(msg);
+  }
+
+  // =====================================================================
+  // GIMMICK ACTIONS: Titanize and Prismorph
+  // =====================================================================
+
+  void activateTitanize({required bool isPlayer, required int slotIdx}) {
+    if (isPlayer && playerTitanizeUsed) return;
+    if (!isPlayer && opponentTitanizeUsed) return;
+
+    BattleOrganism? org;
+    if (isPlayer) {
+      org = slotIdx == 1 ? playerSlot1 : playerSlot2;
+    } else {
+      org = slotIdx == 1 ? opponentSlot1 : opponentSlot2;
+    }
+
+    if (org == null ||
+        org.hasTitanizedThisBattle ||
+        org.hasPrismorphedThisBattle)
+      return;
+
+    if (isPlayer) {
+      playerTitanizeUsed = true;
+    } else {
+      opponentTitanizeUsed = true;
+    }
+
+    final double oldMax = org.maxHealth.toDouble();
+    org.isTitanized = true;
+    org.titanizeTurnsLeft = 3;
+    org.hasTitanizedThisBattle = true;
+
+    // Use ratio-based HP scaling (e.g. 20/40 -> 40/80)
+    final double newMax = org.maxHealth.toDouble();
+    org.health = (org.health * (newMax / oldMax)).floor();
+    if (org.health <= 0 && org.organism.currentHealth > 0) org.health = 1;
+
+    _addLog('${org.name} has Titanized! It grew to a tremendous size!');
+    notifyListeners();
+  }
+
+  void _revertTitanize(BattleOrganism org) {
+    final double oldMax = org.maxHealth.toDouble();
+    org.isTitanized = false;
+    org.titanizeTurnsLeft = 0;
+
+    final double newMax = org.maxHealth.toDouble();
+    // Halve current HP based on max HP ratio
+    org.health = (org.health * (newMax / oldMax)).ceil();
+    if (org.health > newMax) org.health = (newMax).toInt();
+    if (org.health <= 0 && org.organism.currentHealth > 0) org.health = 1;
+
+    _addLog('${org.name}\'s Titanize wore off! It returned to normal size.');
+    notifyListeners();
+  }
+
+  void activatePrismorph({required bool isPlayer, required int slotIdx}) {
+    if (isPlayer && playerPrismorphUsed) return;
+    if (!isPlayer && opponentPrismorphUsed) return;
+
+    BattleOrganism? org;
+    if (isPlayer) {
+      org = slotIdx == 1 ? playerSlot1 : playerSlot2;
+    } else {
+      org = slotIdx == 1 ? opponentSlot1 : opponentSlot2;
+    }
+
+    if (org == null ||
+        org.hasTitanizedThisBattle ||
+        org.hasPrismorphedThisBattle)
+      return;
+
+    final teraType = org.organism.teraType;
+    if (teraType == null) {
+      _addLog('${org.name} has no Tera type and cannot Prismorph!');
+      notifyListeners();
+      return;
+    }
+
+    if (isPlayer) {
+      playerPrismorphUsed = true;
+    } else {
+      opponentPrismorphUsed = true;
+    }
+
+    org.isPrismorphed = true;
+    org.activeTeraType = teraType;
+    org.hasPrismorphedThisBattle = true;
+
+    _addLog(
+      '${org.name} has Prismorphed! '
+      'Its type changed to ${teraType.name}!',
+    );
+    notifyListeners();
   }
 }
 

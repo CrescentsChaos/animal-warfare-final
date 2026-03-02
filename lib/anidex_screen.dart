@@ -263,7 +263,7 @@ class _AnidexScreenState extends State<AnidexScreen>
             image: const AssetImage('assets/main.png'),
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(
-              Colors.black.withOpacity(0.85),
+              Colors.black.withValues(alpha: 0.85),
               BlendMode.darken,
             ),
           ),
@@ -302,7 +302,7 @@ class _AnidexScreenState extends State<AnidexScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.5),
+        color: Colors.black.withValues(alpha: 0.5),
         border: const Border(bottom: BorderSide(color: Colors.white10)),
       ),
       child: TextField(
@@ -311,7 +311,7 @@ class _AnidexScreenState extends State<AnidexScreen>
         decoration: InputDecoration(
           hintText: 'SEARCH SYSTEM...',
           hintStyle: TextStyle(
-            color: Colors.white.withOpacity(0.3),
+            color: Colors.white.withValues(alpha: 0.3),
             fontSize: 10,
             fontFamily: 'PressStart2P',
           ),
@@ -321,7 +321,7 @@ class _AnidexScreenState extends State<AnidexScreen>
             color: AppColors.highlightColor,
           ),
           filled: true,
-          fillColor: Colors.white.withOpacity(0.05),
+          fillColor: Colors.white.withValues(alpha: 0.05),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
             borderSide: BorderSide.none,
@@ -389,10 +389,10 @@ class _AnidexScreenState extends State<AnidexScreen>
       borderRadius: BorderRadius.circular(12),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.4),
+          color: Colors.black.withValues(alpha: 0.4),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: discovered ? rarityColor.withOpacity(0.4) : Colors.white10,
+            color: discovered ? rarityColor.withValues(alpha: 0.4) : Colors.white10,
             width: 1.5,
           ),
         ),
@@ -417,7 +417,7 @@ class _AnidexScreenState extends State<AnidexScreen>
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: discovered
-                    ? rarityColor.withOpacity(0.1)
+                    ? rarityColor.withValues(alpha: 0.1)
                     : Colors.black26,
                 borderRadius: const BorderRadius.vertical(
                   bottom: Radius.circular(11),
@@ -498,10 +498,10 @@ class _AnidexScreenState extends State<AnidexScreen>
 
         return Container(
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.4),
+            color: Colors.black.withValues(alpha: 0.4),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: AppColors.highlightColor.withOpacity(0.15),
+              color: AppColors.highlightColor.withValues(alpha: 0.15),
             ),
           ),
           child: Column(
@@ -618,7 +618,7 @@ class _AnidexScreenState extends State<AnidexScreen>
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.3),
+        color: Colors.black.withValues(alpha: 0.3),
         border: const Border(bottom: BorderSide(color: Colors.white10)),
       ),
       child: Column(
@@ -636,7 +636,7 @@ class _AnidexScreenState extends State<AnidexScreen>
           const SizedBox(height: 4),
           Text(
             'REFINE DATABASE ENTRIES',
-            style: TextStyle(fontSize: 8, color: Colors.white.withOpacity(0.4)),
+            style: TextStyle(fontSize: 8, color: Colors.white.withValues(alpha: 0.4)),
           ),
         ],
       ),
@@ -646,7 +646,7 @@ class _AnidexScreenState extends State<AnidexScreen>
   Widget _buildDrawerFooter() {
     return Container(
       padding: const EdgeInsets.all(20),
-      color: Colors.black.withOpacity(0.2),
+      color: Colors.black.withValues(alpha: 0.2),
       child: Row(
         children: [
           Expanded(
@@ -740,7 +740,7 @@ class _AnidexScreenState extends State<AnidexScreen>
                 if (v) setState(() => _sortBy = opt);
               },
               backgroundColor: Colors.white10,
-              selectedColor: AppColors.highlightColor.withOpacity(0.2),
+              selectedColor: AppColors.highlightColor.withValues(alpha: 0.2),
               labelStyle: TextStyle(
                 color: isSelected ? AppColors.highlightColor : Colors.white54,
                 fontSize: 9,
@@ -866,7 +866,7 @@ class _AnidexScreenState extends State<AnidexScreen>
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
                 side: BorderSide(
-                  color: AppColors.highlightColor.withOpacity(0.3),
+                  color: AppColors.highlightColor.withValues(alpha: 0.3),
                 ),
               ),
               title: Text(

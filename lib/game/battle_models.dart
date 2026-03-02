@@ -121,6 +121,12 @@ class BattleOrganism {
     isMiracleEyed = false;
     shellTrapTriggered = false;
     lastMoveName = null;
+
+    // GIMMICK RESET: Titanize ends on switch, Prismorph persists.
+    isTitanized = false;
+    titanizeTurnsLeft = 0;
+    // NOTE: isPrismorphed/hasTitanized/hasPrismorph/activeTeraType are NOT reset here;
+    // they persist for the entire battle.
   }
 
   /// Refreshes stats after a level-up or level change
@@ -205,6 +211,16 @@ class BattleOrganism {
   // Ability state
   bool isAbilityRevealed = false;
 
+  // ============================================================
+  // GIMMICK STATE: Titanize (Dynamax) and Prismorph (Terastalize)
+  // ============================================================
+  bool isTitanized = false;
+  int titanizeTurnsLeft = 0;
+  bool hasTitanizedThisBattle = false;
+  bool isPrismorphed = false;
+  bool hasPrismorphedThisBattle = false;
+  ElementalType? activeTeraType; // set when Prismorph activates
+
   // New state variables for advanced mechanics
   int? perishTurnCount;
   bool isTrapped = false; // For trapping effects like Mean Look
@@ -279,10 +295,7 @@ class BattleOrganism {
   }) : _atLevel = atLevel,
        level = atLevel ?? organism.level,
        _statusEffects = List.from(organism.statusEffects),
-       abilities = organism.baseOrganism.abilities
-           .split(',')
-           .map((s) => s.trim())
-           .where((s) => s.isNotEmpty)
+       abilities = organism.abilities
            .map((name) => Ability.findByName(name))
            .where((a) => a != null)
            .cast<Ability>()
@@ -297,9 +310,29 @@ class BattleOrganism {
   }
 
   List<ElementalType>? _battleTypes;
-  List<ElementalType> get types =>
-      _battleTypes ?? organism.baseOrganism.elementalTypes;
+  List<ElementalType> get types {
+    // Prismorph overrides the type completely
+    if (isPrismorphed && activeTeraType != null) {
+      return [activeTeraType!];
+    }
+    return _battleTypes ?? organism.baseOrganism.elementalTypes;
+  }
+
   set battleTypes(List<ElementalType> value) => _battleTypes = value;
+
+  bool get isGrounded {
+    if (types.contains(ElementalType.flying)) return false;
+    if (abilities.any((a) => a.name == 'True Flight' || a.name == 'Levitate'))
+      return false;
+    if (organism.equippedTalisman != null && !talismanConsumed) {
+      if (organism.equippedTalisman!.effects.any(
+        (e) => e.type == TalismanEffectType.airBalloon,
+      )) {
+        return false;
+      }
+    }
+    return true;
+  }
 
   // Helper for stat stage multipliers (e.g., +1 stage is 1.5x)
   static double _getStatStageMultiplier(int stage) {
@@ -498,6 +531,9 @@ class BattleOrganism {
   int get maxHealth {
     int baseMax = organism.getMaxHealth(atLevel: level);
     double hp = baseMax.toDouble();
+
+    // Titanize doubles max HP
+    if (isTitanized) hp *= 2.0;
 
     // Apply talisman effects
     if (organism.equippedTalisman != null) {

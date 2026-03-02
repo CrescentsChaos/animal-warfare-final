@@ -157,7 +157,7 @@ class _ForgeTabState extends State<_ForgeTab> {
             decoration: InputDecoration(
               hintText: 'Search recipes...',
               hintStyle: TextStyle(
-                color: Colors.white.withOpacity(0.3),
+                color: Colors.white.withValues(alpha: 0.3),
                 fontSize: 12,
               ),
               prefixIcon: const Icon(
@@ -179,7 +179,7 @@ class _ForgeTabState extends State<_ForgeTab> {
                     )
                   : null,
               filled: true,
-              fillColor: Colors.white.withOpacity(0.06),
+              fillColor: Colors.white.withValues(alpha: 0.06),
               contentPadding: const EdgeInsets.symmetric(vertical: 10),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
@@ -221,9 +221,9 @@ class _ForgeTabState extends State<_ForgeTab> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Text(
         label,
@@ -335,17 +335,17 @@ class _RecipeCardState extends State<_RecipeCard>
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: _crafting
-                  ? AppColors.highlightColor.withOpacity(
+                  ? AppColors.highlightColor.withValues(alpha: 
                       0.5 + _glowAnim.value * 0.5,
                     )
                   : (canCraft
-                        ? AppColors.highlightColor.withOpacity(0.4)
-                        : Colors.white.withOpacity(0.07)),
+                        ? AppColors.highlightColor.withValues(alpha: 0.4)
+                        : Colors.white.withValues(alpha: 0.07)),
             ),
             boxShadow: canCraft
                 ? [
                     BoxShadow(
-                      color: AppColors.highlightColor.withOpacity(
+                      color: AppColors.highlightColor.withValues(alpha: 
                         0.08 + _glowAnim.value * 0.08,
                       ),
                       blurRadius: 16,
@@ -373,8 +373,8 @@ class _RecipeCardState extends State<_RecipeCard>
                     height: 48,
                     decoration: BoxDecoration(
                       color: canCraft
-                          ? AppColors.highlightColor.withOpacity(0.12)
-                          : Colors.white.withOpacity(0.06),
+                          ? AppColors.highlightColor.withValues(alpha: 0.12)
+                          : Colors.white.withValues(alpha: 0.06),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     padding: const EdgeInsets.all(8),
@@ -392,7 +392,7 @@ class _RecipeCardState extends State<_RecipeCard>
                             fontSize: 11,
                             color: canCraft
                                 ? Colors.white
-                                : Colors.white.withOpacity(0.6),
+                                : Colors.white.withValues(alpha: 0.6),
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -400,7 +400,7 @@ class _RecipeCardState extends State<_RecipeCard>
                           talisman.description,
                           style: TextStyle(
                             fontSize: 10,
-                            color: Colors.white.withOpacity(0.45),
+                            color: Colors.white.withValues(alpha: 0.45),
                             height: 1.4,
                           ),
                           maxLines: 2,
@@ -436,7 +436,7 @@ class _RecipeCardState extends State<_RecipeCard>
                         style: TextStyle(
                           fontFamily: 'PressStart2P',
                           fontSize: 7,
-                          color: Colors.white.withOpacity(0.4),
+                          color: Colors.white.withValues(alpha: 0.4),
                           letterSpacing: 1.5,
                         ),
                       ),
@@ -469,7 +469,7 @@ class _RecipeCardState extends State<_RecipeCard>
                                         fontSize: 8,
                                         color: hasEnough
                                             ? Colors.white
-                                            : Colors.white.withOpacity(0.5),
+                                            : Colors.white.withValues(alpha: 0.5),
                                       ),
                                     ),
                                   ),
@@ -494,7 +494,7 @@ class _RecipeCardState extends State<_RecipeCard>
                                   color: hasEnough
                                       ? Colors.greenAccent
                                       : Colors.orange,
-                                  backgroundColor: Colors.white.withOpacity(
+                                  backgroundColor: Colors.white.withValues(alpha: 
                                     0.07,
                                   ),
                                 ),
@@ -521,12 +521,12 @@ class _RecipeCardState extends State<_RecipeCard>
                         style: ElevatedButton.styleFrom(
                           backgroundColor: canCraft
                               ? AppColors.highlightColor
-                              : Colors.white.withOpacity(0.08),
+                              : Colors.white.withValues(alpha: 0.08),
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          disabledBackgroundColor: Colors.white.withOpacity(
+                          disabledBackgroundColor: Colors.white.withValues(alpha: 
                             0.06,
                           ),
                         ),
@@ -615,7 +615,7 @@ class _MaterialsTabState extends State<_MaterialsTab> {
             decoration: InputDecoration(
               hintText: 'Search materials...',
               hintStyle: TextStyle(
-                color: Colors.white.withOpacity(0.3),
+                color: Colors.white.withValues(alpha: 0.3),
                 fontSize: 12,
               ),
               prefixIcon: const Icon(
@@ -624,7 +624,7 @@ class _MaterialsTabState extends State<_MaterialsTab> {
                 size: 18,
               ),
               filled: true,
-              fillColor: Colors.white.withOpacity(0.06),
+              fillColor: Colors.white.withValues(alpha: 0.06),
               contentPadding: const EdgeInsets.symmetric(vertical: 10),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
@@ -642,7 +642,7 @@ class _MaterialsTabState extends State<_MaterialsTab> {
                 style: TextStyle(
                   fontFamily: 'PressStart2P',
                   fontSize: 6,
-                  color: Colors.white.withOpacity(0.4),
+                  color: Colors.white.withValues(alpha: 0.4),
                 ),
               ),
               const Spacer(),
@@ -651,7 +651,7 @@ class _MaterialsTabState extends State<_MaterialsTab> {
                 style: TextStyle(
                   fontFamily: 'PressStart2P',
                   fontSize: 6,
-                  color: Colors.white.withOpacity(0.4),
+                  color: Colors.white.withValues(alpha: 0.4),
                 ),
               ),
             ],
@@ -687,7 +687,7 @@ class _MaterialsTabState extends State<_MaterialsTab> {
                         color: const Color(0xFF14142A),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.07),
+                          color: Colors.white.withValues(alpha: 0.07),
                         ),
                       ),
                       child: Row(
@@ -696,10 +696,10 @@ class _MaterialsTabState extends State<_MaterialsTab> {
                             width: 38,
                             height: 38,
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.05),
+                              color: Colors.white.withValues(alpha: 0.05),
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
-                                color: Colors.white.withOpacity(0.1),
+                                color: Colors.white.withValues(alpha: 0.1),
                               ),
                             ),
                             padding: const EdgeInsets.all(4),
@@ -728,7 +728,7 @@ class _MaterialsTabState extends State<_MaterialsTab> {
                                       : 'Drop item',
                                   style: TextStyle(
                                     fontSize: 9,
-                                    color: Colors.white.withOpacity(0.35),
+                                    color: Colors.white.withValues(alpha: 0.35),
                                   ),
                                 ),
                               ],
@@ -782,8 +782,8 @@ class _EquipTab extends StatelessWidget {
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: talisman != null
-                  ? AppColors.highlightColor.withOpacity(0.3)
-                  : Colors.white.withOpacity(0.07),
+                  ? AppColors.highlightColor.withValues(alpha: 0.3)
+                  : Colors.white.withValues(alpha: 0.07),
             ),
           ),
           child: Padding(
@@ -814,7 +814,7 @@ class _EquipTab extends StatelessWidget {
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.1),
+                              color: Colors.white.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
@@ -856,7 +856,7 @@ class _EquipTab extends StatelessWidget {
                           talisman.description,
                           style: TextStyle(
                             fontSize: 10,
-                            color: Colors.white.withOpacity(0.4),
+                            color: Colors.white.withValues(alpha: 0.4),
                             height: 1.3,
                           ),
                           maxLines: 2,
@@ -868,7 +868,7 @@ class _EquipTab extends StatelessWidget {
                           style: TextStyle(
                             fontFamily: 'PressStart2P',
                             fontSize: 7,
-                            color: Colors.white.withOpacity(0.3),
+                            color: Colors.white.withValues(alpha: 0.3),
                           ),
                         ),
                     ],
@@ -909,13 +909,13 @@ class _EquipButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
           color: hasTalisman
-              ? AppColors.highlightColor.withOpacity(0.12)
-              : Colors.white.withOpacity(0.07),
+              ? AppColors.highlightColor.withValues(alpha: 0.12)
+              : Colors.white.withValues(alpha: 0.07),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: hasTalisman
-                ? AppColors.highlightColor.withOpacity(0.4)
-                : Colors.white.withOpacity(0.12),
+                ? AppColors.highlightColor.withValues(alpha: 0.4)
+                : Colors.white.withValues(alpha: 0.12),
           ),
         ),
         child: Text(
@@ -1004,7 +1004,7 @@ class _EquipButton extends StatelessWidget {
                           style: TextStyle(
                             fontFamily: 'PressStart2P',
                             fontSize: 8,
-                            color: Colors.white.withOpacity(0.35),
+                            color: Colors.white.withValues(alpha: 0.35),
                           ),
                         ),
                       )
@@ -1052,9 +1052,9 @@ class _EquipButton extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.07),
+          color: color.withValues(alpha: 0.07),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withOpacity(0.2)),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
         ),
         child: Row(
           children: [
@@ -1078,7 +1078,7 @@ class _EquipButton extends StatelessWidget {
                       desc,
                       style: TextStyle(
                         fontSize: 10,
-                        color: Colors.white.withOpacity(0.45),
+                        color: Colors.white.withValues(alpha: 0.45),
                         height: 1.4,
                       ),
                       maxLines: 2,
@@ -1107,9 +1107,9 @@ class _AnimalAvatar extends StatelessWidget {
       width: 46,
       height: 46,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.08),
+        color: Colors.white.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
@@ -1152,7 +1152,7 @@ Widget _emptyState(String message) {
         Icon(
           Icons.inbox_outlined,
           size: 48,
-          color: Colors.white.withOpacity(0.15),
+          color: Colors.white.withValues(alpha: 0.15),
         ),
         const SizedBox(height: 16),
         Text(
@@ -1160,7 +1160,7 @@ Widget _emptyState(String message) {
           style: TextStyle(
             fontFamily: 'PressStart2P',
             fontSize: 9,
-            color: Colors.white.withOpacity(0.3),
+            color: Colors.white.withValues(alpha: 0.3),
           ),
           textAlign: TextAlign.center,
         ),

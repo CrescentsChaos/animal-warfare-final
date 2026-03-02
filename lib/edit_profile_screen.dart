@@ -152,7 +152,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ? Icon(
                       Icons.person,
                       size: 70.w,
-                      color: AppColors.highlightColor.withOpacity(0.5),
+                      color: AppColors.highlightColor.withValues(alpha: 0.5),
                     )
                   : null,
             ),
@@ -212,7 +212,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.white10),
       ),
@@ -251,9 +251,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.w),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.highlightColor.withOpacity(0.3)),
+        border: Border.all(color: AppColors.highlightColor.withValues(alpha: 0.3)),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
@@ -290,7 +290,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         minimumSize: Size(double.infinity, 54.h),
         elevation: 8,
-        shadowColor: AppColors.highlightColor.withOpacity(0.4),
+        shadowColor: AppColors.highlightColor.withValues(alpha: 0.4),
       ),
       child: const Text(
         'SYNCHRONIZE DATA',

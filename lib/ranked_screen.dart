@@ -66,7 +66,7 @@ class _RankedScreenState extends State<RankedScreen> {
   Widget _buildSearchField() {
     return Container(
       padding: const EdgeInsets.all(16),
-      color: AppColors.primaryButtonColor.withOpacity(0.5),
+      color: AppColors.primaryButtonColor.withValues(alpha: 0.5),
       child: TextField(
         controller: _searchController,
         onChanged: (val) => setState(() => _searchQuery = val),
@@ -88,7 +88,7 @@ class _RankedScreenState extends State<RankedScreen> {
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
             borderSide: BorderSide(
-              color: AppColors.highlightColor.withOpacity(0.3),
+              color: AppColors.highlightColor.withValues(alpha: 0.3),
             ),
           ),
           contentPadding: const EdgeInsets.symmetric(
@@ -194,10 +194,10 @@ class _RankedScreenState extends State<RankedScreen> {
           decoration: BoxDecoration(
             color: const Color(0xFF1A1A2E),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: tier.color.withOpacity(0.6), width: 2),
+            border: Border.all(color: tier.color.withValues(alpha: 0.6), width: 2),
             boxShadow: [
               BoxShadow(
-                color: tier.color.withOpacity(0.1),
+                color: tier.color.withValues(alpha: 0.1),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -247,7 +247,7 @@ class _RankedScreenState extends State<RankedScreen> {
             trailing: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: tier.color.withOpacity(0.15),
+                color: tier.color.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: tier.color, width: 1),
               ),
@@ -259,7 +259,7 @@ class _RankedScreenState extends State<RankedScreen> {
                   color: tier.color,
                   fontWeight: FontWeight.bold,
                   shadows: [
-                    Shadow(color: tier.color.withOpacity(0.5), blurRadius: 4),
+                    Shadow(color: tier.color.withValues(alpha: 0.5), blurRadius: 4),
                   ],
                 ),
               ),

@@ -25,7 +25,7 @@ class PatchNotesScreen extends StatelessWidget {
             image: const AssetImage('assets/main.png'),
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(
-              Colors.black.withOpacity(0.8),
+              Colors.black.withValues(alpha: 0.8),
               BlendMode.darken,
             ),
           ),

@@ -100,7 +100,7 @@ class _GameScreenState extends State<GameScreen> {
         borderRadius: BorderRadius.circular(4.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.6),
+            color: Colors.black.withValues(alpha: 0.6),
             offset: const Offset(4, 4),
             blurRadius: 0,
           ),
@@ -149,7 +149,7 @@ class _GameScreenState extends State<GameScreen> {
                 image: const AssetImage('assets/main.png'),
                 fit: BoxFit.cover,
                 colorFilter: ColorFilter.mode(
-                  Colors.black.withOpacity(0.7),
+                  Colors.black.withValues(alpha: 0.7),
                   BlendMode.darken,
                 ),
               ),
@@ -260,7 +260,7 @@ class _GameScreenState extends State<GameScreen> {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha: 0.8),
                       fontFamily: 'PressStart2P',
                     ),
                   ),

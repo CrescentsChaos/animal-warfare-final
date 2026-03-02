@@ -57,7 +57,7 @@ class _RogueStarterSelectScreenState extends State<RogueStarterSelectScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [themeColor.withOpacity(0.3), Colors.black],
+            colors: [themeColor.withValues(alpha: 0.3), Colors.black],
           ),
         ),
         child: SafeArea(
@@ -103,8 +103,8 @@ class _RogueStarterSelectScreenState extends State<RogueStarterSelectScreen> {
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? themeColor.withOpacity(0.2)
-                                : Colors.white.withOpacity(0.05),
+                                ? themeColor.withValues(alpha: 0.2)
+                                : Colors.white.withValues(alpha: 0.05),
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
                               color: isSelected ? themeColor : Colors.white10,
@@ -143,7 +143,7 @@ class _RogueStarterSelectScreenState extends State<RogueStarterSelectScreen> {
                                           .toUpperCase(),
                                       style: TextStyle(
                                         fontFamily: 'PressStart2P',
-                                        color: Colors.white.withOpacity(0.5),
+                                        color: Colors.white.withValues(alpha: 0.5),
                                         fontSize: 8,
                                       ),
                                     ),
@@ -287,7 +287,7 @@ class _RogueStarterSelectScreenState extends State<RogueStarterSelectScreen> {
               child: LinearProgressIndicator(
                 value: value / 100, // Normalized for visual
                 backgroundColor: Colors.white10,
-                color: color.withOpacity(0.8),
+                color: color.withValues(alpha: 0.8),
                 minHeight: 4,
               ),
             ),

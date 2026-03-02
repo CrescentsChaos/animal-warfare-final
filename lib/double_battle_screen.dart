@@ -163,7 +163,7 @@ class DoubleBattleScreen extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [primaryColor.withOpacity(0.8), secondaryColor],
+              colors: [primaryColor.withValues(alpha: 0.8), secondaryColor],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -242,6 +242,43 @@ class DoubleBattleScreen extends StatelessWidget {
               ),
               const SizedBox(height: 10),
 
+              // Tera Type
+              if (bo.organism.teraType != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10.0),
+                  child: Row(
+                    children: [
+                      const Text(
+                        'TERA TYPE: ',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 9,
+                          fontFamily: 'PressStart2P',
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: bo.organism.teraType!.color,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          bo.organism.teraType!.name.toUpperCase(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 8,
+                            fontFamily: 'PressStart2P',
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
               // Nature
               Padding(
                 padding: const EdgeInsets.only(bottom: 10.0),
@@ -309,7 +346,7 @@ class DoubleBattleScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.3),
+                  color: Colors.black.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color: Colors.green.withValues(alpha: 0.3),
@@ -464,19 +501,144 @@ class DoubleBattleScreen extends StatelessWidget {
                     ),
                   )
                 else
-                  ...bm.battleStats[bo.organism.id]!.revealedMoves.map(
-                    (m) => Padding(
-                      padding: const EdgeInsets.only(bottom: 4),
-                      child: Text(
-                        m.toUpperCase(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 9,
-                          fontFamily: 'PressStart2P',
-                        ),
+                  ...bm.battleStats[bo.organism.id]!.revealedMoves.map((m) {
+                    final move = Move.findByName(m);
+                    final displayType = move != null
+                        ? bm.getDisplayType(bo, move)
+                        : ElementalType.basic;
+                    final curStam = bo.organism.moveStamina[m] ?? 0;
+                    final maxStam = move?.stamina ?? 0;
+
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                m.toUpperCase(),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 8,
+                                  fontFamily: 'PressStart2P',
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: _typeColor(displayType),
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                                child: Text(
+                                  displayType.name.toUpperCase().substring(
+                                    0,
+                                    3,
+                                  ),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 5,
+                                    fontFamily: 'PressStart2P',
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          Text(
+                            '$curStam/$maxStam',
+                            style: TextStyle(
+                              color: curStam == 0
+                                  ? Colors.red
+                                  : (curStam < maxStam / 2
+                                        ? Colors.orange
+                                        : Colors.white70),
+                              fontSize: 7,
+                              fontFamily: 'PressStart2P',
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
+                    );
+                  }),
+              ] else if (isPlayer) ...[
+                const SizedBox(height: 12),
+                const Divider(color: Colors.white24, height: 1),
+                const SizedBox(height: 10),
+                const Text(
+                  'MOVES',
+                  style: TextStyle(
+                    color: themeColor,
+                    fontSize: 9,
+                    fontFamily: 'PressStart2P',
                   ),
+                ),
+                const SizedBox(height: 6),
+                ...bo.organism.selectedMoveNames.map((m) {
+                  final move = Move.findByName(m);
+                  final displayType = move != null
+                      ? bm.getDisplayType(bo, move)
+                      : ElementalType.basic;
+                  final curStam = bo.organism.moveStamina[m] ?? 0;
+                  final maxStam = move?.stamina ?? 0;
+
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 6),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              m.toUpperCase(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 8,
+                                fontFamily: 'PressStart2P',
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: _typeColor(displayType),
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                              child: Text(
+                                displayType.name.toUpperCase().substring(0, 3),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 5,
+                                  fontFamily: 'PressStart2P',
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Text(
+                          '$curStam/$maxStam',
+                          style: TextStyle(
+                            color: curStam == 0
+                                ? Colors.red
+                                : (curStam < maxStam / 2
+                                      ? Colors.orange
+                                      : Colors.white70),
+                            fontSize: 7,
+                            fontFamily: 'PressStart2P',
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
               ],
             ],
           ),
@@ -597,7 +759,7 @@ class _DoubleBattleViewState extends State<_DoubleBattleView> {
             image: AssetImage(bgPath),
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(
-              Colors.black.withOpacity(0.35),
+              Colors.black.withValues(alpha: 0.35),
               BlendMode.darken,
             ),
           ),
@@ -861,6 +1023,41 @@ class _DoubleBattleViewState extends State<_DoubleBattleView> {
                                 fontSize: 8,
                               ),
                             ),
+                            if (animal.teraType != null) ...[
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  const Text(
+                                    'TERA:',
+                                    style: TextStyle(
+                                      fontFamily: 'PressStart2P',
+                                      fontSize: 6.5,
+                                      color: Colors.white60,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 3,
+                                      vertical: 1,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: animal.teraType!.color,
+                                      borderRadius: BorderRadius.circular(2),
+                                    ),
+                                    child: Text(
+                                      animal.teraType!.name.toUpperCase(),
+                                      style: const TextStyle(
+                                        fontFamily: 'PressStart2P',
+                                        fontSize: 6,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                             if (battleOrg.statusEffects.isNotEmpty)
                               Padding(
                                 padding: const EdgeInsets.only(top: 4),
@@ -1135,7 +1332,7 @@ class _DoubleBattleViewState extends State<_DoubleBattleView> {
             border: Border.all(color: themeColor, width: 2),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.5),
+                color: Colors.black.withValues(alpha: 0.5),
                 blurRadius: 12,
                 offset: const Offset(0, -4),
               ),
@@ -1150,7 +1347,7 @@ class _DoubleBattleViewState extends State<_DoubleBattleView> {
                   horizontal: 16,
                 ),
                 decoration: BoxDecoration(
-                  color: primaryColor.withOpacity(0.5),
+                  color: primaryColor.withValues(alpha: 0.5),
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(14),
                   ),
@@ -1211,7 +1408,7 @@ class _DoubleBattleViewState extends State<_DoubleBattleView> {
                               width: double.infinity,
                               padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.4),
+                                color: Colors.black.withValues(alpha: 0.4),
                                 borderRadius: BorderRadius.circular(6),
                                 border: Border.all(color: Colors.white10),
                               ),
@@ -1266,9 +1463,12 @@ class _HpBar extends StatelessWidget {
         height: 50,
         padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.55),
+          color: Colors.black.withValues(alpha: 0.55),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: primaryColor.withOpacity(0.3), width: 2),
+          border: Border.all(
+            color: primaryColor.withValues(alpha: 0.3),
+            width: 2,
+          ),
         ),
         child: Center(
           child: Text(
@@ -1307,7 +1507,7 @@ class _HpBar extends StatelessWidget {
         constraints: const BoxConstraints(minWidth: 160, maxWidth: 200),
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.55),
+          color: Colors.black.withValues(alpha: 0.55),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isClickable ? const Color(0xFF4ADE80) : primaryColor,
@@ -1315,13 +1515,13 @@ class _HpBar extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.4),
+              color: Colors.black.withValues(alpha: 0.4),
               blurRadius: 6,
               offset: const Offset(2, 2),
             ),
             if (isClickable)
               BoxShadow(
-                color: const Color(0xFF4ADE80).withOpacity(0.4),
+                color: const Color(0xFF4ADE80).withValues(alpha: 0.4),
                 blurRadius: 8,
                 spreadRadius: 1,
               ),
@@ -1594,6 +1794,99 @@ class _SlotSpriteState extends State<_SlotSprite>
 
     const double outlineOffset = 1.0;
 
+    final bo = widget.slot;
+    Widget processedSprite = enhancedImg;
+
+    if (bo != null) {
+      // Substitute grayscaling
+      if (bo.substituteHealth > 0) {
+        processedSprite = ColorFiltered(
+          colorFilter: const ColorFilter.matrix(<double>[
+            0.2126,
+            0.7152,
+            0.0722,
+            0,
+            0,
+            0.2126,
+            0.7152,
+            0.0722,
+            0,
+            0,
+            0.2126,
+            0.7152,
+            0.0722,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+          ]),
+          child: enhancedImg,
+        );
+      }
+
+      // Titanize: 2x scale handled externally in build for layout
+      if (bo.isTitanized) {
+        processedSprite = Stack(
+          alignment: Alignment.center,
+          children: [
+            processedSprite,
+            Positioned.fill(
+              child: ColorFiltered(
+                colorFilter: const ColorFilter.mode(
+                  Color(0x44FF1111), // Translucent red
+                  BlendMode.srcATop,
+                ),
+                child: processedSprite,
+              ),
+            ),
+          ],
+        );
+      }
+      // Prismorph: rainbow/crystal shimmer overlay
+      else if (bo.isPrismorphed) {
+        final baseSprite = processedSprite;
+        processedSprite = Stack(
+          alignment: Alignment.center,
+          children: [
+            baseSprite,
+            Positioned.fill(
+              child: AnimatedBuilder(
+                animation: _pulseAnimation,
+                builder: (context, _) {
+                  return ShaderMask(
+                    blendMode: BlendMode.srcATop,
+                    shaderCallback: (bounds) {
+                      return LinearGradient(
+                        colors: const [
+                          Color(0x55FF00FF), // Magenta
+                          Color(0x5500FFFF), // Cyan
+                          Color(0x55FF00FF), // Magenta
+                        ],
+                        stops: [
+                          0.0,
+                          _pulseAnimation.value.clamp(0.0, 1.0),
+                          1.0,
+                        ],
+                        tileMode: TileMode.mirror,
+                      ).createShader(bounds);
+                    },
+                    child: baseSprite,
+                  );
+                },
+              ),
+            ),
+          ],
+        );
+      }
+    }
+
+    final isTitanized = bo?.isTitanized ?? false;
+    final double titanScale = isTitanized ? 2.0 : 1.0;
+    final double titanYOffset = isTitanized ? -size * 0.25 : 0.0;
+
     return GestureDetector(
       onLongPress: () {
         // Trigger info dialog
@@ -1620,7 +1913,7 @@ class _SlotSpriteState extends State<_SlotSprite>
           boxShadow: widget.isTargetable
               ? [
                   BoxShadow(
-                    color: const Color(0xFF4ADE80).withOpacity(0.4),
+                    color: const Color(0xFF4ADE80).withValues(alpha: 0.4),
                     blurRadius: 12,
                     spreadRadius: 2,
                   ),
@@ -1633,25 +1926,37 @@ class _SlotSpriteState extends State<_SlotSprite>
           children: [
             Positioned(bottom: -size * 0.05, child: _buildPlatform(size)),
 
-            // 4-way outline
+            // Titan Group (Outline + Sprite)
             Transform.translate(
-              offset: const Offset(-outlineOffset, -outlineOffset),
-              child: outlineImg,
-            ),
-            Transform.translate(
-              offset: const Offset(outlineOffset, -outlineOffset),
-              child: outlineImg,
-            ),
-            Transform.translate(
-              offset: const Offset(-outlineOffset, outlineOffset),
-              child: outlineImg,
-            ),
-            Transform.translate(
-              offset: const Offset(outlineOffset, outlineOffset),
-              child: outlineImg,
-            ),
+              offset: Offset(0, titanYOffset),
+              child: Transform.scale(
+                scale: titanScale,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // 4-way outline
+                    Transform.translate(
+                      offset: const Offset(-outlineOffset, -outlineOffset),
+                      child: outlineImg,
+                    ),
+                    Transform.translate(
+                      offset: const Offset(outlineOffset, -outlineOffset),
+                      child: outlineImg,
+                    ),
+                    Transform.translate(
+                      offset: const Offset(-outlineOffset, outlineOffset),
+                      child: outlineImg,
+                    ),
+                    Transform.translate(
+                      offset: const Offset(outlineOffset, outlineOffset),
+                      child: outlineImg,
+                    ),
 
-            enhancedImg,
+                    processedSprite,
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -1733,13 +2038,12 @@ class _SlotSpriteState extends State<_SlotSprite>
 
 class _ActionPanel extends StatelessWidget {
   final DoubleBattleManager bm;
+  final String biomeName;
   final Function(Move, DoubleBattleManager) onMoveSelected;
   final VoidCallback onSwitchTapped;
   final bool isTargeting;
   final VoidCallback onCancelTargeting;
-
   final Move? selectedMove;
-  final String biomeName;
 
   const _ActionPanel({
     required this.bm,
@@ -1820,21 +2124,18 @@ class _ActionPanel extends StatelessWidget {
       return _buildMessageBox(context, 'Waiting...');
     }
 
-    final moves = _getMoves(selectingSlot);
+    final themeColor = DoubleBattleScreen.getBiomeThemeColor(biomeName);
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.55),
+        color: Colors.black.withValues(alpha: 0.55),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: DoubleBattleScreen.getBiomeThemeColor(biomeName),
-          width: 2,
-        ),
+        border: Border.all(color: themeColor, width: 2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.4),
+            color: Colors.black.withValues(alpha: 0.4),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -1851,34 +2152,25 @@ class _ActionPanel extends StatelessWidget {
               style: AppTextStyles.body(
                 context,
                 baseSize: 10,
-                color: DoubleBattleScreen.getBiomeThemeColor(biomeName),
+                color: themeColor,
               ).copyWith(fontWeight: FontWeight.bold),
             ),
           ),
-          // 2×2 Move grid
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: moves.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 8,
-              mainAxisSpacing: 8,
-              childAspectRatio: 2.8,
-            ),
-            itemBuilder: (ctx, i) => _MoveButton(
-              move: moves[i],
-              organism: selectingSlot,
-              bm: bm,
-              onTap: () => _onMoveTapped(context, moves[i], bm),
-            ),
-          ),
+
+          // MOVE GRID
+          _buildMoveGrid(context, selectingSlot, bm, themeColor),
+
+          const SizedBox(height: 12),
+
+          // GIMMICK BUTTONS
+          _buildGimmickButtons(context, selectingSlot, bm, themeColor),
+
           const SizedBox(height: 8),
           // Switch button
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: onSwitchTapped,
+              onPressed: bm.isProcessing ? null : onSwitchTapped,
               icon: const Icon(Icons.swap_horiz, size: 16),
               label: Text(
                 'SWITCH',
@@ -1889,7 +2181,7 @@ class _ActionPanel extends StatelessWidget {
                 ),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white.withOpacity(0.1),
+                backgroundColor: Colors.white.withValues(alpha: 0.1),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(
@@ -1904,27 +2196,160 @@ class _ActionPanel extends StatelessWidget {
     );
   }
 
-  void _onMoveTapped(BuildContext context, Move move, DoubleBattleManager bm) {
-    onMoveSelected(move, bm);
+  Widget _buildGimmickButtons(
+    BuildContext context,
+    BattleOrganism slot,
+    DoubleBattleManager bm,
+    Color themeColor,
+  ) {
+    final canTitanize = !bm.playerTitanizeUsed && !slot.hasTitanizedThisBattle;
+    final canPrismorph =
+        !bm.playerPrismorphUsed && !slot.hasPrismorphedThisBattle;
+
+    final isTitanizing = slot.isTitanized;
+    final isPrismorphing = slot.isPrismorphed;
+
+    if (!canTitanize && !canPrismorph && !isTitanizing && !isPrismorphing) {
+      return const SizedBox.shrink();
+    }
+
+    return Row(
+      children: [
+        if (canTitanize || isTitanizing)
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(right: 4),
+              child: ElevatedButton(
+                onPressed: canTitanize
+                    ? () {
+                        bm.activateTitanize(
+                          isPlayer: true,
+                          slotIdx:
+                              bm.currentState ==
+                                  DoubleBattleState.selectingForSlot1
+                              ? 1
+                              : 2,
+                        );
+                      }
+                    : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isTitanizing ? Colors.red : Colors.redAccent,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    side: isTitanizing
+                        ? const BorderSide(color: Colors.white, width: 2)
+                        : BorderSide.none,
+                  ),
+                ),
+                child: Text(
+                  isTitanizing
+                      ? 'TITANIZED (${slot.titanizeTurnsLeft})'
+                      : 'TITANIZE',
+                  style: const TextStyle(
+                    fontFamily: 'PressStart2P',
+                    fontSize: 8,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        if (canPrismorph || isPrismorphing)
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 4),
+              child: ElevatedButton(
+                onPressed: canPrismorph
+                    ? () {
+                        bm.activatePrismorph(
+                          isPlayer: true,
+                          slotIdx:
+                              bm.currentState ==
+                                  DoubleBattleState.selectingForSlot1
+                              ? 1
+                              : 2,
+                        );
+                      }
+                    : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isPrismorphing
+                      ? Colors.cyan
+                      : Colors.cyan.shade900,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    side: isPrismorphing
+                        ? const BorderSide(color: Colors.white, width: 2)
+                        : BorderSide.none,
+                  ),
+                ),
+                child: Text(
+                  isPrismorphing
+                      ? 'PRISMORPHED (${slot.activeTeraType?.name})'
+                      : 'PRISMORPH',
+                  style: const TextStyle(
+                    fontFamily: 'PressStart2P',
+                    fontSize: 8,
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
   }
 
-  // Target dialog removed in favor of interactive targeting
+  Widget _buildMoveGrid(
+    BuildContext context,
+    BattleOrganism slot,
+    DoubleBattleManager bm,
+    Color themeColor,
+  ) {
+    final moves = _getMoves(slot);
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 2.3,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+      ),
+      itemCount: moves.length,
+      itemBuilder: (context, i) {
+        return _MoveButton(
+          move: moves[i],
+          organism: slot,
+          onTap: () => onMoveSelected(moves[i], bm),
+          bm: bm,
+        );
+      },
+    );
+  }
+
+  List<Move> _getMoves(BattleOrganism slot) {
+    return bm.getMovesFor(slot);
+  }
 
   Widget _buildMessageBox(BuildContext context, String msg) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(24),
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.55),
+        color: Colors.black.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: DoubleBattleScreen.getBiomeThemeColor(biomeName),
+          color: DoubleBattleScreen.getBiomeThemeColor(
+            biomeName,
+          ).withValues(alpha: 0.3),
           width: 2,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.4),
+            color: Colors.black.withValues(alpha: 0.4),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -1934,61 +2359,60 @@ class _ActionPanel extends StatelessWidget {
         msg.isNotEmpty ? msg.toUpperCase() : '...',
         style: AppTextStyles.body(
           context,
-          baseSize: 9,
+          baseSize: 11,
           color: Colors.white,
         ).copyWith(height: 1.5),
+        textAlign: TextAlign.start,
       ),
     );
   }
 
   Widget _buildResultPanel(BuildContext context, DoubleBattleManager bm) {
-    final won = bm.result == DoubleBattleResult.win;
+    final isWin = bm.result == DoubleBattleResult.win;
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(24),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: isWin
+            ? Colors.green.withValues(alpha: 0.2)
+            : Colors.red.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: isWin ? Colors.green : Colors.red, width: 2),
+      ),
       child: Column(
         children: [
           Text(
-            won ? '🎉 YOU WIN!' : '💀 YOU LOST',
+            isWin ? 'VICTORY!' : 'DEFEATED...',
             style: AppTextStyles.headline(
               context,
-              baseSize: 16,
-              color: won ? const Color(0xFF4ADE80) : Colors.red.shade400,
+              baseSize: 18,
+              color: isWin ? Colors.green : Colors.red,
             ).copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
           ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(won ? 'win' : 'loss'),
+            onPressed: () => Navigator.pop(context),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4ADE80),
-              foregroundColor: Colors.black,
+              backgroundColor: isWin ? Colors.green : Colors.red,
+              foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            child: Text(
+            child: const Text(
               'BACK TO MENU',
-              style: AppTextStyles.small(
-                context,
-                baseSize: 10,
-                color: Colors.black,
+              style: TextStyle(
+                fontFamily: 'PressStart2P',
+                fontSize: 10,
+                color: Colors.white,
               ),
             ),
           ),
         ],
       ),
     );
-  }
-
-  List<Move> _getMoves(BattleOrganism slot) {
-    if (slot.organism.selectedMoveNames.isEmpty) {
-      slot.organism.initializeDefaultMoves();
-    }
-    final moves = slot.organism.selectedMoveNames
-        .map((n) => Move.findOrCreate(n))
-        .toList();
-    if (moves.isEmpty) moves.add(Move.findOrCreate('Struggle'));
-    return moves;
   }
 }
 
@@ -2011,18 +2435,27 @@ class _MoveButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final typeColor = _typeColor(move.type);
+    final displayType = bm.getDisplayType(organism, move);
+    final typeColor = _typeColor(displayType);
     final curStam = organism.organism.moveStamina[move.name] ?? 0;
     final maxStam = move.stamina;
 
     return GestureDetector(
-      onTap: onTap,
-      onLongPress: () =>
-          _showMoveDetails(context, move, const Color(0xFF4ADE80)),
+      onTap: bm.isProcessing ? null : onTap,
+      onLongPress: () => _showMoveDetails(
+        context,
+        move,
+        displayType,
+        const Color(0xFF4ADE80),
+        bm,
+      ),
       child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [typeColor.withOpacity(0.8), typeColor.withOpacity(0.4)],
+            colors: [
+              typeColor.withValues(alpha: 0.8),
+              typeColor.withValues(alpha: 0.4),
+            ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -2030,7 +2463,7 @@ class _MoveButton extends StatelessWidget {
           border: Border.all(color: typeColor, width: 1.5),
           boxShadow: [
             BoxShadow(
-              color: typeColor.withOpacity(0.3),
+              color: typeColor.withValues(alpha: 0.3),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),
@@ -2097,7 +2530,7 @@ class _MoveButton extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    move.type.name.toUpperCase(),
+                    displayType.name.toUpperCase(),
                     style: const TextStyle(
                       fontFamily: 'PressStart2P',
                       fontSize: 6,
@@ -2134,7 +2567,13 @@ class _MoveButton extends StatelessWidget {
     );
   }
 
-  void _showMoveDetails(BuildContext context, Move move, Color themeColor) {
+  void _showMoveDetails(
+    BuildContext context,
+    Move move,
+    ElementalType displayType,
+    Color themeColor,
+    DoubleBattleManager bm,
+  ) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -2158,8 +2597,8 @@ class _MoveButton extends StatelessWidget {
           children: [
             _buildDetailRow(
               'TYPE:',
-              move.type.name.toUpperCase(),
-              _typeColor(move.type),
+              displayType.name.toUpperCase(),
+              _typeColor(displayType),
             ),
             const SizedBox(height: 8),
             _buildDetailRow(

@@ -63,8 +63,8 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
       margin: const EdgeInsets.only(bottom: 12.0),
       decoration: BoxDecoration(
         color: completed 
-            ? primaryButtonColor.withOpacity(0.9) 
-            : secondaryButtonColor.withOpacity(0.7), 
+            ? primaryButtonColor.withValues(alpha: 0.9) 
+            : secondaryButtonColor.withValues(alpha: 0.7), 
         border: Border.all(
           color: completed ? highlightColor : Colors.white24,
           width: 2.0,
@@ -119,7 +119,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
             image: const AssetImage('assets/main.png'), 
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(
-              Colors.black.withOpacity(0.7),
+              Colors.black.withValues(alpha: 0.7),
               BlendMode.darken,
             ),
           ),

@@ -111,7 +111,9 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
       decoration: BoxDecoration(
         color: AppColors.secondaryButtonColor,
         border: Border(
-          bottom: BorderSide(color: AppColors.highlightColor.withOpacity(0.3)),
+          bottom: BorderSide(
+            color: AppColors.highlightColor.withValues(alpha: 0.3),
+          ),
         ),
       ),
       child: Column(
@@ -520,8 +522,18 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
                       ),
                     ),
                     onTap: () async {
-                      await userState.equipTalisman(index, tid);
-                      if (ctx.mounted) Navigator.pop(ctx);
+                      if (tid == 'Ability Capsule') {
+                        Navigator.pop(ctx);
+                        _showAbilitySelectionDialog(
+                          context,
+                          userState,
+                          index,
+                          organism,
+                        );
+                      } else {
+                        await userState.equipTalisman(index, tid);
+                        if (ctx.mounted) Navigator.pop(ctx);
+                      }
                     },
                   );
                 }),
@@ -529,6 +541,77 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
           ),
         );
       },
+    );
+  }
+
+  void _showAbilitySelectionDialog(
+    BuildContext context,
+    UserState userState,
+    int index,
+    CapturedOrganism organism,
+  ) {
+    final pool = organism.baseOrganism.abilities
+        .split(',')
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty && e != organism.activeAbilityName)
+        .toList();
+
+    if (pool.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('This animal has no other abilities to change to!'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.secondaryButtonColor,
+        title: const Text(
+          'SELECT NEW ABILITY',
+          style: TextStyle(
+            fontFamily: 'PressStart2P',
+            fontSize: 14,
+            color: AppColors.highlightColor,
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: pool.map((ability) {
+            return ListTile(
+              title: Text(
+                ability.toUpperCase(),
+                style: const TextStyle(
+                  fontFamily: 'PressStart2P',
+                  fontSize: 12,
+                  color: Colors.white,
+                ),
+              ),
+              onTap: () async {
+                await userState.useAbilityCapsule(index, ability);
+                if (ctx.mounted) Navigator.pop(ctx);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Ability changed to $ability!'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              },
+            );
+          }).toList(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('CANCEL'),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -568,7 +651,7 @@ class _AnimalCard extends StatelessWidget {
     if (base.rarity.toLowerCase() == 'legendary') {
       rarityGlow = [
         BoxShadow(
-          color: Colors.orange.withOpacity(0.5),
+          color: Colors.orange.withValues(alpha: 0.5),
           blurRadius: 10,
           spreadRadius: 2,
         ),
@@ -576,7 +659,7 @@ class _AnimalCard extends StatelessWidget {
     } else if (base.rarity.toLowerCase() == 'mythical') {
       rarityGlow = [
         BoxShadow(
-          color: Colors.purple.withOpacity(0.5),
+          color: Colors.purple.withValues(alpha: 0.5),
           blurRadius: 10,
           spreadRadius: 2,
         ),
@@ -585,7 +668,7 @@ class _AnimalCard extends StatelessWidget {
         base.rarity.toLowerCase() == 'elite') {
       rarityGlow = [
         BoxShadow(
-          color: Colors.purpleAccent.withOpacity(0.3),
+          color: Colors.purpleAccent.withValues(alpha: 0.3),
           blurRadius: 8,
           spreadRadius: 1,
         ),
@@ -601,7 +684,7 @@ class _AnimalCard extends StatelessWidget {
             rarityGlow ??
             [
               BoxShadow(
-                color: Colors.black.withOpacity(0.3),
+                color: Colors.black.withValues(alpha: 0.3),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
@@ -955,6 +1038,31 @@ class _AnimalDetailsDialog extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (captured.teraType != null) ...[
+              _buildStatHeader('PRISM TYPE'),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: captured.teraType!.color,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  captured.teraType!.name.toUpperCase(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontFamily: 'PressStart2P',
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Divider(color: Colors.grey),
+            ],
             if (captured.equippedTalisman != null) ...[
               _buildStatHeader('HELD ITEM'),
               const SizedBox(height: 8),
@@ -1465,47 +1573,4 @@ class _AnimalBoxSpriteState extends State<_AnimalBoxSprite> {
   }
 }
 
-Color _getAnimalTypeColor(ElementalType type) {
-  switch (type) {
-    case ElementalType.basic:
-      return const Color.fromARGB(255, 168, 168, 130);
-    case ElementalType.flying:
-      return const Color(0xFFA98FF3);
-    case ElementalType.aquatic:
-      return const Color.fromARGB(255, 46, 60, 255);
-    case ElementalType.earth:
-      return const Color(0xFFE2BF65);
-    case ElementalType.cryo:
-      return const Color.fromARGB(255, 0, 247, 255);
-    case ElementalType.toxic:
-      return const Color(0xFFA33EA1);
-    case ElementalType.rock:
-      return const Color.fromARGB(255, 158, 97, 5);
-    case ElementalType.arthropod:
-      return const Color.fromARGB(255, 111, 207, 0);
-    case ElementalType.electric:
-      return const Color.fromARGB(255, 255, 251, 27);
-    case ElementalType.spectral:
-      return const Color.fromARGB(255, 91, 11, 240);
-    case ElementalType.martial:
-      return const Color.fromARGB(255, 160, 24, 0);
-    case ElementalType.blaze:
-      return const Color.fromARGB(255, 226, 72, 0);
-    case ElementalType.grass:
-      return const Color.fromARGB(255, 22, 131, 0);
-    case ElementalType.mystic:
-      return const Color.fromARGB(255, 255, 81, 162);
-    case ElementalType.darkness:
-      return const Color.fromARGB(255, 37, 36, 37);
-    case ElementalType.drake:
-      return const Color.fromARGB(255, 76, 0, 255);
-    case ElementalType.metal:
-      return const Color.fromARGB(255, 172, 168, 168);
-    case ElementalType.aura:
-      return const Color.fromARGB(255, 229, 255, 79);
-    case ElementalType.sound:
-      return const Color.fromARGB(255, 166, 70, 255);
-    case ElementalType.holy:
-      return const Color.fromARGB(255, 255, 208, 0);
-  }
-}
+Color _getAnimalTypeColor(ElementalType type) => type.color;

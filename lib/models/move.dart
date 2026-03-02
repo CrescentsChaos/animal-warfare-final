@@ -134,6 +134,7 @@ enum MoveEffectType {
   hiddenPower,
   multiAttack,
   judgement,
+  thrash,
 }
 
 enum MoveCategory { physical, special, status }
@@ -272,11 +273,17 @@ class Move {
     this.isBite = false,
     this.isSoundBased = false,
     bool? isContact,
+    this.isTitanizeMove = false,
   }) : isContact =
            isContact ?? (category == MoveCategory.physical && baseDamage > 0);
 
-  final bool isContact;
+  final bool isPunch;
+  final bool isBite;
   final bool isSoundBased;
+  final bool isContact;
+
+  /// True for Max Moves generated during Titanize
+  final bool isTitanizeMove;
 
   // Compatibility getter
   MoveEffect get effect => effects.isNotEmpty
@@ -357,11 +364,73 @@ class Move {
               orElse: () => MoveTargetCount.single,
             )
           : MoveTargetCount.single,
+      isTitanizeMove: json['isTitanizeMove'] as bool? ?? false,
     );
   }
 
-  final bool isPunch;
-  final bool isBite;
+  Move copyWith({
+    String? name,
+    String? description,
+    int? baseDamage,
+    int? accuracy,
+    List<MoveEffect>? effects,
+    int? priority,
+    int? critRate,
+    double? drainPercent,
+    double? recoilPercent,
+    int? minHits,
+    int? maxHits,
+    ElementalType? type,
+    int? stamina,
+    MoveCategory? category,
+    String? customUsageText,
+    MoveTargetCount? targetCount,
+    String? soundEffect,
+    String? battleMusic,
+    String? damageStat,
+    String? multiplierCondition,
+    String? targetDefenseStat,
+    double? conditionalMultiplier,
+    bool? failIfTargetNotAttacking,
+    bool? isPunch,
+    bool? isBite,
+    bool? isSoundBased,
+    bool? isContact,
+    bool? isTitanizeMove,
+  }) {
+    return Move(
+      name: name ?? this.name,
+      description: description ?? this.description,
+      baseDamage: baseDamage ?? this.baseDamage,
+      accuracy: accuracy ?? this.accuracy,
+      effects: effects ?? this.effects,
+      priority: priority ?? this.priority,
+      critRate: critRate ?? this.critRate,
+      drainPercent: drainPercent ?? this.drainPercent,
+      recoilPercent: recoilPercent ?? this.recoilPercent,
+      minHits: minHits ?? this.minHits,
+      maxHits: maxHits ?? this.maxHits,
+      type: type ?? this.type,
+      stamina: stamina ?? this.stamina,
+      category: category ?? this.category,
+      customUsageText: customUsageText ?? this.customUsageText,
+      targetCount: targetCount ?? this.targetCount,
+      soundEffect: soundEffect ?? this.soundEffect,
+      battleMusic: battleMusic ?? this.battleMusic,
+      damageStat: damageStat ?? this.damageStat,
+      multiplierCondition: multiplierCondition ?? this.multiplierCondition,
+      targetDefenseStat: targetDefenseStat ?? this.targetDefenseStat,
+      conditionalMultiplier:
+          conditionalMultiplier ?? this.conditionalMultiplier,
+      failIfTargetNotAttacking:
+          failIfTargetNotAttacking ?? this.failIfTargetNotAttacking,
+      isPunch: isPunch ?? this.isPunch,
+      isBite: isBite ?? this.isBite,
+      isSoundBased: isSoundBased ?? this.isSoundBased,
+      isContact: isContact ?? this.isContact,
+      isTitanizeMove: isTitanizeMove ?? this.isTitanizeMove,
+    );
+  }
 
   static List<Move> _allMoves = [];
   static List<Move> get allMoves => _allMoves;

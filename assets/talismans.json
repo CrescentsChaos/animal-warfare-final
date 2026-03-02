@@ -536,11 +536,11 @@
   {
     "id": "occa_berry",
     "name": "Occa Berry",
-    "description": "Reduces damage from a super-effective Fire-type move by 50% (consumed on use).",
+    "description": "Reduces damage from a super-effective Blaze-type move by 50% (consumed on use).",
     "effects": [
       {
         "type": "berry_type_resist",
-        "stat": "fire",
+        "stat": "blaze",
         "magnitude": 0.5
       }
     ]
@@ -548,7 +548,7 @@
   {
     "id": "passho_berry",
     "name": "Passho Berry",
-    "description": "Reduces damage from a super-effective Water/Aquatic-type move by 50% (consumed on use).",
+    "description": "Reduces damage from a super-effective Aquatic-type move by 50% (consumed on use).",
     "effects": [
       {
         "type": "berry_type_resist",
@@ -572,11 +572,11 @@
   {
     "id": "rindo_berry",
     "name": "Rindo Berry",
-    "description": "Reduces damage from a super-effective Grass/Flora-type move by 50% (consumed on use).",
+    "description": "Reduces damage from a super-effective Grass-type move by 50% (consumed on use).",
     "effects": [
       {
         "type": "berry_type_resist",
-        "stat": "flora",
+        "stat": "grass",
         "magnitude": 0.5
       }
     ]
@@ -584,7 +584,7 @@
   {
     "id": "yache_berry",
     "name": "Yache Berry",
-    "description": "Reduces damage from a super-effective Ice/Cryo-type move by 50% (consumed on use).",
+    "description": "Reduces damage from a super-effective Cryo-type move by 50% (consumed on use).",
     "effects": [
       {
         "type": "berry_type_resist",
@@ -596,7 +596,7 @@
   {
     "id": "shuca_berry",
     "name": "Shuca Berry",
-    "description": "Reduces damage from a super-effective Ground/Earth-type move by 50% (consumed on use).",
+    "description": "Reduces damage from a super-effective Earth-type move by 50% (consumed on use).",
     "effects": [
       {
         "type": "berry_type_resist",
@@ -620,11 +620,119 @@
   {
     "id": "payapa_berry",
     "name": "Payapa Berry",
-    "description": "Reduces damage from a super-effective Psychic-type move by 50% (consumed on use).",
+    "description": "Reduces damage from a super-effective Aura-type move by 50% (consumed on use).",
     "effects": [
       {
         "type": "berry_type_resist",
-        "stat": "psychic",
+        "stat": "aura",
+        "magnitude": 0.5
+      }
+    ]
+  },
+  {
+    "id": "roseli_berry",
+    "name": "Roseli Berry",
+    "description": "Reduces damage from a super-effective Mystic-type move by 50% (consumed on use).",
+    "effects": [
+      {
+        "type": "berry_type_resist",
+        "stat": "mystic",
+        "magnitude": 0.5
+      }
+    ]
+  },
+  {
+    "id": "haban_berry",
+    "name": "Haban Berry",
+    "description": "Reduces damage from a super-effective Drake-type move by 50% (consumed on use).",
+    "effects": [
+      {
+        "type": "berry_type_resist",
+        "stat": "drake",
+        "magnitude": 0.5
+      }
+    ]
+  },
+  {
+    "id": "charti_berry",
+    "name": "Charti Berry",
+    "description": "Reduces damage from a super-effective Rock-type move by 50% (consumed on use).",
+    "effects": [
+      {
+        "type": "berry_type_resist",
+        "stat": "rock",
+        "magnitude": 0.5
+      }
+    ]
+  },
+  {
+    "id": "colbur_berry",
+    "name": "Colbur Berry",
+    "description": "Reduces damage from a super-effective Darkness-type move by 50% (consumed on use).",
+    "effects": [
+      {
+        "type": "berry_type_resist",
+        "stat": "darkness",
+        "magnitude": 0.5
+      }
+    ]
+  },
+  {
+    "id": "babiri_berry",
+    "name": "Babiri Berry",
+    "description": "Reduces damage from a super-effective Metal-type move by 50% (consumed on use).",
+    "effects": [
+      {
+        "type": "berry_type_resist",
+        "stat": "metal",
+        "magnitude": 0.5
+      }
+    ]
+  },
+  {
+    "id": "kasib_berry",
+    "name": "Kasib Berry",
+    "description": "Reduces damage from a super-effective Spectral-type move by 50% (consumed on use).",
+    "effects": [
+      {
+        "type": "berry_type_resist",
+        "stat": "spectral",
+        "magnitude": 0.5
+      }
+    ]
+  },
+  {
+    "id": "chople_berry",
+    "name": "Chople Berry",
+    "description": "Reduces damage from a super-effective Martial-type move by 50% (consumed on use).",
+    "effects": [
+      {
+        "type": "berry_type_resist",
+        "stat": "martial",
+        "magnitude": 0.5
+      }
+    ]
+  },
+  {
+    "id": "kebia_berry",
+    "name": "Kebia Berry",
+    "description": "Reduces damage from a super-effective Toxic-type move by 50% (consumed on use).",
+    "effects": [
+      {
+        "type": "berry_type_resist",
+        "stat": "toxic",
+        "magnitude": 0.5
+      }
+    ]
+  },
+  {
+    "id": "tanga_berry",
+    "name": "Tanga Berry",
+    "description": "Reduces damage from a super-effective Arthropod-type move by 50% (consumed on use).",
+    "effects": [
+      {
+        "type": "berry_type_resist",
+        "stat": "arthropod",
         "magnitude": 0.5
       }
     ]
@@ -690,6 +798,18 @@
     ]
   },
   {
+    "id": "charcoal",
+    "name": "Charcoal",
+    "description": "Boosts Blaze-type moves.",
+    "effects": [
+      {
+        "type": "damage_boost",
+        "stat": "blaze",
+        "magnitude": 1.2
+      }
+    ]
+  },
+  {
     "id": "splash_plate",
     "name": "Splash Plate",
     "description": "A stone tablet that boosts Aquatic-type moves.",
@@ -702,9 +822,45 @@
     ]
   },
   {
+    "id": "mystic_water",
+    "name": "Mystic Water",
+    "description": "Boosts Aquatic-type moves.",
+    "effects": [
+      {
+        "type": "damage_boost",
+        "stat": "aquatic",
+        "magnitude": 1.2
+      }
+    ]
+  },
+  {
     "id": "meadow_plate",
     "name": "Meadow Plate",
     "description": "A stone tablet that boosts Grass-type moves.",
+    "effects": [
+      {
+        "type": "damage_boost",
+        "stat": "grass",
+        "magnitude": 1.2
+      }
+    ]
+  },
+  {
+    "id": "meadow_plate",
+    "name": "Meadow Plate",
+    "description": "A stone tablet that boosts Grass-type moves.",
+    "effects": [
+      {
+        "type": "damage_boost",
+        "stat": "grass",
+        "magnitude": 1.2
+      }
+    ]
+  },
+  {
+    "id": "miracle_seed",
+    "name": "Miracle Seed",
+    "description": "Boosts Grass-type moves.",
     "effects": [
       {
         "type": "damage_boost",
@@ -738,9 +894,33 @@
     ]
   },
   {
+    "id": "never_melt_ice",
+    "name": "Never-Melt Ice",
+    "description": "Boosts Cryo-type moves.",
+    "effects": [
+      {
+        "type": "damage_boost",
+        "stat": "cryo",
+        "magnitude": 1.2
+      }
+    ]
+  },
+  {
     "id": "earth_plate",
     "name": "Earth Plate",
     "description": "A stone tablet that boosts Earth-type moves.",
+    "effects": [
+      {
+        "type": "damage_boost",
+        "stat": "earth",
+        "magnitude": 1.2
+      }
+    ]
+  },
+  {
+    "id": "soft_sand",
+    "name": "Soft Sand",
+    "description": "Boosts Earth-type moves.",
     "effects": [
       {
         "type": "damage_boost",
@@ -762,9 +942,33 @@
     ]
   },
   {
+    "id": "hard_stone",
+    "name": "Hard Stone",
+    "description": "Boosts Rock-type moves.",
+    "effects": [
+      {
+        "type": "damage_boost",
+        "stat": "rock",
+        "magnitude": 1.2
+      }
+    ]
+  },
+  {
     "id": "sky_plate",
     "name": "Sky Plate",
     "description": "A stone tablet that boosts Flying-type moves.",
+    "effects": [
+      {
+        "type": "damage_boost",
+        "stat": "flying",
+        "magnitude": 1.2
+      }
+    ]
+  },
+  {
+    "id": "sharp_beak",
+    "name": "Sharp Beak",
+    "description": "Boosts Flying-type moves.",
     "effects": [
       {
         "type": "damage_boost",
@@ -786,9 +990,33 @@
     ]
   },
   {
+    "id": "poison_barb",
+    "name": "Poison Barb",
+    "description": "Boosts Toxic-type moves.",
+    "effects": [
+      {
+        "type": "damage_boost",
+        "stat": "toxic",
+        "magnitude": 1.2
+      }
+    ]
+  },
+  {
     "id": "dread_plate",
     "name": "Dread Plate",
     "description": "A stone tablet that boosts Darkness-type moves.",
+    "effects": [
+      {
+        "type": "damage_boost",
+        "stat": "darkness",
+        "magnitude": 1.2
+      }
+    ]
+  },
+  {
+    "id": "black_glasses",
+    "name": "Black Glasses",
+    "description": "Boosts Darkness-type moves.",
     "effects": [
       {
         "type": "damage_boost",
@@ -810,9 +1038,33 @@
     ]
   },
   {
+    "id": "fairy_feather",
+    "name": "Fairy Feather",
+    "description": "Boosts Mystic-type moves.",
+    "effects": [
+      {
+        "type": "damage_boost",
+        "stat": "mystic",
+        "magnitude": 1.2
+      }
+    ]
+  },
+  {
     "id": "fist_plate",
     "name": "Fist Plate",
     "description": "A stone tablet that boosts Martial-type moves.",
+    "effects": [
+      {
+        "type": "damage_boost",
+        "stat": "martial",
+        "magnitude": 1.2
+      }
+    ]
+  },
+  {
+    "id": "black_belt",
+    "name": "Black Belt",
+    "description": "Boosts Martial-type moves.",
     "effects": [
       {
         "type": "damage_boost",
@@ -834,9 +1086,33 @@
     ]
   },
   {
+    "id": "metal_coat",
+    "name": "Metal Coat",
+    "description": "Boosts Metal-type moves.",
+    "effects": [
+      {
+        "type": "damage_boost",
+        "stat": "metal",
+        "magnitude": 1.2
+      }
+    ]
+  },
+  {
     "id": "draco_plate",
     "name": "Draco Plate",
     "description": "A stone tablet that boosts Drake-type moves.",
+    "effects": [
+      {
+        "type": "damage_boost",
+        "stat": "drake",
+        "magnitude": 1.2
+      }
+    ]
+  },
+  {
+    "id": "dragon_fang",
+    "name": "Dragon Fang",
+    "description": "Boosts Drake-type moves.",
     "effects": [
       {
         "type": "damage_boost",
@@ -858,6 +1134,18 @@
     ]
   },
   {
+    "id": "spell_tag",
+    "name": "Spell Tag",
+    "description": "Boosts Spectral-type moves.",
+    "effects": [
+      {
+        "type": "damage_boost",
+        "stat": "spectral",
+        "magnitude": 1.2
+      }
+    ]
+  },
+  {
     "id": "mind_plate",
     "name": "Mind Plate",
     "description": "A stone tablet that boosts Aura-type moves.",
@@ -870,9 +1158,33 @@
     ]
   },
   {
+    "id": "twisted_spoon",
+    "name": "Twisted Spoon",
+    "description": "Boosts Aura-type moves.",
+    "effects": [
+      {
+        "type": "damage_boost",
+        "stat": "aura",
+        "magnitude": 1.2
+      }
+    ]
+  },
+  {
     "id": "insect_plate",
     "name": "Insect Plate",
     "description": "A stone tablet that boosts Arthropod-type moves.",
+    "effects": [
+      {
+        "type": "damage_boost",
+        "stat": "arthropod",
+        "magnitude": 1.2
+      }
+    ]
+  },
+  {
+    "id": "silver_powder",
+    "name": "Silver Powder",
+    "description": "Boosts Arthropod-type moves.",
     "effects": [
       {
         "type": "damage_boost",
@@ -981,6 +1293,365 @@
     "id": "bug_memory",
     "name": "Bug Memory",
     "description": "A memory disk that contains Arthropod-type data.",
+    "effects": []
+  },
+  {
+    "id": "normal_gem",
+    "name": "Normal Gem",
+    "description": "Boosts the power of a Basic-type move by 1.5x once, then is consumed.",
+    "effects": [
+      {
+        "type": "gem_boost",
+        "stat": "basic",
+        "magnitude": 1.5
+      }
+    ]
+  },
+  {
+    "id": "flying_gem",
+    "name": "Flying Gem",
+    "description": "Boosts the power of a Flying-type move by 1.5x once, then is consumed.",
+    "effects": [
+      {
+        "type": "gem_boost",
+        "stat": "flying",
+        "magnitude": 1.5
+      }
+    ]
+  },
+  {
+    "id": "water_gem",
+    "name": "Water Gem",
+    "description": "Boosts the power of an Aquatic-type move by 1.5x once, then is consumed.",
+    "effects": [
+      {
+        "type": "gem_boost",
+        "stat": "aquatic",
+        "magnitude": 1.5
+      }
+    ]
+  },
+  {
+    "id": "ground_gem",
+    "name": "Ground Gem",
+    "description": "Boosts the power of an Earth-type move by 1.5x once, then is consumed.",
+    "effects": [
+      {
+        "type": "gem_boost",
+        "stat": "earth",
+        "magnitude": 1.5
+      }
+    ]
+  },
+  {
+    "id": "ice_gem",
+    "name": "Ice Gem",
+    "description": "Boosts the power of a Cryo-type move by 1.5x once, then is consumed.",
+    "effects": [
+      {
+        "type": "gem_boost",
+        "stat": "cryo",
+        "magnitude": 1.5
+      }
+    ]
+  },
+  {
+    "id": "poison_gem",
+    "name": "Poison Gem",
+    "description": "Boosts the power of a Toxic-type move by 1.5x once, then is consumed.",
+    "effects": [
+      {
+        "type": "gem_boost",
+        "stat": "toxic",
+        "magnitude": 1.5
+      }
+    ]
+  },
+  {
+    "id": "rock_gem",
+    "name": "Rock Gem",
+    "description": "Boosts the power of a Rock-type move by 1.5x once, then is consumed.",
+    "effects": [
+      {
+        "type": "gem_boost",
+        "stat": "rock",
+        "magnitude": 1.5
+      }
+    ]
+  },
+  {
+    "id": "bug_gem",
+    "name": "Bug Gem",
+    "description": "Boosts the power of an Arthropod-type move by 1.5x once, then is consumed.",
+    "effects": [
+      {
+        "type": "gem_boost",
+        "stat": "arthropod",
+        "magnitude": 1.5
+      }
+    ]
+  },
+  {
+    "id": "electric_gem",
+    "name": "Electric Gem",
+    "description": "Boosts the power of an Electric-type move by 1.5x once, then is consumed.",
+    "effects": [
+      {
+        "type": "gem_boost",
+        "stat": "electric",
+        "magnitude": 1.5
+      }
+    ]
+  },
+  {
+    "id": "dark_gem",
+    "name": "Dark Gem",
+    "description": "Boosts the power of a Darkness-type move by 1.5x once, then is consumed.",
+    "effects": [
+      {
+        "type": "gem_boost",
+        "stat": "darkness",
+        "magnitude": 1.5
+      }
+    ]
+  },
+  {
+    "id": "fighting_gem",
+    "name": "Fighting Gem",
+    "description": "Boosts the power of a Martial-type move by 1.5x once, then is consumed.",
+    "effects": [
+      {
+        "type": "gem_boost",
+        "stat": "martial",
+        "magnitude": 1.5
+      }
+    ]
+  },
+  {
+    "id": "fire_gem",
+    "name": "Fire Gem",
+    "description": "Boosts the power of a Blaze-type move by 1.5x once, then is consumed.",
+    "effects": [
+      {
+        "type": "gem_boost",
+        "stat": "blaze",
+        "magnitude": 1.5
+      }
+    ]
+  },
+  {
+    "id": "grass_gem",
+    "name": "Grass Gem",
+    "description": "Boosts the power of a Grass-type move by 1.5x once, then is consumed.",
+    "effects": [
+      {
+        "type": "gem_boost",
+        "stat": "grass",
+        "magnitude": 1.5
+      }
+    ]
+  },
+  {
+    "id": "fairy_gem",
+    "name": "Fairy Gem",
+    "description": "Boosts the power of a Mystic-type move by 1.5x once, then is consumed.",
+    "effects": [
+      {
+        "type": "gem_boost",
+        "stat": "mystic",
+        "magnitude": 1.5
+      }
+    ]
+  },
+  {
+    "id": "ghost_gem",
+    "name": "Ghost Gem",
+    "description": "Boosts the power of a Spectral-type move by 1.5x once, then is consumed.",
+    "effects": [
+      {
+        "type": "gem_boost",
+        "stat": "spectral",
+        "magnitude": 1.5
+      }
+    ]
+  },
+  {
+    "id": "dragon_gem",
+    "name": "Dragon Gem",
+    "description": "Boosts the power of a Drake-type move by 1.5x once, then is consumed.",
+    "effects": [
+      {
+        "type": "gem_boost",
+        "stat": "drake",
+        "magnitude": 1.5
+      }
+    ]
+  },
+  {
+    "id": "steel_gem",
+    "name": "Steel Gem",
+    "description": "Boosts the power of a Metal-type move by 1.5x once, then is consumed.",
+    "effects": [
+      {
+        "type": "gem_boost",
+        "stat": "metal",
+        "magnitude": 1.5
+      }
+    ]
+  },
+  {
+    "id": "psychic_gem",
+    "name": "Psychic Gem",
+    "description": "Boosts the power of an Aura-type move by 1.5x once, then is consumed.",
+    "effects": [
+      {
+        "type": "gem_boost",
+        "stat": "aura",
+        "magnitude": 1.5
+      }
+    ]
+  },
+  {
+    "id": "sound_gem",
+    "name": "Sound Gem",
+    "description": "Boosts the power of a Sound-type move by 1.5x once, then is consumed.",
+    "effects": [
+      {
+        "type": "gem_boost",
+        "stat": "sound",
+        "magnitude": 1.5
+      }
+    ]
+  },
+  {
+    "id": "holy_gem",
+    "name": "Holy Gem",
+    "description": "Boosts the power of a Holy-type move by 1.5x once, then is consumed.",
+    "effects": [
+      {
+        "type": "gem_boost",
+        "stat": "holy",
+        "magnitude": 1.5
+      }
+    ]
+  },
+  {
+    "id": "absorb_bulb",
+    "name": "Absorb Bulb",
+    "description": "If hit by an Aquatic-type move, boosts Power once, then is consumed.",
+    "effects": [
+      {
+        "type": "stat_boost",
+        "stat": "power",
+        "magnitude": 1.5,
+        "condition": "hit_by_aquatic"
+      }
+    ]
+  },
+  {
+    "id": "adrenaline_orb",
+    "name": "Adrenaline Orb",
+    "description": "Boosts Speed if its Attack is lowered once, then is consumed.",
+    "effects": [
+      {
+        "type": "stat_boost",
+        "stat": "speed",
+        "magnitude": 1.5,
+        "condition": "stat_lowered"
+      }
+    ]
+  },
+  {
+    "id": "amulet_coin",
+    "name": "Amulet Coin",
+    "description": "Doubles the money earned from a battle if the holder joins in.",
+    "effects": []
+  },
+  {
+    "id": "big_root",
+    "name": "Big Root",
+    "description": "Increases the amount of HP recovered from HP-stealing moves.",
+    "effects": [
+      {
+        "type": "drain_boost",
+        "magnitude": 1.3
+      }
+    ]
+  },
+  {
+    "id": "binding_band",
+    "name": "Binding Band",
+    "description": "Increases the damage dealt by binding moves.",
+    "effects": [
+      {
+        "type": "binding_band_boost",
+        "magnitude": 1.5
+      }
+    ]
+  },
+  {
+    "id": "expert_belt",
+    "name": "Expert Belt",
+    "description": "Boosts the power of super-effective moves.",
+    "effects": [
+      {
+        "type": "damage_boost",
+        "magnitude": 1.2,
+        "condition": "super_effective"
+      }
+    ]
+  },
+  {
+    "id": "blunder_policy",
+    "name": "Blunder Policy",
+    "description": "Sharply boosts Speed if its move misses once, then is consumed.",
+    "effects": [
+      {
+        "type": "miss_stat_boost",
+        "stat": "speed",
+        "magnitude": 2.0
+      }
+    ]
+  },
+  {
+    "id": "bright_powder",
+    "name": "Bright Powder",
+    "description": "Lowers the accuracy of moves targeted at the holder.",
+    "effects": [
+      {
+        "type": "stat_boost",
+        "stat": "evasion",
+        "magnitude": 1.1
+      }
+    ]
+  },
+  {
+    "id": "custap_berry",
+    "name": "Custap Berry",
+    "description": "Lets the holder move first in its priority bracket when HP is low (once).",
+    "effects": [
+      {
+        "type": "priority_low_hp",
+        "threshold": 0.25,
+        "magnitude": 1.0
+      }
+    ]
+  },
+  {
+    "id": "heavy_duty_boots",
+    "name": "Heavy-Duty Boots",
+    "description": "Prevents effects of traps (Spikes, Stealth Rock, etc.) set on the battlefield.",
+    "effects": [
+      {
+        "type": "hazard_immunity",
+        "magnitude": 1.0
+      }
+    ]
+  },
+  {
+    "id": "ability_capsule",
+    "name": "Ability Capsule",
+    "description": "A capsule that allows an animal with multiple possible abilities to switch between them.",
     "effects": []
   }
 ]

@@ -1605,7 +1605,7 @@
         "soundEffect": "audio/effects/chomp.mp3",
         "baseDamage": 110,
         "accuracy": 85,
-        "type": "basic",
+        "type": "toxic",
         "stamina": 20,
         "isBite": true,
         "category": "physical",
@@ -1847,7 +1847,7 @@
         "soundEffect": "audio/effects/absorb.mp3",
         "baseDamage": 0,
         "type": "aquatic",
-        "stamina": 8,
+        "stamina": 5,
         "category": "status",
         "effects": [
             {
@@ -4397,6 +4397,7 @@
         "type": "flying",
         "stamina": 15,
         "category": "physical",
+        "isMultiTurn": true,
         "effects": [
             {
                 "type": "semiInvulnerable",
@@ -5976,7 +5977,13 @@
         "accuracy": 100,
         "stamina": 10,
         "category": "physical",
-        "effects": []
+        "effects": [
+            {
+                "type": "thrash",
+                "target": "self",
+                "chance": 100
+            }
+        ]
     },
     {
         "name": "Outrage",
@@ -5986,7 +5993,13 @@
         "accuracy": 100,
         "stamina": 10,
         "category": "physical",
-        "effects": []
+        "effects": [
+            {
+                "type": "thrash",
+                "target": "self",
+                "chance": 100
+            }
+        ]
     },
     {
         "name": "Petal Dance",
@@ -5996,7 +6009,13 @@
         "accuracy": 100,
         "stamina": 10,
         "category": "special",
-        "effects": []
+        "effects": [
+            {
+                "type": "thrash",
+                "target": "self",
+                "chance": 100
+            }
+        ]
     },
     {
         "name": "Brine",
@@ -6025,6 +6044,7 @@
     {
         "name": "Psychic Fangs",
         "description": "The user bites the target with psychic power. This attack shatters screens.",
+        "soundEffect": "audio/effects/chomp.mp3",
         "baseDamage": 85,
         "type": "aura",
         "accuracy": 100,
@@ -6051,6 +6071,270 @@
         "stamina": 15,
         "category": "special",
         "critRate": 1,
+        "effects": []
+    },
+    {
+        "name": "Max Strike",
+        "description": "A mighty Titanize move with no type. Deals massive damage.",
+        "baseDamage": 130,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 99,
+        "category": "physical",
+        "critRate": 1,
+        "isTitanizeMove": true,
+        "effects": []
+    },
+    {
+        "name": "Max Flare",
+        "description": "A Titanize blaze move that scorches all foes.",
+        "baseDamage": 130,
+        "type": "blaze",
+        "accuracy": 100,
+        "stamina": 99,
+        "category": "special",
+        "critRate": 1,
+        "isTitanizeMove": true,
+        "effects": []
+    },
+    {
+        "name": "Max Geyser",
+        "description": "A Titanize aquatic move that unleashes a tidal torrent.",
+        "baseDamage": 130,
+        "type": "aquatic",
+        "accuracy": 100,
+        "stamina": 99,
+        "category": "special",
+        "critRate": 1,
+        "isTitanizeMove": true,
+        "effects": []
+    },
+    {
+        "name": "Max Overgrowth",
+        "description": "A Titanize grass move that smothers foes in titanic vines.",
+        "baseDamage": 130,
+        "type": "grass",
+        "accuracy": 100,
+        "stamina": 99,
+        "category": "special",
+        "critRate": 1,
+        "isTitanizeMove": true,
+        "effects": []
+    },
+    {
+        "name": "Max Lightning",
+        "description": "A Titanize electric move that discharges colossal energy.",
+        "baseDamage": 130,
+        "type": "electric",
+        "accuracy": 100,
+        "stamina": 99,
+        "category": "special",
+        "critRate": 1,
+        "isTitanizeMove": true,
+        "effects": []
+    },
+    {
+        "name": "Max Hailstorm",
+        "description": "A Titanize cryo move that brings a blizzard of epic scale.",
+        "baseDamage": 130,
+        "type": "cryo",
+        "accuracy": 100,
+        "stamina": 99,
+        "category": "special",
+        "critRate": 1,
+        "isTitanizeMove": true,
+        "effects": []
+    },
+    {
+        "name": "Max Venom",
+        "description": "A Titanize toxic move that drenches foes in colossal poison.",
+        "baseDamage": 130,
+        "type": "toxic",
+        "accuracy": 100,
+        "stamina": 99,
+        "category": "special",
+        "critRate": 1,
+        "isTitanizeMove": true,
+        "effects": []
+    },
+    {
+        "name": "Max Rockfall",
+        "description": "A Titanize rock move that brings down a mountain.",
+        "baseDamage": 130,
+        "type": "rock",
+        "accuracy": 100,
+        "stamina": 99,
+        "category": "physical",
+        "critRate": 1,
+        "isTitanizeMove": true,
+        "effects": []
+    },
+    {
+        "name": "Max Quake",
+        "description": "A Titanize earth move that splits the ground itself.",
+        "baseDamage": 130,
+        "type": "earth",
+        "accuracy": 100,
+        "stamina": 99,
+        "category": "physical",
+        "critRate": 1,
+        "isTitanizeMove": true,
+        "effects": []
+    },
+    {
+        "name": "Max Swarm",
+        "description": "A Titanize arthropod move that overwhelms with a titan swarm.",
+        "baseDamage": 130,
+        "type": "arthropod",
+        "accuracy": 100,
+        "stamina": 99,
+        "category": "physical",
+        "critRate": 1,
+        "isTitanizeMove": true,
+        "effects": []
+    },
+    {
+        "name": "Max Gale",
+        "description": "A Titanize flying move that tears the sky apart.",
+        "baseDamage": 130,
+        "type": "flying",
+        "accuracy": 100,
+        "stamina": 99,
+        "category": "special",
+        "critRate": 1,
+        "isTitanizeMove": true,
+        "effects": []
+    },
+    {
+        "name": "Max Darkness",
+        "description": "A Titanize darkness move that eclipses the battlefield.",
+        "baseDamage": 130,
+        "type": "darkness",
+        "accuracy": 100,
+        "stamina": 99,
+        "category": "special",
+        "critRate": 1,
+        "isTitanizeMove": true,
+        "effects": []
+    },
+    {
+        "name": "Max Knuckle",
+        "description": "A Titanize martial move that delivers a world-shaking blow.",
+        "baseDamage": 130,
+        "type": "martial",
+        "accuracy": 100,
+        "stamina": 99,
+        "category": "physical",
+        "critRate": 1,
+        "isTitanizeMove": true,
+        "effects": []
+    },
+    {
+        "name": "Max Wyrmstrike",
+        "description": "A Titanize drake move that channels the fury of titans.",
+        "baseDamage": 130,
+        "type": "drake",
+        "accuracy": 100,
+        "stamina": 99,
+        "category": "special",
+        "critRate": 1,
+        "isTitanizeMove": true,
+        "effects": []
+    },
+    {
+        "name": "Max Steelspike",
+        "description": "A Titanize metal move that pierces everything in its path.",
+        "baseDamage": 130,
+        "type": "metal",
+        "accuracy": 100,
+        "stamina": 99,
+        "category": "physical",
+        "critRate": 1,
+        "isTitanizeMove": true,
+        "effects": []
+    },
+    {
+        "name": "Max Phantasm",
+        "description": "A Titanize spectral move that tears through reality.",
+        "baseDamage": 130,
+        "type": "spectral",
+        "accuracy": 100,
+        "stamina": 99,
+        "category": "special",
+        "critRate": 1,
+        "isTitanizeMove": true,
+        "effects": []
+    },
+    {
+        "name": "Max Mindstorm",
+        "description": "A Titanize mystic move that bends the laws of physics.",
+        "baseDamage": 130,
+        "type": "mystic",
+        "accuracy": 100,
+        "stamina": 99,
+        "category": "special",
+        "critRate": 1,
+        "isTitanizeMove": true,
+        "effects": []
+    },
+    {
+        "name": "Max Burst",
+        "description": "A Titanize aura move that explodes with overwhelming aura energy.",
+        "baseDamage": 130,
+        "type": "aura",
+        "accuracy": 100,
+        "stamina": 99,
+        "category": "special",
+        "critRate": 1,
+        "isTitanizeMove": true,
+        "effects": []
+    },
+    {
+        "name": "Max Roar",
+        "description": "A Titanize sound move that shatters the battlefield with a titanic roar.",
+        "baseDamage": 130,
+        "type": "sound",
+        "accuracy": 100,
+        "stamina": 99,
+        "category": "physical",
+        "critRate": 1,
+        "isTitanizeMove": true,
+        "effects": []
+    },
+    {
+        "name": "Max Radiance",
+        "description": "A Titanize holy move that bathes the field in blinding light.",
+        "baseDamage": 130,
+        "type": "holy",
+        "accuracy": 100,
+        "stamina": 99,
+        "category": "special",
+        "critRate": 1,
+        "isTitanizeMove": true,
+        "effects": []
+    },
+    {
+        "name": "Max Strike",
+        "description": "A Titanize basic move that strikes with overwhelming force.",
+        "baseDamage": 130,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 99,
+        "category": "physical",
+        "critRate": 1,
+        "isTitanizeMove": true,
+        "effects": []
+    },
+    {
+        "name": "Max Guard",
+        "description": "A Titanize status move that shields the user and boosts their defenses. Replaces all status moves during Titanize.",
+        "baseDamage": 0,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 99,
+        "category": "status",
+        "critRate": 0,
+        "isTitanizeMove": true,
         "effects": []
     }
 ]

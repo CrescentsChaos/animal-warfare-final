@@ -48,6 +48,12 @@ enum TalismanEffectType {
   powerHerb, // Bypass charging turn once
   berryTypeResist, // Reduce damage from super-effective hit of specific type
   weatherDuration, // Extend weather duration (Damp Rock, etc.)
+  gemBoost, // 1.5x damage for specific type, single use
+  drainBoost, // Big Root: increase healing from drain moves
+  bindingBandBoost, // Binding Band: increase trapping damage
+  missStatBoost, // Blunder Policy: +2 speed on miss
+  priorityLowHp, // Custap Berry: move first at low HP once
+  hazardImmunity, // Heavy-Duty Boots: immune to hazards
 }
 
 class TalismanEffect {
@@ -170,6 +176,24 @@ class TalismanEffect {
         break;
       case 'weather_duration':
         type = TalismanEffectType.weatherDuration;
+        break;
+      case 'gem_boost':
+        type = TalismanEffectType.gemBoost;
+        break;
+      case 'drain_boost':
+        type = TalismanEffectType.drainBoost;
+        break;
+      case 'binding_band_boost':
+        type = TalismanEffectType.bindingBandBoost;
+        break;
+      case 'miss_stat_boost':
+        type = TalismanEffectType.missStatBoost;
+        break;
+      case 'priority_low_hp':
+        type = TalismanEffectType.priorityLowHp;
+        break;
+      case 'hazard_immunity':
+        type = TalismanEffectType.hazardImmunity;
         break;
       default:
         type = TalismanEffectType.statBoost; // Fallback
@@ -322,6 +346,7 @@ class Talisman {
             e.type == TalismanEffectType.whiteHerb ||
             e.type == TalismanEffectType.quickClaw ||
             e.type == TalismanEffectType.powerHerb ||
-            e.type == TalismanEffectType.berryTypeResist,
+            e.type == TalismanEffectType.berryTypeResist ||
+            e.type == TalismanEffectType.gemBoost,
       );
 }

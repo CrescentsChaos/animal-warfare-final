@@ -141,6 +141,8 @@ class ArchetypeTeamBuilder {
     // 3. Score candidates by archetype fit for weighted selection
     final scoredEligible = eligible.map((c) {
       double s = _score(archetype, c);
+      // Add a significant amount of jitter to ensure we don't always pick the same "top" animals
+      s += _rng.nextDouble() * (s * 0.4); // 40% jitter based on score
       if (s <= 0) s = 1; // base weight for any eligible animal
       return MapEntry(c, s);
     }).toList();
@@ -162,8 +164,11 @@ class ArchetypeTeamBuilder {
     }
 
     // 5. Build CapturedOrganisms with archetype-tuned movesets
+    final teamMoves = <String>[];
     var team = picked.map((c) {
-      final moves = _selectMoves(archetype, c);
+      final moves = _selectMoves(archetype, c, teamMoves);
+      teamMoves.addAll(moves.map((m) => m.name));
+
       final captured = _makeOrganism(
         c.organism,
         moves,
@@ -279,6 +284,57 @@ class ArchetypeTeamBuilder {
         final hasTR = c.moves.any((m) => m.name == 'Trick Room');
         final isSlowHeavy = o.speed < 55 && (o.attack > 90 || o.power > 90);
         return hasTR || isSlowHeavy;
+
+      case TeamArchetype.tailwindSpeed:
+        return c.moves.any((m) => m.name == 'Tailwind') || o.speed > 100;
+
+      case TeamArchetype.dualScreens:
+        return c.moves.any(
+              (m) =>
+                  m.name == 'Reflect' ||
+                  m.name == 'Light Screen' ||
+                  m.name == 'Aurora Veil',
+            ) ||
+            (o.defense > 80 && o.resistance > 80);
+
+      case TeamArchetype.prioritySweeper:
+        return c.moves.any((m) => m.priority > 0 && m.baseDamage > 0);
+
+      case TeamArchetype.perishTrapper:
+        return c.moves.any((m) => m.name == 'Perish Song') ||
+            c.moves.any(
+              (m) => m.effects.any((e) => e.type == MoveEffectType.trapIndices),
+            );
+
+      case TeamArchetype.gimmickyAssist:
+        return c.moves.any(
+          (m) =>
+              m.name == 'Metronome' ||
+              m.name == 'Assist' ||
+              m.name == 'Copycat',
+        );
+
+      case TeamArchetype.criticalFocus:
+        return c.moves.any((m) => m.critRate > 0 || m.name == 'Focus Energy');
+
+      case TeamArchetype.recoilReckless:
+        return c.moves.any((m) => m.recoilPercent > 0);
+
+      case TeamArchetype.restLoop:
+        return c.moves.any((m) => m.name == 'Rest') &&
+            c.moves.any((m) => m.name == 'Sleep Talk' || m.name == 'Snore');
+
+      case TeamArchetype.evasionBuffer:
+        return c.moves.any(
+          (m) => m.name == 'Double Team' || m.name == 'Minimize',
+        );
+
+      case TeamArchetype.bulkyBruiser:
+        return o.health > 110 && (o.attack > 100 || o.power > 100);
+
+      case TeamArchetype.toxicStall:
+        return c.moves.any((m) => m.name == 'Toxic') &&
+            c.moves.any((m) => m.name == 'Protect' || m.name == 'Spiky Shield');
     }
   }
 
@@ -408,30 +464,157 @@ class ArchetypeTeamBuilder {
         final speedPenalty = (100 - o.speed).clamp(0, 100).toDouble();
         return ((hasTR ? 800 : 0) + speedPenalty + o.attack + o.health)
             .toDouble();
+
+      case TeamArchetype.tailwindSpeed:
+        final hasTW = c.moves.any((m) => m.name == 'Tailwind');
+        return ((hasTW ? 1000 : 0) + o.speed + o.attack).toDouble();
+
+      case TeamArchetype.dualScreens:
+        final hasScreens = c.moves.any(
+          (m) => m.name == 'Reflect' || m.name == 'Light Screen',
+        );
+        return ((hasScreens ? 800 : 0) + o.defense + o.resistance + o.health)
+            .toDouble();
+
+      case TeamArchetype.prioritySweeper:
+        final priorityCount = c.moves.where((m) => m.priority > 0).length;
+        return (priorityCount * 200 + o.attack).toDouble();
+
+      case TeamArchetype.perishTrapper:
+        final hasPerish = c.moves.any((m) => m.name == 'Perish Song');
+        final hasTrap = c.moves.any(
+          (m) => m.effects.any((e) => e.type == MoveEffectType.trapIndices),
+        );
+        return ((hasPerish ? 600 : 0) +
+                (hasTrap ? 600 : 0) +
+                o.defense +
+                o.health)
+            .toDouble();
+
+      case TeamArchetype.gimmickyAssist:
+        return 500; // Almost any animal is fine, just high base score
+
+      case TeamArchetype.criticalFocus:
+        final critCount = c.moves.where((m) => m.critRate > 0).length;
+        final hasFocus = c.moves.any((m) => m.name == 'Focus Energy');
+        return (critCount * 300 + (hasFocus ? 500 : 0) + o.speed).toDouble();
+
+      case TeamArchetype.recoilReckless:
+        final recoilCount = c.moves.where((m) => m.recoilPercent > 0).length;
+        return (recoilCount * 400 + o.attack).toDouble();
+
+      case TeamArchetype.restLoop:
+        final hasRest = c.moves.any((m) => m.name == 'Rest');
+        final hasTalk = c.moves.any((m) => m.name == 'Sleep Talk');
+        return ((hasRest ? 500 : 0) +
+                (hasTalk ? 500 : 0) +
+                o.defense +
+                o.resistance)
+            .toDouble();
+
+      case TeamArchetype.evasionBuffer:
+        final evasionCount = c.moves
+            .where((m) => m.name == 'Double Team' || m.name == 'Minimize')
+            .length;
+        return (evasionCount * 600 + o.speed + o.defense).toDouble();
+
+      case TeamArchetype.bulkyBruiser:
+        return (o.health * 1.5 + o.attack + o.power).toDouble();
+
+      case TeamArchetype.toxicStall:
+        final hasToxic = c.moves.any((m) => m.name == 'Toxic');
+        final hasProtect = c.moves.any(
+          (m) => m.name == 'Protect' || m.name == 'Spiky Shield',
+        );
+        return ((hasToxic ? 700 : 0) +
+                (hasProtect ? 500 : 0) +
+                o.health +
+                o.defense)
+            .toDouble();
     }
   }
 
   // ─────────────────────────────────────────────────────────────────
   // Move Selection — pick best 4 moves per archetype
   // ─────────────────────────────────────────────────────────────────
-  static List<Move> _selectMoves(TeamArchetype archetype, _OrgCandidate c) {
+  static List<Move> _selectMoves(
+    TeamArchetype archetype,
+    _OrgCandidate c,
+    List<String> teamMoves,
+  ) {
     final pool = c.moves;
     if (pool.isEmpty) return [];
 
-    // Score each move by archetype priority, then pick top 4
-    final scored = pool
-        .map((m) => MapEntry(m, _scoreMove(archetype, m)))
-        .toList();
+    // Score each move by archetype priority + team diversity
+    final scored = pool.map((m) {
+      double baseScore = _scoreMove(archetype, m);
+
+      // Penalize moves already heavily present on the team
+      final teamCount = teamMoves.where((name) => name == m.name).length;
+      if (teamCount > 0) {
+        // High penalty for repeating moves across the team,
+        // unless it's an archetype that benefits from it (like Stall/Protect).
+        double penalty = 150.0 * teamCount;
+        if (archetype == TeamArchetype.stall && _isProtect(m)) penalty *= 0.3;
+        if (archetype == TeamArchetype.hazardStacker &&
+            m.effects.any((e) => e.type == MoveEffectType.setHazard))
+          penalty *= 0.5;
+
+        baseScore -= penalty;
+      }
+
+      // Add a healthy amount of jitter to ensure different runs pick different moves
+      baseScore += _rng.nextDouble() * 40.0;
+
+      return MapEntry(m, baseScore);
+    }).toList();
+
     scored.sort((a, b) => b.value.compareTo(a.value));
 
-    // Always guarantee at least one damaging move
+    // Selection strategy: Pick top 2 most strategic moves, then weighted random for the rest
     final selected = <Move>[];
-    final top = scored.take(min(8, scored.length)).map((e) => e.key).toList();
 
-    // Mandatory: include archetype-priority moves first
-    for (final m in top) {
-      if (selected.length >= 4) break;
-      if (!selected.contains(m)) selected.add(m);
+    // 1. Take the absolute best move first (Core strategy)
+    if (scored.isNotEmpty) {
+      selected.add(scored.removeAt(0).key);
+    }
+
+    // 2. Try to ensure a STAB move or high damage move
+    if (scored.isNotEmpty) {
+      final stabIndex = scored.indexWhere(
+        (e) => c.organism.types.contains(e.key.type) && e.key.baseDamage > 0,
+      );
+      if (stabIndex != -1) {
+        selected.add(scored.removeAt(stabIndex).key);
+      } else {
+        selected.add(scored.removeAt(0).key);
+      }
+    }
+
+    // 3. Fill remaining slots with weighted sampling from the top 6 remaining
+    while (selected.length < 4 && scored.isNotEmpty) {
+      final options = scored.take(6).toList();
+      double totalWeight = 0;
+      for (var i = 0; i < options.length; i++) {
+        // Weight is (score + offset) to ensure even lower scores have a small chance
+        double weight = max(10, options[i].value + 500);
+        totalWeight += weight;
+      }
+
+      double r = _rng.nextDouble() * totalWeight;
+      int pickedIndex = 0;
+      for (int i = 0; i < options.length; i++) {
+        double weight = max(10, options[i].value + 500);
+        r -= weight;
+        if (r <= 0) {
+          pickedIndex = i;
+          break;
+        }
+      }
+
+      final picked = options[pickedIndex].key;
+      selected.add(picked);
+      scored.removeWhere((e) => e.key == picked);
     }
 
     // Fallback: if no damaging move included, swap last slot for one
@@ -567,6 +750,66 @@ class ArchetypeTeamBuilder {
         if (_isHeal(m)) s += 60;
         if (m.priority > 0) s -= 50; // priority is useless under TR
         break;
+
+      case TeamArchetype.tailwindSpeed:
+        if (m.name == 'Tailwind') s += 1000;
+        if (m.baseDamage > 70) s += 50;
+        break;
+
+      case TeamArchetype.dualScreens:
+        if (m.name == 'Reflect' ||
+            m.name == 'Light Screen' ||
+            m.name == 'Aurora Veil')
+          s += 800;
+        if (m.baseDamage > 0) s += 20;
+        break;
+
+      case TeamArchetype.prioritySweeper:
+        if (m.priority > 0 && m.baseDamage > 0) s += 500;
+        if (m.baseDamage > 80) s += 40;
+        break;
+
+      case TeamArchetype.perishTrapper:
+        if (m.name == 'Perish Song') s += 1000;
+        if (m.effects.any((e) => e.type == MoveEffectType.trapIndices))
+          s += 800;
+        if (m.name == 'Protect') s += 200;
+        break;
+
+      case TeamArchetype.gimmickyAssist:
+        if (m.name == 'Metronome' || m.name == 'Assist' || m.name == 'Copycat')
+          s += 1000;
+        break;
+
+      case TeamArchetype.criticalFocus:
+        if (m.critRate > 0) s += 400;
+        if (m.name == 'Focus Energy') s += 800;
+        if (m.baseDamage > 60) s += 30;
+        break;
+
+      case TeamArchetype.recoilReckless:
+        if (m.recoilPercent > 0) s += 800;
+        if (m.baseDamage > 100) s += 200;
+        break;
+
+      case TeamArchetype.restLoop:
+        if (m.name == 'Rest' || m.name == 'Sleep Talk' || m.name == 'Snore')
+          s += 800;
+        break;
+
+      case TeamArchetype.evasionBuffer:
+        if (m.name == 'Double Team' || m.name == 'Minimize') s += 1000;
+        break;
+
+      case TeamArchetype.bulkyBruiser:
+        if (m.baseDamage > 90) s += 100;
+        if (m.priority > 0) s += 80;
+        break;
+
+      case TeamArchetype.toxicStall:
+        if (m.name == 'Toxic') s += 1000;
+        if (m.name == 'Protect' || m.name == 'Spiky Shield') s += 800;
+        break;
     }
 
     return s;
@@ -587,6 +830,9 @@ class ArchetypeTeamBuilder {
     for (int i = 0; i < team.length; i++) {
       final c = team[i];
       double s = _leadScore(archetype, c);
+      // Lead Selection Jitter: helps avoid identical leads even if scores are close
+      s += _rng.nextDouble() * 100;
+
       if (s > bestScore) {
         bestScore = s;
         leadIndex = i;
@@ -666,6 +912,55 @@ class ArchetypeTeamBuilder {
 
       case TeamArchetype.balanced:
         return c.baseOrganism.speed.toDouble();
+
+      case TeamArchetype.tailwindSpeed:
+        return c.selectedMoveNames.contains('Tailwind')
+            ? 1000
+            : c.baseOrganism.speed.toDouble();
+
+      case TeamArchetype.dualScreens:
+        return (c.selectedMoveNames.contains('Reflect') ||
+                c.selectedMoveNames.contains('Light Screen'))
+            ? 1000
+            : c.baseOrganism.defense.toDouble();
+
+      case TeamArchetype.prioritySweeper:
+        return c.baseOrganism.speed.toDouble();
+
+      case TeamArchetype.perishTrapper:
+        final canTrap = c.selectedMoveNames.any((n) {
+          final m = Move.findByName(n);
+          return m != null &&
+              m.effects.any((e) => e.type == MoveEffectType.trapIndices);
+        });
+        return canTrap ? 1000 : c.baseOrganism.health.toDouble();
+
+      case TeamArchetype.gimmickyAssist:
+        return _rng.nextDouble() * 1000; // Complete random lead
+
+      case TeamArchetype.criticalFocus:
+        return c.selectedMoveNames.contains('Focus Energy')
+            ? 1000
+            : c.baseOrganism.speed.toDouble();
+
+      case TeamArchetype.recoilReckless:
+        return c.baseOrganism.attack.toDouble();
+
+      case TeamArchetype.restLoop:
+        return (c.baseOrganism.defense + c.baseOrganism.resistance).toDouble();
+
+      case TeamArchetype.evasionBuffer:
+        return c.selectedMoveNames.contains('Double Team')
+            ? 1000
+            : c.baseOrganism.speed.toDouble();
+
+      case TeamArchetype.bulkyBruiser:
+        return c.baseOrganism.health.toDouble();
+
+      case TeamArchetype.toxicStall:
+        return c.selectedMoveNames.contains('Toxic')
+            ? 1000
+            : c.baseOrganism.speed.toDouble();
     }
   }
 
@@ -709,12 +1004,25 @@ class ArchetypeTeamBuilder {
         ? ['Struggle']
         : moves.map((m) => m.name).toList();
 
+    // 90% chance of base type, 10% chance of a completely random Tera Type
+    ElementalType teraType;
+    if (_rng.nextDouble() < 0.9) {
+      final baseTypes = o.elementalTypes;
+      teraType = baseTypes[_rng.nextInt(baseTypes.length)];
+    } else {
+      final allTypes = ElementalType.values
+          .where((t) => t != ElementalType.basic)
+          .toList();
+      teraType = allTypes[_rng.nextInt(allTypes.length)];
+    }
+
     return CapturedOrganism(
       baseOrganism: o,
       individualValues: ivs,
       currentHealth: maxHp,
       selectedMoveNames: moveNames,
       level: level,
+      teraType: teraType,
     );
   }
 
@@ -722,7 +1030,14 @@ class ArchetypeTeamBuilder {
     TeamArchetype? archetype,
     CapturedOrganism c,
   ) {
-    // 1. Mandatory Weather Rocks for Setters
+    // 0. Preliminary: Check for 4x Weaknesses and assign Resist Berry
+    final resistBerry = _getResistBerryFor4xWeakness(c);
+    if (resistBerry != null) {
+      final item = Talisman.findByName(resistBerry);
+      if (item != null) return c.copyWith(equippedTalisman: item);
+    }
+
+    // 1. Mandatory Weather Items for Setters
     if (archetype == TeamArchetype.rainTeam && _isRainSetter(_wrap(c))) {
       final item = Talisman.findByName('Damp Rock');
       if (item != null) return c.copyWith(equippedTalisman: item);
@@ -740,76 +1055,51 @@ class ArchetypeTeamBuilder {
       if (item != null) return c.copyWith(equippedTalisman: item);
     }
 
-    // 2. Complimentary items for weather team members
-    if (archetype != null &&
-        [
-          TeamArchetype.rainTeam,
-          TeamArchetype.sunTeam,
-          TeamArchetype.sandTeam,
-          TeamArchetype.snowTeam,
-        ].contains(archetype)) {
-      final o = c.baseOrganism;
-      final candidates = <String>[];
-
-      // Offensive preference
-      if (o.attack > o.power) {
-        candidates.addAll([
-          'Choice Band',
-          'Life Orb',
-          'Muscle Band',
-          'Strength Charm',
-        ]);
-      } else {
-        candidates.addAll([
-          'Choice Specs',
-          'Life Orb',
-          'Wise Glasses',
-          'Power Crystal',
-        ]);
-      }
-
-      // Speed preference
-      if (o.speed > 100) {
-        candidates.addAll(['Choice Scarf', 'Swift Rune', 'Focus Sash']);
-      }
-
-      // Defensive preference
-      if (o.defense > 80 || o.resistance > 80 || o.health > 100) {
-        candidates.addAll([
-          'Leftovers',
-          'Assault Vest',
-          'Rocky Helmet',
-          'Iron Ward',
-          'Guardian Shell',
-        ]);
-      }
-
-      // Type specific
-      if (o.types.contains(ElementalType.toxic)) {
-        candidates.add('Black Sludge');
-      }
-
-      if (candidates.isNotEmpty) {
-        final name = candidates[_rng.nextInt(candidates.length)];
-        final item = Talisman.findByName(name);
-        if (item != null) return c.copyWith(equippedTalisman: item);
-      }
+    // 2. Defensive items for bulky archetypes
+    if (archetype == TeamArchetype.stall ||
+        archetype == TeamArchetype.defensiveCore ||
+        archetype == TeamArchetype.bulkyBruiser ||
+        archetype == TeamArchetype.toxicStall) {
+      final item = _getDefensiveItem(c);
+      if (item != null) return c.copyWith(equippedTalisman: item);
     }
 
-    // 3. Archetype-specific talisman logic for non-weather teams
+    // 3. Offensive items for offensive archetypes
+    if (archetype == TeamArchetype.hyperOffense ||
+        archetype == TeamArchetype.setupSweeper ||
+        archetype == TeamArchetype.prioritySweeper ||
+        archetype == TeamArchetype.revengeKiller ||
+        (archetype != null &&
+            [
+              TeamArchetype.rainTeam,
+              TeamArchetype.sunTeam,
+              TeamArchetype.sandTeam,
+              TeamArchetype.snowTeam,
+            ].contains(archetype))) {
+      // 40% chance for Gem, 60% for standard offensive item
+      if (_rng.nextDouble() < 0.4) {
+        final gem = _getGemForPrimarySTAB(c);
+        if (gem != null) {
+          final item = Talisman.findByName(gem);
+          if (item != null) return c.copyWith(equippedTalisman: item);
+        }
+      }
+      final item = _getOffensiveItem(c);
+      if (item != null) return c.copyWith(equippedTalisman: item);
+    }
+
+    // 4. Hazard Stackers
     if (archetype == TeamArchetype.hazardStacker) {
       final c2 = _wrap(c);
       final isHazardSetter = c2.moves.any(
         (m) => m.effects.any((e) => e.type == MoveEffectType.setHazard),
       );
       if (isHazardSetter) {
-        // Setters want bulk to survive and set hazards
         final item =
             Talisman.findByName('Leftovers') ??
             Talisman.findByName('Assault Vest');
         if (item != null) return c.copyWith(equippedTalisman: item);
       } else {
-        // Hazard abusers want Red Card to force switches into hazards
         final item =
             Talisman.findByName('Red Card') ??
             Talisman.findByName('Rocky Helmet');
@@ -817,23 +1107,15 @@ class ArchetypeTeamBuilder {
       }
     }
 
+    // 5. Status Spread
     if (archetype == TeamArchetype.statusSpread) {
-      // Rocky Helmet punishes contact moves; great with Hex
-      final o = c.baseOrganism;
-      final item = (o.defense > 80)
+      final item = (c.baseOrganism.defense > 80)
           ? Talisman.findByName('Rocky Helmet')
           : Talisman.findByName('Leftovers');
       if (item != null) return c.copyWith(equippedTalisman: item);
     }
 
-    if (archetype == TeamArchetype.defensiveCore) {
-      final item =
-          Talisman.findByName('Leftovers') ??
-          Talisman.findByName('Rocky Helmet') ??
-          Talisman.findByName('Assault Vest');
-      if (item != null) return c.copyWith(equippedTalisman: item);
-    }
-
+    // 6. Trick Room
     if (archetype == TeamArchetype.trickRoom) {
       final c2 = _wrap(c);
       final isTRSetter = c2.moves.any((m) => m.name == 'Trick Room');
@@ -843,19 +1125,119 @@ class ArchetypeTeamBuilder {
             Talisman.findByName('Focus Sash');
         if (item != null) return c.copyWith(equippedTalisman: item);
       } else {
-        // TR sweeper: Choice Band/Specs for max damage
-        final o = c.baseOrganism;
-        final item = o.attack > o.power
+        final item = c.baseOrganism.attack > c.baseOrganism.power
             ? Talisman.findByName('Choice Band')
             : Talisman.findByName('Choice Specs');
         if (item != null) return c.copyWith(equippedTalisman: item);
       }
     }
 
-    // Fallback to random for Chaos or if no specific logic matched
-    if (Talisman.allTalismans.isEmpty) return c;
-    final t = Talisman.allTalismans[_rng.nextInt(Talisman.allTalismans.length)];
-    return c.copyWith(equippedTalisman: t);
+    // 7. Fallback: Strategy-based random selection
+    final item = _getFallbackItem(c);
+    if (item != null) return c.copyWith(equippedTalisman: item);
+
+    // Final fallback: completely random if somehow none of the above worked
+    if (Talisman.allTalismans.isNotEmpty) {
+      final randomItem =
+          Talisman.allTalismans[_rng.nextInt(Talisman.allTalismans.length)];
+      return c.copyWith(equippedTalisman: randomItem);
+    }
+
+    return c;
+  }
+
+  static String? _getResistBerryFor4xWeakness(CapturedOrganism c) {
+    for (final type in ElementalType.values) {
+      if (type == ElementalType.basic) continue;
+      double effectiveness = 1.0;
+      for (final typeStr in c.baseOrganism.types) {
+        final defType = ElementalTypeX.fromString(typeStr);
+        effectiveness *= TypeChart.getEffectiveness(type, defType);
+      }
+      if (effectiveness >= 4.0) {
+        return _resistBerries[type];
+      }
+    }
+    return null;
+  }
+
+  static final Map<ElementalType, String> _resistBerries = {
+    ElementalType.blaze: 'Occa Berry',
+    ElementalType.aquatic: 'Passho Berry',
+    ElementalType.electric: 'Wacan Berry',
+    ElementalType.grass: 'Rindo Berry',
+    ElementalType.cryo: 'Yache Berry',
+    ElementalType.earth: 'Shuca Berry',
+    ElementalType.flying: 'Coba Berry',
+    ElementalType.toxic: 'Kebia Berry',
+    ElementalType.rock: 'Charti Berry',
+    ElementalType.arthropod: 'Tanga Berry',
+    ElementalType.darkness: 'Colbur Berry',
+    ElementalType.martial: 'Chople Berry',
+    ElementalType.aura: 'Payapa Berry',
+    ElementalType.spectral: 'Kasib Berry',
+    ElementalType.drake: 'Haban Berry',
+    ElementalType.metal: 'Babiri Berry',
+    ElementalType.mystic: 'Roseli Berry',
+  };
+
+  static String? _getGemForPrimarySTAB(CapturedOrganism c) {
+    if (c.baseOrganism.types.isEmpty) return null;
+    final primaryType = c.baseOrganism.types.first;
+    return _gemNames[primaryType];
+  }
+
+  static final Map<ElementalType, String> _gemNames = {
+    ElementalType.blaze: 'Fire Gem',
+    ElementalType.aquatic: 'Water Gem',
+    ElementalType.grass: 'Grass Gem',
+    ElementalType.electric: 'Electric Gem',
+    ElementalType.cryo: 'Ice Gem',
+    ElementalType.earth: 'Earth Gem',
+    ElementalType.flying: 'Flying Gem',
+    ElementalType.toxic: 'Toxic Gem',
+    ElementalType.rock: 'Rock Gem',
+    ElementalType.arthropod: 'Bug Gem',
+    ElementalType.darkness: 'Dark Gem',
+    ElementalType.martial: 'Fighting Gem',
+    ElementalType.aura: 'Psychic Gem',
+    ElementalType.spectral: 'Ghost Gem',
+    ElementalType.drake: 'Dragon Gem',
+    ElementalType.metal: 'Steel Gem',
+    ElementalType.mystic: 'Fairy Gem',
+    ElementalType.sound: 'Sound Gem',
+    ElementalType.holy: 'Holy Gem',
+    ElementalType.basic: 'Normal Gem',
+  };
+
+  static Talisman? _getDefensiveItem(CapturedOrganism c) {
+    final o = c.baseOrganism;
+    final candidates = <String>[];
+    if (o.types.contains(ElementalType.toxic)) candidates.add('Black Sludge');
+    candidates.addAll(['Leftovers', 'Rocky Helmet', 'Assault Vest']);
+    final name = candidates[_rng.nextInt(candidates.length)];
+    return Talisman.findByName(name);
+  }
+
+  static Talisman? _getOffensiveItem(CapturedOrganism c) {
+    final o = c.baseOrganism;
+    final candidates = <String>[];
+    if (o.attack > o.power) {
+      candidates.addAll(['Choice Band', 'Muscle Band', 'Life Orb']);
+    } else {
+      candidates.addAll(['Choice Specs', 'Wise Glasses', 'Life Orb']);
+    }
+    if (o.speed > 80) candidates.add('Choice Scarf');
+    if (o.health < 80) candidates.add('Focus Sash');
+    final name = candidates[_rng.nextInt(candidates.length)];
+    return Talisman.findByName(name);
+  }
+
+  static Talisman? _getFallbackItem(CapturedOrganism c) {
+    if (c.baseOrganism.attack + c.baseOrganism.power > 160) {
+      return _getOffensiveItem(c);
+    }
+    return _getDefensiveItem(c);
   }
 
   // ─────────────────────────────────────────────────────────────────
@@ -882,7 +1264,13 @@ class ArchetypeTeamBuilder {
       m.drainPercent > 0 ||
       m.name == 'Rest' ||
       m.name == 'Recover' ||
-      m.name == 'Roost';
+      m.name == 'Roost' ||
+      m.name == 'Synthesis' ||
+      m.name == 'Shore Up' ||
+      m.name == 'Milk Drink' ||
+      m.name == 'Wish' ||
+      m.name == 'Morning Sun' ||
+      m.name == 'Moonlight';
 
   static bool _isSelfStatBoost(Move m, List<String> stats) => m.effects.any(
     (e) =>
@@ -921,6 +1309,28 @@ class ArchetypeTeamBuilder {
         return 'Setup Sweeper';
       case TeamArchetype.trickRoom:
         return 'Trick Room';
+      case TeamArchetype.tailwindSpeed:
+        return 'Tailwind Offense';
+      case TeamArchetype.dualScreens:
+        return 'Dual Screens';
+      case TeamArchetype.prioritySweeper:
+        return 'Priority Rush';
+      case TeamArchetype.perishTrapper:
+        return 'Perish Trap';
+      case TeamArchetype.gimmickyAssist:
+        return 'Gimmick Chaos';
+      case TeamArchetype.criticalFocus:
+        return 'Crits Only';
+      case TeamArchetype.recoilReckless:
+        return 'Reckless Recoil';
+      case TeamArchetype.restLoop:
+        return 'Rest Loop';
+      case TeamArchetype.evasionBuffer:
+        return 'Evasion Buffer';
+      case TeamArchetype.bulkyBruiser:
+        return 'Bulky Bruiser';
+      case TeamArchetype.toxicStall:
+        return 'Toxic Stall';
     }
   }
 

@@ -87,6 +87,16 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       }
     }
 
+    // Custap Berry: Priority boost (simulated with large speed boost at low HP)
+    if (org.organism.equippedTalisman != null && !org.talismanConsumed) {
+      for (final effect in org.organism.equippedTalisman!.effects) {
+        if (effect.type == TalismanEffectType.priorityLowHp &&
+            org.health <= org.maxHealth * effect.threshold) {
+          speed *= 100.0;
+        }
+      }
+    }
+
     int finalSpeed = speed.round();
 
     // Trick Room: Effectively inverts speed for turn order.
@@ -138,6 +148,12 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   final bool isRogueMode;
   List<CapturedOrganism> opponentTeam = [];
   int currentOpponentIndex = 0;
+
+  // GIMMICK USAGE TRACKING (Side-level)
+  bool playerTitanizeUsed = false;
+  bool playerPrismorphUsed = false;
+  bool opponentTitanizeUsed = false;
+  bool opponentPrismorphUsed = false;
   int? lastOpponentSwitchTurn;
   bool opponentJustSwitched = false;
   bool playerJustSwitched = false;
@@ -148,6 +164,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   bool opponentMovedThisTurn = false;
   Move? lastMoveUsedGlobal;
   bool isResumingTurn = false;
+
+  bool _isProcessing = false;
+  bool get isProcessing => _isProcessing;
   bool ignoreRandom = false; // For deterministic tests
 
   // Stats Persistence
@@ -671,7 +690,10 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   // --- Turn Logic ---
 
   Future<void> processPlayerAction(Move move) async {
-    if (currentState != BattleState.waitingForInput) return;
+    if (currentState != BattleState.waitingForInput || _isProcessing) return;
+
+    _isProcessing = true;
+    notifyListeners();
 
     _stopSuggestionTimer();
 
@@ -724,6 +746,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       // End turn or pick random move? Usually in Pokemon it just misses.
       // Let's end the player's action turn.
       currentState = BattleState.opponentTurn;
+      _isProcessing = false;
       notifyListeners();
       await _processOpponentTurn(isCounter: false);
       await _finalizeTurn();
@@ -736,6 +759,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       notifyListeners();
       if (!isTesting) await Future.delayed(const Duration(milliseconds: 2000));
       currentState = BattleState.opponentTurn;
+      _isProcessing = false;
       notifyListeners();
       await _processOpponentTurn(isCounter: false);
       await _finalizeTurn();
@@ -760,15 +784,23 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       player.rolloutMove = move;
     }
 
+    // Thrash/Outrage/Petal Dance Lock
+    if (player.thrashTurnCount > 0 && player.thrashMove != null) {
+      activeMove = player.thrashMove!;
+    }
+
     // Record player action for AI history
     playerHistory.recordMove(activeMove);
 
-    // Check Stamina
-    final currentStamina = playerOrganism.moveStamina[activeMove.name] ?? 0;
-    if (currentStamina <= 0) {
-      addToLog('${activeMove.name} has no stamina left!');
-      notifyListeners();
-      return;
+    // Check Stamina — Max Moves (Titanize) always have infinite stamina
+    if (!activeMove.isTitanizeMove) {
+      final currentStamina = playerOrganism.moveStamina[activeMove.name] ?? 0;
+      if (currentStamina <= 0) {
+        addToLog('${activeMove.name} has no stamina left!');
+        _isProcessing = false;
+        notifyListeners();
+        return;
+      }
     }
 
     // Choice Lock Check
@@ -776,6 +808,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         player.lockedMove != null &&
         player.lockedMove!.name != activeMove.name) {
       addToLog('${player.organism.baseOrganism.name} is choice-locked!');
+      _isProcessing = false;
       notifyListeners();
       return;
     }
@@ -1423,6 +1456,16 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         }
       }
 
+      // Bright Powder accuracy reduction
+      if (defender.organism.equippedTalisman != null &&
+          !defender.talismanConsumed) {
+        for (final effect in defender.organism.equippedTalisman!.effects) {
+          if (effect.stat == 'evasion') {
+            accuracy = (accuracy * (1.0 / effect.magnitude)).round();
+          }
+        }
+      }
+
       // Evasion stage modifier
       if (defender.evasionStage != 0 && move.name != 'Sacred Sword') {
         double evasionMultiplier = 1.0;
@@ -1461,6 +1504,24 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       }
     } else if (Random().nextInt(100) >= accuracy && !ignoreRandom) {
       addToLog('...but it missed!');
+
+      // Blunder Policy: Speed boost on miss
+      if (attacker.organism.equippedTalisman != null &&
+          !attacker.talismanConsumed) {
+        for (final effect in attacker.organism.equippedTalisman!.effects) {
+          if (effect.type == TalismanEffectType.missStatBoost) {
+            attacker.talismanConsumed = true;
+            attacker.isItemRevealed = true;
+            _getStats(attacker.organism.id).isItemRevealed = true;
+            await applyStatChange(
+              attacker,
+              effect.stat ?? 'speed',
+              effect.magnitude.toInt(),
+            );
+          }
+        }
+      }
+
       if (move.name == 'High Jump Kick') {
         final recoilDamage = (attacker.maxHealth / 2).round();
         attacker.health -= recoilDamage;
@@ -1619,12 +1680,37 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         bool isCrit = damageResult.isCrit;
         double typeMod = damageResult.typeMultiplier;
 
-        // Parental Bond 2nd hit damage reduction
-        if (hasParentalBond && i == 1) {
-          damageCalc *= 0.25;
+        // Expert Belt: Boost damage if super effective
+        if (typeMod > 1.0 &&
+            attacker.organism.equippedTalisman != null &&
+            !attacker.talismanConsumed) {
+          for (final effect in attacker.organism.equippedTalisman!.effects) {
+            if (effect.type == TalismanEffectType.damageBoost &&
+                effect.condition == 'super_effective') {
+              damageCalc *= effect.magnitude;
+            }
+          }
         }
 
         int finalDamage = damageCalc.round();
+
+        // Consume Gem
+        if (attacker.organism.equippedTalisman != null &&
+            !attacker.talismanConsumed) {
+          for (final effect in attacker.organism.equippedTalisman!.effects) {
+            if (effect.type == TalismanEffectType.gemBoost &&
+                effect.stat ==
+                    move.type.toString().split('.').last.toLowerCase()) {
+              attacker.talismanConsumed = true;
+              attacker.isItemRevealed = true;
+              _getStats(attacker.organism.id).isItemRevealed = true;
+              addToLog(
+                'The ${attacker.organism.equippedTalisman!.name} strengthened ${attacker.organism.baseOrganism.name}\'s power!',
+              );
+              break;
+            }
+          }
+        }
 
         // Focus Sash (One-Hit Save)
         if (defender.organism.equippedTalisman != null &&
@@ -1828,6 +1914,26 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           );
         }
 
+        // Absorb Bulb: Power boost when hit by Aquatic
+        if (defender.organism.equippedTalisman != null &&
+            !defender.talismanConsumed &&
+            finalDamage > 0 &&
+            move.type == ElementalType.aquatic) {
+          for (final effect in defender.organism.equippedTalisman!.effects) {
+            if (effect.stat == 'power' &&
+                effect.condition == 'hit_by_aquatic') {
+              defender.talismanConsumed = true;
+              defender.isItemRevealed = true;
+              _getStats(defender.organism.id).isAbilityRevealed = true;
+              await applyStatChange(
+                defender,
+                'power',
+                1,
+              ); // Standard +1 stage for these items
+            }
+          }
+        }
+
         // Air Balloon Pop
         if (effectiveDamage > 0 &&
             !substituteTookDamage &&
@@ -1862,7 +1968,16 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         if (move.drainPercent > 0 &&
             effectiveDamage > 0 &&
             attacker.health < attacker.maxHealth) {
-          final healAmount = (effectiveDamage * move.drainPercent).round();
+          double drainMult = move.drainPercent;
+          if (attacker.organism.equippedTalisman != null &&
+              !attacker.talismanConsumed) {
+            for (final effect in attacker.organism.equippedTalisman!.effects) {
+              if (effect.type == TalismanEffectType.drainBoost) {
+                drainMult *= effect.magnitude;
+              }
+            }
+          }
+          final healAmount = (effectiveDamage * drainMult).round();
           attacker.health = (attacker.health + healAmount).clamp(
             0,
             attacker.maxHealth,
@@ -2181,9 +2296,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     }
 
     // Thrash/Outrage/Petal Dance Lock
-    if ((move.name == 'Thrash' ||
-            move.name == 'Outrage' ||
-            move.name == 'Petal Dance') &&
+    if (move.effects.any((e) => e.type == MoveEffectType.thrash) &&
         defender.tookDamageThisTurn) {
       if (attacker.thrashTurnCount == 0) {
         attacker.thrashTurnCount = 2 + Random().nextInt(2); // 2-3 turns
@@ -2214,6 +2327,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       addToLog('${org.organism.baseOrganism.name} must recharge!');
       org.mustRecharge = false; // Recharge turn is used now
       org.rolloutTurnCount = 0;
+      org.thrashTurnCount = 0;
+      org.thrashMove = null;
       notifyListeners();
       if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
       return false;
@@ -2251,6 +2366,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
       addToLog('${org.organism.baseOrganism.name} is fast asleep.');
       org.rolloutTurnCount = 0;
+      org.thrashTurnCount = 0;
+      org.thrashMove = null;
       notifyListeners();
       if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
       return false;
@@ -2258,6 +2375,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     if (org.statusEffect.type == StatusEffectType.stun) {
       addToLog('${org.organism.baseOrganism.name} is stunned and cannot move!');
       org.rolloutTurnCount = 0;
+      org.thrashTurnCount = 0;
+      org.thrashMove = null;
       notifyListeners();
       if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
       // Remove only the stun status
@@ -2279,6 +2398,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         org.health -= selfDamage;
         org.health = org.health.clamp(0, org.maxHealth);
         org.rolloutTurnCount = 0;
+        org.thrashTurnCount = 0;
+        org.thrashMove = null;
         notifyListeners();
         if (!isTesting) {
           await Future.delayed(const Duration(milliseconds: 3000));
@@ -2299,6 +2420,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       }
       addToLog('${org.organism.baseOrganism.name} is frozen solid!');
       org.rolloutTurnCount = 0;
+      org.thrashTurnCount = 0;
+      org.thrashMove = null;
       notifyListeners();
       if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
       return false;
@@ -2309,6 +2432,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           '${org.organism.baseOrganism.name} is paralyzed! It can\'t move!',
         );
         org.rolloutTurnCount = 0;
+        org.thrashTurnCount = 0;
+        org.thrashMove = null;
         notifyListeners();
         if (!isTesting) {
           await Future.delayed(const Duration(milliseconds: 3000));
@@ -3603,7 +3728,20 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     // Toxic Orb / Flame Orb
     if (target.clampingTurns > 0) {
       target.clampingTurns--;
-      final damage = (target.maxHealth * 0.125).round().clamp(1, 9999);
+      double trapMult = 1.0;
+      final source = (target == player) ? opponent : player;
+      if (source.organism.equippedTalisman != null &&
+          !source.talismanConsumed &&
+          source.organism.equippedTalisman!.effects.any(
+            (e) => e.type == TalismanEffectType.bindingBandBoost,
+          )) {
+        trapMult = 1.5;
+        source.isItemRevealed = true;
+      }
+      final damage = (target.maxHealth * 0.125 * trapMult).round().clamp(
+        1,
+        9999,
+      );
       target.health -= damage;
       target.health = target.health.clamp(0, target.maxHealth);
       addToLog('${target.name} is hurt by the clamping effect!');
@@ -3972,6 +4110,144 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     notifyListeners();
   }
 
+  // =====================================================================
+  // GIMMICK ACTIONS: Titanize and Prismorph
+  // =====================================================================
+
+  /// Returns the set of Max Moves for a titanized organism.
+  /// One Max Move per unique elemental type in the current moveset,
+  /// plus Max Guard for every status move.
+  List<Move> _buildMaxMoveSet(BattleOrganism org) {
+    final currentMoves = org.isOpponent ? opponentMoves : playerMoves;
+    final usedTypes = <ElementalType>{};
+    final result = <Move>{}; // use Set to avoid duplicates
+    bool hasStatusMove = false;
+
+    for (final m in currentMoves) {
+      if (m.category == MoveCategory.status) {
+        hasStatusMove = true;
+      } else if (!usedTypes.contains(m.type)) {
+        usedTypes.add(m.type);
+        // Find the max move matching this type
+        final maxMove = Move.allMoves.firstWhere(
+          (mv) =>
+              mv.isTitanizeMove &&
+              mv.type == m.type &&
+              mv.category != MoveCategory.status,
+          orElse: () => Move.allMoves.firstWhere(
+            (mv) => mv.isTitanizeMove && mv.name == 'Max Strike',
+            orElse: () => m.copyWith(isTitanizeMove: true),
+          ),
+        );
+        result.add(maxMove);
+      }
+    }
+    if (hasStatusMove || result.isEmpty) {
+      final guard = Move.allMoves
+          .firstWhere(
+            (mv) => mv.name == 'Max Guard',
+            orElse: () => Move.findOrCreate('Max Guard'),
+          )
+          .copyWith(isTitanizeMove: true);
+      result.add(guard);
+    }
+    return result.toList();
+  }
+
+  /// Activate Titanize for the given side. Can only be used once per battle.
+  void activateTitanize({required bool isPlayer}) {
+    if (isPlayer && playerTitanizeUsed) return;
+    if (!isPlayer && opponentTitanizeUsed) return;
+
+    final org = isPlayer ? player : opponent;
+    if (org.hasTitanizedThisBattle || org.hasPrismorphedThisBattle) return;
+
+    if (isPlayer) {
+      playerTitanizeUsed = true;
+    } else {
+      opponentTitanizeUsed = true;
+    }
+
+    // Double current HP and Max HP
+    final oldMax = org.maxHealth;
+    org.isTitanized = true;
+    org.titanizeTurnsLeft = 3;
+    org.hasTitanizedThisBattle = true;
+
+    final newMax = org.maxHealth;
+    // We want to DOUBLE current HP, but also ensure it doesn't exceed the new max
+    // (though new max is usually 2x old max, so it's fine).
+    // Formula: newHP = currentHP * (newMax / oldMax)
+    org.health = (org.health * (newMax / oldMax)).round();
+
+    // Replace moves with Max Moves
+    final maxMoves = _buildMaxMoveSet(org);
+    if (isPlayer) {
+      playerMoves = maxMoves;
+    } else {
+      opponentMoves = maxMoves;
+    }
+
+    addToLog('${org.name} has Titanized! It grew to a tremendous size!');
+    notifyListeners();
+  }
+
+  /// Revert Titanize at end of the 3-turn duration.
+  void _revertTitanize(BattleOrganism org) {
+    final oldMax = org.maxHealth;
+    org.isTitanized = false;
+    org.titanizeTurnsLeft = 0;
+    final newMax = org.maxHealth;
+
+    // Restore original move set from the organism's selectedMoveNames
+    final isPlayer = !org.isOpponent;
+    if (isPlayer) {
+      playerMoves = _getOrganismMoves(playerOrganism);
+    } else {
+      opponentMoves = _getOrganismMoves(opponentTeam[currentOpponentIndex]);
+    }
+
+    // Halve current HP based on max HP ratio
+    org.health = (org.health * (newMax / oldMax)).ceil();
+    if (org.health > newMax) org.health = newMax;
+    if (org.health <= 0 && org.organism.currentHealth > 0) org.health = 1;
+
+    addToLog('${org.name}\'s Titanize wore off! It returned to normal size.');
+    notifyListeners();
+  }
+
+  /// Activate Prismorph for the given side. Can only be used once per battle.
+  void activatePrismorph({required bool isPlayer}) {
+    if (isPlayer && playerPrismorphUsed) return;
+    if (!isPlayer && opponentPrismorphUsed) return;
+
+    final org = isPlayer ? player : opponent;
+    if (org.hasTitanizedThisBattle || org.hasPrismorphedThisBattle) return;
+
+    if (isPlayer) {
+      playerPrismorphUsed = true;
+    } else {
+      opponentPrismorphUsed = true;
+    }
+
+    final teraType = org.organism.teraType;
+    if (teraType == null) {
+      addToLog('${org.name} has no Tera type and cannot Prismorph!');
+      notifyListeners();
+      return;
+    }
+
+    org.isPrismorphed = true;
+    org.activeTeraType = teraType;
+    org.hasPrismorphedThisBattle = true;
+
+    addToLog(
+      '${org.name} has Prismorphed! '
+      'Its type changed to ${teraType.name}!',
+    );
+    notifyListeners();
+  }
+
   Future<void> switchAnimal(int index) async {
     bool isForced = currentState == BattleState.waitingForPlayerSwitch;
     if (currentState != BattleState.waitingForInput && !isForced) return;
@@ -4154,6 +4430,16 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       await _applyTurnEffects(opponent);
       if (_checkBattleEnd()) return;
       if (currentState == BattleState.waitingForPlayerSwitch) return;
+
+      // --- Titanize turn countdown ---
+      for (final org in [player, opponent]) {
+        if (org.isTitanized) {
+          org.titanizeTurnsLeft--;
+          if (org.titanizeTurnsLeft <= 0) {
+            _revertTitanize(org);
+          }
+        }
+      }
     }
 
     if (!_checkBattleEnd() &&
@@ -4250,6 +4536,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       if (player.laserFocusTurns > 0) player.laserFocusTurns--;
       if (opponent.laserFocusTurns > 0) opponent.laserFocusTurns--;
     }
+    _isProcessing = false;
     notifyListeners();
   }
 
@@ -4489,6 +4776,119 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     await triggerHazards(opponent, opponentHazards);
 
     notifyListeners();
+  }
+
+  ElementalType getDisplayType(BattleOrganism attacker, Move move) {
+    ElementalType moveType = move.type;
+
+    // Weather Ball
+    if (move.name == 'Weather Ball' ||
+        move.effects.any((e) => e.type == MoveEffectType.weatherBall)) {
+      if (currentWeather.weather != Weather.none) {
+        switch (currentWeather.weather) {
+          case Weather.rain:
+          case Weather.heavyRain:
+          case Weather.thunderstorm:
+            moveType = ElementalType.aquatic;
+            break;
+          case Weather.sunny:
+            moveType = ElementalType.blaze;
+            break;
+          case Weather.sandstorm:
+            moveType = ElementalType.rock;
+            break;
+          case Weather.hail:
+          case Weather.snowstorm:
+            moveType = ElementalType.cryo;
+            break;
+          default:
+            break;
+        }
+      }
+    }
+
+    // Hidden Power
+    if (move.name == 'Hidden Power' ||
+        move.effects.any((e) => e.type == MoveEffectType.hiddenPower)) {
+      int typeIndex = 0;
+      final stats = [
+        'health',
+        'attack',
+        'defense',
+        'speed',
+        'power',
+        'resistance',
+      ];
+      for (int k = 0; k < stats.length; k++) {
+        if ((attacker.organism.individualValues[stats[k]] ?? 0) % 2 != 0) {
+          typeIndex += (1 << k);
+        }
+      }
+      final types = ElementalType.values
+          .where((t) => t != ElementalType.basic)
+          .toList();
+      moveType = types[(typeIndex * types.length / 64).floor()];
+    }
+
+    // Multi-Attack
+    if (move.name == 'Multi-Attack' ||
+        move.effects.any((e) => e.type == MoveEffectType.multiAttack)) {
+      final item = attacker.organism.equippedTalisman;
+      if (item != null && item.id.endsWith('_memory')) {
+        final part = item.id.split('_').first;
+        moveType = _getTypeFromItemName(part);
+      }
+    }
+
+    // Judgement
+    if (move.name == 'Judgement' ||
+        move.effects.any((e) => e.type == MoveEffectType.judgement)) {
+      final item = attacker.organism.equippedTalisman;
+      if (item != null && item.id.endsWith('_plate')) {
+        final part = item.id.split('_').first;
+        moveType = _getTypeFromItemName(part);
+      }
+    }
+
+    // Revelation Dance
+    if (move.name == 'Revelation Dance') {
+      moveType = attacker.types.first;
+    }
+
+    // Aura Wheel
+    if (move.name == 'Aura Wheel') {
+      if (attacker.organism.baseOrganism.name ==
+              'Morpeko' || // Placeholder for specific animal check
+          attacker.organism.baseOrganism.name == 'Electric Rodent') {
+        // In Pokemon it depends on form, here we can make it simple or check status
+        // For now let's assume it follows basic type or special condition
+      }
+    }
+
+    // Terrain Pulse
+    if (move.name == 'Terrain Pulse') {
+      if (currentTerrain.terrain != Terrain.none && attacker.isGrounded) {
+        switch (currentTerrain.terrain) {
+          case Terrain.electric:
+            moveType = ElementalType.electric;
+            break;
+          case Terrain.grassy:
+            moveType = ElementalType.grass;
+            break;
+          case Terrain.misty:
+            moveType =
+                ElementalType.mystic; // Placeholder for Fairy/Misty equivalent
+            break;
+          case Terrain.psychic:
+            moveType = ElementalType.mystic;
+            break;
+          default:
+            break;
+        }
+      }
+    }
+
+    return moveType;
   }
 
   DamageResult calculateDamage(
@@ -4803,72 +5203,13 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       damageCalc *= 2.0;
     }
 
-    ElementalType moveType = move.type;
+    ElementalType moveType = getDisplayType(attacker, move);
 
-    // Weather Ball
-    if (move.effects.any((e) => e.type == MoveEffectType.weatherBall)) {
+    // Weather Ball boost
+    if (move.name == 'Weather Ball' ||
+        move.effects.any((e) => e.type == MoveEffectType.weatherBall)) {
       if (currentWeather.weather != Weather.none) {
-        baseDamage *= 2;
-        switch (currentWeather.weather) {
-          case Weather.rain:
-          case Weather.heavyRain:
-          case Weather.thunderstorm:
-            moveType = ElementalType.aquatic;
-            break;
-          case Weather.sunny:
-            moveType = ElementalType.blaze;
-            break;
-          case Weather.sandstorm:
-            moveType = ElementalType.rock;
-            break;
-          case Weather.hail:
-          case Weather.snowstorm:
-            moveType = ElementalType.cryo;
-            break;
-          default:
-            break;
-        }
-      }
-    }
-
-    // Hidden Power
-    if (move.effects.any((e) => e.type == MoveEffectType.hiddenPower) ||
-        move.name == 'Hidden Power') {
-      int typeIndex = 0;
-      final stats = [
-        'health',
-        'attack',
-        'defense',
-        'speed',
-        'power',
-        'resistance',
-      ];
-      for (int k = 0; k < stats.length; k++) {
-        if ((attacker.organism.individualValues[stats[k]] ?? 0) % 2 != 0) {
-          typeIndex += (1 << k);
-        }
-      }
-      final types = ElementalType.values
-          .where((t) => t != ElementalType.basic)
-          .toList();
-      moveType = types[(typeIndex * types.length / 64).floor()];
-    }
-
-    // Multi-Attack
-    if (move.effects.any((e) => e.type == MoveEffectType.multiAttack)) {
-      final item = attacker.organism.equippedTalisman;
-      if (item != null && item.id.endsWith('_memory')) {
-        final part = item.id.split('_').first;
-        moveType = _getTypeFromItemName(part);
-      }
-    }
-
-    // Judgement
-    if (move.effects.any((e) => e.type == MoveEffectType.judgement)) {
-      final item = attacker.organism.equippedTalisman;
-      if (item != null && item.id.endsWith('_plate')) {
-        final part = item.id.split('_').first;
-        moveType = _getTypeFromItemName(part);
+        damageCalc *= 2; // Weather ball also doubles power in weather
       }
     }
 
@@ -5134,6 +5475,11 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             effect.type == TalismanEffectType.damageBoost) {
           damageCalc *= effect.magnitude;
         }
+        if (effect.type == TalismanEffectType.gemBoost &&
+            !attacker.talismanConsumed &&
+            effect.stat == move.type.toString().split('.').last.toLowerCase()) {
+          damageCalc *= effect.magnitude;
+        }
         if (effect.type == TalismanEffectType.categoryDamageBoost) {
           if ((effect.category == 'physical' &&
                   move.category == MoveCategory.physical) ||
@@ -5376,6 +5722,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     // 9. Move Stamina check
     // If a move has 0 stamina, it's not valid.
     validMoves = validMoves.where((m) {
+      if (m.isTitanizeMove) return true; // Max moves have infinite (99) stamina
       final stamina = org.organism.moveStamina[m.name] ?? 0;
       return stamina > 0;
     }).toList();
@@ -5411,6 +5758,30 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       return Move.findOrCreate('Struggle');
     }
 
+    // --- AI Gimmick trigger: Titanize or Prismorph at low HP ---
+    if (!opponent.hasTitanizedThisBattle &&
+        !opponent.hasPrismorphedThisBattle &&
+        opponent.health < opponent.maxHealth * 0.6) {
+      final hasTeraType = opponent.organism.teraType != null;
+      final rng = Random();
+      if (hasTeraType && rng.nextBool()) {
+        activatePrismorph(isPlayer: false);
+      } else {
+        activateTitanize(isPlayer: false);
+      }
+
+      // Re-fetch valid moves after gimmick activation
+      final actualValidMoves = getValidMoves(opponent);
+      if (actualValidMoves.isNotEmpty) {
+        // Continue to scoring with the new moveset
+        return _pickBestMove(actualValidMoves);
+      }
+    }
+
+    return _pickBestMove(validMoves);
+  }
+
+  Move _pickBestMove(List<Move> validMoves) {
     // AI Context preparation (convert teams to BO once for this decision)
     final aiTeamBO = opponentTeam
         .map(
@@ -5792,6 +6163,15 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   ) async {
     if (hazards.isEmpty) return;
     if (target.health <= 0) return;
+
+    // Heavy-Duty Boots: Hazard Immunity
+    if (target.organism.equippedTalisman != null && !target.talismanConsumed) {
+      if (target.organism.equippedTalisman!.effects.any(
+        (e) => e.type == TalismanEffectType.hazardImmunity,
+      )) {
+        return;
+      }
+    }
 
     bool isGrounded =
         !target.types.contains(ElementalType.flying) &&

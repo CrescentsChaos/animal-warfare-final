@@ -96,11 +96,11 @@ class _RainPainter extends CustomPainter {
     // Background atmospheric tint
     canvas.drawRect(
       Offset.zero & size,
-      Paint()..color = Colors.blueGrey.withOpacity(isHeavy ? 0.25 : 0.1),
+      Paint()..color = Colors.blueGrey.withValues(alpha: isHeavy ? 0.25 : 0.1),
     );
 
     final paint = Paint()
-      ..color = Colors.blue.withOpacity(isHeavy ? 0.6 : 0.4)
+      ..color = Colors.blue.withValues(alpha: isHeavy ? 0.6 : 0.4)
       ..strokeWidth = isHeavy ? 2.5 : 1.5
       ..strokeCap = StrokeCap.round;
 
@@ -148,7 +148,9 @@ class _SnowPainter extends CustomPainter {
     canvas.drawRect(
       Offset.zero & size,
       Paint()
-        ..color = const Color(0xFFE0F7FA).withOpacity(isHeavy ? 0.3 : 0.15),
+        ..color = const Color(
+          0xFFE0F7FA,
+        ).withValues(alpha: isHeavy ? 0.3 : 0.15),
     );
 
     final paint = Paint();
@@ -160,7 +162,7 @@ class _SnowPainter extends CustomPainter {
           (flake.y * size.height + (flake.speed * progress * size.height)) %
           size.height;
 
-      paint.color = Colors.white.withOpacity(isHeavy ? 0.9 : 0.7);
+      paint.color = Colors.white.withValues(alpha: isHeavy ? 0.9 : 0.7);
       canvas.drawCircle(Offset(x, y), flake.radius, paint);
 
       // Add a small glow to heavy flakes
@@ -168,7 +170,7 @@ class _SnowPainter extends CustomPainter {
         canvas.drawCircle(
           Offset(x, y),
           flake.radius + 2,
-          Paint()..color = Colors.white.withOpacity(0.2),
+          Paint()..color = Colors.white.withValues(alpha: 0.2),
         );
       }
     }
@@ -216,7 +218,7 @@ class _SandstormPainter extends CustomPainter {
     canvas.drawRect(
       Offset.zero & size,
       Paint()
-        ..color = const Color(0xFFD2B48C).withOpacity(0.3)
+        ..color = const Color(0xFFD2B48C).withValues(alpha: 0.3)
         ..blendMode = BlendMode.multiply,
     );
 
@@ -229,7 +231,7 @@ class _SandstormPainter extends CustomPainter {
           (p.y * size.height + math.sin(progress * 5 + p.x * 10) * 15) %
           size.height;
 
-      paint.color = const Color(0xFF8B4513).withOpacity(p.opacity);
+      paint.color = const Color(0xFF8B4513).withValues(alpha: p.opacity);
       paint.strokeWidth = p.size;
 
       // Draw as a short line to show wind direction
@@ -274,8 +276,8 @@ class _SunnyPainter extends CustomPainter {
     final Paint sunPaint = Paint()
       ..shader = RadialGradient(
         colors: [
-          Colors.yellow.withOpacity(0.4 * sunPulse),
-          Colors.orange.withOpacity(0.2 * sunPulse),
+          Colors.yellow.withValues(alpha: 0.4 * sunPulse),
+          Colors.orange.withValues(alpha: 0.2 * sunPulse),
           Colors.transparent,
         ],
         center: const Alignment(0.7, -0.7),
@@ -288,13 +290,13 @@ class _SunnyPainter extends CustomPainter {
     canvas.drawRect(
       rect,
       Paint()
-        ..color = Colors.orange.withOpacity(0.1)
+        ..color = Colors.orange.withValues(alpha: 0.1)
         ..blendMode = BlendMode.overlay,
     );
 
     // Intense heat waves
     final wavePaint = Paint()
-      ..color = Colors.white.withOpacity(0.15 * sunPulse)
+      ..color = Colors.white.withValues(alpha: 0.15 * sunPulse)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3;
 
@@ -313,7 +315,7 @@ class _SunnyPainter extends CustomPainter {
       sunCenter,
       size.width * 0.1,
       Paint()
-        ..color = Colors.white.withOpacity(0.3 * sunPulse)
+        ..color = Colors.white.withValues(alpha: 0.3 * sunPulse)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 20),
     );
   }
@@ -334,9 +336,9 @@ class _FogPainter extends CustomPainter {
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          Colors.white.withOpacity(0.3),
-          Colors.white.withOpacity(0.6),
-          Colors.white.withOpacity(0.4),
+          Colors.white.withValues(alpha: 0.3),
+          Colors.white.withValues(alpha: 0.6),
+          Colors.white.withValues(alpha: 0.4),
         ],
         stops: const [0.0, 0.5, 1.0],
       ).createShader(Offset.zero & size);
@@ -363,7 +365,7 @@ class _FogPainter extends CustomPainter {
             size.height;
         final radius = 150.0 + (layer * 50);
 
-        blobPaint.color = Colors.white.withOpacity(layerOpacity);
+        blobPaint.color = Colors.white.withValues(alpha: layerOpacity);
         canvas.drawCircle(Offset(x, y), radius, blobPaint);
       }
     }
@@ -391,7 +393,7 @@ class _ThunderstormPainter extends CustomPainter {
     // Very dark background
     canvas.drawRect(
       Offset.zero & size,
-      Paint()..color = Colors.black.withOpacity(0.4),
+      Paint()..color = Colors.black.withValues(alpha: 0.4),
     );
 
     // Dynamic Lightning Strike
@@ -401,13 +403,13 @@ class _ThunderstormPainter extends CustomPainter {
       canvas.drawRect(
         Offset.zero & size,
         Paint()
-          ..color = const Color(0xFFE0E0FF).withOpacity(flashOpacity)
+          ..color = const Color(0xFFE0E0FF).withValues(alpha: flashOpacity)
           ..blendMode = BlendMode.screen,
       );
     }
 
     final paint = Paint()
-      ..color = Colors.blueGrey.withOpacity(0.7)
+      ..color = Colors.blueGrey.withValues(alpha: 0.7)
       ..strokeWidth = 2.0
       ..strokeCap = StrokeCap.round;
 
@@ -440,7 +442,7 @@ class _HailPainter extends CustomPainter {
     // Background tint (cold gray)
     canvas.drawRect(
       Offset.zero & size,
-      Paint()..color = Colors.blueGrey.withOpacity(0.15),
+      Paint()..color = Colors.blueGrey.withValues(alpha: 0.15),
     );
 
     final random = math.Random(42);
@@ -467,7 +469,7 @@ class _HailPainter extends CustomPainter {
       path.lineTo(xPos - sizePellet / 1.5, yPos); // Left
       path.close();
 
-      canvas.drawPath(path, paint..color = Colors.white.withOpacity(0.9));
+      canvas.drawPath(path, paint..color = Colors.white.withValues(alpha: 0.9));
 
       // Add a crystalline glint/shadow
       final glintPath = Path();
@@ -507,7 +509,7 @@ class _WindPainter extends CustomPainter {
     // Subtle atmospheric tint
     canvas.drawRect(
       Offset.zero & size,
-      Paint()..color = Colors.white.withOpacity(0.05),
+      Paint()..color = Colors.white.withValues(alpha: 0.05),
     );
 
     final paint = Paint()..strokeCap = StrokeCap.round;
@@ -521,7 +523,7 @@ class _WindPainter extends CustomPainter {
           (line.y * size.height + math.sin(progress * 8 + line.x * 5) * 25) %
           size.height;
 
-      paint.color = Colors.white.withOpacity(line.opacity);
+      paint.color = Colors.white.withValues(alpha: line.opacity);
       paint.strokeWidth = 1.2;
 
       canvas.drawLine(

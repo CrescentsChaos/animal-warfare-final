@@ -238,7 +238,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       decoration: BoxDecoration(
-        color: Colors.brown.shade700.withOpacity(0.8),
+        color: Colors.brown.shade700.withValues(alpha: 0.8),
         border: Border.all(color: highlightColor, width: 1),
         borderRadius: BorderRadius.circular(4.0),
       ),
@@ -257,13 +257,13 @@ class _LoginScreenState extends State<LoginScreen> {
         decoration: InputDecoration(
           labelText: labelText,
           labelStyle: TextStyle(
-            color: highlightColor.withOpacity(0.8),
+            color: highlightColor.withValues(alpha: 0.8),
             fontSize: 14,
             fontFamily: 'PressStart2P',
           ),
           prefixIcon: Icon(
             icon,
-            color: highlightColor.withOpacity(0.8),
+            color: highlightColor.withValues(alpha: 0.8),
             size: 20,
           ),
           border: InputBorder.none, // Remove default underline border
@@ -283,7 +283,7 @@ class _LoginScreenState extends State<LoginScreen> {
             image: const AssetImage('assets/main.png'),
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(
-              Colors.black.withOpacity(0.7),
+              Colors.black.withValues(alpha: 0.7),
               BlendMode.darken,
             ),
           ),
@@ -306,7 +306,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     fontFamily: 'PressStart2P',
                     shadows: [
                       Shadow(
-                        color: Colors.black.withOpacity(0.9),
+                        color: Colors.black.withValues(alpha: 0.9),
                         blurRadius: 4,
                         offset: const Offset(3, 3),
                       ),
@@ -404,7 +404,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Text(
                         'FORGOT PASSWORD?',
                         style: TextStyle(
-                          color: highlightColor.withOpacity(0.9),
+                          color: highlightColor.withValues(alpha: 0.9),
                           fontFamily: 'PressStart2P',
                           fontSize: 10,
                           decoration: TextDecoration.underline,

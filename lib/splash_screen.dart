@@ -103,7 +103,7 @@ class _SplashScreenState extends State<SplashScreen>
                   image: const AssetImage('assets/biomes/rainforest-bg.png'),
                   fit: BoxFit.cover,
                   colorFilter: ColorFilter.mode(
-                    Colors.black.withOpacity(0.7),
+                    Colors.black.withValues(alpha: 0.7),
                     BlendMode.darken,
                   ),
                 ),
@@ -149,7 +149,7 @@ class _SplashScreenState extends State<SplashScreen>
                 'V 0.1.1', // Replace with a dynamic version number later
                 style: TextStyle(
                   fontSize: 10,
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withValues(alpha: 0.7),
                 ),
               ),
             ),

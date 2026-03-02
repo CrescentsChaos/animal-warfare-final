@@ -104,7 +104,7 @@ class _BiomeSelectScreenState extends State<BiomeSelectScreen> {
             image: AssetImage('assets/backgrounds/${biome.toLowerCase()}.png'),
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(
-              Colors.black.withOpacity(0.3),
+              Colors.black.withValues(alpha: 0.3),
               BlendMode.darken,
             ),
             onError: (_, __) {}, // Fallback handled by color
@@ -117,7 +117,7 @@ class _BiomeSelectScreenState extends State<BiomeSelectScreen> {
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [Colors.transparent, Colors.black.withOpacity(0.8)],
+              colors: [Colors.transparent, Colors.black.withValues(alpha: 0.8)],
             ),
           ),
           child: Center(

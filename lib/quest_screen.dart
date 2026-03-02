@@ -270,7 +270,7 @@ class _QuestScreenState extends State<QuestScreen> {
           child: Container(
             width: double.infinity,
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha: 0.3),
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(20),
               ),
@@ -356,7 +356,7 @@ class _QuestScreenState extends State<QuestScreen> {
           border: Border.all(color: AppColors.highlightColor),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.4),
+              color: Colors.black.withValues(alpha: 0.4),
               blurRadius: 4,
               offset: const Offset(2, 2),
             ),
@@ -735,9 +735,9 @@ class _QuestScreenState extends State<QuestScreen> {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.blue.withOpacity(0.2),
+                        color: Colors.blue.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(4),
-                        border: Border.all(color: Colors.blue.withOpacity(0.5)),
+                        border: Border.all(color: Colors.blue.withValues(alpha: 0.5)),
                       ),
                       child: Text(
                         h.trim().toUpperCase(),
@@ -1002,7 +1002,7 @@ class _SpeechBubbleState extends State<SpeechBubble> {
         border: Border.all(color: Colors.blue, width: 3),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 4,
             offset: const Offset(2, 2),
           ),

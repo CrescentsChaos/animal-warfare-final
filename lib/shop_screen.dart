@@ -278,7 +278,7 @@ class _ShopScreenState extends State<ShopScreen> {
 
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          color: Colors.black.withOpacity(0.3),
+          color: Colors.black.withValues(alpha: 0.3),
           child: Column(
             children: [
               Row(
@@ -375,12 +375,12 @@ class _ShopScreenState extends State<ShopScreen> {
 
         return Container(
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.5),
+            color: Colors.black.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isActive
                   ? Colors.blueAccent
-                  : AppColors.highlightColor.withOpacity(0.5),
+                  : AppColors.highlightColor.withValues(alpha: 0.5),
               width: isActive ? 2 : 1,
             ),
           ),

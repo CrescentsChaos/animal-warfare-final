@@ -257,6 +257,32 @@ class UserState with ChangeNotifier {
     });
   }
 
+  Future<void> useAbilityCapsule(
+    int organismIndex,
+    String newAbilityName,
+  ) async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) {
+      if (organismIndex < 0 || organismIndex >= u.capturedOrganisms.length) {
+        return u;
+      }
+      final newTalismans = List<String>.from(u.craftedTalismans);
+      final capsuleIndex = newTalismans.indexOf('Ability Capsule');
+      if (capsuleIndex == -1) return u;
+
+      newTalismans.removeAt(capsuleIndex);
+
+      final organisms = List<CapturedOrganism>.from(u.capturedOrganisms);
+      final org = organisms[organismIndex];
+      organisms[organismIndex] = org.changeAbility(newAbilityName);
+
+      return u.copyWith(
+        craftedTalismans: newTalismans,
+        capturedOrganisms: organisms,
+      );
+    });
+  }
+
   Future<void> updateCapturedOrganismMoves(
     int index,
     List<String> newMoves,

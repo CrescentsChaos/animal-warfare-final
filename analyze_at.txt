@@ -1,7 +1,0 @@
-﻿Analyzing archetype_teams.dart...                               
-
-   info - Statements in an if should be enclosed in a block - lib\game\archetype_teams.dart:64:9 - curly_braces_in_flow_control_structures
-   info - Statements in an if should be enclosed in a block - lib\game\archetype_teams.dart:392:11 - curly_braces_in_flow_control_structures
-   info - Statements in an if should be enclosed in a block - lib\game\archetype_teams.dart:408:11 - curly_braces_in_flow_control_structures
-   info - Statements in an if should be enclosed in a block - lib\game\archetype_teams.dart:426:11 - curly_braces_in_flow_control_structures
-
