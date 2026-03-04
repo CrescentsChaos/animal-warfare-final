@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:animal_warfare/main_screen.dart';
 import 'package:animal_warfare/services/audio_service.dart';
+import 'package:animal_warfare/theme.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -15,30 +16,24 @@ class _SplashScreenState extends State<SplashScreen>
   late AnimationController _animationController;
   late Animation<double> _opacityAnimation;
 
-  // Flag to ensure pre-caching runs only once
   bool _assetsPrecached = false;
 
   @override
   void initState() {
     super.initState();
-
-    // 🚨 MODIFIED: Set the screen to Immersive/Full-screen mode
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-
-    // NEW: Initialize Audio Player and start music via AudioService
     _playBackgroundMusic();
 
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 1),
+      duration: const Duration(milliseconds: 900),
     )..repeat(reverse: true);
 
-    _opacityAnimation = Tween(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(_animationController);
+    _opacityAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    );
 
-    // Listen for the first frame to precache assets
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _precacheAssets();
     });
@@ -54,38 +49,20 @@ class _SplashScreenState extends State<SplashScreen>
     AudioService.instance.playMusic('audio/rainforest_theme.mp3');
   }
 
-  // Precache all necessary images and JSON data
   Future<void> _precacheAssets() async {
     if (_assetsPrecached) return;
-
     final BuildContext currentContext = context;
-
-    // 1. Precache main assets
     await precacheImage(
       const AssetImage('assets/biomes/rainforest-bg.png'),
       currentContext,
     );
     await precacheImage(const AssetImage('assets/logo.png'), currentContext);
-
-    // 2. Precache other common assets (add any other images used in the first few screens)
-    // Example: await precacheImage(const AssetImage('assets/default_avatar.png'), currentContext);
-
-    // 3. Load and cache JSON data (Optional, for very fast access)
-    // await rootBundle.loadString('assets/data/organisms.json');
-
     _assetsPrecached = true;
   }
 
   void _navigateToMain() {
-    // 🚨 MODIFIED: Revert to default System UI visibility before navigating
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-
-    // Stop the audio via AudioService if needed, or it will be replaced by local screen music
-
-    // ✅ FIX: Use the custom _createFadeRoute for a smooth, fade-in transition
-    Navigator.of(context).pushReplacement(
-      _createFadeRoute(const MainScreen()), // <--- Use the custom route here!
-    );
+    Navigator.of(context).pushReplacement(_createFadeRoute(const MainScreen()));
   }
 
   @override
@@ -95,45 +72,76 @@ class _SplashScreenState extends State<SplashScreen>
         onTap: _navigateToMain,
         child: Stack(
           children: [
-            // 1. Background Image
+            // Background
             Container(
               decoration: BoxDecoration(
-                color: Colors.black,
+                color: AppColors.background,
                 image: DecorationImage(
                   image: const AssetImage('assets/biomes/rainforest-bg.png'),
                   fit: BoxFit.cover,
                   colorFilter: ColorFilter.mode(
-                    Colors.black.withValues(alpha: 0.7),
+                    Colors.black.withValues(alpha: 0.65),
                     BlendMode.darken,
                   ),
                 ),
               ),
             ),
 
-            // 2. Center Content (Logo and Tap to Continue)
+            // Center content
             Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  // Logo
-                  Image.asset('assets/logo.png', width: 300, height: 300),
+                  // Logo with glow
+                  Container(
+                    decoration: BoxDecoration(
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withValues(alpha: 0.25),
+                          blurRadius: 40,
+                          spreadRadius: 10,
+                        ),
+                      ],
+                    ),
+                    child: Image.asset(
+                      'assets/logo.png',
+                      width: 260,
+                      height: 260,
+                    ),
+                  ),
                   const SizedBox(height: 80),
 
-                  // Flickering "Tap to Continue" Text
+                  // "TAP TO CONTINUE" with gold highlight
                   FadeTransition(
                     opacity: _opacityAnimation,
-                    child: const Text(
-                      'TAP TO CONTINUE',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white,
-                        shadows: [
-                          Shadow(
-                            color: Colors.black,
-                            blurRadius: 2,
-                            offset: Offset(2, 2),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: AppColors.highlight.withValues(alpha: 0.6),
+                            width: 1,
                           ),
-                        ],
+                        ),
+                      ),
+                      child: const Text(
+                        'TAP TO CONTINUE',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppColors.highlight,
+                          fontFamily: 'PressStart2P',
+                          letterSpacing: 2,
+                          shadows: [
+                            Shadow(
+                              color: AppColors.highlight,
+                              blurRadius: 8,
+                              offset: Offset(0, 0),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -141,15 +149,16 @@ class _SplashScreenState extends State<SplashScreen>
               ),
             ),
 
-            // 3. App Version in the bottom right corner
+            // Version tag
             Positioned(
               right: 16,
               bottom: 16,
               child: Text(
-                'V 0.1.1', // Replace with a dynamic version number later
+                'V 0.1.1',
                 style: TextStyle(
                   fontSize: 10,
-                  color: Colors.white.withValues(alpha: 0.7),
+                  color: Colors.white.withValues(alpha: 0.4),
+                  fontFamily: 'PressStart2P',
                 ),
               ),
             ),
@@ -162,7 +171,6 @@ class _SplashScreenState extends State<SplashScreen>
 
 PageRouteBuilder _createFadeRoute(Widget page) {
   return PageRouteBuilder(
-    // Reduce duration for a snappier feel
     transitionDuration: const Duration(milliseconds: 300),
     pageBuilder: (context, animation, secondaryAnimation) => page,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {

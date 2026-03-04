@@ -1,12 +1,12 @@
-// lib/login_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:animal_warfare/local_auth_service.dart';
 import 'package:animal_warfare/main_screen.dart';
+import 'package:animal_warfare/character_creation_screen.dart';
 import 'package:animal_warfare/user_state.dart';
-
 import 'package:animal_warfare/services/audio_service.dart';
+import 'package:animal_warfare/theme.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -28,12 +28,8 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLogin = true;
   bool _isLoading = false;
   bool _showForgotPassword = false;
-
-  // Custom Theming
-  static const Color highlightColor = Color(0xFFDAA520); // Goldenrod
-  static const Color primaryButtonColor = Color(
-    0xFF38761D,
-  ); // Bright Jungle Green
+  bool _obscurePassword = true;
+  bool _obscureConfirm = true;
 
   @override
   void initState() {
@@ -52,7 +48,6 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _playBackgroundMusic() async {
-    // AudioService handles its own 'enabled' state internally
     await AudioService.instance.playMusic('audio/login_theme.mp3');
   }
 
@@ -89,22 +84,14 @@ class _LoginScreenState extends State<LoginScreen> {
     if (mounted) {
       setState(() => _isLoading = false);
       if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text(
-              'Password reset successfully! You can now log in.',
-              style: TextStyle(fontFamily: 'PressStart2P', fontSize: 12),
-            ),
-            backgroundColor: primaryButtonColor,
-          ),
-        );
+        _showSuccess('Password reset successfully!');
         setState(() {
           _showForgotPassword = false;
           _newPasswordController.clear();
           _confirmNewPasswordController.clear();
         });
       } else {
-        _showError('Username not found. Check your username and try again.');
+        _showError('Username not found.');
       }
     }
   }
@@ -112,41 +99,70 @@ class _LoginScreenState extends State<LoginScreen> {
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          message,
-          style: const TextStyle(fontFamily: 'PressStart2P', fontSize: 12),
+        content: Row(
+          children: [
+            const Icon(
+              Icons.error_outline,
+              color: AppColors.dangerLight,
+              size: 18,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                message,
+                style: GoogleFonts.inter(color: Colors.white, fontSize: 13),
+              ),
+            ),
+          ],
         ),
-        backgroundColor: Colors.red.shade700,
+        backgroundColor: AppColors.surface,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  void _showSuccess(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(
+              Icons.check_circle_outline,
+              color: AppColors.primary,
+              size: 18,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                message,
+                style: GoogleFonts.inter(color: Colors.white, fontSize: 13),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: AppColors.surface,
+        behavior: SnackBarBehavior.floating,
       ),
     );
   }
 
   Future<void> _authenticate() async {
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     final username = _usernameController.text.trim();
     final password = _passwordController.text.trim();
-    final confirmPassword = _confirmPasswordController.text.trim(); // 🚨 NEW
+    final confirmPassword = _confirmPasswordController.text.trim();
 
     if (username.isEmpty || password.isEmpty) {
       _showError('Username and password cannot be empty!');
-      setState(() {
-        _isLoading = false;
-      });
+      setState(() => _isLoading = false);
       return;
     }
 
-    if (!_isLogin) {
-      // 🚨 NEW: Check password confirmation on registration
-      if (password != confirmPassword) {
-        _showError('Passwords do not match!');
-        setState(() {
-          _isLoading = false;
-        });
-        return;
-      }
+    if (!_isLogin && password != confirmPassword) {
+      _showError('Passwords do not match!');
+      setState(() => _isLoading = false);
+      return;
     }
 
     bool success;
@@ -154,38 +170,42 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (_isLogin) {
       success = await _authService.login(username, password);
-      message = success
-          ? 'LOGIN SUCCESSFUL!'
-          : 'LOGIN FAILED. Invalid credentials.';
+      message = success ? 'Welcome back!' : 'Invalid credentials.';
     } else {
-      // Use the confirmed password for registration
-      success = await _authService.register(username, password);
-      message = success
-          ? 'REGISTRATION SUCCESSFUL!'
-          : 'REGISTRATION FAILED. User already exists.';
+      final existingUser = await _authService.readUserFile(username);
+      if (existingUser != null) {
+        success = false;
+        message = 'Username already exists.';
+      } else {
+        success = true;
+        message = '';
+      }
     }
 
     if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
-
+      setState(() => _isLoading = false);
       if (success) {
-        await context.read<UserState>().handleSuccessfulAuth();
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              message,
-              style: const TextStyle(fontFamily: 'PressStart2P', fontSize: 12),
-            ),
-            backgroundColor: primaryButtonColor,
-          ),
-        );
-        if (mounted) {
+        if (message.isNotEmpty) {
+          _showSuccess(message);
+        }
+
+        if (_isLogin) {
+          // Normal login -> go to MainScreen
+          await context.read<UserState>().handleSuccessfulAuth();
+          if (mounted) {
+            Navigator.of(context).pushAndRemoveUntil(
+              _createFadeRoute(const MainScreen()),
+              (Route<dynamic> route) => false,
+            );
+          }
+        } else {
+          // New registration -> go to Character Creation
           Navigator.of(context).pushAndRemoveUntil(
-            _createFadeRoute(const MainScreen()),
-            (Route<dynamic> route) => false,
+            _createFadeRoute(
+              CharacterCreationScreen(username: username, password: password),
+            ),
+            (route) => false,
           );
         }
       } else {
@@ -194,80 +214,85 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // Helper function for building the themed action button
-  Widget _buildActionButton({
-    required String title,
-    required VoidCallback onPressed,
-    required Color color,
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String labelText,
+    required IconData icon,
+    bool isPassword = false,
+    bool? obscure,
+    VoidCallback? onToggleObscure,
   }) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      decoration: BoxDecoration(
-        color: color,
-        border: Border.all(color: highlightColor, width: 2),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onPressed,
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 18.0),
-              child: Text(
-                title,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'PressStart2P',
-                  fontSize: 16,
-                ),
-              ),
-            ),
+      margin: const EdgeInsets.symmetric(vertical: 7.0),
+      child: TextField(
+        controller: controller,
+        obscureText: isPassword ? (obscure ?? true) : false,
+        keyboardType: isPassword
+            ? TextInputType.visiblePassword
+            : TextInputType.text,
+        style: GoogleFonts.inter(color: Colors.white, fontSize: 15),
+        decoration: InputDecoration(
+          labelText: labelText,
+          labelStyle: GoogleFonts.inter(
+            color: AppColors.textSecondary,
+            fontSize: 13,
+          ),
+          prefixIcon: Icon(icon, color: AppColors.primary, size: 20),
+          suffixIcon: isPassword && onToggleObscure != null
+              ? IconButton(
+                  icon: Icon(
+                    obscure == true ? Icons.visibility_off : Icons.visibility,
+                    color: AppColors.textMuted,
+                    size: 20,
+                  ),
+                  onPressed: onToggleObscure,
+                )
+              : null,
+          filled: true,
+          fillColor: AppColors.surface.withValues(alpha: 0.8),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(color: AppColors.border),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 14,
+            horizontal: 16,
           ),
         ),
       ),
     );
   }
 
-  // Helper function for pixel-style text fields
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String labelText,
-    required IconData icon,
-    bool isPassword = false,
+  Widget _buildActionButton({
+    required String title,
+    required VoidCallback onPressed,
+    bool isDanger = false,
   }) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8.0),
-      decoration: BoxDecoration(
-        color: Colors.brown.shade700.withValues(alpha: 0.8),
-        border: Border.all(color: highlightColor, width: 1),
-        borderRadius: BorderRadius.circular(4.0),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      child: TextField(
-        controller: controller,
-        obscureText: isPassword,
-        keyboardType: isPassword
-            ? TextInputType.visiblePassword
-            : TextInputType.text,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 16,
-          fontFamily: 'PressStart2P',
+      width: double.infinity,
+      height: 52,
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: isDanger ? AppColors.danger : AppColors.primary,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          elevation: 0,
         ),
-        decoration: InputDecoration(
-          labelText: labelText,
-          labelStyle: TextStyle(
-            color: highlightColor.withValues(alpha: 0.8),
-            fontSize: 14,
+        child: Text(
+          title,
+          style: const TextStyle(
             fontFamily: 'PressStart2P',
+            fontSize: 13,
+            letterSpacing: 1,
           ),
-          prefixIcon: Icon(
-            icon,
-            color: highlightColor.withValues(alpha: 0.8),
-            size: 20,
-          ),
-          border: InputBorder.none, // Remove default underline border
-          contentPadding: const EdgeInsets.symmetric(vertical: 15),
         ),
       ),
     );
@@ -275,164 +300,195 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenTitle = _showForgotPassword
+        ? 'RESET\nPASSWORD'
+        : (_isLogin ? 'SYSTEM\nLOGIN' : 'NEW\nRECRUIT');
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
-          color: Colors.black,
+          color: AppColors.background,
           image: DecorationImage(
             image: const AssetImage('assets/main.png'),
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(
-              Colors.black.withValues(alpha: 0.7),
+              Colors.black.withValues(alpha: 0.75),
               BlendMode.darken,
             ),
           ),
         ),
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(30.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                Text(
-                  _showForgotPassword
-                      ? 'RESET PASSWORD'
-                      : (_isLogin ? 'SYSTEM LOGIN' : 'NEW RECRUIT'),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 24,
-                    color: highlightColor,
-                    fontFamily: 'PressStart2P',
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withValues(alpha: 0.9),
-                        blurRadius: 4,
-                        offset: const Offset(3, 3),
-                      ),
-                    ],
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 32),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  // Header
+                  Text(
+                    screenTitle,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      color: AppColors.highlight,
+                      fontFamily: 'PressStart2P',
+                      height: 1.6,
+                      shadows: [
+                        Shadow(
+                          color: AppColors.highlight,
+                          blurRadius: 12,
+                          offset: Offset(0, 0),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 40),
+                  const SizedBox(height: 8),
+                  Center(
+                    child: Container(
+                      height: 2,
+                      width: 60,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [
+                            Colors.transparent,
+                            AppColors.highlight,
+                            Colors.transparent,
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(1),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 36),
 
-                if (_showForgotPassword) ...[
-                  _buildTextField(
-                    controller: _usernameController,
-                    labelText: 'USERNAME',
-                    icon: Icons.person,
-                  ),
-                  _buildTextField(
-                    controller: _newPasswordController,
-                    labelText: 'NEW PASSWORD',
-                    icon: Icons.lock,
-                    isPassword: true,
-                  ),
-                  _buildTextField(
-                    controller: _confirmNewPasswordController,
-                    labelText: 'CONFIRM NEW PASSWORD',
-                    icon: Icons.lock_open,
-                    isPassword: true,
-                  ),
-                  const SizedBox(height: 30),
-                  _isLoading
-                      ? Center(
-                          child: CircularProgressIndicator(
-                            color: primaryButtonColor,
-                          ),
-                        )
-                      : _buildActionButton(
-                          title: 'RESET PASSWORD',
-                          onPressed: _handleForgotPassword,
-                          color: primaryButtonColor,
-                        ),
-                  const SizedBox(height: 20),
-                  TextButton(
-                    onPressed: () {
-                      setState(() {
-                        _showForgotPassword = false;
-                        _newPasswordController.clear();
-                        _confirmNewPasswordController.clear();
-                      });
-                    },
-                    child: Text(
-                      'BACK TO LOGIN',
-                      style: TextStyle(
-                        color: highlightColor,
-                        fontFamily: 'PressStart2P',
-                        fontSize: 12,
-                        decoration: TextDecoration.underline,
-                      ),
-                    ),
-                  ),
-                ] else ...[
-                  _buildTextField(
-                    controller: _usernameController,
-                    labelText: 'USERNAME',
-                    icon: Icons.person,
-                  ),
-                  _buildTextField(
-                    controller: _passwordController,
-                    labelText: 'PASSWORD',
-                    icon: Icons.lock,
-                    isPassword: true,
-                  ),
-                  if (!_isLogin)
+                  if (_showForgotPassword) ...[
                     _buildTextField(
-                      controller: _confirmPasswordController,
-                      labelText: 'CONFIRM PASSWORD',
-                      icon: Icons.lock_open,
-                      isPassword: true,
+                      controller: _usernameController,
+                      labelText: 'Username',
+                      icon: Icons.person_outline,
                     ),
-                  const SizedBox(height: 30),
-                  _isLoading
-                      ? Center(
-                          child: CircularProgressIndicator(
-                            color: primaryButtonColor,
+                    _buildTextField(
+                      controller: _newPasswordController,
+                      labelText: 'New Password',
+                      icon: Icons.lock_outline,
+                      isPassword: true,
+                      obscure: _obscurePassword,
+                      onToggleObscure: () =>
+                          setState(() => _obscurePassword = !_obscurePassword),
+                    ),
+                    _buildTextField(
+                      controller: _confirmNewPasswordController,
+                      labelText: 'Confirm New Password',
+                      icon: Icons.lock_reset,
+                      isPassword: true,
+                      obscure: _obscureConfirm,
+                      onToggleObscure: () =>
+                          setState(() => _obscureConfirm = !_obscureConfirm),
+                    ),
+                    const SizedBox(height: 20),
+                    _isLoading
+                        ? const Center(
+                            child: CircularProgressIndicator(
+                              color: AppColors.primary,
+                            ),
+                          )
+                        : _buildActionButton(
+                            title: 'RESET',
+                            onPressed: _handleForgotPassword,
                           ),
-                        )
-                      : _buildActionButton(
-                          title: _isLogin ? 'LOG IN' : 'REGISTER',
-                          onPressed: _authenticate,
-                          color: primaryButtonColor,
-                        ),
-                  const SizedBox(height: 12),
-                  if (_isLogin)
+                    const SizedBox(height: 16),
                     TextButton(
                       onPressed: () {
-                        setState(() => _showForgotPassword = true);
+                        setState(() {
+                          _showForgotPassword = false;
+                          _newPasswordController.clear();
+                          _confirmNewPasswordController.clear();
+                        });
                       },
                       child: Text(
-                        'FORGOT PASSWORD?',
-                        style: TextStyle(
-                          color: highlightColor.withValues(alpha: 0.9),
-                          fontFamily: 'PressStart2P',
-                          fontSize: 10,
-                          decoration: TextDecoration.underline,
+                        '← Back to login',
+                        style: GoogleFonts.inter(
+                          color: AppColors.textSecondary,
+                          fontSize: 13,
                         ),
                       ),
                     ),
-                  const SizedBox(height: 12),
-                  TextButton(
-                    onPressed: () {
-                      setState(() {
-                        _isLogin = !_isLogin;
-                        _usernameController.clear();
-                        _passwordController.clear();
-                        _confirmPasswordController.clear();
-                      });
-                    },
-                    child: Text(
-                      _isLogin ? 'CREATE NEW ACCOUNT' : 'BACK TO LOGIN',
-                      style: TextStyle(
-                        color: highlightColor,
-                        fontFamily: 'PressStart2P',
-                        fontSize: 12,
-                        decoration: TextDecoration.underline,
+                  ] else ...[
+                    _buildTextField(
+                      controller: _usernameController,
+                      labelText: 'Username',
+                      icon: Icons.person_outline,
+                    ),
+                    _buildTextField(
+                      controller: _passwordController,
+                      labelText: 'Password',
+                      icon: Icons.lock_outline,
+                      isPassword: true,
+                      obscure: _obscurePassword,
+                      onToggleObscure: () =>
+                          setState(() => _obscurePassword = !_obscurePassword),
+                    ),
+                    if (!_isLogin)
+                      _buildTextField(
+                        controller: _confirmPasswordController,
+                        labelText: 'Confirm Password',
+                        icon: Icons.lock_reset,
+                        isPassword: true,
+                        obscure: _obscureConfirm,
+                        onToggleObscure: () =>
+                            setState(() => _obscureConfirm = !_obscureConfirm),
+                      ),
+                    const SizedBox(height: 20),
+                    _isLoading
+                        ? const Center(
+                            child: CircularProgressIndicator(
+                              color: AppColors.primary,
+                            ),
+                          )
+                        : _buildActionButton(
+                            title: _isLogin ? 'LOG IN' : 'REGISTER',
+                            onPressed: _authenticate,
+                          ),
+                    const SizedBox(height: 12),
+                    if (_isLogin)
+                      TextButton(
+                        onPressed: () {
+                          setState(() => _showForgotPassword = true);
+                        },
+                        child: Text(
+                          'Forgot password?',
+                          style: GoogleFonts.inter(
+                            color: AppColors.textSecondary,
+                            fontSize: 12,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                    const SizedBox(height: 4),
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          _isLogin = !_isLogin;
+                          _usernameController.clear();
+                          _passwordController.clear();
+                          _confirmPasswordController.clear();
+                        });
+                      },
+                      child: Text(
+                        _isLogin
+                            ? 'Don\'t have an account? Create one'
+                            : 'Already have an account? Log in',
+                        style: GoogleFonts.inter(
+                          color: AppColors.primary,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         ),

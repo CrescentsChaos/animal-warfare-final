@@ -9,10 +9,10 @@ import 'package:animal_warfare/battle_screen.dart';
 import 'package:animal_warfare/double_battle_screen.dart';
 import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/theme.dart';
-import 'package:animal_warfare/game/battle_manager.dart';
 import 'package:animal_warfare/game/archetype_teams.dart';
 import 'package:animal_warfare/game/ai_decision_engine.dart';
 import 'package:animal_warfare/ranked_screen.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'dart:convert';
 
 class BattleTabScreen extends StatefulWidget {
@@ -56,7 +56,6 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
     if (_allOrganisms.isEmpty) {
       return ArchetypeResult(archetype: null, archetypeName: 'Chaos', team: []);
     }
-
     return ArchetypeTeamBuilder.build(
       _allOrganisms,
       withTalismans: withTalismans,
@@ -77,7 +76,6 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
       return;
     }
 
-    // Arena auto-scaling: Scale player team to Level 50 if not Rogue
     List<CapturedOrganism> effectivePlayerTeam = playerTeam;
     if (battleTitle != 'Rogue-like' && !battleTitle.startsWith('Rogue Floor')) {
       effectivePlayerTeam = playerTeam
@@ -90,7 +88,6 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
           .toList();
     }
 
-    // Pick first animal from each team as the initial fighters
     final result = await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => BattleScreen(
@@ -106,7 +103,6 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
       ),
     );
 
-    // Post-battle healing for non-Rogue modes
     if (mounted && battleTitle != 'Rogue-like') {
       for (final organism in playerTeam) {
         organism.currentHealth = organism.maxHealth;
@@ -114,12 +110,7 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
       }
     }
 
-    // Handle battle result if needed
-    if (result != null && mounted) {
-      if (battleTitle == 'Rogue-like' && result == BattleResult.win) {
-        // This is handled by BattleScreen usually, but we refresh just in case
-      }
-    }
+    if (result != null && mounted) {}
   }
 
   void _startDoublesBattle() async {
@@ -138,7 +129,6 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
       return;
     }
 
-    // Arena auto-scaling: Scale player team to Level 50
     final effectivePlayerTeam = playerTeam
         .map(
           (o) =>
@@ -146,28 +136,24 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
         )
         .toList();
 
-    final result = await Navigator.of(context).push(
+    await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => DoubleBattleScreen(
           playerTeam: effectivePlayerTeam,
           opponentTeam: opponentTeam,
-          biomeName: 'Rainforest', // Default biome for now
+          biomeName: 'Rainforest',
           battleTitle: 'Random Doubles',
           opponentArchetype: opponentRes.archetype,
         ),
       ),
     );
 
-    // Post-battle healing for non-Rogue modes
     if (mounted) {
       for (final organism in playerTeam) {
         organism.currentHealth = organism.maxHealth;
         organism.restoreAllStamina();
       }
     }
-
-    // Handle battle result if needed
-    if (result != null && mounted) {}
   }
 
   void _startRogueLike(UserState userState) async {
@@ -175,15 +161,10 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
     if (user == null) return;
 
     if (user.rogueLikeState.isActive) {
-      // Continue existing run
       Navigator.of(
         context,
       ).push(MaterialPageRoute(builder: (context) => const RogueHubScreen()));
     } else {
-      // Start new run with starter choice
-      // Just a pick or let select?
-      // Actually RogueHubScreen handles null state maybe?
-      // No, let's use the new screen.
       final firstBiome = userState.getRandomBiome();
       final success = await Navigator.of(context).push<bool>(
         MaterialPageRoute(
@@ -204,75 +185,104 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
     required String description,
     required IconData icon,
     required VoidCallback onTap,
-    required Color color,
+    required Color accentColor,
     VoidCallback? onSecondaryAction,
     String? secondaryActionLabel,
   }) {
-    return Card(
-      elevation: 8,
-      color: color,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: AppColors.highlightColor, width: 3),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: accentColor.withValues(alpha: 0.4), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: accentColor.withValues(alpha: 0.08),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 64, color: AppColors.highlightColor),
-              const SizedBox(height: 16),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontFamily: 'PressStart2P',
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                description,
-                style: const TextStyle(
-                  fontSize: 10,
-                  fontFamily: 'PressStart2P',
-                  color: Colors.white70,
-                  height: 1.5,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              if (onSecondaryAction != null &&
-                  secondaryActionLabel != null) ...[
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: onSecondaryAction,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red.shade900,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      side: const BorderSide(color: Colors.white24),
-                    ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          splashColor: accentColor.withValues(alpha: 0.1),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: accentColor.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(14),
                   ),
-                  child: Text(
-                    secondaryActionLabel,
-                    style: const TextStyle(
-                      fontFamily: 'PressStart2P',
-                      fontSize: 8,
-                    ),
+                  child: Icon(icon, size: 28, color: accentColor),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        description,
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                          height: 1.4,
+                        ),
+                      ),
+                      if (onSecondaryAction != null &&
+                          secondaryActionLabel != null) ...[
+                        const SizedBox(height: 10),
+                        GestureDetector(
+                          onTap: onSecondaryAction,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.danger.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                color: AppColors.danger.withValues(alpha: 0.4),
+                              ),
+                            ),
+                            child: Text(
+                              secondaryActionLabel,
+                              style: GoogleFonts.inter(
+                                color: AppColors.dangerLight,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
+                ),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: accentColor.withValues(alpha: 0.6),
+                  size: 22,
                 ),
               ],
-            ],
+            ),
           ),
         ),
       ),
@@ -283,38 +293,33 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.primaryButtonColor,
+        backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: AppColors.highlightColor, width: 2),
+          side: const BorderSide(color: AppColors.border),
         ),
         title: const Text(
           'RESET RUN?',
           style: TextStyle(
-            color: AppColors.highlightColor,
+            color: AppColors.dangerLight,
             fontFamily: 'PressStart2P',
-            fontSize: 16,
+            fontSize: 14,
           ),
         ),
-        content: const Text(
-          'This will delete your current Roguelike progress and team forever. Are you sure?',
-          style: TextStyle(
-            color: Colors.white70,
-            fontFamily: 'PressStart2P',
-            fontSize: 10,
+        content: Text(
+          'This will permanently delete your current Roguelike progress and team. Are you sure?',
+          style: GoogleFonts.inter(
+            color: AppColors.textSecondary,
+            fontSize: 13,
             height: 1.5,
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text(
-              'CANCEL',
-              style: TextStyle(
-                color: Colors.white,
-                fontFamily: 'PressStart2P',
-                fontSize: 10,
-              ),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.inter(color: AppColors.textSecondary),
             ),
           ),
           ElevatedButton(
@@ -327,13 +332,17 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
                 );
               }
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text(
-              'RESET',
-              style: TextStyle(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.danger,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text(
+              'Reset',
+              style: GoogleFonts.inter(
                 color: Colors.white,
-                fontFamily: 'PressStart2P',
-                fontSize: 10,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -346,16 +355,10 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return Scaffold(
-        backgroundColor: AppColors.secondaryButtonColor,
-        appBar: AppBar(
-          title: const Text(
-            'BATTLE',
-            style: TextStyle(fontFamily: 'PressStart2P'),
-          ),
-          backgroundColor: AppColors.primaryButtonColor,
-        ),
+        backgroundColor: AppColors.background,
+        appBar: AppBar(title: const Text('BATTLE')),
         body: const Center(
-          child: CircularProgressIndicator(color: AppColors.highlightColor),
+          child: CircularProgressIndicator(color: AppColors.primary),
         ),
       );
     }
@@ -364,152 +367,109 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
     final user = userState.currentUser;
 
     return Scaffold(
-      backgroundColor: AppColors.secondaryButtonColor,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text(
-          'BATTLE ARENA',
-          style: TextStyle(fontFamily: 'PressStart2P', fontSize: 16),
-        ),
-        backgroundColor: AppColors.primaryButtonColor,
-        centerTitle: true,
+        title: const Text('BATTLE ARENA'),
+        backgroundColor: AppColors.surface,
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              AppColors.secondaryButtonColor,
-              AppColors.primaryButtonColor.withValues(alpha: 0.3),
-            ],
-          ),
-        ),
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text(
-                  'SELECT MODE',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontFamily: 'PressStart2P',
-                    color: AppColors.highlightColor,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black,
-                        blurRadius: 4,
-                        offset: Offset(2, 2),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 40),
-
-                // vs AI Mode
-                _buildModeCard(
-                  title: 'VS AI',
-                  description:
-                      'Battle with your team against a randomized AI team with items!',
-                  icon: Icons.psychology,
-                  color: AppColors.primaryButtonColor.withValues(alpha: 0.8),
-                  onTap: () {
-                    if (user == null || user.battleTeam.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Please configure your battle team first!',
-                          ),
-                        ),
-                      );
-                      return;
-                    }
-
-                    final playerTeam = user.teamOrganisms;
-                    final aiRes = _generateRandomTeam(withTalismans: true);
-
-                    _startBattle(
-                      playerTeam: playerTeam,
-                      opponentTeam: aiRes.team,
-                      battleTitle: 'vs AI',
-                      opponentArchetype: aiRes.archetype,
-                    );
-                  },
-                ),
-
-                const SizedBox(height: 24),
-
-                if (user != null)
-                  _buildModeCard(
-                    title: user.rogueLikeState.isActive
-                        ? 'ROGUE: FLOOR ${user.rogueLikeState.floor}'
-                        : 'ROGUE-LIKE',
-                    description: user.rogueLikeState.isActive
-                        ? 'CONTINUE: Resume your high-stakes run!'
-                        : 'START: Randomized floors. Permadeath. High rewards! Record: Floor ${user.rogueLikeState.highestFloor}',
-                    icon: Icons.vignette,
-                    color: const Color(0xFF4B0082).withValues(alpha: 0.8), // Indigo
-                    onTap: () => _startRogueLike(userState),
-                    onSecondaryAction: user.rogueLikeState.isActive
-                        ? () => _confirmResetRun(context, userState)
-                        : null,
-                    secondaryActionLabel: 'RESET RUN',
-                  ),
-
-                if (user != null) const SizedBox(height: 24),
-
-                // Randoms Mode
-                _buildModeCard(
-                  title: 'RANDOMS',
-                  description:
-                      'Both teams are completely randomized. Pure chaos!',
-                  icon: Icons.shuffle,
-                  color: const Color(0xFF8B0000).withValues(alpha: 0.8),
-                  onTap: () {
-                    final playerRes = _generateRandomTeam(withTalismans: true);
-                    final aiRes = _generateRandomTeam(withTalismans: true);
-
-                    _startBattle(
-                      playerTeam: playerRes.team,
-                      opponentTeam: aiRes.team,
-                      battleTitle: 'Randoms',
-                      opponentArchetype: aiRes.archetype,
-                    );
-                  },
-                ),
-                // Doubles Mode
-                const SizedBox(height: 24),
-                _buildModeCard(
-                  title: 'Doubles Random',
-                  description:
-                      'Two vs two! Pick targets, use spread moves, and master doubles strategy!',
-                  icon: Icons.group,
-                  color: const Color(0xFF005C4B).withValues(alpha: 0.9),
-                  onTap: _startDoublesBattle,
-                ),
-
-                const SizedBox(height: 24),
-                // Rankings
-                _buildModeCard(
-                  title: 'RANKINGS',
-                  description:
-                      'Check winrates and global ranks for every animal species!',
-                  icon: Icons.emoji_events,
-                  color: Colors.amber.shade900.withValues(alpha: 0.8),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const RankedScreen(),
-                      ),
-                    );
-                  },
-                ),
-              ],
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 24, 16, 32),
+        children: [
+          Text(
+            'Select Mode',
+            style: GoogleFonts.inter(
+              color: AppColors.textSecondary,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 1.5,
             ),
           ),
-        ),
+          const SizedBox(height: 16),
+
+          // VS AI
+          _buildModeCard(
+            title: 'VS AI',
+            description: 'Battle your team against a smart AI with items.',
+            icon: Icons.psychology_rounded,
+            accentColor: AppColors.primary,
+            onTap: () {
+              if (user == null || user.battleTeam.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Configure your battle team first!'),
+                  ),
+                );
+                return;
+              }
+              final aiRes = _generateRandomTeam(withTalismans: true);
+              _startBattle(
+                playerTeam: user.teamOrganisms,
+                opponentTeam: aiRes.team,
+                battleTitle: 'vs AI',
+                opponentArchetype: aiRes.archetype,
+              );
+            },
+          ),
+
+          // Rogue-like
+          if (user != null)
+            _buildModeCard(
+              title: user.rogueLikeState.isActive
+                  ? 'ROGUE: FLOOR ${user.rogueLikeState.floor}'
+                  : 'ROGUE-LIKE',
+              description: user.rogueLikeState.isActive
+                  ? 'Resume your high-stakes run!'
+                  : 'Randomized floors. Permadeath. High rewards!\nRecord: Floor ${user.rogueLikeState.highestFloor}',
+              icon: Icons.vignette_rounded,
+              accentColor: const Color(0xFF9C27B0),
+              onTap: () => _startRogueLike(userState),
+              onSecondaryAction: user.rogueLikeState.isActive
+                  ? () => _confirmResetRun(context, userState)
+                  : null,
+              secondaryActionLabel: 'Reset Run',
+            ),
+
+          // Randoms
+          _buildModeCard(
+            title: 'Randoms',
+            description: 'Both teams are fully randomized. Pure chaos!',
+            icon: Icons.shuffle_rounded,
+            accentColor: const Color(0xFFEF5350),
+            onTap: () {
+              final playerRes = _generateRandomTeam(withTalismans: true);
+              final aiRes = _generateRandomTeam(withTalismans: true);
+              _startBattle(
+                playerTeam: playerRes.team,
+                opponentTeam: aiRes.team,
+                battleTitle: 'Randoms',
+                opponentArchetype: aiRes.archetype,
+              );
+            },
+          ),
+
+          // Doubles
+          _buildModeCard(
+            title: 'Doubles Random',
+            description: '2v2! Use spread moves and master doubles strategy.',
+            icon: Icons.group_rounded,
+            accentColor: const Color(0xFF26A69A),
+            onTap: _startDoublesBattle,
+          ),
+
+          // Rankings
+          _buildModeCard(
+            title: 'Rankings',
+            description: 'Check win rates & global ranks for every species.',
+            icon: Icons.emoji_events_rounded,
+            accentColor: const Color(0xFFFFB300),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const RankedScreen()),
+              );
+            },
+          ),
+        ],
       ),
     );
   }

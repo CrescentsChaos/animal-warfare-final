@@ -10,7 +10,8 @@ import 'package:animal_warfare/theme.dart';
 import 'package:provider/provider.dart';
 import 'package:animal_warfare/models/elemental_type.dart';
 import 'package:animal_warfare/models/shop_item.dart';
-import 'package:animal_warfare/widgets/anidex_details_sheet.dart'; // Added
+import 'package:animal_warfare/widgets/anidex_details_sheet.dart';
+import 'package:animal_warfare/widgets/organism_sprite_widget.dart';
 
 class AnidexScreen extends StatefulWidget {
   final UserData currentUser;
@@ -392,7 +393,9 @@ class _AnidexScreenState extends State<AnidexScreen>
           color: Colors.black.withValues(alpha: 0.4),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: discovered ? rarityColor.withValues(alpha: 0.4) : Colors.white10,
+            color: discovered
+                ? rarityColor.withValues(alpha: 0.4)
+                : Colors.white10,
             width: 1.5,
           ),
         ),
@@ -636,7 +639,10 @@ class _AnidexScreenState extends State<AnidexScreen>
           const SizedBox(height: 4),
           Text(
             'REFINE DATABASE ENTRIES',
-            style: TextStyle(fontSize: 8, color: Colors.white.withValues(alpha: 0.4)),
+            style: TextStyle(
+              fontSize: 8,
+              color: Colors.white.withValues(alpha: 0.4),
+            ),
           ),
         ],
       ),
@@ -1012,7 +1018,6 @@ class _OrganismSpriteDisplay extends StatefulWidget {
 
 class __OrganismSpriteDisplayState extends State<_OrganismSpriteDisplay> {
   String? _imagePath;
-  bool _isLocal = true;
 
   @override
   void initState() {
@@ -1029,9 +1034,7 @@ class __OrganismSpriteDisplayState extends State<_OrganismSpriteDisplay> {
   }
 
   void _initPath() async {
-    // 🚨 RESET: Always start assuming local to prevent state leakage from previous network errors
     setState(() {
-      _isLocal = true;
       _imagePath = null;
     });
 
@@ -1045,21 +1048,14 @@ class __OrganismSpriteDisplayState extends State<_OrganismSpriteDisplay> {
       await rootBundle.load(local);
       if (mounted) setState(() => _imagePath = local);
     } catch (_) {
-      if (mounted) {
-        setState(() {
-          _isLocal = false;
-          String spriteUrl = widget.organism.sprite;
-          // 🚨 FIX: Remove 'file:///' prefix if present (it breaks Image.network)
-          if (spriteUrl.startsWith('file:///')) {
-            spriteUrl = spriteUrl.replaceFirst('file:///', '');
-            // If it starts with 'assets/', it's actually a local path mistakenly prefixed
-            if (spriteUrl.startsWith('assets/')) {
-              _isLocal = true;
-            }
-          }
-          _imagePath = spriteUrl;
-        });
-      }
+      setState(() {
+        String spriteUrl = widget.organism.sprite;
+        // 🚨 FIX: Remove 'file:///' prefix if present (it breaks Image.network)
+        if (spriteUrl.startsWith('file:///')) {
+          spriteUrl = spriteUrl.replaceFirst('file:///', '');
+        }
+        _imagePath = spriteUrl;
+      });
     }
   }
 
@@ -1070,46 +1066,64 @@ class __OrganismSpriteDisplayState extends State<_OrganismSpriteDisplay> {
         child: CircularProgressIndicator(color: Colors.white12),
       );
 
-    Widget imgWidget = _isLocal
-        ? Image.asset(_imagePath!, fit: BoxFit.contain)
-        : Image.network(_imagePath!, fit: BoxFit.contain);
-
     if (widget.isDiscovered) {
       if (!widget.isCaptured) {
-        // Identified but not Captured -> Grayscale
-        return ColorFiltered(
-          colorFilter: const ColorFilter.matrix(<double>[
-            0.2126,
-            0.7152,
-            0.0722,
-            0,
-            0,
-            0.2126,
-            0.7152,
-            0.0722,
-            0,
-            0,
-            0.2126,
-            0.7152,
-            0.0722,
-            0,
-            0,
-            0,
-            0,
-            0,
-            1,
-            0,
-          ]),
-          child: imgWidget,
-        );
+        // Identified but not Captured -> Grayscale with BLACK outline
+        return buildSilhouetteSprite(
+          imageUrl: _imagePath!,
+          silhouetteColor: null, // Keep original (will be filtered below)
+          outlineColor: Colors.black,
+          outlineWidth: 1.0,
+          fit: BoxFit.contain,
+        ).wrapWithGrayscale();
       }
-      return imgWidget;
+      // Captured -> Colored with BLACK outline
+      return buildSilhouetteSprite(
+        imageUrl: _imagePath!,
+        silhouetteColor: null,
+        outlineColor: Colors.black,
+        outlineWidth: 1.0,
+        fit: BoxFit.contain,
+      );
     }
 
-    // Undiscovered -> Silhouette
+    // Undiscovered -> Black Silhouette with WHITE outline
+    return buildSilhouetteSprite(
+      imageUrl: _imagePath!,
+      silhouetteColor: widget.silhouetteColor,
+      outlineColor: Colors.white,
+      outlineWidth: 1.2,
+      fit: BoxFit.contain,
+    );
+  }
+}
+
+extension on Widget {
+  Widget wrapWithGrayscale() {
     return ColorFiltered(
-      colorFilter: ColorFilter.mode(widget.silhouetteColor, BlendMode.srcIn),
-      child: imgWidget,
+      colorFilter: const ColorFilter.matrix(<double>[
+        0.2126,
+        0.7152,
+        0.0722,
+        0,
+        0,
+        0.2126,
+        0.7152,
+        0.0722,
+        0,
+        0,
+        0.2126,
+        0.7152,
+        0.0722,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+      ]),
+      child: this,
     );
   }
 }

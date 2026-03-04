@@ -1,24 +1,23 @@
 // lib/settings_screen.dart
 
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // For saving settings
-import 'package:animal_warfare/local_auth_service.dart'; // For UserData and logout
-import 'package:animal_warfare/main_screen.dart'; // For logout navigation
+import 'package:animal_warfare/local_auth_service.dart';
+import 'package:animal_warfare/main_screen.dart';
 import 'package:animal_warfare/services/audio_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:animal_warfare/patch_notes_screen.dart'; // We will create this next
+import 'package:animal_warfare/patch_notes_screen.dart';
 import 'dart:io';
 import 'dart:convert';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
-
 import 'package:file_picker/file_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:animal_warfare/user_state.dart';
+import 'package:animal_warfare/theme.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class SettingsScreen extends StatefulWidget {
-  // Required fields based on your existing screen structure
   final UserData currentUser;
   final LocalAuthService authService;
 
@@ -33,15 +32,6 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  // --- Custom Colors for Theming ---
-  static const Color primaryButtonColor = Color(
-    0xFF38761D,
-  ); // Bright Jungle Green
-  static const Color secondaryButtonColor = Color(
-    0xFF1E3F2A,
-  ); // Deep Forest Green
-  static const Color highlightColor = Color(0xFFDAA520); // Goldenrod
-
   bool _isMusicEnabled = true;
   bool _isSoundEnabled = true;
   double _musicVolume = 1.0;
@@ -67,9 +57,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
   }
 
-  // --- Helper Widgets and Functions ---
-
-  // Utility function for navigation (copied from profile_screen.dart)
   PageRouteBuilder _createFadeRoute(Widget page) {
     return PageRouteBuilder(
       transitionDuration: const Duration(milliseconds: 400),
@@ -80,74 +67,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildThemedButton({
-    required String text,
-    required VoidCallback onPressed,
-    IconData? icon,
-    bool isDanger = false,
-  }) {
-    // Deep Red/Maroon for danger buttons like Logout/Delete
-    Color buttonColor = isDanger ? const Color(0xFF8B0000) : primaryButtonColor;
-
-    return ElevatedButton.icon(
-      onPressed: onPressed,
-      icon: icon != null
-          ? Icon(icon, color: Colors.white)
-          : const SizedBox.shrink(),
-      label: Text(
-        text,
-        style: const TextStyle(
-          color: Colors.white,
-          fontFamily: 'PressStart2P',
-          fontSize: 14,
-        ),
-      ),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: buttonColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(5.0),
-          side: const BorderSide(color: highlightColor, width: 2.0),
-        ),
-        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-        minimumSize: const Size(double.infinity, 50),
-      ),
-    );
-  }
-
   void _logoutUser() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: secondaryButtonColor.withValues(alpha: 0.95),
+          backgroundColor: AppColors.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: const BorderSide(color: AppColors.border),
+          ),
           title: const Text(
-            'CONFIRM LOGOUT',
+            'LOG OUT?',
             style: TextStyle(
-              color: highlightColor,
+              color: AppColors.dangerLight,
               fontFamily: 'PressStart2P',
-              fontSize: 16,
+              fontSize: 13,
             ),
           ),
-          content: const Text(
-            'Are you sure you want to log out of the system?',
-            style: TextStyle(color: Colors.white, fontSize: 14),
+          content: Text(
+            'Are you sure you want to log out?',
+            style: GoogleFonts.inter(
+              color: AppColors.textSecondary,
+              fontSize: 14,
+              height: 1.5,
+            ),
           ),
           actions: <Widget>[
             TextButton(
-              onPressed: () => Navigator.of(context).pop(), // Cancel
-              child: const Text(
-                'CANCEL',
-                style: TextStyle(
-                  color: highlightColor,
-                  fontFamily: 'PressStart2P',
-                ),
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                'Cancel',
+                style: GoogleFonts.inter(color: AppColors.textSecondary),
               ),
             ),
-            TextButton(
+            ElevatedButton(
               onPressed: () async {
-                Navigator.of(context).pop(); // Dismiss dialog
-                await widget.authService.logout(); // Perform logout
-                // Navigate back to MainScreen and clear the navigation stack
+                Navigator.of(context).pop();
+                await widget.authService.logout();
                 if (mounted) {
                   Navigator.of(context).pushAndRemoveUntil(
                     _createFadeRoute(const MainScreen()),
@@ -155,12 +112,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   );
                 }
               },
-              child: const Text(
-                'LOGOUT',
-                style: TextStyle(
-                  color: Color(0xFFFF0000),
-                  fontFamily: 'PressStart2P',
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.danger,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
                 ),
+              ),
+              child: Text(
+                'Log Out',
+                style: GoogleFonts.inter(fontWeight: FontWeight.w600),
               ),
             ),
           ],
@@ -179,7 +139,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         if (!status.isGranted) {
           await Permission.storage.request();
         }
-
         downloadDir = Directory('/storage/emulated/0/Download');
         if (!await downloadDir.exists()) {
           downloadDir = await getExternalStorageDirectory();
@@ -192,22 +151,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         final String username = widget.currentUser.username;
         final String fileName = 'animal_warfare_save_$username.json';
         final File file = File('${downloadDir.path}/$fileName');
-
         final String jsonData = jsonEncode(widget.currentUser.toJson());
         await file.writeAsString(jsonData);
-
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Saved to Downloads/$fileName',
-                style: const TextStyle(
-                  fontFamily: 'PressStart2P',
-                  fontSize: 10,
-                ),
-              ),
-              backgroundColor: primaryButtonColor,
-            ),
+            SnackBar(content: Text('Saved to Downloads/$fileName')),
           );
         }
       } else {
@@ -215,20 +163,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Export failed: $e',
-              style: const TextStyle(fontFamily: 'PressStart2P', fontSize: 10),
-            ),
-            backgroundColor: Colors.red.shade700,
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Export failed: $e')));
       }
     } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -243,28 +183,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (result != null && result.files.single.path != null) {
         File file = File(result.files.single.path!);
         String jsonString = await file.readAsString();
-
         bool success = await widget.authService.importUser(jsonString);
 
         if (success) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'Save data imported successfully!',
-                  style: TextStyle(fontFamily: 'PressStart2P', fontSize: 10),
-                ),
-                backgroundColor: primaryButtonColor,
-              ),
+              const SnackBar(content: Text('Save data imported successfully!')),
             );
-
-            // Refresh the global application state
             await Provider.of<UserState>(
               context,
               listen: false,
             ).refreshCurrentUser();
-
-            // Return to Main Menu to force full reload
             Navigator.of(context).pushAndRemoveUntil(
               _createFadeRoute(const MainScreen()),
               (route) => false,
@@ -276,236 +205,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Import failed: $e',
-              style: const TextStyle(fontFamily: 'PressStart2P', fontSize: 10),
-            ),
-            backgroundColor: Colors.red.shade700,
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Import failed: $e')));
       }
     } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('SETTINGS'),
-        backgroundColor: secondaryButtonColor,
-        titleTextStyle: const TextStyle(
-          color: highlightColor,
-          fontFamily: 'PressStart2P',
-          fontSize: 16,
-        ),
-      ),
-      body: Container(
-        decoration: BoxDecoration(
-          color: secondaryButtonColor,
-          image: DecorationImage(
-            image: const AssetImage('assets/main.png'),
-            fit: BoxFit.cover,
-            colorFilter: ColorFilter.mode(
-              Colors.black.withValues(alpha: 0.7),
-              BlendMode.darken,
-            ),
-          ),
-        ),
-        padding: const EdgeInsets.all(20.0),
-        child: _isLoading
-            ? const Center(
-                child: CircularProgressIndicator(color: highlightColor),
-              )
-            : ListView(
-                children: <Widget>[
-                  // 1. MUSIC SETTINGS
-                  _buildSectionTitle('AUDIO SETTINGS'),
-                  _buildAudioControl(
-                    title: 'MUSIC',
-                    isEnabled: _isMusicEnabled,
-                    volume: _musicVolume,
-                    onToggle: (val) {
-                      setState(() => _isMusicEnabled = val);
-                      AudioService.instance.setMusicEnabled(val);
-                    },
-                    onVolumeChanged: (val) {
-                      setState(() => _musicVolume = val);
-                      AudioService.instance.setMusicVolume(val);
-                    },
-                  ),
-
-                  _buildAudioControl(
-                    title: 'SOUND EFFECTS',
-                    isEnabled: _isSoundEnabled,
-                    volume: _soundVolume,
-                    onToggle: (val) {
-                      setState(() => _isSoundEnabled = val);
-                      AudioService.instance.setSoundEnabled(val);
-                    },
-                    onVolumeChanged: (val) {
-                      setState(() => _soundVolume = val);
-                      AudioService.instance.setSoundVolume(val);
-                    },
-                  ),
-
-                  const SizedBox(height: 20),
-                  _buildSectionTitle('GAME'),
-                  _buildThemedButton(
-                    text: 'PATCH NOTES',
-                    icon: Icons.description,
-                    onPressed: () {
-                      Navigator.of(
-                        context,
-                      ).push(_createFadeRoute(const PatchNotesScreen()));
-                    },
-                  ),
-
-                  const SizedBox(height: 10),
-                  _buildThemedButton(
-                    text: 'CONTACT & FEEDBACK',
-                    icon: Icons.mail,
-                    onPressed: () => _sendEmail('General Feedback'),
-                  ),
-
-                  const SizedBox(height: 10),
-                  _buildThemedButton(
-                    text: 'REPORT AN ISSUE',
-                    icon: Icons.bug_report,
-                    onPressed: _showReportDialog,
-                  ),
-
-                  const SizedBox(height: 40),
-                  _buildSectionTitle('ACCOUNT'),
-                  _buildThemedButton(
-                    text: 'IMPORT SAVE DATA',
-                    icon: Icons.file_upload,
-                    onPressed: _importSaveData,
-                  ),
-                  const SizedBox(height: 10),
-                  _buildThemedButton(
-                    text: 'EXPORT SAVE DATA',
-                    icon: Icons.save_alt,
-                    onPressed: _exportSaveData,
-                  ),
-                  const SizedBox(height: 10),
-                  _buildThemedButton(
-                    text: 'LOGOUT',
-                    icon: Icons.exit_to_app,
-                    onPressed: _logoutUser,
-                    isDanger: true,
-                  ),
-
-                  const SizedBox(height: 10),
-                  _buildThemedButton(
-                    text: 'DELETE ACCOUNT',
-                    icon: Icons.delete_forever,
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: const Text(
-                            'Delete Account is not yet implemented.',
-                            style: TextStyle(
-                              fontFamily: 'PressStart2P',
-                              fontSize: 10,
-                            ),
-                          ),
-                          backgroundColor: Colors.red.shade700,
-                        ),
-                      );
-                    },
-                    isDanger: true,
-                  ),
-
-                  const SizedBox(height: 20),
-                  Center(
-                    child: Text(
-                      'VERSION $_appVersion',
-                      style: const TextStyle(
-                        fontFamily: 'PressStart2P',
-                        fontSize: 10,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-      ),
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10.0),
-      child: Text(
-        title,
-        style: const TextStyle(
-          color: highlightColor,
-          fontFamily: 'PressStart2P',
-          fontSize: 12,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAudioControl({
-    required String title,
-    required bool isEnabled,
-    required double volume,
-    required ValueChanged<bool> onToggle,
-    required ValueChanged<double> onVolumeChanged,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10.0),
-      padding: const EdgeInsets.all(12.0),
-      decoration: BoxDecoration(
-        color: primaryButtonColor.withValues(alpha: 0.8),
-        border: Border.all(color: highlightColor, width: 2),
-        borderRadius: BorderRadius.circular(5.0),
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'PressStart2P',
-                  fontSize: 10,
-                ),
-              ),
-              Switch(
-                value: isEnabled,
-                onChanged: onToggle,
-                activeThumbColor: highlightColor,
-              ),
-            ],
-          ),
-          if (isEnabled)
-            Row(
-              children: [
-                const Icon(Icons.volume_down, color: Colors.white, size: 16),
-                Expanded(
-                  child: Slider(
-                    value: volume,
-                    onChanged: onVolumeChanged,
-                    activeColor: highlightColor,
-                    inactiveColor: Colors.black45,
-                  ),
-                ),
-                const Icon(Icons.volume_up, color: Colors.white, size: 16),
-              ],
-            ),
-        ],
-      ),
-    );
   }
 
   Future<void> _sendEmail(String subject, {String? body}) async {
@@ -514,22 +220,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
       path: 'crescentslegacy@gmail.com',
       queryParameters: {'subject': subject, if (body != null) 'body': body},
     );
-
     try {
-      if (await canLaunchUrl(params)) {
-        await launchUrl(params, mode: LaunchMode.externalApplication);
-      } else {
-        // Fallback for some devices where canLaunchUrl is unreliable
-        await launchUrl(params, mode: LaunchMode.externalApplication);
-      }
+      await launchUrl(params, mode: LaunchMode.externalApplication);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: ${e.toString()}'),
-            backgroundColor: Colors.red.shade700,
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
       }
     }
   }
@@ -539,40 +236,320 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: secondaryButtonColor,
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: AppColors.border),
+        ),
         title: const Text(
           'REPORT ISSUE',
           style: TextStyle(
             fontFamily: 'PressStart2P',
-            color: highlightColor,
-            fontSize: 14,
+            color: AppColors.highlight,
+            fontSize: 12,
           ),
         ),
         content: TextField(
           controller: controller,
           maxLines: 5,
-          style: const TextStyle(color: Colors.white, fontSize: 12),
-          decoration: const InputDecoration(
+          style: GoogleFonts.inter(color: Colors.white, fontSize: 13),
+          decoration: InputDecoration(
             hintText: 'Describe the issue...',
-            hintStyle: TextStyle(color: Colors.grey),
-            enabledBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: highlightColor),
+            hintStyle: GoogleFonts.inter(color: AppColors.textMuted),
+            filled: true,
+            fillColor: AppColors.background,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: AppColors.border),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: AppColors.primary),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: AppColors.border),
             ),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('CANCEL', style: TextStyle(color: Colors.white)),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.inter(color: AppColors.textSecondary),
+            ),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
               _sendEmail('Game Report', body: controller.text);
             },
-            child: const Text('SEND', style: TextStyle(color: highlightColor)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: Text(
+              'Send',
+              style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+            ),
           ),
         ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: const Text('SETTINGS'),
+        backgroundColor: AppColors.surface,
+      ),
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            )
+          : ListView(
+              padding: const EdgeInsets.fromLTRB(16, 20, 16, 40),
+              children: <Widget>[
+                _buildSectionTitle('Audio'),
+                _buildAudioControl(
+                  title: 'Music',
+                  icon: Icons.music_note_rounded,
+                  isEnabled: _isMusicEnabled,
+                  volume: _musicVolume,
+                  onToggle: (val) {
+                    setState(() => _isMusicEnabled = val);
+                    AudioService.instance.setMusicEnabled(val);
+                  },
+                  onVolumeChanged: (val) {
+                    setState(() => _musicVolume = val);
+                    AudioService.instance.setMusicVolume(val);
+                  },
+                ),
+                _buildAudioControl(
+                  title: 'Sound Effects',
+                  icon: Icons.volume_up_rounded,
+                  isEnabled: _isSoundEnabled,
+                  volume: _soundVolume,
+                  onToggle: (val) {
+                    setState(() => _isSoundEnabled = val);
+                    AudioService.instance.setSoundEnabled(val);
+                  },
+                  onVolumeChanged: (val) {
+                    setState(() => _soundVolume = val);
+                    AudioService.instance.setSoundVolume(val);
+                  },
+                ),
+
+                const SizedBox(height: 24),
+                _buildSectionTitle('Game'),
+                _buildActionTile(
+                  title: 'Patch Notes',
+                  icon: Icons.description_rounded,
+                  onTap: () => Navigator.of(
+                    context,
+                  ).push(_createFadeRoute(const PatchNotesScreen())),
+                ),
+                _buildActionTile(
+                  title: 'Contact & Feedback',
+                  icon: Icons.mail_rounded,
+                  onTap: () => _sendEmail('General Feedback'),
+                ),
+                _buildActionTile(
+                  title: 'Report an Issue',
+                  icon: Icons.bug_report_rounded,
+                  onTap: _showReportDialog,
+                ),
+
+                const SizedBox(height: 24),
+                _buildSectionTitle('Account'),
+                _buildActionTile(
+                  title: 'Import Save Data',
+                  icon: Icons.file_upload_rounded,
+                  onTap: _importSaveData,
+                ),
+                _buildActionTile(
+                  title: 'Export Save Data',
+                  icon: Icons.save_alt_rounded,
+                  onTap: _exportSaveData,
+                ),
+                _buildActionTile(
+                  title: 'Log Out',
+                  icon: Icons.exit_to_app_rounded,
+                  onTap: _logoutUser,
+                  isDanger: true,
+                ),
+                _buildActionTile(
+                  title: 'Delete Account',
+                  icon: Icons.delete_forever_rounded,
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Delete Account is not yet implemented.'),
+                      ),
+                    );
+                  },
+                  isDanger: true,
+                ),
+
+                const SizedBox(height: 32),
+                Center(
+                  child: Text(
+                    'v$_appVersion',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      color: AppColors.textMuted,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Container(
+            width: 3,
+            height: 14,
+            decoration: BoxDecoration(
+              color: AppColors.primary,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            title.toUpperCase(),
+            style: GoogleFonts.inter(
+              color: AppColors.textSecondary,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAudioControl({
+    required String title,
+    required IconData icon,
+    required bool isEnabled,
+    required double volume,
+    required ValueChanged<bool> onToggle,
+    required ValueChanged<double> onVolumeChanged,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                Icon(icon, color: AppColors.primary, size: 20),
+                const SizedBox(width: 12),
+                Text(
+                  title,
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const Spacer(),
+                Switch(value: isEnabled, onChanged: onToggle),
+              ],
+            ),
+          ),
+          if (isEnabled)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.volume_down_rounded,
+                    color: AppColors.textMuted,
+                    size: 18,
+                  ),
+                  Expanded(
+                    child: Slider(value: volume, onChanged: onVolumeChanged),
+                  ),
+                  const Icon(
+                    Icons.volume_up_rounded,
+                    color: AppColors.textSecondary,
+                    size: 18,
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionTile({
+    required String title,
+    required IconData icon,
+    required VoidCallback onTap,
+    bool isDanger = false,
+  }) {
+    final color = isDanger ? AppColors.dangerLight : AppColors.textSecondary;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDanger
+              ? AppColors.danger.withValues(alpha: 0.3)
+              : AppColors.border,
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Row(
+              children: [
+                Icon(icon, color: color, size: 20),
+                const SizedBox(width: 14),
+                Text(
+                  title,
+                  style: GoogleFonts.inter(
+                    color: isDanger ? AppColors.dangerLight : Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const Spacer(),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppColors.textMuted,
+                  size: 18,
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

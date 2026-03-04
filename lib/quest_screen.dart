@@ -737,7 +737,9 @@ class _QuestScreenState extends State<QuestScreen> {
                       decoration: BoxDecoration(
                         color: Colors.blue.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(4),
-                        border: Border.all(color: Colors.blue.withValues(alpha: 0.5)),
+                        border: Border.all(
+                          color: Colors.blue.withValues(alpha: 0.5),
+                        ),
                       ),
                       child: Text(
                         h.trim().toUpperCase(),
@@ -930,6 +932,8 @@ class __OrganismSpriteDisplayState extends State<_OrganismSpriteDisplay> {
       return buildSilhouetteSprite(
         imageUrl: _imagePath,
         silhouetteColor: widget.silhouetteColor,
+        outlineColor: Colors.white,
+        outlineWidth: 1.5,
         organismName: widget.organism.name,
         height: widget.height,
         width: widget.width,

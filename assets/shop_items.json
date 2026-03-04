@@ -4,21 +4,42 @@
         "name": "Old Rod",
         "description": "A basic fishing rod. Enables spawning of common fishes in aquatic biomes.",
         "price": 500,
-        "category": "rod"
+        "category": "rod",
+        "biomes": [
+            "Ocean",
+            "River",
+            "Lake",
+            "Coastal",
+            "Swamp"
+        ]
     },
     {
         "id": "good_rod",
         "name": "Good Rod",
         "description": "A decent fishing rod. Enables spawning of uncommon and rare fishes.",
         "price": 2500,
-        "category": "rod"
+        "category": "rod",
+        "biomes": [
+            "Ocean",
+            "River",
+            "Lake",
+            "Coastal",
+            "Swamp"
+        ]
     },
     {
         "id": "super_rod",
         "name": "Super Rod",
         "description": "The best fishing rod. Enables spawning of epic and mythical fishes.",
         "price": 10000,
-        "category": "rod"
+        "category": "rod",
+        "biomes": [
+            "Ocean",
+            "River",
+            "Lake",
+            "Coastal",
+            "Swamp"
+        ]
     },
     {
         "id": "sitrus_berry",

@@ -1068,12 +1068,12 @@ class UserState with ChangeNotifier {
 
     final effectiveCap = levelCap ?? _currentUser!.accountLevel;
 
-    // XP constants - SUPER ACCELERATED
-    final baseXP = defeatedLevel * 60; // Increased animal battle XP
-    final accountXPShare = (defeatedLevel * 100).clamp(
-      100,
-      10000,
-    ); // Significantly increased account XP
+    // Rebalanced XP constants
+    final baseXP = defeatedLevel * 10; // Animal battle XP
+    final accountXPShare = (defeatedLevel * 5).clamp(
+      50,
+      1000,
+    ); // Account XP aligned with animal growth
 
     Map<String, dynamic> results = {
       'accountLeveledUp': false,
@@ -1098,6 +1098,7 @@ class UserState with ChangeNotifier {
             organisms[i] = org.copyWith(
               xp: xpResult['xp'] as int,
               level: xpResult['level'] as int,
+              currentHealth: xpResult['health'] as int,
               satisfaction: math.min(
                 255,
                 org.satisfaction + 2,
@@ -1148,6 +1149,7 @@ class UserState with ChangeNotifier {
               rogueTeam[j] = org.copyWith(
                 xp: xpResult['xp'] as int,
                 level: xpResult['level'] as int,
+                currentHealth: xpResult['health'] as int,
                 satisfaction: math.min(255, org.satisfaction + 2),
               );
             }
@@ -1166,6 +1168,20 @@ class UserState with ChangeNotifier {
     });
 
     return results;
+  }
+
+  /// Updates or clears a persistent exploration encounter for a biome.
+  Future<void> updateExplorationEncounter(
+    String biome,
+    CapturedOrganism? encounter,
+  ) async {
+    await _readModifyWrite((u) {
+      final encounters = Map<String, CapturedOrganism?>.from(
+        u.explorationEncounters,
+      );
+      encounters[biome] = encounter;
+      return u.copyWith(explorationEncounters: encounters);
+    });
   }
 
   /// Records wins/losses for all animals involved in a battle.

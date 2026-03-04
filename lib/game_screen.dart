@@ -6,22 +6,23 @@ import 'package:animal_warfare/anidex_screen.dart';
 import 'package:animal_warfare/quiz_screen.dart';
 import 'package:animal_warfare/animal_box_screen.dart';
 import 'package:animal_warfare/local_auth_service.dart';
-import 'package:animal_warfare/stats_display_button.dart';
+import 'package:animal_warfare/phone_screen.dart';
 import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/crafting_screen.dart';
 import 'package:animal_warfare/battle_tab_screen.dart';
-
 import 'package:animal_warfare/services/audio_service.dart';
+import 'package:animal_warfare/theme.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:animal_warfare/widgets/game_clock_widget.dart';
 
 class GameScreen extends StatefulWidget {
-  // FIX: ADDED: Required fields to pass down user data and service
   final UserData currentUser;
   final LocalAuthService authService;
 
   const GameScreen({
     super.key,
-    required this.currentUser, // ADDED
-    required this.authService, // ADDED
+    required this.currentUser,
+    required this.authService,
   });
 
   @override
@@ -29,102 +30,104 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> {
-  // Define High-Contrast Retro/Military-themed colors (Copied from main_screen for consistency)
-  static const Color primaryButtonColor = Color(
-    0xFF38761D,
-  ); // Bright Jungle Green
-  static const Color secondaryButtonColor = Color(
-    0xFF1E3F2A,
-  ); // Deep Forest Green
-  static const Color tertiaryButtonColor = Color(0xFF8B0000); // Deep Red/Maroon
-  static const Color highlightColor = Color(
-    0xFFDAA520,
-  ); // Goldenrod (Text/Border Highlight)
-
   @override
   void initState() {
     super.initState();
     _playBackgroundMusic();
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
   void _playBackgroundMusic() {
     AudioService.instance.playMusic('audio/main_theme.mp3');
   }
 
-  // Navigation function to pass UserData and LocalAuthService
   void _navigateTo(Widget screen) async {
     AudioService.instance.pauseAll();
     await Navigator.of(context).push(
       PageRouteBuilder(
-        transitionDuration: const Duration(milliseconds: 400),
+        transitionDuration: const Duration(milliseconds: 350),
         pageBuilder: (context, animation, secondaryAnimation) => screen,
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(opacity: animation, child: child);
         },
       ),
     );
-
-    // Resume music when returning
     AudioService.instance.resumeAll();
-
-    // 🟢 FIX: Refresh user data when returning from any screen
     final updatedUser = await widget.authService.getCurrentUser();
     if (updatedUser != null && mounted) {
-      setState(() {
-        // This updates the GameScreen's reference to currentUser
-        // Note: We can't directly modify widget.currentUser, but we need to
-        // ensure the parent (MainScreen or wherever) knows about updates
-      });
+      setState(() {});
     }
   }
 
-  // Helper function for themed buttons
-  Widget _buildThemedButton({
+  Widget _buildMenuButton({
     required String text,
+    required String subtitle,
     required IconData icon,
     required VoidCallback onPressed,
     required Color color,
   }) {
-    // ... (button UI logic remains the same)
     return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
+      margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: color,
-        border: Border.all(color: highlightColor, width: 2.0),
-        borderRadius: BorderRadius.circular(4.0),
+        color: AppColors.surface.withValues(alpha: 0.92),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: color.withValues(alpha: 0.5), width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.6),
-            offset: const Offset(4, 4),
-            blurRadius: 0,
+            color: color.withValues(alpha: 0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Material(
         color: Colors.transparent,
+        borderRadius: BorderRadius.circular(14),
         child: InkWell(
           onTap: onPressed,
-          borderRadius: BorderRadius.circular(4.0),
+          borderRadius: BorderRadius.circular(14),
+          splashColor: color.withValues(alpha: 0.12),
+          highlightColor: color.withValues(alpha: 0.06),
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(icon, color: highlightColor, size: 20),
-                const SizedBox(width: 10),
-                Text(
-                  text,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontFamily: 'PressStart2P',
+                Container(
+                  width: 46,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
                   ),
+                  child: Icon(icon, color: color, size: 24),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        text,
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        style: GoogleFonts.inter(
+                          color: AppColors.textSecondary,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: color.withValues(alpha: 0.6),
+                  size: 22,
                 ),
               ],
             ),
@@ -137,54 +140,90 @@ class _GameScreenState extends State<GameScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // ADD THE FLOATING ACTION BUTTON HERE
-      floatingActionButton: const StatsDisplayButton(),
+      floatingActionButton: FloatingActionButton(
+        heroTag: 'phoneButton',
+        onPressed: () {
+          Navigator.of(context).push(
+            PageRouteBuilder(
+              opaque: false,
+              pageBuilder: (_, __, ___) => const PhoneScreen(),
+              transitionsBuilder: (_, animation, __, child) {
+                return FadeTransition(opacity: animation, child: child);
+              },
+            ),
+          );
+        },
+        backgroundColor: const Color(0xFF1E1E2E),
+        child: const Icon(Icons.smartphone_rounded, color: Colors.cyanAccent),
+      ),
       body: Stack(
         children: [
-          // Background Image
+          // Background
           Container(
             decoration: BoxDecoration(
-              color: secondaryButtonColor,
+              color: AppColors.background,
               image: DecorationImage(
                 image: const AssetImage('assets/main.png'),
                 fit: BoxFit.cover,
                 colorFilter: ColorFilter.mode(
-                  Colors.black.withValues(alpha: 0.7),
+                  Colors.black.withValues(alpha: 0.78),
                   BlendMode.darken,
                 ),
               ),
             ),
           ),
 
-          Center(
+          SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.fromLTRB(20, 32, 20, 100),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  const Text(
-                    'ANIMAL WARFARE',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: highlightColor,
-                      fontSize: 28,
-                      fontFamily: 'PressStart2P',
-                      height: 1.5,
-                      shadows: [
-                        Shadow(
-                          color: Color(0xFF8B0000),
-                          blurRadius: 5.0,
-                          offset: Offset(2, 2),
+                  // Title
+                  Center(
+                    child: Column(
+                      children: [
+                        ShaderMask(
+                          shaderCallback: (bounds) => const LinearGradient(
+                            colors: [
+                              AppColors.highlight,
+                              Color(0xFFFFF8E1),
+                              AppColors.highlight,
+                            ],
+                          ).createShader(bounds),
+                          child: const Text(
+                            'ANIMAL WARFARE',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 22,
+                              fontFamily: 'PressStart2P',
+                              height: 1.4,
+                              letterSpacing: 2,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        GameClockWidget(highlightColor: AppColors.highlight),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Choose your path, Commander',
+                          style: GoogleFonts.inter(
+                            color: AppColors.textMuted,
+                            fontSize: 12,
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 60),
+                  const SizedBox(height: 36),
 
-                  // Use UserState's current user when available (e.g. after setting attacker in Animal Box)
-                  _buildThemedButton(
-                    text: 'EXPLORE BIOMES',
-                    icon: Icons.map,
+                  // Menu buttons
+                  _buildMenuButton(
+                    text: 'Explore Biomes',
+                    subtitle: 'Discover & capture wild animals',
+                    icon: Icons.explore_rounded,
+                    color: AppColors.primary,
                     onPressed: () {
                       final user =
                           Provider.of<UserState>(
@@ -199,33 +238,37 @@ class _GameScreenState extends State<GameScreen> {
                         ),
                       );
                     },
-                    color: primaryButtonColor,
                   ),
 
-                  _buildThemedButton(
-                    text: 'BATTLE ARENA',
-                    icon: Icons.sports_kabaddi,
+                  _buildMenuButton(
+                    text: 'Battle Arena',
+                    subtitle: 'Fight AI, Rogue runs & more',
+                    icon: Icons.sports_kabaddi_rounded,
+                    color: const Color(0xFFEF5350),
                     onPressed: () => _navigateTo(const BattleTabScreen()),
-                    color: const Color(0xFF8B0000),
                   ),
 
-                  _buildThemedButton(
-                    text: 'ANIMAL BOX',
-                    icon: Icons.inventory_2,
+                  _buildMenuButton(
+                    text: 'Animal Box',
+                    subtitle: 'Manage your collection & team',
+                    icon: Icons.inventory_2_rounded,
+                    color: const Color(0xFF42A5F5),
                     onPressed: () => _navigateTo(const AnimalBoxScreen()),
-                    color: const Color(0xFF2E5A1C),
                   ),
 
-                  _buildThemedButton(
-                    text: 'CRAFTING STATION',
-                    icon: Icons.auto_awesome,
+                  _buildMenuButton(
+                    text: 'Crafting Station',
+                    subtitle: 'Forge talismans & items',
+                    icon: Icons.auto_awesome_rounded,
+                    color: const Color(0xFFFFB300),
                     onPressed: () => _navigateTo(const CraftingScreen()),
-                    color: const Color(0xFF5A4A1C),
                   ),
 
-                  _buildThemedButton(
-                    text: 'ANIMAL DEX',
-                    icon: Icons.pets,
+                  _buildMenuButton(
+                    text: 'Animal Dex',
+                    subtitle: 'Browse the full species database',
+                    icon: Icons.pets_rounded,
+                    color: const Color(0xFFAB47BC),
                     onPressed: () {
                       final user =
                           Provider.of<UserState>(
@@ -240,28 +283,18 @@ class _GameScreenState extends State<GameScreen> {
                         ),
                       );
                     },
-                    color: secondaryButtonColor,
                   ),
-                  _buildThemedButton(
-                    text: 'ANIMAL QUIZ',
-                    icon: Icons.quiz,
+
+                  _buildMenuButton(
+                    text: 'Animal Quiz',
+                    subtitle: 'Test your knowledge',
+                    icon: Icons.quiz_rounded,
+                    color: const Color(0xFF26A69A),
                     onPressed: () => _navigateTo(
                       QuizScreen(
                         currentUser: widget.currentUser,
                         authService: widget.authService,
                       ),
-                    ),
-                    color: tertiaryButtonColor,
-                  ),
-
-                  const SizedBox(height: 40),
-                  Text(
-                    'Deployment Status: Standby',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.white.withValues(alpha: 0.8),
-                      fontFamily: 'PressStart2P',
                     ),
                   ),
                 ],

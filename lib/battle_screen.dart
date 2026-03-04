@@ -19,6 +19,7 @@ import 'package:animal_warfare/game/battle_models.dart';
 import 'package:animal_warfare/services/audio_service.dart';
 import 'package:animal_warfare/models/organism.dart';
 import 'package:animal_warfare/game/ai_decision_engine.dart';
+import 'package:animal_warfare/game/time_service.dart';
 import 'package:animal_warfare/models/elemental_type.dart'; // Added
 import 'package:animal_warfare/models/move.dart'; // Added
 import 'package:animal_warfare/models/status_effect.dart'; // Added for overlay
@@ -42,6 +43,7 @@ class BattleScreen extends StatelessWidget {
   final bool isRogueMode;
   final TeamArchetype? opponentArchetype;
   final String? timeOfDay;
+  final bool startAsleep;
 
   const BattleScreen({
     super.key,
@@ -55,6 +57,7 @@ class BattleScreen extends StatelessWidget {
     this.isRogueMode = false,
     this.opponentArchetype,
     this.timeOfDay,
+    this.startAsleep = false,
   });
 
   @override
@@ -75,6 +78,7 @@ class BattleScreen extends StatelessWidget {
           initialPlayerIndex: isRogueMode
               ? userState.currentUser?.rogueLikeState.currentPlayerIndex
               : null,
+          startAsleep: startAsleep,
         );
       },
       child: BattleScreenContent(
@@ -85,6 +89,7 @@ class BattleScreen extends StatelessWidget {
         isRogueMode: isRogueMode,
         timeOfDay: timeOfDay,
         opponentFullTeam: opponentTeam,
+        startAsleep: startAsleep,
       ),
     );
   }
@@ -100,6 +105,7 @@ class BattleScreenContent extends StatefulWidget {
 
   /// Full opponent team for winrate recording (arena battles)
   final List<CapturedOrganism>? opponentFullTeam;
+  final bool startAsleep;
 
   const BattleScreenContent({
     super.key,
@@ -110,6 +116,7 @@ class BattleScreenContent extends StatefulWidget {
     this.isRogueMode = false,
     this.timeOfDay,
     this.opponentFullTeam,
+    this.startAsleep = false,
   });
 
   @override
@@ -592,59 +599,88 @@ class _BattleScreenContentState extends State<BattleScreenContent>
       }
     }
 
-    final results = await userState.awardBattleXP(
-      defeatedLevel: victim.level,
-      killerId: killer.organism.id,
-      teamIds: bm.playerTeam.map((o) => o.id).toList(),
-      levelCap: levelCap,
-    );
+    if (!widget.isArenaBattle) {
+      final results = await userState.awardBattleXP(
+        defeatedLevel: victim.level,
+        killerId: killer.organism.id,
+        teamIds: bm.playerTeam.map((o) => o.id).toList(),
+        levelCap: levelCap,
+      );
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    // Award KV (Kill Values) to the killer animal
-    if (killer.isPlayer) {
-      await userState.awardKV(killer.organism.id, victim.organism.baseOrganism);
-    }
-    if (!mounted) return;
-
-    setState(() {
-      // Merge results
-      _cumulativeXPResults['gainedAnimalXP'] =
-          (_cumulativeXPResults['gainedAnimalXP'] ?? 0) +
-          (results['gainedAnimalXP'] ?? 0);
-      _cumulativeXPResults['gainedAccountXP'] =
-          (_cumulativeXPResults['gainedAccountXP'] ?? 0) +
-          (results['gainedAccountXP'] ?? 0);
-
-      if (results['accountLeveledUp'] == true) {
-        _cumulativeXPResults['accountLeveledUp'] = true;
+      // Award KV (Kill Values) to the killer animal
+      if (killer.isPlayer) {
+        await userState.awardKV(
+          killer.organism.id,
+          victim.organism.baseOrganism,
+        );
       }
+      if (!mounted) return;
 
+      setState(() {
+        // Merge results
+        _cumulativeXPResults['gainedAnimalXP'] =
+            (_cumulativeXPResults['gainedAnimalXP'] ?? 0) +
+            (results['gainedAnimalXP'] ?? 0);
+        _cumulativeXPResults['gainedAccountXP'] =
+            (_cumulativeXPResults['gainedAccountXP'] ?? 0) +
+            (results['gainedAccountXP'] ?? 0);
+
+        if (results['accountLeveledUp'] == true) {
+          _cumulativeXPResults['accountLeveledUp'] = true;
+        }
+
+        final animalLeveledUp =
+            results['animalLeveledUp'] as Map<String, bool>? ?? {};
+        final cumulativeLeveledUp =
+            _cumulativeXPResults['animalLeveledUp'] as Map<String, bool>? ?? {};
+
+        animalLeveledUp.forEach((id, leveled) {
+          if (leveled) cumulativeLeveledUp[id] = true;
+        });
+        _cumulativeXPResults['animalLeveledUp'] = cumulativeLeveledUp;
+
+        // Immediately refresh stats for the active animal if it leveled up
+        final freshUser = userState.currentUser;
+        if (freshUser != null) {
+          // Update all animals in the BattleManager's team list with fresh data
+          for (int i = 0; i < bm.playerTeam.length; i++) {
+            final oldId = bm.playerTeam[i].id;
+            try {
+              final freshOrg = widget.isRogueMode
+                  ? freshUser.rogueLikeState.team.firstWhere(
+                      (o) => o.id == oldId,
+                    )
+                  : freshUser.capturedOrganisms.firstWhere(
+                      (o) => o.id == oldId,
+                    );
+              bm.playerTeam[i] = freshOrg;
+
+              // If this is the currently active animal, sync its BattleOrganism wrapper
+              if (bm.player.organism.id == oldId) {
+                bm.player.organism = freshOrg;
+                bm.player.recalculateStats();
+              }
+            } catch (_) {
+              // Animal might not be in the team anymore or some other shift
+            }
+          }
+        }
+      });
+
+      // Notify user of level up in log
       final animalLeveledUp =
           results['animalLeveledUp'] as Map<String, bool>? ?? {};
-      final cumulativeLeveledUp =
-          _cumulativeXPResults['animalLeveledUp'] as Map<String, bool>? ?? {};
-
       animalLeveledUp.forEach((id, leveled) {
-        if (leveled) cumulativeLeveledUp[id] = true;
+        if (leveled) {
+          final org = bm.playerTeam.firstWhere((o) => o.id == id);
+          bm.addToLog(
+            '${org.baseOrganism.name} leveled up to Lvl ${org.level}!',
+          );
+        }
       });
-      _cumulativeXPResults['animalLeveledUp'] = cumulativeLeveledUp;
-
-      // Immediately refresh stats for the active animal if it leveled up
-      if (animalLeveledUp[bm.player.organism.id] == true) {
-        bm.player.recalculateStats();
-      }
-    });
-
-    // Notify user of level up in log
-    final animalLeveledUp =
-        results['animalLeveledUp'] as Map<String, bool>? ?? {};
-    animalLeveledUp.forEach((id, leveled) {
-      if (leveled) {
-        final org = bm.playerTeam.firstWhere((o) => o.id == id);
-        bm.addToLog('${org.baseOrganism.name} leveled up to Lvl ${org.level}!');
-      }
-    });
+    }
   }
 
   void _toggleOrientation() {
@@ -1076,25 +1112,36 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           offset: Offset(_screenShakeX, _screenShakeY),
           child: Stack(
             children: [
-              Container(
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage(_getAssetPath(widget.biomeName)),
-                    fit: BoxFit.cover,
-                    colorFilter:
-                        widget.timeOfDay == 'day' || widget.timeOfDay == null
-                        ? ColorFilter.mode(
-                            Colors.black.withValues(alpha: 0.35),
-                            BlendMode.darken,
-                          )
-                        : ColorFilter.mode(
-                            widget.timeOfDay == 'evening'
-                                ? Colors.orangeAccent.withValues(alpha: 0.3)
-                                : Colors.indigo[900]!.withValues(alpha: 0.5),
-                            BlendMode.darken,
-                          ),
-                  ),
-                ),
+              StreamBuilder<GameTime>(
+                stream: TimeService().timeStream,
+                builder: (context, snapshot) {
+                  final hour = TimeService().currentGameTime.hour;
+                  final timeOfDay = (hour >= 6 && hour < 18)
+                      ? 'day'
+                      : (hour >= 18 && hour < 21 ? 'evening' : 'night');
+
+                  return Container(
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage(_getAssetPath(widget.biomeName)),
+                        fit: BoxFit.cover,
+                        colorFilter: timeOfDay == 'day'
+                            ? ColorFilter.mode(
+                                Colors.black.withValues(alpha: 0.35),
+                                BlendMode.darken,
+                              )
+                            : ColorFilter.mode(
+                                timeOfDay == 'evening'
+                                    ? Colors.orangeAccent.withValues(alpha: 0.3)
+                                    : Colors.indigo[900]!.withValues(
+                                        alpha: 0.5,
+                                      ),
+                                BlendMode.darken,
+                              ),
+                      ),
+                    ),
+                  );
+                },
               ),
               if (battleManager.trickRoomTurns > 0) const _TrickRoomOverlay(),
               // Weather Overlay
@@ -1363,13 +1410,53 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                widget.battleTitle ?? 'Wild Encounter',
-                style: AppTextStyles.headline(
-                  context,
-                  baseSize: 12,
-                  color: _getBiomeThemeColor(),
-                ),
+              Row(
+                children: [
+                  Text(
+                    widget.battleTitle ?? 'Wild Encounter',
+                    style: AppTextStyles.headline(
+                      context,
+                      baseSize: 12,
+                      color: _getBiomeThemeColor(),
+                    ),
+                  ),
+                  if (widget.startAsleep) ...[
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(
+                          color: Colors.lightBlueAccent,
+                          width: 1,
+                        ),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.nights_stay,
+                            color: Colors.lightBlueAccent,
+                            size: 10,
+                          ),
+                          SizedBox(width: 3),
+                          Text(
+                            'OFF-TIME',
+                            style: TextStyle(
+                              color: Colors.lightBlueAccent,
+                              fontFamily: 'PressStart2P',
+                              fontSize: 6,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
               ),
               if (widget.isRogueMode && rogueState != null)
                 Padding(
@@ -5093,47 +5180,35 @@ class _BattleResultDialog extends StatelessWidget {
                           ),
                         const SizedBox(height: 8),
                         Text(
-                          'TEAM GAINED XP',
+                          'TEAM PROGRESS',
                           style: TextStyle(
                             color: Colors.greenAccent.withValues(alpha: 0.8),
                             fontFamily: 'PressStart2P',
                             fontSize: 8,
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        // Check for animal level ups
-                        ...() {
-                          final leveledUp =
-                              (xpResults['animalLeveledUp']
-                                      as Map<String, bool>?)
-                                  ?.entries
-                                  .where((e) => e.value)
-                                  .toList() ??
-                              [];
-                          if (leveledUp.isEmpty)
-                            return [const SizedBox.shrink()];
-                          return [
-                            const SizedBox(height: 4),
-                            ...leveledUp.map((e) {
-                              final org = battleManager.playerTeam.firstWhere(
-                                (o) => o.id == e.key,
-                                orElse: () => battleManager.playerTeam.first,
-                              );
-                              return Padding(
-                                padding: const EdgeInsets.only(top: 2),
-                                child: Text(
-                                  '${org.name} LEVELED UP!',
-                                  style: const TextStyle(
-                                    color: Colors.yellowAccent,
-                                    fontFamily: 'PressStart2P',
-                                    fontSize: 8,
-                                  ),
-                                ),
-                              );
-                            }),
-                          ];
-                        }(),
-                        const Divider(color: Colors.white10, height: 16),
+                        const SizedBox(height: 8),
+                        ...battleManager.playerTeam.map((org) {
+                          final gainedXP =
+                              (xpResults['gainedAnimalXP'] as int? ?? 0);
+                          final id = org.id;
+                          final killerId = xpResults['killerId'] as String?;
+
+                          // Calculate this specific animal's share
+                          // Note: In awardBattleXP, killer gets full, others half.
+                          int animalShare = (id == killerId)
+                              ? gainedXP
+                              : (gainedXP / 2).floor();
+
+                          return _XPResultRow(
+                            organism: org,
+                            gainedXP: animalShare,
+                            didLevelUp:
+                                (xpResults['animalLeveledUp']
+                                    as Map<String, bool>?)?[id] ??
+                                false,
+                          );
+                        }),
                       ],
                       if (moneyEarned > 0)
                         Padding(
@@ -5295,6 +5370,187 @@ class _BattleResultDialog extends StatelessWidget {
           ],
         ),
       ],
+    );
+  }
+}
+
+class _XPResultRow extends StatefulWidget {
+  final CapturedOrganism organism;
+  final int gainedXP;
+  final bool didLevelUp;
+
+  const _XPResultRow({
+    required this.organism,
+    required this.gainedXP,
+    required this.didLevelUp,
+  });
+
+  @override
+  State<_XPResultRow> createState() => _XPResultRowState();
+}
+
+class _XPResultRowState extends State<_XPResultRow>
+    with TickerProviderStateMixin {
+  late double _startRatio;
+  late double _endRatio;
+  late int _startLevel;
+  late int _endLevel;
+  late AnimationController _xpController;
+  late Animation<double> _xpAnimation;
+  late AnimationController _levelUpController;
+
+  @override
+  void initState() {
+    super.initState();
+    _startLevel = widget.didLevelUp
+        ? widget.organism.level - 1
+        : widget.organism.level;
+    _endLevel = widget.organism.level;
+
+    // Estimate start ratio
+    // Current XP = level^3
+    final int currentLevelXPThreshold = _startLevel * _startLevel * _startLevel;
+    final int nextLevelXPThreshold =
+        (_startLevel + 1) * (_startLevel + 1) * (_startLevel + 1);
+    final int xpInRange = math.max(
+      0,
+      widget.organism.xp - widget.gainedXP - currentLevelXPThreshold,
+    );
+    final int neededForLevel = nextLevelXPThreshold - currentLevelXPThreshold;
+
+    _startRatio = (xpInRange / neededForLevel).clamp(0.0, 1.0);
+    _endRatio = widget.didLevelUp ? 1.0 : widget.organism.xpRatio;
+
+    _xpController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    );
+
+    _xpAnimation = Tween<double>(begin: _startRatio, end: _endRatio).animate(
+      CurvedAnimation(parent: _xpController, curve: Curves.easeOutCubic),
+    );
+
+    _levelUpController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+
+    _xpController.forward().then((_) {
+      if (widget.didLevelUp) {
+        _levelUpController.forward();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _xpController.dispose();
+    _levelUpController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                widget.organism.name.toUpperCase(),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontFamily: 'PressStart2P',
+                  fontSize: 7,
+                ),
+              ),
+              Row(
+                children: [
+                  ScaleTransition(
+                    scale: Tween<double>(begin: 1.0, end: 1.3).animate(
+                      CurvedAnimation(
+                        parent: _levelUpController,
+                        curve: Curves.elasticOut,
+                      ),
+                    ),
+                    child: Text(
+                      'LV $_endLevel',
+                      style: TextStyle(
+                        color: widget.didLevelUp
+                            ? Colors.yellowAccent
+                            : Colors.white70,
+                        fontFamily: 'PressStart2P',
+                        fontSize: 7,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Stack(
+            children: [
+              // Background
+              Container(
+                height: 6,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+              // Progress Bar
+              AnimatedBuilder(
+                animation: _xpAnimation,
+                builder: (context, child) {
+                  return FractionallySizedBox(
+                    widthFactor: _xpAnimation.value,
+                    child: Container(
+                      height: 6,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.blue.shade400,
+                            Colors.blueAccent.shade700,
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(3),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.blueAccent.withValues(alpha: 0.5),
+                            blurRadius: 4,
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+          if (widget.didLevelUp)
+            FadeTransition(
+              opacity: _levelUpController,
+              child: const Padding(
+                padding: EdgeInsets.only(top: 4.0),
+                child: Text(
+                  'LEVEL UP!',
+                  style: TextStyle(
+                    color: Colors.yellowAccent,
+                    fontFamily: 'PressStart2P',
+                    fontSize: 6,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

@@ -20,6 +20,23 @@ class UserData {
   final String password;
   final String avatar;
   final String gender;
+
+  // --- Character Customization Fields ---
+  /// Player's chosen display name (can differ from login username)
+  final String displayName;
+
+  /// Built-in character portrait key, e.g. 'm_warrior', 'f_ranger'
+  final String avatarIconKey;
+
+  /// Player's chosen faction: 'Wilderness', 'Ocean', 'Sky', 'Shadow'
+  final String faction;
+
+  /// Starting title / rank label, e.g. 'Novice Tamer'
+  final String title;
+
+  /// Short player bio (max 80 chars)
+  final String bio;
+
   final int money; // Currency
   final int stamina;
   final Map<String, dynamic> quizStats;
@@ -40,18 +57,26 @@ class UserData {
   /// State of the current rogue-like run
   final RogueLikeState rogueLikeState;
 
-  /// NEW: Best records for Rogue-like
+  /// Best records for Rogue-like
   final int bestRogueFloor;
   final List<CapturedOrganism> bestRogueTeam;
   final int accountLevel;
   final int accountXP;
   final Map<String, Map<String, int>> speciesStats;
+  final Map<String, CapturedOrganism?>
+  explorationEncounters; // biome -> encounter
+  final Map<String, dynamic> weatherData; // biome -> weather info
 
   UserData({
     required this.username,
     required this.password,
     this.avatar = 'default',
     this.gender = 'N/A',
+    this.displayName = '',
+    this.avatarIconKey = '',
+    this.faction = '',
+    this.title = '',
+    this.bio = '',
     this.money = 1000,
     this.stamina = 100,
     Map<String, dynamic>? quizStats,
@@ -68,6 +93,8 @@ class UserData {
     this.accountLevel = 1,
     this.accountXP = 0,
     Map<String, Map<String, int>>? speciesStats,
+    Map<String, CapturedOrganism?>? explorationEncounters,
+    Map<String, dynamic>? weatherData,
   }) : quizStats = quizStats ?? {},
        discoveredOrganisms = discoveredOrganisms ?? [],
        completedAchievements = completedAchievements ?? [],
@@ -77,13 +104,24 @@ class UserData {
        activeQuests = activeQuests ?? [],
        battleTeam = battleTeam ?? [],
        rogueLikeState = rogueLikeState ?? const RogueLikeState(),
-       speciesStats = speciesStats ?? {};
+       speciesStats = speciesStats ?? {},
+       explorationEncounters = explorationEncounters ?? {},
+       weatherData = weatherData ?? {};
+
+  /// Returns displayName if set, otherwise falls back to username
+  String get effectiveDisplayName =>
+      displayName.isNotEmpty ? displayName : username;
 
   UserData copyWith({
     String? username,
     String? password,
     String? avatar,
     String? gender,
+    String? displayName,
+    String? avatarIconKey,
+    String? faction,
+    String? title,
+    String? bio,
     int? money,
     int? stamina,
     Map<String, dynamic>? quizStats,
@@ -100,12 +138,19 @@ class UserData {
     int? accountLevel,
     int? accountXP,
     Map<String, Map<String, int>>? speciesStats,
+    Map<String, CapturedOrganism?>? explorationEncounters,
+    Map<String, dynamic>? weatherData,
   }) {
     return UserData(
       username: username ?? this.username,
       password: password ?? this.password,
       avatar: avatar ?? this.avatar,
       gender: gender ?? this.gender,
+      displayName: displayName ?? this.displayName,
+      avatarIconKey: avatarIconKey ?? this.avatarIconKey,
+      faction: faction ?? this.faction,
+      title: title ?? this.title,
+      bio: bio ?? this.bio,
       money: money ?? this.money,
       stamina: stamina ?? this.stamina,
       quizStats: quizStats ?? this.quizStats,
@@ -123,6 +168,9 @@ class UserData {
       accountLevel: accountLevel ?? this.accountLevel,
       accountXP: accountXP ?? this.accountXP,
       speciesStats: speciesStats ?? this.speciesStats,
+      explorationEncounters:
+          explorationEncounters ?? this.explorationEncounters,
+      weatherData: weatherData ?? this.weatherData,
     );
   }
 
@@ -183,6 +231,11 @@ class UserData {
     'password': password,
     'avatar': avatar,
     'gender': gender,
+    'displayName': displayName,
+    'avatarIconKey': avatarIconKey,
+    'faction': faction,
+    'title': title,
+    'bio': bio,
     'stamina': stamina,
     'money': money,
     'quizStats': quizStats,
@@ -199,6 +252,10 @@ class UserData {
     'accountLevel': accountLevel,
     'accountXP': accountXP,
     'speciesStats': speciesStats,
+    'explorationEncounters': explorationEncounters.map(
+      (k, v) => MapEntry(k, v?.toJson()),
+    ),
+    'weatherData': weatherData,
   };
 
   factory UserData.fromJson(
@@ -236,7 +293,12 @@ class UserData {
       username: json['username'] as String? ?? '',
       password: json['password'] as String? ?? '',
       avatar: json['avatar'] as String? ?? 'default',
-      gender: json['gender'] as String? ?? 'Select Gender',
+      gender: json['gender'] as String? ?? 'N/A',
+      displayName: json['displayName'] as String? ?? '',
+      avatarIconKey: json['avatarIconKey'] as String? ?? '',
+      faction: json['faction'] as String? ?? '',
+      title: json['title'] as String? ?? '',
+      bio: json['bio'] as String? ?? '',
       money: json['money'] as int? ?? 1000,
       stamina: json['stamina'] as int? ?? 100,
       quizStats: (json['quizStats'] as Map<String, dynamic>?) ?? {},
@@ -297,6 +359,20 @@ class UserData {
             ),
           ) ??
           {},
+      explorationEncounters:
+          (json['explorationEncounters'] as Map?)?.map(
+            (k, v) => MapEntry(
+              k as String,
+              v != null
+                  ? CapturedOrganism.fromJson(
+                      v as Map<String, dynamic>,
+                      allOrganisms ?? [],
+                    )
+                  : null,
+            ),
+          ) ??
+          {},
+      weatherData: (json['weatherData'] as Map?)?.cast<String, dynamic>() ?? {},
     );
   }
 }
@@ -465,7 +541,16 @@ class LocalAuthService {
     await _writeUserFile(user);
   }
 
-  Future<bool> register(String username, String password) async {
+  Future<bool> register(
+    String username,
+    String password, {
+    String displayName = '',
+    String gender = 'N/A',
+    String avatarIconKey = '',
+    String faction = '',
+    String title = '',
+    String bio = '',
+  }) async {
     if (await readUserFile(username) != null) {
       if (kDebugMode) {
         print("DEBUG: Registration failed for $username (already exists).");
@@ -476,6 +561,12 @@ class LocalAuthService {
       UserData(
         username: username,
         password: password,
+        displayName: displayName,
+        gender: gender,
+        avatarIconKey: avatarIconKey,
+        faction: faction,
+        title: title,
+        bio: bio,
         discoveredOrganisms: [],
         completedAchievements: [],
         inventory: {'capture_net': 10},
@@ -571,10 +662,25 @@ class LocalAuthService {
     String username, {
     String? avatar,
     String? gender,
+    String? displayName,
+    String? avatarIconKey,
+    String? faction,
+    String? title,
+    String? bio,
   }) async {
     final user = await readUserFile(username);
     if (user != null) {
-      await _writeUserFile(user.copyWith(avatar: avatar, gender: gender));
+      await _writeUserFile(
+        user.copyWith(
+          avatar: avatar,
+          gender: gender,
+          displayName: displayName,
+          avatarIconKey: avatarIconKey,
+          faction: faction,
+          title: title,
+          bio: bio,
+        ),
+      );
     }
   }
 

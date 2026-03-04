@@ -11,6 +11,8 @@ import 'package:animal_warfare/widgets/animal_summary_screen.dart';
 import 'package:animal_warfare/models/nature.dart';
 import 'package:animal_warfare/models/rogue_like_state.dart';
 import 'package:animal_warfare/rogue/biome_select_screen.dart';
+import 'package:animal_warfare/game/time_service.dart';
+import 'package:animal_warfare/widgets/game_clock_widget.dart';
 
 class RogueHubScreen extends StatefulWidget {
   const RogueHubScreen({super.key});
@@ -74,7 +76,7 @@ class _RogueHubScreenState extends State<RogueHubScreen> {
   }
 
   String _getTimeOfDay() {
-    final hour = DateTime.now().hour;
+    final hour = TimeService().currentGameTime.hour;
     if (hour >= 6 && hour < 18) return 'day';
     if (hour >= 18 && hour < 21) return 'evening';
     return 'night';
@@ -158,7 +160,9 @@ class _RogueHubScreenState extends State<RogueHubScreen> {
 
     if (rogueState == null || !rogueState.isActive) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (context.mounted) Navigator.pop(context);
+        if (context.mounted && ModalRoute.of(context)?.isCurrent == true) {
+          Navigator.pop(context);
+        }
       });
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
@@ -168,101 +172,109 @@ class _RogueHubScreenState extends State<RogueHubScreen> {
 
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage(_getAssetPath(biomeName)),
-            fit: BoxFit.cover,
-            colorFilter: _getTimeOfDay() == 'day'
-                ? ColorFilter.mode(
-                    Colors.black.withValues(alpha: 0.75),
-                    BlendMode.darken,
-                  )
-                : ColorFilter.mode(
-                    _getTimeOfDay() == 'evening'
-                        ? Colors.orangeAccent.withValues(alpha: 0.3)
-                        : Colors.indigo[900]!.withValues(alpha: 0.5),
-                    BlendMode.darken,
-                  ),
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Header
-              _buildHeader(
-                rogueState.floor,
-                rogueState.encounterIndex,
-                themeColor,
-              ),
-
-              const SizedBox(height: 20),
-
-              // Status Bar
-              _buildStatusBar(rogueState.team, themeColor),
-
-              const SizedBox(height: 12),
-
-              // Inventory Summary
-              _buildInventoryBar(rogueState.inventory, themeColor),
-
-              const Expanded(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.0),
-                  child: _RogueTeamList(),
-                ),
-              ),
-
-              // Action Buttons
-              Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.black87,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: themeColor.withValues(alpha: 0.5)),
-                    boxShadow: [
-                      BoxShadow(
-                        color: themeColor.withValues(alpha: 0.2),
-                        blurRadius: 15,
-                        spreadRadius: 2,
+      body: StreamBuilder<GameTime>(
+        stream: TimeService().timeStream,
+        builder: (context, snapshot) {
+          final timeOfDay = _getTimeOfDay();
+          return Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage(_getAssetPath(biomeName)),
+                fit: BoxFit.cover,
+                colorFilter: timeOfDay == 'day'
+                    ? ColorFilter.mode(
+                        Colors.black.withValues(alpha: 0.75),
+                        BlendMode.darken,
+                      )
+                    : ColorFilter.mode(
+                        timeOfDay == 'evening'
+                            ? Colors.orangeAccent.withValues(alpha: 0.3)
+                            : Colors.indigo[900]!.withValues(alpha: 0.5),
+                        BlendMode.darken,
                       ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      _buildActionButton(
-                        context,
-                        label: rogueState.encounterIndex >= 5
-                            ? 'ADVANCE TO NEXT FLOOR'
-                            : 'START NEXT BATTLE',
-                        icon: rogueState.encounterIndex >= 5
-                            ? Icons.arrow_forward
-                            : Icons.flash_on,
-                        color: rogueState.encounterIndex >= 5
-                            ? Colors.greenAccent
-                            : Colors.redAccent,
-                        isPrimary: true,
-                        onPressed: () => rogueState.encounterIndex >= 5
-                            ? _advanceFloor(context)
-                            : _startNextBattle(context, userState),
-                      ),
-                      const SizedBox(height: 12),
-                      _buildActionButton(
-                        context,
-                        label: 'SAVE & QUIT',
-                        icon: Icons.save_outlined,
-                        color: Colors.white24,
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                    ],
-                  ),
-                ),
               ),
-            ],
-          ),
-        ),
+            ),
+            child: SafeArea(
+              child: Column(
+                children: [
+                  // Header
+                  _buildHeader(
+                    rogueState.floor,
+                    rogueState.encounterIndex,
+                    themeColor,
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Status Bar
+                  _buildStatusBar(rogueState.team, themeColor),
+
+                  const SizedBox(height: 12),
+
+                  // Inventory Summary
+                  _buildInventoryBar(rogueState.inventory, themeColor),
+
+                  const Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16.0),
+                      child: _RogueTeamList(),
+                    ),
+                  ),
+
+                  // Action Buttons
+                  Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.black87,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: themeColor.withValues(alpha: 0.5),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: themeColor.withValues(alpha: 0.2),
+                            blurRadius: 15,
+                            spreadRadius: 2,
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          _buildActionButton(
+                            context,
+                            label: rogueState.encounterIndex >= 5
+                                ? 'ADVANCE TO NEXT FLOOR'
+                                : 'START NEXT BATTLE',
+                            icon: rogueState.encounterIndex >= 5
+                                ? Icons.arrow_forward
+                                : Icons.flash_on,
+                            color: rogueState.encounterIndex >= 5
+                                ? Colors.greenAccent
+                                : Colors.redAccent,
+                            isPrimary: true,
+                            onPressed: () => rogueState.encounterIndex >= 5
+                                ? _advanceFloor(context)
+                                : _startNextBattle(context, userState),
+                          ),
+                          const SizedBox(height: 12),
+                          _buildActionButton(
+                            context,
+                            label: 'SAVE & QUIT',
+                            icon: Icons.save_outlined,
+                            color: Colors.white24,
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -277,45 +289,53 @@ class _RogueHubScreenState extends State<RogueHubScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'RUN PROGRESS',
-                style: TextStyle(
-                  fontFamily: 'PressStart2P',
-                  color: themeColor.withValues(alpha: 0.7),
-                  fontSize: 10,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  for (int i = 0; i < 5; i++)
-                    Container(
-                      width: 30,
-                      height: 8,
-                      margin: const EdgeInsets.only(right: 6),
-                      decoration: BoxDecoration(
-                        color: i < encounterIndex
-                            ? themeColor
-                            : i == encounterIndex
-                            ? Colors.white
-                            : Colors.white10,
-                        borderRadius: BorderRadius.circular(2),
-                        boxShadow: i == encounterIndex
-                            ? [
-                                BoxShadow(
-                                  color: Colors.white.withValues(alpha: 0.5),
-                                  blurRadius: 4,
-                                ),
-                              ]
-                            : null,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      'RUN PROGRESS',
+                      style: TextStyle(
+                        fontFamily: 'PressStart2P',
+                        color: themeColor.withValues(alpha: 0.7),
+                        fontSize: 10,
                       ),
                     ),
-                ],
-              ),
-            ],
+                    const SizedBox(width: 12),
+                    GameClockWidget(highlightColor: themeColor),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    for (int i = 0; i < 5; i++)
+                      Container(
+                        width: 30,
+                        height: 8,
+                        margin: const EdgeInsets.only(right: 6),
+                        decoration: BoxDecoration(
+                          color: i < encounterIndex
+                              ? themeColor
+                              : i == encounterIndex
+                              ? Colors.white
+                              : Colors.white10,
+                          borderRadius: BorderRadius.circular(2),
+                          boxShadow: i == encounterIndex
+                              ? [
+                                  BoxShadow(
+                                    color: Colors.white.withValues(alpha: 0.5),
+                                    blurRadius: 4,
+                                  ),
+                                ]
+                              : null,
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,

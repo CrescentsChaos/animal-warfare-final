@@ -21,6 +21,7 @@ class Organism {
   final String description;
   final List<String> types; // NEW: Supports multiple types
   final double weight; // NEW: Weight in kg
+  final String activeTime; // NEW: Spawning time (any, day, night)
 
   Organism({
     required this.name,
@@ -41,6 +42,7 @@ class Organism {
     required this.description,
     this.types = const ['basic'], // Default
     this.weight = 1.0, // Default 1.0 kg
+    this.activeTime = 'any', // Default
   });
 
   factory Organism.fromJson(Map<String, dynamic> json) {
@@ -87,6 +89,7 @@ class Organism {
       description: (json['description'] as String? ?? ''),
       types: typeList,
       weight: (json['weight'] as num? ?? 1.0).toDouble(),
+      activeTime: (json['active_time'] as String? ?? 'any'),
     );
   }
 
@@ -131,6 +134,7 @@ class Organism {
     String? description,
     List<String>? types,
     double? weight,
+    String? activeTime,
   }) {
     return Organism(
       name: name ?? this.name,
@@ -151,6 +155,7 @@ class Organism {
       description: description ?? this.description,
       types: types ?? this.types,
       weight: weight ?? this.weight,
+      activeTime: activeTime ?? this.activeTime,
     );
   }
 
@@ -174,6 +179,7 @@ class Organism {
       'description': description,
       'types': types,
       'weight': weight,
+      'active_time': activeTime,
     };
   }
 
@@ -234,5 +240,6 @@ class Organism {
     rarity: 'Common',
     description: 'The dominant species.',
     weight: 70.0,
+    activeTime: 'any',
   );
 }

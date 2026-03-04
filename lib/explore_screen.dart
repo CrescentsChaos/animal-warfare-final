@@ -2,13 +2,24 @@
 
 import 'package:flutter/material.dart';
 import 'dart:convert';
-import 'dart:math';
+import 'dart:math' as math;
+import 'package:animal_warfare/services/weather_service.dart';
+import 'package:animal_warfare/game/time_service.dart';
+import 'package:animal_warfare/models/weather.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:animal_warfare/models/organism.dart'; // Must import the model
 import 'biome_detail_screen.dart';
 import 'package:animal_warfare/local_auth_service.dart'; // ADDED: Import service
 
 // --- Biome Spawning Logic (Uses Organism.habitat and Organism.rarity) ---
+
+/// Result of a spawn attempt, carrying the organism and flags like isRare.
+class SpawnResult {
+  final Organism organism;
+  final bool isRare;
+
+  SpawnResult({required this.organism, this.isRare = false});
+}
 
 /// Maps rarity string to a weight integer. Higher weight means higher probability.
 int _getRarityWeight(String rarity) {
@@ -31,17 +42,19 @@ int _getRarityWeight(String rarity) {
   }
 }
 
-/// Selects a random organism from the biome by filtering on Organism.habitat
-/// and weighting by Organism.rarity. Respects account level rarity gates.
-Organism? getWeightedRandomOrganism(
+/// Selects a random organism from the biome by filtering on Organism.habitat,
+/// active_time, and weighting by Organism.rarity.
+SpawnResult? getWeightedRandomOrganism(
   String biomeName,
   List<Organism> allOrganisms, {
   int accountLevel = 1,
   Map<String, int> inventory = const {},
   List<String> teamMoveNames = const [],
+  required String currentTimeOfDay,
 }) {
   // Normalize the selected biome name for case-insensitive search
   final String searchBiome = biomeName.toLowerCase();
+  final bool isCave = searchBiome.contains('cave');
 
   final hasOldRod = inventory.containsKey('old_rod');
   final hasGoodRod = inventory.containsKey('good_rod');
@@ -91,6 +104,22 @@ Organism? getWeightedRandomOrganism(
       }
     }
 
+    // --- Active Time Filtering ---
+    final activeTime = org.activeTime.toLowerCase();
+    bool timeMatches = false;
+
+    if (activeTime == 'any' || activeTime == currentTimeOfDay) {
+      timeMatches = true;
+    } else if (isCave && activeTime == 'night' && currentTimeOfDay == 'day') {
+      // Cave Exception: Night animals can spawn during the day
+      timeMatches = true;
+    }
+
+    // Rare Encounter: 5% chance to allow off-time animals
+    final bool isRareEncounter = math.Random().nextDouble() < 0.05;
+
+    if (!timeMatches && !isRareEncounter) return false;
+
     return true;
   }).toList();
 
@@ -106,20 +135,37 @@ Organism? getWeightedRandomOrganism(
   if (totalWeight == 0) return null;
 
   // 3. Select a random weight value
-  final Random random = Random();
+  final math.Random random = math.Random();
   int randomWeight = random.nextInt(totalWeight);
 
   // 4. Find the organism corresponding to the random weight
+  Organism? selectedOrganism;
   for (final organism in biomeOrganisms) {
     int weight = _getRarityWeight(organism.rarity);
     if (randomWeight < weight) {
-      return organism;
+      selectedOrganism = organism;
+      break;
     }
     randomWeight -= weight;
   }
 
-  // Fallback (should not be reached if totalWeight > 0)
-  return biomeOrganisms[random.nextInt(biomeOrganisms.length)];
+  // Fallback
+  selectedOrganism ??= biomeOrganisms[random.nextInt(biomeOrganisms.length)];
+
+  // Determine if it was a rare encounter (off-time)
+  final activeTime = selectedOrganism.activeTime.toLowerCase();
+  bool timeMatches = false;
+  if (activeTime == 'any' || activeTime == currentTimeOfDay) {
+    timeMatches = true;
+  } else if (isCave && activeTime == 'night' && currentTimeOfDay == 'day') {
+    timeMatches = true;
+  }
+
+  return SpawnResult(
+    organism: selectedOrganism,
+    isRare:
+        !timeMatches, // It's rare if the time didn't match but it spawned anyway
+  );
 }
 
 // ------------------------------------------------------------------
@@ -217,10 +263,97 @@ class _ExploreScreenState extends State<ExploreScreen> {
     return 'assets/biomes/$fileName.png';
   }
 
+  String _getTimeOfDay() {
+    final gameTime = TimeService().currentGameTime;
+    final hour = gameTime.hour;
+    if (hour >= 6 && hour < 17) return 'day';
+    if (hour >= 17 && hour < 20) return 'evening';
+    return 'night';
+  }
+
+  Widget _buildWeatherAndTemp(String biomeName) {
+    final weather = WeatherService().getCurrentWeather(biomeName);
+    final forecast = WeatherService().getForecast(biomeName);
+    final today = forecast.first;
+
+    IconData icon;
+    Color color;
+
+    switch (weather) {
+      case Weather.clear:
+        icon = Icons.wb_sunny_outlined;
+        color = Colors.yellow;
+        break;
+      case Weather.rain:
+        icon = Icons.umbrella;
+        color = Colors.blue;
+        break;
+      case Weather.heavyRain:
+        icon = Icons.beach_access;
+        color = Colors.blueAccent;
+        break;
+      case Weather.sunny:
+        icon = Icons.wb_sunny;
+        color = Colors.orange;
+        break;
+      case Weather.snowstorm:
+        icon = Icons.ac_unit;
+        color = Colors.lightBlueAccent;
+        break;
+      case Weather.hail:
+        icon = Icons.grain;
+        color = Colors.white;
+        break;
+      case Weather.sandstorm:
+        icon = Icons.waves;
+        color = Colors.brown;
+        break;
+      case Weather.windstorm:
+        icon = Icons.air;
+        color = Colors.white70;
+        break;
+      case Weather.thunderstorm:
+        icon = Icons.bolt;
+        color = Colors.yellowAccent;
+        break;
+      case Weather.fog:
+        icon = Icons.cloud_queue;
+        color = Colors.grey;
+        break;
+      default:
+        icon = Icons.wb_cloudy;
+        color = Colors.white;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.black54,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: 12),
+          const SizedBox(width: 4),
+          Text(
+            "${today.temperatureCelsius.toStringAsFixed(0)}°C",
+            style: const TextStyle(
+              color: Colors.white,
+              fontFamily: 'PressStart2P',
+              fontSize: 6,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildBiomeButton(BuildContext context, String biomeName) {
-    // ... (button UI logic remains the same)
+    final timeOfDay = _getTimeOfDay();
+
     return InkWell(
-      onTap: () => _navigateToBiomeDetail(context, biomeName), // UPDATED
+      onTap: () => _navigateToBiomeDetail(context, biomeName),
       child: Container(
         decoration: BoxDecoration(
           color: secondaryButtonColor.withValues(alpha: 0.8),
@@ -230,15 +363,18 @@ class _ExploreScreenState extends State<ExploreScreen> {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // Biome Image (Faded)
+            // Biome Image (Day/Evening/Night Filtered)
             ClipRRect(
               borderRadius: BorderRadius.circular(8.0),
               child: Image.asset(
                 _getAssetPath(biomeName),
                 fit: BoxFit.cover,
-                // Darken the image for better text readability
                 colorBlendMode: BlendMode.darken,
-                color: Colors.black.withValues(alpha: 0.5),
+                color: timeOfDay == 'day'
+                    ? Colors.black.withValues(alpha: 0.3)
+                    : (timeOfDay == 'evening'
+                          ? Colors.orangeAccent.withValues(alpha: 0.3)
+                          : Colors.indigo[900]!.withValues(alpha: 0.5)),
                 errorBuilder: (context, error, stackTrace) => Container(
                   color: Colors.black26,
                   child: const Center(
@@ -246,6 +382,12 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   ),
                 ),
               ),
+            ),
+            // Weather & Temp Indicator
+            Positioned(
+              top: 8,
+              right: 8,
+              child: _buildWeatherAndTemp(biomeName),
             ),
             // Text Overlay
             Center(

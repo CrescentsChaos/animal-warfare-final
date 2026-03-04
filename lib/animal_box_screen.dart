@@ -14,6 +14,7 @@ import 'package:animal_warfare/widgets/item_icon.dart';
 import 'package:animal_warfare/models/nature.dart';
 import 'package:animal_warfare/models/elemental_type.dart';
 import 'package:animal_warfare/widgets/animal_summary_screen.dart';
+import 'package:animal_warfare/widgets/organism_sprite_widget.dart';
 import 'dart:async';
 
 class AnimalBoxScreen extends StatefulWidget {
@@ -1534,39 +1535,15 @@ class _AnimalBoxSpriteState extends State<_AnimalBoxSprite> {
         child: Container(
           color: Colors.grey[900],
           alignment: Alignment.center,
-          child: _imageSourceType == 'local'
-              ? Image.asset(
-                  _imagePath,
-                  width: size,
-                  height: size,
-                  fit: BoxFit.contain,
-                )
-              : Image.network(
-                  _imagePath,
-                  width: size,
-                  height: size,
-                  fit: BoxFit.contain,
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return const Center(
-                      child: SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    );
-                  },
-                  errorBuilder: (_, __, ___) => Container(
-                    width: size,
-                    height: size,
-                    color: Colors.grey[800],
-                    child: const Icon(
-                      Icons.pets,
-                      color: Colors.white54,
-                      size: 24,
-                    ),
-                  ),
-                ),
+          child: buildSilhouetteSprite(
+            imageUrl: _imagePath,
+            silhouetteColor: null, // Keep original colors
+            outlineColor: Colors.black,
+            outlineWidth: 1.0,
+            width: size,
+            height: size,
+            fit: BoxFit.contain,
+          ),
         ),
       ),
     );

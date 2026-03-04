@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:animal_warfare/theme.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -20,14 +21,42 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   UserData? _currentUser;
   File? _pickedAvatarFile;
-  final TextEditingController _usernameController = TextEditingController();
+
+  // Controllers
+  final TextEditingController _usernameController =
+      TextEditingController(); // readonly
+  final TextEditingController _displayNameController = TextEditingController();
+  final TextEditingController _bioController = TextEditingController();
+
+  // State
   String? _selectedGender;
+  String? _selectedAvatarKey;
+  String? _selectedFaction;
+  String? _selectedTitle;
   bool _isLoading = true;
+
+  final List<String> _factions = ['Wilderness', 'Ocean', 'Sky', 'Shadow'];
+  final List<String> _titles = [
+    'Novice Tamer',
+    'Wild Scout',
+    'Beast Keeper',
+    'Field Commander',
+    'Apex Hunter',
+    'Nature\'s Guardian',
+  ];
 
   @override
   void initState() {
     super.initState();
     _loadUserProfile();
+  }
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _displayNameController.dispose();
+    _bioController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadUserProfile() async {
@@ -36,7 +65,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       setState(() {
         _currentUser = user;
         _usernameController.text = user.username;
-        _selectedGender = user.gender != 'N/A' ? user.gender : null;
+        _displayNameController.text = user.displayName;
+        _bioController.text = user.bio;
+        _selectedGender = user.gender != 'N/A' && user.gender.isNotEmpty
+            ? user.gender
+            : null;
+        _selectedAvatarKey = user.avatarIconKey.isNotEmpty
+            ? user.avatarIconKey
+            : null;
+        _selectedFaction = user.faction.isNotEmpty ? user.faction : null;
+        _selectedTitle = user.title.isNotEmpty ? user.title : _titles[0];
+
         if (user.avatar.isNotEmpty && user.avatar != 'default') {
           final file = File(user.avatar);
           if (file.existsSync()) {
@@ -54,7 +93,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       imageQuality: 50,
     );
     if (image != null && mounted) {
-      setState(() => _pickedAvatarFile = File(image.path));
+      setState(() {
+        _pickedAvatarFile = File(image.path);
+        _selectedAvatarKey = null; // Clear archetype if custom photo picked
+      });
     }
   }
 
@@ -63,15 +105,27 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     setState(() => _isLoading = true);
 
     final newAvatarPath = _pickedAvatarFile?.path ?? _currentUser!.avatar;
+
     await _authService.updateProfile(
       _currentUser!.username,
       avatar: newAvatarPath,
       gender: _selectedGender ?? 'N/A',
+      displayName: _displayNameController.text.trim(),
+      avatarIconKey: _selectedAvatarKey ?? '',
+      faction: _selectedFaction ?? '',
+      title: _selectedTitle ?? '',
+      bio: _bioController.text.trim(),
     );
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Identity Updated Successfully')),
+        SnackBar(
+          content: Text(
+            'Identity Updated Successfully',
+            style: GoogleFonts.inter(color: Colors.white),
+          ),
+          backgroundColor: AppColors.surface,
+        ),
       );
       Navigator.pop(context);
     }
@@ -80,8 +134,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.secondaryButtonColor,
-      appBar: AppBar(title: const Text('EDIT IDENTITY'), elevation: 0),
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: Text(
+          'EDIT IDENTITY',
+          style: AppTextStyles.headline(context, baseSize: 14),
+        ),
+        backgroundColor: AppColors.surface,
+        elevation: 0,
+      ),
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
@@ -95,27 +156,61 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         ),
         child: _isLoading
             ? const Center(
-                child: CircularProgressIndicator(
-                  color: AppColors.highlightColor,
-                ),
+                child: CircularProgressIndicator(color: AppColors.primary),
               )
             : SingleChildScrollView(
-                padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 24.h),
+                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 24.h),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildAvatarSelector(),
-                    SizedBox(height: 40.h),
+                    Center(child: _buildAvatarPreview()),
+                    SizedBox(height: 32.h),
+
                     _buildSectionHeader('BIOMETRIC DATA'),
-                    SizedBox(height: 20.h),
+                    SizedBox(height: 16.h),
                     _buildDisabledField(
                       'USERNAME',
                       _usernameController.text,
                       Icons.lock,
                     ),
                     SizedBox(height: 16.h),
-                    _buildGenderSelector(),
-                    SizedBox(height: 60.h),
+                    _buildTextField(
+                      'DISPLAY NAME',
+                      _displayNameController,
+                      Icons.badge,
+                    ),
+                    SizedBox(height: 16.h),
+                    _buildDropdown(
+                      'GENDER',
+                      _selectedGender,
+                      ['MALE', 'FEMALE', 'OTHER'],
+                      (v) => setState(() => _selectedGender = v),
+                    ),
+
+                    SizedBox(height: 32.h),
+                    _buildSectionHeader('CHARACTER DATA'),
+                    SizedBox(height: 16.h),
+                    _buildArchetypePicker(),
+                    SizedBox(height: 24.h),
+                    _buildDropdown(
+                      'FACTION',
+                      _selectedFaction,
+                      _factions,
+                      (v) => setState(() => _selectedFaction = v),
+                    ),
+                    SizedBox(height: 16.h),
+                    _buildDropdown(
+                      'TITLE',
+                      _selectedTitle,
+                      _titles,
+                      (v) => setState(() => _selectedTitle = v),
+                    ),
+                    SizedBox(height: 16.h),
+                    _buildBioField(),
+
+                    SizedBox(height: 48.h),
                     _buildSaveButton(),
+                    SizedBox(height: 40.h),
                   ],
                 ),
               ),
@@ -123,20 +218,52 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  Widget _buildAvatarSelector() {
+  Widget _buildAvatarPreview() {
+    IconData? archetypeIcon;
+    Color archetypeColor = AppColors.primary;
+    if (_pickedAvatarFile == null &&
+        _selectedAvatarKey != null &&
+        _selectedAvatarKey!.isNotEmpty) {
+      if (_selectedAvatarKey!.contains('warrior')) {
+        archetypeIcon = Icons.shield_rounded;
+        archetypeColor = const Color(0xFFEF5350);
+      } else if (_selectedAvatarKey!.contains('ranger')) {
+        archetypeIcon = Icons.gps_fixed_rounded;
+        archetypeColor = AppColors.primary;
+      } else if (_selectedAvatarKey!.contains('scholar')) {
+        archetypeIcon = Icons.auto_stories_rounded;
+        archetypeColor = const Color(0xFFAB47BC);
+      } else if (_selectedAvatarKey!.contains('rogue')) {
+        archetypeIcon = Icons.flash_on_rounded;
+        archetypeColor = const Color(0xFFFF7043);
+      }
+    }
+
     return Column(
       children: [
         Stack(
           children: [
             Container(
-              width: 140.w,
-              height: 140.w,
+              width: 120.w,
+              height: 120.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: AppColors.highlightColor, width: 4),
+                color: archetypeIcon != null
+                    ? archetypeColor.withValues(alpha: 0.15)
+                    : AppColors.surface,
+                border: Border.all(
+                  color: _pickedAvatarFile != null
+                      ? AppColors.highlight
+                      : archetypeColor,
+                  width: 4,
+                ),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.highlightColor.withValues(alpha: 0.2),
+                    color:
+                        (_pickedAvatarFile != null
+                                ? AppColors.highlight
+                                : archetypeColor)
+                            .withValues(alpha: 0.2),
                     blurRadius: 20,
                     spreadRadius: 5,
                   ),
@@ -150,9 +277,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
               child: _pickedAvatarFile == null
                   ? Icon(
-                      Icons.person,
-                      size: 70.w,
-                      color: AppColors.highlightColor.withValues(alpha: 0.5),
+                      archetypeIcon ?? Icons.person,
+                      size: 60.w,
+                      color: archetypeIcon != null
+                          ? archetypeColor
+                          : AppColors.textMuted,
                     )
                   : null,
             ),
@@ -164,7 +293,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: const BoxDecoration(
-                    color: AppColors.highlightColor,
+                    color: AppColors.highlight,
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
@@ -177,31 +306,113 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
           ],
         ),
-        SizedBox(height: 16.h),
+        SizedBox(height: 12.h),
         Text(
           'UPDATE AVATAR',
           style: TextStyle(
             fontFamily: 'PressStart2P',
-            fontSize: 8.sp,
-            color: AppColors.highlightColor,
+            fontSize: 9.sp,
+            color: AppColors.highlight,
           ),
         ),
       ],
     );
   }
 
+  Widget _buildArchetypePicker() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'ARCHETYPE (BUILT-IN ICON)',
+          style: GoogleFonts.inter(
+            color: AppColors.textSecondary,
+            fontSize: 10.sp,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.2,
+          ),
+        ),
+        SizedBox(height: 12.h),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              _buildArchOption(
+                'm_warrior',
+                Icons.shield_rounded,
+                const Color(0xFFEF5350),
+              ),
+              _buildArchOption(
+                'm_ranger',
+                Icons.gps_fixed_rounded,
+                AppColors.primary,
+              ),
+              _buildArchOption(
+                'm_scholar',
+                Icons.auto_stories_rounded,
+                const Color(0xFFAB47BC),
+              ),
+              _buildArchOption(
+                'm_rogue',
+                Icons.flash_on_rounded,
+                const Color(0xFFFF7043),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildArchOption(String key, IconData icon, Color color) {
+    final selected = _selectedAvatarKey == key && _pickedAvatarFile == null;
+    return GestureDetector(
+      onTap: () => setState(() {
+        _selectedAvatarKey = key;
+        _pickedAvatarFile =
+            null; // Clear custom photo if they pick an archetype
+      }),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        margin: EdgeInsets.only(right: 12.w),
+        width: 60.w,
+        height: 60.w,
+        decoration: BoxDecoration(
+          color: selected ? color.withValues(alpha: 0.15) : AppColors.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: selected ? color : AppColors.border,
+            width: selected ? 2 : 1,
+          ),
+        ),
+        child: Icon(
+          icon,
+          color: selected ? color : AppColors.textMuted,
+          size: 28.sp,
+        ),
+      ),
+    );
+  }
+
   Widget _buildSectionHeader(String title) {
     return Row(
       children: [
-        Container(width: 3.w, height: 14.h, color: AppColors.highlightColor),
+        Container(
+          width: 3.w,
+          height: 14.h,
+          decoration: BoxDecoration(
+            color: AppColors.primary,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
         SizedBox(width: 12.w),
         Text(
           title,
-          style: TextStyle(
-            fontFamily: 'PressStart2P',
-            fontSize: 9.sp,
-            color: Colors.white70,
-            letterSpacing: 1,
+          style: GoogleFonts.inter(
+            fontSize: 12.sp,
+            color: Colors.white,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.5,
           ),
         ),
       ],
@@ -212,32 +423,32 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white10),
+        border: Border.all(color: AppColors.border),
       ),
       child: Row(
         children: [
-          Icon(icon, color: Colors.white24, size: 18.w),
+          Icon(icon, color: AppColors.textMuted, size: 20.sp),
           SizedBox(width: 16.w),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 label,
-                style: TextStyle(
-                  color: Colors.white24,
-                  fontSize: 8.sp,
+                style: GoogleFonts.inter(
+                  color: AppColors.textMuted,
+                  fontSize: 9.sp,
                   fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
                 ),
               ),
               SizedBox(height: 4.h),
               Text(
-                value.toUpperCase(),
-                style: TextStyle(
-                  color: Colors.white54,
+                value,
+                style: GoogleFonts.inter(
+                  color: AppColors.textSecondary,
                   fontSize: 13.sp,
-                  letterSpacing: 0.5,
                 ),
               ),
             ],
@@ -247,36 +458,163 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  Widget _buildGenderSelector() {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.w),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.highlightColor.withValues(alpha: 0.3)),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          isExpanded: true,
-          value: _selectedGender,
-          dropdownColor: AppColors.secondaryButtonColor,
-          hint: Text(
-            'SELECT GENDER',
-            style: TextStyle(color: Colors.white24, fontSize: 11.sp),
+  Widget _buildTextField(
+    String label,
+    TextEditingController controller,
+    IconData icon,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            color: AppColors.textSecondary,
+            fontSize: 10.sp,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.2,
           ),
-          icon: const Icon(
-            Icons.keyboard_arrow_down,
-            color: AppColors.highlightColor,
-          ),
-          style: TextStyle(color: Colors.white, fontSize: 13.sp),
-          items: [
-            'MALE',
-            'FEMALE',
-            'OTHER',
-          ].map((g) => DropdownMenuItem(value: g, child: Text(g))).toList(),
-          onChanged: (val) => setState(() => _selectedGender = val),
         ),
-      ),
+        SizedBox(height: 8.h),
+        TextField(
+          controller: controller,
+          style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: AppColors.surface,
+            prefixIcon: Icon(icon, color: AppColors.primary, size: 20.sp),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: AppColors.border),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: AppColors.border),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(
+                color: AppColors.primary,
+                width: 1.5,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBioField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'YOUR BIO',
+          style: GoogleFonts.inter(
+            color: AppColors.textSecondary,
+            fontSize: 10.sp,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.2,
+          ),
+        ),
+        SizedBox(height: 8.h),
+        TextField(
+          controller: _bioController,
+          maxLines: 3,
+          maxLength: 80,
+          style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: AppColors.surface,
+            counterStyle: GoogleFonts.inter(
+              color: AppColors.textMuted,
+              fontSize: 10.sp,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: AppColors.border),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: AppColors.border),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(
+                color: AppColors.primary,
+                width: 1.5,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDropdown(
+    String label,
+    String? value,
+    List<String> items,
+    ValueChanged<String?> onChanged,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            color: AppColors.textSecondary,
+            fontSize: 10.sp,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.2,
+          ),
+        ),
+        SizedBox(height: 8.h),
+        Container(
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              isExpanded: true,
+              value: value,
+              dropdownColor: AppColors.surfaceVariant,
+              hint: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 14.w),
+                child: Text(
+                  'Not selected',
+                  style: GoogleFonts.inter(
+                    color: AppColors.textMuted,
+                    fontSize: 12.sp,
+                  ),
+                ),
+              ),
+              icon: Padding(
+                padding: EdgeInsets.only(right: 14.w),
+                child: const Icon(
+                  Icons.keyboard_arrow_down,
+                  color: AppColors.primary,
+                ),
+              ),
+              style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp),
+              items: items
+                  .map(
+                    (g) => DropdownMenuItem(
+                      value: g,
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 14.w),
+                        child: Text(g),
+                      ),
+                    ),
+                  )
+                  .toList(),
+              onChanged: onChanged,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -284,16 +622,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return ElevatedButton(
       onPressed: _saveProfile,
       style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.highlightColor,
-        foregroundColor: Colors.black,
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
         padding: EdgeInsets.symmetric(vertical: 18.h),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         minimumSize: Size(double.infinity, 54.h),
-        elevation: 8,
-        shadowColor: AppColors.highlightColor.withValues(alpha: 0.4),
+        elevation: 0,
       ),
       child: const Text(
-        'SYNCHRONIZE DATA',
+        'SAVE CHANGES',
         style: TextStyle(fontFamily: 'PressStart2P', fontSize: 12),
       ),
     );

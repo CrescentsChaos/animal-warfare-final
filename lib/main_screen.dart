@@ -8,8 +8,10 @@ import 'package:animal_warfare/quest_screen.dart';
 import 'package:animal_warfare/local_auth_service.dart';
 import 'package:animal_warfare/theme.dart';
 import 'package:animal_warfare/shop_screen.dart';
-
 import 'package:animal_warfare/services/audio_service.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:animal_warfare/game/time_service.dart';
+import 'package:animal_warfare/widgets/game_clock_widget.dart';
 
 enum AuthStatus { loading, loggedIn, guest }
 
@@ -46,64 +48,86 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Future<void> _playBackgroundMusic() async {
-    // AudioService handles its own 'enabled' state internally
     await AudioService.instance.playMusic('audio/coastal_theme.mp3');
   }
 
   void _navigateTo(Widget page) {
-    // Stop music via AudioService when navigating away if necessary,
-    // though the new page should handle its own music or pause it.
     AudioService.instance.pauseAll();
-
-    // FIX: Replace MaterialPageRoute with your custom _createFadeRoute
-    Navigator.of(context)
-        .push(
-          _createFadeRoute(page), // <--- Use the custom route here!
-        )
-        .then((_) {
-          // This block runs AFTER the new page is POPPED (i.e., you return to the current screen)
-          _checkAuthStatus();
-          _playBackgroundMusic();
-          // Resume music when returning
-          AudioService.instance.resumeAll();
-        });
+    Navigator.of(context).push(_createFadeRoute(page)).then((_) {
+      _checkAuthStatus();
+      _playBackgroundMusic();
+      AudioService.instance.resumeAll();
+    });
   }
 
   void _handleAuthAction() {
     _navigateTo(const LoginScreen());
   }
 
-  Widget _buildThemedButton({
+  Widget _buildNavButton({
     required String text,
     required IconData icon,
     required VoidCallback onPressed,
-    required bool isPrimary,
+    bool isPrimary = false,
+    Color? accentColor,
   }) {
-    // 🚨 EDITED: Use AppColors
-    final Color buttonColor = isPrimary
-        ? AppColors.primaryButtonColor
-        : AppColors.secondaryButtonColor;
-    final Color textColor = isPrimary ? Colors.white : AppColors.highlightColor;
+    final Color accent = accentColor ?? AppColors.primary;
 
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 10.0),
-      child: ElevatedButton.icon(
-        onPressed: onPressed,
-        icon: Icon(icon, color: textColor),
-        label: Text(
-          text,
-          // 🚨 EDITED: Use AppTextStyles.body (or a custom size based on it)
-          style: AppTextStyles.body(context, baseSize: 16.0, color: textColor),
+      margin: const EdgeInsets.symmetric(vertical: 6.0),
+      decoration: BoxDecoration(
+        color: AppColors.surface.withValues(alpha: 0.9),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isPrimary ? accent : AppColors.border,
+          width: isPrimary ? 1.5 : 1,
         ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: buttonColor.withValues(alpha: 0.9),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(5.0),
-            // 🚨 EDITED: Use AppColors.highlightColor
-            side: const BorderSide(color: AppColors.highlightColor, width: 2.0),
+        boxShadow: isPrimary
+            ? [
+                BoxShadow(
+                  color: accent.withValues(alpha: 0.2),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ]
+            : null,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(12),
+          splashColor: accent.withValues(alpha: 0.1),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+            child: Row(
+              children: [
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: accent.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(icon, color: accent, size: 20),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    text,
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                ),
+                Icon(Icons.chevron_right, color: AppColors.textMuted, size: 20),
+              ],
+            ),
           ),
-          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 30),
-          minimumSize: const Size(double.infinity, 70),
         ),
       ),
     );
@@ -113,141 +137,226 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     if (_authStatus == AuthStatus.loading) {
       return Scaffold(
-        // 🚨 EDITED: Use AppColors for scaffold background
-        backgroundColor: AppColors.secondaryButtonColor,
-        body: Center(
-          child: CircularProgressIndicator(color: AppColors.highlightColor),
+        backgroundColor: AppColors.background,
+        body: const Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
         ),
       );
     }
 
     return Scaffold(
-      // 🚨 EDITED: Use AppColors for scaffold background
-      backgroundColor: AppColors.secondaryButtonColor,
-      body: Stack(
-        children: [
-          // Background Image
-          Container(
-            decoration: BoxDecoration(
-              color: AppColors.secondaryButtonColor,
-              image: DecorationImage(
-                image: const AssetImage('assets/biomes/coastal-bg.png'),
-                fit: BoxFit.cover,
-                colorFilter: ColorFilter.mode(
-                  Colors.black.withValues(alpha: 0.7),
-                  BlendMode.darken,
+      backgroundColor: AppColors.background,
+      body: StreamBuilder<GameTime>(
+        stream: TimeService().timeStream,
+        builder: (context, snapshot) {
+          final hour = TimeService().currentGameTime.hour;
+          final isDay = hour >= 6 && hour < 18;
+          final isEvening = hour >= 18 && hour < 21;
+
+          return Stack(
+            children: [
+              // Background image
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.background,
+                  image: DecorationImage(
+                    image: const AssetImage('assets/biomes/coastal-bg.png'),
+                    fit: BoxFit.cover,
+                    colorFilter: isDay
+                        ? ColorFilter.mode(
+                            Colors.black.withValues(alpha: 0.75),
+                            BlendMode.darken,
+                          )
+                        : ColorFilter.mode(
+                            isEvening
+                                ? Colors.orangeAccent.withValues(alpha: 0.3)
+                                : Colors.indigo[900]!.withValues(alpha: 0.5),
+                            BlendMode.darken,
+                          ),
+                  ),
                 ),
               ),
-            ),
-          ),
 
-          // Content
-          Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(30.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  // Title
-                  Text(
-                    'ANIMAL WARFARE',
-                    textAlign: TextAlign.center,
-                    // 🚨 EDITED: Use AppTextStyles.headline for the main title
-                    style: AppTextStyles.headline(context, baseSize: 32.0)
-                        .copyWith(
-                          shadows: [
-                            Shadow(
-                              color: Colors.black.withValues(alpha: 0.9),
-                              blurRadius: 4,
-                              offset: const Offset(3, 3),
-                            ),
-                          ],
-                        ),
+              // Subtle radial gradient overlay for depth
+              Container(
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    center: Alignment.topCenter,
+                    radius: 1.5,
+                    colors: [
+                      AppColors.primary.withValues(alpha: 0.04),
+                      Colors.transparent,
+                    ],
                   ),
-                  const SizedBox(height: 50),
-
-                  // GAME Button (Primary)
-                  _buildThemedButton(
-                    text: 'START GAME',
-                    icon: Icons.shield,
-                    onPressed: () {
-                      if (_currentUser != null) {
-                        _navigateTo(
-                          GameScreen(
-                            currentUser: _currentUser!,
-                            authService: _authService,
-                          ),
-                        );
-                      } else {
-                        // Redirect to login if a player attempts to start the game while logged out
-                        _navigateTo(const LoginScreen());
-                      }
-                    },
-                    isPrimary: true,
-                  ),
-
-                  // LOGIN / REGISTER Button (Secondary) - Only show if not logged in
-                  if (_authStatus == AuthStatus.guest)
-                    _buildThemedButton(
-                      text: 'LOGIN / REGISTER',
-                      icon: Icons.login,
-                      onPressed: _handleAuthAction,
-                      isPrimary: false,
-                    ),
-
-                  // PROFILE Button (Secondary - Visible ONLY when logged in)
-                  if (_authStatus == AuthStatus.loggedIn)
-                    _buildThemedButton(
-                      text: 'PROFILE',
-                      icon: Icons.person,
-                      onPressed: () => _navigateTo(const ProfileScreen()),
-                      isPrimary: false,
-                    ),
-
-                  // QUEST Button (Secondary - Visible ONLY when logged in)
-                  if (_authStatus == AuthStatus.loggedIn)
-                    _buildThemedButton(
-                      text: 'QUESTS',
-                      icon: Icons.assignment,
-                      onPressed: () => _navigateTo(const QuestScreen()),
-                      isPrimary: false,
-                    ),
-
-                  // SHOP Button
-                  if (_authStatus == AuthStatus.loggedIn)
-                    _buildThemedButton(
-                      text: 'SHOP',
-                      icon: Icons.shopping_bag,
-                      onPressed: () => _navigateTo(const ShopScreen()),
-                      isPrimary: false,
-                    ),
-
-                  const SizedBox(height: 50),
-                  // User Status (Subtle)
-                  Text(
-                    'STATUS: ${_authStatus == AuthStatus.guest ? 'GUEST ACCESS' : 'PLAYER ACTIVE'}',
-                    textAlign: TextAlign.center,
-                    // 🚨 EDITED: Use AppTextStyles.small for subtle status text
-                    style:
-                        AppTextStyles.small(
-                          context,
-                          baseSize: 12.0,
-                          color: AppColors.highlightColor.withValues(alpha: 0.8),
-                        ).copyWith(
-                          shadows: [
-                            Shadow(
-                              color: Colors.black.withValues(alpha: 0.5),
-                              offset: const Offset(1, 1),
-                            ),
-                          ],
-                        ),
-                  ),
-                ],
+                ),
               ),
-            ),
-          ),
-        ],
+
+              // Content
+              SafeArea(
+                child: Center(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24.0,
+                      vertical: 40.0,
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: <Widget>[
+                        // Title
+                        Column(
+                          children: [
+                            ShaderMask(
+                              shaderCallback: (bounds) => const LinearGradient(
+                                colors: [
+                                  AppColors.highlight,
+                                  Color(0xFFFFF8E1),
+                                  AppColors.highlight,
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ).createShader(bounds),
+                              child: const Text(
+                                'ANIMAL\nWARFARE',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontFamily: 'PressStart2P',
+                                  fontSize: 28,
+                                  height: 1.6,
+                                  letterSpacing: 3,
+                                  shadows: [
+                                    Shadow(
+                                      color: Color(0xFFFFB300),
+                                      blurRadius: 20,
+                                      offset: Offset(0, 0),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            GameClockWidget(
+                              highlightColor: AppColors.highlight,
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              height: 2,
+                              width: 80,
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [
+                                    Colors.transparent,
+                                    AppColors.highlight,
+                                    Colors.transparent,
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(1),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 48),
+
+                        // Buttons
+                        _buildNavButton(
+                          text: 'Start Game',
+                          icon: Icons.shield_rounded,
+                          onPressed: () {
+                            if (_currentUser != null) {
+                              _navigateTo(
+                                GameScreen(
+                                  currentUser: _currentUser!,
+                                  authService: _authService,
+                                ),
+                              );
+                            } else {
+                              _navigateTo(const LoginScreen());
+                            }
+                          },
+                          isPrimary: true,
+                          accentColor: AppColors.primary,
+                        ),
+
+                        if (_authStatus == AuthStatus.guest)
+                          _buildNavButton(
+                            text: 'Login / Register',
+                            icon: Icons.login_rounded,
+                            onPressed: _handleAuthAction,
+                            accentColor: AppColors.highlight,
+                          ),
+
+                        if (_authStatus == AuthStatus.loggedIn) ...[
+                          _buildNavButton(
+                            text: 'Profile',
+                            icon: Icons.person_rounded,
+                            onPressed: () => _navigateTo(const ProfileScreen()),
+                            accentColor: AppColors.highlight,
+                          ),
+                          _buildNavButton(
+                            text: 'Quests',
+                            icon: Icons.assignment_rounded,
+                            onPressed: () => _navigateTo(const QuestScreen()),
+                            accentColor: const Color(0xFF7C4DFF),
+                          ),
+                          _buildNavButton(
+                            text: 'Shop',
+                            icon: Icons.shopping_bag_rounded,
+                            onPressed: () => _navigateTo(const ShopScreen()),
+                            accentColor: const Color(0xFFFF6F00),
+                          ),
+                        ],
+
+                        const SizedBox(height: 36),
+
+                        // Status
+                        Center(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.surface.withValues(alpha: 0.7),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: AppColors.border),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 7,
+                                  height: 7,
+                                  decoration: BoxDecoration(
+                                    color: _authStatus == AuthStatus.loggedIn
+                                        ? AppColors.primary
+                                        : AppColors.textMuted,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  _authStatus == AuthStatus.guest
+                                      ? 'Guest Access'
+                                      : 'Player Active',
+                                  style: GoogleFonts.inter(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -255,7 +364,6 @@ class _MainScreenState extends State<MainScreen> {
 
 PageRouteBuilder _createFadeRoute(Widget page) {
   return PageRouteBuilder(
-    // Reduce duration for a snappier feel
     transitionDuration: const Duration(milliseconds: 300),
     pageBuilder: (context, animation, secondaryAnimation) => page,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {

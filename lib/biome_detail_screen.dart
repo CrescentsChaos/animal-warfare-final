@@ -17,6 +17,12 @@ import 'package:animal_warfare/user_state.dart';
 import 'dart:async';
 import 'package:animal_warfare/theme.dart';
 import 'package:animal_warfare/shop_screen.dart';
+import 'package:animal_warfare/phone_screen.dart';
+import 'package:animal_warfare/game/time_service.dart';
+import 'package:animal_warfare/widgets/game_clock_widget.dart';
+import 'package:animal_warfare/services/weather_service.dart';
+import 'package:animal_warfare/widgets/weather_overlay.dart';
+import 'package:animal_warfare/models/weather.dart';
 
 class BiomeDetailScreen extends StatefulWidget {
   final String biomeName;
@@ -40,11 +46,10 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
     with WidgetsBindingObserver {
   static const Color highlightColor = Color(0xFFDAA520);
 
-  Organism? _currentEncounter;
+  SpawnResult? _currentEncounter;
+  CapturedOrganism? _persistentEncounter; // Added to track specific instance
   bool _isExploring = false;
   bool _isNameRevealed = false;
-  Timer? _clockTimer;
-  DateTime _currentTime = DateTime.now();
 
   late Color _biomeBaseColor;
   late Color _biomeDarkColor;
@@ -78,18 +83,20 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
     }
 
     WidgetsBinding.instance.addObserver(this);
-    _startClockTimer();
+    TimeService().start();
     _playBiomeMusic(widget.biomeName);
-  }
 
-  void _startClockTimer() {
-    _clockTimer = Timer.periodic(const Duration(minutes: 1), (timer) {
-      if (mounted) {
-        setState(() {
-          _currentTime = DateTime.now();
-        });
+    // Recover persistent encounter if exists
+    final encounters = _currentUser.explorationEncounters;
+    if (encounters.containsKey(widget.biomeName)) {
+      _persistentEncounter = encounters[widget.biomeName];
+      if (_persistentEncounter != null) {
+        _currentEncounter = SpawnResult(
+          organism: _persistentEncounter!.baseOrganism,
+          isRare: false, // Default or store in UserData if needed
+        );
       }
-    });
+    }
   }
 
   Color _getDarkerColor(Color color) {
@@ -134,7 +141,7 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
   }
 
   String _getTimeOfDay() {
-    final hour = _currentTime.hour;
+    final hour = TimeService().currentGameTime.hour;
     if (hour >= 6 && hour < 18) return 'day';
     if (hour >= 18 && hour < 21) return 'evening';
     return 'night';
@@ -177,7 +184,10 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
     }
   }
 
-  void _onEncounterFound(Organism wildOrganism) async {
+  void _onEncounterFound(
+    Organism wildOrganism, {
+    bool startAsleep = false,
+  }) async {
     final userState = Provider.of<UserState>(context, listen: false);
     final user = userState.currentUser;
     if (user == null) {
@@ -196,10 +206,18 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
         level: user.accountLevel,
       );
     }
-    final wildFighter = CapturedOrganism.spawn(
-      wildOrganism,
-      accountLevel: user.accountLevel,
-    );
+
+    // Use persistent encounter if available, otherwise spawn and save
+    final wildFighter =
+        _persistentEncounter ??
+        CapturedOrganism.spawn(wildOrganism, accountLevel: user.accountLevel);
+
+    if (_persistentEncounter == null) {
+      _persistentEncounter = wildFighter;
+      // Save it immediately in UserData
+      userState.updateExplorationEncounter(widget.biomeName, wildFighter);
+    }
+
     AudioService.instance.pauseAll();
     final Object? result = await Navigator.of(context).push(
       MaterialPageRoute(
@@ -209,15 +227,29 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
           biomeName: widget.biomeName,
           playerTeam: user.teamOrganisms,
           timeOfDay: _getTimeOfDay(),
+          startAsleep: startAsleep,
         ),
       ),
     );
     AudioService.instance.resumeAll();
-    if (result == BattleResult.capture ||
-        result == BattleResult.fled ||
-        result == BattleResult.win) {
+    if (result == BattleResult.capture || result == BattleResult.win) {
+      // Clear persistent encounter on success
+      userState.updateExplorationEncounter(widget.biomeName, null);
+      setState(() {
+        _persistentEncounter = null;
+        _currentEncounter = null;
+      });
       Future.delayed(const Duration(milliseconds: 500), () {
         _startExploration();
+      });
+    } else if (result == BattleResult.loss) {
+      // Keeper persistent encounter for next time (don't clear)
+    } else if (result == BattleResult.fled) {
+      // Clear or keep? Usually flee clears the encounter.
+      userState.updateExplorationEncounter(widget.biomeName, null);
+      setState(() {
+        _persistentEncounter = null;
+        _currentEncounter = null;
       });
     }
   }
@@ -232,45 +264,10 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
 
   @override
   void dispose() {
-    _clockTimer?.cancel();
     _stopAndDisposeMusic();
     WidgetsBinding.instance.removeObserver(this);
     _audioPlayer.dispose();
     super.dispose();
-  }
-
-  Widget _buildClock() {
-    final hour = _currentTime.hour.toString().padLeft(2, '0');
-    final minute = _currentTime.minute.toString().padLeft(2, '0');
-    final timeStr = "$hour:$minute";
-    final isNight = _getTimeOfDay() == 'night';
-    return Container(
-      padding: const EdgeInsets.only(left: 8),
-      alignment: Alignment.centerLeft,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: _biomeHighlightColor, width: 1),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            isNight ? Icons.nightlight_round : Icons.wb_sunny,
-            color: _biomeHighlightColor,
-            size: 14,
-          ),
-          const SizedBox(width: 6),
-          Text(
-            timeStr,
-            style: const TextStyle(
-              color: Colors.white,
-              fontFamily: 'PressStart2P',
-              fontSize: 10,
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   Color _getBiomeBaseColor(String biomeName) {
@@ -520,6 +517,21 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
       _isNameRevealed = false;
     });
     Future.delayed(const Duration(seconds: 1), () {
+      if (_persistentEncounter != null && mounted) {
+        setState(() {
+          _currentEncounter = SpawnResult(
+            organism: _persistentEncounter!.baseOrganism,
+            isRare: false, // Default or store this info in UserData if needed
+          );
+          _isExploring = false;
+          _rarityHighlightColor = _getRarityHighlightColor(
+            _persistentEncounter!.baseOrganism.rarity,
+          );
+          _isNameRevealed = _isDiscovered(_persistentEncounter!.baseOrganism);
+        });
+        return;
+      }
+
       final encounter = getWeightedRandomOrganism(
         widget.biomeName,
         widget.allOrganisms,
@@ -530,14 +542,16 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
                 .expand((o) => o.selectedMoveNames)
                 .toList() ??
             [],
+        currentTimeOfDay: _getTimeOfDay(),
       );
       if (mounted) {
         setState(() {
           _currentEncounter = encounter;
           _isExploring = false;
           if (encounter != null) {
-            _rarityHighlightColor = _getRarityHighlightColor(encounter.rarity);
-            _isNameRevealed = _isDiscovered(encounter);
+            final organism = encounter.organism;
+            _rarityHighlightColor = _getRarityHighlightColor(organism.rarity);
+            _isNameRevealed = _isDiscovered(organism);
           }
         });
       }
@@ -545,10 +559,15 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
   }
 
   void _showStatsModal(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (BuildContext context) => const _StatsModalContent(),
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: false,
+        pageBuilder: (_, animation, __) =>
+            PhoneScreen(initialBiome: widget.biomeName),
+        transitionsBuilder: (_, animation, __, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+      ),
     );
   }
 
@@ -616,8 +635,11 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
           fontFamily: 'PressStart2P',
           fontSize: 14,
         ),
-        leading: _buildClock(),
-        leadingWidth: 100,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 8.0, top: 4.0, bottom: 4.0),
+          child: GameClockWidget(highlightColor: _biomeHighlightColor),
+        ),
+        leadingWidth: 120,
         actions: [
           IconButton(
             icon: Icon(Icons.shopping_cart, color: AppColors.highlightColor),
@@ -631,84 +653,177 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
           _buildStaminaBarIcon(context),
         ],
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          color: _biomeBaseColor,
-          image: DecorationImage(
-            image: AssetImage(_getAssetPath(widget.biomeName)),
-            fit: BoxFit.cover,
-            colorFilter: _getTimeOfDay() == 'day'
-                ? ColorFilter.mode(
-                    _biomeDarkColor.withValues(alpha: 0.5),
-                    BlendMode.darken,
-                  )
-                : ColorFilter.mode(
-                    _getTimeOfDay() == 'evening'
-                        ? Colors.orangeAccent.withValues(alpha: 0.3)
-                        : Colors.indigo[900]!.withValues(alpha: 0.5),
-                    BlendMode.darken,
-                  ),
-          ),
-        ),
-        padding: const EdgeInsets.all(20.0),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+      body: StreamBuilder<GameTime>(
+        stream: TimeService().timeStream,
+        builder: (context, snapshot) {
+          final timeOfDay = _getTimeOfDay();
+          final weather = WeatherService().getCurrentWeather(widget.biomeName);
+          return Stack(
             children: [
-              if (_isExploring)
-                Column(
-                  children: [
-                    CircularProgressIndicator(color: _biomeHighlightColor),
-                    const SizedBox(height: 10),
-                    Text(
-                      'EXPLORING...',
-                      style: TextStyle(
-                        color: _biomeHighlightColor,
-                        fontFamily: 'PressStart2P',
-                        fontSize: 18,
-                        shadows: [
-                          Shadow(
-                            color: _biomeHighlightColor.withValues(alpha: 0.5),
-                            blurRadius: 5.0,
-                            offset: const Offset(1, 1),
+              Container(
+                decoration: BoxDecoration(
+                  color: _biomeBaseColor,
+                  image: DecorationImage(
+                    image: AssetImage(_getAssetPath(widget.biomeName)),
+                    fit: BoxFit.cover,
+                    colorFilter: timeOfDay == 'day'
+                        ? ColorFilter.mode(
+                            _biomeDarkColor.withValues(alpha: 0.5),
+                            BlendMode.darken,
+                          )
+                        : ColorFilter.mode(
+                            timeOfDay == 'evening'
+                                ? Colors.orangeAccent.withValues(alpha: 0.3)
+                                : Colors.indigo[900]!.withValues(alpha: 0.5),
+                            BlendMode.darken,
                           ),
-                        ],
+                  ),
+                ),
+                padding: const EdgeInsets.all(20.0),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (_isExploring)
+                        Column(
+                          children: [
+                            CircularProgressIndicator(
+                              color: _biomeHighlightColor,
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              'EXPLORING...',
+                              style: TextStyle(
+                                color: _biomeHighlightColor,
+                                fontFamily: 'PressStart2P',
+                                fontSize: 18,
+                                shadows: [
+                                  Shadow(
+                                    color: _biomeHighlightColor.withValues(
+                                      alpha: 0.5,
+                                    ),
+                                    blurRadius: 5.0,
+                                    offset: const Offset(1, 1),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      if (!_isExploring && _currentEncounter != null)
+                        _buildEncounterResultCard(_currentEncounter!),
+                      if (!_isExploring && _currentEncounter == null)
+                        ElevatedButton(
+                          onPressed: _startExploration,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _biomeDarkColor,
+                            shape: StadiumBorder(
+                              side: BorderSide(
+                                color: _biomeHighlightColor,
+                                width: 2,
+                              ),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 20,
+                              horizontal: 40,
+                            ),
+                          ),
+                          child: Text(
+                            'START EXPLORING',
+                            style: TextStyle(
+                              color: _biomeHighlightColor,
+                              fontFamily: 'PressStart2P',
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              // Weather Overlay
+              IgnorePointer(child: WeatherOverlay(weather: weather)),
+              // Weather Indicator
+              Positioned(
+                top: 20,
+                right: 20,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(15),
+                    border: Border.all(
+                      color: _biomeHighlightColor.withValues(alpha: 0.5),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _getWeatherIcon(weather),
+                      const SizedBox(width: 5),
+                      Text(
+                        weather.name.toUpperCase(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontFamily: 'PressStart2P',
+                          fontSize: 8,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              if (!_isExploring && _currentEncounter != null)
-                _buildEncounterResultCard(_currentEncounter!),
-              if (!_isExploring && _currentEncounter == null)
-                ElevatedButton(
-                  onPressed: _startExploration,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _biomeDarkColor,
-                    shape: StadiumBorder(
-                      side: BorderSide(color: _biomeHighlightColor, width: 2),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 20,
-                      horizontal: 40,
-                    ),
-                  ),
-                  child: Text(
-                    'START EXPLORING',
-                    style: TextStyle(
-                      color: _biomeHighlightColor,
-                      fontFamily: 'PressStart2P',
-                      fontSize: 16,
-                    ),
+                    ],
                   ),
                 ),
+              ),
             ],
-          ),
-        ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildEncounterResultCard(Organism organism) {
+  Widget _getWeatherIcon(Weather weather) {
+    switch (weather) {
+      case Weather.clear:
+        return const Icon(
+          Icons.wb_sunny_outlined,
+          color: Colors.yellow,
+          size: 16,
+        );
+      case Weather.rain:
+        return const Icon(Icons.umbrella, color: Colors.blue, size: 16);
+      case Weather.heavyRain:
+        return const Icon(
+          Icons.beach_access,
+          color: Colors.blueAccent,
+          size: 16,
+        );
+      case Weather.sunny:
+        return const Icon(Icons.wb_sunny, color: Colors.orange, size: 16);
+      case Weather.snowstorm:
+        return const Icon(
+          Icons.ac_unit,
+          color: Colors.lightBlueAccent,
+          size: 16,
+        );
+      case Weather.hail:
+        return const Icon(Icons.grain, color: Colors.white, size: 16);
+      case Weather.sandstorm:
+        return const Icon(Icons.waves, color: Colors.brown, size: 16);
+      case Weather.windstorm:
+        return const Icon(Icons.air, color: Colors.white70, size: 16);
+      case Weather.thunderstorm:
+        return const Icon(Icons.bolt, color: Colors.yellowAccent, size: 16);
+      case Weather.fog:
+        return const Icon(Icons.cloud_queue, color: Colors.grey, size: 16);
+      default:
+        return const Icon(Icons.wb_cloudy, color: Colors.white, size: 16);
+    }
+  }
+
+  Widget _buildEncounterResultCard(SpawnResult result) {
+    final organism = result.organism;
     final bool isNameVisible = _isDiscovered(organism) || _isNameRevealed;
     return Card(
       elevation: 12,
@@ -772,7 +887,7 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
               ),
             ),
             const SizedBox(height: 16),
-            if (isNameVisible)
+            if (isNameVisible) ...[
               Container(
                 margin: const EdgeInsets.only(bottom: 24),
                 padding: const EdgeInsets.symmetric(
@@ -797,11 +912,11 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
                 ),
                 child: Text(
                   organism.name.toUpperCase(),
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.white,
                     fontFamily: 'PressStart2P',
                     fontSize: 18,
-                    shadows: const [
+                    shadows: [
                       Shadow(
                         color: Colors.black,
                         offset: Offset(2, 2),
@@ -810,8 +925,83 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
                     ],
                   ),
                 ),
-              )
-            else ...[
+              ),
+              if (result.isRare)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 24),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: Colors.lightBlueAccent,
+                        width: 1,
+                      ),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.nights_stay,
+                          color: Colors.lightBlueAccent,
+                          size: 14,
+                        ),
+                        SizedBox(width: 4),
+                        Text(
+                          'OFF-TIME ENCOUNTER',
+                          style: TextStyle(
+                            color: Colors.lightBlueAccent,
+                            fontFamily: 'PressStart2P',
+                            fontSize: 8,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ] else ...[
+              const SizedBox(height: 12),
+              if (result.isRare)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: Colors.lightBlueAccent,
+                        width: 1,
+                      ),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.nights_stay,
+                          color: Colors.lightBlueAccent,
+                          size: 14,
+                        ),
+                        SizedBox(width: 4),
+                        Text(
+                          'OFF-TIME ENCOUNTER',
+                          style: TextStyle(
+                            color: Colors.lightBlueAccent,
+                            fontFamily: 'PressStart2P',
+                            fontSize: 8,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ElevatedButton.icon(
                 onPressed: () => _revealName(organism),
                 icon: const Icon(
@@ -847,7 +1037,10 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
                   flex: 3,
                   child: ElevatedButton(
                     onPressed: isNameVisible
-                        ? () => _onEncounterFound(organism)
+                        ? () => _onEncounterFound(
+                            organism,
+                            startAsleep: result.isRare,
+                          )
                         : () => _displayMessage(
                             "You cannot fight an unidentified animal!",
                           ),
@@ -1004,141 +1197,24 @@ class __OrganismSpriteDisplayState extends State<_OrganismSpriteDisplay> {
       );
     final String source = _imagePath;
     if (widget.isNameVisible) {
-      if (_imageSourceType == 'local')
-        return Image.asset(
-          source,
-          height: widget.height,
-          width: 400,
-          fit: widget.fit,
-        );
-      return Image.network(
-        source,
+      return buildSilhouetteSprite(
+        imageUrl: source,
+        silhouetteColor: null, // Keep original Colors
+        outlineColor: Colors.black,
+        outlineWidth: 1.0,
         height: widget.height,
         width: 400,
         fit: widget.fit,
-        loadingBuilder: (context, child, loadingProgress) =>
-            loadingProgress == null
-            ? child
-            : SizedBox(
-                height: widget.height,
-                child: const Center(
-                  child: CircularProgressIndicator(color: Colors.white),
-                ),
-              ),
-        errorBuilder: (context, error, stackTrace) => SizedBox(
-          height: widget.height,
-          child: const Center(
-            child: Text(
-              'IMAGE ERROR',
-              style: TextStyle(
-                color: Colors.red,
-                fontFamily: 'PressStart2P',
-                fontSize: 12,
-              ),
-            ),
-          ),
-        ),
       );
     }
     return buildSilhouetteSprite(
       imageUrl: source,
       silhouetteColor: widget.silhouetteColor,
+      outlineColor: Colors.white,
+      outlineWidth: 1.2,
       height: widget.height,
       width: 400,
       fit: widget.fit,
-    );
-  }
-}
-
-class _StatsModalContent extends StatelessWidget {
-  const _StatsModalContent();
-  Widget _buildStatRow(String label, String value) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 4.0),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
-        Text(value),
-      ],
-    ),
-  );
-
-  Widget _buildStaminaBar(BuildContext context, int currentStamina) {
-    final progress = currentStamina / 100;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'STAMINA',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-        ),
-        const SizedBox(height: 5),
-        Stack(
-          children: [
-            LinearProgressIndicator(
-              value: 1.0,
-              backgroundColor: Colors.grey[800],
-              minHeight: 20,
-              color: Colors.grey[600],
-            ),
-            LinearProgressIndicator(
-              value: progress,
-              backgroundColor: Colors.transparent,
-              color: currentStamina > 25
-                  ? Colors.greenAccent[400]
-                  : Colors.redAccent,
-              minHeight: 20,
-            ),
-            Positioned.fill(
-              child: Center(
-                child: Text(
-                  '$currentStamina / 100',
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 5),
-        const Text(
-          'Regenerates +20 every 5 seconds.',
-          style: TextStyle(fontSize: 10, color: Colors.greenAccent),
-        ),
-      ],
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Consumer<UserState>(
-      builder: (context, userState, child) {
-        final user = userState.currentUser;
-        if (user == null) return const SizedBox.shrink();
-        return Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text(
-                'Player Stats',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const Divider(),
-              _buildStatRow('Username:', user.username),
-              _buildStatRow('Gender:', user.gender),
-              _buildStatRow('Money:', '\$${user.money}'),
-              const SizedBox(height: 20),
-              _buildStaminaBar(context, user.stamina),
-              const SizedBox(height: 20),
-            ],
-          ),
-        );
-      },
     );
   }
 }

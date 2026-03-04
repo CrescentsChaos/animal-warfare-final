@@ -10,6 +10,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:animal_warfare/theme.dart';
 import 'package:animal_warfare/settings_screen.dart';
 import 'package:animal_warfare/achievement_screen.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+// Helper to get faction styling
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -73,8 +76,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     if (_isLoading || _currentUser == null) {
       return const Scaffold(
+        backgroundColor: AppColors.background,
         body: Center(
-          child: CircularProgressIndicator(color: AppColors.highlightColor),
+          child: CircularProgressIndicator(color: AppColors.primary),
         ),
       );
     }
@@ -84,7 +88,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final discoveredCount = user.discoveredOrganisms.length;
 
     return Scaffold(
-      backgroundColor: AppColors.secondaryButtonColor,
+      backgroundColor: AppColors.background,
       body: CustomScrollView(
         slivers: [
           _buildSliverAppBar(user),
@@ -127,7 +131,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return SliverAppBar(
       expandedHeight: 280.h,
       pinned: true,
-      backgroundColor: AppColors.secondaryButtonColor,
+      backgroundColor: AppColors.surface,
       flexibleSpace: FlexibleSpaceBar(
         background: Stack(
           alignment: Alignment.center,
@@ -147,37 +151,93 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SizedBox(height: 40.h),
+                SizedBox(height: 36.h),
                 _buildAvatar(user),
-                SizedBox(height: 16.h),
-                Text(
-                  user.username.toUpperCase(),
-                  style: AppTextStyles.headline(
-                    context,
-                    baseSize: 14,
-                    color: Colors.white,
-                  ),
+                SizedBox(height: 12.h),
+
+                // Display Name + Rank
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      user.effectiveDisplayName.toUpperCase(),
+                      style: AppTextStyles.headline(
+                        context,
+                        baseSize: 14,
+                        color: Colors.white,
+                      ),
+                    ),
+                    SizedBox(width: 8.w),
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 6.w,
+                        vertical: 3.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: user.rankColor.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(
+                          color: user.rankColor.withValues(alpha: 0.5),
+                        ),
+                      ),
+                      child: Text(
+                        user.rankName.toUpperCase(),
+                        style: TextStyle(
+                          color: user.rankColor,
+                          fontFamily: 'PressStart2P',
+                          fontSize: 6.sp,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                SizedBox(height: 4.h),
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 12.w,
-                    vertical: 4.h,
-                  ),
-                  decoration: BoxDecoration(
-                    color: user.rankColor.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: user.rankColor, width: 1),
-                  ),
-                  child: Text(
-                    user.rankName.toUpperCase(),
-                    style: TextStyle(
-                      color: user.rankColor,
-                      fontFamily: 'PressStart2P',
-                      fontSize: 7.sp,
+                SizedBox(height: 8.h),
+
+                // Username label
+                if (user.displayName.isNotEmpty)
+                  Text(
+                    '@${user.username}',
+                    style: GoogleFonts.inter(
+                      fontSize: 10.sp,
+                      color: AppColors.textMuted,
                     ),
                   ),
+                if (user.displayName.isNotEmpty) SizedBox(height: 8.h),
+
+                // Title & Faction Badges
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (user.title.isNotEmpty) ...[
+                      _buildBadge(
+                        Icons.military_tech,
+                        user.title,
+                        AppColors.highlight,
+                      ),
+                      SizedBox(width: 6.w),
+                    ],
+                    if (user.faction.isNotEmpty)
+                      _buildFactionBadge(user.faction),
+                  ],
                 ),
+
+                // Bio
+                if (user.bio.isNotEmpty) ...[
+                  SizedBox(height: 12.h),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 40.w),
+                    child: Text(
+                      '"${user.bio}"',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                        fontSize: 10.sp,
+                        fontStyle: FontStyle.italic,
+                        color: AppColors.textSecondary,
+                        height: 1.3,
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ],
@@ -198,29 +258,145 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildAvatar(UserData user) {
+    // Determine which image to show
+    ImageProvider? imageProvider;
+    bool isCustom = false;
+
+    if (user.avatar.isNotEmpty && user.avatar != 'default') {
+      final file = File(user.avatar);
+      if (file.existsSync()) {
+        imageProvider = FileImage(file);
+        isCustom = true;
+      }
+    }
+
+    // If no custom photo, try to load archetype icon
+    IconData? archetypeIcon;
+    Color archetypeColor = AppColors.primary;
+    if (!isCustom && user.avatarIconKey.isNotEmpty) {
+      if (user.avatarIconKey.contains('warrior')) {
+        archetypeIcon = Icons.shield_rounded;
+        archetypeColor = const Color(0xFFEF5350);
+      } else if (user.avatarIconKey.contains('ranger')) {
+        archetypeIcon = Icons.gps_fixed_rounded;
+        archetypeColor = AppColors.primary;
+      } else if (user.avatarIconKey.contains('scholar')) {
+        archetypeIcon = Icons.auto_stories_rounded;
+        archetypeColor = const Color(0xFFAB47BC);
+      } else if (user.avatarIconKey.contains('rogue')) {
+        archetypeIcon = Icons.flash_on_rounded;
+        archetypeColor = const Color(0xFFFF7043);
+      }
+    }
+
     return Container(
-      width: 100.w,
-      height: 100.w,
+      width: 90.w,
+      height: 90.w,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: AppColors.highlightColor, width: 3),
+        color: archetypeIcon != null
+            ? archetypeColor.withValues(alpha: 0.15)
+            : AppColors.surface,
+        border: Border.all(
+          color: isCustom ? AppColors.highlight : archetypeColor,
+          width: 3,
+        ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.highlightColor.withValues(alpha: 0.3),
+            color: (isCustom ? AppColors.highlight : archetypeColor).withValues(
+              alpha: 0.3,
+            ),
             blurRadius: 15,
             spreadRadius: 2,
           ),
         ],
-        image: user.avatar.isNotEmpty && user.avatar != 'default'
-            ? DecorationImage(
-                image: FileImage(File(user.avatar)),
-                fit: BoxFit.cover,
-              )
+        image: imageProvider != null
+            ? DecorationImage(image: imageProvider, fit: BoxFit.cover)
             : null,
       ),
-      child: user.avatar == 'default'
-          ? Icon(Icons.person, size: 50.w, color: AppColors.highlightColor)
+      child: imageProvider == null
+          ? Icon(
+              archetypeIcon ?? Icons.person,
+              size: 45.w,
+              color: archetypeIcon != null
+                  ? archetypeColor
+                  : AppColors.textMuted,
+            )
           : null,
+    );
+  }
+
+  Widget _buildBadge(IconData icon, String label, Color color) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 3.h),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceVariant,
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 8.sp, color: color),
+          SizedBox(width: 4.w),
+          Text(
+            label.toUpperCase(),
+            style: GoogleFonts.inter(
+              fontSize: 8.sp,
+              color: color,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFactionBadge(String faction) {
+    Color color = Colors.grey;
+    String emoji = '';
+
+    switch (faction) {
+      case 'Wilderness':
+        color = const Color(0xFF66BB6A);
+        emoji = '🌿';
+        break;
+      case 'Ocean':
+        color = const Color(0xFF29B6F6);
+        emoji = '🌊';
+        break;
+      case 'Sky':
+        color = const Color(0xFFFFCA28);
+        emoji = '🌤';
+        break;
+      case 'Shadow':
+        color = const Color(0xFF7E57C2);
+        emoji = '🌑';
+        break;
+    }
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 3.h),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceVariant,
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(emoji, style: TextStyle(fontSize: 8.sp)),
+          SizedBox(width: 4.w),
+          Text(
+            faction.toUpperCase(),
+            style: GoogleFonts.inter(
+              fontSize: 8.sp,
+              color: color,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -289,14 +465,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildSectionHeader(String title) {
     return Row(
       children: [
-        Container(width: 4.w, height: 16.h, color: AppColors.highlightColor),
+        Container(
+          width: 3.w,
+          height: 14.h,
+          decoration: BoxDecoration(
+            color: AppColors.primary,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
         SizedBox(width: 12.w),
         Text(
           title,
-          style: TextStyle(
-            fontFamily: 'PressStart2P',
-            fontSize: 10.sp,
-            color: AppColors.highlightColor,
+          style: GoogleFonts.inter(
+            fontSize: 11.sp,
+            color: AppColors.textSecondary,
+            fontWeight: FontWeight.w700,
             letterSpacing: 1.5,
           ),
         ),
@@ -347,9 +530,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             borderRadius: BorderRadius.circular(6),
             child: LinearProgressIndicator(
               value: progress,
-              minHeight: 12.h,
-              backgroundColor: Colors.white.withValues(alpha: 0.05),
-              color: AppColors.highlightColor,
+              minHeight: 10.h,
+              backgroundColor: Colors.white.withValues(alpha: 0.06),
+              color: AppColors.primary,
             ),
           ),
           SizedBox(height: 12.h),

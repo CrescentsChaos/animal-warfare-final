@@ -4,17 +4,19 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:animal_warfare/splash_screen.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:provider/provider.dart'; // 🚨 NEW: Import Provider
-import 'package:animal_warfare/user_state.dart'; // 🚨 NEW: Import UserState (Assumed to exist/created in previous steps)
+import 'package:provider/provider.dart';
+import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/services/audio_service.dart';
 import 'package:animal_warfare/models/talisman.dart';
 import 'package:animal_warfare/models/move.dart';
-
+import 'package:animal_warfare/theme.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:animal_warfare/game/time_service.dart';
 
 void main() async {
   // 1. Ensure Flutter bindings are initialized first
   WidgetsFlutterBinding.ensureInitialized();
+  TimeService().start();
 
   // 2. CONFIGURE GLOBAL AUDIO CONTEXT (Retained)
   final audioContext = AudioContext(
@@ -90,15 +92,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       builder: (_, child) {
         return MaterialApp(
           title: 'Animal Warfare',
-          theme: ThemeData(
-            fontFamily: 'PressStart2P',
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: Colors.deepPurple,
-              brightness: Brightness.dark,
-            ),
-            scaffoldBackgroundColor: Colors.black,
-            useMaterial3: true,
-          ),
+          theme: appTheme,
           home: child,
         );
       },

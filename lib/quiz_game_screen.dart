@@ -533,38 +533,23 @@ class __QuizSpriteDisplayState extends State<_QuizSpriteDisplay> {
       imageWidget = buildSilhouetteSprite(
         imageUrl: source,
         silhouetteColor: Colors.black,
+        outlineColor: Colors.white,
+        outlineWidth: 1.2,
         organismName: widget.organism.name,
         height: widget.height,
         width: widget.width,
         fit: BoxFit.contain,
       );
     } else {
-      if (_imageSourceType == 'local') {
-        imageWidget = Image.asset(
-          source,
-          height: widget.height,
-          width: widget.width,
-          fit: BoxFit.contain,
-        );
-      } else {
-        imageWidget = Image.network(
-          source,
-          height: widget.height,
-          width: widget.width,
-          fit: BoxFit.contain,
-          loadingBuilder: (context, child, loadingProgress) {
-            if (loadingProgress == null) return child;
-            return SizedBox(
-              height: widget.height,
-              child: const Center(
-                child: CircularProgressIndicator(color: Colors.white),
-              ),
-            );
-          },
-          errorBuilder: (context, error, stackTrace) =>
-              const Icon(Icons.broken_image, color: Colors.red, size: 80),
-        );
-      }
+      imageWidget = buildSilhouetteSprite(
+        imageUrl: source,
+        silhouetteColor: null, // Keep original Colors
+        outlineColor: Colors.black,
+        outlineWidth: 1.0,
+        height: widget.height,
+        width: widget.width,
+        fit: BoxFit.contain,
+      );
     }
 
     return Container(

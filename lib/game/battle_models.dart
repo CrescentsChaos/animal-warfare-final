@@ -6,7 +6,7 @@ import 'package:animal_warfare/models/elemental_type.dart';
 import 'package:animal_warfare/models/talisman.dart';
 
 class BattleOrganism {
-  final CapturedOrganism organism;
+  CapturedOrganism organism;
   final List<Ability> abilities;
 
   String get name => isOpponent
@@ -133,13 +133,17 @@ class BattleOrganism {
   void recalculateStats() {
     if (_atLevel == null) {
       int prevMax = maxHealth;
-      level = organism.level;
+      level = organism.level; // SYNC LEVEL FROM THE UPDATED ORGANISM
       int newMax = maxHealth;
 
-      // Heel the difference so current percentage is somewhat maintained or just add health
-      if (newMax > prevMax) {
+      // Sync health from organism if it's higher (restored on level up)
+      if (organism.currentHealth > _health) {
+        _health = organism.currentHealth;
+      } else if (newMax > prevMax) {
+        // Heel the difference if health wasn't explicitly set in organism
         _health += (newMax - prevMax);
       }
+      _health = _health.clamp(0, newMax);
     }
   }
 

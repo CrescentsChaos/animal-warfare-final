@@ -247,12 +247,20 @@ class CapturedOrganism {
     }
 
     int newLevel = levelFromXP;
+    int restoredHealth = currentHealth;
 
     if (newLevel > level) {
       leveledUp = true;
+      // Calculate new max HP for the new level
+      restoredHealth = getMaxHealth(atLevel: newLevel);
     }
 
-    return {'xp': newXP, 'level': newLevel, 'leveledUp': leveledUp};
+    return {
+      'xp': newXP,
+      'level': newLevel,
+      'leveledUp': leveledUp,
+      'health': restoredHealth,
+    };
   }
 
   /// Returns the percentage of XP gained towards the next level (0.0 to 1.0).

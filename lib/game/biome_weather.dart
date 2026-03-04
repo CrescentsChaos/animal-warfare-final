@@ -6,8 +6,9 @@ import 'package:animal_warfare/models/terrain.dart';
 /// Maps biomes to weather probabilities and default terrains
 class BiomeWeatherTable {
   /// Returns a random weather for the given biome based on probability
-  static Weather getRandomWeatherForBiome(String biomeName) {
-    final random = Random();
+  /// If [seed] is provided, the weather generation is deterministic for that seed and biome.
+  static Weather getRandomWeatherForBiome(String biomeName, {int? seed}) {
+    final random = seed != null ? Random(seed ^ biomeName.hashCode) : Random();
     final roll = random.nextDouble() * 100; // 0-100
 
     final biome = biomeName.toLowerCase();

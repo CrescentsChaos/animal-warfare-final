@@ -14,6 +14,7 @@ import 'package:animal_warfare/models/talisman.dart';
 import 'package:animal_warfare/models/elemental_type.dart';
 import 'package:animal_warfare/game/biome_weather.dart';
 import 'package:animal_warfare/game/battle_models.dart';
+import 'package:animal_warfare/game/time_service.dart';
 import 'package:animal_warfare/game/ability_helpers.dart';
 import 'package:animal_warfare/services/audio_service.dart';
 import 'package:animal_warfare/game/ai_decision_engine.dart';
@@ -148,6 +149,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   final bool isRogueMode;
   List<CapturedOrganism> opponentTeam = [];
   int currentOpponentIndex = 0;
+  final bool startAsleep;
 
   // GIMMICK USAGE TRACKING (Side-level)
   bool playerTitanizeUsed = false;
@@ -286,6 +288,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     int? initialPlayerIndex,
     this.isTesting = false,
     TeamArchetype? opponentArchetype,
+    this.startAsleep = false,
   }) : playerTeam = (team?.isNotEmpty ?? false) ? team! : [initialPlayer],
        opponentTeam = (opponentTeam?.isNotEmpty ?? false)
            ? opponentTeam!
@@ -482,8 +485,10 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   Future<void> _initializeBattle(String? biomeName) async {
     // 0. Apply biome weather/terrain if no ability overrides
     if (biomeName != null && biomeName.isNotEmpty) {
+      final dailySeed = TimeService().currentGameTime.dailySeed;
       final biomeWeather = BiomeWeatherTable.getRandomWeatherForBiome(
         biomeName,
+        seed: dailySeed,
       );
       if (biomeWeather != Weather.none && biomeWeather != Weather.clear) {
         _setWeather(biomeWeather, 99); // Long duration for biome weather
@@ -500,6 +505,18 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     // 1. Check for Auto-Weather/Terrain/Intimidate (abilities can override)
     await _checkEntranceAbility(player, opponent, biomeName);
     await _checkEntranceAbility(opponent, player, biomeName);
+
+    // 1.5. Apply Sleep if the encounter was rare/off-time
+    if (startAsleep) {
+      opponent.addStatusEffect(
+        const StatusEffect(type: StatusEffectType.sleep, duration: -1),
+      );
+      addToLog('${opponent.name} is sleeping soundly...');
+      notifyListeners();
+      if (!isTesting) {
+        await Future.delayed(const Duration(milliseconds: 2000));
+      }
+    }
 
     // 2. Speed Check
     // Removed "Opponent is faster" notification as per user request.
@@ -4787,12 +4804,15 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       if (currentWeather.weather != Weather.none) {
         switch (currentWeather.weather) {
           case Weather.rain:
+          case Weather.fog:
           case Weather.heavyRain:
-          case Weather.thunderstorm:
             moveType = ElementalType.aquatic;
             break;
           case Weather.sunny:
             moveType = ElementalType.blaze;
+            break;
+          case Weather.thunderstorm:
+            moveType = ElementalType.electric;
             break;
           case Weather.sandstorm:
             moveType = ElementalType.rock;
@@ -4800,6 +4820,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           case Weather.hail:
           case Weather.snowstorm:
             moveType = ElementalType.cryo;
+            break;
+          case Weather.windstorm:
+            moveType = ElementalType.flying;
             break;
           default:
             break;
