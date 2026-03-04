@@ -750,22 +750,20 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 10,
-                    vertical: 5,
+                    vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.black54,
-                    borderRadius: BorderRadius.circular(15),
-                    border: Border.all(
-                      color: _biomeHighlightColor.withValues(alpha: 0.5),
-                    ),
+                    color: Colors.black45,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: _biomeHighlightColor, width: 1.5),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       _getWeatherIcon(weather),
-                      const SizedBox(width: 5),
+                      const SizedBox(width: 8),
                       Text(
-                        weather.name.toUpperCase(),
+                        "${WeatherService().getForecast(widget.biomeName).first.temperatureCelsius.toStringAsFixed(1)}°C",
                         style: const TextStyle(
                           color: Colors.white,
                           fontFamily: 'PressStart2P',

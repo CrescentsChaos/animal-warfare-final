@@ -443,16 +443,26 @@ class _ExploreScreenState extends State<ExploreScreen> {
             ? const Center(
                 child: CircularProgressIndicator(color: highlightColor),
               )
-            : GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 1.5,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                ),
-                itemCount: biomes.length,
-                itemBuilder: (context, index) {
-                  return _buildBiomeButton(context, biomes[index]);
+            : StreamBuilder<math.Random?>(
+                // Rebuild periodically or on timer if needed, but for now
+                // we'll just listen to the time stream to update visuals
+                stream: Stream.periodic(
+                  const Duration(seconds: 1),
+                ).map((_) => null),
+                builder: (context, _) {
+                  return GridView.builder(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          childAspectRatio: 1.5,
+                          crossAxisSpacing: 10,
+                          mainAxisSpacing: 10,
+                        ),
+                    itemCount: biomes.length,
+                    itemBuilder: (context, index) {
+                      return _buildBiomeButton(context, biomes[index]);
+                    },
+                  );
                 },
               ),
       ),
