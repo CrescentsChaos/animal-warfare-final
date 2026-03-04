@@ -181,6 +181,45 @@ class BattleDetailsSheet extends StatelessWidget {
     bool captured,
     Color themeColor,
   ) {
+    // Tera Type Display
+    Widget? teraIcon;
+    if (bo.organism.teraType != null) {
+      teraIcon = Container(
+        margin: const EdgeInsets.only(left: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: _getTypeColor(bo.organism.teraType!).withOpacity(0.2),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: _getTypeColor(bo.organism.teraType!).withOpacity(0.5),
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: _getTypeColor(bo.organism.teraType!).withOpacity(0.2),
+              blurRadius: 4,
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.auto_awesome, color: Colors.white, size: 10),
+            const SizedBox(width: 4),
+            Text(
+              bo.organism.teraType!.name.toUpperCase(),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 8,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'PressStart2P',
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -208,23 +247,38 @@ class BattleDetailsSheet extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                discovered
-                    ? (bo.organism.nickname ?? org.name.toUpperCase())
-                    : '???',
-                style: GoogleFonts.outfit(
-                  color: Colors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.5,
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      discovered
+                          ? (bo.organism.nickname ?? org.name.toUpperCase())
+                          : '???',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                  if (discovered && teraIcon != null) teraIcon,
+                ],
               ),
               if (discovered && bo.organism.nickname != null)
                 Text(
-                  'Species: ${org.name.toUpperCase()}',
+                  'Species: ${org.name.toUpperCase()} • HP: ${bo.health.round()}/${bo.maxHealth}',
                   style: GoogleFonts.outfit(
                     color: Colors.white38,
                     fontSize: 12,
+                  ),
+                )
+              else if (discovered)
+                Text(
+                  'HP: ${bo.health.round()}/${bo.maxHealth}',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white70,
+                    fontSize: 14,
                   ),
                 ),
               const SizedBox(height: 8),
@@ -237,11 +291,11 @@ class BattleDetailsSheet extends StatelessWidget {
                 )
               else
                 Text(
-                  'LV. ${bo.level}',
+                  'LV. ${bo.level} • HP: ${bo.health.round()}/${bo.maxHealth}',
                   style: const TextStyle(
                     fontFamily: 'PressStart2P',
-                    color: Colors.white24,
-                    fontSize: 8,
+                    color: Colors.white70,
+                    fontSize: 10,
                   ),
                 ),
               if (discovered) ...[
@@ -381,17 +435,37 @@ class BattleDetailsSheet extends StatelessWidget {
 
     return Column(
       children: [
-        _buildStatRow('HEALTH', org.health, 500, AppColors.statHealthColor),
-        _buildStatRow('ATTACK', org.attack, 200, AppColors.statAttackColor),
-        _buildStatRow('DEFENSE', org.defense, 200, AppColors.statDefenseColor),
-        _buildStatRow('POWER', org.power, 200, AppColors.statPowerColor),
+        _buildStatRow('HEALTH', bo.maxHealth, 500, AppColors.statHealthColor),
+        _buildStatRow(
+          'ATTACK',
+          bo.organism.effectiveAttack,
+          200,
+          AppColors.statAttackColor,
+        ),
+        _buildStatRow(
+          'DEFENSE',
+          bo.organism.effectiveDefense,
+          200,
+          AppColors.statDefenseColor,
+        ),
+        _buildStatRow(
+          'POWER',
+          bo.organism.effectivePower,
+          200,
+          AppColors.statPowerColor,
+        ),
         _buildStatRow(
           'RESISTANCE',
-          org.resistance,
+          bo.organism.effectiveResistance,
           200,
           AppColors.statResistanceStatColor,
         ),
-        _buildStatRow('SPEED', org.speed, 200, AppColors.statSpeedColor),
+        _buildStatRow(
+          'SPEED',
+          bo.organism.effectiveSpeed,
+          200,
+          AppColors.statSpeedColor,
+        ),
         if (!isPlayer) ...[
           const SizedBox(height: 4),
           Padding(
@@ -399,8 +473,9 @@ class BattleDetailsSheet extends StatelessWidget {
             child: Text(
               'EST. SPD: ${((CapturedOrganism.calculateStat('speed', org.speed, 0, level: bo.level)) * 0.9).round()} - ${((CapturedOrganism.calculateStat('speed', org.speed, 31, level: bo.level)) * 1.1).round()}',
               style: GoogleFonts.outfit(
-                color: Colors.white38,
-                fontSize: 10,
+                color: Colors.amberAccent.withOpacity(0.8),
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
                 letterSpacing: 0.5,
               ),
             ),
@@ -587,31 +662,40 @@ class BattleDetailsSheet extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Wrap(
-          spacing: 12,
-          runSpacing: 12,
+          spacing: 8,
+          runSpacing: 8,
           children: stages.map((e) {
             final color = e.value > 0 ? Colors.greenAccent : Colors.redAccent;
-            return Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  '${e.key}: ',
-                  style: const TextStyle(
-                    color: Colors.white38,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: color.withOpacity(0.3)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '${e.key}',
+                    style: TextStyle(
+                      color: color.withOpacity(0.7),
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                Text(
-                  '${e.value > 0 ? '+' : ''}${e.value}',
-                  style: TextStyle(
-                    color: color,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'PressStart2P',
+                  const SizedBox(width: 6),
+                  Text(
+                    '${e.value > 0 ? '+' : ''}${e.value}',
+                    style: TextStyle(
+                      color: color,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'PressStart2P',
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             );
           }).toList(),
         ),

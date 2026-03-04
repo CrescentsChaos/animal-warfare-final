@@ -29,8 +29,6 @@ import 'package:animal_warfare/widgets/capture_overlay.dart';
 import 'package:animal_warfare/widgets/weather_overlay.dart';
 import 'package:animal_warfare/widgets/terrain_overlay.dart';
 import 'package:animal_warfare/widgets/item_icon.dart';
-import 'package:animal_warfare/widgets/anidex_details_sheet.dart';
-import 'package:animal_warfare/widgets/type_matchup_sheet.dart';
 import 'package:animal_warfare/widgets/battle_details_sheet.dart';
 
 class BattleScreen extends StatelessWidget {
@@ -1184,9 +1182,17 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                                         battleManager,
                                       ),
                                       if (widget.isArenaBattle)
-                                        _buildOpponentTeamIndicator(
-                                          context,
-                                          battleManager,
+                                        Column(
+                                          children: [
+                                            _buildPlayerTeamIndicator(
+                                              context,
+                                              battleManager,
+                                            ),
+                                            _buildOpponentTeamIndicator(
+                                              context,
+                                              battleManager,
+                                            ),
+                                          ],
                                         ),
                                       const SizedBox(height: 2),
                                       AnimatedBuilder(
@@ -1280,7 +1286,15 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                         const SizedBox(height: 2),
                         _buildFieldEffects(context, battleManager),
                         if (widget.isArenaBattle)
-                          _buildOpponentTeamIndicator(context, battleManager),
+                          Column(
+                            children: [
+                              _buildPlayerTeamIndicator(context, battleManager),
+                              _buildOpponentTeamIndicator(
+                                context,
+                                battleManager,
+                              ),
+                            ],
+                          ),
                         const SizedBox(height: 2),
                         Expanded(
                           child: Column(
@@ -1744,6 +1758,11 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           const SizedBox(width: 4),
           ...List.generate(bm.opponentTeam.length, (index) {
             final animal = bm.opponentTeam[index];
+            final bo = BattleOrganism(
+              animal,
+              isOpponent: true,
+              isRogueMode: widget.isRogueMode,
+            );
             final isCurrent = index == bm.currentOpponentIndex;
             final hpRatio = animal.currentHealth / animal.maxHealth;
 
@@ -1758,22 +1777,92 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               indicatorColor = Colors.red; // Critical
             }
 
-            return Padding(
-              padding: const EdgeInsets.only(right: 4),
-              child: Container(
-                width: 16,
-                height: 16,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: indicatorColor,
-                  border: Border.all(
-                    color: isCurrent ? _getBiomeThemeColor() : Colors.white30,
-                    width: isCurrent ? 2 : 1,
+            return GestureDetector(
+              onTap: () => BattleDetailsSheet.show(context, bo, false),
+              child: Padding(
+                padding: const EdgeInsets.only(right: 4),
+                child: Container(
+                  width: 16,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: indicatorColor,
+                    border: Border.all(
+                      color: isCurrent ? _getBiomeThemeColor() : Colors.white30,
+                      width: isCurrent ? 2 : 1,
+                    ),
                   ),
+                  child: animal.currentHealth <= 0
+                      ? const Icon(Icons.close, size: 10, color: Colors.white54)
+                      : null,
                 ),
-                child: animal.currentHealth <= 0
-                    ? const Icon(Icons.close, size: 10, color: Colors.white54)
-                    : null,
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPlayerTeamIndicator(BuildContext context, BattleManager bm) {
+    if (!widget.isArenaBattle || bm.playerTeam.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          const Text(
+            'YOU: ',
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 8,
+              fontFamily: 'PressStart2P',
+            ),
+          ),
+          const SizedBox(width: 4),
+          ...List.generate(bm.playerTeam.length, (index) {
+            final animal = bm.playerTeam[index];
+            final bo = BattleOrganism(
+              animal,
+              isOpponent: false,
+              isRogueMode: widget.isRogueMode,
+            );
+            final isCurrent = index == bm.currentPlayerIndex;
+            final hpRatio = animal.currentHealth / animal.maxHealth;
+
+            Color indicatorColor;
+            if (animal.currentHealth <= 0) {
+              indicatorColor = Colors.grey.shade700;
+            } else if (hpRatio > 0.5) {
+              indicatorColor = const Color(0xFF4CAF50); // Green
+            } else if (hpRatio > 0.2) {
+              indicatorColor = Colors.orange; // Yellow/Orange
+            } else {
+              indicatorColor = Colors.red; // Critical
+            }
+
+            return GestureDetector(
+              onTap: () => BattleDetailsSheet.show(context, bo, true),
+              child: Padding(
+                padding: const EdgeInsets.only(right: 4),
+                child: Container(
+                  width: 16,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: indicatorColor,
+                    border: Border.all(
+                      color: isCurrent ? _getBiomeThemeColor() : Colors.white30,
+                      width: isCurrent ? 2 : 1,
+                    ),
+                  ),
+                  child: animal.currentHealth <= 0
+                      ? const Icon(Icons.close, size: 10, color: Colors.white54)
+                      : null,
+                ),
               ),
             );
           }),
@@ -1856,7 +1945,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
-              'HP: ${(hpRatio * 100).toStringAsFixed(1)}%',
+              'HP: ${organism.health.round()}/${organism.maxHealth}',
               style: TextStyle(
                 color: Colors.white70,
                 fontSize: isNarrow ? 8 : 10,
@@ -2074,7 +2163,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
-              'HP: ${(hpRatio * 100).toStringAsFixed(1)}%',
+              'HP: ${organism.health.round()}/${organism.maxHealth}',
               style: TextStyle(
                 color: Colors.white70,
                 fontSize: isNarrow ? 8 : 10,
@@ -3171,8 +3260,9 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     if (_isHandlingBattleEnd) return; // FIX: Prevent duplicate execution
     _isHandlingBattleEnd = true;
 
-    // Add delay to allow reading the final log message
-    Future.delayed(const Duration(milliseconds: 2500), () async {
+    // Add delay to allow reading the final log message (shorter for fleeing)
+    final delayMs = battleManager.result == BattleResult.fled ? 1000 : 2500;
+    Future.delayed(Duration(milliseconds: delayMs), () async {
       try {
         if (!mounted) {
           _isHandlingBattleEnd = false;
@@ -3335,14 +3425,15 @@ class _BattleScreenContentState extends State<BattleScreenContent>
             xpResults: xpResults,
           );
         }
+        _isHandlingBattleEnd = false; // Reset here
       } catch (e) {
         debugPrint('Error during battle end handling: $e');
-        // Safety fallback to ensure the UI doesn't stay stuck
         if (mounted) {
           _showBattleResultDialog(context, battleManager, 0, null, userState);
         }
+        _isHandlingBattleEnd = false; // Reset here
       } finally {
-        _isHandlingBattleEnd = false;
+        // Handled inside the async block
       }
     });
   }
