@@ -94,15 +94,6 @@ class _SplashScreenState extends State<SplashScreen>
                 children: <Widget>[
                   // Logo with glow
                   Container(
-                    decoration: BoxDecoration(
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.25),
-                          blurRadius: 40,
-                          spreadRadius: 10,
-                        ),
-                      ],
-                    ),
                     child: Image.asset(
                       'assets/logo.png',
                       width: 260,
@@ -118,14 +109,6 @@ class _SplashScreenState extends State<SplashScreen>
                       padding: const EdgeInsets.symmetric(
                         horizontal: 20,
                         vertical: 10,
-                      ),
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color: AppColors.highlight.withValues(alpha: 0.6),
-                            width: 1,
-                          ),
-                        ),
                       ),
                       child: const Text(
                         'TAP TO CONTINUE',

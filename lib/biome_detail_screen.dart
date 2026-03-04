@@ -674,8 +674,8 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
                         : ColorFilter.mode(
                             timeOfDay == 'evening'
                                 ? Colors.orangeAccent.withValues(alpha: 0.3)
-                                : Colors.indigo[900]!.withValues(alpha: 0.5),
-                            BlendMode.darken,
+                                : Colors.indigo[900]!.withValues(alpha: 0.7),
+                            BlendMode.multiply,
                           ),
                   ),
                 ),

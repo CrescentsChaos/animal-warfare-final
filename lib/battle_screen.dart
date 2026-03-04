@@ -593,10 +593,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     // Award XP
     int? levelCap;
     if (widget.isRogueMode) {
-      final rogue = userState.currentUser?.rogueLikeState;
-      if (rogue != null) {
-        levelCap = rogue.floor * 5;
-      }
+      levelCap = 100; // Allow normal leveling up to max in Rogue mode
     }
 
     if (!widget.isArenaBattle) {
@@ -1134,9 +1131,9 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                                 timeOfDay == 'evening'
                                     ? Colors.orangeAccent.withValues(alpha: 0.3)
                                     : Colors.indigo[900]!.withValues(
-                                        alpha: 0.5,
+                                        alpha: 0.7,
                                       ),
-                                BlendMode.darken,
+                                BlendMode.multiply,
                               ),
                       ),
                     ),
@@ -5869,7 +5866,7 @@ class _BattleSpriteState extends State<_BattleSprite>
 
     // Sprite Outline Logic
     final spriteOutlineColor = Colors.black.withValues(alpha: 0.8);
-    const double outlineOffset = 1.0;
+    const double outlineOffset = 1.5;
 
     final outlineImage = ColorFiltered(
       colorFilter: ColorFilter.mode(spriteOutlineColor, BlendMode.srcIn),
@@ -5961,11 +5958,12 @@ class _BattleSpriteState extends State<_BattleSprite>
                 return ShaderMask(
                   blendMode: BlendMode.srcATop,
                   shaderCallback: (bounds) {
+                    final teraColor = bo.activeTeraType?.color ?? Colors.cyan;
                     return LinearGradient(
-                      colors: const [
-                        Color(0x55FF00FF), // Magenta
-                        Color(0x5500FFFF), // Cyan
-                        Color(0x55FF00FF), // Magenta
+                      colors: [
+                        teraColor.withValues(alpha: 0.35),
+                        teraColor.withValues(alpha: 0.75),
+                        teraColor.withValues(alpha: 0.35),
                       ],
                       stops: [0.0, _pulseAnimation.value.clamp(0.0, 1.0), 1.0],
                       tileMode: TileMode.mirror,
@@ -6063,6 +6061,7 @@ class _BattleSpriteState extends State<_BattleSprite>
                     child: Stack(
                       children: [
                         // Outline Layer
+                        // Diagonals
                         Transform.translate(
                           offset: const Offset(-outlineOffset, -outlineOffset),
                           child: outlineLayer,
@@ -6077,6 +6076,23 @@ class _BattleSpriteState extends State<_BattleSprite>
                         ),
                         Transform.translate(
                           offset: const Offset(outlineOffset, outlineOffset),
+                          child: outlineLayer,
+                        ),
+                        // Cardinals
+                        Transform.translate(
+                          offset: const Offset(-outlineOffset, 0),
+                          child: outlineLayer,
+                        ),
+                        Transform.translate(
+                          offset: const Offset(outlineOffset, 0),
+                          child: outlineLayer,
+                        ),
+                        Transform.translate(
+                          offset: const Offset(0, -outlineOffset),
+                          child: outlineLayer,
+                        ),
+                        Transform.translate(
+                          offset: const Offset(0, outlineOffset),
                           child: outlineLayer,
                         ),
 

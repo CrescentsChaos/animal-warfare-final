@@ -14,6 +14,8 @@ class Achievement {
   final int
   requiredSpecificCount; // Required number from the list, e.g., 1 or 5
   final int requiredFloor; // NEW: Floor reached in Rogue-like mode
+  final String tier; // NEW: Medal tier (bronze, silver, gold)
+  final String? imagePath; // NEW: Path to the achievement medal image
 
   Achievement({
     required this.title,
@@ -24,6 +26,8 @@ class Achievement {
     this.requiredOrganisms = const [],
     this.requiredSpecificCount = 0,
     this.requiredFloor = 0,
+    this.tier = 'bronze',
+    this.imagePath,
   });
 
   factory Achievement.fromJson(Map<String, dynamic> json) {
@@ -40,6 +44,8 @@ class Achievement {
           [],
       requiredSpecificCount: json['requiredSpecificCount'] as int? ?? 0,
       requiredFloor: json['requiredFloor'] as int? ?? 0,
+      tier: json['tier'] as String? ?? 'bronze',
+      imagePath: json['imagePath'] as String?,
     );
   }
 }

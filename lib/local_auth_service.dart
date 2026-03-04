@@ -66,6 +66,8 @@ class UserData {
   final Map<String, CapturedOrganism?>
   explorationEncounters; // biome -> encounter
   final Map<String, dynamic> weatherData; // biome -> weather info
+  final List<String>
+  displayedAchievements; // NEW: 3 selected achievement titles
 
   UserData({
     required this.username,
@@ -95,6 +97,7 @@ class UserData {
     Map<String, Map<String, int>>? speciesStats,
     Map<String, CapturedOrganism?>? explorationEncounters,
     Map<String, dynamic>? weatherData,
+    List<String>? displayedAchievements,
   }) : quizStats = quizStats ?? {},
        discoveredOrganisms = discoveredOrganisms ?? [],
        completedAchievements = completedAchievements ?? [],
@@ -106,7 +109,8 @@ class UserData {
        rogueLikeState = rogueLikeState ?? const RogueLikeState(),
        speciesStats = speciesStats ?? {},
        explorationEncounters = explorationEncounters ?? {},
-       weatherData = weatherData ?? {};
+       weatherData = weatherData ?? {},
+       displayedAchievements = (displayedAchievements ?? []).take(3).toList();
 
   /// Returns displayName if set, otherwise falls back to username
   String get effectiveDisplayName =>
@@ -140,6 +144,7 @@ class UserData {
     Map<String, Map<String, int>>? speciesStats,
     Map<String, CapturedOrganism?>? explorationEncounters,
     Map<String, dynamic>? weatherData,
+    List<String>? displayedAchievements,
   }) {
     return UserData(
       username: username ?? this.username,
@@ -171,6 +176,8 @@ class UserData {
       explorationEncounters:
           explorationEncounters ?? this.explorationEncounters,
       weatherData: weatherData ?? this.weatherData,
+      displayedAchievements:
+          displayedAchievements ?? this.displayedAchievements,
     );
   }
 
@@ -256,6 +263,7 @@ class UserData {
       (k, v) => MapEntry(k, v?.toJson()),
     ),
     'weatherData': weatherData,
+    'displayedAchievements': displayedAchievements,
   };
 
   factory UserData.fromJson(
@@ -373,6 +381,8 @@ class UserData {
           ) ??
           {},
       weatherData: (json['weatherData'] as Map?)?.cast<String, dynamic>() ?? {},
+      displayedAchievements:
+          (json['displayedAchievements'] as List?)?.cast<String>() ?? [],
     );
   }
 }

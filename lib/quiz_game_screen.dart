@@ -534,7 +534,7 @@ class __QuizSpriteDisplayState extends State<_QuizSpriteDisplay> {
         imageUrl: source,
         silhouetteColor: Colors.black,
         outlineColor: Colors.white,
-        outlineWidth: 1.2,
+        outlineWidth: 2.2,
         organismName: widget.organism.name,
         height: widget.height,
         width: widget.width,
@@ -545,7 +545,7 @@ class __QuizSpriteDisplayState extends State<_QuizSpriteDisplay> {
         imageUrl: source,
         silhouetteColor: null, // Keep original Colors
         outlineColor: Colors.black,
-        outlineWidth: 1.0,
+        outlineWidth: 2.0,
         height: widget.height,
         width: widget.width,
         fit: BoxFit.contain,

@@ -92,6 +92,11 @@ class AnidexDetailsSheet {
 
   static bool _isCaptured(BuildContext context, Organism organism) {
     final userState = Provider.of<UserState>(context, listen: false);
+    // Use the persistent 'captured' flag in speciesStats
+    final stats = userState.currentUser?.speciesStats[organism.name];
+    if (stats != null && stats['captured'] == 1) return true;
+
+    // Fallback to current box
     return userState.currentUser?.capturedOrganisms.any(
           (co) => co.name == organism.name,
         ) ??
@@ -257,12 +262,16 @@ class AnidexDetailsSheet {
                 ),
                 decoration: BoxDecoration(
                   color: discovered
-                      ? (isCaptured ? color.withValues(alpha: 0.2) : Colors.white10)
+                      ? (isCaptured
+                            ? color.withValues(alpha: 0.2)
+                            : Colors.white10)
                       : Colors.white10,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: discovered
-                        ? (isCaptured ? color.withValues(alpha: 0.4) : Colors.white24)
+                        ? (isCaptured
+                              ? color.withValues(alpha: 0.4)
+                              : Colors.white24)
                         : Colors.white10,
                   ),
                 ),
@@ -350,7 +359,9 @@ class AnidexDetailsSheet {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: AppColors.highlightColor.withValues(alpha: 0.3),
+                          color: AppColors.highlightColor.withValues(
+                            alpha: 0.3,
+                          ),
                           width: 1,
                         ),
                       ),
@@ -562,7 +573,10 @@ class AnidexDetailsSheet {
                     fontWeight: FontWeight.bold,
                     fontFamily: 'PressStart2P',
                     shadows: [
-                      Shadow(color: color.withValues(alpha: 0.5), blurRadius: 4),
+                      Shadow(
+                        color: color.withValues(alpha: 0.5),
+                        blurRadius: 4,
+                      ),
                     ],
                   ),
                 ),
@@ -977,7 +991,9 @@ class AnidexDetailsSheet {
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.highlightColor.withValues(alpha: 0.3)),
+          border: Border.all(
+            color: AppColors.highlightColor.withValues(alpha: 0.3),
+          ),
         ),
         child: Row(
           children: const [

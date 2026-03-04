@@ -152,7 +152,15 @@ class AchievementService {
   // --- UI Helpers ---
 
   void showAchievementSnackbar(BuildContext context, String achievementTitle) {
-    // ... (This function remains unchanged)
+    // Find the achievement object to get its image
+    final achievement = _allAchievements.firstWhere(
+      (a) => a.title == achievementTitle,
+      orElse: () => Achievement(title: achievementTitle, description: ''),
+    );
+
+    final imagePath =
+        achievement.imagePath ?? 'assets/achievements/medal_bronze.png';
+
     // 1. Define the duration and the overlay entry
     final overlay = Overlay.of(context);
     late OverlayEntry overlayEntry;
@@ -163,51 +171,118 @@ class AchievementService {
       child: Align(
         alignment: Alignment.topCenter,
         child: Padding(
-          padding: const EdgeInsets.only(top: 10.0), // Space from the top edge
-          child: Material(
-            elevation: 10.0,
-            borderRadius: BorderRadius.circular(16.0),
-            child: Container(
-              constraints: const BoxConstraints(
-                maxWidth: 400,
-              ), // Max width for tablets/desktop
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              decoration: BoxDecoration(
-                color: Colors.purple.shade700, // Retaining a dramatic color
-                borderRadius: BorderRadius.circular(16.0),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min, // Wrap content tightly
-                children: [
-                  const Icon(Icons.star, color: Colors.yellowAccent, size: 24),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'ACHIEVEMENT UNLOCKED',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w900,
-                            fontSize: 12,
-                            color: Colors.white70,
-                          ),
-                        ),
-                        Text(
-                          achievementTitle,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: Colors.white,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
+          padding: const EdgeInsets.only(top: 20.0),
+          child: TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0.0, end: 1.0),
+            duration: const Duration(milliseconds: 800),
+            curve: Curves.elasticOut,
+            builder: (context, value, child) {
+              return Transform.translate(
+                offset: Offset(0, -50 * (1 - value)),
+                child: Opacity(opacity: value.clamp(0.0, 1.0), child: child),
+              );
+            },
+            child: Material(
+              color: Colors.transparent,
+              child: Container(
+                width: 320,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.purple.shade900.withValues(alpha: 0.95),
+                      Colors.blue.shade900.withValues(alpha: 0.95),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                ],
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    width: 1.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.5),
+                      blurRadius: 20,
+                      spreadRadius: 5,
+                    ),
+                    BoxShadow(
+                      color: Colors.purple.withValues(alpha: 0.3),
+                      blurRadius: 40,
+                      spreadRadius: -10,
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Medal Image (200x200 placeholder but sized for notification)
+                    Container(
+                      height: 120,
+                      width: 120,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.yellow.withValues(alpha: 0.3),
+                            blurRadius: 20,
+                            spreadRadius: 2,
+                          ),
+                        ],
+                      ),
+                      child: Image.asset(
+                        imagePath,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(
+                              Icons.stars,
+                              color: Colors.yellow,
+                              size: 80,
+                            ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'ACHIEVEMENT UNLOCKED',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 10,
+                        letterSpacing: 2,
+                        color: Colors.white70,
+                        fontFamily: 'PressStart2P',
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      achievement.title.toUpperCase(),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        color: Colors.white,
+                        fontFamily: 'PressStart2P',
+                        shadows: [
+                          Shadow(
+                            color: Colors.black,
+                            blurRadius: 4,
+                            offset: Offset(2, 2),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      achievement.description,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 8,
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontFamily: 'PressStart2P',
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -222,7 +297,9 @@ class AchievementService {
     overlay.insert(overlayEntry);
 
     Future.delayed(duration, () {
-      overlayEntry.remove();
+      if (overlayEntry.mounted) {
+        overlayEntry.remove();
+      }
     });
   }
 }

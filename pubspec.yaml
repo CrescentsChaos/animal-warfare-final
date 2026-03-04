@@ -89,6 +89,7 @@ flutter:
     - assets/
     - assets/main.png
     - assets/biomes/
+    - assets/achievements/
     - assets/npc/
     - assets/audio/ # <<< CRITICAL: This line must be present and correctly indented!
     - assets/audio/effects/ # Verified for release build

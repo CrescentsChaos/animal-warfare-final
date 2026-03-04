@@ -2,93 +2,135 @@
   {
     "title": "Darwin's Apprentice",
     "description": "Discover your first animals.",
-    "requiredCount": 1
+    "requiredCount": 1,
+    "tier": "bronze",
+    "imagePath": "assets/achievements/darwins_apprentice.png"
   },
   {
     "title": "Naturalist",
     "description": "Discover 100 unique animals.",
-    "requiredCount": 100
+    "requiredCount": 100,
+    "tier": "silver",
+    "imagePath": "assets/achievements/naturalist.png"
   },
   {
     "title": "Biodiversity Buff",
     "description": "Discover 500 unique animals.",
-    "requiredCount": 500
+    "requiredCount": 500,
+    "tier": "silver",
+    "imagePath": "assets/achievements/biodiversity.png"
   },
   {
     "title": "The Collector",
     "description": "Discover 1000 unique animals.",
-    "requiredCount": 1000
+    "requiredCount": 1000,
+    "tier": "gold",
+    "imagePath": "assets/achievements/collector.png"
   },
   {
     "title": "Life Encyclopedia",
     "description": "Discover all unique animals.",
-    "requiredCount": 1700
+    "requiredCount": 1700,
+    "tier": "gold",
+    "imagePath": "assets/achievements/life_encyclopedia.png"
   },
   {
     "title": "Novice Collector",
     "description": "Discover 20 Common animals.",
     "requiredRarity": "Common",
-    "requiredCount": 20
+    "requiredCount": 20,
+    "tier": "bronze",
+    "imagePath": "assets/achievements/novice_collector.png"
   },
   {
     "title": "Rare Hunter",
     "description": "Discover 5 Rare animals.",
     "requiredRarity": "Rare",
-    "requiredCount": 5
+    "requiredCount": 5,
+    "tier": "silver",
+    "imagePath": "assets/achievements/rare_hunter.png"
   },
   {
     "title": "Treat to the Eyes",
     "description": "Discover all Epic animals.",
     "requiredRarity": "Epic",
-    "requiredCount": 90
+    "requiredCount": 90,
+    "tier": "gold",
+    "imagePath": "assets/achievements/treat2eyes.png"
   },
   {
     "title": "Living Legend",
     "description": "Discover all Legendary animals.",
     "requiredRarity": "Legendary",
-    "requiredCount": 30
+    "requiredCount": 30,
+    "tier": "gold",
+    "imagePath": "assets/achievements/living_legend.png"
   },
   {
     "title": "Mythical Seeker",
     "description": "Discover 1 Mythical animal.",
     "requiredRarity": "Mythical",
-    "requiredCount": 1
+    "requiredCount": 1,
+    "tier": "gold",
+    "imagePath": "assets/achievements/mythical_seeker.png"
   },
   {
     "title": "I wish...",
     "description": "Discover all Mythical animals.",
     "requiredRarity": "Mythical",
-    "requiredCount": 4
+    "requiredCount": 4,
+    "tier": "gold",
+    "imagePath": "assets/achievements/medal_gold.png"
   },
   {
     "title": "King of the Jungle",
     "description": "Discover the mighty African Lion.",
-    "requiredOrganisms": ["African Lion"],
-    "requiredSpecificCount": 1
+    "requiredOrganisms": [
+      "African Lion"
+    ],
+    "requiredSpecificCount": 1,
+    "tier": "bronze",
+    "imagePath": "assets/achievements/medal_bronze.png"
   },
   {
     "title": "Largest Fish Alive",
     "description": "Discover the mighty Whale Shark.",
-    "requiredOrganisms": ["Whale Shark"],
-    "requiredSpecificCount": 1
+    "requiredOrganisms": [
+      "Whale Shark"
+    ],
+    "requiredSpecificCount": 1,
+    "tier": "bronze",
+    "imagePath": "assets/achievements/medal_bronze.png"
   },
   {
     "title": "Eternal Behemoth",
     "description": "Discover the mighty Blue Whale.",
-    "requiredOrganisms": ["Blue Whale"],
-    "requiredSpecificCount": 1
+    "requiredOrganisms": [
+      "Blue Whale"
+    ],
+    "requiredSpecificCount": 1,
+    "tier": "bronze",
+    "imagePath": "assets/achievements/medal_bronze.png"
   },
   {
     "title": "Fastest Creature Alive",
     "description": "Discover the Peregrine Falcon.",
-    "requiredOrganisms": ["Peregrine Falcon"],
-    "requiredSpecificCount": 1
+    "requiredOrganisms": [
+      "Peregrine Falcon"
+    ],
+    "requiredSpecificCount": 1,
+    "tier": "bronze",
+    "imagePath": "assets/achievements/medal_bronze.png"
   },
   {
     "title": "Largest Land Creature Alive",
     "description": "Discover the mighty African Bush Elephant.",
-    "requiredOrganisms": ["African Bush Elephant"],
-    "requiredSpecificCount": 1
+    "requiredOrganisms": [
+      "African Bush Elephant"
+    ],
+    "requiredSpecificCount": 1,
+    "tier": "bronze",
+    "imagePath": "assets/achievements/medal_bronze.png"
   },
   {
     "title": "The Big Cat Whisperer",
@@ -100,13 +142,19 @@
       "Jaguar",
       "African Cheetah"
     ],
-    "requiredSpecificCount": 5
+    "requiredSpecificCount": 5,
+    "tier": "silver",
+    "imagePath": "assets/achievements/medal_silver.png"
   },
   {
     "title": "Healthy Soil",
     "description": "Discover an earthworm.",
-    "requiredOrganisms": ["Earthworm"],
-    "requiredSpecificCount": 1
+    "requiredOrganisms": [
+      "Earthworm"
+    ],
+    "requiredSpecificCount": 1,
+    "tier": "bronze",
+    "imagePath": "assets/achievements/earthworm.png"
   },
   {
     "title": "Feeding Frenzy",
@@ -115,7 +163,9 @@
       "Red-bellied Piranha",
       "Black Piranha"
     ],
-    "requiredSpecificCount": 2
+    "requiredSpecificCount": 2,
+    "tier": "bronze",
+    "imagePath": "assets/achievements/medal_bronze.png"
   },
   {
     "title": "Did someone say.. vampire?",
@@ -123,7 +173,9 @@
     "requiredOrganisms": [
       "Common Vampire Bat"
     ],
-    "requiredSpecificCount": 1
+    "requiredSpecificCount": 1,
+    "tier": "bronze",
+    "imagePath": "assets/achievements/medal_bronze.png"
   },
   {
     "title": "Arena Trap",
@@ -131,21 +183,29 @@
     "requiredOrganisms": [
       "Antlion Larvae"
     ],
-    "requiredSpecificCount": 1
+    "requiredSpecificCount": 1,
+    "tier": "bronze",
+    "imagePath": "assets/achievements/medal_bronze.png"
   },
   {
     "title": "Rogue Scout",
     "description": "Reach Floor 5 in Rogue-like mode.",
-    "requiredFloor": 5
+    "requiredFloor": 5,
+    "tier": "bronze",
+    "imagePath": "assets/achievements/medal_bronze.png"
   },
   {
     "title": "Survival Specialist",
     "description": "Reach Floor 10 in Rogue-like mode.",
-    "requiredFloor": 10
+    "requiredFloor": 10,
+    "tier": "silver",
+    "imagePath": "assets/achievements/medal_silver.png"
   },
   {
     "title": "Apex Predator",
     "description": "Reach Floor 20 in Rogue-like mode.",
-    "requiredFloor": 20
+    "requiredFloor": 20,
+    "tier": "gold",
+    "imagePath": "assets/achievements/medal_gold.png"
   }
 ]

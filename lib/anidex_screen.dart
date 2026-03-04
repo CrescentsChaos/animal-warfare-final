@@ -226,6 +226,11 @@ class _AnidexScreenState extends State<AnidexScreen>
 
   bool _isCaptured(Organism organism) {
     final userState = Provider.of<UserState>(context, listen: false);
+    // Use the persistent 'captured' flag in speciesStats
+    final stats = userState.currentUser?.speciesStats[organism.name];
+    if (stats != null && stats['captured'] == 1) return true;
+
+    // Fallback to current box (though speciesStats should be updated on capture)
     return userState.currentUser?.capturedOrganisms.any(
           (co) => co.name == organism.name,
         ) ??
@@ -1073,7 +1078,7 @@ class __OrganismSpriteDisplayState extends State<_OrganismSpriteDisplay> {
           imageUrl: _imagePath!,
           silhouetteColor: null, // Keep original (will be filtered below)
           outlineColor: Colors.black,
-          outlineWidth: 1.0,
+          outlineWidth: 2.0,
           fit: BoxFit.contain,
         ).wrapWithGrayscale();
       }
@@ -1082,7 +1087,7 @@ class __OrganismSpriteDisplayState extends State<_OrganismSpriteDisplay> {
         imageUrl: _imagePath!,
         silhouetteColor: null,
         outlineColor: Colors.black,
-        outlineWidth: 1.0,
+        outlineWidth: 2.0,
         fit: BoxFit.contain,
       );
     }
@@ -1092,7 +1097,7 @@ class __OrganismSpriteDisplayState extends State<_OrganismSpriteDisplay> {
       imageUrl: _imagePath!,
       silhouetteColor: widget.silhouetteColor,
       outlineColor: Colors.white,
-      outlineWidth: 1.2,
+      outlineWidth: 2.2,
       fit: BoxFit.contain,
     );
   }

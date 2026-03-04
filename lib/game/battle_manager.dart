@@ -14,9 +14,9 @@ import 'package:animal_warfare/models/talisman.dart';
 import 'package:animal_warfare/models/elemental_type.dart';
 import 'package:animal_warfare/game/biome_weather.dart';
 import 'package:animal_warfare/game/battle_models.dart';
-import 'package:animal_warfare/game/time_service.dart';
 import 'package:animal_warfare/game/ability_helpers.dart';
 import 'package:animal_warfare/services/audio_service.dart';
+import 'package:animal_warfare/services/weather_service.dart';
 import 'package:animal_warfare/game/ai_decision_engine.dart';
 import 'package:animal_warfare/game/player_history.dart';
 
@@ -485,11 +485,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   Future<void> _initializeBattle(String? biomeName) async {
     // 0. Apply biome weather/terrain if no ability overrides
     if (biomeName != null && biomeName.isNotEmpty) {
-      final dailySeed = TimeService().currentGameTime.dailySeed;
-      final biomeWeather = BiomeWeatherTable.getRandomWeatherForBiome(
-        biomeName,
-        seed: dailySeed,
-      );
+      // Sync with WeatherService for consistency across biome/battle
+      final biomeWeather = WeatherService().getCurrentWeather(biomeName);
       if (biomeWeather != Weather.none && biomeWeather != Weather.clear) {
         _setWeather(biomeWeather, 99); // Long duration for biome weather
       }

@@ -7,7 +7,7 @@ Widget buildSilhouetteSprite({
   required String imageUrl,
   Color? silhouetteColor,
   Color? outlineColor,
-  double outlineWidth = 1.0,
+  double outlineWidth = 2.0,
   String? organismName,
   double? width,
   double? height,
@@ -73,10 +73,11 @@ Widget buildSilhouetteSprite({
   }
 
   // Implementation of outline using a stack of shifted silhouettes
+  // We use 8 directions for a fuller outline
   return Stack(
     alignment: Alignment.center,
     children: [
-      // Draw the outline in 8 directions using translate for better centering
+      // Diagonals
       Transform.translate(
         offset: Offset(-outlineWidth, -outlineWidth),
         child: createImageWidget(colorOverride: outlineColor),
@@ -93,6 +94,7 @@ Widget buildSilhouetteSprite({
         offset: Offset(outlineWidth, outlineWidth),
         child: createImageWidget(colorOverride: outlineColor),
       ),
+      // Cardinals
       Transform.translate(
         offset: Offset(-outlineWidth, 0),
         child: createImageWidget(colorOverride: outlineColor),

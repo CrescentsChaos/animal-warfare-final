@@ -65,41 +65,82 @@ class WeatherService {
     else
       baseTemp = 20.0 + random.nextDouble() * 5.0; // Default
 
-    // Weather Offsets
-    double offset = 0;
-    switch (weather) {
-      case Weather.sunny:
-        offset = 5.0;
-        break;
-      case Weather.rain:
-        offset = -3.0;
-        break;
-      case Weather.heavyRain:
-        offset = -5.0;
-        break;
-      case Weather.thunderstorm:
-        offset = -4.0;
-        break;
-      case Weather.snowstorm:
-        offset = -10.0;
-        break;
-      case Weather.hail:
-        offset = -8.0;
-        break;
-      case Weather.sandstorm:
-        offset = 2.0;
-        break;
-      case Weather.fog:
-        offset = -2.0;
-        break;
-      case Weather.windstorm:
-        offset = -5.0;
-        break;
-      default:
-        offset = 0;
+    // Day/Night Temperature Shifts
+    final gameTime = TimeService().currentGameTime;
+    final hour = gameTime.hour;
+    bool isDay = hour >= 6 && hour < 18;
+    bool isNight = hour >= 21 || hour < 5;
+    bool isEvening = !isDay && !isNight;
+
+    double timeDelta = 0;
+    if (biome.contains('desert')) {
+      if (isDay)
+        timeDelta = 15.0;
+      else if (isNight)
+        timeDelta = -15.0;
+    } else if (biome.contains('polar') ||
+        biome.contains('tundra') ||
+        biome.contains('frozen ocean') ||
+        biome.contains('deep sea')) {
+      // Minimal shift in extreme cold/stable deep sea
+      if (isDay)
+        timeDelta = 2.0;
+      else if (isNight)
+        timeDelta = -2.0;
+    } else if (biome.contains('urban')) {
+      // Heat island effect: warmer at night
+      if (isDay)
+        timeDelta = 3.0;
+      else if (isNight)
+        timeDelta = 2.0;
+    } else if (biome.contains('volcano') || biome.contains('cave')) {
+      // Stable high heat or stable underground
+      timeDelta = 0;
+    } else {
+      // Default cycle
+      if (isDay)
+        timeDelta = 5.0;
+      else if (isEvening)
+        timeDelta = 0;
+      else if (isNight)
+        timeDelta = -5.0;
     }
 
-    return baseTemp + offset;
+    // Weather Offsets
+    double weatherOffset = 0;
+    switch (weather) {
+      case Weather.sunny:
+        weatherOffset = 5.0;
+        break;
+      case Weather.rain:
+        weatherOffset = -3.0;
+        break;
+      case Weather.heavyRain:
+        weatherOffset = -5.0;
+        break;
+      case Weather.thunderstorm:
+        weatherOffset = -4.0;
+        break;
+      case Weather.snowstorm:
+        weatherOffset = -10.0;
+        break;
+      case Weather.hail:
+        weatherOffset = -8.0;
+        break;
+      case Weather.sandstorm:
+        weatherOffset = 2.0;
+        break;
+      case Weather.fog:
+        weatherOffset = -2.0;
+        break;
+      case Weather.windstorm:
+        weatherOffset = -5.0;
+        break;
+      default:
+        weatherOffset = 0;
+    }
+
+    return baseTemp + timeDelta + weatherOffset;
   }
 
   /// Gets a 3-day forecast for a specific biome (including today).

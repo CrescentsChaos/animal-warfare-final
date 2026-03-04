@@ -1,6 +1,8 @@
 // lib/profile_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/local_auth_service.dart';
 import 'package:animal_warfare/edit_profile_screen.dart';
 import 'dart:io';
@@ -10,9 +12,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:animal_warfare/theme.dart';
 import 'package:animal_warfare/settings_screen.dart';
 import 'package:animal_warfare/achievement_screen.dart';
+import 'package:animal_warfare/achievement_service.dart';
+import 'package:animal_warfare/models/achievement.dart';
+import 'package:animal_warfare/widgets/achievement_selection_sheet.dart';
 import 'package:google_fonts/google_fonts.dart';
-
-// Helper to get faction styling
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -22,16 +25,15 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  final LocalAuthService _authService = LocalAuthService();
-  UserData? _currentUser;
-  bool _isLoading = true;
   List<dynamic> _allOrganisms = [];
+  late AchievementService _achievementService;
+  List<Achievement> _achievements = [];
 
   @override
   void initState() {
     super.initState();
-    _loadUserProfile();
     _loadOrganisms();
+    _initAchievementService();
   }
 
   Future<void> _loadOrganisms() async {
@@ -41,6 +43,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (mounted) {
         setState(() {
           _allOrganisms = json.decode(response);
+          // Re-init achievement service once organisms are loaded
+          _initAchievementService();
         });
       }
     } catch (e) {
@@ -48,196 +52,179 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  Future<void> _loadUserProfile() async {
-    UserData? user = await _authService.getCurrentUser();
-    if (user != null && user.avatar.isNotEmpty && user.avatar != 'default') {
-      File avatarFile = File(user.avatar);
-      if (!(await avatarFile.exists())) {
-        user = user.copyWith(avatar: 'default');
-      }
-    }
+  void _initAchievementService() {
+    _achievementService = AchievementService(
+      allOrganisms: _allOrganisms,
+      authService: LocalAuthService(),
+    );
+    _loadAchievements();
+  }
+
+  Future<void> _loadAchievements() async {
+    await _achievementService.loadAchievements();
     if (mounted) {
       setState(() {
-        _currentUser = user;
-        _isLoading = false;
+        _achievements = _achievementService.getAllAchievements();
       });
     }
   }
 
   void _navigateToEditScreen() {
-    Navigator.of(context)
-        .push(
-          MaterialPageRoute(builder: (context) => const EditProfileScreen()),
-        )
-        .then((_) => _loadUserProfile());
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => const EditProfileScreen()));
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading || _currentUser == null) {
-      return const Scaffold(
-        backgroundColor: AppColors.background,
-        body: Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
-        ),
-      );
-    }
+    return Consumer<UserState>(
+      builder: (context, userState, child) {
+        final user = userState.currentUser;
+        if (user == null) {
+          return const Scaffold(
+            backgroundColor: Color(0xFF0F0F0F),
+            body: Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            ),
+          );
+        }
 
-    final user = _currentUser!;
-    final totalCount = _allOrganisms.length;
-    final discoveredCount = user.discoveredOrganisms.length;
+        final totalCount = _allOrganisms.isNotEmpty
+            ? _allOrganisms.length
+            : 1700;
+        final discoveredCount = user.discoveredOrganisms.length;
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: CustomScrollView(
-        slivers: [
-          _buildSliverAppBar(user),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _buildStatRow(user, discoveredCount, totalCount),
-                  SizedBox(height: 32.h),
-                  _buildSectionHeader('ACCOUNT PROGRESS'),
-                  SizedBox(height: 16.h),
-                  _buildProgressCard(user),
-                  SizedBox(height: 32.h),
-                  _buildSectionHeader('UTILITIES'),
-                  SizedBox(height: 16.h),
-                  _buildUtilityGrid(),
-                  if (user.bestRogueFloor > 0) ...[
-                    SizedBox(height: 32.h),
-                    _buildSectionHeader('ROGUE RECORDS'),
-                    SizedBox(height: 16.h),
-                    _buildRogueCard(user),
-                  ],
-                  SizedBox(height: 32.h),
-                  _buildSectionHeader('BATTLE QUIZ ANALYTICS'),
-                  SizedBox(height: 16.h),
-                  _buildQuizStats(user),
-                  SizedBox(height: 60.h),
+        return Scaffold(
+          backgroundColor: const Color(0xFF0F0F0F),
+          body: Stack(
+            children: [
+              _buildBackground(),
+              CustomScrollView(
+                physics: const BouncingScrollPhysics(),
+                slivers: [
+                  _buildSliverAppBar(user),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20.w),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          SizedBox(height: 24.h),
+                          _buildStatGrid(user, discoveredCount, totalCount),
+                          SizedBox(height: 32.h),
+                          _buildAchievementDisplay(user),
+                          SizedBox(height: 32.h),
+                          _buildAccountProgress(user),
+                          SizedBox(height: 32.h),
+                          _buildUtilities(user),
+                          if (user.bestRogueFloor > 0) ...[
+                            SizedBox(height: 32.h),
+                            _buildRogueSection(user),
+                          ],
+                          SizedBox(height: 100.h),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
-            ),
+            ],
           ),
-        ],
+        );
+      },
+    );
+  }
+
+  Widget _buildBackground() {
+    return Positioned.fill(
+      child: Container(
+        decoration: const BoxDecoration(
+          gradient: RadialGradient(
+            center: Alignment(0, -0.5),
+            radius: 1.5,
+            colors: [Color(0xFF1A1A1A), Color(0xFF0A0A0A)],
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildSliverAppBar(UserData user) {
     return SliverAppBar(
-      expandedHeight: 280.h,
+      expandedHeight: 340.h,
       pinned: true,
-      backgroundColor: AppColors.surface,
+      stretch: true,
+      backgroundColor: Colors.transparent,
+      elevation: 0,
       flexibleSpace: FlexibleSpaceBar(
+        stretchModes: const [
+          StretchMode.zoomBackground,
+          StretchMode.blurBackground,
+        ],
         background: Stack(
           alignment: Alignment.center,
           children: [
-            Container(
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: const AssetImage('assets/main.png'),
-                  fit: BoxFit.cover,
-                  colorFilter: ColorFilter.mode(
-                    Colors.black.withValues(alpha: 0.75),
-                    BlendMode.darken,
+            Positioned.fill(
+              child: Opacity(
+                opacity: 0.3,
+                child: Image.asset('assets/main.png', fit: BoxFit.cover),
+              ),
+            ),
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      const Color(0xFF0F0F0F).withOpacity(0.8),
+                      const Color(0xFF0F0F0F),
+                    ],
                   ),
                 ),
               ),
             ),
             Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                SizedBox(height: 36.h),
                 _buildAvatar(user),
-                SizedBox(height: 12.h),
-
-                // Display Name + Rank
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      user.effectiveDisplayName.toUpperCase(),
-                      style: AppTextStyles.headline(
-                        context,
-                        baseSize: 14,
-                        color: Colors.white,
+                SizedBox(height: 16.h),
+                Text(
+                  user.effectiveDisplayName.toUpperCase(),
+                  style: GoogleFonts.orbitron(
+                    fontSize: 20.sp,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                    letterSpacing: 2,
+                    shadows: [
+                      const Shadow(
+                        color: Colors.black,
+                        blurRadius: 10,
+                        offset: Offset(2, 2),
                       ),
-                    ),
-                    SizedBox(width: 8.w),
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 6.w,
-                        vertical: 3.h,
-                      ),
-                      decoration: BoxDecoration(
-                        color: user.rankColor.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(4),
-                        border: Border.all(
-                          color: user.rankColor.withValues(alpha: 0.5),
-                        ),
-                      ),
-                      child: Text(
-                        user.rankName.toUpperCase(),
-                        style: TextStyle(
-                          color: user.rankColor,
-                          fontFamily: 'PressStart2P',
-                          fontSize: 6.sp,
-                        ),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 SizedBox(height: 8.h),
-
-                // Username label
-                if (user.displayName.isNotEmpty)
-                  Text(
-                    '@${user.username}',
-                    style: GoogleFonts.inter(
-                      fontSize: 10.sp,
-                      color: AppColors.textMuted,
-                    ),
-                  ),
-                if (user.displayName.isNotEmpty) SizedBox(height: 8.h),
-
-                // Title & Faction Badges
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (user.title.isNotEmpty) ...[
-                      _buildBadge(
-                        Icons.military_tech,
-                        user.title,
-                        AppColors.highlight,
-                      ),
-                      SizedBox(width: 6.w),
-                    ],
-                    if (user.faction.isNotEmpty)
-                      _buildFactionBadge(user.faction),
-                  ],
-                ),
-
-                // Bio
-                if (user.bio.isNotEmpty) ...[
-                  SizedBox(height: 12.h),
+                _buildRankBadge(user),
+                SizedBox(height: 12.h),
+                if (user.bio.isNotEmpty)
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 40.w),
                     child: Text(
-                      '"${user.bio}"',
+                      user.bio,
                       textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
-                        fontSize: 10.sp,
+                        fontSize: 11.sp,
+                        color: Colors.white60,
                         fontStyle: FontStyle.italic,
-                        color: AppColors.textSecondary,
-                        height: 1.3,
                       ),
                     ),
                   ),
-                ],
+                SizedBox(height: 16.h),
+                _buildTitleFactionBadges(user),
+                SizedBox(height: 24.h),
               ],
             ),
           ],
@@ -245,11 +232,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.settings, color: Colors.white70),
+          icon: const Icon(Icons.settings_outlined, color: Colors.white70),
           onPressed: () => Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) =>
-                  SettingsScreen(currentUser: user, authService: _authService),
+              builder: (context) => SettingsScreen(
+                currentUser: user,
+                authService: LocalAuthService(),
+              ),
             ),
           ),
         ),
@@ -258,7 +247,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildAvatar(UserData user) {
-    // Determine which image to show
     ImageProvider? imageProvider;
     bool isCustom = false;
 
@@ -270,8 +258,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
     }
 
-    // If no custom photo, try to load archetype icon
-    IconData? archetypeIcon;
+    IconData archetypeIcon = Icons.person;
     Color archetypeColor = AppColors.primary;
     if (!isCustom && user.avatarIconKey.isNotEmpty) {
       if (user.avatarIconKey.contains('warrior')) {
@@ -290,61 +277,92 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
 
     return Container(
-      width: 90.w,
-      height: 90.w,
+      width: 110.w,
+      height: 110.w,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: archetypeIcon != null
-            ? archetypeColor.withValues(alpha: 0.15)
-            : AppColors.surface,
         border: Border.all(
-          color: isCustom ? AppColors.highlight : archetypeColor,
+          color: (isCustom ? AppColors.highlight : archetypeColor).withOpacity(
+            0.5,
+          ),
           width: 3,
         ),
         boxShadow: [
           BoxShadow(
-            color: (isCustom ? AppColors.highlight : archetypeColor).withValues(
-              alpha: 0.3,
-            ),
-            blurRadius: 15,
-            spreadRadius: 2,
+            color: (isCustom ? AppColors.highlight : archetypeColor)
+                .withOpacity(0.3),
+            blurRadius: 20,
+            spreadRadius: 5,
           ),
         ],
-        image: imageProvider != null
-            ? DecorationImage(image: imageProvider, fit: BoxFit.cover)
+      ),
+      child: CircleAvatar(
+        radius: 52.w,
+        backgroundColor: archetypeColor.withOpacity(0.1),
+        backgroundImage: imageProvider,
+        child: imageProvider == null
+            ? Icon(archetypeIcon, size: 55.w, color: archetypeColor)
             : null,
       ),
-      child: imageProvider == null
-          ? Icon(
-              archetypeIcon ?? Icons.person,
-              size: 45.w,
-              color: archetypeIcon != null
-                  ? archetypeColor
-                  : AppColors.textMuted,
-            )
-          : null,
     );
   }
 
-  Widget _buildBadge(IconData icon, String label, Color color) {
+  Widget _buildRankBadge(UserData user) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 3.h),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
+        color: user.rankColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: user.rankColor.withOpacity(0.4)),
+        boxShadow: [
+          BoxShadow(color: user.rankColor.withOpacity(0.05), blurRadius: 10),
+        ],
+      ),
+      child: Text(
+        user.rankName.toUpperCase(),
+        style: GoogleFonts.orbitron(
+          color: user.rankColor,
+          fontSize: 9.sp,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 1.5,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTitleFactionBadges(UserData user) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (user.title.isNotEmpty)
+          _badgeItem(Icons.military_tech, user.title, const Color(0xFFDAA520)),
+        if (user.faction.isNotEmpty) ...[
+          SizedBox(width: 8.w),
+          _factionBadge(user.faction),
+        ],
+      ],
+    );
+  }
+
+  Widget _badgeItem(IconData icon, String label, Color color) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withOpacity(0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 8.sp, color: color),
-          SizedBox(width: 4.w),
+          Icon(icon, size: 14.sp, color: color),
+          SizedBox(width: 8.w),
           Text(
             label.toUpperCase(),
             style: GoogleFonts.inter(
-              fontSize: 8.sp,
+              fontSize: 10.sp,
               color: color,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w800,
             ),
           ),
         ],
@@ -352,10 +370,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildFactionBadge(String faction) {
+  Widget _factionBadge(String faction) {
     Color color = Colors.grey;
     String emoji = '';
-
     switch (faction) {
       case 'Wilderness':
         color = const Color(0xFF66BB6A);
@@ -374,25 +391,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
         emoji = '🌑';
         break;
     }
-
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 3.h),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withOpacity(0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(emoji, style: TextStyle(fontSize: 8.sp)),
-          SizedBox(width: 4.w),
+          Text(emoji, style: TextStyle(fontSize: 12.sp)),
+          SizedBox(width: 8.w),
           Text(
             faction.toUpperCase(),
             style: GoogleFonts.inter(
-              fontSize: 8.sp,
+              fontSize: 10.sp,
               color: color,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w800,
             ),
           ),
         ],
@@ -400,197 +416,370 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildStatRow(UserData user, int discovered, int total) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  Widget _buildStatGrid(UserData user, int discovered, int total) {
+    return Column(
       children: [
-        _buildMiniStat(
-          'GOLD',
-          '${user.money}',
-          Icons.monetization_on,
-          Colors.amber,
+        Row(
+          children: [
+            Expanded(
+              child: _statCard(
+                'COINS',
+                user.money.toString(),
+                Icons.monetization_on,
+                Colors.amber,
+              ),
+            ),
+            SizedBox(width: 16.w),
+            Expanded(
+              child: _statCard(
+                'LEVEL',
+                user.accountLevel.toString(),
+                Icons.bolt,
+                Colors.blueAccent,
+              ),
+            ),
+          ],
         ),
-        _buildMiniStat(
-          'LEVEL',
-          '${user.accountLevel}',
-          Icons.trending_up,
-          Colors.blueAccent,
-        ),
-        _buildMiniStat(
-          'IDEX',
-          '$discovered/$total',
+        SizedBox(height: 16.h),
+        _statCard(
+          'ANIMAL DEX COMPLETION',
+          '$discovered / $total',
           Icons.pets,
           const Color(0xFF2ECC71),
+          fullWidth: true,
         ),
       ],
     );
   }
 
-  Widget _buildMiniStat(
+  Widget _statCard(
     String label,
     String value,
     IconData icon,
-    Color color,
-  ) {
+    Color color, {
+    bool fullWidth = false,
+  }) {
     return Container(
-      width: 100.w,
-      padding: EdgeInsets.symmetric(vertical: 12.h),
+      padding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 20.w),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white10),
+        color: Colors.white.withOpacity(0.04),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withOpacity(0.06)),
       ),
-      child: Column(
+      child: Row(
+        mainAxisAlignment: fullWidth
+            ? MainAxisAlignment.spaceBetween
+            : MainAxisAlignment.start,
         children: [
-          Icon(icon, color: color, size: 20.w),
-          SizedBox(height: 8.h),
-          Text(
-            value,
-            style: AppTextStyles.headline(
-              context,
-              baseSize: 10,
-              color: Colors.white,
+          Container(
+            padding: EdgeInsets.all(10.w),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.15),
+              shape: BoxShape.circle,
             ),
+            child: Icon(icon, color: color, size: 24.sp),
           ),
-          SizedBox(height: 4.h),
-          Text(
-            label,
-            style: TextStyle(color: Colors.white38, fontSize: 8.sp),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSectionHeader(String title) {
-    return Row(
-      children: [
-        Container(
-          width: 3.w,
-          height: 14.h,
-          decoration: BoxDecoration(
-            color: AppColors.primary,
-            borderRadius: BorderRadius.circular(2),
-          ),
-        ),
-        SizedBox(width: 12.w),
-        Text(
-          title,
-          style: GoogleFonts.inter(
-            fontSize: 11.sp,
-            color: AppColors.textSecondary,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 1.5,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildProgressCard(UserData user) {
-    final currentLevelXP = user.accountLevel * user.accountLevel * 100;
-    final nextLevelXP = (user.accountLevel + 1) * (user.accountLevel + 1) * 100;
-    final progress =
-        ((user.accountXP - currentLevelXP) / (nextLevelXP - currentLevelXP))
-            .clamp(0.0, 1.0);
-
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white10),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          SizedBox(width: 20.w),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'XP PROGRESS',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 9.sp,
-                  fontWeight: FontWeight.bold,
+                value,
+                style: GoogleFonts.orbitron(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white,
                 ),
               ),
               Text(
-                '${(progress * 100).toStringAsFixed(0)}%',
-                style: TextStyle(
-                  color: AppColors.highlightColor,
+                label,
+                style: GoogleFonts.inter(
                   fontSize: 9.sp,
-                  fontFamily: 'PressStart2P',
+                  color: Colors.white24,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.2,
                 ),
               ),
             ],
           ),
-          SizedBox(height: 12.h),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: LinearProgressIndicator(
-              value: progress,
-              minHeight: 10.h,
-              backgroundColor: Colors.white.withValues(alpha: 0.06),
-              color: AppColors.primary,
-            ),
-          ),
-          SizedBox(height: 12.h),
-          Center(
-            child: Text(
-              '${user.accountXP} / $nextLevelXP XP',
-              style: TextStyle(
-                color: Colors.white38,
-                fontSize: 10.sp,
-                letterSpacing: 1,
-              ),
-            ),
-          ),
         ],
       ),
     );
   }
 
-  Widget _buildUtilityGrid() {
-    return GridView.count(
-      crossAxisCount: 2,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 12.w,
-      crossAxisSpacing: 12.w,
-      childAspectRatio: 2.5,
+  Widget _buildAchievementDisplay(UserData user) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildIconButton('EDIT PROFILE', Icons.edit, _navigateToEditScreen),
-        _buildIconButton(
-          'ACHIEVES',
-          Icons.emoji_events,
-          _navigateToAchievementsScreen,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _sectionHeader('FEATURED MEDALS'),
+            TextButton(
+              onPressed: () => _showAchievementSelection(context),
+              child: Text(
+                'CUSTOMIZE',
+                style: TextStyle(
+                  fontFamily: 'PressStart2P',
+                  fontSize: 7.sp,
+                  color: const Color(0xFFDAA520).withOpacity(0.8),
+                ),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 16.h),
+        Container(
+          padding: EdgeInsets.symmetric(vertical: 24.h),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.03),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: Colors.white.withOpacity(0.05)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: List.generate(3, (index) {
+              if (index < user.displayedAchievements.length) {
+                final title = user.displayedAchievements[index];
+                final achievement = _achievements.firstWhere(
+                  (a) => a.title == title,
+                  orElse: () => Achievement(title: title, description: ''),
+                );
+                return _medalItem(achievement.imagePath, achievement.title);
+              } else {
+                return _emptyMedalSlot();
+              }
+            }),
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildIconButton(String label, IconData icon, VoidCallback onTap) {
+  Widget _medalItem(String? path, String title) {
+    return Column(
+      children: [
+        Container(
+          width: 80.w,
+          height: 80.w,
+          padding: EdgeInsets.all(4.w),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFDAA520).withOpacity(0.3),
+                blurRadius: 20,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+          child: Image.asset(
+            path ?? 'assets/achievements/medal_bronze.png',
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) => const Icon(
+              Icons.military_tech,
+              color: Color(0xFFDAA520),
+              size: 50,
+            ),
+          ),
+        ),
+        SizedBox(height: 12.h),
+        SizedBox(
+          width: 90.w,
+          child: Text(
+            title.toUpperCase(),
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: 'PressStart2P',
+              fontSize: 6.sp,
+              color: Colors.white.withOpacity(0.9),
+              height: 1.6,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _emptyMedalSlot() {
+    return Column(
+      children: [
+        GestureDetector(
+          onTap: () => _showAchievementSelection(context),
+          child: Container(
+            width: 80.w,
+            height: 80.w,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white.withOpacity(0.04),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.1),
+                width: 2,
+                style: BorderStyle.none,
+              ),
+            ),
+            child: Icon(Icons.add_rounded, color: Colors.white10, size: 36.sp),
+          ),
+        ),
+        SizedBox(height: 12.h),
+        Text(
+          'LOCKED',
+          style: TextStyle(
+            fontFamily: 'PressStart2P',
+            fontSize: 7.sp,
+            color: Colors.white10,
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showAchievementSelection(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) =>
+          AchievementSelectionSheet(allOrganisms: _allOrganisms),
+    );
+  }
+
+  Widget _buildAccountProgress(UserData user) {
+    final nextLevelXP = (user.accountLevel + 1) * (user.accountLevel + 1) * 100;
+    final prevLevelXP = user.accountLevel * user.accountLevel * 100;
+    final progress =
+        ((user.accountXP - prevLevelXP) / (nextLevelXP - prevLevelXP)).clamp(
+          0.0,
+          1.0,
+        );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _sectionHeader('EXPERIENCE HUB'),
+        SizedBox(height: 16.h),
+        Container(
+          padding: EdgeInsets.all(24.w),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.03),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: Colors.white.withOpacity(0.06)),
+          ),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'LEVEL ${user.accountLevel} PROGRESS',
+                    style: GoogleFonts.orbitron(
+                      fontSize: 11.sp,
+                      color: Colors.white.withOpacity(0.7),
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  Text(
+                    '${(progress * 100).toInt()}%',
+                    style: TextStyle(
+                      fontFamily: 'PressStart2P',
+                      fontSize: 9.sp,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 20.h),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: LinearProgressIndicator(
+                  value: progress,
+                  minHeight: 14.h,
+                  backgroundColor: Colors.white.withOpacity(0.05),
+                  color: AppColors.primary,
+                ),
+              ),
+              SizedBox(height: 16.h),
+              Text(
+                '${user.accountXP} / $nextLevelXP XP',
+                style: GoogleFonts.inter(
+                  fontSize: 11.sp,
+                  color: Colors.white12,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1.5,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildUtilities(UserData user) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _sectionHeader('OPERATIONS'),
+        SizedBox(height: 16.h),
+        Row(
+          children: [
+            Expanded(
+              child: _utilityButton(
+                'EDIT PROFILE',
+                Icons.manage_accounts,
+                _navigateToEditScreen,
+              ),
+            ),
+            SizedBox(width: 16.w),
+            Expanded(
+              child: _utilityButton(
+                'ACHIEVEMENTS',
+                Icons.emoji_events,
+                () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => AchievementsScreen(
+                      currentUser: user,
+                      allOrganisms: _allOrganisms,
+                      authService: LocalAuthService(),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _utilityButton(String label, IconData icon, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(20),
       child: Container(
+        height: 100.h,
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white10),
+          color: Colors.white.withOpacity(0.04),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.white.withOpacity(0.08)),
         ),
-        child: Row(
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: AppColors.highlightColor, size: 18.w),
-            SizedBox(width: 12.w),
+            Icon(
+              icon,
+              color: const Color(0xFFDAA520).withOpacity(0.9),
+              size: 28.sp,
+            ),
+            SizedBox(height: 12.h),
             Text(
               label,
               style: TextStyle(
                 fontFamily: 'PressStart2P',
-                fontSize: 7.sp,
-                color: Colors.white,
+                fontSize: 6.5.sp,
+                color: Colors.white.withOpacity(0.8),
               ),
             ),
           ],
@@ -599,157 +788,126 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildRogueCard(UserData user) {
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.purple.withValues(alpha: 0.1),
-            Colors.black.withValues(alpha: 0.3),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.purple.withValues(alpha: 0.2)),
-      ),
-      child: Column(
-        children: [
-          _buildDataRow('MAX FLOOR', '${user.bestRogueFloor}', highlight: true),
-          SizedBox(height: 16.h),
-          SizedBox(
-            height: 40.h,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              shrinkWrap: true,
-              children: user.bestRogueTeam.map((animal) {
-                final fileName = animal.name
-                    .toLowerCase()
-                    .replaceAll(' ', '_')
-                    .replaceAll("'", '_')
-                    .replaceAll('-', '_');
-                return Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 4.w),
-                  child: Image.asset(
-                    'assets/sprites/$fileName.png',
-                    width: 32.h,
-                    errorBuilder: (_, __, ___) =>
-                        const Icon(Icons.pets, color: Colors.white24),
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuizStats(UserData user) {
-    if (user.quizStats.isEmpty) {
-      return Center(
-        child: Text(
-          'NO COMBAT ANALYTICS AVAILABLE',
-          style: TextStyle(
-            color: Colors.white24,
-            fontSize: 8.sp,
-            fontFamily: 'PressStart2P',
-          ),
-        ),
-      );
-    }
+  Widget _buildRogueSection(UserData user) {
     return Column(
-      children: user.quizStats.entries.map((entry) {
-        final attempts = entry.value['attempts'] as int? ?? 0;
-        final correct = entry.value['correct'] as int? ?? 0;
-        final accuracy = attempts > 0 ? (correct / attempts) : 0.0;
-        return Container(
-          margin: EdgeInsets.only(bottom: 12.h),
-          padding: EdgeInsets.all(16.w),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _sectionHeader('MISSION LOGS'),
+        SizedBox(height: 16.h),
+        Container(
+          padding: EdgeInsets.all(24.w),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.03),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                entry.key.toUpperCase(),
-                style: TextStyle(
-                  color: AppColors.highlightColor,
-                  fontSize: 9.sp,
-                  fontFamily: 'PressStart2P',
-                ),
-              ),
-              SizedBox(height: 12.h),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildStatPill(
-                    'ACC:',
-                    '${(accuracy * 100).toStringAsFixed(1)}%',
-                    Colors.blue,
-                  ),
-                  _buildStatPill('TRIAL:', '$attempts', Colors.orange),
-                  _buildStatPill('WIN:', '$correct', const Color(0xFF2ECC71)),
-                ],
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                const Color(0xFF1E3C72).withOpacity(0.15),
+                const Color(0xFF2A5298).withOpacity(0.15),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: const Color(0xFF1E3C72).withOpacity(0.4)),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF1E3C72).withOpacity(0.1),
+                blurRadius: 20,
               ),
             ],
           ),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildStatPill(String label, String value, Color color) {
-    return Row(
-      children: [
-        Text(
-          label,
-          style: TextStyle(color: Colors.white38, fontSize: 8.sp),
-        ),
-        SizedBox(width: 4.w),
-        Text(
-          value,
-          style: TextStyle(
-            color: color,
-            fontSize: 9.sp,
-            fontWeight: FontWeight.bold,
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'ROGUE ELITE FLOOR',
+                    style: GoogleFonts.orbitron(
+                      fontSize: 11.sp,
+                      color: Colors.white.withOpacity(0.8),
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  Text(
+                    '${user.bestRogueFloor}',
+                    style: TextStyle(
+                      fontFamily: 'PressStart2P',
+                      fontSize: 14.sp,
+                      color: const Color(0xFFDAA520),
+                    ),
+                  ),
+                ],
+              ),
+              if (user.bestRogueTeam.isNotEmpty) ...[
+                SizedBox(height: 24.h),
+                SizedBox(
+                  height: 56.h,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: user.bestRogueTeam.length,
+                    itemBuilder: (context, idx) {
+                      final animal = user.bestRogueTeam[idx];
+                      final fileName = animal.name.toLowerCase().replaceAll(
+                        ' ',
+                        '_',
+                      );
+                      return Padding(
+                        padding: EdgeInsets.only(right: 16.w),
+                        child: Container(
+                          padding: EdgeInsets.all(6.w),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.4),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.05),
+                            ),
+                          ),
+                          child: Image.asset(
+                            'assets/sprites/$fileName.png',
+                            width: 44.h,
+                            errorBuilder: (_, __, ___) =>
+                                const Icon(Icons.pets, color: Colors.white10),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
       ],
     );
   }
 
-  Widget _buildDataRow(String label, String value, {bool highlight = false}) {
+  Widget _sectionHeader(String title) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: TextStyle(color: Colors.white38, fontSize: 10.sp),
+        Container(
+          width: 5.w,
+          height: 18.h,
+          decoration: BoxDecoration(
+            color: const Color(0xFFDAA520),
+            borderRadius: BorderRadius.circular(3),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFDAA520).withOpacity(0.4),
+                blurRadius: 10,
+              ),
+            ],
+          ),
         ),
+        SizedBox(width: 14.w),
         Text(
-          value,
-          style: TextStyle(
-            color: highlight ? AppColors.highlightColor : Colors.white,
-            fontSize: 11.sp,
-            fontWeight: FontWeight.bold,
+          title,
+          style: GoogleFonts.orbitron(
+            fontSize: 13.sp,
+            color: Colors.white,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 2.5,
           ),
         ),
       ],
-    );
-  }
-
-  void _navigateToAchievementsScreen() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => AchievementsScreen(
-          currentUser: _currentUser!,
-          allOrganisms: _allOrganisms,
-          authService: _authService,
-        ),
-      ),
     );
   }
 }

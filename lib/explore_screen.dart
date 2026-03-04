@@ -369,12 +369,14 @@ class _ExploreScreenState extends State<ExploreScreen> {
               child: Image.asset(
                 _getAssetPath(biomeName),
                 fit: BoxFit.cover,
-                colorBlendMode: BlendMode.darken,
                 color: timeOfDay == 'day'
                     ? Colors.black.withValues(alpha: 0.3)
                     : (timeOfDay == 'evening'
                           ? Colors.orangeAccent.withValues(alpha: 0.3)
-                          : Colors.indigo[900]!.withValues(alpha: 0.5)),
+                          : Colors.indigo[900]!.withValues(alpha: 0.7)),
+                colorBlendMode: timeOfDay == 'night'
+                    ? BlendMode.multiply
+                    : BlendMode.darken,
                 errorBuilder: (context, error, stackTrace) => Container(
                   color: Colors.black26,
                   child: const Center(

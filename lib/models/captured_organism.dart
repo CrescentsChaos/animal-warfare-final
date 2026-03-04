@@ -246,7 +246,7 @@ class CapturedOrganism {
       levelFromXP++;
     }
 
-    int newLevel = levelFromXP;
+    int newLevel = max(level, levelFromXP); // FIX: Never de-level
     int restoredHealth = currentHealth;
 
     if (newLevel > level) {
@@ -628,6 +628,11 @@ class CapturedOrganism {
 
     final level =
         json['level'] as int? ?? 50; // Read level from JSON, default to 50
+    final xp =
+        json['xp'] as int? ??
+        (level > 1
+            ? xpForLevel(level)
+            : 0); // FIX: Init XP from level if missing
 
     return CapturedOrganism(
       id: id, // Pass id to constructor
@@ -644,7 +649,7 @@ class CapturedOrganism {
                 .toList()
           : (status != null ? [status] : []),
       level: level,
-      xp: json['xp'] as int? ?? 0,
+      xp: xp,
       initialLevel: json['initialLevel'] as int? ?? level,
       attackStage: json['attackStage'] as int? ?? 0,
       defenseStage: json['defenseStage'] as int? ?? 0,

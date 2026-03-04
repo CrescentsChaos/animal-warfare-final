@@ -70,7 +70,21 @@ class UserState with ChangeNotifier {
     await _readModifyWrite((u) {
       final list = List<CapturedOrganism>.from(u.capturedOrganisms)
         ..add(newCapture);
-      return u.copyWith(capturedOrganisms: list);
+
+      // Mark species as captured in stats
+      final newStats = Map<String, Map<String, int>>.from(
+        u.speciesStats.map((k, v) => MapEntry(k, Map<String, int>.from(v))),
+      );
+      final species = newCapture.name;
+      final existing =
+          newStats[species] ?? {'matches': 0, 'wins': 0, 'captured': 0};
+      newStats[species] = {
+        'matches': existing['matches'] ?? 0,
+        'wins': existing['wins'] ?? 0,
+        'captured': 1,
+      };
+
+      return u.copyWith(capturedOrganisms: list, speciesStats: newStats);
     });
   }
 
@@ -144,6 +158,16 @@ class UserState with ChangeNotifier {
           .toList();
       return u.copyWith(capturedOrganisms: list, battleTeam: newTeam);
     });
+  }
+
+  Future<void> updateDisplayedAchievements(
+    List<String> achievementTitles,
+  ) async {
+    if (_currentUser == null) return;
+    await _readModifyWrite(
+      (u) =>
+          u.copyWith(displayedAchievements: achievementTitles.take(3).toList()),
+    );
   }
 
   Future<void> removeCapturedOrganism(CapturedOrganism organism) async {
@@ -833,7 +857,24 @@ class UserState with ChangeNotifier {
     await _readModifyWrite((u) {
       final team = List<CapturedOrganism>.from(u.rogueLikeState.team)
         ..add(newCapture);
-      return u.copyWith(rogueLikeState: u.rogueLikeState.copyWith(team: team));
+
+      // Mark species as captured in stats (Roguelike counts too!)
+      final newStats = Map<String, Map<String, int>>.from(
+        u.speciesStats.map((k, v) => MapEntry(k, Map<String, int>.from(v))),
+      );
+      final species = newCapture.name;
+      final existing =
+          newStats[species] ?? {'matches': 0, 'wins': 0, 'captured': 0};
+      newStats[species] = {
+        'matches': existing['matches'] ?? 0,
+        'wins': existing['wins'] ?? 0,
+        'captured': 1,
+      };
+
+      return u.copyWith(
+        rogueLikeState: u.rogueLikeState.copyWith(team: team),
+        speciesStats: newStats,
+      );
     });
   }
 
@@ -1091,7 +1132,8 @@ class UserState with ChangeNotifier {
         if (teamIds.contains(org.id)) {
           int share = (org.id == killerId) ? baseXP : (baseXP / 2).floor();
           if (share > 0) {
-            final xpResult = org.gainXP(share, effectiveCap);
+            // Roguelike animals ignore account/floor level cap as requested
+            final xpResult = org.gainXP(share, 100);
             if (xpResult['leveledUp'] as bool) {
               results['animalLeveledUp'][org.id] = true;
             }
@@ -1142,7 +1184,8 @@ class UserState with ChangeNotifier {
           if (teamIds.contains(org.id)) {
             int share = (org.id == killerId) ? baseXP : (baseXP / 2).floor();
             if (share > 0) {
-              final xpResult = org.gainXP(share, effectiveCap);
+              // Roguelike animals ignore account/floor level cap
+              final xpResult = org.gainXP(share, 100);
               if (xpResult['leveledUp'] as bool) {
                 results['animalLeveledUp'][org.id] = true;
               }
@@ -1198,10 +1241,12 @@ class UserState with ChangeNotifier {
 
       // Helper to update stats
       void update(String species, bool won) {
-        final existing = newStats[species] ?? {'matches': 0, 'wins': 0};
+        final existing =
+            newStats[species] ?? {'matches': 0, 'wins': 0, 'captured': 0};
         newStats[species] = {
           'matches': (existing['matches'] ?? 0) + 1,
           'wins': (existing['wins'] ?? 0) + (won ? 1 : 0),
+          'captured': existing['captured'] ?? 0,
         };
       }
 
