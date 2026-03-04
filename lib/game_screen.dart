@@ -257,8 +257,8 @@ class _GameScreenState extends State<GameScreen> {
                   ),
 
                   _buildMenuButton(
-                    text: 'Crafting Station',
-                    subtitle: 'Forge talismans & items',
+                    text: 'Inventory',
+                    subtitle: 'Manage items & forging',
                     icon: Icons.auto_awesome_rounded,
                     color: const Color(0xFFFFB300),
                     onPressed: () => _navigateTo(const CraftingScreen()),

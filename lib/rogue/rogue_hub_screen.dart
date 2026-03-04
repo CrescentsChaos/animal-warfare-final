@@ -1,18 +1,14 @@
+// lib/rogue/rogue_hub_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/models/captured_organism.dart';
-import 'package:animal_warfare/battle_screen.dart';
-import 'package:animal_warfare/rogue/move_manage_screen.dart';
 import 'package:animal_warfare/data/biome_data.dart';
-import 'package:animal_warfare/models/talisman.dart';
+import 'package:animal_warfare/models/rogue_like_state.dart';
 import 'package:animal_warfare/rogue/rogue_reward_dialog.dart';
 import 'package:animal_warfare/widgets/animal_summary_screen.dart';
-import 'package:animal_warfare/models/nature.dart';
-import 'package:animal_warfare/models/rogue_like_state.dart';
-import 'package:animal_warfare/rogue/biome_select_screen.dart';
-import 'package:animal_warfare/game/time_service.dart';
-import 'package:animal_warfare/widgets/game_clock_widget.dart';
+import 'package:animal_warfare/battle_screen.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class RogueHubScreen extends StatefulWidget {
   const RogueHubScreen({super.key});
@@ -21,343 +17,199 @@ class RogueHubScreen extends StatefulWidget {
   State<RogueHubScreen> createState() => _RogueHubScreenState();
 }
 
-class _RogueHubScreenState extends State<RogueHubScreen> {
+class _RogueHubScreenState extends State<RogueHubScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _pulseController;
+
   @override
   void initState() {
     super.initState();
-    _checkForRewards();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
   }
 
   void _checkForRewards() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      final userState = Provider.of<UserState>(context, listen: false);
-      final rewards = userState.currentUser?.rogueLikeState.pendingRewards;
-
-      if (rewards != null && rewards.isNotEmpty) {
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (ctx) => RogueRewardDialog(
-            rewards: rewards,
-            biome:
-                userState.currentUser?.rogueLikeState.currentBiome ?? 'Jungle',
-            onSelect: (reward) async {
-              if (reward.type == RogueRewardType.singleHeal) {
-                final targetIndex = await _showAnimalSelection(context);
-                if (targetIndex != null) {
-                  userState.claimRogueReward(
-                    reward.copyWith(targetIndex: targetIndex),
-                  );
-                }
-              } else {
-                userState.claimRogueReward(reward);
-              }
-            },
-          ),
-        );
-      }
-    });
-  }
-
-  String _getAssetPath(String biomeName) {
-    var name = biomeName;
-    if (name.contains(',')) {
-      name = name.split(',')[0];
-    }
-    name = name.trim().toLowerCase();
-    if (name == 'forest') return 'assets/biomes/jungle-bg.png';
-    if (name == 'rain forest' || name == 'rainforest') {
-      return 'assets/biomes/rainforest-bg.png';
-    }
-    if (name == 'grassland') return 'assets/biomes/savanna-bg.png';
-    final fileName = name.replaceAll(' ', '_');
-    return 'assets/biomes/$fileName-bg.png';
-  }
-
-  String _getTimeOfDay() {
-    final hour = TimeService().currentGameTime.hour;
-    if (hour >= 6 && hour < 18) return 'day';
-    if (hour >= 18 && hour < 21) return 'evening';
-    return 'night';
-  }
-
-  void _advanceFloor(BuildContext context) {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (context) => const BiomeSelectScreen()));
-  }
-
-  Future<int?> _showAnimalSelection(BuildContext context) async {
     final userState = Provider.of<UserState>(context, listen: false);
-    final team = userState.currentUser?.rogueLikeState.team ?? [];
-
-    return showDialog<int>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF151515),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: Colors.white10),
+    final rogue = userState.currentUser?.rogueLikeState;
+    if (rogue != null &&
+        rogue.pendingRewards != null &&
+        rogue.pendingRewards!.isNotEmpty) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => RogueRewardDialog(
+          rewards: rogue.pendingRewards!,
+          biome: rogue.currentBiome ?? 'Jungle',
+          onSelect: (reward) {
+            userState.claimRogueReward(reward);
+          },
         ),
-        title: const Text(
-          'CHOOSE ANIMAL TO HEAL',
-          style: TextStyle(
-            fontFamily: 'PressStart2P',
-            fontSize: 10,
-            color: Colors.white,
-          ),
-        ),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: team.length,
-            itemBuilder: (context, index) {
-              final member = team[index];
-              final hpRatio = member.currentHealth / member.maxHealth;
-              return ListTile(
-                leading: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Image.asset(member.baseOrganism.sprite),
-                ),
-                title: Text(
-                  member.baseOrganism.name.toUpperCase(),
-                  style: const TextStyle(
-                    fontFamily: 'PressStart2P',
-                    fontSize: 9,
-                    color: Colors.white,
-                  ),
-                ),
-                subtitle: Text(
-                  'HP: ${member.currentHealth}/${member.maxHealth}',
-                  style: TextStyle(
-                    fontFamily: 'PressStart2P',
-                    fontSize: 7,
-                    color: hpRatio < 0.3
-                        ? Colors.redAccent
-                        : Colors.greenAccent,
-                  ),
-                ),
-                onTap: () => Navigator.of(ctx).pop(index),
-              );
-            },
-          ),
-        ),
-      ),
-    );
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final userState = Provider.of<UserState>(context);
-    final rogueState = userState.currentUser?.rogueLikeState;
-
-    if (rogueState == null || !rogueState.isActive) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (context.mounted && ModalRoute.of(context)?.isCurrent == true) {
-          Navigator.pop(context);
+    return Consumer<UserState>(
+      builder: (context, userState, _) {
+        final rogue = userState.currentUser?.rogueLikeState;
+        if (rogue == null || !rogue.isActive) {
+          return const Scaffold(body: Center(child: Text('No active run')));
         }
-      });
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
 
-    final String biomeName = rogueState.currentBiome ?? 'Jungle';
-    final Color themeColor = BiomeData.colorFor(biomeName);
+        final Color themeColor = BiomeData.colorFor(
+          rogue.currentBiome ?? 'Jungle',
+        );
 
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: StreamBuilder<GameTime>(
-        stream: TimeService().timeStream,
-        builder: (context, snapshot) {
-          final timeOfDay = _getTimeOfDay();
-          return Container(
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage(_getAssetPath(biomeName)),
-                fit: BoxFit.cover,
-                colorFilter: timeOfDay == 'day'
-                    ? ColorFilter.mode(
-                        Colors.black.withValues(alpha: 0.75),
-                        BlendMode.darken,
-                      )
-                    : ColorFilter.mode(
-                        timeOfDay == 'evening'
-                            ? Colors.orangeAccent.withValues(alpha: 0.3)
-                            : Colors.indigo[900]!.withValues(alpha: 0.5),
-                        BlendMode.darken,
-                      ),
-              ),
-            ),
-            child: SafeArea(
-              child: Column(
-                children: [
-                  // Header
-                  _buildHeader(
-                    rogueState.floor,
-                    rogueState.encounterIndex,
-                    themeColor,
+        return Scaffold(
+          backgroundColor: const Color(0xFF0A0A0A),
+          body: Stack(
+            children: [
+              // Background Image with darkening overlay
+              Positioned.fill(
+                child: Opacity(
+                  opacity: 0.4,
+                  child: Image.asset(
+                    'assets/biomes/${(rogue.currentBiome ?? 'Jungle').toLowerCase()}.png',
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) =>
+                        Container(color: Colors.black),
                   ),
-
-                  const SizedBox(height: 20),
-
-                  // Status Bar
-                  _buildStatusBar(rogueState.team, themeColor),
-
-                  const SizedBox(height: 12),
-
-                  // Inventory Summary
-                  _buildInventoryBar(rogueState.inventory, themeColor),
-
-                  const Expanded(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16.0),
-                      child: _RogueTeamList(),
+                ),
+              ),
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withValues(alpha: 0.1),
+                        Colors.black.withValues(alpha: 0.8),
+                        Colors.black,
+                      ],
                     ),
                   ),
-
-                  // Action Buttons
-                  Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.black87,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: themeColor.withValues(alpha: 0.5),
+                ),
+              ),
+              SafeArea(
+                child: Column(
+                  children: [
+                    _buildHeader(rogue, themeColor),
+                    _buildStatusBar(rogue.team, themeColor),
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.05),
+                          ),
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: themeColor.withValues(alpha: 0.2),
-                            blurRadius: 15,
-                            spreadRadius: 2,
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        children: [
-                          _buildActionButton(
-                            context,
-                            label: rogueState.encounterIndex >= 5
-                                ? 'ADVANCE TO NEXT FLOOR'
-                                : 'START NEXT BATTLE',
-                            icon: rogueState.encounterIndex >= 5
-                                ? Icons.arrow_forward
-                                : Icons.flash_on,
-                            color: rogueState.encounterIndex >= 5
-                                ? Colors.greenAccent
-                                : Colors.redAccent,
-                            isPrimary: true,
-                            onPressed: () => rogueState.encounterIndex >= 5
-                                ? _advanceFloor(context)
-                                : _startNextBattle(context, userState),
-                          ),
-                          const SizedBox(height: 12),
-                          _buildActionButton(
-                            context,
-                            label: 'SAVE & QUIT',
-                            icon: Icons.save_outlined,
-                            color: Colors.white24,
-                            onPressed: () => Navigator.pop(context),
-                          ),
-                        ],
+                        child: const _RogueTeamList(),
                       ),
                     ),
-                  ),
-                ],
+                    _buildControls(context, userState, themeColor),
+                  ],
+                ),
               ),
-            ),
-          );
-        },
-      ),
+            ],
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildHeader(int floor, int encounterIndex, Color themeColor) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.8),
-        border: const Border(bottom: BorderSide(color: Colors.white12)),
-      ),
+  Widget _buildHeader(RogueLikeState rogue, Color themeColor) {
+    return Padding(
+      padding: const EdgeInsets.all(24.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: themeColor,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: themeColor.withValues(alpha: 0.5),
+                          blurRadius: 8,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Flexible(
+                    child: Text(
                       'RUN PROGRESS',
                       style: TextStyle(
                         fontFamily: 'PressStart2P',
                         color: themeColor.withValues(alpha: 0.7),
-                        fontSize: 10,
+                        fontSize: 8,
                       ),
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(width: 12),
-                    GameClockWidget(highlightColor: themeColor),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    for (int i = 0; i < 5; i++)
-                      Container(
-                        width: 30,
-                        height: 8,
-                        margin: const EdgeInsets.only(right: 6),
-                        decoration: BoxDecoration(
-                          color: i < encounterIndex
-                              ? themeColor
-                              : i == encounterIndex
-                              ? Colors.white
-                              : Colors.white10,
-                          borderRadius: BorderRadius.circular(2),
-                          boxShadow: i == encounterIndex
-                              ? [
-                                  BoxShadow(
-                                    color: Colors.white.withValues(alpha: 0.5),
-                                    blurRadius: 4,
-                                  ),
-                                ]
-                              : null,
-                        ),
-                      ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                'FLOOR',
-                style: TextStyle(
-                  fontFamily: 'PressStart2P',
-                  color: themeColor.withValues(alpha: 0.7),
-                  fontSize: 10,
-                ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 8),
               Text(
-                '$floor',
-                style: const TextStyle(
-                  fontFamily: 'PressStart2P',
+                '${rogue.currentBiome?.toUpperCase() ?? 'REGION'}',
+                style: GoogleFonts.outfit(
                   color: Colors.white,
-                  fontSize: 20,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
                 ),
               ),
             ],
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: themeColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: themeColor.withValues(alpha: 0.3)),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  'FLOOR',
+                  style: TextStyle(
+                    fontFamily: 'PressStart2P',
+                    color: themeColor.withValues(alpha: 0.7),
+                    fontSize: 8,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${rogue.floor}',
+                  style: const TextStyle(
+                    fontFamily: 'PressStart2P',
+                    color: Colors.white,
+                    fontSize: 18,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -385,7 +237,7 @@ class _RogueHubScreenState extends State<RogueHubScreen> {
                 'TEAM VITALITY',
                 style: TextStyle(
                   fontFamily: 'PressStart2P',
-                  color: Colors.white.withValues(alpha: 0.7),
+                  color: Colors.white.withValues(alpha: 0.5),
                   fontSize: 8,
                 ),
               ),
@@ -399,14 +251,94 @@ class _RogueHubScreenState extends State<RogueHubScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 10),
           ClipRRect(
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(6),
             child: LinearProgressIndicator(
               value: ratio,
-              backgroundColor: Colors.white10,
+              backgroundColor: Colors.white.withValues(alpha: 0.05),
               color: themeColor,
-              minHeight: 8,
+              minHeight: 12,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildControls(
+    BuildContext context,
+    UserState userState,
+    Color themeColor,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(24.0),
+      decoration: BoxDecoration(
+        color: const Color(0xFF111111),
+        border: Border(
+          top: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildActionButton(
+              context,
+              label: 'QUIT RUN',
+              icon: Icons.exit_to_app,
+              color: Colors.white.withValues(alpha: 0.05),
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    backgroundColor: const Color(0xFF1A1A1A),
+                    title: const Text(
+                      'ABANDON RUN',
+                      style: TextStyle(
+                        fontFamily: 'PressStart2P',
+                        fontSize: 12,
+                        color: Colors.redAccent,
+                      ),
+                    ),
+                    content: const Text(
+                      'All progress in this run will be lost! Are you sure?',
+                      style: TextStyle(color: Colors.white70),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        child: const Text('CANCEL'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          userState.endRogueRun();
+                          Navigator.pop(ctx);
+                          Navigator.pop(context);
+                        },
+                        child: const Text(
+                          'ABANDON',
+                          style: TextStyle(color: Colors.redAccent),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            flex: 2,
+            child: ScaleTransition(
+              scale: Tween(begin: 1.0, end: 1.02).animate(_pulseController),
+              child: _buildActionButton(
+                context,
+                label: 'BATTLE',
+                icon: Icons.flash_on,
+                color: themeColor,
+                isPrimary: true,
+                onPressed: () => _startNextBattle(context, userState),
+              ),
             ),
           ),
         ],
@@ -423,89 +355,31 @@ class _RogueHubScreenState extends State<RogueHubScreen> {
     bool isPrimary = false,
   }) {
     return SizedBox(
-      width: double.infinity,
+      height: 60,
       child: ElevatedButton.icon(
-        icon: Icon(icon, color: Colors.white, size: 18),
+        icon: Icon(icon, color: Colors.white, size: 20),
         label: Text(
           label,
           style: TextStyle(
             fontFamily: 'PressStart2P',
-            fontSize: isPrimary ? 11 : 9,
+            fontSize: isPrimary ? 12 : 10,
             color: Colors.white,
           ),
         ),
         style: ElevatedButton.styleFrom(
           backgroundColor: color,
-          padding: const EdgeInsets.symmetric(vertical: 18),
-          elevation: isPrimary ? 8 : 0,
+          elevation: isPrimary ? 12 : 0,
+          shadowColor: isPrimary
+              ? color.withValues(alpha: 0.5)
+              : Colors.transparent,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(16),
             side: isPrimary
                 ? BorderSide.none
-                : const BorderSide(color: Colors.white12),
+                : const BorderSide(color: Colors.white10),
           ),
         ),
         onPressed: onPressed,
-      ),
-    );
-  }
-
-  Widget _buildInventoryBar(Map<String, int> inventory, Color themeColor) {
-    final items = inventory.entries.where((e) => e.value > 0).toList();
-    if (items.isEmpty) return const SizedBox.shrink();
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'RUN INVENTORY',
-            style: TextStyle(
-              fontFamily: 'PressStart2P',
-              color: Colors.white.withValues(alpha: 0.5),
-              fontSize: 8,
-            ),
-          ),
-          const SizedBox(height: 10),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: items
-                  .map((e) => _buildInventoryItem(e.key, e.value, themeColor))
-                  .toList(),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInventoryItem(String id, int count, Color themeColor) {
-    String label = id.replaceAll('_', ' ').toUpperCase();
-    if (id == 'capture_net') label = 'NET';
-
-    return Container(
-      margin: const EdgeInsets.only(right: 12),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: themeColor.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.shopping_bag_outlined, size: 12, color: themeColor),
-          const SizedBox(width: 6),
-          Text(
-            '$label x$count',
-            style: const TextStyle(
-              fontFamily: 'PressStart2P',
-              fontSize: 7,
-              color: Colors.white70,
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -524,8 +398,8 @@ class _RogueHubScreenState extends State<RogueHubScreen> {
           isRogueMode: true,
           biomeName: rogue.currentBiome ?? 'Jungle',
           battleTitle:
-              'Rogue Floor ${rogue.floor} - ${rogue.encounterIndex + 1}/5',
-          timeOfDay: _getTimeOfDay(),
+              'FLOOR ${rogue.floor} - STAGE ${rogue.encounterIndex + 1}/5',
+          timeOfDay: 'Day',
         ),
       ),
     );
@@ -541,8 +415,10 @@ class _RogueTeamList extends StatelessWidget {
     final userState = Provider.of<UserState>(context);
     final team = userState.currentUser?.rogueLikeState.team ?? [];
 
+    if (team.isEmpty) return const SizedBox();
+
     return ReorderableListView.builder(
-      padding: const EdgeInsets.symmetric(vertical: 20),
+      padding: const EdgeInsets.all(16),
       itemCount: team.length,
       onReorder: (oldIndex, newIndex) {
         if (oldIndex < newIndex) {
@@ -577,612 +453,185 @@ class _RogueTeamCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final userState = Provider.of<UserState>(context, listen: false);
     final biomeName =
-        Provider.of<UserState>(
-          context,
-          listen: false,
-        ).currentUser?.rogueLikeState.currentBiome ??
-        'Jungle';
+        userState.currentUser?.rogueLikeState.currentBiome ?? 'Jungle';
     final Color themeColor = BiomeData.colorFor(biomeName);
     final hpRatio = member.currentHealth / member.maxHealth;
     final isFainted = member.currentHealth <= 0;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      key: ValueKey(member.id),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.black54,
-        borderRadius: BorderRadius.circular(16),
+        color: const Color(0xFF1A1A1A),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isFainted ? Colors.red.withValues(alpha: 0.5) : Colors.white12,
+          color: isFainted
+              ? Colors.redAccent.withValues(alpha: 0.3)
+              : Colors.white.withValues(alpha: 0.05),
           width: 1.5,
         ),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        children: [
-          // Main Body
-          IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Sprite section
-                Container(
-                  width: 90,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: themeColor.withValues(alpha: 0.1),
-                    border: const Border(
-                      right: BorderSide(color: Colors.white10),
-                    ),
-                  ),
-                  child: Center(
-                    child: Opacity(
-                      opacity: isFainted ? 0.4 : 1.0,
-                      child: Image.asset(
-                        'assets/sprites/${member.baseOrganism.name.toLowerCase().replaceAll(' ', '_').replaceAll('-', '_').replaceAll("'", "_")}.png',
-                        width: 60,
-                        height: 60,
-                        errorBuilder: (_, __, ___) => const Icon(
-                          Icons.pets,
-                          color: Colors.white24,
-                          size: 40,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                // Info section
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              member.baseOrganism.name.toUpperCase(),
-                              style: const TextStyle(
-                                fontFamily: 'PressStart2P',
-                                color: Colors.white,
-                                fontSize: 10,
-                              ),
-                            ),
-                            const Spacer(),
-                            Text(
-                              'LV.${member.level}',
-                              style: TextStyle(
-                                fontFamily: 'PressStart2P',
-                                color: themeColor,
-                                fontSize: 9,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            const Icon(
-                              Icons.drag_indicator,
-                              color: Colors.white24,
-                              size: 16,
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        // HP
-                        Row(
-                          children: [
-                            const Text(
-                              'HP',
-                              style: TextStyle(
-                                fontFamily: 'PressStart2P',
-                                color: Colors.white54,
-                                fontSize: 8,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: LinearProgressIndicator(
-                                value: hpRatio,
-                                minHeight: 6,
-                                backgroundColor: Colors.white10,
-                                color: hpRatio > 0.5
-                                    ? Colors.green
-                                    : (hpRatio > 0.2
-                                          ? Colors.orange
-                                          : Colors.red),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '${member.currentHealth}/${member.maxHealth}',
-                          style: const TextStyle(
-                            fontFamily: 'PressStart2P',
-                            color: Colors.white38,
-                            fontSize: 7,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // Actions / Item Bar
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.03),
-              border: const Border(top: BorderSide(color: Colors.white10)),
-            ),
-            child: Row(
-              children: [
-                // Item indicator
-                Icon(
-                  Icons.auto_awesome,
-                  size: 14,
-                  color: member.equippedTalisman != null
-                      ? Colors.amberAccent
-                      : Colors.white24,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    member.equippedTalisman?.name ?? 'NO ITEM',
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontFamily: 'PressStart2P',
-                      fontSize: 8,
-                      color: member.equippedTalisman != null
-                          ? Colors.amberAccent
-                          : Colors.white24,
-                    ),
-                  ),
-                ),
-                // Action buttons
-                _buildSmallAction(
-                  context,
-                  'SUMMARY',
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (ctx) => AnimalSummaryScreen(captured: member),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                _buildSmallAction(
-                  context,
-                  'MANAGE',
-                  onPressed: () => _showManageOptions(context),
-                ),
-              ],
-            ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildSmallAction(
-    BuildContext context,
-    String label, {
-    required VoidCallback onPressed,
-  }) {
-    return InkWell(
-      onTap: onPressed,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: Colors.white12,
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: Text(
-          label,
-          style: const TextStyle(
-            fontFamily: 'PressStart2P',
-            fontSize: 8,
-            color: Colors.white,
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showManageOptions(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: const Color(0xFF151515),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'MANAGE ${member.name.toUpperCase()}',
-                style: const TextStyle(
-                  fontFamily: 'PressStart2P',
-                  fontSize: 12,
-                  color: Colors.white,
-                ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (ctx) => AnimalSummaryScreen(captured: member),
               ),
-              const SizedBox(height: 24),
-              _buildLargeOption(
-                ctx,
-                label: 'VIEW SUMMARY',
-                icon: Icons.info_outline,
-                color: Colors.orangeAccent.withValues(alpha: 0.8),
-                onPressed: () {
-                  Navigator.pop(ctx);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (ctx) => AnimalSummaryScreen(captured: member),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 12),
-              _buildLargeOption(
-                ctx,
-                label: 'MANAGE MOVES',
-                icon: Icons.edit_note,
-                onPressed: () {
-                  Navigator.pop(ctx);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (ctx) => MoveManageScreen(organismIndex: index),
-                    ),
-                  ).then((_) {
-                    // Update trigger already active via provider
-                  });
-                },
-              ),
-              const SizedBox(height: 12),
-              _buildLargeOption(
-                ctx,
-                label: 'GIVE ITEM',
-                icon: Icons.add_circle_outline,
-                onPressed: () {
-                  Navigator.pop(ctx);
-                  _showItemSelection(context);
-                },
-              ),
-              const SizedBox(height: 12),
-              _buildLargeOption(
-                ctx,
-                label: 'SWAP ITEM',
-                icon: Icons.swap_horiz,
-                enabled: teamCount > 1,
-                onPressed: () {
-                  Navigator.pop(ctx);
-                  _showSwapSelection(context);
-                },
-              ),
-              const SizedBox(height: 12),
-              _buildLargeOption(
-                ctx,
-                label: 'REMOVE ITEM',
-                icon: Icons.delete_outline,
-                enabled: member.equippedTalisman != null,
-                color: Colors.redAccent.withValues(alpha: 0.8),
-                onPressed: () {
-                  Navigator.pop(ctx);
-                  Provider.of<UserState>(
-                    context,
-                    listen: false,
-                  ).removeRogueTalisman(index);
-                },
-              ),
-              const SizedBox(height: 24),
-              _buildLargeOption(
-                ctx,
-                label: 'USE NATURE MINT',
-                icon: Icons.spa,
-                enabled:
-                    (Provider.of<UserState>(context, listen: false)
-                            .currentUser
-                            ?.rogueLikeState
-                            .inventory['nature_mint'] ??
-                        0) >
-                    0,
-                color: Colors.greenAccent.withValues(alpha: 0.8),
-                onPressed: () {
-                  Navigator.pop(ctx);
-                  _showNatureSelection(context);
-                },
-              ),
-              const SizedBox(height: 12),
-              _buildLargeOption(
-                ctx,
-                label: 'CANCEL',
-                icon: Icons.close,
-                onPressed: () => Navigator.pop(ctx),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showNatureSelection(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: const Color(0xFF151515),
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) {
-        final natures = Nature.allNatures;
-        return DraggableScrollableSheet(
-          initialChildSize: 0.7,
-          minChildSize: 0.5,
-          maxChildSize: 0.9,
-          expand: false,
-          builder: (_, controller) => Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
               children: [
-                const Text(
-                  'SELECT NEW NATURE',
-                  style: TextStyle(
-                    fontFamily: 'PressStart2P',
-                    fontSize: 12,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                const Text(
-                  'Consumes 1 Nature Mint',
-                  style: TextStyle(
-                    fontFamily: 'PressStart2P',
-                    fontSize: 8,
-                    color: Colors.white54,
-                  ),
-                ),
-                const SizedBox(height: 20),
+                _buildSprite(member),
+                const SizedBox(width: 16),
                 Expanded(
-                  child: ListView.builder(
-                    controller: controller,
-                    itemCount: natures.length,
-                    itemBuilder: (context, i) {
-                      final n = natures[i];
-                      final isNeutral = n.increasedStat == n.decreasedStat;
-                      return ListTile(
-                        title: Text(
-                          n.name,
-                          style: const TextStyle(
-                            fontFamily: 'PressStart2P',
-                            fontSize: 10,
-                            color: Colors.white,
-                          ),
-                        ),
-                        subtitle: Text(
-                          isNeutral
-                              ? 'Neutral'
-                              : '+${n.increasedStat.name.toUpperCase()} / -${n.decreasedStat.name.toUpperCase()}',
-                          style: TextStyle(
-                            fontFamily: 'PressStart2P',
-                            fontSize: 6,
-                            color: isNeutral ? Colors.white38 : Colors.amber,
-                          ),
-                        ),
-                        onTap: () {
-                          Navigator.pop(ctx);
-                          Provider.of<UserState>(
-                            context,
-                            listen: false,
-                          ).changeRogueAnimalNature(index, n);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                '${member.name}\'s nature changed to ${n.name}!',
-                                style: const TextStyle(
-                                  fontFamily: 'PressStart2P',
-                                  fontSize: 8,
-                                ),
-                              ),
-                              backgroundColor: Colors.green,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            member.nickname ?? member.name.toUpperCase(),
+                            style: GoogleFonts.outfit(
+                              color: isFainted ? Colors.white38 : Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
                             ),
-                          );
-                        },
-                      );
-                    },
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: themeColor.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              'LV ${member.level}',
+                              style: TextStyle(
+                                fontFamily: 'PressStart2P',
+                                color: themeColor,
+                                fontSize: 8,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      // HP Bar
+                      _buildMiniBar(
+                        label: 'HP',
+                        value: hpRatio,
+                        color: _getHpColor(hpRatio),
+                        trailing: '${member.currentHealth}/${member.maxHealth}',
+                      ),
+                      const SizedBox(height: 6),
+                      // XP Bar
+                      _buildMiniBar(
+                        label: 'XP',
+                        value: member.xpRatio,
+                        color: Colors.blueAccent,
+                        trailing: '${(member.xpRatio * 100).toInt()}%',
+                      ),
+                    ],
                   ),
                 ),
+                const Icon(Icons.drag_handle, color: Colors.white12, size: 20),
               ],
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
-  Widget _buildLargeOption(
-    BuildContext context, {
-    required String label,
-    required IconData icon,
-    required VoidCallback onPressed,
-    Color? color,
-    bool enabled = true,
-  }) {
-    return SizedBox(
-      width: double.infinity,
+  Widget _buildSprite(CapturedOrganism member) {
+    final isFainted = member.currentHealth <= 0;
+    return Container(
+      width: 64,
+      height: 64,
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Opacity(
-        opacity: enabled ? 1.0 : 0.4,
-        child: ElevatedButton.icon(
-          onPressed: enabled ? onPressed : null,
-          icon: Icon(icon, color: Colors.white, size: 20),
-          label: Text(
-            label,
-            style: const TextStyle(
-              fontFamily: 'PressStart2P',
-              fontSize: 10,
-              color: Colors.white,
-            ),
-          ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: color ?? Colors.white10,
-            padding: const EdgeInsets.symmetric(vertical: 20),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
+        opacity: isFainted ? 0.3 : 1.0,
+        child: ColorFiltered(
+          colorFilter: isFainted
+              ? const ColorFilter.mode(Colors.grey, BlendMode.saturation)
+              : const ColorFilter.mode(Colors.transparent, BlendMode.multiply),
+          child: Image.asset(
+            'assets/sprites/${member.baseOrganism.name.toLowerCase().replaceAll(' ', '_').replaceAll('-', '_')}.png',
+            errorBuilder: (_, __, ___) =>
+                const Icon(Icons.pets, color: Colors.white24),
           ),
         ),
       ),
     );
   }
 
-  void _showSwapSelection(BuildContext context) {
-    final userState = Provider.of<UserState>(context, listen: false);
-    final team = userState.currentUser!.rogueLikeState.team;
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: const Color(0xFF151515),
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+  Widget _buildMiniBar({
+    required String label,
+    required double value,
+    required Color color,
+    required String trailing,
+  }) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Padding(
-              padding: EdgeInsets.all(20.0),
-              child: Text(
-                'SWAP ITEM WITH...',
-                style: TextStyle(
-                  fontFamily: 'PressStart2P',
-                  fontSize: 12,
-                  color: Colors.white,
-                ),
+            Text(
+              label,
+              style: TextStyle(
+                fontFamily: 'PressStart2P',
+                color: color.withValues(alpha: 0.8),
+                fontSize: 7,
               ),
             ),
-            Flexible(
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: team.length,
-                itemBuilder: (context, idx) {
-                  if (idx == index) return const SizedBox.shrink();
-                  final target = team[idx];
-                  return ListTile(
-                    leading: Image.asset(
-                      'assets/sprites/${target.baseOrganism.name.toLowerCase().replaceAll(' ', '_').replaceAll('-', '_').replaceAll("'", "_")}.png',
-                      width: 32,
-                      errorBuilder: (_, __, ___) =>
-                          const Icon(Icons.pets, color: Colors.white24),
-                    ),
-                    title: Text(
-                      target.name.toUpperCase(),
-                      style: const TextStyle(
-                        fontFamily: 'PressStart2P',
-                        fontSize: 9,
-                        color: Colors.white,
-                      ),
-                    ),
-                    subtitle: Text(
-                      target.equippedTalisman?.name ?? 'NO ITEM',
-                      style: const TextStyle(
-                        fontFamily: 'PressStart2P',
-                        fontSize: 7,
-                        color: Colors.white54,
-                      ),
-                    ),
-                    onTap: () {
-                      Navigator.pop(ctx);
-                      userState.swapRogueTalismans(index, idx);
-                    },
-                  );
-                },
+            Text(
+              trailing,
+              style: const TextStyle(
+                fontFamily: 'PressStart2P',
+                color: Colors.white38,
+                fontSize: 6,
               ),
             ),
           ],
         ),
-      ),
+        const SizedBox(height: 4),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(2),
+          child: LinearProgressIndicator(
+            value: value,
+            minHeight: 4,
+            backgroundColor: Colors.white10,
+            color: color,
+          ),
+        ),
+      ],
     );
   }
 
-  void _showItemSelection(BuildContext context) {
-    final userState = Provider.of<UserState>(context, listen: false);
-    final inv = userState.currentUser!.rogueLikeState.inventory;
-
-    final talismanIds = inv.keys
-        .where((id) => Talisman.findById(id) != null)
-        .toList();
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: const Color(0xFF151515),
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(20.0),
-              child: Text(
-                'GIVE ITEM...',
-                style: TextStyle(
-                  fontFamily: 'PressStart2P',
-                  fontSize: 12,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-            if (talismanIds.isEmpty)
-              const Padding(
-                padding: EdgeInsets.all(40.0),
-                child: Text(
-                  'NO ITEMS IN POCKET',
-                  style: TextStyle(
-                    fontFamily: 'PressStart2P',
-                    fontSize: 8,
-                    color: Colors.white24,
-                  ),
-                ),
-              )
-            else
-              Flexible(
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: talismanIds.length,
-                  itemBuilder: (context, idx) {
-                    final tid = talismanIds[idx];
-                    final talisman = Talisman.findById(tid)!;
-                    final count = inv[tid];
-                    return ListTile(
-                      title: Text(
-                        '${talisman.name.toUpperCase()} x$count',
-                        style: const TextStyle(
-                          fontFamily: 'PressStart2P',
-                          fontSize: 9,
-                          color: Colors.white,
-                        ),
-                      ),
-                      subtitle: Text(
-                        talisman.description,
-                        style: const TextStyle(
-                          fontFamily: 'PressStart2P',
-                          fontSize: 7,
-                          color: Colors.white54,
-                          height: 1.5,
-                        ),
-                      ),
-                      onTap: () {
-                        Navigator.pop(ctx);
-                        userState.equipRogueTalisman(index, tid);
-                      },
-                    );
-                  },
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
+  Color _getHpColor(double ratio) {
+    if (ratio > 0.5) return Colors.greenAccent;
+    if (ratio > 0.2) return Colors.orangeAccent;
+    return Colors.redAccent;
   }
 }

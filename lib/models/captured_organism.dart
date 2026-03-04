@@ -60,6 +60,11 @@ class CapturedOrganism {
   // Tera type for Prismorph gimmick (null = no tera type)
   ElementalType? teraType;
 
+  // Nicknaming support
+  final String? nickname;
+
+  String get displayName => nickname ?? baseOrganism.name;
+
   CapturedOrganism({
     required this.baseOrganism,
     required this.individualValues,
@@ -91,6 +96,7 @@ class CapturedOrganism {
     this.satisfaction = 120,
     String? activeAbilityName,
     this.teraType,
+    this.nickname,
   }) : activeAbilityName =
            activeAbilityName ??
            (baseOrganism.abilities.split(',').first.trim().isEmpty
@@ -189,8 +195,11 @@ class CapturedOrganism {
     String? activeAbilityName,
     ElementalType? teraType,
     bool clearTeraType = false,
+    String? nickname,
+    bool clearNickname = false,
   }) {
     return CapturedOrganism(
+      id: id ?? this.id,
       baseOrganism: baseOrganism ?? this.baseOrganism,
       individualValues: individualValues ?? Map.from(this.individualValues),
       currentHealth: currentHealth ?? this.currentHealth,
@@ -201,7 +210,6 @@ class CapturedOrganism {
       initialMoveStamina: moveStamina ?? Map.from(this.moveStamina),
       nature: nature ?? this.nature,
       statusEffects: statusEffects ?? List.from(this.statusEffects),
-      id: id ?? this.id,
       initialLevel: initialLevel ?? this.initialLevel,
       level: level ?? this.level,
       xp: xp ?? this.xp,
@@ -218,6 +226,7 @@ class CapturedOrganism {
       satisfaction: satisfaction ?? this.satisfaction,
       activeAbilityName: activeAbilityName ?? this.activeAbilityName,
       teraType: clearTeraType ? null : (teraType ?? this.teraType),
+      nickname: clearNickname ? null : (nickname ?? this.nickname),
     );
   }
 
@@ -584,7 +593,8 @@ class CapturedOrganism {
     'killValues': killValues,
     'satisfaction': satisfaction,
     'activeAbilityName': activeAbilityName,
-    'teraType': teraType?.name,
+    'teraType': teraType?.toString().split('.').last,
+    'nickname': nickname,
   };
 
   /// Create CapturedOrganism from JSON
@@ -668,6 +678,7 @@ class CapturedOrganism {
       teraType: json['teraType'] != null
           ? ElementalTypeX.fromString(json['teraType'] as String)
           : null,
+      nickname: json['nickname'] as String?,
     );
   }
 

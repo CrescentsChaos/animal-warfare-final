@@ -1928,6 +1928,10 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           );
         }
 
+        if (defender.health <= 0) {
+          _getStats(attacker.organism.id).totalKills += 1;
+        }
+
         // Absorb Bulb: Power boost when hit by Aquatic
         if (defender.organism.equippedTalisman != null &&
             !defender.talismanConsumed &&

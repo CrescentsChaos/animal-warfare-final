@@ -1,0 +1,869 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:animal_warfare/game/battle_models.dart';
+import 'package:animal_warfare/models/organism.dart';
+import 'package:animal_warfare/models/move.dart';
+import 'package:animal_warfare/models/elemental_type.dart';
+import 'package:animal_warfare/user_state.dart';
+import 'package:animal_warfare/theme.dart';
+import 'package:animal_warfare/models/status_effect.dart';
+import 'package:animal_warfare/widgets/anidex_details_sheet.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:animal_warfare/widgets/type_matchup_sheet.dart';
+import 'package:animal_warfare/models/captured_organism.dart';
+
+class BattleDetailsSheet extends StatelessWidget {
+  final BattleOrganism bo;
+  final bool isPlayer;
+
+  const BattleDetailsSheet({
+    super.key,
+    required this.bo,
+    required this.isPlayer,
+  });
+
+  static void show(BuildContext context, BattleOrganism bo, bool isPlayer) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => BattleDetailsSheet(bo: bo, isPlayer: isPlayer),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final userState = Provider.of<UserState>(context, listen: false);
+    final user = userState.currentUser;
+    final org = bo.organism.baseOrganism;
+
+    // Anidex Checks
+    // Identity info (Name, Image, Types, Matchups) is always visible during battle
+    bool isDiscovered = true;
+    final stats = user?.speciesStats[org.name];
+    bool isCaptured = (stats != null && stats['captured'] == 1);
+
+    // If it's the player's own animal, everything is revealed
+    if (isPlayer) {
+      isDiscovered = true;
+      isCaptured = true;
+    }
+
+    final Color themeColor = _getTypeColor(org.elementalTypes.first);
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.7,
+      minChildSize: 0.5,
+      maxChildSize: 0.95,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFF0F0F0F),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+            border: Border.all(color: themeColor.withOpacity(0.2), width: 1.5),
+            boxShadow: [
+              BoxShadow(
+                color: themeColor.withOpacity(0.1),
+                blurRadius: 20,
+                offset: const Offset(0, -5),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+            child: Stack(
+              children: [
+                // Top gradient glow
+                Positioned(
+                  top: -100,
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    height: 250,
+                    decoration: BoxDecoration(
+                      gradient: RadialGradient(
+                        colors: [
+                          themeColor.withOpacity(0.15),
+                          Colors.transparent,
+                        ],
+                        radius: 1.2,
+                      ),
+                    ),
+                  ),
+                ),
+                ListView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 20,
+                  ),
+                  children: [
+                    // Handle Bar
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.white12,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Header Area (Sprite & Basic Info)
+                    _buildHeader(
+                      context,
+                      org,
+                      isDiscovered,
+                      isCaptured,
+                      themeColor,
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    // Combat Intel Section
+                    _buildSectionHeader('COMBAT INTEL', themeColor),
+                    const SizedBox(height: 16),
+                    _buildCombatStats(org, isCaptured, themeColor),
+
+                    const SizedBox(height: 32),
+
+                    // Status Effects & Battle State
+                    _buildSectionHeader('CONDITION', themeColor),
+                    const SizedBox(height: 16),
+                    _buildBattleStatus(themeColor),
+
+                    const SizedBox(height: 32),
+
+                    // Loadout (Ability & Item)
+                    _buildSectionHeader('LOADOUT', themeColor),
+                    const SizedBox(height: 16),
+                    _buildLoadout(org, isCaptured, themeColor),
+
+                    const SizedBox(height: 32),
+
+                    // Arsenal (Moves)
+                    _buildSectionHeader('ARSENAL', themeColor),
+                    const SizedBox(height: 16),
+                    _buildMoves(org, isCaptured, themeColor),
+
+                    const SizedBox(height: 32),
+
+                    // Description (Mission Brief)
+                    _buildSectionHeader('DESCRIPTION', themeColor),
+                    const SizedBox(height: 12),
+                    Text(
+                      isDiscovered
+                          ? org.description
+                          : 'DATA ENCRYPTED. FIELD IDENTIFICATION REQUIRED.',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white70,
+                        fontSize: 14,
+                        height: 1.6,
+                      ),
+                    ),
+                    const SizedBox(height: 40),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildHeader(
+    BuildContext context,
+    Organism org,
+    bool discovered,
+    bool captured,
+    Color themeColor,
+  ) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // Sprite with glow
+        Container(
+          width: 100,
+          height: 100,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.03),
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.white10),
+          ),
+          child: Center(
+            child: OrganismSpriteDisplay(
+              organism: org,
+              isDiscovered: discovered,
+              isCaptured: captured,
+              silhouetteColor: Colors.black,
+              height: 80,
+            ),
+          ),
+        ),
+        const SizedBox(width: 20),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                discovered
+                    ? (bo.organism.nickname ?? org.name.toUpperCase())
+                    : '???',
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              if (discovered && bo.organism.nickname != null)
+                Text(
+                  'Species: ${org.name.toUpperCase()}',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white38,
+                    fontSize: 12,
+                  ),
+                ),
+              const SizedBox(height: 8),
+              if (discovered)
+                Wrap(
+                  spacing: 6,
+                  children: org.elementalTypes
+                      .map((type) => _buildTypeTag(type))
+                      .toList(),
+                )
+              else
+                Text(
+                  'LV. ${bo.level}',
+                  style: const TextStyle(
+                    fontFamily: 'PressStart2P',
+                    color: Colors.white24,
+                    fontSize: 8,
+                  ),
+                ),
+              if (discovered) ...[
+                const SizedBox(height: 12),
+                GestureDetector(
+                  onTap: () =>
+                      TypeMatchupSheet.show(context, org.elementalTypes),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: themeColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: themeColor.withOpacity(0.3)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.shield_outlined,
+                          color: themeColor,
+                          size: 14,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'VIEW MATCHUPS',
+                          style: GoogleFonts.outfit(
+                            color: themeColor,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTypeTag(ElementalType type) {
+    final color = _getTypeColor(type);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Text(
+        type.name.toUpperCase(),
+        style: TextStyle(
+          color: color,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 1,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title, Color themeColor) {
+    return Row(
+      children: [
+        Container(
+          width: 4,
+          height: 16,
+          decoration: BoxDecoration(
+            color: themeColor,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Text(
+          title,
+          style: TextStyle(
+            fontFamily: 'PressStart2P',
+            color: themeColor.withOpacity(0.8),
+            fontSize: 10,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCombatStats(Organism org, bool captured, Color themeColor) {
+    if (!captured && !isPlayer) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.02),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white10),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.lock_outline, color: Colors.white24, size: 24),
+                SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    'FIELD STATS ENCRYPTED. CAPTURE SPECIMEN TO REVEAL BASE DATA.',
+                    style: TextStyle(
+                      color: Colors.white24,
+                      fontSize: 10,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.only(left: 4),
+            child: Text(
+              'EST. SPD: ${((CapturedOrganism.calculateStat('speed', org.speed, 0, level: bo.level)) * 0.9).round()} - ${((CapturedOrganism.calculateStat('speed', org.speed, 31, level: bo.level)) * 1.1).round()}',
+              style: GoogleFonts.outfit(
+                color: Colors.white38,
+                fontSize: 10,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Column(
+      children: [
+        _buildStatRow('HEALTH', org.health, 500, AppColors.statHealthColor),
+        _buildStatRow('ATTACK', org.attack, 200, AppColors.statAttackColor),
+        _buildStatRow('DEFENSE', org.defense, 200, AppColors.statDefenseColor),
+        _buildStatRow('POWER', org.power, 200, AppColors.statPowerColor),
+        _buildStatRow(
+          'RESISTANCE',
+          org.resistance,
+          200,
+          AppColors.statResistanceStatColor,
+        ),
+        _buildStatRow('SPEED', org.speed, 200, AppColors.statSpeedColor),
+        if (!isPlayer) ...[
+          const SizedBox(height: 4),
+          Padding(
+            padding: const EdgeInsets.only(left: 4),
+            child: Text(
+              'EST. SPD: ${((CapturedOrganism.calculateStat('speed', org.speed, 0, level: bo.level)) * 0.9).round()} - ${((CapturedOrganism.calculateStat('speed', org.speed, 31, level: bo.level)) * 1.1).round()}',
+              style: GoogleFonts.outfit(
+                color: Colors.white38,
+                fontSize: 10,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildStatRow(String label, int value, int max, Color color) {
+    final perc = (value / max).clamp(0.0, 1.0);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(
+                  color: Colors.white54,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                '$value',
+                style: TextStyle(
+                  fontFamily: 'PressStart2P',
+                  color: color.withOpacity(0.9),
+                  fontSize: 8,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: perc,
+              minHeight: 8,
+              backgroundColor: Colors.white.withOpacity(0.05),
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBattleStatus(Color themeColor) {
+    final hpRatio = bo.maxHealth > 0 ? bo.health / bo.maxHealth : 0.0;
+
+    return Column(
+      children: [
+        // Current HP (Numbers hidden for opponent as per user request)
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'VITALITY',
+              style: TextStyle(
+                color: Colors.white54,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            if (isPlayer)
+              Text(
+                '${bo.health}/${bo.maxHealth}',
+                style: const TextStyle(
+                  fontFamily: 'PressStart2P',
+                  color: Colors.white70,
+                  fontSize: 8,
+                ),
+              )
+            else
+              Text(
+                '${(hpRatio * 100).toInt()}%',
+                style: const TextStyle(
+                  fontFamily: 'PressStart2P',
+                  color: Colors.white70,
+                  fontSize: 8,
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: LinearProgressIndicator(
+            value: hpRatio,
+            minHeight: 12,
+            backgroundColor: Colors.white.withOpacity(0.05),
+            color: _getHpColor(hpRatio),
+          ),
+        ),
+        const SizedBox(height: 20),
+
+        // Status Effects
+        if (bo.statusEffects.isEmpty)
+          const Center(
+            child: Text(
+              'NO ACTIVE STATUS EFFECTS',
+              style: TextStyle(
+                color: Colors.white10,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          )
+        else
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: bo.statusEffects
+                .map((se) => _buildStatusTag(se))
+                .toList(),
+          ),
+
+        const SizedBox(height: 20),
+
+        // Stat Stages (Only for player or if user wants them visible? Usually stages are visible in roguelikes)
+        // For now, let's show stages as "Modifiers" but hide raw resulting numbers for opponent
+        _buildStatModifiers(themeColor),
+      ],
+    );
+  }
+
+  Widget _buildStatusTag(StatusEffect se) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: se.color.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: se.color.withOpacity(0.5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            se.name.toUpperCase(),
+            style: TextStyle(
+              color: se.color,
+              fontSize: 9,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'PressStart2P',
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            se.description,
+            style: const TextStyle(color: Colors.white54, fontSize: 10),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatModifiers(Color themeColor) {
+    final List<MapEntry<String, int>> stages = [
+      MapEntry('ATK', bo.attackStage),
+      MapEntry('DEF', bo.defenseStage),
+      MapEntry('PWR', bo.powerStage),
+      MapEntry('RES', bo.resistanceStage),
+      MapEntry('SPD', bo.speedStage),
+      MapEntry('ACC', bo.accuracyStage),
+      MapEntry('EVA', bo.evasionStage),
+    ].where((e) => e.value != 0).toList();
+
+    if (stages.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'BATTLE MODIFIERS',
+          style: TextStyle(
+            color: Colors.white54,
+            fontSize: 9,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: stages.map((e) {
+            final color = e.value > 0 ? Colors.greenAccent : Colors.redAccent;
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '${e.key}: ',
+                  style: const TextStyle(
+                    color: Colors.white38,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  '${e.value > 0 ? '+' : ''}${e.value}',
+                  style: TextStyle(
+                    color: color,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'PressStart2P',
+                  ),
+                ),
+              ],
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Color _getHpColor(double ratio) {
+    if (ratio > 0.5) return const Color(0xFF4CAF50);
+    if (ratio > 0.2) return Colors.orange;
+    return Colors.red;
+  }
+
+  Color _getTypeColor(ElementalType type) {
+    switch (type) {
+      case ElementalType.basic:
+        return const Color(0xFFA8A878);
+      case ElementalType.flying:
+        return const Color(0xFFA890F0);
+      case ElementalType.aquatic:
+        return const Color(0xFF6890F0);
+      case ElementalType.earth:
+        return const Color(0xFFE0C068);
+      case ElementalType.cryo:
+        return const Color(0xFF98D8D8);
+      case ElementalType.toxic:
+        return const Color(0xFFA040A0);
+      case ElementalType.rock:
+        return const Color(0xFFB8A038);
+      case ElementalType.arthropod:
+        return const Color(0xFFA8B820);
+      case ElementalType.electric:
+        return const Color(0xFFF8D030);
+      case ElementalType.spectral:
+        return const Color(0xFF705898);
+      case ElementalType.martial:
+        return const Color(0xFFC03028);
+      case ElementalType.blaze:
+        return const Color(0xFFF08030);
+      case ElementalType.grass:
+        return const Color(0xFF78C850);
+      case ElementalType.mystic:
+        return const Color(0xFFF85888);
+      case ElementalType.darkness:
+        return const Color(0xFF705848);
+      case ElementalType.drake:
+        return const Color(0xFF7038F8);
+      case ElementalType.metal:
+        return const Color(0xFFB8B8D0);
+      case ElementalType.aura:
+        return const Color(0xFFD4E157);
+      case ElementalType.sound:
+        return const Color(0xFF9C27B0);
+      case ElementalType.holy:
+        return const Color(0xFFFFD700);
+    }
+  }
+
+  Widget _buildLoadout(Organism org, bool captured, Color themeColor) {
+    if (!captured && !isPlayer) {
+      return _buildLockedSection('ABILITY & ITEM DATA ENCRYPTED');
+    }
+
+    return Column(
+      children: [
+        _buildInfoTile(
+          'ABILITY',
+          bo.abilities.isNotEmpty
+              ? bo.abilities.first.name.toUpperCase()
+              : 'NONE',
+          bo.abilities.isNotEmpty
+              ? bo.abilities.first.description
+              : 'NO ABILITY DETECTED.',
+          Icons.auto_awesome_outlined,
+          themeColor,
+        ),
+        const SizedBox(height: 12),
+        _buildInfoTile(
+          'HELD ITEM',
+          bo.organism.equippedTalisman?.name.toUpperCase() ?? 'NONE',
+          bo.organism.equippedTalisman?.description ?? 'NO HELD ITEM DETECTED.',
+          Icons.inventory_2_outlined,
+          themeColor,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMoves(Organism org, bool captured, Color themeColor) {
+    final moves = bo.organism.selectedMoveNames
+        .map((name) => Move.findByName(name))
+        .whereType<Move>()
+        .where((move) {
+          if (isPlayer || captured) return true;
+          return bo.revealedMoves.contains(move.name);
+        })
+        .toList();
+
+    if (moves.isEmpty && !isPlayer && !captured) {
+      return _buildLockedSection('NO MOVES REVEALED YET.');
+    }
+
+    return Column(
+      children: moves.map((move) {
+        final currentStamina = bo.organism.moveStamina[move.name] ?? 0;
+        final maxStamina = move.stamina;
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.03),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white10),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: _getTypeColor(move.type).withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.flash_on,
+                    color: _getTypeColor(move.type),
+                    size: 16,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            move.name.toUpperCase(),
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            '${move.category.name.toUpperCase()} | PWR: ${move.baseDamage} | STAMINA: $currentStamina/$maxStamina',
+                            style: const TextStyle(
+                              fontFamily: 'PressStart2P',
+                              color: Colors.white38,
+                              fontSize: 6,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        move.description,
+                        style: GoogleFonts.outfit(
+                          color: Colors.white54,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildInfoTile(
+    String label,
+    String title,
+    String subtitle,
+    IconData icon,
+    Color themeColor,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.03),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: themeColor, size: 24),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontFamily: 'PressStart2P',
+                    color: themeColor.withOpacity(0.6),
+                    fontSize: 8,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  title,
+                  style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  subtitle,
+                  style: GoogleFonts.outfit(
+                    color: Colors.white54,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLockedSection(String message) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.02),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.lock_outline, color: Colors.white24, size: 24),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              message,
+              style: const TextStyle(
+                color: Colors.white24,
+                fontSize: 10,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

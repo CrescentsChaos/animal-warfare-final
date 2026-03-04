@@ -47,7 +47,7 @@ class _CraftingScreenState extends State<CraftingScreen>
             centerTitle: true,
             backgroundColor: const Color(0xFF0D0D1A),
             title: const Text(
-              'CRAFTING STATION',
+              'INVENTORY',
               style: TextStyle(
                 fontFamily: 'PressStart2P',
                 fontSize: 14,
@@ -335,8 +335,8 @@ class _RecipeCardState extends State<_RecipeCard>
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: _crafting
-                  ? AppColors.highlightColor.withValues(alpha: 
-                      0.5 + _glowAnim.value * 0.5,
+                  ? AppColors.highlightColor.withValues(
+                      alpha: 0.5 + _glowAnim.value * 0.5,
                     )
                   : (canCraft
                         ? AppColors.highlightColor.withValues(alpha: 0.4)
@@ -345,8 +345,8 @@ class _RecipeCardState extends State<_RecipeCard>
             boxShadow: canCraft
                 ? [
                     BoxShadow(
-                      color: AppColors.highlightColor.withValues(alpha: 
-                        0.08 + _glowAnim.value * 0.08,
+                      color: AppColors.highlightColor.withValues(
+                        alpha: 0.08 + _glowAnim.value * 0.08,
                       ),
                       blurRadius: 16,
                       spreadRadius: 1,
@@ -469,7 +469,9 @@ class _RecipeCardState extends State<_RecipeCard>
                                         fontSize: 8,
                                         color: hasEnough
                                             ? Colors.white
-                                            : Colors.white.withValues(alpha: 0.5),
+                                            : Colors.white.withValues(
+                                                alpha: 0.5,
+                                              ),
                                       ),
                                     ),
                                   ),
@@ -494,8 +496,8 @@ class _RecipeCardState extends State<_RecipeCard>
                                   color: hasEnough
                                       ? Colors.greenAccent
                                       : Colors.orange,
-                                  backgroundColor: Colors.white.withValues(alpha: 
-                                    0.07,
+                                  backgroundColor: Colors.white.withValues(
+                                    alpha: 0.07,
                                   ),
                                 ),
                               ),
@@ -526,8 +528,8 @@ class _RecipeCardState extends State<_RecipeCard>
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          disabledBackgroundColor: Colors.white.withValues(alpha: 
-                            0.06,
+                          disabledBackgroundColor: Colors.white.withValues(
+                            alpha: 0.06,
                           ),
                         ),
                         child: _crafting

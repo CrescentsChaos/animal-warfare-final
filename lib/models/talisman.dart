@@ -239,6 +239,9 @@ class Talisman {
     required this.effects,
   });
 
+  String get spritePath =>
+      'assets/items/${name.toLowerCase().replaceAll(' ', '-')}.png';
+
   // Loaded talismans list
   static List<Talisman> allTalismans = [];
   static final Map<String, Talisman> _byId = {};

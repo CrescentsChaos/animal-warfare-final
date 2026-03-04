@@ -94,7 +94,6 @@ class _ShopScreenState extends State<ShopScreen> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 20),
-                // Quantity row
                 Container(
                   decoration: BoxDecoration(
                     color: AppColors.background,
@@ -164,17 +163,6 @@ class _ShopScreenState extends State<ShopScreen> {
                     ),
                   ],
                 ),
-                if (!canAfford)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: Text(
-                      'Not enough gold!',
-                      style: GoogleFonts.inter(
-                        color: AppColors.dangerLight,
-                        fontSize: 11,
-                      ),
-                    ),
-                  ),
               ],
             ),
             actions: [
@@ -221,40 +209,310 @@ class _ShopScreenState extends State<ShopScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(
-          widget.biome != null ? '${widget.biome!.toUpperCase()} SHOP' : 'SHOP',
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          title: Text(
+            widget.biome != null
+                ? '${widget.biome!.toUpperCase()} SHOP'
+                : 'SHOP',
+            style: const TextStyle(fontFamily: 'PressStart2P', fontSize: 12),
+          ),
+          backgroundColor: AppColors.surface,
+          bottom: const TabBar(
+            indicatorColor: AppColors.primary,
+            labelStyle: TextStyle(fontFamily: 'PressStart2P', fontSize: 10),
+            tabs: [
+              Tab(text: 'BUY'),
+              Tab(text: 'SELL'),
+            ],
+          ),
         ),
-        backgroundColor: AppColors.surface,
-      ),
-      body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppColors.primary),
-            )
-          : Column(
-              children: [
-                _buildGoldBalance(),
-                _buildCategoryFilter(),
-                Expanded(
-                  child: GridView.builder(
-                    padding: const EdgeInsets.all(14),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 0.72,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
+        body: _isLoading
+            ? const Center(
+                child: CircularProgressIndicator(color: AppColors.primary),
+              )
+            : TabBarView(
+                children: [
+                  // Buy Tab
+                  Column(
+                    children: [
+                      _buildGoldBalance(),
+                      _buildCategoryFilter(),
+                      Expanded(
+                        child: GridView.builder(
+                          padding: const EdgeInsets.all(14),
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                childAspectRatio: 0.72,
+                                crossAxisSpacing: 12,
+                                mainAxisSpacing: 12,
+                              ),
+                          itemCount: _filteredItems.length,
+                          itemBuilder: (context, index) {
+                            return _buildItemCard(_filteredItems[index]);
+                          },
                         ),
-                    itemCount: _filteredItems.length,
-                    itemBuilder: (context, index) {
-                      return _buildItemCard(_filteredItems[index]);
-                    },
+                      ),
+                    ],
                   ),
+                  // Sell Tab
+                  _buildSellTab(),
+                ],
+              ),
+      ),
+    );
+  }
+
+  Widget _buildSellTab() {
+    return Consumer<UserState>(
+      builder: (context, userState, _) {
+        final inv = userState.currentUser?.inventory ?? {};
+        final ownedItems = inv.entries
+            .where(
+              (e) =>
+                  e.value > 0 &&
+                  !_rodIds.contains(e.key) &&
+                  !e.key.endsWith('_active'),
+            )
+            .toList();
+
+        if (ownedItems.isEmpty) {
+          return const Center(
+            child: Text(
+              'NO ITEMS TO SELL',
+              style: TextStyle(
+                fontFamily: 'PressStart2P',
+                fontSize: 10,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          );
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: ownedItems.length,
+          itemBuilder: (context, index) {
+            final entry = ownedItems[index];
+            final itemId = entry.key;
+            final count = entry.value;
+            final config = _allItemConfigs.firstWhere(
+              (i) => i.id == itemId,
+              orElse: () => ShopItem(
+                id: itemId,
+                name: itemId.replaceAll('_', ' '),
+                description: '',
+                price: 100,
+                category: 'misc',
+              ),
+            );
+
+            final sellPrice = (config.price * 0.5).round();
+
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Row(
+                children: [
+                  _buildItemIcon(config),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          config.name.toUpperCase(),
+                          style: const TextStyle(
+                            fontFamily: 'PressStart2P',
+                            fontSize: 10,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Owned: $count',
+                          style: GoogleFonts.inter(
+                            color: AppColors.textSecondary,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.monetization_on,
+                            color: Colors.amber,
+                            size: 14,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '$sellPrice',
+                            style: const TextStyle(
+                              fontFamily: 'PressStart2P',
+                              fontSize: 10,
+                              color: Colors.amber,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      ElevatedButton(
+                        onPressed: () => _showSellDialog(config, count),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.dangerLight,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 0,
+                          ),
+                          minimumSize: const Size(60, 30),
+                        ),
+                        child: const Text(
+                          'SELL',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showSellDialog(ShopItem item, int maxQty) {
+    final userState = Provider.of<UserState>(context, listen: false);
+    int qty = 1;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setLocal) {
+          final sellPrice = (item.price * 0.5).round();
+          final total = sellPrice * qty;
+          return AlertDialog(
+            backgroundColor: AppColors.surface,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: const BorderSide(color: AppColors.border),
+            ),
+            title: Text(
+              'SELL ${item.name.toUpperCase()}',
+              style: const TextStyle(
+                fontFamily: 'PressStart2P',
+                fontSize: 11,
+                color: AppColors.dangerLight,
+              ),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'How many do you want to sell?',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.white70, fontSize: 13),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.remove_circle_outline),
+                      onPressed: qty > 1 ? () => setLocal(() => qty--) : null,
+                    ),
+                    Text(
+                      '$qty / $maxQty',
+                      style: const TextStyle(
+                        fontFamily: 'PressStart2P',
+                        fontSize: 16,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.add_circle_outline),
+                      onPressed: qty < maxQty
+                          ? () => setLocal(() => qty++)
+                          : null,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'Total: ',
+                      style: TextStyle(color: Colors.white54),
+                    ),
+                    const Icon(
+                      Icons.monetization_on,
+                      color: Colors.amber,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      '$total Gold',
+                      style: const TextStyle(
+                        fontFamily: 'PressStart2P',
+                        fontSize: 14,
+                        color: Colors.amber,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  Navigator.pop(ctx);
+                  final sellPrice = (item.price * 0.5).round();
+                  final success = await userState.sellItem(
+                    item.id,
+                    qty,
+                    sellPrice,
+                  );
+                  if (success && mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Sold $qty× ${item.name} for $total Gold',
+                        ),
+                      ),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.dangerLight,
+                ),
+                child: const Text('SELL'),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 
@@ -473,7 +731,6 @@ class _ShopScreenState extends State<ShopScreen> {
                   ),
                 ),
               const SizedBox(height: 8),
-              // Action area
               if (isRod && owned > 0)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(8, 0, 8, 10),

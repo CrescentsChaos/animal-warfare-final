@@ -581,6 +581,7 @@ class DamageResult {
 }
 
 class BattleStats {
+  int totalKills;
   int totalDamageDealt;
   int totalDamageTaken;
   bool isItemRevealed;
@@ -588,6 +589,7 @@ class BattleStats {
   final Set<String> revealedMoves;
 
   BattleStats({
+    this.totalKills = 0,
     this.totalDamageDealt = 0,
     this.totalDamageTaken = 0,
     this.isItemRevealed = false,

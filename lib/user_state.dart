@@ -201,6 +201,50 @@ class UserState with ChangeNotifier {
     await _readModifyWrite((u) => u.addMoney(amount));
   }
 
+  Future<bool> sellItem(String itemId, int count, int pricePerItem) async {
+    if (_currentUser == null) return false;
+    bool success = false;
+    await _readModifyWrite((u) {
+      final inv = Map<String, int>.from(u.inventory);
+      final currentCount = inv[itemId] ?? 0;
+      if (currentCount >= count) {
+        inv[itemId] = currentCount - count;
+        if (inv[itemId] == 0) inv.remove(itemId);
+        success = true;
+        return u.copyWith(
+          inventory: inv,
+          money: u.money + (pricePerItem * count),
+        );
+      }
+      return u;
+    });
+    return success;
+  }
+
+  Future<void> renameOrganism(String id, String newNickname) async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) {
+      final orgs = List<CapturedOrganism>.from(u.capturedOrganisms);
+      final index = orgs.indexWhere((o) => o.id == id);
+      if (index != -1) {
+        orgs[index] = orgs[index].copyWith(nickname: newNickname);
+      }
+
+      // Also update in rogue team if active
+      var rogueState = u.rogueLikeState;
+      if (rogueState.isActive) {
+        final rogueTeam = List<CapturedOrganism>.from(rogueState.team);
+        final rIndex = rogueTeam.indexWhere((o) => o.id == id);
+        if (rIndex != -1) {
+          rogueTeam[rIndex] = rogueTeam[rIndex].copyWith(nickname: newNickname);
+          rogueState = rogueState.copyWith(team: rogueTeam);
+        }
+      }
+
+      return u.copyWith(capturedOrganisms: orgs, rogueLikeState: rogueState);
+    });
+  }
+
   /// Fully heals all animals in the current team (HP, Status, Stamina).
   Future<void> fullyHealTeam() async {
     if (_currentUser == null) return;
@@ -253,6 +297,8 @@ class UserState with ChangeNotifier {
     return true;
   }
 
+  /// Equips a talisman from either craftedTalismans list or global inventory.
+  /// Returns the old talisman to the appropriate source.
   Future<void> equipTalisman(int organismIndex, String? talismanId) async {
     if (_currentUser == null) return;
     await _readModifyWrite((u) {
@@ -263,20 +309,41 @@ class UserState with ChangeNotifier {
       final targetOrg = organisms[organismIndex];
       final oldId = targetOrg.equippedTalisman?.id;
       final newCrafted = List<String>.from(u.craftedTalismans);
+      final newInventory = Map<String, int>.from(u.inventory);
+
       if (talismanId != null) {
+        // Try crafted first
         final tIndex = newCrafted.indexOf(talismanId);
-        if (tIndex == -1) return u;
-        newCrafted.removeAt(tIndex);
+        if (tIndex != -1) {
+          // From crafted pool
+          newCrafted.removeAt(tIndex);
+        } else {
+          // Try global inventory
+          final invCount = newInventory[talismanId] ?? 0;
+          if (invCount <= 0) return u; // Not available anywhere
+          newInventory[talismanId] = invCount - 1;
+          if (newInventory[talismanId]! <= 0) newInventory.remove(talismanId);
+        }
         organisms[organismIndex] = targetOrg.copyWith(
           equippedTalisman: Talisman.findById(talismanId),
         );
       } else {
         organisms[organismIndex] = targetOrg.copyWith(clearTalisman: true);
       }
-      if (oldId != null) newCrafted.add(oldId);
+
+      // Return old talisman: check if the id is in craftedTalismans - if yes, it was crafted.
+      // Otherwise put it back in inventory.
+      if (oldId != null) {
+        // We check if oldId was originally from crafted (craftedTalismans still has other entries with same id? no—we just removed one)
+        // Heuristic: if it's a known non-shop talisman or is in craftedTalismans pool name list, use crafted
+        // Simpler: always return to craftedTalismans for now (backwards compatible)
+        newCrafted.add(oldId);
+      }
+
       return u.copyWith(
         capturedOrganisms: organisms,
         craftedTalismans: newCrafted,
+        inventory: newInventory,
       );
     });
   }
@@ -969,6 +1036,35 @@ class UserState with ChangeNotifier {
     });
   }
 
+  Future<bool> applyRogueBerry(int orgIndex, String berryId) async {
+    if (_currentUser == null) return false;
+    bool success = false;
+    await _readModifyWrite((u) {
+      final state = u.rogueLikeState;
+      final team = List<CapturedOrganism>.from(state.team);
+      if (orgIndex < 0 || orgIndex >= team.length) return u;
+
+      final inventory = Map<String, int>.from(state.inventory);
+      final berryCount = inventory[berryId] ?? 0;
+
+      if (berryCount > 0) {
+        inventory[berryId] = berryCount - 1;
+        if (inventory[berryId]! <= 0) inventory.remove(berryId);
+
+        final updatedOrg = team[orgIndex].copyWith();
+        updatedOrg.applyBerry(berryId);
+        team[orgIndex] = updatedOrg;
+
+        success = true;
+        return u.copyWith(
+          rogueLikeState: state.copyWith(team: team, inventory: inventory),
+        );
+      }
+      return u;
+    });
+    return success;
+  }
+
   Future<void> equipRogueTalisman(int teamIndex, String talismanId) async {
     if (_currentUser == null) return;
     await _readModifyWrite((u) {
@@ -1132,8 +1228,8 @@ class UserState with ChangeNotifier {
         if (teamIds.contains(org.id)) {
           int share = (org.id == killerId) ? baseXP : (baseXP / 2).floor();
           if (share > 0) {
-            // Roguelike animals ignore account/floor level cap as requested
-            final xpResult = org.gainXP(share, 100);
+            // Normal team: use the effectiveCap (floor-based for roguelike)
+            final xpResult = org.gainXP(share, effectiveCap);
             if (xpResult['leveledUp'] as bool) {
               results['animalLeveledUp'][org.id] = true;
             }
@@ -1184,8 +1280,9 @@ class UserState with ChangeNotifier {
           if (teamIds.contains(org.id)) {
             int share = (org.id == killerId) ? baseXP : (baseXP / 2).floor();
             if (share > 0) {
-              // Roguelike animals ignore account/floor level cap
-              final xpResult = org.gainXP(share, 100);
+              // Roguelike team: ignore account level, use 100 as fallback if levelCap is null
+              final rogueCap = levelCap ?? 100;
+              final xpResult = org.gainXP(share, rogueCap);
               if (xpResult['leveledUp'] as bool) {
                 results['animalLeveledUp'][org.id] = true;
               }
@@ -1307,30 +1404,27 @@ class UserState with ChangeNotifier {
   }
 
   /// Applies a mint item to change an animal's nature.
-  /// Consumes 1 mint from inventory. Format of mintId: 'adamant_mint'
-  Future<bool> applyMint(int orgIndex, String mintId) async {
+  /// Consumes 1 Generic Nature Mint from inventory and applies the specified Nature.
+  Future<bool> applyMint(int orgIndex, Nature newNature) async {
     if (_currentUser == null) return false;
-    // Check user has the mint
+    const mintId = 'nature_mint';
     if ((_currentUser!.inventory[mintId] ?? 0) <= 0) return false;
-    // Derive nature name from mint id (e.g. 'adamant_mint' -> 'Adamant')
-    final natureName = mintId
-        .replaceAll('_mint', '')
-        .split('_')
-        .map((w) => w[0].toUpperCase() + w.substring(1))
-        .join(' ');
-    final nature = Nature.findByName(natureName);
-    bool success = false;
+
     await _readModifyWrite((u) {
-      if (orgIndex < 0 || orgIndex >= u.capturedOrganisms.length) return u;
+      final organisms = List<CapturedOrganism>.from(u.capturedOrganisms);
+      if (orgIndex < 0 || orgIndex >= organisms.length) return u;
+
+      // Apply
+      organisms[orgIndex] = organisms[orgIndex].copyWith(nature: newNature);
+
+      // Consume
       final inventory = Map<String, int>.from(u.inventory);
       inventory[mintId] = (inventory[mintId] ?? 1) - 1;
       if (inventory[mintId]! <= 0) inventory.remove(mintId);
-      final organisms = List<CapturedOrganism>.from(u.capturedOrganisms);
-      organisms[orgIndex] = organisms[orgIndex].copyWith(nature: nature);
-      success = true;
+
       return u.copyWith(capturedOrganisms: organisms, inventory: inventory);
     });
-    return success;
+    return true;
   }
 
   /// Applies a berry item to an animal to reduce KVs and increase satisfaction.

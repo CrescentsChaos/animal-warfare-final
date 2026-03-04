@@ -10,7 +10,6 @@ import 'package:animal_warfare/models/talisman.dart';
 import 'package:animal_warfare/local_auth_service.dart';
 import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/theme.dart';
-import 'package:animal_warfare/widgets/item_icon.dart';
 import 'package:animal_warfare/models/nature.dart';
 import 'package:animal_warfare/models/elemental_type.dart';
 import 'package:animal_warfare/widgets/animal_summary_screen.dart';
@@ -209,12 +208,8 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
                 },
                 onManageMoves: () =>
                     _showMoveSelection(context, org, originalIndex),
-                onEquip: () => _showTalismanSelector(
-                  context,
-                  userState,
-                  originalIndex,
-                  org,
-                ),
+                onManageItems: () =>
+                    _showItemSelection(context, userState, originalIndex, org),
                 onRelease: () =>
                     _confirmRelease(context, org, originalIndex, userState),
               );
@@ -255,8 +250,8 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
           onTap: () => _showAnimalDetails(context, org, originalIndex),
           onToggleTeam: () => userState.toggleTeamMember(originalIndex),
           onManageMoves: () => _showMoveSelection(context, org, originalIndex),
-          onEquip: () =>
-              _showTalismanSelector(context, userState, originalIndex, org),
+          onManageItems: () =>
+              _showItemSelection(context, userState, originalIndex, org),
           onRelease: () =>
               _confirmRelease(context, org, originalIndex, userState),
         );
@@ -453,6 +448,21 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
     CapturedOrganism organism,
   ) {
     final craftedTalismans = userState.currentUser?.craftedTalismans ?? [];
+    final inventory = userState.currentUser?.inventory ?? {};
+
+    // Build a combined map of talismanId -> count (from both crafted list and shop inventory)
+    final Map<String, int> availableMap = {};
+    for (final tid in craftedTalismans) {
+      if (Talisman.findById(tid) != null) {
+        availableMap[tid] = (availableMap[tid] ?? 0) + 1;
+      }
+    }
+    for (final entry in inventory.entries) {
+      if (entry.value > 0 && Talisman.findById(entry.key) != null) {
+        // Add inventory items (may overlap with crafted; either way show max)
+        availableMap[entry.key] = (availableMap[entry.key] ?? 0) + entry.value;
+      }
+    }
 
     showModalBottomSheet(
       context: context,
@@ -488,7 +498,7 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
                     if (ctx.mounted) Navigator.pop(ctx);
                   },
                 ),
-              if (craftedTalismans.isEmpty)
+              if (availableMap.isEmpty)
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 20),
                   child: Text(
@@ -497,47 +507,52 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
                   ),
                 )
               else
-                ...craftedTalismans.toSet().map((tid) {
-                  final t = Talisman.findById(tid);
-                  final count = craftedTalismans
-                      .where((id) => id == tid)
-                      .length;
-                  return ListTile(
-                    leading: const Icon(
-                      Icons.auto_awesome,
-                      color: AppColors.highlightColor,
-                    ),
-                    title: Text(
-                      t?.name ?? tid,
-                      style: const TextStyle(
-                        fontFamily: 'PressStart2P',
-                        fontSize: 12,
-                        color: Colors.white,
-                      ),
-                    ),
-                    subtitle: Text(
-                      'Count: x$count',
-                      style: const TextStyle(
-                        color: Colors.white54,
-                        fontSize: 10,
-                      ),
-                    ),
-                    onTap: () async {
-                      if (tid == 'Ability Capsule') {
-                        Navigator.pop(ctx);
-                        _showAbilitySelectionDialog(
-                          context,
-                          userState,
-                          index,
-                          organism,
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: availableMap.entries.map((entry) {
+                        final tid = entry.key;
+                        final count = entry.value;
+                        final t = Talisman.findById(tid)!;
+                        return ListTile(
+                          leading: const Icon(
+                            Icons.auto_awesome,
+                            color: AppColors.highlightColor,
+                          ),
+                          title: Text(
+                            t.name,
+                            style: const TextStyle(
+                              fontFamily: 'PressStart2P',
+                              fontSize: 12,
+                              color: Colors.white,
+                            ),
+                          ),
+                          subtitle: Text(
+                            'Count: x$count',
+                            style: const TextStyle(
+                              color: Colors.white54,
+                              fontSize: 10,
+                            ),
+                          ),
+                          onTap: () async {
+                            if (tid == 'Ability Capsule') {
+                              Navigator.pop(ctx);
+                              _showAbilitySelectionDialog(
+                                context,
+                                userState,
+                                index,
+                                organism,
+                              );
+                            } else {
+                              await userState.equipTalisman(index, tid);
+                              if (ctx.mounted) Navigator.pop(ctx);
+                            }
+                          },
                         );
-                      } else {
-                        await userState.equipTalisman(index, tid);
-                        if (ctx.mounted) Navigator.pop(ctx);
-                      }
-                    },
-                  );
-                }),
+                      }).toList(),
+                    ),
+                  ),
+                ),
             ],
           ),
         );
@@ -615,6 +630,305 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
       ),
     );
   }
+
+  void _showItemSelection(
+    BuildContext context,
+    UserState userState,
+    int index,
+    CapturedOrganism organism,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.secondaryButtonColor,
+      builder: (ctx) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Text(
+                  'MANAGE ITEMS',
+                  style: TextStyle(
+                    fontFamily: 'PressStart2P',
+                    fontSize: 14,
+                    color: AppColors.highlightColor,
+                  ),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.auto_awesome,
+                  color: Colors.blueAccent,
+                ),
+                title: Text(
+                  organism.equippedTalisman != null
+                      ? 'CHANGE / UNEQUIP TALISMAN'
+                      : 'EQUIP TALISMAN',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontFamily: 'PressStart2P',
+                    fontSize: 10,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _showTalismanSelector(context, userState, index, organism);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.eco, color: Colors.greenAccent),
+                title: const Text(
+                  'USE NATURE MINT',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontFamily: 'PressStart2P',
+                    fontSize: 10,
+                  ),
+                ),
+                enabled:
+                    (userState.currentUser?.inventory['nature_mint'] ?? 0) > 0,
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _showNatureSelection(context, userState, index, organism);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.favorite, color: Colors.pinkAccent),
+                title: const Text(
+                  'USE BERRY',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontFamily: 'PressStart2P',
+                    fontSize: 10,
+                  ),
+                ),
+                enabled: _hasAnyBerries(userState.currentUser?.inventory ?? {}),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _showBerrySelection(context, userState, index, organism);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  bool _hasAnyBerries(Map<String, int> inventory) {
+    const berries = {
+      'pomeg_berry',
+      'kelpsy_berry',
+      'qualot_berry',
+      'hondew_berry',
+      'grepa_berry',
+      'tamato_berry',
+    };
+    return inventory.entries.any((e) => berries.contains(e.key) && e.value > 0);
+  }
+
+  void _showNatureSelection(
+    BuildContext context,
+    UserState userState,
+    int index,
+    CapturedOrganism organism,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF151515),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        final natures = Nature.allNatures;
+        return DraggableScrollableSheet(
+          initialChildSize: 0.7,
+          minChildSize: 0.5,
+          maxChildSize: 0.9,
+          expand: false,
+          builder: (_, controller) => Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              children: [
+                const Text(
+                  'SELECT NEW NATURE',
+                  style: TextStyle(
+                    fontFamily: 'PressStart2P',
+                    fontSize: 12,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                const Text(
+                  'Consumes 1 Nature Mint',
+                  style: TextStyle(
+                    fontFamily: 'PressStart2P',
+                    fontSize: 8,
+                    color: Colors.white54,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Expanded(
+                  child: ListView.builder(
+                    controller: controller,
+                    itemCount: natures.length,
+                    itemBuilder: (context, i) {
+                      final n = natures[i];
+                      final isNeutral = n.increasedStat == n.decreasedStat;
+                      return ListTile(
+                        title: Text(
+                          n.name,
+                          style: const TextStyle(
+                            fontFamily: 'PressStart2P',
+                            fontSize: 10,
+                            color: Colors.white,
+                          ),
+                        ),
+                        subtitle: Text(
+                          isNeutral
+                              ? 'Neutral'
+                              : '+${n.increasedStat.name.toUpperCase()} / -${n.decreasedStat.name.toUpperCase()}',
+                          style: TextStyle(
+                            fontFamily: 'PressStart2P',
+                            fontSize: 6,
+                            color: isNeutral ? Colors.white38 : Colors.amber,
+                          ),
+                        ),
+                        onTap: () async {
+                          Navigator.pop(ctx);
+                          final success = await userState.applyMint(index, n);
+                          if (success && context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  '${organism.name}\'s nature changed to ${n.name}!',
+                                  style: const TextStyle(
+                                    fontFamily: 'PressStart2P',
+                                    fontSize: 8,
+                                  ),
+                                ),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
+                          }
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showBerrySelection(
+    BuildContext context,
+    UserState userState,
+    int index,
+    CapturedOrganism organism,
+  ) {
+    const berries = {
+      'pomeg_berry',
+      'kelpsy_berry',
+      'qualot_berry',
+      'hondew_berry',
+      'grepa_berry',
+      'tamato_berry',
+    };
+    final inventory = userState.currentUser?.inventory ?? {};
+    final available = inventory.entries
+        .where((e) => berries.contains(e.key) && e.value > 0)
+        .toList();
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF151515),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.5,
+          minChildSize: 0.4,
+          maxChildSize: 0.8,
+          expand: false,
+          builder: (_, controller) => Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              children: [
+                const Text(
+                  'USE BERRY',
+                  style: TextStyle(
+                    fontFamily: 'PressStart2P',
+                    fontSize: 12,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                const Text(
+                  'Increases Satisfaction, reduces KV.',
+                  style: TextStyle(
+                    fontFamily: 'PressStart2P',
+                    fontSize: 8,
+                    color: Colors.white54,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Expanded(
+                  child: ListView.builder(
+                    controller: controller,
+                    itemCount: available.length,
+                    itemBuilder: (context, i) {
+                      final b = available[i];
+                      final name = b.key.replaceAll('_', ' ').toUpperCase();
+                      return ListTile(
+                        leading: const Icon(Icons.favorite, color: Colors.pink),
+                        title: Text(
+                          '$name (x${b.value})',
+                          style: const TextStyle(
+                            fontFamily: 'PressStart2P',
+                            fontSize: 10,
+                            color: Colors.white,
+                          ),
+                        ),
+                        onTap: () async {
+                          Navigator.pop(ctx);
+                          final success = await userState.applyBerry(
+                            index,
+                            b.key,
+                          );
+                          if (success && context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Used $name on ${organism.name}!',
+                                  style: const TextStyle(
+                                    fontFamily: 'PressStart2P',
+                                    fontSize: 8,
+                                  ),
+                                ),
+                                backgroundColor: Colors.pinkAccent,
+                              ),
+                            );
+                          }
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 }
 
 class _AnimalCard extends StatelessWidget {
@@ -626,7 +940,7 @@ class _AnimalCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onToggleTeam;
   final VoidCallback onManageMoves;
-  final VoidCallback onEquip;
+  final VoidCallback onManageItems;
   final VoidCallback onRelease;
 
   const _AnimalCard({
@@ -639,14 +953,16 @@ class _AnimalCard extends StatelessWidget {
     required this.onTap,
     required this.onToggleTeam,
     required this.onManageMoves,
-    required this.onEquip,
+    required this.onManageItems,
     required this.onRelease,
   });
 
   @override
   Widget build(BuildContext context) {
     final base = captured.baseOrganism;
-    final spriteSize = isNarrow ? 80.0 : 100.0;
+    final spriteSize = isNarrow
+        ? 60.0
+        : 80.0; // Slightly smaller to fit details
 
     List<BoxShadow>? rarityGlow;
     if (base.rarity.toLowerCase() == 'legendary') {
@@ -677,38 +993,67 @@ class _AnimalCard extends StatelessWidget {
     }
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 12, left: 4, right: 4),
       decoration: BoxDecoration(
-        color: Colors.grey[850],
-        borderRadius: BorderRadius.circular(8),
+        color: const Color(0xFF1E1E2A),
+        borderRadius: BorderRadius.circular(16),
         boxShadow:
             rarityGlow ??
             [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.3),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
               ),
             ],
         border: Border.all(
-          color: isInTeam ? Colors.blue[300]! : Colors.grey[700]!,
-          width: isInTeam ? 2 : 1,
+          color: isInTeam
+              ? Colors.blueAccent.withValues(alpha: 0.6)
+              : Colors.white.withValues(alpha: 0.1),
+          width: isInTeam ? 2 : 1.5,
         ),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(8),
+          onTap: () => _showContextMenu(context),
+          borderRadius: BorderRadius.circular(16),
           child: Padding(
             padding: const EdgeInsets.all(12),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Hero(
-                  tag: 'animal_box_sprite_$index',
-                  child: _AnimalBoxSprite(organism: base, size: spriteSize),
+                // Animal Sprite with Level Badge
+                Stack(
+                  alignment: Alignment.bottomRight,
+                  children: [
+                    Hero(
+                      tag: 'animal_box_sprite_$index',
+                      child: _AnimalBoxSprite(organism: base, size: spriteSize),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black87,
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(color: Colors.white24),
+                      ),
+                      child: Text(
+                        'L${captured.level}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 7,
+                          fontFamily: 'PressStart2P',
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 16),
+                // Details
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -717,50 +1062,31 @@ class _AnimalCard extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Text(
-                              base.name,
+                              captured.displayName,
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 12,
+                                fontSize: 11,
                                 fontFamily: 'PressStart2P',
+                                color: Colors.white,
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          if (isNew)
-                            Container(
-                              margin: const EdgeInsets.only(left: 8),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.red[600],
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: const Text(
-                                'NEW',
-                                style: TextStyle(
-                                  fontSize: 8,
-                                  fontFamily: 'PressStart2P',
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
                           if (isInTeam)
                             Container(
-                              margin: const EdgeInsets.only(left: 8),
+                              margin: const EdgeInsets.only(left: 6),
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 6,
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.blue[800],
+                                color: Colors.blueAccent,
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: const Text(
                                 'TEAM',
                                 style: TextStyle(
-                                  fontSize: 8,
+                                  fontSize: 6,
                                   fontFamily: 'PressStart2P',
                                   color: Colors.white,
                                 ),
@@ -768,9 +1094,10 @@ class _AnimalCard extends StatelessWidget {
                             ),
                         ],
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 6),
+                      // Types
                       Wrap(
-                        spacing: 6,
+                        spacing: 4,
                         runSpacing: 4,
                         children: base.category.split(',').map((cat) {
                           final typeStr = cat.trim().toLowerCase();
@@ -784,87 +1111,144 @@ class _AnimalCard extends StatelessWidget {
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: _getAnimalTypeColor(type),
-                              borderRadius: BorderRadius.circular(3),
+                              color: _getAnimalTypeColor(
+                                type,
+                              ).withValues(alpha: 0.8),
+                              borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
                               cat.trim().toUpperCase(),
                               style: const TextStyle(
                                 color: Colors.white,
-                                fontSize: 7,
+                                fontSize: 6,
                                 fontFamily: 'PressStart2P',
-                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           );
                         }).toList(),
                       ),
-                      const SizedBox(height: 4),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 10),
+                      // HP Bar
                       Row(
                         children: [
-                          Text(
-                            'LV.${captured.level}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 9,
+                          const Text(
+                            'HP',
+                            style: TextStyle(
+                              color: Colors.white60,
+                              fontSize: 7,
                               fontFamily: 'PressStart2P',
                             ),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: ClipRRect(
-                              borderRadius: BorderRadius.circular(2),
+                              borderRadius: BorderRadius.circular(4),
                               child: LinearProgressIndicator(
                                 value:
-                                    (captured.xp /
-                                            CapturedOrganism.xpForLevel(
-                                              captured.level + 1,
-                                            ))
+                                    (captured.currentHealth /
+                                            captured.maxHealth)
                                         .clamp(0.0, 1.0),
-                                backgroundColor: Colors.white10,
-                                color: Colors.greenAccent,
-                                minHeight: 4,
+                                backgroundColor: Colors.white12,
+                                color:
+                                    (captured.currentHealth /
+                                            captured.maxHealth) >
+                                        0.5
+                                    ? Colors.greenAccent
+                                    : (captured.currentHealth /
+                                              captured.maxHealth) >
+                                          0.2
+                                    ? Colors.orangeAccent
+                                    : Colors.redAccent,
+                                minHeight: 6,
                               ),
                             ),
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'HP: ${captured.currentHealth}/${captured.maxHealth}',
-                        style: TextStyle(
-                          color: Colors.grey[400],
-                          fontSize: 10,
-                          fontFamily: 'PressStart2P',
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          if (captured.equippedTalisman != null) ...[
-                            ItemIcon(
-                              itemName: captured.equippedTalisman!.name,
-                              size: 14,
-                            ),
-                            const SizedBox(width: 4),
-                          ],
+                          const SizedBox(width: 8),
                           Text(
-                            captured.equippedTalisman != null
-                                ? captured.equippedTalisman!.name
-                                : 'No Item',
-                            style: TextStyle(
-                              color: captured.equippedTalisman != null
-                                  ? AppColors.highlightColor
-                                  : Colors.grey[500],
-                              fontSize: 9,
+                            '${captured.currentHealth}/${captured.maxHealth}',
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 7,
                               fontFamily: 'PressStart2P',
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
-                      _buildActions(context),
+                      const SizedBox(height: 10),
+                      // Item and Ability
+                      Row(
+                        children: [
+                          // Item
+                          Expanded(
+                            flex: 3,
+                            child: Row(
+                              children: [
+                                if (captured.equippedTalisman != null) ...[
+                                  Image.asset(
+                                    captured.equippedTalisman!.spritePath,
+                                    width: 14,
+                                    height: 14,
+                                    errorBuilder: (_, __, ___) => const Icon(
+                                      Icons.stars,
+                                      size: 14,
+                                      color: Colors.amber,
+                                    ),
+                                  ),
+                                ] else ...[
+                                  const Icon(
+                                    Icons.circle_outlined,
+                                    size: 14,
+                                    color: Colors.white24,
+                                  ),
+                                ],
+                                const SizedBox(width: 4),
+                                Expanded(
+                                  child: Text(
+                                    captured.equippedTalisman?.name ??
+                                        'No Item',
+                                    style: TextStyle(
+                                      color: captured.equippedTalisman != null
+                                          ? Colors.amberAccent
+                                          : Colors.white24,
+                                      fontSize: 7,
+                                      fontFamily: 'PressStart2P',
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          // Ability
+                          Expanded(
+                            flex: 2,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                const Icon(
+                                  Icons.auto_fix_high,
+                                  size: 12,
+                                  color: Colors.cyanAccent,
+                                ),
+                                const SizedBox(width: 4),
+                                Flexible(
+                                  child: Text(
+                                    captured.activeAbilityName,
+                                    style: const TextStyle(
+                                      color: Colors.cyanAccent,
+                                      fontSize: 7,
+                                      fontFamily: 'PressStart2P',
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -876,110 +1260,274 @@ class _AnimalCard extends StatelessWidget {
     );
   }
 
-  Widget _buildActions(BuildContext context) {
-    return Wrap(
-      spacing: 6,
-      runSpacing: 6,
-      children: [
-        _SmallActionBtn(
-          label: 'MOVES',
-          color: AppColors.secondaryButtonColor,
-          onPressed: onManageMoves,
-          isOutlined: true,
-          textColor: AppColors.highlightColor,
+  void _showContextMenu(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: const BoxDecoration(
+          color: Color(0xFF151525),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
-        _SmallActionBtn(
-          label: captured.equippedTalisman != null ? 'CHANGE' : 'EQUIP',
-          color: AppColors.secondaryButtonColor,
-          onPressed: onEquip,
-          isOutlined: true,
-          textColor: Colors.blueAccent,
-        ),
-        _SmallActionBtn(
-          label: isInTeam ? 'REMOVE' : 'ADD TEAM',
-          color: isInTeam ? Colors.blue[700]! : Colors.blue[400]!,
-          onPressed: onToggleTeam,
-        ),
-        _SmallActionBtn(
-          label: 'SUMMARY',
-          color: AppColors.secondaryButtonColor,
-          onPressed: () => Navigator.push(
-            context,
-            PageRouteBuilder(
-              pageBuilder: (_, __, ___) =>
-                  AnimalSummaryScreen(captured: captured),
-              transitionsBuilder: (_, animation, __, child) {
-                return FadeTransition(opacity: animation, child: child);
-              },
-              transitionDuration: const Duration(milliseconds: 250),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 12),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
-          ),
-          isOutlined: true,
-          textColor: Colors.orange,
+            Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Row(
+                children: [
+                  _AnimalBoxSprite(organism: captured.baseOrganism, size: 50),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          captured.displayName,
+                          style: const TextStyle(
+                            fontFamily: 'PressStart2P',
+                            fontSize: 14,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'LV.${captured.level} ${captured.baseOrganism.name}',
+                          style: const TextStyle(
+                            fontFamily: 'PressStart2P',
+                            fontSize: 8,
+                            color: Colors.white54,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(color: Colors.white10, height: 1),
+            _buildContextOption(
+              context,
+              icon: Icons.edit,
+              label: 'RENAME',
+              color: Colors.cyanAccent,
+              onTap: () {
+                Navigator.pop(ctx);
+                _showRenameDialog(context);
+              },
+            ),
+            _buildContextOption(
+              context,
+              icon: Icons.bolt,
+              label: 'MOVES',
+              color: Colors.orangeAccent,
+              onTap: () {
+                Navigator.pop(ctx);
+                onManageMoves();
+              },
+            ),
+            _buildContextOption(
+              context,
+              icon: Icons.stars,
+              label: 'ITEMS',
+              color: Colors.amberAccent,
+              onTap: () {
+                Navigator.pop(ctx);
+                onManageItems();
+              },
+            ),
+            _buildContextOption(
+              context,
+              icon: isInTeam
+                  ? Icons.remove_circle_outline
+                  : Icons.add_circle_outline,
+              label: isInTeam ? 'REMOVE FROM TEAM' : 'ADD TO TEAM',
+              color: Colors.blueAccent,
+              onTap: () {
+                Navigator.pop(ctx);
+                onToggleTeam();
+              },
+            ),
+            _buildContextOption(
+              context,
+              icon: Icons.bar_chart,
+              label: 'SUMMARY',
+              color: Colors.greenAccent,
+              onTap: () {
+                Navigator.pop(ctx);
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (_, __, ___) =>
+                        AnimalSummaryScreen(captured: captured),
+                    transitionsBuilder: (_, animation, __, child) =>
+                        FadeTransition(opacity: animation, child: child),
+                  ),
+                );
+              },
+            ),
+            _buildContextOption(
+              context,
+              icon: Icons.delete_forever,
+              label: 'RELEASE',
+              color: Colors.redAccent,
+              onTap: () {
+                Navigator.pop(ctx);
+                onRelease();
+              },
+            ),
+            const SizedBox(height: 32),
+          ],
         ),
-        _SmallActionBtn(
-          label: 'RELEASE',
-          color: Colors.transparent,
-          textColor: Colors.red[300],
-          onPressed: onRelease,
-          isOutlined: true,
+      ),
+    );
+  }
+
+  Widget _buildContextOption(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        child: Row(
+          children: [
+            Icon(icon, color: color, size: 20),
+            const SizedBox(width: 16),
+            Text(
+              label,
+              style: TextStyle(
+                fontFamily: 'PressStart2P',
+                fontSize: 10,
+                color: Colors.white.withValues(alpha: 0.9),
+                letterSpacing: 1,
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
+    );
+  }
+
+  void _showRenameDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => _RenameDialog(
+        initialName: captured.nickname ?? '',
+        baseName: captured.baseOrganism.name,
+        onRename: (newName) {
+          Provider.of<UserState>(
+            context,
+            listen: false,
+          ).renameOrganism(captured.id, newName);
+        },
+      ),
     );
   }
 }
 
-class _SmallActionBtn extends StatelessWidget {
-  final String label;
-  final Color color;
-  final VoidCallback? onPressed;
-  final bool isOutlined;
-  final Color? textColor;
+class _RenameDialog extends StatefulWidget {
+  final String initialName;
+  final String baseName;
+  final Function(String) onRename;
 
-  const _SmallActionBtn({
-    required this.label,
-    required this.color,
-    this.onPressed,
-    this.isOutlined = false,
-    this.textColor,
+  const _RenameDialog({
+    required this.initialName,
+    required this.baseName,
+    required this.onRename,
   });
 
   @override
+  State<_RenameDialog> createState() => _RenameDialogState();
+}
+
+class _RenameDialogState extends State<_RenameDialog> {
+  late TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialName);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (isOutlined) {
-      return SizedBox(
-        height: 24,
-        child: OutlinedButton(
-          onPressed: onPressed,
-          style: OutlinedButton.styleFrom(
-            side: BorderSide(color: textColor ?? color),
-            padding: const EdgeInsets.symmetric(horizontal: 8),
+    return AlertDialog(
+      backgroundColor: const Color(0xFF1A1A2E),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      title: Text(
+        'RENAME ${widget.baseName.toUpperCase()}',
+        style: const TextStyle(
+          fontFamily: 'PressStart2P',
+          fontSize: 12,
+          color: Colors.white,
+        ),
+      ),
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        style: const TextStyle(
+          color: Colors.white,
+          fontFamily: 'PressStart2P',
+          fontSize: 10,
+        ),
+        decoration: InputDecoration(
+          hintText: 'Enter nickname...',
+          hintStyle: const TextStyle(color: Colors.white24, fontSize: 10),
+          enabledBorder: const UnderlineInputBorder(
+            borderSide: BorderSide(color: Colors.white24),
           ),
-          child: Text(
-            label,
+          focusedBorder: const UnderlineInputBorder(
+            borderSide: BorderSide(color: Colors.cyanAccent),
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text(
+            'CANCEL',
             style: TextStyle(
+              color: Colors.white54,
               fontSize: 8,
               fontFamily: 'PressStart2P',
-              color: textColor,
             ),
           ),
         ),
-      );
-    }
-    return SizedBox(
-      height: 24,
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: color,
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(horizontal: 8),
+        TextButton(
+          onPressed: () {
+            widget.onRename(_controller.text.trim());
+            Navigator.pop(context);
+          },
+          child: const Text(
+            'CONFIRM',
+            style: TextStyle(
+              color: Colors.cyanAccent,
+              fontSize: 8,
+              fontFamily: 'PressStart2P',
+            ),
+          ),
         ),
-        child: Text(
-          label,
-          style: const TextStyle(fontSize: 8, fontFamily: 'PressStart2P'),
-        ),
-      ),
+      ],
     );
   }
 }

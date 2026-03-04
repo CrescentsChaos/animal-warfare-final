@@ -693,6 +693,7 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
                             const SizedBox(height: 10),
                             Text(
                               'EXPLORING...',
+                              textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: _biomeHighlightColor,
                                 fontFamily: 'PressStart2P',
@@ -839,6 +840,7 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
           children: [
             Text(
               isNameVisible ? 'ENCOUNTER' : 'UNKNOWN ANIMAL',
+              textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.white,
                 fontFamily: 'PressStart2P',
@@ -858,6 +860,7 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
               ),
               child: Text(
                 organism.rarity.toUpperCase(),
+                textAlign: TextAlign.center,
                 style: TextStyle(
                   color: _getRarityColor(organism.rarity),
                   fontFamily: 'PressStart2P',
@@ -910,6 +913,7 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
                 ),
                 child: Text(
                   organism.name.toUpperCase(),
+                  textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: Colors.white,
                     fontFamily: 'PressStart2P',

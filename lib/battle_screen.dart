@@ -31,6 +31,7 @@ import 'package:animal_warfare/widgets/terrain_overlay.dart';
 import 'package:animal_warfare/widgets/item_icon.dart';
 import 'package:animal_warfare/widgets/anidex_details_sheet.dart';
 import 'package:animal_warfare/widgets/type_matchup_sheet.dart';
+import 'package:animal_warfare/widgets/battle_details_sheet.dart';
 
 class BattleScreen extends StatelessWidget {
   final CapturedOrganism playerOrganism;
@@ -279,6 +280,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
   late Animation<double> _opponentShakeAnimation;
   bool _isSwitchDialogShowing = false;
   bool _isHandlingBattleEnd = false;
+  bool _isFastMode = false; // Hold message box to speed up text 3x
   CapturedOrganism? _pendingRogueCapture;
   BattleManager? _battleManager;
   final LayerLink _playerLink = LayerLink();
@@ -351,8 +353,10 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     if (!mounted) return;
     final bm = Provider.of<BattleManager>(context, listen: false);
 
+    // Double-switch guard: set flag synchronously BEFORE opening dialog
     if (bm.currentState == BattleState.choosingLead &&
         !_isSwitchDialogShowing) {
+      _isSwitchDialogShowing = true;
       _showPartyScreen(
         context,
         bm,
@@ -362,6 +366,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
       );
     } else if (bm.currentState == BattleState.waitingForPlayerSwitch &&
         !_isSwitchDialogShowing) {
+      _isSwitchDialogShowing = true;
       _showPartyScreen(context, bm, isForced: true);
     } else if (bm.currentState == BattleState.battleEnd) {
       final userState = Provider.of<UserState>(context, listen: false);
@@ -593,7 +598,11 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     // Award XP
     int? levelCap;
     if (widget.isRogueMode) {
-      levelCap = 100; // Allow normal leveling up to max in Rogue mode
+      // In Roguelike, animals can level up to the current floor's cap (floor * 10).
+      // The only cap is the floor-based one, no account level restriction.
+      final rogueState = userState.currentUser?.rogueLikeState;
+      final currentFloor = rogueState?.floor ?? 1;
+      levelCap = (currentFloor * 10).clamp(10, 100);
     }
 
     if (!widget.isArenaBattle) {
@@ -735,17 +744,17 @@ class _BattleScreenContentState extends State<BattleScreenContent>
             filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
             child: Container(
               decoration: BoxDecoration(
-                color: secondaryColor.withValues(alpha: 0.85),
+                color: secondaryColor.withOpacity(0.95),
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(24),
                 ),
                 border: Border.all(
-                  color: themeColor.withValues(alpha: 0.5),
+                  color: themeColor.withOpacity(0.5),
                   width: 1.5,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.5),
+                    color: Colors.black.withOpacity(0.5),
                     blurRadius: 20,
                     spreadRadius: 5,
                   ),
@@ -760,7 +769,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                       width: 40,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.3),
+                        color: Colors.white.withOpacity(0.5),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -770,7 +779,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          primaryColor.withValues(alpha: 0.6),
+                          primaryColor.withOpacity(0.3),
                           Colors.transparent,
                         ],
                         begin: Alignment.topCenter,
@@ -819,7 +828,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.2),
+                                  color: Colors.white.withOpacity(0.5),
                                 ),
                               ),
                               child: const Icon(
@@ -864,7 +873,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                                       vertical: 4,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: themeColor.withValues(alpha: 0.2),
+                                      color: themeColor.withOpacity(0.5),
                                       borderRadius: BorderRadius.circular(4),
                                       border: Border.all(
                                         color: themeColor.withValues(
@@ -891,7 +900,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                                       decoration: BoxDecoration(
                                         gradient: LinearGradient(
                                           colors: [
-                                            themeColor.withValues(alpha: 0.5),
+                                            themeColor.withOpacity(0.5),
                                             Colors.transparent,
                                           ],
                                         ),
@@ -914,8 +923,8 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                                   decoration: BoxDecoration(
                                     gradient: LinearGradient(
                                       colors: [
-                                        Colors.black.withValues(alpha: 0.4),
-                                        Colors.black.withValues(alpha: 0.2),
+                                        Colors.black.withOpacity(0.5),
+                                        Colors.black.withOpacity(0.5),
                                       ],
                                       begin: Alignment.topLeft,
                                       end: Alignment.bottomRight,
@@ -1051,7 +1060,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           primaryColor: _getBiomePrimaryColor(),
           onDismiss: () => _isSwitchDialogShowing = false,
           onShowSummary: (bo) {
-            _showOrganismInfo(context, bo, bm: bm, isPlayer: true);
+            BattleDetailsSheet.show(context, bo, true);
           },
           onSelect: (index) {
             Navigator.pop(ctx);
@@ -1084,7 +1093,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
 
     // Moved _handleBattleEnd to _handleStateTriggers (listener) to avoid build-phase side effects.
 
-    final overlayColor = Colors.black.withValues(alpha: 0.55);
+    final overlayColor = Colors.black.withOpacity(0.5);
 
     // Initialize/Update listener
     battleManager.onAttack = _onAttack;
@@ -1124,12 +1133,12 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                         fit: BoxFit.cover,
                         colorFilter: timeOfDay == 'day'
                             ? ColorFilter.mode(
-                                Colors.black.withValues(alpha: 0.35),
+                                Colors.black.withOpacity(0.5),
                                 BlendMode.darken,
                               )
                             : ColorFilter.mode(
                                 timeOfDay == 'evening'
-                                    ? Colors.orangeAccent.withValues(alpha: 0.3)
+                                    ? Colors.orangeAccent.withOpacity(0.5)
                                     : Colors.indigo[900]!.withValues(
                                         alpha: 0.7,
                                       ),
@@ -1425,7 +1434,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.blue.withValues(alpha: 0.2),
+                        color: Colors.blue.withOpacity(0.5),
                         borderRadius: BorderRadius.circular(4),
                         border: Border.all(
                           color: Colors.lightBlueAccent,
@@ -1646,7 +1655,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(
-        color: Colors.blue.withValues(alpha: 0.7),
+        color: Colors.blue.withOpacity(0.5),
         borderRadius: BorderRadius.circular(6),
         border: Border.all(color: Colors.white70),
       ),
@@ -1665,7 +1674,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(
-        color: Colors.purple.withValues(alpha: 0.7),
+        color: Colors.purple.withOpacity(0.5),
         borderRadius: BorderRadius.circular(6),
         border: Border.all(color: Colors.white70),
       ),
@@ -1685,12 +1694,12 @@ class _BattleScreenContentState extends State<BattleScreenContent>
       margin: const EdgeInsets.symmetric(horizontal: 1, vertical: 1),
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.85),
+        color: color.withOpacity(0.0),
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.5)),
+        border: Border.all(color: Colors.white.withOpacity(0.4)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
+            color: Colors.black.withOpacity(0.5),
             blurRadius: 2,
             offset: const Offset(1, 1),
           ),
@@ -1801,7 +1810,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
         border: Border.all(color: _getBiomeThemeColor(), width: 2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.4),
+            color: Colors.black.withOpacity(0.5),
             blurRadius: 6,
             offset: const Offset(2, 2),
           ),
@@ -1847,7 +1856,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
-              'HP: ${organism.health}/$maxHp (${(hpRatio * 100).toStringAsFixed(1)}%)',
+              'HP: ${(hpRatio * 100).toStringAsFixed(1)}%',
               style: TextStyle(
                 color: Colors.white70,
                 fontSize: isNarrow ? 8 : 10,
@@ -1938,8 +1947,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
         children: [
           Flexible(
             child: GestureDetector(
-              onLongPress: () =>
-                  _showOrganismInfo(context, organism, isPlayer: false),
+              onTap: () => BattleDetailsSheet.show(context, organism, false),
               child: statusBox,
             ),
           ),
@@ -1981,8 +1989,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                 size: spriteSize,
                 hideAnimal:
                     bm.result == BattleResult.capture && !bm.isCapturing,
-                onLongPress: () =>
-                    _showOrganismInfo(context, organism, isPlayer: false),
+                onTap: () => BattleDetailsSheet.show(context, organism, false),
                 mirror: false, // Mirrored from previous State
                 biomeName: widget.biomeName,
                 hazards: hazards,
@@ -2022,7 +2029,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
         border: Border.all(color: _getBiomeThemeColor(), width: 2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.4),
+            color: Colors.black.withOpacity(0.5),
             blurRadius: 6,
             offset: const Offset(2, 2),
           ),
@@ -2067,7 +2074,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
-              'HP: ${organism.health}/$maxHp (${(hpRatio * 100).toStringAsFixed(1)}%)',
+              'HP: ${(hpRatio * 100).toStringAsFixed(1)}%',
               style: TextStyle(
                 color: Colors.white70,
                 fontSize: isNarrow ? 8 : 10,
@@ -2192,8 +2199,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                 key: ValueKey(organism.organism.id),
                 organism: organism,
                 size: spriteSize,
-                onLongPress: () =>
-                    _showOrganismInfo(context, organism, isPlayer: true),
+                onTap: () => BattleDetailsSheet.show(context, organism, true),
                 mirror: true,
                 biomeName: widget.biomeName,
                 hazards: hazards,
@@ -2203,748 +2209,10 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           const SizedBox(width: 8),
           Flexible(
             child: GestureDetector(
-              onLongPress: () =>
-                  _showOrganismInfo(context, organism, isPlayer: true),
+              onTap: () => BattleDetailsSheet.show(context, organism, true),
               child: statusBox,
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  void _showOrganismInfo(
-    BuildContext context,
-    BattleOrganism bo, {
-    BattleManager? bm,
-    bool isPlayer = false,
-  }) {
-    final base = bo.organism.baseOrganism;
-    final battleManager =
-        bm ?? Provider.of<BattleManager>(context, listen: false);
-    final isPlayer =
-        (bo == battleManager.player) ||
-        battleManager.playerTeam.any((po) => po == bo.organism);
-
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: _getBiomeSecondaryColor(),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: _getBiomeThemeColor(), width: 2),
-        ),
-        titlePadding: EdgeInsets.zero,
-        title: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                _getBiomePrimaryColor().withValues(alpha: 0.8),
-                _getBiomeSecondaryColor(),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
-          ),
-          child: Text(
-            bo.displayName,
-            style: TextStyle(
-              color: _getBiomeThemeColor(),
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              height: 1.2,
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.visible,
-          ),
-        ),
-        contentPadding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Category
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.only(top: 4.0),
-                    child: Text(
-                      'CATEGORY: ',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 9,
-                        fontFamily: 'PressStart2P',
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Wrap(
-                      spacing: 4.0,
-                      runSpacing: 4.0,
-                      children: bo.displayCategory.toUpperCase().split(',').map(
-                        (cat) {
-                          final typeStr = cat.trim().toLowerCase();
-                          final type = ElementalType.values.firstWhere(
-                            (e) => e.toString().split('.').last == typeStr,
-                            orElse: () => ElementalType.basic,
-                          );
-                          final typeColor = _getTypeColor(type);
-
-                          return Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: typeColor,
-                              borderRadius: BorderRadius.circular(4),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.3),
-                                  blurRadius: 2,
-                                  offset: const Offset(1, 1),
-                                ),
-                              ],
-                            ),
-                            child: Text(
-                              cat.trim().toUpperCase(),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 8,
-                                fontFamily: 'PressStart2P',
-                                fontWeight: FontWeight.bold,
-                                shadows: [
-                                  Shadow(
-                                    color: Colors.black45,
-                                    blurRadius: 1,
-                                    offset: Offset(0.5, 0.5),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ).toList(),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-
-              // Tera Type
-              if (bo.organism.teraType != null)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 10.0),
-                  child: Row(
-                    children: [
-                      const Text(
-                        'TERA TYPE: ',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 9,
-                          fontFamily: 'PressStart2P',
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: bo.organism.teraType!.color,
-                          borderRadius: BorderRadius.circular(4),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.3),
-                              blurRadius: 2,
-                              offset: const Offset(1, 1),
-                            ),
-                          ],
-                        ),
-                        child: Text(
-                          bo.organism.teraType!.name.toUpperCase(),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 8,
-                            fontFamily: 'PressStart2P',
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-              // Nature
-              Padding(
-                padding: const EdgeInsets.only(bottom: 10.0),
-                child: Row(
-                  children: [
-                    const Text(
-                      'NATURE: ',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 9,
-                        fontFamily: 'PressStart2P',
-                      ),
-                    ),
-                    Text(
-                      isPlayer
-                          ? bo.organism.nature.name.toUpperCase()
-                          : 'UNKNOWN',
-                      style: TextStyle(
-                        color: _getBiomeThemeColor(),
-                        fontSize: 9,
-                        fontFamily: 'PressStart2P',
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // HP Section
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: Colors.green.withValues(alpha: 0.3),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'HP',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontFamily: 'PressStart2P',
-                      ),
-                    ),
-                    Text(
-                      '${bo.health}/${bo.maxHealth}',
-                      style: const TextStyle(
-                        color: Colors.green,
-                        fontSize: 10,
-                        fontFamily: 'PressStart2P',
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 10),
-
-              // Stat Boosts
-              Text(
-                'STATS & BOOSTS',
-                style: TextStyle(
-                  color: _getBiomeThemeColor(),
-                  fontSize: 9,
-                  fontFamily: 'PressStart2P',
-                ),
-              ),
-              const SizedBox(height: 6),
-              _buildStatRow(
-                'ATK',
-                isPlayer ? '${bo.currentAttack}' : '???',
-                bo.attackStage >= 0
-                    ? '+${bo.attackStage}'
-                    : '${bo.attackStage}',
-                const Color.fromARGB(255, 228, 1, 1),
-              ),
-              _buildStatRow(
-                'DEF',
-                isPlayer ? '${bo.currentDefense}' : '???',
-                bo.defenseStage >= 0
-                    ? '+${bo.defenseStage}'
-                    : '${bo.defenseStage}',
-                const Color.fromARGB(255, 209, 125, 0),
-              ),
-              _buildStatRow(
-                'PWR',
-                isPlayer ? '${bo.currentPower}' : '???',
-                bo.powerStage >= 0 ? '+${bo.powerStage}' : '${bo.powerStage}',
-                Colors.purple,
-              ),
-              _buildStatRow(
-                'RES',
-                isPlayer ? '${bo.currentResistance}' : '???',
-                bo.resistanceStage >= 0
-                    ? '+${bo.resistanceStage}'
-                    : '${bo.resistanceStage}',
-                const Color.fromARGB(255, 209, 212, 0),
-              ),
-              _buildStatRow(
-                'SPD',
-                isPlayer ? '${bo.currentSpeed}' : '???',
-                bo.speedStage >= 0 ? '+${bo.speedStage}' : '${bo.speedStage}',
-                const Color.fromARGB(255, 0, 188, 235),
-              ),
-              if (!isPlayer)
-                Padding(
-                  padding: const EdgeInsets.only(left: 48.0, bottom: 4.0),
-                  child: Text(
-                    'EST. RANGE: ${((CapturedOrganism.calculateStat('speed', base.speed, 0, level: bo.organism.level)) * 0.9).round()} - ${((CapturedOrganism.calculateStat('speed', base.speed, 31, level: bo.organism.level)) * 1.1).round()}',
-                    style: const TextStyle(
-                      color: Colors.white54,
-                      fontSize: 7,
-                      fontFamily: 'PressStart2P',
-                    ),
-                  ),
-                ),
-
-              const SizedBox(height: 10),
-              const Divider(color: Colors.white24, height: 1),
-              const SizedBox(height: 10),
-
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'STATUS: ',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 9,
-                      fontFamily: 'PressStart2P',
-                    ),
-                  ),
-                  if (bo.statusEffects.isEmpty)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.withValues(alpha: 0.3),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: const Text(
-                        "NONE",
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 9,
-                          fontFamily: 'PressStart2P',
-                        ),
-                      ),
-                    )
-                  else
-                    Expanded(
-                      child: Wrap(
-                        spacing: 4,
-                        runSpacing: 4,
-                        children: bo.statusEffects
-                            .map(
-                              (se) => GestureDetector(
-                                onLongPress: () {
-                                  ScaffoldMessenger.of(
-                                    context,
-                                  ).hideCurrentSnackBar();
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        '${se.name}: ${se.description}',
-                                      ),
-                                      duration: const Duration(seconds: 4),
-                                      behavior: SnackBarBehavior.floating,
-                                      width: 250,
-                                    ),
-                                  );
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                    vertical: 2,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: se.color.withValues(alpha: 0.5),
-                                    borderRadius: BorderRadius.circular(4),
-                                    border: Border.all(color: se.color),
-                                  ),
-                                  child: Text(
-                                    se.name.toUpperCase(),
-                                    style: TextStyle(
-                                      color: se.color,
-                                      fontSize: 9,
-                                      fontFamily: 'PressStart2P',
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            )
-                            .toList(),
-                      ),
-                    ),
-                ],
-              ),
-
-              const SizedBox(height: 10),
-              const Divider(color: Colors.white24, height: 1),
-              const SizedBox(height: 10),
-
-              // Held Item
-              if (bo.organism.equippedTalisman != null &&
-                  (isPlayer || bo.isItemRevealed))
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 10.0),
-                  child: Row(
-                    children: [
-                      const SizedBox(width: 8),
-                      const Text(
-                        'HELD ITEM: ',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 9,
-                          fontFamily: 'PressStart2P',
-                        ),
-                      ),
-                      ItemIcon(
-                        itemName: bo.organism.equippedTalisman!.name,
-                        size: 16,
-                      ),
-                      Expanded(
-                        child: Text(
-                          bo.organism.equippedTalisman!.name,
-                          style: const TextStyle(
-                            color: Colors.yellowAccent,
-                            fontSize: 9,
-                            fontFamily: 'PressStart2P',
-                            fontWeight: FontWeight.bold,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              if (bo.organism.equippedTalisman != null &&
-                  (isPlayer || bo.isItemRevealed))
-                const SizedBox(height: 10),
-              if (bo.organism.equippedTalisman != null &&
-                  (isPlayer || bo.isItemRevealed))
-                const Divider(color: Colors.white24, height: 1),
-              if (bo.organism.equippedTalisman != null &&
-                  (isPlayer || bo.isItemRevealed))
-                const SizedBox(height: 10),
-
-              // Revealed Moves (Opponent Only)
-              if (!isPlayer) ...[
-                const SizedBox(height: 10),
-                const Divider(color: Colors.white24, height: 1),
-                const SizedBox(height: 10),
-                Text(
-                  'REVEALED MOVES',
-                  style: TextStyle(
-                    color: _getBiomeThemeColor(),
-                    fontSize: 9,
-                    fontFamily: 'PressStart2P',
-                  ),
-                ),
-                const SizedBox(height: 6),
-                if ((battleManager
-                        .battleStats[bo.organism.id]
-                        ?.revealedMoves
-                        .isEmpty ??
-                    true))
-                  const Text(
-                    'NONE',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 9,
-                      fontFamily: 'PressStart2P',
-                    ),
-                  )
-                else
-                  ...battleManager.battleStats[bo.organism.id]!.revealedMoves
-                      .map((moveName) {
-                        final move = Move.findByName(moveName);
-                        final curStam = bo.organism.moveStamina[moveName] ?? 0;
-                        final maxStam = move?.stamina ?? 0;
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 4.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                moveName.toUpperCase(),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 9,
-                                  fontFamily: 'PressStart2P',
-                                ),
-                              ),
-                              Text(
-                                '$curStam/$maxStam',
-                                style: TextStyle(
-                                  color: curStam == 0
-                                      ? Colors.red
-                                      : (curStam < maxStam / 2
-                                            ? Colors.orange
-                                            : Colors.white70),
-                                  fontSize: 8,
-                                  fontFamily: 'PressStart2P',
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }),
-                const SizedBox(height: 10),
-                const Divider(color: Colors.white24, height: 1),
-                const SizedBox(height: 10),
-              ] else ...[
-                // Player Moves
-                const SizedBox(height: 10),
-                const Divider(color: Colors.white24, height: 1),
-                const SizedBox(height: 10),
-                Text(
-                  'MOVES',
-                  style: TextStyle(
-                    color: _getBiomeThemeColor(),
-                    fontSize: 9,
-                    fontFamily: 'PressStart2P',
-                  ),
-                ),
-                const SizedBox(height: 6),
-                ...bo.organism.selectedMoveNames.map((moveName) {
-                  final move = Move.findByName(moveName);
-                  final displayType = move != null
-                      ? (bm?.getDisplayType(bo, move) ?? move.type)
-                      : ElementalType.basic;
-                  final curStam = bo.organism.moveStamina[moveName] ?? 0;
-                  final maxStam = move?.stamina ?? 0;
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 4.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              moveName.toUpperCase(),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 9,
-                                fontFamily: 'PressStart2P',
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 4,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: _getTypeColor(displayType),
-                                borderRadius: BorderRadius.circular(2),
-                              ),
-                              child: Text(
-                                displayType.name.toUpperCase().substring(0, 3),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 6,
-                                  fontFamily: 'PressStart2P',
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        Text(
-                          '$curStam/$maxStam',
-                          style: TextStyle(
-                            color: curStam == 0
-                                ? Colors.red
-                                : (curStam < maxStam / 2
-                                      ? Colors.orange
-                                      : Colors.white70),
-                            fontSize: 8,
-                            fontFamily: 'PressStart2P',
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }),
-                const SizedBox(height: 10),
-                const Divider(color: Colors.white24, height: 1),
-                const SizedBox(height: 10),
-              ],
-
-              // Abilities
-              Text(
-                'ABILITIES',
-                style: TextStyle(
-                  color: _getBiomeThemeColor(),
-                  fontSize: 9,
-                  fontFamily: 'PressStart2P',
-                ),
-              ),
-              const SizedBox(height: 6),
-              if (!isPlayer && !bo.isAbilityRevealed)
-                const Padding(
-                  padding: EdgeInsets.only(bottom: 8.0),
-                  child: Text(
-                    '???',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontFamily: 'PressStart2P',
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                )
-              else
-                ...bo.abilities.map(
-                  (ab) => Padding(
-                    padding: const EdgeInsets.only(bottom: 8.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          ab.name.toUpperCase(),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontFamily: 'PressStart2P',
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          ab.description,
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 9,
-                            height: 1.5,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              AnidexDetailsSheet.show(
-                context,
-                bo.organism.baseOrganism,
-                capturedOverride: bo.organism,
-                showScaledStats: true,
-              );
-            },
-            style: TextButton.styleFrom(
-              backgroundColor: Colors.transparent,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              side: const BorderSide(color: Colors.orange),
-            ),
-            child: const Text(
-              'ANIDEX',
-              style: TextStyle(
-                color: Colors.orange,
-                fontFamily: 'PressStart2P',
-                fontSize: 10,
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              TypeMatchupSheet.show(
-                context,
-                bo.organism.baseOrganism.elementalTypes,
-              );
-            },
-            style: TextButton.styleFrom(
-              backgroundColor: Colors.transparent,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              side: const BorderSide(color: AppColors.highlightColor),
-            ),
-            child: const Text(
-              'MATCHUP',
-              style: TextStyle(
-                color: AppColors.highlightColor,
-                fontFamily: 'PressStart2P',
-                fontSize: 10,
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            style: TextButton.styleFrom(
-              backgroundColor: _getBiomePrimaryColor().withValues(alpha: 0.3),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            ),
-            child: Text(
-              'OK',
-              style: TextStyle(
-                color: _getBiomeThemeColor(),
-                fontFamily: 'PressStart2P',
-                fontSize: 10,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatRow(String label, String value, String boost, Color color) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              Text(
-                label,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 10,
-                  fontFamily: 'PressStart2P',
-                ),
-              ),
-              const SizedBox(width: 8),
-              if (boost != '+0' && boost != '0')
-                Text(
-                  boost,
-                  style: TextStyle(
-                    color: boost.startsWith('+') ? Colors.green : Colors.red,
-                    fontSize: 8,
-                    fontFamily: 'PressStart2P',
-                  ),
-                ),
-              if (boost == '+0' || boost == '0')
-                const Text(
-                  '+0',
-                  style: TextStyle(
-                    color: Colors.white24,
-                    fontSize: 8,
-                    fontFamily: 'PressStart2P',
-                  ),
-                ),
-            ],
-          ),
-          if (value != '???')
-            Text(
-              value,
-              style: TextStyle(
-                color: color,
-                fontSize: 10,
-                fontFamily: 'PressStart2P',
-                fontWeight: FontWeight.bold,
-              ),
-            ),
         ],
       ),
     );
@@ -2956,58 +2224,65 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     bool isNarrow, {
     bool expanded = false,
   }) {
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: isNarrow ? 8 : 12,
-        vertical: isNarrow ? 4 : 8,
-      ),
-      child: Container(
-        padding: EdgeInsets.all(isNarrow ? 10 : 16),
-        decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.85),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: _getBiomeThemeColor(), width: 2),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.5),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+    return GestureDetector(
+      onLongPress: () => setState(() => _isFastMode = true),
+      onLongPressEnd: (_) => setState(() => _isFastMode = false),
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: isNarrow ? 8 : 12,
+          vertical: isNarrow ? 4 : 8,
         ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 2),
-              child: Icon(
-                Icons.chat_bubble_outline,
-                color: _getBiomeThemeColor(),
-                size: isNarrow ? 16 : 20,
-              ),
+        child: Container(
+          padding: EdgeInsets.all(isNarrow ? 10 : 16),
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.5),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: _isFastMode ? Colors.yellowAccent : _getBiomeThemeColor(),
+              width: 2,
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Container(
-                height: expanded ? null : (isNarrow ? 50 : 70),
-                width: double.infinity,
-                alignment: Alignment.topLeft,
-                child: SingleChildScrollView(
-                  reverse: false,
-                  child: TypewriterText(
-                    message,
-                    speed: const Duration(milliseconds: 50),
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: isNarrow ? 10 : 12,
-                      fontFamily: 'PressStart2P',
-                      height: 1.2,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.5),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Icon(
+                  Icons.chat_bubble_outline,
+                  color: _getBiomeThemeColor(),
+                  size: isNarrow ? 16 : 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Container(
+                  height: expanded ? null : (isNarrow ? 50 : 70),
+                  width: double.infinity,
+                  alignment: Alignment.topLeft,
+                  child: SingleChildScrollView(
+                    reverse: false,
+                    child: TypewriterText(
+                      message,
+                      speed: Duration(milliseconds: _isFastMode ? 17 : 50),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: isNarrow ? 10 : 12,
+                        fontFamily: 'PressStart2P',
+                        height: 1.2,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -3166,7 +2441,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
         border: Border.all(color: _getBiomeThemeColor(), width: 2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.4),
+            color: Colors.black.withOpacity(0.5),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -3225,7 +2500,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                         style: TextStyle(
                           fontSize: isNarrow ? 8 : 10,
                           fontFamily: 'PressStart2P',
-                          color: Colors.white.withValues(alpha: 0.9),
+                          color: Colors.white.withOpacity(0.5),
                         ),
                       ),
                     ],
@@ -3299,7 +2574,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                               borderRadius: BorderRadius.circular(8),
                               side: BorderSide(
                                 color: !isValid
-                                    ? Colors.grey.withValues(alpha: 0.3)
+                                    ? Colors.grey.withOpacity(0.2)
                                     : (isSuggested
                                           ? Colors.yellowAccent
                                           : Colors.white.withValues(
@@ -3507,14 +2782,14 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                             foregroundColor: Colors.white,
                             disabledBackgroundColor: const Color(
                               0xFFCC0000,
-                            ).withValues(alpha: 0.5),
+                            ).withOpacity(0.5),
                             disabledForegroundColor: Colors.white54,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                               side: BorderSide(
                                 color: p.isTitanized
                                     ? Colors.redAccent
-                                    : Colors.red.withValues(alpha: 0.6),
+                                    : Colors.red.withOpacity(0.5),
                                 width: 2,
                               ),
                             ),
@@ -3550,14 +2825,14 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                             foregroundColor: Colors.white,
                             disabledBackgroundColor: const Color(
                               0xFF7B00D4,
-                            ).withValues(alpha: 0.5),
+                            ).withOpacity(0.5),
                             disabledForegroundColor: Colors.white54,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                               side: BorderSide(
                                 color: p.isPrismorphed
                                     ? Colors.purpleAccent
-                                    : Colors.purple.withValues(alpha: 0.6),
+                                    : Colors.purple.withOpacity(0.5),
                                 width: 2,
                               ),
                             ),
@@ -4083,57 +3358,64 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => _BattleResultDialog(
-        battleManager: battleManager,
-        result: battleManager.result!,
-        opponentName: battleManager.opponent.organism.baseOrganism.name,
-        playerName: battleManager.player.organism.baseOrganism.name,
-        moneyEarned: moneyEarned,
-        lootName: lootName,
-        themeColor: _getBiomeThemeColor(),
-        primaryColor: _getBiomePrimaryColor(),
-        secondaryColor: _getBiomeSecondaryColor(),
-        xpResults: xpResults,
-        isRogueMode: widget.isRogueMode,
-        rogueFloor: userState.currentUser?.rogueLikeState.floor,
-        onConfirm: () async {
-          SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-          Navigator.of(ctx).pop();
+      builder: (ctx) => ChangeNotifierProvider<BattleManager>.value(
+        value: battleManager,
+        child: _BattleResultDialog(
+          battleManager: battleManager,
+          result: battleManager.result!,
+          opponentName: battleManager.opponent.organism.baseOrganism.name,
+          playerName: battleManager.player.organism.baseOrganism.name,
+          moneyEarned: moneyEarned,
+          lootName: lootName,
+          themeColor: _getBiomeThemeColor(),
+          primaryColor: _getBiomePrimaryColor(),
+          secondaryColor: _getBiomeSecondaryColor(),
+          xpResults: xpResults,
+          isRogueMode: widget.isRogueMode,
+          rogueFloor: userState.currentUser?.rogueLikeState.floor,
+          onConfirm: () async {
+            SystemChrome.setPreferredOrientations([
+              DeviceOrientation.portraitUp,
+            ]);
+            Navigator.of(ctx).pop();
 
-          if (widget.isRogueMode &&
-              (battleManager.result == BattleResult.loss ||
-                  battleManager.result == BattleResult.fled)) {
-            // Roguelike defeat/forfeit: clean up and go to Arena menu
+            if (widget.isRogueMode &&
+                (battleManager.result == BattleResult.loss ||
+                    battleManager.result == BattleResult.fled)) {
+              // Roguelike defeat/forfeit: clean up and go to Arena menu
 
-            // FIX: Use a single pushAndRemoveUntil to reset the stack stably BEFORE ending the run.
-            // Chaining multiple pushes on a cleaning context causes soft-locks (black screens).
-            // By navigating first, the underlying RogueHubScreen isn't suddenly left without a Rogue state.
-            Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (ctx) => const MainScreen()),
-              (route) => false,
-            );
-
-            await userState.endRogueRun();
-          } else if ((battleManager.result == BattleResult.win ||
-                  battleManager.result == BattleResult.capture) &&
-              widget.isRogueMode) {
-            final rogue = userState.currentUser!.rogueLikeState;
-
-            // Navigator logic:
-            if (rogue.encounterIndex >= 5) {
-              // Boss/Floor completed -> Choose next biome
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (ctx) => const BiomeSelectScreen()),
+              // FIX: Use a single pushAndRemoveUntil to reset the stack stably BEFORE ending the run.
+              // Chaining multiple pushes on a cleaning context causes soft-locks (black screens).
+              // By navigating first, the underlying RogueHubScreen isn't suddenly left without a Rogue state.
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (ctx) => const MainScreen()),
+                (route) => false,
               );
+
+              await userState.endRogueRun();
+            } else if ((battleManager.result == BattleResult.win ||
+                    battleManager.result == BattleResult.capture) &&
+                widget.isRogueMode) {
+              final rogue = userState.currentUser!.rogueLikeState;
+
+              // Navigator logic:
+              if (rogue.encounterIndex >= 5) {
+                // Boss/Floor completed -> Choose next biome
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (ctx) => const BiomeSelectScreen(),
+                  ),
+                );
+              } else {
+                // Normal battle completed -> Return to Rogue Hub
+                Navigator.of(context).pop();
+              }
             } else {
-              // Normal battle completed -> Return to Rogue Hub
-              Navigator.of(context).pop();
+              // Normal exploration or other modes
+              Navigator.of(context).pop(battleManager.result);
             }
-          } else {
-            // Normal exploration or other modes
-            Navigator.of(context).pop(battleManager.result);
-          }
-        },
+          },
+        ),
       ),
     );
   }
@@ -4249,7 +3531,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
       builder: (ctx) => Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: _getBiomeSecondaryColor().withValues(alpha: 0.95),
+          color: _getBiomeSecondaryColor().withOpacity(0.9),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           border: Border.all(color: _getBiomeThemeColor(), width: 2),
         ),
@@ -4428,7 +3710,7 @@ class _CaptureReplaceDialog extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.cyan.shade900.withValues(alpha: 0.5),
+        color: Colors.cyan.shade900.withOpacity(0.4),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.cyanAccent, width: 2),
       ),
@@ -4719,50 +4001,89 @@ class _BattleResultDialog extends StatelessWidget {
     required this.isRogueMode,
   });
 
+  Map<String, dynamic> _calculateMvp() {
+    CapturedOrganism? mvpOrg;
+    String mvpSide = 'PLAYER';
+    double maxScore = -1;
+
+    final allParticipants = [
+      ...battleManager.playerTeam,
+      ...battleManager.opponentTeam,
+    ];
+
+    for (final org in allParticipants) {
+      final stats = battleManager.battleStats[org.id];
+      if (stats == null) continue;
+
+      // Improved MVP Score: DMG Dealt + Kills weight - Minor DMG Taken penalty
+      double score =
+          stats.totalDamageDealt.toDouble() +
+          (stats.totalKills * 150.0) -
+          (stats.totalDamageTaken * 0.05);
+
+      if (score > maxScore) {
+        maxScore = score;
+        mvpOrg = org;
+        mvpSide = battleManager.playerTeam.any((o) => o.id == org.id)
+            ? 'YOUR TEAM'
+            : 'OPPONENT';
+      }
+    }
+
+    if (mvpOrg == null && battleManager.playerTeam.isNotEmpty) {
+      mvpOrg = battleManager.playerTeam.first;
+      mvpSide = 'YOUR TEAM';
+    }
+
+    return {'organism': mvpOrg, 'side': mvpSide, 'score': maxScore};
+  }
+
   void _showStats(BuildContext context) {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: secondaryColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: themeColor, width: 2),
-        ),
-        title: Text(
-          'BATTLE STATS',
-          style: TextStyle(
-            color: themeColor,
-            fontFamily: 'PressStart2P',
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
+      builder: (ctx) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        child: AlertDialog(
+          backgroundColor: secondaryColor.withOpacity(0.95),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+            side: BorderSide(color: themeColor, width: 2),
           ),
-        ),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildStatsSection('PLAYER TEAM', battleManager.playerTeam),
-                const SizedBox(height: 16),
-                _buildStatsSection('OPPONENT TEAM', battleManager.opponentTeam),
-              ],
+          title: Text(
+            'BATTLE STATS',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: themeColor,
+              fontFamily: 'PressStart2P',
+              fontSize: 18,
             ),
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              'CLOSE',
-              style: TextStyle(
-                color: themeColor,
-                fontFamily: 'PressStart2P',
-                fontSize: 10,
+          content: SizedBox(
+            width: double.maxFinite,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildStatsSection('PLAYER TEAM', battleManager.playerTeam),
+                  const SizedBox(height: 20),
+                  _buildStatsSection(
+                    'OPPONENT TEAM',
+                    battleManager.opponentTeam,
+                  ),
+                ],
               ),
             ),
           ),
-        ],
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(
+                'CLOSE',
+                style: TextStyle(color: themeColor, fontFamily: 'PressStart2P'),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -4779,92 +4100,48 @@ class _BattleResultDialog extends StatelessWidget {
             fontSize: 10,
           ),
         ),
-        const SizedBox(height: 8),
+        const Divider(color: Colors.white24, height: 16),
         ...team.map((org) {
           final stats = battleManager.battleStats[org.id] ?? BattleStats();
           return _buildStatRow(
-            org.name,
+            org.baseOrganism.name,
             stats.totalDamageDealt,
             stats.totalDamageTaken,
-            battleManager.playerTeam.contains(org),
+            stats.totalKills,
           );
         }),
       ],
     );
   }
 
-  Widget _buildStatRow(String name, int dealt, int taken, bool isPlayer) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 2),
-      padding: const EdgeInsets.all(6),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(4),
-      ),
+  Widget _buildStatRow(
+    String name,
+    int damageDealt,
+    int damageTaken,
+    int kills,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(
-            flex: 4,
             child: Text(
-              name,
-              style: TextStyle(
-                color: isPlayer ? Colors.greenAccent : Colors.redAccent,
+              name.toUpperCase(),
+              style: const TextStyle(
+                color: Colors.white,
                 fontFamily: 'PressStart2P',
                 fontSize: 8,
               ),
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          Expanded(
-            flex: 5,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    const Text(
-                      'D:',
-                      style: TextStyle(
-                        color: Colors.white54,
-                        fontSize: 7,
-                        fontFamily: 'PressStart2P',
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '$dealt',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 8,
-                        fontFamily: 'PressStart2P',
-                      ),
-                    ),
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    const Text(
-                      'T:',
-                      style: TextStyle(
-                        color: Colors.white54,
-                        fontSize: 7,
-                        fontFamily: 'PressStart2P',
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '$taken',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 8,
-                        fontFamily: 'PressStart2P',
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+          Text(
+            'D:$damageDealt T:$damageTaken K:$kills',
+            style: const TextStyle(
+              color: Colors.white70,
+              fontFamily: 'PressStart2P',
+              fontSize: 8,
             ),
           ),
         ],
@@ -4875,11 +4152,11 @@ class _BattleResultDialog extends StatelessWidget {
   Widget _buildSummaryCard(BuildContext context, CapturedOrganism org) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.white10),
+        color: Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white24),
       ),
       child: Row(
         children: [
@@ -4894,16 +4171,16 @@ class _BattleResultDialog extends StatelessWidget {
                   style: const TextStyle(
                     color: Colors.white,
                     fontFamily: 'PressStart2P',
-                    fontSize: 8,
+                    fontSize: 10,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'LV.${org.level}',
-                  style: const TextStyle(
-                    color: Colors.white70,
+                  'LVL ${org.level} • ${org.baseOrganism.rarity.toUpperCase()}',
+                  style: TextStyle(
+                    color: Colors.white60,
                     fontFamily: 'PressStart2P',
-                    fontSize: 7,
+                    fontSize: 8,
                   ),
                 ),
               ],
@@ -4916,457 +4193,411 @@ class _BattleResultDialog extends StatelessWidget {
 
   Widget _buildSmallSprite(CapturedOrganism org) {
     return Container(
-      width: 32,
-      height: 32,
-      padding: const EdgeInsets.all(4),
+      width: 48,
+      height: 48,
       decoration: BoxDecoration(
-        color: Colors.black38,
-        borderRadius: BorderRadius.circular(6),
+        color: Colors.black26,
+        borderRadius: BorderRadius.circular(8),
       ),
-      child: ChangeNotifierProvider.value(
-        value: battleManager,
-        child: _BattleSprite(
-          organism: BattleOrganism(org, isRogueMode: true),
-          size: 32,
-          biomeName: 'Forest',
-          hazards: const [],
-        ),
-      ),
-    );
-  }
-
-  void _showMvp(BuildContext context) {
-    CapturedOrganism? mvp;
-    int maxDamage = -1;
-
-    for (final org in battleManager.playerTeam) {
-      final stats = battleManager.battleStats[org.id];
-      if (stats != null && stats.totalDamageDealt > maxDamage) {
-        maxDamage = stats.totalDamageDealt;
-        mvp = org;
-      }
-    }
-
-    if (mvp == null && battleManager.playerTeam.isNotEmpty) {
-      mvp = battleManager.playerTeam.first;
-    }
-
-    if (mvp == null) return;
-
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: secondaryColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: Colors.amber, width: 3),
-        ),
-        title: const Column(
-          children: [
-            Icon(Icons.star, color: Colors.amber, size: 48),
-            SizedBox(height: 8),
-            Text(
-              'MVP',
-              style: TextStyle(
-                color: Colors.amber,
-                fontFamily: 'PressStart2P',
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 100,
-              height: 100,
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.white10,
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.amber, width: 2),
-              ),
-              child: ChangeNotifierProvider.value(
-                value: battleManager,
-                child: _BattleSprite(
-                  organism: BattleOrganism(mvp!, isRogueMode: true),
-                  size: 80,
-                  biomeName: 'forest',
-                  hazards: const [],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              mvp.name.toUpperCase(),
-              style: const TextStyle(
-                color: Colors.white,
-                fontFamily: 'PressStart2P',
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 12),
-            if (maxDamage > 0)
-              Text(
-                'DAMAGE DEALT: $maxDamage',
-                style: const TextStyle(
-                  color: Colors.greenAccent,
-                  fontFamily: 'PressStart2P',
-                  fontSize: 10,
-                ),
-              )
-            else
-              const Text(
-                'PARTICIPATION MEDAL',
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontFamily: 'PressStart2P',
-                  fontSize: 8,
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text(
-              'NICE!',
-              style: TextStyle(
-                color: Colors.amber,
-                fontFamily: 'PressStart2P',
-                fontSize: 12,
-              ),
-            ),
+      child: Center(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: _BattleSprite(
+            organism: BattleOrganism(org, isRogueMode: true),
+            size: 40,
+            biomeName: 'forest',
+            hazards: const [],
           ),
-        ],
+        ),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final mvpInfo = _calculateMvp();
+    final CapturedOrganism? mvpOrg = mvpInfo['organism'];
+    final String mvpSide = mvpInfo['side'];
+
     String titleText;
     Color titleColor;
     String description;
     IconData mainIcon;
+    List<Color> gradientColors;
 
     switch (result) {
       case BattleResult.win:
-        titleText = 'VICTORY!';
-        titleColor = themeColor;
+        titleText = 'VICTORY';
+        titleColor = Colors.amber;
         description = 'You defeated the wild encounter!';
         mainIcon = Icons.emoji_events;
+        gradientColors = [
+          Colors.amber.withOpacity(0.2),
+          secondaryColor.withOpacity(0.95),
+        ];
         break;
       case BattleResult.loss:
-        titleText = 'DEFEAT!';
+        titleText = 'DEFEAT';
         titleColor = Colors.redAccent;
-        description = battleManager.isArenaBattle
-            ? 'Your $playerName was defeated in battle.'
-            : 'Your $playerName was defeated in battle...';
-        mainIcon = Icons.error;
+        description = 'Your team was overwhelmed...';
+        mainIcon = Icons.close;
+        gradientColors = [
+          Colors.redAccent.withOpacity(0.2),
+          secondaryColor.withOpacity(0.95),
+        ];
         break;
       case BattleResult.capture:
-        titleText = 'CAPTURED!';
+        titleText = 'CAPTURED';
         titleColor = Colors.cyanAccent;
-        description = 'You successfully captured the $opponentName!';
+        description = 'The $opponentName was caught!';
         mainIcon = Icons.catching_pokemon;
+        gradientColors = [
+          Colors.cyanAccent.withOpacity(0.2),
+          secondaryColor.withOpacity(0.95),
+        ];
         break;
       case BattleResult.fled:
-        titleText = 'ESCAPED!';
+        titleText = 'ESCAPED';
         titleColor = Colors.grey;
-        description = 'You ran away safely!';
+        description = 'You slipped away safely.';
         mainIcon = Icons.directions_run;
+        gradientColors = [
+          Colors.grey.withOpacity(0.2),
+          secondaryColor.withOpacity(0.95),
+        ];
         break;
     }
 
-    return AlertDialog(
-      backgroundColor: secondaryColor,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: titleColor, width: 3),
-      ),
-      title: Column(
-        children: [
-          Icon(mainIcon, color: titleColor, size: 48),
-          const SizedBox(height: 12),
-          Text(
-            titleText,
-            style: TextStyle(
-              color: titleColor,
-              fontFamily: 'PressStart2P',
-              fontSize: 20,
-              shadows: const [
-                Shadow(
-                  color: Colors.black,
-                  blurRadius: 4,
-                  offset: Offset(2, 2),
+    return BackdropFilter(
+      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+      child: Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(16),
+        child: Container(
+          width: double.infinity,
+          constraints: const BoxConstraints(maxWidth: 500),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: gradientColors,
+            ),
+            borderRadius: BorderRadius.circular(32),
+            border: Border.all(color: titleColor.withOpacity(0.5), width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: titleColor.withOpacity(0.2),
+                blurRadius: 20,
+                spreadRadius: 5,
+              ),
+            ],
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 32),
+                // Header
+                Icon(mainIcon, color: titleColor, size: 64),
+                const SizedBox(height: 16),
+                Text(
+                  titleText,
+                  style: TextStyle(
+                    color: titleColor,
+                    fontFamily: 'PressStart2P',
+                    fontSize: 32,
+                    letterSpacing: 4,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withOpacity(0.5),
+                        offset: const Offset(4, 4),
+                        blurRadius: 8,
+                      ),
+                    ],
+                  ),
                 ),
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: Text(
+                    description.toUpperCase(),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontFamily: 'PressStart2P',
+                      fontSize: 10,
+                      height: 1.5,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 32),
+
+                // MVP Showcase
+                if (mvpOrg != null) ...[
+                  Text(
+                    'BATTLE MVP',
+                    style: TextStyle(
+                      color: Colors.white54,
+                      fontFamily: 'PressStart2P',
+                      fontSize: 10,
+                      letterSpacing: 2,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    width: 200,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: Colors.amber.withOpacity(0.3)),
+                    ),
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.amber,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            mvpSide,
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontFamily: 'PressStart2P',
+                              fontSize: 8,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        _BattleSprite(
+                          organism: BattleOrganism(mvpOrg, isRogueMode: true),
+                          size: 100,
+                          biomeName: 'forest',
+                          hazards: const [],
+                        ),
+                        const SizedBox(height: 12),
+                        FittedBox(
+                          child: Text(
+                            mvpOrg.baseOrganism.name.toUpperCase(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontFamily: 'PressStart2P',
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                ],
+
+                // Rewards / XP
+                if (moneyEarned > 0 || lootName != null || xpResults.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.black38,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: Colors.white12),
+                      ),
+                      child: Column(
+                        children: [
+                          if (xpResults.isNotEmpty) ...[
+                            _buildRewardRow(
+                              Icons.stars,
+                              '${xpResults['gainedAccountXP']} ACCOUNT XP',
+                              Colors.blueAccent,
+                            ),
+                            if (xpResults['accountLeveledUp'] == true)
+                              _buildPromoText(
+                                'ACCOUNT LEVEL UP!',
+                                Colors.orange,
+                              ),
+                            const SizedBox(height: 12),
+                            const Text(
+                              'TEAM PROGRESS',
+                              style: TextStyle(
+                                color: Colors.white38,
+                                fontFamily: 'PressStart2P',
+                                fontSize: 8,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            ...battleManager.playerTeam.map((org) {
+                              final gainedXP =
+                                  (xpResults['gainedAnimalXP'] as int? ?? 0);
+                              final id = org.id;
+                              final killerId = xpResults['killerId'] as String?;
+                              int animalShare = (id == killerId)
+                                  ? gainedXP
+                                  : (gainedXP / 2).floor();
+
+                              return _XPResultRow(
+                                organism: org,
+                                gainedXP: animalShare,
+                                didLevelUp:
+                                    (xpResults['animalLeveledUp']
+                                        as Map<String, bool>?)?[id] ??
+                                    false,
+                              );
+                            }),
+                          ],
+                          if (moneyEarned > 0) ...[
+                            const SizedBox(height: 8),
+                            _buildRewardRow(
+                              Icons.monetization_on,
+                              '$moneyEarned GOLD',
+                              Colors.yellow,
+                            ),
+                          ],
+                          if (lootName != null) ...[
+                            const SizedBox(height: 8),
+                            _buildRewardRow(
+                              Icons.inventory_2,
+                              'LOOT: $lootName',
+                              Colors.purpleAccent,
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+
+                if (isRogueMode && result == BattleResult.loss) ...[
+                  const SizedBox(height: 24),
+                  const Text(
+                    'FINAL PARTY',
+                    style: TextStyle(
+                      color: Colors.white60,
+                      fontFamily: 'PressStart2P',
+                      fontSize: 10,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      children: battleManager.playerTeam
+                          .map((org) => _buildSummaryCard(context, org))
+                          .toList(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'FLOOR REACHED: $rogueFloor',
+                    style: const TextStyle(
+                      color: Colors.orangeAccent,
+                      fontFamily: 'PressStart2P',
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+
+                const SizedBox(height: 32),
+                // Footer Actions
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => _showStats(context),
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: titleColor),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: Text(
+                            'STATS',
+                            style: TextStyle(
+                              color: titleColor,
+                              fontFamily: 'PressStart2P',
+                              fontSize: 10,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        flex: 2,
+                        child: ElevatedButton(
+                          onPressed: onConfirm,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: titleColor,
+                            foregroundColor: Colors.black,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            elevation: 8,
+                          ),
+                          child: const Text(
+                            'CONTINUE',
+                            style: TextStyle(
+                              fontFamily: 'PressStart2P',
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 32),
               ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRewardRow(IconData icon, String text, Color color) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: color, size: 16),
+          const SizedBox(width: 12),
+          Text(
+            text,
+            style: TextStyle(
+              color: color,
+              fontFamily: 'PressStart2P',
+              fontSize: 11,
             ),
           ),
         ],
       ),
-      content: Container(
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.6,
-        ),
-        width: double.maxFinite,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                description,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'PressStart2P',
-                  fontSize: 10,
-                  height: 1.5,
-                ),
-              ),
-              if (moneyEarned > 0 ||
-                  lootName != null ||
-                  xpResults.isNotEmpty) ...[
-                const SizedBox(height: 24),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.4),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.white10),
-                  ),
-                  child: Column(
-                    children: [
-                      if (xpResults.isNotEmpty) ...[
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              Icons.stars,
-                              color: Colors.blueAccent,
-                              size: 16,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              '+${xpResults['gainedAccountXP']} ACCOUNT XP',
-                              style: const TextStyle(
-                                color: Colors.blueAccent,
-                                fontFamily: 'PressStart2P',
-                                fontSize: 10,
-                              ),
-                            ),
-                          ],
-                        ),
-                        if (xpResults['accountLeveledUp'] == true)
-                          const Padding(
-                            padding: EdgeInsets.only(top: 8, bottom: 8),
-                            child: Text(
-                              'ACCOUNT LEVEL UP!',
-                              style: TextStyle(
-                                color: Colors.orangeAccent,
-                                fontFamily: 'PressStart2P',
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'TEAM PROGRESS',
-                          style: TextStyle(
-                            color: Colors.greenAccent.withValues(alpha: 0.8),
-                            fontFamily: 'PressStart2P',
-                            fontSize: 8,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        ...battleManager.playerTeam.map((org) {
-                          final gainedXP =
-                              (xpResults['gainedAnimalXP'] as int? ?? 0);
-                          final id = org.id;
-                          final killerId = xpResults['killerId'] as String?;
+    );
+  }
 
-                          // Calculate this specific animal's share
-                          // Note: In awardBattleXP, killer gets full, others half.
-                          int animalShare = (id == killerId)
-                              ? gainedXP
-                              : (gainedXP / 2).floor();
-
-                          return _XPResultRow(
-                            organism: org,
-                            gainedXP: animalShare,
-                            didLevelUp:
-                                (xpResults['animalLeveledUp']
-                                    as Map<String, bool>?)?[id] ??
-                                false,
-                          );
-                        }),
-                      ],
-                      if (moneyEarned > 0)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 8.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(
-                                Icons.monetization_on,
-                                color: Colors.yellow,
-                                size: 16,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                '+$moneyEarned GOLD',
-                                style: const TextStyle(
-                                  color: Colors.yellow,
-                                  fontFamily: 'PressStart2P',
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      if (lootName != null)
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              Icons.inventory_2,
-                              color: Colors.purpleAccent,
-                              size: 16,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'LOOT: $lootName',
-                              style: const TextStyle(
-                                color: Colors.purpleAccent,
-                                fontFamily: 'PressStart2P',
-                                fontSize: 10,
-                              ),
-                            ),
-                          ],
-                        ),
-                    ],
-                  ),
-                ),
-              ],
-              if (isRogueMode && result == BattleResult.loss) ...[
-                const Divider(color: Colors.white24, height: 24),
-                const Text(
-                  'FINAL PARTY',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontFamily: 'PressStart2P',
-                    fontSize: 10,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                ...battleManager.playerTeam.map(
-                  (org) => _buildSummaryCard(context, org),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'FLOOR REACHED: $rogueFloor',
-                  style: const TextStyle(
-                    color: Colors.orangeAccent,
-                    fontFamily: 'PressStart2P',
-                    fontSize: 10,
-                  ),
-                ),
-              ],
-            ],
-          ),
+  Widget _buildPromoText(String text, Color color) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: color,
+          fontFamily: 'PressStart2P',
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+          shadows: [Shadow(color: color.withOpacity(0.5), blurRadius: 4)],
         ),
       ),
-      actionsAlignment: MainAxisAlignment.center,
-      actions: [
-        Column(
-          children: [
-            if (isRogueMode && result == BattleResult.loss)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: ElevatedButton.icon(
-                  onPressed: () => _showStats(context),
-                  icon: const Icon(Icons.analytics, size: 16),
-                  label: const Text(
-                    'BATTLE STATS',
-                    style: TextStyle(fontFamily: 'PressStart2P', fontSize: 10),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueGrey,
-                    foregroundColor: Colors.white,
-                  ),
-                ),
-              ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                OutlinedButton(
-                  onPressed: () => _showStats(context),
-                  style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: themeColor),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                  ),
-                  child: Text(
-                    'STATS',
-                    style: TextStyle(
-                      color: themeColor,
-                      fontFamily: 'PressStart2P',
-                      fontSize: 10,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                OutlinedButton(
-                  onPressed: () => _showMvp(context),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Colors.amber),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                  ),
-                  child: const Text(
-                    'MVP',
-                    style: TextStyle(
-                      color: Colors.amber,
-                      fontFamily: 'PressStart2P',
-                      fontSize: 10,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: onConfirm,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: primaryColor,
-                foregroundColor: Colors.white,
-                side: BorderSide(color: titleColor.withValues(alpha: 0.5)),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 32,
-                  vertical: 16,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: const Text(
-                'CONTINUE',
-                style: TextStyle(fontFamily: 'PressStart2P', fontSize: 12),
-              ),
-            ),
-          ],
-        ),
-      ],
     );
   }
 }
@@ -5497,7 +4728,7 @@ class _XPResultRowState extends State<_XPResultRow>
                 height: 6,
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.1),
+                  color: Colors.white.withOpacity(0.5),
                   borderRadius: BorderRadius.circular(3),
                 ),
               ),
@@ -5519,7 +4750,7 @@ class _XPResultRowState extends State<_XPResultRow>
                         borderRadius: BorderRadius.circular(3),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.blueAccent.withValues(alpha: 0.5),
+                            color: Colors.blueAccent.withOpacity(0.2),
                             blurRadius: 4,
                           ),
                         ],
@@ -5555,7 +4786,7 @@ class _XPResultRowState extends State<_XPResultRow>
 class _BattleSprite extends StatefulWidget {
   final BattleOrganism organism;
   final double size;
-  final VoidCallback? onLongPress;
+  final VoidCallback? onTap;
   final bool mirror;
   final String biomeName;
   final List<String> hazards;
@@ -5565,7 +4796,7 @@ class _BattleSprite extends StatefulWidget {
     super.key,
     required this.organism,
     required this.size,
-    this.onLongPress,
+    this.onTap,
     this.mirror = false,
     required this.biomeName,
     required this.hazards,
@@ -5722,12 +4953,12 @@ class _BattleSpriteState extends State<_BattleSprite>
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.85),
+                color: Colors.black.withOpacity(0.85),
                 borderRadius: BorderRadius.circular(4),
                 border: Border.all(color: Colors.amber, width: 1.5),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.5),
+                    color: Colors.black.withOpacity(0.5),
                     blurRadius: 2,
                     offset: const Offset(1, 1),
                   ),
@@ -5865,7 +5096,7 @@ class _BattleSpriteState extends State<_BattleSprite>
     );
 
     // Sprite Outline Logic
-    final spriteOutlineColor = Colors.black.withValues(alpha: 0.8);
+    final spriteOutlineColor = Colors.black.withOpacity(0.8);
     const double outlineOffset = 1.5;
 
     final outlineImage = ColorFiltered(
@@ -5961,9 +5192,9 @@ class _BattleSpriteState extends State<_BattleSprite>
                     final teraColor = bo.activeTeraType?.color ?? Colors.cyan;
                     return LinearGradient(
                       colors: [
-                        teraColor.withValues(alpha: 0.35),
-                        teraColor.withValues(alpha: 0.75),
-                        teraColor.withValues(alpha: 0.35),
+                        teraColor.withOpacity(0.35),
+                        teraColor.withOpacity(0.75),
+                        teraColor.withOpacity(0.35),
                       ],
                       stops: [0.0, _pulseAnimation.value.clamp(0.0, 1.0), 1.0],
                       tileMode: TileMode.mirror,
@@ -5996,7 +5227,7 @@ class _BattleSpriteState extends State<_BattleSprite>
     final titanYOffset = isTitanized ? -size * 0.25 : 0.0;
 
     return GestureDetector(
-      onLongPress: widget.onLongPress,
+      onTap: widget.onTap,
       child: SizedBox(
         width: size,
         height: size,
@@ -6026,7 +5257,7 @@ class _BattleSpriteState extends State<_BattleSprite>
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.5),
+                            color: Colors.black.withOpacity(0.5),
                             blurRadius: 10,
                             offset: const Offset(0, 6),
                           ),
@@ -6036,7 +5267,7 @@ class _BattleSpriteState extends State<_BattleSprite>
                           radius: 0.9,
                           colors: [
                             platformColor,
-                            platformColor.withValues(alpha: 0.92),
+                            platformColor.withOpacity(0.0),
                           ],
                           stops: const [0.3, 1.0],
                         ),
@@ -6186,7 +5417,7 @@ class _ScreenShieldOverlayState extends State<_ScreenShieldOverlay>
       shields.add(
         CustomPaint(
           painter: _ShieldPainter(
-            color: Colors.cyanAccent.withValues(alpha: 0.75),
+            color: Colors.cyanAccent.withOpacity(0.2),
             progress: _controller.value,
             scale: 1.1,
           ),
@@ -6197,7 +5428,7 @@ class _ScreenShieldOverlayState extends State<_ScreenShieldOverlay>
       shields.add(
         CustomPaint(
           painter: _ShieldPainter(
-            color: Colors.orangeAccent.withValues(alpha: 0.75),
+            color: Colors.orangeAccent.withOpacity(0.5),
             progress: _controller.value,
             offset: hasAuroraVeil ? 2.0 : 0.0,
           ),
@@ -6208,7 +5439,7 @@ class _ScreenShieldOverlayState extends State<_ScreenShieldOverlay>
       shields.add(
         CustomPaint(
           painter: _ShieldPainter(
-            color: Colors.yellowAccent.withValues(alpha: 0.75),
+            color: Colors.yellowAccent.withOpacity(0.5),
             progress: _controller.value,
             scale: hasReflect || hasAuroraVeil ? 0.9 : 1.0,
           ),
@@ -6267,7 +5498,7 @@ class _ShieldPainter extends CustomPainter {
     canvas.drawPath(path, paint);
 
     final fillPaint = Paint()
-      ..color = color.withValues(alpha: color.a * 0.15)
+      ..color = color.withOpacity(color.a * 0.15)
       ..style = PaintingStyle.fill;
     canvas.drawPath(path, fillPaint);
   }
@@ -6422,12 +5653,12 @@ class _AbilityPopUpState extends State<_AbilityPopUp>
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.85),
+              color: Colors.black.withOpacity(0.5),
               border: Border.all(color: widget.themeColor, width: 2),
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.5),
+                  color: Colors.black.withOpacity(0.5),
                   blurRadius: 10,
                   offset: const Offset(4, 4),
                 ),
@@ -6556,7 +5787,7 @@ class _FloatingIndicatorWidgetState extends State<_FloatingIndicatorWidget>
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.6),
+            color: Colors.black.withOpacity(0.5),
             borderRadius: BorderRadius.circular(6),
           ),
           child: Text(
@@ -6649,12 +5880,12 @@ class _TrickRoomPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.cyanAccent.withValues(alpha: 0.2 + progress * 0.2)
+      ..color = Colors.cyanAccent.withOpacity(0.2 + progress * 0.2)
       ..strokeWidth = 2.0
       ..style = PaintingStyle.stroke;
     canvas.drawRect(
       Rect.fromLTWH(0, 0, size.width, size.height),
-      Paint()..color = Colors.deepPurple.withValues(alpha: 0.1),
+      Paint()..color = Colors.deepPurple.withOpacity(0.5),
     );
 
     final step = 50.0;
@@ -6707,7 +5938,7 @@ class _PartyScreenDialog extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF1A2A1A),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        border: Border.all(color: themeColor.withValues(alpha: 0.8), width: 2),
+        border: Border.all(color: themeColor.withOpacity(0.4), width: 2),
       ),
       padding: const EdgeInsets.fromLTRB(12, 16, 12, 8),
       child: Column(
@@ -6784,7 +6015,7 @@ class _PartyScreenDialog extends StatelessWidget {
                     color: isFainted
                         ? const Color(0xFF2A2A2A)
                         : isCurrent
-                        ? primaryColor.withValues(alpha: 0.35)
+                        ? primaryColor.withOpacity(0.3)
                         : const Color(0xFF2C4A2C),
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
@@ -6798,7 +6029,7 @@ class _PartyScreenDialog extends StatelessWidget {
                     boxShadow: isCurrent
                         ? [
                             BoxShadow(
-                              color: themeColor.withValues(alpha: 0.5),
+                              color: themeColor.withOpacity(0.4),
                               blurRadius: 8,
                               spreadRadius: 1,
                             ),
@@ -7274,10 +6505,7 @@ class _GlowPainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final paint = Paint()
       ..shader = RadialGradient(
-        colors: [
-          color.withValues(alpha: intensity),
-          color.withValues(alpha: 0),
-        ],
+        colors: [color.withOpacity(intensity), color.withOpacity(0.0)],
       ).createShader(Rect.fromCircle(center: center, radius: 50));
     canvas.drawCircle(center, 50, paint);
   }
@@ -7317,7 +6545,7 @@ class _PhysicalHitPainter extends CustomPainter {
     switch (type) {
       // Basic — plain X-slash slashes
       case ElementalType.basic:
-        paint.color = color.withValues(alpha: fade);
+        paint.color = color.withOpacity(fade);
         paint.strokeWidth = 6 * (1 - p * 0.5);
         paint.style = PaintingStyle.stroke;
         _drawSlash(canvas, cx, cy, 50 * p, paint);
@@ -7325,7 +6553,7 @@ class _PhysicalHitPainter extends CustomPainter {
 
       // Flying — feather-arc sweep
       case ElementalType.flying:
-        paint.color = color.withValues(alpha: fade);
+        paint.color = color.withOpacity(fade);
         final r = 55.0 * p;
         canvas.drawArc(
           Rect.fromCircle(center: Offset(cx, cy), radius: r),
@@ -7344,7 +6572,7 @@ class _PhysicalHitPainter extends CustomPainter {
           canvas.drawCircle(
             Offset(dx, dy),
             5 * fade,
-            Paint()..color = color.withValues(alpha: fade * 0.8),
+            Paint()..color = color.withOpacity(fade * 0.8),
           );
         }
         break;
@@ -7364,7 +6592,7 @@ class _PhysicalHitPainter extends CustomPainter {
           paint
             ..style = PaintingStyle.stroke
             ..strokeWidth = 5
-            ..color = color.withValues(alpha: fade),
+            ..color = color.withOpacity(fade),
         );
         break;
 
@@ -7378,11 +6606,11 @@ class _PhysicalHitPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = 4.0 - i
-              ..color = color.withValues(alpha: fade * (1.0 - i * 0.25)),
+              ..color = color.withOpacity(fade * (1.0 - i * 0.25)),
           );
         }
         // Ground crack lines
-        paint.color = color.withValues(alpha: fade);
+        paint.color = color.withOpacity(fade);
         paint.strokeWidth = 3;
         paint.style = PaintingStyle.stroke;
         for (int i = 0; i < 6; i++) {
@@ -7414,17 +6642,14 @@ class _PhysicalHitPainter extends CustomPainter {
             ..lineTo(base1.dx, base1.dy)
             ..lineTo(base2.dx, base2.dy)
             ..close();
-          canvas.drawPath(
-            path,
-            Paint()..color = color.withValues(alpha: fade * 0.9),
-          );
+          canvas.drawPath(path, Paint()..color = color.withOpacity(fade * 0.9));
         }
         break;
 
       // Toxic — splat blob
       case ElementalType.toxic:
         final r = 40.0 * p;
-        paint.color = color.withValues(alpha: fade * 0.85);
+        paint.color = color.withOpacity(fade * 0.85);
         canvas.drawCircle(Offset(cx, cy), r, paint);
         // Droplets
         for (int i = 0; i < 5; i++) {
@@ -7433,7 +6658,7 @@ class _PhysicalHitPainter extends CustomPainter {
           canvas.drawCircle(
             Offset(cx + cos(angle) * dr, cy + sin(angle) * dr),
             8 * p * fade,
-            Paint()..color = color.withValues(alpha: fade * 0.6),
+            Paint()..color = color.withOpacity(fade * 0.6),
           );
         }
         break;
@@ -7451,7 +6676,7 @@ class _PhysicalHitPainter extends CustomPainter {
             width: (8 + rand.nextDouble() * 8) * (1 - p * 0.3),
             height: (8 + rand.nextDouble() * 8) * (1 - p * 0.3),
           );
-          canvas.drawRect(rect, Paint()..color = color.withValues(alpha: fade));
+          canvas.drawRect(rect, Paint()..color = color.withOpacity(fade));
         }
         break;
 
@@ -7462,7 +6687,7 @@ class _PhysicalHitPainter extends CustomPainter {
           ..strokeWidth = 5
           ..strokeCap = StrokeCap.round;
         for (int i = -1; i <= 1; i++) {
-          paint.color = color.withValues(alpha: fade);
+          paint.color = color.withOpacity(fade);
           final ox = cx + i * 18.0;
           canvas.drawLine(
             Offset(ox - 10, cy - 35 * p),
@@ -7485,7 +6710,7 @@ class _PhysicalHitPainter extends CustomPainter {
             ..style = PaintingStyle.stroke
             ..strokeWidth = 7
             ..strokeJoin = StrokeJoin.round
-            ..color = color.withValues(alpha: fade),
+            ..color = color.withOpacity(fade),
         );
         // Inner bright core
         canvas.drawPath(
@@ -7493,7 +6718,7 @@ class _PhysicalHitPainter extends CustomPainter {
           Paint()
             ..style = PaintingStyle.stroke
             ..strokeWidth = 3
-            ..color = Colors.white.withValues(alpha: fade * 0.8),
+            ..color = Colors.white.withOpacity(fade * 0.8),
         );
         break;
 
@@ -7504,7 +6729,7 @@ class _PhysicalHitPainter extends CustomPainter {
           ..strokeWidth = 4;
         for (int i = 0; i < 3; i++) {
           final r2 = (20 + i * 12) * p;
-          paint.color = color.withValues(alpha: fade * (1 - i * 0.2));
+          paint.color = color.withOpacity(fade * (1 - i * 0.2));
           final sweepAngle = pi * 2 * p;
           canvas.drawArc(
             Rect.fromCircle(center: Offset(cx, cy), radius: r2),
@@ -7520,7 +6745,7 @@ class _PhysicalHitPainter extends CustomPainter {
           40 * p,
           Paint()
             ..style = PaintingStyle.fill
-            ..color = color.withValues(alpha: fade * 0.3),
+            ..color = color.withOpacity(fade * 0.3),
         );
         break;
 
@@ -7533,16 +6758,10 @@ class _PhysicalHitPainter extends CustomPainter {
           Paint()
             ..style = PaintingStyle.stroke
             ..strokeWidth = 4
-            ..color = color.withValues(alpha: fade),
+            ..color = color.withOpacity(fade),
         );
         // 5-pointed star
-        _drawStar(
-          canvas,
-          Offset(cx, cy),
-          40 * p,
-          5,
-          color.withValues(alpha: fade),
-        );
+        _drawStar(canvas, Offset(cx, cy), 40 * p, 5, color.withOpacity(fade));
         break;
 
       // Blaze — fire burst
@@ -7559,7 +6778,7 @@ class _PhysicalHitPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = 4 + rand2.nextDouble() * 4
-              ..color = color.withValues(alpha: fade * 0.9),
+              ..color = color.withOpacity(fade * 0.9),
           );
         }
         // Core glow
@@ -7568,7 +6787,7 @@ class _PhysicalHitPainter extends CustomPainter {
           18 * p,
           Paint()
             ..style = PaintingStyle.fill
-            ..color = Colors.white.withValues(alpha: fade * 0.6),
+            ..color = Colors.white.withOpacity(fade * 0.6),
         );
         break;
 
@@ -7590,7 +6809,7 @@ class _PhysicalHitPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = 6
-              ..color = color.withValues(alpha: fade * 0.9),
+              ..color = color.withOpacity(fade * 0.9),
           );
         }
         break;
@@ -7608,7 +6827,7 @@ class _PhysicalHitPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = 3
-              ..color = color.withValues(alpha: fade * (0.6 + i * 0.1)),
+              ..color = color.withOpacity(fade * (0.6 + i * 0.1)),
           );
         }
         break;
@@ -7626,7 +6845,7 @@ class _PhysicalHitPainter extends CustomPainter {
             ),
             Paint()
               ..style = PaintingStyle.fill
-              ..color = color.withValues(alpha: fade * (0.4 - i * 0.05)),
+              ..color = color.withOpacity(fade * (0.4 - i * 0.05)),
           );
         }
         break;
@@ -7639,7 +6858,7 @@ class _PhysicalHitPainter extends CustomPainter {
           ..strokeWidth = 6
           ..strokeCap = StrokeCap.round;
         for (int i = -1; i <= 1; i++) {
-          paint.color = color.withValues(alpha: fade);
+          paint.color = color.withOpacity(fade);
           final ox = cx + i * 22.0;
           canvas.drawLine(
             Offset(ox - 15, cy - 40 * p),
@@ -7653,7 +6872,7 @@ class _PhysicalHitPainter extends CustomPainter {
           30 * p,
           Paint()
             ..style = PaintingStyle.fill
-            ..color = color.withValues(alpha: fade * 0.4),
+            ..color = color.withOpacity(fade * 0.4),
         );
         break;
 
@@ -7664,12 +6883,12 @@ class _PhysicalHitPainter extends CustomPainter {
           Offset(cx, cy),
           50 * p,
           6,
-          color.withValues(alpha: fade * 0.8),
+          color.withOpacity(fade * 0.8),
         );
         canvas.drawCircle(
           Offset(cx, cy),
           15 * p,
-          Paint()..color = Colors.white.withValues(alpha: fade * 0.9),
+          Paint()..color = Colors.white.withOpacity(fade * 0.9),
         );
         break;
 
@@ -7683,7 +6902,7 @@ class _PhysicalHitPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = 3
-              ..color = color.withValues(alpha: fade * (0.9 - i * 0.15)),
+              ..color = color.withOpacity(fade * (0.9 - i * 0.15)),
           );
         }
         break;
@@ -7695,7 +6914,7 @@ class _PhysicalHitPainter extends CustomPainter {
           ..strokeWidth = 4;
         for (int i = 0; i < 5; i++) {
           final r6 = (15 + i * 16) * p;
-          paint.color = color.withValues(alpha: fade * (1 - i * 0.15));
+          paint.color = color.withOpacity(fade * (1 - i * 0.15));
           canvas.drawArc(
             Rect.fromCircle(center: Offset(cx, cy), radius: r6),
             -pi * 0.7,
@@ -7715,13 +6934,13 @@ class _PhysicalHitPainter extends CustomPainter {
           Paint()
             ..style = PaintingStyle.stroke
             ..strokeWidth = 5
-            ..color = color.withValues(alpha: fade),
+            ..color = color.withOpacity(fade),
         );
         // Radiant cross
         paint
           ..style = PaintingStyle.stroke
           ..strokeWidth = 5
-          ..color = Colors.white.withValues(alpha: fade);
+          ..color = Colors.white.withOpacity(fade);
         canvas.drawLine(
           Offset(cx, cy - 50 * p),
           Offset(cx, cy + 50 * p),
@@ -7836,12 +7055,12 @@ class _SpecialHitPainter extends CustomPainter {
         canvas.drawCircle(
           Offset(bx, by),
           r,
-          paint..color = color.withValues(alpha: fade * 0.85),
+          paint..color = color.withOpacity(fade * 0.85),
         );
         canvas.drawCircle(
           Offset(bx, by),
           r * 0.6,
-          Paint()..color = Colors.white.withValues(alpha: fade * 0.4),
+          Paint()..color = Colors.white.withOpacity(fade * 0.4),
         );
         if (impactPhase > 0) {
           // Splash
@@ -7851,7 +7070,7 @@ class _SpecialHitPainter extends CustomPainter {
             canvas.drawCircle(
               Offset(cx + cos(angle) * dist, cy + sin(angle) * dist),
               5 * (1 - impactPhase),
-              Paint()..color = color.withValues(alpha: fade * 0.7),
+              Paint()..color = color.withOpacity(fade * 0.7),
             );
           }
         }
@@ -7867,7 +7086,7 @@ class _SpecialHitPainter extends CustomPainter {
             width: 28,
             height: 24,
           );
-          canvas.drawRect(rect, paint..color = color.withValues(alpha: fade));
+          canvas.drawRect(rect, paint..color = color.withOpacity(fade));
         } else {
           // Fragment explosion
           final rand = Random(7);
@@ -7879,10 +7098,7 @@ class _SpecialHitPainter extends CustomPainter {
               width: 8 * (1 - impactPhase),
               height: 8 * (1 - impactPhase),
             );
-            canvas.drawRect(
-              frag,
-              Paint()..color = color.withValues(alpha: fade),
-            );
+            canvas.drawRect(frag, Paint()..color = color.withOpacity(fade));
           }
         }
         break;
@@ -7899,14 +7115,14 @@ class _SpecialHitPainter extends CustomPainter {
           ..close();
         canvas.drawPath(
           shardPath,
-          paint..color = color.withValues(alpha: fade * 0.9),
+          paint..color = color.withOpacity(fade * 0.9),
         );
         canvas.drawPath(
           shardPath,
           Paint()
             ..style = PaintingStyle.stroke
             ..strokeWidth = 2
-            ..color = Colors.white.withValues(alpha: fade * 0.5),
+            ..color = Colors.white.withOpacity(fade * 0.5),
         );
         if (impactPhase > 0) {
           for (int i = 0; i < 6; i++) {
@@ -7918,7 +7134,7 @@ class _SpecialHitPainter extends CustomPainter {
               Paint()
                 ..style = PaintingStyle.stroke
                 ..strokeWidth = 3
-                ..color = color.withValues(alpha: fade * 0.8),
+                ..color = color.withOpacity(fade * 0.8),
             );
           }
         }
@@ -7931,14 +7147,14 @@ class _SpecialHitPainter extends CustomPainter {
           canvas.drawCircle(
             Offset(bx + i * 8.0, cy - i * 5.0),
             (12 + i * 5) * (1 - p * 0.3),
-            Paint()..color = color.withValues(alpha: fade * (0.7 - i * 0.15)),
+            Paint()..color = color.withOpacity(fade * (0.7 - i * 0.15)),
           );
         }
         if (impactPhase > 0) {
           canvas.drawCircle(
             Offset(cx, cy),
             impactPhase * 50,
-            Paint()..color = color.withValues(alpha: fade * 0.35),
+            Paint()..color = color.withOpacity(fade * 0.35),
           );
         }
         break;
@@ -7950,14 +7166,14 @@ class _SpecialHitPainter extends CustomPainter {
         canvas.drawCircle(
           Offset(bx, by),
           14,
-          paint..color = color.withValues(alpha: fade),
+          paint..color = color.withOpacity(fade),
         );
         if (impactPhase > 0) {
           // Dust cloud
           canvas.drawCircle(
             Offset(cx, cy),
             impactPhase * 40,
-            Paint()..color = color.withValues(alpha: fade * 0.3),
+            Paint()..color = color.withOpacity(fade * 0.3),
           );
         }
         break;
@@ -7971,7 +7187,7 @@ class _SpecialHitPainter extends CustomPainter {
           ..lineTo(bx - 5, cy)
           ..lineTo(bx, cy + 6)
           ..close();
-        canvas.drawPath(path, paint..color = color.withValues(alpha: fade));
+        canvas.drawPath(path, paint..color = color.withOpacity(fade));
         break;
 
       // Electric — lightning bolt projectile
@@ -7987,14 +7203,14 @@ class _SpecialHitPainter extends CustomPainter {
           Paint()
             ..style = PaintingStyle.stroke
             ..strokeWidth = 6
-            ..color = color.withValues(alpha: fade),
+            ..color = color.withOpacity(fade),
         );
         canvas.drawPath(
           zap,
           Paint()
             ..style = PaintingStyle.stroke
             ..strokeWidth = 2.5
-            ..color = Colors.white.withValues(alpha: fade * 0.9),
+            ..color = Colors.white.withOpacity(fade * 0.9),
         );
         if (impactPhase > 0) {
           for (int i = 0; i < 8; i++) {
@@ -8006,7 +7222,7 @@ class _SpecialHitPainter extends CustomPainter {
               Paint()
                 ..style = PaintingStyle.stroke
                 ..strokeWidth = 3
-                ..color = color.withValues(alpha: fade * 0.9),
+                ..color = color.withOpacity(fade * 0.9),
             );
           }
         }
@@ -8018,18 +7234,18 @@ class _SpecialHitPainter extends CustomPainter {
         canvas.drawCircle(
           Offset(bx, cy),
           20,
-          paint..color = color.withValues(alpha: fade * 0.9),
+          paint..color = color.withOpacity(fade * 0.9),
         );
         canvas.drawCircle(
           Offset(bx - 5, cy - 5),
           8,
-          Paint()..color = Colors.deepPurple.withValues(alpha: fade * 0.5),
+          Paint()..color = Colors.deepPurple.withOpacity(fade * 0.5),
         );
         if (impactPhase > 0) {
           canvas.drawCircle(
             Offset(cx, cy),
             impactPhase * 55,
-            Paint()..color = color.withValues(alpha: fade * 0.25),
+            Paint()..color = color.withOpacity(fade * 0.25),
           );
         }
         break;
@@ -8045,12 +7261,12 @@ class _SpecialHitPainter extends CustomPainter {
         canvas.drawCircle(
           Offset(bx, cy),
           20 - travelPhase * 4,
-          paint..color = color.withValues(alpha: fade),
+          paint..color = color.withOpacity(fade),
         );
         canvas.drawCircle(
           Offset(bx, cy),
           10 - travelPhase * 3,
-          Paint()..color = Colors.yellow.withValues(alpha: fade * 0.8),
+          Paint()..color = Colors.yellow.withOpacity(fade * 0.8),
         );
         // Flame trail
         final trailCells = 4;
@@ -8059,7 +7275,7 @@ class _SpecialHitPainter extends CustomPainter {
           canvas.drawCircle(
             Offset(tx, cy),
             (8 - i * 1.5) * (1 - travelPhase * 0.5),
-            Paint()..color = color.withValues(alpha: fade * (0.6 - i * 0.1)),
+            Paint()..color = color.withOpacity(fade * (0.6 - i * 0.1)),
           );
         }
         if (impactPhase > 0) {
@@ -8067,12 +7283,12 @@ class _SpecialHitPainter extends CustomPainter {
           canvas.drawCircle(
             Offset(cx, cy),
             impactPhase * 50,
-            paint..color = color.withValues(alpha: fade * 0.5),
+            paint..color = color.withOpacity(fade * 0.5),
           );
           canvas.drawCircle(
             Offset(cx, cy),
             impactPhase * 30,
-            Paint()..color = Colors.yellow.withValues(alpha: fade * 0.7),
+            Paint()..color = Colors.yellow.withOpacity(fade * 0.7),
           );
         }
         break;
@@ -8084,14 +7300,14 @@ class _SpecialHitPainter extends CustomPainter {
           ..moveTo(bx, cy - 14)
           ..quadraticBezierTo(bx + 20, cy, bx, cy + 14)
           ..quadraticBezierTo(bx - 20, cy, bx, cy - 14);
-        canvas.drawPath(leafPath, paint..color = color.withValues(alpha: fade));
+        canvas.drawPath(leafPath, paint..color = color.withOpacity(fade));
         canvas.drawLine(
           Offset(bx - 10, cy),
           Offset(bx + 10, cy),
           Paint()
             ..style = PaintingStyle.stroke
             ..strokeWidth = 1.5
-            ..color = Colors.white.withValues(alpha: fade * 0.5),
+            ..color = Colors.white.withOpacity(fade * 0.5),
         );
         break;
 
@@ -8105,7 +7321,7 @@ class _SpecialHitPainter extends CustomPainter {
           canvas.drawCircle(
             Offset(tx + cos(angle) * 8, cy + sin(angle) * 8),
             (10 - i * 1.5),
-            Paint()..color = color.withValues(alpha: fade * (0.8 - i * 0.1)),
+            Paint()..color = color.withOpacity(fade * (0.8 - i * 0.1)),
           );
         }
         if (impactPhase > 0) {
@@ -8117,7 +7333,7 @@ class _SpecialHitPainter extends CustomPainter {
                 cy + sin(angle) * impactPhase * 45,
               ),
               8 * (1 - impactPhase),
-              Paint()..color = color.withValues(alpha: fade * 0.9),
+              Paint()..color = color.withOpacity(fade * 0.9),
             );
           }
         }
@@ -8133,14 +7349,14 @@ class _SpecialHitPainter extends CustomPainter {
               width: 20.0,
               height: 30.0,
             ),
-            Paint()..color = color.withValues(alpha: fade * (0.7 - i * 0.15)),
+            Paint()..color = color.withOpacity(fade * (0.7 - i * 0.15)),
           );
         }
         if (impactPhase > 0) {
           canvas.drawCircle(
             Offset(cx, cy),
             impactPhase * 50,
-            Paint()..color = color.withValues(alpha: fade * 0.3),
+            Paint()..color = color.withOpacity(fade * 0.3),
           );
         }
         break;
@@ -8156,18 +7372,18 @@ class _SpecialHitPainter extends CustomPainter {
         );
         canvas.drawRect(
           beamRect,
-          paint..color = color.withValues(alpha: fade * 0.85),
+          paint..color = color.withOpacity(fade * 0.85),
         );
         // Core
         canvas.drawRect(
           Rect.fromLTWH(beamRect.left, cy - 4, beamRect.width, 8),
-          Paint()..color = Colors.white.withValues(alpha: fade * 0.5),
+          Paint()..color = Colors.white.withOpacity(fade * 0.5),
         );
         if (impactPhase > 0) {
           canvas.drawCircle(
             Offset(cx, cy),
             impactPhase * 55,
-            paint..color = color.withValues(alpha: fade * 0.5),
+            paint..color = color.withOpacity(fade * 0.5),
           );
         }
         break;
@@ -8183,14 +7399,14 @@ class _SpecialHitPainter extends CustomPainter {
           Offset.zero,
           18,
           6,
-          color.withValues(alpha: fade * 0.9),
+          color.withOpacity(fade * 0.9),
         );
         canvas.restore();
         if (impactPhase > 0) {
           canvas.drawCircle(
             Offset(cx, cy),
             impactPhase * 45,
-            paint..color = color.withValues(alpha: fade * 0.4),
+            paint..color = color.withOpacity(fade * 0.4),
           );
         }
         break;
@@ -8202,14 +7418,14 @@ class _SpecialHitPainter extends CustomPainter {
           canvas.drawCircle(
             Offset(bx, cy),
             (18 - i * 4) * (0.8 + sin(travelPhase * pi * 4 + i) * 0.2),
-            Paint()..color = color.withValues(alpha: fade * (0.9 - i * 0.2)),
+            Paint()..color = color.withOpacity(fade * (0.9 - i * 0.2)),
           );
         }
         if (impactPhase > 0) {
           canvas.drawCircle(
             Offset(cx, cy),
             impactPhase * 50,
-            paint..color = color.withValues(alpha: fade * 0.4),
+            paint..color = color.withOpacity(fade * 0.4),
           );
         }
         break;
@@ -8224,7 +7440,7 @@ class _SpecialHitPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = 3
-              ..color = color.withValues(alpha: fade * (0.9 - i * 0.15)),
+              ..color = color.withOpacity(fade * (0.9 - i * 0.15)),
           );
         }
         if (impactPhase > 0) {
@@ -8236,7 +7452,7 @@ class _SpecialHitPainter extends CustomPainter {
               Paint()
                 ..style = PaintingStyle.stroke
                 ..strokeWidth = 3
-                ..color = color.withValues(alpha: fade * (0.8 - i * 0.12)),
+                ..color = color.withOpacity(fade * (0.8 - i * 0.12)),
             );
           }
         }
@@ -8246,19 +7462,16 @@ class _SpecialHitPainter extends CustomPainter {
       case ElementalType.holy:
         final beamW = travelPhase * 65;
         final beamRect = Rect.fromLTWH(cx - beamW, cy - 10, beamW, 20);
-        canvas.drawRect(
-          beamRect,
-          paint..color = color.withValues(alpha: fade * 0.6),
-        );
+        canvas.drawRect(beamRect, paint..color = color.withOpacity(fade * 0.6));
         canvas.drawRect(
           Rect.fromLTWH(cx - beamW, cy - 4, beamW, 8),
-          Paint()..color = Colors.white.withValues(alpha: fade * 0.8),
+          Paint()..color = Colors.white.withOpacity(fade * 0.8),
         );
         if (impactPhase > 0) {
           canvas.drawCircle(
             Offset(cx, cy),
             impactPhase * 55,
-            paint..color = color.withValues(alpha: fade * 0.5),
+            paint..color = color.withOpacity(fade * 0.5),
           );
           // Cross burst
           canvas.drawLine(
@@ -8267,7 +7480,7 @@ class _SpecialHitPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = 4
-              ..color = Colors.white.withValues(alpha: fade * 0.8),
+              ..color = Colors.white.withOpacity(fade * 0.8),
           );
           canvas.drawLine(
             Offset(cx, cy - impactPhase * 50),
@@ -8275,7 +7488,7 @@ class _SpecialHitPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = 4
-              ..color = Colors.white.withValues(alpha: fade * 0.8),
+              ..color = Colors.white.withOpacity(fade * 0.8),
           );
         }
         break;
@@ -8295,18 +7508,18 @@ class _SpecialHitPainter extends CustomPainter {
     canvas.drawCircle(
       Offset(bx, cy),
       18 * (1 - impact * 0.6),
-      Paint()..color = color.withValues(alpha: fade * 0.9),
+      Paint()..color = color.withOpacity(fade * 0.9),
     );
     canvas.drawCircle(
       Offset(bx, cy),
       10 * (1 - impact * 0.6),
-      Paint()..color = Colors.white.withValues(alpha: fade * 0.5),
+      Paint()..color = Colors.white.withOpacity(fade * 0.5),
     );
     if (impact > 0) {
       canvas.drawCircle(
         Offset(cx, cy),
         impact * 50,
-        Paint()..color = color.withValues(alpha: fade * 0.4),
+        Paint()..color = color.withOpacity(fade * 0.4),
       );
     }
   }
@@ -8327,10 +7540,7 @@ class _SpecialHitPainter extends CustomPainter {
       ..lineTo(bx - 16, cy)
       ..lineTo(bx, cy + 6)
       ..close();
-    canvas.drawPath(
-      path,
-      Paint()..color = color.withValues(alpha: fade * 0.85),
-    );
+    canvas.drawPath(path, Paint()..color = color.withOpacity(fade * 0.85));
     if (impact > 0) {
       for (int i = 0; i < 6; i++) {
         final angle = pi * 2 * i / 6;
@@ -8340,7 +7550,7 @@ class _SpecialHitPainter extends CustomPainter {
           Paint()
             ..style = PaintingStyle.stroke
             ..strokeWidth = 3
-            ..color = color.withValues(alpha: fade * 0.8),
+            ..color = color.withOpacity(fade * 0.8),
         );
       }
     }
@@ -8406,7 +7616,7 @@ class _StatusEffectPainter extends CustomPainter {
           canvas.drawCircle(
             Offset(ox, oy),
             8 + i * 2.0,
-            paint..color = color.withValues(alpha: fadeOut * 0.7),
+            paint..color = color.withOpacity(fadeOut * 0.7),
           );
         }
         break;
@@ -8420,7 +7630,7 @@ class _StatusEffectPainter extends CustomPainter {
           canvas.drawCircle(
             Offset(ox, oy),
             3 + rand.nextDouble() * 4,
-            paint..color = color.withValues(alpha: fadeOut * 0.8),
+            paint..color = color.withOpacity(fadeOut * 0.8),
           );
         }
         break;
@@ -8436,7 +7646,7 @@ class _StatusEffectPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = 2.5
-              ..color = color.withValues(alpha: fadeOut),
+              ..color = color.withOpacity(fadeOut),
           );
           // Mini cross
           canvas.drawLine(
@@ -8448,7 +7658,7 @@ class _StatusEffectPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = 2
-              ..color = color.withValues(alpha: fadeOut * 0.7),
+              ..color = color.withOpacity(fadeOut * 0.7),
           );
         }
         break;
@@ -8467,7 +7677,7 @@ class _StatusEffectPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = 3
-              ..color = color.withValues(alpha: fadeOut),
+              ..color = color.withOpacity(fadeOut),
           );
         }
         break;
@@ -8482,7 +7692,7 @@ class _StatusEffectPainter extends CustomPainter {
               width: 20,
               height: 30,
             ),
-            paint..color = color.withValues(alpha: fadeOut * 0.5),
+            paint..color = color.withOpacity(fadeOut * 0.5),
           );
         }
         break;
@@ -8495,7 +7705,7 @@ class _StatusEffectPainter extends CustomPainter {
           canvas.drawCircle(
             Offset(cx + cos(angle) * dist, riseY + sin(angle) * dist * 0.4),
             5 * fadeOut,
-            paint..color = color.withValues(alpha: fadeOut),
+            paint..color = color.withOpacity(fadeOut),
           );
         }
         break;
@@ -8514,7 +7724,7 @@ class _StatusEffectPainter extends CustomPainter {
             ..quadraticBezierTo(lx - 8, ly, lx, ly - 8);
           canvas.drawPath(
             leafPath,
-            paint..color = color.withValues(alpha: fadeOut * 0.8),
+            paint..color = color.withOpacity(fadeOut * 0.8),
           );
         }
         break;
@@ -8526,7 +7736,7 @@ class _StatusEffectPainter extends CustomPainter {
           canvas.drawCircle(
             Offset(cx + cos(angle) * 30, riseY + sin(angle) * 20),
             12 * fadeOut,
-            paint..color = color.withValues(alpha: fadeOut * 0.6),
+            paint..color = color.withOpacity(fadeOut * 0.6),
           );
         }
         break;
@@ -8541,7 +7751,7 @@ class _StatusEffectPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = 3
-              ..color = color.withValues(alpha: fadeOut * (0.9 - i * 0.2)),
+              ..color = color.withOpacity(fadeOut * (0.9 - i * 0.2)),
           );
         }
         break;
@@ -8557,7 +7767,7 @@ class _StatusEffectPainter extends CustomPainter {
               riseY + sin(angle + p * pi * 2) * r * 0.5,
             ),
             4,
-            paint..color = color.withValues(alpha: fadeOut * 0.8),
+            paint..color = color.withOpacity(fadeOut * 0.8),
           );
         }
         break;
@@ -8571,7 +7781,7 @@ class _StatusEffectPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = 2.5
-              ..color = color.withValues(alpha: fadeOut * (0.8 - i * 0.2)),
+              ..color = color.withOpacity(fadeOut * (0.8 - i * 0.2)),
           );
         }
         break;

@@ -25,7 +25,10 @@ class RogueRewardDialog extends StatelessWidget {
         decoration: BoxDecoration(
           color: const Color(0xFF151515),
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: themeColor.withValues(alpha: 0.5), width: 2),
+          border: Border.all(
+            color: themeColor.withValues(alpha: 0.5),
+            width: 2,
+          ),
           boxShadow: [
             BoxShadow(
               color: themeColor.withValues(alpha: 0.2),
@@ -99,12 +102,28 @@ class RogueRewardDialog extends StatelessWidget {
                                       : themeColor.withValues(alpha: 0.1),
                                   shape: BoxShape.circle,
                                 ),
-                                child: Icon(
-                                  isPremium
-                                      ? Icons.star
-                                      : _iconFor(reward.type),
-                                  color: isPremium ? Colors.amber : themeColor,
-                                ),
+                                child:
+                                    reward.type == RogueRewardType.item &&
+                                        reward.itemId != null
+                                    ? Image.asset(
+                                        'assets/items/${reward.itemId!.replaceAll('_', '-')}.png',
+                                        errorBuilder: (context, _, __) => Icon(
+                                          isPremium
+                                              ? Icons.star
+                                              : _iconFor(reward.type),
+                                          color: isPremium
+                                              ? Colors.amber
+                                              : themeColor,
+                                        ),
+                                      )
+                                    : Icon(
+                                        isPremium
+                                            ? Icons.star
+                                            : _iconFor(reward.type),
+                                        color: isPremium
+                                            ? Colors.amber
+                                            : themeColor,
+                                      ),
                               ),
                               const SizedBox(width: 16),
                               Expanded(
