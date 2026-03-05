@@ -5995,16 +5995,51 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       return Move.findOrCreate('Struggle');
     }
 
+    // --- Wild Animal Gimmick Adjustments ---
+    final isWild = !isRogueMode && !isArenaBattle;
+
+    if (isWild && currentTurn == 1 && !opponent.hasPrismorphedThisBattle) {
+      final teraType = opponent.organism.teraType;
+      final baseTypes = opponent.organism.baseOrganism.types
+          .map(
+            (t) => ElementalType.values.firstWhere(
+              (e) =>
+                  e.toString().split('.').last.toLowerCase() == t.toLowerCase(),
+              orElse: () => ElementalType.basic,
+            ),
+          )
+          .toList();
+
+      if (teraType != null && !baseTypes.contains(teraType)) {
+        // Force Prismorph on turn 1 for special tera types
+        activatePrismorph(isPlayer: false);
+
+        // Re-fetch valid moves after gimmick activation
+        final actualValidMoves = getValidMoves(opponent);
+        if (actualValidMoves.isNotEmpty) {
+          return _pickBestMove(actualValidMoves);
+        }
+      }
+    }
+
     // --- AI Gimmick trigger: Titanize or Prismorph at low HP ---
     if (!opponent.hasTitanizedThisBattle &&
         !opponent.hasPrismorphedThisBattle &&
         opponent.health < opponent.maxHealth * 0.6) {
       final hasTeraType = opponent.organism.teraType != null;
       final rng = Random();
-      if (hasTeraType && rng.nextBool()) {
-        activatePrismorph(isPlayer: false);
+
+      // Wild animals NEVER titanize
+      if (isWild) {
+        if (hasTeraType) {
+          activatePrismorph(isPlayer: false);
+        }
       } else {
-        activateTitanize(isPlayer: false);
+        if (hasTeraType && rng.nextBool()) {
+          activatePrismorph(isPlayer: false);
+        } else {
+          activateTitanize(isPlayer: false);
+        }
       }
 
       // Re-fetch valid moves after gimmick activation

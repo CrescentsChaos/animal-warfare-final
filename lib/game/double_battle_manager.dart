@@ -102,6 +102,7 @@ class DoubleBattleManager extends ChangeNotifier {
   int currentTurn = 1;
 
   final bool isRogueMode;
+  final bool isArenaBattle;
   final bool isTesting;
 
   final PlayerHistory playerHistory = PlayerHistory();
@@ -137,6 +138,7 @@ class DoubleBattleManager extends ChangeNotifier {
     required List<CapturedOrganism> playerTeam,
     required List<CapturedOrganism> opponentTeam,
     this.isRogueMode = false,
+    this.isArenaBattle = false,
     this.isTesting = false,
     TeamArchetype? opponentArchetype,
   }) : playerTeam = List.from(playerTeam),
@@ -317,9 +319,32 @@ class DoubleBattleManager extends ChangeNotifier {
       final aiSlot = i == 0 ? opponentSlot1 : opponentSlot2;
       if (aiSlot == null || aiSlot.health <= 0) continue;
 
+      // --- Wild Animal Gimmick Adjustments ---
+      final isWild = !isRogueMode && !isArenaBattle;
+
+      if (isWild && currentTurn == 1 && !aiSlot.hasPrismorphedThisBattle) {
+        final teraType = aiSlot.organism.teraType;
+        final baseTypes = aiSlot.organism.baseOrganism.types
+            .map(
+              (t) => ElementalType.values.firstWhere(
+                (e) =>
+                    e.toString().split('.').last.toLowerCase() ==
+                    t.toLowerCase(),
+                orElse: () => ElementalType.basic,
+              ),
+            )
+            .toList();
+
+        if (teraType != null && !baseTypes.contains(teraType)) {
+          // Force Prismorph on turn 1 for special tera types
+          activatePrismorph(isPlayer: false, slotIdx: i == 0 ? 1 : 2);
+        }
+      }
+
       // AI GIMMICK TRIGGER: 60% HP
       if (aiSlot.health < aiSlot.maxHealth * 0.6) {
-        if (!opponentTitanizeUsed &&
+        if (!isWild &&
+            !opponentTitanizeUsed &&
             !aiSlot.hasTitanizedThisBattle &&
             !aiSlot.hasPrismorphedThisBattle) {
           activateTitanize(isPlayer: false, slotIdx: i == 0 ? 1 : 2);

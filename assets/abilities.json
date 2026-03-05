@@ -27,6 +27,15 @@
         "effectType": "none"
     },
     {
+        "name": "Levitate",
+        "description": "Makes the organism immune to earth‑type attacks.",
+        "trigger": "onDamageTaken",
+        "effectType": "preventDamage",
+        "conditions": [
+            "type_earth"
+        ]
+    },
+    {
         "name": "Battle Armor",
         "description": "Protects the organism from critical hits.",
         "trigger": "onDamageTaken",
@@ -70,6 +79,16 @@
         "effectType": "statChange",
         "targetStat": "defense",
         "magnitude": 1
+    },
+    {
+        "name": "Shield Dust",
+        "description": "Prevents status changes when hit by an attacking move.",
+        "trigger": "onStatusAttempt",
+        "effectType": "preventStatus",
+        "value": "any",
+        "conditions": [
+            "contact"
+        ]
     },
     {
         "name": "Drizzle",
@@ -435,6 +454,17 @@
         "value": "sandstorm"
     },
     {
+        "name": "Sand Veil",
+        "description": "Raises evasion during sandstorms.",
+        "trigger": "onCalculateEvasion",
+        "effectType": "statMultiplier",
+        "targetStat": "evasion",
+        "magnitude": 1.2,
+        "conditions": [
+            "weather_sandstorm"
+        ]
+    },
+    {
         "name": "Electric Surge",
         "description": "Creates Electric Terrain when entering battle.",
         "trigger": "onEntry",
@@ -522,6 +552,15 @@
         "value": "stun"
     },
     {
+        "name": "Sturdy",
+        "description": "Prevents the organism from being knocked out by a single hit.",
+        "trigger": "onDamageTaken",
+        "effectType": "preventKO",
+        "conditions": [
+            "singleHit"
+        ]
+    },
+    {
         "name": "Echolocation",
         "description": "Prevents accuracy from being lowered and ignores enemy stealth effects.",
         "effectType": "none"
@@ -550,9 +589,14 @@
     },
     {
         "name": "Flash Fire",
-        "description": "Protects from Fire-type moves and boosts Attack when hit by one.",
+        "description": "Boosts Blaze moves when hit by a Blaze attack.",
         "trigger": "onDamageTaken",
-        "effectType": "none"
+        "effectType": "statChange",
+        "targetStat": "attack",
+        "magnitude": 1,
+        "conditions": [
+            "type_blaze"
+        ]
     },
     {
         "name": "Lightning Rod",
@@ -745,6 +789,17 @@
         "conditions": [
             "type_arthropod",
             "type_spectral",
+            "type_darkness"
+        ]
+    },
+    {
+        "name": "Justified",
+        "description": "Raises Attack by 1 stage when hit by a Darkness-type damaging move.",
+        "trigger": "onDamageTaken",
+        "effectType": "statChange",
+        "targetStat": "attack",
+        "magnitude": 1,
+        "conditions": [
             "type_darkness"
         ]
     }

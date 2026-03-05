@@ -68,6 +68,23 @@
         ]
     },
     {
+        "name": "Rock Polish",
+        "description": "The user sharpens its rocky body, sharply raising its Attack stat.",
+        "baseDamage": 0,
+        "type": "rock",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "speed",
+                "value": 2,
+                "chance": 100
+            }
+        ]
+    },
+    {
         "name": "Aurora Beam",
         "description": "10% chance to lower the opponent's attack.",
         "baseDamage": 65,
@@ -237,6 +254,22 @@
                 "type": "statusParalysis",
                 "target": "opponent",
                 "chance": 10
+            }
+        ]
+    },
+    {
+        "name": "Lick",
+        "description": "30% chance to paralyze the opponent.",
+        "baseDamage": 30,
+        "type": "spectral",
+        "accuracy": 100,
+        "stamina": 15,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statusParalysis",
+                "target": "opponent",
+                "chance": 30
             }
         ]
     },
@@ -487,6 +520,14 @@
         "category": "physical"
     },
     {
+        "name": "Drill Peck",
+        "description": "Deals regular damage.",
+        "baseDamage": 80,
+        "type": "flying",
+        "stamina": 20,
+        "category": "physical"
+    },
+    {
         "name": "Piercing Beak",
         "description": "A strong peck attack.",
         "baseDamage": 70,
@@ -604,6 +645,22 @@
     },
     {
         "name": "Withdraw",
+        "description": "Raises the user's defense.",
+        "baseDamage": 0,
+        "type": "metal",
+        "stamina": 10,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "defense",
+                "value": 1
+            }
+        ]
+    },
+    {
+        "name": "Harden",
         "description": "Raises the user's defense.",
         "baseDamage": 0,
         "type": "metal",
@@ -916,6 +973,23 @@
                 "target": "opponent",
                 "value": 2,
                 "chance": 30
+            }
+        ]
+    },
+    {
+        "name": "Water Pulse",
+        "description": "It may also confuse the target.",
+        "baseDamage": 60,
+        "type": "aquatic",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statusConfusion",
+                "target": "opponent",
+                "value": 3,
+                "chance": 20
             }
         ]
     },
@@ -1643,6 +1717,43 @@
         "accuracy": 100,
         "type": "blaze",
         "stamina": 15,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statusBurn",
+                "target": "opponent",
+                "value": 1,
+                "chance": 10
+            }
+        ]
+    },
+    {
+        "name": "Heat Wave",
+        "description": "10% chance to burn the target.",
+        "soundEffect": "audio/effects/flamethrower.mp3",
+        "baseDamage": 95,
+        "accuracy": 90,
+        "type": "blaze",
+        "stamina": 10,
+        "targetCount": "multiple",
+        "category": "special",
+        "effects": [
+            {
+                "type": "statusBurn",
+                "target": "opponent",
+                "value": 1,
+                "chance": 10
+            }
+        ]
+    },
+    {
+        "name": "Scorching Sands",
+        "description": "10% chance to burn the target.",
+        "soundEffect": "audio/effects/sandstorm.mp3",
+        "baseDamage": 95,
+        "accuracy": 90,
+        "type": "earth",
+        "stamina": 10,
         "category": "special",
         "effects": [
             {
@@ -2408,8 +2519,16 @@
         "accuracy": 95,
         "type": "basic",
         "stamina": 35,
-        "category": "physical",
-        "effects": []
+        "category": "physical"
+    },
+    {
+        "name": "Pound",
+        "description": "User pounds the foe.",
+        "baseDamage": 40,
+        "accuracy": 100,
+        "type": "basic",
+        "stamina": 35,
+        "category": "physical"
     },
     {
         "name": "Pounce",
@@ -2567,6 +2686,16 @@
         "baseDamage": 70,
         "type": "aquatic",
         "stamina": 20,
+        "accuracy": 100,
+        "category": "physical",
+        "critRate": 1
+    },
+    {
+        "name": "Leaf Blade",
+        "description": "High critical rate leaf attack.",
+        "baseDamage": 90,
+        "type": "grass",
+        "stamina": 15,
         "accuracy": 100,
         "category": "physical",
         "critRate": 1
@@ -2965,6 +3094,36 @@
         "baseDamage": 120,
         "accuracy": 100,
         "type": "basic",
+        "stamina": 15,
+        "recoilPercent": 0.33,
+        "category": "physical"
+    },
+    {
+        "name": "Flare Blitz",
+        "description": "A reckless, life-risking tackle. This also damages the user quite a lot.",
+        "baseDamage": 120,
+        "accuracy": 100,
+        "type": "blaze",
+        "stamina": 15,
+        "recoilPercent": 0.33,
+        "category": "physical"
+    },
+    {
+        "name": "Wood Hammer",
+        "description": "A reckless, life-risking tackle. This also damages the user quite a lot.",
+        "baseDamage": 120,
+        "accuracy": 100,
+        "type": "grass",
+        "stamina": 15,
+        "recoilPercent": 0.33,
+        "category": "physical"
+    },
+    {
+        "name": "Wave Crash",
+        "description": "A reckless, life-risking tackle. This also damages the user quite a lot.",
+        "baseDamage": 120,
+        "accuracy": 100,
+        "type": "aquatic",
         "stamina": 15,
         "recoilPercent": 0.33,
         "category": "physical"
@@ -3456,6 +3615,23 @@
         ]
     },
     {
+        "name": "Zen Headbutt",
+        "description": "20% chance to stun the target.",
+        "baseDamage": 80,
+        "accuracy": 90,
+        "type": "aura",
+        "stamina": 15,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusStun",
+                "target": "opponent",
+                "value": 1,
+                "chance": 20
+            }
+        ]
+    },
+    {
         "name": "Strength",
         "description": "Deals regular damage.",
         "baseDamage": 80,
@@ -3630,7 +3806,6 @@
         "effects": [
             {
                 "type": "statusParalysis",
-                "value": 1,
                 "chance": 100
             }
         ]
@@ -3896,6 +4071,30 @@
         ]
     },
     {
+        "name": "Focus Blast",
+        "description": "Also known as Focus Miss.",
+        "baseDamage": 120,
+        "type": "martial",
+        "stamina": 15,
+        "accuracy": 70,
+        "category": "special"
+    },
+    {
+        "name": "Close Combat",
+        "description": "A powerful martial attack that lowers the user's attack and defense.",
+        "baseDamage": 120,
+        "type": "martial",
+        "stamina": 15,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "multiStatChange",
+                "target": "self",
+                "stat": "attack:-1,defense:-1"
+            }
+        ]
+    },
+    {
         "name": "Headlong Rush",
         "description": "A powerful earth attack that lowers the user's defense and resistance.",
         "baseDamage": 120,
@@ -3959,6 +4158,24 @@
         ]
     },
     {
+        "name": "Baby-Doll Eyes",
+        "description": "Lowers foes attack and it always goes first.",
+        "baseDamage": 0,
+        "type": "mystic",
+        "stamina": 15,
+        "priority": 4,
+        "accuracy ": 100,
+        "category": "status",
+        "effects": [
+            {
+                "type": "StatChange",
+                "target": "opponent",
+                "stat": "attack",
+                "value": -1
+            }
+        ]
+    },
+    {
         "name": "Muddy Water",
         "description": "30% chance to drop foes accuracy.",
         "baseDamage": 90,
@@ -3988,6 +4205,21 @@
                 "type": "multiStatChange",
                 "target": "self",
                 "stat": "speed:-1,defense:1,resistance:1"
+            }
+        ]
+    },
+    {
+        "name": "Tickle",
+        "description": "Lowers foes attack and defense.",
+        "baseDamage": 0,
+        "type": "basic",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "multiStatChange",
+                "target": "opponent",
+                "stat": "attack:-1,defense:1"
             }
         ]
     },
@@ -5459,6 +5691,21 @@
         "baseDamage": 130,
         "type": "martial",
         "accuracy": 90,
+        "stamina": 10,
+        "category": "physical",
+        "isContact": true,
+        "effects": [
+            {
+                "type": "highJumpKick"
+            }
+        ]
+    },
+    {
+        "name": "Jump Kick",
+        "description": "The user jumps, then strikes with a knee kick. If this move misses, the user takes damage instead.",
+        "baseDamage": 100,
+        "type": "martial",
+        "accuracy": 95,
         "stamina": 10,
         "category": "physical",
         "isContact": true,

@@ -546,6 +546,39 @@ class CapturedOrganism {
 
     // Fallback if logic somehow failed to fill 4 (e.g. only 3 unique moves)
     selectedMoveNames = result.take(4).toList();
+
+    // --- Tera Type Consistency Check ---
+    if (teraType != null) {
+      final selectedMoves = selectedMoveNames
+          .map((n) => Move.findByName(n))
+          .whereType<Move>();
+      bool hasMatchingMove = selectedMoves.any((m) => m.type == teraType);
+
+      if (!hasMatchingMove) {
+        // Try to find a matching move in the base organism's available pool first
+        final matchingInPool = moves.where((m) => m.type == teraType).toList();
+        if (matchingInPool.isNotEmpty) {
+          matchingInPool.shuffle(rng);
+          selectedMoveNames[rng.nextInt(selectedMoveNames.length)] =
+              matchingInPool.first.name;
+        } else {
+          // If not in pool, find a generic move of that type from global library
+          final globalMatching = Move.allMoves
+              .where(
+                (m) =>
+                    m.type == teraType &&
+                    m.category != MoveCategory.status &&
+                    !m.isTitanizeMove,
+              )
+              .toList();
+          if (globalMatching.isNotEmpty) {
+            globalMatching.shuffle(rng);
+            selectedMoveNames[rng.nextInt(selectedMoveNames.length)] =
+                globalMatching.first.name;
+          }
+        }
+      }
+    }
     _initializeStamina();
   }
 

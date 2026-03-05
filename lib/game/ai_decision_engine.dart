@@ -184,7 +184,25 @@ class AIDecisionEngine {
             score += 50;
           }
         } else {
-          score -= 30; // Wasteful to status an already afflicted opponent
+          // --- Target already has a status ---
+          final isDedicatedStatusMove =
+              move.category == MoveCategory.status || move.baseDamage == 0;
+
+          if (isDedicatedStatusMove) {
+            // Heuristic: Predict switch if we heavily threaten the current defender
+            final predictsSwitch =
+                typeMultiplier > 1.5 || expectedDamage >= defender.health;
+
+            if (predictsSwitch) {
+              score +=
+                  20; // Small reward for catching a switch with a status move
+            } else {
+              score -= 800; // Heavily penalize redundant status moves
+            }
+          } else {
+            score -=
+                10; // Minimal penalty for attacks with secondary status effects
+          }
         }
       }
 
