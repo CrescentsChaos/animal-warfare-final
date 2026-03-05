@@ -1800,16 +1800,16 @@
         "weight": 1
     },
     {
-        "abilities": "Alert Call",
+        "abilities": "Punk Rock",
         "active_time": "any",
         "attack": 50,
-        "category": "Basic, Flying",
+        "category": "Sound, Flying",
         "defense": 40,
         "description": "With a perky crest and red cheek patch, it is lively and vocal. It thrives in gardens, filling mornings with song.",
         "drops": "Feather",
         "habitat": "Jungle, Urban, River, Mangrove",
         "health": 45,
-        "moves": "Hidden Power, Hurricane, Dual Wingbeat, Brave Bird, U-turn, Roost, Tailwind, Heat Wave, Focus Blast, Hyper Voice, Sand-Attack, Quick Attack, Whirlwind, Feather Dance, Agility, Air Slash, Hyper Beam, Protect, Double Team, Steel Wing, Substitute, Defog, Swagger, Return, Razor Wind",
+        "moves": "Peck, Growl, Echoed Voice, Wing Attack, Quick Attack, Sing, Air Cutter, Roost, Tailwind, Air Slash, Hurricane, Hyper Voice, U-turn, Acrobatics, Mirror Move, Agility, Defog, Helping Hand, Round, Facade, Feather Dance",
         "name": "Red-whiskered Bulbul",
         "power": 60,
         "rarity": "Common",
@@ -1940,16 +1940,16 @@
         "weight": 1
     },
     {
-        "abilities": "Agile Escape",
+        "abilities": "Punk Rock",
         "active_time": "any",
         "attack": 60,
-        "category": "Basic",
+        "category": "Sound, Electric",
         "defense": 40,
         "description": "Tiny monkeys with wild white crests of hair. Endangered and energetic, they chatter constantly in groups.",
         "drops": "Fur",
         "habitat": "Jungle, Rainforest",
         "health": 50,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Thunder Shock, Pound, Growl, Spark, Echoed Voice, Charge, Discharge, Hyper Voice, Wild Charge, U-turn, Acrobatics, Fake Out, Encore, Nasty Plot, Agility, Thunder Wave, Helping Hand, Boomburst, Screech, Volt Switch, Slack Off",
         "name": "Cotton-top Tamarin",
         "power": 65,
         "rarity": "Uncommon",
@@ -2380,7 +2380,7 @@
         "weight": 1
     },
     {
-        "abilities": "Agile Escape",
+        "abilities": "Stamina",
         "active_time": "any",
         "attack": 55,
         "category": "Basic",
@@ -2500,7 +2500,7 @@
         "weight": 1
     },
     {
-        "abilities": "Agile Climber",
+        "abilities": "Cheek Pouch",
         "active_time": "any",
         "attack": 45,
         "category": "Grass",
@@ -2509,7 +2509,7 @@
         "drops": "Fur",
         "habitat": "Taiga, Mountain",
         "health": 50,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Bullet Seed, Seed Bomb, Stuff Cheeks, Stockpile, Swallow, Spit Up, Tail Slap, Agility, Quick Attack, Leaf Blade, Giga Drain, Synthesis, Trailblaze, Energy Ball, Grass Whistle, Helping Hand, Iron Tail, U-turn, Dig, Double-Edge, Grassy Terrain",
         "name": "Kaibab Squirrel",
         "power": 54,
         "rarity": "Uncommon",
@@ -3260,16 +3260,16 @@
         "weight": 1
     },
     {
-        "abilities": "Silent Diver",
+        "abilities": "Infiltrator",
         "active_time": "any",
         "attack": 50,
-        "category": "Flying, Aquatic, Solitary",
+        "category": "Flying, Aquatic, Spectral",
         "defense": 45,
         "description": "A large aquatic bird of northern lakes and coastal waters, the Common Loon dives skillfully to catch fish. Its haunting calls are iconic of wilderness lakes.",
         "drops": "Feather",
         "habitat": "Coastal,Tundra,Lake",
         "health": 60,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Astonish, Water Gun, Confuse Ray, Night Shade, Water Pulse, Mean Look, Curse, Shadow Ball, Dive, Hex, Roost, Perish Song, Destiny Bond, Hydro Pump, Phantom Force, Rain Dance, Calm Mind, Ominous Wind, Liquidation, Whirlpool, Scald",
         "name": "Common Loon",
         "power": 43,
         "rarity": "Uncommon",
@@ -3360,7 +3360,7 @@
         "weight": 1
     },
     {
-        "abilities": "Mountain Acrobat",
+        "abilities": "Snow Cloak",
         "active_time": "any",
         "attack": 40,
         "category": "Cryo, Flying",
@@ -4080,7 +4080,7 @@
         "weight": 1
     },
     {
-        "abilities": "Coral Stealth",
+        "abilities": "Reef Camouflage",
         "active_time": "any",
         "attack": 70,
         "category": "Aquatic, Darkness",
@@ -4140,7 +4140,7 @@
         "weight": 1
     },
     {
-        "abilities": "Coral Stealth",
+        "abilities": "Reef Camouflage",
         "active_time": "any",
         "attack": 30,
         "category": "Predator, Aquatic, Tiny",
@@ -6440,16 +6440,16 @@
         "weight": 1
     },
     {
-        "abilities": "Precision Dive",
+        "abilities": "Reckless",
         "active_time": "any",
         "attack": 65,
-        "category": "Predator, Flying, Solitary",
+        "category": "Flying",
         "defense": 55,
         "description": "The largest booby species, recognized by its dark facial mask and strong build. Found across tropical oceans, the Masked Booby hunts fish and squid by soaring over the waves and diving with precision.",
         "drops": "Feather",
         "habitat": "Ocean,Coastal",
         "health": 70,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Tackle, Peck, Leer, Wing Attack, Double-Edge, Brave Bird, Take Down, Giga Impact, Roost, Tailwind, Air Slash, Hurricane, Facade, U-turn, Acrobatics, Sky Attack, Steel Wing, Fly, Focus Energy, Quick Attack, Whirlwind",
         "name": "Masked Booby",
         "power": 73,
         "rarity": "Uncommon",
@@ -6460,16 +6460,16 @@
         "weight": 1
     },
     {
-        "abilities": "Precision Dive",
+        "abilities": "Flame Body",
         "active_time": "any",
         "attack": 60,
-        "category": "Predator, Flying, Solitary",
+        "category": "Blaze, Flying",
         "defense": 50,
         "description": "The smallest and most agile of the boobies, the Red-footed Booby is easily recognized by its bright red feet and slender frame. It excels at long-distance ocean foraging, often traveling hundreds of kilometers from its nesting grounds to hunt fish and squid.",
         "drops": "Feather",
         "habitat": "Ocean,Coastal",
         "health": 65,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Ember, Flame Charge, Fire Spin, Wing Attack, Roost, Sunny Day, Heat Wave, Flamethrower, Flare Blitz, Tailwind, Air Slash, Hurricane, Solar Beam, Will-O-Wisp, Acrobatics, Defog, Agility, Pluck, Sky Drop, Burn Up, Mystical Fire",
         "name": "Red-footed Booby",
         "power": 63,
         "rarity": "Uncommon",
@@ -6620,7 +6620,7 @@
         "weight": 1
     },
     {
-        "abilities": "Acrobat",
+        "abilities": "Regenerator",
         "active_time": "any",
         "attack": 45,
         "category": "Mystic, Flying",
@@ -6629,7 +6629,7 @@
         "drops": "Feather",
         "habitat": "Rainforest, Jungle",
         "health": 60,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Disarming Voice, Peck, Gust, Confuse Ray, Fairy Wind, Wing Attack, Mimic, Roost, Moonblast, Dazzling Gleam, Tailwind, Air Slash, Hurricane, Play Rough, Mirror Move, Helping Hand, Sunny Day, Solar Beam, U-turn, Fly, Giga Impact",
         "name": "Spix's Macaw",
         "power": 54,
         "rarity": "Legendary",
@@ -7380,7 +7380,7 @@
         "weight": 1
     },
     {
-        "abilities": "Agile Schooler",
+        "abilities": "Rattled",
         "active_time": "any",
         "attack": 55,
         "category": "Aquatic, Grass",
@@ -7389,7 +7389,7 @@
         "drops": "Fillet",
         "habitat": "River, Swamp",
         "health": 75,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Splash, Water Gun, Absorb, Bubble, Growth, Water Pulse, Mega Drain, Synthesis, Dive, Rain Dance, Energy Ball, Hydro Pump, Giga Drain, Muddy Water, Flip Turn, Camouflage, Double-Edge, Grass Whistle, Life Dew, Scald, Flail",
         "name": "Swamp Barb",
         "power": 57,
         "rarity": "Common",
@@ -10860,16 +10860,16 @@
         "weight": 1
     },
     {
-        "abilities": "Agile Climber",
+        "abilities": "Fluffy",
         "active_time": "any",
         "attack": 65,
-        "category": "Basic, Blaze",
+        "category": "Grass, Blaze",
         "defense": 60,
         "description": "A small tree dwelling mammal with reddish fur and a bushy tail found in the Himalayas",
         "drops": "Bamboo Leaves",
         "habitat": "Jungle",
         "health": 70,
-        "moves": "Ember,Flamethrower,Hyper Voice,Tail Whip",
+        "moves": "Ember, Leafage, Scratch, Flame Charge, Razor Leaf, Fire Spin, Seed Bomb, Synthesis, Flamethrower, Solar Beam, Giga Drain, Flare Blitz, Play Rough, Helping Hand, Baby-Doll Eyes, U-turn, Acrobatics, Nasty Plot, Tail Slap, Energy Ball, Sunny Day",
         "name": "Red Panda",
         "power": 115,
         "rarity": "Rare",
@@ -15860,16 +15860,16 @@
         "weight": 1
     },
     {
-        "abilities": "Agile",
+        "abilities": "Infiltrator",
         "active_time": "any",
         "attack": 40,
-        "category": "Predator, Solitary, Agile",
+        "category": "Aquatic, Darkness",
         "defense": 35,
         "description": "A playful and curious hunter known for its energy.",
         "drops": "Whisker",
         "habitat": "Jungle,Urban",
         "health": 50,
-        "moves": "Scratch, Leer, Quick Attack, Bite, Crunch, Super Fang, Hyper Fang, Dig, Sand Attack, Agility, Hone Claws, Shadow Claw, Night Slash, Pursuit, U-turn, Beat Up, Helping Hand, Fake Out, Follow Me, Recycle",
+        "moves": "Scratch, Bite, Quick Attack, Pursuit, Fake Out, Crunch, Sucker Punch, Dig, Hone Claws, Agility, Slash, Night Slash, U-turn, Helping Hand, Super Fang, Thief, Snatch, Fury Swipes, Covet, Tail Slap, Play Rough",
         "name": "Ferret",
         "power": 49,
         "rarity": "Common",
@@ -19960,7 +19960,7 @@
         "weight": 1
     },
     {
-        "abilities": "Agile",
+        "abilities": "Swift Swim",
         "active_time": "any",
         "attack": 60,
         "category": "Aquatic, Darkness",
@@ -20760,7 +20760,7 @@
         "weight": 1
     },
     {
-        "abilities": "Agile",
+        "abilities": "Shadow Shield",
         "active_time": "any",
         "attack": 60,
         "category": "Aquatic, Aura",
@@ -20800,7 +20800,7 @@
         "weight": 1
     },
     {
-        "abilities": "Agile",
+        "abilities": "Forewarn",
         "active_time": "any",
         "attack": 58,
         "category": "Darkness, Mystic",
@@ -21200,7 +21200,7 @@
         "weight": 1
     },
     {
-        "abilities": "Agile",
+        "abilities": "Long Reach",
         "active_time": "any",
         "attack": 74,
         "category": "Predator, Flying, Solitary",
@@ -21209,7 +21209,7 @@
         "drops": "Feather",
         "habitat": "Jungle, Rainforest, Savanna",
         "health": 90,
-        "moves": "Peck,Fly,Roost,Glide,Waterfowl Dance",
+        "moves": "Peck, Low Kick, Wing Attack, Focus Energy, Karate Chop, Aerial Ace, Bulk Up, Brick Break, Roost, Tailwind, Air Slash, Hurricane, Close Combat, Detect, Sky Drop, Defog, Acrobatics, Quick Attack, Drain Punch, Steel Wing, U-turn,Waterfowl Dance",
         "name": "Crane Hawk",
         "power": 71,
         "rarity": "Uncommon",
@@ -21260,7 +21260,7 @@
         "weight": 500
     },
     {
-        "abilities": "Dive",
+        "abilities": "Long Reach",
         "active_time": "any",
         "attack": 95,
         "category": "Aquatic, Flying",
@@ -21380,7 +21380,7 @@
         "weight": 1
     },
     {
-        "abilities": "Agile",
+        "abilities": "Big Pecks",
         "active_time": "any",
         "attack": 73,
         "category": "Flying",
@@ -22180,10 +22180,10 @@
         "weight": 1
     },
     {
-        "abilities": "Agile",
+        "abilities": "Strong Jaw",
         "active_time": "any",
         "attack": 68,
-        "category": "Predator, Aquatic, Solitary",
+        "category": "Aquatic, Earth",
         "defense": 57,
         "description": "A common trout species found in cool freshwater streams.",
         "drops": "Fillet",
@@ -23380,16 +23380,16 @@
         "weight": 1
     },
     {
-        "abilities": "Dive Attack",
+        "abilities": "Rock Head",
         "active_time": "any",
         "attack": 55,
-        "category": "Aquatic, Flying",
+        "category": "Rock, Flying",
         "defense": 50,
         "description": "Australasian Gannets dive from great heights to catch fish. They feed in large flocks, using precision and speed to secure prey.",
         "drops": "Feather",
         "habitat": "Ocean, Coastal",
         "health": 76,
-        "moves": "Protect, Roost, Surf, Ice Beam, Hurricane, Hydro Pump, Scald, Chilling Water, Air Slash, Weather Ball, Tailwind, U-turn, Soak, Quick Attack, Acrobatics, Icy Wind, Rain Dance, Snowscape, Seed Bomb, Waterfall, Fly, Gunk Shot, Substitute, Liquidation, Blizzard, Giga Impact, Hyper Beam, Brave Bird, Aqua Ring, Knock Off",
+        "moves": "Tackle, Wing Attack, Rock Throw, Smack Down, Pluck, Ancient Power, Brave Bird, Head Smash, Rock Slide, Roost, Tailwind, Air Slash, Hurricane, Giga Impact, Double-Edge, Stealth Rock, Sky Attack, Stone Edge, U-turn, Agility, Iron Head",
         "name": "Australasian Gannet",
         "power": 65,
         "rarity": "Rare",
@@ -26860,7 +26860,7 @@
         "weight": 1
     },
     {
-        "abilities": "Agile Swim",
+        "abilities": "Water Veil",
         "active_time": "any",
         "attack": 35,
         "category": "Aquatic",
@@ -26869,7 +26869,7 @@
         "drops": "Fillet",
         "habitat": "River, Lake, Coastal",
         "health": 120,
-        "moves": "Bounce, Charm, Tail Whip, Attract, Dazzling Gleam, Life Dew, Scald, Rain Dance, Captivate, Safeguard, Moonblast, Play Rough, Heal Pulse, Aromatherapy, Helping Hand, Calm Mind, Surf, Hyper Voice, Sweet Kiss, Wish",
+        "moves": "Water Gun, Splash, Tail Whip, Water Pulse, Aqua Ring, Dazzling Gleam, Brine, Surf, Hydro Pump, Moonblast, Rain Dance, Life Dew, Scald, Aqua Jet, Charm, Helping Hand, Whirlpool, Dive, Mist, Safeguard, Captivate",
         "name": "White Sailfin Molly",
         "power": 29,
         "rarity": "Common",
@@ -29220,7 +29220,7 @@
         "weight": 1
     },
     {
-        "abilities": "Agile Swim",
+        "abilities": "Swift Swim",
         "active_time": "any",
         "attack": 62,
         "category": "Aquatic",
@@ -31660,7 +31660,7 @@
         "weight": 1
     },
     {
-        "abilities": "Agile Hunter",
+        "abilities": "Infiltrator",
         "active_time": "any",
         "attack": 115,
         "category": "Aquatic, Darkness",
@@ -32080,7 +32080,7 @@
         "weight": 1
     },
     {
-        "abilities": "Agile Hunter",
+        "abilities": "Swift Swim",
         "active_time": "any",
         "attack": 95,
         "category": "Aquatic, Darkness",
@@ -32100,7 +32100,7 @@
         "weight": 1
     },
     {
-        "abilities": "Agile Hunter",
+        "abilities": "Pressure",
         "active_time": "any",
         "attack": 100,
         "category": "Aquatic, Darkness",
@@ -32260,7 +32260,7 @@
         "weight": 1
     },
     {
-        "abilities": "Agile Swimmer",
+        "abilities": "Strong Jaw",
         "active_time": "night",
         "attack": 105,
         "category": "Aquatic, Darkness",
@@ -32620,7 +32620,7 @@
         "weight": 1
     },
     {
-        "abilities": "Agile Predator",
+        "abilities": "Rough Skin",
         "active_time": "any",
         "attack": 105,
         "category": "Aquatic, Darkness",
@@ -32920,7 +32920,7 @@
         "weight": 1
     },
     {
-        "abilities": "Alert Senses",
+        "abilities": "Intimidate",
         "active_time": "any",
         "attack": 25,
         "category": "Basic, Aura",
@@ -34260,7 +34260,7 @@
         "weight": 1
     },
     {
-        "abilities": "Aqua Dive",
+        "abilities": "Swift Swim",
         "active_time": "any",
         "attack": 48,
         "category": "Flying, Aquatic",
@@ -34300,7 +34300,7 @@
         "weight": 1
     },
     {
-        "abilities": "Agile Hunter",
+        "abilities": "Strong Jaw",
         "active_time": "any",
         "attack": 60,
         "category": "Predator, Agile, Solitary",
@@ -34900,7 +34900,7 @@
         "weight": 1
     },
     {
-        "abilities": "Agile Swing",
+        "abilities": "Inner Focus",
         "active_time": "any",
         "attack": 55,
         "category": "Sound, Aura",
@@ -36540,16 +36540,16 @@
         "weight": 1
     },
     {
-        "abilities": "Dive",
+        "abilities": "Sniper",
         "active_time": "any",
         "attack": 65,
-        "category": "Predator, Flying, Aquatic",
+        "category": "Metal, Flying",
         "defense": 55,
         "description": "The pied kingfisher hovers above water before plunging to catch fish. It is one of the few bird species capable of sustained hovering flight.",
         "drops": "Feather",
         "habitat": "River, Lake",
         "health": 80,
-        "moves": "Dive, Grab, Fly, Shake",
+        "moves": "Peck, Drill Peck, Metal Claw, Smart Strike, Iron Head, Aerial Ace, Agility, Hover (Custom/Gravity), Tailwind, Air Pressure, Defog, Steel Wing, Fury Attack, Quick Attack, Swords Dance, Roost, Flash Cannon, Mirror Move, Rain Dance, Spike Cannon, U-turn",
         "name": "Pied Kingfisher",
         "power": 73,
         "rarity": "Uncommon",
@@ -36640,7 +36640,7 @@
         "weight": 1
     },
     {
-        "abilities": "Alertness",
+        "abilities": "Stamina",
         "active_time": "any",
         "attack": 65,
         "category": "Basic, Grass",
@@ -36649,7 +36649,7 @@
         "drops": "Venison, Antler, Fur",
         "habitat": "Jungle, River",
         "health": 84,
-        "moves": "Kick, Charge, Run, Call",
+        "moves": "Tackle, Water Gun, Horn Attack, Bulk Up, Surf, Stomp, Aqua Jet, Megahorn, Body Slam, Hydro Pump, Rain Dance, Double-Edge, Roar, Zen Headbutt, Thrash, Giga Impact, Iron Head, Liquidation, Whirlpool, Strength, Trailblaze",
         "name": "Samber Deer",
         "power": 59,
         "rarity": "Uncommon",
@@ -38020,7 +38020,7 @@
         "weight": 1
     },
     {
-        "abilities": "Alertness",
+        "abilities": "Inner Focus",
         "active_time": "any",
         "attack": 15,
         "category": "Cryo, Basic",
@@ -40760,7 +40760,7 @@
         "weight": 1
     },
     {
-        "abilities": "Flock Alert",
+        "abilities": "Flame Body",
         "active_time": "any",
         "attack": 22,
         "category": "Blaze, Flying",
@@ -40769,7 +40769,7 @@
         "drops": "Feather",
         "habitat": "Jungle, Savanna",
         "health": 45,
-        "moves": "Aerial Ace, Roost, Sky Drop, Focus Energy,Piercing Beak,Peck",
+        "moves": "Ember, Peck, Fire Spin, Wing Attack, Flame Charge, Swift, Flamethrower, Air Slash, Heat Wave, Roost, Tailwind, Sunny Day, Solar Beam, Will-O-Wisp, Fire Blast, Defog, Acrobatics, U-turn, Agility, Mystical Fire, Burn Up",
         "name": "Small Minivet",
         "power": 19,
         "rarity": "Common",
@@ -41560,7 +41560,7 @@
         "weight": 1
     },
     {
-        "abilities": "Alert Hearing",
+        "abilities": "Sap Sipper",
         "active_time": "any",
         "attack": 36,
         "category": "Grass",
@@ -42560,7 +42560,7 @@
         "weight": 1
     },
     {
-        "abilities": "Agile Tail Fan",
+        "abilities": "Dancer",
         "active_time": "any",
         "attack": 30,
         "category": "Flying, Mystic",
@@ -42569,7 +42569,7 @@
         "drops": "Fantail Feather, Light Plume",
         "habitat": "Jungle",
         "health": 35,
-        "moves": "Quick Peck, Fan Display, Dart, Call",
+        "moves": "Quiver Dance, Feather Dance, Teeter Dance, Wing Attack, Fairy Wind, Gust, Disarming Voice, Moonblast, Tailwind, Air Slash, Hurricane, Roost, U-turn, Acrobatics, Mirror Move, Dazzling Gleam, Play Rough, Attract, Captivate, Defog, Sweet Kiss",
         "name": "White-throated Fantail",
         "power": 22,
         "rarity": "Uncommon",
@@ -42660,7 +42660,7 @@
         "weight": 1
     },
     {
-        "abilities": "Group Alert",
+        "abilities": "Parental Bond",
         "active_time": "any",
         "attack": 28,
         "category": "Earth, Flying",
@@ -42800,16 +42800,16 @@
         "weight": 1
     },
     {
-        "abilities": "Precision Dive",
+        "abilities": "Defiant",
         "active_time": "any",
         "attack": 60,
-        "category": "Predator, Flying, Solitary",
+        "category": "Electric, Flying",
         "defense": 45,
         "description": "The white-throated kingfisher is a vividly colored bird often seen perched near water. It plunges swiftly to seize fish and large insects with its strong pointed bill.",
         "drops": "Blue Feather, Sharp Beak",
         "habitat": "River, Lake, Urban",
         "health": 65,
-        "moves": "Dive, Spear Strike, Perch, Call",
+        "moves": "Spark, Peck, Drill Peck, Thunder Shock, Volt Switch, Discharge, Wild Charge, Aerial Ace, Air Slash, Brave Bird, Roost, Agility, Thunder Wave, Light Screen, Reflect, U-turn, Quick Attack, Extreme Speed, Screech, Thunder, Sky Attack",
         "name": "White-throated Kingfisher",
         "power": 67,
         "rarity": "Common",
@@ -43720,16 +43720,16 @@
         "weight": 1
     },
     {
-        "abilities": "Swift Dive",
+        "abilities": "Serene Grace",
         "active_time": "any",
         "attack": 55,
-        "category": "Predator, Flying",
+        "category": "Mystic, Flying",
         "defense": 45,
         "description": "The Chinese crested tern is a rare seabird that hunts fish along coastal waters. It performs swift aerial dives, plunging into the sea to seize prey with precision.",
         "drops": "Sea Feather, Sharp Beak",
         "habitat": "Coastal, Ocean",
         "health": 60,
-        "moves": "Dive Strike, Glide, Beak Snap, Sky Call",
+        "moves": "Fairy Wind, Peck, Disarming Voice, Wing Attack, Water Pulse, Moonblast, Dazzling Gleam, Roost, Tailwind, Air Slash, Hurricane, Defog, Misty Terrain, Play Rough, Mirror Move, Agility, U-turn, Helping Hand, Giga Drain, Safeguard, Tailwind",
         "name": "Chinese Crested Tern",
         "power": 50,
         "rarity": "Epic",
@@ -46080,7 +46080,7 @@
         "weight": 1
     },
     {
-        "abilities": "Deep Diver",
+        "abilities": "Liquid Voice",
         "active_time": "any",
         "attack": 50,
         "category": "Aquatic,Cryo",
@@ -46089,7 +46089,7 @@
         "drops": "Seal Fat,Seal Fur,Raw Meat",
         "habitat": "Frozen Ocean,Polar",
         "health": 82,
-        "moves": "Bite,Flipper Bash,Deep Dive,Ice Charge",
+        "moves": "Pound, Growl, Powder Snow, Sing, Echoed Voice, Ice Shard, Body Slam, Rest, Sleep Talk, Hyper Voice, Ice Beam, Blizzard, Sing, Round, Encore, Boomburst, Surf, Icicle Crash, Belly Drum, Heavy Slam, Noble Roar",
         "name": "Ross Seal",
         "power": 44,
         "rarity": "Rare",
@@ -46229,7 +46229,7 @@
         "drops": "Feathers,Small Meat",
         "habitat": "Ocean,Coastal",
         "health": 42,
-        "moves": "Peck,Wave Step,Gust Glide,Quick Flap",
+        "moves": "Water Gun, Peck, Gust, Water Pulse, Wing Attack, Mist, Haze, Aqua Ring, Roost, Tailwind, Air Slash, Hurricane, Rain Dance, Brine, Surf, Hydro Pump, Acrobatics, Defog, U-turn, Agility, Feather Dance",
         "name": "Wilson's Storm Petrel",
         "power": 26,
         "rarity": "Common",
