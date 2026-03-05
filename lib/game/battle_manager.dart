@@ -4756,9 +4756,88 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       lastOpponentFaintTurn = currentTurn;
       // ARENA BATTLE: Check if opponent has more animals
       if (isArenaBattle) {
-        final nextOpponentHealthy = opponentTeam.indexWhere(
-          (org) => org.currentHealth > 0,
-        );
+        // AI: Choose the BEST healthy animal instead of just the first one.
+        int nextOpponentHealthy = -1;
+        final healthyTeammates = opponentTeam
+            .where((org) => org.currentHealth > 0)
+            .toList();
+
+        if (healthyTeammates.isNotEmpty) {
+          // If there's only one left, pick it.
+          if (healthyTeammates.length == 1) {
+            nextOpponentHealthy = opponentTeam.indexOf(healthyTeammates.first);
+          } else {
+            // Use AIDecisionEngine to find the best replacement
+            final aiTeamBO = opponentTeam
+                .map(
+                  (org) => BattleOrganism(
+                    org,
+                    isRogueMode: isRogueMode,
+                    isOpponent: true,
+                  ),
+                )
+                .toList();
+
+            final bench = aiTeamBO.where((org) => org.health > 0).toList();
+
+            // We pass a dummy activeMon that is guaranteed to want to switch (since it's fainted)
+            final dummyFainted = BattleOrganism(
+              opponentTeam[currentOpponentIndex],
+              isRogueMode: isRogueMode,
+              isOpponent: true,
+            );
+            dummyFainted.health = 0;
+
+            final decision = AIDecisionEngine.shouldSwitch(
+              activeMon: dummyFainted,
+              bench: bench,
+              opponent: player,
+              playerHazards: playerHazards,
+              playerHistory: playerHistory,
+              archetype: opponentArchetype,
+              estimateOpponentDamage: (attacker, defender) {
+                double maxDmg = 1.0;
+                final moves = _getOrganismMoves(attacker.organism);
+                for (final m in moves) {
+                  final res = calculateDamage(
+                    attacker,
+                    defender,
+                    m,
+                    ignoreRandom: true,
+                  );
+                  if (res.damage > maxDmg) maxDmg = res.damage.toDouble();
+                }
+                return maxDmg;
+              },
+              estimateOurDamage: (attacker, defender) {
+                double maxDmg = 1.0;
+                final moves = _getOrganismMoves(attacker.organism);
+                for (final m in moves) {
+                  final res = calculateDamage(
+                    attacker,
+                    defender,
+                    m,
+                    ignoreRandom: true,
+                  );
+                  if (res.damage > maxDmg) maxDmg = res.damage.toDouble();
+                }
+                return maxDmg;
+              },
+            );
+
+            if (decision.shouldSwitch && decision.bestBenchIndex != null) {
+              final targetId = bench[decision.bestBenchIndex!].organism.id;
+              nextOpponentHealthy = opponentTeam.indexWhere(
+                (org) => org.id == targetId,
+              );
+            } else {
+              // Fallback
+              nextOpponentHealthy = opponentTeam.indexWhere(
+                (org) => org.currentHealth > 0,
+              );
+            }
+          }
+        }
 
         if (nextOpponentHealthy != -1) {
           addToLog(
