@@ -6203,7 +6203,7 @@ class _PartyScreenDialog extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    isLeadSelection ? 'Choose your lead!' : 'Choose a Pokémon.',
+                    isLeadSelection ? 'Choose your lead!' : 'Choose an animal.',
                     style: const TextStyle(
                       fontFamily: 'PressStart2P',
                       fontSize: 9,

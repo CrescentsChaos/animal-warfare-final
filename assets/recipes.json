@@ -1,0 +1,214 @@
+[
+    {
+        "id": "recipe_strength_charm",
+        "resultTalismanId": "strength_charm",
+        "requiredLoot": {
+            "Fur": 3,
+            "Horn": 2,
+            "Fang": 1
+        }
+    },
+    {
+        "id": "recipe_iron_ward",
+        "resultTalismanId": "iron_ward",
+        "requiredLoot": {
+            "Scales": 4,
+            "Shell": 2
+        }
+    },
+    {
+        "id": "recipe_swift_rune",
+        "resultTalismanId": "swift_rune",
+        "requiredLoot": {
+            "Feather": 5,
+            "Claw": 2,
+            "Antler": 1
+        }
+    },
+    {
+        "id": "recipe_vitality_stone",
+        "resultTalismanId": "vitality_stone",
+        "requiredLoot": {
+            "Shell": 3,
+            "Scales": 3,
+            "Pearl": 1
+        }
+    },
+    {
+        "id": "recipe_power_crystal",
+        "resultTalismanId": "power_crystal",
+        "requiredLoot": {
+            "Fang": 4,
+            "Claw": 3,
+            "Venom": 2
+        }
+    },
+    {
+        "id": "recipe_guardian_shell",
+        "resultTalismanId": "guardian_shell",
+        "requiredLoot": {
+            "Shell": 5,
+            "Scales": 4
+        }
+    },
+    {
+        "id": "recipe_rawst_berry",
+        "resultTalismanId": "rawst_berry",
+        "requiredLoot": {
+            "Strawberry": 1,
+            "Berry Catalyst": 1
+        }
+    },
+    {
+        "id": "recipe_oran_berry",
+        "resultTalismanId": "oran_berry",
+        "requiredLoot": {
+            "Orange": 1,
+            "Berry Catalyst": 1
+        }
+    },
+    {
+        "id": "recipe_pecha_berry",
+        "resultTalismanId": "pecha_berry",
+        "requiredLoot": {
+            "Peach": 1,
+            "Berry Catalyst": 1
+        }
+    },
+    {
+        "id": "recipe_cheri_berry",
+        "resultTalismanId": "cheri_berry",
+        "requiredLoot": {
+            "Cherry": 1,
+            "Berry Catalyst": 1
+        }
+    },
+    {
+        "id": "recipe_aspear_berry",
+        "resultTalismanId": "aspear_berry",
+        "requiredLoot": {
+            "Pear": 1,
+            "Berry Catalyst": 1
+        }
+    },
+    {
+        "id": "recipe_leppa_berry",
+        "resultTalismanId": "leppa_berry",
+        "requiredLoot": {
+            "Apple": 1,
+            "Berry Catalyst": 1
+        }
+    },
+    {
+        "id": "recipe_sitrus_berry",
+        "resultTalismanId": "sitrus_berry",
+        "requiredLoot": {
+            "Lemon": 1,
+            "Berry Catalyst": 1
+        }
+    },
+    {
+        "id": "recipe_persim_berry",
+        "resultTalismanId": "persim_berry",
+        "requiredLoot": {
+            "Persimmon": 1,
+            "Berry Catalyst": 1
+        }
+    },
+    {
+        "id": "recipe_lum_berry",
+        "resultTalismanId": "lum_berry",
+        "requiredLoot": {
+            "Lime": 1,
+            "Berry Catalyst": 1
+        }
+    },
+    {
+        "id": "recipe_figy_berry",
+        "resultTalismanId": "figy_berry",
+        "requiredLoot": {
+            "Fig": 1,
+            "Berry Catalyst": 1
+        }
+    },
+    {
+        "id": "recipe_wiki_berry",
+        "resultTalismanId": "wiki_berry",
+        "requiredLoot": {
+            "Kiwi": 1,
+            "Berry Catalyst": 1
+        }
+    },
+    {
+        "id": "recipe_aguav_berry",
+        "resultTalismanId": "aguav_berry",
+        "requiredLoot": {
+            "Avocado": 1,
+            "Berry Catalyst": 1
+        }
+    },
+    {
+        "id": "recipe_iapapa_berry",
+        "resultTalismanId": "iapapa_berry",
+        "requiredLoot": {
+            "Papaya": 1,
+            "Berry Catalyst": 1
+        }
+    },
+    {
+        "id": "recipe_mago_berry",
+        "resultTalismanId": "mago_berry",
+        "requiredLoot": {
+            "Mango": 1,
+            "Berry Catalyst": 1
+        }
+    },
+    {
+        "id": "recipe_pomeg_berry",
+        "resultTalismanId": "pomeg_berry",
+        "requiredLoot": {
+            "Pomegranate": 1,
+            "Berry Catalyst": 1
+        }
+    },
+    {
+        "id": "recipe_kelpsy_berry",
+        "resultTalismanId": "kelpsy_berry",
+        "requiredLoot": {
+            "Grapefruit": 1,
+            "Berry Catalyst": 1
+        }
+    },
+    {
+        "id": "recipe_qualot_berry",
+        "resultTalismanId": "qualot_berry",
+        "requiredLoot": {
+            "Quince": 1,
+            "Berry Catalyst": 1
+        }
+    },
+    {
+        "id": "recipe_hondew_berry",
+        "resultTalismanId": "hondew_berry",
+        "requiredLoot": {
+            "Honeydew": 1,
+            "Berry Catalyst": 1
+        }
+    },
+    {
+        "id": "recipe_grepa_berry",
+        "resultTalismanId": "grepa_berry",
+        "requiredLoot": {
+            "Grape": 1,
+            "Berry Catalyst": 1
+        }
+    },
+    {
+        "id": "recipe_tamato_berry",
+        "resultTalismanId": "tamato_berry",
+        "requiredLoot": {
+            "Tomato": 1,
+            "Berry Catalyst": 1
+        }
+    }
+]

@@ -1,4 +1,5 @@
-// lib/models/recipe.dart
+import 'dart:convert';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:animal_warfare/models/talisman.dart';
 
 class Recipe {
@@ -14,48 +15,46 @@ class Recipe {
 
   Talisman? get resultTalisman => Talisman.findById(resultTalismanId);
 
-  // Predefined recipes
-  static const List<Recipe> allRecipes = [
-    Recipe(
-      id: 'recipe_strength_charm',
-      resultTalismanId: 'strength_charm',
-      requiredLoot: {'Fur': 3, 'Horn': 2, 'Fang': 1},
-    ),
-    Recipe(
-      id: 'recipe_iron_ward',
-      resultTalismanId: 'iron_ward',
-      requiredLoot: {'Scales': 4, 'Shell': 2},
-    ),
-    Recipe(
-      id: 'recipe_swift_rune',
-      resultTalismanId: 'swift_rune',
-      requiredLoot: {'Feather': 5, 'Claw': 2, 'Antler': 1},
-    ),
-    Recipe(
-      id: 'recipe_vitality_stone',
-      resultTalismanId: 'vitality_stone',
-      requiredLoot: {'Shell': 3, 'Scales': 3, 'Pearl': 1},
-    ),
-    Recipe(
-      id: 'recipe_power_crystal',
-      resultTalismanId: 'power_crystal',
-      requiredLoot: {'Fang': 4, 'Claw': 3, 'Venom': 2},
-    ),
-    Recipe(
-      id: 'recipe_guardian_shell',
-      resultTalismanId: 'guardian_shell',
-      requiredLoot: {'Shell': 5, 'Scales': 4},
-    ),
-    Recipe(
-      id: 'recipe_lucky_claw',
-      resultTalismanId: 'lucky_claw',
-      requiredLoot: {'Claw': 5, 'Feather': 3, 'Pearl': 1},
-    ),
-  ];
+  // Constructor for loading Recipe from JSON
+  factory Recipe.fromJson(Map<String, dynamic> json) {
+    return Recipe(
+      id: json['id'] as String? ?? '',
+      resultTalismanId: json['resultTalismanId'] as String? ?? '',
+      requiredLoot:
+          (json['requiredLoot'] as Map<String, dynamic>?)?.map(
+            (key, value) => MapEntry(key, value as int),
+          ) ??
+          {},
+    );
+  }
 
-  static final Map<String, Recipe> _byId = {
-    for (final r in allRecipes) r.id: r,
-  };
+  static List<Recipe> _allRecipes = [];
+
+  static List<Recipe> get allRecipes => _allRecipes;
+
+  static final Map<String, Recipe> _byId = {};
+
+  /// Loads recipes from the JSON asset file.
+  static Future<void> loadFromJson() async {
+    try {
+      final String response = await rootBundle.loadString(
+        'assets/recipes.json',
+      );
+      final data = json.decode(response);
+      if (data is List) {
+        _allRecipes = data
+            .map((r) => Recipe.fromJson(r as Map<String, dynamic>))
+            .toList();
+        _byId.clear();
+        for (final r in _allRecipes) {
+          _byId[r.id] = r;
+        }
+        print('Loaded ${_allRecipes.length} recipes from JSON.');
+      }
+    } catch (e) {
+      print('Error loading recipes from JSON: $e');
+    }
+  }
 
   static Recipe? findById(String id) {
     return _byId[id];

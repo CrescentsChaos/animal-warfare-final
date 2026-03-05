@@ -99,6 +99,7 @@ flutter:
     - assets/status_overlays/
     - assets/items/
     - assets/shop_items.json
+    - assets/recipes.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

@@ -12,6 +12,7 @@ import 'package:animal_warfare/models/move.dart';
 import 'package:animal_warfare/theme.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:animal_warfare/game/time_service.dart';
+import 'package:animal_warfare/models/recipe.dart';
 import 'package:animal_warfare/models/ability.dart';
 
 void main() async {
@@ -36,6 +37,8 @@ void main() async {
   await Move.loadFromJson();
   // Load Abilities from JSON
   await Ability.loadFromJson();
+  // Load Recipes from JSON
+  await Recipe.loadFromJson();
 
   // 3. Initialize Firebase (Retained from your file)
   try {

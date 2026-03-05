@@ -447,7 +447,7 @@ class _AnidexScreenState extends State<AnidexScreen>
                   const SizedBox(height: 4),
                   Text(
                     discovered
-                        ? (captured ? org.rarity.toUpperCase() : 'GRAYSCALE')
+                        ? (captured ? org.rarity.toUpperCase() : 'SEEN')
                         : 'UNIDENTIFIED',
                     style: TextStyle(
                       color: discovered
