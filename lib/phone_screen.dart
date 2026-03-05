@@ -6,6 +6,7 @@ import 'package:animal_warfare/services/weather_service.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:ui';
 import 'package:animal_warfare/models/weather.dart';
+import 'package:animal_warfare/services/save_service.dart';
 
 class PhoneScreen extends StatefulWidget {
   final String? initialBiome; // Optional biome for weather app context
@@ -731,6 +732,26 @@ class _SettingsApp extends StatelessWidget {
                     style: TextStyle(color: Colors.white),
                   ),
                   trailing: Switch(value: true, onChanged: (v) {}),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.save_alt, color: Colors.white),
+                  title: const Text(
+                    'Export Save Data',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  onTap: () {
+                    final userState = Provider.of<UserState>(
+                      context,
+                      listen: false,
+                    );
+                    if (userState.currentUser != null) {
+                      SaveService.exportSaveData(
+                        context,
+                        userState.currentUser!,
+                        (loading) {},
+                      );
+                    }
+                  },
                 ),
               ],
             ),

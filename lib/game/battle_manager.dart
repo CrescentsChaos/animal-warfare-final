@@ -6006,6 +6006,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       lastUsedMoves: opponentLastUsedMoves,
       archetype: opponentArchetype,
       isTrickRoomActive: trickRoomTurns > 0,
+      isTailwindActive: opponentTailwindTurns > 0,
       targetHasReflect: defender.isPlayer
           ? playerReflectTurns > 0
           : opponentReflectTurns > 0,

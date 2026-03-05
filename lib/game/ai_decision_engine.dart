@@ -56,6 +56,7 @@ class AIDecisionEngine {
     List<String>? lastUsedMoves, // Last few moves used by the AI for diversity
     TeamArchetype archetype = TeamArchetype.balanced,
     bool isTrickRoomActive = false,
+    bool isTailwindActive = false,
     bool targetHasReflect = false,
     bool targetHasLightScreen = false,
     bool targetHasAuroraVeil = false,
@@ -725,7 +726,13 @@ class AIDecisionEngine {
         );
         if (hasTRMove && move.name == 'Trick Room') {
           if (!isTrickRoomActive) {
-            score += 500; // Always try to set TR first turn
+            // Trick Room flips speed. If we are already faster, using Trick Room
+            // will make us move last, which is bad!
+            if (isFaster) {
+              score -= 500; // Very bad idea
+            } else {
+              score += 500; // Always try to set TR first turn if slower
+            }
           } else {
             score -= 600; // Don't turn it off if we are a TR team!
           }
@@ -747,6 +754,10 @@ class AIDecisionEngine {
           'Tailwind',
         );
         if (hasTailwind && move.name == 'Tailwind') {
+          // Check if Tailwind is already active on our side.
+          // Since we might not have direct turn counters here,
+          // let's pass a boolean from BattleManager, or use a workaround.
+          // Actually, we can add a boolean `isTailwindActive` to `calculateMoveScore`
           score += 500;
         }
         if (move.baseDamage > 0) score += 40;

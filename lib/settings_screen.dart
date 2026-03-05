@@ -6,16 +6,14 @@ import 'package:animal_warfare/main_screen.dart';
 import 'package:animal_warfare/services/audio_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:animal_warfare/patch_notes_screen.dart';
 import 'dart:io';
-import 'dart:convert';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:animal_warfare/patch_notes_screen.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/theme.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:animal_warfare/services/save_service.dart';
 
 class SettingsScreen extends StatefulWidget {
   final UserData currentUser;
@@ -130,46 +128,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _exportSaveData() async {
-    setState(() => _isLoading = true);
-    try {
-      Directory? downloadDir;
-
-      if (Platform.isAndroid) {
-        var status = await Permission.storage.status;
-        if (!status.isGranted) {
-          await Permission.storage.request();
-        }
-        downloadDir = Directory('/storage/emulated/0/Download');
-        if (!await downloadDir.exists()) {
-          downloadDir = await getExternalStorageDirectory();
-        }
-      } else {
-        downloadDir = await getDownloadsDirectory();
-      }
-
-      if (downloadDir != null) {
-        final String username = widget.currentUser.username;
-        final String fileName = 'animal_warfare_save_$username.json';
-        final File file = File('${downloadDir.path}/$fileName');
-        final String jsonData = jsonEncode(widget.currentUser.toJson());
-        await file.writeAsString(jsonData);
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Saved to Downloads/$fileName')),
-          );
-        }
-      } else {
-        throw Exception('Could not find Downloads directory');
-      }
-    } catch (e) {
+    await SaveService.exportSaveData(context, widget.currentUser, (loading) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Export failed: $e')));
+        setState(() => _isLoading = loading);
       }
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
+    });
   }
 
   Future<void> _importSaveData() async {
