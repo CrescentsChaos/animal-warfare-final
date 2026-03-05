@@ -17,13 +17,8 @@ import 'package:animal_warfare/widgets/game_clock_widget.dart';
 
 class GameScreen extends StatefulWidget {
   final UserData currentUser;
-  final LocalAuthService authService;
 
-  const GameScreen({
-    super.key,
-    required this.currentUser,
-    required this.authService,
-  });
+  const GameScreen({super.key, required this.currentUser});
 
   @override
   State<GameScreen> createState() => _GameScreenState();
@@ -52,10 +47,6 @@ class _GameScreenState extends State<GameScreen> {
       ),
     );
     AudioService.instance.resumeAll();
-    final updatedUser = await widget.authService.getCurrentUser();
-    if (updatedUser != null && mounted) {
-      setState(() {});
-    }
   }
 
   Widget _buildMenuButton({
@@ -231,10 +222,11 @@ class _GameScreenState extends State<GameScreen> {
                             listen: false,
                           ).currentUser ??
                           widget.currentUser;
+                      final authService = LocalAuthService();
                       _navigateTo(
                         ExploreScreen(
                           currentUser: user,
-                          authService: widget.authService,
+                          authService: authService,
                         ),
                       );
                     },
@@ -276,10 +268,11 @@ class _GameScreenState extends State<GameScreen> {
                             listen: false,
                           ).currentUser ??
                           widget.currentUser;
+                      final authService = LocalAuthService();
                       _navigateTo(
                         AnidexScreen(
                           currentUser: user,
-                          authService: widget.authService,
+                          authService: authService,
                         ),
                       );
                     },
@@ -292,8 +285,13 @@ class _GameScreenState extends State<GameScreen> {
                     color: const Color(0xFF26A69A),
                     onPressed: () => _navigateTo(
                       QuizScreen(
-                        currentUser: widget.currentUser,
-                        authService: widget.authService,
+                        currentUser:
+                            Provider.of<UserState>(
+                              context,
+                              listen: false,
+                            ).currentUser ??
+                            widget.currentUser,
+                        authService: LocalAuthService(),
                       ),
                     ),
                   ),

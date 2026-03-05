@@ -12,6 +12,7 @@ import 'package:animal_warfare/models/move.dart';
 import 'package:animal_warfare/theme.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:animal_warfare/game/time_service.dart';
+import 'package:animal_warfare/models/ability.dart';
 
 void main() async {
   // 1. Ensure Flutter bindings are initialized first
@@ -33,6 +34,8 @@ void main() async {
   await Talisman.loadFromJson();
   // Load Moves from JSON
   await Move.loadFromJson();
+  // Load Abilities from JSON
+  await Ability.loadFromJson();
 
   // 3. Initialize Firebase (Retained from your file)
   try {

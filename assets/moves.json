@@ -6336,5 +6336,29 @@
         "critRate": 0,
         "isTitanizeMove": true,
         "effects": []
+    },
+    {
+        "name": "Pursuit",
+        "description": "An attack move that inflicts double damage if used on a target that is switching out of battle.",
+        "baseDamage": 40,
+        "type": "darkness",
+        "accuracy": 100,
+        "stamina": 20,
+        "category": "physical",
+        "effects": []
+    },
+    {
+        "name": "Thrash",
+        "description": "The user rampages and attacks for two to three turns. The user then becomes confused.",
+        "baseDamage": 120,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "thrash"
+            }
+        ]
     }
 ]

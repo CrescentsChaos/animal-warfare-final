@@ -108,6 +108,8 @@ class BattleOrganism {
     throatChopTurns = 0;
     clampingTurns = 0;
     isFirstTurnOutOfBall = true;
+    wasSwitchedInThisTurn = true;
+    isSwitchingOut = false;
     wishTurns = 0;
     wishHealAmount = 0;
     healBlockTurns = 0;
@@ -231,6 +233,8 @@ class BattleOrganism {
   int throatChopTurns = 0;
   int clampingTurns = 0;
   bool isFirstTurnOutOfBall = true;
+  bool wasSwitchedInThisTurn = false;
+  bool isSwitchingOut = false;
 
   // Advanced move state
   int substituteHealth = 0;
@@ -311,6 +315,7 @@ class BattleOrganism {
        _accuracyStage = isRogueMode ? organism.accuracyStage : 0 {
     final int battleMax = maxHealth;
     _health = organism.currentHealth.clamp(0, battleMax);
+    wasSwitchedInThisTurn = true;
   }
 
   List<ElementalType>? _battleTypes;

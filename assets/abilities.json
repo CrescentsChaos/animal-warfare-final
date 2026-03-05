@@ -255,7 +255,7 @@
         "effectType": "damageMultiplier",
         "magnitude": 0.5,
         "conditions": [
-            "type_fire"
+            "type_blaze"
         ]
     },
     {
@@ -723,5 +723,29 @@
         "description": "Heals HP in rain, takes damage in sun. Water heals 25% HP, Fire does 25% more damage.",
         "trigger": "none",
         "effectType": "none"
+    },
+    {
+        "name": "Thick Fat",
+        "description": "Halves the damage taken from Blaze and Cryo-type moves.",
+        "trigger": "onCalculateDamage",
+        "effectType": "damageMultiplier",
+        "magnitude": 0.5,
+        "conditions": [
+            "type_blaze",
+            "type_cryo"
+        ]
+    },
+    {
+        "name": "Rattled",
+        "description": "Boosts the Speed stat if hit by a Arthropod, Spectral, or Darkness-type attack.",
+        "trigger": "onDamageTaken",
+        "effectType": "statChange",
+        "stat": "speed",
+        "magnitude": 1,
+        "conditions": [
+            "type_arthropod",
+            "type_spectral",
+            "type_darkness"
+        ]
     }
 ]

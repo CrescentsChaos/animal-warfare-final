@@ -5,6 +5,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'
     show rootBundle, SystemChrome, DeviceOrientation;
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:animal_warfare/models/captured_organism.dart';
 import 'package:animal_warfare/game/battle_manager.dart';
@@ -4072,7 +4073,6 @@ class _BattleResultDialog extends StatelessWidget {
   final Color secondaryColor;
   final BattleManager battleManager;
   final Map<String, dynamic> xpResults;
-
   final int? rogueFloor;
   final bool isRogueMode;
 
@@ -4092,6 +4092,360 @@ class _BattleResultDialog extends StatelessWidget {
     required this.isRogueMode,
   });
 
+  @override
+  Widget build(BuildContext context) {
+    final isVictory =
+        result == BattleResult.win || result == BattleResult.capture;
+    final mvpData = _calculateMvp();
+    final mvpOrg = mvpData['organism'] as CapturedOrganism?;
+
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: const Color(0xFF0A0A0A),
+          borderRadius: BorderRadius.circular(28),
+          border: Border.all(
+            color: isVictory
+                ? Colors.amber.withOpacity(0.5)
+                : Colors.redAccent.withOpacity(0.5),
+            width: 2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: (isVictory ? Colors.amber : Colors.redAccent).withOpacity(
+                0.2,
+              ),
+              blurRadius: 30,
+              spreadRadius: 5,
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(26),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildHeader(isVictory),
+              Flexible(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      if (mvpOrg != null) ...[
+                        _buildMvpSection(mvpOrg, mvpData['score'] as double),
+                        const SizedBox(height: 20),
+                      ],
+                      _buildRewardsAndXpGrid(context),
+                      const SizedBox(height: 20),
+                      _buildActionButtons(context),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(bool isVictory) {
+    String headerText;
+    String subText;
+    switch (result) {
+      case BattleResult.win:
+        headerText = 'VICTORY';
+        subText = 'BATTLE CONCLUDED';
+        break;
+      case BattleResult.capture:
+        headerText = 'CAPTURED';
+        subText = 'NEW COMPANION JOINED';
+        break;
+      case BattleResult.fled:
+        headerText = 'FLED';
+        subText = 'RETREATED SAFELY';
+        break;
+      case BattleResult.loss:
+        headerText = 'DEFEAT';
+        subText = 'STRATEGIZE AND RETURN';
+        break;
+    }
+
+    final headerColor = isVictory
+        ? Colors.amber
+        : (result == BattleResult.fled ? Colors.grey : Colors.redAccent);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 24),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [headerColor.withOpacity(0.3), Colors.transparent],
+        ),
+      ),
+      child: Column(
+        children: [
+          Text(
+            headerText,
+            style: GoogleFonts.orbitron(
+              fontSize: 32,
+              fontWeight: FontWeight.w900,
+              color: headerColor,
+              letterSpacing: 4,
+              shadows: [
+                Shadow(color: headerColor.withOpacity(0.5), blurRadius: 15),
+              ],
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            subText,
+            style: const TextStyle(
+              color: Colors.white54,
+              fontFamily: 'PressStart2P',
+              fontSize: 8,
+              letterSpacing: 1,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMvpSection(CapturedOrganism org, double score) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.amber.withOpacity(0.3)),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.amber,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: const Text(
+                  'MVP',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontFamily: 'PressStart2P',
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const Spacer(),
+              Text(
+                'SCORE: ${score.toInt()}',
+                style: const TextStyle(
+                  color: Colors.amber,
+                  fontFamily: 'PressStart2P',
+                  fontSize: 8,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              _buildSmallSprite(org),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      org.baseOrganism.name.toUpperCase(),
+                      style: GoogleFonts.orbitron(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'LVL ${org.level} ${org.baseOrganism.rarity.toUpperCase()}',
+                      style: const TextStyle(
+                        color: Colors.white38,
+                        fontFamily: 'PressStart2P',
+                        fontSize: 8,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRewardsAndXpGrid(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (xpResults.isNotEmpty) ...[
+          const Text(
+            'EXPERIENCE GAINED',
+            style: TextStyle(
+              color: Colors.white70,
+              fontFamily: 'PressStart2P',
+              fontSize: 9,
+            ),
+          ),
+          const SizedBox(height: 12),
+          ...battleManager.playerTeam
+              .take(3)
+              .map((org) => _buildXpProgressRow(org)),
+          if (battleManager.playerTeam.length > 3)
+            const Padding(
+              padding: EdgeInsets.only(top: 4),
+              child: Text(
+                '...and others',
+                style: TextStyle(
+                  color: Colors.white24,
+                  fontSize: 10,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ),
+          const SizedBox(height: 24),
+        ],
+        _buildRewardSection(),
+      ],
+    );
+  }
+
+  Widget _buildXpProgressRow(CapturedOrganism org) {
+    // Note: Here we're displaying our redesigned progress UI.
+    // In our redesigned system, we use _XPResultRow (defined below) for the animated effect.
+    return _XPResultRow(
+      organism: org,
+      gainedXP: (xpResults['gainedAnimalXP'] as int? ?? 0),
+      didLevelUp:
+          (xpResults['animalLeveledUp'] as Map<String, bool>?)?[org.id] ??
+          false,
+    );
+  }
+
+  Widget _buildRewardSection() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.03),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'REWARDS',
+            style: TextStyle(
+              color: Colors.white70,
+              fontFamily: 'PressStart2P',
+              fontSize: 9,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              _buildRewardItem(
+                Icons.monetization_on,
+                '$moneyEarned',
+                Colors.amber,
+              ),
+              if (lootName != null) ...[
+                const SizedBox(width: 24),
+                _buildRewardItem(
+                  Icons.inventory_2,
+                  lootName!,
+                  Colors.purpleAccent,
+                ),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRewardItem(IconData icon, String label, Color color) {
+    return Row(
+      children: [
+        Icon(icon, color: color, size: 20),
+        const SizedBox(width: 8),
+        Text(
+          label.toUpperCase(),
+          style: const TextStyle(
+            color: Colors.white,
+            fontFamily: 'PressStart2P',
+            fontSize: 10,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButtons(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: TextButton(
+            onPressed: () => _showStats(context),
+            child: const Text(
+              'VIEW STATS',
+              style: TextStyle(
+                color: Colors.white38,
+                fontFamily: 'PressStart2P',
+                fontSize: 8,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          flex: 2,
+          child: ElevatedButton(
+            onPressed: onConfirm,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: result == BattleResult.win
+                  ? Colors.amber
+                  : Colors.white24,
+              foregroundColor: result == BattleResult.win
+                  ? Colors.black
+                  : Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: const Text(
+              'CONTINUE',
+              style: TextStyle(
+                fontFamily: 'PressStart2P',
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Map<String, dynamic> _calculateMvp() {
     CapturedOrganism? mvpOrg;
     String mvpSide = 'PLAYER';
@@ -4106,7 +4460,6 @@ class _BattleResultDialog extends StatelessWidget {
       final stats = battleManager.battleStats[org.id];
       if (stats == null) continue;
 
-      // Improved MVP Score: DMG Dealt + Kills weight - Minor DMG Taken penalty
       double score =
           stats.totalDamageDealt.toDouble() +
           (stats.totalKills * 150.0) -
@@ -4240,453 +4593,24 @@ class _BattleResultDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildSummaryCard(BuildContext context, CapturedOrganism org) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white24),
-      ),
-      child: Row(
-        children: [
-          _buildSmallSprite(org),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  org.baseOrganism.name.toUpperCase(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontFamily: 'PressStart2P',
-                    fontSize: 10,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'LVL ${org.level} • ${org.baseOrganism.rarity.toUpperCase()}',
-                  style: TextStyle(
-                    color: Colors.white60,
-                    fontFamily: 'PressStart2P',
-                    fontSize: 8,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildSmallSprite(CapturedOrganism org) {
     return Container(
-      width: 48,
-      height: 48,
+      width: 64,
+      height: 64,
       decoration: BoxDecoration(
         color: Colors.black26,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white10),
       ),
       child: Center(
         child: ClipRRect(
           borderRadius: BorderRadius.circular(8),
           child: _BattleSprite(
             organism: BattleOrganism(org, isRogueMode: true),
-            size: 40,
+            size: 56,
             biomeName: 'forest',
             hazards: const [],
           ),
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final mvpInfo = _calculateMvp();
-    final CapturedOrganism? mvpOrg = mvpInfo['organism'];
-    final String mvpSide = mvpInfo['side'];
-
-    String titleText;
-    Color titleColor;
-    String description;
-    IconData mainIcon;
-    List<Color> gradientColors;
-
-    switch (result) {
-      case BattleResult.win:
-        titleText = 'VICTORY';
-        titleColor = Colors.amber;
-        description = 'You defeated the wild encounter!';
-        mainIcon = Icons.emoji_events;
-        gradientColors = [
-          Colors.amber.withOpacity(0.2),
-          secondaryColor.withOpacity(0.95),
-        ];
-        break;
-      case BattleResult.loss:
-        titleText = 'DEFEAT';
-        titleColor = Colors.redAccent;
-        description = 'Your team was overwhelmed...';
-        mainIcon = Icons.close;
-        gradientColors = [
-          Colors.redAccent.withOpacity(0.2),
-          secondaryColor.withOpacity(0.95),
-        ];
-        break;
-      case BattleResult.capture:
-        titleText = 'CAPTURED';
-        titleColor = Colors.cyanAccent;
-        description = 'The $opponentName was caught!';
-        mainIcon = Icons.catching_pokemon;
-        gradientColors = [
-          Colors.cyanAccent.withOpacity(0.2),
-          secondaryColor.withOpacity(0.95),
-        ];
-        break;
-      case BattleResult.fled:
-        titleText = 'ESCAPED';
-        titleColor = Colors.grey;
-        description = 'You slipped away safely.';
-        mainIcon = Icons.directions_run;
-        gradientColors = [
-          Colors.grey.withOpacity(0.2),
-          secondaryColor.withOpacity(0.95),
-        ];
-        break;
-    }
-
-    return BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-      child: Dialog(
-        backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.all(16),
-        child: Container(
-          width: double.infinity,
-          constraints: const BoxConstraints(maxWidth: 500),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: gradientColors,
-            ),
-            borderRadius: BorderRadius.circular(32),
-            border: Border.all(color: titleColor.withOpacity(0.5), width: 2),
-            boxShadow: [
-              BoxShadow(
-                color: titleColor.withOpacity(0.2),
-                blurRadius: 20,
-                spreadRadius: 5,
-              ),
-            ],
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox(height: 32),
-                // Header
-                Icon(mainIcon, color: titleColor, size: 64),
-                const SizedBox(height: 16),
-                Text(
-                  titleText,
-                  style: TextStyle(
-                    color: titleColor,
-                    fontFamily: 'PressStart2P',
-                    fontSize: 32,
-                    letterSpacing: 4,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withOpacity(0.5),
-                        offset: const Offset(4, 4),
-                        blurRadius: 8,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  child: Text(
-                    description.toUpperCase(),
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontFamily: 'PressStart2P',
-                      fontSize: 10,
-                      height: 1.5,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 32),
-
-                // MVP Showcase
-                if (mvpOrg != null) ...[
-                  Text(
-                    'BATTLE MVP',
-                    style: TextStyle(
-                      color: Colors.white54,
-                      fontFamily: 'PressStart2P',
-                      fontSize: 10,
-                      letterSpacing: 2,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Container(
-                    width: 200,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.05),
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: Colors.amber.withOpacity(0.3)),
-                    ),
-                    child: Column(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.amber,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            mvpSide,
-                            style: const TextStyle(
-                              color: Colors.black,
-                              fontFamily: 'PressStart2P',
-                              fontSize: 8,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        _BattleSprite(
-                          organism: BattleOrganism(mvpOrg, isRogueMode: true),
-                          size: 100,
-                          biomeName: 'forest',
-                          hazards: const [],
-                        ),
-                        const SizedBox(height: 12),
-                        FittedBox(
-                          child: Text(
-                            mvpOrg.baseOrganism.name.toUpperCase(),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontFamily: 'PressStart2P',
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                ],
-
-                // Rewards / XP
-                if (moneyEarned > 0 || lootName != null || xpResults.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.black38,
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: Colors.white12),
-                      ),
-                      child: Column(
-                        children: [
-                          if (xpResults.isNotEmpty) ...[
-                            _buildRewardRow(
-                              Icons.stars,
-                              '${xpResults['gainedAccountXP']} ACCOUNT XP',
-                              Colors.blueAccent,
-                            ),
-                            if (xpResults['accountLeveledUp'] == true)
-                              _buildPromoText(
-                                'ACCOUNT LEVEL UP!',
-                                Colors.orange,
-                              ),
-                            const SizedBox(height: 12),
-                            const Text(
-                              'TEAM PROGRESS',
-                              style: TextStyle(
-                                color: Colors.white38,
-                                fontFamily: 'PressStart2P',
-                                fontSize: 8,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            ...battleManager.playerTeam.map((org) {
-                              final gainedXP =
-                                  (xpResults['gainedAnimalXP'] as int? ?? 0);
-                              final id = org.id;
-                              final killerId = xpResults['killerId'] as String?;
-                              int animalShare = (id == killerId)
-                                  ? gainedXP
-                                  : (gainedXP / 2).floor();
-
-                              return _XPResultRow(
-                                organism: org,
-                                gainedXP: animalShare,
-                                didLevelUp:
-                                    (xpResults['animalLeveledUp']
-                                        as Map<String, bool>?)?[id] ??
-                                    false,
-                              );
-                            }),
-                          ],
-                          if (moneyEarned > 0) ...[
-                            const SizedBox(height: 8),
-                            _buildRewardRow(
-                              Icons.monetization_on,
-                              '$moneyEarned GOLD',
-                              Colors.yellow,
-                            ),
-                          ],
-                          if (lootName != null) ...[
-                            const SizedBox(height: 8),
-                            _buildRewardRow(
-                              Icons.inventory_2,
-                              'LOOT: $lootName',
-                              Colors.purpleAccent,
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ),
-
-                if (isRogueMode && result == BattleResult.loss) ...[
-                  const SizedBox(height: 24),
-                  const Text(
-                    'FINAL PARTY',
-                    style: TextStyle(
-                      color: Colors.white60,
-                      fontFamily: 'PressStart2P',
-                      fontSize: 10,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Column(
-                      children: battleManager.playerTeam
-                          .map((org) => _buildSummaryCard(context, org))
-                          .toList(),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'FLOOR REACHED: $rogueFloor',
-                    style: const TextStyle(
-                      color: Colors.orangeAccent,
-                      fontFamily: 'PressStart2P',
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-
-                const SizedBox(height: 32),
-                // Footer Actions
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => _showStats(context),
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: titleColor),
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                          ),
-                          child: Text(
-                            'STATS',
-                            style: TextStyle(
-                              color: titleColor,
-                              fontFamily: 'PressStart2P',
-                              fontSize: 10,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        flex: 2,
-                        child: ElevatedButton(
-                          onPressed: onConfirm,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: titleColor,
-                            foregroundColor: Colors.black,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            elevation: 8,
-                          ),
-                          child: const Text(
-                            'CONTINUE',
-                            style: TextStyle(
-                              fontFamily: 'PressStart2P',
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 32),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRewardRow(IconData icon, String text, Color color) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: color, size: 16),
-          const SizedBox(width: 12),
-          Text(
-            text,
-            style: TextStyle(
-              color: color,
-              fontFamily: 'PressStart2P',
-              fontSize: 11,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPromoText(String text, Color color) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 8),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: color,
-          fontFamily: 'PressStart2P',
-          fontSize: 10,
-          fontWeight: FontWeight.bold,
-          shadows: [Shadow(color: color.withOpacity(0.5), blurRadius: 4)],
         ),
       ),
     );

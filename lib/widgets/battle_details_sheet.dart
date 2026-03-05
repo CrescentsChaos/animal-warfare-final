@@ -11,6 +11,7 @@ import 'package:animal_warfare/widgets/anidex_details_sheet.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:animal_warfare/widgets/type_matchup_sheet.dart';
 import 'package:animal_warfare/models/captured_organism.dart';
+import 'package:animal_warfare/widgets/item_icon.dart';
 
 class BattleDetailsSheet extends StatelessWidget {
   final BattleOrganism bo;
@@ -754,6 +755,51 @@ class BattleDetailsSheet extends StatelessWidget {
     }
   }
 
+  IconData _getTypeIcon(ElementalType type) {
+    switch (type) {
+      case ElementalType.basic:
+        return Icons.circle_outlined;
+      case ElementalType.flying:
+        return Icons.air;
+      case ElementalType.aquatic:
+        return Icons.water_drop;
+      case ElementalType.earth:
+        return Icons.landscape;
+      case ElementalType.cryo:
+        return Icons.ac_unit;
+      case ElementalType.toxic:
+        return Icons.science;
+      case ElementalType.rock:
+        return Icons.hexagon_outlined;
+      case ElementalType.arthropod:
+        return Icons.bug_report;
+      case ElementalType.electric:
+        return Icons.flash_on;
+      case ElementalType.spectral:
+        return Icons.visibility_outlined;
+      case ElementalType.martial:
+        return Icons.sports_mma;
+      case ElementalType.blaze:
+        return Icons.local_fire_department;
+      case ElementalType.grass:
+        return Icons.grass;
+      case ElementalType.mystic:
+        return Icons.auto_awesome;
+      case ElementalType.darkness:
+        return Icons.nightlight_round;
+      case ElementalType.drake:
+        return Icons.pets;
+      case ElementalType.metal:
+        return Icons.settings;
+      case ElementalType.aura:
+        return Icons.psychology;
+      case ElementalType.sound:
+        return Icons.volume_up;
+      case ElementalType.holy:
+        return Icons.brightness_high;
+    }
+  }
+
   Widget _buildLoadout(Organism org, bool captured, Color themeColor) {
     if (!captured && !isPlayer) {
       return _buildLockedSection('ABILITY & ITEM DATA ENCRYPTED');
@@ -769,7 +815,7 @@ class BattleDetailsSheet extends StatelessWidget {
           bo.abilities.isNotEmpty
               ? bo.abilities.first.description
               : 'NO ABILITY DETECTED.',
-          Icons.auto_awesome_outlined,
+          Icon(Icons.auto_awesome_outlined, color: themeColor, size: 24),
           themeColor,
         ),
         const SizedBox(height: 12),
@@ -777,7 +823,9 @@ class BattleDetailsSheet extends StatelessWidget {
           'HELD ITEM',
           bo.organism.equippedTalisman?.name.toUpperCase() ?? 'NONE',
           bo.organism.equippedTalisman?.description ?? 'NO HELD ITEM DETECTED.',
-          Icons.inventory_2_outlined,
+          bo.organism.equippedTalisman != null
+              ? ItemIcon(itemName: bo.organism.equippedTalisman!.name, size: 24)
+              : Icon(Icons.inventory_2_outlined, color: themeColor, size: 24),
           themeColor,
         ),
       ],
@@ -820,7 +868,7 @@ class BattleDetailsSheet extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    Icons.flash_on,
+                    _getTypeIcon(move.type),
                     color: _getTypeColor(move.type),
                     size: 16,
                   ),
@@ -833,20 +881,24 @@ class BattleDetailsSheet extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            move.name.toUpperCase(),
-                            style: GoogleFonts.outfit(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
+                          Expanded(
+                            child: Text(
+                              move.name.toUpperCase(),
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
+                          const SizedBox(width: 8),
                           Text(
                             '${move.category.name.toUpperCase()} | PWR: ${move.baseDamage} | STAMINA: $currentStamina/$maxStamina',
                             style: const TextStyle(
                               fontFamily: 'PressStart2P',
                               color: Colors.white38,
-                              fontSize: 6,
+                              fontSize: 5,
                             ),
                           ),
                         ],
@@ -854,6 +906,8 @@ class BattleDetailsSheet extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         move.description,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.outfit(
                           color: Colors.white54,
                           fontSize: 11,
@@ -874,7 +928,7 @@ class BattleDetailsSheet extends StatelessWidget {
     String label,
     String title,
     String subtitle,
-    IconData icon,
+    Widget iconWidget,
     Color themeColor,
   ) {
     return Container(
@@ -886,7 +940,7 @@ class BattleDetailsSheet extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(icon, color: themeColor, size: 24),
+          SizedBox(width: 32, height: 32, child: Center(child: iconWidget)),
           const SizedBox(width: 16),
           Expanded(
             child: Column(

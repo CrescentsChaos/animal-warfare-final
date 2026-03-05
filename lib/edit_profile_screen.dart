@@ -7,6 +7,8 @@ import 'dart:io';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:animal_warfare/theme.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'package:animal_warfare/user_state.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -106,8 +108,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     final newAvatarPath = _pickedAvatarFile?.path ?? _currentUser!.avatar;
 
-    await _authService.updateProfile(
-      _currentUser!.username,
+    final userState = Provider.of<UserState>(context, listen: false);
+    await userState.updateProfile(
       avatar: newAvatarPath,
       gender: _selectedGender ?? 'N/A',
       displayName: _displayNameController.text.trim(),

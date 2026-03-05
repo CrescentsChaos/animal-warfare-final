@@ -65,6 +65,29 @@ class UserState with ChangeNotifier {
     await _readModifyWrite((u) => u.restoreStamina(amount));
   }
 
+  Future<void> updateProfile({
+    String? avatar,
+    String? gender,
+    String? displayName,
+    String? avatarIconKey,
+    String? faction,
+    String? title,
+    String? bio,
+  }) async {
+    if (_currentUser == null) return;
+    await _readModifyWrite(
+      (u) => u.copyWith(
+        avatar: avatar,
+        gender: gender,
+        displayName: displayName,
+        avatarIconKey: avatarIconKey,
+        faction: faction,
+        title: title,
+        bio: bio,
+      ),
+    );
+  }
+
   Future<void> addCapturedOrganism(CapturedOrganism newCapture) async {
     if (_currentUser == null) return;
     await _readModifyWrite((u) {

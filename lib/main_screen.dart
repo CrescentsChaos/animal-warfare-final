@@ -1,19 +1,18 @@
 // lib/main_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:animal_warfare/login_screen.dart';
 import 'package:animal_warfare/profile_screen.dart';
 import 'package:animal_warfare/game_screen.dart';
 import 'package:animal_warfare/quest_screen.dart';
-import 'package:animal_warfare/local_auth_service.dart';
+import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/theme.dart';
 import 'package:animal_warfare/shop_screen.dart';
 import 'package:animal_warfare/services/audio_service.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:animal_warfare/game/time_service.dart';
 import 'package:animal_warfare/widgets/game_clock_widget.dart';
-
-enum AuthStatus { loading, loggedIn, guest }
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -23,28 +22,10 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  final LocalAuthService _authService = LocalAuthService();
-  AuthStatus _authStatus = AuthStatus.loading;
-  UserData? _currentUser;
-
   @override
   void initState() {
     super.initState();
-    _checkAuthStatus();
     _playBackgroundMusic();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  Future<void> _checkAuthStatus() async {
-    final user = await _authService.getCurrentUser();
-    setState(() {
-      _currentUser = user;
-      _authStatus = user != null ? AuthStatus.loggedIn : AuthStatus.guest;
-    });
   }
 
   Future<void> _playBackgroundMusic() async {
@@ -54,13 +35,12 @@ class _MainScreenState extends State<MainScreen> {
   void _navigateTo(Widget page) {
     AudioService.instance.pauseAll();
     Navigator.of(context).push(_createFadeRoute(page)).then((_) {
-      _checkAuthStatus();
       _playBackgroundMusic();
       AudioService.instance.resumeAll();
     });
   }
 
-  void _handleAuthAction() {
+  void _handleAuthAction(BuildContext ctx) {
     _navigateTo(const LoginScreen());
   }
 
@@ -135,14 +115,9 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_authStatus == AuthStatus.loading) {
-      return Scaffold(
-        backgroundColor: AppColors.background,
-        body: const Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
-        ),
-      );
-    }
+    final userState = context.watch<UserState>();
+    final currentUser = userState.currentUser;
+    final isLoggedIn = userState.isLoggedIn;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -263,13 +238,8 @@ class _MainScreenState extends State<MainScreen> {
                           text: 'Start Game',
                           icon: Icons.shield_rounded,
                           onPressed: () {
-                            if (_currentUser != null) {
-                              _navigateTo(
-                                GameScreen(
-                                  currentUser: _currentUser!,
-                                  authService: _authService,
-                                ),
-                              );
+                            if (currentUser != null) {
+                              _navigateTo(GameScreen(currentUser: currentUser));
                             } else {
                               _navigateTo(const LoginScreen());
                             }
@@ -278,15 +248,15 @@ class _MainScreenState extends State<MainScreen> {
                           accentColor: AppColors.primary,
                         ),
 
-                        if (_authStatus == AuthStatus.guest)
+                        if (!isLoggedIn)
                           _buildNavButton(
                             text: 'Login / Register',
                             icon: Icons.login_rounded,
-                            onPressed: _handleAuthAction,
+                            onPressed: () => _handleAuthAction(context),
                             accentColor: AppColors.highlight,
                           ),
 
-                        if (_authStatus == AuthStatus.loggedIn) ...[
+                        if (isLoggedIn) ...[
                           _buildNavButton(
                             text: 'Profile',
                             icon: Icons.person_rounded,
@@ -328,7 +298,7 @@ class _MainScreenState extends State<MainScreen> {
                                   width: 7,
                                   height: 7,
                                   decoration: BoxDecoration(
-                                    color: _authStatus == AuthStatus.loggedIn
+                                    color: isLoggedIn
                                         ? AppColors.primary
                                         : AppColors.textMuted,
                                     shape: BoxShape.circle,
@@ -336,9 +306,7 @@ class _MainScreenState extends State<MainScreen> {
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
-                                  _authStatus == AuthStatus.guest
-                                      ? 'Guest Access'
-                                      : 'Player Active',
+                                  isLoggedIn ? 'Player Active' : 'Guest Access',
                                   style: GoogleFonts.inter(
                                     color: AppColors.textSecondary,
                                     fontSize: 11,

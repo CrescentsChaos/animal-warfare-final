@@ -394,8 +394,8 @@ class LocalAuthService {
   static const _currentKey = 'current_user_username';
   static const _organismsAssetPath = 'assets/Organisms.json';
 
-  /// Prevents concurrent writes to the same user file.
-  final Map<String, Future<void>?> _writeLocks = {};
+  /// Prevents concurrent writes to the same user file across all instances.
+  static final Map<String, Future<void>?> _writeLocks = {};
 
   static List<Organism>? _cachedOrganisms;
   static Future<List<Organism>> loadOrganisms() async {

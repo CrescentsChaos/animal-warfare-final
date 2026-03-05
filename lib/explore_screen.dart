@@ -113,6 +113,8 @@ SpawnResult? getWeightedRandomOrganism(
     } else if (isCave && activeTime == 'night' && currentTimeOfDay == 'day') {
       // Cave Exception: Night animals can spawn during the day
       timeMatches = true;
+    } else if (activeTime == 'day' && currentTimeOfDay == 'night') {
+      timeMatches = true;
     }
 
     // Rare Encounter: 5% chance to allow off-time animals

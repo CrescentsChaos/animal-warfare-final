@@ -1653,5 +1653,17 @@
     "name": "Ability Capsule",
     "description": "A capsule that allows an animal with multiple possible abilities to switch between them.",
     "effects": []
+  },
+  {
+    "id": "red_card",
+    "name": "Red Card",
+    "description": "When hit by an attack, the holder forces the attacker to switch out (once per battle).",
+    "effects": [
+      {
+        "type": "one_hit_save",
+        "magnitude": 1.0,
+        "condition": "forced_switch"
+      }
+    ]
   }
 ]

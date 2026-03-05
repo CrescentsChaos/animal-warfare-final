@@ -205,6 +205,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   Move? pendingPlayerMove;
   Move? currentTurnOpponentMove;
   Move? lastOpponentAction; // For UI/Testing persistence
+  int? pendingOpponentSwitchIndex;
 
   // Suggestion logic
   Timer? _suggestionTimer;
@@ -837,8 +838,6 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       // Pre-calculate opponent action
       final int? switchIndex = _shouldOpponentSwitch();
       if (switchIndex != null) {
-        // If switching, we set a high-priority dummy move to ensure switch happens first
-        // and set the flag to skip their actual move execution
         currentTurnOpponentMove = Move(
           name: 'Switch',
           description: 'Switching...',
@@ -847,10 +846,18 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           stamina: 0,
           priority: 6,
         );
-        _switchOpponentTo(switchIndex);
-        opponentJustSwitched = true;
+        // Pursuit Intercept: If player uses Pursuit, it hits BEFORE the switch
+        if (activeMove.name == 'Pursuit') {
+          // Delay switch until after Pursuit hits
+          opponentJustSwitched =
+              false; // We'll handle it in _executeTurn or after
+          pendingOpponentSwitchIndex = switchIndex;
+        } else {
+          _switchOpponentTo(switchIndex);
+          opponentJustSwitched = true;
+          lastOpponentSwitchTurn = currentTurn;
+        }
         lastOpponentAction = currentTurnOpponentMove;
-        lastOpponentSwitchTurn = currentTurn;
       } else {
         currentTurnOpponentMove = pickOpponentMove();
         lastOpponentAction = currentTurnOpponentMove;
@@ -991,6 +998,13 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       if (_checkBattleEnd()) return;
       if (currentState == BattleState.waitingForPlayerSwitch) return;
 
+      // Handle pending opponent switch after player's turn (if Pursuit was used)
+      if (pendingOpponentSwitchIndex != null && playerMovedThisTurn) {
+        _switchOpponentTo(pendingOpponentSwitchIndex!);
+        opponentJustSwitched = true;
+        pendingOpponentSwitchIndex = null;
+      }
+
       // Opponent Turn
       if (!opponentMovedThisTurn && !opponentJustSwitched) {
         if (await _canMove(opponent)) {
@@ -1054,6 +1068,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     BattleOrganism defender,
     Move move, {
     Move? opponentMove,
+    bool isPursuitIntercept = false,
   }) async {
     defender.tookDamageThisTurn = false;
     // 1. Multi-turn logical handling
@@ -1075,9 +1090,10 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       return;
     }
 
-    // --- NEW: Fake Out First Turn Check ---
-    if (move.name == 'Fake Out' && !attacker.isFirstTurnOutOfBall) {
-      addToLog('But it failed! (Can only be used on the first turn)');
+    // --- NEW: Fake Out / First Impression First Turn Check ---
+    if ((move.name == 'Fake Out' || move.name == 'First Impression') &&
+        !attacker.isFirstTurnOutOfBall) {
+      addToLog('But it failed! (Can only be used on the first turnout)');
       notifyListeners();
       if (!isTesting) await Future.delayed(const Duration(milliseconds: 2000));
       return;
@@ -1098,14 +1114,6 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     if (move.name == 'Gigaton Hammer' &&
         attacker.lastMoveName == 'Gigaton Hammer') {
       addToLog('But it failed! ${attacker.name} can\'t use its hammer again!');
-      notifyListeners();
-      if (!isTesting) await Future.delayed(const Duration(milliseconds: 2000));
-      return;
-    }
-
-    // First Impression: Only works on first turn out
-    if (move.name == 'First Impression' && !attacker.isFirstTurnOutOfBall) {
-      addToLog('But it failed! ${attacker.name} is no longer impressed.');
       notifyListeners();
       if (!isTesting) await Future.delayed(const Duration(milliseconds: 2000));
       return;
@@ -1591,47 +1599,24 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       }
     }
 
-    if (defender.isProtected && !isSelfOrFieldMove) {
-      // Unseen Fist bypasses Protect for contact moves
-      bool attackerHasUnseenFist = attacker.abilities.any(
+    // Protect Check
+    if (defender.isProtected &&
+        move.name != 'Feint' &&
+        move.name != 'Mighty Cleave' &&
+        move.name != 'Snipe Shot') {
+      final bool attackerHasUnseenFist = attacker.abilities.any(
         (ab) => ab.name == 'Unseen Fist',
       );
-
       if (!(move.isContact && attackerHasUnseenFist) &&
-          move.name != 'Feint' &&
-          move.name != 'Mighty Cleave' &&
-          move.name != 'Snipe Shot') {
-        // Detect moves that penetrate Protect (Feint, etc.) - bypassing for now
-        // But No Guard allows hitting through Protect? In some gens yes, some no.
-        // Gen 4-5 yes, Gen 6+ no (except for dynamic punch glitch?).
-        // Standard rule: No Guard allows hitting through Fly/Dig, but NOT Protect (except in Gen 4).
-        // I will assume standard Gen 7+ behavior: Protect blocks No Guard.
-
+          !attacker.abilities.any((ab) => ab.name == 'Infiltrator')) {
         addToLog('${defender.organism.baseOrganism.name} protected itself!');
-        // Track revealed move
-        final attackerStats = _getStats(attacker.organism.id);
-        attackerStats.revealedMoves.add(move.name);
-        attacker.revealedMoves.add(move.name);
-
-        if (move.name == 'Baneful Bunker' ||
-            (move.name != 'Protect' &&
-                attacker.organism.baseOrganism.moves.contains(
-                  'Baneful Bunker',
-                ))) {
-          if (move.baseDamage > 0) {
-            await _applyMoveEffect(defender, attacker, [
-              const MoveEffect(type: MoveEffectType.statusPoison),
-            ], move);
-          }
-        }
-        if (move.name == 'Rollout' || move.name == 'Ice Ball') {
-          attacker.rolloutTurnCount = 0;
-        }
         notifyListeners();
         if (!isTesting) {
           await Future.delayed(const Duration(milliseconds: 3000));
         }
         return;
+      } else {
+        addToLog('${attacker.name} bypassed the protection!');
       }
     }
 
@@ -1689,7 +1674,12 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
       // 2. Damage Calculation
       if (move.baseDamage > 0) {
-        final damageResult = calculateDamage(attacker, defender, move);
+        final damageResult = calculateDamage(
+          attacker,
+          defender,
+          move,
+          isPursuitIntercept: isPursuitIntercept,
+        );
         double damageCalc = damageResult.damage.toDouble();
         bool isCrit = damageResult.isCrit;
         double typeMod = damageResult.typeMultiplier;
@@ -1795,7 +1785,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           }
         }
 
-        if (defender.substituteHealth > 0) {
+        if (defender.substituteHealth > 0 &&
+            !attacker.abilities.any((ab) => ab.name == 'Infiltrator')) {
           final int subDamage = finalDamage.clamp(0, defender.substituteHealth);
           defender.substituteHealth -= subDamage;
           substituteTookDamage = true;
@@ -1970,6 +1961,55 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           if (!isTesting) {
             await Future.delayed(const Duration(milliseconds: 1500));
           }
+        }
+
+        // --- Red Card Implementation ---
+        if (effectiveDamage > 0 &&
+            !substituteTookDamage &&
+            defender.organism.equippedTalisman != null &&
+            !defender.talismanConsumed &&
+            defender.organism.equippedTalisman!.name == 'Red Card' &&
+            defender.health > 0) {
+          defender.talismanConsumed = true;
+          defender.isItemRevealed = true;
+          _getStats(defender.organism.id).isItemRevealed = true;
+          addToLog('${defender.name} held up its Red Card!');
+          notifyListeners();
+
+          if (attacker.isPlayer) {
+            final healthyIndex = playerTeam.indexWhere(
+              (org) => org.currentHealth > 0 && org != attacker.organism,
+            );
+            if (healthyIndex != -1 && isArenaBattle) {
+              addToLog('${attacker.name} was forced to switch out!');
+              currentState = BattleState
+                  .waitingForPlayerSwitch; // This might be tricky mid-turn
+            }
+          } else {
+            final healthyIndex = opponentTeam.indexWhere(
+              (org) => org.currentHealth > 0 && org != attacker.organism,
+            );
+            if (healthyIndex != -1 && isArenaBattle) {
+              addToLog('${attacker.name} was forced to switch out!');
+              _switchOpponentTo(healthyIndex);
+            }
+          }
+          if (!isTesting)
+            await Future.delayed(const Duration(milliseconds: 1500));
+        }
+
+        // --- Rattled Implementation ---
+        if (effectiveDamage > 0 &&
+            !substituteTookDamage &&
+            defender.abilities.any((ab) => ab.name == 'Rattled') &&
+            (move.type == ElementalType.arthropod ||
+                move.type == ElementalType.spectral ||
+                move.type == ElementalType.darkness)) {
+          await notifyAbilityTrigger(
+            defender,
+            defender.abilities.firstWhere((a) => a.name == 'Rattled'),
+          );
+          await applyStatChange(defender, 'speed', 1);
         }
 
         // Notify UI to update HP bars after HP has changed
@@ -2218,6 +2258,25 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           }
         }
 
+        // --- Rattled Ability ---
+        if (defender.abilities.any((ab) => ab.name == 'Rattled') &&
+            effectiveDamage > 0 &&
+            !substituteTookDamage) {
+          final rattles = [
+            ElementalType.darkness,
+            ElementalType.arthropod,
+            ElementalType.spectral,
+            ElementalType.sound,
+          ];
+          if (rattles.contains(move.type)) {
+            await notifyAbilityTrigger(
+              defender,
+              defender.abilities.firstWhere((ab) => ab.name == 'Rattled'),
+            );
+            await applyStatChange(defender, 'speed', 1);
+          }
+        }
+
         // --- Ability Triggers: onDamageDealt ---
         for (final ab in attacker.abilities) {
           if (ab.trigger == AbilityTrigger.onDamageDealt) {
@@ -2314,15 +2373,27 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     }
 
     // Thrash/Outrage/Petal Dance Lock
-    if (move.effects.any((e) => e.type == MoveEffectType.thrash) &&
-        defender.tookDamageThisTurn) {
-      if (attacker.thrashTurnCount == 0) {
-        attacker.thrashTurnCount = 2 + Random().nextInt(2); // 2-3 turns
-        attacker.thrashMove = move;
-      }
-      attacker.thrashTurnCount--;
-      if (attacker.thrashTurnCount == 0) {
-        await applyStatusEffect(attacker, StatusEffectType.confusion);
+    if (move.effects.any((e) => e.type == MoveEffectType.thrash)) {
+      if (defender.tookDamageThisTurn) {
+        if (attacker.thrashTurnCount == 0) {
+          attacker.thrashTurnCount = 2 + Random().nextInt(2); // 2-3 turns
+          attacker.thrashMove = move;
+        }
+        attacker.thrashTurnCount--;
+        if (attacker.thrashTurnCount == 0) {
+          await applyStatusEffect(attacker, StatusEffectType.confusion);
+          attacker.thrashMove = null;
+        }
+      } else {
+        // Disrupted: Confusion if it already went for at least one turn
+        if (attacker.thrashTurnCount > 0 &&
+            attacker.thrashTurnCount <
+                (attacker.thrashMove?.name == move.name ? 3 : 2)) {
+          // This check is a bit complex without knowing initial count,
+          // but if it's currently > 0, it was already set.
+          await applyStatusEffect(attacker, StatusEffectType.confusion);
+        }
+        attacker.thrashTurnCount = 0;
         attacker.thrashMove = null;
       }
     }
@@ -2839,7 +2910,22 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           }
           break;
         case MoveEffectType.protect:
-          attacker.isProtected = true;
+          double successChance = 1.0;
+          if (attacker.protectSuccessionCount > 0) {
+            successChance = pow(
+              0.5,
+              attacker.protectSuccessionCount,
+            ).toDouble();
+          }
+
+          if (Random().nextDouble() < successChance) {
+            attacker.isProtected = true;
+            attacker.protectSuccessionCount++;
+          } else {
+            attacker.isProtected = false;
+            attacker.protectSuccessionCount = 0;
+            addToLog('${attacker.name} failed to protect itself!');
+          }
           break;
         case MoveEffectType.heal:
           if (target.health < target.maxHealth) {
@@ -3933,7 +4019,10 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     }
 
     // Reset turn-based flags
-    target.isFirstTurnOutOfBall = false;
+    if (!target.wasSwitchedInThisTurn) {
+      target.isFirstTurnOutOfBall = false;
+    }
+    target.wasSwitchedInThisTurn = false;
     target.statsLoweredThisTurn = false;
     target.shellTrapTriggered = false;
     target.focusPunchFailed = false;
@@ -4287,8 +4376,12 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       return;
     }
 
-    if (!isForced && player.isTrapped) {
-      addToLog('${player.name} is trapped and cannot switch!');
+    if (!isForced && (player.isTrapped || player.thrashTurnCount > 0)) {
+      if (player.thrashTurnCount > 0) {
+        addToLog('${player.name} is locked into its attack!');
+      } else {
+        addToLog('${player.name} is trapped and cannot switch!');
+      }
       currentState = BattleState.waitingForInput;
       notifyListeners();
       return;
@@ -4416,6 +4509,20 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     // Normal switching takes a turn, so process opponent's turn
     currentState = BattleState.opponentTurn;
+
+    // Pursuit Check: If opponent uses Pursuit, it should hit now
+    Move opponentMove = pickOpponentMove();
+    if (opponentMove.name == 'Pursuit') {
+      addToLog('${opponent.name} anticipates the switch!');
+      await _executeTurn(
+        opponent,
+        player,
+        opponentMove,
+        isPursuitIntercept: true,
+      );
+      if (_checkBattleEnd()) return;
+    }
+
     await _processOpponentTurn(isCounter: false);
 
     await _finalizeTurn();
@@ -4920,6 +5027,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     BattleOrganism defender,
     Move move, {
     bool ignoreRandom = false,
+    bool isPursuitIntercept = false,
   }) {
     if (move.name == 'Counter') {
       if (attacker.lastPhysicalDamageTaken > 0) {
@@ -4935,6 +5043,12 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     }
 
     if (move.baseDamage <= 0) return const DamageResult(0, 1.0, false);
+
+    // Pursuit Intercept Power Double
+    double pursuitMultiplier = 1.0;
+    if (move.name == 'Pursuit' && isPursuitIntercept) {
+      pursuitMultiplier = 2.0;
+    }
 
     bool isCrit = false;
     double critChance = 6.25;
@@ -5205,6 +5319,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       if (attacker.usedDefenseCurl) baseDamage *= 2;
     }
 
+    baseDamage = (baseDamage * pursuitMultiplier).round();
+
     // 3. Core Damage Formula
     double damageCalc =
         ((2 * attacker.level / 5 + (ignoreRandom ? 0 : 2)) *
@@ -5278,7 +5394,14 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         } else if (defenderHasTrueFlight ||
             defenderHasAirBalloon ||
             defType == ElementalType.flying) {
-          eff = 0.0;
+          if (defender.semiInvulnerable == 'underground' &&
+              (move.name == 'Earthquake' || move.name == 'Magnitude')) {
+            // Earthquake hits underground targets even if they are flying/levitating (e.g. Dig used by a flyer)
+            eff = 1.0;
+            damageCalc *= 2.0;
+          } else {
+            eff = 0.0;
+          }
         }
       }
 
@@ -5387,6 +5510,11 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           (move.type == ElementalType.blaze ||
               move.type == ElementalType.cryo)) {
         damageCalc *= 0.5;
+      }
+      if (ab.name == 'Infiltrator' &&
+          (move.category != MoveCategory.status ||
+              move.effects.any((e) => e.target == 'opponent'))) {
+        // Infiltrator handled in screens section below, but we can also mark it here if needed
       }
     }
 
@@ -5542,6 +5670,12 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       } else if (move.category == MoveCategory.special && hasLightScreen) {
         damageCalc *= 0.5;
       }
+    }
+
+    // Earthquake double damage on underground
+    if (defender.semiInvulnerable == 'underground' &&
+        (move.name == 'Earthquake' || move.name == 'Magnitude')) {
+      damageCalc *= 2.0;
     }
 
     // Final variation
