@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Android Auto Backup rules for API level < 31.
+    Backs up the user save files and shared preferences so data
+    survives an uninstall/reinstall cycle via Google Drive backup.
+-->
+<full-backup-content>
+    <!-- Save files: AnimalWarfare/UserSaves/ inside the app files dir -->
+    <include domain="file" path="AnimalWarfare/UserSaves/" />
+
+    <!-- SharedPreferences: stores the currently logged-in username -->
+    <include domain="sharedpref" path="." />
+</full-backup-content>

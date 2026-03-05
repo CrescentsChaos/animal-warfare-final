@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Android Auto Backup rules for API level 31+ (Android 12+).
+    Both <cloud-backup> and <device-transfer> are included so
+    data restores when reinstalling from Play Store or transferring
+    to a new device.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <!-- Save files: AnimalWarfare/UserSaves/ inside the app files dir -->
+        <include domain="file" path="AnimalWarfare/UserSaves/" />
+
+        <!-- SharedPreferences: stores the currently logged-in username -->
+        <include domain="sharedpref" path="." />
+    </cloud-backup>
+
+    <device-transfer>
+        <!-- Also include saves when transferring to a new device -->
+        <include domain="file" path="AnimalWarfare/UserSaves/" />
+        <include domain="sharedpref" path="." />
+    </device-transfer>
+</data-extraction-rules>
