@@ -1251,6 +1251,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                                               overlayColor,
                                               isNarrow,
                                               battleManager.playerHazards,
+                                              battleManager,
                                               spriteKey: _playerSpriteKey,
                                             ),
                                           ),
@@ -1274,268 +1275,127 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                           );
                         }
 
-                        // Portrait layout: split into battle field (top) + bottom panel (fixed)
+                        // Portrait layout: split into battle field (top) + bottom panel (Expanded)
                         return Column(
                           children: [
-                            // === BATTLE FIELD AREA (top, flexible height) ===
-                            Expanded(
-                              child: Column(
-                                children: [
-                                  _buildHeader(
-                                    context,
-                                    battleManager,
-                                    overlayColor,
-                                  ),
-                                  const SizedBox(height: 2),
-                                  const Divider(
-                                    height: 1,
-                                    color: Colors.white24,
-                                  ),
-                                  const SizedBox(height: 2),
-                                  _buildFieldEffects(context, battleManager),
-                                  const SizedBox(height: 2),
-                                  Expanded(
-                                    child: LayoutBuilder(
-                                      builder: (context, constraints) {
-                                        return Stack(
-                                          clipBehavior: Clip.hardEdge,
-                                          children: [
-                                            SingleChildScrollView(
-                                              physics:
-                                                  const NeverScrollableScrollPhysics(),
-                                              child: SizedBox(
-                                                height: constraints.maxHeight,
-                                                child: Column(
-                                                  children: [
-                                                    AnimatedBuilder(
-                                                      animation:
-                                                          _opponentShakeAnimation,
-                                                      builder: (context, child) =>
-                                                          Transform.translate(
-                                                            offset: Offset(
-                                                              _opponentShakeAnimation
-                                                                  .value,
-                                                              0,
-                                                            ),
-                                                            child: child,
-                                                          ),
-                                                      child: _buildOpponentStatus(
-                                                        context,
-                                                        battleManager.opponent,
-                                                        overlayColor,
-                                                        isNarrow,
-                                                        battleManager
-                                                            .opponentHazards,
-                                                        battleManager,
-                                                        spriteKey:
-                                                            _opponentSpriteKey,
-                                                      ),
-                                                    ),
-                                                    const SizedBox(height: 4),
-                                                    AnimatedBuilder(
-                                                      animation:
-                                                          _playerShakeAnimation,
-                                                      builder: (context, child) =>
-                                                          Transform.translate(
-                                                            offset: Offset(
-                                                              _playerShakeAnimation
-                                                                  .value,
-                                                              0,
-                                                            ),
-                                                            child: child,
-                                                          ),
-                                                      child: _buildPlayerStatus(
-                                                        context,
-                                                        battleManager.player,
-                                                        overlayColor,
-                                                        isNarrow,
-                                                        battleManager
-                                                            .playerHazards,
-                                                        spriteKey:
-                                                            _playerSpriteKey,
-                                                      ),
-                                                    ),
-                                                    const SizedBox(height: 8),
-                                                  ],
+                            // === BATTLE FIELD AREA (top, takes only needed height) ===
+                            _buildHeader(context, battleManager, overlayColor),
+                            const SizedBox(height: 2),
+                            const Divider(height: 1, color: Colors.white24),
+                            const SizedBox(height: 2),
+                            _buildFieldEffects(context, battleManager),
+                            const SizedBox(height: 2),
+                            // Participant area - takes min height
+                            LayoutBuilder(
+                              builder: (context, constraints) {
+                                return Stack(
+                                  clipBehavior: Clip.hardEdge,
+                                  children: [
+                                    Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        AnimatedBuilder(
+                                          animation: _opponentShakeAnimation,
+                                          builder: (context, child) =>
+                                              Transform.translate(
+                                                offset: Offset(
+                                                  _opponentShakeAnimation.value,
+                                                  0,
                                                 ),
+                                                child: child,
                                               ),
-                                            ),
-                                            // Animations clipped to battle field only
-                                            ..._moveAnims.map(
-                                              (anim) =>
-                                                  anims.MoveAnimationOverlay(
-                                                    key: ValueKey(anim.id),
-                                                    data: anim,
-                                                    playerLink: _playerLink,
-                                                    opponentLink: _opponentLink,
-                                                  ),
-                                            ),
-                                          ],
-                                        );
-                                      },
+                                          child: _buildOpponentStatus(
+                                            context,
+                                            battleManager.opponent,
+                                            overlayColor,
+                                            isNarrow,
+                                            battleManager.opponentHazards,
+                                            battleManager,
+                                            spriteKey: _opponentSpriteKey,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        AnimatedBuilder(
+                                          animation: _playerShakeAnimation,
+                                          builder: (context, child) =>
+                                              Transform.translate(
+                                                offset: Offset(
+                                                  _playerShakeAnimation.value,
+                                                  0,
+                                                ),
+                                                child: child,
+                                              ),
+                                          child: _buildPlayerStatus(
+                                            context,
+                                            battleManager.player,
+                                            overlayColor,
+                                            isNarrow,
+                                            battleManager.playerHazards,
+                                            battleManager,
+                                            spriteKey: _playerSpriteKey,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                      ],
                                     ),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            // === BOTTOM PANEL (fixed, never moves) ===
-                            Container(
-                              color: Colors.black.withOpacity(0.85),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  // Text log — always visible
-                                  _buildMessageBox(
-                                    context,
-                                    battleManager.battleLog,
-                                    isNarrow,
-                                    expanded: false,
-                                  ),
-                                  // Team circles — always visible (only in arena)
-                                  if (widget.isArenaBattle)
-                                    _buildTeamIndicators(
-                                      context,
-                                      battleManager,
+                                    // Animations clipped to battle field only
+                                    ..._moveAnims.map(
+                                      (anim) => anims.MoveAnimationOverlay(
+                                        key: ValueKey(anim.id),
+                                        data: anim,
+                                        playerLink: _playerLink,
+                                        opponentLink: _opponentLink,
+                                      ),
                                     ),
-                                  // Move controls — only during input
-                                  if (battleManager.currentState ==
-                                      BattleState.waitingForInput) ...[
-                                    _buildActionControls(
-                                      context,
-                                      battleManager,
-                                      overlayColor,
-                                      isNarrow,
-                                      userState,
-                                    ),
-                                  ] else ...[
-                                    const SizedBox(height: 20),
+                                    // Stat Change Indicators
+                                    ..._indicators.map((indicator) {
+                                      return _FloatingIndicatorWidget(
+                                        key: ValueKey(indicator.id),
+                                        data: indicator,
+                                        link: indicator.isPlayer
+                                            ? _playerLink
+                                            : _opponentLink,
+                                      );
+                                    }),
                                   ],
-                                ],
+                                );
+                              },
+                            ),
+                            // UI Panel - Expanded to fill remaining space (the "red spot")
+                            Expanded(
+                              child: SafeArea(
+                                top: false,
+                                child: Container(
+                                  color: Colors.black.withOpacity(0.85),
+                                  child: Column(
+                                    children: [
+                                      // Text log — Expanded to fill available space
+                                      Expanded(
+                                        child: _buildMessageBox(
+                                          context,
+                                          battleManager.battleLog,
+                                          isNarrow,
+                                          expanded: true,
+                                        ),
+                                      ),
+
+                                      // Move controls — only during input
+                                      if (battleManager.currentState ==
+                                          BattleState.waitingForInput)
+                                        _buildActionControls(
+                                          context,
+                                          battleManager,
+                                          overlayColor,
+                                          isNarrow,
+                                          userState,
+                                        ),
+                                      const SizedBox(height: 10),
+                                    ],
+                                  ),
+                                ),
                               ),
                             ),
                           ],
-                        );
-                      },
-                    ),
-
-                    // [MOVE ANIMATIONS] Placed here to be above sprites but below UI logs
-                    ..._moveAnims.map(
-                      (anim) => anims.MoveAnimationOverlay(
-                        key: ValueKey(anim.id),
-                        data: anim,
-                        playerLink: _playerLink,
-                        opponentLink: _opponentLink,
-                      ),
-                    ),
-
-                    // [UI LOGS & CONTROLS] Placed strictly on top
-                    OrientationBuilder(
-                      builder: (context, orientation) {
-                        final isLandscape =
-                            orientation == Orientation.landscape;
-
-                        if (isLandscape) {
-                          return Column(
-                            children: [
-                              // Filler for header
-                              const SizedBox(height: 40),
-                              Expanded(
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    // Filler for left side
-                                    Expanded(flex: 5, child: const SizedBox()),
-                                    // Right side: Logs and Controls
-                                    Expanded(
-                                      flex: 4,
-                                      child: Column(
-                                        children: [
-                                          if (widget.isArenaBattle)
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                top: 8,
-                                              ),
-                                              child: _buildTeamIndicators(
-                                                context,
-                                                battleManager,
-                                              ),
-                                            ),
-                                          if (battleManager.currentState ==
-                                              BattleState.waitingForInput) ...[
-                                            _buildMessageBox(
-                                              context,
-                                              battleManager.battleLog,
-                                              isNarrow,
-                                              expanded: false,
-                                            ),
-                                            Expanded(
-                                              child: SingleChildScrollView(
-                                                child: _buildActionControls(
-                                                  context,
-                                                  battleManager,
-                                                  overlayColor,
-                                                  isNarrow,
-                                                  userState,
-                                                ),
-                                              ),
-                                            ),
-                                          ] else
-                                            Expanded(
-                                              child: _buildMessageBox(
-                                                context,
-                                                battleManager.battleLog,
-                                                isNarrow,
-                                                expanded: true,
-                                              ),
-                                            ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          );
-                        }
-
-                        return Container(
-                          padding: EdgeInsets.only(
-                            bottom: MediaQuery.of(context).padding.bottom + 2,
-                          ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              if (battleManager.currentState ==
-                                  BattleState.waitingForInput) ...[
-                                _buildMessageBox(
-                                  context,
-                                  battleManager.battleLog,
-                                  isNarrow,
-                                  expanded: false,
-                                ),
-                                if (widget.isArenaBattle)
-                                  _buildTeamIndicators(context, battleManager),
-                                _buildActionControls(
-                                  context,
-                                  battleManager,
-                                  overlayColor,
-                                  isNarrow,
-                                  userState,
-                                ),
-                              ] else ...[
-                                _buildMessageBox(
-                                  context,
-                                  battleManager.battleLog,
-                                  isNarrow,
-                                  expanded: true,
-                                ),
-                                if (widget.isArenaBattle)
-                                  _buildTeamIndicators(context, battleManager),
-                                const SizedBox(height: 20),
-                              ],
-                            ],
-                          ),
                         );
                       },
                     ),
@@ -1907,26 +1767,21 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.end,
         children: [
           const Text(
             'OPP: ',
             style: TextStyle(
               color: Colors.white70,
-              fontSize: 8,
+              fontSize: 6,
               fontFamily: 'PressStart2P',
             ),
           ),
           const SizedBox(width: 4),
           ...List.generate(bm.opponentTeam.length, (index) {
             final animal = bm.opponentTeam[index];
-            final bo = BattleOrganism(
-              animal,
-              isOpponent: true,
-              isRogueMode: widget.isRogueMode,
-            );
             final isCurrent = index == bm.currentOpponentIndex;
             final hpRatio = animal.currentHealth / animal.maxHealth;
 
@@ -1941,25 +1796,22 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               indicatorColor = Colors.red; // Critical
             }
 
-            return GestureDetector(
-              onTap: () => BattleDetailsSheet.show(context, bo, false),
-              child: Padding(
-                padding: const EdgeInsets.only(right: 4),
-                child: Container(
-                  width: 16,
-                  height: 16,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: indicatorColor,
-                    border: Border.all(
-                      color: isCurrent ? _getBiomeThemeColor() : Colors.white30,
-                      width: isCurrent ? 2 : 1,
-                    ),
+            return Padding(
+              padding: const EdgeInsets.only(right: 2),
+              child: Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: indicatorColor,
+                  border: Border.all(
+                    color: isCurrent ? Colors.white : Colors.white24,
+                    width: isCurrent ? 1.5 : 0.5,
                   ),
-                  child: animal.currentHealth <= 0
-                      ? const Icon(Icons.close, size: 10, color: Colors.white54)
-                      : null,
                 ),
+                child: animal.currentHealth <= 0
+                    ? const Icon(Icons.close, size: 6, color: Colors.white54)
+                    : null,
               ),
             );
           }),
@@ -1974,7 +1826,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
@@ -1982,18 +1834,13 @@ class _BattleScreenContentState extends State<BattleScreenContent>
             'YOU: ',
             style: TextStyle(
               color: Colors.white70,
-              fontSize: 8,
+              fontSize: 6,
               fontFamily: 'PressStart2P',
             ),
           ),
           const SizedBox(width: 4),
           ...List.generate(bm.playerTeam.length, (index) {
             final animal = bm.playerTeam[index];
-            final bo = BattleOrganism(
-              animal,
-              isOpponent: false,
-              isRogueMode: widget.isRogueMode,
-            );
             final isCurrent = index == bm.currentPlayerIndex;
             final hpRatio = animal.currentHealth / animal.maxHealth;
 
@@ -2008,25 +1855,22 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               indicatorColor = Colors.red; // Critical
             }
 
-            return GestureDetector(
-              onTap: () => BattleDetailsSheet.show(context, bo, true),
-              child: Padding(
-                padding: const EdgeInsets.only(right: 4),
-                child: Container(
-                  width: 16,
-                  height: 16,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: indicatorColor,
-                    border: Border.all(
-                      color: isCurrent ? _getBiomeThemeColor() : Colors.white30,
-                      width: isCurrent ? 2 : 1,
-                    ),
+            return Padding(
+              padding: const EdgeInsets.only(right: 2),
+              child: Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: indicatorColor,
+                  border: Border.all(
+                    color: isCurrent ? Colors.white : Colors.white24,
+                    width: isCurrent ? 1.5 : 0.5,
                   ),
-                  child: animal.currentHealth <= 0
-                      ? const Icon(Icons.close, size: 10, color: Colors.white54)
-                      : null,
                 ),
+                child: animal.currentHealth <= 0
+                    ? const Icon(Icons.close, size: 6, color: Colors.white54)
+                    : null,
               ),
             );
           }),
@@ -2035,14 +1879,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     );
   }
 
-  Widget _buildTeamIndicators(BuildContext context, BattleManager bm) {
-    return Column(
-      children: [
-        _buildPlayerTeamIndicator(context, bm),
-        _buildOpponentTeamIndicator(context, bm),
-      ],
-    );
-  }
+  // Removed _buildTeamIndicators — logic moved to status bars
 
   Widget _buildOpponentStatus(
     BuildContext context,
@@ -2099,6 +1936,9 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               softWrap: false,
             ),
           ),
+          const SizedBox(height: 4),
+          // Team Preview Circles for Opponent
+          _buildOpponentTeamIndicator(context, bm),
           const SizedBox(height: 4),
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
@@ -2278,7 +2118,8 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     BattleOrganism organism,
     Color barColor,
     bool isNarrow,
-    List<String> hazards, { // Added
+    List<String> hazards,
+    BattleManager bm, {
     Key? spriteKey,
   }) {
     final base = organism.organism.baseOrganism;
@@ -2327,6 +2168,9 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               softWrap: false,
             ),
           ),
+          const SizedBox(height: 4),
+          // Team Preview Circles for Player
+          _buildPlayerTeamIndicator(context, bm),
           const SizedBox(height: 4),
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
@@ -6406,6 +6250,9 @@ class _FloatingIndicatorWidgetState extends State<_FloatingIndicatorWidget>
   late Animation<Offset> _positionAnimation;
   late Animation<double> _opacityAnimation;
 
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _wobbleAnimation;
+
   @override
   void initState() {
     super.initState();
@@ -6415,14 +6262,32 @@ class _FloatingIndicatorWidgetState extends State<_FloatingIndicatorWidget>
     );
 
     _positionAnimation = Tween<Offset>(
-      begin: const Offset(0, 0),
-      end: const Offset(0, -60), // Float upwards
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
+      begin: const Offset(0, 10),
+      end: const Offset(0, -80), // Float upwards further
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCirc));
 
     _opacityAnimation = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.0), weight: 20),
-      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.0), weight: 60),
-      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.0), weight: 20),
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.0), weight: 15),
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.0), weight: 70),
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.0), weight: 15),
+    ]).animate(_controller);
+
+    _scaleAnimation = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween(
+          begin: 0.5,
+          end: 1.2,
+        ).chain(CurveTween(curve: Curves.easeOutBack)),
+        weight: 20,
+      ),
+      TweenSequenceItem(tween: Tween(begin: 1.2, end: 1.0), weight: 10),
+      TweenSequenceItem(tween: ConstantTween(1.0), weight: 70),
+    ]).animate(_controller);
+
+    _wobbleAnimation = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: 5.0), weight: 25),
+      TweenSequenceItem(tween: Tween(begin: 5.0, end: -5.0), weight: 50),
+      TweenSequenceItem(tween: Tween(begin: -5.0, end: 0.0), weight: 25),
     ]).animate(_controller);
 
     _controller.forward();
@@ -6448,31 +6313,46 @@ class _FloatingIndicatorWidgetState extends State<_FloatingIndicatorWidget>
           return Opacity(
             opacity: _opacityAnimation.value,
             child: Transform.translate(
-              offset: _positionAnimation.value,
-              child: child,
+              offset:
+                  _positionAnimation.value + Offset(_wobbleAnimation.value, 0),
+              child: Transform.scale(
+                scale: _scaleAnimation.value,
+                child: child,
+              ),
             ),
           );
         },
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.5),
-            borderRadius: BorderRadius.circular(6),
+            color: Colors.black.withOpacity(0.7),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: widget.data.color.withOpacity(0.8),
+              width: 2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: widget.data.color.withOpacity(0.3),
+                blurRadius: 8,
+                spreadRadius: 2,
+              ),
+            ],
           ),
           child: Text(
-            widget.data.text,
+            widget.data.text.toUpperCase(),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              color: widget.data.color,
-              fontSize: 13,
+              color: Colors.white,
+              fontSize: 14,
               fontWeight: FontWeight.bold,
               fontFamily: 'PressStart2P',
-              shadows: const [
+              shadows: [
                 Shadow(
-                  color: Colors.black,
-                  blurRadius: 4,
-                  offset: Offset(2, 2),
+                  color: widget.data.color,
+                  blurRadius: 2,
+                  offset: const Offset(1, 1),
                 ),
               ],
             ),

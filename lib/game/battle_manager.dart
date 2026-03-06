@@ -412,8 +412,21 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       addToLog('You have no animals! You must defend yourself!');
     } else {
       // In roguelike mode, we already set currentPlayerIndex in the constructor.
-      // In normal mode, auto-select index 0.
-      if (!isRogueMode) currentPlayerIndex = 0;
+      // In normal mode, if it's an arena battle, we allow the player to choose their lead.
+      if (!isRogueMode) {
+        if (isArenaBattle) {
+          currentState = BattleState.choosingLead;
+          notifyListeners();
+
+          _switchCompleter = Completer<void>();
+          await _switchCompleter!.future;
+          _switchCompleter = null;
+          // After returning from choosingLead, currentPlayerIndex and player organism are set by setLeadAnimal()
+        } else {
+          currentPlayerIndex = 0;
+        }
+      }
+
       // Guard: clamp to valid range
       if (currentPlayerIndex >= playerTeam.length) currentPlayerIndex = 0;
       final lead = playerTeam[currentPlayerIndex];

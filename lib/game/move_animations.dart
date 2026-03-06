@@ -886,6 +886,12 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
           move.name.toLowerCase().contains('dark pulse') ||
           move.name.toLowerCase().contains('aqua pulse') ||
           move.name.toLowerCase() == 'pulse';
+      final rand = math.Random(42);
+      final options = [
+        'assets/move_effects/leaf1.png',
+        'assets/move_effects/leaf2.png',
+        'assets/move_effects/leaf3.png',
+      ];
 
       final imagePath = isFire
           ? 'assets/move_effects/flame.png'
@@ -893,6 +899,8 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
           ? 'assets/move_effects/sludge.png'
           : move.name.toLowerCase() == 'dark pulse'
           ? 'assets/move_effects/dark_pulse.png'
+          : move.name.toLowerCase() == 'leaf storm'
+          ? options[rand.nextInt(options.length)]
           : (isWaterPulse
                 ? 'assets/move_effects/water_pulse.png'
                 : 'assets/move_effects/aqua.png');
@@ -940,7 +948,7 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
           ? 'assets/move_effects/greenball.png'
           : move.name.toLowerCase() == 'flip turn'
           ? 'assets/move_effects/blueball.png'
-          : 'assets/move_effects/air_slash.png';
+          : 'assets/move_effects/slash.png';
 
       return AnimatedBuilder(
         animation: _progress,
@@ -1131,6 +1139,24 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
             targetAnchor: Alignment.center,
             child: FangScatterEffect(
               isAqua: true,
+              progress: _progress.value,
+              isPlayer: isPlayer,
+            ),
+          );
+        },
+      );
+    }
+    if (move.animationType == 'ice_fang') {
+      return AnimatedBuilder(
+        animation: _progress,
+        builder: (context, _) {
+          return CompositedTransformFollower(
+            link: targetLink,
+            showWhenUnlinked: false,
+            followerAnchor: Alignment.center,
+            targetAnchor: Alignment.center,
+            child: FangScatterEffect(
+              isCryo: true,
               progress: _progress.value,
               isPlayer: isPlayer,
             ),
@@ -2764,6 +2790,7 @@ class SingleProjectileEffect extends StatelessWidget {
 class FangScatterEffect extends StatelessWidget {
   final bool isFire;
   final bool isAqua;
+  final bool isCryo;
   final double progress;
   final bool isPlayer;
 
@@ -2771,6 +2798,7 @@ class FangScatterEffect extends StatelessWidget {
     super.key,
     this.isFire = false,
     this.isAqua = false,
+    this.isCryo = false,
     required this.progress,
     required this.isPlayer,
   });
@@ -2788,6 +2816,8 @@ class FangScatterEffect extends StatelessWidget {
     const numExplosions = 10;
     final assetPath = isFire
         ? 'assets/move_effects/flame.png'
+        : isCryo
+        ? 'assets/move_effects/cryo.png'
         : 'assets/move_effects/aqua.png';
 
     return SizedBox(
