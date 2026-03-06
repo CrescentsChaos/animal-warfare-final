@@ -227,6 +227,8 @@ class Move {
   final MoveCategory category; // NEW: physical, special, status
   final String? customUsageText; // Custom text when using the move
   final MoveTargetCount targetCount; // single (default) or multiple
+  final String?
+  animationType; // NEW: Animation type flag (e.g., 'blob', 'slash', 'brave_bird')
 
   // Audio fields
   final String? soundEffect; // Optional path to sound effect file
@@ -269,11 +271,11 @@ class Move {
     this.soundEffect,
     this.battleMusic,
     this.targetCount = MoveTargetCount.single,
+    this.animationType,
     this.isPunch = false,
     this.isBite = false,
     this.isSoundBased = false,
     bool? isContact,
-    this.isTitanizeMove = false,
   }) : isContact =
            isContact ?? (category == MoveCategory.physical && baseDamage > 0);
 
@@ -281,9 +283,6 @@ class Move {
   final bool isBite;
   final bool isSoundBased;
   final bool isContact;
-
-  /// True for Max Moves generated during Titanize
-  final bool isTitanizeMove;
 
   // Compatibility getter
   MoveEffect get effect => effects.isNotEmpty
@@ -364,7 +363,7 @@ class Move {
               orElse: () => MoveTargetCount.single,
             )
           : MoveTargetCount.single,
-      isTitanizeMove: json['isTitanizeMove'] as bool? ?? false,
+      animationType: json['animationType'] as String?,
     );
   }
 
@@ -396,7 +395,7 @@ class Move {
     bool? isBite,
     bool? isSoundBased,
     bool? isContact,
-    bool? isTitanizeMove,
+    String? animationType,
   }) {
     return Move(
       name: name ?? this.name,
@@ -428,7 +427,7 @@ class Move {
       isBite: isBite ?? this.isBite,
       isSoundBased: isSoundBased ?? this.isSoundBased,
       isContact: isContact ?? this.isContact,
-      isTitanizeMove: isTitanizeMove ?? this.isTitanizeMove,
+      animationType: animationType ?? this.animationType,
     );
   }
 

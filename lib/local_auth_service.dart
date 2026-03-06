@@ -604,6 +604,18 @@ class LocalAuthService {
     return true;
   }
 
+  /// Automatically logs in as a Guest, creating the account if it doesn't exist.
+  Future<bool> loginAsGuest() async {
+    const guestUsername = 'Guest';
+    const guestPassword = 'guest_password'; // Internal password for guest
+
+    final user = await readUserFile(guestUsername);
+    if (user == null) {
+      await register(guestUsername, guestPassword, displayName: 'Guest Player');
+    }
+    return await login(guestUsername, guestPassword);
+  }
+
   /// Reset password for an existing user. Returns true if successful.
   Future<bool> resetPassword(String username, String newPassword) async {
     final user = await readUserFile(username);

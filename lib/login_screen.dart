@@ -214,6 +214,29 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _guestAuthenticate() async {
+    setState(() => _isLoading = true);
+
+    final success = await _authService.loginAsGuest();
+
+    if (mounted) {
+      setState(() => _isLoading = false);
+      if (success) {
+        if (!mounted) return;
+        _showSuccess('Logged in as Guest (Debug Mode)');
+        await context.read<UserState>().handleSuccessfulAuth();
+        if (mounted) {
+          Navigator.of(context).pushAndRemoveUntil(
+            _createFadeRoute(const MainScreen()),
+            (Route<dynamic> route) => false,
+          );
+        }
+      } else {
+        _showError('Failed to initialize Guest session.');
+      }
+    }
+  }
+
   Widget _buildTextField({
     required TextEditingController controller,
     required String labelText,
@@ -270,7 +293,8 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _buildActionButton({
     required String title,
     required VoidCallback onPressed,
-    bool isDanger = false,
+    Color? backgroundColor,
+    Color? foregroundColor,
   }) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8.0),
@@ -279,8 +303,8 @@ class _LoginScreenState extends State<LoginScreen> {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: isDanger ? AppColors.danger : AppColors.primary,
-          foregroundColor: Colors.white,
+          backgroundColor: backgroundColor ?? AppColors.primary,
+          foregroundColor: foregroundColor ?? Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
@@ -446,9 +470,19 @@ class _LoginScreenState extends State<LoginScreen> {
                               color: AppColors.primary,
                             ),
                           )
-                        : _buildActionButton(
-                            title: _isLogin ? 'LOG IN' : 'REGISTER',
-                            onPressed: _authenticate,
+                        : Column(
+                            children: [
+                              _buildActionButton(
+                                title: _isLogin ? 'LOG IN' : 'REGISTER',
+                                onPressed: _authenticate,
+                              ),
+                              _buildActionButton(
+                                title: 'PLAY AS GUEST',
+                                onPressed: _guestAuthenticate,
+                                backgroundColor: AppColors.surface,
+                                foregroundColor: AppColors.textPrimary,
+                              ),
+                            ],
                           ),
                     const SizedBox(height: 12),
                     if (_isLogin)

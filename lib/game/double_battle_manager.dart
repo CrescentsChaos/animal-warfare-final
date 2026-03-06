@@ -5,7 +5,7 @@
 // Turn structure: select actions for both player slots → AI picks → speed-order execution.
 
 import 'dart:math';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:animal_warfare/models/captured_organism.dart';
 import 'package:animal_warfare/models/move.dart';
 import 'package:animal_warfare/models/elemental_type.dart';
@@ -112,11 +112,11 @@ class DoubleBattleManager extends ChangeNotifier {
   bool _isProcessing = false;
   bool get isProcessing => _isProcessing;
 
-  // GIMMICK USAGE TRACKING (Side-level)
-  bool playerTitanizeUsed = false;
   bool playerPrismorphUsed = false;
-  bool opponentTitanizeUsed = false;
   bool opponentPrismorphUsed = false;
+  // Pending gimmick notification (read by UI listener, cleared after handling)
+  String? pendingGimmickType;
+  BattleOrganism? pendingGimmickTarget;
 
   @override
   void dispose() {
@@ -342,15 +342,8 @@ class DoubleBattleManager extends ChangeNotifier {
       }
 
       // AI GIMMICK TRIGGER: 60% HP
-      if (aiSlot.health < aiSlot.maxHealth * 0.6) {
-        if (!isWild &&
-            !opponentTitanizeUsed &&
-            !aiSlot.hasTitanizedThisBattle &&
-            !aiSlot.hasPrismorphedThisBattle) {
-          activateTitanize(isPlayer: false, slotIdx: i == 0 ? 1 : 2);
-        } else if (!opponentPrismorphUsed &&
-            !aiSlot.hasTitanizedThisBattle &&
-            !aiSlot.hasPrismorphedThisBattle) {
+      if (aiSlot.health / aiSlot.maxHealth <= 0.6) {
+        if (!opponentPrismorphUsed && !aiSlot.hasPrismorphedThisBattle) {
           activatePrismorph(isPlayer: false, slotIdx: i == 0 ? 1 : 2);
         }
       }
@@ -567,9 +560,6 @@ class DoubleBattleManager extends ChangeNotifier {
   }
 
   List<Move> getMovesFor(BattleOrganism org) {
-    if (org.isTitanized) {
-      return _buildMaxMoveSet(org);
-    }
     if (org.organism.selectedMoveNames.isEmpty) {
       org.organism.initializeDefaultMoves();
     }
@@ -578,52 +568,6 @@ class DoubleBattleManager extends ChangeNotifier {
         .toList();
     if (moves.isEmpty) moves.add(Move.findOrCreate('Struggle'));
     return moves;
-  }
-
-  List<Move> _buildMaxMoveSet(BattleOrganism org) {
-    // We need to get the "base" moves first
-    if (org.organism.selectedMoveNames.isEmpty) {
-      org.organism.initializeDefaultMoves();
-    }
-    final baseMoves = org.organism.selectedMoveNames
-        .map((n) => Move.findOrCreate(n))
-        .toList();
-    if (baseMoves.isEmpty) baseMoves.add(Move.findOrCreate('Struggle'));
-
-    final usedTypes = <ElementalType>{};
-    final result = <Move>{}; // use Set to avoid duplicates
-    bool hasStatusMove = false;
-
-    for (final m in baseMoves) {
-      if (m.category == MoveCategory.status) {
-        hasStatusMove = true;
-      } else if (!usedTypes.contains(m.type)) {
-        usedTypes.add(m.type);
-        // Find the max move matching this type
-        final maxMove = Move.allMoves.firstWhere(
-          (mv) =>
-              mv.isTitanizeMove &&
-              mv.type == m.type &&
-              mv.category != MoveCategory.status,
-          orElse: () {
-            final fallback = Move.allMoves.firstWhere(
-              (mv) => mv.isTitanizeMove && mv.name == 'Max Strike',
-              orElse: () => m,
-            );
-            return fallback.copyWith(isTitanizeMove: true);
-          },
-        );
-        result.add(maxMove);
-      }
-    }
-    if (hasStatusMove || result.isEmpty) {
-      final guard = Move.allMoves.firstWhere(
-        (mv) => mv.name == 'Max Guard',
-        orElse: () => Move.findOrCreate('Max Guard'),
-      );
-      result.add(guard.copyWith(isTitanizeMove: true));
-    }
-    return result.toList();
   }
 
   Future<void> _executeAllActions() async {
@@ -1121,14 +1065,6 @@ class DoubleBattleManager extends ChangeNotifier {
     for (final slot in _allActiveSlots()) {
       if (slot.health <= 0) continue;
 
-      // Titanize duration check
-      if (slot.isTitanized) {
-        slot.titanizeTurnsLeft--;
-        if (slot.titanizeTurnsLeft <= 0) {
-          _revertTitanize(slot);
-        }
-      }
-
       // Poison / Burn damage
       for (final se in List<StatusEffect>.from(slot.statusEffects)) {
         switch (se.type) {
@@ -1375,59 +1311,8 @@ class DoubleBattleManager extends ChangeNotifier {
   }
 
   // =====================================================================
-  // GIMMICK ACTIONS: Titanize and Prismorph
+  // GIMMICK ACTIONS: Prismorph
   // =====================================================================
-
-  void activateTitanize({required bool isPlayer, required int slotIdx}) {
-    if (isPlayer && playerTitanizeUsed) return;
-    if (!isPlayer && opponentTitanizeUsed) return;
-
-    BattleOrganism? org;
-    if (isPlayer) {
-      org = slotIdx == 1 ? playerSlot1 : playerSlot2;
-    } else {
-      org = slotIdx == 1 ? opponentSlot1 : opponentSlot2;
-    }
-
-    if (org == null ||
-        org.hasTitanizedThisBattle ||
-        org.hasPrismorphedThisBattle)
-      return;
-
-    if (isPlayer) {
-      playerTitanizeUsed = true;
-    } else {
-      opponentTitanizeUsed = true;
-    }
-
-    final double oldMax = org.maxHealth.toDouble();
-    org.isTitanized = true;
-    org.titanizeTurnsLeft = 3;
-    org.hasTitanizedThisBattle = true;
-
-    // Use ratio-based HP scaling (e.g. 20/40 -> 40/80)
-    final double newMax = org.maxHealth.toDouble();
-    org.health = (org.health * (newMax / oldMax)).floor();
-    if (org.health <= 0 && org.organism.currentHealth > 0) org.health = 1;
-
-    _addLog('${org.name} has Titanized! It grew to a tremendous size!');
-    notifyListeners();
-  }
-
-  void _revertTitanize(BattleOrganism org) {
-    final double oldMax = org.maxHealth.toDouble();
-    org.isTitanized = false;
-    org.titanizeTurnsLeft = 0;
-
-    final double newMax = org.maxHealth.toDouble();
-    // Halve current HP based on max HP ratio
-    org.health = (org.health * (newMax / oldMax)).ceil();
-    if (org.health > newMax) org.health = (newMax).toInt();
-    if (org.health <= 0 && org.organism.currentHealth > 0) org.health = 1;
-
-    _addLog('${org.name}\'s Titanize wore off! It returned to normal size.');
-    notifyListeners();
-  }
 
   void activatePrismorph({required bool isPlayer, required int slotIdx}) {
     if (isPlayer && playerPrismorphUsed) return;
@@ -1440,10 +1325,7 @@ class DoubleBattleManager extends ChangeNotifier {
       org = slotIdx == 1 ? opponentSlot1 : opponentSlot2;
     }
 
-    if (org == null ||
-        org.hasTitanizedThisBattle ||
-        org.hasPrismorphedThisBattle)
-      return;
+    if (org == null || org.hasPrismorphedThisBattle) return;
 
     final teraType = org.organism.teraType;
     if (teraType == null) {
@@ -1463,9 +1345,10 @@ class DoubleBattleManager extends ChangeNotifier {
     org.hasPrismorphedThisBattle = true;
 
     _addLog(
-      '${org.name} has Prismorphed! '
-      'Its type changed to ${teraType.name}!',
+      '${org.name} used Prismorph! It is shining with ${teraType.name} energy!',
     );
+    pendingGimmickType = 'prismorph';
+    pendingGimmickTarget = org;
     notifyListeners();
   }
 }

@@ -152,9 +152,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   final bool startAsleep;
 
   // GIMMICK USAGE TRACKING (Side-level)
-  bool playerTitanizeUsed = false;
   bool playerPrismorphUsed = false;
-  bool opponentTitanizeUsed = false;
   bool opponentPrismorphUsed = false;
   int? lastOpponentSwitchTurn;
   bool opponentJustSwitched = false;
@@ -223,8 +221,13 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   Function(BattleOrganism, int)? onHeal;
   Function(BattleOrganism, String, int)? onStatChange;
   VoidCallback? onVictory;
+  // REMOVED onGimmickActivation callback — replaced by state flags below
   Future<void> Function(BattleOrganism killer, BattleOrganism victim)?
   onOpponentFainted;
+
+  // Pending gimmick notification (read by UI listener, cleared after handling)
+  String? pendingGimmickType;
+  BattleOrganism? pendingGimmickTarget;
 
   // Audio service for battle sounds and music
   final AudioService _audioService = AudioService.instance;
@@ -807,15 +810,13 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     // Record player action for AI history
     playerHistory.recordMove(activeMove);
 
-    // Check Stamina — Max Moves (Titanize) always have infinite stamina
-    if (!activeMove.isTitanizeMove) {
-      final currentStamina = playerOrganism.moveStamina[activeMove.name] ?? 0;
-      if (currentStamina <= 0) {
-        addToLog('${activeMove.name} has no stamina left!');
-        _isProcessing = false;
-        notifyListeners();
-        return;
-      }
+    // Check Stamina
+    final currentStamina = playerOrganism.moveStamina[activeMove.name] ?? 0;
+    if (currentStamina <= 0) {
+      addToLog('${activeMove.name} has no stamina left!');
+      _isProcessing = false;
+      notifyListeners();
+      return;
     }
 
     // Choice Lock Check
@@ -4218,110 +4219,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   }
 
   // =====================================================================
-  // GIMMICK ACTIONS: Titanize and Prismorph
+  // GIMMICK ACTIONS: Prismorph
   // =====================================================================
-
-  /// Returns the set of Max Moves for a titanized organism.
-  /// One Max Move per unique elemental type in the current moveset,
-  /// plus Max Guard for every status move.
-  List<Move> _buildMaxMoveSet(BattleOrganism org) {
-    final currentMoves = org.isOpponent ? opponentMoves : playerMoves;
-    final usedTypes = <ElementalType>{};
-    final result = <Move>{}; // use Set to avoid duplicates
-    bool hasStatusMove = false;
-
-    for (final m in currentMoves) {
-      if (m.category == MoveCategory.status) {
-        hasStatusMove = true;
-      } else if (!usedTypes.contains(m.type)) {
-        usedTypes.add(m.type);
-        // Find the max move matching this type
-        final maxMove = Move.allMoves.firstWhere(
-          (mv) =>
-              mv.isTitanizeMove &&
-              mv.type == m.type &&
-              mv.category != MoveCategory.status,
-          orElse: () => Move.allMoves.firstWhere(
-            (mv) => mv.isTitanizeMove && mv.name == 'Max Strike',
-            orElse: () => m.copyWith(isTitanizeMove: true),
-          ),
-        );
-        result.add(maxMove);
-      }
-    }
-    if (hasStatusMove || result.isEmpty) {
-      final guard = Move.allMoves
-          .firstWhere(
-            (mv) => mv.name == 'Max Guard',
-            orElse: () => Move.findOrCreate('Max Guard'),
-          )
-          .copyWith(isTitanizeMove: true);
-      result.add(guard);
-    }
-    return result.toList();
-  }
-
-  /// Activate Titanize for the given side. Can only be used once per battle.
-  void activateTitanize({required bool isPlayer}) {
-    if (isPlayer && playerTitanizeUsed) return;
-    if (!isPlayer && opponentTitanizeUsed) return;
-
-    final org = isPlayer ? player : opponent;
-    if (org.hasTitanizedThisBattle || org.hasPrismorphedThisBattle) return;
-
-    if (isPlayer) {
-      playerTitanizeUsed = true;
-    } else {
-      opponentTitanizeUsed = true;
-    }
-
-    // Double current HP and Max HP
-    final oldMax = org.maxHealth;
-    org.isTitanized = true;
-    org.titanizeTurnsLeft = 3;
-    org.hasTitanizedThisBattle = true;
-
-    final newMax = org.maxHealth;
-    // We want to DOUBLE current HP, but also ensure it doesn't exceed the new max
-    // (though new max is usually 2x old max, so it's fine).
-    // Formula: newHP = currentHP * (newMax / oldMax)
-    org.health = (org.health * (newMax / oldMax)).round();
-
-    // Replace moves with Max Moves
-    final maxMoves = _buildMaxMoveSet(org);
-    if (isPlayer) {
-      playerMoves = maxMoves;
-    } else {
-      opponentMoves = maxMoves;
-    }
-
-    addToLog('${org.name} has Titanized! It grew to a tremendous size!');
-    notifyListeners();
-  }
-
-  /// Revert Titanize at end of the 3-turn duration.
-  void _revertTitanize(BattleOrganism org) {
-    final oldMax = org.maxHealth;
-    org.isTitanized = false;
-    org.titanizeTurnsLeft = 0;
-    final newMax = org.maxHealth;
-
-    // Restore original move set from the organism's selectedMoveNames
-    final isPlayer = !org.isOpponent;
-    if (isPlayer) {
-      playerMoves = _getOrganismMoves(playerOrganism);
-    } else {
-      opponentMoves = _getOrganismMoves(opponentTeam[currentOpponentIndex]);
-    }
-
-    // Halve current HP based on max HP ratio
-    org.health = (org.health * (newMax / oldMax)).ceil();
-    if (org.health > newMax) org.health = newMax;
-    if (org.health <= 0 && org.organism.currentHealth > 0) org.health = 1;
-
-    addToLog('${org.name}\'s Titanize wore off! It returned to normal size.');
-    notifyListeners();
-  }
 
   /// Activate Prismorph for the given side. Can only be used once per battle.
   void activatePrismorph({required bool isPlayer}) {
@@ -4329,7 +4228,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     if (!isPlayer && opponentPrismorphUsed) return;
 
     final org = isPlayer ? player : opponent;
-    if (org.hasTitanizedThisBattle || org.hasPrismorphedThisBattle) return;
+    if (org.hasPrismorphedThisBattle) return;
 
     if (isPlayer) {
       playerPrismorphUsed = true;
@@ -4349,16 +4248,17 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     org.hasPrismorphedThisBattle = true;
 
     addToLog(
-      '${org.name} has Prismorphed! '
-      'Its type changed to ${teraType.name}!',
+      '${org.name} used Prismorph! It is shining with ${teraType.name} energy!',
     );
+    // Set pending gimmick state — UI will pick this up in its safe listener
+    pendingGimmickType = 'prismorph';
+    pendingGimmickTarget = org;
     notifyListeners();
   }
 
   Future<void> switchAnimal(int index) async {
     bool isForced = currentState == BattleState.waitingForPlayerSwitch;
     if (currentState != BattleState.waitingForInput && !isForced) return;
-
     // Prevent switching during two-turn moves or recharge
     if (!isForced &&
         (player.chargingMove != null ||
@@ -4556,15 +4456,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       if (_checkBattleEnd()) return;
       if (currentState == BattleState.waitingForPlayerSwitch) return;
 
-      // --- Titanize turn countdown ---
-      for (final org in [player, opponent]) {
-        if (org.isTitanized) {
-          org.titanizeTurnsLeft--;
-          if (org.titanizeTurnsLeft <= 0) {
-            _revertTitanize(org);
-          }
-        }
-      }
+      // Poison / Burn / Bleed damage handling follows
     }
 
     if (!_checkBattleEnd() &&
@@ -5959,7 +5851,6 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     // 9. Move Stamina check
     // If a move has 0 stamina, it's not valid.
     validMoves = validMoves.where((m) {
-      if (m.isTitanizeMove) return true; // Max moves have infinite (99) stamina
       final stamina = org.organism.moveStamina[m.name] ?? 0;
       return stamina > 0;
     }).toList();
@@ -6022,23 +5913,14 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       }
     }
 
-    // --- AI Gimmick trigger: Titanize or Prismorph at low HP ---
-    if (!opponent.hasTitanizedThisBattle &&
-        !opponent.hasPrismorphedThisBattle &&
+    // --- AI Gimmick trigger: Prismorph at low HP ---
+    if (!opponent.hasPrismorphedThisBattle &&
         opponent.health < opponent.maxHealth * 0.6) {
       final hasTeraType = opponent.organism.teraType != null;
-      final rng = Random();
-
-      // Wild animals NEVER titanize
-      if (isWild) {
-        if (hasTeraType) {
+      if (hasTeraType) {
+        // RNG based so it doesn't always pop on first low HP turn
+        if (isWild || Random().nextBool()) {
           activatePrismorph(isPlayer: false);
-        }
-      } else {
-        if (hasTeraType && rng.nextBool()) {
-          activatePrismorph(isPlayer: false);
-        } else {
-          activateTitanize(isPlayer: false);
         }
       }
 

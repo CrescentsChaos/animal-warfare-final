@@ -6,7 +6,7 @@
 
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/services.dart' show rootBundle, HapticFeedback;
 import 'package:provider/provider.dart';
 import 'package:animal_warfare/game/double_battle_manager.dart';
 import 'package:animal_warfare/game/battle_models.dart';
@@ -724,10 +724,93 @@ class _DoubleBattleView extends StatefulWidget {
   State<_DoubleBattleView> createState() => _DoubleBattleViewState();
 }
 
-class _DoubleBattleViewState extends State<_DoubleBattleView> {
+class _DoubleBattleViewState extends State<_DoubleBattleView>
+    with TickerProviderStateMixin {
   Move? _selectedMove;
   bool _isTargeting = false;
   bool _isSwitchDialogShowing = false;
+
+  // Screen Shake Animations
+  late AnimationController _screenShakeController;
+  late Animation<double> _screenShakeAnimation;
+
+  // Gimmick Banner State
+  bool _showGimmickBanner = false;
+  String? _activeGimmickType;
+  BattleOrganism? _gimmickTarget;
+
+  @override
+  void initState() {
+    super.initState();
+    _screenShakeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+
+    _screenShakeAnimation = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 0, end: 10), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: 10, end: -10), weight: 2),
+      TweenSequenceItem(tween: Tween(begin: -10, end: 10), weight: 2),
+      TweenSequenceItem(tween: Tween(begin: 10, end: 0), weight: 1),
+    ]).animate(_screenShakeController);
+
+    // Set up DoubleBattleManager triggers
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final bm = context.read<DoubleBattleManager>();
+      bm.addListener(_handleStateTriggers);
+    });
+  }
+
+  @override
+  void dispose() {
+    final bm = context.read<DoubleBattleManager>();
+    bm.removeListener(_handleStateTriggers);
+    _screenShakeController.dispose();
+    super.dispose();
+  }
+
+  void _handleStateTriggers() {
+    if (!mounted) return;
+    final bm = context.read<DoubleBattleManager>();
+
+    // Handle pending gimmick activation (set by DoubleBattleManager, cleared here)
+    if (bm.pendingGimmickType != null && bm.pendingGimmickTarget != null) {
+      final type = bm.pendingGimmickType!;
+      final target = bm.pendingGimmickTarget!;
+      bm.pendingGimmickType = null;
+      bm.pendingGimmickTarget = null;
+
+      // SAFE LISTENER PATTERN: Wrap UI updates in a frame callback
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _onGimmickActivation(target, type);
+      });
+    }
+  }
+
+  void _onGimmickActivation(BattleOrganism target, String type) {
+    setState(() {
+      _activeGimmickType = type;
+      _gimmickTarget = target;
+      _showGimmickBanner = true;
+    });
+
+    // Vibration feedback
+    HapticFeedback.heavyImpact();
+
+    // Trigger screen shake
+    _screenShakeController.forward(from: 0);
+
+    // Hide banner after duration
+    Future.delayed(const Duration(milliseconds: 2500), () {
+      if (mounted) {
+        setState(() {
+          _showGimmickBanner = false;
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -753,95 +836,120 @@ class _DoubleBattleViewState extends State<_DoubleBattleView> {
 
     return Scaffold(
       backgroundColor: Colors.black, // Pure black background behind everything
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage(bgPath),
-            fit: BoxFit.cover,
-            colorFilter: ColorFilter.mode(
-              Colors.black.withValues(alpha: 0.35),
-              BlendMode.darken,
-            ),
-          ),
-        ),
-        child: Column(
+      body: AnimatedBuilder(
+        animation: _screenShakeAnimation,
+        builder: (context, child) {
+          return Transform.translate(
+            offset: Offset(0, _screenShakeAnimation.value),
+            child: child,
+          );
+        },
+        child: Stack(
           children: [
-            // Header integrated with background
-            _buildHeader(context, bm, themeColor),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    const SizedBox(height: 16),
-                    // ── Opponent Rows ──
-                    _buildRow(
-                      context,
-                      bm.opponentSlot1,
-                      isPlayerSide: false,
-                      isSecond: false,
-                      target: DoubleTarget.opponentSlot1,
-                      primaryColor: primaryColor,
-                    ),
-                    const SizedBox(height: 10),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 32), // Offset
-                      child: _buildRow(
-                        context,
-                        bm.opponentSlot2,
-                        isPlayerSide: false,
-                        isSecond: true,
-                        target: DoubleTarget.opponentSlot2,
-                        primaryColor: primaryColor,
-                      ),
-                    ),
-
-                    const SizedBox(height: 32),
-
-                    // ── Player Rows ──
-                    _buildRow(
-                      context,
-                      bm.playerSlot1,
-                      isPlayerSide: true,
-                      isSecond: false,
-                      target: DoubleTarget.playerSlot1,
-                      primaryColor: primaryColor,
-                    ),
-                    const SizedBox(height: 10),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 32), // Offset
-                      child: _buildRow(
-                        context,
-                        bm.playerSlot2,
-                        isPlayerSide: true,
-                        isSecond: true,
-                        target: DoubleTarget.playerSlot2,
-                        primaryColor: primaryColor,
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
-                    _ActionPanel(
-                      bm: bm,
-                      biomeName: widget.biomeName,
-                      onMoveSelected: _onMoveTapped,
-                      onSwitchTapped: () => _showSwitchDialog(context, bm),
-                      isTargeting: _isTargeting,
-                      selectedMove: _selectedMove,
-                      onCancelTargeting: () {
-                        setState(() {
-                          _isTargeting = false;
-                          _selectedMove = null;
-                        });
-                      },
-                    ),
-                    // Padding at the bottom for navigation bar
-                    SizedBox(
-                      height: MediaQuery.of(context).padding.bottom + 16,
-                    ),
-                  ],
+            Container(
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage(bgPath),
+                  fit: BoxFit.cover,
+                  colorFilter: ColorFilter.mode(
+                    Colors.black.withValues(alpha: 0.35),
+                    BlendMode.darken,
+                  ),
                 ),
               ),
+              child: Column(
+                children: [
+                  // Header integrated with background
+                  _buildHeader(context, bm, themeColor),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 16),
+                          // ── Opponent Rows ──
+                          _buildRow(
+                            context,
+                            bm.opponentSlot1,
+                            isPlayerSide: false,
+                            isSecond: false,
+                            target: DoubleTarget.opponentSlot1,
+                            primaryColor: primaryColor,
+                          ),
+                          const SizedBox(height: 10),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 32), // Offset
+                            child: _buildRow(
+                              context,
+                              bm.opponentSlot2,
+                              isPlayerSide: false,
+                              isSecond: true,
+                              target: DoubleTarget.opponentSlot2,
+                              primaryColor: primaryColor,
+                            ),
+                          ),
+
+                          const SizedBox(height: 32),
+
+                          // ── Player Rows ──
+                          _buildRow(
+                            context,
+                            bm.playerSlot1,
+                            isPlayerSide: true,
+                            isSecond: false,
+                            target: DoubleTarget.playerSlot1,
+                            primaryColor: primaryColor,
+                          ),
+                          const SizedBox(height: 10),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 32), // Offset
+                            child: _buildRow(
+                              context,
+                              bm.playerSlot2,
+                              isPlayerSide: true,
+                              isSecond: true,
+                              target: DoubleTarget.playerSlot2,
+                              primaryColor: primaryColor,
+                            ),
+                          ),
+
+                          const SizedBox(height: 24),
+                          _ActionPanel(
+                            bm: bm,
+                            biomeName: widget.biomeName,
+                            onMoveSelected: _onMoveTapped,
+                            onSwitchTapped: () =>
+                                _showSwitchDialog(context, bm),
+                            isTargeting: _isTargeting,
+                            selectedMove: _selectedMove,
+                            onCancelTargeting: () {
+                              setState(() {
+                                _isTargeting = false;
+                                _selectedMove = null;
+                              });
+                            },
+                          ),
+                          // Padding at the bottom for navigation bar
+                          SizedBox(
+                            height: MediaQuery.of(context).padding.bottom + 16,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
+            // Gimmick Banner Overlay
+            if (_showGimmickBanner)
+              _GimmickBanner(
+                type: _activeGimmickType ?? 'gimmick',
+                targetName: _gimmickTarget?.name ?? '',
+                color: _activeGimmickType == 'titanize'
+                    ? Colors.redAccent
+                    : _typeColor(
+                        _gimmickTarget?.activeTeraType ?? ElementalType.basic,
+                      ),
+              ),
           ],
         ),
       ),
@@ -1827,26 +1935,8 @@ class _SlotSpriteState extends State<_SlotSprite>
         );
       }
 
-      // Titanize: 2x scale handled externally in build for layout
-      if (bo.isTitanized) {
-        processedSprite = Stack(
-          alignment: Alignment.center,
-          children: [
-            processedSprite,
-            Positioned.fill(
-              child: ColorFiltered(
-                colorFilter: const ColorFilter.mode(
-                  Color(0x44FF1111), // Translucent red
-                  BlendMode.srcATop,
-                ),
-                child: processedSprite,
-              ),
-            ),
-          ],
-        );
-      }
       // Prismorph: rainbow/crystal shimmer overlay
-      else if (bo.isPrismorphed) {
+      if (bo.isPrismorphed) {
         final baseSprite = processedSprite;
         processedSprite = Stack(
           alignment: Alignment.center,
@@ -1883,9 +1973,8 @@ class _SlotSpriteState extends State<_SlotSprite>
       }
     }
 
-    final isTitanized = bo?.isTitanized ?? false;
-    final double titanScale = isTitanized ? 2.0 : 1.0;
-    final double titanYOffset = isTitanized ? -size * 0.25 : 0.0;
+    final double titanScale = 1.0;
+    final double titanYOffset = 0.0;
 
     return GestureDetector(
       onLongPress: () {
@@ -2202,59 +2291,17 @@ class _ActionPanel extends StatelessWidget {
     DoubleBattleManager bm,
     Color themeColor,
   ) {
-    final canTitanize = !bm.playerTitanizeUsed && !slot.hasTitanizedThisBattle;
     final canPrismorph =
         !bm.playerPrismorphUsed && !slot.hasPrismorphedThisBattle;
 
-    final isTitanizing = slot.isTitanized;
     final isPrismorphing = slot.isPrismorphed;
 
-    if (!canTitanize && !canPrismorph && !isTitanizing && !isPrismorphing) {
+    if (!canPrismorph && !isPrismorphing) {
       return const SizedBox.shrink();
     }
 
     return Row(
       children: [
-        if (canTitanize || isTitanizing)
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(right: 4),
-              child: ElevatedButton(
-                onPressed: canTitanize
-                    ? () {
-                        bm.activateTitanize(
-                          isPlayer: true,
-                          slotIdx:
-                              bm.currentState ==
-                                  DoubleBattleState.selectingForSlot1
-                              ? 1
-                              : 2,
-                        );
-                      }
-                    : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: isTitanizing ? Colors.red : Colors.redAccent,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    side: isTitanizing
-                        ? const BorderSide(color: Colors.white, width: 2)
-                        : BorderSide.none,
-                  ),
-                ),
-                child: Text(
-                  isTitanizing
-                      ? 'TITANIZED (${slot.titanizeTurnsLeft})'
-                      : 'TITANIZE',
-                  style: const TextStyle(
-                    fontFamily: 'PressStart2P',
-                    fontSize: 8,
-                  ),
-                ),
-              ),
-            ),
-          ),
         if (canPrismorph || isPrismorphing)
           Expanded(
             child: Padding(
@@ -2690,6 +2737,123 @@ class _MoveButton extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+class _GimmickBanner extends StatefulWidget {
+  final String type;
+  final String targetName;
+  final Color color;
+
+  const _GimmickBanner({
+    required this.type,
+    required this.targetName,
+    required this.color,
+  });
+
+  @override
+  State<_GimmickBanner> createState() => _GimmickBannerState();
+}
+
+class _GimmickBannerState extends State<_GimmickBanner>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _opacityAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    );
+
+    _scaleAnimation = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.2), weight: 20),
+      TweenSequenceItem(tween: Tween(begin: 1.2, end: 1.0), weight: 10),
+      TweenSequenceItem(tween: ConstantTween(1.0), weight: 50),
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.5), weight: 20),
+    ]).animate(_controller);
+
+    _opacityAnimation = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.0), weight: 20),
+      TweenSequenceItem(tween: ConstantTween(1.0), weight: 60),
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.0), weight: 20),
+    ]).animate(_controller);
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          return Opacity(
+            opacity: _opacityAnimation.value,
+            child: Container(
+              color: Colors.black45,
+              child: Center(
+                child: Transform.scale(
+                  scale: _scaleAnimation.value,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 40,
+                          vertical: 20,
+                        ),
+                        decoration: BoxDecoration(
+                          color: widget.color.withOpacity(0.9),
+                          boxShadow: [
+                            BoxShadow(
+                              color: widget.color.withOpacity(0.5),
+                              blurRadius: 30,
+                              spreadRadius: 10,
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          widget.type.toUpperCase(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'PressStart2P',
+                            letterSpacing: 4,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        '${widget.targetName}!',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'PressStart2P',
+                          shadows: [
+                            Shadow(color: widget.color, blurRadius: 10),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }

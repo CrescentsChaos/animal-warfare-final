@@ -568,7 +568,6 @@
     },
     {
         "name": "Air Slash",
-        "animationType": "slash",
         "description": "A strong wing attack.",
         "soundEffect": "audio/effects/air_slash.mp3",
         "baseDamage": 75,
@@ -812,7 +811,6 @@
     },
     {
         "name": "Hydro Pump",
-        "animationType": "blob",
         "description": "User pumps high pressure water at foe.",
         "soundEffect": "audio/effects/surf.mp3",
         "baseDamage": 110,
@@ -1713,7 +1711,6 @@
     },
     {
         "name": "Flamethrower",
-        "animationType": "blob",
         "description": "10% chance to burn the target.",
         "soundEffect": "audio/effects/flamethrower.mp3",
         "baseDamage": 90,
@@ -2743,8 +2740,7 @@
         "baseDamage": 40,
         "type": "aquatic",
         "stamina": 25,
-        "category": "special",
-        "effects": []
+        "category": "special"
     },
     {
         "name": "Thunder Shock",
@@ -3300,7 +3296,6 @@
     },
     {
         "name": "Night Slash",
-        "animationType": "slash",
         "description": "High crit rate.",
         "baseDamage": 70,
         "accuracy": 100,
@@ -3766,7 +3761,6 @@
     },
     {
         "name": "Brave Bird",
-        "animationType": "brave_bird",
         "description": "Hurts user.",
         "soundEffect": "audio/effects/brave_bird.mp3",
         "baseDamage": 120,
@@ -5080,7 +5074,6 @@
     },
     {
         "name": "Water Spout",
-        "animationType": "blob",
         "description": "The user attacks by spouting water. The higher the user's HP, the greater the move's power.",
         "soundEffect": "audio/effects/water_spout.mp3",
         "baseDamage": 150,

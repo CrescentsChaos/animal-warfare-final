@@ -124,10 +124,8 @@ class BattleOrganism {
     shellTrapTriggered = false;
     lastMoveName = null;
 
-    // GIMMICK RESET: Titanize ends on switch, Prismorph persists.
-    isTitanized = false;
-    titanizeTurnsLeft = 0;
-    // NOTE: isPrismorphed/hasTitanized/hasPrismorph/activeTeraType are NOT reset here;
+    // GIMMICK RESET: Prismorph persists.
+    // NOTE: isPrismorphed/hasPrismorph/activeTeraType are NOT reset here;
     // they persist for the entire battle.
   }
 
@@ -218,11 +216,8 @@ class BattleOrganism {
   bool isAbilityRevealed = false;
 
   // ============================================================
-  // GIMMICK STATE: Titanize (Dynamax) and Prismorph (Terastalize)
+  // GIMMICK STATE: Prismorph (Terastalize)
   // ============================================================
-  bool isTitanized = false;
-  int titanizeTurnsLeft = 0;
-  bool hasTitanizedThisBattle = false;
   bool isPrismorphed = false;
   bool hasPrismorphedThisBattle = false;
   ElementalType? activeTeraType; // set when Prismorph activates
@@ -540,9 +535,6 @@ class BattleOrganism {
   int get maxHealth {
     int baseMax = organism.getMaxHealth(atLevel: level);
     double hp = baseMax.toDouble();
-
-    // Titanize doubles max HP
-    if (isTitanized) hp *= 2.0;
 
     // Apply talisman effects
     if (organism.equippedTalisman != null) {

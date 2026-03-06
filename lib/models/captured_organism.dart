@@ -565,10 +565,7 @@ class CapturedOrganism {
           // If not in pool, find a generic move of that type from global library
           final globalMatching = Move.allMoves
               .where(
-                (m) =>
-                    m.type == teraType &&
-                    m.category != MoveCategory.status &&
-                    !m.isTitanizeMove,
+                (m) => m.type == teraType && m.category != MoveCategory.status,
               )
               .toList();
           if (globalMatching.isNotEmpty) {
