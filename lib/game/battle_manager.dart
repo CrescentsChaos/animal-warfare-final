@@ -1999,19 +1999,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             await Future.delayed(const Duration(milliseconds: 1500));
         }
 
-        // --- Rattled Implementation ---
-        if (effectiveDamage > 0 &&
-            !substituteTookDamage &&
-            defender.abilities.any((ab) => ab.name == 'Rattled') &&
-            (move.type == ElementalType.arthropod ||
-                move.type == ElementalType.spectral ||
-                move.type == ElementalType.darkness)) {
-          await notifyAbilityTrigger(
-            defender,
-            defender.abilities.firstWhere((a) => a.name == 'Rattled'),
-          );
-          await applyStatChange(defender, 'speed', 1);
-        }
+        // Rattled logic moved lower to consolidate with other damage-based triggers
 
         // Notify UI to update HP bars after HP has changed
         notifyListeners();
@@ -2259,7 +2247,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           }
         }
 
-        // --- Rattled Ability ---
+        // --- Rattled Ability (Consolidated) ---
         if (defender.abilities.any((ab) => ab.name == 'Rattled') &&
             effectiveDamage > 0 &&
             !substituteTookDamage) {
@@ -3341,6 +3329,14 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     if (value < 0) {
       target.statsLoweredThisTurn = true;
+      // Rattled trigger on Intimidate (Attack lowered by opponent)
+      if (statName == 'attack' && source != null && source != target) {
+        if (target.abilities.any((ab) => ab.name == 'Rattled')) {
+          final ab = target.abilities.firstWhere((a) => a.name == 'Rattled');
+          await notifyAbilityTrigger(target, ab);
+          await applyStatChange(target, 'speed', 1);
+        }
+      }
     }
 
     if (statName == 'attack') {
@@ -4247,6 +4243,12 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     org.activeTeraType = teraType;
     org.hasPrismorphedThisBattle = true;
 
+    // Sync to persistent stats
+    final stats = _getStats(org.organism.id);
+    stats.isPrismorphed = true;
+    stats.activeTeraType = teraType;
+    stats.hasPrismorphedThisBattle = true;
+
     addToLog(
       '${org.name} used Prismorph! It is shining with ${teraType.name} energy!',
     );
@@ -4590,6 +4592,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     player.totalDamageDealt = stats.totalDamageDealt;
     player.totalDamageTaken = stats.totalDamageTaken;
     player.isItemRevealed = stats.isItemRevealed;
+    player.isPrismorphed = stats.isPrismorphed;
+    player.hasPrismorphedThisBattle = stats.hasPrismorphedThisBattle;
+    player.activeTeraType = stats.activeTeraType;
     player.revealedMoves.addAll(stats.revealedMoves);
 
     playerMoves = _getOrganismMoves(playerOrganism);
@@ -4851,6 +4856,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     opponent.totalDamageDealt = stats.totalDamageDealt;
     opponent.totalDamageTaken = stats.totalDamageTaken;
     opponent.isItemRevealed = stats.isItemRevealed;
+    opponent.isPrismorphed = stats.isPrismorphed;
+    opponent.hasPrismorphedThisBattle = stats.hasPrismorphedThisBattle;
+    opponent.activeTeraType = stats.activeTeraType;
     opponent.revealedMoves.addAll(stats.revealedMoves);
     opponentMoves = _getOrganismMoves(opponentTeam[currentOpponentIndex]);
 

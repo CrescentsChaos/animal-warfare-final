@@ -693,6 +693,18 @@ class DoubleBattleManager extends ChangeNotifier {
         playerSlot2 = newOrg;
       }
 
+      // Restore persistent stats
+      final stats = battleStats.putIfAbsent(
+        newOrg.organism.id,
+        () => BattleStats(),
+      );
+      newOrg.isPrismorphed = stats.isPrismorphed;
+      newOrg.hasPrismorphedThisBattle = stats.hasPrismorphedThisBattle;
+      newOrg.activeTeraType = stats.activeTeraType;
+      newOrg.revealedMoves.addAll(stats.revealedMoves);
+      newOrg.isItemRevealed = stats.isItemRevealed;
+      newOrg.isAbilityRevealed = stats.isAbilityRevealed;
+
       _addLog('Come back, ${attacker.organism.baseOrganism.name}!');
       _addLog('Go, ${newOrg.organism.baseOrganism.name}!');
       notifyListeners();
@@ -1224,6 +1236,18 @@ class DoubleBattleManager extends ChangeNotifier {
       playerIdx2 = benchTeamIndex;
       playerSlot2 = newOrg;
     }
+
+    // Restore persistent stats
+    final stats = battleStats.putIfAbsent(
+      newOrg.organism.id,
+      () => BattleStats(),
+    );
+    newOrg.isPrismorphed = stats.isPrismorphed;
+    newOrg.hasPrismorphedThisBattle = stats.hasPrismorphedThisBattle;
+    newOrg.activeTeraType = stats.activeTeraType;
+    newOrg.revealedMoves.addAll(stats.revealedMoves);
+    newOrg.isItemRevealed = stats.isItemRevealed;
+    newOrg.isAbilityRevealed = stats.isAbilityRevealed;
     _addLog('Go, ${newOrg.organism.baseOrganism.name}!');
     switchNeededSlot = null;
     notifyListeners();
@@ -1343,6 +1367,12 @@ class DoubleBattleManager extends ChangeNotifier {
     org.isPrismorphed = true;
     org.activeTeraType = teraType;
     org.hasPrismorphedThisBattle = true;
+
+    // Sync to persistent stats
+    final stats = battleStats.putIfAbsent(org.organism.id, () => BattleStats());
+    stats.isPrismorphed = true;
+    stats.activeTeraType = teraType;
+    stats.hasPrismorphedThisBattle = true;
 
     _addLog(
       '${org.name} used Prismorph! It is shining with ${teraType.name} energy!',

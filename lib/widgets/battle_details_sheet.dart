@@ -12,6 +12,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:animal_warfare/widgets/type_matchup_sheet.dart';
 import 'package:animal_warfare/models/captured_organism.dart';
 import 'package:animal_warfare/widgets/item_icon.dart';
+import 'package:animal_warfare/game/battle_manager.dart';
 
 class BattleDetailsSheet extends StatelessWidget {
   final BattleOrganism bo;
@@ -38,6 +39,17 @@ class BattleDetailsSheet extends StatelessWidget {
     final user = userState.currentUser;
     final org = bo.organism.baseOrganism;
 
+    BattleManager? bm;
+    try {
+      bm = Provider.of<BattleManager?>(context, listen: false);
+    } catch (_) {}
+
+    int effectiveSpeed = bo.currentSpeed;
+    if (bm != null) {
+      if (isPlayer && bm.playerTailwindTurns > 0) effectiveSpeed *= 2;
+      if (!isPlayer && bm.opponentTailwindTurns > 0) effectiveSpeed *= 2;
+    }
+    // Note: DoubleBattleManager doesn't have Tailwind implementation yet
     // Anidex Checks
     // Identity info (Name, Image, Types, Matchups) is always visible during battle
     bool isDiscovered = true;
@@ -126,7 +138,12 @@ class BattleDetailsSheet extends StatelessWidget {
                     // Combat Intel Section
                     _buildSectionHeader('COMBAT INTEL', themeColor),
                     const SizedBox(height: 16),
-                    _buildCombatStats(org, isCaptured, themeColor),
+                    _buildCombatStats(
+                      org,
+                      isCaptured,
+                      themeColor,
+                      effectiveSpeed,
+                    ),
 
                     const SizedBox(height: 32),
 
@@ -389,7 +406,12 @@ class BattleDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildCombatStats(Organism org, bool captured, Color themeColor) {
+  Widget _buildCombatStats(
+    Organism org,
+    bool captured,
+    Color themeColor,
+    int effectiveSpeed,
+  ) {
     if (!captured && !isPlayer) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -418,7 +440,19 @@ class BattleDetailsSheet extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.only(left: 4),
+            child: Text(
+              'EFF. SPD: $effectiveSpeed',
+              style: GoogleFonts.outfit(
+                color: Colors.amberAccent.withOpacity(0.8),
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
           Padding(
             padding: const EdgeInsets.only(left: 4),
             child: Text(
@@ -467,21 +501,38 @@ class BattleDetailsSheet extends StatelessWidget {
           200,
           AppColors.statSpeedColor,
         ),
-        if (!isPlayer) ...[
-          const SizedBox(height: 4),
-          Padding(
-            padding: const EdgeInsets.only(left: 4),
-            child: Text(
-              'EST. SPD: ${((CapturedOrganism.calculateStat('speed', org.speed, 0, level: bo.level)) * 0.9).round()} - ${((CapturedOrganism.calculateStat('speed', org.speed, 31, level: bo.level)) * 1.1).round()}',
-              style: GoogleFonts.outfit(
-                color: Colors.amberAccent.withOpacity(0.8),
-                fontSize: 11,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 0.5,
+        Padding(
+          padding: const EdgeInsets.only(left: 4),
+          child: Row(
+            children: [
+              Text(
+                'EFF. SPD: $effectiveSpeed',
+                style: GoogleFonts.outfit(
+                  color: Colors.amberAccent.withOpacity(0.8),
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.5,
+                ),
               ),
+              if (effectiveSpeed != bo.currentSpeed) ...[
+                const SizedBox(width: 8),
+                const Icon(Icons.air, color: Colors.lightBlue, size: 12),
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(height: 4),
+        Padding(
+          padding: const EdgeInsets.only(left: 4),
+          child: Text(
+            'EST. SPD: ${((CapturedOrganism.calculateStat('speed', org.speed, 0, level: bo.level)) * 0.9).round()} - ${((CapturedOrganism.calculateStat('speed', org.speed, 31, level: bo.level)) * 1.1).round()}',
+            style: GoogleFonts.outfit(
+              color: Colors.white38,
+              fontSize: 10,
+              letterSpacing: 0.5,
             ),
           ),
-        ],
+        ),
       ],
     );
   }

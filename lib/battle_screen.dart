@@ -23,8 +23,8 @@ import 'package:animal_warfare/models/organism.dart';
 import 'package:animal_warfare/game/ai_decision_engine.dart';
 import 'package:animal_warfare/game/time_service.dart';
 import 'package:animal_warfare/models/elemental_type.dart'; // Added
-import 'package:animal_warfare/models/move.dart'; // Added
-import 'package:animal_warfare/models/status_effect.dart'; // Added for overlay
+import 'package:animal_warfare/models/move.dart';
+import 'package:animal_warfare/models/status_effect.dart';
 import 'dart:math' as math;
 import 'dart:async';
 import 'package:animal_warfare/widgets/capture_overlay.dart';
@@ -209,52 +209,6 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     return const Color(0xFF1E3F2A); // Default Deep Forest Green
   }
 
-  // Helper: Get color for ElementalType
-  Color _getTypeColor(ElementalType type) {
-    switch (type) {
-      case ElementalType.basic:
-        return const Color.fromARGB(255, 168, 168, 130);
-      case ElementalType.flying:
-        return const Color(0xFFA98FF3);
-      case ElementalType.aquatic:
-        return const Color.fromARGB(255, 46, 60, 255);
-      case ElementalType.earth:
-        return const Color(0xFFE2BF65);
-      case ElementalType.cryo:
-        return const Color.fromARGB(255, 0, 247, 255);
-      case ElementalType.toxic:
-        return const Color(0xFFA33EA1);
-      case ElementalType.rock:
-        return const Color.fromARGB(255, 158, 97, 5);
-      case ElementalType.arthropod:
-        return const Color.fromARGB(255, 111, 207, 0);
-      case ElementalType.electric:
-        return const Color.fromARGB(255, 255, 251, 27);
-      case ElementalType.spectral:
-        return const Color.fromARGB(255, 91, 11, 240);
-      case ElementalType.martial:
-        return const Color.fromARGB(255, 160, 24, 0);
-      case ElementalType.blaze:
-        return const Color.fromARGB(255, 226, 72, 0);
-      case ElementalType.grass:
-        return const Color.fromARGB(255, 22, 131, 0);
-      case ElementalType.mystic:
-        return const Color.fromARGB(255, 255, 81, 162);
-      case ElementalType.darkness:
-        return const Color.fromARGB(255, 37, 36, 37);
-      case ElementalType.drake:
-        return const Color.fromARGB(255, 76, 0, 255);
-      case ElementalType.metal:
-        return const Color.fromARGB(255, 172, 168, 168);
-      case ElementalType.aura:
-        return const Color.fromARGB(255, 229, 255, 79);
-      case ElementalType.sound:
-        return const Color.fromARGB(255, 166, 70, 255);
-      case ElementalType.holy:
-        return const Color.fromARGB(255, 255, 208, 0);
-    }
-  }
-
   // Helper: Calculate effectiveness multiplier
   double _calculateMoveEffectiveness(Move move, BattleOrganism opponent) {
     if (move.category == MoveCategory.status) return 1.0;
@@ -293,11 +247,14 @@ class _BattleScreenContentState extends State<BattleScreenContent>
   bool _showGimmickBanner = false;
 
   // Move animation tracking
-  final List<_MoveAnimData> _moveAnims = [];
+  final List<anims.MoveAnimData> _moveAnims = [];
   int _moveAnimIdCounter = 0;
   double _screenShakeX = 0;
   double _screenShakeY = 0;
   AnimationController? _screenShakeController;
+
+  final GlobalKey<_BattleSpriteState> _playerSpriteKey = GlobalKey();
+  final GlobalKey<_BattleSpriteState> _opponentSpriteKey = GlobalKey();
   Animation<double>? _screenShakeXAnim;
   Animation<double>? _screenShakeYAnim;
 
@@ -507,7 +464,11 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     final id = ++_moveAnimIdCounter;
     setState(() {
       _moveAnims.add(
-        _MoveAnimData(id: id, move: move, isPlayerAttacking: isPlayerAttacking),
+        anims.MoveAnimData(
+          id: id,
+          move: move,
+          isPlayerAttacking: isPlayerAttacking,
+        ),
       );
     });
 
@@ -1155,7 +1116,13 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     battleManager.onAttack = _onAttack;
     battleManager.onDamage = _onDamage;
     battleManager.onHeal = _onHeal;
-    battleManager.onStatChange = _onStatChange;
+    battleManager.onStatChange = (target, stat, value) {
+      _onStatChange(target, stat, value);
+      final spriteKey = target == 'player'
+          ? _playerSpriteKey
+          : _opponentSpriteKey;
+      spriteKey.currentState?.showStatChange(value > 0);
+    };
 
     return PopScope(
       canPop: false,
@@ -1216,208 +1183,282 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                     battleManager.opponentTailwindTurns > 0,
               ),
               SafeArea(
-                child: OrientationBuilder(
-                  builder: (context, orientation) {
-                    final isLandscape = orientation == Orientation.landscape;
+                child: Stack(
+                  children: [
+                    OrientationBuilder(
+                      builder: (context, orientation) {
+                        final isLandscape =
+                            orientation == Orientation.landscape;
 
-                    if (isLandscape) {
-                      return Column(
-                        children: [
-                          _buildHeader(context, battleManager, overlayColor),
-                          Expanded(
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Left side: Animal Statuses and Sprites
-                                Expanded(
-                                  flex: 5,
-                                  child: Column(
-                                    children: [
-                                      _buildFieldEffects(
-                                        context,
-                                        battleManager,
-                                      ),
-                                      if (widget.isArenaBattle)
-                                        Column(
-                                          children: [
-                                            _buildPlayerTeamIndicator(
+                        if (isLandscape) {
+                          return Column(
+                            children: [
+                              _buildHeader(
+                                context,
+                                battleManager,
+                                overlayColor,
+                              ),
+                              Expanded(
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Left side: Animal Statuses and Sprites
+                                    Expanded(
+                                      flex: 5,
+                                      child: Column(
+                                        children: [
+                                          _buildFieldEffects(
+                                            context,
+                                            battleManager,
+                                          ),
+                                          const SizedBox(height: 2),
+                                          AnimatedBuilder(
+                                            animation: _opponentShakeAnimation,
+                                            builder: (context, child) =>
+                                                Transform.translate(
+                                                  offset: Offset(
+                                                    _opponentShakeAnimation
+                                                        .value,
+                                                    0,
+                                                  ),
+                                                  child: child,
+                                                ),
+                                            child: _buildOpponentStatus(
                                               context,
-                                              battleManager,
-                                            ),
-                                            _buildOpponentTeamIndicator(
-                                              context,
-                                              battleManager,
-                                            ),
-                                          ],
-                                        ),
-                                      const SizedBox(height: 2),
-                                      AnimatedBuilder(
-                                        animation: _opponentShakeAnimation,
-                                        builder: (context, child) =>
-                                            Transform.translate(
-                                              offset: Offset(
-                                                _opponentShakeAnimation.value,
-                                                0,
-                                              ),
-                                              child: child,
-                                            ),
-                                        child: _buildOpponentStatus(
-                                          context,
-                                          battleManager.opponent,
-                                          overlayColor,
-                                          isNarrow,
-                                          battleManager.opponentHazards,
-                                          battleManager,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      AnimatedBuilder(
-                                        animation: _playerShakeAnimation,
-                                        builder: (context, child) =>
-                                            Transform.translate(
-                                              offset: Offset(
-                                                _playerShakeAnimation.value,
-                                                0,
-                                              ),
-                                              child: child,
-                                            ),
-                                        child: _buildPlayerStatus(
-                                          context,
-                                          battleManager.player,
-                                          overlayColor,
-                                          isNarrow,
-                                          battleManager.playerHazards,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                // Right side: Logs and Controls
-                                Expanded(
-                                  flex: 4,
-                                  child: Column(
-                                    children: [
-                                      if (battleManager.currentState ==
-                                          BattleState.waitingForInput) ...[
-                                        _buildMessageBox(
-                                          context,
-                                          battleManager.battleLog,
-                                          isNarrow,
-                                          expanded: false,
-                                        ),
-                                        Expanded(
-                                          child: SingleChildScrollView(
-                                            child: _buildActionControls(
-                                              context,
-                                              battleManager,
+                                              battleManager.opponent,
                                               overlayColor,
                                               isNarrow,
-                                              userState,
+                                              battleManager.opponentHazards,
+                                              battleManager,
+                                              spriteKey: _opponentSpriteKey,
                                             ),
                                           ),
-                                        ),
-                                      ] else
-                                        Expanded(
-                                          child: _buildMessageBox(
-                                            context,
-                                            battleManager.battleLog,
-                                            isNarrow,
-                                            expanded: true,
+                                          const SizedBox(height: 2),
+                                          AnimatedBuilder(
+                                            animation: _playerShakeAnimation,
+                                            builder: (context, child) =>
+                                                Transform.translate(
+                                                  offset: Offset(
+                                                    _playerShakeAnimation.value,
+                                                    0,
+                                                  ),
+                                                  child: child,
+                                                ),
+                                            child: _buildPlayerStatus(
+                                              context,
+                                              battleManager.player,
+                                              overlayColor,
+                                              isNarrow,
+                                              battleManager.playerHazards,
+                                              spriteKey: _playerSpriteKey,
+                                            ),
                                           ),
-                                        ),
-                                    ],
-                                  ),
+                                        ],
+                                      ),
+                                    ),
+                                    // Right side: Logs and Controls
+                                    Expanded(
+                                      flex: 4,
+                                      child: Column(
+                                        children: [
+                                          // Empty space where logs would be, leaving room for animations
+                                          Expanded(child: const SizedBox()),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      );
-                    }
+                              ),
+                            ],
+                          );
+                        }
 
-                    // Portrait layout
-                    return Column(
-                      children: [
-                        _buildHeader(context, battleManager, overlayColor),
-                        const SizedBox(height: 2),
-                        const Divider(height: 1, color: Colors.white24),
-                        const SizedBox(height: 2),
-                        _buildFieldEffects(context, battleManager),
-                        if (widget.isArenaBattle)
-                          _buildTeamIndicators(context, battleManager),
-                        const SizedBox(height: 2),
-                        Expanded(
-                          child: SingleChildScrollView(
-                            child: Column(
-                              children: [
-                                AnimatedBuilder(
-                                  animation: _opponentShakeAnimation,
-                                  builder: (context, child) =>
-                                      Transform.translate(
-                                        offset: Offset(
-                                          _opponentShakeAnimation.value,
-                                          0,
-                                        ),
-                                        child: child,
+                        // Portrait layout (Background sprites/statuses)
+                        return Column(
+                          children: [
+                            _buildHeader(context, battleManager, overlayColor),
+                            const SizedBox(height: 2),
+                            const Divider(height: 1, color: Colors.white24),
+                            const SizedBox(height: 2),
+                            _buildFieldEffects(context, battleManager),
+                            const SizedBox(height: 0),
+                            const SizedBox(height: 2),
+                            Expanded(
+                              child: SingleChildScrollView(
+                                child: Column(
+                                  children: [
+                                    AnimatedBuilder(
+                                      animation: _opponentShakeAnimation,
+                                      builder: (context, child) =>
+                                          Transform.translate(
+                                            offset: Offset(
+                                              _opponentShakeAnimation.value,
+                                              0,
+                                            ),
+                                            child: child,
+                                          ),
+                                      child: _buildOpponentStatus(
+                                        context,
+                                        battleManager.opponent,
+                                        overlayColor,
+                                        isNarrow,
+                                        battleManager.opponentHazards,
+                                        battleManager,
+                                        spriteKey: _opponentSpriteKey,
                                       ),
-                                  child: _buildOpponentStatus(
-                                    context,
-                                    battleManager.opponent,
-                                    overlayColor,
-                                    isNarrow,
-                                    battleManager.opponentHazards,
-                                    battleManager,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                AnimatedBuilder(
-                                  animation: _playerShakeAnimation,
-                                  builder: (context, child) =>
-                                      Transform.translate(
-                                        offset: Offset(
-                                          _playerShakeAnimation.value,
-                                          0,
-                                        ),
-                                        child: child,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    AnimatedBuilder(
+                                      animation: _playerShakeAnimation,
+                                      builder: (context, child) =>
+                                          Transform.translate(
+                                            offset: Offset(
+                                              _playerShakeAnimation.value,
+                                              0,
+                                            ),
+                                            child: child,
+                                          ),
+                                      child: _buildPlayerStatus(
+                                        context,
+                                        battleManager.player,
+                                        overlayColor,
+                                        isNarrow,
+                                        battleManager.playerHazards,
+                                        spriteKey: _playerSpriteKey,
                                       ),
-                                  child: _buildPlayerStatus(
-                                    context,
-                                    battleManager.player,
-                                    overlayColor,
-                                    isNarrow,
-                                    battleManager.playerHazards,
-                                  ),
+                                    ),
+                                    // Small spacer so sprites don't touch the bottom bar
+                                    const SizedBox(height: 8),
+                                  ],
                                 ),
-                                const SizedBox(height: 2),
-                                if (battleManager.currentState ==
-                                    BattleState.waitingForInput) ...[
-                                  _buildMessageBox(
-                                    context,
-                                    battleManager.battleLog,
-                                    isNarrow,
-                                    expanded: false,
-                                  ),
-                                  _buildActionControls(
-                                    context,
-                                    battleManager,
-                                    overlayColor,
-                                    isNarrow,
-                                    userState,
-                                  ),
-                                ] else
-                                  _buildMessageBox(
-                                    context,
-                                    battleManager.battleLog,
-                                    isNarrow,
-                                    expanded: true,
-                                  ),
-                              ],
+                              ),
                             ),
+                          ],
+                        );
+                      },
+                    ),
+
+                    // [MOVE ANIMATIONS] Placed here to be above sprites but below UI logs
+                    ..._moveAnims.map(
+                      (anim) => anims.MoveAnimationOverlay(
+                        key: ValueKey(anim.id),
+                        data: anim,
+                        playerLink: _playerLink,
+                        opponentLink: _opponentLink,
+                      ),
+                    ),
+
+                    // [UI LOGS & CONTROLS] Placed strictly on top
+                    OrientationBuilder(
+                      builder: (context, orientation) {
+                        final isLandscape =
+                            orientation == Orientation.landscape;
+
+                        if (isLandscape) {
+                          return Column(
+                            children: [
+                              // Filler for header
+                              const SizedBox(height: 40),
+                              Expanded(
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Filler for left side
+                                    Expanded(flex: 5, child: const SizedBox()),
+                                    // Right side: Logs and Controls
+                                    Expanded(
+                                      flex: 4,
+                                      child: Column(
+                                        children: [
+                                          if (widget.isArenaBattle)
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                top: 8,
+                                              ),
+                                              child: _buildTeamIndicators(
+                                                context,
+                                                battleManager,
+                                              ),
+                                            ),
+                                          if (battleManager.currentState ==
+                                              BattleState.waitingForInput) ...[
+                                            _buildMessageBox(
+                                              context,
+                                              battleManager.battleLog,
+                                              isNarrow,
+                                              expanded: false,
+                                            ),
+                                            Expanded(
+                                              child: SingleChildScrollView(
+                                                child: _buildActionControls(
+                                                  context,
+                                                  battleManager,
+                                                  overlayColor,
+                                                  isNarrow,
+                                                  userState,
+                                                ),
+                                              ),
+                                            ),
+                                          ] else
+                                            Expanded(
+                                              child: _buildMessageBox(
+                                                context,
+                                                battleManager.battleLog,
+                                                isNarrow,
+                                                expanded: true,
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          );
+                        }
+
+                        return Container(
+                          padding: EdgeInsets.only(
+                            bottom: MediaQuery.of(context).padding.bottom + 2,
                           ),
-                        ),
-                      ],
-                    );
-                  },
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              if (battleManager.currentState ==
+                                  BattleState.waitingForInput) ...[
+                                _buildMessageBox(
+                                  context,
+                                  battleManager.battleLog,
+                                  isNarrow,
+                                  expanded: false,
+                                ),
+                                if (widget.isArenaBattle)
+                                  _buildTeamIndicators(context, battleManager),
+                                _buildActionControls(
+                                  context,
+                                  battleManager,
+                                  overlayColor,
+                                  isNarrow,
+                                  userState,
+                                ),
+                              ] else ...[
+                                _buildMessageBox(
+                                  context,
+                                  battleManager.battleLog,
+                                  isNarrow,
+                                  expanded: true,
+                                ),
+                                if (widget.isArenaBattle)
+                                  _buildTeamIndicators(context, battleManager),
+                                const SizedBox(height: 20),
+                              ],
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ),
               // Ability Pop-up Overlay
@@ -1439,16 +1480,6 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                   link: _opponentLink,
                   onComplete: () {},
                 ),
-              // Move Animation Overlays
-              ..._moveAnims.map(
-                (anim) => _MoveAnimationOverlay(
-                  key: ValueKey(anim.id),
-                  data: anim,
-                  playerLink: _playerLink,
-                  opponentLink: _opponentLink,
-                  getTypeColor: _getTypeColor,
-                ),
-              ),
               // Gimmick Banner Overlay
               if (_showGimmickBanner)
                 _GimmickBanner(
@@ -1456,9 +1487,8 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                   targetName: _gimmickTarget?.name ?? '',
                   color: _activeGimmickType == 'titanize'
                       ? Colors.redAccent
-                      : _getTypeColor(
-                          _gimmickTarget?.activeTeraType ?? ElementalType.basic,
-                        ),
+                      : (_gimmickTarget?.activeTeraType ?? ElementalType.basic)
+                            .color,
                 ),
             ],
           ),
@@ -1939,8 +1969,9 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     Color barColor,
     bool isNarrow,
     List<String> hazards, // Added
-    BattleManager bm, // Added
-  ) {
+    BattleManager bm, { // Added
+    Key? spriteKey,
+  }) {
     final displayLevel = widget.isArenaBattle ? 50 : organism.organism.level;
     final base = organism.organism.baseOrganism;
     final maxHp = organism.maxHealth;
@@ -2139,7 +2170,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                 }
               },
               child: _BattleSprite(
-                key: ValueKey(organism.organism.id),
+                key: spriteKey,
                 organism: organism,
                 size: spriteSize,
                 hideAnimal:
@@ -2166,8 +2197,9 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     BattleOrganism organism,
     Color barColor,
     bool isNarrow,
-    List<String> hazards, // Added
-  ) {
+    List<String> hazards, { // Added
+    Key? spriteKey,
+  }) {
     final base = organism.organism.baseOrganism;
     final maxHp = organism.maxHealth;
     final hpRatio = maxHp > 0 ? organism.health / maxHp : 0.0;
@@ -2360,7 +2392,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                 }
               },
               child: _BattleSprite(
-                key: ValueKey(organism.organism.id),
+                key: spriteKey,
                 organism: organism,
                 size: spriteSize,
                 hideAnimal: _moveAnims.any(
@@ -2520,7 +2552,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
             _buildDetailRow(
               'TYPE:',
               bm.getDisplayType(bm.player, move).name.toUpperCase(),
-              _getTypeColor(bm.getDisplayType(bm.player, move)),
+              bm.getDisplayType(bm.player, move).color,
             ),
             const SizedBox(height: 8),
             _buildDetailRow(
@@ -2698,7 +2730,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                           battleManager.player,
                           move,
                         );
-                        final typeColor = _getTypeColor(displayType);
+                        final typeColor = displayType.color;
                         final effectiveness = _calculateMoveEffectiveness(
                           move,
                           battleManager.opponent,
@@ -3339,6 +3371,14 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               battleManager.opponent,
             );
           }
+        }
+
+        // Fainting animations for health 0 organisms
+        if (battleManager.opponent.organism.currentHealth <= 0) {
+          await _opponentSpriteKey.currentState?.faint();
+        }
+        if (battleManager.player.organism.currentHealth <= 0) {
+          await _playerSpriteKey.currentState?.faint();
         }
 
         // Handle death mechanic for non-Arena, non-Rogue battles
@@ -5265,6 +5305,15 @@ class _BattleSpriteState extends State<_BattleSprite>
   late Animation<double> _bounceAnimation;
   late AnimationController _entryController;
   late Animation<double> _entryAnimation;
+  late AnimationController _faintController;
+  late Animation<double> _faintOpacity;
+  late Animation<double> _faintFlash;
+
+  late AnimationController _statUpdateController;
+  late Animation<double> _statUpdateOpacity;
+  late Animation<double> _statUpdateOffset;
+  bool _isStatIncrease = true;
+  Color _statColor = Colors.orange;
 
   Color _getTypeColor(ElementalType type) {
     return type.color;
@@ -5298,6 +5347,36 @@ class _BattleSpriteState extends State<_BattleSprite>
       curve: Curves.elasticOut,
     );
 
+    _faintController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _faintOpacity = Tween<double>(begin: 1.0, end: 0.0).animate(
+      CurvedAnimation(
+        parent: _faintController,
+        curve: const Interval(0.4, 1.0, curve: Curves.easeIn),
+      ),
+    );
+    _faintFlash = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _faintController,
+        curve: const Interval(0.0, 0.4, curve: Curves.easeOut),
+      ),
+    );
+
+    _statUpdateController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    );
+    _statUpdateOpacity = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.0), weight: 20),
+      TweenSequenceItem(tween: ConstantTween(1.0), weight: 60),
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.0), weight: 20),
+    ]).animate(_statUpdateController);
+    _statUpdateOffset = Tween<double>(begin: 20, end: -20).animate(
+      CurvedAnimation(parent: _statUpdateController, curve: Curves.easeOut),
+    );
+
     _entryController.forward();
   }
 
@@ -5306,7 +5385,24 @@ class _BattleSpriteState extends State<_BattleSprite>
     _pulseController.dispose();
     _bounceController.dispose();
     _entryController.dispose();
+    _faintController.dispose();
+    _statUpdateController.dispose();
     super.dispose();
+  }
+
+  Future<void> faint() async {
+    if (!mounted) return;
+    await _faintController.forward();
+  }
+
+  void showStatChange(bool isIncrease) {
+    if (!mounted) return;
+    setState(() {
+      _isStatIncrease = isIncrease;
+      _statColor = isIncrease ? Colors.orangeAccent : Colors.blueAccent;
+    });
+    _statUpdateController.reset();
+    _statUpdateController.forward();
   }
 
   @override
@@ -5758,7 +5854,51 @@ class _BattleSpriteState extends State<_BattleSprite>
                           offset: const Offset(0, outlineOffset),
                           child: outlineLayer,
                         ),
-                        spriteLayer,
+                        Opacity(
+                          opacity: _faintOpacity.value,
+                          child: Stack(
+                            children: [
+                              spriteLayer,
+                              if (_faintFlash.value > 0)
+                                Positioned.fill(
+                                  child: DecoratedBox(
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(
+                                        _faintFlash.value,
+                                      ),
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+            // Stat Change Arrows Overlay
+            AnimatedBuilder(
+              animation: _statUpdateController,
+              builder: (context, child) {
+                if (_statUpdateController.value == 0)
+                  return const SizedBox.shrink();
+                return Positioned(
+                  top: _statUpdateOffset.value - 40,
+                  child: Opacity(
+                    opacity: _statUpdateOpacity.value,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          _isStatIncrease
+                              ? Icons.keyboard_arrow_up
+                              : Icons.keyboard_arrow_down,
+                          color: _statColor,
+                          size: 40,
+                        ),
                       ],
                     ),
                   ),
@@ -6770,753 +6910,6 @@ class _PartyScreenDialog extends StatelessWidget {
       ),
     );
   }
-}
-// ----------------------------------------------------------------
-// MOVE ANIMATION SYSTEM
-// ----------------------------------------------------------------
-
-/// Holds the data needed to render one move-attack animation overlay.
-class _MoveAnimData {
-  final int id;
-  final Move move;
-  final bool isPlayerAttacking;
-
-  const _MoveAnimData({
-    required this.id,
-    required this.move,
-    required this.isPlayerAttacking,
-  });
-}
-
-/// Renders a move-specific visual effect overlaid on the battle screen.
-/// Each (MoveCategory × ElementalType) pair has its own unique shape/motion.
-class _MoveAnimationOverlay extends StatefulWidget {
-  final _MoveAnimData data;
-  final LayerLink playerLink;
-  final LayerLink opponentLink;
-  final Color Function(ElementalType) getTypeColor;
-
-  const _MoveAnimationOverlay({
-    super.key,
-    required this.data,
-    required this.playerLink,
-    required this.opponentLink,
-    required this.getTypeColor,
-  });
-
-  @override
-  State<_MoveAnimationOverlay> createState() => _MoveAnimationOverlayState();
-}
-
-class _MoveAnimationOverlayState extends State<_MoveAnimationOverlay>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _ctrl;
-  late Animation<double> _progress;
-
-  @override
-  void initState() {
-    super.initState();
-    _ctrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 3500),
-    )..forward();
-    _progress = CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut);
-  }
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final move = widget.data.move;
-    final isPlayer = widget.data.isPlayerAttacking;
-    // The ATTACKER link is used as the origin, target receives the hit
-    final attackerLink = isPlayer ? widget.playerLink : widget.opponentLink;
-    final targetLink = isPlayer ? widget.opponentLink : widget.playerLink;
-    final color = widget.getTypeColor(move.type);
-
-    if (move.animationType == 'blob') {
-      final isFire =
-          move.type == ElementalType.blaze ||
-          move.name.toLowerCase() == 'flamethrower' ||
-          move.name.toLowerCase() == 'overheat';
-      final imagePath = isFire
-          ? 'assets/move_effects/flame.png'
-          : 'assets/move_effects/aqua.png';
-
-      return AnimatedBuilder(
-        animation: _progress,
-        builder: (context, _) {
-          return CompositedTransformFollower(
-            link: targetLink,
-            showWhenUnlinked: false,
-            followerAnchor: Alignment.center,
-            targetAnchor: Alignment.center,
-            child: anims.BlobStreamEffect(
-              imagePath: imagePath,
-              progress: _progress.value,
-              isPlayer: isPlayer,
-            ),
-          );
-        },
-      );
-    }
-
-    if (move.animationType == 'slash') {
-      final imagePath =
-          move.type == ElementalType.darkness ||
-              move.name.toLowerCase() == 'night slash'
-          ? 'assets/move_effects/night_slash.png'
-          : 'assets/move_effects/air_slash.png';
-
-      return AnimatedBuilder(
-        animation: _progress,
-        builder: (context, _) {
-          return CompositedTransformFollower(
-            link: targetLink,
-            showWhenUnlinked: false,
-            followerAnchor: Alignment.center,
-            targetAnchor: Alignment.center,
-            child: anims.SlashEffect(
-              imagePath: imagePath,
-              progress: _progress.value,
-              isPlayer: isPlayer,
-            ),
-          );
-        },
-      );
-    }
-
-    if (move.animationType == 'brave_bird') {
-      return AnimatedBuilder(
-        animation: _progress,
-        builder: (context, _) {
-          return CompositedTransformFollower(
-            link:
-                targetLink, // We use target as origin to calculate diagonal travel mathematically
-            showWhenUnlinked: false,
-            followerAnchor: Alignment.center,
-            targetAnchor: Alignment.center,
-            child: anims.BraveBirdEffect(
-              progress: _progress.value,
-              isPlayer: isPlayer,
-            ),
-          );
-        },
-      );
-    }
-
-    return AnimatedBuilder(
-      animation: _progress,
-      builder: (context, _) {
-        return Stack(
-          children: [
-            // Attacker flash (brief glow at origin)
-            CompositedTransformFollower(
-              link: attackerLink,
-              showWhenUnlinked: false,
-              followerAnchor: Alignment.center,
-              targetAnchor: Alignment.center,
-              child: Opacity(
-                opacity: (1.0 - _progress.value * 2).clamp(0.0, 1.0),
-                child: _buildAttackerGlow(color, move.type, move.category),
-              ),
-            ),
-            // Target hit effect
-            CompositedTransformFollower(
-              link: targetLink,
-              showWhenUnlinked: false,
-              followerAnchor: Alignment.center,
-              targetAnchor: Alignment.center,
-              child: _buildTargetEffect(
-                color,
-                move.type,
-                move.category,
-                _progress.value,
-                isPlayer,
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildAttackerGlow(Color color, ElementalType type, MoveCategory cat) {
-    return SizedBox(
-      width: 100,
-      height: 100,
-      child: CustomPaint(painter: _GlowPainter(color: color, intensity: 0.8)),
-    );
-  }
-
-  Widget _buildTargetEffect(
-    Color color,
-    ElementalType type,
-    MoveCategory cat,
-    double progress,
-    bool isPlayer,
-  ) {
-    final size = 160.0;
-    // Flip horizontally if the target is the opponent (so projectiles face the right direction)
-    final flipX = !isPlayer; // effects point toward the target
-
-    switch (cat) {
-      case MoveCategory.physical:
-        return SizedBox(
-          width: size,
-          height: size,
-          child: CustomPaint(
-            painter: _PhysicalHitPainter(
-              type: type,
-              color: color,
-              progress: progress,
-              flip: flipX,
-            ),
-          ),
-        );
-      case MoveCategory.special:
-        return SizedBox(
-          width: size,
-          height: size,
-          child: CustomPaint(
-            painter: _SpecialHitPainter(
-              type: type,
-              color: color,
-              progress: progress,
-              flip: flipX,
-            ),
-          ),
-        );
-      case MoveCategory.status:
-        return SizedBox(
-          width: size,
-          height: size,
-          child: CustomPaint(
-            painter: _StatusEffectPainter(
-              type: type,
-              color: color,
-              progress: progress,
-            ),
-          ),
-        );
-    }
-  }
-}
-
-// ----------------------------------------------------------------
-// Glow painter for attacker charge-up
-// ----------------------------------------------------------------
-class _GlowPainter extends CustomPainter {
-  final Color color;
-  final double intensity;
-  _GlowPainter({required this.color, required this.intensity});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final paint = Paint()
-      ..shader = RadialGradient(
-        colors: [color.withOpacity(intensity), color.withOpacity(0.0)],
-      ).createShader(Rect.fromCircle(center: center, radius: 50));
-    canvas.drawCircle(center, 50, paint);
-  }
-
-  @override
-  bool shouldRepaint(_GlowPainter old) => old.intensity != intensity;
-}
-
-// ----------------------------------------------------------------
-// Shared Painters for Procedural Effects
-// ----------------------------------------------------------------
-class _PhysicalHitPainter extends CustomPainter {
-  final ElementalType type;
-  final Color color;
-  final double progress; // 0.0 → 1.0
-  final bool flip;
-
-  _PhysicalHitPainter({
-    required this.type,
-    required this.color,
-    required this.progress,
-    required this.flip,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (flip) {
-      canvas.translate(size.width, 0);
-      canvas.scale(-1, 1);
-    }
-    final cx = size.width / 2;
-    final cy = size.height / 2;
-    final p = progress;
-    final fade = (1.0 - p).clamp(0.0, 1.0);
-    final paint = Paint()..style = PaintingStyle.fill;
-
-    switch (type) {
-      // Basic — plain X-slash slashes
-      case ElementalType.basic:
-        paint.color = color.withOpacity(fade);
-        paint.strokeWidth = 6 * (1 - p * 0.5);
-        paint.style = PaintingStyle.stroke;
-        _drawSlash(canvas, cx, cy, 50 * p, paint);
-        break;
-
-      // Flying — feather-arc sweep
-      case ElementalType.flying:
-        paint.color = color.withOpacity(fade);
-        final r = 55.0 * p;
-        canvas.drawArc(
-          Rect.fromCircle(center: Offset(cx, cy), radius: r),
-          -pi / 4,
-          pi * 1.2 * p,
-          false,
-          paint
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 6,
-        );
-        // Feather tip circles
-        for (int i = 0; i < 4; i++) {
-          final angle = -pi / 4 + (pi * 1.2 * p) * i / 3;
-          final dx = cx + cos(angle) * r;
-          final dy = cy + sin(angle) * r;
-          canvas.drawCircle(
-            Offset(dx, dy),
-            5 * fade,
-            Paint()..color = color.withOpacity(fade * 0.8),
-          );
-        }
-        break;
-
-      // Aquatic — wave slash
-      case ElementalType.aquatic:
-        final path = Path();
-        path.moveTo(cx - 50 * p, cy);
-        for (int i = 0; i <= 30; i++) {
-          final t = i / 30;
-          final x = cx - 50 * p + t * 100 * p;
-          final y = cy + sin(t * pi * 2) * 15 * fade;
-          path.lineTo(x, y);
-        }
-        canvas.drawPath(
-          path,
-          paint
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 5
-            ..color = color.withOpacity(fade),
-        );
-        break;
-
-      // Earth — impact shockwave ring
-      case ElementalType.earth:
-        for (int i = 0; i < 3; i++) {
-          final r = (30 + i * 12) * p;
-          canvas.drawCircle(
-            Offset(cx, cy),
-            r,
-            Paint()
-              ..style = PaintingStyle.stroke
-              ..strokeWidth = 4.0 - i
-              ..color = color.withOpacity(fade * (1.0 - i * 0.25)),
-          );
-        }
-        // Ground crack lines
-        paint.color = color.withOpacity(fade);
-        paint.strokeWidth = 3;
-        paint.style = PaintingStyle.stroke;
-        for (int i = 0; i < 6; i++) {
-          final angle = pi * 2 * i / 6 + p * 0.5;
-          canvas.drawLine(
-            Offset(cx, cy),
-            Offset(cx + cos(angle) * 50 * p, cy + sin(angle) * 50 * p),
-            paint,
-          );
-        }
-        break;
-
-      // Cryo — ice shard burst
-      case ElementalType.cryo:
-        for (int i = 0; i < 8; i++) {
-          final angle = pi * 2 * i / 8;
-          final len = 45 * p;
-          final tip = Offset(cx + cos(angle) * len, cy + sin(angle) * len);
-          final base1 = Offset(
-            cx + cos(angle + 0.35) * 8,
-            cy + sin(angle + 0.35) * 8,
-          );
-          final base2 = Offset(
-            cx + cos(angle - 0.35) * 8,
-            cy + sin(angle - 0.35) * 8,
-          );
-          final path = Path()
-            ..moveTo(tip.dx, tip.dy)
-            ..lineTo(base1.dx, base1.dy)
-            ..lineTo(base2.dx, base2.dy)
-            ..close();
-          canvas.drawPath(path, Paint()..color = color.withOpacity(fade * 0.9));
-        }
-        break;
-
-      // Toxic — splat blob
-      case ElementalType.toxic:
-        final r = 40.0 * p;
-        paint.color = color.withOpacity(fade * 0.85);
-        canvas.drawCircle(Offset(cx, cy), r, paint);
-        // Droplets
-        for (int i = 0; i < 5; i++) {
-          final angle = pi * 2 * i / 5;
-          final dr = r * 1.4;
-          canvas.drawCircle(
-            Offset(cx + cos(angle) * dr, cy + sin(angle) * dr),
-            8 * p * fade,
-            Paint()..color = color.withOpacity(fade * 0.6),
-          );
-        }
-        break;
-
-      // Rock — boulder chunks
-      case ElementalType.rock:
-        final rand = Random(42);
-        for (int i = 0; i < 8; i++) {
-          final angle = pi * 2 * i / 8 + rand.nextDouble();
-          final dist = 15 + rand.nextDouble() * 35 * p;
-          final bx = cx + cos(angle) * dist;
-          final by = cy + sin(angle) * dist;
-          final rect = Rect.fromCenter(
-            center: Offset(bx, by),
-            width: (8 + rand.nextDouble() * 8) * (1 - p * 0.3),
-            height: (8 + rand.nextDouble() * 8) * (1 - p * 0.3),
-          );
-          canvas.drawRect(rect, Paint()..color = color.withOpacity(fade));
-        }
-        break;
-
-      // Arthropod — claw marks (3 downward slashes)
-      case ElementalType.arthropod:
-        paint
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 5
-          ..strokeCap = StrokeCap.round;
-        for (int i = -1; i <= 1; i++) {
-          paint.color = color.withOpacity(fade);
-          final ox = cx + i * 18.0;
-          canvas.drawLine(
-            Offset(ox - 10, cy - 35 * p),
-            Offset(ox + 10, cy + 35 * p),
-            paint,
-          );
-        }
-        break;
-
-      // Electric — lightning bolt
-      case ElementalType.electric:
-        final path = Path();
-        path.moveTo(cx - 10, cy - 50 * p);
-        path.lineTo(cx + 8, cy - 5 * p);
-        path.lineTo(cx - 8, cy + 5 * p);
-        path.lineTo(cx + 10, cy + 50 * p);
-        canvas.drawPath(
-          path,
-          Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 7
-            ..strokeJoin = StrokeJoin.round
-            ..color = color.withOpacity(fade),
-        );
-        // Inner bright core
-        canvas.drawPath(
-          path,
-          Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 3
-            ..color = Colors.white.withOpacity(fade * 0.8),
-        );
-        break;
-
-      // Darkness — void spiral
-      case ElementalType.darkness:
-        paint
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 4;
-        for (int i = 0; i < 3; i++) {
-          final r2 = (20 + i * 12) * p;
-          paint.color = color.withOpacity(fade * (1 - i * 0.2));
-          final sweepAngle = pi * 2 * p;
-          canvas.drawArc(
-            Rect.fromCircle(center: Offset(cx, cy), radius: r2),
-            -pi / 2 + i * pi / 3,
-            sweepAngle,
-            false,
-            paint,
-          );
-        }
-        // Dark shroud
-        canvas.drawCircle(
-          Offset(cx, cy),
-          40 * p,
-          Paint()
-            ..style = PaintingStyle.fill
-            ..color = color.withOpacity(fade * 0.3),
-        );
-        break;
-
-      // Martial — impact stars + ring
-      case ElementalType.martial:
-        // Ring
-        canvas.drawCircle(
-          Offset(cx, cy),
-          55 * p,
-          Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 4
-            ..color = color.withOpacity(fade),
-        );
-        // 5-pointed star
-        _drawStar(canvas, Offset(cx, cy), 40 * p, 5, color.withOpacity(fade));
-        break;
-
-      // Blaze — fire burst
-      case ElementalType.blaze:
-        final rand2 = Random(12);
-        for (int i = 0; i < 10; i++) {
-          final angle = pi * 2 * rand2.nextDouble();
-          final len = (20 + rand2.nextDouble() * 40) * p;
-          final path = Path();
-          path.moveTo(cx, cy);
-          path.lineTo(cx + cos(angle) * len, cy + sin(angle) * len);
-          canvas.drawPath(
-            path,
-            Paint()
-              ..style = PaintingStyle.stroke
-              ..strokeWidth = 4 + rand2.nextDouble() * 4
-              ..color = color.withOpacity(fade * 0.9),
-          );
-        }
-        // Core glow
-        canvas.drawCircle(
-          Offset(cx, cy),
-          18 * p,
-          Paint()
-            ..style = PaintingStyle.fill
-            ..color = Colors.white.withOpacity(fade * 0.6),
-        );
-        break;
-
-      // Grass — leaf fan
-      case ElementalType.grass:
-        for (int i = 0; i < 6; i++) {
-          final angle = pi * 2 * i / 6;
-          final len = 50 * p;
-          final ctrl = Offset(
-            cx + cos(angle + 0.4) * len * 0.6,
-            cy + sin(angle + 0.4) * len * 0.6,
-          );
-          final end = Offset(cx + cos(angle) * len, cy + sin(angle) * len);
-          final path = Path()
-            ..moveTo(cx, cy)
-            ..quadraticBezierTo(ctrl.dx, ctrl.dy, end.dx, end.dy);
-          canvas.drawPath(
-            path,
-            Paint()
-              ..style = PaintingStyle.stroke
-              ..strokeWidth = 6
-              ..color = color.withOpacity(fade * 0.9),
-          );
-        }
-        break;
-
-      // Mystic — energy sigil rings
-      case ElementalType.mystic:
-        for (int i = 0; i < 4; i++) {
-          final r3 = (10 + i * 12) * p;
-          canvas.drawCircle(
-            Offset(
-              cx + cos(pi / 4 + i) * 10 * p,
-              cy + sin(pi / 4 + i) * 10 * p,
-            ),
-            r3,
-            Paint()
-              ..style = PaintingStyle.stroke
-              ..strokeWidth = 3
-              ..color = color.withOpacity(fade * (0.6 + i * 0.1)),
-          );
-        }
-        break;
-
-      // Spectral — ghostly wisp
-      case ElementalType.spectral:
-        for (int i = 0; i < 3; i++) {
-          final ox = cx + (i - 1) * 20.0;
-          final r4 = (25 + i * 8) * p;
-          canvas.drawOval(
-            Rect.fromCenter(
-              center: Offset(ox, cy),
-              width: r4,
-              height: r4 * 1.5,
-            ),
-            Paint()
-              ..style = PaintingStyle.fill
-              ..color = color.withOpacity(fade * (0.4 - i * 0.05)),
-          );
-        }
-        break;
-
-      // Drake — dragon claw + breath
-      case ElementalType.drake:
-        // Three wide claw marks
-        paint
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 6
-          ..strokeCap = StrokeCap.round;
-        for (int i = -1; i <= 1; i++) {
-          paint.color = color.withOpacity(fade);
-          final ox = cx + i * 22.0;
-          canvas.drawLine(
-            Offset(ox - 15, cy - 40 * p),
-            Offset(ox + 15, cy + 40 * p),
-            paint,
-          );
-        }
-        // Breath glow
-        canvas.drawCircle(
-          Offset(cx, cy),
-          30 * p,
-          Paint()
-            ..style = PaintingStyle.fill
-            ..color = color.withOpacity(fade * 0.4),
-        );
-        break;
-
-      // Metal — gear/gear-spike burst
-      case ElementalType.metal:
-        _drawStar(
-          canvas,
-          Offset(cx, cy),
-          50 * p,
-          6,
-          color.withOpacity(fade * 0.8),
-        );
-        canvas.drawCircle(
-          Offset(cx, cy),
-          15 * p,
-          Paint()..color = Colors.white.withOpacity(fade * 0.9),
-        );
-        break;
-
-      // Aura — pulsing concentric rings
-      case ElementalType.aura:
-        for (int i = 0; i < 4; i++) {
-          final r5 = (15 + i * 14) * p;
-          canvas.drawCircle(
-            Offset(cx, cy),
-            r5,
-            Paint()
-              ..style = PaintingStyle.stroke
-              ..strokeWidth = 3
-              ..color = color.withOpacity(fade * (0.9 - i * 0.15)),
-          );
-        }
-        break;
-
-      // Sound — expanding sound wave arcs
-      case ElementalType.sound:
-        paint
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 4;
-        for (int i = 0; i < 5; i++) {
-          final r6 = (15 + i * 16) * p;
-          paint.color = color.withOpacity(fade * (1 - i * 0.15));
-          canvas.drawArc(
-            Rect.fromCircle(center: Offset(cx, cy), radius: r6),
-            -pi * 0.7,
-            pi * 1.4,
-            false,
-            paint,
-          );
-        }
-        break;
-
-      // Holy — radiant cross + halo
-      case ElementalType.holy:
-        // Halo
-        canvas.drawCircle(
-          Offset(cx, cy),
-          50 * p,
-          Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 5
-            ..color = color.withOpacity(fade),
-        );
-        // Radiant cross
-        paint
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 5
-          ..color = Colors.white.withOpacity(fade);
-        canvas.drawLine(
-          Offset(cx, cy - 50 * p),
-          Offset(cx, cy + 50 * p),
-          paint,
-        );
-        canvas.drawLine(
-          Offset(cx - 50 * p, cy),
-          Offset(cx + 50 * p, cy),
-          paint,
-        );
-        break;
-    }
-  }
-
-  void _drawSlash(
-    Canvas canvas,
-    double cx,
-    double cy,
-    double len,
-    Paint paint,
-  ) {
-    canvas.drawLine(
-      Offset(cx - len, cy - len),
-      Offset(cx + len, cy + len),
-      paint,
-    );
-    canvas.drawLine(
-      Offset(cx + len, cy - len),
-      Offset(cx - len, cy + len),
-      paint,
-    );
-  }
-
-  void _drawStar(
-    Canvas canvas,
-    Offset center,
-    double radius,
-    int points,
-    Color color,
-  ) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
-    final path = Path();
-    for (int i = 0; i < points * 2; i++) {
-      final r = i.isEven ? radius : radius * 0.45;
-      final angle = -pi / 2 + pi * i / points;
-      final x = center.dx + cos(angle) * r;
-      final y = center.dy + sin(angle) * r;
-      if (i == 0) {
-        path.moveTo(x, y);
-      } else {
-        path.lineTo(x, y);
-      }
-    }
-    path.close();
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(_PhysicalHitPainter old) => old.progress != progress;
 }
 
 // ----------------------------------------------------------------

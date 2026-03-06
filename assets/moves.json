@@ -143,6 +143,7 @@
         "name": "Ice Beam",
         "description": "10% chance to freeze the opponent.",
         "soundEffect": "audio/effects/ice_beam.mp3",
+        "animationType": "ice_beam_column",
         "baseDamage": 90,
         "type": "cryo",
         "accuracy": 100,
@@ -165,6 +166,7 @@
         "accuracy": 95,
         "stamina": 15,
         "category": "physical",
+        "animationType": "bite",
         "isBite": true,
         "effects": [
             {
@@ -176,6 +178,7 @@
     },
     {
         "name": "Ice Punch",
+        "animationType": "elemental_melee",
         "description": "10% chance to freeze the opponent.",
         "baseDamage": 75,
         "type": "cryo",
@@ -193,6 +196,7 @@
     },
     {
         "name": "Fire Punch",
+        "animationType": "elemental_melee",
         "description": "10% chance to burn the opponent.",
         "baseDamage": 75,
         "type": "blaze",
@@ -281,6 +285,7 @@
         "accuracy": 95,
         "stamina": 15,
         "category": "physical",
+        "animationType": "fire_fang",
         "isBite": true,
         "effects": [
             {
@@ -620,6 +625,7 @@
         "baseDamage": 65,
         "type": "toxic",
         "stamina": 15,
+        "animationType": "bite",
         "category": "physical",
         "isBite": true,
         "effects": [
@@ -1731,6 +1737,25 @@
         ]
     },
     {
+        "name": "Sludge Bomb",
+        "animationType": "blob",
+        "description": "10% chance to poison the target.",
+        "soundEffect": "audio/effects/flamethrower.mp3",
+        "baseDamage": 90,
+        "accuracy": 100,
+        "type": "toxic",
+        "stamina": 15,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statusPoison",
+                "target": "opponent",
+                "value": 1,
+                "chance": 10
+            }
+        ]
+    },
+    {
         "name": "Heat Wave",
         "description": "10% chance to burn the target.",
         "soundEffect": "audio/effects/flamethrower.mp3",
@@ -1770,6 +1795,7 @@
     {
         "name": "Power Gem",
         "description": "10% chance to burn the target.",
+        "animationType": "rock",
         "baseDamage": 80,
         "accuracy": 100,
         "type": "rock",
@@ -1870,6 +1896,7 @@
     {
         "name": "Moonblast",
         "description": "10% chance to lower the target's power.",
+        "animationType": "slash",
         "baseDamage": 90,
         "accuracy": 100,
         "type": "mystic",
@@ -1888,6 +1915,7 @@
     {
         "name": "Shadow Ball",
         "description": "20% chance to lower the target's resistance.",
+        "animationType": "slash",
         "baseDamage": 80,
         "accuracy": 100,
         "type": "spectral",
@@ -1906,6 +1934,7 @@
     {
         "name": "Energy Ball",
         "description": "20% chance to lower the target's resistance.",
+        "animationType": "slash",
         "baseDamage": 80,
         "accuracy": 100,
         "type": "grass",
@@ -2003,6 +2032,7 @@
     {
         "name": "Dark Pulse",
         "description": "30% chance to stun the target.",
+        "animationType": "blob",
         "baseDamage": 80,
         "accuracy": 100,
         "type": "darkness",
@@ -2037,6 +2067,7 @@
     {
         "name": "Rock Slide",
         "description": "30% chance to stun the target.",
+        "animationType": "rock",
         "baseDamage": 75,
         "accuracy": 90,
         "type": "rock",
@@ -2601,6 +2632,7 @@
     },
     {
         "name": "Bite",
+        "animationType": "bite",
         "description": "Bites with vicious fangs.",
         "soundEffect": "audio/effects/chomp.mp3",
         "baseDamage": 60,
@@ -2611,6 +2643,7 @@
     },
     {
         "name": "Crunch",
+        "animationType": "bite",
         "description": "Bites with vicious fangs.",
         "soundEffect": "audio/effects/chomp.mp3",
         "baseDamage": 80,
@@ -2674,6 +2707,7 @@
         "type": "aquatic",
         "stamina": 15,
         "category": "physical",
+        "animationType": "aqua_fang",
         "isBite": true,
         "effects": [
             {
@@ -3045,6 +3079,7 @@
         "name": "Ice Shard",
         "description": "Strikes first.",
         "soundEffect": "audio/effects/agile.mp3",
+        "animationType": "ice_shard_single",
         "baseDamage": 40,
         "priority": 1,
         "type": "cryo",
@@ -4067,6 +4102,7 @@
         "type": "martial",
         "stamina": 15,
         "category": "physical",
+        "animationType": "close_combat",
         "effects": [
             {
                 "type": "multiStatChange",
@@ -4078,6 +4114,7 @@
     {
         "name": "Focus Blast",
         "description": "Also known as Focus Miss.",
+        "animationType": "slash",
         "baseDamage": 120,
         "type": "martial",
         "stamina": 15,
@@ -4091,6 +4128,7 @@
         "type": "martial",
         "stamina": 15,
         "category": "physical",
+        "animationType": "close_combat",
         "effects": [
             {
                 "type": "multiStatChange",
@@ -4293,6 +4331,7 @@
     {
         "name": "Ancient Power",
         "description": "The user attacks with a prehistoric power. This may also raise all the user's stats at once.",
+        "animationType": "rock",
         "baseDamage": 60,
         "type": "rock",
         "stamina": 5,
@@ -4478,6 +4517,17 @@
         "stamina": 10,
         "category": "physical",
         "damageStat": "defense",
+        "effects": []
+    },
+    {
+        "name": "Bullet Punch",
+        "animationType": "melee",
+        "description": "The user delivers a tough punch as fast as a bullet.",
+        "baseDamage": 40,
+        "type": "martial",
+        "stamina": 5,
+        "category": "physical",
+        "priority": 1,
         "effects": []
     },
     {
@@ -5072,6 +5122,7 @@
         "accuracy": 100,
         "stamina": 5,
         "category": "special",
+        "animationType": "eruption",
         "effects": [
             {
                 "type": "hpRatioDamage"
@@ -5080,7 +5131,7 @@
     },
     {
         "name": "Water Spout",
-        "animationType": "blob",
+        "animationType": "water_spout",
         "description": "The user attacks by spouting water. The higher the user's HP, the greater the move's power.",
         "soundEffect": "audio/effects/water_spout.mp3",
         "baseDamage": 150,
@@ -5443,6 +5494,7 @@
     },
     {
         "name": "Focus Punch",
+        "animationType": "melee",
         "description": "The user focuses its mind before launching a punch. This move fails if the user is hit before it is used.",
         "baseDamage": 150,
         "type": "martial",
@@ -5762,6 +5814,16 @@
         "accuracy": 0,
         "stamina": 10,
         "category": "physical",
+        "isContact": true
+    },
+    {
+        "name": "Aura Sphere",
+        "description": "The user slashes the target after making a deep bow. This move never misses.",
+        "baseDamage": 80,
+        "type": "martial",
+        "accuracy": 0,
+        "stamina": 20,
+        "category": "special",
         "isContact": true
     },
     {

@@ -583,6 +583,9 @@ class BattleStats {
   int totalDamageTaken;
   bool isItemRevealed;
   bool isAbilityRevealed;
+  bool isPrismorphed;
+  bool hasPrismorphedThisBattle;
+  ElementalType? activeTeraType;
   final Set<String> revealedMoves;
 
   BattleStats({
@@ -591,6 +594,9 @@ class BattleStats {
     this.totalDamageTaken = 0,
     this.isItemRevealed = false,
     this.isAbilityRevealed = false,
+    this.isPrismorphed = false,
+    this.hasPrismorphedThisBattle = false,
+    this.activeTeraType,
     Set<String>? revealedMoves,
   }) : revealedMoves = revealedMoves ?? {};
 }
