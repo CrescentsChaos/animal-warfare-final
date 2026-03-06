@@ -4553,6 +4553,7 @@
         "name": "Crippling Bite",
         "description": "A deep, jagged bite that causes heavy bleeding and hampers the foe's movement.",
         "soundEffect": "audio/effects/chomp.mp3",
+        "animationType": "bite",
         "baseDamage": 70,
         "accuracy": 70,
         "type": "darkness",

@@ -1185,6 +1185,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               SafeArea(
                 child: Stack(
                   children: [
+                    // Portrait layout uses a Column with fixed bottom panel
                     OrientationBuilder(
                       builder: (context, orientation) {
                         final isLandscape =
@@ -1273,64 +1274,144 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                           );
                         }
 
-                        // Portrait layout (Background sprites/statuses)
+                        // Portrait layout: split into battle field (top) + bottom panel (fixed)
                         return Column(
                           children: [
-                            _buildHeader(context, battleManager, overlayColor),
-                            const SizedBox(height: 2),
-                            const Divider(height: 1, color: Colors.white24),
-                            const SizedBox(height: 2),
-                            _buildFieldEffects(context, battleManager),
-                            const SizedBox(height: 0),
-                            const SizedBox(height: 2),
+                            // === BATTLE FIELD AREA (top, flexible height) ===
                             Expanded(
-                              child: SingleChildScrollView(
-                                child: Column(
-                                  children: [
-                                    AnimatedBuilder(
-                                      animation: _opponentShakeAnimation,
-                                      builder: (context, child) =>
-                                          Transform.translate(
-                                            offset: Offset(
-                                              _opponentShakeAnimation.value,
-                                              0,
+                              child: Column(
+                                children: [
+                                  _buildHeader(
+                                    context,
+                                    battleManager,
+                                    overlayColor,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  const Divider(
+                                    height: 1,
+                                    color: Colors.white24,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  _buildFieldEffects(context, battleManager),
+                                  const SizedBox(height: 2),
+                                  Expanded(
+                                    child: LayoutBuilder(
+                                      builder: (context, constraints) {
+                                        return Stack(
+                                          clipBehavior: Clip.hardEdge,
+                                          children: [
+                                            SingleChildScrollView(
+                                              physics:
+                                                  const NeverScrollableScrollPhysics(),
+                                              child: SizedBox(
+                                                height: constraints.maxHeight,
+                                                child: Column(
+                                                  children: [
+                                                    AnimatedBuilder(
+                                                      animation:
+                                                          _opponentShakeAnimation,
+                                                      builder: (context, child) =>
+                                                          Transform.translate(
+                                                            offset: Offset(
+                                                              _opponentShakeAnimation
+                                                                  .value,
+                                                              0,
+                                                            ),
+                                                            child: child,
+                                                          ),
+                                                      child: _buildOpponentStatus(
+                                                        context,
+                                                        battleManager.opponent,
+                                                        overlayColor,
+                                                        isNarrow,
+                                                        battleManager
+                                                            .opponentHazards,
+                                                        battleManager,
+                                                        spriteKey:
+                                                            _opponentSpriteKey,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 4),
+                                                    AnimatedBuilder(
+                                                      animation:
+                                                          _playerShakeAnimation,
+                                                      builder: (context, child) =>
+                                                          Transform.translate(
+                                                            offset: Offset(
+                                                              _playerShakeAnimation
+                                                                  .value,
+                                                              0,
+                                                            ),
+                                                            child: child,
+                                                          ),
+                                                      child: _buildPlayerStatus(
+                                                        context,
+                                                        battleManager.player,
+                                                        overlayColor,
+                                                        isNarrow,
+                                                        battleManager
+                                                            .playerHazards,
+                                                        spriteKey:
+                                                            _playerSpriteKey,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 8),
+                                                  ],
+                                                ),
+                                              ),
                                             ),
-                                            child: child,
-                                          ),
-                                      child: _buildOpponentStatus(
-                                        context,
-                                        battleManager.opponent,
-                                        overlayColor,
-                                        isNarrow,
-                                        battleManager.opponentHazards,
-                                        battleManager,
-                                        spriteKey: _opponentSpriteKey,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    AnimatedBuilder(
-                                      animation: _playerShakeAnimation,
-                                      builder: (context, child) =>
-                                          Transform.translate(
-                                            offset: Offset(
-                                              _playerShakeAnimation.value,
-                                              0,
+                                            // Animations clipped to battle field only
+                                            ..._moveAnims.map(
+                                              (anim) =>
+                                                  anims.MoveAnimationOverlay(
+                                                    key: ValueKey(anim.id),
+                                                    data: anim,
+                                                    playerLink: _playerLink,
+                                                    opponentLink: _opponentLink,
+                                                  ),
                                             ),
-                                            child: child,
-                                          ),
-                                      child: _buildPlayerStatus(
-                                        context,
-                                        battleManager.player,
-                                        overlayColor,
-                                        isNarrow,
-                                        battleManager.playerHazards,
-                                        spriteKey: _playerSpriteKey,
-                                      ),
+                                          ],
+                                        );
+                                      },
                                     ),
-                                    // Small spacer so sprites don't touch the bottom bar
-                                    const SizedBox(height: 8),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            // === BOTTOM PANEL (fixed, never moves) ===
+                            Container(
+                              color: Colors.black.withOpacity(0.85),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  // Text log — always visible
+                                  _buildMessageBox(
+                                    context,
+                                    battleManager.battleLog,
+                                    isNarrow,
+                                    expanded: false,
+                                  ),
+                                  // Team circles — always visible (only in arena)
+                                  if (widget.isArenaBattle)
+                                    _buildTeamIndicators(
+                                      context,
+                                      battleManager,
+                                    ),
+                                  // Move controls — only during input
+                                  if (battleManager.currentState ==
+                                      BattleState.waitingForInput) ...[
+                                    _buildActionControls(
+                                      context,
+                                      battleManager,
+                                      overlayColor,
+                                      isNarrow,
+                                      userState,
+                                    ),
+                                  ] else ...[
+                                    const SizedBox(height: 20),
                                   ],
-                                ),
+                                ],
                               ),
                             ),
                           ],
