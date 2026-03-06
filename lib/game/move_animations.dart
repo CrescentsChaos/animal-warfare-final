@@ -49,8 +49,8 @@ class BlobStreamEffect extends StatelessWidget {
           // Refined: starts exactly from middle of attacker sprite (cx=80, cy=80)
           // Previous startX was cx - 100, startY was cy + 110
           double startX =
-              cx - 180; // Approximate attacker center in relative coordinates
-          double startY = cy + 180;
+              cx - 200; // Approximate attacker center in relative coordinates
+          double startY = cy + 190;
           double endX = cx;
           double endY = cy;
 
@@ -168,8 +168,8 @@ class SlashEffect extends StatelessWidget {
                 angle: rotation,
                 child: Image.asset(
                   imagePath,
-                  width: 100,
-                  height: 100,
+                  width: 40,
+                  height: 40,
                   fit: BoxFit.contain,
                 ),
               ),
@@ -238,8 +238,8 @@ class BraveBirdEffect extends StatelessWidget {
                 angle: rotation,
                 child: Image.asset(
                   'assets/move_effects/bird.png',
-                  width: 100,
-                  height: 100,
+                  width: 40,
+                  height: 40,
                   fit: BoxFit.contain,
                 ),
               ),
@@ -486,8 +486,8 @@ class ElementalMeleeEffect extends StatelessWidget {
               scale: 0.5 + p * 2.5,
               child: Image.asset(
                 blobImage,
-                width: 100,
-                height: 100,
+                width: 40,
+                height: 40,
                 fit: BoxFit.contain,
               ),
             ),
@@ -600,8 +600,8 @@ class BeamEffect extends StatelessWidget {
     final cy = size / 2;
 
     // Movement: straight beam from attacker to target
-    double startX = cx - 180;
-    double startY = cy + 180;
+    double startX = cx - 200;
+    double startY = cy + 190;
     double endX = cx;
     double endY = cy;
 
@@ -932,6 +932,14 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
           ? 'assets/move_effects/aura_sphere.png'
           : move.name.toLowerCase() == 'focus blast'
           ? 'assets/move_effects/focus_blast.png'
+          : move.name.toLowerCase() == 'electro ball'
+          ? 'assets/move_effects/electric_ball.png'
+          : move.name.toLowerCase() == 'volt switch'
+          ? 'assets/move_effects/electric_ball.png'
+          : move.name.toLowerCase() == 'u-turn'
+          ? 'assets/move_effects/greenball.png'
+          : move.name.toLowerCase() == 'flip turn'
+          ? 'assets/move_effects/blueball.png'
           : 'assets/move_effects/air_slash.png';
 
       return AnimatedBuilder(
@@ -1075,7 +1083,7 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
       );
     }
 
-    if (move.animationType == 'ice_beam_column') {
+    if (move.animationType == 'beam_column') {
       return AnimatedBuilder(
         animation: _progress,
         builder: (context, _) {
@@ -1131,7 +1139,15 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
       );
     }
 
-    if (move.animationType == 'ice_shard_single') {
+    if (move.animationType == 'single_attack') {
+      // ice_shard_single
+      final imagePath = move.name.toLowerCase() == 'water gun'
+          ? 'assets/move_effects/aqua.png'
+          : move.name.toLowerCase() == 'ember'
+          ? 'assets/move_effects/flame.png'
+          : move.name.toLowerCase() == 'sludge'
+          ? 'assets/move_effects/sludge.png'
+          : 'assets/move_effects/ice.png';
       return AnimatedBuilder(
         animation: _progress,
         builder: (context, _) {
@@ -1141,7 +1157,7 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
             followerAnchor: Alignment.center,
             targetAnchor: Alignment.center,
             child: SingleProjectileEffect(
-              imagePath: 'assets/move_effects/ice.png',
+              imagePath: imagePath,
               progress: _progress.value,
               isPlayer: isPlayer,
             ),
@@ -1188,7 +1204,26 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
       );
     }
 
-    if (move.animationType == 'ice_beam') {
+    if (move.animationType == 'beam_column') {
+      String imagePath;
+      final rand = math.Random(42);
+      if (move.name.toLowerCase() == 'hyper beam') {
+        final options = [
+          'assets/move_effects/redball.png',
+          'assets/move_effects/yellowball.png',
+          'assets/move_effects/smallyellowball.png',
+          'assets/move_effects/smallredball.png',
+        ];
+        imagePath = options[rand.nextInt(options.length)];
+      } else if (move.name.toLowerCase() == 'solar beam') {
+        final options = [
+          'assets/move_effects/yellowball.png',
+          'assets/move_effects/smallyellowball.png',
+        ];
+        imagePath = options[rand.nextInt(options.length)];
+      } else {
+        imagePath = 'assets/move_effects/ice.png';
+      }
       return AnimatedBuilder(
         animation: _progress,
         builder: (context, _) {
@@ -1198,7 +1233,7 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
             followerAnchor: Alignment.center,
             targetAnchor: Alignment.center,
             child: BeamEffect(
-              imagePath: 'assets/move_effects/ice.png',
+              imagePath: imagePath,
               progress: _progress.value,
               isPlayer: isPlayer,
             ),

@@ -411,8 +411,11 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       playerMoves = _getOrganismMoves(trainer);
       addToLog('You have no animals! You must defend yourself!');
     } else {
-      // Automatic lead: index 0
-      currentPlayerIndex = 0;
+      // In roguelike mode, we already set currentPlayerIndex in the constructor.
+      // In normal mode, auto-select index 0.
+      if (!isRogueMode) currentPlayerIndex = 0;
+      // Guard: clamp to valid range
+      if (currentPlayerIndex >= playerTeam.length) currentPlayerIndex = 0;
       final lead = playerTeam[currentPlayerIndex];
       player = BattleOrganism(
         lead,
