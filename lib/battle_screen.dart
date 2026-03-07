@@ -1110,7 +1110,12 @@ class _BattleScreenContentState extends State<BattleScreenContent>
 
     // Moved _handleBattleEnd to _handleStateTriggers (listener) to avoid build-phase side effects.
 
-    final overlayColor = Colors.black.withOpacity(0.5);
+    final overlayColor = const Color.fromARGB(
+      255,
+      0,
+      0,
+      0,
+    ).withOpacity(0.5); //majority of black
 
     // Initialize/Update listener
     battleManager.onAttack = _onAttack;
@@ -1156,7 +1161,12 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                         fit: BoxFit.cover,
                         colorFilter: timeOfDay == 'day'
                             ? ColorFilter.mode(
-                                Colors.black.withOpacity(0.5),
+                                const Color.fromARGB(
+                                  255,
+                                  0,
+                                  0,
+                                  0,
+                                ).withOpacity(0.5),
                                 BlendMode.darken,
                               )
                             : ColorFilter.mode(
@@ -1279,94 +1289,119 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                         return Column(
                           children: [
                             // === BATTLE FIELD AREA (top, takes only needed height) ===
-                            _buildHeader(context, battleManager, overlayColor),
-                            const SizedBox(height: 2),
-                            const Divider(height: 1, color: Colors.white24),
-                            const SizedBox(height: 2),
-                            _buildFieldEffects(context, battleManager),
-                            const SizedBox(height: 2),
-                            // Participant area - takes min height
-                            LayoutBuilder(
-                              builder: (context, constraints) {
-                                return Stack(
-                                  clipBehavior: Clip.hardEdge,
-                                  children: [
-                                    Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        AnimatedBuilder(
-                                          animation: _opponentShakeAnimation,
-                                          builder: (context, child) =>
-                                              Transform.translate(
-                                                offset: Offset(
-                                                  _opponentShakeAnimation.value,
-                                                  0,
+                            Flexible(
+                              fit: FlexFit.loose,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  _buildHeader(
+                                    context,
+                                    battleManager,
+                                    overlayColor,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  const Divider(
+                                    height: 1,
+                                    color: Colors.white24,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  _buildFieldEffects(context, battleManager),
+                                  const SizedBox(height: 2),
+                                  // Participant area - takes min height
+                                  LayoutBuilder(
+                                    builder: (context, constraints) {
+                                      return Stack(
+                                        clipBehavior: Clip.hardEdge,
+                                        children: [
+                                          Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              AnimatedBuilder(
+                                                animation:
+                                                    _opponentShakeAnimation,
+                                                builder: (context, child) =>
+                                                    Transform.translate(
+                                                      offset: Offset(
+                                                        _opponentShakeAnimation
+                                                            .value,
+                                                        0,
+                                                      ),
+                                                      child: child,
+                                                    ),
+                                                child: _buildOpponentStatus(
+                                                  context,
+                                                  battleManager.opponent,
+                                                  overlayColor,
+                                                  isNarrow,
+                                                  battleManager.opponentHazards,
+                                                  battleManager,
+                                                  spriteKey: _opponentSpriteKey,
                                                 ),
-                                                child: child,
                                               ),
-                                          child: _buildOpponentStatus(
-                                            context,
-                                            battleManager.opponent,
-                                            overlayColor,
-                                            isNarrow,
-                                            battleManager.opponentHazards,
-                                            battleManager,
-                                            spriteKey: _opponentSpriteKey,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        AnimatedBuilder(
-                                          animation: _playerShakeAnimation,
-                                          builder: (context, child) =>
-                                              Transform.translate(
-                                                offset: Offset(
-                                                  _playerShakeAnimation.value,
-                                                  0,
+                                              const SizedBox(height: 4),
+                                              AnimatedBuilder(
+                                                animation:
+                                                    _playerShakeAnimation,
+                                                builder: (context, child) =>
+                                                    Transform.translate(
+                                                      offset: Offset(
+                                                        _playerShakeAnimation
+                                                            .value,
+                                                        0,
+                                                      ),
+                                                      child: child,
+                                                    ),
+                                                child: _buildPlayerStatus(
+                                                  context,
+                                                  battleManager.player,
+                                                  overlayColor,
+                                                  isNarrow,
+                                                  battleManager.playerHazards,
+                                                  battleManager,
+                                                  spriteKey: _playerSpriteKey,
                                                 ),
-                                                child: child,
                                               ),
-                                          child: _buildPlayerStatus(
-                                            context,
-                                            battleManager.player,
-                                            overlayColor,
-                                            isNarrow,
-                                            battleManager.playerHazards,
-                                            battleManager,
-                                            spriteKey: _playerSpriteKey,
+                                              const SizedBox(height: 8),
+                                            ],
                                           ),
-                                        ),
-                                        const SizedBox(height: 8),
-                                      ],
-                                    ),
-                                    // Animations clipped to battle field only
-                                    ..._moveAnims.map(
-                                      (anim) => anims.MoveAnimationOverlay(
-                                        key: ValueKey(anim.id),
-                                        data: anim,
-                                        playerLink: _playerLink,
-                                        opponentLink: _opponentLink,
-                                      ),
-                                    ),
-                                    // Stat Change Indicators
-                                    ..._indicators.map((indicator) {
-                                      return _FloatingIndicatorWidget(
-                                        key: ValueKey(indicator.id),
-                                        data: indicator,
-                                        link: indicator.isPlayer
-                                            ? _playerLink
-                                            : _opponentLink,
+                                          // Animations clipped to battle field only
+                                          ..._moveAnims.map(
+                                            (anim) =>
+                                                anims.MoveAnimationOverlay(
+                                                  key: ValueKey(anim.id),
+                                                  data: anim,
+                                                  playerLink: _playerLink,
+                                                  opponentLink: _opponentLink,
+                                                ),
+                                          ),
+                                          // Stat Change Indicators
+                                          ..._indicators.map((indicator) {
+                                            return _FloatingIndicatorWidget(
+                                              key: ValueKey(indicator.id),
+                                              data: indicator,
+                                              link: indicator.isPlayer
+                                                  ? _playerLink
+                                                  : _opponentLink,
+                                            );
+                                          }),
+                                        ],
                                       );
-                                    }),
-                                  ],
-                                );
-                              },
+                                    },
+                                  ),
+                                ],
+                              ),
                             ),
                             // UI Panel - Expanded to fill remaining space (the "red spot")
                             Expanded(
                               child: SafeArea(
                                 top: false,
                                 child: Container(
-                                  color: Colors.black.withOpacity(0.85),
+                                  color: const Color.fromARGB(
+                                    255,
+                                    255,
+                                    0,
+                                    0,
+                                  ).withOpacity(0.0), //criminal background
                                   child: Column(
                                     children: [
                                       // Text log — Expanded to fill available space
@@ -1624,13 +1659,13 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                       if (bm.playerReflectTurns > 0)
                         _buildEffectIndicator(
                           'REFL (${bm.playerReflectTurns})',
-                          Colors.orange,
+                          const Color.fromARGB(235, 255, 21, 204),
                           Icons.shield,
                         ),
                       if (bm.playerLightScreenTurns > 0)
                         _buildEffectIndicator(
                           'L.SCR (${bm.playerLightScreenTurns})',
-                          Colors.yellow.shade700,
+                          const Color.fromARGB(216, 251, 193, 45),
                           Icons.wb_sunny,
                         ),
                       if (bm.playerAuroraVeilTurns > 0)
@@ -1664,13 +1699,13 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                       if (bm.opponentReflectTurns > 0)
                         _buildEffectIndicator(
                           'FOE REFL (${bm.opponentReflectTurns})',
-                          Colors.orange.shade800,
+                          const Color.fromARGB(255, 255, 28, 198),
                           Icons.shield,
                         ),
                       if (bm.opponentLightScreenTurns > 0)
                         _buildEffectIndicator(
                           'FOE L.SCR (${bm.opponentLightScreenTurns})',
-                          Colors.yellow.shade900,
+                          const Color.fromARGB(221, 245, 193, 23),
                           Icons.wb_sunny,
                         ),
                       if (bm.opponentAuroraVeilTurns > 0)
@@ -1693,7 +1728,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(
-        color: Colors.blue.withOpacity(0.5),
+        color: const Color.fromARGB(176, 33, 149, 243).withOpacity(0.5),
         borderRadius: BorderRadius.circular(6),
         border: Border.all(color: Colors.white70),
       ),
@@ -1712,7 +1747,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(
-        color: Colors.purple.withOpacity(0.5),
+        color: const Color.fromARGB(197, 176, 39, 39).withOpacity(0.5),
         borderRadius: BorderRadius.circular(6),
         border: Border.all(color: Colors.white70),
       ),
@@ -2361,15 +2396,27 @@ class _BattleScreenContentState extends State<BattleScreenContent>
         child: Container(
           padding: EdgeInsets.all(isNarrow ? 10 : 16),
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.5),
+            color: const Color.fromARGB(
+              255,
+              0,
+              0,
+              0,
+            ).withOpacity(0.5), //foregound of box
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: _isFastMode ? Colors.yellowAccent : _getBiomeThemeColor(),
+              color: _isFastMode
+                  ? Colors.yellowAccent
+                  : _getBiomeThemeColor(), // yellow outline
               width: 2,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.5),
+                color: const Color.fromARGB(
+                  255,
+                  0,
+                  0,
+                  0,
+                ).withOpacity(0.5), // shadow of foreground
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -2567,7 +2614,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
         border: Border.all(color: _getBiomeThemeColor(), width: 2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.5),
+            color: Colors.black.withOpacity(0.5), // action panel box shadow
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -2807,7 +2854,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                                         shadows: [
                                           const Shadow(
                                             blurRadius: 2,
-                                            color: Colors.black54,
+                                            color: Color.fromARGB(136, 0, 0, 0),
                                             offset: Offset(1, 1),
                                           ),
                                         ],
@@ -5805,31 +5852,31 @@ class _BattleSpriteState extends State<_BattleSprite>
               },
             ),
             // Stat Change Arrows Overlay
-            AnimatedBuilder(
-              animation: _statUpdateController,
-              builder: (context, child) {
-                if (_statUpdateController.value == 0)
-                  return const SizedBox.shrink();
-                return Positioned(
-                  top: _statUpdateOffset.value - 40,
-                  child: Opacity(
-                    opacity: _statUpdateOpacity.value,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          _isStatIncrease
-                              ? Icons.keyboard_arrow_up
-                              : Icons.keyboard_arrow_down,
-                          color: _statColor,
-                          size: 40,
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
+            // AnimatedBuilder(
+            //   animation: _statUpdateController,
+            //   builder: (context, child) {
+            //     if (_statUpdateController.value == 0)
+            //       return const SizedBox.shrink();
+            //     return Positioned(
+            //       top: _statUpdateOffset.value - 40,
+            //       child: Opacity(
+            //         opacity: _statUpdateOpacity.value,
+            //         child: Column(
+            //           mainAxisSize: MainAxisSize.min,
+            //           children: [
+            //             Icon(
+            //               _isStatIncrease
+            //                   ? Icons.keyboard_arrow_up
+            //                   : Icons.keyboard_arrow_down,
+            //               color: _statColor,
+            //               size: 40,
+            //             ),
+            //           ],
+            //         ),
+            //       ),
+            //     );
+            //   },
+            // ),
             if (!isInvulnerable && overlayPath != null)
               Positioned.fill(
                 child: Transform.translate(

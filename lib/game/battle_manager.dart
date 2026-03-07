@@ -3456,6 +3456,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   }
 
   Future<void> _applyGlobalTurnEffects() async {
+    if (_lastGlobalFinalizeTurn == currentTurn) return;
+    _lastGlobalFinalizeTurn = currentTurn;
+
     // Weather
     if (weatherTurnsLeft > 0) {
       weatherTurnsLeft--;
@@ -3490,7 +3493,6 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           if (user != null) {
             addToLog('The future sight attack hit ${organism.name}!');
             // Calculate damage now
-            // Future Sight is 120 power, special (power), typeless/neutral usually
             if (organism.isProtected) {
               addToLog(
                 '${organism.name} protected itself from the foreseen attack!',
@@ -3586,6 +3588,29 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         if (!isTesting)
           await Future.delayed(const Duration(milliseconds: 3000));
       }
+    }
+
+    // Trick Room
+    if (trickRoomTurns > 0) {
+      trickRoomTurns--;
+      if (trickRoomTurns == 0) {
+        addToLog('The dimensions returned to normal!');
+        notifyListeners();
+        if (!isTesting)
+          await Future.delayed(const Duration(milliseconds: 3000));
+      }
+    }
+
+    // Tailwind
+    if (playerTailwindTurns > 0) {
+      playerTailwindTurns--;
+      if (playerTailwindTurns == 0)
+        addToLog('Your team\'s tailwind petered out!');
+    }
+    if (opponentTailwindTurns > 0) {
+      opponentTailwindTurns--;
+      if (opponentTailwindTurns == 0)
+        addToLog('The opposing team\'s tailwind petered out!');
     }
 
     // Screens
@@ -4502,57 +4527,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       await _handlePerishSong(player);
       await _handlePerishSong(opponent);
 
-      // Decimate field effect counters - ONLY ONCE PER TURN
-      if (_lastGlobalFinalizeTurn != currentTurn) {
-        _lastGlobalFinalizeTurn = currentTurn;
-
-        if (trickRoomTurns > 0) {
-          trickRoomTurns--;
-          if (trickRoomTurns == 0)
-            addToLog('The dimensions returned to normal!');
-        }
-        if (playerTailwindTurns > 0) {
-          playerTailwindTurns--;
-          if (playerTailwindTurns == 0)
-            addToLog('The player\'s tailwind petered out!');
-        }
-        if (opponentTailwindTurns > 0) {
-          opponentTailwindTurns--;
-          if (opponentTailwindTurns == 0)
-            addToLog('The opponent\'s tailwind petered out!');
-        }
-
-        // Decimate Screen counters
-        if (playerReflectTurns > 0) {
-          playerReflectTurns--;
-          if (playerReflectTurns == 0) addToLog('Your reflect wore off!');
-        }
-        if (opponentReflectTurns > 0) {
-          opponentReflectTurns--;
-          if (opponentReflectTurns == 0)
-            addToLog('The opponent\'s reflect wore off!');
-        }
-        if (playerLightScreenTurns > 0) {
-          playerLightScreenTurns--;
-          if (playerLightScreenTurns == 0)
-            addToLog('Your light screen wore off!');
-        }
-        if (opponentLightScreenTurns > 0) {
-          opponentLightScreenTurns--;
-          if (opponentLightScreenTurns == 0)
-            addToLog('The opponent\'s light screen wore off!');
-        }
-        if (playerAuroraVeilTurns > 0) {
-          playerAuroraVeilTurns--;
-          if (playerAuroraVeilTurns == 0)
-            addToLog('Your aurora veil wore off!');
-        }
-        if (opponentAuroraVeilTurns > 0) {
-          opponentAuroraVeilTurns--;
-          if (opponentAuroraVeilTurns == 0)
-            addToLog('The opponent\'s aurora veil wore off!');
-        }
-      }
+      // Track if we are in the middle of a multi-hit move to avoid repeating logic
       // Track if we are in the middle of a multi-hit move to avoid repeating logic
       _isProcessingHits = false;
 

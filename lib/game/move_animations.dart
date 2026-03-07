@@ -49,8 +49,8 @@ class BlobStreamEffect extends StatelessWidget {
           // Refined: starts exactly from middle of attacker sprite (cx=80, cy=80)
           // Previous startX was cx - 100, startY was cy + 110
           double startX =
-              cx - 200; // Approximate attacker center in relative coordinates
-          double startY = cy + 190;
+              cx - 210; // Approximate attacker center in relative coordinates
+          double startY = cy + 150;
           double endX = cx;
           double endY = cy;
 
@@ -108,6 +108,181 @@ class BlobStreamEffect extends StatelessWidget {
 }
 
 // ----------------------------------------------------------------
+// Swords Dance Effect (Circling Swords)
+// ----------------------------------------------------------------
+class BuffEffect extends StatelessWidget {
+  final double progress;
+  final bool isPlayer;
+  final String imagePath;
+
+  const BuffEffect({
+    super.key,
+    required this.imagePath,
+    required this.progress,
+    required this.isPlayer,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const size = 160.0;
+    const numSwords = 2;
+    final p = progress.clamp(0.0, 1.0);
+
+    // Fade in (0-20%), hold, then fade out (80-100%)
+    final opacity = p < 0.2 ? p / 0.2 : (p > 0.8 ? (1.0 - p) / 0.2 : 1.0);
+
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Stack(
+        alignment: Alignment.center,
+        clipBehavior: Clip.none,
+        children: List.generate(numSwords, (index) {
+          // Circular motion: 2 full rotations (4 * PI) over the duration
+          final angle = (p * math.pi * 4) + (index * math.pi);
+
+          // Radius stays consistent or pulses slightly
+          final radius = 65.0 + math.sin(p * math.pi * 4) * 5.0;
+
+          final dx = math.cos(angle) * radius;
+          final dy = math.sin(angle) * radius;
+
+          // Rotation: adjust by 45 degrees so sword points inward/forward
+          final swordRotation = angle + (math.pi / 4);
+
+          return Positioned(
+            left: (size / 2) + dx - 25,
+            top: (size / 2) + dy - 25,
+            child: Opacity(
+              opacity: opacity.clamp(0.0, 1.0),
+              child: Transform.rotate(
+                angle: swordRotation,
+                child: Image.asset(
+                  imagePath, // Ensure this asset exists
+                  width: 50,
+                  height: 50,
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+}
+
+// ----------------------------------------------------------------
+// Protect Effect (Hexagonal Shield)
+// ----------------------------------------------------------------
+class ProtectEffect extends StatelessWidget {
+  final double progress;
+  final bool isPlayer;
+
+  const ProtectEffect({
+    super.key,
+    required this.progress,
+    required this.isPlayer,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const size = 200.0;
+    final p = progress.clamp(0.0, 1.0);
+
+    // Fade in (0-15%), hold, then fade out (85-100%)
+    final opacity = p < 0.15 ? p / 0.15 : (p > 0.85 ? (1.0 - p) / 0.15 : 1.0);
+
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Opacity(
+        opacity: opacity.clamp(0.0, 1.0),
+        child: CustomPaint(painter: _ProtectPainter(progress: p)),
+      ),
+    );
+  }
+}
+
+class _ProtectPainter extends CustomPainter {
+  final double progress;
+  _ProtectPainter({required this.progress});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final paint = Paint()
+      ..style = PaintingStyle.fill
+      ..strokeWidth = 2.0;
+
+    // Pulse effect for color/glow
+    final pulse = 0.8 + math.sin(progress * math.pi * 10) * 0.2;
+    final shieldColor = const Color(0xFF40E0D0); // Turquoise/Teal
+
+    const hexRadius = 18.0;
+    final hexWidth = hexRadius * math.sqrt(3);
+    final hexHeight = hexRadius * 2;
+
+    // Draw a small cluster of hexagons
+    for (int q = -2; q <= 2; q++) {
+      for (int r = -2; r <= 2; r++) {
+        // Hexagonal axial to pixel coordinates
+        if (q.abs() + r.abs() + (-q - r).abs() > 6) continue;
+
+        final dx = hexWidth * (q + r / 2);
+        final dy = hexHeight * 0.75 * r;
+
+        final hexCenter = center + Offset(dx, dy);
+
+        // Individual hex pulse based on progress and distance
+        final dist = Offset(dx, dy).distance / 60;
+        final localPulse = (math.sin(progress * 15 - dist * 5) + 1) / 2;
+
+        paint.color = shieldColor.withOpacity(0.2 + 0.4 * localPulse * pulse);
+        _drawHexagon(canvas, hexCenter, hexRadius * 0.9, paint);
+
+        // Hex border
+        paint.style = PaintingStyle.stroke;
+        paint.color = shieldColor.withOpacity(0.6 * pulse);
+        _drawHexagon(canvas, hexCenter, hexRadius * 0.9, paint);
+        paint.style = PaintingStyle.fill;
+      }
+    }
+
+    // Outer glow ring
+    canvas.drawCircle(
+      center,
+      80 * (0.95 + 0.05 * pulse),
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 4
+        ..shader = RadialGradient(
+          colors: [shieldColor.withOpacity(0.6), shieldColor.withOpacity(0)],
+        ).createShader(Rect.fromCircle(center: center, radius: 90)),
+    );
+  }
+
+  void _drawHexagon(Canvas canvas, Offset c, double radius, Paint paint) {
+    final path = Path();
+    for (int i = 0; i < 6; i++) {
+      final angle = (math.pi / 3) * i + (math.pi / 6);
+      final x = c.dx + radius * math.cos(angle);
+      final y = c.dy + radius * math.sin(angle);
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
+    }
+    path.close();
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(_ProtectPainter old) => true;
+}
+
+// ----------------------------------------------------------------
 // Slash Effect for Specific Moves
 // ----------------------------------------------------------------
 class SlashEffect extends StatelessWidget {
@@ -136,8 +311,8 @@ class SlashEffect extends StatelessWidget {
     final cy = size / 2;
 
     // Diagonal travel: from attacker (bottom left) to target (top right)
-    double startX = cx - 180;
-    double startY = cy + 180;
+    double startX = cx - 210;
+    double startY = cy + 150;
     double endX = cx;
     double endY = cy;
 
@@ -385,14 +560,16 @@ class MeleeEffect extends StatelessWidget {
 // ----------------------------------------------------------------
 // Close Combat Effect (Rapid Strikes)
 // ----------------------------------------------------------------
-class CloseCombatEffect extends StatelessWidget {
+class SpamAttackEffect extends StatelessWidget {
   final double progress;
   final bool isPlayer;
+  final String imagePath;
 
-  const CloseCombatEffect({
+  const SpamAttackEffect({
     super.key,
     required this.progress,
     required this.isPlayer,
+    required this.imagePath,
   });
 
   @override
@@ -420,10 +597,16 @@ class CloseCombatEffect extends StatelessWidget {
           final dx = math.cos(angle) * radius;
           final dy = math.sin(angle) * radius;
 
-          final isPunch = rand.nextBool();
-          final imagePath = isPunch
+          final isPunchRand = rand.nextBool();
+          final particlePath = isPunchRand
               ? 'assets/move_effects/punch.png'
               : 'assets/move_effects/kick.png';
+
+          // Use the passed-in imagePath if available, otherwise fallback to the random one
+          final finalImagePath =
+              imagePath.isNotEmpty && !imagePath.contains('ice.png')
+              ? imagePath
+              : particlePath;
 
           final opacity = (1.0 - p).clamp(0.0, 1.0);
           final scale = 0.5 + p * 1.0;
@@ -436,7 +619,7 @@ class CloseCombatEffect extends StatelessWidget {
               child: Transform.scale(
                 scale: scale,
                 child: Image.asset(
-                  imagePath,
+                  finalImagePath,
                   width: 60,
                   height: 60,
                   fit: BoxFit.contain,
@@ -445,6 +628,206 @@ class CloseCombatEffect extends StatelessWidget {
             ),
           );
         }),
+      ),
+    );
+  }
+}
+
+// ----------------------------------------------------------------
+// Drain Effect (Particles from Target to Attacker)
+// ----------------------------------------------------------------
+class DrainEffect extends StatelessWidget {
+  final double progress;
+  final bool isPlayer;
+
+  const DrainEffect({
+    super.key,
+    required this.progress,
+    required this.isPlayer,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const size = 200.0;
+    const numParticles = 12;
+    final p = progress.clamp(0.0, 1.0);
+
+    final cx = size / 2;
+    final cy = size / 2;
+
+    // Movement: from target to attacker
+    double startX = cx;
+    double startY = cy;
+    double endX = cx - 210;
+    double endY = cy + 150;
+
+    if (!isPlayer) {
+      endX = cx + 210;
+      endY = cy - 150;
+    }
+
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: List.generate(numParticles, (index) {
+          final appearanceThreshold = (index / numParticles) * 0.5;
+          if (p < appearanceThreshold) return const SizedBox.shrink();
+
+          final localP = ((p - appearanceThreshold) / 0.5).clamp(0.0, 1.0);
+
+          final curX = startX + (endX - startX) * localP;
+          final curY = startY + (endY - startY) * localP;
+
+          final opacity = localP > 0.8 ? (1.0 - localP) / 0.2 : 1.0;
+          final scale = 0.4 + math.sin(localP * math.pi) * 0.6;
+
+          return Positioned(
+            left: curX - 20,
+            top: curY - 20,
+            child: Opacity(
+              opacity: opacity.clamp(0.0, 1.0),
+              child: Transform.scale(
+                scale: scale,
+                child: Image.asset(
+                  'assets/move_effects/aqua.png',
+                  width: 40,
+                  height: 40,
+                  color: Colors.greenAccent.withOpacity(0.8),
+                  colorBlendMode: BlendMode.modulate,
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+}
+
+// ----------------------------------------------------------------
+// Surf Effect (Wave Overlay)
+// ----------------------------------------------------------------
+class SurfEffect extends StatelessWidget {
+  final double progress;
+  final bool isPlayer;
+
+  const SurfEffect({super.key, required this.progress, required this.isPlayer});
+
+  @override
+  Widget build(BuildContext context) {
+    const size = 300.0;
+    final p = progress.clamp(0.0, 1.0);
+
+    final opacity = p < 0.2 ? p / 0.2 : (p > 0.8 ? (1.0 - p) / 0.2 : 1.0);
+
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Transform.translate(
+            offset: Offset((p - 0.5) * 500 * (isPlayer ? 1 : -1), 0),
+            child: Opacity(
+              opacity: opacity,
+              child: Image.asset(
+                'assets/move_effects/aqua.png',
+                width: 300,
+                height: 180,
+                fit: BoxFit.fill,
+                color: Colors.blue.withOpacity(0.4),
+                colorBlendMode: BlendMode.srcATop,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ----------------------------------------------------------------
+// Hurricane Effect (Swirling Vortex)
+// ----------------------------------------------------------------
+class HurricaneEffect extends StatelessWidget {
+  final double progress;
+
+  const HurricaneEffect({super.key, required this.progress});
+
+  @override
+  Widget build(BuildContext context) {
+    const size = 250.0;
+    final p = progress.clamp(0.0, 1.0);
+    final opacity = p < 0.2 ? p / 0.2 : (p > 0.8 ? (1.0 - p) / 0.2 : 1.0);
+
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Opacity(
+        opacity: opacity,
+        child: AnimatedBuilder(
+          animation: AlwaysStoppedAnimation(p),
+          builder: (context, _) {
+            return Transform.rotate(
+              angle: p * math.pi * 10,
+              child: Transform.scale(
+                scale: 0.8 + p * 0.4,
+                child: Image.asset(
+                  'assets/move_effects/air_slash.png',
+                  width: size,
+                  height: size,
+                  color: Colors.white70,
+                  colorBlendMode: BlendMode.modulate,
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+// ----------------------------------------------------------------
+// Thunder Effect (Lightning Bolt)
+// ----------------------------------------------------------------
+class ThunderEffect extends StatelessWidget {
+  final double progress;
+
+  const ThunderEffect({super.key, required this.progress});
+
+  @override
+  Widget build(BuildContext context) {
+    const size = 400.0;
+    final p = progress.clamp(0.0, 1.0);
+    final flash = (math.sin(p * math.pi * 20) + 1) / 2;
+    final opacity = p < 0.1 ? p / 0.1 : (p > 0.9 ? (1.0 - p) / 0.1 : 1.0);
+
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Stack(
+        alignment: Alignment.topCenter,
+        clipBehavior: Clip.none,
+        children: [
+          Positioned(
+            top: -200,
+            child: Opacity(
+              opacity: opacity * (0.6 + 0.4 * flash),
+              child: Image.asset(
+                'assets/move_effects/electric_ball.png',
+                width: 120,
+                height: 500,
+                fit: BoxFit.fill,
+                color: Colors.yellowAccent,
+                colorBlendMode: BlendMode.modulate,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -600,14 +983,14 @@ class BeamEffect extends StatelessWidget {
     final cy = size / 2;
 
     // Movement: straight beam from attacker to target
-    double startX = cx - 200;
-    double startY = cy + 190;
+    double startX = cx - 210;
+    double startY = cy + 150;
     double endX = cx;
     double endY = cy;
 
     if (!isPlayer) {
-      startX = cx + 180;
-      startY = cy - 180;
+      startX = cx + 210;
+      startY = cy - 150;
     }
 
     // A "stretched" beam look or a stream of particles
@@ -1000,7 +1383,97 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
         },
       );
     }
-
+    if (move.animationType == 'buff') {
+      final imagePath = move.name.toLowerCase() == 'swords dance'
+          ? 'assets/move_effects/sword.png'
+          : 'assets/move_effects/sword.png';
+      return AnimatedBuilder(
+        animation: _progress,
+        builder: (context, _) {
+          return CompositedTransformFollower(
+            link: attackerLink, // Anchor to the user of the move
+            showWhenUnlinked: false,
+            followerAnchor: Alignment.center,
+            targetAnchor: Alignment.center,
+            child: BuffEffect(
+              progress: _progress.value,
+              isPlayer: isPlayer,
+              imagePath: imagePath,
+            ),
+          );
+        },
+      );
+    }
+    if (move.animationType == 'protect') {
+      return AnimatedBuilder(
+        animation: _progress,
+        builder: (context, _) {
+          return CompositedTransformFollower(
+            link: attackerLink,
+            showWhenUnlinked: false,
+            followerAnchor: Alignment.center,
+            targetAnchor: Alignment.center,
+            child: ProtectEffect(progress: _progress.value, isPlayer: isPlayer),
+          );
+        },
+      );
+    }
+    if (move.animationType == 'drain') {
+      return AnimatedBuilder(
+        animation: _progress,
+        builder: (context, _) {
+          return CompositedTransformFollower(
+            link: targetLink,
+            showWhenUnlinked: false,
+            followerAnchor: Alignment.center,
+            targetAnchor: Alignment.center,
+            child: DrainEffect(progress: _progress.value, isPlayer: isPlayer),
+          );
+        },
+      );
+    }
+    if (move.animationType == 'surf') {
+      return AnimatedBuilder(
+        animation: _progress,
+        builder: (context, _) {
+          return CompositedTransformFollower(
+            link: targetLink,
+            showWhenUnlinked: false,
+            followerAnchor: Alignment.center,
+            targetAnchor: Alignment.center,
+            child: SurfEffect(progress: _progress.value, isPlayer: isPlayer),
+          );
+        },
+      );
+    }
+    if (move.animationType == 'hurricane') {
+      return AnimatedBuilder(
+        animation: _progress,
+        builder: (context, _) {
+          return CompositedTransformFollower(
+            link: targetLink,
+            showWhenUnlinked: false,
+            followerAnchor: Alignment.center,
+            targetAnchor: Alignment.center,
+            child: HurricaneEffect(progress: _progress.value),
+          );
+        },
+      );
+    }
+    if (move.animationType == 'thunder') {
+      return AnimatedBuilder(
+        animation: _progress,
+        builder: (context, _) {
+          return CompositedTransformFollower(
+            link: targetLink,
+            showWhenUnlinked: false,
+            followerAnchor: Alignment.center,
+            targetAnchor: Alignment.center,
+            child: ThunderEffect(progress: _progress.value),
+          );
+        },
+      );
+    }
     if (move.animationType == 'melee') {
       final isKick = move.name.toLowerCase().contains('kick');
       final imagePath = isKick
@@ -1025,7 +1498,42 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
       );
     }
 
-    if (move.animationType == 'close_combat') {
+    if (move.animationType == 'spam_attack') {
+      String imagePath;
+      final rand = math.Random(42);
+      if (move.name.toLowerCase() == 'close combat') {
+        final options = [
+          'assets/move_effects/kick.png',
+          'assets/move_effects/punch.png',
+        ];
+        imagePath = options[rand.nextInt(options.length)];
+      } else if (move.name.toLowerCase() == 'thrash') {
+        final options = [
+          'assets/move_effects/punch.png',
+          'assets/move_effects/normal_impact.png',
+        ];
+        imagePath = options[rand.nextInt(options.length)];
+      } else if (move.name.toLowerCase() == 'outrage') {
+        final options = [
+          'assets/move_effects/flame.png',
+          'assets/move_effects/drake_impact.png',
+        ];
+        imagePath = options[rand.nextInt(options.length)];
+      } else if (move.name.toLowerCase() == 'petal dance') {
+        final options = [
+          'assets/move_effects/flower.png',
+          'assets/move_effects/grass_impact.png',
+        ];
+        imagePath = options[rand.nextInt(options.length)];
+      } else if (move.name.toLowerCase() == 'acrobatics') {
+        final options = [
+          'assets/move_effects/flying_impact.png',
+          'assets/move_effects/normal_impact.png',
+        ];
+        imagePath = options[rand.nextInt(options.length)];
+      } else {
+        imagePath = 'assets/move_effects/ice.png';
+      }
       return AnimatedBuilder(
         animation: _progress,
         builder: (context, _) {
@@ -1034,9 +1542,10 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
             showWhenUnlinked: false,
             followerAnchor: Alignment.center,
             targetAnchor: Alignment.center,
-            child: CloseCombatEffect(
+            child: SpamAttackEffect(
               progress: _progress.value,
               isPlayer: isPlayer,
+              imagePath: imagePath,
             ),
           );
         },
@@ -1091,23 +1600,23 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
       );
     }
 
-    if (move.animationType == 'beam_column') {
-      return AnimatedBuilder(
-        animation: _progress,
-        builder: (context, _) {
-          return CompositedTransformFollower(
-            link: targetLink,
-            showWhenUnlinked: false,
-            followerAnchor: Alignment.center,
-            targetAnchor: Alignment.center,
-            child: IceColumnEffect(
-              progress: _progress.value,
-              isPlayer: isPlayer,
-            ),
-          );
-        },
-      );
-    }
+    // if (move.animationType == 'beam_column') {
+    //   return AnimatedBuilder(
+    //     animation: _progress,
+    //     builder: (context, _) {
+    //       return CompositedTransformFollower(
+    //         link: targetLink,
+    //         showWhenUnlinked: false,
+    //         followerAnchor: Alignment.center,
+    //         targetAnchor: Alignment.center,
+    //         child: IceColumnEffect(
+    //           progress: _progress.value,
+    //           isPlayer: isPlayer,
+    //         ),
+    //       );
+    //     },
+    //   );
+    // }
 
     if (move.animationType == 'fire_fang') {
       return AnimatedBuilder(
@@ -1172,6 +1681,8 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
           : move.name.toLowerCase() == 'ember'
           ? 'assets/move_effects/flame.png'
           : move.name.toLowerCase() == 'sludge'
+          ? 'assets/move_effects/sludge.png'
+          : move.name.toLowerCase() == 'toxic'
           ? 'assets/move_effects/sludge.png'
           : 'assets/move_effects/ice.png';
       return AnimatedBuilder(
@@ -2739,8 +3250,8 @@ class SingleProjectileEffect extends StatelessWidget {
     final cy = size / 2;
 
     // From attacker to target
-    double startX = cx - 180;
-    double startY = cy + 180;
+    double startX = cx - 210;
+    double startY = cy + 150;
     double endX = cx;
     double endY = cy;
 
