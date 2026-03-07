@@ -68,8 +68,8 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
       height: 120, // Give it enough height for the big medal and text
       decoration: BoxDecoration(
         color: completed
-            ? primaryButtonColor.withOpacity(0.9)
-            : secondaryButtonColor.withOpacity(0.6),
+            ? primaryButtonColor.withValues(alpha: 0.9)
+            : secondaryButtonColor.withValues(alpha: 0.6),
         border: Border.all(
           color: completed ? highlightColor : Colors.white12,
           width: 2.0,
@@ -78,7 +78,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
         boxShadow: completed
             ? [
                 BoxShadow(
-                  color: highlightColor.withOpacity(0.3),
+                  color: highlightColor.withValues(alpha: 0.3),
                   blurRadius: 10,
                   spreadRadius: 1,
                 ),
@@ -102,7 +102,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                       boxShadow: completed
                           ? [
                               BoxShadow(
-                                color: Colors.yellow.withOpacity(0.2),
+                                color: Colors.yellow.withValues(alpha: 0.2),
                                 blurRadius: 15,
                               ),
                             ]

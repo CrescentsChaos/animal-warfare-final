@@ -118,6 +118,7 @@ class _MainScreenState extends State<MainScreen> {
     final userState = context.watch<UserState>();
     final currentUser = userState.currentUser;
     final isLoggedIn = userState.isLoggedIn;
+    final isInitialized = userState.isInitialized;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -234,47 +235,61 @@ class _MainScreenState extends State<MainScreen> {
                         const SizedBox(height: 48),
 
                         // Buttons
-                        _buildNavButton(
-                          text: 'Start Game',
-                          icon: Icons.shield_rounded,
-                          onPressed: () {
-                            if (currentUser != null) {
-                              _navigateTo(GameScreen(currentUser: currentUser));
-                            } else {
-                              _navigateTo(const LoginScreen());
-                            }
-                          },
-                          isPrimary: true,
-                          accentColor: AppColors.primary,
-                        ),
-
-                        if (!isLoggedIn)
+                        if (!isInitialized)
+                          const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(40.0),
+                              child: CircularProgressIndicator(
+                                color: AppColors.highlight,
+                              ),
+                            ),
+                          )
+                        else ...[
                           _buildNavButton(
-                            text: 'Login / Register',
-                            icon: Icons.login_rounded,
-                            onPressed: () => _handleAuthAction(context),
-                            accentColor: AppColors.highlight,
+                            text: 'Start Game',
+                            icon: Icons.shield_rounded,
+                            onPressed: () {
+                              if (currentUser != null) {
+                                _navigateTo(
+                                  GameScreen(currentUser: currentUser),
+                                );
+                              } else {
+                                _navigateTo(const LoginScreen());
+                              }
+                            },
+                            isPrimary: true,
+                            accentColor: AppColors.primary,
                           ),
 
-                        if (isLoggedIn) ...[
-                          _buildNavButton(
-                            text: 'Profile',
-                            icon: Icons.person_rounded,
-                            onPressed: () => _navigateTo(const ProfileScreen()),
-                            accentColor: AppColors.highlight,
-                          ),
-                          _buildNavButton(
-                            text: 'Quests',
-                            icon: Icons.assignment_rounded,
-                            onPressed: () => _navigateTo(const QuestScreen()),
-                            accentColor: const Color(0xFF7C4DFF),
-                          ),
-                          _buildNavButton(
-                            text: 'Shop',
-                            icon: Icons.shopping_bag_rounded,
-                            onPressed: () => _navigateTo(const ShopScreen()),
-                            accentColor: const Color(0xFFFF6F00),
-                          ),
+                          if (!isLoggedIn)
+                            _buildNavButton(
+                              text: 'Login / Register',
+                              icon: Icons.login_rounded,
+                              onPressed: () => _handleAuthAction(context),
+                              accentColor: AppColors.highlight,
+                            ),
+
+                          if (isLoggedIn) ...[
+                            _buildNavButton(
+                              text: 'Profile',
+                              icon: Icons.person_rounded,
+                              onPressed: () =>
+                                  _navigateTo(const ProfileScreen()),
+                              accentColor: AppColors.highlight,
+                            ),
+                            _buildNavButton(
+                              text: 'Quests',
+                              icon: Icons.assignment_rounded,
+                              onPressed: () => _navigateTo(const QuestScreen()),
+                              accentColor: const Color(0xFF7C4DFF),
+                            ),
+                            _buildNavButton(
+                              text: 'Shop',
+                              icon: Icons.shopping_bag_rounded,
+                              onPressed: () => _navigateTo(const ShopScreen()),
+                              accentColor: const Color(0xFFFF6F00),
+                            ),
+                          ],
                         ],
 
                         const SizedBox(height: 36),

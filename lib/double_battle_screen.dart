@@ -2814,10 +2814,10 @@ class _GimmickBannerState extends State<_GimmickBanner>
                           vertical: 20,
                         ),
                         decoration: BoxDecoration(
-                          color: widget.color.withOpacity(0.9),
+                          color: widget.color.withValues(alpha: 0.9),
                           boxShadow: [
                             BoxShadow(
-                              color: widget.color.withOpacity(0.5),
+                              color: widget.color.withValues(alpha: 0.5),
                               blurRadius: 30,
                               spreadRadius: 10,
                             ),

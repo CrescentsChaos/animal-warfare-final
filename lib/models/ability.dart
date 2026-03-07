@@ -14,6 +14,8 @@ enum AbilityTrigger {
   onCalculatePriority,
   onStatusAttempt,
   onTurnEnd,
+  onPostTurn,
+  onContact,
 }
 
 enum AbilityEffectType {
@@ -30,6 +32,18 @@ enum AbilityEffectType {
   preventStatus,
   preventCrit,
   wakeUpFaster,
+  preventSwitch,
+  synchronize,
+  sereneGrace,
+  trace,
+  staminaRecovery,
+  stunChance,
+  damageReduction,
+  preventDamage,
+  preventKO,
+  statStageMultiplier,
+  hazardRemoval,
+  recoilImmunity,
 }
 
 class Ability {

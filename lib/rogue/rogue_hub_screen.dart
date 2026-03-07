@@ -8,6 +8,8 @@ import 'package:animal_warfare/models/rogue_like_state.dart';
 import 'package:animal_warfare/rogue/rogue_reward_dialog.dart';
 import 'package:animal_warfare/widgets/animal_summary_screen.dart';
 import 'package:animal_warfare/battle_screen.dart';
+import 'package:animal_warfare/rogue/move_manage_screen.dart';
+import 'package:animal_warfare/models/nature.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class RogueHubScreen extends StatefulWidget {
@@ -136,51 +138,53 @@ class _RogueHubScreenState extends State<RogueHubScreen>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 12,
-                    height: 12,
-                    decoration: BoxDecoration(
-                      color: themeColor,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: themeColor.withValues(alpha: 0.5),
-                          blurRadius: 8,
-                          spreadRadius: 2,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Flexible(
-                    child: Text(
-                      'RUN PROGRESS',
-                      style: TextStyle(
-                        fontFamily: 'PressStart2P',
-                        color: themeColor.withValues(alpha: 0.7),
-                        fontSize: 8,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: themeColor,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: themeColor.withValues(alpha: 0.5),
+                            blurRadius: 8,
+                            spreadRadius: 2,
+                          ),
+                        ],
                       ),
-                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '${rogue.currentBiome?.toUpperCase() ?? 'REGION'}',
-                style: GoogleFonts.outfit(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.2,
+                    const SizedBox(width: 12),
+                    Flexible(
+                      child: Text(
+                        'RUN PROGRESS',
+                        style: TextStyle(
+                          fontFamily: 'PressStart2P',
+                          color: themeColor.withValues(alpha: 0.7),
+                          fontSize: 8,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
+                const SizedBox(height: 8),
+                Text(
+                  '${rogue.currentBiome?.toUpperCase() ?? 'REGION'}',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+              ],
+            ),
           ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -272,78 +276,200 @@ class _RogueHubScreenState extends State<RogueHubScreen>
     Color themeColor,
   ) {
     return Container(
-      padding: const EdgeInsets.all(24.0),
+      padding: const EdgeInsets.all(20.0),
       decoration: BoxDecoration(
         color: const Color(0xFF111111),
         border: Border(
           top: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
         ),
       ),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Expanded(
-            child: _buildActionButton(
-              context,
-              label: 'QUIT RUN',
-              icon: Icons.exit_to_app,
-              color: Colors.white.withValues(alpha: 0.05),
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (ctx) => AlertDialog(
-                    backgroundColor: const Color(0xFF1A1A1A),
-                    title: const Text(
-                      'ABANDON RUN',
-                      style: TextStyle(
-                        fontFamily: 'PressStart2P',
-                        fontSize: 12,
-                        color: Colors.redAccent,
-                      ),
-                    ),
-                    content: const Text(
-                      'All progress in this run will be lost! Are you sure?',
-                      style: TextStyle(color: Colors.white70),
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(ctx),
-                        child: const Text('CANCEL'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          userState.endRogueRun();
-                          Navigator.pop(ctx);
-                          Navigator.pop(context);
-                        },
-                        child: const Text(
-                          'ABANDON',
-                          style: TextStyle(color: Colors.redAccent),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            flex: 2,
-            child: ScaleTransition(
-              scale: Tween(begin: 1.0, end: 1.02).animate(_pulseController),
-              child: _buildActionButton(
-                context,
-                label: 'BATTLE',
-                icon: Icons.flash_on,
-                color: themeColor,
-                isPrimary: true,
-                onPressed: () => _startNextBattle(context, userState),
+          Row(
+            children: [
+              Expanded(
+                child: _buildActionButton(
+                  context,
+                  label: 'SAVE & EXIT',
+                  icon: Icons.save,
+                  color: Colors.blueAccent.withValues(alpha: 0.2),
+                  onPressed: () => Navigator.pop(context),
+                ),
               ),
-            ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildActionButton(
+                  context,
+                  label: 'INVENTORY',
+                  icon: Icons.inventory_2,
+                  color: Colors.amberAccent.withValues(alpha: 0.2),
+                  onPressed: () => _showRogueInventory(context, userState),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _buildActionButton(
+                  context,
+                  label: 'ABANDON',
+                  icon: Icons.exit_to_app,
+                  color: Colors.redAccent.withValues(alpha: 0.1),
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        backgroundColor: const Color(0xFF1A1A1A),
+                        title: const Text(
+                          'ABANDON RUN',
+                          style: TextStyle(
+                            fontFamily: 'PressStart2P',
+                            fontSize: 12,
+                            color: Colors.redAccent,
+                          ),
+                        ),
+                        content: const Text(
+                          'All progress in this run will be lost! Are you sure?',
+                          style: TextStyle(color: Colors.white70),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx),
+                            child: const Text('CANCEL'),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              userState.endRogueRun();
+                              Navigator.pop(ctx);
+                              Navigator.pop(context);
+                            },
+                            child: const Text(
+                              'ABANDON',
+                              style: TextStyle(color: Colors.redAccent),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                flex: 2,
+                child: ScaleTransition(
+                  scale: Tween(begin: 1.0, end: 1.02).animate(_pulseController),
+                  child: _buildActionButton(
+                    context,
+                    label: 'BATTLE',
+                    icon: Icons.flash_on,
+                    color: themeColor,
+                    isPrimary: true,
+                    onPressed: () => _startNextBattle(context, userState),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
+  }
+
+  void _showRogueInventory(BuildContext context, UserState userState) {
+    final rogueState = userState.currentUser?.rogueLikeState;
+    if (rogueState == null) return;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: const BoxDecoration(
+          color: Color(0xFF0F0F1A),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          children: [
+            const SizedBox(height: 12),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.all(24.0),
+              child: Text(
+                'YOUR INVENTORY',
+                style: TextStyle(
+                  fontFamily: 'PressStart2P',
+                  fontSize: 14,
+                  color: Colors.amberAccent,
+                ),
+              ),
+            ),
+            Expanded(
+              child: rogueState.inventory.isEmpty
+                  ? const Center(
+                      child: Text(
+                        'EMPTY INVENTORY',
+                        style: TextStyle(color: Colors.white24, fontSize: 10),
+                      ),
+                    )
+                  : ListView(
+                      children: rogueState.inventory.entries.map((entry) {
+                        return ListTile(
+                          leading: Icon(
+                            _getIconForAnyItem(entry.key),
+                            color: Colors.amberAccent,
+                          ),
+                          title: Text(
+                            entry.key.replaceAll('_', ' ').toUpperCase(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          trailing: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              'x${entry.value}',
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 10,
+                                fontFamily: 'PressStart2P',
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+            ),
+            const SizedBox(height: 32),
+          ],
+        ),
+      ),
+    );
+  }
+
+  IconData _getIconForAnyItem(String itemId) {
+    if (itemId.contains('talisman')) return Icons.vpn_key;
+    if (itemId.contains('berry')) return Icons.eco;
+    if (itemId.contains('mint')) return Icons.refresh;
+    return Icons.inventory;
   }
 
   Widget _buildActionButton(
@@ -484,14 +610,7 @@ class _RogueTeamCard extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (ctx) => AnimalSummaryScreen(captured: member),
-              ),
-            );
-          },
+          onTap: () => _showContextMenu(context, userState),
           child: Padding(
             padding: const EdgeInsets.all(12),
             child: Row(
@@ -633,5 +752,394 @@ class _RogueTeamCard extends StatelessWidget {
     if (ratio > 0.5) return Colors.greenAccent;
     if (ratio > 0.2) return Colors.orangeAccent;
     return Colors.redAccent;
+  }
+
+  void _showContextMenu(BuildContext context, UserState userState) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => Container(
+        decoration: const BoxDecoration(
+          color: Color(0xFF151525),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 12),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Row(
+                children: [
+                  _buildSprite(member),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          member.nickname ?? member.name.toUpperCase(),
+                          style: const TextStyle(
+                            fontFamily: 'PressStart2P',
+                            fontSize: 14,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'LV.${member.level} ${member.baseOrganism.name}',
+                          style: const TextStyle(
+                            fontFamily: 'PressStart2P',
+                            fontSize: 8,
+                            color: Colors.white54,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(color: Colors.white10, height: 1),
+            _buildContextOption(
+              context,
+              icon: Icons.bar_chart,
+              label: 'SUMMARY',
+              color: Colors.greenAccent,
+              onTap: () {
+                Navigator.pop(ctx);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (ctx) => AnimalSummaryScreen(captured: member),
+                  ),
+                );
+              },
+            ),
+            _buildContextOption(
+              context,
+              icon: Icons.bolt,
+              label: 'MOVES',
+              color: Colors.orangeAccent,
+              onTap: () {
+                Navigator.pop(ctx);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (ctx) => MoveManageScreen(organismIndex: index),
+                  ),
+                );
+              },
+            ),
+            _buildContextOption(
+              context,
+              icon: Icons.stars,
+              label: 'MANAGE ITEMS',
+              color: Colors.amberAccent,
+              onTap: () {
+                Navigator.pop(ctx);
+                _showRogueItemSelection(context, userState);
+              },
+            ),
+            _buildContextOption(
+              context,
+              icon: Icons.delete_forever,
+              label: 'RELEASE',
+              color: Colors.redAccent,
+              onTap: () {
+                Navigator.pop(ctx);
+                _showReleaseConfirmation(context, userState);
+              },
+            ),
+            const SizedBox(height: 32),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContextOption(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        child: Row(
+          children: [
+            Icon(icon, color: color, size: 20),
+            const SizedBox(width: 16),
+            Text(
+              label,
+              style: TextStyle(
+                fontFamily: 'PressStart2P',
+                fontSize: 10,
+                color: Colors.white.withValues(alpha: 0.9),
+                letterSpacing: 1,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showReleaseConfirmation(BuildContext context, UserState userState) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1A1A),
+        title: const Text(
+          'RELEASE ANIMAL',
+          style: TextStyle(
+            fontFamily: 'PressStart2P',
+            fontSize: 12,
+            color: Colors.redAccent,
+          ),
+        ),
+        content: Text(
+          'Are you sure you want to release ${member.name}? This will remove it from your Rogue team permanently!',
+          style: const TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('CANCEL'),
+          ),
+          TextButton(
+            onPressed: () {
+              userState.releaseFromRogueRun(index);
+              Navigator.pop(ctx);
+            },
+            child: const Text(
+              'RELEASE',
+              style: TextStyle(color: Colors.redAccent),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showRogueItemSelection(BuildContext context, UserState userState) {
+    final rogueState = userState.currentUser?.rogueLikeState;
+    if (rogueState == null) return;
+
+    final inventoryEntries = rogueState.inventory.entries
+        .where((e) => e.value > 0)
+        .toList();
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: const BoxDecoration(
+          color: Color(0xFF0F0F1A),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          children: [
+            const SizedBox(height: 12),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.all(24.0),
+              child: Text(
+                'MANAGE ITEMS',
+                style: TextStyle(
+                  fontFamily: 'PressStart2P',
+                  fontSize: 14,
+                  color: Colors.amberAccent,
+                ),
+              ),
+            ),
+            Expanded(
+              child: Column(
+                children: [
+                  if (member.equippedTalisman != null)
+                    ListTile(
+                      leading: const Icon(
+                        Icons.remove_circle_outline,
+                        color: Colors.redAccent,
+                      ),
+                      title: Text(
+                        'REMOVE: ${member.equippedTalisman!.name.toUpperCase()}',
+                        style: const TextStyle(
+                          color: Colors.redAccent,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        userState.removeRogueTalisman(index);
+                      },
+                    ),
+                  if (member.equippedTalisman != null)
+                    const Divider(color: Colors.white10),
+                  Expanded(
+                    child: inventoryEntries.isEmpty
+                        ? const Center(
+                            child: Text(
+                              'NO ITEMS IN INVENTORY',
+                              style: TextStyle(
+                                color: Colors.white24,
+                                fontSize: 10,
+                              ),
+                            ),
+                          )
+                        : ListView.builder(
+                            itemCount: inventoryEntries.length,
+                            itemBuilder: (context, i) {
+                              final entry = inventoryEntries[i];
+                              final itemId = entry.key;
+                              final count = entry.value;
+
+                              return ListTile(
+                                leading: Icon(
+                                  _getIconForItemById(itemId),
+                                  color: Colors.amberAccent,
+                                ),
+                                title: Text(
+                                  itemId.replaceAll('_', ' ').toUpperCase(),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  'In stock: $count',
+                                  style: const TextStyle(
+                                    color: Colors.white54,
+                                    fontSize: 10,
+                                  ),
+                                ),
+                                onTap: () async {
+                                  Navigator.pop(ctx);
+                                  if (itemId.contains('talisman')) {
+                                    userState.equipRogueTalisman(index, itemId);
+                                  } else if (itemId.contains('berry')) {
+                                    userState.applyRogueBerry(index, itemId);
+                                  } else if (itemId == 'nature_mint') {
+                                    _showNatureSelection(context, userState);
+                                  } else if (itemId.startsWith(
+                                    'nature_mint_',
+                                  )) {
+                                    final natureName = itemId.replaceFirst(
+                                      'nature_mint_',
+                                      '',
+                                    );
+                                    final nature = Nature.allNatures.firstWhere(
+                                      (n) => n.name.toLowerCase() == natureName,
+                                    );
+                                    userState.changeRogueAnimalNature(
+                                      index,
+                                      nature,
+                                    );
+                                  }
+                                },
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 32),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showNatureSelection(BuildContext context, UserState userState) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => Container(
+        height: MediaQuery.of(context).size.height * 0.7,
+        decoration: const BoxDecoration(
+          color: Color(0xFF0F0F1A),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          children: [
+            const SizedBox(height: 12),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.all(24.0),
+              child: Text(
+                'SELECT NATURE',
+                style: TextStyle(
+                  fontFamily: 'PressStart2P',
+                  fontSize: 14,
+                  color: Colors.cyanAccent,
+                ),
+              ),
+            ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: Nature.allNatures.length,
+                itemBuilder: (context, i) {
+                  final n = Nature.allNatures[i];
+                  return ListTile(
+                    title: Text(
+                      n.name.toUpperCase(),
+                      style: const TextStyle(color: Colors.white, fontSize: 12),
+                    ),
+                    subtitle: Text(
+                      '+${n.increasedStat.name.toUpperCase()} / -${n.decreasedStat.name.toUpperCase()}',
+                      style: const TextStyle(
+                        color: Colors.white54,
+                        fontSize: 10,
+                      ),
+                    ),
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      userState.changeRogueAnimalNature(index, n);
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  IconData _getIconForItemById(String itemId) {
+    if (itemId.contains('talisman')) return Icons.vpn_key;
+    if (itemId.contains('berry')) return Icons.eco;
+    if (itemId.contains('mint')) return Icons.refresh;
+    return Icons.inventory;
   }
 }

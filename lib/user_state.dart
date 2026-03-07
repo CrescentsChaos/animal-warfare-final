@@ -16,9 +16,11 @@ class UserState with ChangeNotifier {
   final LocalAuthService _authService = LocalAuthService();
   Timer? _staminaRegenTimer;
   Future<void> _writeLock = Future.value();
+  bool _isInitialized = false;
 
   UserData? get currentUser => _currentUser;
   bool get isLoggedIn => _currentUser != null;
+  bool get isInitialized => _isInitialized;
 
   UserState() {
     loadCurrentUser();
@@ -114,6 +116,7 @@ class UserState with ChangeNotifier {
   Future<void> refreshCurrentUser() async => loadCurrentUser();
   Future<void> loadCurrentUser() async {
     _currentUser = await _authService.getCurrentUser();
+    _isInitialized = true;
     notifyListeners();
   }
 
@@ -641,10 +644,13 @@ class UserState with ChangeNotifier {
           label: 'GOLDEN TALISMAN',
         ),
       );
+      final nature =
+          Nature.allNatures[math.Random().nextInt(Nature.allNatures.length)];
       rewards.add(
-        const RogueReward(
+        RogueReward(
           type: RogueRewardType.natureMint,
-          label: 'MYSTICAL NATURE MINT',
+          label: 'MYSTICAL ${nature.name.toUpperCase()} MINT',
+          itemId: 'nature_mint_${nature.name.toLowerCase()}',
         ),
       );
       rewards.add(
@@ -755,11 +761,13 @@ class UserState with ChangeNotifier {
           );
           break;
         case RogueRewardType.natureMint:
+          final nature =
+              Nature.allNatures[random.nextInt(Nature.allNatures.length)];
           rewards.add(
-            const RogueReward(
+            RogueReward(
               type: RogueRewardType.natureMint,
-              label: 'NATURE MINT',
-              itemId: 'nature_mint',
+              label: '${nature.name.toUpperCase()} MINT',
+              itemId: 'nature_mint_${nature.name.toLowerCase()}',
             ),
           );
           break;
@@ -820,7 +828,9 @@ class UserState with ChangeNotifier {
               (inventory['capture_net'] ?? 0) + (reward.count ?? 1);
           break;
         case RogueRewardType.natureMint:
-          inventory['nature_mint'] = (inventory['nature_mint'] ?? 0) + 1;
+          if (reward.itemId != null) {
+            inventory[reward.itemId!] = (inventory[reward.itemId!] ?? 0) + 1;
+          }
           break;
         case RogueRewardType.premium:
           inventory['premium_token'] = (inventory['premium_token'] ?? 0) + 1;
@@ -1046,10 +1056,12 @@ class UserState with ChangeNotifier {
       if (index < 0 || index >= team.length) return u;
 
       final inventory = Map<String, int>.from(state.inventory);
-      final mintCount = inventory['nature_mint'] ?? 0;
+      final mintId = 'nature_mint_${newNature.name.toLowerCase()}';
+      final mintCount = inventory[mintId] ?? 0;
 
       if (mintCount > 0) {
-        inventory['nature_mint'] = mintCount - 1;
+        inventory[mintId] = mintCount - 1;
+        if (inventory[mintId]! <= 0) inventory.remove(mintId);
         team[index] = team[index].copyWith(nature: newNature);
         return u.copyWith(
           rogueLikeState: state.copyWith(team: team, inventory: inventory),

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/models/rogue_like_state.dart';
 import 'package:animal_warfare/data/biome_data.dart';
 
@@ -76,8 +78,12 @@ class RogueRewardDialog extends StatelessWidget {
                       padding: const EdgeInsets.only(bottom: 12),
                       child: InkWell(
                         onTap: () {
-                          onSelect(reward);
-                          Navigator.pop(context);
+                          if (reward.type == RogueRewardType.singleHeal) {
+                            _showAnimalSelection(context, themeColor, reward);
+                          } else {
+                            onSelect(reward);
+                            Navigator.pop(context);
+                          }
                         },
                         child: Container(
                           padding: const EdgeInsets.all(16),
@@ -173,6 +179,55 @@ class RogueRewardDialog extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  void _showAnimalSelection(
+    BuildContext context,
+    Color themeColor,
+    RogueReward reward,
+  ) {
+    final userState = Provider.of<UserState>(context, listen: false);
+    final team = userState.currentUser?.rogueLikeState.team ?? [];
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF151515),
+        title: Text(
+          'SELECT ANIMAL',
+          style: TextStyle(
+            fontFamily: 'PressStart2P',
+            fontSize: 12,
+            color: themeColor,
+          ),
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: team.length,
+            itemBuilder: (c, i) {
+              final org = team[i];
+              return ListTile(
+                title: Text(
+                  org.displayName,
+                  style: const TextStyle(color: Colors.white),
+                ),
+                subtitle: Text(
+                  'HP: ${org.currentHealth}/${org.maxHealth}',
+                  style: const TextStyle(color: Colors.white54),
+                ),
+                onTap: () {
+                  onSelect(reward.copyWith(targetIndex: i));
+                  Navigator.pop(ctx); // Pop selection
+                  Navigator.pop(context); // Pop reward dialog
+                },
+              );
+            },
+          ),
         ),
       ),
     );

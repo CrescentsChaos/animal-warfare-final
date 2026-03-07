@@ -73,10 +73,13 @@ class BattleDetailsSheet extends StatelessWidget {
           decoration: BoxDecoration(
             color: const Color(0xFF0F0F0F),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-            border: Border.all(color: themeColor.withOpacity(0.2), width: 1.5),
+            border: Border.all(
+              color: themeColor.withValues(alpha: 0.2),
+              width: 1.5,
+            ),
             boxShadow: [
               BoxShadow(
-                color: themeColor.withOpacity(0.1),
+                color: themeColor.withValues(alpha: 0.1),
                 blurRadius: 20,
                 offset: const Offset(0, -5),
               ),
@@ -96,7 +99,7 @@ class BattleDetailsSheet extends StatelessWidget {
                     decoration: BoxDecoration(
                       gradient: RadialGradient(
                         colors: [
-                          themeColor.withOpacity(0.15),
+                          themeColor.withValues(alpha: 0.15),
                           Colors.transparent,
                         ],
                         radius: 1.2,
@@ -206,15 +209,17 @@ class BattleDetailsSheet extends StatelessWidget {
         margin: const EdgeInsets.only(left: 8),
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
-          color: _getTypeColor(bo.organism.teraType!).withOpacity(0.2),
+          color: _getTypeColor(bo.organism.teraType!).withValues(alpha: 0.2),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: _getTypeColor(bo.organism.teraType!).withOpacity(0.5),
+            color: _getTypeColor(bo.organism.teraType!).withValues(alpha: 0.5),
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: _getTypeColor(bo.organism.teraType!).withOpacity(0.2),
+              color: _getTypeColor(
+                bo.organism.teraType!,
+              ).withValues(alpha: 0.2),
               blurRadius: 4,
             ),
           ],
@@ -246,7 +251,7 @@ class BattleDetailsSheet extends StatelessWidget {
           width: 100,
           height: 100,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.03),
+            color: Colors.white.withValues(alpha: 0.03),
             shape: BoxShape.circle,
             border: Border.all(color: Colors.white10),
           ),
@@ -327,9 +332,11 @@ class BattleDetailsSheet extends StatelessWidget {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: themeColor.withOpacity(0.1),
+                      color: themeColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: themeColor.withOpacity(0.3)),
+                      border: Border.all(
+                        color: themeColor.withValues(alpha: 0.3),
+                      ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -366,9 +373,9 @@ class BattleDetailsSheet extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
+        color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Text(
         type.name.toUpperCase(),
@@ -398,7 +405,7 @@ class BattleDetailsSheet extends StatelessWidget {
           title,
           style: TextStyle(
             fontFamily: 'PressStart2P',
-            color: themeColor.withOpacity(0.8),
+            color: themeColor.withValues(alpha: 0.8),
             fontSize: 10,
           ),
         ),
@@ -419,7 +426,7 @@ class BattleDetailsSheet extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.02),
+              color: Colors.white.withValues(alpha: 0.02),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: Colors.white10),
             ),
@@ -445,7 +452,7 @@ class BattleDetailsSheet extends StatelessWidget {
             child: Text(
               'EFF. SPD: $effectiveSpeed',
               style: GoogleFonts.outfit(
-                color: Colors.amberAccent.withOpacity(0.8),
+                color: Colors.amberAccent.withValues(alpha: 0.8),
                 fontSize: 11,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 0.5,
@@ -508,7 +515,7 @@ class BattleDetailsSheet extends StatelessWidget {
               Text(
                 'EFF. SPD: $effectiveSpeed',
                 style: GoogleFonts.outfit(
-                  color: Colors.amberAccent.withOpacity(0.8),
+                  color: Colors.amberAccent.withValues(alpha: 0.8),
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 0.5,
@@ -558,7 +565,7 @@ class BattleDetailsSheet extends StatelessWidget {
                 '$value',
                 style: TextStyle(
                   fontFamily: 'PressStart2P',
-                  color: color.withOpacity(0.9),
+                  color: color.withValues(alpha: 0.9),
                   fontSize: 8,
                 ),
               ),
@@ -570,7 +577,7 @@ class BattleDetailsSheet extends StatelessWidget {
             child: LinearProgressIndicator(
               value: perc,
               minHeight: 8,
-              backgroundColor: Colors.white.withOpacity(0.05),
+              backgroundColor: Colors.white.withValues(alpha: 0.05),
               color: color,
             ),
           ),
@@ -622,7 +629,7 @@ class BattleDetailsSheet extends StatelessWidget {
           child: LinearProgressIndicator(
             value: hpRatio,
             minHeight: 12,
-            backgroundColor: Colors.white.withOpacity(0.05),
+            backgroundColor: Colors.white.withValues(alpha: 0.05),
             color: _getHpColor(hpRatio),
           ),
         ),
@@ -662,9 +669,9 @@ class BattleDetailsSheet extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: se.color.withOpacity(0.2),
+        color: se.color.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: se.color.withOpacity(0.5)),
+        border: Border.all(color: se.color.withValues(alpha: 0.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -721,9 +728,9 @@ class BattleDetailsSheet extends StatelessWidget {
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: color.withOpacity(0.3)),
+                border: Border.all(color: color.withValues(alpha: 0.3)),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -731,7 +738,7 @@ class BattleDetailsSheet extends StatelessWidget {
                   Text(
                     '${e.key}',
                     style: TextStyle(
-                      color: color.withOpacity(0.7),
+                      color: color.withValues(alpha: 0.7),
                       fontSize: 9,
                       fontWeight: FontWeight.bold,
                     ),
@@ -906,7 +913,7 @@ class BattleDetailsSheet extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.03),
+              color: Colors.white.withValues(alpha: 0.03),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: Colors.white10),
             ),
@@ -915,7 +922,7 @@ class BattleDetailsSheet extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: _getTypeColor(move.type).withOpacity(0.2),
+                    color: _getTypeColor(move.type).withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -985,7 +992,7 @@ class BattleDetailsSheet extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.03),
+        color: Colors.white.withValues(alpha: 0.03),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white10),
       ),
@@ -1001,7 +1008,7 @@ class BattleDetailsSheet extends StatelessWidget {
                   label,
                   style: TextStyle(
                     fontFamily: 'PressStart2P',
-                    color: themeColor.withOpacity(0.6),
+                    color: themeColor.withValues(alpha: 0.6),
                     fontSize: 8,
                   ),
                 ),
@@ -1033,7 +1040,7 @@ class BattleDetailsSheet extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.02),
+        color: Colors.white.withValues(alpha: 0.02),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white10),
       ),

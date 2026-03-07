@@ -275,6 +275,7 @@ class Move {
     this.isPunch = false,
     this.isBite = false,
     this.isSoundBased = false,
+    this.isSelfDestruct = false,
     bool? isContact,
   }) : isContact =
            isContact ?? (category == MoveCategory.physical && baseDamage > 0);
@@ -283,6 +284,7 @@ class Move {
   final bool isBite;
   final bool isSoundBased;
   final bool isContact;
+  final bool isSelfDestruct;
 
   // Compatibility getter
   MoveEffect get effect => effects.isNotEmpty
@@ -357,6 +359,17 @@ class Move {
       isPunch: json['isPunch'] as bool? ?? false,
       isBite: json['isBite'] as bool? ?? false,
       isSoundBased: json['isSoundBased'] as bool? ?? false,
+      isSelfDestruct:
+          json['isSelfDestruct'] as bool? ??
+          (json['name'] == 'Self-Destruct' ||
+              json['name'] == 'Explosion' ||
+              json['name'] == 'Mind Blown' ||
+              json['name'] == 'Misty Explosion' ||
+              effectsList.any(
+                (e) =>
+                    e.type == MoveEffectType.finalGambit ||
+                    e.type == MoveEffectType.memento,
+              )),
       targetCount: json['targetCount'] != null
           ? MoveTargetCount.values.firstWhere(
               (e) => e.toString().split('.').last == json['targetCount'],
@@ -394,6 +407,7 @@ class Move {
     bool? isPunch,
     bool? isBite,
     bool? isSoundBased,
+    bool? isSelfDestruct,
     bool? isContact,
     String? animationType,
   }) {
@@ -426,6 +440,7 @@ class Move {
       isPunch: isPunch ?? this.isPunch,
       isBite: isBite ?? this.isBite,
       isSoundBased: isSoundBased ?? this.isSoundBased,
+      isSelfDestruct: isSelfDestruct ?? this.isSelfDestruct,
       isContact: isContact ?? this.isContact,
       animationType: animationType ?? this.animationType,
     );

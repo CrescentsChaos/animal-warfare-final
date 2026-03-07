@@ -238,12 +238,14 @@ class _ProtectPainter extends CustomPainter {
         final dist = Offset(dx, dy).distance / 60;
         final localPulse = (math.sin(progress * 15 - dist * 5) + 1) / 2;
 
-        paint.color = shieldColor.withOpacity(0.2 + 0.4 * localPulse * pulse);
+        paint.color = shieldColor.withValues(
+          alpha: 0.2 + 0.4 * localPulse * pulse,
+        );
         _drawHexagon(canvas, hexCenter, hexRadius * 0.9, paint);
 
         // Hex border
         paint.style = PaintingStyle.stroke;
-        paint.color = shieldColor.withOpacity(0.6 * pulse);
+        paint.color = shieldColor.withValues(alpha: 0.6 * pulse);
         _drawHexagon(canvas, hexCenter, hexRadius * 0.9, paint);
         paint.style = PaintingStyle.fill;
       }
@@ -257,7 +259,10 @@ class _ProtectPainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeWidth = 4
         ..shader = RadialGradient(
-          colors: [shieldColor.withOpacity(0.6), shieldColor.withOpacity(0)],
+          colors: [
+            shieldColor.withValues(alpha: 0.6),
+            shieldColor.withValues(alpha: 0),
+          ],
         ).createShader(Rect.fromCircle(center: center, radius: 90)),
     );
   }
@@ -694,7 +699,7 @@ class DrainEffect extends StatelessWidget {
                   'assets/move_effects/aqua.png',
                   width: 40,
                   height: 40,
-                  color: Colors.greenAccent.withOpacity(0.8),
+                  color: Colors.greenAccent.withValues(alpha: 0.8),
                   colorBlendMode: BlendMode.modulate,
                   fit: BoxFit.contain,
                 ),
@@ -738,7 +743,7 @@ class SurfEffect extends StatelessWidget {
                 width: 300,
                 height: 180,
                 fit: BoxFit.fill,
-                color: Colors.blue.withOpacity(0.4),
+                color: Colors.blue.withValues(alpha: 0.4),
                 colorBlendMode: BlendMode.srcATop,
               ),
             ),
@@ -1910,7 +1915,10 @@ class _GlowPainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final paint = Paint()
       ..shader = RadialGradient(
-        colors: [color.withOpacity(intensity), color.withOpacity(0.0)],
+        colors: [
+          color.withValues(alpha: intensity),
+          color.withValues(alpha: 0.0),
+        ],
       ).createShader(Rect.fromCircle(center: center, radius: 50));
     canvas.drawCircle(center, 50, paint);
   }
@@ -1950,7 +1958,7 @@ class _PhysicalHitPainter extends CustomPainter {
     switch (type) {
       // Basic — plain X-slash slashes
       case ElementalType.basic:
-        paint.color = color.withOpacity(fade);
+        paint.color = color.withValues(alpha: fade);
         paint.strokeWidth = 6 * (1 - p * 0.5);
         paint.style = PaintingStyle.stroke;
         _drawSlash(canvas, cx, cy, 50 * p, paint);
@@ -1958,7 +1966,7 @@ class _PhysicalHitPainter extends CustomPainter {
 
       // Flying — feather-arc sweep
       case ElementalType.flying:
-        paint.color = color.withOpacity(fade);
+        paint.color = color.withValues(alpha: fade);
         final r = 55.0 * p;
         canvas.drawArc(
           Rect.fromCircle(center: Offset(cx, cy), radius: r),
@@ -1977,7 +1985,7 @@ class _PhysicalHitPainter extends CustomPainter {
           canvas.drawCircle(
             Offset(dx, dy),
             5 * fade,
-            Paint()..color = color.withOpacity(fade * 0.8),
+            Paint()..color = color.withValues(alpha: fade * 0.8),
           );
         }
         break;
@@ -1997,7 +2005,7 @@ class _PhysicalHitPainter extends CustomPainter {
           paint
             ..style = PaintingStyle.stroke
             ..strokeWidth = 5
-            ..color = color.withOpacity(fade),
+            ..color = color.withValues(alpha: fade),
         );
         break;
 
@@ -2011,11 +2019,11 @@ class _PhysicalHitPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = 4.0 - i
-              ..color = color.withOpacity(fade * (1.0 - i * 0.25)),
+              ..color = color.withValues(alpha: fade * (1.0 - i * 0.25)),
           );
         }
         // Ground crack lines
-        paint.color = color.withOpacity(fade);
+        paint.color = color.withValues(alpha: fade);
         paint.strokeWidth = 3;
         paint.style = PaintingStyle.stroke;
         for (int i = 0; i < 6; i++) {
@@ -2053,14 +2061,17 @@ class _PhysicalHitPainter extends CustomPainter {
             ..lineTo(base1.dx, base1.dy)
             ..lineTo(base2.dx, base2.dy)
             ..close();
-          canvas.drawPath(path, Paint()..color = color.withOpacity(fade * 0.9));
+          canvas.drawPath(
+            path,
+            Paint()..color = color.withValues(alpha: fade * 0.9),
+          );
         }
         break;
 
       // Toxic — splat blob
       case ElementalType.toxic:
         final r = 40.0 * p;
-        paint.color = color.withOpacity(fade * 0.85);
+        paint.color = color.withValues(alpha: fade * 0.85);
         canvas.drawCircle(Offset(cx, cy), r, paint);
         // Droplets
         for (int i = 0; i < 5; i++) {
@@ -2069,7 +2080,7 @@ class _PhysicalHitPainter extends CustomPainter {
           canvas.drawCircle(
             Offset(cx + math.cos(angle) * dr, cy + math.sin(angle) * dr),
             8 * p * fade,
-            Paint()..color = color.withOpacity(fade * 0.6),
+            Paint()..color = color.withValues(alpha: fade * 0.6),
           );
         }
         break;
@@ -2087,7 +2098,7 @@ class _PhysicalHitPainter extends CustomPainter {
             width: (8 + rand.nextDouble() * 8) * (1 - p * 0.3),
             height: (8 + rand.nextDouble() * 8) * (1 - p * 0.3),
           );
-          canvas.drawRect(rect, Paint()..color = color.withOpacity(fade));
+          canvas.drawRect(rect, Paint()..color = color.withValues(alpha: fade));
         }
         break;
 
@@ -2098,7 +2109,7 @@ class _PhysicalHitPainter extends CustomPainter {
           ..strokeWidth = 5
           ..strokeCap = StrokeCap.round;
         for (int i = -1; i <= 1; i++) {
-          paint.color = color.withOpacity(fade);
+          paint.color = color.withValues(alpha: fade);
           final ox = cx + i * 18.0;
           canvas.drawLine(
             Offset(ox - 10, cy - 35 * p),
@@ -2121,7 +2132,7 @@ class _PhysicalHitPainter extends CustomPainter {
             ..style = PaintingStyle.stroke
             ..strokeWidth = 7
             ..strokeJoin = StrokeJoin.round
-            ..color = color.withOpacity(fade),
+            ..color = color.withValues(alpha: fade),
         );
         // Inner bright core
         canvas.drawPath(
@@ -2129,7 +2140,7 @@ class _PhysicalHitPainter extends CustomPainter {
           Paint()
             ..style = PaintingStyle.stroke
             ..strokeWidth = 3
-            ..color = Colors.white.withOpacity(fade * 0.8),
+            ..color = Colors.white.withValues(alpha: fade * 0.8),
         );
         break;
 
@@ -2140,7 +2151,7 @@ class _PhysicalHitPainter extends CustomPainter {
           ..strokeWidth = 4;
         for (int i = 0; i < 3; i++) {
           final r2 = (20 + i * 12) * p;
-          paint.color = color.withOpacity(fade * (1 - i * 0.2));
+          paint.color = color.withValues(alpha: fade * (1 - i * 0.2));
           final sweepAngle = math.pi * 2 * p;
           canvas.drawArc(
             Rect.fromCircle(center: Offset(cx, cy), radius: r2),
@@ -2156,7 +2167,7 @@ class _PhysicalHitPainter extends CustomPainter {
           40 * p,
           Paint()
             ..style = PaintingStyle.fill
-            ..color = color.withOpacity(fade * 0.3),
+            ..color = color.withValues(alpha: fade * 0.3),
         );
         break;
 
@@ -2169,10 +2180,16 @@ class _PhysicalHitPainter extends CustomPainter {
           Paint()
             ..style = PaintingStyle.stroke
             ..strokeWidth = 4
-            ..color = color.withOpacity(fade),
+            ..color = color.withValues(alpha: fade),
         );
         // 5-pointed star
-        _drawStar(canvas, Offset(cx, cy), 40 * p, 5, color.withOpacity(fade));
+        _drawStar(
+          canvas,
+          Offset(cx, cy),
+          40 * p,
+          5,
+          color.withValues(alpha: fade),
+        );
         break;
 
       // Blaze — fire burst
@@ -2189,7 +2206,7 @@ class _PhysicalHitPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = 4 + rand2.nextDouble() * 4
-              ..color = color.withOpacity(fade * 0.9),
+              ..color = color.withValues(alpha: fade * 0.9),
           );
         }
         // Core glow
@@ -2198,7 +2215,7 @@ class _PhysicalHitPainter extends CustomPainter {
           18 * p,
           Paint()
             ..style = PaintingStyle.fill
-            ..color = Colors.white.withOpacity(fade * 0.6),
+            ..color = Colors.white.withValues(alpha: fade * 0.6),
         );
         break;
 
@@ -2223,7 +2240,7 @@ class _PhysicalHitPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = 6
-              ..color = color.withOpacity(fade * 0.9),
+              ..color = color.withValues(alpha: fade * 0.9),
           );
         }
         break;
@@ -2241,7 +2258,7 @@ class _PhysicalHitPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = 3
-              ..color = color.withOpacity(fade * (0.6 + i * 0.1)),
+              ..color = color.withValues(alpha: fade * (0.6 + i * 0.1)),
           );
         }
         break;
@@ -2259,7 +2276,7 @@ class _PhysicalHitPainter extends CustomPainter {
             ),
             Paint()
               ..style = PaintingStyle.fill
-              ..color = color.withOpacity(fade * (0.4 - i * 0.05)),
+              ..color = color.withValues(alpha: fade * (0.4 - i * 0.05)),
           );
         }
         break;
@@ -2272,7 +2289,7 @@ class _PhysicalHitPainter extends CustomPainter {
           ..strokeWidth = 6
           ..strokeCap = StrokeCap.round;
         for (int i = -1; i <= 1; i++) {
-          paint.color = color.withOpacity(fade);
+          paint.color = color.withValues(alpha: fade);
           final ox = cx + i * 22.0;
           canvas.drawLine(
             Offset(ox - 15, cy - 40 * p),
@@ -2286,7 +2303,7 @@ class _PhysicalHitPainter extends CustomPainter {
           30 * p,
           Paint()
             ..style = PaintingStyle.fill
-            ..color = color.withOpacity(fade * 0.4),
+            ..color = color.withValues(alpha: fade * 0.4),
         );
         break;
 
@@ -2297,12 +2314,12 @@ class _PhysicalHitPainter extends CustomPainter {
           Offset(cx, cy),
           50 * p,
           6,
-          color.withOpacity(fade * 0.8),
+          color.withValues(alpha: fade * 0.8),
         );
         canvas.drawCircle(
           Offset(cx, cy),
           15 * p,
-          Paint()..color = Colors.white.withOpacity(fade * 0.9),
+          Paint()..color = Colors.white.withValues(alpha: fade * 0.9),
         );
         break;
 
@@ -2316,7 +2333,7 @@ class _PhysicalHitPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = 3
-              ..color = color.withOpacity(fade * (0.9 - i * 0.15)),
+              ..color = color.withValues(alpha: fade * (0.9 - i * 0.15)),
           );
         }
         break;
@@ -2328,7 +2345,7 @@ class _PhysicalHitPainter extends CustomPainter {
           ..strokeWidth = 4;
         for (int i = 0; i < 5; i++) {
           final r6 = (15 + i * 16) * p;
-          paint.color = color.withOpacity(fade * (1 - i * 0.15));
+          paint.color = color.withValues(alpha: fade * (1 - i * 0.15));
           canvas.drawArc(
             Rect.fromCircle(center: Offset(cx, cy), radius: r6),
             -math.pi * 0.7,
@@ -2348,13 +2365,13 @@ class _PhysicalHitPainter extends CustomPainter {
           Paint()
             ..style = PaintingStyle.stroke
             ..strokeWidth = 5
-            ..color = color.withOpacity(fade),
+            ..color = color.withValues(alpha: fade),
         );
         // Radiant cross
         paint
           ..style = PaintingStyle.stroke
           ..strokeWidth = 5
-          ..color = Colors.white.withOpacity(fade);
+          ..color = Colors.white.withValues(alpha: fade);
         canvas.drawLine(
           Offset(cx, cy - 50 * p),
           Offset(cx, cy + 50 * p),
@@ -2469,12 +2486,12 @@ class _SpecialHitPainter extends CustomPainter {
         canvas.drawCircle(
           Offset(bx, by),
           r,
-          paint..color = color.withOpacity(fade * 0.85),
+          paint..color = color.withValues(alpha: fade * 0.85),
         );
         canvas.drawCircle(
           Offset(bx, by),
           r * 0.6,
-          Paint()..color = Colors.white.withOpacity(fade * 0.4),
+          Paint()..color = Colors.white.withValues(alpha: fade * 0.4),
         );
         if (impactPhase > 0) {
           // Splash
@@ -2484,7 +2501,7 @@ class _SpecialHitPainter extends CustomPainter {
             canvas.drawCircle(
               Offset(cx + math.cos(angle) * dist, cy + math.sin(angle) * dist),
               5 * (1 - impactPhase),
-              Paint()..color = color.withOpacity(fade * 0.7),
+              Paint()..color = color.withValues(alpha: fade * 0.7),
             );
           }
         }
@@ -2500,7 +2517,7 @@ class _SpecialHitPainter extends CustomPainter {
             width: 28,
             height: 24,
           );
-          canvas.drawRect(rect, paint..color = color.withOpacity(fade));
+          canvas.drawRect(rect, paint..color = color.withValues(alpha: fade));
         } else {
           // Fragment explosion
           final rand = math.Random(7);
@@ -2515,7 +2532,10 @@ class _SpecialHitPainter extends CustomPainter {
               width: 8 * (1 - impactPhase),
               height: 8 * (1 - impactPhase),
             );
-            canvas.drawRect(frag, Paint()..color = color.withOpacity(fade));
+            canvas.drawRect(
+              frag,
+              Paint()..color = color.withValues(alpha: fade),
+            );
           }
         }
         break;
@@ -2532,14 +2552,14 @@ class _SpecialHitPainter extends CustomPainter {
           ..close();
         canvas.drawPath(
           shardPath,
-          paint..color = color.withOpacity(fade * 0.9),
+          paint..color = color.withValues(alpha: fade * 0.9),
         );
         canvas.drawPath(
           shardPath,
           Paint()
             ..style = PaintingStyle.stroke
             ..strokeWidth = 2
-            ..color = Colors.white.withOpacity(fade * 0.5),
+            ..color = Colors.white.withValues(alpha: fade * 0.5),
         );
         if (impactPhase > 0) {
           for (int i = 0; i < 6; i++) {
@@ -2551,7 +2571,7 @@ class _SpecialHitPainter extends CustomPainter {
               Paint()
                 ..style = PaintingStyle.stroke
                 ..strokeWidth = 3
-                ..color = color.withOpacity(fade * 0.8),
+                ..color = color.withValues(alpha: fade * 0.8),
             );
           }
         }
@@ -2564,14 +2584,14 @@ class _SpecialHitPainter extends CustomPainter {
           canvas.drawCircle(
             Offset(bx + i * 8.0, cy - i * 5.0),
             (12 + i * 5) * (1 - p * 0.3),
-            Paint()..color = color.withOpacity(fade * (0.7 - i * 0.15)),
+            Paint()..color = color.withValues(alpha: fade * (0.7 - i * 0.15)),
           );
         }
         if (impactPhase > 0) {
           canvas.drawCircle(
             Offset(cx, cy),
             impactPhase * 50,
-            Paint()..color = color.withOpacity(fade * 0.35),
+            Paint()..color = color.withValues(alpha: fade * 0.35),
           );
         }
         break;
@@ -2583,14 +2603,14 @@ class _SpecialHitPainter extends CustomPainter {
         canvas.drawCircle(
           Offset(bx, by),
           14,
-          paint..color = color.withOpacity(fade),
+          paint..color = color.withValues(alpha: fade),
         );
         if (impactPhase > 0) {
           // Dust cloud
           canvas.drawCircle(
             Offset(cx, cy),
             impactPhase * 40,
-            Paint()..color = color.withOpacity(fade * 0.3),
+            Paint()..color = color.withValues(alpha: fade * 0.3),
           );
         }
         break;
@@ -2604,7 +2624,7 @@ class _SpecialHitPainter extends CustomPainter {
           ..lineTo(bx - 5, cy)
           ..lineTo(bx, cy + 6)
           ..close();
-        canvas.drawPath(path, paint..color = color.withOpacity(fade));
+        canvas.drawPath(path, paint..color = color.withValues(alpha: fade));
         break;
 
       // Electric — lightning bolt projectile
@@ -2620,14 +2640,14 @@ class _SpecialHitPainter extends CustomPainter {
           Paint()
             ..style = PaintingStyle.stroke
             ..strokeWidth = 6
-            ..color = color.withOpacity(fade),
+            ..color = color.withValues(alpha: fade),
         );
         canvas.drawPath(
           zap,
           Paint()
             ..style = PaintingStyle.stroke
             ..strokeWidth = 2.5
-            ..color = Colors.white.withOpacity(fade * 0.9),
+            ..color = Colors.white.withValues(alpha: fade * 0.9),
         );
         if (impactPhase > 0) {
           for (int i = 0; i < 8; i++) {
@@ -2639,7 +2659,7 @@ class _SpecialHitPainter extends CustomPainter {
               Paint()
                 ..style = PaintingStyle.stroke
                 ..strokeWidth = 3
-                ..color = color.withOpacity(fade * 0.9),
+                ..color = color.withValues(alpha: fade * 0.9),
             );
           }
         }
@@ -2651,18 +2671,18 @@ class _SpecialHitPainter extends CustomPainter {
         canvas.drawCircle(
           Offset(bx, cy),
           20,
-          paint..color = color.withOpacity(fade * 0.9),
+          paint..color = color.withValues(alpha: fade * 0.9),
         );
         canvas.drawCircle(
           Offset(bx - 5, cy - 5),
           8,
-          Paint()..color = Colors.deepPurple.withOpacity(fade * 0.5),
+          Paint()..color = Colors.deepPurple.withValues(alpha: fade * 0.5),
         );
         if (impactPhase > 0) {
           canvas.drawCircle(
             Offset(cx, cy),
             impactPhase * 55,
-            Paint()..color = color.withOpacity(fade * 0.25),
+            Paint()..color = color.withValues(alpha: fade * 0.25),
           );
         }
         break;
@@ -2678,12 +2698,12 @@ class _SpecialHitPainter extends CustomPainter {
         canvas.drawCircle(
           Offset(bx, cy),
           20 - travelPhase * 4,
-          paint..color = color.withOpacity(fade),
+          paint..color = color.withValues(alpha: fade),
         );
         canvas.drawCircle(
           Offset(bx, cy),
           10 - travelPhase * 3,
-          Paint()..color = Colors.yellow.withOpacity(fade * 0.8),
+          Paint()..color = Colors.yellow.withValues(alpha: fade * 0.8),
         );
         // Flame trail
         final trailCells = 4;
@@ -2692,7 +2712,7 @@ class _SpecialHitPainter extends CustomPainter {
           canvas.drawCircle(
             Offset(tx, cy),
             (8 - i * 1.5) * (1 - travelPhase * 0.5),
-            Paint()..color = color.withOpacity(fade * (0.6 - i * 0.1)),
+            Paint()..color = color.withValues(alpha: fade * (0.6 - i * 0.1)),
           );
         }
         if (impactPhase > 0) {
@@ -2700,12 +2720,12 @@ class _SpecialHitPainter extends CustomPainter {
           canvas.drawCircle(
             Offset(cx, cy),
             impactPhase * 50,
-            paint..color = color.withOpacity(fade * 0.5),
+            paint..color = color.withValues(alpha: fade * 0.5),
           );
           canvas.drawCircle(
             Offset(cx, cy),
             impactPhase * 30,
-            Paint()..color = Colors.yellow.withOpacity(fade * 0.7),
+            Paint()..color = Colors.yellow.withValues(alpha: fade * 0.7),
           );
         }
         break;
@@ -2717,14 +2737,14 @@ class _SpecialHitPainter extends CustomPainter {
           ..moveTo(bx, cy - 14)
           ..quadraticBezierTo(bx + 20, cy, bx, cy + 14)
           ..quadraticBezierTo(bx - 20, cy, bx, cy - 14);
-        canvas.drawPath(leafPath, paint..color = color.withOpacity(fade));
+        canvas.drawPath(leafPath, paint..color = color.withValues(alpha: fade));
         canvas.drawLine(
           Offset(bx - 10, cy),
           Offset(bx + 10, cy),
           Paint()
             ..style = PaintingStyle.stroke
             ..strokeWidth = 1.5
-            ..color = Colors.white.withOpacity(fade * 0.5),
+            ..color = Colors.white.withValues(alpha: fade * 0.5),
         );
         break;
 
@@ -2738,7 +2758,7 @@ class _SpecialHitPainter extends CustomPainter {
           canvas.drawCircle(
             Offset(tx + math.cos(angle) * 8, cy + math.sin(angle) * 8),
             (10 - i * 1.5),
-            Paint()..color = color.withOpacity(fade * (0.8 - i * 0.1)),
+            Paint()..color = color.withValues(alpha: fade * (0.8 - i * 0.1)),
           );
         }
         if (impactPhase > 0) {
@@ -2750,7 +2770,7 @@ class _SpecialHitPainter extends CustomPainter {
                 cy + math.sin(angle) * impactPhase * 45,
               ),
               8 * (1 - impactPhase),
-              Paint()..color = color.withOpacity(fade * 0.9),
+              Paint()..color = color.withValues(alpha: fade * 0.9),
             );
           }
         }
@@ -2766,14 +2786,14 @@ class _SpecialHitPainter extends CustomPainter {
               width: 20.0,
               height: 30.0,
             ),
-            Paint()..color = color.withOpacity(fade * (0.7 - i * 0.15)),
+            Paint()..color = color.withValues(alpha: fade * (0.7 - i * 0.15)),
           );
         }
         if (impactPhase > 0) {
           canvas.drawCircle(
             Offset(cx, cy),
             impactPhase * 50,
-            Paint()..color = color.withOpacity(fade * 0.3),
+            Paint()..color = color.withValues(alpha: fade * 0.3),
           );
         }
         break;
@@ -2789,18 +2809,18 @@ class _SpecialHitPainter extends CustomPainter {
         );
         canvas.drawRect(
           beamRect,
-          paint..color = color.withOpacity(fade * 0.85),
+          paint..color = color.withValues(alpha: fade * 0.85),
         );
         // Core
         canvas.drawRect(
           Rect.fromLTWH(beamRect.left, cy - 4, beamRect.width, 8),
-          Paint()..color = Colors.white.withOpacity(fade * 0.5),
+          Paint()..color = Colors.white.withValues(alpha: fade * 0.5),
         );
         if (impactPhase > 0) {
           canvas.drawCircle(
             Offset(cx, cy),
             impactPhase * 55,
-            paint..color = color.withOpacity(fade * 0.5),
+            paint..color = color.withValues(alpha: fade * 0.5),
           );
         }
         break;
@@ -2816,14 +2836,14 @@ class _SpecialHitPainter extends CustomPainter {
           Offset.zero,
           18,
           6,
-          color.withOpacity(fade * 0.9),
+          color.withValues(alpha: fade * 0.8),
         );
         canvas.restore();
         if (impactPhase > 0) {
           canvas.drawCircle(
             Offset(cx, cy),
             impactPhase * 45,
-            paint..color = color.withOpacity(fade * 0.4),
+            paint..color = color.withValues(alpha: fade * 0.4),
           );
         }
         break;
@@ -2836,14 +2856,14 @@ class _SpecialHitPainter extends CustomPainter {
             Offset(bx, cy),
             (18 - i * 4) *
                 (0.8 + math.sin(travelPhase * math.pi * 4 + i) * 0.2),
-            Paint()..color = color.withOpacity(fade * (0.9 - i * 0.2)),
+            Paint()..color = color.withValues(alpha: fade * (0.9 - i * 0.2)),
           );
         }
         if (impactPhase > 0) {
           canvas.drawCircle(
             Offset(cx, cy),
             impactPhase * 50,
-            paint..color = color.withOpacity(fade * 0.4),
+            paint..color = color.withValues(alpha: fade * 0.4),
           );
         }
         break;
@@ -2858,7 +2878,7 @@ class _SpecialHitPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = 3
-              ..color = color.withOpacity(fade * (0.9 - i * 0.15)),
+              ..color = color.withValues(alpha: fade * (0.9 - i * 0.15)),
           );
         }
         if (impactPhase > 0) {
@@ -2870,7 +2890,7 @@ class _SpecialHitPainter extends CustomPainter {
               Paint()
                 ..style = PaintingStyle.stroke
                 ..strokeWidth = 3
-                ..color = color.withOpacity(fade * (0.8 - i * 0.12)),
+                ..color = color.withValues(alpha: fade * (0.8 - i * 0.12)),
             );
           }
         }
@@ -2880,16 +2900,19 @@ class _SpecialHitPainter extends CustomPainter {
       case ElementalType.holy:
         final beamW = travelPhase * 65;
         final beamRect = Rect.fromLTWH(cx - beamW, cy - 10, beamW, 20);
-        canvas.drawRect(beamRect, paint..color = color.withOpacity(fade * 0.6));
+        canvas.drawRect(
+          beamRect,
+          paint..color = color.withValues(alpha: fade * 0.6),
+        );
         canvas.drawRect(
           Rect.fromLTWH(cx - beamW, cy - 4, beamW, 8),
-          Paint()..color = Colors.white.withOpacity(fade * 0.8),
+          Paint()..color = Colors.white.withValues(alpha: fade * 0.8),
         );
         if (impactPhase > 0) {
           canvas.drawCircle(
             Offset(cx, cy),
             impactPhase * 55,
-            paint..color = color.withOpacity(fade * 0.5),
+            paint..color = color.withValues(alpha: fade * 0.5),
           );
           // Cross burst
           canvas.drawLine(
@@ -2898,7 +2921,7 @@ class _SpecialHitPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = 4
-              ..color = Colors.white.withOpacity(fade * 0.8),
+              ..color = Colors.white.withValues(alpha: fade * 0.8),
           );
           canvas.drawLine(
             Offset(cx, cy - impactPhase * 50),
@@ -2906,7 +2929,7 @@ class _SpecialHitPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = 4
-              ..color = Colors.white.withOpacity(fade * 0.8),
+              ..color = Colors.white.withValues(alpha: fade * 0.8),
           );
         }
         break;
@@ -2926,18 +2949,18 @@ class _SpecialHitPainter extends CustomPainter {
     canvas.drawCircle(
       Offset(bx, cy),
       18 * (1 - impact * 0.6),
-      Paint()..color = color.withOpacity(fade * 0.9),
+      Paint()..color = color.withValues(alpha: fade * 0.9),
     );
     canvas.drawCircle(
       Offset(bx, cy),
       10 * (1 - impact * 0.6),
-      Paint()..color = Colors.white.withOpacity(fade * 0.5),
+      Paint()..color = Colors.white.withValues(alpha: fade * 0.5),
     );
     if (impact > 0) {
       canvas.drawCircle(
         Offset(cx, cy),
         impact * 50,
-        Paint()..color = color.withOpacity(fade * 0.4),
+        Paint()..color = color.withValues(alpha: fade * 0.4),
       );
     }
   }
@@ -2958,7 +2981,10 @@ class _SpecialHitPainter extends CustomPainter {
       ..lineTo(bx - 16, cy)
       ..lineTo(bx, cy + 6)
       ..close();
-    canvas.drawPath(path, Paint()..color = color.withOpacity(fade * 0.85));
+    canvas.drawPath(
+      path,
+      Paint()..color = color.withValues(alpha: fade * 0.85),
+    );
     if (impact > 0) {
       for (int i = 0; i < 6; i++) {
         final angle = math.pi * 2 * i / 6;
@@ -2971,7 +2997,7 @@ class _SpecialHitPainter extends CustomPainter {
           Paint()
             ..style = PaintingStyle.stroke
             ..strokeWidth = 3
-            ..color = color.withOpacity(fade * 0.8),
+            ..color = color.withValues(alpha: fade * 0.8),
         );
       }
     }
@@ -3037,7 +3063,7 @@ class _StatusEffectPainter extends CustomPainter {
           canvas.drawCircle(
             Offset(ox, oy),
             8 + i * 2.0,
-            paint..color = color.withOpacity(fadeOut * 0.7),
+            paint..color = color.withValues(alpha: fadeOut * 0.7),
           );
         }
         break;
@@ -3051,7 +3077,7 @@ class _StatusEffectPainter extends CustomPainter {
           canvas.drawCircle(
             Offset(ox, oy),
             3 + rand.nextDouble() * 4,
-            paint..color = color.withOpacity(fadeOut * 0.8),
+            paint..color = color.withValues(alpha: fadeOut * 0.8),
           );
         }
         break;
@@ -3067,7 +3093,7 @@ class _StatusEffectPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = 2.5
-              ..color = color.withOpacity(fadeOut),
+              ..color = color.withValues(alpha: fadeOut),
           );
           // Mini cross
           canvas.drawLine(
@@ -3086,7 +3112,7 @@ class _StatusEffectPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = 2
-              ..color = color.withOpacity(fadeOut * 0.7),
+              ..color = color.withValues(alpha: fadeOut * 0.7),
           );
         }
         break;
@@ -3105,7 +3131,7 @@ class _StatusEffectPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = 3
-              ..color = color.withOpacity(fadeOut),
+              ..color = color.withValues(alpha: fadeOut),
           );
         }
         break;
@@ -3123,7 +3149,7 @@ class _StatusEffectPainter extends CustomPainter {
               width: 20,
               height: 30,
             ),
-            paint..color = color.withOpacity(fadeOut * 0.5),
+            paint..color = color.withValues(alpha: fadeOut * 0.5),
           );
         }
         break;
@@ -3139,7 +3165,7 @@ class _StatusEffectPainter extends CustomPainter {
               riseY + math.sin(angle) * dist * 0.4,
             ),
             5 * fadeOut,
-            paint..color = color.withOpacity(fadeOut),
+            paint..color = color.withValues(alpha: fadeOut),
           );
         }
         break;
@@ -3158,7 +3184,7 @@ class _StatusEffectPainter extends CustomPainter {
             ..quadraticBezierTo(lx - 8, ly, lx, ly - 8);
           canvas.drawPath(
             leafPath,
-            paint..color = color.withOpacity(fadeOut * 0.8),
+            paint..color = color.withValues(alpha: fadeOut * 0.8),
           );
         }
         break;
@@ -3170,7 +3196,7 @@ class _StatusEffectPainter extends CustomPainter {
           canvas.drawCircle(
             Offset(cx + math.cos(angle) * 30, riseY + math.sin(angle) * 20),
             12 * fadeOut,
-            paint..color = color.withOpacity(fadeOut * 0.6),
+            paint..color = color.withValues(alpha: fadeOut * 0.6),
           );
         }
         break;
@@ -3185,7 +3211,7 @@ class _StatusEffectPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = 3
-              ..color = color.withOpacity(fadeOut * (0.9 - i * 0.2)),
+              ..color = color.withValues(alpha: fadeOut * (0.9 - i * 0.2)),
           );
         }
         break;
@@ -3201,7 +3227,7 @@ class _StatusEffectPainter extends CustomPainter {
               riseY + math.sin(angle + p * math.pi * 2) * r * 0.5,
             ),
             4,
-            paint..color = color.withOpacity(fadeOut * 0.8),
+            paint..color = color.withValues(alpha: fadeOut * 0.8),
           );
         }
         break;
@@ -3215,7 +3241,7 @@ class _StatusEffectPainter extends CustomPainter {
             Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = 2.5
-              ..color = color.withOpacity(fadeOut * (0.8 - i * 0.2)),
+              ..color = color.withValues(alpha: fadeOut * (0.8 - i * 0.2)),
           );
         }
         break;
@@ -3406,11 +3432,11 @@ class SpoutEffect extends StatelessWidget {
     final cy = size / 2;
 
     // Attacker position relative to target
-    double attackerX = cx - 180;
-    double attackerY = cy + 180;
+    double attackerX = cx - 250;
+    double attackerY = cy + 150;
     if (!isPlayer) {
-      attackerX = cx + 180;
-      attackerY = cy - 180;
+      attackerX = cx + 250;
+      attackerY = cy - 150;
     }
 
     return SizedBox(
@@ -3446,8 +3472,8 @@ class SpoutEffect extends StatelessWidget {
                   opacity: (1.0 - individualP).clamp(0.0, 1.0),
                   child: Image.asset(
                     asset,
-                    width: 40,
-                    height: 40,
+                    width: 20,
+                    height: 20,
                     fit: BoxFit.contain,
                   ),
                 ),

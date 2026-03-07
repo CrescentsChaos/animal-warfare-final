@@ -7,7 +7,13 @@ import 'package:animal_warfare/models/talisman.dart';
 
 class BattleOrganism {
   CapturedOrganism organism;
-  final List<Ability> abilities;
+  final List<Ability> _baseAbilities;
+  final List<Ability> tempAbilities = [];
+  List<Ability> get abilities => [..._baseAbilities, ...tempAbilities];
+  List<Move> get moves => organism.selectedMoveNames
+      .map((name) => Move.findByName(name))
+      .whereType<Move>()
+      .toList();
 
   String get name => isOpponent
       ? 'Foe ${organism.baseOrganism.name}'
@@ -123,10 +129,31 @@ class BattleOrganism {
     isMiracleEyed = false;
     shellTrapTriggered = false;
     lastMoveName = null;
+    tempAbilities.clear();
+    anticipationShieldActive = false;
 
     // GIMMICK RESET: Prismorph persists.
     // NOTE: isPrismorphed/hasPrismorph/activeTeraType are NOT reset here;
     // they persist for the entire battle.
+  }
+
+  void resetStatStages() {
+    _attackStage = 0;
+    _defenseStage = 0;
+    _powerStage = 0;
+    _resistanceStage = 0;
+    _speedStage = 0;
+    _accuracyStage = 0;
+    _evasionStage = 0;
+    if (isRogueMode) {
+      organism.attackStage = 0;
+      organism.defenseStage = 0;
+      organism.powerStage = 0;
+      organism.resistanceStage = 0;
+      organism.speedStage = 0;
+      organism.accuracyStage = 0;
+      organism.evasionStage = 0;
+    }
   }
 
   /// Refreshes stats after a level-up or level change
@@ -259,6 +286,10 @@ class BattleOrganism {
   bool helpingHandBoosted = false;
   bool isFollowMeTarget = false;
   String? lastMoveName;
+  bool truantSkipTurn = false;
+  bool unburdenActive = false;
+  bool isAbilitySuppressed = false;
+  bool anticipationShieldActive = false;
 
   String get displaySprite => isDisguised && disguisedAs != null
       ? disguisedAs!.baseOrganism.sprite
@@ -298,7 +329,7 @@ class BattleOrganism {
   }) : _atLevel = atLevel,
        level = atLevel ?? organism.level,
        _statusEffects = List.from(organism.statusEffects),
-       abilities = organism.abilities
+       _baseAbilities = organism.abilities
            .map((name) => Ability.findByName(name))
            .where((a) => a != null)
            .cast<Ability>()
@@ -324,11 +355,17 @@ class BattleOrganism {
 
   set battleTypes(List<ElementalType> value) => _battleTypes = value;
 
+  bool get _isItemValid =>
+      organism.equippedTalisman != null &&
+      !talismanConsumed &&
+      !organism.equippedTalisman!.name.contains('(used)');
+
   bool get isGrounded {
     if (types.contains(ElementalType.flying)) return false;
-    if (abilities.any((a) => a.name == 'True Flight' || a.name == 'Levitate'))
+    if (abilities.any((a) => a.name == 'True Flight' || a.name == 'Levitate')) {
       return false;
-    if (organism.equippedTalisman != null && !talismanConsumed) {
+    }
+    if (_isItemValid) {
       if (organism.equippedTalisman!.effects.any(
         (e) => e.type == TalismanEffectType.airBalloon,
       )) {
@@ -346,7 +383,7 @@ class BattleOrganism {
   }
 
   // This will be replaced by property-based logic in next phase
-  double _getAbilityStatMultiplier(String statName) {
+  double getAbilityStatMultiplier(String statName) {
     double totalMultiplier = 1.0;
     for (final ability in abilities) {
       if (ability.trigger != AbilityTrigger.onCalculateStat ||
@@ -363,23 +400,37 @@ class BattleOrganism {
         totalMultiplier *= ability.magnitude;
       }
 
-      // --- Batch 2 Ability Logic ---
+      // --- Phase 1: Pure Stat Multipliers (No conditions or simple stat conditions) ---
       if (ability.name == 'Fur Coat' && statName == 'defense') {
         totalMultiplier *= 2.0;
-      } else if (ability.name == 'Huge Power' && statName == 'attack') {
+      } else if ((ability.name == 'Huge Power' ||
+              ability.name == 'Pure Power') &&
+          statName == 'attack') {
         totalMultiplier *= 2.0;
       } else if (ability.name == 'Gorilla Tactics' && statName == 'attack') {
         totalMultiplier *= 1.5;
-      } else if (ability.name == 'Hustle' && statName == 'attack') {
-        totalMultiplier *= 1.5;
-      } else if (ability.name == 'Guts' &&
-          statName == 'attack' &&
-          statusEffects.isNotEmpty) {
-        totalMultiplier *= 1.5;
-      } else if (ability.name == 'Marvel Scale' &&
-          statName == 'defense' &&
-          statusEffects.isNotEmpty) {
-        totalMultiplier *= 1.5;
+      } else if (ability.name == 'Hustle' &&
+          (statName == 'attack' || statName == 'power')) {
+        totalMultiplier *= 1.4;
+      } else if (ability.name == 'Swift Hunter' && statName == 'speed') {
+        totalMultiplier *= 1.2;
+      } else if ((ability.name == 'Compound Eyes' ||
+              ability.name == 'Compoundeyes') &&
+          statName == 'accuracy') {
+        totalMultiplier *= 1.3;
+      } else if (ability.name == 'Illuminate' && statName == 'accuracy') {
+        totalMultiplier *= 1.2;
+      }
+
+      // --- Phase 2: Status-based Multipliers ---
+      if (statusEffects.isNotEmpty) {
+        if (ability.name == 'Guts' && statName == 'attack') {
+          totalMultiplier *= 1.5;
+        } else if (ability.name == 'Marvel Scale' && statName == 'defense') {
+          totalMultiplier *= 1.5;
+        } else if (ability.name == 'Quick Feet' && statName == 'speed') {
+          totalMultiplier *= 1.5;
+        }
       }
     }
     return totalMultiplier;
@@ -388,7 +439,7 @@ class BattleOrganism {
   int get currentAttack {
     double attack = organism.getAttack(atLevel: level).toDouble();
     attack *= _getStatStageMultiplier(attackStage);
-    attack *= _getAbilityStatMultiplier('attack');
+    attack *= getAbilityStatMultiplier('attack');
 
     for (final se in statusEffects) {
       if (se.type == StatusEffectType.burn) attack *= 0.5;
@@ -396,7 +447,7 @@ class BattleOrganism {
     }
 
     // Apply talisman effects (multi-effect support)
-    if (organism.equippedTalisman != null) {
+    if (_isItemValid) {
       for (final effect in organism.equippedTalisman!.effects) {
         // Legacy support
         if (effect.type == TalismanEffectType.attackBoost) {
@@ -422,14 +473,14 @@ class BattleOrganism {
     int baseDefense = organism.getDefense(atLevel: level);
     double defense = (baseDefense * _getStatStageMultiplier(defenseStage))
         .toDouble();
-    defense *= _getAbilityStatMultiplier('defense');
+    defense *= getAbilityStatMultiplier('defense');
 
     for (final se in statusEffects) {
       if (se.type == StatusEffectType.fear) defense *= 0.9;
     }
 
     // Apply talisman effects
-    if (organism.equippedTalisman != null) {
+    if (_isItemValid) {
       for (final effect in organism.equippedTalisman!.effects) {
         if (effect.type == TalismanEffectType.defenseBoost) {
           defense *= effect.magnitude;
@@ -446,14 +497,14 @@ class BattleOrganism {
   int get currentPower {
     double power = organism.getPower(atLevel: level).toDouble();
     power *= _getStatStageMultiplier(powerStage);
-    power *= _getAbilityStatMultiplier('power');
+    power *= getAbilityStatMultiplier('power');
 
     for (final se in statusEffects) {
       if (se.type == StatusEffectType.fear) power *= 0.9;
     }
 
     // Apply talisman effects
-    if (organism.equippedTalisman != null) {
+    if (_isItemValid) {
       for (final effect in organism.equippedTalisman!.effects) {
         if (effect.type == TalismanEffectType.powerBoost) {
           power *= effect.magnitude;
@@ -476,14 +527,14 @@ class BattleOrganism {
     int baseRes = organism.getResistance(atLevel: level);
     double resistance = (baseRes * _getStatStageMultiplier(resistanceStage))
         .toDouble();
-    resistance *= _getAbilityStatMultiplier('resistance');
+    resistance *= getAbilityStatMultiplier('resistance');
 
     for (final se in statusEffects) {
       if (se.type == StatusEffectType.fear) resistance *= 0.9;
     }
 
     // Apply talisman effects
-    if (organism.equippedTalisman != null) {
+    if (_isItemValid) {
       for (final effect in organism.equippedTalisman!.effects) {
         if (effect.type == TalismanEffectType.resistanceStatBoost) {
           resistance *= effect.magnitude;
@@ -499,7 +550,7 @@ class BattleOrganism {
 
   int get currentSpeed {
     double speed = organism.getSpeed(atLevel: level).toDouble();
-    speed *= _getAbilityStatMultiplier('speed');
+    speed *= getAbilityStatMultiplier('speed');
     speed *= _getStatStageMultiplier(speedStage);
 
     // Unburden: doubles speed if item is consumed
@@ -508,7 +559,7 @@ class BattleOrganism {
     }
 
     // Apply talisman effects
-    if (organism.equippedTalisman != null) {
+    if (_isItemValid) {
       for (final effect in organism.equippedTalisman!.effects) {
         if (effect.type == TalismanEffectType.speedBoost) {
           speed *= effect.magnitude;
@@ -537,7 +588,7 @@ class BattleOrganism {
     double hp = baseMax.toDouble();
 
     // Apply talisman effects
-    if (organism.equippedTalisman != null) {
+    if (_isItemValid) {
       for (final effect in organism.equippedTalisman!.effects) {
         if (effect.type == TalismanEffectType.healthBoost) {
           hp *= effect.magnitude;

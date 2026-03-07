@@ -11,13 +11,13 @@
     },
     {
         "name": "Anger Point",
-        "description": "Maxes Attack stat if hit by a critical hit.",
+        "description": "Getting hit raises Atk by +1. Critical hits maximize Attack.",
         "trigger": "onDamageTaken",
         "effectType": "statChange",
         "targetStat": "attack",
-        "magnitude": 12,
+        "magnitude": 1,
         "conditions": [
-            "crit"
+            "on_hit"
         ]
     },
     {
@@ -79,6 +79,14 @@
         "effectType": "statChange",
         "targetStat": "defense",
         "magnitude": 1
+    },
+    {
+        "name": "Cute Charm",
+        "description": "30% chance to charm attacker on contact, which halves its power.",
+        "trigger": "onContact",
+        "effectType": "statusChange",
+        "value": "charmed",
+        "chance": 0.3
     },
     {
         "name": "Shield Dust",
@@ -279,7 +287,7 @@
     },
     {
         "name": "Huge Power",
-        "description": "Doubles the Attack stat.",
+        "description": "Doubles own Attack stat. (Raw stat, not base stat)",
         "trigger": "onCalculateStat",
         "effectType": "statMultiplier",
         "targetStat": "attack",
@@ -287,11 +295,11 @@
     },
     {
         "name": "Hustle",
-        "description": "Boosts Attack by 50% but lowers accuracy.",
+        "description": "0.9x accuracy. Raises Atk & power by 1.4x.",
         "trigger": "onCalculateStat",
         "effectType": "statMultiplier",
-        "targetStat": "attack",
-        "magnitude": 1.5
+        "targetStat": "accuracy",
+        "magnitude": 0.9
     },
     {
         "name": "Hydration",
@@ -317,6 +325,15 @@
     },
     {
         "name": "Iron Barbs",
+        "description": "Damages the attacker on contact.",
+        "trigger": "onDamageTaken",
+        "effectType": "none",
+        "conditions": [
+            "contact"
+        ]
+    },
+    {
+        "name": "Rough Skin",
         "description": "Damages the attacker on contact.",
         "trigger": "onDamageTaken",
         "effectType": "none",
@@ -624,10 +641,10 @@
     },
     {
         "name": "Iron Fist",
-        "description": "Boosts the power of punching moves by 20%.",
+        "description": "Boosts the power of punching moves by 1.3x.",
         "trigger": "onCalculateDamage",
         "effectType": "statMultiplier",
-        "magnitude": 1.2,
+        "magnitude": 1.3,
         "conditions": [
             "punch"
         ]
@@ -673,7 +690,7 @@
     },
     {
         "name": "Gluttony",
-        "description": "Eats Berries at 50% HP instead of 25%.",
+        "description": "Eats berries early (at 50% HP). Berries also restore 1/3 of max HP.",
         "trigger": "none",
         "effectType": "none"
     },
@@ -692,9 +709,12 @@
     },
     {
         "name": "Magnet Pull",
-        "description": "Prevents Metal type opponents from escaping.",
+        "description": "Traps opposing Steel-types. Spectral-types aren't affected.",
         "trigger": "none",
-        "effectType": "none"
+        "effectType": "preventSwitch",
+        "conditions": [
+            "type_metal"
+        ]
     },
     {
         "name": "Armor Tail",
@@ -734,9 +754,11 @@
     },
     {
         "name": "Compound Eyes",
-        "description": "Boosts accuracy by 30%.",
-        "trigger": "none",
-        "effectType": "none"
+        "description": "Grants a 1.3x accuracy boost.",
+        "trigger": "onCalculateStat",
+        "effectType": "statMultiplier",
+        "targetStat": "accuracy",
+        "magnitude": 1.3
     },
     {
         "name": "Tinted Lens",
@@ -758,13 +780,14 @@
     },
     {
         "name": "Damp",
-        "description": "Prevents the use of self-destructing moves.",
-        "trigger": "none",
-        "effectType": "none"
+        "description": "Makes foe Aquatic-type on contact. Also works on offense. Also, prevent self destructive moves for both.",
+        "trigger": "onContact",
+        "effectType": "typeChange",
+        "value": "aquatic"
     },
     {
         "name": "Dry Skin",
-        "description": "Heals HP in rain, takes damage in sun. Water heals 25% HP, Fire does 25% more damage.",
+        "description": "Water/Rain heals. blaze-type/Sunny hurts.",
         "trigger": "none",
         "effectType": "none"
     },
@@ -802,5 +825,394 @@
         "conditions": [
             "type_darkness"
         ]
+    },
+    {
+        "name": "Stench",
+        "description": "Attacks have a 10% chance to cause enemy to stun.",
+        "trigger": "onDamageDealt",
+        "effectType": "stunChance",
+        "magnitude": 0.1
+    },
+    {
+        "name": "Speed Boost",
+        "description": "Raises own Speed by one stage after every turn.",
+        "trigger": "onTurnEnd",
+        "effectType": "statChange",
+        "targetStat": "speed",
+        "magnitude": 1
+    },
+    {
+        "name": "Oblivious",
+        "description": "Immune to infatuation, Fear, Intimidate and Taunt.",
+        "trigger": "onStatusAttempt",
+        "effectType": "preventStatus",
+        "value": "infatuation,fear,taunt"
+    },
+    {
+        "name": "Cloud Nine",
+        "description": "Clears weather and prevents its effects.",
+        "trigger": "onEntry",
+        "effectType": "weatherChange",
+        "value": "none"
+    },
+    {
+        "name": "Shadow Tag",
+        "description": "Opponents can't be switched out. Ghosts isn't affected.",
+        "trigger": "none",
+        "effectType": "preventSwitch"
+    },
+    {
+        "name": "Wonder Guard",
+        "description": "Is only hit by Super-effective attacks or indirect damage.",
+        "trigger": "onDamageTaken",
+        "effectType": "none"
+    },
+    {
+        "name": "Effect Spore",
+        "description": "30% chance to inflict Sleep, Paralysis or Poison if hit by a contact move.",
+        "trigger": "onContact",
+        "effectType": "statusChange",
+        "value": "random",
+        "chance": 0.3
+    },
+    {
+        "name": "Synchronize",
+        "description": "Enemies inflicting status on this Pokémon get same status.",
+        "trigger": "none",
+        "effectType": "synchronize"
+    },
+    {
+        "name": "Serene Grace",
+        "description": "Doubles chance of secondary effects on its own moves.",
+        "trigger": "none",
+        "effectType": "sereneGrace"
+    },
+    {
+        "name": "Illuminate",
+        "description": "Grants a 1.2x accuracy boost.",
+        "trigger": "onCalculateStat",
+        "effectType": "statMultiplier",
+        "targetStat": "accuracy",
+        "magnitude": 1.2
+    },
+    {
+        "name": "Trace",
+        "description": "Copies the foe's ability.",
+        "trigger": "onEntry",
+        "effectType": "trace"
+    },
+    {
+        "name": "Inner Focus",
+        "description": "Blocks flinch, Intimidate, Fear. Focus Blast never misses.",
+        "trigger": "onStatusAttempt",
+        "effectType": "preventStatus",
+        "value": "flinch,fear"
+    },
+    {
+        "name": "Magma Armor",
+        "description": "Frostbite-immune. Takes 30% less dmg from Aquatic/Cryo-type moves.",
+        "trigger": "onCalculateDamage",
+        "effectType": "damageReduction",
+        "magnitude": 0.3,
+        "conditions": [
+            "type_aquatic",
+            "type_cryo"
+        ]
+    },
+    {
+        "name": "Water Veil",
+        "description": "Burn-immune. Casts Aqua Ring on entry.",
+        "trigger": "onEntry",
+        "effectType": "statusChange",
+        "value": "aquatic_ring"
+    },
+    {
+        "name": "Soundproof",
+        "description": "Immune to sound-type moves.",
+        "trigger": "none",
+        "effectType": "none"
+    },
+    {
+        "name": "Rain Dish",
+        "description": "Heals 1/8 of max HP every turn if rain is active.",
+        "trigger": "onTurnEnd",
+        "effectType": "none",
+        "conditions": [
+            "weather_rain"
+        ]
+    },
+    {
+        "name": "Pressure",
+        "description": "Doubles foe's PP usage. Clears stat buffs on entry.",
+        "trigger": "onEntry",
+        "effectType": "statChange",
+        "targetStat": "all",
+        "magnitude": 0
+    },
+    {
+        "name": "Run Away",
+        "description": "Guarantees fleeing. Raises Speed if stats lowered by an enemy.",
+        "trigger": "onStatLoss",
+        "effectType": "statChange",
+        "targetStat": "speed",
+        "magnitude": 1
+    },
+    {
+        "name": "Keen Eye",
+        "description": "Immune to accuracy drops. Grants a 1.2x accuracy boost.",
+        "trigger": "onCalculateStat",
+        "effectType": "statMultiplier",
+        "targetStat": "accuracy",
+        "magnitude": 1.2
+    },
+    {
+        "name": "Hyper Cutter",
+        "description": "Enemies can't lower Atk/Pwr. Crit rate of contact moves+1.",
+        "trigger": "onStatLoss",
+        "effectType": "preventStatLoss",
+        "targetStat": "attack,power"
+    },
+    {
+        "name": "Pickup",
+        "description": "Removes all hazards on entry. Not immune to hazards.",
+        "trigger": "onEntry",
+        "effectType": "hazardRemoval"
+    },
+    {
+        "name": "Truant",
+        "description": "Can only attack every other turn. Can use status moves every turn.",
+        "trigger": "none",
+        "effectType": "none"
+    },
+    {
+        "name": "Overgrow",
+        "description": "Boosts Grass-type moves by 1.2x, or 1.5x when under 1/3 HP.",
+        "trigger": "onCalculateDamage",
+        "effectType": "damageMultiplier",
+        "magnitude": 1.2,
+        "conditions": [
+            "type_grass"
+        ]
+    },
+    {
+        "name": "Blaze",
+        "description": "Boosts Blaze-type moves by 1.2x, or 1.5x when under 1/3 HP.",
+        "trigger": "onCalculateDamage",
+        "effectType": "damageMultiplier",
+        "magnitude": 1.2,
+        "conditions": [
+            "type_blaze"
+        ]
+    },
+    {
+        "name": "Torrent",
+        "description": "Boosts Aquatic-type moves by 1.2x, or 1.5x when under 1/3 HP.",
+        "trigger": "onCalculateDamage",
+        "effectType": "damageMultiplier",
+        "magnitude": 1.2,
+        "conditions": [
+            "type_aquatic"
+        ]
+    },
+    {
+        "name": "Swarm",
+        "description": "Boosts Arthropod-type moves by 1.2x, or 1.5x when under 1/3 HP.",
+        "trigger": "onCalculateDamage",
+        "effectType": "damageMultiplier",
+        "magnitude": 1.2,
+        "conditions": [
+            "type_arthropod"
+        ]
+    },
+    {
+        "name": "Rock Head",
+        "description": "Immune to recoil damage, but not immune to Explosion/crash dmg.",
+        "trigger": "onDamageDealt",
+        "effectType": "recoilImmunity"
+    },
+    {
+        "name": "Vital Spirit",
+        "description": "Can't fall asleep. Heals status after using Fighting-type moves.",
+        "trigger": "onStatusAttempt",
+        "effectType": "preventStatus",
+        "value": "sleep"
+    },
+    {
+        "name": "White Smoke",
+        "description": "Sets Smokescreen for 3 turns on switch-in.",
+        "trigger": "onEntry",
+        "effectType": "statusChange",
+        "value": "smokescreen"
+    },
+    {
+        "name": "Pure Power",
+        "description": "Doubles own Power stat. Boosts raw stat, not base stat.",
+        "trigger": "onCalculateStat",
+        "effectType": "statMultiplier",
+        "targetStat": "power",
+        "magnitude": 2.0
+    },
+    {
+        "name": "Shell Armor",
+        "description": "Immune to critical hits. Takes 20% less damage from all attacks.",
+        "trigger": "onDamageTaken",
+        "effectType": "preventCrit"
+    },
+    {
+        "name": "Air Lock",
+        "description": "Clears weather and prevents its effects.",
+        "trigger": "onEntry",
+        "effectType": "weatherChange",
+        "value": "none"
+    },
+    {
+        "name": "Tangled Feet",
+        "description": "Doubles Evasion when confused.",
+        "trigger": "onCalculateStat",
+        "effectType": "statMultiplier",
+        "targetStat": "evasion",
+        "magnitude": 2.0,
+        "conditions": [
+            "confused"
+        ]
+    },
+    {
+        "name": "Motor Drive",
+        "description": "Boosts Speed instead of being hit by Electric-type moves.",
+        "trigger": "onDamageTaken",
+        "effectType": "preventDamage",
+        "conditions": [
+            "type_electric"
+        ]
+    },
+    {
+        "name": "Steadfast",
+        "description": "Raises Speed by one stage if this Pokémon is stunned.",
+        "trigger": "onStatusAttempt",
+        "effectType": "statChange",
+        "targetStat": "speed",
+        "magnitude": 1,
+        "conditions": [
+            "stun"
+        ]
+    },
+    {
+        "name": "Simple",
+        "description": "Doubles all stat changes on this Pokémon.",
+        "trigger": "none",
+        "effectType": "statStageMultiplier",
+        "magnitude": 2.0
+    },
+    {
+        "name": "Download",
+        "description": "Raises Atk/power by one stage depending on opponent.",
+        "trigger": "onEntry",
+        "effectType": "statChange"
+    },
+    {
+        "name": "Skill Link",
+        "description": "Multi-hit moves always hit the maximum number of times.",
+        "trigger": "none",
+        "effectType": "none"
+    },
+    {
+        "name": "Solar Power",
+        "description": "Ups highest attacking stat by 1.5x in sun.",
+        "trigger": "onCalculateStat",
+        "effectType": "statMultiplier",
+        "magnitude": 1.5,
+        "conditions": [
+            "weather_sunny"
+        ]
+    },
+    {
+        "name": "Quick Feet",
+        "description": "Ups Speed by 1.5x if suffering from a status condition.",
+        "trigger": "onCalculateStat",
+        "effectType": "statMultiplier",
+        "targetStat": "speed",
+        "magnitude": 1.5,
+        "conditions": [
+            "statused"
+        ]
+    },
+    {
+        "name": "Normalize",
+        "description": "Its moves become Normal-type, get 1.1x boost, ignore resists.",
+        "trigger": "onCalculateDamage",
+        "effectType": "none"
+    },
+    {
+        "name": "Sniper",
+        "description": "Critical hits have a 2.25x dmg multiplier instead of 1.5x.",
+        "trigger": "onCalculateDamage",
+        "effectType": "none"
+    },
+    {
+        "name": "Magic Guard",
+        "description": "Only damaged by attacks.",
+        "trigger": "onDamageTaken",
+        "effectType": "none"
+    },
+    {
+        "name": "Stall",
+        "description": "Takes 30% less damage if it hasn't moved yet.",
+        "trigger": "onCalculateDamage",
+        "effectType": "damageReduction",
+        "magnitude": 0.3
+    },
+    {
+        "name": "Technician",
+        "description": "Moves with 60 BP or less get a 1.5x boost.",
+        "trigger": "onCalculateDamage",
+        "effectType": "damageMultiplier",
+        "magnitude": 1.5
+    },
+    {
+        "name": "Leaf Guard",
+        "description": "Immune to status conditions if sun is active.",
+        "trigger": "onStatusAttempt",
+        "effectType": "preventStatus",
+        "value": "all",
+        "conditions": [
+            "weather_sunny"
+        ]
+    },
+    {
+        "name": "Klutz",
+        "description": "Own held item has no effect. Mega Stones are unaffected.",
+        "trigger": "none",
+        "effectType": "none"
+    },
+    {
+        "name": "Mold Breaker",
+        "description": "Moves hit through abilities. Also affects innates.",
+        "trigger": "none",
+        "effectType": "none"
+    },
+    {
+        "name": "Anticipation",
+        "description": "Senses Super-effective moves. Blocks one Super-effective hit.",
+        "trigger": "onEntry",
+        "effectType": "none"
+    },
+    {
+        "name": "Forewarn",
+        "description": "Casts a 50 BP Future Sight on entry.",
+        "trigger": "onEntry",
+        "effectType": "none"
+    },
+    {
+        "name": "Unaware",
+        "description": "Ignores foes' stat changes, both positive and negative ones.",
+        "trigger": "onCalculateDamage",
+        "effectType": "none"
+    },
+    {
+        "name": "Filter",
+        "description": "Takes 35% less damage from Super-effective moves.",
+        "trigger": "onCalculateDamage",
+        "effectType": "damageReduction",
+        "magnitude": 0.35
     }
 ]

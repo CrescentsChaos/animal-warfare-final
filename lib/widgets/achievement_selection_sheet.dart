@@ -161,13 +161,13 @@ class _AchievementSelectionSheetState extends State<AchievementSelectionSheet> {
                           padding: EdgeInsets.all(12.w),
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? const Color(0xFFDAA520).withOpacity(0.1)
-                                : Colors.white.withOpacity(0.05),
+                                ? const Color(0xFFDAA520).withValues(alpha: 0.1)
+                                : Colors.white.withValues(alpha: 0.05),
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
                               color: isSelected
                                   ? const Color(0xFFDAA520)
-                                  : Colors.white.withOpacity(0.1),
+                                  : Colors.white.withValues(alpha: 0.1),
                               width: 1.5,
                             ),
                           ),

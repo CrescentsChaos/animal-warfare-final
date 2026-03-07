@@ -3404,6 +3404,7 @@
     {
         "name": "Rock Tomb",
         "description": "Lowers foes Speed.",
+        "animationType": "rock",
         "baseDamage": 60,
         "accuracy": 90,
         "type": "rock",
@@ -4075,7 +4076,7 @@
         "category": "special"
     },
     {
-        "name": "Close Combat",
+        "name": "Superpower",
         "description": "A powerful martial attack that lowers the user's attack and defense.",
         "baseDamage": 120,
         "type": "martial",
@@ -6267,6 +6268,7 @@
         "name": "Outrage",
         "description": "The user rampages and attacks for 2–3 turns. The user then becomes confused.",
         "baseDamage": 120,
+        "animationType": "spam_attack",
         "type": "drake",
         "accuracy": 100,
         "stamina": 10,
@@ -6461,7 +6463,7 @@
         "description": "The user drains the target's blood. The user's HP is restored by half the damage taken by the target.",
         "baseDamage": 80,
         "animationType": "drain",
-        "type": "bug",
+        "type": "arthropod",
         "accuracy": 100,
         "stamina": 10,
         "category": "physical",

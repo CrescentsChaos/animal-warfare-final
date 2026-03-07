@@ -26,6 +26,17 @@ enum StatusEffectType {
   encore, // Must repeat last move
   imprison, // Cannot use moves known by the user
   soaked, // Type changed to Aquatic
+  charmed, // Power halved when attacking the charmer
+  smokescreen, // Accuracy reduced
+}
+
+extension StatusEffectTypeX on StatusEffectType {
+  static StatusEffectType fromString(String value) {
+    return StatusEffectType.values.firstWhere(
+      (e) => e.name.toLowerCase() == value.toLowerCase(),
+      orElse: () => StatusEffectType.none,
+    );
+  }
 }
 
 class StatusEffect {
@@ -99,6 +110,10 @@ class StatusEffect {
         return 'Imprison';
       case StatusEffectType.soaked:
         return 'Soaked';
+      case StatusEffectType.charmed:
+        return 'Charmed';
+      case StatusEffectType.smokescreen:
+        return 'Smokescreen';
       default:
         return 'None';
     }
@@ -150,6 +165,10 @@ class StatusEffect {
         return 'was imprisoned!';
       case StatusEffectType.soaked:
         return 'was soaked in water!';
+      case StatusEffectType.charmed:
+        return 'fell in love!';
+      case StatusEffectType.smokescreen:
+        return 'is surrounded by smoke!';
       default:
         return '';
     }
@@ -183,8 +202,10 @@ class StatusEffect {
         return Colors.indigo;
       case StatusEffectType.marked:
         return Colors.redAccent;
-      case StatusEffectType.stealth:
-        return Colors.blueGrey;
+      case StatusEffectType.charmed:
+        return Colors.pinkAccent;
+      case StatusEffectType.smokescreen:
+        return Colors.blueGrey[800]!;
       default:
         return Colors.grey;
     }
@@ -240,8 +261,10 @@ class StatusEffect {
         return 'Forces the same move to be repeated.';
       case StatusEffectType.imprison:
         return 'Prevents the use of moves known by the user.';
-      case StatusEffectType.soaked:
-        return 'Changes the type to Aquatic.';
+      case StatusEffectType.charmed:
+        return 'Power is halved when attacking the charmer.';
+      case StatusEffectType.smokescreen:
+        return 'Accuracy is significantly reduced.';
       default:
         return 'No current effect.';
     }
