@@ -99,6 +99,7 @@ class BattleOrganism {
     encoreTurns = 0;
     lastMove = null;
     isImprisoning = false;
+    lastHitById = null;
 
     // Advanced move state reset
     substituteHealth = 0;
@@ -248,6 +249,8 @@ class BattleOrganism {
   bool isPrismorphed = false;
   bool hasPrismorphedThisBattle = false;
   ElementalType? activeTeraType; // set when Prismorph activates
+
+  String? lastHitById;
 
   // New state variables for advanced mechanics
   int? perishTurnCount;

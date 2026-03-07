@@ -124,6 +124,7 @@ enum RogueRewardType {
   item,
   fullHeal,
   singleHeal, // Added
+  singleStamina, // Added
   cureStatus,
   captureItems,
   natureMint, // Added

@@ -1165,7 +1165,7 @@ class _AnimalCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            '${captured.currentHealth}/${captured.maxHealth}',
+                            '${captured.currentHealth}/${captured.maxHealth} (${((captured.currentHealth / captured.maxHealth) * 100).toStringAsFixed(1)}%)',
                             style: const TextStyle(
                               color: Colors.white70,
                               fontSize: 7,

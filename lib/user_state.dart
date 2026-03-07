@@ -668,6 +668,7 @@ class UserState with ChangeNotifier {
       RogueRewardType.item: 2,
       RogueRewardType.fullHeal: 1,
       RogueRewardType.singleHeal: 4,
+      RogueRewardType.singleStamina: 3, // Added this
       RogueRewardType.cureStatus: 1,
       RogueRewardType.captureItems: 4,
       RogueRewardType.natureMint: 1,
@@ -737,6 +738,14 @@ class UserState with ChangeNotifier {
             const RogueReward(
               type: RogueRewardType.singleHeal,
               label: 'SINGLE ANIMAL HEAL',
+            ),
+          );
+          break;
+        case RogueRewardType.singleStamina:
+          rewards.add(
+            const RogueReward(
+              type: RogueRewardType.singleStamina,
+              label: 'RESTORE STAMINA',
             ),
           );
           break;
@@ -820,8 +829,20 @@ class UserState with ChangeNotifier {
             );
           }
           break;
+        case RogueRewardType.singleStamina:
+          if (team.isNotEmpty) {
+            int targetIdx = reward.targetIndex ?? 0;
+            if (targetIdx < 0 || targetIdx >= team.length) targetIdx = 0;
+            team[targetIdx] = team[targetIdx].copyWith(); // Clone just in case
+            team[targetIdx].restoreAllStamina();
+          }
+          break;
         case RogueRewardType.cureStatus:
-          team = team.map((org) => org..restoreAllStamina()).toList();
+          team = team.map((org) {
+            final newOrg = org.copyWith();
+            newOrg.restoreAllStamina();
+            return newOrg;
+          }).toList();
           break;
         case RogueRewardType.captureItems:
           inventory['capture_net'] =
@@ -1056,18 +1077,23 @@ class UserState with ChangeNotifier {
       if (index < 0 || index >= team.length) return u;
 
       final inventory = Map<String, int>.from(state.inventory);
-      final mintId = 'nature_mint_${newNature.name.toLowerCase()}';
-      final mintCount = inventory[mintId] ?? 0;
+      final specificMintId = 'nature_mint_${newNature.name.toLowerCase()}';
+      const genericMintId = 'nature_mint';
 
-      if (mintCount > 0) {
-        inventory[mintId] = mintCount - 1;
-        if (inventory[mintId]! <= 0) inventory.remove(mintId);
-        team[index] = team[index].copyWith(nature: newNature);
-        return u.copyWith(
-          rogueLikeState: state.copyWith(team: team, inventory: inventory),
-        );
+      if ((inventory[specificMintId] ?? 0) > 0) {
+        inventory[specificMintId] = inventory[specificMintId]! - 1;
+        if (inventory[specificMintId] == 0) inventory.remove(specificMintId);
+      } else if ((inventory[genericMintId] ?? 0) > 0) {
+        inventory[genericMintId] = inventory[genericMintId]! - 1;
+        if (inventory[genericMintId] == 0) inventory.remove(genericMintId);
+      } else {
+        return u; // No mint available
       }
-      return u;
+
+      team[index] = team[index].copyWith(nature: newNature);
+      return u.copyWith(
+        rogueLikeState: state.copyWith(team: team, inventory: inventory),
+      );
     });
   }
 
@@ -1235,6 +1261,7 @@ class UserState with ChangeNotifier {
     required String? killerId,
     required List<String> teamIds,
     int? levelCap, // Optional cap
+    bool ignoreCap = false,
   }) async {
     if (_currentUser == null) return {};
 
@@ -1264,7 +1291,11 @@ class UserState with ChangeNotifier {
           int share = (org.id == killerId) ? baseXP : (baseXP / 2).floor();
           if (share > 0) {
             // Normal team: use the effectiveCap (floor-based for roguelike)
-            final xpResult = org.gainXP(share, effectiveCap);
+            final xpResult = org.gainXP(
+              share,
+              effectiveCap,
+              ignoreCap: ignoreCap,
+            );
             if (xpResult['leveledUp'] as bool) {
               results['animalLeveledUp'][org.id] = true;
             }
@@ -1315,8 +1346,8 @@ class UserState with ChangeNotifier {
           if (teamIds.contains(org.id)) {
             int share = (org.id == killerId) ? baseXP : (baseXP / 2).floor();
             if (share > 0) {
-              // Roguelike team: ignore account level, use 100 as fallback if levelCap is null
-              final rogueCap = levelCap ?? 100;
+              // Roguelike team: remove all level caps
+              const rogueCap = 9999;
               final xpResult = org.gainXP(share, rogueCap);
               if (xpResult['leveledUp'] as bool) {
                 results['animalLeveledUp'][org.id] = true;

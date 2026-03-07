@@ -134,6 +134,13 @@ class DoubleBattleManager extends ChangeNotifier {
   // Stats tracking (for revealed moves etc)
   final Map<String, BattleStats> battleStats = {};
 
+  // Callbacks
+  void Function(BattleOrganism attacker, Move move, BattleOrganism target)?
+  onAttack;
+  void Function(BattleOrganism target, int damage)? onDamage;
+  Future<void> Function(BattleOrganism killer, BattleOrganism victim)?
+  onOpponentFainted;
+
   DoubleBattleManager({
     required List<CapturedOrganism> playerTeam,
     required List<CapturedOrganism> opponentTeam,
@@ -162,7 +169,7 @@ class DoubleBattleManager extends ChangeNotifier {
     _fillSlotsFromBench();
 
     turnHistory.add(BattleTurn(currentTurn));
-    _addLog('GO! ${_slotName(playerSlot1)} & ${_slotName(playerSlot2)}!');
+    addLog('GO! ${_slotName(playerSlot1)} & ${_slotName(playerSlot2)}!');
 
     _startIntro();
   }
@@ -232,12 +239,12 @@ class DoubleBattleManager extends ChangeNotifier {
   void _transitionToSelection() {
     if (playerSlot1 != null) {
       currentState = DoubleBattleState.selectingForSlot1;
-      _addLog(
+      addLog(
         'What will ${_slotName(playerSlot1)} & ${_slotName(playerSlot2)} do?',
       );
     } else if (playerSlot2 != null) {
       currentState = DoubleBattleState.selectingForSlot2;
-      _addLog('What will ${_slotName(playerSlot2)} do?');
+      addLog('What will ${_slotName(playerSlot2)} do?');
     }
     notifyListeners();
   }
@@ -262,7 +269,7 @@ class DoubleBattleManager extends ChangeNotifier {
       pendingAction1 = action;
       if (playerSlot2 != null) {
         currentState = DoubleBattleState.selectingForSlot2;
-        _addLog('What will ${_slotName(playerSlot2)} do?');
+        addLog('What will ${_slotName(playerSlot2)} do?');
         notifyListeners();
       } else {
         await _executeAllActions();
@@ -283,7 +290,7 @@ class DoubleBattleManager extends ChangeNotifier {
       pendingAction1 = action;
       if (playerSlot2 != null) {
         currentState = DoubleBattleState.selectingForSlot2;
-        _addLog('What will ${_slotName(playerSlot2)} do?');
+        addLog('What will ${_slotName(playerSlot2)} do?');
         notifyListeners();
       } else {
         currentState = DoubleBattleState.executing;
@@ -705,8 +712,8 @@ class DoubleBattleManager extends ChangeNotifier {
       newOrg.isItemRevealed = stats.isItemRevealed;
       newOrg.isAbilityRevealed = stats.isAbilityRevealed;
 
-      _addLog('Come back, ${attacker.organism.baseOrganism.name}!');
-      _addLog('Go, ${newOrg.organism.baseOrganism.name}!');
+      addLog('Come back, ${attacker.organism.baseOrganism.name}!');
+      addLog('Go, ${newOrg.organism.baseOrganism.name}!');
       notifyListeners();
       if (!isTesting) await Future.delayed(const Duration(milliseconds: 1000));
       return;
@@ -725,7 +732,7 @@ class DoubleBattleManager extends ChangeNotifier {
           move.stamina,
         );
 
-    _addLog('${attacker.organism.baseOrganism.name} used ${move.name}!');
+    addLog('${attacker.organism.baseOrganism.name} used ${move.name}!');
 
     // Track revealed moves
     battleStats
@@ -761,13 +768,13 @@ class DoubleBattleManager extends ChangeNotifier {
         );
       }
       if (!hitAtLeastOne) {
-        _addLog('But there was no target!');
+        addLog('But there was no target!');
       }
     } else {
       // Single target
       final defender = _resolveTarget(target);
       if (defender == null || defender.health <= 0) {
-        _addLog('But the target is gone!');
+        addLog('But the target is gone!');
         return;
       }
       await _applyMoveToTarget(
@@ -801,7 +808,7 @@ class DoubleBattleManager extends ChangeNotifier {
     }
 
     if (Random().nextInt(100) >= accuracy) {
-      _addLog('...but it missed!');
+      addLog('...but it missed!');
 
       // Blunder Policy: Speed boost on miss
       if (attacker.organism.equippedTalisman != null &&
@@ -846,7 +853,7 @@ class DoubleBattleManager extends ChangeNotifier {
     };
     if (critRoll < critThreshold) {
       dmg *= 1.5;
-      _addLog('A critical hit!');
+      addLog('A critical hit!');
     }
 
     // Random variance [0.85–1.0]
@@ -855,13 +862,17 @@ class DoubleBattleManager extends ChangeNotifier {
     // Apply damage (Only once!)
     final finalDmg = dmg.round().clamp(1, 99999);
     defender.health = (defender.health - finalDmg).clamp(0, defender.maxHealth);
+    if (finalDmg > 0) {
+      defender.lastHitById = attacker.organism.id;
+      if (onDamage != null) onDamage!(defender, finalDmg);
+    }
 
     // Break Disguise (Mimic/Illusion)
     if (defender.isDisguised && finalDmg > 0) {
       defender.isDisguised = false;
       defender.disguisedAs = null;
       defender.isAbilityRevealed = true;
-      _addLog('${defender.organism.baseOrganism.name}\'s illusion wore off!');
+      addLog('${defender.organism.baseOrganism.name}\'s illusion wore off!');
     }
 
     // Consume Gem
@@ -871,7 +882,7 @@ class DoubleBattleManager extends ChangeNotifier {
         if (effect.type == TalismanEffectType.gemBoost &&
             effect.stat == move.type.toString().split('.').last.toLowerCase()) {
           attacker.talismanConsumed = true;
-          _addLog(
+          addLog(
             'The ${attacker.organism.equippedTalisman!.name} strengthened ${attacker.organism.baseOrganism.name}\'s power!',
           );
           break;
@@ -895,10 +906,10 @@ class DoubleBattleManager extends ChangeNotifier {
 
     defender.tookDamageThisTurn = true;
 
-    if (typeMod > 1.0) _addLog('It\'s super effective!');
-    if (typeMod < 1.0 && typeMod > 0) _addLog('It\'s not very effective...');
+    if (typeMod > 1.0) addLog('It\'s super effective!');
+    if (typeMod < 1.0 && typeMod > 0) addLog('It\'s not very effective...');
     if (typeMod == 0.0)
-      _addLog('It doesn\'t affect ${defender.organism.baseOrganism.name}!');
+      addLog('It doesn\'t affect ${defender.organism.baseOrganism.name}!');
 
     // Drain
     if (move.drainPercent > 0) {
@@ -913,14 +924,14 @@ class DoubleBattleManager extends ChangeNotifier {
       }
       final heal = (finalDmg * drainMult).round();
       attacker.health = (attacker.health + heal).clamp(0, attacker.maxHealth);
-      _addLog('${attacker.organism.baseOrganism.name} absorbed energy!');
+      addLog('${attacker.organism.baseOrganism.name} absorbed energy!');
     }
 
     // Recoil
     if (move.recoilPercent > 0) {
       final recoil = (finalDmg * move.recoilPercent).round();
       attacker.health = (attacker.health - recoil).clamp(0, attacker.maxHealth);
-      _addLog('${attacker.organism.baseOrganism.name} was hurt by recoil!');
+      addLog('${attacker.organism.baseOrganism.name} was hurt by recoil!');
     }
 
     // Apply secondary effects
@@ -987,7 +998,7 @@ class DoubleBattleManager extends ChangeNotifier {
             0,
             effectTarget.maxHealth,
           );
-          _addLog('${effectTarget.organism.baseOrganism.name} restored HP!');
+          addLog('${effectTarget.organism.baseOrganism.name} restored HP!');
           break;
         case MoveEffectType.statusPoison:
           _applyStatus(
@@ -1058,14 +1069,14 @@ class DoubleBattleManager extends ChangeNotifier {
         break;
     }
     final dir = stages > 0 ? 'rose' : 'fell';
-    _addLog("${org.organism.baseOrganism.name}'s $stat $dir!");
+    addLog("${org.organism.baseOrganism.name}'s $stat $dir!");
     notifyListeners();
   }
 
   void _applyStatus(BattleOrganism org, StatusEffect se) {
     if (org.statusEffects.any((e) => e.type == se.type)) return;
     org.addStatusEffect(se);
-    _addLog('${org.organism.baseOrganism.name} is now ${se.name}!');
+    addLog('${org.organism.baseOrganism.name} is now ${se.name}!');
     notifyListeners();
   }
 
@@ -1083,17 +1094,17 @@ class DoubleBattleManager extends ChangeNotifier {
           case StatusEffectType.poison:
             final dmg = (slot.maxHealth * 0.0625).round().clamp(1, 99999);
             slot.health = (slot.health - dmg).clamp(0, slot.maxHealth);
-            _addLog('${slot.organism.baseOrganism.name} was hurt by poison!');
+            addLog('${slot.organism.baseOrganism.name} was hurt by poison!');
             break;
           case StatusEffectType.burn:
             final dmg = (slot.maxHealth * 0.0625).round().clamp(1, 99999);
             slot.health = (slot.health - dmg).clamp(0, slot.maxHealth);
-            _addLog('${slot.organism.baseOrganism.name} was hurt by burn!');
+            addLog('${slot.organism.baseOrganism.name} was hurt by burn!');
             break;
           case StatusEffectType.bleed:
             final dmg = (slot.maxHealth * 0.05).round().clamp(1, 99999);
             slot.health = (slot.health - dmg).clamp(0, slot.maxHealth);
-            _addLog('${slot.organism.baseOrganism.name} is bleeding!');
+            addLog('${slot.organism.baseOrganism.name} is bleeding!');
             break;
           default:
             break;
@@ -1128,7 +1139,7 @@ class DoubleBattleManager extends ChangeNotifier {
           99999,
         );
         slot.health = (slot.health - damage).clamp(0, slot.maxHealth);
-        _addLog(
+        addLog(
           '${slot.organism.baseOrganism.name} is hurt by the clamping effect!',
         );
       }
@@ -1155,12 +1166,29 @@ class DoubleBattleManager extends ChangeNotifier {
 
     for (final (bo, clear) in slots) {
       if (bo != null && bo.health <= 0) {
-        _addLog('${bo.organism.baseOrganism.name} fainted!');
+        // Find killer before clearing
+        BattleOrganism? killer;
+        if (bo.lastHitById != null) {
+          killer = slots
+              .map((s) => s.$1)
+              .firstWhere(
+                (s) => s?.organism.id == bo.lastHitById,
+                orElse: () => null,
+              );
+        }
+
+        addLog('${bo.organism.baseOrganism.name} fainted!');
+
+        if (onOpponentFainted != null && killer != null) {
+          await onOpponentFainted!(killer, bo);
+        }
+
         clear();
         anyNewFaints = true;
         notifyListeners();
-        if (!isTesting)
+        if (!isTesting) {
           await Future.delayed(const Duration(milliseconds: 1000));
+        }
       }
     }
 
@@ -1180,9 +1208,7 @@ class DoubleBattleManager extends ChangeNotifier {
       opponentIdx1 = nextIdx;
       opponentSlot1 = BattleOrganism(opponentTeam[nextIdx]);
       _checkMimic(opponentSlot1!);
-      _addLog(
-        'Opponent sent out ${opponentSlot1!.organism.baseOrganism.name}!',
-      );
+      addLog('Opponent sent out ${opponentSlot1!.organism.baseOrganism.name}!');
       notifyListeners();
       if (!isTesting) await Future.delayed(const Duration(milliseconds: 1000));
     }
@@ -1191,9 +1217,7 @@ class DoubleBattleManager extends ChangeNotifier {
       opponentIdx2 = nextIdx;
       opponentSlot2 = BattleOrganism(opponentTeam[nextIdx]);
       _checkMimic(opponentSlot2!);
-      _addLog(
-        'Opponent sent out ${opponentSlot2!.organism.baseOrganism.name}!',
-      );
+      addLog('Opponent sent out ${opponentSlot2!.organism.baseOrganism.name}!');
       notifyListeners();
       if (!isTesting) await Future.delayed(const Duration(milliseconds: 1000));
     }
@@ -1248,7 +1272,7 @@ class DoubleBattleManager extends ChangeNotifier {
     newOrg.revealedMoves.addAll(stats.revealedMoves);
     newOrg.isItemRevealed = stats.isItemRevealed;
     newOrg.isAbilityRevealed = stats.isAbilityRevealed;
-    _addLog('Go, ${newOrg.organism.baseOrganism.name}!');
+    addLog('Go, ${newOrg.organism.baseOrganism.name}!');
     switchNeededSlot = null;
     notifyListeners();
     if (!isTesting) await Future.delayed(const Duration(milliseconds: 1000));
@@ -1278,7 +1302,7 @@ class DoubleBattleManager extends ChangeNotifier {
     final playerAlive = playerSlot1 != null || playerSlot2 != null;
     result = playerAlive ? DoubleBattleResult.win : DoubleBattleResult.loss;
     currentState = DoubleBattleState.battleEnd;
-    _addLog(
+    addLog(
       result == DoubleBattleResult.win
           ? 'You won the doubles battle!'
           : 'You lost the doubles battle...',
@@ -1328,7 +1352,7 @@ class DoubleBattleManager extends ChangeNotifier {
   String _slotName(BattleOrganism? slot) =>
       slot?.organism.baseOrganism.name ?? '---';
 
-  void _addLog(String msg) {
+  void addLog(String msg) {
     battleLog = msg;
     if (turnHistory.isEmpty) turnHistory.add(BattleTurn(currentTurn));
     turnHistory.last.logEntries.add(msg);
@@ -1353,7 +1377,7 @@ class DoubleBattleManager extends ChangeNotifier {
 
     final teraType = org.organism.teraType;
     if (teraType == null) {
-      _addLog('${org.name} has no Tera type and cannot Prismorph!');
+      addLog('${org.name} has no Tera type and cannot Prismorph!');
       notifyListeners();
       return;
     }
@@ -1374,7 +1398,7 @@ class DoubleBattleManager extends ChangeNotifier {
     stats.activeTeraType = teraType;
     stats.hasPrismorphedThisBattle = true;
 
-    _addLog(
+    addLog(
       '${org.name} used Prismorph! It is shining with ${teraType.name} energy!',
     );
     pendingGimmickType = 'prismorph';

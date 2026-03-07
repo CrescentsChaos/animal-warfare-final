@@ -15,6 +15,7 @@ import 'package:animal_warfare/models/move.dart';
 import 'package:animal_warfare/models/elemental_type.dart';
 import 'package:animal_warfare/theme.dart';
 import 'package:animal_warfare/game/ai_decision_engine.dart';
+import 'package:animal_warfare/user_state.dart';
 
 // ════════════════════════════════════════════════════════════
 // Type color helper
@@ -73,6 +74,8 @@ class DoubleBattleScreen extends StatelessWidget {
   final String biomeName;
   final String? battleTitle;
   final TeamArchetype? opponentArchetype;
+  final bool isRogueMode;
+  final bool isArenaBattle;
 
   const DoubleBattleScreen({
     super.key,
@@ -81,6 +84,8 @@ class DoubleBattleScreen extends StatelessWidget {
     required this.biomeName,
     this.battleTitle,
     this.opponentArchetype,
+    this.isRogueMode = false,
+    this.isArenaBattle = false,
   });
 
   @override
@@ -90,8 +95,15 @@ class DoubleBattleScreen extends StatelessWidget {
         playerTeam: playerTeam,
         opponentTeam: opponentTeam,
         opponentArchetype: opponentArchetype,
+        isRogueMode: isRogueMode,
+        isArenaBattle: isArenaBattle,
       ),
-      child: _DoubleBattleView(biomeName: biomeName, battleTitle: battleTitle),
+      child: _DoubleBattleView(
+        biomeName: biomeName,
+        battleTitle: battleTitle,
+        isRogueMode: isRogueMode,
+        isArenaBattle: isArenaBattle,
+      ),
     );
   }
 
@@ -718,7 +730,15 @@ class DoubleBattleScreen extends StatelessWidget {
 class _DoubleBattleView extends StatefulWidget {
   final String biomeName;
   final String? battleTitle;
-  const _DoubleBattleView({required this.biomeName, this.battleTitle});
+  final bool isRogueMode;
+  final bool isArenaBattle;
+
+  const _DoubleBattleView({
+    required this.biomeName,
+    this.battleTitle,
+    this.isRogueMode = false,
+    this.isArenaBattle = false,
+  });
 
   @override
   State<_DoubleBattleView> createState() => _DoubleBattleViewState();
@@ -729,6 +749,12 @@ class _DoubleBattleViewState extends State<_DoubleBattleView>
   Move? _selectedMove;
   bool _isTargeting = false;
   bool _isSwitchDialogShowing = false;
+
+  final Map<String, dynamic> _cumulativeXPResults = {
+    'gainedAnimalXP': 0,
+    'gainedAccountXP': 0,
+    'animalLeveledUp': <String, bool>{},
+  };
 
   // Screen Shake Animations
   late AnimationController _screenShakeController;
@@ -759,6 +785,7 @@ class _DoubleBattleViewState extends State<_DoubleBattleView>
       if (!mounted) return;
       final bm = context.read<DoubleBattleManager>();
       bm.addListener(_handleStateTriggers);
+      bm.onOpponentFainted = _onOpponentFainted;
     });
   }
 
@@ -785,6 +812,106 @@ class _DoubleBattleViewState extends State<_DoubleBattleView>
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         _onGimmickActivation(target, type);
+      });
+    }
+  }
+
+  Future<void> _onOpponentFainted(
+    BattleOrganism killer,
+    BattleOrganism victim,
+  ) async {
+    if (!mounted) return;
+    final userState = Provider.of<UserState>(context, listen: false);
+    final bm = Provider.of<DoubleBattleManager>(context, listen: false);
+
+    // Award XP
+    int? levelCap;
+    if (widget.isRogueMode) {
+      final rogueState = userState.currentUser?.rogueLikeState;
+      final currentFloor = rogueState?.floor ?? 1;
+      levelCap = (currentFloor * 10).clamp(10, 100);
+    }
+
+    if (!widget.isArenaBattle) {
+      final results = await userState.awardBattleXP(
+        defeatedLevel: victim.level,
+        killerId: killer.organism.id,
+        teamIds: bm.playerTeam.map((o) => o.id).toList(),
+        levelCap: levelCap,
+        ignoreCap: widget.isRogueMode,
+      );
+
+      if (!mounted) return;
+
+      // Award KV (Kill Values) to the killer animal
+      if (killer.isPlayer) {
+        await userState.awardKV(
+          killer.organism.id,
+          victim.organism.baseOrganism,
+        );
+      }
+      if (!mounted) return;
+
+      setState(() {
+        // Merge results
+        _cumulativeXPResults['gainedAnimalXP'] =
+            (_cumulativeXPResults['gainedAnimalXP'] ?? 0) +
+            (results['gainedAnimalXP'] ?? 0);
+        _cumulativeXPResults['gainedAccountXP'] =
+            (_cumulativeXPResults['gainedAccountXP'] ?? 0) +
+            (results['gainedAccountXP'] ?? 0);
+
+        if (results['accountLeveledUp'] == true) {
+          _cumulativeXPResults['accountLeveledUp'] = true;
+        }
+
+        final animalLeveledUp =
+            results['animalLeveledUp'] as Map<String, bool>? ?? {};
+        final cumulativeLeveledUp =
+            _cumulativeXPResults['animalLeveledUp'] as Map<String, bool>? ?? {};
+
+        animalLeveledUp.forEach((id, leveled) {
+          if (leveled) cumulativeLeveledUp[id] = true;
+        });
+        _cumulativeXPResults['animalLeveledUp'] = cumulativeLeveledUp;
+
+        // Immediately refresh stats for the active animals if they leveled up
+        final freshUser = userState.currentUser;
+        if (freshUser != null) {
+          for (int i = 0; i < bm.playerTeam.length; i++) {
+            final oldId = bm.playerTeam[i].id;
+            try {
+              final freshOrg = widget.isRogueMode
+                  ? freshUser.rogueLikeState.team.firstWhere(
+                      (o) => o.id == oldId,
+                    )
+                  : freshUser.capturedOrganisms.firstWhere(
+                      (o) => o.id == oldId,
+                    );
+              bm.playerTeam[i] = freshOrg;
+
+              // Sync active slots
+              if (bm.playerSlot1?.organism.id == oldId) {
+                bm.playerSlot1!.organism = freshOrg;
+                bm.playerSlot1!.recalculateStats();
+              }
+              if (bm.playerSlot2?.organism.id == oldId) {
+                bm.playerSlot2!.organism = freshOrg;
+                bm.playerSlot2!.recalculateStats();
+              }
+            } catch (_) {}
+          }
+        }
+      });
+
+      // Notify level up in log
+      final animalLeveledUp =
+          results['animalLeveledUp'] as Map<String, bool>? ?? {};
+      animalLeveledUp.forEach((id, leveled) {
+        if (leveled) {
+          final org = bm.playerTeam.firstWhere((o) => o.id == id);
+          bm.addLog('${org.baseOrganism.name} leveled up to Lvl ${org.level}!');
+        }
       });
     }
   }

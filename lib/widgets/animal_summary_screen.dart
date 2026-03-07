@@ -745,6 +745,15 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
                   fontWeight: FontWeight.bold,
                 ),
               ),
+              if (label == 'HEALTH')
+                Text(
+                  ' (${((curVal / _current.maxHealth) * 100).toStringAsFixed(1)}%)',
+                  style: const TextStyle(
+                    fontFamily: 'PressStart2P',
+                    fontSize: 8,
+                    color: Colors.white54,
+                  ),
+                ),
               const Spacer(),
               Text(
                 '$l50Val',

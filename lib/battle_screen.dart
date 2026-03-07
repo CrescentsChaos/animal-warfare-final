@@ -634,6 +634,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
         killerId: killer.organism.id,
         teamIds: bm.playerTeam.map((o) => o.id).toList(),
         levelCap: levelCap,
+        ignoreCap: widget.isRogueMode,
       );
 
       if (!mounted) return;
@@ -1999,11 +2000,10 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               ),
             ),
           ),
-          const SizedBox(height: 4),
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
-              'HP: ${organism.health.round()}/${organism.maxHealth}',
+              'HP: ${organism.health.round()}/${organism.maxHealth} (${(hpRatio * 100).toStringAsFixed(1)}%)',
               style: TextStyle(
                 color: Colors.white70,
                 fontSize: isNarrow ? 8 : 10,
@@ -2231,11 +2231,10 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               ),
             ),
           ),
-          const SizedBox(height: 4),
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
-              'HP: ${organism.health.round()}/${organism.maxHealth}',
+              'HP: ${organism.health.round()}/${organism.maxHealth} (${(hpRatio * 100).toStringAsFixed(1)}%)',
               style: TextStyle(
                 color: Colors.white70,
                 fontSize: isNarrow ? 8 : 10,

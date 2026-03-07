@@ -241,13 +241,19 @@ class CapturedOrganism {
 
   /// Awards XP to the organism, handles level ups and account level capping.
   /// Returns a map with 'leveledUp' (bool) and 'xp' (int) and 'level' (int).
-  Map<String, dynamic> gainXP(int amount, int accountLevelCap) {
+  Map<String, dynamic> gainXP(
+    int amount,
+    int accountLevelCap, {
+    bool ignoreCap = false,
+  }) {
     int newXP = xp + amount;
     bool leveledUp = false;
 
-    int effectiveCap = max(initialLevel, accountLevelCap);
-    int maxAllowedXP = xpForLevel(effectiveCap + 1) - 1;
-    newXP = min(newXP, maxAllowedXP);
+    if (!ignoreCap) {
+      int effectiveCap = max(initialLevel, accountLevelCap);
+      int maxAllowedXP = xpForLevel(effectiveCap + 1) - 1;
+      newXP = min(newXP, maxAllowedXP);
+    }
 
     // Calculate level from total XP
     int levelFromXP = 1;
@@ -561,18 +567,6 @@ class CapturedOrganism {
           matchingInPool.shuffle(rng);
           selectedMoveNames[rng.nextInt(selectedMoveNames.length)] =
               matchingInPool.first.name;
-        } else {
-          // If not in pool, find a generic move of that type from global library
-          final globalMatching = Move.allMoves
-              .where(
-                (m) => m.type == teraType && m.category != MoveCategory.status,
-              )
-              .toList();
-          if (globalMatching.isNotEmpty) {
-            globalMatching.shuffle(rng);
-            selectedMoveNames[rng.nextInt(selectedMoveNames.length)] =
-                globalMatching.first.name;
-          }
         }
       }
     }

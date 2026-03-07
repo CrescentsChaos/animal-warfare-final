@@ -641,13 +641,43 @@ class _RogueTeamCard extends StatelessWidget {
                               color: themeColor.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: Text(
-                              'LV ${member.level}',
-                              style: TextStyle(
-                                fontFamily: 'PressStart2P',
-                                color: themeColor,
-                                fontSize: 8,
-                              ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (member.equippedTalisman != null) ...[
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(4),
+                                    child: Image.asset(
+                                      member.equippedTalisman!.spritePath,
+                                      width: 14,
+                                      height: 14,
+                                      errorBuilder: (context, _, __) => Icon(
+                                        Icons.auto_awesome,
+                                        color: themeColor,
+                                        size: 10,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    member.equippedTalisman!.name.toUpperCase(),
+                                    style: TextStyle(
+                                      fontFamily: 'PressStart2P',
+                                      color: themeColor,
+                                      fontSize: 6,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                ],
+                                Text(
+                                  'LV ${member.level}',
+                                  style: TextStyle(
+                                    fontFamily: 'PressStart2P',
+                                    color: themeColor,
+                                    fontSize: 8,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -658,7 +688,8 @@ class _RogueTeamCard extends StatelessWidget {
                         label: 'HP',
                         value: hpRatio,
                         color: _getHpColor(hpRatio),
-                        trailing: '${member.currentHealth}/${member.maxHealth}',
+                        trailing:
+                            '${member.currentHealth}/${member.maxHealth} (${(hpRatio * 100).toStringAsFixed(1)}%)',
                       ),
                       const SizedBox(height: 6),
                       // XP Bar
@@ -995,6 +1026,25 @@ class _RogueTeamCard extends StatelessWidget {
                       },
                     ),
                   if (member.equippedTalisman != null)
+                    ListTile(
+                      leading: const Icon(
+                        Icons.swap_horiz,
+                        color: Colors.blueAccent,
+                      ),
+                      title: const Text(
+                        'SWAP WITH TEAMMATE',
+                        style: TextStyle(
+                          color: Colors.blueAccent,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        _showRogueSwapSelection(context, userState);
+                      },
+                    ),
+                  if (member.equippedTalisman != null)
                     const Divider(color: Colors.white10),
                   Expanded(
                     child: inventoryEntries.isEmpty
@@ -1125,6 +1175,79 @@ class _RogueTeamCard extends StatelessWidget {
                     onTap: () {
                       Navigator.pop(ctx);
                       userState.changeRogueAnimalNature(index, n);
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showRogueSwapSelection(BuildContext context, UserState userState) {
+    final team = userState.currentUser?.rogueLikeState.team ?? [];
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: const BoxDecoration(
+          color: Color(0xFF0F0F1A),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          children: [
+            const SizedBox(height: 12),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.all(24.0),
+              child: Text(
+                'SWAP ITEM WITH...',
+                style: TextStyle(
+                  fontFamily: 'PressStart2P',
+                  fontSize: 14,
+                  color: Colors.blueAccent,
+                ),
+              ),
+            ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: team.length,
+                itemBuilder: (context, i) {
+                  if (i == index) return const SizedBox();
+                  final org = team[i];
+                  return ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: Colors.black26,
+                      backgroundImage: AssetImage(
+                        'assets/sprites/${org.baseOrganism.name.toLowerCase().replaceAll(' ', '_').replaceAll('-', '_')}.png',
+                      ),
+                    ),
+                    title: Text(
+                      org.displayName,
+                      style: const TextStyle(color: Colors.white, fontSize: 13),
+                    ),
+                    subtitle: Text(
+                      org.equippedTalisman != null
+                          ? 'Holding: ${org.equippedTalisman!.name}'
+                          : 'No item',
+                      style: const TextStyle(
+                        color: Colors.white54,
+                        fontSize: 10,
+                      ),
+                    ),
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      userState.swapRogueTalismans(index, i);
                     },
                   );
                 },
