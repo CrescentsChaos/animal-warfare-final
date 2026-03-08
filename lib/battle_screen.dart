@@ -3528,19 +3528,76 @@ class _BattleScreenContentState extends State<BattleScreenContent>
         if (decisiveResult == BattleResult.win ||
             decisiveResult == BattleResult.capture ||
             decisiveResult == BattleResult.loss) {
-          final playerSpecies = battleManager.playerTeam
-              .map((o) => o.baseOrganism.name)
-              .toList();
-          final opponentSpecies = widget.opponentFullTeam != null
-              ? widget.opponentFullTeam!
-                    .map((o) => o.baseOrganism.name)
-                    .toList()
-              : [battleManager.opponent.organism.baseOrganism.name];
+          // --- Participation Filter ---
+          // Only count animals that actual dealt OR took damage in the battle.
+          final bStats = battleManager.battleStats;
+
+          final playerSpeciesStats = <String, Map<String, int>>{};
+          for (final org in battleManager.playerTeam) {
+            final s = bStats[org.id];
+            if (s != null &&
+                (s.totalDamageDealt > 0 || s.totalDamageTaken > 0)) {
+              final name = org.baseOrganism.name;
+              final existing = playerSpeciesStats[name] ?? {};
+              playerSpeciesStats[name] = {
+                'damageDealt':
+                    (existing['damageDealt'] ?? 0) + s.totalDamageDealt,
+                'damageTaken':
+                    (existing['damageTaken'] ?? 0) + s.totalDamageTaken,
+                'kills': (existing['kills'] ?? 0) + s.totalKills,
+              };
+            }
+          }
+
+          final opponentSpeciesStats = <String, Map<String, int>>{};
+          // Arena / Rogue: opponentFullTeam may be available
+          final allOpponents =
+              widget.opponentFullTeam ?? [battleManager.opponentOrganism];
+          for (final org in allOpponents) {
+            final s = bStats[org.id];
+            if (s != null &&
+                (s.totalDamageDealt > 0 || s.totalDamageTaken > 0)) {
+              final name = org.baseOrganism.name;
+              final existing = opponentSpeciesStats[name] ?? {};
+              opponentSpeciesStats[name] = {
+                'damageDealt':
+                    (existing['damageDealt'] ?? 0) + s.totalDamageDealt,
+                'damageTaken':
+                    (existing['damageTaken'] ?? 0) + s.totalDamageTaken,
+                'kills': (existing['kills'] ?? 0) + s.totalKills,
+              };
+            }
+          }
+
+          // If nothing was in bStats (e.g. very short fight), fall back to lead
+          if (playerSpeciesStats.isEmpty) {
+            playerSpeciesStats[battleManager
+                .player
+                .organism
+                .baseOrganism
+                .name] = {
+              'damageDealt': 0,
+              'damageTaken': 0,
+              'kills': 0,
+            };
+          }
+          if (opponentSpeciesStats.isEmpty) {
+            opponentSpeciesStats[battleManager
+                .opponent
+                .organism
+                .baseOrganism
+                .name] = {
+              'damageDealt': 0,
+              'damageTaken': 0,
+              'kills': 0,
+            };
+          }
+
           final playerWon = decisiveResult != BattleResult.loss;
           unawaited(
             userState.recordMatchResults(
-              playerSpecies: playerSpecies,
-              opponentSpecies: opponentSpecies,
+              playerSpeciesStats: playerSpeciesStats,
+              opponentSpeciesStats: opponentSpeciesStats,
               playerWon: playerWon,
             ),
           );

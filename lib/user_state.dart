@@ -1390,10 +1390,16 @@ class UserState with ChangeNotifier {
     });
   }
 
-  /// Records wins/losses for all animals involved in a battle.
+  /// Records wins/losses and combat stats for animals that participated in a battle.
+  /// [playerSpeciesStats] and [opponentSpeciesStats] map species name to
+  /// {damageDealt, damageTaken, kills} for animals that actually participated.
   Future<void> recordMatchResults({
-    required List<String> playerSpecies,
-    required List<String> opponentSpecies,
+    // New rich format
+    Map<String, Map<String, int>>? playerSpeciesStats,
+    Map<String, Map<String, int>>? opponentSpeciesStats,
+    // Legacy flat format (kept for backwards compatibility)
+    List<String>? playerSpecies,
+    List<String>? opponentSpecies,
     required bool playerWon,
   }) async {
     if (_currentUser == null) return;
@@ -1402,26 +1408,41 @@ class UserState with ChangeNotifier {
         u.speciesStats.map((k, v) => MapEntry(k, Map<String, int>.from(v))),
       );
 
-      // Helper to update stats
-      void update(String species, bool won) {
+      // Build participation maps from either format
+      final Map<String, Map<String, int>> pStats =
+          playerSpeciesStats ?? {for (final s in (playerSpecies ?? [])) s: {}};
+      final Map<String, Map<String, int>> oStats =
+          opponentSpeciesStats ??
+          {for (final s in (opponentSpecies ?? [])) s: {}};
+
+      void update(String species, bool won, Map<String, int> combatData) {
         final existing =
-            newStats[species] ?? {'matches': 0, 'wins': 0, 'captured': 0};
+            newStats[species] ??
+            {
+              'matches': 0,
+              'wins': 0,
+              'captured': 0,
+              'damageDealt': 0,
+              'damageTaken': 0,
+              'kills': 0,
+            };
         newStats[species] = {
           'matches': (existing['matches'] ?? 0) + 1,
           'wins': (existing['wins'] ?? 0) + (won ? 1 : 0),
           'captured': existing['captured'] ?? 0,
+          'damageDealt':
+              (existing['damageDealt'] ?? 0) + (combatData['damageDealt'] ?? 0),
+          'damageTaken':
+              (existing['damageTaken'] ?? 0) + (combatData['damageTaken'] ?? 0),
+          'kills': (existing['kills'] ?? 0) + (combatData['kills'] ?? 0),
         };
       }
 
-      // Track unique species in the team for that match
-      final pUnique = playerSpecies.toSet();
-      final oUnique = opponentSpecies.toSet();
-
-      for (final species in pUnique) {
-        update(species, playerWon);
+      for (final entry in pStats.entries) {
+        update(entry.key, playerWon, entry.value);
       }
-      for (final species in oUnique) {
-        update(species, !playerWon);
+      for (final entry in oStats.entries) {
+        update(entry.key, !playerWon, entry.value);
       }
 
       return u.copyWith(speciesStats: newStats);
