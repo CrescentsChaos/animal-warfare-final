@@ -4,11 +4,18 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// Service for managing game audio including sound effects and background music
 class AudioService {
   static final AudioService instance = AudioService._internal();
-  AudioService._internal();
+  static bool isTesting = false;
+
+  AudioService._internal() {
+    if (!isTesting) {
+      _musicPlayer = AudioPlayer();
+      _soundPlayer = AudioPlayer();
+    }
+  }
 
   // Separate players for music and sound effects
-  final AudioPlayer _musicPlayer = AudioPlayer();
-  final AudioPlayer _soundPlayer = AudioPlayer();
+  late final AudioPlayer _musicPlayer;
+  late final AudioPlayer _soundPlayer;
 
   bool _isMusicEnabled = true;
   bool _isSoundEnabled = true;
@@ -26,7 +33,7 @@ class AudioService {
 
   /// Initialize settings from SharedPreferences
   Future<void> init() async {
-    if (_isInitialized) return;
+    if (_isInitialized || isTesting) return;
 
     _prefs = await SharedPreferences.getInstance();
     _isMusicEnabled = _prefs?.getBool('isMusicEnabled') ?? true;
@@ -85,6 +92,7 @@ class AudioService {
 
   /// Play a sound effect once
   Future<void> playSound(String assetPath) async {
+    if (isTesting) return;
     try {
       // Volume is controlled separately via _soundVolume and _isSoundEnabled
       // When disabled, volume is set to 0.0, so we don't need an early return here
@@ -96,6 +104,7 @@ class AudioService {
 
   /// Play background music with looping
   Future<void> playMusic(String assetPath, {bool loop = true}) async {
+    if (isTesting) return;
     // If already playing this track, don't restart it (avoids stuttering)
     if (_currentMusicPath == assetPath &&
         (_musicPlayer.state == PlayerState.playing ||
@@ -129,6 +138,7 @@ class AudioService {
 
   /// Stop the current background music
   Future<void> stopMusic() async {
+    if (isTesting) return;
     try {
       await _musicPlayer.stop();
       _currentMusicPath = null;

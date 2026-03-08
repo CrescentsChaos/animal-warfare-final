@@ -9,8 +9,10 @@ enum Weather {
   hail, // Chip damage for all except Cryo
   fog, // Reduced accuracy
   sunny, // Fire boost, aquatic reduced
+  intenseSun, // aquatic unusable
   sandstorm, // Chip damage, Rock boost
   windstorm, // Flying boost, accuracy down
+  strongWinds, // Weather-based moves unusable
   thunderstorm, // Electric boost, paralysis chance
 }
 
@@ -36,10 +38,14 @@ class WeatherEffect {
         return 'Fog rolled in!';
       case Weather.sunny:
         return 'The temperature is scorching!';
+      case Weather.intenseSun:
+        return 'The sunlight turned extremely harsh!';
       case Weather.sandstorm:
         return 'A sandstorm kicked up!';
       case Weather.windstorm:
         return 'Strong winds blow!';
+      case Weather.strongWinds:
+        return 'Mysterious strong winds are protecting the field!';
       case Weather.thunderstorm:
         return 'A thunderstorm rumbles!';
       default:
@@ -59,10 +65,12 @@ class WeatherEffect {
       case Weather.fog:
         return 'The fog lifted.';
       case Weather.sunny:
+      case Weather.intenseSun:
         return 'The temperature cooled down.';
       case Weather.sandstorm:
         return 'The sandstorm subsided.';
       case Weather.windstorm:
+      case Weather.strongWinds:
         return 'The winds calmed.';
       case Weather.thunderstorm:
         return 'The storm passed.';
@@ -82,8 +90,11 @@ class WeatherEffect {
           return weather == Weather.heavyRain ? 0.3 : 0.5;
         break;
       case Weather.sunny:
-        if (moveType == 'blaze') return 1.6;
-        if (moveType == 'aquatic') return 0.4;
+      case Weather.intenseSun:
+        if (moveType == 'blaze')
+          return weather == Weather.intenseSun ? 2.0 : 1.6;
+        if (moveType == 'aquatic')
+          return weather == Weather.intenseSun ? 0.0 : 0.4;
         break;
       case Weather.snowstorm:
         if (moveType == 'cryo') return 1.3;
@@ -95,6 +106,7 @@ class WeatherEffect {
         if (moveType == 'rock') return 1.3;
         break;
       case Weather.windstorm:
+      case Weather.strongWinds:
         if (moveType == 'flying') return 1.4;
         break;
       case Weather.thunderstorm:

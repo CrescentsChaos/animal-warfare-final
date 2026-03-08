@@ -82,11 +82,23 @@ class AIDecisionEngine {
       }
       if (effect.type == MoveEffectType.trickRoom) {
         if (isTrickRoomActive) {
-          // Generally bad to turn it off unless the AI is fast or TR is about to end?
-          // For now, penalize toggling it off to prevent "spam"
           score -= 800;
         }
       }
+    }
+
+    // Redundant screen / tailwind check
+    if ((move.name == 'Tailwind') && isTailwindActive) {
+      score -= 700; // Already active, waste of a turn
+    }
+    if ((move.name == 'Reflect') && targetHasReflect) {
+      score -= 700;
+    }
+    if ((move.name == 'Light Screen') && targetHasLightScreen) {
+      score -= 700;
+    }
+    if ((move.name == 'Aurora Veil') && targetHasAuroraVeil) {
+      score -= 700;
     }
 
     // ──────────────────────────────────────────────
@@ -666,13 +678,15 @@ class AIDecisionEngine {
         }
         break;
 
-      // ── Anti-Hazard: Clear our hazards as top priority. ──
+      // ── Anti-Hazard: Clear our hazards as top priority, then attack. ──
       case TeamArchetype.antiHazard:
         if (move.name == 'Rapid Spin' ||
             move.name == 'Defog' ||
             move.name == 'Mortal Spin') {
-          score += targetHazards.isNotEmpty ? 9999 : 80;
+          // Only massively boost if there are hazards to clear
+          score += targetHazards.isNotEmpty ? 9999 : -200;
         }
+        if (targetHazards.isEmpty && move.baseDamage > 0) score += 60;
         break;
 
       // ── Revenge Killer: Priority moves for clean KOs. ──
@@ -772,22 +786,29 @@ class AIDecisionEngine {
           'Tailwind',
         );
         if (hasTailwind && move.name == 'Tailwind') {
-          // Check if Tailwind is already active on our side.
-          // Since we might not have direct turn counters here,
-          // let's pass a boolean from BattleManager, or use a workaround.
-          // Actually, we can add a boolean `isTailwindActive` to `calculateMoveScore`
-          score += 500;
+          if (isTailwindActive) {
+            score -= 600; // Already active — don't waste the turn
+          } else {
+            score += 500; // Not yet active — top priority
+          }
         }
         if (move.baseDamage > 0) score += 40;
+        if (isTailwindActive)
+          score += 60; // Under tailwind, offense is rewarded
         if (isFaster) score += 40;
         break;
 
       case TeamArchetype.dualScreens:
-        if (move.name == 'Reflect' ||
-            move.name == 'Light Screen' ||
-            move.name == 'Aurora Veil') {
-          score += 400;
+        if (move.name == 'Reflect') {
+          score += targetHasReflect ? -600 : 400;
+        } else if (move.name == 'Light Screen') {
+          score += targetHasLightScreen ? -600 : 400;
+        } else if (move.name == 'Aurora Veil') {
+          score += targetHasAuroraVeil ? -600 : 500; // Highest priority if snow
         }
+        // Once both main screens are up, attack!
+        if (targetHasReflect && targetHasLightScreen && move.baseDamage > 0)
+          score += 80;
         if (move.baseDamage > 0) score += 30;
         break;
 

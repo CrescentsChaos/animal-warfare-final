@@ -230,6 +230,16 @@ class Move {
   final String?
   animationType; // NEW: Animation type flag (e.g., 'blob', 'slash', 'brave_bird')
 
+  final bool isPunch;
+  final bool isBite;
+  final bool isSoundBased;
+  final bool isSelfDestruct;
+  final bool isContact;
+  final bool isPowder;
+  final bool isPulse;
+  final bool isBallBomb;
+  final bool isAura;
+
   // Audio fields
   final String? soundEffect; // Optional path to sound effect file
   final String? battleMusic; // Optional path to custom battle music
@@ -276,15 +286,13 @@ class Move {
     this.isBite = false,
     this.isSoundBased = false,
     this.isSelfDestruct = false,
+    this.isPowder = false,
+    this.isPulse = false,
+    this.isBallBomb = false,
+    this.isAura = false,
     bool? isContact,
   }) : isContact =
            isContact ?? (category == MoveCategory.physical && baseDamage > 0);
-
-  final bool isPunch;
-  final bool isBite;
-  final bool isSoundBased;
-  final bool isContact;
-  final bool isSelfDestruct;
 
   // Compatibility getter
   MoveEffect get effect => effects.isNotEmpty
@@ -359,6 +367,10 @@ class Move {
       isPunch: json['isPunch'] as bool? ?? false,
       isBite: json['isBite'] as bool? ?? false,
       isSoundBased: json['isSoundBased'] as bool? ?? false,
+      isPowder:
+          json['isPowder'] as bool? ??
+          (json['name'] == 'Spore' ||
+              json['name'].toString().contains('Powder')),
       isSelfDestruct:
           json['isSelfDestruct'] as bool? ??
           (json['name'] == 'Self-Destruct' ||
@@ -377,6 +389,9 @@ class Move {
             )
           : MoveTargetCount.single,
       animationType: json['animationType'] as String?,
+      isPulse: json['isPulse'] as bool? ?? false,
+      isBallBomb: json['isBallBomb'] as bool? ?? false,
+      isAura: json['isAura'] as bool? ?? false,
     );
   }
 
@@ -409,6 +424,10 @@ class Move {
     bool? isSoundBased,
     bool? isSelfDestruct,
     bool? isContact,
+    bool? isPowder,
+    bool? isPulse,
+    bool? isBallBomb,
+    bool? isAura,
     String? animationType,
   }) {
     return Move(
@@ -442,6 +461,10 @@ class Move {
       isSoundBased: isSoundBased ?? this.isSoundBased,
       isSelfDestruct: isSelfDestruct ?? this.isSelfDestruct,
       isContact: isContact ?? this.isContact,
+      isPowder: isPowder ?? this.isPowder,
+      isPulse: isPulse ?? this.isPulse,
+      isBallBomb: isBallBomb ?? this.isBallBomb,
+      isAura: isAura ?? this.isAura,
       animationType: animationType ?? this.animationType,
     );
   }
@@ -480,6 +503,11 @@ class Move {
     } catch (_) {
       return null;
     }
+  }
+
+  @visibleForTesting
+  static void addTestMove(Move move) {
+    _byName[move.name.toLowerCase()] = move;
   }
 
   /// Create a move by name. If not in the predefined list, returns a move with

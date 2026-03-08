@@ -871,9 +871,8 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                       controller: scrollController,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
-                        vertical: 8,
+                        vertical: 12,
                       ),
-                      // Reverse order of turns (Latest turn first)
                       itemCount: battleManager.turnHistory.length,
                       itemBuilder: (_, i) {
                         final turnIndex =
@@ -883,125 +882,11 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                         if (turn.logEntries.isEmpty)
                           return const SizedBox.shrink();
 
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Turn Header with Gradient Underscore
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(0, 16, 0, 12),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: themeColor.withValues(alpha: 0.5),
-                                      borderRadius: BorderRadius.circular(4),
-                                      border: Border.all(
-                                        color: themeColor.withValues(
-                                          alpha: 0.4,
-                                        ),
-                                        width: 1,
-                                      ),
-                                    ),
-                                    child: Text(
-                                      'TURN ${turn.turnNumber}',
-                                      style: TextStyle(
-                                        color: themeColor,
-                                        fontSize: 10,
-                                        fontFamily: 'PressStart2P',
-                                        fontWeight: FontWeight.bold,
-                                        letterSpacing: 1.2,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: Container(
-                                      height: 1,
-                                      decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          colors: [
-                                            themeColor.withValues(alpha: 0.5),
-                                            Colors.transparent,
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            // Log Entries for this turn (Chronological)
-                            ...turn.logEntries.map(
-                              (entry) => Padding(
-                                padding: const EdgeInsets.only(bottom: 8),
-                                child: Container(
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 14,
-                                    vertical: 12,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        Colors.black.withValues(alpha: 0.5),
-                                        Colors.black.withValues(alpha: 0.5),
-                                      ],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ),
-                                    borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.05,
-                                      ),
-                                      width: 1,
-                                    ),
-                                  ),
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.only(top: 4),
-                                        child: Icon(
-                                          Icons.arrow_right,
-                                          color: themeColor.withValues(
-                                            alpha: 0.7,
-                                          ),
-                                          size: 16,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          entry,
-                                          style: TextStyle(
-                                            color: Colors.white.withValues(
-                                              alpha: 0.95,
-                                            ),
-                                            fontSize: isNarrow ? 10 : 11,
-                                            fontFamily: 'PressStart2P',
-                                            height: 1.6,
-                                            shadows: [
-                                              const Shadow(
-                                                color: Colors.black,
-                                                offset: Offset(1, 1),
-                                                blurRadius: 2,
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
+                        return _buildTurnLogGroup(
+                          context,
+                          turn,
+                          themeColor,
+                          isNarrow,
                         );
                       },
                     ),
@@ -1010,6 +895,181 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTurnLogGroup(
+    BuildContext context,
+    BattleTurn turn,
+    Color themeColor,
+    bool isNarrow,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Turn Header
+        Padding(
+          padding: const EdgeInsets.fromLTRB(0, 8, 0, 12),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      themeColor.withValues(alpha: 0.2),
+                      themeColor.withValues(alpha: 0.1),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: themeColor.withValues(alpha: 0.3),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.timer,
+                      size: 10,
+                      color: themeColor.withValues(alpha: 0.8),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'TURN ${turn.turnNumber}',
+                      style: TextStyle(
+                        color: themeColor,
+                        fontSize: 9,
+                        fontFamily: 'PressStart2P',
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Container(
+                  height: 1,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        themeColor.withValues(alpha: 0.3),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        // Log Entries
+        ...turn.logEntries.map(
+          (entry) => _buildLogEntry(context, entry, themeColor, isNarrow),
+        ),
+        const SizedBox(height: 8),
+      ],
+    );
+  }
+
+  Widget _buildLogEntry(
+    BuildContext context,
+    String entry,
+    Color themeColor,
+    bool isNarrow,
+  ) {
+    // Determine entry style based on content
+    Color accentColor = themeColor;
+    IconData entryIcon = Icons.navigate_next;
+    bool isHighlight = false;
+
+    final lowerEntry = entry.toLowerCase();
+    if (lowerEntry.contains('critical hit')) {
+      accentColor = Colors.redAccent;
+      entryIcon = Icons.flash_on;
+      isHighlight = true;
+    } else if (lowerEntry.contains('super effective')) {
+      accentColor = Colors.orangeAccent;
+      entryIcon = Icons.auto_awesome;
+      isHighlight = true;
+    } else if (lowerEntry.contains('not very effective')) {
+      accentColor = Colors.blueGrey;
+      entryIcon = Icons.shield_outlined;
+    } else if (lowerEntry.contains('fainted')) {
+      accentColor = Colors.red;
+      entryIcon = Icons.dangerous;
+      isHighlight = true;
+    } else if (lowerEntry.contains('uses')) {
+      accentColor = themeColor;
+      entryIcon = Icons.sports_mma;
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.4),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isHighlight
+                ? accentColor.withValues(alpha: 0.4)
+                : Colors.white.withValues(alpha: 0.08),
+            width: isHighlight ? 1.2 : 1,
+          ),
+          boxShadow: isHighlight
+              ? [
+                  BoxShadow(
+                    color: accentColor.withValues(alpha: 0.1),
+                    blurRadius: 4,
+                    spreadRadius: 1,
+                  ),
+                ]
+              : null,
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Icon(
+                entryIcon,
+                color: accentColor.withValues(alpha: 0.8),
+                size: 14,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                entry,
+                style: TextStyle(
+                  color: isHighlight
+                      ? Colors.white
+                      : Colors.white.withValues(alpha: 0.85),
+                  fontSize: isNarrow ? 9 : 10,
+                  fontFamily: 'PressStart2P',
+                  height: 1.5,
+                  shadows: [
+                    Shadow(
+                      color: Colors.black.withValues(alpha: 0.5),
+                      offset: const Offset(1, 1),
+                      blurRadius: 1,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -1965,7 +2025,10 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
-              '${base.name} LV.$displayLevel',
+              bm.currentState == BattleState.choosingLead &&
+                      widget.isArenaBattle
+                  ? '??? LV.??'
+                  : '${base.name} LV.$displayLevel',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
@@ -2000,10 +2063,14 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               ),
             ),
           ),
+          const SizedBox(height: 2),
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
-              'HP: ${organism.health.round()}/${organism.maxHealth} (${(hpRatio * 100).toStringAsFixed(1)}%)',
+              bm.currentState == BattleState.choosingLead &&
+                      widget.isArenaBattle
+                  ? 'HP: ???/??? (??.?%)'
+                  : 'HP: ${organism.health.round()}/${organism.maxHealth} (${(hpRatio * 100).toStringAsFixed(1)}%)',
               style: TextStyle(
                 color: Colors.white70,
                 fontSize: isNarrow ? 8 : 10,
@@ -2135,6 +2202,10 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                 organism: organism,
                 size: spriteSize,
                 hideAnimal:
+                    (bm.currentState == BattleState.intro &&
+                        widget.isArenaBattle) ||
+                    (bm.currentState == BattleState.choosingLead &&
+                        widget.isArenaBattle) ||
                     (bm.result == BattleResult.capture && !bm.isCapturing) ||
                     _moveAnims.any(
                       (anim) =>
@@ -2231,6 +2302,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               ),
             ),
           ),
+          const SizedBox(height: 2),
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(

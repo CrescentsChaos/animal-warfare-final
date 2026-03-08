@@ -424,7 +424,9 @@ class DoubleBattleManager extends ChangeNotifier {
   }
 
   void _checkMimic(BattleOrganism org) {
-    if (org.abilities.any((a) => a.name == 'Mimic' || a.name == 'Mimicry')) {
+    if (org.abilities.any(
+      (a) => a.name == 'Mimic' || a.name == 'Mimicry' || a.name == 'Illusion',
+    )) {
       final team = (org == playerSlot1 || org == playerSlot2)
           ? playerTeam
           : opponentTeam;
@@ -439,6 +441,24 @@ class DoubleBattleManager extends ChangeNotifier {
       if (disguiseTarget != null) {
         org.isDisguised = true;
         org.disguisedAs = disguiseTarget;
+      }
+    } else if (org.abilities.any((a) => a.name == 'Frisk')) {
+      final opposingSlots = (org == playerSlot1 || org == playerSlot2)
+          ? [opponentSlot1, opponentSlot2]
+          : [playerSlot1, playerSlot2];
+      for (final foe in opposingSlots) {
+        if (foe != null &&
+            foe.health > 0 &&
+            foe.organism.equippedTalisman != null &&
+            !foe.talismanConsumed) {
+          addLog(
+            '${org.organism.baseOrganism.name} frisked ${foe.organism.baseOrganism.name} and found its ${foe.organism.equippedTalisman!.name}!',
+          );
+          foe.itemDisabledTurns = 2;
+          addLog(
+            '${foe.organism.baseOrganism.name}\'s item was disabled for 2 turns!',
+          );
+        }
       }
     }
   }
@@ -512,12 +532,35 @@ class DoubleBattleManager extends ChangeNotifier {
   }) {
     if (move.baseDamage == 0) return const DamageResult(0, 1.0, false);
 
-    final atkStat = move.category == MoveCategory.special
-        ? attacker.currentPower
-        : attacker.currentAttack;
-    final defStat = move.category == MoveCategory.special
-        ? defender.currentResistance
-        : defender.currentDefense;
+    double atkStat = move.category == MoveCategory.special
+        ? attacker.currentPower.toDouble()
+        : attacker.currentAttack.toDouble();
+    double defStat = move.category == MoveCategory.special
+        ? defender.currentResistance.toDouble()
+        : defender.currentDefense.toDouble();
+
+    // --- Flower Gift ---
+    // (Awaiting weather implementation in DoubleBattleManager)
+
+    // --- Toxic Boost / Flare Boost ---
+    if (move.category == MoveCategory.physical &&
+        attacker.abilities.any((ab) => ab.name == 'Toxic Boost') &&
+        attacker.statusEffects.any(
+          (se) => se.type == StatusEffectType.poison,
+        )) {
+      atkStat *= 1.5;
+    }
+    if (move.category == MoveCategory.special &&
+        attacker.abilities.any((ab) => ab.name == 'Flare Boost') &&
+        attacker.statusEffects.any((se) => se.type == StatusEffectType.burn)) {
+      atkStat *= 1.5;
+    }
+
+    // --- Defeatist ---
+    if (attacker.abilities.any((ab) => ab.name == 'Defeatist') &&
+        attacker.health <= attacker.maxHealth / 3) {
+      atkStat /= 2.0;
+    }
 
     double dmg =
         ((2 * attacker.level / 5 + 2) * move.baseDamage * atkStat / defStat) /
@@ -530,8 +573,27 @@ class DoubleBattleManager extends ChangeNotifier {
     // Type effectiveness
     double typeMod = 1.0;
     for (final defType in defender.types) {
-      typeMod *= TypeChart.getEffectiveness(moveType, defType);
+      double mod = TypeChart.getEffectiveness(moveType, defType);
+
+      // Scrappy: Normal/Fighting moves hit Ghost types
+      if (mod == 0.0 &&
+          defType == ElementalType.spectral &&
+          (moveType == ElementalType.basic ||
+              moveType == ElementalType.martial) &&
+          attacker.abilities.any((ab) => ab.name == 'Scrappy')) {
+        mod = 1.0;
+      }
+      typeMod *= mod;
     }
+
+    // Solid Rock / Filter
+    if (typeMod > 1.0 &&
+        defender.abilities.any(
+          (ab) => ab.name == 'Solid Rock' || ab.name == 'Filter',
+        )) {
+      typeMod *= 0.75;
+    }
+
     dmg *= typeMod;
 
     // Gem Boost
@@ -562,6 +624,38 @@ class DoubleBattleManager extends ChangeNotifier {
 
     // Multi-target penalty
     dmg *= multiTargetPenalty;
+
+    // Sheer Force: Remove secondary effects but boost damage
+    if (attacker.abilities.any((ab) => ab.name == 'Sheer Force') &&
+        move.effects.isNotEmpty) {
+      dmg *= 1.3;
+    }
+
+    // Multiscale
+    if (defender.abilities.any((ab) => ab.name == 'Multiscale') &&
+        defender.health == defender.maxHealth) {
+      dmg *= 0.5;
+    }
+
+    // Big Pecks
+    if (attacker.abilities.any((ab) => ab.name == 'Big Pecks') &&
+        move.isContact) {
+      dmg *= 1.3;
+    }
+
+    // Analytic
+    if (attacker.abilities.any((ab) => ab.name == 'Analytic') &&
+        defender.hasMovedThisTurn) {
+      dmg *= 1.3;
+    }
+
+    // Illusion
+    if (attacker.abilities.any((ab) => ab.name == 'Illusion') &&
+        attacker.isDisguised) {
+      dmg *= 1.3;
+    }
+
+    // Sand Force (Awaiting weather implementation in DoubleBattleManager)
 
     return DamageResult(dmg.round().clamp(1, 99999), typeMod, false);
   }
@@ -658,6 +752,11 @@ class DoubleBattleManager extends ChangeNotifier {
 
     await _applyEndOfTurnEffects();
     await _processFaints();
+
+    // Decrement item disable turns
+    for (final slot in _allActiveSlots()) {
+      if (slot.itemDisabledTurns > 0) slot.itemDisabledTurns--;
+    }
 
     if (await _processReplacements()) {
       return;
@@ -784,6 +883,7 @@ class DoubleBattleManager extends ChangeNotifier {
         multiTargetPenalty: 1.0,
       );
     }
+    attacker.hasMovedThisTurn = true;
   }
 
   // ──────────────────────────────────────────────
@@ -829,6 +929,15 @@ class DoubleBattleManager extends ChangeNotifier {
     // Status-only moves: apply effects and return
     if (move.baseDamage == 0) {
       await _applyEffects(attacker, defender, move);
+      notifyListeners();
+      return;
+    }
+
+    // Storm Drain
+    if (defender.abilities.any((ab) => ab.name == 'Storm Drain') &&
+        move.type == ElementalType.aquatic) {
+      addLog('${defender.name}\'s Storm Drain absorbed the attack!');
+      await _applyStatChange(defender, 'power', 1);
       notifyListeners();
       return;
     }
@@ -911,6 +1020,58 @@ class DoubleBattleManager extends ChangeNotifier {
     if (typeMod == 0.0)
       addLog('It doesn\'t affect ${defender.organism.baseOrganism.name}!');
 
+    // --- Rattled ---
+    if (defender.abilities.any((ab) => ab.name == 'Rattled') &&
+        finalDmg > 0 &&
+        (move.type == ElementalType.arthropod ||
+            move.type == ElementalType.spectral ||
+            move.type == ElementalType.darkness ||
+            move.category ==
+                MoveCategory
+                    .status /* Intimidate is handled separately, sound in _executeTurn but wait, sound is a type or effect? Sound is a MoveEffect or Type */ )) {
+      // Assuming for now Sound is ElementalType.sound
+      if (move.type == ElementalType.arthropod ||
+          move.type == ElementalType.spectral ||
+          move.type == ElementalType.darkness ||
+          move.type == ElementalType.sound) {
+        await _applyStatChange(defender, 'speed', 1);
+      }
+    }
+
+    // --- Weak Armor ---
+    if (defender.abilities.any((ab) => ab.name == 'Weak Armor') &&
+        finalDmg > 0 &&
+        move.category == MoveCategory.physical) {
+      await _applyStatChange(defender, 'defense', -1);
+      await _applyStatChange(defender, 'speed', 2);
+    }
+
+    // --- Cursed Body ---
+    if (defender.abilities.any((ab) => ab.name == 'Cursed Body') &&
+        finalDmg > 0 &&
+        move.isContact) {
+      if (Random().nextDouble() < 0.3) {
+        attacker.disabledMoves[move.name] = 4; // Disable for 4 turns
+        addLog('${attacker.name}\'s ${move.name} was disabled by Cursed Body!');
+      }
+    }
+
+    // --- Pickpocket ---
+    if (defender.abilities.any((ab) => ab.name == 'Pickpocket') &&
+        finalDmg > 0 &&
+        move.isContact) {
+      if (defender.organism.equippedTalisman == null &&
+          attacker.organism.equippedTalisman != null &&
+          !attacker.talismanConsumed) {
+        // Steal item
+        defender.organism.equippedTalisman = attacker.organism.equippedTalisman;
+        attacker.organism.equippedTalisman = null;
+        addLog(
+          '${defender.name} stole ${attacker.name}\'s ${defender.organism.equippedTalisman!.name}!',
+        );
+      }
+    }
+
     // Drain
     if (move.drainPercent > 0) {
       double drainMult = move.drainPercent;
@@ -935,7 +1096,12 @@ class DoubleBattleManager extends ChangeNotifier {
     }
 
     // Apply secondary effects
-    await _applyEffects(attacker, defender, move);
+    if (attacker.abilities.any((ab) => ab.name == 'Sheer Force') &&
+        move.effects.isNotEmpty) {
+      addLog('${attacker.name}\'s Sheer Force prevented secondary effects!');
+    } else {
+      await _applyEffects(attacker, defender, move);
+    }
 
     // Thrash/Outrage/Petal Dance Lock
     if (move.effects.any((e) => e.type == MoveEffectType.thrash) &&
@@ -1048,6 +1214,11 @@ class DoubleBattleManager extends ChangeNotifier {
     String stat,
     int stages,
   ) async {
+    // --- Contrary ---
+    if (org.abilities.any((ab) => ab.name == 'Contrary')) {
+      stages = -stages;
+    }
+
     switch (stat.toLowerCase()) {
       case 'attack':
         org.attackStage = (org.attackStage + stages).clamp(-6, 6);
@@ -1070,6 +1241,13 @@ class DoubleBattleManager extends ChangeNotifier {
     }
     final dir = stages > 0 ? 'rose' : 'fell';
     addLog("${org.organism.baseOrganism.name}'s $stat $dir!");
+
+    // --- Defiant ---
+    if (stages < 0 && org.abilities.any((ab) => ab.name == 'Defiant')) {
+      addLog("${org.organism.baseOrganism.name}'s Defiant triggered!");
+      await _applyStatChange(org, 'attack', 2);
+    }
+
     notifyListeners();
   }
 
@@ -1087,6 +1265,53 @@ class DoubleBattleManager extends ChangeNotifier {
   Future<void> _applyEndOfTurnEffects() async {
     for (final slot in _allActiveSlots()) {
       if (slot.health <= 0) continue;
+
+      // Ice Body
+      if (slot.abilities.any((ab) => ab.name == 'Ice Body')) {
+        // Double Battle Manager currently lacks full weather support (like currentWeatherGlobal)
+        // so we can't implement Ice Body faithfully without weather state.
+        // We will leave this placeholder.
+      }
+
+      // Bad Dreams
+      if (slot.statusEffects.any((se) => se.type == StatusEffectType.sleep)) {
+        final opposingSlots = (slot == playerSlot1 || slot == playerSlot2)
+            ? [opponentSlot1, opponentSlot2]
+            : [playerSlot1, playerSlot2];
+        if (opposingSlots.any(
+          (foe) =>
+              foe != null &&
+              foe.health > 0 &&
+              foe.abilities.any((ab) => ab.name == 'Bad Dreams'),
+        )) {
+          final damageAmount = (slot.maxHealth / 4).floor().clamp(
+            1,
+            slot.maxHealth,
+          );
+          slot.health -= damageAmount;
+          addLog(
+            '${slot.organism.baseOrganism.name} is tormented by bad dreams!',
+          );
+        }
+      }
+
+      // Healer
+      if (slot.abilities.any((ab) => ab.name == 'Healer') &&
+          slot.statusEffects.any((se) => se.type != StatusEffectType.none)) {
+        if (Random().nextDouble() < 0.3) {
+          slot.clearStatusEffects();
+          addLog(
+            '${slot.organism.baseOrganism.name}\'s Healer cured its status conditions!',
+          );
+        }
+      }
+
+      // Honey Gather
+      if (slot.abilities.any((ab) => ab.name == 'Honey Gather')) {
+        if (Random().nextDouble() < 0.5) {
+          addLog('${slot.organism.baseOrganism.name} gathered some honey!');
+        }
+      }
 
       // Poison / Burn damage
       for (final se in List<StatusEffect>.from(slot.statusEffects)) {
@@ -1142,6 +1367,45 @@ class DoubleBattleManager extends ChangeNotifier {
         addLog(
           '${slot.organism.baseOrganism.name} is hurt by the clamping effect!',
         );
+      }
+
+      // Unnerve Check
+      final opposingSlots = (slot == playerSlot1 || slot == playerSlot2)
+          ? [opponentSlot1, opponentSlot2]
+          : [playerSlot1, playerSlot2];
+      final foeHasUnnerve = opposingSlots.any(
+        (foe) =>
+            foe != null &&
+            foe.health > 0 &&
+            foe.abilities.any((ab) => ab.name == 'Unnerve'),
+      );
+
+      if (slot.organism.equippedTalisman != null &&
+          !slot.talismanConsumed &&
+          slot.itemDisabledTurns <= 0 &&
+          !foeHasUnnerve) {
+        for (final effect in slot.organism.equippedTalisman!.effects) {
+          if (effect.type == TalismanEffectType.onTurnHeal) {
+            final healAmount = (slot.maxHealth * effect.magnitude).round();
+            slot.health = (slot.health + healAmount).clamp(0, slot.maxHealth);
+            slot.talismanConsumed = true;
+            break; // Stop at first heal effect
+          } else if (effect.type == TalismanEffectType.berryCureStatus &&
+              slot.statusEffects.isNotEmpty) {
+            final statusToCure = effect.stat; // e.g., 'burn', 'all'
+            if (statusToCure == 'all' ||
+                slot.statusEffects.any(
+                  (s) => s.type.toString().split('.').last == statusToCure,
+                )) {
+              slot.clearStatusEffects();
+              slot.talismanConsumed = true;
+              slot.isItemRevealed = true;
+              addLog(
+                '${slot.organism.equippedTalisman!.name} cured ${slot.organism.baseOrganism.name}\'s status!',
+              );
+            }
+          }
+        }
       }
     }
     notifyListeners();

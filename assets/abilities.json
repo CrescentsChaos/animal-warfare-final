@@ -1,1218 +1,1904 @@
 [
-    {
-        "name": "Adaptability",
-        "description": "Increases the STAB (Same Type Attack Bonus) multiplier from 1.5x to 2.0x.",
-        "trigger": "onCalculateDamage",
-        "effectType": "damageMultiplier",
-        "magnitude": 2.0,
-        "conditions": [
-            "stab"
-        ]
-    },
-    {
-        "name": "Anger Point",
-        "description": "Getting hit raises Atk by +1. Critical hits maximize Attack.",
-        "trigger": "onDamageTaken",
-        "effectType": "statChange",
-        "targetStat": "attack",
-        "magnitude": 1,
-        "conditions": [
-            "on_hit"
-        ]
-    },
-    {
-        "name": "Arena Trap",
-        "description": "Prevents grounded opponents from fleeing.",
-        "trigger": "none",
-        "effectType": "none"
-    },
-    {
-        "name": "Levitate",
-        "description": "Makes the organism immune to earth‑type attacks.",
-        "trigger": "onDamageTaken",
-        "effectType": "preventDamage",
-        "conditions": [
-            "type_earth"
-        ]
-    },
-    {
-        "name": "Battle Armor",
-        "description": "Protects the organism from critical hits.",
-        "trigger": "onDamageTaken",
-        "effectType": "preventCrit"
-    },
-    {
-        "name": "Berserk",
-        "description": "Boosts Attack when HP falls below 50% due to an attack.",
-        "trigger": "onDamageTaken",
-        "effectType": "statChange",
-        "targetStat": "attack",
-        "magnitude": 1,
-        "conditions": [
-            "hp_below_50"
-        ]
-    },
-    {
-        "name": "Clear Body",
-        "description": "Prevents other organisms from lowering its stats.",
-        "trigger": "onStatLoss",
-        "effectType": "preventStatLoss"
-    },
-    {
-        "name": "Color Change",
-        "description": "Changes the organism's type to the type of the move it was hit by.",
-        "trigger": "onDamageTaken",
-        "effectType": "typeChange"
-    },
-    {
-        "name": "Defiant",
-        "description": "Boosts Attack by two stages when a stat is lowered.",
-        "trigger": "onStatLoss",
-        "effectType": "statChange",
-        "targetStat": "attack",
-        "magnitude": 2
-    },
-    {
-        "name": "Dauntless Shield",
-        "description": "Boosts Defense when entering battle.",
-        "trigger": "onEntry",
-        "effectType": "statChange",
-        "targetStat": "defense",
-        "magnitude": 1
-    },
-    {
-        "name": "Cute Charm",
-        "description": "30% chance to charm attacker on contact, which halves its power.",
-        "trigger": "onContact",
-        "effectType": "statusChange",
-        "value": "charmed",
-        "chance": 0.3
-    },
-    {
-        "name": "Shield Dust",
-        "description": "Prevents status changes when hit by an attacking move.",
-        "trigger": "onStatusAttempt",
-        "effectType": "preventStatus",
-        "value": "any",
-        "conditions": [
-            "contact"
-        ]
-    },
-    {
-        "name": "Drizzle",
-        "description": "Summons rain when entering battle.",
-        "trigger": "onEntry",
-        "effectType": "weatherChange",
-        "value": "rain"
-    },
-    {
-        "name": "Early Bird",
-        "description": "Awakens from sleep twice as fast.",
-        "trigger": "onTurnEnd",
-        "effectType": "wakeUpFaster"
-    },
-    {
-        "name": "Poison Touch",
-        "description": "May poison a target when using a contact move.",
-        "trigger": "onDamageDealt",
-        "effectType": "statusChange",
-        "value": "poison",
-        "chance": 0.3,
-        "conditions": [
-            "contact"
-        ]
-    },
-    {
-        "name": "Poison Point",
-        "description": "May poison a target on contact.",
-        "trigger": "onDamageTaken",
-        "effectType": "statusChange",
-        "value": "poison",
-        "chance": 0.3,
-        "conditions": [
-            "contact"
-        ]
-    },
-    {
-        "name": "Poison Skin",
-        "description": "May poison a target on contact.",
-        "trigger": "onDamageTaken",
-        "effectType": "statusChange",
-        "value": "poison",
-        "chance": 0.5,
-        "conditions": [
-            "contact"
-        ]
-    },
-    {
-        "name": "Fur Coat",
-        "description": "Doubles the organism's Defense stat.",
-        "trigger": "onCalculateStat",
-        "effectType": "statMultiplier",
-        "targetStat": "defense",
-        "magnitude": 2.0
-    },
-    {
-        "name": "Gale Wings",
-        "description": "Gives priority to Flying-type moves at full HP.",
-        "trigger": "onCalculatePriority",
-        "effectType": "priorityBoost",
-        "magnitude": 1,
-        "conditions": [
-            "full_hp",
-            "type_flying"
-        ]
-    },
-    {
-        "name": "Guts",
-        "description": "Boosts Attack by 50% when having a status condition.",
-        "trigger": "onCalculateStat",
-        "effectType": "statMultiplier",
-        "targetStat": "attack",
-        "magnitude": 1.5,
-        "conditions": [
-            "statused"
-        ]
-    },
-    {
-        "name": "Intimidate",
-        "description": "Lowers opponent's Attack when entering.",
-        "trigger": "onEntry",
-        "effectType": "statChange",
-        "targetStat": "attack",
-        "magnitude": -1
-    },
-    {
-        "name": "Limber",
-        "description": "Protects the organism from paralysis.",
-        "trigger": "onStatusAttempt",
-        "effectType": "preventStatus",
-        "value": "paralysis"
-    },
-    {
-        "name": "Immunity",
-        "description": "Protects the organism from poison.",
-        "trigger": "onStatusAttempt",
-        "effectType": "preventStatus",
-        "value": "poison"
-    },
-    {
-        "name": "Static",
-        "description": "May paralyze a target on contact.",
-        "trigger": "onDamageTaken",
-        "effectType": "statusChange",
-        "value": "paralysis",
-        "chance": 0.3,
-        "conditions": [
-            "contact"
-        ]
-    },
-    {
-        "name": "Flame Body",
-        "description": "May burn a target on contact.",
-        "trigger": "onDamageTaken",
-        "effectType": "statusChange",
-        "value": "burn",
-        "chance": 0.3,
-        "conditions": [
-            "contact"
-        ]
-    },
-    {
-        "name": "Spiky Body",
-        "description": "May cause bleeding on contact.",
-        "trigger": "onDamageTaken",
-        "effectType": "statusChange",
-        "value": "bleed",
-        "chance": 0.3,
-        "conditions": [
-            "contact"
-        ]
-    },
-    {
-        "name": "Comatose",
-        "description": "The organism is always asleep and cannot be inflicted with other status conditions.",
-        "trigger": "onStatusAttempt",
-        "effectType": "preventStatus",
-        "value": "all"
-    },
-    {
-        "name": "Competitive",
-        "description": "Boosts Special Attack by two stages when a stat is lowered.",
-        "trigger": "onStatLoss",
-        "effectType": "statChange",
-        "targetStat": "power",
-        "magnitude": 2
-    },
-    {
-        "name": "Earth Eater",
-        "description": "Restores HP when hit by a Ground-type move.",
-        "trigger": "onDamageTaken",
-        "effectType": "none"
-    },
-    {
-        "name": "Gooey",
-        "description": "Lowers the speed of the attacker on contact.",
-        "trigger": "onDamageTaken",
-        "effectType": "statChange",
-        "targetStat": "speed",
-        "magnitude": -1,
-        "conditions": [
-            "contact"
-        ]
-    },
-    {
-        "name": "Gorilla Tactics",
-        "description": "Boosts Attack but only allows the use of the first selected move.",
-        "trigger": "onCalculateStat",
-        "effectType": "statMultiplier",
-        "targetStat": "attack",
-        "magnitude": 1.5
-    },
-    {
-        "name": "Guard Dog",
-        "description": "Prevents the effect of Intimidate and forced switching.",
-        "trigger": "onStatLoss",
-        "effectType": "preventStatLoss"
-    },
-    {
-        "name": "Heatproof",
-        "description": "Halves the damage taken from Fire-type moves.",
-        "trigger": "onCalculateDamage",
-        "effectType": "damageMultiplier",
-        "magnitude": 0.5,
-        "conditions": [
-            "type_blaze"
-        ]
-    },
-    {
-        "name": "Huge Power",
-        "description": "Doubles own Attack stat. (Raw stat, not base stat)",
-        "trigger": "onCalculateStat",
-        "effectType": "statMultiplier",
-        "targetStat": "attack",
-        "magnitude": 2.0
-    },
-    {
-        "name": "Hustle",
-        "description": "0.9x accuracy. Raises Atk & power by 1.4x.",
-        "trigger": "onCalculateStat",
-        "effectType": "statMultiplier",
-        "targetStat": "accuracy",
-        "magnitude": 0.9
-    },
-    {
-        "name": "Hydration",
-        "description": "Cures status conditions at the end of the turn if it is raining.",
-        "trigger": "onTurnEnd",
-        "effectType": "statusChange",
-        "conditions": [
-            "weather_rain"
-        ]
-    },
-    {
-        "name": "Mimic",
-        "description": "Disguises itself as the last animal in the party.",
-        "trigger": "onEntry",
-        "effectType": "none"
-    },
-    {
-        "name": "Insomnia",
-        "description": "Prevents the organism from falling asleep.",
-        "trigger": "onStatusAttempt",
-        "effectType": "preventStatus",
-        "value": "sleep"
-    },
-    {
-        "name": "Iron Barbs",
-        "description": "Damages the attacker on contact.",
-        "trigger": "onDamageTaken",
-        "effectType": "none",
-        "conditions": [
-            "contact"
-        ]
-    },
-    {
-        "name": "Rough Skin",
-        "description": "Damages the attacker on contact.",
-        "trigger": "onDamageTaken",
-        "effectType": "none",
-        "conditions": [
-            "contact"
-        ]
-    },
-    {
-        "name": "Marvel Scale",
-        "description": "Boosts Defense by 50% if the organism has a status condition.",
-        "trigger": "onCalculateStat",
-        "effectType": "statMultiplier",
-        "targetStat": "defense",
-        "magnitude": 1.5,
-        "conditions": [
-            "statused"
-        ]
-    },
-    {
-        "name": "Merciless",
-        "description": "Attacks become critical hits if the target is poisoned.",
-        "trigger": "onCalculateDamage",
-        "effectType": "none"
-    },
-    {
-        "name": "Moody",
-        "description": "Raises one stat and lowers another at the end of every turn.",
-        "trigger": "onTurnEnd",
-        "effectType": "none"
-    },
-    {
-        "name": "Multiscale",
-        "description": "Reduces damage taken when HP is full.",
-        "trigger": "onCalculateDamage",
-        "effectType": "damageMultiplier",
-        "magnitude": 0.5,
-        "conditions": [
-            "full_hp"
-        ]
-    },
-    {
-        "name": "Natural Cure",
-        "description": "Cures status conditions upon switching out.",
-        "trigger": "none",
-        "effectType": "none"
-    },
-    {
-        "name": "No Guard",
-        "description": "Ensures that all moves used by or against the organism land.",
-        "trigger": "none",
-        "effectType": "none"
-    },
-    {
-        "name": "Overcoat",
-        "description": "Protects from weather damage and powder moves.",
-        "trigger": "onDamageTaken",
-        "effectType": "none"
-    },
-    {
-        "name": "Parental Bond",
-        "description": "Allows the organism to attack twice in one turn.",
-        "trigger": "onDamageDealt",
-        "effectType": "none"
-    },
-    {
-        "name": "Poison Heal",
-        "description": "Restores HP if the organism is poisoned instead of losing HP.",
-        "trigger": "onTurnEnd",
-        "effectType": "none"
-    },
-    {
-        "name": "Prankster",
-        "description": "Gives priority to status moves.",
-        "trigger": "onCalculatePriority",
-        "effectType": "priorityBoost",
-        "magnitude": 1,
-        "conditions": [
-            "move_category_status"
-        ]
-    },
-    {
-        "name": "Reckless",
-        "description": "Boosts the power of recoil moves.",
-        "trigger": "onCalculateDamage",
-        "effectType": "damageMultiplier",
-        "magnitude": 1.2,
-        "conditions": [
-            "move_recoil"
-        ]
-    },
-    {
-        "name": "Regenerator",
-        "description": "Restores a little HP when withdrawn from battle.",
-        "trigger": "none",
-        "effectType": "none"
-    },
-    {
-        "name": "Swift Hunter",
-        "description": "Passively boosts the organism's speed by 20%.",
-        "trigger": "onCalculateStat",
-        "effectType": "statMultiplier",
-        "targetStat": "speed",
-        "magnitude": 1.2
-    },
-    {
-        "name": "Cornered Beast",
-        "description": "Attack is boosted by 50% when HP falls below 30%.",
-        "trigger": "onCalculateStat",
-        "effectType": "statMultiplier",
-        "targetStat": "attack",
-        "magnitude": 1.5,
-        "conditions": [
-            "hp_below_30"
-        ]
-    },
-    {
-        "name": "Drought",
-        "description": "Summons harsh sunlight when entering battle.",
-        "trigger": "onEntry",
-        "effectType": "weatherChange",
-        "value": "sunny"
-    },
-    {
-        "name": "Snow Warning",
-        "description": "Summons snowstrom when entering battle.",
-        "trigger": "onEntry",
-        "effectType": "weatherChange",
-        "value": "snowstorm"
-    },
-    {
-        "name": "Sand Stream",
-        "description": "Summons sandstorm when entering battle.",
-        "trigger": "onEntry",
-        "effectType": "weatherChange",
-        "value": "sandstorm"
-    },
-    {
-        "name": "Sand Veil",
-        "description": "Raises evasion during sandstorms.",
-        "trigger": "onCalculateEvasion",
-        "effectType": "statMultiplier",
-        "targetStat": "evasion",
-        "magnitude": 1.2,
-        "conditions": [
-            "weather_sandstorm"
-        ]
-    },
-    {
-        "name": "Electric Surge",
-        "description": "Creates Electric Terrain when entering battle.",
-        "trigger": "onEntry",
-        "effectType": "terrainChange",
-        "value": "electric"
-    },
-    {
-        "name": "Sand Rush",
-        "description": "Speed doubles in sandstorm.",
-        "trigger": "onCalculateStat",
-        "effectType": "statMultiplier",
-        "targetStat": "speed",
-        "magnitude": 2.0,
-        "conditions": [
-            "weather_sandstorm"
-        ]
-    },
-    {
-        "name": "Chlorophyll",
-        "description": "Speed doubles in harsh sunlight.",
-        "trigger": "onCalculateStat",
-        "effectType": "statMultiplier",
-        "targetStat": "speed",
-        "magnitude": 2.0,
-        "conditions": [
-            "weather_sun"
-        ]
-    },
-    {
-        "name": "Swift Swim",
-        "description": "Speed doubles in rain.",
-        "trigger": "onCalculateStat",
-        "effectType": "statMultiplier",
-        "targetStat": "speed",
-        "magnitude": 2.0,
-        "conditions": [
-            "weather_rain"
-        ]
-    },
-    {
-        "name": "Slush Rush",
-        "description": "Speed doubles in snow.",
-        "trigger": "onCalculateStat",
-        "effectType": "statMultiplier",
-        "targetStat": "speed",
-        "magnitude": 2.0,
-        "conditions": [
-            "weather_snow"
-        ]
-    },
-    {
-        "name": "Cold-blooded",
-        "description": "Speed Raises by 1 stage during sunny weather and drops by 1 stage during rain or snow weather while entering the field.",
-        "trigger": "onEntry"
-    },
-    {
-        "name": "Camouflage Carapace",
-        "description": "In Swamp biome, user gains Stealth on entry.",
-        "trigger": "onEntry",
-        "effectType": "statusChange",
-        "value": "stealth"
-    },
-    {
-        "name": "Reef Camouflage",
-        "description": "In Coral Reef biome, user gains Stealth on entry.",
-        "trigger": "onEntry",
-        "effectType": "statusChange",
-        "value": "stealth"
-    },
-    {
-        "name": "Sticky Hold",
-        "description": "Prevents the organism from being forced out of battle.",
-        "effectType": "none"
-    },
-    {
-        "name": "True Flight",
-        "description": "Grants all offensive advantages of Flying type but ignores their disadvantages.",
-        "effectType": "none"
-    },
-    {
-        "name": "Abyss Dweller",
-        "description": "Prevents moves that force a switch and grants immunity to Stun status.",
-        "trigger": "onStatusAttempt",
-        "effectType": "preventStatus",
-        "value": "stun"
-    },
-    {
-        "name": "Sturdy",
-        "description": "Prevents the organism from being knocked out by a single hit.",
-        "trigger": "onDamageTaken",
-        "effectType": "preventKO",
-        "conditions": [
-            "singleHit"
-        ]
-    },
-    {
-        "name": "Echolocation",
-        "description": "Prevents accuracy from being lowered and ignores enemy stealth effects.",
-        "effectType": "none"
-    },
-    {
-        "name": "Harvest",
-        "description": "May create a new Berry to replace one the organism has already used.",
-        "trigger": "onTurnEnd"
-    },
-    {
-        "name": "Unburden",
-        "description": "Doubles the Speed stat if the organism's held item is used or lost.",
-        "trigger": "onCalculateStat"
-    },
-    {
-        "name": "Water Absorb",
-        "description": "Restores HP when hit by an Aquatic-type move.",
-        "trigger": "onDamageTaken",
-        "effectType": "none"
-    },
-    {
-        "name": "Volt Absorb",
-        "description": "Restores HP when hit by an Electric-type move.",
-        "trigger": "onDamageTaken",
-        "effectType": "none"
-    },
-    {
-        "name": "Flash Fire",
-        "description": "Boosts Blaze moves when hit by a Blaze attack.",
-        "trigger": "onDamageTaken",
-        "effectType": "statChange",
-        "targetStat": "attack",
-        "magnitude": 1,
-        "conditions": [
-            "type_blaze"
-        ]
-    },
-    {
-        "name": "Lightning Rod",
-        "description": "Protects from Electric-type moves and boosts Power when hit by one.",
-        "trigger": "onDamageTaken",
-        "effectType": "none"
-    },
-    {
-        "name": "Sap Sipper",
-        "description": "Protects from Grass-type moves and boosts Attack when hit by one.",
-        "trigger": "onDamageTaken",
-        "effectType": "none"
-    },
-    {
-        "name": "Infiltrator",
-        "description": "Bypasses technical screens like Reflect and Light Screen.",
-        "trigger": "onCalculateDamage",
-        "effectType": "none"
-    },
-    {
-        "name": "Unseen Fist",
-        "description": "Contact moves skip protection.",
-        "trigger": "onCalculateDamage",
-        "effectType": "none"
-    },
-    {
-        "name": "Iron Fist",
-        "description": "Boosts the power of punching moves by 1.3x.",
-        "trigger": "onCalculateDamage",
-        "effectType": "statMultiplier",
-        "magnitude": 1.3,
-        "conditions": [
-            "punch"
-        ]
-    },
-    {
-        "name": "Strong Jaw",
-        "description": "Boosts the power of biting moves by 50%.",
-        "trigger": "onCalculateDamage",
-        "effectType": "statMultiplier",
-        "magnitude": 1.5,
-        "conditions": [
-            "bite"
-        ]
-    },
-    {
-        "name": "Tough Claws",
-        "description": "Boosts the power of contact moves by 30%.",
-        "trigger": "onCalculateDamage",
-        "effectType": "statMultiplier",
-        "magnitude": 1.3,
-        "conditions": [
-            "contact"
-        ]
-    },
-    {
-        "name": "Super Luck",
-        "description": "Increases the critical hit ratio.",
-        "trigger": "onCalculateDamage",
-        "effectType": "none"
-    },
-    {
-        "name": "Stakeout",
-        "description": "Doubles the damage dealt to the target's replacement if the target switches out.",
-        "trigger": "onCalculateDamage",
-        "effectType": "damageMultiplier",
-        "magnitude": 2.0
-    },
-    {
-        "name": "Cheek Pouch",
-        "description": "Restores 33% HP when a Berry is consumed.",
-        "trigger": "none",
-        "effectType": "none"
-    },
-    {
-        "name": "Gluttony",
-        "description": "Eats berries early (at 50% HP). Berries also restore 1/3 of max HP.",
-        "trigger": "none",
-        "effectType": "none"
-    },
-    {
-        "name": "Aftermath",
-        "description": "Damages the attacker for 25% of their HP if knocked out by a contact move.",
-        "trigger": "onDamageTaken",
-        "effectType": "none"
-    },
-    {
-        "name": "Analytic",
-        "description": "Boosts move power by 30% if moving last in the turn.",
-        "trigger": "onCalculateDamage",
-        "effectType": "damageMultiplier",
-        "magnitude": 1.3
-    },
-    {
-        "name": "Magnet Pull",
-        "description": "Traps opposing Steel-types. Spectral-types aren't affected.",
-        "trigger": "none",
-        "effectType": "preventSwitch",
-        "conditions": [
-            "type_metal"
-        ]
-    },
-    {
-        "name": "Armor Tail",
-        "description": "Prevents opponents from using priority moves against them.",
-        "trigger": "none",
-        "effectType": "none"
-    },
-    {
-        "name": "Dazzling",
-        "description": "Prevents opponents from using priority moves against them.",
-        "trigger": "none",
-        "effectType": "none"
-    },
-    {
-        "name": "Queenly Majesty",
-        "description": "Prevents opponents from using priority moves against them.",
-        "trigger": "none",
-        "effectType": "none"
-    },
-    {
-        "name": "Moxie",
-        "description": "Boosts Attack by 1 stage when knocking out an opponent.",
-        "trigger": "none",
-        "effectType": "none"
-    },
-    {
-        "name": "Chilling Neigh",
-        "description": "Boosts Attack by 1 stage when knocking out an opponent.",
-        "trigger": "none",
-        "effectType": "none"
-    },
-    {
-        "name": "Beast Boost",
-        "description": "Boosts highest stat by 1 stage when knocking out an opponent.",
-        "trigger": "none",
-        "effectType": "none"
-    },
-    {
-        "name": "Compound Eyes",
-        "description": "Grants a 1.3x accuracy boost.",
-        "trigger": "onCalculateStat",
-        "effectType": "statMultiplier",
-        "targetStat": "accuracy",
-        "magnitude": 1.3
-    },
-    {
-        "name": "Tinted Lens",
-        "description": "Doubles the power of \"not very effective\" moves.",
-        "trigger": "onCalculateDamage",
-        "effectType": "none"
-    },
-    {
-        "name": "Corrosion",
-        "description": "Can poison Poison and Steel (Metal) types.",
-        "trigger": "none",
-        "effectType": "none"
-    },
-    {
-        "name": "Cud Chew",
-        "description": "Applies the berry's effect twice immediately.",
-        "trigger": "none",
-        "effectType": "none"
-    },
-    {
-        "name": "Damp",
-        "description": "Makes foe Aquatic-type on contact. Also works on offense. Also, prevent self destructive moves for both.",
-        "trigger": "onContact",
-        "effectType": "typeChange",
-        "value": "aquatic"
-    },
-    {
-        "name": "Dry Skin",
-        "description": "Water/Rain heals. blaze-type/Sunny hurts.",
-        "trigger": "none",
-        "effectType": "none"
-    },
-    {
-        "name": "Thick Fat",
-        "description": "Halves the damage taken from Blaze and Cryo-type moves.",
-        "trigger": "onCalculateDamage",
-        "effectType": "damageMultiplier",
-        "magnitude": 0.5,
-        "conditions": [
-            "type_blaze",
-            "type_cryo"
-        ]
-    },
-    {
-        "name": "Rattled",
-        "description": "Boosts the Speed stat if hit by a Arthropod, Spectral, or Darkness-type attack.",
-        "trigger": "onDamageTaken",
-        "effectType": "statChange",
-        "stat": "speed",
-        "magnitude": 1,
-        "conditions": [
-            "type_arthropod",
-            "type_spectral",
-            "type_darkness"
-        ]
-    },
-    {
-        "name": "Justified",
-        "description": "Raises Attack by 1 stage when hit by a Darkness-type damaging move.",
-        "trigger": "onDamageTaken",
-        "effectType": "statChange",
-        "targetStat": "attack",
-        "magnitude": 1,
-        "conditions": [
-            "type_darkness"
-        ]
-    },
-    {
-        "name": "Stench",
-        "description": "Attacks have a 10% chance to cause enemy to stun.",
-        "trigger": "onDamageDealt",
-        "effectType": "stunChance",
-        "magnitude": 0.1
-    },
-    {
-        "name": "Speed Boost",
-        "description": "Raises own Speed by one stage after every turn.",
-        "trigger": "onTurnEnd",
-        "effectType": "statChange",
-        "targetStat": "speed",
-        "magnitude": 1
-    },
-    {
-        "name": "Oblivious",
-        "description": "Immune to infatuation, Fear, Intimidate and Taunt.",
-        "trigger": "onStatusAttempt",
-        "effectType": "preventStatus",
-        "value": "infatuation,fear,taunt"
-    },
-    {
-        "name": "Cloud Nine",
-        "description": "Clears weather and prevents its effects.",
-        "trigger": "onEntry",
-        "effectType": "weatherChange",
-        "value": "none"
-    },
-    {
-        "name": "Shadow Tag",
-        "description": "Opponents can't be switched out. Ghosts isn't affected.",
-        "trigger": "none",
-        "effectType": "preventSwitch"
-    },
-    {
-        "name": "Wonder Guard",
-        "description": "Is only hit by Super-effective attacks or indirect damage.",
-        "trigger": "onDamageTaken",
-        "effectType": "none"
-    },
-    {
-        "name": "Effect Spore",
-        "description": "30% chance to inflict Sleep, Paralysis or Poison if hit by a contact move.",
-        "trigger": "onContact",
-        "effectType": "statusChange",
-        "value": "random",
-        "chance": 0.3
-    },
-    {
-        "name": "Synchronize",
-        "description": "Enemies inflicting status on this Pokémon get same status.",
-        "trigger": "none",
-        "effectType": "synchronize"
-    },
-    {
-        "name": "Serene Grace",
-        "description": "Doubles chance of secondary effects on its own moves.",
-        "trigger": "none",
-        "effectType": "sereneGrace"
-    },
-    {
-        "name": "Illuminate",
-        "description": "Grants a 1.2x accuracy boost.",
-        "trigger": "onCalculateStat",
-        "effectType": "statMultiplier",
-        "targetStat": "accuracy",
-        "magnitude": 1.2
-    },
-    {
-        "name": "Trace",
-        "description": "Copies the foe's ability.",
-        "trigger": "onEntry",
-        "effectType": "trace"
-    },
-    {
-        "name": "Inner Focus",
-        "description": "Blocks flinch, Intimidate, Fear. Focus Blast never misses.",
-        "trigger": "onStatusAttempt",
-        "effectType": "preventStatus",
-        "value": "flinch,fear"
-    },
-    {
-        "name": "Magma Armor",
-        "description": "Frostbite-immune. Takes 30% less dmg from Aquatic/Cryo-type moves.",
-        "trigger": "onCalculateDamage",
-        "effectType": "damageReduction",
-        "magnitude": 0.3,
-        "conditions": [
-            "type_aquatic",
-            "type_cryo"
-        ]
-    },
-    {
-        "name": "Water Veil",
-        "description": "Burn-immune. Casts Aqua Ring on entry.",
-        "trigger": "onEntry",
-        "effectType": "statusChange",
-        "value": "aquatic_ring"
-    },
-    {
-        "name": "Soundproof",
-        "description": "Immune to sound-type moves.",
-        "trigger": "none",
-        "effectType": "none"
-    },
-    {
-        "name": "Rain Dish",
-        "description": "Heals 1/8 of max HP every turn if rain is active.",
-        "trigger": "onTurnEnd",
-        "effectType": "none",
-        "conditions": [
-            "weather_rain"
-        ]
-    },
-    {
-        "name": "Pressure",
-        "description": "Doubles foe's PP usage. Clears stat buffs on entry.",
-        "trigger": "onEntry",
-        "effectType": "statChange",
-        "targetStat": "all",
-        "magnitude": 0
-    },
-    {
-        "name": "Run Away",
-        "description": "Guarantees fleeing. Raises Speed if stats lowered by an enemy.",
-        "trigger": "onStatLoss",
-        "effectType": "statChange",
-        "targetStat": "speed",
-        "magnitude": 1
-    },
-    {
-        "name": "Keen Eye",
-        "description": "Immune to accuracy drops. Grants a 1.2x accuracy boost.",
-        "trigger": "onCalculateStat",
-        "effectType": "statMultiplier",
-        "targetStat": "accuracy",
-        "magnitude": 1.2
-    },
-    {
-        "name": "Hyper Cutter",
-        "description": "Enemies can't lower Atk/Pwr. Crit rate of contact moves+1.",
-        "trigger": "onStatLoss",
-        "effectType": "preventStatLoss",
-        "targetStat": "attack,power"
-    },
-    {
-        "name": "Pickup",
-        "description": "Removes all hazards on entry. Not immune to hazards.",
-        "trigger": "onEntry",
-        "effectType": "hazardRemoval"
-    },
-    {
-        "name": "Truant",
-        "description": "Can only attack every other turn. Can use status moves every turn.",
-        "trigger": "none",
-        "effectType": "none"
-    },
-    {
-        "name": "Overgrow",
-        "description": "Boosts Grass-type moves by 1.2x, or 1.5x when under 1/3 HP.",
-        "trigger": "onCalculateDamage",
-        "effectType": "damageMultiplier",
-        "magnitude": 1.2,
-        "conditions": [
-            "type_grass"
-        ]
-    },
-    {
-        "name": "Blaze",
-        "description": "Boosts Blaze-type moves by 1.2x, or 1.5x when under 1/3 HP.",
-        "trigger": "onCalculateDamage",
-        "effectType": "damageMultiplier",
-        "magnitude": 1.2,
-        "conditions": [
-            "type_blaze"
-        ]
-    },
-    {
-        "name": "Torrent",
-        "description": "Boosts Aquatic-type moves by 1.2x, or 1.5x when under 1/3 HP.",
-        "trigger": "onCalculateDamage",
-        "effectType": "damageMultiplier",
-        "magnitude": 1.2,
-        "conditions": [
-            "type_aquatic"
-        ]
-    },
-    {
-        "name": "Swarm",
-        "description": "Boosts Arthropod-type moves by 1.2x, or 1.5x when under 1/3 HP.",
-        "trigger": "onCalculateDamage",
-        "effectType": "damageMultiplier",
-        "magnitude": 1.2,
-        "conditions": [
-            "type_arthropod"
-        ]
-    },
-    {
-        "name": "Rock Head",
-        "description": "Immune to recoil damage, but not immune to Explosion/crash dmg.",
-        "trigger": "onDamageDealt",
-        "effectType": "recoilImmunity"
-    },
-    {
-        "name": "Vital Spirit",
-        "description": "Can't fall asleep. Heals status after using Fighting-type moves.",
-        "trigger": "onStatusAttempt",
-        "effectType": "preventStatus",
-        "value": "sleep"
-    },
-    {
-        "name": "White Smoke",
-        "description": "Sets Smokescreen for 3 turns on switch-in.",
-        "trigger": "onEntry",
-        "effectType": "statusChange",
-        "value": "smokescreen"
-    },
-    {
-        "name": "Pure Power",
-        "description": "Doubles own Power stat. Boosts raw stat, not base stat.",
-        "trigger": "onCalculateStat",
-        "effectType": "statMultiplier",
-        "targetStat": "power",
-        "magnitude": 2.0
-    },
-    {
-        "name": "Shell Armor",
-        "description": "Immune to critical hits. Takes 20% less damage from all attacks.",
-        "trigger": "onDamageTaken",
-        "effectType": "preventCrit"
-    },
-    {
-        "name": "Air Lock",
-        "description": "Clears weather and prevents its effects.",
-        "trigger": "onEntry",
-        "effectType": "weatherChange",
-        "value": "none"
-    },
-    {
-        "name": "Tangled Feet",
-        "description": "Doubles Evasion when confused.",
-        "trigger": "onCalculateStat",
-        "effectType": "statMultiplier",
-        "targetStat": "evasion",
-        "magnitude": 2.0,
-        "conditions": [
-            "confused"
-        ]
-    },
-    {
-        "name": "Motor Drive",
-        "description": "Boosts Speed instead of being hit by Electric-type moves.",
-        "trigger": "onDamageTaken",
-        "effectType": "preventDamage",
-        "conditions": [
-            "type_electric"
-        ]
-    },
-    {
-        "name": "Steadfast",
-        "description": "Raises Speed by one stage if this Pokémon is stunned.",
-        "trigger": "onStatusAttempt",
-        "effectType": "statChange",
-        "targetStat": "speed",
-        "magnitude": 1,
-        "conditions": [
-            "stun"
-        ]
-    },
-    {
-        "name": "Simple",
-        "description": "Doubles all stat changes on this Pokémon.",
-        "trigger": "none",
-        "effectType": "statStageMultiplier",
-        "magnitude": 2.0
-    },
-    {
-        "name": "Download",
-        "description": "Raises Atk/power by one stage depending on opponent.",
-        "trigger": "onEntry",
-        "effectType": "statChange"
-    },
-    {
-        "name": "Skill Link",
-        "description": "Multi-hit moves always hit the maximum number of times.",
-        "trigger": "none",
-        "effectType": "none"
-    },
-    {
-        "name": "Solar Power",
-        "description": "Ups highest attacking stat by 1.5x in sun.",
-        "trigger": "onCalculateStat",
-        "effectType": "statMultiplier",
-        "magnitude": 1.5,
-        "conditions": [
-            "weather_sunny"
-        ]
-    },
-    {
-        "name": "Quick Feet",
-        "description": "Ups Speed by 1.5x if suffering from a status condition.",
-        "trigger": "onCalculateStat",
-        "effectType": "statMultiplier",
-        "targetStat": "speed",
-        "magnitude": 1.5,
-        "conditions": [
-            "statused"
-        ]
-    },
-    {
-        "name": "Normalize",
-        "description": "Its moves become Normal-type, get 1.1x boost, ignore resists.",
-        "trigger": "onCalculateDamage",
-        "effectType": "none"
-    },
-    {
-        "name": "Sniper",
-        "description": "Critical hits have a 2.25x dmg multiplier instead of 1.5x.",
-        "trigger": "onCalculateDamage",
-        "effectType": "none"
-    },
-    {
-        "name": "Magic Guard",
-        "description": "Only damaged by attacks.",
-        "trigger": "onDamageTaken",
-        "effectType": "none"
-    },
-    {
-        "name": "Stall",
-        "description": "Takes 30% less damage if it hasn't moved yet.",
-        "trigger": "onCalculateDamage",
-        "effectType": "damageReduction",
-        "magnitude": 0.3
-    },
-    {
-        "name": "Technician",
-        "description": "Moves with 60 BP or less get a 1.5x boost.",
-        "trigger": "onCalculateDamage",
-        "effectType": "damageMultiplier",
-        "magnitude": 1.5
-    },
-    {
-        "name": "Leaf Guard",
-        "description": "Immune to status conditions if sun is active.",
-        "trigger": "onStatusAttempt",
-        "effectType": "preventStatus",
-        "value": "all",
-        "conditions": [
-            "weather_sunny"
-        ]
-    },
-    {
-        "name": "Klutz",
-        "description": "Own held item has no effect. Mega Stones are unaffected.",
-        "trigger": "none",
-        "effectType": "none"
-    },
-    {
-        "name": "Mold Breaker",
-        "description": "Moves hit through abilities. Also affects innates.",
-        "trigger": "none",
-        "effectType": "none"
-    },
-    {
-        "name": "Anticipation",
-        "description": "Senses Super-effective moves. Blocks one Super-effective hit.",
-        "trigger": "onEntry",
-        "effectType": "none"
-    },
-    {
-        "name": "Forewarn",
-        "description": "Casts a 50 BP Future Sight on entry.",
-        "trigger": "onEntry",
-        "effectType": "none"
-    },
-    {
-        "name": "Unaware",
-        "description": "Ignores foes' stat changes, both positive and negative ones.",
-        "trigger": "onCalculateDamage",
-        "effectType": "none"
-    },
-    {
-        "name": "Filter",
-        "description": "Takes 35% less damage from Super-effective moves.",
-        "trigger": "onCalculateDamage",
-        "effectType": "damageReduction",
-        "magnitude": 0.35
-    }
+  {
+    "name": "Hyper Cutter",
+    "description": "Enemies can't lower Atk/Pwr. Crit rate of contact moves+1.",
+    "trigger": "onStatLoss",
+    "effectType": "preventStatLoss",
+    "targetStat": "attack,power"
+  },
+  {
+    "name": "Early Bird",
+    "description": "Awakens from sleep twice as fast.",
+    "trigger": "onTurnEnd",
+    "effectType": "wakeUpFaster"
+  },
+  {
+    "name": "Motor Drive",
+    "description": "Boosts Speed instead of being hit by Electric-type moves.",
+    "trigger": "onDamageTaken",
+    "effectType": "preventDamage",
+    "conditions": [
+      "type_electric"
+    ]
+  },
+  {
+    "name": "Cloud Nine",
+    "description": "Clears weather and prevents its effects.",
+    "trigger": "onEntry",
+    "effectType": "weatherChange",
+    "value": "none"
+  },
+  {
+    "name": "Pure Power",
+    "description": "Doubles own Power stat. Boosts raw stat, not base stat.",
+    "trigger": "onCalculateStat",
+    "effectType": "statMultiplier",
+    "targetStat": "power",
+    "magnitude": 2.0
+  },
+  {
+    "name": "Color Change",
+    "description": "Changes the organism's type to the type of the move it was hit by.",
+    "trigger": "onDamageTaken",
+    "effectType": "typeChange"
+  },
+  {
+    "name": "Mimic",
+    "description": "Disguises itself as the last animal in the party.",
+    "trigger": "onEntry",
+    "effectType": "none"
+  },
+  {
+    "name": "Chilling Neigh",
+    "description": "Boosts Attack by 1 stage when knocking out an opponent.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Cornered Beast",
+    "description": "Attack is boosted by 50% when HP falls below 30%.",
+    "trigger": "onCalculateStat",
+    "effectType": "statMultiplier",
+    "targetStat": "attack",
+    "magnitude": 1.5,
+    "conditions": [
+      "hp_below_30"
+    ]
+  },
+  {
+    "name": "Pressure",
+    "description": "Doubles foe's PP usage. Clears stat buffs on entry.",
+    "trigger": "onEntry",
+    "effectType": "statChange",
+    "targetStat": "all",
+    "magnitude": 0
+  },
+  {
+    "name": "Limber",
+    "description": "Protects the organism from paralysis.",
+    "trigger": "onStatusAttempt",
+    "effectType": "preventStatus",
+    "value": "paralysis"
+  },
+  {
+    "name": "Defeatist",
+    "description": "Halves Atk and Sp. Atk stats if user is below 1/3 of max HP.",
+    "trigger": "onCalculateStat",
+    "effectType": "statMultiplier",
+    "targetStat": "attack",
+    "magnitude": 0.5,
+    "conditions": [
+      "hp_below_33"
+    ]
+  },
+  {
+    "name": "Heatproof",
+    "description": "Halves the damage taken from Fire-type moves.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 0.5,
+    "conditions": [
+      "type_blaze"
+    ]
+  },
+  {
+    "name": "Forewarn",
+    "description": "Casts a 50 BP Future Sight on entry.",
+    "trigger": "onEntry",
+    "effectType": "none"
+  },
+  {
+    "name": "Swift Swim",
+    "description": "Speed doubles in rain.",
+    "trigger": "onCalculateStat",
+    "effectType": "statMultiplier",
+    "targetStat": "speed",
+    "magnitude": 2.0,
+    "conditions": [
+      "weather_rain"
+    ]
+  },
+  {
+    "name": "Air Lock",
+    "description": "Clears weather and prevents its effects.",
+    "trigger": "onEntry",
+    "effectType": "weatherChange",
+    "value": "none"
+  },
+  {
+    "name": "Honey Gather",
+    "description": "Has a 50% chance to find Honey each turn.",
+    "trigger": "onTurnEnd",
+    "effectType": "none"
+  },
+  {
+    "name": "Flash Fire",
+    "description": "Boosts Blaze moves when hit by a Blaze attack.",
+    "trigger": "onDamageTaken",
+    "effectType": "statChange",
+    "targetStat": "attack",
+    "magnitude": 1,
+    "conditions": [
+      "type_blaze"
+    ]
+  },
+  {
+    "name": "Speed Boost",
+    "description": "Raises own Speed by one stage after every turn.",
+    "trigger": "onTurnEnd",
+    "effectType": "statChange",
+    "targetStat": "speed",
+    "magnitude": 1
+  },
+  {
+    "name": "Water Absorb",
+    "description": "Restores HP when hit by an Aquatic-type move.",
+    "trigger": "onDamageTaken",
+    "effectType": "none"
+  },
+  {
+    "name": "Huge Power",
+    "description": "Doubles own Attack stat. (Raw stat, not base stat)",
+    "trigger": "onCalculateStat",
+    "effectType": "statMultiplier",
+    "targetStat": "attack",
+    "magnitude": 2.0
+  },
+  {
+    "name": "Soundproof",
+    "description": "Immune to sound-type moves.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Sheer Force",
+    "description": "Exchanges added effects on its moves for 1.3x more power.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 1.3
+  },
+  {
+    "name": "Skill Link",
+    "description": "Multi-hit moves always hit the maximum number of times.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Klutz",
+    "description": "Own held item has no effect. Mega Stones are unaffected.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Stall",
+    "description": "Takes 30% less damage if it hasn't moved yet.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageReduction",
+    "magnitude": 0.3
+  },
+  {
+    "name": "Intimidate",
+    "description": "Lowers opponent's Attack when entering.",
+    "trigger": "onEntry",
+    "effectType": "statChange",
+    "targetStat": "attack",
+    "magnitude": -1
+  },
+  {
+    "name": "Guts",
+    "description": "Boosts Attack by 50% when having a status condition.",
+    "trigger": "onCalculateStat",
+    "effectType": "statMultiplier",
+    "targetStat": "attack",
+    "magnitude": 1.5,
+    "conditions": [
+      "statused"
+    ]
+  },
+  {
+    "name": "Moxie",
+    "description": "Boosts Attack by 1 stage when knocking out an opponent.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Storm Drain",
+    "description": "Redirects Water moves. Absorbs them, ups highest Atk.",
+    "trigger": "onDamageTaken",
+    "effectType": "none"
+  },
+  {
+    "name": "Inner Focus",
+    "description": "Blocks flinch, Intimidate, Fear. Focus Blast never misses.",
+    "trigger": "onStatusAttempt",
+    "effectType": "preventStatus",
+    "value": "flinch,fear"
+  },
+  {
+    "name": "Trace",
+    "description": "Copies the foe's ability.",
+    "trigger": "onEntry",
+    "effectType": "trace"
+  },
+  {
+    "name": "Flame Body",
+    "description": "May burn a target on contact.",
+    "trigger": "onDamageTaken",
+    "effectType": "statusChange",
+    "value": "burn",
+    "chance": 0.3,
+    "conditions": [
+      "contact"
+    ]
+  },
+  {
+    "name": "Drought",
+    "description": "Summons harsh sunlight when entering battle.",
+    "trigger": "onEntry",
+    "effectType": "weatherChange",
+    "value": "sunny"
+  },
+  {
+    "name": "Gluttony",
+    "description": "Eats berries early (at 50% HP). Berries also restore 1/3 of max HP.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "True Flight",
+    "description": "Grants all offensive advantages of Flying type but ignores their disadvantages.",
+    "effectType": "none"
+  },
+  {
+    "name": "Defiant",
+    "description": "Boosts Attack by two stages when a stat is lowered.",
+    "trigger": "onStatLoss",
+    "effectType": "statChange",
+    "targetStat": "attack",
+    "magnitude": 2
+  },
+  {
+    "name": "Download",
+    "description": "Raises Atk/power by one stage depending on opponent.",
+    "trigger": "onEntry",
+    "effectType": "statChange"
+  },
+  {
+    "name": "Tough Claws",
+    "description": "Boosts the power of contact moves by 30%.",
+    "trigger": "onCalculateDamage",
+    "effectType": "statMultiplier",
+    "magnitude": 1.3,
+    "conditions": [
+      "contact"
+    ]
+  },
+  {
+    "name": "Dazzling",
+    "description": "Prevents opponents from using priority moves against them.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Rain Dish",
+    "description": "Heals 1/8 of max HP every turn if rain is active.",
+    "trigger": "onTurnEnd",
+    "effectType": "none",
+    "conditions": [
+      "weather_rain"
+    ]
+  },
+  {
+    "name": "Marvel Scale",
+    "description": "Boosts Defense by 50% if the organism has a status condition.",
+    "trigger": "onCalculateStat",
+    "effectType": "statMultiplier",
+    "targetStat": "defense",
+    "magnitude": 1.5,
+    "conditions": [
+      "statused"
+    ]
+  },
+  {
+    "name": "Adaptability",
+    "description": "Increases the STAB (Same Type Attack Bonus) multiplier from 1.5x to 2.0x.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 2.0,
+    "conditions": [
+      "stab"
+    ]
+  },
+  {
+    "name": "Sturdy",
+    "description": "Prevents the organism from being knocked out by a single hit.",
+    "trigger": "onDamageTaken",
+    "effectType": "preventKO",
+    "conditions": [
+      "singleHit"
+    ]
+  },
+  {
+    "name": "Swift Hunter",
+    "description": "Passively boosts the organism's speed by 20%.",
+    "trigger": "onCalculateStat",
+    "effectType": "statMultiplier",
+    "targetStat": "speed",
+    "magnitude": 1.2
+  },
+  {
+    "name": "Sand Veil",
+    "description": "Raises evasion during sandstorms.",
+    "trigger": "onCalculateEvasion",
+    "effectType": "statMultiplier",
+    "targetStat": "evasion",
+    "magnitude": 1.2,
+    "conditions": [
+      "weather_sandstorm"
+    ]
+  },
+  {
+    "name": "Unnerve",
+    "description": "Foes can't eat Berries as long as this organism is in battle.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Sticky Hold",
+    "description": "Prevents the organism from being forced out of battle.",
+    "effectType": "none"
+  },
+  {
+    "name": "Unaware",
+    "description": "Ignores foes' stat changes, both positive and negative ones.",
+    "trigger": "onCalculateDamage",
+    "effectType": "none"
+  },
+  {
+    "name": "Cud Chew",
+    "description": "Applies the berry's effect twice immediately.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Anticipation",
+    "description": "Senses Super-effective moves. Blocks one Super-effective hit.",
+    "trigger": "onEntry",
+    "effectType": "none"
+  },
+  {
+    "name": "Shield Dust",
+    "description": "Prevents status changes when hit by an attacking move.",
+    "trigger": "onStatusAttempt",
+    "effectType": "preventStatus",
+    "value": "any",
+    "conditions": [
+      "contact"
+    ]
+  },
+  {
+    "name": "Rattled",
+    "description": "Boosts the Speed stat if hit by a Arthropod, Spectral, or Darkness-type attack.",
+    "trigger": "onDamageTaken",
+    "effectType": "statChange",
+    "stat": "speed",
+    "magnitude": 1,
+    "conditions": [
+      "type_arthropod",
+      "type_spectral",
+      "type_darkness"
+    ]
+  },
+  {
+    "name": "Insomnia",
+    "description": "Prevents the organism from falling asleep.",
+    "trigger": "onStatusAttempt",
+    "effectType": "preventStatus",
+    "value": "sleep"
+  },
+  {
+    "name": "Water Veil",
+    "description": "Burn-immune. Casts Aqua Ring on entry.",
+    "trigger": "onEntry",
+    "effectType": "statusChange",
+    "value": "aquatic_ring"
+  },
+  {
+    "name": "Slush Rush",
+    "description": "Speed doubles in snow.",
+    "trigger": "onCalculateStat",
+    "effectType": "statMultiplier",
+    "targetStat": "speed",
+    "magnitude": 2.0,
+    "conditions": [
+      "weather_snow"
+    ]
+  },
+  {
+    "name": "Drizzle",
+    "description": "Summons rain when entering battle.",
+    "trigger": "onEntry",
+    "effectType": "weatherChange",
+    "value": "rain"
+  },
+  {
+    "name": "Super Luck",
+    "description": "Increases the critical hit ratio.",
+    "trigger": "onCalculateDamage",
+    "effectType": "none"
+  },
+  {
+    "name": "Natural Cure",
+    "description": "Cures status conditions upon switching out.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Illuminate",
+    "description": "Grants a 1.2x accuracy boost.",
+    "trigger": "onCalculateStat",
+    "effectType": "statMultiplier",
+    "targetStat": "accuracy",
+    "magnitude": 1.2
+  },
+  {
+    "name": "Gorilla Tactics",
+    "description": "Boosts Attack but only allows the use of the first selected move.",
+    "trigger": "onCalculateStat",
+    "effectType": "statMultiplier",
+    "targetStat": "attack",
+    "magnitude": 1.5
+  },
+  {
+    "name": "Parental Bond",
+    "description": "Allows the organism to attack twice in one turn.",
+    "trigger": "onDamageDealt",
+    "effectType": "none"
+  },
+  {
+    "name": "Poison Skin",
+    "description": "May poison a target on contact.",
+    "trigger": "onDamageTaken",
+    "effectType": "statusChange",
+    "value": "poison",
+    "chance": 0.5,
+    "conditions": [
+      "contact"
+    ]
+  },
+  {
+    "name": "Prankster",
+    "description": "Gives priority to status moves.",
+    "trigger": "onCalculatePriority",
+    "effectType": "priorityBoost",
+    "magnitude": 1,
+    "conditions": [
+      "move_category_status"
+    ]
+  },
+  {
+    "name": "Leaf Guard",
+    "description": "Immune to status conditions if sun is active.",
+    "trigger": "onStatusAttempt",
+    "effectType": "preventStatus",
+    "value": "all",
+    "conditions": [
+      "weather_sunny"
+    ]
+  },
+  {
+    "name": "Camouflage Carapace",
+    "description": "In Swamp biome, user gains Stealth on entry.",
+    "trigger": "onEntry",
+    "effectType": "statusChange",
+    "value": "stealth"
+  },
+  {
+    "name": "No Guard",
+    "description": "Ensures that all moves used by or against the organism land.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Cute Charm",
+    "description": "30% chance to charm attacker on contact, which halves its power.",
+    "trigger": "onContact",
+    "effectType": "statusChange",
+    "value": "charmed",
+    "chance": 0.3
+  },
+  {
+    "name": "Sniper",
+    "description": "Critical hits have a 2.25x dmg multiplier instead of 1.5x.",
+    "trigger": "onCalculateDamage",
+    "effectType": "none"
+  },
+  {
+    "name": "Immunity",
+    "description": "Protects the organism from poison.",
+    "trigger": "onStatusAttempt",
+    "effectType": "preventStatus",
+    "value": "poison"
+  },
+  {
+    "name": "Iron Barbs",
+    "description": "Damages the attacker on contact.",
+    "trigger": "onDamageTaken",
+    "effectType": "none",
+    "conditions": [
+      "contact"
+    ]
+  },
+  {
+    "name": "Gooey",
+    "description": "Lowers the speed of the attacker on contact.",
+    "trigger": "onDamageTaken",
+    "effectType": "statChange",
+    "targetStat": "speed",
+    "magnitude": -1,
+    "conditions": [
+      "contact"
+    ]
+  },
+  {
+    "name": "Snow Warning",
+    "description": "Summons snowstrom when entering battle.",
+    "trigger": "onEntry",
+    "effectType": "weatherChange",
+    "value": "snowstorm"
+  },
+  {
+    "name": "Scrappy",
+    "description": "Normal/Fighting can hit Ghosts. Immune to Intimidate/Scare.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Infiltrator",
+    "description": "Bypasses technical screens like Reflect and Light Screen.",
+    "trigger": "onCalculateDamage",
+    "effectType": "none"
+  },
+  {
+    "name": "Volt Absorb",
+    "description": "Restores HP when hit by an Electric-type move.",
+    "trigger": "onDamageTaken",
+    "effectType": "none"
+  },
+  {
+    "name": "Steadfast",
+    "description": "Raises Speed by one stage if this Pokémon is stunned.",
+    "trigger": "onStatusAttempt",
+    "effectType": "statChange",
+    "targetStat": "speed",
+    "magnitude": 1,
+    "conditions": [
+      "stun"
+    ]
+  },
+  {
+    "name": "Tangled Feet",
+    "description": "Doubles Evasion when confused.",
+    "trigger": "onCalculateStat",
+    "effectType": "statMultiplier",
+    "targetStat": "evasion",
+    "magnitude": 2.0,
+    "conditions": [
+      "confused"
+    ]
+  },
+  {
+    "name": "Tinted Lens",
+    "description": "Doubles the power of \"not very effective\" moves.",
+    "trigger": "onCalculateDamage",
+    "effectType": "none"
+  },
+  {
+    "name": "Echolocation",
+    "description": "Prevents accuracy from being lowered and ignores enemy stealth effects.",
+    "effectType": "none"
+  },
+  {
+    "name": "Stench",
+    "description": "Attacks have a 10% chance to cause enemy to stun.",
+    "trigger": "onDamageDealt",
+    "effectType": "stunChance",
+    "magnitude": 0.1
+  },
+  {
+    "name": "Reef Camouflage",
+    "description": "In Coral Reef biome, user gains Stealth on entry.",
+    "trigger": "onEntry",
+    "effectType": "statusChange",
+    "value": "stealth"
+  },
+  {
+    "name": "Berserk",
+    "description": "Boosts Attack when HP falls below 50% due to an attack.",
+    "trigger": "onDamageTaken",
+    "effectType": "statChange",
+    "targetStat": "attack",
+    "magnitude": 1,
+    "conditions": [
+      "hp_below_50"
+    ]
+  },
+  {
+    "name": "Hustle",
+    "description": "0.9x accuracy. Raises Atk & power by 1.4x.",
+    "trigger": "onCalculateStat",
+    "effectType": "statMultiplier",
+    "targetStat": "accuracy",
+    "magnitude": 0.9
+  },
+  {
+    "name": "Pickup",
+    "description": "Removes all hazards on entry. Not immune to hazards.",
+    "trigger": "onEntry",
+    "effectType": "hazardRemoval"
+  },
+  {
+    "name": "Ice Body",
+    "description": "Heals 1/8 of max HP every turn in hail.",
+    "trigger": "onTurnEnd",
+    "effectType": "none"
+  },
+  {
+    "name": "Run Away",
+    "description": "Guarantees fleeing. Raises Speed if stats lowered by an enemy.",
+    "trigger": "onStatLoss",
+    "effectType": "statChange",
+    "targetStat": "speed",
+    "magnitude": 1
+  },
+  {
+    "name": "Strong Jaw",
+    "description": "Boosts the power of biting moves by 50%.",
+    "trigger": "onCalculateDamage",
+    "effectType": "statMultiplier",
+    "magnitude": 1.5,
+    "conditions": [
+      "bite"
+    ]
+  },
+  {
+    "name": "Analytic",
+    "description": "Boosts move power by 30% if moving last in the turn.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 1.3
+  },
+  {
+    "name": "Rock Head",
+    "description": "Immune to recoil damage, but not immune to Explosion/crash dmg.",
+    "trigger": "onDamageDealt",
+    "effectType": "recoilImmunity"
+  },
+  {
+    "name": "Overgrow",
+    "description": "Boosts Grass-type moves by 1.2x, or 1.5x when under 1/3 HP.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 1.2,
+    "conditions": [
+      "type_grass"
+    ]
+  },
+  {
+    "name": "Regenerator",
+    "description": "Restores a little HP when withdrawn from battle.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Earth Eater",
+    "description": "Restores HP when hit by a Ground-type move.",
+    "trigger": "onDamageTaken",
+    "effectType": "none"
+  },
+  {
+    "name": "Flower Gift",
+    "description": "Increases the party's SpAtk and SpDef by 1.5x in Sun.",
+    "trigger": "onCalculateStat",
+    "effectType": "statMultiplier",
+    "magnitude": 1.5
+  },
+  {
+    "name": "Poison Point",
+    "description": "May poison a target on contact.",
+    "trigger": "onDamageTaken",
+    "effectType": "statusChange",
+    "value": "poison",
+    "chance": 0.3,
+    "conditions": [
+      "contact"
+    ]
+  },
+  {
+    "name": "Iron Fist",
+    "description": "Boosts the power of punching moves by 1.3x.",
+    "trigger": "onCalculateDamage",
+    "effectType": "statMultiplier",
+    "magnitude": 1.3,
+    "conditions": [
+      "punch"
+    ]
+  },
+  {
+    "name": "Harvest",
+    "description": "May create a new Berry to replace one the organism has already used.",
+    "trigger": "onTurnEnd"
+  },
+  {
+    "name": "Frisk",
+    "description": "Checks foes' item and disables their items for two turns.",
+    "trigger": "onEntry",
+    "effectType": "none"
+  },
+  {
+    "name": "Simple",
+    "description": "Doubles all stat changes on this Pokémon.",
+    "trigger": "none",
+    "effectType": "statStageMultiplier",
+    "magnitude": 2.0
+  },
+  {
+    "name": "Effect Spore",
+    "description": "30% chance to inflict Sleep, Paralysis or Poison if hit by a contact move.",
+    "trigger": "onContact",
+    "effectType": "statusChange",
+    "value": "random",
+    "chance": 0.3
+  },
+  {
+    "name": "Synchronize",
+    "description": "Enemies inflicting status on this Pokémon get same status.",
+    "trigger": "none",
+    "effectType": "synchronize"
+  },
+  {
+    "name": "Abyss Dweller",
+    "description": "Prevents moves that force a switch and grants immunity to Stun status.",
+    "trigger": "onStatusAttempt",
+    "effectType": "preventStatus",
+    "value": "stun"
+  },
+  {
+    "name": "Magnet Pull",
+    "description": "Traps opposing Steel-types. Spectral-types aren't affected.",
+    "trigger": "none",
+    "effectType": "preventSwitch",
+    "conditions": [
+      "type_metal"
+    ]
+  },
+  {
+    "name": "Swarm",
+    "description": "Boosts Arthropod-type moves by 1.2x, or 1.5x when under 1/3 HP.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 1.2,
+    "conditions": [
+      "type_arthropod"
+    ]
+  },
+  {
+    "name": "Friend Guard",
+    "description": "Reduces damage that ally takes by 50% in double battles.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Filter",
+    "description": "Takes 35% less damage from Super-effective moves.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageReduction",
+    "magnitude": 0.35
+  },
+  {
+    "name": "Cold-blooded",
+    "description": "Speed Raises by 1 stage during sunny weather and drops by 1 stage during rain or snow weather while entering the field.",
+    "trigger": "onEntry"
+  },
+  {
+    "name": "Justified",
+    "description": "Raises Attack by 1 stage when hit by a Darkness-type damaging move.",
+    "trigger": "onDamageTaken",
+    "effectType": "statChange",
+    "targetStat": "attack",
+    "magnitude": 1,
+    "conditions": [
+      "type_darkness"
+    ]
+  },
+  {
+    "name": "Pickpocket",
+    "description": "Steals the foe's held item on contact.",
+    "trigger": "onContact",
+    "effectType": "none"
+  },
+  {
+    "name": "Aftermath",
+    "description": "Damages the attacker for 25% of their HP if knocked out by a contact move.",
+    "trigger": "onDamageTaken",
+    "effectType": "none"
+  },
+  {
+    "name": "Guard Dog",
+    "description": "Prevents the effect of Intimidate and forced switching.",
+    "trigger": "onStatLoss",
+    "effectType": "preventStatLoss"
+  },
+  {
+    "name": "Static",
+    "description": "May paralyze a target on contact.",
+    "trigger": "onDamageTaken",
+    "effectType": "statusChange",
+    "value": "paralysis",
+    "chance": 0.3,
+    "conditions": [
+      "contact"
+    ]
+  },
+  {
+    "name": "Sand Stream",
+    "description": "Summons sandstorm when entering battle.",
+    "trigger": "onEntry",
+    "effectType": "weatherChange",
+    "value": "sandstorm"
+  },
+  {
+    "name": "Gale Wings",
+    "description": "Gives priority to Flying-type moves at full HP.",
+    "trigger": "onCalculatePriority",
+    "effectType": "priorityBoost",
+    "magnitude": 1,
+    "conditions": [
+      "full_hp",
+      "type_flying"
+    ]
+  },
+  {
+    "name": "Wonder Guard",
+    "description": "Is only hit by Super-effective attacks or indirect damage.",
+    "trigger": "onDamageTaken",
+    "effectType": "none"
+  },
+  {
+    "name": "Cursed Body",
+    "description": "30% chance to disable moves if enemy makes contact.",
+    "trigger": "onDamageTaken",
+    "effectType": "none",
+    "conditions": [
+      "contact"
+    ]
+  },
+  {
+    "name": "Levitate",
+    "description": "Makes the organism immune to earth‑type attacks.",
+    "trigger": "onDamageTaken",
+    "effectType": "preventDamage",
+    "conditions": [
+      "type_earth"
+    ]
+  },
+  {
+    "name": "Technician",
+    "description": "Moves with 60 BP or less get a 1.5x boost.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 1.5
+  },
+  {
+    "name": "Magic Guard",
+    "description": "Only damaged by attacks.",
+    "trigger": "onDamageTaken",
+    "effectType": "none"
+  },
+  {
+    "name": "Armor Tail",
+    "description": "Prevents opponents from using priority moves against them.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Reckless",
+    "description": "Moves causing recoil damage deal 1.2x more damage.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 1.2,
+    "conditions": [
+      "move_recoil"
+    ]
+  },
+  {
+    "name": "Unburden",
+    "description": "Doubles the Speed stat if the organism's held item is used or lost.",
+    "trigger": "onCalculateStat"
+  },
+  {
+    "name": "Healer",
+    "description": "30% chance to heal user or ally's status at the end of each turn.",
+    "trigger": "onTurnEnd",
+    "effectType": "none"
+  },
+  {
+    "name": "Truant",
+    "description": "Can only attack every other turn. Can use status moves every turn.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Blaze",
+    "description": "Boosts Blaze-type moves by 1.2x, or 1.5x when under 1/3 HP.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 1.2,
+    "conditions": [
+      "type_blaze"
+    ]
+  },
+  {
+    "name": "Anger Point",
+    "description": "Getting hit raises Atk by +1. Critical hits maximize Attack.",
+    "trigger": "onDamageTaken",
+    "effectType": "statChange",
+    "targetStat": "attack",
+    "magnitude": 1,
+    "conditions": [
+      "on_hit"
+    ]
+  },
+  {
+    "name": "Fur Coat",
+    "description": "Doubles the organism's Defense stat.",
+    "trigger": "onCalculateStat",
+    "effectType": "statMultiplier",
+    "targetStat": "defense",
+    "magnitude": 2.0
+  },
+  {
+    "name": "Hydration",
+    "description": "Cures status conditions at the end of the turn if it is raining.",
+    "trigger": "onTurnEnd",
+    "effectType": "statusChange",
+    "conditions": [
+      "weather_rain"
+    ]
+  },
+  {
+    "name": "Merciless",
+    "description": "Attacks become critical hits if the target is poisoned.",
+    "trigger": "onCalculateDamage",
+    "effectType": "none"
+  },
+  {
+    "name": "Lightning Rod",
+    "description": "Protects from Electric-type moves and boosts Power when hit by one.",
+    "trigger": "onDamageTaken",
+    "effectType": "none"
+  },
+  {
+    "name": "Normalize",
+    "description": "Its moves become Normal-type, get 1.1x boost, ignore resists.",
+    "trigger": "onCalculateDamage",
+    "effectType": "none"
+  },
+  {
+    "name": "Battle Armor",
+    "description": "Protects the organism from critical hits.",
+    "trigger": "onDamageTaken",
+    "effectType": "preventCrit"
+  },
+  {
+    "name": "Competitive",
+    "description": "Boosts Special Attack by two stages when a stat is lowered.",
+    "trigger": "onStatLoss",
+    "effectType": "statChange",
+    "targetStat": "power",
+    "magnitude": 2
+  },
+  {
+    "name": "Stakeout",
+    "description": "Doubles the damage dealt to the target's replacement if the target switches out.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 2.0
+  },
+  {
+    "name": "Unseen Fist",
+    "description": "Contact moves skip protection.",
+    "trigger": "onCalculateDamage",
+    "effectType": "none"
+  },
+  {
+    "name": "Shell Armor",
+    "description": "Immune to critical hits. Takes 20% less damage from all attacks.",
+    "trigger": "onDamageTaken",
+    "effectType": "preventCrit"
+  },
+  {
+    "name": "Damp",
+    "description": "Makes foe Aquatic-type on contact. Also works on offense. Also, prevent self destructive moves for both.",
+    "trigger": "onContact",
+    "effectType": "typeChange",
+    "value": "aquatic"
+  },
+  {
+    "name": "Compound Eyes",
+    "description": "Grants a 1.3x accuracy boost.",
+    "trigger": "onCalculateStat",
+    "effectType": "statMultiplier",
+    "targetStat": "accuracy",
+    "magnitude": 1.3
+  },
+  {
+    "name": "Weak Armor",
+    "description": "If hit by a contact attack: -1 Defense and +2 Speed.",
+    "trigger": "onDamageTaken",
+    "effectType": "none",
+    "conditions": [
+      "contact"
+    ]
+  },
+  {
+    "name": "Bad Dreams",
+    "description": "Sleeping organisms lose 1/4 of max HP at the end of each turn.",
+    "trigger": "onTurnEnd",
+    "effectType": "none"
+  },
+  {
+    "name": "Contrary",
+    "description": "Stat raises turn into stat drops for this organism and vice versa.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Sand Rush",
+    "description": "Speed doubles in sandstorm.",
+    "trigger": "onCalculateStat",
+    "effectType": "statMultiplier",
+    "targetStat": "speed",
+    "magnitude": 2.0,
+    "conditions": [
+      "weather_sandstorm"
+    ]
+  },
+  {
+    "name": "Multitype",
+    "description": "Held Plate item decides holder's type.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Cheek Pouch",
+    "description": "Restores 33% HP when a Berry is consumed.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Dauntless Shield",
+    "description": "Boosts Defense when entering battle.",
+    "trigger": "onEntry",
+    "effectType": "statChange",
+    "targetStat": "defense",
+    "magnitude": 1
+  },
+  {
+    "name": "Vital Spirit",
+    "description": "Can't fall asleep. Heals status after using Fighting-type moves.",
+    "trigger": "onStatusAttempt",
+    "effectType": "preventStatus",
+    "value": "sleep"
+  },
+  {
+    "name": "Chlorophyll",
+    "description": "Speed doubles in harsh sunlight.",
+    "trigger": "onCalculateStat",
+    "effectType": "statMultiplier",
+    "targetStat": "speed",
+    "magnitude": 2.0,
+    "conditions": [
+      "weather_sun"
+    ]
+  },
+  {
+    "name": "Dry Skin",
+    "description": "Water/Rain heals. blaze-type/Sunny hurts.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Moody",
+    "description": "Raises one stat and lowers another at the end of every turn.",
+    "trigger": "onTurnEnd",
+    "effectType": "none"
+  },
+  {
+    "name": "Spiky Body",
+    "description": "May cause bleeding on contact.",
+    "trigger": "onDamageTaken",
+    "effectType": "statusChange",
+    "value": "bleed",
+    "chance": 0.3,
+    "conditions": [
+      "contact"
+    ]
+  },
+  {
+    "name": "Multiscale",
+    "description": "Reduces damage taken when HP is full.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 0.5,
+    "conditions": [
+      "full_hp"
+    ]
+  },
+  {
+    "name": "Oblivious",
+    "description": "Immune to infatuation, Fear, Intimidate and Taunt.",
+    "trigger": "onStatusAttempt",
+    "effectType": "preventStatus",
+    "value": "infatuation,fear,taunt"
+  },
+  {
+    "name": "Shadow Tag",
+    "description": "Opponents can't be switched out. Ghosts isn't affected.",
+    "trigger": "none",
+    "effectType": "preventSwitch"
+  },
+  {
+    "name": "Serene Grace",
+    "description": "Doubles chance of secondary effects on its own moves.",
+    "trigger": "none",
+    "effectType": "sereneGrace"
+  },
+  {
+    "name": "White Smoke",
+    "description": "Sets Smokescreen for 3 turns on switch-in.",
+    "trigger": "onEntry",
+    "effectType": "statusChange",
+    "value": "smokescreen"
+  },
+  {
+    "name": "Overcoat",
+    "description": "Protects from weather damage and powder moves.",
+    "trigger": "onDamageTaken",
+    "effectType": "none"
+  },
+  {
+    "name": "Mold Breaker",
+    "description": "Moves hit through abilities. Also affects innates.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Poison Touch",
+    "description": "May poison a target when using a contact move.",
+    "trigger": "onDamageDealt",
+    "effectType": "statusChange",
+    "value": "poison",
+    "chance": 0.3,
+    "conditions": [
+      "contact"
+    ]
+  },
+  {
+    "name": "Keen Eye",
+    "description": "Immune to accuracy drops. Grants a 1.2x accuracy boost.",
+    "trigger": "onCalculateStat",
+    "effectType": "statMultiplier",
+    "targetStat": "accuracy",
+    "magnitude": 1.2
+  },
+  {
+    "name": "Magma Armor",
+    "description": "Frostbite-immune. Takes 30% less dmg from Aquatic/Cryo-type moves.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageReduction",
+    "magnitude": 0.3,
+    "conditions": [
+      "type_aquatic",
+      "type_cryo"
+    ]
+  },
+  {
+    "name": "Arena Trap",
+    "description": "Prevents grounded opponents from fleeing.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Beast Boost",
+    "description": "Boosts highest stat by 1 stage when knocking out an opponent.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Corrosion",
+    "description": "Can poison Poison and Steel (Metal) types.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Solar Power",
+    "description": "Ups highest attacking stat by 1.5x in sun.",
+    "trigger": "onCalculateStat",
+    "effectType": "statMultiplier",
+    "magnitude": 1.5,
+    "conditions": [
+      "weather_sunny"
+    ]
+  },
+  {
+    "name": "Solid Rock",
+    "description": "Takes 35% less damage from Super-effective moves.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 0.65
+  },
+  {
+    "name": "Sap Sipper",
+    "description": "Protects from Grass-type moves and boosts Attack when hit by one.",
+    "trigger": "onDamageTaken",
+    "effectType": "none"
+  },
+  {
+    "name": "Rough Skin",
+    "description": "Damages the attacker on contact.",
+    "trigger": "onDamageTaken",
+    "effectType": "none",
+    "conditions": [
+      "contact"
+    ]
+  },
+  {
+    "name": "Electric Surge",
+    "description": "Creates Electric Terrain when entering battle.",
+    "trigger": "onEntry",
+    "effectType": "terrainChange",
+    "value": "electric"
+  },
+  {
+    "name": "Quick Feet",
+    "description": "Ups Speed by 1.5x if suffering from a status condition.",
+    "trigger": "onCalculateStat",
+    "effectType": "statMultiplier",
+    "targetStat": "speed",
+    "magnitude": 1.5,
+    "conditions": [
+      "statused"
+    ]
+  },
+  {
+    "name": "Comatose",
+    "description": "The organism is always asleep and cannot be inflicted with other status conditions.",
+    "trigger": "onStatusAttempt",
+    "effectType": "preventStatus",
+    "value": "all"
+  },
+  {
+    "name": "Queenly Majesty",
+    "description": "Prevents opponents from using priority moves against them.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Clear Body",
+    "description": "Prevents other organisms from lowering its stats.",
+    "trigger": "onStatLoss",
+    "effectType": "preventStatLoss"
+  },
+  {
+    "name": "Thick Fat",
+    "description": "Halves the damage taken from Blaze and Cryo-type moves.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 0.5,
+    "conditions": [
+      "type_blaze",
+      "type_cryo"
+    ]
+  },
+  {
+    "name": "Poison Heal",
+    "description": "Restores HP if the organism is poisoned instead of losing HP.",
+    "trigger": "onTurnEnd",
+    "effectType": "none"
+  },
+  {
+    "name": "Torrent",
+    "description": "Boosts Aquatic-type moves by 1.2x, or 1.5x when under 1/3 HP.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 1.2,
+    "conditions": [
+      "type_aquatic"
+    ]
+  },
+  {
+    "name": "Heavy Metal",
+    "description": "Doubles this organism's weight.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Light Metal",
+    "description": "Boosts Speed by 1.3x and halves this organism's weight.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Toxic Boost",
+    "description": "Ups Atk by 1.5x if poisoned. Immune to Poison status damage.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Flare Boost",
+    "description": "Ups Sp. Atk by 1.5x if burned. Ignites in fog.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Harvest",
+    "description": "50% chance to recycle a used Berry every turn, 100% in sun.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Telepathy",
+    "description": "Can't be damaged by ally attacks.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Regenerator",
+    "description": "Heals 1/3 of max HP upon switching out.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Big Pecks",
+    "description": "Boosts the power of contact moves by 1.3x.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Sand Rush",
+    "description": "This organism's Speed gets a 1.5x boost in a sandstorm.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Wonder Skin",
+    "description": "Opposing status moves have their accuracy halved.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Analytic",
+    "description": "Attacks get a 1.3x power boost if it moves last.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Illusion",
+    "description": "Appears as last party slot and boosts power by 1.3x until hit.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Imposter",
+    "description": "Transforms into the foe on entry.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Mummy",
+    "description": "If hit, makes the attacker's ability Mummy.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Justified",
+    "description": "Boosts Attack instead of being hit by Darkness-type moves.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Magic Bounce",
+    "description": "Bounces back the effect of status moves to their user.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Sand Force",
+    "description": "Ups highest attacking stat by 1.5x in sand.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Soul-Heart",
+    "description": "Raises Special Attack when another organism faints.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Tangling Hair",
+    "description": "Lowers Speed of any organism that hits this organism with a contact move.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Receiver",
+    "description": "Takes over a fainting ally's Ability.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Power of Alchemy",
+    "description": "Takes over a fainting ally's Ability, transmutes berries on entry.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "RKS System",
+    "description": "Changes the organism's type to match the memory disc it holds. Boosts STAB.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Electro Surge",
+    "description": "Turns the ground into Electric Terrain when the organism enters a battle.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Psychic Surge",
+    "description": "Turns the ground into Psychic Terrain when the organism enters a battle.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Misty Surge",
+    "description": "Turns the ground into Misty Terrain when the organism enters a battle.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Grassy Surge",
+    "description": "Turns the ground into Grassy Terrain when the organism enters a battle.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Full Metal Body",
+    "description": "Prevents other organisms' moves or Abilities from lowering this organism's stat stages.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Shadow Shield",
+    "description": "Reduces the amount of damage the organism takes while its HP is full.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Prism Armor",
+    "description": "Reduces the power of supereffective attacks taken.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Neuroforce",
+    "description": "Powers up moves that are supereffective against the target.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Intrepid Sword",
+    "description": "Boosts the organism's Attack stat when the organism enters a battle.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Dauntless Shield",
+    "description": "Boosts the organism's Defense stat when the organism enters a battle.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Libero",
+    "description": "Changes the organism's type to the type of the move it's about to use.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Ball Fetch",
+    "description": "Fetches the Poké Ball from the first failed catch of the battle.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Cotton Down",
+    "description": "Scatters cotton to lower the Speed stat of all other organisms when hit by an attack.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Propeller Tail",
+    "description": "Ignores the effects of opposing organisms' Abilities and moves that draw in moves.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Stalwart",
+    "description": "Ignores the effects of opposing organisms' Abilities and moves that draw in moves.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Mirror Armor",
+    "description": "Bounces back only the stat-lowering effects that the organism receives.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Gulp Missile",
+    "description": "When the organism uses Surf or Dive, it will come back with prey based on its HP.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Steam Engine",
+    "description": "Boosts the organism's Speed stat drastically if hit by a Fire- or Water-type move.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Punk Rock",
+    "description": "Boosts the power of sound-based moves. Takes half damage from sound-based moves.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Sand Spit",
+    "description": "The organism creates a sandstorm when it's hit by an attack.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Ice Scales",
+    "description": "The organism is protected by ice scales, which halve the damage taken from special moves.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Zen Mode",
+    "description": "Changes form if the organism acts with less than half of its max HP.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Turboblaze",
+    "description": "Moves can be used on the target regardless of its Abilities. Imbues fire.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Teravolt",
+    "description": "Moves can be used on the target regardless of its Abilities. Imbues electric.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Victory Star",
+    "description": "Boosts the accuracy of its allies and itself.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Mega Launcher",
+    "description": "Powers up aura and pulse moves.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Dark Aura",
+    "description": "Powers up everyone's Darkness-type moves.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Fairy Aura",
+    "description": "Powers up everyone's Light-type moves.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Aura Break",
+    "description": "The effects of Aura Abilities are reversed to lower the power of affected moves.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Refrigerate",
+    "description": "Basic-type moves become Cryo-type moves. The power of those moves is boosted a little.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Aroma Veil",
+    "description": "Protects itself and its allies from attacks that limit their move choices.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Flower Veil",
+    "description": "Ally Grass-type organisms are protected from status conditions and the lowering of their stats.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Sweet Veil",
+    "description": "Prevents itself and ally organisms from falling asleep.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Bulletproof",
+    "description": "Protects the organism from some ball and bomb moves.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Protean",
+    "description": "Changes the organism's type to the type of the move it's about to use.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Stamina",
+    "description": "Boosts the organism's Defense stat when it takes a hit from an attack.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Water Compaction",
+    "description": "Boosts the organism's Defense stat sharply when hit by a Water-type move.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Magician",
+    "description": "The organism steals the held item of an organism it hits with a move.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Stance Change",
+    "description": "The organism changes its form to Blade Forme when it uses an attack move, and changes to Shield Forme when it uses King's Shield.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Shields Down",
+    "description": "When its HP becomes half or less, the organism's shell breaks and it becomes aggressive.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Water Bubble",
+    "description": "Lowers the power of Fire-type moves done to the organism and prevents the organism from getting a burn.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Steelworker",
+    "description": "Powers up Steel-type moves.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Long Reach",
+    "description": "The organism uses its moves without making contact with the target.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Liquid Voice",
+    "description": "All sound-based moves become Water-type moves.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Triage",
+    "description": "Gives priority to a healing move.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Galvanize",
+    "description": "Basic-type moves become Electric-type moves. The power of those moves is boosted a little.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Surge Surfer",
+    "description": "Doubles the organism's Speed stat on Electric Terrain.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Schooling",
+    "description": "When it has a lot of HP, the organism forms a powerful school. It stops schooling when its HP drops.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Disguise",
+    "description": "Once per battle, the shroud that covers the organism can protect it from an attack.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Battle Bond",
+    "description": "Defeating an opposing organism raises the organism's Attack, Sp. Atk, and Speed stats.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Power Construct",
+    "description": "Other Cells gather to aid when its HP becomes half or less. Then the organism changes its form to Complete Forme.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Innards Out",
+    "description": "Damages the attacker landing the finishing hit by the amount equal to its last HP.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Dancer",
+    "description": "When another organism uses a dance move, it can use a dance move following it regardless of its Speed.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Battery",
+    "description": "Powers up ally organisms' special moves.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Fluffy",
+    "description": "Halves the damage taken from moves that make direct contact, but doubles that of Fire-type moves.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Ripen",
+    "description": "Doubles the effect of Berries on the holder.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Ice Face",
+    "description": "Protects the holder from one physical hit. Restores under hail.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Power Spot",
+    "description": "Just being nearby powers up moves.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Mimicry",
+    "description": "Changes the organism's type depending on the terrain.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Screen Cleaner",
+    "description": "When the organism enters a battle, the effects of Light Screen, Reflect, and Aurora Veil are nullified for both sides.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Steely Spirit",
+    "description": "Powers up ally and user's Metal-type moves.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Perish Body",
+    "description": "When hit by a contact move, both the user and the attacker will faint after 3 turns.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Wandering Spirit",
+    "description": "When hit by a contact move, swaps Ability with the attacker.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Gorilla Tactics",
+    "description": "Boosts the holder's Attack stat but only allows the use of the first selected move.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Neutralizing Gas",
+    "description": "If the holder is in battle, the effects of all organisms' Abilities are nullified.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Pastel Veil",
+    "description": "Prevents the holder and its ally from being poisoned.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Hunger Switch",
+    "description": "The organism alternates between its Full Belly Mode and Hangry Mode after the end of each turn.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Quick Draw",
+    "description": "Enables the organism to move first occasionally.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Unseen Fist",
+    "description": "If the organism uses moves that make direct contact, it can attack the target regardless of the target's Ability.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Curious Medicine",
+    "description": "When the organism enters a battle, it scatters medicine from its shell, which resets all stat changes of allies.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Transistor",
+    "description": "Powers up Electric-type moves.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Dragon's Maw",
+    "description": "Powers up Dragon-type moves.",
+    "trigger": "none",
+    "effectType": "none"
+  }
 ]

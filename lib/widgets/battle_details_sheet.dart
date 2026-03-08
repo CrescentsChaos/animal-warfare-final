@@ -10,9 +10,7 @@ import 'package:animal_warfare/models/status_effect.dart';
 import 'package:animal_warfare/widgets/anidex_details_sheet.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:animal_warfare/widgets/type_matchup_sheet.dart';
-import 'package:animal_warfare/models/captured_organism.dart';
 import 'package:animal_warfare/widgets/item_icon.dart';
-import 'package:animal_warfare/game/battle_manager.dart';
 
 class BattleDetailsSheet extends StatelessWidget {
   final BattleOrganism bo;
@@ -39,17 +37,6 @@ class BattleDetailsSheet extends StatelessWidget {
     final user = userState.currentUser;
     final org = bo.organism.baseOrganism;
 
-    BattleManager? bm;
-    try {
-      bm = Provider.of<BattleManager?>(context, listen: false);
-    } catch (_) {}
-
-    int effectiveSpeed = bo.currentSpeed;
-    if (bm != null) {
-      if (isPlayer && bm.playerTailwindTurns > 0) effectiveSpeed *= 2;
-      if (!isPlayer && bm.opponentTailwindTurns > 0) effectiveSpeed *= 2;
-    }
-    // Note: DoubleBattleManager doesn't have Tailwind implementation yet
     // Anidex Checks
     // Identity info (Name, Image, Types, Matchups) is always visible during battle
     bool isDiscovered = true;
@@ -141,12 +128,7 @@ class BattleDetailsSheet extends StatelessWidget {
                     // Combat Intel Section
                     _buildSectionHeader('COMBAT INTEL', themeColor),
                     const SizedBox(height: 16),
-                    _buildCombatStats(
-                      org,
-                      isCaptured,
-                      themeColor,
-                      effectiveSpeed,
-                    ),
+                    _buildCombatStats(org, isCaptured, themeColor),
 
                     const SizedBox(height: 32),
 
@@ -413,12 +395,7 @@ class BattleDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildCombatStats(
-    Organism org,
-    bool captured,
-    Color themeColor,
-    int effectiveSpeed,
-  ) {
+  Widget _buildCombatStats(Organism org, bool captured, Color themeColor) {
     if (!captured && !isPlayer) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -447,105 +424,80 @@ class BattleDetailsSheet extends StatelessWidget {
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.only(left: 4),
-            child: Text(
-              'EFF. SPD: $effectiveSpeed',
-              style: GoogleFonts.outfit(
-                color: Colors.amberAccent.withValues(alpha: 0.8),
-                fontSize: 11,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 0.5,
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.only(left: 4),
-            child: Text(
-              'EST. SPD: ${((CapturedOrganism.calculateStat('speed', org.speed, 0, level: bo.level)) * 0.9).round()} - ${((CapturedOrganism.calculateStat('speed', org.speed, 31, level: bo.level)) * 1.1).round()}',
-              style: GoogleFonts.outfit(
-                color: Colors.white38,
-                fontSize: 10,
-                letterSpacing: 0.5,
-              ),
-            ),
-          ),
         ],
       );
     }
 
+    // Base stats at current level (no ability/stage modifiers)
+    final baseAtk = bo.organism.effectiveAttack;
+    final baseDef = bo.organism.effectiveDefense;
+    final basePwr = bo.organism.effectivePower;
+    final baseRes = bo.organism.effectiveResistance;
+    final baseSpd = bo.organism.effectiveSpeed;
+
     return Column(
       children: [
-        _buildStatRow('HEALTH', bo.maxHealth, 500, AppColors.statHealthColor),
+        _buildStatRow(
+          'HEALTH',
+          bo.maxHealth,
+          bo.maxHealth,
+          500,
+          AppColors.statHealthColor,
+        ),
         _buildStatRow(
           'ATTACK',
-          bo.organism.effectiveAttack,
+          isPlayer ? bo.currentAttack : baseAtk,
+          baseAtk,
           200,
           AppColors.statAttackColor,
         ),
         _buildStatRow(
           'DEFENSE',
-          bo.organism.effectiveDefense,
+          isPlayer ? bo.currentDefense : baseDef,
+          baseDef,
           200,
           AppColors.statDefenseColor,
         ),
         _buildStatRow(
           'POWER',
-          bo.organism.effectivePower,
+          isPlayer ? bo.currentPower : basePwr,
+          basePwr,
           200,
           AppColors.statPowerColor,
         ),
         _buildStatRow(
           'RESISTANCE',
-          bo.organism.effectiveResistance,
+          isPlayer ? bo.currentResistance : baseRes,
+          baseRes,
           200,
           AppColors.statResistanceStatColor,
         ),
         _buildStatRow(
           'SPEED',
-          bo.organism.effectiveSpeed,
+          isPlayer ? bo.currentSpeed : baseSpd,
+          baseSpd,
           200,
           AppColors.statSpeedColor,
-        ),
-        Padding(
-          padding: const EdgeInsets.only(left: 4),
-          child: Row(
-            children: [
-              Text(
-                'EFF. SPD: $effectiveSpeed',
-                style: GoogleFonts.outfit(
-                  color: Colors.amberAccent.withValues(alpha: 0.8),
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.5,
-                ),
-              ),
-              if (effectiveSpeed != bo.currentSpeed) ...[
-                const SizedBox(width: 8),
-                const Icon(Icons.air, color: Colors.lightBlue, size: 12),
-              ],
-            ],
-          ),
-        ),
-        const SizedBox(height: 4),
-        Padding(
-          padding: const EdgeInsets.only(left: 4),
-          child: Text(
-            'EST. SPD: ${((CapturedOrganism.calculateStat('speed', org.speed, 0, level: bo.level)) * 0.9).round()} - ${((CapturedOrganism.calculateStat('speed', org.speed, 31, level: bo.level)) * 1.1).round()}',
-            style: GoogleFonts.outfit(
-              color: Colors.white38,
-              fontSize: 10,
-              letterSpacing: 0.5,
-            ),
-          ),
         ),
       ],
     );
   }
 
-  Widget _buildStatRow(String label, int value, int max, Color color) {
+  Widget _buildStatRow(
+    String label,
+    int value,
+    int baseValue,
+    int max,
+    Color color,
+  ) {
     final perc = (value / max).clamp(0.0, 1.0);
+    Color valueColor = Colors.white;
+    if (value > baseValue) {
+      valueColor = Colors.greenAccent;
+    } else if (value < baseValue) {
+      valueColor = Colors.redAccent;
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Column(
@@ -565,7 +517,7 @@ class BattleDetailsSheet extends StatelessWidget {
                 '$value',
                 style: TextStyle(
                   fontFamily: 'PressStart2P',
-                  color: color.withValues(alpha: 0.9),
+                  color: valueColor,
                   fontSize: 8,
                 ),
               ),

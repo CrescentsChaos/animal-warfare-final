@@ -4,16 +4,40 @@ import 'package:animal_warfare/models/status_effect.dart';
 import 'package:animal_warfare/models/move.dart';
 import 'package:animal_warfare/models/elemental_type.dart';
 import 'package:animal_warfare/models/talisman.dart';
+import 'package:animal_warfare/models/weather.dart';
+import 'package:animal_warfare/models/terrain.dart';
 
 class BattleOrganism {
   CapturedOrganism organism;
   final List<Ability> _baseAbilities;
   final List<Ability> tempAbilities = [];
-  List<Ability> get abilities => [..._baseAbilities, ...tempAbilities];
+  List<Ability> get abilities {
+    if (isAbilitySuppressed) return [];
+
+    // Start with basic abilities from the organism
+    List<Ability> result = [..._baseAbilities];
+
+    // If activeAbilityName is set and different from base, override/add it
+    final activeName = organism.activeAbilityName;
+    if (activeName != 'None') {
+      final active = Ability.findByName(activeName);
+      if (active != null) {
+        result = [
+          active,
+        ]; // In most cases, it completely replaces for the battle mon
+      }
+    }
+
+    return [...result, ...tempAbilities];
+  }
+
   List<Move> get moves => organism.selectedMoveNames
       .map((name) => Move.findByName(name))
       .whereType<Move>()
       .toList();
+
+  Weather weather = Weather.none;
+  Terrain terrain = Terrain.none;
 
   String get name => isOpponent
       ? 'Foe ${organism.baseOrganism.name}'
@@ -78,15 +102,19 @@ class BattleOrganism {
 
   int tauntTurns = 0;
   int encoreTurns = 0;
+  bool isShieldForm = true;
+  bool isKingsShieldActive = false;
   Move? lastMove;
   bool isImprisoning = false;
   Move? rolloutMove;
+  String? activeForm;
 
   /// Reset battle-specific flags (called when switching out or starting battle)
   void resetBattleState() {
     isChoiceLocked = false;
     lockedMove = null;
     isProtected = false;
+    isKingsShieldActive = false;
     mustRecharge = false;
     chargeMove = null;
     chargingMove = null;
@@ -122,6 +150,9 @@ class BattleOrganism {
     healBlockTurns = 0;
     glaiveRushVulnerable = false;
     shellTrapActive = false;
+    isShieldForm =
+        (organism.baseOrganism.name ==
+        'Aegislash'); // Default to Shield for Aegislash
     movesUsedInBattle.clear();
     lastPhysicalDamageTaken = 0;
     lastSpecialDamageTaken = 0;
@@ -136,6 +167,12 @@ class BattleOrganism {
     // GIMMICK RESET: Prismorph persists.
     // NOTE: isPrismorphed/hasPrismorph/activeTeraType are NOT reset here;
     // they persist for the entire battle.
+
+    // Disable reset
+    itemDisabledTurns = 0;
+    disabledMoves.clear();
+
+    hasMovedThisTurn = false;
   }
 
   void resetStatStages() {
@@ -243,6 +280,15 @@ class BattleOrganism {
   // Ability state
   bool isAbilityRevealed = false;
 
+  double get currentWeight {
+    double baseWeight = organism.baseOrganism.weight;
+    if (abilities.any((a) => a.name == 'Heavy Metal')) return baseWeight * 2;
+    if (abilities.any((a) => a.name == 'Light Metal')) return baseWeight * 0.5;
+    return baseWeight;
+  }
+
+  bool hasMovedThisTurn = false;
+
   // ============================================================
   // GIMMICK STATE: Prismorph (Terastalize)
   // ============================================================
@@ -260,6 +306,10 @@ class BattleOrganism {
   bool isFirstTurnOutOfBall = true;
   bool wasSwitchedInThisTurn = false;
   bool isSwitchingOut = false;
+
+  // Disable effects
+  int itemDisabledTurns = 0;
+  final Map<String, int> disabledMoves = {};
 
   // Advanced move state
   int substituteHealth = 0;
@@ -293,6 +343,16 @@ class BattleOrganism {
   bool unburdenActive = false;
   bool isAbilitySuppressed = false;
   bool anticipationShieldActive = false;
+
+  // Ability-state fields for Gen 8 abilities
+  bool iceFaceActive = false; // Ice Face protection is intact
+  Move? gorillaTacticsLockedMove; // The locked move for Gorilla Tactics
+  bool gorillaTacticsActive =
+      false; // Gorilla Tactics is active (restricts moves)
+  bool ripenActive = false; // Set externally based on ability possession
+  bool neutralizingGasActive = false; // Disable all other abilities
+  bool hasEatenBerry =
+      false; // Tracks berry consumption for Power of Alchemy etc
 
   String get displaySprite => isDisguised && disguisedAs != null
       ? disguisedAs!.baseOrganism.sprite
@@ -337,11 +397,13 @@ class BattleOrganism {
            .where((a) => a != null)
            .cast<Ability>()
            .toList(),
-       _attackStage = isRogueMode ? organism.attackStage : 0,
-       _defenseStage = isRogueMode ? organism.defenseStage : 0,
-       _powerStage = isRogueMode ? organism.powerStage : 0,
-       _speedStage = isRogueMode ? organism.speedStage : 0,
-       _accuracyStage = isRogueMode ? organism.accuracyStage : 0 {
+       _attackStage = organism.attackStage,
+       _defenseStage = organism.defenseStage,
+       _powerStage = organism.powerStage,
+       _resistanceStage = organism.resistanceStage,
+       _speedStage = organism.speedStage,
+       _accuracyStage = organism.accuracyStage,
+       _evasionStage = organism.evasionStage {
     final int battleMax = maxHealth;
     _health = organism.currentHealth.clamp(0, battleMax);
     wasSwitchedInThisTurn = true;
@@ -353,6 +415,30 @@ class BattleOrganism {
     if (isPrismorphed && activeTeraType != null) {
       return [activeTeraType!];
     }
+
+    // Multitype / Plates
+    if (abilities.any((a) => a.name == 'Multitype') && _isItemValid) {
+      final itemName = organism.equippedTalisman!.name.toLowerCase();
+      if (itemName.contains('plate')) {
+        if (itemName.contains('flame')) return [ElementalType.blaze];
+        if (itemName.contains('splash')) return [ElementalType.aquatic];
+        if (itemName.contains('zap')) return [ElementalType.electric];
+        if (itemName.contains('meadow')) return [ElementalType.grass];
+        if (itemName.contains('icicle')) return [ElementalType.cryo];
+        if (itemName.contains('fist')) return [ElementalType.martial];
+        if (itemName.contains('toxic')) return [ElementalType.toxic];
+        if (itemName.contains('earth')) return [ElementalType.earth];
+        if (itemName.contains('sky')) return [ElementalType.flying];
+        if (itemName.contains('mind')) return [ElementalType.mystic];
+        if (itemName.contains('insect')) return [ElementalType.arthropod];
+        if (itemName.contains('stone')) return [ElementalType.rock];
+        if (itemName.contains('spooky')) return [ElementalType.spectral];
+        if (itemName.contains('dread')) return [ElementalType.darkness];
+        if (itemName.contains('iron')) return [ElementalType.metal];
+        if (itemName.contains('pixie')) return [ElementalType.aura];
+      }
+    }
+
     return _battleTypes ?? organism.baseOrganism.elementalTypes;
   }
 
@@ -361,6 +447,7 @@ class BattleOrganism {
   bool get _isItemValid =>
       organism.equippedTalisman != null &&
       !talismanConsumed &&
+      itemDisabledTurns <= 0 &&
       !organism.equippedTalisman!.name.contains('(used)');
 
   bool get isGrounded {
@@ -389,17 +476,39 @@ class BattleOrganism {
   double getAbilityStatMultiplier(String statName) {
     double totalMultiplier = 1.0;
     for (final ability in abilities) {
-      if (ability.trigger != AbilityTrigger.onCalculateStat ||
-          ability.targetStat != statName) {
+      // Relaxed trigger check: If targetStat matches, we likely want to process it here
+      // especially for test abilities that might have 'none' trigger
+      if (ability.trigger != AbilityTrigger.onCalculateStat &&
+          ability.trigger != AbilityTrigger.none) {
+        continue;
+      }
+      if (ability.targetStat != statName) {
         continue;
       }
 
       // Skip hardcoded conditional checks for now as they depend on BattleManager global state
       // We will properly implement this with the new trigger system
       if (ability.conditions.isEmpty &&
-          ability.name != 'Iron Fist' &&
-          ability.name != 'Strong Jaw' &&
-          ability.name != 'Tough Claws') {
+          !const [
+            'Iron Fist',
+            'Strong Jaw',
+            'Tough Claws',
+            'Sand Rush',
+            'Swift Swim',
+            'Slush Rush',
+            'Chlorophyll',
+            'Surge Surfer',
+            'Toxic Boost',
+            'Flare Boost',
+            'Guts',
+            'Marvel Scale',
+            'Quick Feet',
+            'Solar Power',
+            'Sand Force',
+            'Big Pecks',
+            'Analytic',
+            'Illusion',
+          ].contains(ability.name)) {
         totalMultiplier *= ability.magnitude;
       }
 
@@ -433,7 +542,42 @@ class BattleOrganism {
           totalMultiplier *= 1.5;
         } else if (ability.name == 'Quick Feet' && statName == 'speed') {
           totalMultiplier *= 1.5;
+        } else if (ability.name == 'Toxic Boost' &&
+            statName == 'attack' &&
+            statusEffects.any((se) => se.type == StatusEffectType.poison)) {
+          totalMultiplier *= 1.5;
+        } else if (ability.name == 'Flare Boost' &&
+            statName == 'power' &&
+            statusEffects.any((se) => se.type == StatusEffectType.burn)) {
+          totalMultiplier *= 1.5;
         }
+      }
+
+      // --- Phase 3: Weather/Terrain Based Multipliers ---
+      if (weather == Weather.sandstorm &&
+          ability.name == 'Sand Rush' &&
+          statName == 'speed') {
+        totalMultiplier *= 1.5;
+      }
+      if (weather == Weather.rain &&
+          ability.name == 'Swift Swim' &&
+          statName == 'speed') {
+        totalMultiplier *= 2.0;
+      }
+      if (weather == Weather.snowstorm &&
+          ability.name == 'Slush Rush' &&
+          statName == 'speed') {
+        totalMultiplier *= 1.5;
+      }
+      if (weather == Weather.sunny &&
+          ability.name == 'Chlorophyll' &&
+          statName == 'speed') {
+        totalMultiplier *= 2.0;
+      }
+      if (terrain == Terrain.electric &&
+          ability.name == 'Surge Surfer' &&
+          statName == 'speed') {
+        totalMultiplier *= 1.5;
       }
     }
     return totalMultiplier;
@@ -469,6 +613,14 @@ class BattleOrganism {
         }
       }
     }
+
+    // Defeatist
+    if (abilities.any((a) => a.name == 'Defeatist') && !isAbilitySuppressed) {
+      if (health <= (maxHealth / 3)) {
+        attack = attack * 0.5;
+      }
+    }
+
     return attack.round();
   }
 
@@ -523,6 +675,14 @@ class BattleOrganism {
         }
       }
     }
+
+    // Defeatist
+    if (abilities.any((a) => a.name == 'Defeatist') && !isAbilitySuppressed) {
+      if (health <= (maxHealth / 3)) {
+        power = power * 0.5;
+      }
+    }
+
     return power.round();
   }
 

@@ -121,4 +121,9 @@ class Ability {
   static Ability? findByName(String name) {
     return _byName[name.toLowerCase()];
   }
+
+  @visibleForTesting
+  static void addTestAbility(Ability ability) {
+    _byName[ability.name.toLowerCase()] = ability;
+  }
 }
