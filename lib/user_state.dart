@@ -1,6 +1,8 @@
 // lib/user_state.dart
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:animal_warfare/models/captured_organism.dart';
 import 'package:animal_warfare/models/talisman.dart';
 import 'package:animal_warfare/models/move.dart';
@@ -9,6 +11,7 @@ import 'package:animal_warfare/models/organism.dart';
 import 'package:animal_warfare/models/nature.dart';
 import 'dart:math' as math;
 import 'package:animal_warfare/models/rogue_like_state.dart';
+import 'package:animal_warfare/models/farm_slot.dart';
 import 'local_auth_service.dart';
 
 class UserState with ChangeNotifier {
@@ -17,14 +20,33 @@ class UserState with ChangeNotifier {
   Timer? _staminaRegenTimer;
   Future<void> _writeLock = Future.value();
   bool _isInitialized = false;
+  Map<String, dynamic> _farmingConfig = {};
 
   UserData? get currentUser => _currentUser;
   bool get isLoggedIn => _currentUser != null;
   bool get isInitialized => _isInitialized;
+  Map<String, dynamic> get farmingConfig => _farmingConfig;
 
   UserState() {
-    loadCurrentUser();
+    _init();
     _startStaminaRegeneration();
+  }
+
+  Future<void> _init() async {
+    await loadCurrentUser();
+    await _loadFarmingConfig();
+  }
+
+  Future<void> _loadFarmingConfig() async {
+    try {
+      final String response = await rootBundle.loadString(
+        'assets/farming.json',
+      );
+      _farmingConfig = json.decode(response);
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error loading farming.json: $e');
+    }
   }
 
   Future<void> _readModifyWrite(UserData Function(UserData) update) async {
@@ -49,8 +71,11 @@ class UserState with ChangeNotifier {
   void _startStaminaRegeneration() {
     _staminaRegenTimer?.cancel();
     _staminaRegenTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      if (_currentUser != null && _currentUser!.stamina < 100) {
-        _regenerateStamina(20);
+      if (_currentUser != null) {
+        if (_currentUser!.stamina < 100) {
+          _regenerateStamina(20);
+        }
+        _processPlantGrowth();
       }
     });
   }
@@ -1552,6 +1577,190 @@ class UserState with ChangeNotifier {
       organisms[orgIndex] = org.copyWith(killValues: currentKVs);
       return u.copyWith(capturedOrganisms: organisms);
     });
+  }
+
+  Future<void> _processPlantGrowth() async {
+    if (_currentUser == null) return;
+
+    bool needsUpdate = false;
+    final now = DateTime.now();
+    final updatedSlots = List<FarmSlot>.from(_currentUser!.farmSlots);
+
+    for (int i = 0; i < updatedSlots.length; i++) {
+      final slot = updatedSlots[i];
+      if (slot.stage == PlantStage.empty || slot.stage == PlantStage.fruit)
+        continue;
+
+      if (slot.lastStageTime != null) {
+        final elapsed = now.difference(slot.lastStageTime!);
+        // Base time: 60 seconds
+        int requiredSeconds = 60;
+        if (slot.isWatered) requiredSeconds -= 20;
+        if (slot.isFertilized) requiredSeconds -= 20;
+
+        if (elapsed.inSeconds >= requiredSeconds) {
+          needsUpdate = true;
+          PlantStage nextStage = PlantStage.values[slot.stage.index + 1];
+          updatedSlots[i] = slot.copyWith(
+            stage: nextStage,
+            lastStageTime: now,
+            isWatered: false,
+            isFertilized: false,
+          );
+        }
+      }
+    }
+
+    if (needsUpdate) {
+      await _readModifyWrite((u) => u.copyWith(farmSlots: updatedSlots));
+    }
+  }
+
+  Future<bool> plantSeed(int index, String seedId) async {
+    if (_currentUser == null) return false;
+    if ((_currentUser!.inventory[seedId] ?? 0) <= 0) return false;
+
+    bool success = false;
+    await _readModifyWrite((u) {
+      if (index < 0 || index >= u.farmSlots.length) return u;
+      if (u.farmSlots[index].stage != PlantStage.empty) return u;
+
+      final inventory = Map<String, int>.from(u.inventory);
+      inventory[seedId] = (inventory[seedId] ?? 1) - 1;
+      if (inventory[seedId]! <= 0) inventory.remove(seedId);
+
+      final slots = List<FarmSlot>.from(u.farmSlots);
+      slots[index] = slots[index].copyWith(
+        plantType: seedId.replaceAll('_seed', ''), // e.g., 'strawberry'
+        stage: PlantStage.seed,
+        lastStageTime: DateTime.now(),
+        isWatered: false,
+        isFertilized: false,
+        clearPlantType: false,
+      );
+
+      success = true;
+      return u.copyWith(inventory: inventory, farmSlots: slots);
+    });
+    return success;
+  }
+
+  Future<bool> waterPlant(int index) async {
+    if (_currentUser == null) return false;
+    if ((_currentUser!.inventory['spray_bottle'] ?? 0) <= 0) return false;
+
+    bool success = false;
+    await _readModifyWrite((u) {
+      if (index < 0 || index >= u.farmSlots.length) return u;
+      final slot = u.farmSlots[index];
+      if (slot.stage == PlantStage.empty ||
+          slot.stage == PlantStage.fruit ||
+          slot.isWatered)
+        return u;
+
+      final slots = List<FarmSlot>.from(u.farmSlots);
+      slots[index] = slot.copyWith(isWatered: true);
+      success = true;
+      return u.copyWith(farmSlots: slots);
+    });
+    return success;
+  }
+
+  Future<bool> fertilizePlant(int index) async {
+    if (_currentUser == null) return false;
+    if ((_currentUser!.inventory['organic_fertilizer'] ?? 0) <= 0) return false;
+
+    bool success = false;
+    await _readModifyWrite((u) {
+      if (index < 0 || index >= u.farmSlots.length) return u;
+      final slot = u.farmSlots[index];
+      if (slot.stage == PlantStage.empty ||
+          slot.stage == PlantStage.fruit ||
+          slot.isFertilized)
+        return u;
+
+      final inventory = Map<String, int>.from(u.inventory);
+      inventory['organic_fertilizer'] =
+          (inventory['organic_fertilizer'] ?? 1) - 1;
+      if (inventory['organic_fertilizer']! <= 0)
+        inventory.remove('organic_fertilizer');
+
+      final slots = List<FarmSlot>.from(u.farmSlots);
+      slots[index] = slot.copyWith(isFertilized: true);
+      success = true;
+      return u.copyWith(inventory: inventory, farmSlots: slots);
+    });
+    return success;
+  }
+
+  Future<int> harvestPlant(int index) async {
+    if (_currentUser == null) return 0;
+
+    int yieldCount = 0;
+    await _readModifyWrite((u) {
+      if (index < 0 || index >= u.farmSlots.length) return u;
+      final slot = u.farmSlots[index];
+      if (slot.stage != PlantStage.fruit) return u;
+
+      final inventory = Map<String, int>.from(u.inventory);
+
+      // Get the name for the fruit: capitalized plantType (e.g., "Strawberry")
+      final String plantType = slot.plantType ?? 'strawberry';
+      final String fruitName =
+          plantType[0].toUpperCase() + plantType.substring(1).toLowerCase();
+
+      // Get yield config from farming.json
+      final plantConfig = _farmingConfig['plants']?[plantType];
+      final int minYield = plantConfig?['min_yield'] ?? 4;
+      final int maxYield = plantConfig?['max_yield'] ?? 7;
+      final int fertYield = plantConfig?['fertilized_yield'] ?? 7;
+
+      yieldCount = slot.isFertilized
+          ? fertYield
+          : (minYield + math.Random().nextInt(maxYield - minYield + 1));
+      inventory[fruitName] = (inventory[fruitName] ?? 0) + yieldCount;
+
+      final slots = List<FarmSlot>.from(u.farmSlots);
+      slots[index] = FarmSlot.empty(index);
+
+      return u.copyWith(inventory: inventory, farmSlots: slots);
+    });
+    return yieldCount;
+  }
+
+  Future<bool> pickSeeds(String fruitId, [int count = 1]) async {
+    if (_currentUser == null || count <= 0) return false;
+    final config = _farmingConfig['seed_picking']?[fruitId.toLowerCase()];
+    if (config == null) return false;
+
+    final toolRequired = config['tool_required'];
+    final resultSeed = config['result_seed'];
+    final int minYield = config['min_yield'] ?? 1;
+    final int maxYield = config['max_yield'] ?? 1;
+
+    if ((_currentUser!.inventory[toolRequired] ?? 0) <= 0) return false;
+    if ((_currentUser!.inventory[fruitId] ?? 0) < count) return false;
+
+    bool success = false;
+    await _readModifyWrite((u) {
+      final inventory = Map<String, int>.from(u.inventory);
+
+      // Consume fruits
+      inventory[fruitId] = (inventory[fruitId] ?? count) - count;
+      if (inventory[fruitId]! <= 0) inventory.remove(fruitId);
+
+      // Grant seeds
+      int totalSeeds = 0;
+      final rand = math.Random();
+      for (int i = 0; i < count; i++) {
+        totalSeeds += minYield + rand.nextInt(maxYield - minYield + 1);
+      }
+      inventory[resultSeed] = (inventory[resultSeed] ?? 0) + totalSeeds;
+
+      success = true;
+      return u.copyWith(inventory: inventory);
+    });
+    return success;
   }
 
   @override

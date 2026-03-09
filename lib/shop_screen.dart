@@ -65,6 +65,13 @@ class _ShopScreenState extends State<ShopScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setLocal) {
+          final maxAffordable = (user.money / item.price).floor();
+          final maxQty = maxAffordable > 0
+              ? (maxAffordable > 99 ? 99 : maxAffordable)
+              : 1;
+
+          if (qty > maxQty) qty = maxQty;
+
           final total = item.price * qty;
           final canAfford = user.money >= total;
           return AlertDialog(
@@ -127,20 +134,25 @@ class _ShopScreenState extends State<ShopScreen> {
                           Icons.add_circle_outline,
                           color: AppColors.primary,
                         ),
-                        onPressed: () => setLocal(() => qty++),
+                        onPressed: qty < maxQty
+                            ? () => setLocal(() => qty++)
+                            : null,
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 8),
-                Slider(
-                  value: qty.toDouble(),
-                  min: 1,
-                  max: 99,
-                  divisions: 98,
-                  label: '$qty',
-                  onChanged: (v) => setLocal(() => qty = v.round()),
-                ),
+                if (maxQty > 1)
+                  Slider(
+                    value: qty.toDouble(),
+                    min: 1,
+                    max: maxQty.toDouble(),
+                    divisions: maxQty > 1 ? maxQty - 1 : 1,
+                    label: '$qty',
+                    onChanged: (v) => setLocal(() => qty = v.round()),
+                  ),
+                if (maxQty <= 1)
+                  const SizedBox(height: 48), // Spacer to prevent layout jump
                 const SizedBox(height: 6),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,

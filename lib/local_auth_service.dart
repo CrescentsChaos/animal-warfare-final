@@ -9,6 +9,7 @@ import 'package:animal_warfare/models/captured_organism.dart';
 import 'package:animal_warfare/models/organism.dart';
 import 'package:animal_warfare/models/quest.dart';
 import 'package:animal_warfare/models/rogue_like_state.dart';
+import 'package:animal_warfare/models/farm_slot.dart';
 
 import 'local_auth_storage_io.dart'
     if (dart.library.html) 'local_auth_storage_web.dart'
@@ -69,6 +70,9 @@ class UserData {
   final List<String>
   displayedAchievements; // NEW: 3 selected achievement titles
 
+  /// Farming slots
+  final List<FarmSlot> farmSlots;
+
   UserData({
     required this.username,
     required this.password,
@@ -98,6 +102,7 @@ class UserData {
     Map<String, CapturedOrganism?>? explorationEncounters,
     Map<String, dynamic>? weatherData,
     List<String>? displayedAchievements,
+    List<FarmSlot>? farmSlots,
   }) : quizStats = quizStats ?? {},
        discoveredOrganisms = discoveredOrganisms ?? [],
        completedAchievements = completedAchievements ?? [],
@@ -110,7 +115,8 @@ class UserData {
        speciesStats = speciesStats ?? {},
        explorationEncounters = explorationEncounters ?? {},
        weatherData = weatherData ?? {},
-       displayedAchievements = (displayedAchievements ?? []).take(3).toList();
+       displayedAchievements = (displayedAchievements ?? []).take(3).toList(),
+       farmSlots = farmSlots ?? List.generate(10, (i) => FarmSlot.empty(i));
 
   /// Returns displayName if set, otherwise falls back to username
   String get effectiveDisplayName =>
@@ -145,6 +151,7 @@ class UserData {
     Map<String, CapturedOrganism?>? explorationEncounters,
     Map<String, dynamic>? weatherData,
     List<String>? displayedAchievements,
+    List<FarmSlot>? farmSlots,
   }) {
     return UserData(
       username: username ?? this.username,
@@ -178,6 +185,7 @@ class UserData {
       weatherData: weatherData ?? this.weatherData,
       displayedAchievements:
           displayedAchievements ?? this.displayedAchievements,
+      farmSlots: farmSlots ?? this.farmSlots,
     );
   }
 
@@ -264,6 +272,7 @@ class UserData {
     ),
     'weatherData': weatherData,
     'displayedAchievements': displayedAchievements,
+    'farmSlots': farmSlots.map((slot) => slot.toJson()).toList(),
   };
 
   factory UserData.fromJson(
@@ -383,6 +392,11 @@ class UserData {
       weatherData: (json['weatherData'] as Map?)?.cast<String, dynamic>() ?? {},
       displayedAchievements:
           (json['displayedAchievements'] as List?)?.cast<String>() ?? [],
+      farmSlots:
+          (json['farmSlots'] as List<dynamic>?)
+              ?.map((e) => FarmSlot.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          List.generate(10, (i) => FarmSlot.empty(i)),
     );
   }
 }

@@ -1665,5 +1665,18 @@
         "condition": "forced_switch"
       }
     ]
+  },
+  {
+    "id": "strawberry",
+    "name": "Strawberry",
+    "description": "Restores 10% HP when HP falls below 80%.",
+    "effects": [
+      {
+        "type": "stat_boost",
+        "stat": "hp",
+        "magnitude": 0.10,
+        "condition": "hp_low"
+      }
+    ]
   }
 ]

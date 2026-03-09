@@ -680,77 +680,217 @@ class _MaterialsTabState extends State<_MaterialsTab> {
                         .where((r) => r.requiredLoot.containsKey(entry.key))
                         .length;
 
-                    return Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF14142A),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.07),
+                    return InkWell(
+                      onTap: () {
+                        final config =
+                            userState.farmingConfig['seed_picking']?[entry.key
+                                .toLowerCase()];
+                        final hasTweezers = (inventory['tweezers'] ?? 0) > 0;
+                        if (config != null && hasTweezers) {
+                          _showSeedPickingDialog(
+                            context,
+                            userState,
+                            entry.key,
+                            config,
+                          );
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
                         ),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 38,
-                            height: 38,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.05),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.1),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF14142A),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.07),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 38,
+                              height: 38,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.05),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.1),
+                                ),
+                              ),
+                              padding: const EdgeInsets.all(4),
+                              child: ItemIcon(itemName: name, size: 28),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    name,
+                                    style: const TextStyle(
+                                      fontFamily: 'PressStart2P',
+                                      fontSize: 7,
+                                      color: Colors.white,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    usedIn > 0
+                                        ? 'Used in $usedIn recipe${usedIn > 1 ? 's' : ''}'
+                                        : 'Drop item',
+                                    style: TextStyle(
+                                      fontSize: 9,
+                                      color: Colors.white.withValues(
+                                        alpha: 0.35,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            padding: const EdgeInsets.all(4),
-                            child: ItemIcon(itemName: name, size: 28),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  name,
-                                  style: const TextStyle(
-                                    fontFamily: 'PressStart2P',
-                                    fontSize: 7,
-                                    color: Colors.white,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  usedIn > 0
-                                      ? 'Used in $usedIn recipe${usedIn > 1 ? 's' : ''}'
-                                      : 'Drop item',
-                                  style: TextStyle(
-                                    fontSize: 9,
-                                    color: Colors.white.withValues(alpha: 0.35),
-                                  ),
-                                ),
-                              ],
+                            Text(
+                              'x${entry.value}',
+                              style: const TextStyle(
+                                fontFamily: 'PressStart2P',
+                                fontSize: 10,
+                                color: AppColors.highlightColor,
+                              ),
                             ),
-                          ),
-                          Text(
-                            'x${entry.value}',
-                            style: const TextStyle(
-                              fontFamily: 'PressStart2P',
-                              fontSize: 10,
-                              color: AppColors.highlightColor,
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     );
                   },
                 ),
         ),
       ],
+    );
+  }
+
+  void _showSeedPickingDialog(
+    BuildContext context,
+    UserState userState,
+    String fruitId,
+    dynamic config,
+  ) {
+    final inventory = userState.currentUser?.inventory ?? {};
+    final maxFruit = inventory[fruitId] ?? 0;
+    if (maxFruit <= 0) return;
+
+    int qty = 1;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setLocal) {
+          return AlertDialog(
+            backgroundColor: const Color(0xFF14142A),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: const BorderSide(color: Colors.white10),
+            ),
+            title: const Text(
+              'SEED PICKING',
+              style: TextStyle(
+                fontFamily: 'PressStart2P',
+                fontSize: 12,
+                color: Colors.white,
+              ),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Use Tweezers to extract seeds from ${fruitId.toUpperCase()}?',
+                  style: const TextStyle(color: Colors.white70, fontSize: 13),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.remove_circle_outline),
+                      color: AppColors.dangerLight,
+                      onPressed: qty > 1 ? () => setLocal(() => qty--) : null,
+                    ),
+                    Text(
+                      '$qty / $maxFruit',
+                      style: const TextStyle(
+                        fontFamily: 'PressStart2P',
+                        fontSize: 14,
+                        color: AppColors.highlightColor,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.add_circle_outline),
+                      color: AppColors.primary,
+                      onPressed: qty < maxFruit
+                          ? () => setLocal(() => qty++)
+                          : null,
+                    ),
+                  ],
+                ),
+                if (maxFruit > 1)
+                  Slider(
+                    value: qty.toDouble(),
+                    min: 1,
+                    max: maxFruit.toDouble(),
+                    divisions: maxFruit > 1 ? maxFruit - 1 : 1,
+                    activeColor: AppColors.primary,
+                    inactiveColor: Colors.white24,
+                    label: '$qty',
+                    onChanged: (v) => setLocal(() => qty = v.toInt()),
+                  ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                style: TextButton.styleFrom(foregroundColor: Colors.white54),
+                child: const Text('CANCEL'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  Navigator.pop(ctx);
+                  final success = await userState.pickSeeds(fruitId, qty);
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          success
+                              ? 'Successfully picked seeds from $qty ${fruitId.toUpperCase()}!'
+                              : 'Failed to pick seeds.',
+                        ),
+                        backgroundColor: success
+                            ? Colors.green
+                            : Colors.redAccent,
+                      ),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.highlightColor,
+                  foregroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text(
+                  'PICK SEEDS',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 }

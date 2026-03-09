@@ -12643,7 +12643,7 @@
         "abilities": "Static",
         "active_time": "any",
         "attack": 70,
-        "category": "Marial",
+        "category": "Martial",
         "defense": 65,
         "description": "A smaller anteater that uses its claws and prehensile tail to forage.",
         "drops": "Claw",
@@ -16400,7 +16400,7 @@
         "weight": 1
     },
     {
-        "abilities": "Moody",
+        "abilities": "Moody, Snow Warning",
         "active_time": "any",
         "attack": 55,
         "category": "Cryo, Mystic",
@@ -46120,7 +46120,7 @@
         "weight": 1
     },
     {
-        "abilities": "Swift Swimmer",
+        "abilities": "Swift Swim",
         "active_time": "any",
         "attack": 46,
         "category": "Aquatic",
@@ -46320,7 +46320,7 @@
         "weight": 1
     },
     {
-        "abilities": "Cold Blood",
+        "abilities": "Cold-blooded",
         "active_time": "any",
         "attack": 44,
         "category": "Aquatic,Cryo",
@@ -47987,7 +47987,7 @@
         "defense": 42,
         "description": "The western tiger salamander is a large amphibian with bold striped patterns. It spends much of its time underground and emerges to hunt insects and worms.",
         "drops": "Amphibian Skin,Raw Meat",
-        "habitat": "Darkness",
+        "habitat": "Cave",
         "health": 70,
         "moves": "Assurance, Beat Up, Bite, Brutal Swing, Bulk Up, Crunch, Dark Pulse, Dig, Earth Power, Earthquake, False Surrender, Foul Play, Gash, Lash Out, Mud Shot, Night Slash, Payback, Roar, Rock Slide, Sand Tomb, Scary Face, Throat Chop",
         "name": "Western Tiger Salamander",

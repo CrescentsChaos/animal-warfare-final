@@ -9,6 +9,7 @@ import 'package:animal_warfare/quest_screen.dart';
 import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/theme.dart';
 import 'package:animal_warfare/shop_screen.dart';
+import 'package:animal_warfare/farming_screen.dart';
 import 'package:animal_warfare/services/audio_service.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:animal_warfare/game/time_service.dart';
@@ -288,6 +289,13 @@ class _MainScreenState extends State<MainScreen> {
                               icon: Icons.shopping_bag_rounded,
                               onPressed: () => _navigateTo(const ShopScreen()),
                               accentColor: const Color(0xFFFF6F00),
+                            ),
+                            _buildNavButton(
+                              text: 'Farm',
+                              icon: Icons.agriculture_rounded,
+                              onPressed: () =>
+                                  _navigateTo(const FarmingScreen()),
+                              accentColor: Colors.green,
                             ),
                           ],
                         ],

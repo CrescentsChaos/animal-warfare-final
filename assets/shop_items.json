@@ -159,55 +159,6 @@
         "category": "talisman"
     },
     {
-        "id": "strength_charm",
-        "name": "Strength Charm",
-        "description": "Increases attack power by 20%.",
-        "price": 3000,
-        "category": "talisman"
-    },
-    {
-        "id": "iron_ward",
-        "name": "Iron Ward",
-        "description": "Increases defense by 25%.",
-        "price": 3000,
-        "category": "talisman"
-    },
-    {
-        "id": "swift_rune",
-        "name": "Swift Rune",
-        "description": "Increases speed by 30%.",
-        "price": 3000,
-        "category": "talisman"
-    },
-    {
-        "id": "vitality_stone",
-        "name": "Vitality Stone",
-        "description": "Increases max health by 15%.",
-        "price": 3000,
-        "category": "talisman"
-    },
-    {
-        "id": "power_crystal",
-        "name": "Power Crystal",
-        "description": "All attacks deal 15% more damage.",
-        "price": 3500,
-        "category": "talisman"
-    },
-    {
-        "id": "guardian_shell",
-        "name": "Guardian Shell",
-        "description": "Reduces incoming damage by 20%.",
-        "price": 3500,
-        "category": "talisman"
-    },
-    {
-        "id": "lucky_claw",
-        "name": "Lucky Claw",
-        "description": "Increases critical hit chance by 10%.",
-        "price": 2500,
-        "category": "talisman"
-    },
-    {
         "id": "black_sludge",
         "name": "Black Sludge",
         "description": "Restores 1/16 max HP each turn for Poison types, damages others by 1/8.",
@@ -647,5 +598,52 @@
         "description": "Changes nature to Serious (neutral).",
         "price": 3000,
         "category": "mint"
+    },
+    {
+        "id": "strawberry_seed",
+        "name": "Strawberry Seed",
+        "description": "Plant strawberry tree.",
+        "price": 50,
+        "category": "seed",
+        "biomes": [
+            "Jungle",
+            "Rainforest"
+        ]
+    },
+    {
+        "id": "strawberry",
+        "name": "Strawberry",
+        "description": "Strawberry fruit.",
+        "price": 500,
+        "category": "fruits",
+        "biomes": [
+            "Jungle",
+            "Rainforest"
+        ]
+    },
+    {
+        "id": "organic_fertilizer",
+        "name": "Organic Fertilizer",
+        "description": "Fertilizer for plants.",
+        "price": 100,
+        "category": "fertilizer",
+        "biomes": [
+            "Jungle",
+            "Rainforest"
+        ]
+    },
+    {
+        "id": "spray_bottle",
+        "name": "Spray Bottle",
+        "description": "A reusable bottle for watering plants.",
+        "price": 250,
+        "category": "farming_tool"
+    },
+    {
+        "id": "tweezers",
+        "name": "Tweezers",
+        "description": "A tool for pluck seeds from fruits.",
+        "price": 250,
+        "category": "farming_tool"
     }
 ]
