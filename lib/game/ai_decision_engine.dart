@@ -880,6 +880,76 @@ class AIDecisionEngine {
         break;
     }
 
+    // ──────────────────────────────────────────────
+    // Trait 11: Held Item Synergy
+    // ──────────────────────────────────────────────
+    final item = attacker.organism.equippedTalisman;
+    if (item != null && !attacker.talismanConsumed) {
+      final itemName = item.name;
+
+      // Choice Item Strategy
+      final isChoiceItem = itemName.contains('Choice');
+      if (isChoiceItem) {
+        // If we are about to be locked into a move, ensure it's a good one.
+        if (!attacker.isChoiceLocked) {
+          if (move.category == MoveCategory.status) {
+            score -= 400; // Heavily penalize locking into a status move
+          }
+          if (typeMultiplier < 1.0) {
+            score -= 150; // Penalize locking into a resisted move
+          }
+          if (canKO) {
+            score += 100; // Excellent to lock into a KO move
+          }
+        }
+      }
+
+      // Life Orb Recoil Awareness
+      if (itemName == 'Life Orb' && move.category != MoveCategory.status) {
+        final recoil = attacker.maxHealth * 0.1;
+        if (attacker.health <= recoil) {
+          score -= 300; // Don't suicide if we can help it
+        } else if (isSurvivalRisky) {
+          score -= 50; // Be more cautious
+        }
+      }
+
+      // Focus Sash Aggression
+      if (itemName == 'Focus Sash' && attackerHpRatio > 0.99) {
+        // We can survive a hit. Be slightly more aggressive.
+        if (canKO) {
+          score += 150;
+        } else {
+          score += 30;
+        }
+      }
+
+      // Weather/Terrain Extension
+      final isDurationExtender =
+          itemName.endsWith(' Rock') || itemName == 'Terrain Extender';
+      if (isDurationExtender) {
+        final hasWeatherEffect = move.effects.any(
+          (e) => e.type == MoveEffectType.weather,
+        );
+        final hasTerrainEffect = move.effects.any(
+          (e) => e.type == MoveEffectType.terrain,
+        );
+        if (hasWeatherEffect || hasTerrainEffect) {
+          score += 200; // High priority to setup with extension item
+        }
+      }
+
+      // Power Herb Synergy (Multi-turn moves skip charge)
+      if (itemName == 'Power Herb' && move.isMultiTurn) {
+        score += 300; // Great synergy
+      }
+
+      // Assault Vest (Heuristic)
+      if (itemName == 'Assault Vest' && move.category == MoveCategory.status) {
+        score -= 1000;
+      }
+    }
+
     return score;
   }
 

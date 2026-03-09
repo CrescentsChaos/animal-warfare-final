@@ -1140,7 +1140,7 @@
         "weight": 1
     },
     {
-        "abilities": "Rock Shelter",
+        "abilities": "Solar Power , Solid Rock",
         "active_time": "any",
         "attack": 40,
         "category": "Rock",
@@ -1149,7 +1149,7 @@
         "drops": "Skin",
         "habitat": "Mountain",
         "health": 50,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Ancient Power, Body Press, Bulk Up, Burn Up, Clear Smog, Dig, Earth Power, Ember, Fire Blast, Fire Spin, Flare Blitz, Heat Crash, Iron Defense, Morning Sun, Mud-Slap, Rock Polish, Rock Slide, Sandstorm, Stealth Rock, Stone Edge, Sunny Day, Will-O-Wisp",
         "name": "Black Mountain Skink",
         "power": 32,
         "rarity": "Uncommon",
@@ -1400,7 +1400,7 @@
         "weight": 1
     },
     {
-        "abilities": "Ancient Resilience",
+        "abilities": "Sturdy , Shell Armor",
         "active_time": "any",
         "attack": 60,
         "category": "Rock, Aquatic",
@@ -1409,7 +1409,7 @@
         "drops": "Fillet",
         "habitat": "Deep Sea",
         "health": 100,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Amnesia, Ancient Power, Aqua Tail, Body Press, Brine, Curse, Dive, Earth Power, Earthquake, Flip Turn, Heavy Slam, Hydro Pump, Iron Defense, Iron Head, Liquidation, Muddy Water, Rain Dance, Recover, Rock Slide, Stealth Rock, Stone Edge, Surf",
         "name": "West Indian Ocean Coelacanth",
         "power": 65,
         "rarity": "Legendary",
@@ -1749,7 +1749,7 @@
         "drops": "Feather",
         "habitat": "Taiga, Mountain, Urban, Tundra",
         "health": 65,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Aerial Ace, Air Slash, Assurance, Brave Bird, Confuse Ray, Copycat, Dark Pulse, Defog, Fake Out, Foul Play, Hone Claws, Hurricane, Me First, Mimic, Nasty Plot, Night Shade, Night Slash, Quash, Roost, Sky Attack, Snarl, Sucker Punch, Taunt, Thief",
         "name": "Common Raven",
         "power": 62,
         "rarity": "Uncommon",
@@ -1960,7 +1960,7 @@
         "weight": 1
     },
     {
-        "abilities": "Mustache Charm",
+        "abilities": "Queenly Majesty , Prankster",
         "active_time": "any",
         "attack": 55,
         "category": "Basic",
@@ -1969,7 +1969,7 @@
         "drops": "Fur",
         "habitat": "Jungle, Rainforest",
         "health": 50,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Acrobatics, Agility, Baby-Doll Eyes, Baton Pass, Charm, Copycat, Dazzling Gleam, Encore, Fake Out, Follow Me, Giga Drain, Helping Hand, Low Kick, Noble Roar, Play Rough, Quick Attack, Sunny Day, Swift, Tail Slap, Taunt, Tickle, U-turn",
         "name": "Emperor Tamarin",
         "power": 48,
         "rarity": "Uncommon",
@@ -1980,7 +1980,7 @@
         "weight": 1
     },
     {
-        "abilities": "Forest Shadow",
+        "abilities": "Intimidate , Defiant",
         "active_time": "any",
         "attack": 60,
         "category": "Basic, Blaze",
@@ -1989,7 +1989,7 @@
         "drops": "Fur",
         "habitat": "Jungle, Rainforest",
         "health": 55,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Assurance, Beat Up, Bite, Bulk Up, Close Combat, Crunch, Dark Pulse, Drain Punch, Fake Out, Fire Punch, Focus Punch, Hone Claws, Iron Head, Knock Off, Lash Out, Low Kick, Mach Punch, Night Slash, Parting Shot, Power-Up Punch, Sucker Punch, Taunt, Throat Chop",
         "name": "Black Lion Tamarin",
         "power": 64,
         "rarity": "Rare",
@@ -2080,7 +2080,7 @@
         "weight": 1
     },
     {
-        "abilities": "Iron Shell",
+        "abilities": "Shell Armor , Pressure",
         "active_time": "any",
         "attack": 45,
         "category": "Arthropod, Aquatic",
@@ -2089,7 +2089,7 @@
         "drops": "Exoskeleton",
         "habitat": "Deep Sea, Ocean, Cave",
         "health": 100,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Amnesia, Aqua Jet, Body Press, Bug Bite, Crunch, Curse, Dig, First Impression, Gire Spin, Heavy Slam, Hydro Pump, Iron Defense, Liquidation, Metal Claw, Protect, Rain Dance, Rapid Spin, Rock Slide, Skitter Smack, Stealth Rock, Wide Guard",
         "name": "Giant Isopod",
         "power": 55,
         "rarity": "Uncommon",
@@ -2100,16 +2100,16 @@
         "weight": 1
     },
     {
-        "abilities": "Clear Body",
+        "abilities": "Compound Eyes , Infiltrator",
         "active_time": "any",
         "attack": 35,
-        "category": "Aquatic",
+        "category": "Aquatic, Aura",
         "defense": 50,
         "description": "A strange deep-sea fish with a transparent head that reveals its upward-facing tubular eyes, allowing it to track prey in the pitch-black depths.",
         "drops": "Fillet",
         "habitat": "Deep Sea",
         "health": 60,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Agility, Amnesia, Aqua Ring, Barrier, Calm Mind, Clear Smog, Confuse Ray, Destiny Bond, Dive, Extrasensory, Flash, Future Sight, Hydro Pump, Light Screen, Mirror Coat, Night Shade, Psychic, Rain Dance, Reflect, Shadow Ball, Water Pulse",
         "name": "Barreleye Fish",
         "power": 25,
         "rarity": "Rare",
@@ -2360,7 +2360,7 @@
         "weight": 1
     },
     {
-        "abilities": "Tusks Charge",
+        "abilities": "Rough Skin , Stench",
         "active_time": "any",
         "attack": 65,
         "category": "Basic",
@@ -2369,7 +2369,7 @@
         "drops": "Fur",
         "habitat": "Desert, Savanna, Jungle, River",
         "health": 80,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Bite, Body Slam, Bulk Up, Bulldoze, Dig, Double-Edge, Earth Power, Earthquake, Fire Fang, Gire Spin, Headbutt, High Horsepower, Iron Defense, Mud-Slap, Play Rough, Roar, Rock Slide, Sandstorm, Scary Face, Stomping Tantrum, Superpower, Thrash",
         "name": "Collared Peccary",
         "power": 62,
         "rarity": "Uncommon",
@@ -2400,7 +2400,7 @@
         "weight": 1
     },
     {
-        "abilities": "Glide Leap",
+        "abilities": "Swift Swim , Aerilate",
         "active_time": "any",
         "attack": 45,
         "category": "Basic, Aquatic",
@@ -2409,7 +2409,7 @@
         "drops": "Frog Leg",
         "habitat": "Jungle, Rainforest, Mountain",
         "health": 50,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Acrobatics, Aerial Ace, Agility, Air Slash, Aqua Jet, Bounce, Bubble Beam, Camouflage, Chilling Water, Double Team, Flip Turn, Giga Drain, Gust, Hydro Pump, Leafage, Muddy Water, Rain Dance, Roost, Tailwind, U-turn, Water Pulse",
         "name": "Chinese Gliding Tree Frog",
         "power": 48,
         "rarity": "Uncommon",
@@ -2640,7 +2640,7 @@
         "weight": 1
     },
     {
-        "abilities": "Bioluminescent Lure",
+        "abilities": "Strong Jaw , Illuminate",
         "active_time": "any",
         "attack": 75,
         "category": "Aquatic, Drake",
@@ -2649,7 +2649,7 @@
         "drops": "Fillet",
         "habitat": "Deep Sea",
         "health": 85,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Assurance, Bite, Brine, Crunch, Dark Pulse, Destiny Bond, Dive, Dragon Breath, Dragon Tail, Fang Lock, Fire Fang, Flash, Hydro Pump, Ice Fang, Jaw Lock, Night Shade, Poison Fang, Psychic Fangs, Scary Face, Sucker Punch, Thunder Fang, Water Gun",
         "name": "Straightline Dragonfish",
         "power": 77,
         "rarity": "Rare",
@@ -2740,16 +2740,16 @@
         "weight": 1
     },
     {
-        "abilities": "Static",
+        "abilities": "Swift Swim , Anticipation",
         "active_time": "any",
         "attack": 40,
-        "category": "Aquatic, Electric",
+        "category": "Aquatic, Metal",
         "defense": 50,
         "description": "A freshwater fish with an elongated trunk-like mouth resembling an elephant’s trunk. It uses this organ for probing the riverbed in search of invertebrates. Its weak bioelectric field gives it an uncanny awareness of its surroundings, even in complete darkness.",
         "drops": "Fillet",
         "habitat": "River, Lake",
         "health": 65,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Aqua Jet, Aqua Tail, Bind, Body Slam, Chilling Water, Dig, Dragon Tail, Earth Power, Flash, Flip Turn, Hydro Pump, Iron Defense, Iron Head, Liquidation, Metal Claw, Mud Shot, Rain Dance, Smart Strike, Surf, Thunder Wave, Water Pulse",
         "name": "American Elephant Fish",
         "power": 35,
         "rarity": "Rare",
@@ -2780,7 +2780,7 @@
         "weight": 1
     },
     {
-        "abilities": "Anticipation",
+        "abilities": "Compound Eyes , Clear Body",
         "active_time": "any",
         "attack": 50,
         "category": "Aquatic, Aura",
@@ -2789,7 +2789,7 @@
         "drops": "Fillet",
         "habitat": "River, Lake",
         "health": 85,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Amnesia, Aqua Ring, Barrier, Calm Mind, Chilling Water, Confuse Ray, Dragon Pulse, Extrasensory, Gire Spin, Hydro Pump, Light Screen, Mirror Coat, Mist, Muddy Water, Psybeam, Psychic, Rain Dance, Recover, Reflect, Surf, Water Spout",
         "name": "American Paddlefish",
         "power": 48,
         "rarity": "Rare",
@@ -2900,7 +2900,7 @@
         "weight": 1
     },
     {
-        "abilities": "Armor Plate",
+        "abilities": "Rough Skin , Suction Cups , Screen Cleaner",
         "active_time": "any",
         "attack": 40,
         "category": "Rock, Aquatic",
@@ -2909,7 +2909,7 @@
         "drops": "Fillet",
         "habitat": "River, Lake, Jungle",
         "health": 70,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Acid Armor, Aqua Tail, Body Press, Bulldoze, Camouflage, Dig, Earth Power, Earthquake, Gastro Acid, Gire Spin, Heavy Slam, Hydro Pump, Iron Defense, Liquidation, Mud-Slap, Protect, Rapid Spin, Rock Slide, Sandstorm, Stealth Rock, Sticky Hold, Surf",
         "name": "Common Pleco",
         "power": 31,
         "rarity": "Common",
@@ -3040,7 +3040,7 @@
         "weight": 1
     },
     {
-        "abilities": "Aerilate",
+        "abilities": "Serene Grace , Big Pecks",
         "active_time": "any",
         "attack": 55,
         "category": "Mystic, Flying",
@@ -3049,7 +3049,7 @@
         "drops": "Feather",
         "habitat": "River, Lake, Savanna",
         "health": 75,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Aerial Ace, Air Slash, Brave Bird, Defog, Dual Wingbeat, Feather Dance, Fly, Gust, Helping Hand, Hurricane, Life Dew, Light Screen, Mist, Moonblast, Moonlight, Rain Dance, Recover, Reflect, Roost, Tailwind, Whirlwind, Wish",
         "name": "White Stork",
         "power": 49,
         "rarity": "Uncommon",
@@ -3240,7 +3240,7 @@
         "weight": 1
     },
     {
-        "abilities": "Sea Glide",
+        "abilities": "Thick Fat , Fur Coat",
         "active_time": "any",
         "attack": 40,
         "category": "Aquatic, Cryo",
@@ -3249,7 +3249,7 @@
         "drops": "Feather",
         "habitat": "Coastal,Tundra,Ocean",
         "health": 55,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Amnesia, Aqua Ring, Aurora Beam, Blizzard, Brine, Chilling Water, Dive, Double-Edge, Feather Dance, Flip Turn, Frost Breath, Giga Impact, Hail, Hydro Pump, Ice Beam, Icy Wind, Rain Dance, Roost, Snowscape, Surf, Water Pulse, Waterfall",
         "name": "Common Eider",
         "power": 43,
         "rarity": "Uncommon",
@@ -3560,7 +3560,7 @@
         "weight": 1
     },
     {
-        "abilities": "True Flight",
+        "abilities": "Keen Eye , Hydration",
         "active_time": "any",
         "attack": 50,
         "category": "Aquatic, Metal",
@@ -3569,7 +3569,7 @@
         "drops": "Feather",
         "habitat": "River,Lake,Swamp,Coastal",
         "health": 60,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Aerial Ace, Air Slash, Aqua Ring, Brave Bird, Defog, Dual Wingbeat, Feather Dance, Fly, Gust, Hurricane, Hydro Pump, Life Dew, Muddy Water, Rain Dance, Roost, Sky Attack, Sludge Bomb, Soak, Surf, Tailwind, Water Pulse, Whirlwind",
         "name": "Eurasian Spoonbill",
         "power": 49,
         "rarity": "Uncommon",
@@ -4520,16 +4520,16 @@
         "weight": 1
     },
     {
-        "abilities": "Vibrant Charge",
+        "abilities": "Strong Jaw , Dazzling",
         "active_time": "any",
         "attack": 45,
-        "category": "Aquatic",
+        "category": "Aquatic, Mystic",
         "defense": 40,
         "description": "A large, colorful parrotfish native to Indo-Pacific reefs. Its striking red lips are used to scrape algae and coral, helping maintain reef ecosystems while fending off predators.",
         "drops": "Fillet",
         "habitat": "Coral Reef,Coastal",
         "health": 55,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Ancient Power, Aqua Tail, Bite, Body Press, Calm Mind, Crunch, Dazzling Gleam, Dragon Pulse, Earth Power, Fire Fang, Giga Drain, Head Smash, Hydro Pump, Ice Fang, Light Screen, Moonblast, Play Rough, Psychic Fangs, Reflect, Rock Slide, Sandstorm, Stealth Rock, Surf",
         "name": "Redlip Parrotfish",
         "power": 44,
         "rarity": "Uncommon",
@@ -5780,7 +5780,7 @@
         "weight": 1
     },
     {
-        "abilities": "School Swimmer",
+        "abilities": "Speed Boost , Swift Swim",
         "active_time": "any",
         "attack": 60,
         "category": "Aquatic",
@@ -5789,7 +5789,7 @@
         "drops": "Fillet",
         "habitat": "Ocean",
         "health": 70,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Agility, Aqua Jet, Aqua Tail, Double-Edge, Flash Cannon, Flip Turn, Hydro Pump, Iron Head, Liquidation, Metal Sound, Rain Dance, Smart Strike, Sonic Boom, Steel Wing, Surf, Tail Slap, U-turn, Water Pulse, Wave Crash",
         "name": "Atlantic Mackerel",
         "power": 70,
         "rarity": "Common",
@@ -6840,16 +6840,16 @@
         "weight": 1
     },
     {
-        "abilities": "Swarm",
+        "abilities": "Swarm , Illuminate",
         "active_time": "any",
         "attack": 10,
-        "category": "Aquatic",
+        "category": "Aquatic, Arthropod",
         "defense": 15,
         "description": "A small but vital crustacean of the Southern Ocean, krill form enormous swarms that sustain penguins, seals, whales, and many fish. Despite their size, their ecological role is massive, making them the cornerstone of Antarctic food webs.",
         "drops": "Exoskeleton",
         "habitat": "Ocean, Frozen Ocean",
         "health": 20,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Aqua Jet, Aqua Ring, Bug Bite, Bug Buzz, Chilling Water, Discharge, Double Team, Electric Terrain, Electroweb, Flash, Giga Drain, Hydro Pump, Ice Beam, Icy Wind, Light Screen, Lunge, Rain Dance, Recover, Reflect, Signal Beam, Skitter Smack, Struggle Bug, Surf, Tail Glow, Water Spout",
         "name": "Antarctic Krill",
         "power": 15,
         "rarity": "Common",
@@ -7260,7 +7260,7 @@
         "weight": 1
     },
     {
-        "abilities": "Aquatic Grazer",
+        "abilities": "Gluttony , Harvest",
         "active_time": "any",
         "attack": 50,
         "category": "Aquatic, Grass",
@@ -7269,7 +7269,7 @@
         "drops": "Fillet",
         "habitat": "River, Lake",
         "health": 100,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Aqua Tail, Bounce, Bullet Seed, Chilling Water, Dragon Tail, Energy Ball, Flail, Giga Drain, Grass Whistle, Grassy Glide, Grassy Terrain, Hydro Pump, Leaf Storm, Liquidation, Magical Leaf, Muddy Water, Rain Dance, Seed Bomb, Solar Beam, Surf, Trailblaze, Waterfall",
         "name": "Grass Carp",
         "power": 59,
         "rarity": "Common",
@@ -7420,7 +7420,7 @@
         "weight": 1
     },
     {
-        "abilities": "School Swimmer",
+        "abilities": "Swift Swim , Sturdy",
         "active_time": "any",
         "attack": 60,
         "category": "Aquatic, Martial",
@@ -7429,7 +7429,7 @@
         "drops": "Fillet",
         "habitat": "River, Lake",
         "health": 100,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Aqua Jet, Aqua Tail, Body Slam, Bulk Up, Bulldoze, Chilling Water, Dig, Double-Edge, Earth Power, Earthquake, Flip Turn, Focus Energy, Hydro Pump, Iron Head, Liquidation, Mud Shot, Muddy Water, Rain Dance, Scald, Stomping Tantrum, Surf, Waterfall",
         "name": "Rohu",
         "power": 52,
         "rarity": "Common",
@@ -7960,7 +7960,7 @@
         "weight": 1
     },
     {
-        "abilities": "Filter Feeder",
+        "abilities": "Unaware , Filter",
         "active_time": "any",
         "attack": 50,
         "category": "Aquatic, Basic",
@@ -7969,7 +7969,7 @@
         "drops": "Fillet",
         "habitat": "River, Lake",
         "health": 100,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Amnesia, Aqua Ring, Bide, Body Slam, Brine, Bubble Beam, Calm Mind, Chilling Water, Curse, Endure, Gire Spin, Hydro Pump, Iron Defense, Life Dew, Muddy Water, Protect, Rain Dance, Recover, Refresh, Stockpile, Swallow, Water Spout",
         "name": "Bigmouth Buffalo",
         "power": 57,
         "rarity": "Uncommon",
@@ -8440,16 +8440,16 @@
         "weight": 1
     },
     {
-        "abilities": "Cold Endurance",
+        "abilities": "Swift Swim , Strong Jaw",
         "active_time": "any",
         "attack": 85,
-        "category": "Aquatic",
+        "category": "Aquatic, Cryo",
         "defense": 65,
         "description": "A freshwater salmonid native to Siberian and East Asian rivers. Lenok feed on smaller fish and invertebrates, using speed and ambush tactics in cold waters.",
         "drops": "Fillet",
         "habitat": "River, Lake",
         "health": 75,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Aqua Jet, Aqua Tail, Avalanche, Blizzard, Chilling Water, Crunch, Dual Chop, Flip Turn, Frost Breath, Hydro Pump, Ice Beam, Ice Fang, Icy Wind, Liquidation, Noble Roar, Rain Dance, Scale Shot, Snowscape, Surf, Water Pulse, Waterfall",
         "name": "Manchurian Trout",
         "power": 92,
         "rarity": "Rare",
@@ -8660,7 +8660,7 @@
         "weight": 1
     },
     {
-        "abilities": "Regenerator, Natural Cure",
+        "abilities": "Suction Cups , Regenerator",
         "active_time": "any",
         "attack": 50,
         "category": "Aquatic",
@@ -8669,7 +8669,7 @@
         "drops": "Star",
         "habitat": "Coastal, Kelp Forest",
         "health": 90,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Aqua Jet, Aqua Tail, Bind, Body Press, Brine, Bulk Up, Clamp, Close Combat, Constrict, Double-Hit, Drain Punch, Flip Turn, Focus Energy, Hydro Pump, Liquidation, Low Kick, Power-Up Punch, Rain Dance, Recover, Reversal, Superpower, Surf, Wrap",
         "name": "Ochre Sea Star",
         "power": 49,
         "rarity": "Common",
@@ -8680,7 +8680,7 @@
         "weight": 1
     },
     {
-        "abilities": "Poison Point, Regenerator, Spiky Body",
+        "abilities": "Iron Barbs , Rough Skin",
         "active_time": "any",
         "attack": 75,
         "category": "Aquatic, Toxic",
@@ -8689,7 +8689,7 @@
         "drops": "Star",
         "habitat": "Coastal, Kelp Forest",
         "health": 65,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Aqua Ring, Baneful Bunker, Brine, Gire Spin, Harden, Hydro Pump, Iron Defense, Pin Missile, Power Gem, Rapid Spin, Recover, Rock Polish, Rock Slide, Self-Destruct, Shore Up, Spiky Shield, Stealth Rock, Surf, Toxic, Toxic Spikes",
         "name": "Purple Sea Urchin",
         "power": 60,
         "rarity": "Common",
@@ -8700,7 +8700,7 @@
         "weight": 1
     },
     {
-        "abilities": "Battle Armor, Regenerator, Spiky Body",
+        "abilities": "Iron Barbs , Poison Point",
         "active_time": "any",
         "attack": 80,
         "category": "Aquatic, Rock",
@@ -8709,7 +8709,7 @@
         "drops": "Star",
         "habitat": "Coastal,  Kelp Forest",
         "health": 70,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Acid Spray, Amnesia, Aqua Ring, Baneful Bunker, Brine, Gire Spin, Gunk Shot, Harden, Hydro Pump, Iron Defense, Pin Missile, Poison Gas, Power Gem, Rapid Spin, Recover, Self-Destruct, Sludge Bomb, Spiky Shield, Surf, Toxic, Toxic Spikes",
         "name": "Red Sea Urchin",
         "power": 50,
         "rarity": "Common",
@@ -8729,7 +8729,7 @@
         "drops": "Star",
         "habitat": "Coastal, Kelp Forest",
         "health": 77,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Aqua Ring, Arm Thrust, Bind, Brine, Calm Mind, Camouflage, Constrict, Double-Hit, Extrasensory, Giga Drain, Hydro Pump, Life Dew, Light Screen, Mirror Coat, Power Gem, Psychic, Rain Dance, Recover, Reflect, Surf, Water Pulse, Wrap",
         "name": "Sunflower Star",
         "power": 91,
         "rarity": "Rare",
@@ -8780,7 +8780,7 @@
         "weight": 1
     },
     {
-        "abilities": "Regenerator, Natural Cure",
+        "abilities": "Regenerator , Shell Armor",
         "active_time": "any",
         "attack": 55,
         "category": "Aquatic",
@@ -8789,7 +8789,7 @@
         "drops": "Star",
         "habitat": "Coastal, Kelp Forest",
         "health": 95,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Amnesia, Aqua Ring, Body Slam, Calm Mind, Dazzling Gleam, Flash, Giga Drain, Heavy Slam, Hydro Pump, Iron Defense, Life Dew, Light Screen, Magic Coat, Mirror Coat, Misty Terrain, Moonblast, Play Rough, Power Gem, Recover, Reflect, Safeguard, Surf",
         "name": "Cushion Star",
         "power": 65,
         "rarity": "Uncommon",
@@ -8980,7 +8980,7 @@
         "weight": 1
     },
     {
-        "abilities": "Sturdy",
+        "abilities": "Sturdy , Rough Skin",
         "active_time": "any",
         "attack": 55,
         "category": "Aquatic, Rock",
@@ -8989,7 +8989,7 @@
         "drops": "Fillet",
         "habitat": "Coastal, Kelp Forest",
         "health": 90,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Amnesia, Aqua Tail, Bind, Bite, Body Press, Bulldoze, Chilling Water, Coil, Crunch, Dig, Earth Power, Earthquake, Flip Turn, Gire Spin, Heavy Slam, Hydro Pump, Iron Defense, Liquidation, Mud Shot, Muddy Water, Rock Slide, Stealth Rock, Stone Edge, Surf, Wrap",
         "name": "Black Prickleback",
         "power": 61,
         "rarity": "Common",
@@ -9560,7 +9560,7 @@
         "weight": 1
     },
     {
-        "abilities": "Water Absorb",
+        "abilities": "Swift Swim , Symbiosis",
         "active_time": "any",
         "attack": 60,
         "category": "Aquatic",
@@ -9569,7 +9569,7 @@
         "drops": "Fillet",
         "habitat": "Coastal,Coral Reef",
         "health": 85,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Acrobatics, Agility, Aqua Jet, Aqua Ring, Assurance, Chilling Water, Double-Hit, Follow Me, Helping Hand, Hydro Pump, Life Dew, Liquidation, Rain Dance, Surf, Swift, Tail Slap, U-turn, Water Pulse, Waterfall",
         "name": "Banded Rudderfish",
         "power": 66,
         "rarity": "Uncommon",
@@ -9700,7 +9700,7 @@
         "weight": 1
     },
     {
-        "abilities": "Speed Boost",
+        "abilities": "Speed Boost , Sniper",
         "active_time": "any",
         "attack": 72,
         "category": "Aquatic",
@@ -9709,7 +9709,7 @@
         "drops": "Fillet",
         "habitat": "Coastal,Ocean",
         "health": 100,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Agility, Aqua Jet, Aqua Tail, Brave Bird, Double-Edge, Extreme Speed, Facade, Flash Cannon, Flip Turn, Focus Energy, Hydro Pump, Iron Head, Liquidation, Night Slash, Poison Jab, Rain Dance, Smart Strike, Steel Wing, Surf, U-turn, Waterfall, Wave Crash",
         "name": "Atlantic Bonito",
         "power": 80,
         "rarity": "Uncommon",
@@ -10580,7 +10580,7 @@
         "weight": 1
     },
     {
-        "abilities": "Neutralizing Gas",
+        "abilities": "Adaptability , Swift Swim",
         "active_time": "any",
         "attack": 78,
         "category": "Aquatic",
@@ -10589,7 +10589,7 @@
         "drops": "Fillet",
         "habitat": "River,Coastal",
         "health": 96,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Aqua Jet, Aqua Tail, Bite, Body Slam, Breaking Swipe, Chilling Water, Crunch, Dragon Breath, Dragon Dance, Dragon Pulse, Dragon Tail, Flip Turn, Focus Energy, Hydro Pump, Iron Head, Liquidation, Outrage, Rain Dance, Scald, Surf, Thrash, Waterfall",
         "name": "Barramundi",
         "power": 75,
         "rarity": "Rare",
@@ -10760,16 +10760,16 @@
         "weight": 1
     },
     {
-        "abilities": "Thick Hide",
+        "abilities": "Thick Fat , Infiltrator",
         "active_time": "any",
         "attack": 65,
-        "category": "Aquatic, Aura",
+        "category": "Earth, Darkness",
         "defense": 70,
         "description": "A large black and white herbivore with a distinctive pattern found in Southeast Asia",
         "drops": "Tapir Hide",
         "habitat": "Rainforest, Swamp",
         "health": 99,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Assurance, Body Press, Body Slam, Bulk Up, Bulldoze, Camouflage, Crunch, Dark Pulse, Dig, Earth Power, Earthquake, Fake Tears, Heavy Slam, High Horsepower, Iron Defense, Lash Out, Mud-Slap, Night Slash, Payback, Roar, Snarl, Stomping Tantrum, Sucker Punch, Throat Chop",
         "name": "Malayan Tapir",
         "power": 75,
         "rarity": "Uncommon",
@@ -10780,16 +10780,16 @@
         "weight": 1
     },
     {
-        "abilities": "Thick Hide",
+        "abilities": "Thick Fat , Sap Sipper",
         "active_time": "any",
         "attack": 63,
-        "category": "Aquatic, Cryo",
+        "category": "Earth, Cryo",
         "defense": 72,
         "description": "A small shaggy haired tapir adapted to cooler mountain regions of South America",
         "drops": "Tapir Hide",
         "habitat": "Mountain,Jungle",
         "health": 99,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Amnesia, Avalanche, Body Press, Body Slam, Bulk Up, Bulldoze, Chilling Water, Curse, Dig, Earth Power, Earthquake, Giga Drain, Heavy Slam, High Horsepower, Ice Beam, Ice Shard, Icicle Crash, Iron Defense, Mud-Slap, Rest, Snowscape, Stomping Tantrum, Synthesis, Yawn",
         "name": "Mountain Tapir",
         "power": 67,
         "rarity": "Uncommon",
@@ -10840,16 +10840,16 @@
         "weight": 1
     },
     {
-        "abilities": "Thick Hide",
+        "abilities": "Thick Fat , Sap Sipper",
         "active_time": "any",
         "attack": 64,
-        "category": "Aquatic, Grass",
+        "category": "Aquatic, Earth",
         "defense": 68,
         "description": "A common tapir species in South America often found near rivers and wetlands",
         "drops": "Tapir Hide",
         "habitat": "Rainforest",
         "health": 105,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Amnesia, Aqua Ring, Body Press, Body Slam, Bulldoze, Curse, Dig, Earth Power, Earthquake, Giga Drain, Heavy Slam, High Horsepower, Iron Defense, Mud-Slap, Rain Dance, Rest, Roar, Stomping Tantrum, Superpower, Surf, Synthesis, Yawn",
         "name": "South American Tapir",
         "power": 72,
         "rarity": "Uncommon",
@@ -10960,7 +10960,7 @@
         "weight": 1
     },
     {
-        "abilities": "Sharpness, Heatproof",
+        "abilities": "Sturdy , Justified",
         "active_time": "any",
         "attack": 120,
         "category": "Metal, Earth",
@@ -10969,7 +10969,7 @@
         "drops": "Oryx Horn",
         "habitat": "Savanna,Jungle,Swamp",
         "health": 90,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Agility, Body Press, Bulk Up, Bulldoze, Double-Edge, Drill Run, Earth Power, Earthquake, Endeavor, High Horsepower, Horn Attack, Iron Defense, Megahorn, Mud-Slap, Noble Roar, Rock Slide, Sandstorm, Smart Strike, Stomping Tantrum, Swords Dance",
         "name": "East African Oryx",
         "power": 50,
         "rarity": "Uncommon",
@@ -12160,7 +12160,7 @@
         "weight": 1
     },
     {
-        "abilities": "Cold-blooded",
+        "abilities": "Cold-blooded,Swift Swim , Water Veil",
         "active_time": "any",
         "attack": 70,
         "category": "Grass",
@@ -12169,7 +12169,7 @@
         "drops": "Scales",
         "habitat": "Rainforest,Swamp",
         "health": 100,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Acrobatics, Agility, Aqua Jet, Bounce, Branch Poke, Bullet Seed, Camouflage, Chilling Water, Double Team, Dragon Tail, Energy Ball, Giga Drain, Grassy Glide, Hydro Pump, Leaf Storm, Low Kick, Magical Leaf, Rain Dance, Trailblaze, Water Pulse",
         "name": "Green Basilisk",
         "power": 63,
         "rarity": "Rare",
@@ -12180,7 +12180,7 @@
         "weight": 1
     },
     {
-        "abilities": "Camouflage",
+        "abilities": "Dazzling , Infiltrator",
         "active_time": "any",
         "attack": 60,
         "category": "Grass, Aura",
@@ -12189,7 +12189,7 @@
         "drops": "Toxin Gland",
         "habitat": "Rainforest,Swamp",
         "health": 85,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Acrobatics, Agility, Baby-Doll Eyes, Bounce, Bug Bite, Calm Mind, Camouflage, Confuse Ray, Dazzling Gleam, Extrasensory, Giga Drain, Hypnosis, Light Screen, Lunge, Magical Leaf, Night Shade, Play Rough, Psychic, Quiver Dance, Reflect, Sleep Powder",
         "name": "Red-eye Tree Frog",
         "power": 69,
         "rarity": "Uncommon",
@@ -12440,7 +12440,7 @@
         "weight": 1
     },
     {
-        "abilities": "Stamina",
+        "abilities": "Stamina, Run Away",
         "active_time": "any",
         "attack": 85,
         "category": "Basic, Earth",
@@ -12449,7 +12449,7 @@
         "drops": "Horse Hair",
         "habitat": "Savanna",
         "health": 80,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Agility, Body Slam, Bulk Up, Bulldoze, Double-Edge, Drill Run, Earth Power, Earthquake, Extreme Speed, Helping Hand, High Horsepower, Iron Defense, Morning Sun, Mud-Slap, Play Rough, Quick Attack, Roar, Stomping Tantrum, Sunny Day, Take Down",
         "name": "White-spotted Horse",
         "power": 82,
         "rarity": "Uncommon",
@@ -12560,7 +12560,7 @@
         "weight": 1
     },
     {
-        "abilities": "Cold-blooded",
+        "abilities": "Swift Swim , Rough Skin",
         "active_time": "any",
         "attack": 65,
         "category": "Rock",
@@ -12569,7 +12569,7 @@
         "drops": "Scales",
         "habitat": "Rainforest,Swamp",
         "health": 95,
-        "moves": "Tackle,Scratch,Bite,Peck",
+        "moves": "Aqua Tail, Bind, Bite, Body Press, Bulldoze, Camouflage, Chilling Water, Dig, Dragon Tail, Earth Power, Earthquake, Flip Turn, Hydro Pump, Iron Defense, Liquidation, Mud Shot, Muddy Water, Rain Dance, Rock Slide, Sandstorm, Stealth Rock",
         "name": "Brown Basilisk",
         "power": 72,
         "rarity": "Uncommon",

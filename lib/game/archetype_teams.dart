@@ -61,21 +61,17 @@ class ArchetypeTeamBuilder {
     if (_rng.nextDouble() < chaosCutoff) {
       // Filter out God-Tier organisms (test entries with 999 stats)
       final normalPool = allOrganisms.where((o) => !_isGodTier(o)).toList();
-      if (normalPool.isEmpty)
-        return _buildChaos(
-          allOrganisms,
-          withTalismans: withTalismans,
-          level: level,
-          teamSize: teamSize,
-          minIV: minIV,
-        );
-
-      return _buildChaos(
-        normalPool,
+      final team = buildChaos(
+        normalPool.isEmpty ? allOrganisms : normalPool,
         withTalismans: withTalismans,
         level: level,
         teamSize: teamSize,
         minIV: minIV,
+      );
+      return ArchetypeResult(
+        archetype: null,
+        archetypeName: 'Chaos',
+        team: team,
       );
     }
 
@@ -83,7 +79,7 @@ class ArchetypeTeamBuilder {
     final archetypes = TeamArchetype.values;
     final archetype = archetypes[_rng.nextInt(archetypes.length)];
 
-    return _buildForArchetype(
+    final team = buildForArchetype(
       archetype,
       allOrganisms,
       withTalismans: withTalismans,
@@ -91,12 +87,18 @@ class ArchetypeTeamBuilder {
       teamSize: teamSize,
       minIV: minIV,
     );
+
+    return ArchetypeResult(
+      archetype: archetype,
+      archetypeName: _name(archetype),
+      team: team,
+    );
   }
 
   // ───────────────────────────────────────────────
   // Chaos mode — pure random, no archetype logic
   // ───────────────────────────────────────────────
-  static ArchetypeResult _buildChaos(
+  static List<CapturedOrganism> buildChaos(
     List<Organism> allOrganisms, {
     bool withTalismans = true,
     int level = 50,
@@ -109,19 +111,26 @@ class ArchetypeTeamBuilder {
     final team = picked.map((o) {
       final moves = _resolveMovelist(o);
       final randomMoves = (List.of(moves)..shuffle(_rng)).take(4).toList();
-      final c = _makeOrganism(o, randomMoves, level: level, minIV: minIV);
+      final ability = _selectAbility(null, o, randomMoves);
+      final c = _makeOrganism(
+        o,
+        randomMoves,
+        level: level,
+        minIV: minIV,
+        activeAbilityName: ability,
+      );
       return withTalismans
           ? _assignTalisman(null, c)
           : c; // Archetype null for chaos
     }).toList();
 
-    return ArchetypeResult(archetype: null, archetypeName: 'Chaos', team: team);
+    return team;
   }
 
   // ───────────────────────────────────────────────
   // Archetype-driven team build
   // ───────────────────────────────────────────────
-  static ArchetypeResult _buildForArchetype(
+  static List<CapturedOrganism> buildForArchetype(
     TeamArchetype archetype,
     List<Organism> allOrganisms, {
     bool withTalismans = true,
@@ -169,11 +178,14 @@ class ArchetypeTeamBuilder {
       final moves = _selectMoves(archetype, c, teamMoves);
       teamMoves.addAll(moves.map((m) => m.name));
 
+      final ability = _selectAbility(archetype, c.organism, moves);
+
       final captured = _makeOrganism(
         c.organism,
         moves,
         level: level,
         minIV: minIV,
+        activeAbilityName: ability,
       );
       return withTalismans ? _assignTalisman(archetype, captured) : captured;
     }).toList();
@@ -181,11 +193,7 @@ class ArchetypeTeamBuilder {
     // 6. Order the lead
     team = _orderLead(archetype, team);
 
-    return ArchetypeResult(
-      archetype: archetype,
-      archetypeName: _name(archetype),
-      team: team,
-    );
+    return team;
   }
 
   // ─────────────────────────────────────────────────────────────────
@@ -982,6 +990,7 @@ class ArchetypeTeamBuilder {
     List<Move> moves, {
     int level = 50,
     int minIV = 24,
+    String? activeAbilityName,
   }) {
     // Near-perfect IVs for a challenging opponent
     final ivs = <String, int>{
@@ -1022,8 +1031,79 @@ class ArchetypeTeamBuilder {
       currentHealth: maxHp,
       selectedMoveNames: moveNames,
       level: level,
+      activeAbilityName: activeAbilityName,
       teraType: teraType,
     );
+  }
+
+  /// Randomly selects or forces an ability based on archetype.
+  static String? _selectAbility(
+    TeamArchetype? archetype,
+    Organism o,
+    List<Move> moves,
+  ) {
+    final pool = o.abilities
+        .split(',')
+        .map((a) => a.trim())
+        .where((a) => a.isNotEmpty)
+        .toList();
+
+    if (pool.isEmpty) return 'None';
+    if (pool.length == 1) return pool.first;
+
+    // For Chaos (null archetype), pure random selection
+    if (archetype == null) {
+      return pool[_rng.nextInt(pool.length)];
+    }
+
+    // Weather archetypes: PRIORITIZE weather-setting abilities
+    if (archetype == TeamArchetype.sunTeam) {
+      final sunSetter = pool.firstWhere(
+        (a) => a.toLowerCase().contains('drought'),
+        orElse: () => '',
+      );
+      if (sunSetter.isNotEmpty) return sunSetter;
+    }
+    if (archetype == TeamArchetype.rainTeam) {
+      final rainSetter = pool.firstWhere(
+        (a) => a.toLowerCase().contains('drizzle'),
+        orElse: () => '',
+      );
+      if (rainSetter.isNotEmpty) return rainSetter;
+    }
+    if (archetype == TeamArchetype.sandTeam) {
+      final sandSetter = pool.firstWhere(
+        (a) => a.toLowerCase().contains('sand stream'),
+        orElse: () => '',
+      );
+      if (sandSetter.isNotEmpty) return sandSetter;
+    }
+    if (archetype == TeamArchetype.snowTeam) {
+      final snowSetter = pool.firstWhere(
+        (a) => a.toLowerCase().contains('snow warning'),
+        orElse: () => '',
+      );
+      if (snowSetter.isNotEmpty) return snowSetter;
+    }
+
+    // Secondary priority: Archetype synergy
+    if (archetype == TeamArchetype.sunTeam) {
+      final bloom = pool.firstWhere(
+        (a) => a.toLowerCase().contains('chlorophyll'),
+        orElse: () => '',
+      );
+      if (bloom.isNotEmpty) return bloom;
+    }
+    if (archetype == TeamArchetype.rainTeam) {
+      final swim = pool.firstWhere(
+        (a) => a.toLowerCase().contains('swift swim'),
+        orElse: () => '',
+      );
+      if (swim.isNotEmpty) return swim;
+    }
+
+    // Default: Random selection for diversity
+    return pool[_rng.nextInt(pool.length)];
   }
 
   static CapturedOrganism _assignTalisman(
@@ -1076,8 +1156,8 @@ class ArchetypeTeamBuilder {
               TeamArchetype.sandTeam,
               TeamArchetype.snowTeam,
             ].contains(archetype))) {
-      // 40% chance for Gem, 60% for standard offensive item
-      if (_rng.nextDouble() < 0.4) {
+      // 50% chance for Gem, 50% for standard offensive item
+      if (_rng.nextDouble() < 0.5) {
         final gem = _getGemForPrimarySTAB(c);
         if (gem != null) {
           final item = Talisman.findByName(gem);
@@ -1095,9 +1175,10 @@ class ArchetypeTeamBuilder {
         (m) => m.effects.any((e) => e.type == MoveEffectType.setHazard),
       );
       if (isHazardSetter) {
+        // Hazard setters usually want durability to set multiple layers
         final item =
-            Talisman.findByName('Leftovers') ??
-            Talisman.findByName('Assault Vest');
+            Talisman.findByName('Focus Sash') ??
+            Talisman.findByName('Leftovers');
         if (item != null) return c.copyWith(equippedTalisman: item);
       } else {
         final item =
@@ -1125,9 +1206,12 @@ class ArchetypeTeamBuilder {
             Talisman.findByName('Focus Sash');
         if (item != null) return c.copyWith(equippedTalisman: item);
       } else {
+        // TR Sweepers love power
         final item = c.baseOrganism.attack > c.baseOrganism.power
-            ? Talisman.findByName('Choice Band')
-            : Talisman.findByName('Choice Specs');
+            ? (Talisman.findByName('Life Orb') ??
+                  Talisman.findByName('Choice Band'))
+            : (Talisman.findByName('Life Orb') ??
+                  Talisman.findByName('Choice Specs'));
         if (item != null) return c.copyWith(equippedTalisman: item);
       }
     }
@@ -1136,13 +1220,7 @@ class ArchetypeTeamBuilder {
     final item = _getFallbackItem(c);
     if (item != null) return c.copyWith(equippedTalisman: item);
 
-    // Final fallback: completely random if somehow none of the above worked
-    if (Talisman.allTalismans.isNotEmpty) {
-      final randomItem =
-          Talisman.allTalismans[_rng.nextInt(Talisman.allTalismans.length)];
-      return c.copyWith(equippedTalisman: randomItem);
-    }
-
+    // Final fallback
     return c;
   }
 
@@ -1212,25 +1290,75 @@ class ArchetypeTeamBuilder {
 
   static Talisman? _getDefensiveItem(CapturedOrganism c) {
     final o = c.baseOrganism;
+    final wrapper = _wrap(c);
     final candidates = <String>[];
-    if (o.types.contains(ElementalType.toxic)) candidates.add('Black Sludge');
-    candidates.addAll(['Leftovers', 'Rocky Helmet', 'Assault Vest']);
+
+    // Assault Vest check: No status moves, good resistance
+    final hasStatusMoves = wrapper.moves.any(
+      (m) => m.category == MoveCategory.status,
+    );
+    if (!hasStatusMoves && o.resistance > 70) {
+      candidates.add('Assault Vest');
+    }
+
+    if (o.types.contains(ElementalType.toxic)) {
+      candidates.add('Black Sludge');
+    }
+
+    if (o.defense > 90) {
+      candidates.add('Rocky Helmet');
+    }
+
+    candidates.add('Leftovers');
+
     final name = candidates[_rng.nextInt(candidates.length)];
     return Talisman.findByName(name);
   }
 
   static Talisman? _getOffensiveItem(CapturedOrganism c) {
     final o = c.baseOrganism;
+    final wrapper = _wrap(c);
     final candidates = <String>[];
-    if (o.attack > o.power) {
-      candidates.addAll(['Choice Band', 'Muscle Band', 'Life Orb']);
-    } else {
-      candidates.addAll(['Choice Specs', 'Wise Glasses', 'Life Orb']);
+
+    final isPhysical = o.attack >= o.power;
+
+    // Choice items logic: Only if speed is decent or they are bulky
+    if (o.speed > 90 || o.health > 100) {
+      if (isPhysical) {
+        candidates.add('Choice Band');
+      } else {
+        candidates.add('Choice Specs');
+      }
     }
-    if (o.speed > 80) candidates.add('Choice Scarf');
-    if (o.health < 80) candidates.add('Focus Sash');
+
+    if (o.speed > 80 && o.speed < 110) {
+      candidates.add('Choice Scarf');
+    }
+
+    if (isPhysical) {
+      candidates.add('Muscle Band');
+    } else {
+      candidates.add('Wise Glasses');
+    }
+
+    candidates.add('Life Orb');
+
+    // High speed but frail
+    if (o.speed > 100 && o.health < 80) {
+      candidates.add('Focus Sash');
+    }
+
+    // Special items for multi-turn moves
+    if (wrapper.moves.any((m) => m.isMultiTurn)) {
+      final herb = Talisman.findByName('Power Herb');
+      if (herb != null) return herb;
+    }
+
+    if (candidates.isEmpty)
+      return Talisman.findByName('Life Orb'); // Absolute fallback
+
     final name = candidates[_rng.nextInt(candidates.length)];
-    return Talisman.findByName(name);
+    return Talisman.findByName(name) ?? Talisman.findByName('Life Orb');
   }
 
   static Talisman? _getFallbackItem(CapturedOrganism c) {
