@@ -100,10 +100,10 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
   }
 
   Color _getDarkerColor(Color color) {
-    int r = (color.red * 0.6).round().clamp(0, 255);
-    int g = (color.green * 0.6).round().clamp(0, 255);
-    int b = (color.blue * 0.6).round().clamp(0, 255);
-    return Color.fromARGB(color.alpha, r, g, b);
+    int r = (color.r * 255.0 * 0.6).round().clamp(0, 255);
+    int g = (color.g * 255.0 * 0.6).round().clamp(0, 255);
+    int b = (color.b * 255.0 * 0.6).round().clamp(0, 255);
+    return Color.fromARGB((color.a * 255.0).round().clamp(0, 255), r, g, b);
   }
 
   Color _getBiomeHighlightColor(String biomeName) {
@@ -426,7 +426,11 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
           _achievementService.showAchievementSnackbar(context, title);
       }
     }
-    if (mounted) setState(() => _isNameRevealed = true);
+    if (mounted) {
+      setState(() => _isNameRevealed = true);
+      // Play cry when identified
+      AudioService.instance.playOrganismCry(organism.cry);
+    }
   }
 
   bool _isDiscovered(Organism organism) =>
@@ -552,6 +556,9 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
             final organism = encounter.organism;
             _rarityHighlightColor = _getRarityHighlightColor(organism.rarity);
             _isNameRevealed = _isDiscovered(organism);
+
+            // Play cry when a new animal is found
+            AudioService.instance.playOrganismCry(organism.cry);
           }
         });
       }

@@ -37,6 +37,8 @@ enum TeamArchetype {
   evasionBuffer, // 53: Double Team/Minimize (Annoying)
   bulkyBruiser, // 54: High HP/Attack but slow
   toxicStall, // 55: Focus purely on Toxic/Protect
+  psychicTerrainAbuser, // 56: Set Psychic Terrain; boost Psychic moves
+  electricTerrainAbuser, // 57: Set Electric Terrain; boost Electric moves
 }
 
 class AIDecisionEngine {
@@ -611,7 +613,33 @@ class AIDecisionEngine {
           if (move.type == ElementalType.blaze) score -= 60;
         }
         break;
-
+      case TeamArchetype.psychicTerrainAbuser:
+        final psychicTerrainActive = currentTerrain.terrain == Terrain.psychic;
+        if (!psychicTerrainActive) {
+          if (move.effects.any((e) => e.stat == 'psychic')) score += 400;
+        } else {
+          if (move.type == ElementalType.aura) score += 80;
+          if (move.name == 'Psychic' ||
+              move.name == 'Psyshock' ||
+              move.name == 'Expanding Force')
+            score += 60;
+          if (move.type == ElementalType.basic) score -= 60;
+        }
+        break;
+      case TeamArchetype.electricTerrainAbuser:
+        final electricTerrainActive =
+            currentTerrain.terrain == Terrain.electric;
+        if (!electricTerrainActive) {
+          if (move.effects.any((e) => e.stat == 'electric')) score += 400;
+        } else {
+          if (move.type == ElementalType.aura) score += 80;
+          if (move.name == 'Thunderbolt' ||
+              move.name == 'Thunder' ||
+              move.name == 'Volt Switch')
+            score += 60;
+          if (move.type == ElementalType.earth) score -= 60;
+        }
+        break;
       // ── Sun: Set sun immediately; then spam Blaze moves. ──
       case TeamArchetype.sunTeam:
         final sunActive = currentEffect.weather == Weather.sunny;

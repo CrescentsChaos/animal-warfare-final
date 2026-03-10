@@ -382,19 +382,68 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   }
 
   Future<void> _initializeSequence(String? biomeName) async {
-    // Fix 4: Restore all move stamina at the start of every non-rogue battle.
-    if (!isRogueMode) {
-      for (final member in playerTeam) {
-        member.restoreAllStamina();
+    if (!isTesting) {
+      if (isArenaBattle) {
+        _audioService.playMusic('audio/battle_default.mp3');
+      }
+      // For exploration battles (isArenaBattle = false), we do nothing here
+      // so the biome music started in BiomeDetailScreen continues to play.
+    }
+
+    // Restore stamina at start of battle
+    for (var organism in playerTeam) {
+      if (organism.selectedMoveNames.isNotEmpty) {
+        for (var moveName in organism.selectedMoveNames) {
+          final moveDef = Move.findByName(moveName);
+          if (moveDef != null) {
+            organism.moveStamina[moveName] = moveDef.stamina;
+          }
+        }
       }
     }
 
-    // Start battle music
-    if (!isTesting) {
-      await _audioService.playMusic('audio/battle_default.mp3');
+    if (isArenaBattle && !isRogueMode) {
+      // In Arena mode (non-rogue), we let the player choose a lead BEFORE any announcements
+      currentState = BattleState.choosingLead;
+      notifyListeners();
+
+      _switchCompleter = Completer<void>();
+      await _switchCompleter!.future;
+      _switchCompleter = null;
+
+      // Lead is set in setLeadAnimal()
+    } else {
+      // Rogue mode or wild battle - lead is already decided in constructor or can be set to 0
+      if (!isRogueMode) {
+        currentPlayerIndex = 0;
+      }
+
+      if (playerTeam.isNotEmpty) {
+        if (currentPlayerIndex >= playerTeam.length) currentPlayerIndex = 0;
+        final lead = playerTeam[currentPlayerIndex];
+        player = BattleOrganism(
+          lead,
+          isRogueMode: isRogueMode,
+          isOpponent: false,
+        );
+        playerMoves = _getOrganismMoves(lead);
+      }
     }
 
-    // If player has NO animals at all, they must fight themselves (Trainer Combat)
+    // Now reveal the opponent
+    if (isArenaBattle) {
+      addToLog('Battle Arena: ${opponent.name} challenged you!');
+    } else {
+      addToLog('A wild ${opponent.name} appeared!');
+    }
+
+    if (!isTesting) {
+      _audioService.playOrganismCry(opponent.organism.baseOrganism.cry);
+      notifyListeners();
+      await Future.delayed(const Duration(milliseconds: 2000));
+    }
+
+    // If player team is empty, create trainer
     if (playerTeam.isEmpty) {
       final trainer = _createTrainerOrganism();
       playerTeam.add(trainer);
@@ -406,39 +455,14 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       );
       playerMoves = _getOrganismMoves(trainer);
       addToLog('You have no animals! You must defend yourself!');
-    } else {
-      // In roguelike mode, we already set currentPlayerIndex in the constructor.
-      // In normal mode, if it's an arena battle, we allow the player to choose their lead.
-      if (!isRogueMode) {
-        if (isArenaBattle) {
-          currentState = BattleState.choosingLead;
-          notifyListeners();
-
-          _switchCompleter = Completer<void>();
-          await _switchCompleter!.future;
-          _switchCompleter = null;
-          // After returning from choosingLead, currentPlayerIndex and player organism are set by setLeadAnimal()
-        } else {
-          currentPlayerIndex = 0;
-        }
-      }
-
-      // Guard: clamp to valid range
-      if (currentPlayerIndex >= playerTeam.length) currentPlayerIndex = 0;
-      final lead = playerTeam[currentPlayerIndex];
-      player = BattleOrganism(
-        lead,
-        isRogueMode: isRogueMode,
-        isOpponent: false,
-      );
-      playerMoves = _getOrganismMoves(lead);
     }
 
-    addToLog('A wild ${opponent.name} appeared! Go, ${player.name}!');
-
+    // Now reveal the player's animal
+    addToLog('Go, ${player.name}!');
     if (!isTesting) {
+      _audioService.playOrganismCry(player.organism.baseOrganism.cry);
       notifyListeners();
-      await Future.delayed(const Duration(milliseconds: 3000));
+      await Future.delayed(const Duration(milliseconds: 2000));
     }
 
     await _initializeBattle(biomeName);
@@ -2346,7 +2370,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
               );
               notifyListeners();
               if (!isTesting)
-                await Future.delayed(const Duration(milliseconds: 3000));
+                await Future.delayed(const Duration(milliseconds: 2000));
             }
           }
         }
@@ -6009,6 +6033,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     }
 
     await _switchToAnimal(index);
+    if (!isTesting) {
+      _audioService.playOrganismCry(player.organism.baseOrganism.cry);
+    }
 
     // Detect if this is a mid-turn U-turn switch (completer is waiting)
     final isMidTurnSwitch =
@@ -6210,6 +6237,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         addToLog(
           'Your ${player.organism.baseOrganism.name} fainted! Choose an animal to send out.',
         );
+        if (!isTesting) {
+          _audioService.playOrganismCry(player.organism.baseOrganism.cry);
+        }
         currentState = BattleState.waitingForPlayerSwitch;
         notifyListeners();
         return false; // Battle continues, but waiting for switch
@@ -6220,6 +6250,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       addToLog(
         'Your ${player.organism.baseOrganism.name} fainted! Your whole team is defeated.',
       );
+      if (!isTesting) {
+        _audioService.playOrganismCry(player.organism.baseOrganism.cry);
+      }
       _cleanupStatusEffects();
       currentState = BattleState.battleEnd;
       notifyListeners();
@@ -6313,6 +6346,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           addToLog(
             'Opponent\'s ${opponent.organism.baseOrganism.name} fainted!',
           );
+          if (!isTesting) {
+            _audioService.playOrganismCry(opponent.organism.baseOrganism.cry);
+          }
 
           // Award XP for defeating this opponent animal
           if (lastBlowOrganismId != null) {
@@ -6338,6 +6374,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         addToLog(
           'Opponent\'s ${opponent.organism.baseOrganism.name} fainted! You won the arena battle!',
         );
+        if (!isTesting) {
+          _audioService.playOrganismCry(opponent.organism.baseOrganism.cry);
+        }
 
         // Award XP for final opponent
         if (lastBlowOrganismId != null) {
@@ -6376,11 +6415,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         addToLog(
           'The wild ${opponent.organism.baseOrganism.name} fainted! You won the battle.',
         );
-        _appendToLog('\nIt dropped something!');
-      } else {
-        addToLog(
-          'The wild ${opponent.organism.baseOrganism.name} fainted! You won the battle.',
-        );
+        if (!isTesting) {
+          _audioService.playOrganismCry(opponent.organism.baseOrganism.cry);
+        }
       }
 
       _cleanupStatusEffects();
@@ -6422,6 +6459,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       isRogueMode: isRogueMode,
       isOpponent: true,
     );
+    if (!isTesting) {
+      _audioService.playOrganismCry(opponent.organism.baseOrganism.cry);
+    }
     opponent.weather = currentWeather.weather;
     opponent.terrain = currentTerrain.terrain;
     opponent.futureSightTurns = fsTurns;

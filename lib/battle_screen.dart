@@ -1132,7 +1132,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
       useSafeArea: true,
       builder: (ctx) => PopScope(
         canPop: !isForced,
-        onPopInvoked: (_) {
+        onPopInvokedWithResult: (didPop, result) {
           _isSwitchDialogShowing = false;
         },
         child: _PartyScreenDialog(
@@ -2202,8 +2202,6 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                 organism: organism,
                 size: spriteSize,
                 hideAnimal:
-                    (bm.currentState == BattleState.intro &&
-                        widget.isArenaBattle) ||
                     (bm.currentState == BattleState.choosingLead &&
                         widget.isArenaBattle) ||
                     (bm.result == BattleResult.capture && !bm.isCapturing) ||
@@ -2268,7 +2266,10 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
-              '${base.name} LV.$displayLevel',
+              bm.currentState == BattleState.choosingLead &&
+                      widget.isArenaBattle
+                  ? '??? LV.??'
+                  : '${base.name} LV.$displayLevel',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
@@ -2306,7 +2307,10 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
-              'HP: ${organism.health.round()}/${organism.maxHealth} (${(hpRatio * 100).toStringAsFixed(1)}%)',
+              bm.currentState == BattleState.choosingLead &&
+                      widget.isArenaBattle
+                  ? 'HP: ???/??? (??.?%)'
+                  : 'HP: ${organism.health.round()}/${organism.maxHealth} (${(hpRatio * 100).toStringAsFixed(1)}%)',
               style: TextStyle(
                 color: Colors.white70,
                 fontSize: isNarrow ? 8 : 10,
@@ -2431,11 +2435,14 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                 key: spriteKey,
                 organism: organism,
                 size: spriteSize,
-                hideAnimal: _moveAnims.any(
-                  (anim) =>
-                      anim.move.name.toLowerCase() == 'brave bird' &&
-                      anim.isPlayerAttacking,
-                ),
+                hideAnimal:
+                    (bm.currentState == BattleState.choosingLead &&
+                        widget.isArenaBattle) ||
+                    _moveAnims.any(
+                      (anim) =>
+                          anim.move.name.toLowerCase() == 'brave bird' &&
+                          anim.isPlayerAttacking,
+                    ),
                 onTap: () => BattleDetailsSheet.show(context, organism, true),
                 mirror: true,
                 biomeName: widget.biomeName,
@@ -5429,12 +5436,6 @@ class _BattleSpriteState extends State<_BattleSprite>
   late Animation<double> _faintOpacity;
   late Animation<double> _faintFlash;
 
-  late AnimationController _statUpdateController;
-  late Animation<double> _statUpdateOpacity;
-  late Animation<double> _statUpdateOffset;
-  bool _isStatIncrease = true;
-  Color _statColor = Colors.orange;
-
   Color _getTypeColor(ElementalType type) {
     return type.color;
   }
@@ -5484,19 +5485,6 @@ class _BattleSpriteState extends State<_BattleSprite>
       ),
     );
 
-    _statUpdateController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1000),
-    );
-    _statUpdateOpacity = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.0), weight: 20),
-      TweenSequenceItem(tween: ConstantTween(1.0), weight: 60),
-      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.0), weight: 20),
-    ]).animate(_statUpdateController);
-    _statUpdateOffset = Tween<double>(begin: 20, end: -20).animate(
-      CurvedAnimation(parent: _statUpdateController, curve: Curves.easeOut),
-    );
-
     _entryController.forward();
   }
 
@@ -5506,7 +5494,7 @@ class _BattleSpriteState extends State<_BattleSprite>
     _bounceController.dispose();
     _entryController.dispose();
     _faintController.dispose();
-    _statUpdateController.dispose();
+
     super.dispose();
   }
 
@@ -5515,15 +5503,7 @@ class _BattleSpriteState extends State<_BattleSprite>
     await _faintController.forward();
   }
 
-  void showStatChange(bool isIncrease) {
-    if (!mounted) return;
-    setState(() {
-      _isStatIncrease = isIncrease;
-      _statColor = isIncrease ? Colors.orangeAccent : Colors.blueAccent;
-    });
-    _statUpdateController.reset();
-    _statUpdateController.forward();
-  }
+  void showStatChange(bool isIncrease) {}
 
   @override
   void didUpdateWidget(_BattleSprite oldWidget) {
@@ -6036,7 +6016,7 @@ class _BattleSpriteState extends State<_BattleSprite>
                     scale: titanScaleFinal.toDouble(),
                     alignment: Alignment.bottomCenter,
                     child: Image.asset(
-                      overlayPath!,
+                      overlayPath,
                       fit: BoxFit.contain,
                       opacity: const AlwaysStoppedAnimation(0.85),
                       errorBuilder: (_, __, ___) => const SizedBox.shrink(),
@@ -7078,6 +7058,7 @@ class _PartyScreenDialog extends StatelessWidget {
 // ----------------------------------------------------------------
 // Special Hit Painter — projectile shapes per type
 // ----------------------------------------------------------------
+// ignore: unused_element
 class _SpecialHitPainter extends CustomPainter {
   final ElementalType type;
   final Color color;
@@ -7665,6 +7646,7 @@ class _SpecialHitPainter extends CustomPainter {
 // ----------------------------------------------------------------
 // Status Effect Painter — aura/buff animations per type
 // ----------------------------------------------------------------
+// ignore: unused_element
 class _StatusEffectPainter extends CustomPainter {
   final ElementalType type;
   final Color color;

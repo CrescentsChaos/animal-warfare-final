@@ -21,7 +21,7 @@ void main() {
         if (match != null) {
           final whitespace = match.group(1);
           final rest = match.group(2);
-          lines[i] = '\$whitespace' + 'if (!isTesting) ' + rest!;
+          lines[i] = '$whitespace' + 'if (!isTesting) ' + rest!;
           changed = true;
           print('Patched line \${i + 1}');
         }

@@ -249,6 +249,16 @@ class ArchetypeTeamBuilder {
             o.types.contains(ElementalType.cryo) ||
             _hasSnowAbility(o);
 
+      case TeamArchetype.psychicTerrainAbuser:
+        return _isPsychicTerrainSetter(c) ||
+            o.types.contains(ElementalType.aura) ||
+            _hasPsychicTerrainAbility(o);
+
+      case TeamArchetype.electricTerrainAbuser:
+        return _isElectricTerrainSetter(c) ||
+            o.types.contains(ElementalType.electric) ||
+            _hasElectricTerrainAbility(o);
+
       case TeamArchetype.hazardStacker:
         // Allow hazard setters AND hazard abusers (Roar, Whirlwind, forced-switch moves)
         return c.moves.any(
@@ -394,6 +404,18 @@ class ArchetypeTeamBuilder {
         if (_isRainSetter(c)) s += 500;
         if (o.types.contains(ElementalType.aquatic)) s += 50;
         if (_hasRainAbility(o)) s += 100;
+        return s;
+
+      case TeamArchetype.psychicTerrainAbuser:
+        double s = (o.attack + o.power).toDouble();
+        if (_isPsychicTerrainSetter(c)) s += 500;
+        if (o.types.contains(ElementalType.aura)) s += 50;
+        return s;
+
+      case TeamArchetype.electricTerrainAbuser:
+        double s = (o.attack + o.power).toDouble();
+        if (_isElectricTerrainSetter(c)) s += 500;
+        if (o.types.contains(ElementalType.electric)) s += 50;
         return s;
 
       case TeamArchetype.sunTeam:
@@ -692,6 +714,24 @@ class ArchetypeTeamBuilder {
         if (m.name == 'Aurora Veil') s += 300;
         break;
 
+      case TeamArchetype.psychicTerrainAbuser:
+        if (m.effects.any((e) => e.stat == 'psychic')) s += 800;
+        if (m.type == ElementalType.aura) s += 100;
+        if (m.name == 'Psychic' ||
+            m.name == 'Psyshock' ||
+            m.name == 'Expanding Force')
+          s += 150;
+        break;
+
+      case TeamArchetype.electricTerrainAbuser:
+        if (m.effects.any((e) => e.stat == 'electric')) s += 800;
+        if (m.type == ElementalType.electric) s += 100;
+        if (m.name == 'Thunderbolt' ||
+            m.name == 'Thunder' ||
+            m.name == 'Volt Switch')
+          s += 150;
+        break;
+
       case TeamArchetype.hazardStacker:
         // Hazard setters: prize every hazard move; then phazing; then damage
         if (m.effects.any((e) => e.type == MoveEffectType.setHazard)) s += 500;
@@ -890,6 +930,14 @@ class ArchetypeTeamBuilder {
         return _isSandSetter(_wrap(c)) ? 1000 : c.baseOrganism.speed.toDouble();
       case TeamArchetype.snowTeam:
         return _isSnowSetter(_wrap(c)) ? 1000 : c.baseOrganism.speed.toDouble();
+      case TeamArchetype.psychicTerrainAbuser:
+        return _isPsychicTerrainSetter(_wrap(c))
+            ? 1000
+            : c.baseOrganism.speed.toDouble();
+      case TeamArchetype.electricTerrainAbuser:
+        return _isElectricTerrainSetter(_wrap(c))
+            ? 1000
+            : c.baseOrganism.speed.toDouble();
 
       case TeamArchetype.trickRoom:
         // Lead with the TR setter
@@ -1459,6 +1507,10 @@ class ArchetypeTeamBuilder {
         return 'Bulky Bruiser';
       case TeamArchetype.toxicStall:
         return 'Toxic Stall';
+      case TeamArchetype.psychicTerrainAbuser:
+        return 'Psychic Terrain Abuser';
+      case TeamArchetype.electricTerrainAbuser:
+        return 'Electric Terrain Abuser';
     }
   }
 
@@ -1491,6 +1543,14 @@ class ArchetypeTeamBuilder {
       c.organism.abilities.toLowerCase().contains('snow warning') ||
       c.moves.any((m) => m.effects.any((e) => e.stat == 'hail'));
 
+  static bool _isPsychicTerrainSetter(_OrgCandidate c) =>
+      c.organism.abilities.toLowerCase().contains('psychic surge') ||
+      c.moves.any((m) => m.effects.any((e) => e.stat == 'psychic'));
+
+  static bool _isElectricTerrainSetter(_OrgCandidate c) =>
+      c.organism.abilities.toLowerCase().contains('electric surge') ||
+      c.moves.any((m) => m.effects.any((e) => e.stat == 'electric'));
+
   static bool _hasRainAbility(Organism o) {
     final abs = o.abilities.toLowerCase();
     return abs.contains('swift swim') ||
@@ -1519,6 +1579,27 @@ class ArchetypeTeamBuilder {
     return abs.contains('slush rush') ||
         abs.contains('snow cloak') ||
         abs.contains('ice body');
+  }
+
+  static bool _hasElectricTerrainAbility(Organism o) {
+    final abs = o.abilities.toLowerCase();
+    return abs.contains('surge surfer') ||
+        abs.contains('static') ||
+        abs.contains('volt absorb') ||
+        abs.contains('lightning rod') ||
+        abs.contains('motor drive') ||
+        abs.contains('galvanize') ||
+        abs.contains('transistor') ||
+        abs.contains('battery');
+  }
+
+  static bool _hasPsychicTerrainAbility(Organism o) {
+    final abs = o.abilities.toLowerCase();
+    return abs.contains('psychic surge') ||
+        abs.contains('synchronize') ||
+        abs.contains('magic guard') ||
+        abs.contains('magic bounce') ||
+        abs.contains('telepathy');
   }
 
   static _OrgCandidate _wrap(CapturedOrganism c) {

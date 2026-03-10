@@ -102,6 +102,17 @@ class AudioService {
     }
   }
 
+  /// Play an organism's cry
+  Future<void> playOrganismCry(String cryName) async {
+    if (isTesting) return;
+    try {
+      // Path construction: assets/audio/cries/ + cryName + .mp3
+      await playSound('audio/cries/$cryName.mp3');
+    } catch (e) {
+      print('Error playing organism cry: $e');
+    }
+  }
+
   /// Play background music with looping
   Future<void> playMusic(String assetPath, {bool loop = true}) async {
     if (isTesting) return;

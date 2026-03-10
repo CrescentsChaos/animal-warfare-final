@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/theme.dart';
 import 'package:animal_warfare/models/farm_slot.dart';
+import 'package:animal_warfare/crafting_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class FarmingScreen extends StatefulWidget {
@@ -69,7 +70,11 @@ class _FarmingScreenState extends State<FarmingScreen> {
                 size: 28,
               ),
               onPressed: () {
-                // Future: open inventory
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const CraftingScreen(),
+                  ),
+                );
               },
             ),
           ),
@@ -348,12 +353,28 @@ class FarmSlotBottomSheet extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
-            _buildSeedOption(
-              context,
-              'strawberry_seed',
-              'Strawberry Seed',
-              inventory,
-            ),
+            ...inventory.entries
+                .where((e) => e.key.endsWith('_seed') && e.value > 0)
+                .map((e) {
+                  final seedId = e.key;
+                  final name = seedId.replaceAll('_', ' ').toUpperCase();
+                  return _buildSeedOption(context, seedId, name, inventory);
+                }),
+            if (!inventory.keys.any(
+              (k) => k.endsWith('_seed') && (inventory[k] ?? 0) > 0,
+            ))
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                child: Text(
+                  'NO SEEDS IN INVENTORY',
+                  style: GoogleFonts.inter(
+                    color: Colors.white38,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
           ] else if (slot.stage == PlantStage.fruit) ...[
             ElevatedButton.icon(
               onPressed: () async {
@@ -623,7 +644,7 @@ class _FlyingFruitWidgetState extends State<_FlyingFruitWidget>
             child: Opacity(
               opacity: (1.0 - t).clamp(0.0, 1.0),
               child: Image.asset(
-                'assets/farming/${widget.fruit.fruitName}-fruit.png',
+                'assets/items/${widget.fruit.fruitName}.png',
                 width: 40,
                 height: 40,
                 fit: BoxFit.contain,

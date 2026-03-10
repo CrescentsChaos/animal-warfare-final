@@ -37,7 +37,7 @@ void main() {
       // Run multiple times to see different abilities (statistically likely)
       for (int i = 0; i < 50; i++) {
         final team = ArchetypeTeamBuilder.buildChaos([organism], teamSize: 1);
-        abilitiesSeen.add(team.first.activeAbilityName ?? 'None');
+        abilitiesSeen.add(team.first.activeAbilityName);
       }
 
       // It should have seen more than just the first ability

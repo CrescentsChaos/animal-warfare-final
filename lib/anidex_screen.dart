@@ -12,6 +12,7 @@ import 'package:animal_warfare/models/elemental_type.dart';
 import 'package:animal_warfare/models/shop_item.dart';
 import 'package:animal_warfare/widgets/anidex_details_sheet.dart';
 import 'package:animal_warfare/widgets/organism_sprite_widget.dart';
+import 'package:animal_warfare/services/audio_service.dart';
 
 class AnidexScreen extends StatefulWidget {
   final UserData currentUser;
@@ -390,8 +391,12 @@ class _AnidexScreenState extends State<AnidexScreen>
   Widget _buildAnimalCard(Organism org, bool discovered, bool captured) {
     final rarityColor = _getRarityColor(org.rarity);
     return InkWell(
-      onTap: () =>
-          AnidexDetailsSheet.show(context, org, showScaledStats: false),
+      onTap: () {
+        if (discovered) {
+          AudioService.instance.playOrganismCry(org.cry);
+        }
+        AnidexDetailsSheet.show(context, org, showScaledStats: false);
+      },
       borderRadius: BorderRadius.circular(12),
       child: Container(
         decoration: BoxDecoration(
@@ -1010,7 +1015,6 @@ class _OrganismSpriteDisplay extends StatefulWidget {
   final Color silhouetteColor;
 
   const _OrganismSpriteDisplay({
-    super.key,
     required this.organism,
     required this.isDiscovered,
     required this.isCaptured,

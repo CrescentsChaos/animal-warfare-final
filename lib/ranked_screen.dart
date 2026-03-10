@@ -909,9 +909,6 @@ class _DetailSheet extends StatelessWidget {
   }
 
   Widget _buildDonutChart(_SpeciesRecord r, Color tierColor) {
-    final winFrac = r.winrate;
-    final lossFrac = 1.0 - winFrac;
-
     return SizedBox(
       height: 180,
       child: Row(

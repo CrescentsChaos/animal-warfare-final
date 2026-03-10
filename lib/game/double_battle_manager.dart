@@ -170,6 +170,16 @@ class DoubleBattleManager extends ChangeNotifier {
 
     turnHistory.add(BattleTurn(currentTurn));
     addLog('GO! ${_slotName(playerSlot1)} & ${_slotName(playerSlot2)}!');
+    if (!isTesting) {
+      if (playerSlot1 != null)
+        _audio.playOrganismCry(playerSlot1!.organism.baseOrganism.cry);
+      if (playerSlot2 != null)
+        _audio.playOrganismCry(playerSlot2!.organism.baseOrganism.cry);
+      if (opponentSlot1 != null)
+        _audio.playOrganismCry(opponentSlot1!.organism.baseOrganism.cry);
+      if (opponentSlot2 != null)
+        _audio.playOrganismCry(opponentSlot2!.organism.baseOrganism.cry);
+    }
 
     _startIntro();
   }
@@ -797,6 +807,9 @@ class DoubleBattleManager extends ChangeNotifier {
       } else {
         playerIdx2 = benchIdx;
         playerSlot2 = newOrg;
+      }
+      if (!isTesting) {
+        _audio.playOrganismCry(newOrg.organism.baseOrganism.cry);
       }
 
       // Restore persistent stats
@@ -1442,6 +1455,9 @@ class DoubleBattleManager extends ChangeNotifier {
         }
 
         addLog('${bo.organism.baseOrganism.name} fainted!');
+        if (!isTesting) {
+          _audio.playOrganismCry(bo.organism.baseOrganism.cry);
+        }
 
         if (onOpponentFainted != null && killer != null) {
           await onOpponentFainted!(killer, bo);
@@ -1473,6 +1489,9 @@ class DoubleBattleManager extends ChangeNotifier {
       opponentSlot1 = BattleOrganism(opponentTeam[nextIdx]);
       _checkMimic(opponentSlot1!);
       addLog('Opponent sent out ${opponentSlot1!.organism.baseOrganism.name}!');
+      if (!isTesting) {
+        _audio.playOrganismCry(opponentSlot1!.organism.baseOrganism.cry);
+      }
       notifyListeners();
       if (!isTesting) await Future.delayed(const Duration(milliseconds: 1000));
     }
@@ -1482,6 +1501,9 @@ class DoubleBattleManager extends ChangeNotifier {
       opponentSlot2 = BattleOrganism(opponentTeam[nextIdx]);
       _checkMimic(opponentSlot2!);
       addLog('Opponent sent out ${opponentSlot2!.organism.baseOrganism.name}!');
+      if (!isTesting) {
+        _audio.playOrganismCry(opponentSlot2!.organism.baseOrganism.cry);
+      }
       notifyListeners();
       if (!isTesting) await Future.delayed(const Duration(milliseconds: 1000));
     }
@@ -1537,6 +1559,9 @@ class DoubleBattleManager extends ChangeNotifier {
     newOrg.isItemRevealed = stats.isItemRevealed;
     newOrg.isAbilityRevealed = stats.isAbilityRevealed;
     addLog('Go, ${newOrg.organism.baseOrganism.name}!');
+    if (!isTesting) {
+      _audio.playOrganismCry(newOrg.organism.baseOrganism.cry);
+    }
     switchNeededSlot = null;
     notifyListeners();
     if (!isTesting) await Future.delayed(const Duration(milliseconds: 1000));

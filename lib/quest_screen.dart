@@ -36,13 +36,6 @@ class _QuestScreenState extends State<QuestScreen> {
     "You look like you've got the stomach for this. Most turn back at the first sign of a silhouette beneath the surface.",
   ];
 
-  final List<String> _idleQuotes = [
-    "I've seen things in the Congo that would turn your hair white overnight.",
-    "Equipment check: Lines strong? Hooks sharp? Mental resolve intact?",
-    "Every monster has a weakness. You just have to be patient enough to find it.",
-    "The locals speak of a legend... something that pulls entire boats under. We're going to find it.",
-  ];
-
   final List<String> _questFullQuotes = [
     "You're already tracking two legends. Stay focused. One monster at a time.",
     "Your log is full. Finish what you started before we go chasing more shadows.",
@@ -825,7 +818,6 @@ class _OrganismSpriteDisplay extends StatefulWidget {
   final Color silhouetteColor;
   final double height;
   final double width;
-  final BoxFit fit;
 
   const _OrganismSpriteDisplay({
     required this.organism,
@@ -833,7 +825,6 @@ class _OrganismSpriteDisplay extends StatefulWidget {
     required this.silhouetteColor,
     this.height = 200,
     this.width = 400,
-    this.fit = BoxFit.contain,
   });
 
   @override
@@ -905,14 +896,14 @@ class __OrganismSpriteDisplayState extends State<_OrganismSpriteDisplay> {
           _imagePath,
           height: widget.height,
           width: widget.width,
-          fit: widget.fit,
+          fit: BoxFit.contain,
         );
       } else {
         return Image.network(
           _imagePath,
           height: widget.height,
           width: widget.width,
-          fit: widget.fit,
+          fit: BoxFit.contain,
           loadingBuilder: (context, child, loadingProgress) {
             if (loadingProgress == null) return child;
             return SizedBox(
@@ -937,7 +928,7 @@ class __OrganismSpriteDisplayState extends State<_OrganismSpriteDisplay> {
         organismName: widget.organism.name,
         height: widget.height,
         width: widget.width,
-        fit: widget.fit,
+        fit: BoxFit.contain,
       );
     }
   }

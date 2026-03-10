@@ -8,6 +8,7 @@ import 'package:animal_warfare/models/captured_organism.dart';
 import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/widgets/type_matchup_sheet.dart';
 import 'package:animal_warfare/theme.dart';
+import 'package:animal_warfare/services/audio_service.dart';
 
 class AnidexDetailsSheet {
   static void show(
@@ -208,6 +209,23 @@ class AnidexDetailsSheet {
             ),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
           ),
+        ),
+        Positioned(
+          top: 20,
+          right: 20,
+          child: discovered
+              ? IconButton(
+                  icon: const Icon(
+                    Icons.volume_up_rounded,
+                    color: Colors.white,
+                    size: 28,
+                  ),
+                  tooltip: 'LISTEN TO CRY',
+                  onPressed: () {
+                    AudioService.instance.playOrganismCry(org.cry);
+                  },
+                )
+              : const SizedBox.shrink(),
         ),
         Positioned(
           top: 40,
