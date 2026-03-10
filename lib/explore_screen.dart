@@ -221,6 +221,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
           .expand(
             (habitatString) => habitatString.split(',').map((h) => h.trim()),
           )
+          .where((h) => h.isNotEmpty)
           .toSet()
           .toList();
 

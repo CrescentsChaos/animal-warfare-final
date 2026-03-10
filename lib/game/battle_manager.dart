@@ -1046,6 +1046,20 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         return 'Strong winds persist.';
       case Weather.thunderstorm:
         return 'The storm rumbles on!';
+      case Weather.typhoon:
+        return 'The typhoon rumbles!';
+      case Weather.tornado:
+        return 'The tornado rages on!';
+      case Weather.hurricane:
+        return 'The hurricane rages!';
+      case Weather.tsunami:
+        return 'The floodwaters remain!';
+      case Weather.earthquake:
+        return 'The earth tremors continue.';
+      case Weather.volcanoEruption:
+        return 'The sky is dark with ash and fire!';
+      case Weather.blizzard:
+        return 'The blizzard is freezing!';
       default:
         return '';
     }
@@ -5213,6 +5227,86 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         target.health = target.health.clamp(0, target.maxHealth);
         addToLog(
           '${target.organism.baseOrganism.name} is battered by the hail!',
+        );
+        notifyListeners();
+      }
+      if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
+    } else if (currentWeather.weather == Weather.typhoon ||
+        currentWeather.weather == Weather.hurricane) {
+      // Overcoat Check & Type Immunities (Aquatic, Flying, Electric)
+      bool hasOvercoat = target.abilities.any((ab) => ab.name == 'Overcoat');
+      bool isImmune = target.types.any(
+        (t) =>
+            t == ElementalType.aquatic ||
+            t == ElementalType.flying ||
+            t == ElementalType.electric,
+      );
+      if (!hasOvercoat && !isImmune) {
+        final damage = (target.maxHealth * 0.083).round().clamp(1, 9999);
+        target.health -= damage;
+        target.health = target.health.clamp(0, target.maxHealth);
+        addToLog(
+          '${target.organism.baseOrganism.name} is buffeted by the ${currentWeather.weather.name}!',
+        );
+        notifyListeners();
+      }
+      if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
+    } else if (currentWeather.weather == Weather.tornado) {
+      bool hasOvercoat = target.abilities.any((ab) => ab.name == 'Overcoat');
+      if (!hasOvercoat) {
+        final damage = (target.maxHealth * 0.125).round().clamp(1, 9999);
+        target.health -= damage;
+        target.health = target.health.clamp(0, target.maxHealth);
+        addToLog(
+          '${target.organism.baseOrganism.name} is battered by the tornado!',
+        );
+        notifyListeners();
+      }
+      if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
+    } else if (currentWeather.weather == Weather.tsunami) {
+      bool isAquatic = target.types.any((t) => t == ElementalType.aquatic);
+      if (!isAquatic) {
+        final damage = (target.maxHealth * 0.125).round().clamp(1, 9999);
+        target.health -= damage;
+        target.health = target.health.clamp(0, target.maxHealth);
+        addToLog(
+          '${target.organism.baseOrganism.name} is washed away by the tsunami!',
+        );
+        notifyListeners();
+      }
+      if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
+    } else if (currentWeather.weather == Weather.earthquake) {
+      bool isFlying = target.types.any((t) => t == ElementalType.flying);
+      if (!isFlying) {
+        final damage = (target.maxHealth * 0.125).round().clamp(1, 9999);
+        target.health -= damage;
+        target.health = target.health.clamp(0, target.maxHealth);
+        addToLog(
+          '${target.organism.baseOrganism.name} is hurt by the tremors!',
+        );
+        notifyListeners();
+      }
+      if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
+    } else if (currentWeather.weather == Weather.volcanoEruption) {
+      bool isBlaze = target.types.any((t) => t == ElementalType.blaze);
+      if (!isBlaze) {
+        final damage = (target.maxHealth * 0.125).round().clamp(1, 9999);
+        target.health -= damage;
+        target.health = target.health.clamp(0, target.maxHealth);
+        addToLog(
+          '${target.organism.baseOrganism.name} is burned by the eruption!',
+        );
+        notifyListeners();
+      }
+      if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
+    } else if (currentWeather.weather == Weather.blizzard) {
+      bool isCryo = target.types.any((t) => t == ElementalType.cryo);
+      if (!isCryo) {
+        final damage = (target.maxHealth * 0.083).round().clamp(1, 9999);
+        target.health -= damage;
+        target.health = target.health.clamp(0, target.maxHealth);
+        addToLog(
+          '${target.organism.baseOrganism.name} is freezing in the blizzard!',
         );
         notifyListeners();
       }

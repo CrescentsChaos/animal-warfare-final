@@ -53,77 +53,141 @@ class BiomeWeatherTable {
   static Map<Weather, double> _getWeatherProbabilities(String biome) {
     switch (biome) {
       case 'desert':
-        return {Weather.clear: 60, Weather.sunny: 30, Weather.sandstorm: 10};
+        return {
+          Weather.clear: 49.5,
+          Weather.sunny: 30,
+          Weather.sandstorm: 20,
+          Weather.tornado: 0.5,
+        };
 
       case 'savanna':
-        return {Weather.clear: 70, Weather.sunny: 20, Weather.rain: 10};
+        return {
+          Weather.clear: 69.5,
+          Weather.sunny: 20,
+          Weather.rain: 10,
+          Weather.tornado: 0.5,
+        };
 
       case 'ocean':
         return {
-          Weather.rain: 40,
-          Weather.heavyRain: 30,
-          Weather.clear: 20,
+          Weather.rain: 39.5,
+          Weather.heavyRain: 29.5,
+          Weather.clear: 19.5,
           Weather.thunderstorm: 10,
+          Weather.typhoon: 0.5,
+          Weather.hurricane: 0.5,
+          Weather.tsunami: 0.5,
         };
 
       case 'polar':
       case 'frozen ocean':
-        return {Weather.snowstorm: 50, Weather.hail: 30, Weather.clear: 20};
+        return {
+          Weather.snowstorm: 49.5,
+          Weather.hail: 29.5,
+          Weather.clear: 20,
+          Weather.blizzard: 1.0,
+        };
 
       case 'rainforest':
-      case 'jungle':
         return {
-          Weather.rain: 60,
+          Weather.rain: 59,
           Weather.heavyRain: 20,
           Weather.clear: 15,
           Weather.thunderstorm: 5,
+          Weather.hurricane: 0.5,
+          Weather.typhoon: 0.5,
         };
-
+      case 'redwoods':
+      case 'jungle':
+        return {
+          Weather.rain: 29.5,
+          Weather.clear: 59.5,
+          Weather.thunderstorm: 10,
+          Weather.tornado: 0.5,
+          Weather.typhoon: 0.5,
+        };
       case 'swamp':
       case 'mangrove':
-        return {Weather.rain: 50, Weather.fog: 30, Weather.clear: 20};
+      case 'wetlands':
+        return {
+          Weather.rain: 39.5,
+          Weather.fog: 19.5,
+          Weather.clear: 29.5,
+          Weather.heavyRain: 10,
+          Weather.typhoon: 0.5,
+          Weather.hurricane: 0.5,
+          Weather.tsunami: 0.5,
+        };
 
       case 'coastal':
       case 'river':
       case 'lake':
-        return {Weather.clear: 40, Weather.rain: 50, Weather.fog: 10};
+        return {
+          Weather.clear: 39,
+          Weather.rain: 49,
+          Weather.fog: 10,
+          Weather.typhoon: 0.5,
+          Weather.tsunami: 0.5,
+          Weather.hurricane: 1.0,
+        };
 
       case 'cave':
-        return {Weather.clear: 80, Weather.fog: 20};
+        return {Weather.clear: 79.5, Weather.fog: 20, Weather.earthquake: 0.5};
 
       case 'mountain':
         return {
-          Weather.clear: 30,
-          Weather.windstorm: 30,
-          Weather.snowstorm: 20,
+          Weather.clear: 29,
+          Weather.windstorm: 29,
+          Weather.snowstorm: 19.5,
           Weather.fog: 20,
+          Weather.earthquake: 1.5,
+          Weather.blizzard: 1.0,
         };
 
       case 'taiga':
         return {
           Weather.snowstorm: 40,
           Weather.clear: 30,
-          Weather.hail: 20,
+          Weather.hail: 19,
           Weather.fog: 10,
+          Weather.blizzard: 1.0,
         };
 
       case 'urban':
         return {
-          Weather.clear: 70,
+          Weather.clear: 69,
           Weather.rain: 15,
           Weather.fog: 10,
           Weather.thunderstorm: 5,
+          Weather.earthquake: 1.0,
         };
 
       case 'volcano':
-        return {Weather.sunny: 60, Weather.clear: 30, Weather.sandstorm: 10};
+        return {
+          Weather.sunny: 59,
+          Weather.clear: 30,
+          Weather.sandstorm: 10,
+          Weather.volcanoEruption: 0.5,
+          Weather.earthquake: 0.5,
+        };
 
       case 'tundra':
-        return {Weather.snowstorm: 50, Weather.hail: 30, Weather.clear: 20};
+        return {
+          Weather.snowstorm: 49.5,
+          Weather.hail: 29.5,
+          Weather.clear: 20,
+          Weather.blizzard: 1.0,
+        };
 
       case 'coral reef':
       case 'kelp forest':
-        return {Weather.clear: 50, Weather.rain: 50};
+        return {
+          Weather.clear: 49.5,
+          Weather.rain: 39.5,
+          Weather.thunderstorm: 10,
+          Weather.tsunami: 0.5,
+          Weather.typhoon: 0.5,
+        };
 
       // Default for unknown biomes
       default:

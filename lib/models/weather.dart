@@ -14,6 +14,13 @@ enum Weather {
   windstorm, // Flying boost, accuracy down
   strongWinds, // Weather-based moves unusable
   thunderstorm, // Electric boost, paralysis chance
+  typhoon, // Aquatic/Flying boost, heavy chip
+  tornado, // Flying boost, heavy chip, accuracy down
+  hurricane, // Extreme rain/wind, heavy chip
+  tsunami, // Extreme aquatic boost, non-aquatic chip
+  earthquake, // Earth boost, non-flying chip
+  volcanoEruption, // Blaze boost, non-blaze chip
+  blizzard, // Cryo boost, non-cryo chip
 }
 
 class WeatherEffect {
@@ -48,6 +55,20 @@ class WeatherEffect {
         return 'Mysterious strong winds are protecting the field!';
       case Weather.thunderstorm:
         return 'A thunderstorm rumbles!';
+      case Weather.typhoon:
+        return 'A massive typhoon is spinning!';
+      case Weather.tornado:
+        return 'A terrifying tornado is sweeping the field!';
+      case Weather.hurricane:
+        return 'A powerful hurricane is raging!';
+      case Weather.tsunami:
+        return 'A colossal tsunami is crashing!';
+      case Weather.earthquake:
+        return 'The earth is shaking violently!';
+      case Weather.volcanoEruption:
+        return 'The volcano is erupting!';
+      case Weather.blizzard:
+        return 'A freezing blizzard is blinding everyone!';
       default:
         return '';
     }
@@ -74,6 +95,19 @@ class WeatherEffect {
         return 'The winds calmed.';
       case Weather.thunderstorm:
         return 'The storm passed.';
+      case Weather.typhoon:
+      case Weather.hurricane:
+        return 'The storm cleared.';
+      case Weather.tornado:
+        return 'The tornado dissipated.';
+      case Weather.tsunami:
+        return 'The waters receded.';
+      case Weather.earthquake:
+        return 'The ground stopped shaking.';
+      case Weather.volcanoEruption:
+        return 'The eruption subsided.';
+      case Weather.blizzard:
+        return 'The blizzard stopped.';
       default:
         return '';
     }
@@ -112,6 +146,33 @@ class WeatherEffect {
       case Weather.thunderstorm:
         if (moveType == 'electric') return 1.5;
         break;
+      case Weather.typhoon:
+        if (moveType == 'aquatic' || moveType == 'flying') return 1.5;
+        if (moveType == 'blaze') return 0.5;
+        break;
+      case Weather.tornado:
+        if (moveType == 'flying') return 1.8;
+        break;
+      case Weather.hurricane:
+        if (moveType == 'aquatic' || moveType == 'flying') return 1.8;
+        if (moveType == 'blaze') return 0.2;
+        break;
+      case Weather.tsunami:
+        if (moveType == 'aquatic') return 2.0;
+        if (moveType == 'blaze') return 0.0;
+        if (moveType == 'earth') return 0.5;
+        break;
+      case Weather.earthquake:
+        if (moveType == 'earth') return 1.5;
+        break;
+      case Weather.volcanoEruption:
+        if (moveType == 'blaze') return 1.8;
+        if (moveType == 'aquatic') return 0.5;
+        break;
+      case Weather.blizzard:
+        if (moveType == 'cryo') return 1.8;
+        if (moveType == 'blaze') return 0.5;
+        break;
       default:
         break;
     }
@@ -125,9 +186,15 @@ class WeatherEffect {
         return 0.7;
       case Weather.hail:
       case Weather.sandstorm:
-        return 0.85;
+        return 0.95;
       case Weather.windstorm:
         return 0.9;
+      case Weather.typhoon:
+      case Weather.hurricane:
+      case Weather.blizzard:
+        return 0.7;
+      case Weather.tornado:
+        return 0.6;
       default:
         return 1.0;
     }

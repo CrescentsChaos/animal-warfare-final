@@ -36,9 +36,13 @@ class WeatherService {
       baseTemp = 35.0 + random.nextDouble() * 12.0;
     else if (biome.contains('savanna'))
       baseTemp = 28.0 + random.nextDouble() * 7.0;
-    else if (biome.contains('jungle') || biome.contains('rainforest'))
+    else if (biome.contains('jungle') ||
+        biome.contains('rainforest') ||
+        biome.contains('redwoods'))
       baseTemp = 26.0 + random.nextDouble() * 6.0;
-    else if (biome.contains('mangrove') || biome.contains('swamp'))
+    else if (biome.contains('mangrove') ||
+        biome.contains('swamp') ||
+        biome.contains('wetlands'))
       baseTemp = 24.0 + random.nextDouble() * 6.0;
     else if (biome.contains('urban'))
       baseTemp = 22.0 + random.nextDouble() * 8.0;

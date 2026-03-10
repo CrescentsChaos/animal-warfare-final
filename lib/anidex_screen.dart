@@ -40,6 +40,7 @@ class _AnidexScreenState extends State<AnidexScreen>
   List<String> _allMoves = [];
   List<String> _allDrops = [];
   List<String> _allCategories = [];
+  List<String> _allRarities = [];
 
   final TextEditingController _searchController = TextEditingController();
   late TabController _tabController;
@@ -52,6 +53,7 @@ class _AnidexScreenState extends State<AnidexScreen>
   // Filter State
   String? _selectedCategory1;
   String? _selectedCategory2;
+  String? _selectedRarity;
   String? _selectedBiome;
   String? _selectedAbility;
   String? _selectedMove;
@@ -146,6 +148,14 @@ class _AnidexScreenState extends State<AnidexScreen>
       _allCategories =
           ElementalType.values.map((e) => e.name.toUpperCase()).toList()
             ..sort();
+      _allRarities =
+          _allOrganisms
+              .map((o) => o.rarity)
+              .expand((d) => d.split(',').map((s) => s.trim()))
+              .where((s) => s.isNotEmpty)
+              .toSet()
+              .toList()
+            ..sort();
 
       _applyFilters();
     } catch (e) {
@@ -162,6 +172,10 @@ class _AnidexScreenState extends State<AnidexScreen>
       if (query.isNotEmpty &&
           !org.name.toLowerCase().contains(query) &&
           !org.scientificName.toLowerCase().contains(query)) {
+        return false;
+      }
+      if (_selectedRarity != null &&
+          !org.rarity.toLowerCase().contains(_selectedRarity!.toLowerCase())) {
         return false;
       }
       if (_selectedCategory1 != null &&
@@ -585,6 +599,12 @@ class _AnidexScreenState extends State<AnidexScreen>
                   _selectedBiome,
                   _allBiomes,
                   (v) => setState(() => _selectedBiome = v),
+                ),
+                _buildSearchableFilter(
+                  'RARITY',
+                  _selectedRarity,
+                  _allRarities,
+                  (v) => setState(() => _selectedRarity = v),
                 ),
                 _buildSearchableFilter(
                   'CATEGORY 1',

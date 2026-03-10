@@ -71,6 +71,22 @@ class _WeatherOverlayState extends State<WeatherOverlay>
         return _ThunderstormPainter(progress: progress);
       case Weather.windstorm:
         return _WindPainter(progress: progress);
+      case Weather.typhoon:
+      case Weather.hurricane:
+        return _HurricanePainter(
+          progress: progress,
+          isTyphoon: weather == Weather.typhoon,
+        );
+      case Weather.tornado:
+        return _TornadoPainter(progress: progress);
+      case Weather.tsunami:
+        return _TsunamiPainter(progress: progress);
+      case Weather.earthquake:
+        return _EarthquakePainter(progress: progress);
+      case Weather.volcanoEruption:
+        return _VolcanoPainter(progress: progress);
+      case Weather.blizzard:
+        return _SnowPainter(progress: progress, isHeavy: true);
       default:
         return _EmptyPainter();
     }
@@ -126,21 +142,25 @@ class _RainPainter extends CustomPainter {
 class _SnowPainter extends CustomPainter {
   final double progress;
   final bool isHeavy;
+  final Color color;
   final List<_Snowflake> flakes;
 
-  _SnowPainter({required this.progress, required this.isHeavy})
-    : flakes = List.generate(
-        isHeavy ? 200 : 100,
-        (i) => _Snowflake(
-          radius: math.Random(i).nextDouble() * (isHeavy ? 4 : 3) + 1,
-          x: math.Random(i + 1).nextDouble(),
-          y: math.Random(i + 2).nextDouble(),
-          speed: math.Random(i + 3).nextDouble() * (isHeavy ? 1.0 : 0.5) + 0.2,
-          drift:
-              (math.Random(i + 4).nextDouble() * 0.4 - 0.2) +
-              (isHeavy ? -0.5 : 0.0),
-        ),
-      );
+  _SnowPainter({
+    required this.progress,
+    required this.isHeavy,
+    this.color = Colors.white,
+  }) : flakes = List.generate(
+         isHeavy ? 200 : 100,
+         (i) => _Snowflake(
+           radius: math.Random(i).nextDouble() * (isHeavy ? 4 : 3) + 1,
+           x: math.Random(i + 1).nextDouble(),
+           y: math.Random(i + 2).nextDouble(),
+           speed: math.Random(i + 3).nextDouble() * (isHeavy ? 1.0 : 0.5) + 0.2,
+           drift:
+               (math.Random(i + 4).nextDouble() * 0.4 - 0.2) +
+               (isHeavy ? -0.5 : 0.0),
+         ),
+       );
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -162,7 +182,7 @@ class _SnowPainter extends CustomPainter {
           (flake.y * size.height + (flake.speed * progress * size.height)) %
           size.height;
 
-      paint.color = Colors.white.withValues(alpha: isHeavy ? 0.9 : 0.7);
+      paint.color = color.withValues(alpha: isHeavy ? 0.9 : 0.7);
       canvas.drawCircle(Offset(x, y), flake.radius, paint);
 
       // Add a small glow to heavy flakes
@@ -170,7 +190,7 @@ class _SnowPainter extends CustomPainter {
         canvas.drawCircle(
           Offset(x, y),
           flake.radius + 2,
-          Paint()..color = Colors.white.withValues(alpha: 0.2),
+          Paint()..color = color.withValues(alpha: 0.2),
         );
       }
     }
@@ -552,6 +572,192 @@ class _WindLine {
     required this.speed,
     required this.opacity,
   });
+}
+
+class _HurricanePainter extends CustomPainter {
+  final double progress;
+  final bool isTyphoon;
+  final _RainPainter _rain;
+  final _WindPainter _wind;
+  final _ThunderstormPainter _storm;
+
+  _HurricanePainter({required this.progress, required this.isTyphoon})
+    : _rain = _RainPainter(progress: progress, isHeavy: true),
+      _wind = _WindPainter(progress: progress),
+      _storm = _ThunderstormPainter(progress: progress);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    _rain.paint(canvas, size);
+    _wind.paint(canvas, size);
+    if (!isTyphoon) _storm.paint(canvas, size);
+  }
+
+  @override
+  bool shouldRepaint(covariant _HurricanePainter oldDelegate) => true;
+}
+
+class _TornadoPainter extends CustomPainter {
+  final double progress;
+  final List<_WindLine> lines;
+
+  _TornadoPainter({required this.progress})
+    : lines = List.generate(
+        100,
+        (i) => _WindLine(
+          x: math.Random(i).nextDouble(),
+          y: math.Random(i + 1).nextDouble(),
+          length: math.Random(i + 2).nextDouble() * 120 + 60,
+          speed: math.Random(i + 3).nextDouble() * 5.0 + 4.0,
+          opacity: math.Random(i + 4).nextDouble() * 0.5 + 0.2,
+        ),
+      );
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.drawRect(
+      Offset.zero & size,
+      Paint()..color = Colors.grey.withValues(alpha: 0.2),
+    );
+
+    final paint = Paint()
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 2.0;
+
+    for (var line in lines) {
+      final x =
+          ((line.x * size.width + progress * line.speed * size.width) %
+              (size.width + 400)) -
+          200;
+      final y =
+          (line.y * size.height + math.sin(progress * 15 + line.x * 10) * 50) %
+          size.height;
+
+      paint.color = Colors.white.withValues(alpha: line.opacity);
+      canvas.drawLine(Offset(x, y), Offset(x + line.length, y - 5), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _TornadoPainter oldDelegate) => true;
+}
+
+class _TsunamiPainter extends CustomPainter {
+  final double progress;
+
+  _TsunamiPainter({required this.progress});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = Colors.blue.withValues(alpha: 0.3);
+
+    for (int i = 0; i < 3; i++) {
+      final waveProgress = (progress + i * 0.33) % 1.0;
+      final height = size.height * (0.2 + 0.1 * math.sin(progress * 5 + i));
+      final path = Path();
+      path.moveTo(0, size.height);
+      path.lineTo(0, size.height - height);
+
+      for (double x = 0; x <= size.width; x += 20) {
+        final y =
+            size.height -
+            height +
+            math.sin(x * 0.01 + progress * 10 + i) * 20 * waveProgress;
+        path.lineTo(x, y);
+      }
+
+      path.lineTo(size.width, size.height);
+      path.close();
+      canvas.drawPath(path, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _TsunamiPainter oldDelegate) => true;
+}
+
+class _EarthquakePainter extends CustomPainter {
+  final double progress;
+
+  _EarthquakePainter({required this.progress});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (math.Random((progress * 20).floor()).nextDouble() > 0.7) {
+      final offsetX = (math.Random().nextDouble() - 0.5) * 20;
+      final offsetY = (math.Random().nextDouble() - 0.5) * 20;
+      canvas.translate(offsetX, offsetY);
+    }
+
+    final paint = Paint()
+      ..color = Colors.brown.withValues(alpha: 0.1)
+      ..strokeWidth = 2.0;
+
+    final random = math.Random(42);
+    for (int i = 0; i < 5; i++) {
+      final x = random.nextDouble() * size.width;
+      final y = random.nextDouble() * size.height;
+      canvas.drawLine(
+        Offset(x, y),
+        Offset(x + 50, y + 20),
+        paint..color = Colors.black.withValues(alpha: 0.05),
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _EarthquakePainter oldDelegate) => true;
+}
+
+class _VolcanoPainter extends CustomPainter {
+  final double progress;
+
+  _VolcanoPainter({required this.progress});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Ash fall (darker snow)
+    final ashPainter = _SnowPainter(
+      progress: progress,
+      isHeavy: true,
+      color: Colors.grey[700]!,
+    );
+    ashPainter.paint(canvas, size);
+
+    // Embers (red particles)
+    final embers = List.generate(
+      50,
+      (i) => Offset(
+        math.Random(i).nextDouble(),
+        math.Random(i + 100).nextDouble(),
+      ),
+    );
+
+    canvas.drawRect(
+      Offset.zero & size,
+      Paint()..color = Colors.red.withValues(alpha: 0.1),
+    );
+
+    final emberPaint = Paint()
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
+
+    for (int i = 0; i < embers.length; i++) {
+      final e = embers[i];
+      final x = e.dx * size.width;
+      final y = ((e.dy - progress * 0.5) % 1.0) * size.height;
+      emberPaint.color = Colors.orangeAccent.withValues(
+        alpha: 0.6 + 0.4 * math.sin(progress * 10 + i),
+      );
+      canvas.drawCircle(
+        Offset(x, y),
+        2 + math.Random(i).nextDouble() * 3,
+        emberPaint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _VolcanoPainter oldDelegate) => true;
 }
 
 class _EmptyPainter extends CustomPainter {

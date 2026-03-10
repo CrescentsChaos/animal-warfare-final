@@ -127,7 +127,9 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
     if (biome.contains('forest') ||
         biome.contains('jungle') ||
         biome.contains('rainforest') ||
-        biome.contains('kelp'))
+        biome.contains('kelp') ||
+        biome.contains('wetlands') ||
+        biome.contains('redwoods'))
       return const Color(0xFF69F0AE);
     if (biome.contains('ocean') ||
         biome.contains('beach') ||
@@ -300,6 +302,10 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
         return const Color(0xFFE9967A);
       case 'rainforest':
         return const Color(0xFF1E5B3D);
+      case 'wetlands':
+        return const Color(0xFF535C3E);
+      case 'redwoods':
+        return const Color(0xFF2E4A2E);
       case 'kelp forest':
         return const Color(0xFF708F70);
       case 'mangrove':

@@ -897,6 +897,7 @@ class UserState with ChangeNotifier {
     final organisms = LocalAuthService.getCachedOrganisms();
     List<String> allBiomes = organisms
         .expand((o) => o.habitat.split(',').map((e) => e.trim()))
+        .where((e) => e.isNotEmpty)
         .toSet()
         .toList();
 
@@ -923,6 +924,8 @@ class UserState with ChangeNotifier {
         'River',
         'Ocean',
         'Mountain',
+        'Redwoods',
+        'Wetlands',
       ];
     }
 
@@ -1202,6 +1205,7 @@ class UserState with ChangeNotifier {
     final organisms = LocalAuthService.getCachedOrganisms();
     List<String> biomes = organisms
         .expand((o) => o.habitat.split(',').map((e) => e.trim()))
+        .where((e) => e.isNotEmpty)
         .toSet()
         .toList();
     if (biomes.isEmpty) {
@@ -1227,6 +1231,8 @@ class UserState with ChangeNotifier {
         'River',
         'Ocean',
         'Mountain',
+        'Redwoods',
+        'Wetlands',
       ];
     }
     return biomes[math.Random().nextInt(biomes.length)];
