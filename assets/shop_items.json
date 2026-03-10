@@ -611,6 +611,28 @@
         ]
     },
     {
+        "id": "apple_seed",
+        "name": "Apple Seed",
+        "description": "Plant apple tree.",
+        "price": 50,
+        "category": "seed",
+        "biomes": [
+            "Jungle",
+            "Rainforest"
+        ]
+    },
+    {
+        "id": "apple",
+        "name": "Apple",
+        "description": "Apple fruit.",
+        "price": 500,
+        "category": "fruits",
+        "biomes": [
+            "Jungle",
+            "Rainforest"
+        ]
+    },
+    {
         "id": "strawberry",
         "name": "Strawberry",
         "description": "Strawberry fruit.",

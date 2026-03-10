@@ -5,6 +5,12 @@
             "result_seed": "strawberry_seed",
             "min_yield": 2,
             "max_yield": 3
+        },
+        "apple": {
+            "tool_required": "tweezers",
+            "result_seed": "apple_seed",
+            "min_yield": 2,
+            "max_yield": 3
         }
     },
     "plants": {
@@ -12,6 +18,11 @@
             "min_yield": 4,
             "max_yield": 7,
             "fertilized_yield": 7
+        },
+        "apple": {
+            "min_yield": 3,
+            "max_yield": 5,
+            "fertilized_yield": 5
         }
     }
 }
