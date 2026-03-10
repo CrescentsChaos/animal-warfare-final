@@ -22,8 +22,12 @@ class BattleDetailsSheet extends StatelessWidget {
     required this.isPlayer,
   });
 
-  static void show(BuildContext context, BattleOrganism bo, bool isPlayer) {
-    showModalBottomSheet(
+  static Future<void> show(
+    BuildContext context,
+    BattleOrganism bo,
+    bool isPlayer,
+  ) {
+    return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

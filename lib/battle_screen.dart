@@ -233,6 +233,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
   late Animation<double> _playerShakeAnimation;
   late Animation<double> _opponentShakeAnimation;
   bool _isSwitchDialogShowing = false;
+  bool _isDetailsSheetOpen = false;
   bool _isHandlingBattleEnd = false;
   bool _isFastMode = false; // Hold message box to speed up text 3x
   CapturedOrganism? _pendingRogueCapture;
@@ -310,6 +311,10 @@ class _BattleScreenContentState extends State<BattleScreenContent>
         bm.addListener(_syncRogueState);
       }
       bm.addListener(_handleStateTriggers);
+
+      // FIX: Trigger state check immediately after adding listener to prevent race conditions
+      // (e.g. if bm.currentState is already in a triggered state)
+      _handleStateTriggers();
     });
   }
 
@@ -1143,8 +1148,10 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           themeColor: _getBiomeThemeColor(),
           primaryColor: _getBiomePrimaryColor(),
           onDismiss: () => _isSwitchDialogShowing = false,
-          onShowSummary: (bo) {
-            BattleDetailsSheet.show(context, bo, true);
+          onShowSummary: (bo) async {
+            _isDetailsSheetOpen = true;
+            await BattleDetailsSheet.show(context, bo, true);
+            _isDetailsSheetOpen = false;
           },
           onSelect: (index) {
             Navigator.pop(ctx);
@@ -2161,7 +2168,11 @@ class _BattleScreenContentState extends State<BattleScreenContent>
         children: [
           Flexible(
             child: GestureDetector(
-              onTap: () => BattleDetailsSheet.show(context, organism, false),
+              onTap: () async {
+                _isDetailsSheetOpen = true;
+                await BattleDetailsSheet.show(context, organism, false);
+                _isDetailsSheetOpen = false;
+              },
               child: statusBox,
             ),
           ),
@@ -2210,7 +2221,11 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                           anim.move.name.toLowerCase() == 'brave bird' &&
                           !anim.isPlayerAttacking,
                     ),
-                onTap: () => BattleDetailsSheet.show(context, organism, false),
+                onTap: () async {
+                  _isDetailsSheetOpen = true;
+                  await BattleDetailsSheet.show(context, organism, false);
+                  _isDetailsSheetOpen = false;
+                },
                 mirror: false, // Mirrored from previous State
                 biomeName: widget.biomeName,
                 hazards: hazards,
@@ -2443,7 +2458,11 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                           anim.move.name.toLowerCase() == 'brave bird' &&
                           anim.isPlayerAttacking,
                     ),
-                onTap: () => BattleDetailsSheet.show(context, organism, true),
+                onTap: () async {
+                  _isDetailsSheetOpen = true;
+                  await BattleDetailsSheet.show(context, organism, true);
+                  _isDetailsSheetOpen = false;
+                },
                 mirror: true,
                 biomeName: widget.biomeName,
                 hazards: hazards,
@@ -2453,7 +2472,11 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           const SizedBox(width: 8),
           Flexible(
             child: GestureDetector(
-              onTap: () => BattleDetailsSheet.show(context, organism, true),
+              onTap: () async {
+                _isDetailsSheetOpen = true;
+                await BattleDetailsSheet.show(context, organism, true);
+                _isDetailsSheetOpen = false;
+              },
               child: statusBox,
             ),
           ),
@@ -3668,6 +3691,12 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               DeviceOrientation.portraitUp,
             ]);
             Navigator.of(ctx).pop();
+
+            // FIX: If the animal details sheet is still open, pop it as well
+            // so we don't get stuck on the BattleScreen beneath it.
+            if (_isDetailsSheetOpen) {
+              Navigator.of(context).pop();
+            }
 
             if (widget.isRogueMode &&
                 (battleManager.result == BattleResult.loss ||
