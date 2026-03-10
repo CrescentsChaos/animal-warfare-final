@@ -1833,6 +1833,7 @@
         "type": "arthropod",
         "stamina": 15,
         "category": "special",
+        "isSoundBased": true,
         "effects": [
             {
                 "type": "statChange",
@@ -4440,7 +4441,8 @@
         "type": "sound",
         "stamina": 10,
         "accuracy": 100,
-        "category": "special"
+        "category": "special",
+        "isSoundBased": true
     },
     {
         "name": "Honking Havoc",
@@ -5399,16 +5401,6 @@
                 "type": "hpRatioDamage"
             }
         ]
-    },
-    {
-        "name": "Boomburst",
-        "description": "The user attacks everything around it with the tremendous power of a terrible explosive sound.",
-        "baseDamage": 140,
-        "type": "basic",
-        "accuracy": 100,
-        "stamina": 10,
-        "category": "special",
-        "isSoundBased": true
     },
     {
         "name": "First Impression",
