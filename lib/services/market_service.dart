@@ -5,9 +5,16 @@ class MarketService {
   /// Returns a multiplier for an item based on the current game date.
   /// Used to determine the current market price.
   static double getPriceMultiplier(String itemId, GameTime time) {
-    // Generate a pseudo-random multiplier between 0.6 and 1.5
-    // based on the daily seed and item ID so it stays constant throughout the day.
-    final seed = time.dailySeed ^ itemId.hashCode;
+    return _calculateMultiplier(itemId, time.dailySeed, time.weekday);
+  }
+
+  /// Internal helper to calculate multiplier consistently.
+  static double _calculateMultiplier(
+    String itemId,
+    int dailySeed,
+    int weekday,
+  ) {
+    final seed = dailySeed ^ itemId.hashCode;
     final random = math.Random(seed);
 
     // Base fluctuation between 0.8 and 1.2
@@ -15,12 +22,12 @@ class MarketService {
 
     // Day of the week bias
     // Weekends (Fri-Sun) are more volatile and slightly higher demand/prices
-    final weekday = time.weekday;
     if (weekday >= 5) {
       // 5=Fri, 6=Sat, 7=Sun
       multiplier += (random.nextDouble() * 0.2); // Potential for higher prices
-      if (random.nextDouble() < 0.2)
+      if (random.nextDouble() < 0.2) {
         multiplier += 0.1; // Extra weekend spike chance
+      }
     } else {
       multiplier -= (random.nextDouble() * 0.05); // Workdays slightly lower
     }
@@ -47,6 +54,10 @@ class MarketService {
   /// Calculates the sell price (typically 50% of the current buy price).
   static int getSellPrice(String itemId, int basePrice, GameTime time) {
     final currentBuyPrice = getCurrentPrice(itemId, basePrice, time);
+    // Gold bars and Diamonds sell for 90% of current price
+    if (itemId == 'gold_bar' || itemId == 'diamond') {
+      return (currentBuyPrice * 0.9).round();
+    }
     return (currentBuyPrice * 0.5).round();
   }
 
@@ -58,29 +69,18 @@ class MarketService {
     int days = 7,
   }) {
     List<double> history = [];
-    // We need to work backwards. We'll approximate by modifying the daily seed.
-    // In a real system, we might want a utility to subtract days from GameTime accurately.
-    // Since GameTime has a dailySeed defined as `year * 10000 + month * 100 + day`,
-    // this simplistic backwards step will break across month boundaries slightly
-    // (e.g. 20240101 -> 20240100 instead of 20231231) but for a seeded RNG effect,
-    // it perfectly suffices for generating consistent charting data without date math complexity.
 
-    int currentSeed = time.dailySeed;
-
+    // Day offset calculation (simplistic but consistent for the graph)
     for (int i = days - 1; i >= 0; i--) {
-      // Create a deterministic offset seed for the past days.
-      final pastSeed = currentSeed - i;
-      final seed = pastSeed ^ itemId.hashCode;
-      final random = math.Random(seed);
+      // We calculate a simulated past seed and weekday.
+      // 1 day = 1 dailySeed unit.
+      final pastSeed = time.dailySeed - i;
+      // We approximate weekday by subtracting 'i' and wrapping 1-7.
+      int pastWeekday = ((time.weekday - i - 1) % 7) + 1;
+      if (pastWeekday <= 0) pastWeekday += 7;
 
-      double multiplier = 0.8 + (random.nextDouble() * 0.4);
-      if (random.nextDouble() < 0.1) {
-        multiplier += 0.2 + (random.nextDouble() * 0.2);
-      } else if (random.nextDouble() < 0.1) {
-        multiplier -= 0.2 + (random.nextDouble() * 0.2);
-      }
-
-      history.add(basePrice * multiplier.clamp(0.4, 1.8));
+      final multiplier = _calculateMultiplier(itemId, pastSeed, pastWeekday);
+      history.add(basePrice * multiplier);
     }
 
     return history;

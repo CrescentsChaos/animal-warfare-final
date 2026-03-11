@@ -12,6 +12,7 @@ import 'package:animal_warfare/models/nature.dart';
 import 'dart:math' as math;
 import 'package:animal_warfare/models/rogue_like_state.dart';
 import 'package:animal_warfare/models/farm_slot.dart';
+import 'package:animal_warfare/models/battle_replay.dart';
 import 'local_auth_service.dart';
 
 class UserState with ChangeNotifier {
@@ -26,6 +27,29 @@ class UserState with ChangeNotifier {
   bool get isLoggedIn => _currentUser != null;
   bool get isInitialized => _isInitialized;
   Map<String, dynamic> get farmingConfig => _farmingConfig;
+  bool _showDetailedCurrency = false;
+  bool get showDetailedCurrency => _showDetailedCurrency;
+
+  void toggleDetailedCurrency() {
+    _showDetailedCurrency = !_showDetailedCurrency;
+    notifyListeners();
+  }
+
+  static String formatCurrency(int value, {bool detailed = false}) {
+    if (detailed || value.abs() < 1000) return value.toString();
+
+    final sign = value < 0 ? "-" : "";
+    final absVal = value.abs();
+
+    if (absVal >= 1000000) {
+      final m = absVal / 1000000.0;
+      return "$sign${m.toStringAsFixed(m >= 10 ? 1 : 2)}M";
+    } else if (absVal >= 1000) {
+      final k = absVal / 1000.0;
+      return "$sign${k.toStringAsFixed(k >= 10 ? 1 : 2)}K";
+    }
+    return value.toString();
+  }
 
   UserState() {
     _init();
@@ -113,6 +137,16 @@ class UserState with ChangeNotifier {
         bio: bio,
       ),
     );
+  }
+
+  Future<void> updateUserData(UserData updated) async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) => updated);
+  }
+
+  void logout() {
+    _currentUser = null;
+    notifyListeners();
   }
 
   Future<void> addCapturedOrganism(CapturedOrganism newCapture) async {
@@ -208,6 +242,31 @@ class UserState with ChangeNotifier {
           .map((i) => i > index ? i - 1 : i)
           .toList();
       return u.copyWith(capturedOrganisms: list, battleTeam: newTeam);
+    });
+  }
+
+  Future<void> saveReplay(BattleReplay replay) async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) {
+      final list = List<Map<String, dynamic>>.from(u.savedReplays);
+      // Remove if already exists (shouldn't happen with timestamp IDs, but for safety)
+      list.removeWhere((r) => r['id'] == replay.id);
+      // Add new replay at the beginning
+      list.insert(0, replay.toJson());
+      // Keep only the most recent 20
+      if (list.length > 20) {
+        list.removeLast();
+      }
+      return u.copyWith(savedReplays: list);
+    });
+  }
+
+  Future<void> deleteReplay(String id) async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) {
+      final list = List<Map<String, dynamic>>.from(u.savedReplays)
+        ..removeWhere((r) => r['id'] == id);
+      return u.copyWith(savedReplays: list);
     });
   }
 

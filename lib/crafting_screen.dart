@@ -421,146 +421,148 @@ class _RecipeCardState extends State<_RecipeCard>
             ),
           ),
           // Expandable materials + craft button
-          AnimatedCrossFade(
-            firstChild: const SizedBox.shrink(),
-            secondChild: Column(
-              children: [
-                const Divider(height: 1, color: Colors.white10),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+          AnimatedSize(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeInOut,
+            child: _expanded
+                ? Column(
                     children: [
-                      Text(
-                        'MATERIALS REQUIRED',
-                        style: TextStyle(
-                          fontFamily: 'PressStart2P',
-                          fontSize: 7,
-                          color: Colors.white.withValues(alpha: 0.4),
-                          letterSpacing: 1.5,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      ...widget.recipe.requiredLoot.entries.map((entry) {
-                        final loot = LootItem.findById(entry.key);
-                        final owned = widget.inventory[entry.key] ?? 0;
-                        final required = entry.value;
-                        final hasEnough = owned >= required;
-                        final progress = (owned / required).clamp(0.0, 1.0);
+                      const Divider(height: 1, color: Colors.white10),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'MATERIALS REQUIRED',
+                              style: TextStyle(
+                                fontFamily: 'PressStart2P',
+                                fontSize: 7,
+                                color: Colors.white.withValues(alpha: 0.4),
+                                letterSpacing: 1.5,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            ...widget.recipe.requiredLoot.entries.map((entry) {
+                              final loot = LootItem.findById(entry.key);
+                              final owned = widget.inventory[entry.key] ?? 0;
+                              final required = entry.value;
+                              final hasEnough = owned >= required;
+                              final progress = (owned / required).clamp(
+                                0.0,
+                                1.0,
+                              );
 
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  const Icon(
-                                    Icons.hexagon_outlined,
-                                    size: 12,
-                                    color: Colors.white38,
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Expanded(
-                                    child: Text(
-                                      loot.name,
-                                      style: TextStyle(
-                                        fontFamily: 'PressStart2P',
-                                        fontSize: 8,
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 10),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.hexagon_outlined,
+                                          size: 12,
+                                          color: Colors.white38,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Expanded(
+                                          child: Text(
+                                            loot.name,
+                                            style: TextStyle(
+                                              fontFamily: 'PressStart2P',
+                                              fontSize: 8,
+                                              color: hasEnough
+                                                  ? Colors.white
+                                                  : Colors.white.withValues(
+                                                      alpha: 0.5,
+                                                    ),
+                                            ),
+                                          ),
+                                        ),
+                                        Text(
+                                          '$owned / $required',
+                                          style: TextStyle(
+                                            fontFamily: 'PressStart2P',
+                                            fontSize: 8,
+                                            color: hasEnough
+                                                ? Colors.greenAccent
+                                                : Colors.redAccent,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 5),
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(3),
+                                      child: LinearProgressIndicator(
+                                        value: progress,
+                                        minHeight: 5,
                                         color: hasEnough
-                                            ? Colors.white
-                                            : Colors.white.withValues(
-                                                alpha: 0.5,
-                                              ),
+                                            ? Colors.greenAccent
+                                            : Colors.orange,
+                                        backgroundColor: Colors.white
+                                            .withValues(alpha: 0.07),
                                       ),
                                     ),
-                                  ),
-                                  Text(
-                                    '$owned / $required',
-                                    style: TextStyle(
-                                      fontFamily: 'PressStart2P',
-                                      fontSize: 8,
-                                      color: hasEnough
-                                          ? Colors.greenAccent
-                                          : Colors.redAccent,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 5),
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(3),
-                                child: LinearProgressIndicator(
-                                  value: progress,
-                                  minHeight: 5,
-                                  color: hasEnough
-                                      ? Colors.greenAccent
-                                      : Colors.orange,
-                                  backgroundColor: Colors.white.withValues(
-                                    alpha: 0.07,
-                                  ),
+                                  ],
                                 ),
+                              );
+                            }),
+                          ],
+                        ),
+                      ),
+                      // Craft button
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 44,
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            child: ElevatedButton(
+                              onPressed: canCraft && !_crafting
+                                  ? () => _craft(context)
+                                  : null,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: canCraft
+                                    ? AppColors.highlightColor
+                                    : Colors.white.withValues(alpha: 0.08),
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                disabledBackgroundColor: Colors.white
+                                    .withValues(alpha: 0.06),
                               ),
-                            ],
-                          ),
-                        );
-                      }),
-                    ],
-                  ),
-                ),
-                // Craft button
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 44,
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      child: ElevatedButton(
-                        onPressed: canCraft && !_crafting
-                            ? () => _craft(context)
-                            : null,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: canCraft
-                              ? AppColors.highlightColor
-                              : Colors.white.withValues(alpha: 0.08),
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          disabledBackgroundColor: Colors.white.withValues(
-                            alpha: 0.06,
+                              child: _crafting
+                                  ? const SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                  : Text(
+                                      canCraft
+                                          ? '⚒  FORGE'
+                                          : 'MISSING MATERIALS',
+                                      style: TextStyle(
+                                        fontFamily: 'PressStart2P',
+                                        fontSize: 10,
+                                        color: canCraft
+                                            ? Colors.black
+                                            : Colors.white30,
+                                      ),
+                                    ),
+                            ),
                           ),
                         ),
-                        child: _crafting
-                            ? const SizedBox(
-                                width: 18,
-                                height: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : Text(
-                                canCraft ? '⚒  FORGE' : 'MISSING MATERIALS',
-                                style: TextStyle(
-                                  fontFamily: 'PressStart2P',
-                                  fontSize: 10,
-                                  color: canCraft
-                                      ? Colors.black
-                                      : Colors.white30,
-                                ),
-                              ),
                       ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            crossFadeState: _expanded
-                ? CrossFadeState.showSecond
-                : CrossFadeState.showFirst,
-            duration: const Duration(milliseconds: 200),
+                    ],
+                  )
+                : const SizedBox.shrink(),
           ),
         ],
       ),

@@ -710,5 +710,19 @@
         "description": "An incredibly expensive, highly suspicious box. The ultimate gamble.",
         "price": 100000,
         "category": "mystery_box"
+    },
+    {
+        "id": "gold_bar",
+        "name": "Gold Bar",
+        "description": "A heavy bar of pure gold. A stable store of value.",
+        "price": 20000,
+        "category": "asset"
+    },
+    {
+        "id": "diamond",
+        "name": "Diamond",
+        "description": "A sparkling, high-density diamond. The ultimate luxury asset.",
+        "price": 2800000,
+        "category": "asset"
     }
 ]

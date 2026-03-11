@@ -110,7 +110,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           SizedBox(height: 24.h),
-                          _buildStatGrid(user, discoveredCount, totalCount),
+                          _buildStatGrid(
+                            userState,
+                            discoveredCount,
+                            totalCount,
+                          ),
                           SizedBox(height: 32.h),
                           _buildAchievementDisplay(user),
                           SizedBox(height: 32.h),
@@ -151,7 +155,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildSliverAppBar(UserData user) {
     return SliverAppBar(
-      expandedHeight: 340.h,
+      expandedHeight: 260.h,
       pinned: true,
       stretch: true,
       backgroundColor: Colors.transparent,
@@ -286,29 +290,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ],
       ),
-      child: Text(
-        user.rankName.toUpperCase(),
-        style: GoogleFonts.orbitron(
-          color: user.rankColor,
-          fontSize: 9.sp,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 1.5,
-        ),
-      ),
+      child:
+          user.effectiveDisplayName.toUpperCase() == user.rankName.toUpperCase()
+          ? Text(
+              'LV. ${user.accountLevel}',
+              style: GoogleFonts.orbitron(
+                color: user.rankColor,
+                fontSize: 9.sp,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.5,
+              ),
+            )
+          : Text(
+              user.rankName.toUpperCase(),
+              style: GoogleFonts.orbitron(
+                color: user.rankColor,
+                fontSize: 9.sp,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.5,
+              ),
+            ),
     );
   }
 
-  Widget _buildStatGrid(UserData user, int discovered, int total) {
+  Widget _buildStatGrid(UserState userState, int discovered, int total) {
+    final user = userState.currentUser!;
     return Column(
       children: [
         Row(
           children: [
             Expanded(
-              child: _statCard(
-                'COINS',
-                user.money.toString(),
-                Icons.monetization_on,
-                Colors.amber,
+              child: GestureDetector(
+                onTap: () => userState.toggleDetailedCurrency(),
+                child: _statCard(
+                  'CASH',
+                  '${UserState.formatCurrency(user.money, detailed: userState.showDetailedCurrency)} Tk.',
+                  Icons.savings_outlined,
+                  Colors.amber,
+                ),
               ),
             ),
             SizedBox(width: 16.w),

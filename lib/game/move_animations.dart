@@ -3354,7 +3354,7 @@ class FangScatterEffect extends StatelessWidget {
     final assetPath = isFire
         ? 'assets/move_effects/flame.png'
         : isCryo
-        ? 'assets/move_effects/cryo.png'
+        ? 'assets/move_effects/ice.png'
         : 'assets/move_effects/aqua.png';
 
     return SizedBox(

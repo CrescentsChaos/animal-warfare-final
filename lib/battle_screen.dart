@@ -2,6 +2,7 @@
 
 import 'dart:math';
 import 'dart:ui';
+import 'package:animal_warfare/models/battle_replay.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'
     show rootBundle, SystemChrome, DeviceOrientation;
@@ -4299,7 +4300,7 @@ class _CaptureReplaceDialog extends StatelessWidget {
   }
 }
 
-class _BattleResultDialog extends StatelessWidget {
+class _BattleResultDialog extends StatefulWidget {
   final BattleResult result;
   final String opponentName;
   final String playerName;
@@ -4331,9 +4332,17 @@ class _BattleResultDialog extends StatelessWidget {
   });
 
   @override
+  State<_BattleResultDialog> createState() => _BattleResultDialogState();
+}
+
+class _BattleResultDialogState extends State<_BattleResultDialog> {
+  bool _isSaved = false;
+
+  @override
   Widget build(BuildContext context) {
     final isVictory =
-        result == BattleResult.win || result == BattleResult.capture;
+        widget.result == BattleResult.win ||
+        widget.result == BattleResult.capture;
     final mvpData = _calculateMvp();
     final mvpOrg = mvpData['organism'] as CapturedOrganism?;
 
@@ -4393,7 +4402,7 @@ class _BattleResultDialog extends StatelessWidget {
   Widget _buildHeader(bool isVictory) {
     String headerText;
     String subText;
-    switch (result) {
+    switch (widget.result) {
       case BattleResult.win:
         headerText = 'VICTORY';
         subText = 'BATTLE CONCLUDED';
@@ -4414,7 +4423,7 @@ class _BattleResultDialog extends StatelessWidget {
 
     final headerColor = isVictory
         ? Colors.amber
-        : (result == BattleResult.fled ? Colors.grey : Colors.redAccent);
+        : (widget.result == BattleResult.fled ? Colors.grey : Colors.redAccent);
 
     return Container(
       width: double.infinity,
@@ -4537,7 +4546,7 @@ class _BattleResultDialog extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (xpResults.isNotEmpty) ...[
+        if (widget.xpResults.isNotEmpty) ...[
           const Text(
             'EXPERIENCE GAINED',
             style: TextStyle(
@@ -4547,10 +4556,10 @@ class _BattleResultDialog extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          ...battleManager.playerTeam
+          ...widget.battleManager.playerTeam
               .take(3)
               .map((org) => _buildXpProgressRow(org)),
-          if (battleManager.playerTeam.length > 3)
+          if (widget.battleManager.playerTeam.length > 3)
             const Padding(
               padding: EdgeInsets.only(top: 4),
               child: Text(
@@ -4570,13 +4579,12 @@ class _BattleResultDialog extends StatelessWidget {
   }
 
   Widget _buildXpProgressRow(CapturedOrganism org) {
-    // Note: Here we're displaying our redesigned progress UI.
-    // In our redesigned system, we use _XPResultRow (defined below) for the animated effect.
     return _XPResultRow(
       organism: org,
-      gainedXP: (xpResults['gainedAnimalXP'] as int? ?? 0),
+      gainedXP: (widget.xpResults['gainedAnimalXP'] as int? ?? 0),
       didLevelUp:
-          (xpResults['animalLeveledUp'] as Map<String, bool>?)?[org.id] ??
+          (widget.xpResults['animalLeveledUp']
+              as Map<String, bool>?)?[org.id] ??
           false,
     );
   }
@@ -4605,14 +4613,14 @@ class _BattleResultDialog extends StatelessWidget {
             children: [
               _buildRewardItem(
                 Icons.monetization_on,
-                '$moneyEarned',
+                '${widget.moneyEarned}',
                 Colors.amber,
               ),
-              if (lootName != null) ...[
+              if (widget.lootName != null) ...[
                 const SizedBox(width: 24),
                 _buildRewardItem(
                   Icons.inventory_2,
-                  lootName!,
+                  widget.lootName!,
                   Colors.purpleAccent,
                 ),
               ],
@@ -4641,47 +4649,100 @@ class _BattleResultDialog extends StatelessWidget {
   }
 
   Widget _buildActionButtons(BuildContext context) {
-    return Row(
+    final userState = Provider.of<UserState>(context, listen: false);
+
+    return Column(
       children: [
-        Expanded(
-          child: TextButton(
-            onPressed: () => _showStats(context),
-            child: const Text(
-              'VIEW STATS',
+        // Save Replay Button
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: _isSaved
+                ? null
+                : () async {
+                    final replay = BattleReplay.fromBattle(
+                      widget.battleManager,
+                    );
+                    await userState.saveReplay(replay);
+                    setState(() {
+                      _isSaved = true;
+                    });
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Replay saved!')),
+                      );
+                    }
+                  },
+            icon: Icon(
+              _isSaved ? Icons.check_circle_rounded : Icons.save_rounded,
+              size: 16,
+              color: _isSaved ? Colors.greenAccent : AppColors.primary,
+            ),
+            label: Text(
+              _isSaved ? 'REPLAY SAVED' : 'SAVE REPLAY',
               style: TextStyle(
-                color: Colors.white38,
                 fontFamily: 'PressStart2P',
                 fontSize: 8,
+                color: _isSaved ? Colors.greenAccent : AppColors.primary,
               ),
             ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          flex: 2,
-          child: ElevatedButton(
-            onPressed: onConfirm,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: result == BattleResult.win
-                  ? Colors.amber
-                  : Colors.white24,
-              foregroundColor: result == BattleResult.win
-                  ? Colors.black
-                  : Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(
+                color: _isSaved
+                    ? Colors.greenAccent.withValues(alpha: 0.5)
+                    : AppColors.primary.withValues(alpha: 0.5),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: const Text(
-              'CONTINUE',
-              style: TextStyle(
-                fontFamily: 'PressStart2P',
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: TextButton(
+                onPressed: () => _showStats(context),
+                child: const Text(
+                  'VIEW STATS',
+                  style: TextStyle(
+                    color: Colors.white38,
+                    fontFamily: 'PressStart2P',
+                    fontSize: 8,
+                  ),
+                ),
               ),
             ),
-          ),
+            const SizedBox(width: 12),
+            Expanded(
+              flex: 2,
+              child: ElevatedButton(
+                onPressed: widget.onConfirm,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: widget.result == BattleResult.win
+                      ? Colors.amber
+                      : Colors.white24,
+                  foregroundColor: widget.result == BattleResult.win
+                      ? Colors.black
+                      : Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'CONTINUE',
+                  style: TextStyle(
+                    fontFamily: 'PressStart2P',
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -4693,12 +4754,12 @@ class _BattleResultDialog extends StatelessWidget {
     double maxScore = -1;
 
     final allParticipants = [
-      ...battleManager.playerTeam,
-      ...battleManager.opponentTeam,
+      ...widget.battleManager.playerTeam,
+      ...widget.battleManager.opponentTeam,
     ];
 
     for (final org in allParticipants) {
-      final stats = battleManager.battleStats[org.id];
+      final stats = widget.battleManager.battleStats[org.id];
       if (stats == null) continue;
 
       // Only count if the animal actually contributed/fielded
@@ -4716,14 +4777,14 @@ class _BattleResultDialog extends StatelessWidget {
       if (score > maxScore) {
         maxScore = score;
         mvpOrg = org;
-        mvpSide = battleManager.playerTeam.any((o) => o.id == org.id)
+        mvpSide = widget.battleManager.playerTeam.any((o) => o.id == org.id)
             ? 'YOUR TEAM'
             : 'OPPONENT';
       }
     }
 
-    if (mvpOrg == null && battleManager.playerTeam.isNotEmpty) {
-      mvpOrg = battleManager.playerTeam.first;
+    if (mvpOrg == null && widget.battleManager.playerTeam.isNotEmpty) {
+      mvpOrg = widget.battleManager.playerTeam.first;
       mvpSide = 'YOUR TEAM';
     }
 
@@ -4750,7 +4811,7 @@ class _BattleResultDialog extends StatelessWidget {
               color: const Color(0xFF0F0F0F), // Deep dark theme
               borderRadius: BorderRadius.circular(28),
               border: Border.all(
-                color: themeColor.withValues(alpha: 0.3),
+                color: widget.themeColor.withValues(alpha: 0.3),
                 width: 1.5,
               ),
               boxShadow: [
@@ -4785,13 +4846,13 @@ class _BattleResultDialog extends StatelessWidget {
                       Text(
                         'BATTLE SUMMARY',
                         style: TextStyle(
-                          color: themeColor,
+                          color: widget.themeColor,
                           fontFamily: 'PressStart2P',
                           fontSize: 14,
                           letterSpacing: 2,
                           shadows: [
                             Shadow(
-                              color: themeColor.withValues(alpha: 0.3),
+                              color: widget.themeColor.withValues(alpha: 0.3),
                               blurRadius: 8,
                             ),
                           ],
@@ -4821,13 +4882,13 @@ class _BattleResultDialog extends StatelessWidget {
                         ],
                         _buildFancierStatsSection(
                           'YOUR TEAM',
-                          battleManager.playerTeam,
+                          widget.battleManager.playerTeam,
                           isPlayer: true,
                         ),
                         const SizedBox(height: 24),
                         _buildFancierStatsSection(
                           'OPPONENT TEAM',
-                          battleManager.opponentTeam,
+                          widget.battleManager.opponentTeam,
                           isPlayer: false,
                         ),
                       ],
@@ -4841,7 +4902,7 @@ class _BattleResultDialog extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: () => Navigator.pop(ctx),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: themeColor,
+                        backgroundColor: widget.themeColor,
                         foregroundColor: Colors.black,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
@@ -4869,7 +4930,7 @@ class _BattleResultDialog extends StatelessWidget {
   }
 
   Widget _buildMvpSpotlight(CapturedOrganism org, String side) {
-    final stats = battleManager.battleStats[org.id] ?? BattleStats();
+    final stats = widget.battleManager.battleStats[org.id] ?? BattleStats();
     return Container(
       padding: const EdgeInsets.all(2),
       decoration: BoxDecoration(
@@ -5019,7 +5080,7 @@ class _BattleResultDialog extends StatelessWidget {
               width: 4,
               height: 14,
               decoration: BoxDecoration(
-                color: isPlayer ? themeColor : Colors.redAccent,
+                color: isPlayer ? widget.themeColor : Colors.redAccent,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -5042,7 +5103,7 @@ class _BattleResultDialog extends StatelessWidget {
   }
 
   Widget _buildAnimalStatCard(CapturedOrganism org) {
-    final stats = battleManager.battleStats[org.id] ?? BattleStats();
+    final stats = widget.battleManager.battleStats[org.id] ?? BattleStats();
     final bool revealedMoves = stats.revealedMoves.isNotEmpty;
 
     return Container(

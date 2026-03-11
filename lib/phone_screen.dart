@@ -6,10 +6,10 @@ import 'package:animal_warfare/services/weather_service.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:ui';
 import 'package:animal_warfare/models/weather.dart';
-import 'package:animal_warfare/services/save_service.dart';
 import 'package:animal_warfare/models/shop_item.dart';
 import 'package:animal_warfare/services/market_service.dart';
 import 'dart:async';
+import 'dart:io';
 
 class PhoneScreen extends StatefulWidget {
   final String? initialBiome; // Optional biome for weather app context
@@ -84,6 +84,7 @@ class _PhoneScreenState extends State<PhoneScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final userState = Provider.of<UserState>(context);
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Stack(
@@ -96,40 +97,89 @@ class _PhoneScreenState extends State<PhoneScreen> {
 
           Center(
             child: Container(
-              width: 320,
-              height: 600,
+              width: 335,
+              height: 670,
               decoration: BoxDecoration(
-                color: const Color(0xFF1E1E2E).withValues(alpha: 0.9),
-                borderRadius: BorderRadius.circular(40),
-                border: Border.all(color: Colors.white24, width: 2),
+                color: const Color(0xFF151515),
+                borderRadius: BorderRadius.circular(54),
+                border: Border.all(color: Colors.white12, width: 2.5),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.5),
-                    blurRadius: 30,
-                    offset: const Offset(0, 10),
+                    color: Colors.black.withValues(alpha: 0.8),
+                    blurRadius: 50,
+                    spreadRadius: 10,
+                  ),
+                  const BoxShadow(
+                    color: Colors.white10,
+                    blurRadius: 1,
+                    spreadRadius: 0.5,
+                    offset: Offset(2, 2),
                   ),
                 ],
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(38),
-                child: Column(
-                  children: [
-                    // Status Bar
-                    _buildStatusBar(),
-
-                    // Main Content
-                    Expanded(
-                      child: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 300),
-                        child: _activeApp == null
-                            ? _buildHomeScreen()
-                            : _buildAppView(_activeApp!),
-                      ),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.black,
+                    borderRadius: BorderRadius.circular(44),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(44),
+                    child: Stack(
+                      children: [
+                        // Dynamic Wallpaper Layer
+                        Positioned.fill(
+                          child: (userState.currentUser?.phoneWallpaper != null)
+                              ? Image.asset(
+                                  'assets/biomes/${userState.currentUser!.phoneWallpaper}',
+                                  fit: BoxFit.cover,
+                                )
+                              : Image.asset(
+                                  'assets/biomes/plains-bg.png',
+                                  fit: BoxFit.cover,
+                                ),
+                        ),
+                        // Premium Glass Overlay
+                        Positioned.fill(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  Colors.white.withAlpha(15),
+                                  Colors.black.withAlpha(80),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        Column(
+                          children: [
+                            _buildStatusBar(),
+                            Expanded(
+                              child: AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 300),
+                                child: _activeApp == null
+                                    ? _buildHomeScreen()
+                                    : _buildAppView(_activeApp!),
+                              ),
+                            ),
+                            _buildHomeIndicator(),
+                          ],
+                        ),
+                        // Notifications on Top
+                        if (_showDealNotification)
+                          Positioned(
+                            top: 45,
+                            left: 14,
+                            right: 14,
+                            child: _buildNotificationBanner(),
+                          ),
+                      ],
                     ),
-
-                    // Home Button / Indicator
-                    _buildHomeIndicator(),
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -143,15 +193,6 @@ class _PhoneScreenState extends State<PhoneScreen> {
               icon: const Icon(Icons.close, color: Colors.white, size: 30),
               onPressed: () => Navigator.pop(context),
             ),
-          ),
-
-          // Deal Notification Overlay
-          AnimatedPositioned(
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeOutBack,
-            top: _showDealNotification ? 80 : -100,
-            left: MediaQuery.of(context).size.width / 2 - 140,
-            child: _buildNotificationBanner(),
           ),
         ],
       ),
@@ -167,45 +208,53 @@ class _PhoneScreenState extends State<PhoneScreen> {
         });
       },
       child: Container(
-        width: 280,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
-          color: const Color(0xFF2E1E3E),
+          color: Colors.black.withValues(alpha: 0.8),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.5),
-              blurRadius: 10,
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 8,
               offset: const Offset(0, 4),
             ),
           ],
-          border: Border.all(color: Colors.purpleAccent.withValues(alpha: 0.3)),
+          border: Border.all(color: Colors.white12),
         ),
         child: Row(
           children: [
-            const Icon(
-              Icons.shopping_cart_checkout,
-              color: Colors.purpleAccent,
-              size: 28,
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.purple.withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.local_offer,
+                color: Colors.purpleAccent,
+                size: 20,
+              ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   const Text(
-                    'DealSniper',
+                    'MARKET ALERT',
                     style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
+                      color: Colors.purpleAccent,
+                      fontSize: 10,
                       fontWeight: FontWeight.bold,
+                      letterSpacing: 1,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   Text(
                     _dealItemMessage,
-                    style: const TextStyle(color: Colors.white70, fontSize: 11),
-                    maxLines: 2,
+                    style: const TextStyle(color: Colors.white, fontSize: 10),
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
@@ -291,13 +340,13 @@ class _PhoneScreenState extends State<PhoneScreen> {
           Expanded(
             child: GridView.count(
               crossAxisCount: 3,
-              mainAxisSpacing: 20,
-              crossAxisSpacing: 20,
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
               children: [
                 _buildAppIcon(
-                  'Bank',
-                  Icons.account_balance_wallet_outlined,
-                  Colors.amber,
+                  'Weather',
+                  Icons.wb_sunny_outlined,
+                  Colors.cyanAccent,
                 ),
                 _buildAppIcon(
                   'VPN',
@@ -333,20 +382,49 @@ class _PhoneScreenState extends State<PhoneScreen> {
     return InkWell(
       onTap: () => setState(() => _activeApp = name),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.2),
+              color: color.withValues(
+                alpha: 0.8,
+              ), // High opacity for visibility
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: color.withValues(alpha: 0.4)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.4),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
-            child: Icon(icon, color: color, size: 30),
+            child: Icon(
+              icon,
+              color: Colors.white,
+              size: 28,
+            ), // White icons for contrast
           ),
-          const SizedBox(height: 6),
-          Text(
-            name,
-            style: const TextStyle(color: Colors.white70, fontSize: 10),
+          const SizedBox(height: 4),
+          Container(
+            width: 65,
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+            decoration: BoxDecoration(
+              color: Colors.black45,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 8.5,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
       ),
@@ -356,33 +434,56 @@ class _PhoneScreenState extends State<PhoneScreen> {
   Widget _buildAppView(String appName) {
     void closeApp() => setState(() => _activeApp = null);
 
+    Widget app;
     switch (appName) {
       case 'Weather':
-        return _WeatherApp(
+        app = _WeatherApp(
           biome: widget.initialBiome ?? 'Forest',
           onBack: closeApp,
         );
+        break;
       case 'Profile':
-        return _ProfileApp(onBack: closeApp);
+        app = _ProfileApp(onBack: closeApp);
+        break;
       case 'Bank':
-        return _BankApp(onBack: closeApp);
+        app = _BankApp(onBack: closeApp);
+        break;
       case 'Deals':
-        return _DealSniperApp(onBack: closeApp, items: _allItemConfigs);
+        app = _DealSniperApp(onBack: closeApp, items: _allItemConfigs);
+        break;
       case 'Settings':
-        return _SettingsApp(onBack: closeApp);
+        app = _SettingsApp(onBack: closeApp);
+        break;
       case 'VPN':
-        return _VpnApp(
+        app = _VpnApp(
           isOn: _isVpnOn,
           onToggle: (v) => setState(() => _isVpnOn = v),
           onBack: closeApp,
         );
+        break;
       case 'Browser':
-        return _BrowserApp(onBack: closeApp);
+        app = _BrowserApp(onBack: closeApp);
+        break;
       default:
-        return Center(
+        app = Center(
           child: Text(appName, style: const TextStyle(color: Colors.white)),
         );
     }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(44),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.6),
+            border: Border.all(color: Colors.white12, width: 0.5),
+            borderRadius: BorderRadius.circular(44),
+          ),
+          child: app,
+        ),
+      ),
+    );
   }
 }
 
@@ -653,11 +754,26 @@ class _ProfileApp extends StatelessWidget {
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.orangeAccent, width: 2),
                   ),
-                  child: const Icon(
-                    Icons.person,
-                    color: Colors.orangeAccent,
-                    size: 40,
-                  ),
+                  child: user.avatar.isNotEmpty && user.avatar != 'default'
+                      ? ClipOval(
+                          child: File(user.avatar).existsSync()
+                              ? Image.file(
+                                  File(user.avatar),
+                                  fit: BoxFit.cover,
+                                  width: 80,
+                                  height: 80,
+                                )
+                              : const Icon(
+                                  Icons.person,
+                                  color: Colors.orangeAccent,
+                                  size: 40,
+                                ),
+                        )
+                      : const Icon(
+                          Icons.person,
+                          color: Colors.orangeAccent,
+                          size: 40,
+                        ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -671,17 +787,26 @@ class _ProfileApp extends StatelessWidget {
                   ),
                 ),
               ),
-              Center(
-                child: Text(
-                  _getRankName(user.accountLevel),
-                  style: const TextStyle(
-                    color: Colors.orangeAccent,
-                    fontSize: 12,
+              if (user.username.toUpperCase() !=
+                  _getRankName(user.accountLevel).toUpperCase())
+                Center(
+                  child: Text(
+                    _getRankName(user.accountLevel),
+                    style: const TextStyle(
+                      color: Colors.orangeAccent,
+                      fontSize: 12,
+                    ),
                   ),
                 ),
-              ),
               const SizedBox(height: 32),
               _buildInfoRow('Gender', user.gender),
+              GestureDetector(
+                onTap: () => userState.toggleDetailedCurrency(),
+                child: _buildInfoRow(
+                  'Balance',
+                  '${UserState.formatCurrency(user.money, detailed: userState.showDetailedCurrency)} Tk.',
+                ),
+              ),
               _buildInfoRow('Account Level', 'LV. ${user.accountLevel}'),
               const SizedBox(height: 24),
               const Text(
@@ -807,54 +932,150 @@ class _SettingsApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final userState = Provider.of<UserState>(context);
+    final biomes = [
+      'plains',
+      'cave',
+      'coastal',
+      'coral_reef',
+      'deep_sea',
+      'desert',
+      'frozen_ocean',
+      'jungle',
+      'kelp_forest',
+      'lake',
+      'mangrove',
+      'mountain',
+      'ocean',
+      'polar',
+      'rainforest',
+      'redwoods',
+      'river',
+      'savanna',
+      'swamp',
+      'taiga',
+      'tundra',
+      'urban',
+      'volcano',
+      'wetlands',
+    ];
+
     return Column(
       children: [
         _AppHeader(title: 'Settings', onBack: onBack),
         Expanded(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 20),
-                ListTile(
-                  leading: const Icon(Icons.music_note, color: Colors.white),
-                  title: const Text(
-                    'Music',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  trailing: Switch(value: true, onChanged: (v) {}),
+          child: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            children: [
+              const SizedBox(height: 20),
+              const Text(
+                'WALLPAPER',
+                style: TextStyle(
+                  color: Colors.white54,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1,
                 ),
-                ListTile(
-                  leading: const Icon(Icons.volume_up, color: Colors.white),
-                  title: const Text(
-                    'SFX',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  trailing: Switch(value: true, onChanged: (v) {}),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.save_alt, color: Colors.white),
-                  title: const Text(
-                    'Export Save Data',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  onTap: () {
-                    final userState = Provider.of<UserState>(
-                      context,
-                      listen: false,
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 120,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: biomes.length,
+                  itemBuilder: (context, index) {
+                    final b = biomes[index];
+                    final fileName = '$b-bg.png';
+                    final isSelected =
+                        userState.currentUser?.phoneWallpaper == fileName;
+
+                    return GestureDetector(
+                      onTap: () async {
+                        await userState.updateUserData(
+                          userState.currentUser!.copyWith(
+                            phoneWallpaper: fileName,
+                          ),
+                        );
+                      },
+                      child: Container(
+                        width: 80,
+                        margin: const EdgeInsets.only(right: 12),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: isSelected
+                                ? Colors.cyanAccent
+                                : Colors.white12,
+                            width: 2,
+                          ),
+                          image: DecorationImage(
+                            image: AssetImage('assets/biomes/$fileName'),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        child: isSelected
+                            ? const Center(
+                                child: Icon(
+                                  Icons.check_circle,
+                                  color: Colors.cyanAccent,
+                                ),
+                              )
+                            : null,
+                      ),
                     );
-                    if (userState.currentUser != null) {
-                      SaveService.exportSaveData(
-                        context,
-                        userState.currentUser!,
-                        (loading) {},
-                      );
-                    }
                   },
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 24),
+              const Text(
+                'SOUND',
+                style: TextStyle(
+                  color: Colors.white54,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1,
+                ),
+              ),
+              const SizedBox(height: 8),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.music_note, color: Colors.white70),
+                title: const Text(
+                  'Music',
+                  style: TextStyle(color: Colors.white, fontSize: 14),
+                ),
+                trailing: Switch(
+                  value: true,
+                  onChanged: (v) {},
+                  activeColor: Colors.cyanAccent,
+                ),
+              ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.volume_up, color: Colors.white70),
+                title: const Text(
+                  'SFX',
+                  style: TextStyle(color: Colors.white, fontSize: 14),
+                ),
+                trailing: Switch(
+                  value: true,
+                  onChanged: (v) {},
+                  activeColor: Colors.cyanAccent,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.logout, color: Colors.redAccent),
+                title: const Text(
+                  'Log Out',
+                  style: TextStyle(color: Colors.redAccent, fontSize: 14),
+                ),
+                onTap: () {
+                  userState.logout();
+                },
+              ),
+            ],
           ),
         ),
       ],
@@ -919,7 +1140,7 @@ class _DealSniperApp extends StatelessWidget {
     );
 
     return Container(
-      color: const Color(0xFF1E1E2E),
+      color: Colors.transparent,
       child: Column(
         children: [
           _AppHeader(title: 'DealSniper', onBack: onBack),
@@ -1026,9 +1247,31 @@ class _DealSniperApp extends StatelessWidget {
   }
 }
 
-class _BankApp extends StatelessWidget {
+class _BankApp extends StatefulWidget {
   final VoidCallback onBack;
   const _BankApp({required this.onBack});
+
+  @override
+  State<_BankApp> createState() => _BankAppState();
+}
+
+class _BankAppState extends State<_BankApp> {
+  final Map<String, TextEditingController> _controllers = {};
+
+  TextEditingController _getController(String key) {
+    if (!_controllers.containsKey(key)) {
+      _controllers[key] = TextEditingController(text: '0');
+    }
+    return _controllers[key]!;
+  }
+
+  @override
+  void dispose() {
+    for (var c in _controllers.values) {
+      c.dispose();
+    }
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1038,7 +1281,7 @@ class _BankApp extends StatelessWidget {
 
     return Column(
       children: [
-        _AppHeader(title: 'Taka Bank', onBack: onBack),
+        _AppHeader(title: 'Taka Bank', onBack: widget.onBack),
         Expanded(
           child: ListView(
             padding: const EdgeInsets.all(20),
@@ -1052,6 +1295,7 @@ class _BankApp extends StatelessWidget {
                 (amt) => userState.addMoney(amt),
                 (amt) => userState.updateBankBalance(tk: amt),
                 (amt) => userState.updateBankBalance(tk: -amt),
+                'taka',
               ),
               const SizedBox(height: 16),
               _buildAssetCard(
@@ -1063,6 +1307,7 @@ class _BankApp extends StatelessWidget {
                 (qty) => userState.updateBankBalance(gold: qty),
                 (qty) => userState.updateBankBalance(gold: -qty),
                 userState,
+                'gold',
               ),
               const SizedBox(height: 16),
               _buildAssetCard(
@@ -1074,6 +1319,7 @@ class _BankApp extends StatelessWidget {
                 (qty) => userState.updateBankBalance(diamond: qty),
                 (qty) => userState.updateBankBalance(diamond: -qty),
                 userState,
+                'diamond',
               ),
             ],
           ),
@@ -1091,7 +1337,9 @@ class _BankApp extends StatelessWidget {
     Function(int) addPocket,
     Function(int) addBank,
     Function(int) decBank,
+    String controllerKey,
   ) {
+    final controller = _getController(controllerKey);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -1118,18 +1366,59 @@ class _BankApp extends StatelessWidget {
           Row(
             children: [
               Expanded(
+                child: TextField(
+                  controller: controller,
+                  keyboardType: TextInputType.number,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  decoration: InputDecoration(
+                    labelText: 'AMOUNT',
+                    labelStyle: TextStyle(
+                      color: color.withValues(alpha: 0.5),
+                      fontSize: 9,
+                    ),
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(
+                        color: color.withValues(alpha: 0.3),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                icon: const Icon(
+                  Icons.refresh,
+                  size: 16,
+                  color: Colors.white24,
+                ),
+                onPressed: () => controller.text = '0',
+                tooltip: 'Reset',
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
                 child: ElevatedButton(
                   onPressed: pocket > 0
                       ? () {
-                          addBank(pocket);
-                          decPocket(pocket);
+                          final amt = int.tryParse(controller.text) ?? 0;
+                          if (amt <= 0) return;
+                          final toDeposit = amt > pocket ? pocket : amt;
+                          addBank(toDeposit);
+                          decPocket(toDeposit);
+                          controller.text = '0';
                         }
                       : null,
-                  style: ElevatedButton.styleFrom(backgroundColor: color),
-                  child: const Text(
-                    'DEPOSIT ALL',
-                    style: TextStyle(fontSize: 10),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: color,
+                    padding: EdgeInsets.zero,
                   ),
+                  child: const Text('DEPOSIT', style: TextStyle(fontSize: 10)),
                 ),
               ),
               const SizedBox(width: 8),
@@ -1137,20 +1426,33 @@ class _BankApp extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: bank > 0
                       ? () {
-                          addPocket(bank);
-                          decBank(bank);
+                          final amt = int.tryParse(controller.text) ?? 0;
+                          if (amt <= 0) return;
+                          final toWithdraw = amt > bank ? bank : amt;
+                          addPocket(toWithdraw);
+                          decBank(toWithdraw);
+                          controller.text = '0';
                         }
                       : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white24,
+                    padding: EdgeInsets.zero,
                   ),
-                  child: const Text(
-                    'WITHDRAW ALL',
-                    style: TextStyle(fontSize: 10),
-                  ),
+                  child: const Text('WITHDRAW', style: TextStyle(fontSize: 10)),
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 8),
+          TextButton(
+            onPressed: () {
+              addBank(pocket);
+              decPocket(pocket);
+            },
+            child: const Text(
+              'DEPOSIT ALL',
+              style: TextStyle(fontSize: 9, color: Colors.white24),
+            ),
           ),
         ],
       ),
@@ -1166,7 +1468,9 @@ class _BankApp extends StatelessWidget {
     Function(int) addBank,
     Function(int) decBank,
     UserState userState,
+    String controllerKey,
   ) {
+    final controller = _getController(controllerKey);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -1184,9 +1488,62 @@ class _BankApp extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _amountColumn('Pocket', pocket, color),
+              GestureDetector(
+                onTap: () => userState.toggleDetailedCurrency(),
+                child: _amountColumn(
+                  'Pocket',
+                  pocket,
+                  color,
+                  detailed: userState.showDetailedCurrency,
+                ),
+              ),
               const Icon(Icons.inventory_2_outlined, color: Colors.white24),
-              _amountColumn('Vault', bank, color),
+              GestureDetector(
+                onTap: () => userState.toggleDetailedCurrency(),
+                child: _amountColumn(
+                  'Vault',
+                  bank,
+                  color,
+                  detailed: userState.showDetailedCurrency,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: controller,
+                  keyboardType: TextInputType.number,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  decoration: InputDecoration(
+                    labelText: 'QUANTITY',
+                    labelStyle: TextStyle(
+                      color: color.withValues(alpha: 0.5),
+                      fontSize: 9,
+                    ),
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(
+                        color: color.withValues(alpha: 0.3),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                icon: const Icon(
+                  Icons.refresh,
+                  size: 16,
+                  color: Colors.white24,
+                ),
+                onPressed: () => controller.text = '0',
+                tooltip: 'Reset',
+              ),
             ],
           ),
           const SizedBox(height: 16),
@@ -1196,15 +1553,19 @@ class _BankApp extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: pocket > 0
                       ? () {
-                          addBank(pocket);
-                          userState.addLoot(itemId, -pocket);
+                          final qty = int.tryParse(controller.text) ?? 0;
+                          if (qty <= 0) return;
+                          final toStore = qty > pocket ? pocket : qty;
+                          addBank(toStore);
+                          userState.addLoot(itemId, -toStore);
+                          controller.text = '0';
                         }
                       : null,
-                  style: ElevatedButton.styleFrom(backgroundColor: color),
-                  child: const Text(
-                    'STORE ALL',
-                    style: TextStyle(fontSize: 10),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: color,
+                    padding: EdgeInsets.zero,
                   ),
+                  child: const Text('STORE', style: TextStyle(fontSize: 10)),
                 ),
               ),
               const SizedBox(width: 8),
@@ -1212,27 +1573,45 @@ class _BankApp extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: bank > 0
                       ? () {
-                          decBank(bank);
-                          userState.addLoot(itemId, bank);
+                          final qty = int.tryParse(controller.text) ?? 0;
+                          if (qty <= 0) return;
+                          final toFetch = qty > bank ? bank : qty;
+                          decBank(toFetch);
+                          userState.addLoot(itemId, toFetch);
+                          controller.text = '0';
                         }
                       : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white24,
+                    padding: EdgeInsets.zero,
                   ),
-                  child: const Text(
-                    'FETCH ALL',
-                    style: TextStyle(fontSize: 10),
-                  ),
+                  child: const Text('FETCH', style: TextStyle(fontSize: 10)),
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 8),
+          TextButton(
+            onPressed: () {
+              addBank(pocket);
+              userState.addLoot(itemId, -pocket);
+            },
+            child: const Text(
+              'STORE ALL',
+              style: TextStyle(fontSize: 9, color: Colors.white24),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _amountColumn(String label, int val, Color color) {
+  Widget _amountColumn(
+    String label,
+    int val,
+    Color color, {
+    bool detailed = false,
+  }) {
     return Column(
       children: [
         Text(
@@ -1240,7 +1619,7 @@ class _BankApp extends StatelessWidget {
           style: const TextStyle(color: Colors.white54, fontSize: 10),
         ),
         Text(
-          val.toString(),
+          UserState.formatCurrency(val, detailed: detailed),
           style: TextStyle(
             color: color,
             fontWeight: FontWeight.bold,

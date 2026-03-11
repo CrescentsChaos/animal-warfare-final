@@ -12,6 +12,7 @@ import 'package:animal_warfare/theme.dart';
 import 'package:animal_warfare/game/archetype_teams.dart';
 import 'package:animal_warfare/game/ai_decision_engine.dart';
 import 'package:animal_warfare/ranked_screen.dart';
+import 'package:animal_warfare/replay_list_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:convert';
 
@@ -454,6 +455,23 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
             icon: Icons.group_rounded,
             accentColor: const Color(0xFF26A69A),
             onTap: _startDoublesBattle,
+          ),
+
+          // Replays
+          _buildModeCard(
+            title: 'Replays',
+            description:
+                'Watch your saved battles and analyze your strategies.',
+            icon: Icons.replay_rounded,
+            accentColor: const Color(0xFF26A69A),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ReplayListScreen(),
+                ),
+              );
+            },
           ),
 
           // Rankings

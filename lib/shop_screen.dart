@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:animal_warfare/services/market_service.dart';
 import 'package:animal_warfare/game/time_service.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'dart:math' as math;
 
 class ShopScreen extends StatefulWidget {
   final String? biome;
@@ -262,9 +263,11 @@ class _ShopScreenState extends State<ShopScreen> {
           ),
           backgroundColor: AppColors.surface,
           actions: [
-            IconButton(
-              icon: const Icon(Icons.tune, color: AppColors.primary),
-              onPressed: () => Scaffold.of(context).openEndDrawer(),
+            Builder(
+              builder: (ctx) => IconButton(
+                icon: const Icon(Icons.tune, color: AppColors.primary),
+                onPressed: () => Scaffold.of(ctx).openEndDrawer(),
+              ),
             ),
           ],
           bottom: TabBar(
@@ -531,15 +534,36 @@ class _ShopScreenState extends State<ShopScreen> {
                     );
                     return;
                   }
+                  final random = math.Random();
+                  if (random.nextDouble() < 0.15) {
+                    // SCAM!
+                    await userState.addMoney(-price);
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          backgroundColor: Colors.red,
+                          content: Text(
+                            'SCAMMED! The seller ran off with your Taka and gave you junk!',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      );
+                    }
+                    return;
+                  }
+
                   await userState.addMoney(-price);
                   await userState.addLoot(item.id, 1);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Shady deal complete. Received ${item.name}.',
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        backgroundColor: Colors.deepPurple,
+                        content: Text(
+                          'Shady deal complete. Received ${item.name}.',
+                        ),
                       ),
-                    ),
-                  );
+                    );
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.deepPurple,
@@ -797,7 +821,8 @@ class _ShopScreenState extends State<ShopScreen> {
                       Row(
                         children: [
                           const Icon(
-                            Icons.monetization_on,
+                            Icons
+                                .toll, // Changed from monetization_on to remove $
                             color: Colors.amber,
                             size: 14,
                           ),
@@ -939,7 +964,11 @@ class _ShopScreenState extends State<ShopScreen> {
               ElevatedButton(
                 onPressed: () async {
                   Navigator.pop(ctx);
-                  final sellPrice = (item.price * 0.5).round();
+                  final sellPrice = MarketService.getSellPrice(
+                    item.id,
+                    item.price,
+                    TimeService().currentGameTime,
+                  );
                   final success = await userState.sellItem(
                     item.id,
                     qty,
@@ -1369,6 +1398,24 @@ class _MarketGraph extends StatelessWidget {
         gridData: const FlGridData(show: false),
         titlesData: const FlTitlesData(show: false),
         borderData: FlBorderData(show: false),
+        lineTouchData: LineTouchData(
+          touchTooltipData: LineTouchTooltipData(
+            getTooltipColor: (spot) =>
+                AppColors.background.withValues(alpha: 0.8),
+            getTooltipItems: (List<LineBarSpot> touchedSpots) {
+              return touchedSpots.map((LineBarSpot touchedSpot) {
+                return LineTooltipItem(
+                  '${touchedSpot.y.toStringAsFixed(2)} Tk.',
+                  GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                );
+              }).toList();
+            },
+          ),
+        ),
         minX: 0,
         maxX: history.length.toDouble() - 1,
         lineBarsData: [

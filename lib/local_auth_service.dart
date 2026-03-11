@@ -78,6 +78,8 @@ class UserData {
   final int bankGold;
   final int bankDiamond;
   final bool isBlackMarketUnlocked;
+  final String phoneWallpaper;
+  final List<Map<String, dynamic>> savedReplays;
 
   UserData({
     required this.username,
@@ -95,6 +97,8 @@ class UserData {
     this.bankGold = 0,
     this.bankDiamond = 0,
     this.isBlackMarketUnlocked = false,
+    this.phoneWallpaper = 'plains-bg.png',
+    List<Map<String, dynamic>>? savedReplays,
     Map<String, dynamic>? quizStats,
     List<String>? discoveredOrganisms,
     List<String>? completedAchievements,
@@ -126,7 +130,8 @@ class UserData {
        explorationEncounters = explorationEncounters ?? {},
        weatherData = weatherData ?? {},
        displayedAchievements = (displayedAchievements ?? []).take(3).toList(),
-       farmSlots = farmSlots ?? List.generate(10, (i) => FarmSlot.empty(i));
+       farmSlots = farmSlots ?? List.generate(10, (i) => FarmSlot.empty(i)),
+       savedReplays = savedReplays ?? [];
 
   /// Returns displayName if set, otherwise falls back to username
   String get effectiveDisplayName =>
@@ -166,6 +171,8 @@ class UserData {
     int? bankGold,
     int? bankDiamond,
     bool? isBlackMarketUnlocked,
+    String? phoneWallpaper,
+    List<Map<String, dynamic>>? savedReplays,
   }) {
     return UserData(
       username: username ?? this.username,
@@ -184,6 +191,8 @@ class UserData {
       bankDiamond: bankDiamond ?? this.bankDiamond,
       isBlackMarketUnlocked:
           isBlackMarketUnlocked ?? this.isBlackMarketUnlocked,
+      phoneWallpaper: phoneWallpaper ?? this.phoneWallpaper,
+      savedReplays: savedReplays ?? this.savedReplays,
       quizStats: quizStats ?? this.quizStats,
       discoveredOrganisms: discoveredOrganisms ?? this.discoveredOrganisms,
       completedAchievements:
@@ -296,6 +305,8 @@ class UserData {
     'bankGold': bankGold,
     'bankDiamond': bankDiamond,
     'isBlackMarketUnlocked': isBlackMarketUnlocked,
+    'phoneWallpaper': phoneWallpaper,
+    'savedReplays': savedReplays,
   };
 
   factory UserData.fromJson(
@@ -345,6 +356,12 @@ class UserData {
       bankGold: json['bankGold'] as int? ?? 0,
       bankDiamond: json['bankDiamond'] as int? ?? 0,
       isBlackMarketUnlocked: json['isBlackMarketUnlocked'] as bool? ?? false,
+      phoneWallpaper: json['phoneWallpaper'] as String? ?? 'plains-bg.png',
+      savedReplays:
+          (json['savedReplays'] as List<dynamic>?)
+              ?.map((e) => Map<String, dynamic>.from(e as Map))
+              .toList() ??
+          [],
       quizStats: (json['quizStats'] as Map<String, dynamic>?) ?? {},
       discoveredOrganisms:
           (json['discoveredOrganisms'] as List<dynamic>?)

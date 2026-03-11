@@ -204,7 +204,7 @@ class _RankedScreenState extends State<RankedScreen>
     int totalKills,
   ) {
     return SliverAppBar(
-      expandedHeight: 200,
+      expandedHeight: 160,
       pinned: true,
       backgroundColor: const Color(0xFF0D0D1A),
       flexibleSpace: FlexibleSpaceBar(
@@ -310,15 +310,7 @@ class _RankedScreenState extends State<RankedScreen>
           ],
         ),
       ),
-      title: const Text(
-        'RANKINGS',
-        style: TextStyle(
-          fontFamily: 'PressStart2P',
-          fontSize: 12,
-          color: Colors.white,
-          letterSpacing: 2,
-        ),
-      ),
+      title: null, // Removed redundant center title
       centerTitle: true,
     );
   }
