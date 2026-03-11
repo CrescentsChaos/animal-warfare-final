@@ -611,6 +611,28 @@
         ]
     },
     {
+        "id": "pear_seed",
+        "name": "Pear Seed",
+        "description": "Plant pear tree.",
+        "price": 50,
+        "category": "seed",
+        "biomes": [
+            "Jungle",
+            "Rainforest"
+        ]
+    },
+    {
+        "id": "pear",
+        "name": "Pear",
+        "description": "Pear fruit.",
+        "price": 500,
+        "category": "fruits",
+        "biomes": [
+            "Jungle",
+            "Rainforest"
+        ]
+    },
+    {
         "id": "apple_seed",
         "name": "Apple Seed",
         "description": "Plant apple tree.",
@@ -667,5 +689,26 @@
         "description": "A tool for pluck seeds from fruits.",
         "price": 250,
         "category": "farming_tool"
+    },
+    {
+        "id": "bronze_box",
+        "name": "Bronze Mystery Box",
+        "description": "A suspicious box. Could contain trash, could contain treasure. 50% scam rate.",
+        "price": 5000,
+        "category": "mystery_box"
+    },
+    {
+        "id": "silver_box",
+        "name": "Silver Mystery Box",
+        "description": "A shiny suspicious box. Higher risk, higher reward.",
+        "price": 20000,
+        "category": "mystery_box"
+    },
+    {
+        "id": "gold_box",
+        "name": "Gold Mystery Box",
+        "description": "An incredibly expensive, highly suspicious box. The ultimate gamble.",
+        "price": 100000,
+        "category": "mystery_box"
     }
 ]

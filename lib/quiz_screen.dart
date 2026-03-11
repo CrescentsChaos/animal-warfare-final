@@ -22,7 +22,7 @@ class QuizScreen extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColors.secondaryButtonColor,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: AppColors.highlightColor, width: 2),
         boxShadow: [
@@ -156,7 +156,7 @@ class QuizScreen extends StatelessWidget {
     final activeUser = userState.currentUser ?? currentUser;
 
     return Scaffold(
-      backgroundColor: AppColors.secondaryButtonColor,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
         title: const Text('QUIZ LAB'),
         backgroundColor: Colors.black.withValues(alpha: 0.3),
@@ -168,7 +168,7 @@ class QuizScreen extends StatelessWidget {
         width: double.infinity,
         height: double.infinity,
         decoration: BoxDecoration(
-          color: AppColors.secondaryButtonColor,
+          color: AppColors.surface,
           image: DecorationImage(
             image: const AssetImage('assets/biomes/savanna-bg.png'),
             fit: BoxFit.cover,

@@ -349,7 +349,7 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const Scaffold(
-        backgroundColor: AppColors.secondaryButtonColor,
+        backgroundColor: AppColors.surface,
         body: Center(
           child: CircularProgressIndicator(color: AppColors.highlightColor),
         ),
@@ -364,7 +364,7 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
           elevation: 0,
           titleTextStyle: AppTextStyles.headline(context, baseSize: 16),
         ),
-        backgroundColor: AppColors.secondaryButtonColor,
+        backgroundColor: AppColors.surface,
         body: Center(
           child: Text(
             'NOT ENOUGH ANIMALS DISCOVERED.',
@@ -392,7 +392,7 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
         width: double.infinity,
         height: double.infinity,
         decoration: BoxDecoration(
-          color: AppColors.secondaryButtonColor,
+          color: AppColors.surface,
           image: DecorationImage(
             image: const AssetImage('assets/biomes/savanna-bg.png'),
             fit: BoxFit.cover,

@@ -196,7 +196,7 @@ class _QuestScreenState extends State<QuestScreen> {
             'QUEST LOG',
             style: TextStyle(fontFamily: 'PressStart2P', fontSize: 14),
           ),
-          backgroundColor: AppColors.secondaryButtonColor,
+          backgroundColor: AppColors.surface,
           bottom: const TabBar(
             isScrollable: true,
             indicatorColor: AppColors.highlightColor,
@@ -344,7 +344,7 @@ class _QuestScreenState extends State<QuestScreen> {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.secondaryButtonColor,
+          color: AppColors.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: AppColors.highlightColor),
           boxShadow: [
@@ -370,7 +370,7 @@ class _QuestScreenState extends State<QuestScreen> {
                   ),
                 ),
                 Text(
-                  '\$${quest.rewardMoney}',
+                  'Tk. ${quest.rewardMoney}',
                   style: const TextStyle(
                     color: Colors.green,
                     fontWeight: FontWeight.bold,
@@ -476,7 +476,7 @@ class _QuestScreenState extends State<QuestScreen> {
         return StatefulBuilder(
           builder: (context, setModalState) {
             return AlertDialog(
-              backgroundColor: AppColors.secondaryButtonColor,
+              backgroundColor: AppColors.surface,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(15),
                 side: const BorderSide(color: Colors.blueAccent, width: 2),
@@ -668,7 +668,7 @@ class _QuestScreenState extends State<QuestScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.secondaryButtonColor,
+        backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(15),
           side: const BorderSide(color: AppColors.highlightColor, width: 2),

@@ -6,6 +6,7 @@ import 'package:animal_warfare/achievement_service.dart';
 // ADDED: Import Achievement model (assuming path)
 import 'package:animal_warfare/models/achievement.dart';
 import 'package:animal_warfare/local_auth_service.dart';
+import 'package:animal_warfare/theme.dart';
 
 class AchievementsScreen extends StatefulWidget {
   // CHANGE: StatelessWidget to StatefulWidget
@@ -29,11 +30,11 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
   List<Achievement> _achievements = [];
   bool _isLoading = true; // NEW: Loading state
 
-  // Custom retro/military colors
-  static const Color primaryButtonColor = Color(0xFF38761D);
-  static const Color secondaryButtonColor = Color(0xFF1E3F2A);
-  static const Color highlightColor = Color(0xFFDAA520);
-  static const Color neonGreen = Color(0xFF39FF14);
+  // Custom retro/military colors mapped to premium theme
+  static const Color primaryButtonColor = AppColors.primary;
+  static const Color secondaryButtonColor = AppColors.surface;
+  static const Color highlightColor = AppColors.highlight;
+  static const Color neonGreen = AppColors.correctGreen;
 
   @override
   void initState() {

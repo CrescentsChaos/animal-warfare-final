@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 // Define the dark background color for the transition (Deep Forest Green)
-const Color _transitionBackgroundColor = Color(0xFF1E3F2A); 
-const Duration _fadeDuration = Duration(milliseconds: 400);
-const Duration _cloudDuration = Duration(milliseconds: 1500);
-
+const Color _transitionBackgroundColor = Color(0xFF1E3F2A);
+const Duration _fadeDuration = Duration(milliseconds: 280);
+const Duration _slideUpDuration = Duration(milliseconds: 320);
+const Duration _fadeScaleDuration = Duration(milliseconds: 280);
 
 // ------------------------------------------------------------------
 // 1. Fade Transition
@@ -12,100 +12,70 @@ const Duration _cloudDuration = Duration(milliseconds: 1500);
 // ------------------------------------------------------------------
 PageRouteBuilder createFadeRoute(Widget page) {
   return PageRouteBuilder(
-    // ⬅️ FIX: Set opaque to false so we can draw the background
-    opaque: false, 
+    opaque: false,
     transitionDuration: _fadeDuration,
     pageBuilder: (context, animation, secondaryAnimation) => page,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      // ⬅️ FIX: Wrap the entire transition in a Container with the dark background color.
-      // This prevents the underlying black screen from flashing.
+      final curved = CurvedAnimation(parent: animation, curve: Curves.easeOut);
       return Container(
         color: _transitionBackgroundColor,
-        child: FadeTransition(
-          opacity: animation,
-          child: child,
-        ),
+        child: FadeTransition(opacity: curved, child: child),
       );
     },
   );
 }
 
-
 // ------------------------------------------------------------------
-// 2. Cloud Transition (Clash of Clans style)
-// Used for high-impact transitions (e.g., Splash to Main, Main to Game)
-// NOTE: Requires 'assets/cloud_transition.png' to be available.
+// 2. Slide-Up Transition
+// Used for detail / sub-screens pushed from the main nav
+// (Settings, Profile, PatchNotes, etc.)
 // ------------------------------------------------------------------
-PageRouteBuilder createCloudTransitionRoute(Widget page) {
-  // Use 1500ms (1.5 second) for a cinematic, noticeable transition.
+PageRouteBuilder createSlideUpRoute(Widget page) {
   return PageRouteBuilder(
-    // ⬅️ FIX: Set opaque to false so we can draw the background
-    opaque: false,
-    transitionDuration: _cloudDuration,
+    transitionDuration: _slideUpDuration,
+    reverseTransitionDuration: const Duration(milliseconds: 240),
     pageBuilder: (context, animation, secondaryAnimation) => page,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      // The entering screen (page) itself is underneath.
-      final Widget incomingScreen = child;
+      final slide = Tween<Offset>(
+        begin: const Offset(0, 0.06),
+        end: Offset.zero,
+      ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic));
 
-      // ⬅️ FIX: Wrap the entire transition stack in a Container with the dark background color.
-      // This guarantees the area behind the clouds is always dark green, not black.
-      return Container(
-        color: _transitionBackgroundColor,
-        child: Stack(
-          children: [
-            incomingScreen, // The new screen, visible underneath the cloud layers
+      final fade = CurvedAnimation(
+        parent: animation,
+        curve: const Interval(0.0, 0.7, curve: Curves.easeOut),
+      );
 
-            // SlideTransition holds the cloud overlay
-            SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(-1.0, 0.0), // Start from left, off-screen
-                end: const Offset(1.0, 0.0),    // Move to right, off-screen
-              ).animate(
-                CurvedAnimation(
-                  parent: animation,
-                  // Ensure the animation covers the full duration for the clouds to hide and reveal
-                  curve: const Interval(0.0, 1.0, curve: Curves.easeInOutSine), 
-                ),
-              ),
-              child: Stack(
-                children: [
-                  // Layer 1: Main Cloud Pattern (Faster, top layer)
-                  Positioned.fill(
-                    child: Image.asset(
-                      'assets/cloud_transition.png', 
-                      fit: BoxFit.cover,
-                      repeat: ImageRepeat.repeatX,
-                      alignment: Alignment.centerLeft,
-                      // Use BlendMode.screen or another mode to help with transparency/white clouds
-                      color: Colors.white.withValues(alpha: 0.9),
-                      colorBlendMode: BlendMode.modulate,
-                      // Fallback text if image isn't found
-                      errorBuilder: (context, error, stackTrace) => const Center(
-                        child: Text("Loading...", style: TextStyle(color: Colors.white, fontFamily: 'PressStart2P')),
-                      ),
-                    ),
-                  ),
-                  // Layer 2: Offset Cloud Pattern (Slightly slower/smaller for depth)
-                  Positioned.fill(
-                    left: 50, // Slight offset
-                    right: -50,
-                    child: Opacity(
-                      opacity: 0.7,
-                      child: Image.asset(
-                        'assets/cloud_transition.png',
-                        fit: BoxFit.cover,
-                        repeat: ImageRepeat.repeatX,
-                        alignment: Alignment.centerRight,
-                        color: Colors.white.withValues(alpha: 0.5),
-                        colorBlendMode: BlendMode.modulate,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+      return FadeTransition(
+        opacity: fade,
+        child: SlideTransition(position: slide, child: child),
+      );
+    },
+  );
+}
+
+// ------------------------------------------------------------------
+// 3. Fade-Scale Transition
+// Used for high-importance pushes (entering Game, Roguelike, Battle)
+// ------------------------------------------------------------------
+PageRouteBuilder createFadeScaleRoute(Widget page) {
+  return PageRouteBuilder(
+    transitionDuration: _fadeScaleDuration,
+    reverseTransitionDuration: const Duration(milliseconds: 220),
+    pageBuilder: (context, animation, secondaryAnimation) => page,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      final fade = CurvedAnimation(
+        parent: animation,
+        curve: const Interval(0.0, 0.8, curve: Curves.easeOut),
+      );
+      final scale = Tween<double>(
+        begin: 0.96,
+        end: 1.0,
+      ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic));
+
+      return FadeTransition(
+        opacity: fade,
+        child: ScaleTransition(scale: scale, child: child),
       );
     },
   );

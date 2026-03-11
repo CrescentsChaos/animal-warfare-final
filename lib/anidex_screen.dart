@@ -255,7 +255,7 @@ class _AnidexScreenState extends State<AnidexScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.secondaryButtonColor,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
         title: const Text('DATABASE'),
         bottom: TabBar(
@@ -279,7 +279,7 @@ class _AnidexScreenState extends State<AnidexScreen>
       endDrawer: _buildFilterDrawer(),
       body: Container(
         decoration: BoxDecoration(
-          color: AppColors.secondaryButtonColor,
+          color: AppColors.surface,
           image: DecorationImage(
             image: const AssetImage('assets/main.png'),
             fit: BoxFit.cover,
@@ -452,15 +452,19 @@ class _AnidexScreenState extends State<AnidexScreen>
               ),
               child: Column(
                 children: [
-                  Text(
-                    discovered ? org.name.toUpperCase() : '???',
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontFamily: 'PressStart2P',
-                      fontSize: 8,
-                      color: discovered ? Colors.white : Colors.white24,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        discovered ? org.name.toUpperCase() : '???',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: 'PressStart2P',
+                          fontSize: 8,
+                          color: discovered ? Colors.white : Colors.white24,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -582,7 +586,7 @@ class _AnidexScreenState extends State<AnidexScreen>
 
   Widget _buildFilterDrawer() {
     return Drawer(
-      backgroundColor: AppColors.secondaryButtonColor,
+      backgroundColor: AppColors.surface,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -898,7 +902,7 @@ class _AnidexScreenState extends State<AnidexScreen>
                 .where((i) => i.toLowerCase().contains(query.toLowerCase()))
                 .toList();
             return AlertDialog(
-              backgroundColor: AppColors.secondaryButtonColor,
+              backgroundColor: AppColors.surface,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
                 side: BorderSide(

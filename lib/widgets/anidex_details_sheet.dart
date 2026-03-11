@@ -34,7 +34,7 @@ class AnidexDetailsSheet {
         maxChildSize: 0.95,
         builder: (_, scrollController) => Container(
           decoration: BoxDecoration(
-            color: AppColors.secondaryButtonColor,
+            color: AppColors.surface,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
             boxShadow: [
               BoxShadow(
@@ -404,15 +404,26 @@ class AnidexDetailsSheet {
                                   ),
                             ),
                             Center(
-                              child: Text(
-                                biome.toUpperCase(),
-                                style: const TextStyle(
-                                  color: AppColors.highlightColor,
-                                  fontFamily: 'PressStart2P',
-                                  fontSize: 7,
-                                  shadows: [
-                                    Shadow(color: Colors.black, blurRadius: 4),
-                                  ],
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4.0,
+                                ),
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Text(
+                                    biome.toUpperCase(),
+                                    style: const TextStyle(
+                                      color: AppColors.highlightColor,
+                                      fontFamily: 'PressStart2P',
+                                      fontSize: 7,
+                                      shadows: [
+                                        Shadow(
+                                          color: Colors.black,
+                                          blurRadius: 4,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),

@@ -5,6 +5,9 @@ import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/models/shop_item.dart';
 import 'package:animal_warfare/theme.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:animal_warfare/services/market_service.dart';
+import 'package:animal_warfare/game/time_service.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 class ShopScreen extends StatefulWidget {
   final String? biome;
@@ -18,6 +21,19 @@ class _ShopScreenState extends State<ShopScreen> {
   List<ShopItem> _allItemConfigs = [];
   bool _isLoading = true;
   String _selectedCategory = 'All';
+  String _searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
+
+  final Map<String, String> _categoryNames = {
+    'All': 'All Items',
+    'talisman': 'Talismans',
+    'mint': 'Mints',
+    'capture_item': 'Capture Nets',
+    'rod': 'Fishing Rods',
+    'fruit': 'Fruits',
+    'farming_tool': 'Farming Tools',
+    'misc': 'Miscellaneous',
+  };
 
   static const _rodIds = {'old_rod', 'good_rod', 'super_rod'};
 
@@ -50,8 +66,23 @@ class _ShopScreenState extends State<ShopScreen> {
       }).toList();
     }
 
-    if (_selectedCategory == 'All') return base;
-    return base.where((i) => i.category == _selectedCategory).toList();
+    if (_selectedCategory != 'All') {
+      base = base.where((i) => i.category == _selectedCategory).toList();
+    }
+
+    if (_searchQuery.isNotEmpty) {
+      final q = _searchQuery.toLowerCase();
+      base = base
+          .where(
+            (i) =>
+                i.name.toLowerCase().contains(q) ||
+                i.description.toLowerCase().contains(q),
+          )
+          .toList();
+    }
+
+    // Hide black market items from regular buy pool
+    return base.where((i) => i.category != 'mystery_box').toList();
   }
 
   void _showBuyDialog(ShopItem item) {
@@ -65,14 +96,19 @@ class _ShopScreenState extends State<ShopScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setLocal) {
-          final maxAffordable = (user.money / item.price).floor();
+          final currentPrice = MarketService.getCurrentPrice(
+            item.id,
+            item.price,
+            TimeService().currentGameTime,
+          );
+          final maxAffordable = (user.money / currentPrice).floor();
           final maxQty = maxAffordable > 0
               ? (maxAffordable > 99 ? 99 : maxAffordable)
               : 1;
 
           if (qty > maxQty) qty = maxQty;
 
-          final total = item.price * qty;
+          final total = currentPrice * qty;
           final canAfford = user.money >= total;
           return AlertDialog(
             backgroundColor: AppColors.surface,
@@ -154,26 +190,15 @@ class _ShopScreenState extends State<ShopScreen> {
                 if (maxQty <= 1)
                   const SizedBox(height: 48), // Spacer to prevent layout jump
                 const SizedBox(height: 6),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.monetization_on,
-                      color: Colors.amber,
-                      size: 16,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      '$total Gold',
-                      style: TextStyle(
-                        color: canAfford
-                            ? AppColors.highlight
-                            : AppColors.dangerLight,
-                        fontFamily: 'PressStart2P',
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
+                Text(
+                  '${total.toStringAsFixed(0)} Tk.',
+                  style: TextStyle(
+                    color: canAfford
+                        ? AppColors.highlight
+                        : AppColors.dangerLight,
+                    fontFamily: 'PressStart2P',
+                    fontSize: 13,
+                  ),
                 ),
               ],
             ),
@@ -221,27 +246,41 @@ class _ShopScreenState extends State<ShopScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final userState = Provider.of<UserState>(context);
+    final isUnlocked = userState.currentUser?.isBlackMarketUnlocked ?? false;
+
     return DefaultTabController(
-      length: 2,
+      length: isUnlocked ? 3 : 2,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
           title: Text(
             widget.biome != null
                 ? '${widget.biome!.toUpperCase()} SHOP'
-                : 'SHOP',
+                : 'MARKETPLACE',
             style: const TextStyle(fontFamily: 'PressStart2P', fontSize: 12),
           ),
           backgroundColor: AppColors.surface,
-          bottom: const TabBar(
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.tune, color: AppColors.primary),
+              onPressed: () => Scaffold.of(context).openEndDrawer(),
+            ),
+          ],
+          bottom: TabBar(
             indicatorColor: AppColors.primary,
-            labelStyle: TextStyle(fontFamily: 'PressStart2P', fontSize: 10),
+            labelStyle: const TextStyle(
+              fontFamily: 'PressStart2P',
+              fontSize: 10,
+            ),
             tabs: [
-              Tab(text: 'BUY'),
-              Tab(text: 'SELL'),
+              const Tab(text: 'BUY'),
+              const Tab(text: 'SELL'),
+              if (isUnlocked) const Tab(text: 'BLACK MKT'),
             ],
           ),
         ),
+        endDrawer: _buildFilterDrawer(),
         body: _isLoading
             ? const Center(
                 child: CircularProgressIndicator(color: AppColors.primary),
@@ -251,8 +290,8 @@ class _ShopScreenState extends State<ShopScreen> {
                   // Buy Tab
                   Column(
                     children: [
-                      _buildGoldBalance(),
-                      _buildCategoryFilter(),
+                      _buildTakaBalance(),
+                      _buildSearchBar(),
                       Expanded(
                         child: GridView.builder(
                           padding: const EdgeInsets.all(14),
@@ -273,8 +312,396 @@ class _ShopScreenState extends State<ShopScreen> {
                   ),
                   // Sell Tab
                   _buildSellTab(),
+                  // Black Market Tab
+                  if (isUnlocked) _buildBlackMarketTab(),
                 ],
               ),
+      ),
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      color: AppColors.surface,
+      child: TextField(
+        controller: _searchController,
+        style: GoogleFonts.inter(color: Colors.white, fontSize: 13),
+        onChanged: (val) {
+          setState(() {
+            _searchQuery = val;
+          });
+        },
+        decoration: InputDecoration(
+          hintText: 'Search items...',
+          hintStyle: GoogleFonts.inter(color: AppColors.textMuted),
+          prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
+          suffixIcon: _searchQuery.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(
+                    Icons.close,
+                    color: AppColors.textSecondary,
+                    size: 18,
+                  ),
+                  onPressed: () {
+                    _searchController.clear();
+                    setState(() {
+                      _searchQuery = '';
+                    });
+                  },
+                )
+              : null,
+          filled: true,
+          fillColor: AppColors.background,
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 0,
+            horizontal: 16,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.border),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.border),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.primary, width: 2),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBlackMarketTab() {
+    return Consumer<UserState>(
+      builder: (context, userState, _) {
+        final gameTime = TimeService().currentGameTime;
+        // Filter all items for the black market stock EXCEPT mystery boxes
+        final allNormalItems = _allItemConfigs
+            .where((i) => i.category != 'mystery_box')
+            .map((i) => i.id)
+            .toList();
+        final stockIds = MarketService.getBlackMarketStock(
+          allNormalItems,
+          gameTime,
+        );
+
+        final stockItems = _allItemConfigs
+            .where((i) => stockIds.contains(i.id))
+            .toList();
+        final mysteryBoxes = _allItemConfigs
+            .where((i) => i.category == 'mystery_box')
+            .toList();
+        mysteryBoxes.sort(
+          (a, b) => a.price.compareTo(b.price),
+        ); // bronze, silver, gold
+
+        return Container(
+          color: const Color(0xFF0F0F1A), // Darker theme
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              _buildTakaBalance(isBlackMarket: true),
+              const SizedBox(height: 24),
+              const Text(
+                "TODAY's SHADY DEALS",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'PressStart2P',
+                  fontSize: 12,
+                  color: Colors.deepPurpleAccent,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ...stockItems.map(
+                (item) => _buildBlackMarketItem(item, userState, gameTime),
+              ),
+
+              const SizedBox(height: 32),
+              const Text(
+                "MYSTERY BOXES (NO REFUNDS)",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'PressStart2P',
+                  fontSize: 12,
+                  color: Colors.orangeAccent,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ...mysteryBoxes.map((box) => _buildMysteryBox(box, userState)),
+              const SizedBox(height: 40),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildBlackMarketItem(
+    ShopItem item,
+    UserState userState,
+    GameTime time,
+  ) {
+    double mult = MarketService.getBlackMarketMultiplier(item.id, time);
+    final price = (item.price * mult).round();
+    final isScam = mult > 1.5;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A1A2E), // Darker surface
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.deepPurpleAccent.withValues(alpha: 0.3),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.5),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          _buildItemIcon(item),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "??? ${item.name} ???",
+                  style: const TextStyle(
+                    fontFamily: 'PressStart2P',
+                    fontSize: 9,
+                    color: Colors.grey,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                if (isScam)
+                  const Text(
+                    'Looks suspiciously overpriced...',
+                    style: TextStyle(
+                      color: AppColors.dangerLight,
+                      fontSize: 10,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  )
+                else
+                  const Text(
+                    'Looks like a steal...',
+                    style: TextStyle(
+                      color: Colors.greenAccent,
+                      fontSize: 10,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    '$price Tk.',
+                    style: const TextStyle(
+                      fontFamily: 'PressStart2P',
+                      fontSize: 10,
+                      color: Colors.redAccent,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              ElevatedButton(
+                onPressed: () async {
+                  final user = userState.currentUser;
+                  if (user == null) return;
+                  if (user.money < price) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Not enough Taka to make the deal.'),
+                      ),
+                    );
+                    return;
+                  }
+                  await userState.addMoney(-price);
+                  await userState.addLoot(item.id, 1);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Shady deal complete. Received ${item.name}.',
+                      ),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepPurple,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 0,
+                  ),
+                  minimumSize: const Size(60, 30),
+                ),
+                child: const Text(
+                  'PURCHASE',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMysteryBox(ShopItem box, UserState userState) {
+    Color boxColor;
+    if (box.id == 'bronze_box')
+      boxColor = Colors.brown[400]!;
+    else if (box.id == 'silver_box')
+      boxColor = Colors.grey[300]!;
+    else
+      boxColor = Colors.amber;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A1A2E), // Darker surface
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: boxColor.withValues(alpha: 0.5)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.inventory_2, color: boxColor, size: 42),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  box.name.toUpperCase(),
+                  style: TextStyle(
+                    fontFamily: 'PressStart2P',
+                    fontSize: 9,
+                    color: boxColor,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  box.description,
+                  style: GoogleFonts.inter(
+                    color: Colors.white70,
+                    fontSize: 10,
+                    height: 1.2,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    '${box.price} Tk.',
+                    style: const TextStyle(
+                      fontFamily: 'PressStart2P',
+                      fontSize: 10,
+                      color: Colors.amber,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              ElevatedButton(
+                onPressed: () async {
+                  final user = userState.currentUser;
+                  if (user == null) return;
+                  if (user.money < box.price) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Not enough Taka to gamble.'),
+                      ),
+                    );
+                    return;
+                  }
+                  await userState.addMoney(-box.price);
+                  // Open Box logic
+                  final resultStr = MarketService.openMysteryBox(
+                    box.id,
+                    user.inventory,
+                    user.money,
+                    (amt) => userState.addMoney(amt),
+                    (id, qty) => userState.addLoot(id, qty),
+                  );
+
+                  if (mounted) {
+                    showDialog(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        backgroundColor: const Color(0xFF1A1A2E),
+                        title: Text(
+                          box.name,
+                          style: TextStyle(
+                            color: boxColor,
+                            fontFamily: 'PressStart2P',
+                            fontSize: 12,
+                          ),
+                        ),
+                        content: Text(
+                          resultStr,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                          ),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx),
+                            child: const Text('Close'),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: boxColor.withValues(alpha: 0.2),
+                  side: BorderSide(color: boxColor),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 0,
+                  ),
+                  minimumSize: const Size(60, 30),
+                ),
+                child: const Text(
+                  'OPEN',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -323,7 +750,11 @@ class _ShopScreenState extends State<ShopScreen> {
               ),
             );
 
-            final sellPrice = (config.price * 0.5).round();
+            final sellPrice = MarketService.getSellPrice(
+              itemId,
+              config.price,
+              TimeService().currentGameTime,
+            );
 
             return Container(
               margin: const EdgeInsets.only(bottom: 12),
@@ -372,7 +803,7 @@ class _ShopScreenState extends State<ShopScreen> {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            '$sellPrice',
+                            '$sellPrice Tk.',
                             style: const TextStyle(
                               fontFamily: 'PressStart2P',
                               fontSize: 10,
@@ -419,7 +850,11 @@ class _ShopScreenState extends State<ShopScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setLocal) {
-          final sellPrice = (item.price * 0.5).round();
+          final sellPrice = MarketService.getSellPrice(
+            item.id,
+            item.price,
+            TimeService().currentGameTime,
+          );
           final total = sellPrice * qty;
           return AlertDialog(
             backgroundColor: AppColors.surface,
@@ -467,6 +902,15 @@ class _ShopScreenState extends State<ShopScreen> {
                   ],
                 ),
                 const SizedBox(height: 16),
+                if (maxQty > 1)
+                  Slider(
+                    value: qty.toDouble(),
+                    min: 1,
+                    max: maxQty.toDouble(),
+                    divisions: maxQty - 1,
+                    label: '$qty',
+                    onChanged: (v) => setLocal(() => qty = v.round()),
+                  ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -474,14 +918,9 @@ class _ShopScreenState extends State<ShopScreen> {
                       'Total: ',
                       style: TextStyle(color: Colors.white54),
                     ),
-                    const Icon(
-                      Icons.monetization_on,
-                      color: Colors.amber,
-                      size: 16,
-                    ),
                     const SizedBox(width: 4),
                     Text(
-                      '$total Gold',
+                      '${total.toStringAsFixed(0)} Tk.',
                       style: const TextStyle(
                         fontFamily: 'PressStart2P',
                         fontSize: 14,
@@ -510,7 +949,7 @@ class _ShopScreenState extends State<ShopScreen> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
-                          'Sold $qty× ${item.name} for $total Gold',
+                          'Sold $qty× ${item.name} for ${total.toStringAsFixed(0)} Taka',
                         ),
                       ),
                     );
@@ -528,7 +967,7 @@ class _ShopScreenState extends State<ShopScreen> {
     );
   }
 
-  Widget _buildGoldBalance() {
+  Widget _buildTakaBalance({bool isBlackMarket = false}) {
     return Consumer<UserState>(
       builder: (context, userState, _) {
         final money = userState.currentUser?.money ?? 0;
@@ -577,14 +1016,18 @@ class _ShopScreenState extends State<ShopScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
-                    Icons.monetization_on,
-                    color: Colors.amber,
-                    size: 22,
+                  Container(
+                    width: 20,
+                    height: 20,
+                    decoration: BoxDecoration(
+                      color: Colors.amber,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.amberAccent, width: 1.5),
+                    ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 10),
                   Text(
-                    '$money Gold',
+                    '${money.toStringAsFixed(0)} Tk.',
                     style: const TextStyle(
                       fontFamily: 'PressStart2P',
                       fontSize: 16,
@@ -616,49 +1059,88 @@ class _ShopScreenState extends State<ShopScreen> {
     );
   }
 
-  Widget _buildCategoryFilter() {
-    final cats = [
-      ('All', 'All'),
-      ('talisman', 'Talismans'),
-      ('mint', 'Mints'),
-      ('capture_item', 'Nets'),
-      ('rod', 'Rods'),
-    ];
-    return Container(
-      height: 48,
-      decoration: const BoxDecoration(
-        color: AppColors.background,
-        border: Border(bottom: BorderSide(color: AppColors.border)),
-      ),
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        children: cats.map((pair) {
-          final selected = _selectedCategory == pair.$1;
-          return GestureDetector(
-            onTap: () => setState(() => _selectedCategory = pair.$1),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              margin: const EdgeInsets.only(right: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-              decoration: BoxDecoration(
-                color: selected ? AppColors.primary : AppColors.surface,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: selected ? AppColors.primary : AppColors.border,
-                ),
+  Widget _buildFilterDrawer() {
+    return Drawer(
+      backgroundColor: AppColors.background,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            padding: const EdgeInsets.fromLTRB(20, 60, 20, 20),
+            color: AppColors.surface,
+            child: const Text(
+              'FILTERS',
+              style: TextStyle(
+                fontFamily: 'PressStart2P',
+                fontSize: 16,
+                color: AppColors.primary,
               ),
-              child: Text(
-                pair.$2,
-                style: GoogleFonts.inter(
-                  color: selected ? Colors.white : AppColors.textSecondary,
-                  fontSize: 12,
-                  fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+            ),
+          ),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(20),
+              children: [
+                const Text(
+                  'CATEGORY',
+                  style: TextStyle(
+                    fontFamily: 'PressStart2P',
+                    fontSize: 10,
+                    color: AppColors.textMuted,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: _categoryNames.entries.map((e) {
+                    final isSelected = _selectedCategory == e.key;
+                    return ChoiceChip(
+                      label: Text(e.value),
+                      selected: isSelected,
+                      onSelected: (v) {
+                        if (v) {
+                          setState(() {
+                            _selectedCategory = e.key;
+                          });
+                        }
+                      },
+                      backgroundColor: AppColors.surface,
+                      selectedColor: AppColors.primary.withValues(alpha: 0.2),
+                      labelStyle: TextStyle(
+                        color: isSelected ? AppColors.primary : Colors.white70,
+                        fontSize: 11,
+                      ),
+                      side: BorderSide(
+                        color: isSelected
+                            ? AppColors.primary
+                            : AppColors.border,
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                minimumSize: const Size(double.infinity, 45),
+              ),
+              child: const Text(
+                'APPLY',
+                style: TextStyle(
+                  fontFamily: 'PressStart2P',
+                  fontSize: 11,
+                  color: Colors.white,
                 ),
               ),
             ),
-          );
-        }).toList(),
+          ),
+        ],
       ),
     );
   }
@@ -667,6 +1149,14 @@ class _ShopScreenState extends State<ShopScreen> {
     final isRod = _rodIds.contains(item.id);
     return Consumer<UserState>(
       builder: (context, userState, _) {
+        final gameTime = TimeService().currentGameTime;
+        final currentPrice = MarketService.getCurrentPrice(
+          item.id,
+          item.price,
+          gameTime,
+        );
+        final multiplier = MarketService.getPriceMultiplier(item.id, gameTime);
+
         final inv = userState.currentUser?.inventory ?? {};
         final owned = inv[item.id] ?? 0;
         final isActive = isRod && inv['${item.id}_active'] == 1;
@@ -690,144 +1180,91 @@ class _ShopScreenState extends State<ShopScreen> {
                   ]
                 : null,
           ),
+          clipBehavior: Clip.antiAlias,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Center(child: _buildItemIcon(item)),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                child: Text(
-                  item.name.toUpperCase(),
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
-                    color: AppColors.highlight,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.3,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(height: 3),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                child: Text(
-                  item.description,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
-                    color: AppColors.textSecondary,
-                    fontSize: 10,
-                    height: 1.3,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              if (owned > 0)
-                Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: Text(
-                    'Owned: $owned',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
-                      color: AppColors.primary,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
+                child: Stack(
+                  children: [
+                    Container(
+                      color: AppColors.background.withValues(alpha: 0.3),
+                      child: Center(child: _buildItemIcon(item)),
                     ),
-                  ),
-                ),
-              const SizedBox(height: 8),
-              if (isRod && owned > 0)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(8, 0, 8, 10),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: _buyButton(
-                          label: '${item.price}G',
-                          onTap: () => _showBuyDialog(item),
+                    if (multiplier < 0.85)
+                      Positioned(
+                        top: 8,
+                        left: 8,
+                        child: _buildBadge('DISCOUNT!', Colors.green),
+                      )
+                    else if (multiplier > 1.35)
+                      Positioned(
+                        top: 8,
+                        left: 8,
+                        child: _buildBadge('SPIKE!', Colors.orange),
+                      ),
+                    // Embedded Graph in image area bottom
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: SizedBox(
+                        height: 30,
+                        child: _MarketGraph(
+                          itemId: item.id,
+                          basePrice: item.price,
+                          time: gameTime,
                         ),
                       ),
-                      const SizedBox(width: 6),
-                      GestureDetector(
-                        onTap: () async {
-                          final key = '${item.id}_active';
-                          final current = inv[key] ?? 0;
-                          await userState.addLoot(key, current == 1 ? -1 : 1);
-                        },
-                        child: Container(
-                          width: 34,
-                          height: 34,
-                          decoration: BoxDecoration(
-                            color: isActive
-                                ? AppColors.primary.withValues(alpha: 0.15)
-                                : AppColors.border,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: isActive
-                                  ? AppColors.primary
-                                  : Colors.transparent,
-                            ),
-                          ),
-                          child: Icon(
-                            isActive ? Icons.toggle_on : Icons.toggle_off,
-                            color: isActive
-                                ? AppColors.primary
-                                : AppColors.textMuted,
-                            size: 20,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              else
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(8, 0, 8, 10),
-                  child: _buyButton(
-                    label: '${item.price}G',
-                    onTap: () => _showBuyDialog(item),
-                  ),
+                    ),
+                  ],
                 ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 8,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      item.name.toUpperCase(),
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                        color: AppColors.highlight,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.3,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Owned: $owned',
+                      style: GoogleFonts.inter(
+                        color: owned > 0
+                            ? AppColors.primary
+                            : AppColors.textMuted,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8, 0, 8, 10),
+                child: _buyButton(
+                  label: '$currentPrice Tk.',
+                  onTap: () => _showBuyDialog(item),
+                ),
+              ),
             ],
           ),
         );
       },
-    );
-  }
-
-  Widget _buyButton({required String label, required VoidCallback onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 34,
-        decoration: BoxDecoration(
-          color: AppColors.primary,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        alignment: Alignment.center,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.monetization_on, color: Colors.amber, size: 13),
-            const SizedBox(width: 4),
-            Text(
-              label,
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -861,6 +1298,99 @@ class _ShopScreenState extends State<ShopScreen> {
         }
         return Icon(iconData, size: 48, color: color);
       },
+    );
+  }
+
+  Widget _buyButton({required String label, required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 34,
+        decoration: BoxDecoration(
+          color: AppColors.primary,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        alignment: Alignment.center,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBadge(String text, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontFamily: 'PressStart2P',
+          fontSize: 6,
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+}
+
+class _MarketGraph extends StatelessWidget {
+  final String itemId;
+  final int basePrice;
+  final GameTime time;
+
+  const _MarketGraph({
+    required this.itemId,
+    required this.basePrice,
+    required this.time,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final history = MarketService.getPriceHistory(itemId, basePrice, time);
+    final isUp = history.last >= history.first;
+
+    return LineChart(
+      LineChartData(
+        gridData: const FlGridData(show: false),
+        titlesData: const FlTitlesData(show: false),
+        borderData: FlBorderData(show: false),
+        minX: 0,
+        maxX: history.length.toDouble() - 1,
+        lineBarsData: [
+          LineChartBarData(
+            spots: List.generate(
+              history.length,
+              (i) => FlSpot(i.toDouble(), history[i]),
+            ),
+            isCurved: true,
+            color: isUp ? Colors.greenAccent : Colors.redAccent,
+            barWidth: 2,
+            isStrokeCapRound: true,
+            dotData: const FlDotData(show: false),
+            belowBarData: BarAreaData(
+              show: true,
+              color: (isUp ? Colors.greenAccent : Colors.redAccent).withValues(
+                alpha: 0.1,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

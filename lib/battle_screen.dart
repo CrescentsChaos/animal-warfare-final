@@ -268,6 +268,13 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     // Add lifecycle observer to handle app backgrounding
     WidgetsBinding.instance.addObserver(this);
 
+    // Play battle music — randomly pick between the two available battle themes
+    final rand = Random();
+    final track = rand.nextBool()
+        ? 'audio/battle_default.mp3'
+        : 'audio/battle_default1.mp3';
+    AudioService.instance.playMusic(track);
+
     _playerShakeController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 500),
@@ -1564,12 +1571,16 @@ class _BattleScreenContentState extends State<BattleScreenContent>
             children: [
               Row(
                 children: [
-                  Text(
-                    widget.battleTitle ?? 'Wild Encounter',
-                    style: AppTextStyles.headline(
-                      context,
-                      baseSize: 12,
-                      color: _getBiomeThemeColor(),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      widget.battleTitle ?? 'Wild Encounter',
+                      style: AppTextStyles.headline(
+                        context,
+                        baseSize: 12,
+                        color: _getBiomeThemeColor(),
+                      ),
                     ),
                   ),
                   if (widget.startAsleep) ...[

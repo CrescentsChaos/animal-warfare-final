@@ -208,22 +208,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 SizedBox(height: 8.h),
                 _buildRankBadge(user),
-                SizedBox(height: 12.h),
-                if (user.bio.isNotEmpty)
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 40.w),
-                    child: Text(
-                      user.bio,
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
-                        fontSize: 11.sp,
-                        color: Colors.white60,
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
-                  ),
-                SizedBox(height: 16.h),
-                _buildTitleFactionBadges(user),
                 SizedBox(height: 24.h),
               ],
             ),
@@ -258,40 +242,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
     }
 
-    IconData archetypeIcon = Icons.person;
-    Color archetypeColor = AppColors.primary;
-    if (!isCustom && user.avatarIconKey.isNotEmpty) {
-      if (user.avatarIconKey.contains('warrior')) {
-        archetypeIcon = Icons.shield_rounded;
-        archetypeColor = const Color(0xFFEF5350);
-      } else if (user.avatarIconKey.contains('ranger')) {
-        archetypeIcon = Icons.gps_fixed_rounded;
-        archetypeColor = AppColors.primary;
-      } else if (user.avatarIconKey.contains('scholar')) {
-        archetypeIcon = Icons.auto_stories_rounded;
-        archetypeColor = const Color(0xFFAB47BC);
-      } else if (user.avatarIconKey.contains('rogue')) {
-        archetypeIcon = Icons.flash_on_rounded;
-        archetypeColor = const Color(0xFFFF7043);
-      }
-    }
-
     return Container(
       width: 110.w,
       height: 110.w,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(
-          color: (isCustom ? AppColors.highlight : archetypeColor).withValues(
-            alpha: 0.5,
-          ),
+          color: (isCustom ? AppColors.highlight : AppColors.primary)
+              .withValues(alpha: 0.5),
           width: 3,
         ),
         boxShadow: [
           BoxShadow(
-            color: (isCustom ? AppColors.highlight : archetypeColor).withValues(
-              alpha: 0.3,
-            ),
+            color: (isCustom ? AppColors.highlight : AppColors.primary)
+                .withValues(alpha: 0.3),
             blurRadius: 20,
             spreadRadius: 5,
           ),
@@ -299,10 +263,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       child: CircleAvatar(
         radius: 52.w,
-        backgroundColor: archetypeColor.withValues(alpha: 0.1),
+        backgroundColor: AppColors.primary.withValues(alpha: 0.1),
         backgroundImage: imageProvider,
         child: imageProvider == null
-            ? Icon(archetypeIcon, size: 55.w, color: archetypeColor)
+            ? Icon(Icons.person, size: 55.w, color: AppColors.primary)
             : null,
       ),
     );
@@ -330,92 +294,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           fontWeight: FontWeight.bold,
           letterSpacing: 1.5,
         ),
-      ),
-    );
-  }
-
-  Widget _buildTitleFactionBadges(UserData user) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (user.title.isNotEmpty)
-          _badgeItem(Icons.military_tech, user.title, const Color(0xFFDAA520)),
-        if (user.faction.isNotEmpty) ...[
-          SizedBox(width: 8.w),
-          _factionBadge(user.faction),
-        ],
-      ],
-    );
-  }
-
-  Widget _badgeItem(IconData icon, String label, Color color) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14.sp, color: color),
-          SizedBox(width: 8.w),
-          Text(
-            label.toUpperCase(),
-            style: GoogleFonts.inter(
-              fontSize: 10.sp,
-              color: color,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _factionBadge(String faction) {
-    Color color = Colors.grey;
-    String emoji = '';
-    switch (faction) {
-      case 'Wilderness':
-        color = const Color(0xFF66BB6A);
-        emoji = '🌿';
-        break;
-      case 'Ocean':
-        color = const Color(0xFF29B6F6);
-        emoji = '🌊';
-        break;
-      case 'Sky':
-        color = const Color(0xFFFFCA28);
-        emoji = '🌤';
-        break;
-      case 'Shadow':
-        color = const Color(0xFF7E57C2);
-        emoji = '🌑';
-        break;
-    }
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(emoji, style: TextStyle(fontSize: 12.sp)),
-          SizedBox(width: 8.w),
-          Text(
-            faction.toUpperCase(),
-            style: GoogleFonts.inter(
-              fontSize: 10.sp,
-              color: color,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ],
       ),
     );
   }

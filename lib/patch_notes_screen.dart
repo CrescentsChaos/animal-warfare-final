@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:animal_warfare/theme.dart';
 
 class PatchNotesScreen extends StatelessWidget {
   const PatchNotesScreen({super.key});
 
-  static const Color secondaryButtonColor = Color(0xFF1E3F2A);
-  static const Color highlightColor = Color(0xFFDAA520);
+  static const Color secondaryButtonColor = AppColors.surface;
+  static const Color highlightColor = AppColors.highlight;
 
   @override
   Widget build(BuildContext context) {
@@ -33,10 +34,14 @@ class PatchNotesScreen extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.all(20),
           children: [
-            _buildVersionPadding('VERSION 0.1.1 (Current)'),
-            _buildNote('• Changed many category names'),
-            _buildNote('• Fixed sound effects for some attacks'),
-            _buildNote('• Implemented visual status effects'),
+            _buildVersionPadding('VERSION $kAppVersion (Current)'),
+            _buildNote('• Removed cloud transition for smoother navigation'),
+            _buildNote(
+              '• Fixed text truncation/overlapping in Battle and Biome screens',
+            ),
+            _buildNote('• Improved UI responsiveness and layout scaling'),
+            _buildNote('• Added haptic feedback and premium scroll physics'),
+            _buildNote('• Centralized app version management'),
           ],
         ),
       ),

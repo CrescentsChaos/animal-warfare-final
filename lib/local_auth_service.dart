@@ -73,6 +73,12 @@ class UserData {
   /// Farming slots
   final List<FarmSlot> farmSlots;
 
+  // --- Banking & Secret Auth Fields ---
+  final int bankTaka;
+  final int bankGold;
+  final int bankDiamond;
+  final bool isBlackMarketUnlocked;
+
   UserData({
     required this.username,
     required this.password,
@@ -85,6 +91,10 @@ class UserData {
     this.bio = '',
     this.money = 1000,
     this.stamina = 100,
+    this.bankTaka = 0,
+    this.bankGold = 0,
+    this.bankDiamond = 0,
+    this.isBlackMarketUnlocked = false,
     Map<String, dynamic>? quizStats,
     List<String>? discoveredOrganisms,
     List<String>? completedAchievements,
@@ -152,6 +162,10 @@ class UserData {
     Map<String, dynamic>? weatherData,
     List<String>? displayedAchievements,
     List<FarmSlot>? farmSlots,
+    int? bankTaka,
+    int? bankGold,
+    int? bankDiamond,
+    bool? isBlackMarketUnlocked,
   }) {
     return UserData(
       username: username ?? this.username,
@@ -165,6 +179,11 @@ class UserData {
       bio: bio ?? this.bio,
       money: money ?? this.money,
       stamina: stamina ?? this.stamina,
+      bankTaka: bankTaka ?? this.bankTaka,
+      bankGold: bankGold ?? this.bankGold,
+      bankDiamond: bankDiamond ?? this.bankDiamond,
+      isBlackMarketUnlocked:
+          isBlackMarketUnlocked ?? this.isBlackMarketUnlocked,
       quizStats: quizStats ?? this.quizStats,
       discoveredOrganisms: discoveredOrganisms ?? this.discoveredOrganisms,
       completedAchievements:
@@ -273,6 +292,10 @@ class UserData {
     'weatherData': weatherData,
     'displayedAchievements': displayedAchievements,
     'farmSlots': farmSlots.map((slot) => slot.toJson()).toList(),
+    'bankTaka': bankTaka,
+    'bankGold': bankGold,
+    'bankDiamond': bankDiamond,
+    'isBlackMarketUnlocked': isBlackMarketUnlocked,
   };
 
   factory UserData.fromJson(
@@ -318,6 +341,10 @@ class UserData {
       bio: json['bio'] as String? ?? '',
       money: json['money'] as int? ?? 1000,
       stamina: json['stamina'] as int? ?? 100,
+      bankTaka: json['bankTaka'] as int? ?? 0,
+      bankGold: json['bankGold'] as int? ?? 0,
+      bankDiamond: json['bankDiamond'] as int? ?? 0,
+      isBlackMarketUnlocked: json['isBlackMarketUnlocked'] as bool? ?? false,
       quizStats: (json['quizStats'] as Map<String, dynamic>?) ?? {},
       discoveredOrganisms:
           (json['discoveredOrganisms'] as List<dynamic>?)

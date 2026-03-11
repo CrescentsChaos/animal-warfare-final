@@ -28,24 +28,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final TextEditingController _usernameController =
       TextEditingController(); // readonly
   final TextEditingController _displayNameController = TextEditingController();
-  final TextEditingController _bioController = TextEditingController();
 
   // State
   String? _selectedGender;
-  String? _selectedAvatarKey;
-  String? _selectedFaction;
-  String? _selectedTitle;
+  // UI State
   bool _isLoading = true;
-
-  final List<String> _factions = ['Wilderness', 'Ocean', 'Sky', 'Shadow'];
-  final List<String> _titles = [
-    'Novice Tamer',
-    'Wild Scout',
-    'Beast Keeper',
-    'Field Commander',
-    'Apex Hunter',
-    'Nature\'s Guardian',
-  ];
 
   @override
   void initState() {
@@ -57,7 +44,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   void dispose() {
     _usernameController.dispose();
     _displayNameController.dispose();
-    _bioController.dispose();
     super.dispose();
   }
 
@@ -68,15 +54,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         _currentUser = user;
         _usernameController.text = user.username;
         _displayNameController.text = user.displayName;
-        _bioController.text = user.bio;
         _selectedGender = user.gender != 'N/A' && user.gender.isNotEmpty
             ? user.gender
             : null;
-        _selectedAvatarKey = user.avatarIconKey.isNotEmpty
-            ? user.avatarIconKey
-            : null;
-        _selectedFaction = user.faction.isNotEmpty ? user.faction : null;
-        _selectedTitle = user.title.isNotEmpty ? user.title : _titles[0];
 
         if (user.avatar.isNotEmpty && user.avatar != 'default') {
           final file = File(user.avatar);
@@ -97,7 +77,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     if (image != null && mounted) {
       setState(() {
         _pickedAvatarFile = File(image.path);
-        _selectedAvatarKey = null; // Clear archetype if custom photo picked
       });
     }
   }
@@ -113,10 +92,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       avatar: newAvatarPath,
       gender: _selectedGender ?? 'N/A',
       displayName: _displayNameController.text.trim(),
-      avatarIconKey: _selectedAvatarKey ?? '',
-      faction: _selectedFaction ?? '',
-      title: _selectedTitle ?? '',
-      bio: _bioController.text.trim(),
+      avatarIconKey:
+          _currentUser!.avatarIconKey, // Keep existing generic icon key
+      faction: _currentUser!.faction, // Preserve empty faction string
+      title: _currentUser!.title, // Preserve empty title string
+      bio: _currentUser!.bio, // Preserve empty bio string
     );
 
     if (mounted) {
@@ -190,27 +170,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     ),
 
                     SizedBox(height: 32.h),
-                    _buildSectionHeader('CHARACTER DATA'),
-                    SizedBox(height: 16.h),
-                    _buildArchetypePicker(),
-                    SizedBox(height: 24.h),
-                    _buildDropdown(
-                      'FACTION',
-                      _selectedFaction,
-                      _factions,
-                      (v) => setState(() => _selectedFaction = v),
-                    ),
-                    SizedBox(height: 16.h),
-                    _buildDropdown(
-                      'TITLE',
-                      _selectedTitle,
-                      _titles,
-                      (v) => setState(() => _selectedTitle = v),
-                    ),
-                    SizedBox(height: 16.h),
-                    _buildBioField(),
 
-                    SizedBox(height: 48.h),
                     _buildSaveButton(),
                     SizedBox(height: 40.h),
                   ],
@@ -221,26 +181,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Widget _buildAvatarPreview() {
-    IconData? archetypeIcon;
-    Color archetypeColor = AppColors.primary;
-    if (_pickedAvatarFile == null &&
-        _selectedAvatarKey != null &&
-        _selectedAvatarKey!.isNotEmpty) {
-      if (_selectedAvatarKey!.contains('warrior')) {
-        archetypeIcon = Icons.shield_rounded;
-        archetypeColor = const Color(0xFFEF5350);
-      } else if (_selectedAvatarKey!.contains('ranger')) {
-        archetypeIcon = Icons.gps_fixed_rounded;
-        archetypeColor = AppColors.primary;
-      } else if (_selectedAvatarKey!.contains('scholar')) {
-        archetypeIcon = Icons.auto_stories_rounded;
-        archetypeColor = const Color(0xFFAB47BC);
-      } else if (_selectedAvatarKey!.contains('rogue')) {
-        archetypeIcon = Icons.flash_on_rounded;
-        archetypeColor = const Color(0xFFFF7043);
-      }
-    }
-
     return Column(
       children: [
         Stack(
@@ -250,13 +190,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               height: 120.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: archetypeIcon != null
-                    ? archetypeColor.withValues(alpha: 0.15)
-                    : AppColors.surface,
+                color: AppColors.surface,
                 border: Border.all(
                   color: _pickedAvatarFile != null
                       ? AppColors.highlight
-                      : archetypeColor,
+                      : AppColors.primary,
                   width: 4,
                 ),
                 boxShadow: [
@@ -264,7 +202,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     color:
                         (_pickedAvatarFile != null
                                 ? AppColors.highlight
-                                : archetypeColor)
+                                : AppColors.primary)
                             .withValues(alpha: 0.2),
                     blurRadius: 20,
                     spreadRadius: 5,
@@ -278,13 +216,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     : null,
               ),
               child: _pickedAvatarFile == null
-                  ? Icon(
-                      archetypeIcon ?? Icons.person,
-                      size: 60.w,
-                      color: archetypeIcon != null
-                          ? archetypeColor
-                          : AppColors.textMuted,
-                    )
+                  ? Icon(Icons.person, size: 60.w, color: AppColors.textMuted)
                   : null,
             ),
             Positioned(
@@ -318,81 +250,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildArchetypePicker() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'ARCHETYPE (BUILT-IN ICON)',
-          style: GoogleFonts.inter(
-            color: AppColors.textSecondary,
-            fontSize: 10.sp,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.2,
-          ),
-        ),
-        SizedBox(height: 12.h),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              _buildArchOption(
-                'm_warrior',
-                Icons.shield_rounded,
-                const Color(0xFFEF5350),
-              ),
-              _buildArchOption(
-                'm_ranger',
-                Icons.gps_fixed_rounded,
-                AppColors.primary,
-              ),
-              _buildArchOption(
-                'm_scholar',
-                Icons.auto_stories_rounded,
-                const Color(0xFFAB47BC),
-              ),
-              _buildArchOption(
-                'm_rogue',
-                Icons.flash_on_rounded,
-                const Color(0xFFFF7043),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildArchOption(String key, IconData icon, Color color) {
-    final selected = _selectedAvatarKey == key && _pickedAvatarFile == null;
-    return GestureDetector(
-      onTap: () => setState(() {
-        _selectedAvatarKey = key;
-        _pickedAvatarFile =
-            null; // Clear custom photo if they pick an archetype
-      }),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        margin: EdgeInsets.only(right: 12.w),
-        width: 60.w,
-        height: 60.w,
-        decoration: BoxDecoration(
-          color: selected ? color.withValues(alpha: 0.15) : AppColors.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: selected ? color : AppColors.border,
-            width: selected ? 2 : 1,
-          ),
-        ),
-        child: Icon(
-          icon,
-          color: selected ? color : AppColors.textMuted,
-          size: 28.sp,
-        ),
-      ),
     );
   }
 
@@ -485,53 +342,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             filled: true,
             fillColor: AppColors.surface,
             prefixIcon: Icon(icon, color: AppColors.primary, size: 20.sp),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: AppColors.border),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: AppColors.border),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(
-                color: AppColors.primary,
-                width: 1.5,
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBioField() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'YOUR BIO',
-          style: GoogleFonts.inter(
-            color: AppColors.textSecondary,
-            fontSize: 10.sp,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.2,
-          ),
-        ),
-        SizedBox(height: 8.h),
-        TextField(
-          controller: _bioController,
-          maxLines: 3,
-          maxLength: 80,
-          style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp),
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: AppColors.surface,
-            counterStyle: GoogleFonts.inter(
-              color: AppColors.textMuted,
-              fontSize: 10.sp,
-            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: const BorderSide(color: AppColors.border),

@@ -14,6 +14,8 @@ import 'package:animal_warfare/services/audio_service.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:animal_warfare/game/time_service.dart';
 import 'package:animal_warfare/widgets/game_clock_widget.dart';
+import 'package:animal_warfare/services/haptic_service.dart';
+import 'package:animal_warfare/utils/transitions.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -23,19 +25,29 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
+  double _buttonsOpacity = 0.0;
+
   @override
   void initState() {
     super.initState();
     _playBackgroundMusic();
+    // Fade in the button list after a short delay for a polished entry feel
+    Future.delayed(const Duration(milliseconds: 150), () {
+      if (mounted) setState(() => _buttonsOpacity = 1.0);
+    });
   }
 
   Future<void> _playBackgroundMusic() async {
     await AudioService.instance.playMusic('audio/coastal_theme.mp3');
   }
 
-  void _navigateTo(Widget page) {
+  void _navigateTo(Widget page, {bool isGame = false}) {
+    HapticService.light();
     AudioService.instance.pauseAll();
-    Navigator.of(context).push(_createFadeRoute(page)).then((_) {
+    final route = isGame
+        ? createFadeScaleRoute(page)
+        : createSlideUpRoute(page);
+    Navigator.of(context).push(route).then((_) {
       _playBackgroundMusic();
       AudioService.instance.resumeAll();
     });
@@ -245,60 +257,72 @@ class _MainScreenState extends State<MainScreen> {
                               ),
                             ),
                           )
-                        else ...[
-                          _buildNavButton(
-                            text: 'Start Game',
-                            icon: Icons.shield_rounded,
-                            onPressed: () {
-                              if (currentUser != null) {
-                                _navigateTo(
-                                  GameScreen(currentUser: currentUser),
-                                );
-                              } else {
-                                _navigateTo(const LoginScreen());
-                              }
-                            },
-                            isPrimary: true,
-                            accentColor: AppColors.primary,
+                        else
+                          AnimatedOpacity(
+                            opacity: _buttonsOpacity,
+                            duration: const Duration(milliseconds: 400),
+                            curve: Curves.easeOut,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                _buildNavButton(
+                                  text: 'Start Game',
+                                  icon: Icons.shield_rounded,
+                                  onPressed: () {
+                                    if (currentUser != null) {
+                                      _navigateTo(
+                                        GameScreen(currentUser: currentUser),
+                                        isGame: true,
+                                      );
+                                    } else {
+                                      _navigateTo(const LoginScreen());
+                                    }
+                                  },
+                                  isPrimary: true,
+                                  accentColor: AppColors.primary,
+                                ),
+
+                                if (!isLoggedIn)
+                                  _buildNavButton(
+                                    text: 'Login / Register',
+                                    icon: Icons.login_rounded,
+                                    onPressed: () => _handleAuthAction(context),
+                                    accentColor: AppColors.highlight,
+                                  ),
+
+                                if (isLoggedIn) ...[
+                                  _buildNavButton(
+                                    text: 'Profile',
+                                    icon: Icons.person_rounded,
+                                    onPressed: () =>
+                                        _navigateTo(const ProfileScreen()),
+                                    accentColor: AppColors.highlight,
+                                  ),
+                                  _buildNavButton(
+                                    text: 'Quests',
+                                    icon: Icons.assignment_rounded,
+                                    onPressed: () =>
+                                        _navigateTo(const QuestScreen()),
+                                    accentColor: const Color(0xFF7C4DFF),
+                                  ),
+                                  _buildNavButton(
+                                    text: 'Shop',
+                                    icon: Icons.shopping_bag_rounded,
+                                    onPressed: () =>
+                                        _navigateTo(const ShopScreen()),
+                                    accentColor: const Color(0xFFFF6F00),
+                                  ),
+                                  _buildNavButton(
+                                    text: 'Farm',
+                                    icon: Icons.agriculture_rounded,
+                                    onPressed: () =>
+                                        _navigateTo(const FarmingScreen()),
+                                    accentColor: Colors.green,
+                                  ),
+                                ],
+                              ],
+                            ),
                           ),
-
-                          if (!isLoggedIn)
-                            _buildNavButton(
-                              text: 'Login / Register',
-                              icon: Icons.login_rounded,
-                              onPressed: () => _handleAuthAction(context),
-                              accentColor: AppColors.highlight,
-                            ),
-
-                          if (isLoggedIn) ...[
-                            _buildNavButton(
-                              text: 'Profile',
-                              icon: Icons.person_rounded,
-                              onPressed: () =>
-                                  _navigateTo(const ProfileScreen()),
-                              accentColor: AppColors.highlight,
-                            ),
-                            _buildNavButton(
-                              text: 'Quests',
-                              icon: Icons.assignment_rounded,
-                              onPressed: () => _navigateTo(const QuestScreen()),
-                              accentColor: const Color(0xFF7C4DFF),
-                            ),
-                            _buildNavButton(
-                              text: 'Shop',
-                              icon: Icons.shopping_bag_rounded,
-                              onPressed: () => _navigateTo(const ShopScreen()),
-                              accentColor: const Color(0xFFFF6F00),
-                            ),
-                            _buildNavButton(
-                              text: 'Farm',
-                              icon: Icons.agriculture_rounded,
-                              onPressed: () =>
-                                  _navigateTo(const FarmingScreen()),
-                              accentColor: Colors.green,
-                            ),
-                          ],
-                        ],
 
                         const SizedBox(height: 36),
 
@@ -353,12 +377,4 @@ class _MainScreenState extends State<MainScreen> {
   }
 }
 
-PageRouteBuilder _createFadeRoute(Widget page) {
-  return PageRouteBuilder(
-    transitionDuration: const Duration(milliseconds: 300),
-    pageBuilder: (context, animation, secondaryAnimation) => page,
-    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      return FadeTransition(opacity: animation, child: child);
-    },
-  );
-}
+// Navigation routes are provided by lib/utils/transitions.dart

@@ -121,19 +121,25 @@ class _BiomeSelectScreenState extends State<BiomeSelectScreen> {
             ),
           ),
           child: Center(
-            child: Text(
-              biome.toUpperCase(),
-              style: const TextStyle(
-                fontFamily: 'PressStart2P',
-                color: Colors.white,
-                fontSize: 14,
-                shadows: [
-                  Shadow(
-                    blurRadius: 2,
-                    color: Colors.black,
-                    offset: Offset(1, 1),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  biome.toUpperCase(),
+                  style: const TextStyle(
+                    fontFamily: 'PressStart2P',
+                    color: Colors.white,
+                    fontSize: 14,
+                    shadows: [
+                      Shadow(
+                        blurRadius: 2,
+                        color: Colors.black,
+                        offset: Offset(1, 1),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),

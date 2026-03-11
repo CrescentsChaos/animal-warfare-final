@@ -259,15 +259,19 @@ class BattleDetailsSheet extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: Text(
-                      discovered
-                          ? (bo.organism.nickname ?? org.name.toUpperCase())
-                          : '???',
-                      style: GoogleFonts.outfit(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        discovered
+                            ? (bo.organism.nickname ?? org.name.toUpperCase())
+                            : '???',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                        ),
                       ),
                     ),
                   ),

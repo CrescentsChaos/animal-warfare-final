@@ -1,6 +1,7 @@
 // lib/main.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:animal_warfare/splash_screen.dart';
 import 'package:audioplayers/audioplayers.dart';
@@ -19,6 +20,22 @@ void main() async {
   // 1. Ensure Flutter bindings are initialized first
   WidgetsFlutterBinding.ensureInitialized();
   TimeService().start();
+
+  // Lock orientation to portrait — the game is designed portrait-first.
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+
+  // Set global status bar / nav bar style: transparent with light icons.
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+      systemNavigationBarColor: Color(0xFF0D1117), // AppColors.background
+      systemNavigationBarIconBrightness: Brightness.light,
+    ),
+  );
 
   // 2. CONFIGURE GLOBAL AUDIO CONTEXT (Retained)
   final audioContext = AudioContext(
@@ -98,11 +115,23 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       builder: (_, child) {
         return MaterialApp(
           title: 'Animal Warfare',
+          debugShowCheckedModeBanner: false,
           theme: appTheme,
+          scrollBehavior: AppScrollBehavior(),
           home: child,
         );
       },
       child: const SplashScreen(),
     );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Custom scroll behavior — bouncy physics on all platforms (feels premium)
+// ---------------------------------------------------------------------------
+class AppScrollBehavior extends MaterialScrollBehavior {
+  @override
+  ScrollPhysics getScrollPhysics(BuildContext context) {
+    return const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics());
   }
 }

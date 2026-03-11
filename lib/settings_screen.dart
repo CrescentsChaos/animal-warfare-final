@@ -14,6 +14,8 @@ import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/theme.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:animal_warfare/services/save_service.dart';
+import 'package:animal_warfare/services/haptic_service.dart';
+import 'package:animal_warfare/utils/transitions.dart';
 
 class SettingsScreen extends StatefulWidget {
   final UserData currentUser;
@@ -50,22 +52,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _isSoundEnabled = AudioService.instance.isSoundEnabled;
       _musicVolume = AudioService.instance.musicVolume;
       _soundVolume = AudioService.instance.soundVolume;
-      _appVersion = packageInfo.version;
+      // Use package_info_plus at runtime; fall back to compile-time constant.
+      final pkgVersion = packageInfo.version;
+      _appVersion = pkgVersion.isNotEmpty ? pkgVersion : kAppVersion;
       _isLoading = false;
     });
   }
 
-  PageRouteBuilder _createFadeRoute(Widget page) {
-    return PageRouteBuilder(
-      transitionDuration: const Duration(milliseconds: 400),
-      pageBuilder: (context, animation, secondaryAnimation) => page,
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        return FadeTransition(opacity: animation, child: child);
-      },
-    );
-  }
+  PageRouteBuilder _createFadeRoute(Widget page) => createSlideUpRoute(page);
 
   void _logoutUser() {
+    HapticService.heavy();
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -287,6 +284,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   volume: _musicVolume,
                   onToggle: (val) {
                     setState(() => _isMusicEnabled = val);
+                    HapticService.medium();
                     AudioService.instance.setMusicEnabled(val);
                   },
                   onVolumeChanged: (val) {
@@ -301,6 +299,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   volume: _soundVolume,
                   onToggle: (val) {
                     setState(() => _isSoundEnabled = val);
+                    HapticService.medium();
                     AudioService.instance.setSoundEnabled(val);
                   },
                   onVolumeChanged: (val) {

@@ -66,7 +66,7 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Animal Box'),
-          backgroundColor: AppColors.secondaryButtonColor,
+          backgroundColor: AppColors.surface,
           bottom: const TabBar(
             indicatorColor: AppColors.highlightColor,
             labelStyle: TextStyle(fontFamily: 'PressStart2P', fontSize: 10),
@@ -109,7 +109,7 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.secondaryButtonColor,
+        color: AppColors.surface,
         border: Border(
           bottom: BorderSide(
             color: AppColors.highlightColor.withValues(alpha: 0.3),
@@ -466,7 +466,7 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.secondaryButtonColor,
+      backgroundColor: AppColors.surface,
       builder: (ctx) {
         return Container(
           padding: const EdgeInsets.all(16),
@@ -585,7 +585,7 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.secondaryButtonColor,
+        backgroundColor: AppColors.surface,
         title: const Text(
           'SELECT NEW ABILITY',
           style: TextStyle(
@@ -639,7 +639,7 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
   ) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.secondaryButtonColor,
+      backgroundColor: AppColors.surface,
       builder: (ctx) {
         return SafeArea(
           child: Column(
@@ -1548,7 +1548,7 @@ class _AnimalDetailsDialog extends StatelessWidget {
       titlePadding: EdgeInsets.zero,
       title: Container(
         padding: const EdgeInsets.all(16),
-        color: AppColors.secondaryButtonColor,
+        color: AppColors.surface,
         child: Row(
           children: [
             Hero(
@@ -1900,7 +1900,7 @@ class _MoveSelectionDialogState extends State<_MoveSelectionDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: AppColors.secondaryButtonColor,
+      backgroundColor: AppColors.surface,
       title: const Text(
         'Select Moves (Max 4)',
         style: TextStyle(
@@ -1982,7 +1982,7 @@ class _MoveSelectionDialogState extends State<_MoveSelectionDialog> {
             if (context.mounted) Navigator.pop(context);
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primaryButtonColor,
+            backgroundColor: AppColors.primary,
           ),
           child: const Text(
             'Save',

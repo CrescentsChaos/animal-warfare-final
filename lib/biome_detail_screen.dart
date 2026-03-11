@@ -129,7 +129,8 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
         biome.contains('rainforest') ||
         biome.contains('kelp') ||
         biome.contains('wetlands') ||
-        biome.contains('redwoods'))
+        biome.contains('redwoods') ||
+        biome.contains('plains'))
       return const Color(0xFF69F0AE);
     if (biome.contains('ocean') ||
         biome.contains('beach') ||
@@ -304,6 +305,8 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
         return const Color(0xFF1E5B3D);
       case 'wetlands':
         return const Color(0xFF535C3E);
+      case 'plains':
+        return const Color(0xFFC39C6B);
       case 'redwoods':
         return const Color(0xFF2E4A2E);
       case 'kelp forest':
@@ -924,20 +927,23 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
                     ),
                   ],
                 ),
-                child: Text(
-                  organism.name.toUpperCase(),
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontFamily: 'PressStart2P',
-                    fontSize: 18,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black,
-                        offset: Offset(2, 2),
-                        blurRadius: 2,
-                      ),
-                    ],
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    organism.name.toUpperCase(),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontFamily: 'PressStart2P',
+                      fontSize: 18,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black,
+                          offset: Offset(2, 2),
+                          blurRadius: 2,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

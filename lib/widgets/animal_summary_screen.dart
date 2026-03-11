@@ -222,15 +222,18 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          base.scientificName,
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: Colors.white.withValues(alpha: 0.55),
-                            fontStyle: FontStyle.italic,
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            base.scientificName,
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.white.withValues(alpha: 0.55),
+                              fontStyle: FontStyle.italic,
+                            ),
+                            maxLines: 1,
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 10),
                         Row(
@@ -542,17 +545,20 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
             ),
           ),
           const SizedBox(height: 3),
-          Text(
-            value,
-            style: TextStyle(
-              fontFamily: 'PressStart2P',
-              fontSize: 9,
-              color: label == 'TERA TYPE' && value != 'NONE'
-                  ? ElementalTypeX.fromString(value).color
-                  : Colors.white,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              value,
+              style: TextStyle(
+                fontFamily: 'PressStart2P',
+                fontSize: 9,
+                color: label == 'TERA TYPE' && value != 'NONE'
+                    ? ElementalTypeX.fromString(value).color
+                    : Colors.white,
+              ),
+              maxLines: 1,
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),

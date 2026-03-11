@@ -7,6 +7,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'dart:ui';
 import 'package:animal_warfare/models/weather.dart';
 import 'package:animal_warfare/services/save_service.dart';
+import 'package:animal_warfare/models/shop_item.dart';
+import 'package:animal_warfare/services/market_service.dart';
+import 'dart:async';
 
 class PhoneScreen extends StatefulWidget {
   final String? initialBiome; // Optional biome for weather app context
@@ -18,6 +21,66 @@ class PhoneScreen extends StatefulWidget {
 
 class _PhoneScreenState extends State<PhoneScreen> {
   String? _activeApp; // null means home screen
+  bool _showDealNotification = false;
+  String _dealItemMessage = '';
+  List<ShopItem> _allItemConfigs = [];
+  Timer? _notificationTimer;
+  bool _isVpnOn = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDeals();
+  }
+
+  @override
+  void dispose() {
+    _notificationTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _loadDeals() async {
+    final items = await ShopItem.loadAll();
+    if (!mounted) return;
+
+    setState(() {
+      _allItemConfigs = items;
+    });
+
+    // Find the best deal today
+    final gameTime = TimeService().currentGameTime;
+    ShopItem? bestDeal;
+    double bestMult = 1.0;
+
+    for (var item in items) {
+      if (item.category == 'mystery_box') continue;
+      final mult = MarketService.getPriceMultiplier(item.id, gameTime);
+      if (mult < bestMult) {
+        bestMult = mult;
+        bestDeal = item;
+      }
+    }
+
+    if (bestDeal != null && bestMult <= 0.75) {
+      _dealItemMessage =
+          "BARGAIN ALERT! ${bestDeal.name} is deeply discounted today!";
+      _notificationTimer = Timer(const Duration(seconds: 1), () {
+        if (mounted) {
+          setState(() {
+            _showDealNotification = true;
+          });
+        }
+        // Auto hide
+        Timer(const Duration(seconds: 5), () {
+          if (mounted) {
+            setState(() {
+              _showDealNotification = false;
+            });
+          }
+        });
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,7 +144,75 @@ class _PhoneScreenState extends State<PhoneScreen> {
               onPressed: () => Navigator.pop(context),
             ),
           ),
+
+          // Deal Notification Overlay
+          AnimatedPositioned(
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeOutBack,
+            top: _showDealNotification ? 80 : -100,
+            left: MediaQuery.of(context).size.width / 2 - 140,
+            child: _buildNotificationBanner(),
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildNotificationBanner() {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _showDealNotification = false;
+          _activeApp = 'Deals';
+        });
+      },
+      child: Container(
+        width: 280,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFF2E1E3E),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.5),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+          border: Border.all(color: Colors.purpleAccent.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.shopping_cart_checkout,
+              color: Colors.purpleAccent,
+              size: 28,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'DealSniper',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _dealItemMessage,
+                    style: const TextStyle(color: Colors.white70, fontSize: 11),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -164,15 +295,30 @@ class _PhoneScreenState extends State<PhoneScreen> {
               crossAxisSpacing: 20,
               children: [
                 _buildAppIcon(
-                  'Weather',
-                  Icons.cloud_outlined,
-                  Colors.lightBlue,
+                  'Bank',
+                  Icons.account_balance_wallet_outlined,
+                  Colors.amber,
+                ),
+                _buildAppIcon(
+                  'VPN',
+                  Icons.vpn_lock_outlined,
+                  _isVpnOn ? Colors.greenAccent : Colors.grey,
+                ),
+                _buildAppIcon(
+                  'Browser',
+                  Icons.public_outlined,
+                  Colors.orangeAccent,
                 ),
                 _buildAppIcon('Profile', Icons.person_outline, Colors.orange),
                 _buildAppIcon(
                   'Bank',
                   Icons.account_balance_wallet_outlined,
                   Colors.green,
+                ),
+                _buildAppIcon(
+                  'Deals',
+                  Icons.local_offer_outlined,
+                  Colors.purple,
                 ),
                 _buildAppIcon('Settings', Icons.settings_outlined, Colors.grey),
               ],
@@ -220,8 +366,18 @@ class _PhoneScreenState extends State<PhoneScreen> {
         return _ProfileApp(onBack: closeApp);
       case 'Bank':
         return _BankApp(onBack: closeApp);
+      case 'Deals':
+        return _DealSniperApp(onBack: closeApp, items: _allItemConfigs);
       case 'Settings':
         return _SettingsApp(onBack: closeApp);
+      case 'VPN':
+        return _VpnApp(
+          isOn: _isVpnOn,
+          onToggle: (v) => setState(() => _isVpnOn = v),
+          onBack: closeApp,
+        );
+      case 'Browser':
+        return _BrowserApp(onBack: closeApp);
       default:
         return Center(
           child: Text(appName, style: const TextStyle(color: Colors.white)),
@@ -645,62 +801,6 @@ class _ProfileApp extends StatelessWidget {
   }
 }
 
-class _BankApp extends StatelessWidget {
-  final VoidCallback onBack;
-  const _BankApp({required this.onBack});
-
-  @override
-  Widget build(BuildContext context) {
-    final userState = Provider.of<UserState>(context);
-    final money = userState.currentUser?.money ?? 0;
-
-    return Column(
-      children: [
-        _AppHeader(title: 'Bank', onBack: onBack),
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 48),
-                Center(
-                  child: Column(
-                    children: [
-                      const Icon(
-                        Icons.account_balance_wallet,
-                        color: Colors.greenAccent,
-                        size: 64,
-                      ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'AVAILABLE BALANCE',
-                        style: TextStyle(
-                          color: Colors.white38,
-                          fontSize: 10,
-                          letterSpacing: 2,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '\$$money',
-                        style: GoogleFonts.pressStart2p(
-                          color: Colors.white,
-                          fontSize: 24,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 class _SettingsApp extends StatelessWidget {
   final VoidCallback onBack;
   const _SettingsApp({required this.onBack});
@@ -789,6 +889,543 @@ class _AppHeader extends StatelessWidget {
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DealSniperApp extends StatelessWidget {
+  final VoidCallback onBack;
+  final List<ShopItem> items;
+
+  const _DealSniperApp({required this.onBack, required this.items});
+
+  @override
+  Widget build(BuildContext context) {
+    final gameTime = TimeService().currentGameTime;
+
+    // Calculate current multipliers and sort
+    final deals = items.where((i) => i.category != 'mystery_box').map((item) {
+      final mult = MarketService.getPriceMultiplier(item.id, gameTime);
+      return {'item': item, 'multiplier': mult};
+    }).toList();
+
+    // Sort so biggest deals (lowest multiplayer) are at the top, biggest scams at bottom
+    deals.sort(
+      (a, b) =>
+          (a['multiplier'] as double).compareTo(b['multiplier'] as double),
+    );
+
+    return Container(
+      color: const Color(0xFF1E1E2E),
+      child: Column(
+        children: [
+          _AppHeader(title: 'DealSniper', onBack: onBack),
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              itemCount: deals.length,
+              itemBuilder: (context, index) {
+                final item = deals[index]['item'] as ShopItem;
+                final mult = deals[index]['multiplier'] as double;
+
+                Color multColor = Colors.white;
+                String sentiment = '';
+                if (mult <= 0.75) {
+                  multColor = Colors.greenAccent;
+                  sentiment = 'STEAL!';
+                } else if (mult >= 1.25) {
+                  multColor = Colors.redAccent;
+                  sentiment = 'RIPOFF';
+                } else if (mult < 1.0) {
+                  multColor = Colors.lightGreen;
+                  sentiment = 'Good';
+                } else {
+                  multColor = Colors.orangeAccent;
+                  sentiment = 'Bad';
+                }
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2E2E3E),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: multColor.withValues(alpha: 0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: Colors.black26,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.white12),
+                        ),
+                        child: Icon(
+                          Icons.shopping_bag,
+                          color: multColor,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              item.name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                fontSize: 13,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Market: ${(mult * 100).round()}%',
+                              style: TextStyle(
+                                color: multColor,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: multColor.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          sentiment,
+                          style: TextStyle(
+                            color: multColor,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BankApp extends StatelessWidget {
+  final VoidCallback onBack;
+  const _BankApp({required this.onBack});
+
+  @override
+  Widget build(BuildContext context) {
+    final userState = Provider.of<UserState>(context);
+    final user = userState.currentUser;
+    if (user == null) return const SizedBox();
+
+    return Column(
+      children: [
+        _AppHeader(title: 'Taka Bank', onBack: onBack),
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.all(20),
+            children: [
+              _buildBalanceCard(
+                'Taka (Tk.)',
+                user.money,
+                user.bankTaka,
+                Colors.amber,
+                (amt) => userState.addMoney(-amt),
+                (amt) => userState.addMoney(amt),
+                (amt) => userState.updateBankBalance(tk: amt),
+                (amt) => userState.updateBankBalance(tk: -amt),
+              ),
+              const SizedBox(height: 16),
+              _buildAssetCard(
+                'Gold Bars',
+                'gold_bar',
+                user.inventory['gold_bar'] ?? 0,
+                user.bankGold,
+                Colors.orange,
+                (qty) => userState.updateBankBalance(gold: qty),
+                (qty) => userState.updateBankBalance(gold: -qty),
+                userState,
+              ),
+              const SizedBox(height: 16),
+              _buildAssetCard(
+                'Diamonds',
+                'diamond',
+                user.inventory['diamond'] ?? 0,
+                user.bankDiamond,
+                Colors.cyanAccent,
+                (qty) => userState.updateBankBalance(diamond: qty),
+                (qty) => userState.updateBankBalance(diamond: -qty),
+                userState,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBalanceCard(
+    String label,
+    int pocket,
+    int bank,
+    Color color,
+    Function(int) decPocket,
+    Function(int) addPocket,
+    Function(int) addBank,
+    Function(int) decBank,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        children: [
+          Text(
+            label,
+            style: TextStyle(color: color, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _amountColumn('Pocket', pocket, color),
+              const Icon(Icons.compare_arrows, color: Colors.white24),
+              _amountColumn('Vault', bank, color),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: pocket > 0
+                      ? () {
+                          addBank(pocket);
+                          decPocket(pocket);
+                        }
+                      : null,
+                  style: ElevatedButton.styleFrom(backgroundColor: color),
+                  child: const Text(
+                    'DEPOSIT ALL',
+                    style: TextStyle(fontSize: 10),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: bank > 0
+                      ? () {
+                          addPocket(bank);
+                          decBank(bank);
+                        }
+                      : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white24,
+                  ),
+                  child: const Text(
+                    'WITHDRAW ALL',
+                    style: TextStyle(fontSize: 10),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAssetCard(
+    String label,
+    String itemId,
+    int pocket,
+    int bank,
+    Color color,
+    Function(int) addBank,
+    Function(int) decBank,
+    UserState userState,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        children: [
+          Text(
+            label,
+            style: TextStyle(color: color, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _amountColumn('Pocket', pocket, color),
+              const Icon(Icons.inventory_2_outlined, color: Colors.white24),
+              _amountColumn('Vault', bank, color),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: pocket > 0
+                      ? () {
+                          addBank(pocket);
+                          userState.addLoot(itemId, -pocket);
+                        }
+                      : null,
+                  style: ElevatedButton.styleFrom(backgroundColor: color),
+                  child: const Text(
+                    'STORE ALL',
+                    style: TextStyle(fontSize: 10),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: bank > 0
+                      ? () {
+                          decBank(bank);
+                          userState.addLoot(itemId, bank);
+                        }
+                      : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white24,
+                  ),
+                  child: const Text(
+                    'FETCH ALL',
+                    style: TextStyle(fontSize: 10),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _amountColumn(String label, int val, Color color) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: const TextStyle(color: Colors.white54, fontSize: 10),
+        ),
+        Text(
+          val.toString(),
+          style: TextStyle(
+            color: color,
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _VpnApp extends StatelessWidget {
+  final bool isOn;
+  final Function(bool) onToggle;
+  final VoidCallback onBack;
+  const _VpnApp({
+    required this.isOn,
+    required this.onToggle,
+    required this.onBack,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        _AppHeader(title: 'VPN Secure', onBack: onBack),
+        Expanded(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                isOn ? Icons.vpn_lock : Icons.vpn_lock_outlined,
+                size: 80,
+                color: isOn ? Colors.greenAccent : Colors.white24,
+              ),
+              const SizedBox(height: 24),
+              Text(
+                isOn ? 'VPN ACTIVE' : 'VPN DISCONNECTED',
+                style: TextStyle(
+                  color: isOn ? Colors.greenAccent : Colors.white54,
+                  fontFamily: 'PressStart2P',
+                  fontSize: 12,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                isOn ? 'Your IP is masked.' : 'Your connection is public.',
+                style: const TextStyle(color: Colors.white30, fontSize: 11),
+              ),
+              const SizedBox(height: 48),
+              Switch(
+                value: isOn,
+                onChanged: onToggle,
+                activeColor: Colors.greenAccent,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _BrowserApp extends StatefulWidget {
+  final VoidCallback onBack;
+  const _BrowserApp({required this.onBack});
+
+  @override
+  State<_BrowserApp> createState() => _BrowserAppState();
+}
+
+class _BrowserAppState extends State<_BrowserApp> {
+  final TextEditingController _urlController = TextEditingController();
+  bool _isDarkWeb = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final userState = Provider.of<UserState>(context);
+    return Column(
+      children: [
+        _AppHeader(title: 'Explorer', onBack: widget.onBack),
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: TextField(
+            controller: _urlController,
+            style: const TextStyle(color: Colors.white, fontSize: 12),
+            decoration: InputDecoration(
+              hintText: 'Enter URL...',
+              hintStyle: const TextStyle(color: Colors.white24),
+              prefixIcon: const Icon(
+                Icons.search,
+                color: Colors.white54,
+                size: 18,
+              ),
+              filled: true,
+              fillColor: Colors.white10,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              contentPadding: const EdgeInsets.symmetric(vertical: 0),
+            ),
+            onSubmitted: (val) {
+              if (val.trim().toLowerCase() == 'darkweb.com') {
+                setState(() => _isDarkWeb = true);
+              } else {
+                setState(() => _isDarkWeb = false);
+              }
+            },
+          ),
+        ),
+        Expanded(
+          child: _isDarkWeb
+              ? _buildDarkWeb(userState)
+              : const Center(
+                  child: Text(
+                    '404 Page Not Found',
+                    style: TextStyle(color: Colors.white24),
+                  ),
+                ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDarkWeb(UserState userState) {
+    final vpnOn =
+        (context.findAncestorStateOfType<_PhoneScreenState>()?._isVpnOn ??
+        false);
+
+    if (!vpnOn) {
+      return const Padding(
+        padding: EdgeInsets.all(40),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.warning_amber, color: Colors.redAccent, size: 48),
+            SizedBox(height: 16),
+            Text(
+              'ACCESS DENIED',
+              style: TextStyle(
+                color: Colors.redAccent,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'A VPN connection is required to access this domain.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white54, fontSize: 12),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.security, color: Colors.purpleAccent, size: 64),
+          const SizedBox(height: 24),
+          const Text(
+            'WELCOME TO THE DEPTHS',
+            style: TextStyle(
+              color: Colors.purpleAccent,
+              fontFamily: 'PressStart2P',
+              fontSize: 10,
+            ),
+          ),
+          const SizedBox(height: 32),
+          ElevatedButton(
+            onPressed: () {
+              userState.setBlackMarketUnlocked(true);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    'Black Market access granted for this session.',
+                  ),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.purpleAccent,
+            ),
+            child: const Text('UNLOCK BLACK MARKET ACCESS'),
           ),
         ],
       ),

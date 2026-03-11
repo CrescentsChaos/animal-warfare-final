@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:animal_warfare/main_screen.dart';
 import 'package:animal_warfare/services/audio_service.dart';
 import 'package:animal_warfare/theme.dart';
+import 'package:animal_warfare/utils/transitions.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -15,6 +16,7 @@ class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _opacityAnimation;
+  late Animation<double> _logoScaleAnimation;
 
   bool _assetsPrecached = false;
 
@@ -33,6 +35,18 @@ class _SplashScreenState extends State<SplashScreen>
       parent: _animationController,
       curve: Curves.easeInOut,
     );
+
+    // Logo pops in on first frame with a subtle scale
+    _logoScaleAnimation =
+        TweenSequence<double>([
+          TweenSequenceItem(tween: Tween(begin: 0.88, end: 1.03), weight: 60),
+          TweenSequenceItem(tween: Tween(begin: 1.03, end: 1.0), weight: 40),
+        ]).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: const Interval(0.0, 0.5, curve: Curves.easeOut),
+          ),
+        );
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _precacheAssets();
@@ -62,7 +76,9 @@ class _SplashScreenState extends State<SplashScreen>
 
   void _navigateToMain() {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    Navigator.of(context).pushReplacement(_createFadeRoute(const MainScreen()));
+    Navigator.of(
+      context,
+    ).pushReplacement(createFadeScaleRoute(const MainScreen()));
   }
 
   @override
@@ -92,8 +108,9 @@ class _SplashScreenState extends State<SplashScreen>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  // Logo with glow
-                  Container(
+                  // Logo with pop-in scale animation
+                  ScaleTransition(
+                    scale: _logoScaleAnimation,
                     child: Image.asset(
                       'assets/logo.png',
                       width: 260,
@@ -137,7 +154,7 @@ class _SplashScreenState extends State<SplashScreen>
               right: 16,
               bottom: 16,
               child: Text(
-                'V 0.1.1',
+                'V $kAppVersion',
                 style: TextStyle(
                   fontSize: 10,
                   color: Colors.white.withValues(alpha: 0.4),
@@ -152,12 +169,5 @@ class _SplashScreenState extends State<SplashScreen>
   }
 }
 
-PageRouteBuilder _createFadeRoute(Widget page) {
-  return PageRouteBuilder(
-    transitionDuration: const Duration(milliseconds: 300),
-    pageBuilder: (context, animation, secondaryAnimation) => page,
-    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      return FadeTransition(opacity: animation, child: child);
-    },
-  );
-}
+// Splash screen handles its own routing via createFadeScaleRoute
+// from transitions.dart.

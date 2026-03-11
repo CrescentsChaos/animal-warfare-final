@@ -152,7 +152,7 @@ class BiomeWeatherTable {
           Weather.fog: 10,
           Weather.blizzard: 1.0,
         };
-
+      case 'plains':
       case 'urban':
         return {
           Weather.clear: 69,

@@ -396,20 +396,26 @@ class _ExploreScreenState extends State<ExploreScreen> {
             ),
             // Text Overlay
             Center(
-              child: Text(
-                biomeName.toUpperCase(),
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: highlightColor,
-                  fontFamily: 'PressStart2P',
-                  fontSize: 14,
-                  shadows: [
-                    Shadow(
-                      color: Colors.black,
-                      blurRadius: 4.0,
-                      offset: Offset(2, 2),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    biomeName.toUpperCase(),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: highlightColor,
+                      fontFamily: 'PressStart2P',
+                      fontSize: 14,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black,
+                          blurRadius: 4.0,
+                          offset: Offset(2, 2),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),

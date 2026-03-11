@@ -240,6 +240,9 @@ class UserState with ChangeNotifier {
     await _readModifyWrite((u) {
       final newInventory = Map<String, int>.from(u.inventory);
       newInventory[lootId] = (newInventory[lootId] ?? 0) + quantity;
+      if (newInventory[lootId]! <= 0) {
+        newInventory.remove(lootId);
+      }
       return u.copyWith(inventory: newInventory);
     });
     if (kDebugMode) {
@@ -250,6 +253,22 @@ class UserState with ChangeNotifier {
   Future<void> addMoney(int amount) async {
     if (_currentUser == null) return;
     await _readModifyWrite((u) => u.addMoney(amount));
+  }
+
+  Future<void> updateBankBalance({int? tk, int? gold, int? diamond}) async {
+    if (_currentUser == null) return;
+    await _readModifyWrite(
+      (u) => u.copyWith(
+        bankTaka: tk != null ? u.bankTaka + tk : u.bankTaka,
+        bankGold: gold != null ? u.bankGold + gold : u.bankGold,
+        bankDiamond: diamond != null ? u.bankDiamond + diamond : u.bankDiamond,
+      ),
+    );
+  }
+
+  Future<void> setBlackMarketUnlocked(bool unlocked) async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) => u.copyWith(isBlackMarketUnlocked: unlocked));
   }
 
   Future<bool> sellItem(String itemId, int count, int pricePerItem) async {
@@ -926,6 +945,7 @@ class UserState with ChangeNotifier {
         'Mountain',
         'Redwoods',
         'Wetlands',
+        'Plains',
       ];
     }
 
@@ -1233,6 +1253,7 @@ class UserState with ChangeNotifier {
         'Mountain',
         'Redwoods',
         'Wetlands',
+        'Plains',
       ];
     }
     return biomes[math.Random().nextInt(biomes.length)];

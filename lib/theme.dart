@@ -2,6 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+// ---------------------------------------------------------------------------
+// APP VERSION — change this ONE value and it propagates everywhere.
+// ---------------------------------------------------------------------------
+const String kAppVersion = '0.1.1';
+const int kBuildNumber = 1;
+
 // --- 1. COLOR CONSTANTS ---
 class AppColors {
   // === BASE SURFACES ===
@@ -209,5 +215,58 @@ ThemeData get appTheme {
         side: const BorderSide(color: AppColors.border),
       ),
     ),
+    // Tooltips
+    tooltipTheme: TooltipThemeData(
+      decoration: BoxDecoration(
+        color: AppColors.surfaceVariant,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.border),
+      ),
+      textStyle: GoogleFonts.inter(color: Colors.white, fontSize: 12),
+      waitDuration: const Duration(milliseconds: 500),
+    ),
+    // Page Transitions — smooth fade+scale on every push by default
+    pageTransitionsTheme: const PageTransitionsTheme(
+      builders: {
+        TargetPlatform.android: _FadeScalePageTransitionsBuilder(),
+        TargetPlatform.iOS: _FadeScalePageTransitionsBuilder(),
+        TargetPlatform.windows: _FadeScalePageTransitionsBuilder(),
+        TargetPlatform.macOS: _FadeScalePageTransitionsBuilder(),
+        TargetPlatform.linux: _FadeScalePageTransitionsBuilder(),
+      },
+    ),
   );
+}
+
+// ---------------------------------------------------------------------------
+// Custom page transition — fast fade + subtle upward slide (professional feel)
+// ---------------------------------------------------------------------------
+class _FadeScalePageTransitionsBuilder extends PageTransitionsBuilder {
+  const _FadeScalePageTransitionsBuilder();
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    // Only animate forward pushes; pops feel instant (like native apps)
+    if (animation.status == AnimationStatus.reverse) return child;
+
+    final fade = CurvedAnimation(
+      parent: animation,
+      curve: const Interval(0.0, 0.75, curve: Curves.easeOut),
+    );
+    final slide = Tween<Offset>(
+      begin: const Offset(0, 0.04),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic));
+
+    return FadeTransition(
+      opacity: fade,
+      child: SlideTransition(position: slide, child: child),
+    );
+  }
 }
