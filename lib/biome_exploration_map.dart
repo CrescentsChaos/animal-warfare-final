@@ -21,13 +21,11 @@ import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/services/audio_service.dart';
 import 'package:animal_warfare/services/weather_service.dart';
 import 'package:animal_warfare/widgets/weather_overlay.dart';
-import 'package:animal_warfare/widgets/organism_sprite_widget.dart';
 import 'package:animal_warfare/game/time_service.dart';
 import 'package:animal_warfare/widgets/game_clock_widget.dart';
 import 'package:animal_warfare/shop_screen.dart';
 import 'package:animal_warfare/phone_screen.dart';
 import 'package:animal_warfare/theme.dart';
-import 'package:animal_warfare/achievement_service.dart';
 
 class BiomeExplorationMap extends StatefulWidget {
   final String biomeName;
@@ -67,11 +65,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   late double _playerY;
   double _velX = 0;
   double _velY = 0;
-  Offset _joystickOffset = Offset.zero;
   bool _encounterActive = false;
-  SpawnResult? _currentEncounter;
-  bool _isNameRevealed = false;
-  late UserData _currentUser;
 
   // ── Asset state ──
   ui.Image? _playerImage;
@@ -80,14 +74,8 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   late Color _biomeBaseColor;
   late Color _biomeDarkColor;
   late Color _biomeHighlightColor;
-  Color _rarityHighlightColor = const Color(0xFFDAA520);
 
   // ── Animation & Physics ──
-  late AnimationController _playerBobController;
-  late Animation<double> _playerBobAnim;
-  late AnimationController _encounterSlideController;
-  late Animation<Offset> _encounterSlideAnim;
-  late AnimationController _grassShakeController;
   int _stepCount = 0;
   late Ticker _ticker;
   double _stepDistanceAccumulator = 0;
@@ -105,28 +93,17 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   double _walkAnimAccumulator = 0.0;
   final Map<String, List<ui.Image>> _playerSprites = {};
 
-  // ── Achievement ──
-  late AchievementService _achievementService;
+  final Set<String> _activeDirections = {};
 
   @override
   void initState() {
     super.initState();
-    _currentUser = widget.currentUser;
     WidgetsBinding.instance.addObserver(this);
 
     // Colors
     _biomeBaseColor = _getBiomeBaseColor(widget.biomeName);
     _biomeDarkColor = _getDarkerColor(_biomeBaseColor);
     _biomeHighlightColor = _getBiomeHighlightColor(widget.biomeName);
-
-    // Achievement
-    final allOrganismsJson = widget.allOrganisms
-        .map((o) => o.toJson())
-        .toList();
-    _achievementService = AchievementService(
-      allOrganisms: allOrganismsJson,
-      authService: widget.authService,
-    );
     // Generate or load map
     if (widget.customMapData != null) {
       _mapData = widget.customMapData!;
@@ -156,31 +133,6 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     final fileName = widget.biomeName.toLowerCase().replaceAll(' ', '_');
     AudioService.instance.playMusic('audio/${fileName}_theme.mp3');
 
-    // Animations
-    _playerBobController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 600),
-    )..repeat(reverse: true);
-    _playerBobAnim = Tween<double>(begin: -2, end: 2).animate(
-      CurvedAnimation(parent: _playerBobController, curve: Curves.easeInOut),
-    );
-
-    _encounterSlideController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 400),
-    );
-    _encounterSlideAnim =
-        Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero).animate(
-          CurvedAnimation(
-            parent: _encounterSlideController,
-            curve: Curves.easeOutBack,
-          ),
-        );
-    _grassShakeController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 200),
-    );
-
     // Camera initialization will happen in _scrollToPlayer or build
 
     // Ticker for smooth movement
@@ -201,52 +153,70 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       _velY = 0;
       _walkFrame = 0;
       _walkAnimAccumulator = 0.0;
+      // We still update camera if not panning
+      if (!_isPanning) _scrollToPlayer(insideSetState: true);
+      setState(() {});
       return;
     }
-    if (_velX == 0 && _velY == 0) return;
 
-    final speed = 5.0; // Snappier speed
+    // Handle movement based on DPad
+    double vx = 0;
+    double vy = 0;
+    if (_activeDirections.isNotEmpty) {
+      // Prioritize the last pressed direction
+      final dir = _activeDirections.last;
+      _playerDirection = dir;
+      if (dir == 'up') {
+        vy = -1.0;
+      } else if (dir == 'down') {
+        vy = 1.0;
+      } else if (dir == 'left') {
+        vx = -1.0;
+      } else if (dir == 'right') {
+        vx = 1.0;
+      }
+    }
+    _velX = vx;
+    _velY = vy;
+
+    if (_velX == 0 && _velY == 0) {
+      // Always ensure camera follows if not panning (even if stopped)
+      if (!_isPanning) {
+        _scrollToPlayer(insideSetState: true);
+      }
+      // Reset walk animation when stopped
+      if (_walkFrame != 0) {
+        setState(() {
+          _walkFrame = 0;
+          _walkAnimAccumulator = 0.0;
+        });
+      } else {
+        setState(() {});
+      }
+      return;
+    }
+
+    const double speed = 5.0; // Snappier speed
     final nextX = _playerX + _velX * speed;
     final nextY = _playerY + _velY * speed;
 
-    // Sliding collision Logic: Try moving in X and Y independently
-    bool canMoveX = _canWalkAt(nextX, _playerY);
-    bool canMoveY = _canWalkAt(_playerX, nextY);
-
-    if (!canMoveX && !canMoveY) {
-      // If fully blocked, check if we can actually move diagonally
-      // (sometimes helpful for corner rounding)
-      if (_canWalkAt(nextX, nextY)) {
-        canMoveX = true;
-        canMoveY = true;
-      }
-    }
+    // Discrete 4-way collision
+    bool canMove = _canWalkAt(nextX, nextY);
 
     setState(() {
-      if (canMoveX) _playerX = nextX;
-      if (canMoveY) _playerY = nextY;
-
-      // Determine direction
-      if (_velX.abs() > _velY.abs()) {
-        _playerDirection = _velX > 0 ? 'right' : 'left';
-      } else if (_velY.abs() > 0) {
-        _playerDirection = _velY > 0 ? 'down' : 'up';
+      if (canMove) {
+        _playerX = nextX;
+        _playerY = nextY;
       }
 
       // Handle walk animation Accumulator
-      final actualMoveX = canMoveX ? _velX * speed : 0.0;
-      final actualMoveY = canMoveY ? _velY * speed : 0.0;
-      final dist = sqrt(actualMoveX * actualMoveX + actualMoveY * actualMoveY);
+      const double dist = speed;
 
-      if (dist > 0) {
-        _walkAnimAccumulator += dist;
-        if (_walkAnimAccumulator >= tileSize / 2) {
-          _walkAnimAccumulator -= tileSize / 2;
-          _walkFrame = (_walkFrame == 1) ? 2 : 1;
-        }
-      } else {
-        _walkFrame = 0;
-        _walkAnimAccumulator = 0.0;
+      _walkAnimAccumulator += dist;
+      if (_walkAnimAccumulator >= tileSize / 2) {
+        _walkAnimAccumulator -= tileSize / 2;
+        // Cycle: 1 -> 2 -> 1 (frame 0 is idle)
+        _walkFrame = (_walkFrame == 1) ? 2 : 1;
       }
 
       _stepDistanceAccumulator += dist;
@@ -254,15 +224,15 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         _stepDistanceAccumulator -= tileSize;
         _stepCount++;
         _checkStepEncounter(
-          (_playerY / tileSize).floor(),
-          (_playerX / tileSize).floor(),
+          ((_playerY + tileSize / 2) / tileSize).floor(),
+          ((_playerX + tileSize / 2) / tileSize).floor(),
         );
       }
-    });
 
-    if (!_isPanning) {
-      _scrollToPlayer();
-    }
+      if (!_isPanning) {
+        _scrollToPlayer(insideSetState: true);
+      }
+    });
   }
 
   bool _canWalkAt(double x, double y) {
@@ -308,56 +278,55 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
           _encounterActive = true;
           _velX = 0;
           _velY = 0;
+          _playerX = col * tileSize;
+          _playerY = row * tileSize;
           _walkFrame = 0;
           _walkAnimAccumulator = 0.0;
         });
 
-        _grassShakeController.forward(from: 0);
-        Future.delayed(const Duration(milliseconds: 250), () {
-          if (mounted) _triggerEncounter(activeTile.category);
-        });
+        _triggerEncounter(activeTile.category);
       }
     }
   }
 
   Future<void> _loadAssets() async {
-    // Assets are now loaded centrally via BiomeDataManager, but we can load additional ones if needed.
-    // However, for tiles, we rely on BiomeDataManager.tileAssets.
+    // 1. Try specified path or default
+    final String mainPath = widget.playerSpritePath ?? 'assets/player.png';
+    _playerImage = await BiomeDataManager.loadImage(mainPath);
+    if (_playerImage == null && widget.playerSpritePath != null) {
+      _playerImage = await BiomeDataManager.loadImage('assets/player.png');
+    }
 
-    // Load player image
-    if (widget.playerSpritePath != null) {
-      _playerImage = await BiomeDataManager.loadImage(widget.playerSpritePath!);
+    // 2. Load directional animations
+    final String basePath = mainPath.replaceAll('.png', '');
+    final directions = ['down', 'up', 'left', 'right'];
 
-      final String basePath = widget.playerSpritePath!.replaceAll('.png', '');
-      final directions = ['down', 'up', 'left', 'right'];
-      for (final dir in directions) {
-        final frames = <ui.Image>[];
-        for (int i = 0; i < 3; i++) {
-          final frameImg = await BiomeDataManager.loadImage(
-            '${basePath}_${dir}_$i.png',
-          );
-          if (frameImg != null) {
-            frames.add(frameImg);
-          }
+    for (final dir in directions) {
+      final List<ui.Image> frames = [];
+      for (int i = 0; i < 3; i++) {
+        final frameImg = await BiomeDataManager.loadImage(
+          '${basePath}_${dir}_$i.png',
+        );
+        if (frameImg != null) {
+          frames.add(frameImg);
         }
-        if (frames.isNotEmpty) {
-          _playerSprites[dir] = frames;
-        }
+      }
+
+      // Fallback: If no frames for this direction, use main player image as frame 0 if nothing else
+      if (frames.isEmpty && _playerImage != null) {
+        // No directional frames found
+      } else if (frames.isNotEmpty) {
+        _playerSprites[dir] = frames;
       }
     }
 
-    if (mounted) {
-      setState(() {});
-    }
+    if (mounted) setState(() {});
   }
 
   // Redundant _loadImage removed.
 
   @override
   void dispose() {
-    _playerBobController.dispose();
-    _encounterSlideController.dispose();
-    _grassShakeController.dispose();
     AudioService.instance.stopAll();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
@@ -375,16 +344,22 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     }
   }
 
-  void _scrollToPlayer() {
+  void _scrollToPlayer({bool insideSetState = false}) {
     if (!mounted || _viewSize == Size.zero) return;
 
     // Target scroll position to keep player center at viewport center
     double targetX = (_playerX + tileSize / 2) - (_viewSize.width / 2);
     double targetY = (_playerY + tileSize / 2) - (_viewSize.height / 2);
 
-    // If _isPanning is false, we want instantaneous following (no lag)
-    _cameraX = targetX;
-    _cameraY = targetY;
+    if (insideSetState) {
+      _cameraX = targetX;
+      _cameraY = targetY;
+    } else {
+      setState(() {
+        _cameraX = targetX;
+        _cameraY = targetY;
+      });
+    }
   }
 
   void _triggerEncounter(TileCategory category) {
@@ -433,18 +408,6 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     } else {
       setState(() => _encounterActive = false);
     }
-  }
-
-  void _dismissEncounter() {
-    _encounterSlideController.reverse();
-    Future.delayed(const Duration(milliseconds: 300), () {
-      if (mounted) {
-        setState(() {
-          _encounterActive = false;
-          _currentEncounter = null;
-        });
-      }
-    });
   }
 
   Future<ui.Image?> _captureMapScreenshot() async {
@@ -513,73 +476,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     if (mounted) {
       setState(() {
         _encounterActive = false;
-        _currentEncounter = null;
       });
-    }
-  }
-
-  void _revealName(Organism organism) async {
-    final userState = Provider.of<UserState>(context, listen: false);
-    final cost = _getIdentifyStaminaCost(organism.rarity);
-    if (userState.currentUser == null ||
-        userState.currentUser!.stamina < cost) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Not enough stamina! Need $cost stamina.'),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
-      }
-      return;
-    }
-    await userState.decreaseStamina(cost);
-    await widget.authService.markOrganismAsDiscovered(
-      _currentUser.username,
-      organism.name,
-    );
-    final refreshedUser = await widget.authService.getCurrentUser();
-    if (refreshedUser != null && mounted) {
-      _currentUser = refreshedUser;
-    }
-    final newAchievements = await _achievementService
-        .checkAndUnlockAchievements(_currentUser);
-    if (newAchievements.isNotEmpty) {
-      _currentUser = _currentUser.copyWith(
-        completedAchievements: [
-          ..._currentUser.completedAchievements,
-          ...newAchievements,
-        ],
-      );
-      await widget.authService.updateUser(_currentUser);
-      userState.setCurrentUser(_currentUser);
-      for (final title in newAchievements) {
-        if (mounted)
-          _achievementService.showAchievementSnackbar(context, title);
-      }
-    }
-    if (mounted) {
-      setState(() => _isNameRevealed = true);
-      AudioService.instance.playOrganismCry(organism.cry);
-    }
-  }
-
-  int _getIdentifyStaminaCost(String rarity) {
-    switch (rarity.toLowerCase()) {
-      case 'common':
-        return 5;
-      case 'uncommon':
-        return 10;
-      case 'rare':
-        return 15;
-      case 'epic':
-        return 25;
-      case 'legendary':
-        return 40;
-      case 'mythical':
-        return 60;
-      default:
-        return 5;
     }
   }
 
@@ -606,50 +503,12 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     return const Color(0xFFDAA520);
   }
 
-  Color _getRarityHighlightColor(String rarity) {
-    switch (rarity.toLowerCase()) {
-      case 'common':
-        return Colors.grey.shade400;
-      case 'uncommon':
-        return const Color.fromARGB(255, 22, 254, 95);
-      case 'rare':
-        return const Color.fromARGB(255, 0, 175, 194);
-      case 'epic':
-        return const Color.fromARGB(255, 103, 0, 114);
-      case 'legendary':
-        return const Color.fromARGB(226, 227, 148, 0);
-      case 'mythical':
-        return Colors.redAccent.shade400;
-      default:
-        return const Color(0xFFDAA520);
-    }
-  }
-
-  Color _getRarityColor(String rarity) {
-    switch (rarity.toLowerCase()) {
-      case 'common':
-        return Colors.grey;
-      case 'uncommon':
-        return Colors.green;
-      case 'rare':
-        return Colors.blue;
-      case 'epic':
-        return Colors.purple;
-      case 'legendary':
-        return Colors.orange;
-      case 'mythical':
-        return Colors.red;
-      default:
-        return Colors.white;
-    }
-  }
-
   // ── BUILD ──
   @override
   Widget build(BuildContext context) {
     final weather = WeatherService().getCurrentWeather(widget.biomeName);
     return Scaffold(
-      backgroundColor: _biomeBaseColor,
+      backgroundColor: Colors.black,
       appBar: AppBar(
         centerTitle: true,
         title: Text(widget.biomeName.toUpperCase()),
@@ -689,8 +548,8 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
             _buildWeatherChip(weather),
             // Step counter
             _buildStepCounter(),
-            // Joystick
-            _buildJoystick(),
+            // D-Pad
+            _buildDPad(),
           ],
         ),
       ),
@@ -719,34 +578,24 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
                 _cameraX -= details.focalPointDelta.dx;
                 _cameraY -= details.focalPointDelta.dy;
 
-                _cameraX = _cameraX.clamp(
-                  0.0,
-                  max(0.0, mapWidth * tileSize - _viewSize.width),
-                );
-                _cameraY = _cameraY.clamp(
-                  0.0,
-                  max(0.0, mapHeight * tileSize - _viewSize.height),
-                );
+                // We allow panning slightly beyond bounds now if user wants infinite black,
+                // but let's keep some loose clamping or allow it for better feel.
               });
             }
           },
-          child: ClipRect(
-            child: Transform.translate(
-              offset: Offset(-_cameraX, -_cameraY),
-              child: CustomPaint(
-                size: Size(mapWidth * tileSize, mapHeight * tileSize),
-                painter: _BiomeMapPainter(
-                  mapData: _mapData,
-                  playerX: _playerX,
-                  playerY: _playerY,
-                  playerBobOffset: _playerBobAnim.value,
-                  tileSize: tileSize,
-                  playerImage: _playerImage,
-                  playerDirection: _playerDirection,
-                  walkFrame: _walkFrame,
-                  playerSprites: _playerSprites,
-                ),
-              ),
+          child: CustomPaint(
+            size: viewSize,
+            painter: _BiomeMapPainter(
+              mapData: _mapData,
+              playerX: _playerX,
+              playerY: _playerY,
+              cameraX: _cameraX,
+              cameraY: _cameraY,
+              tileSize: tileSize,
+              playerImage: _playerImage,
+              playerDirection: _playerDirection,
+              walkFrame: _walkFrame,
+              playerSprites: _playerSprites,
             ),
           ),
         );
@@ -754,70 +603,128 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     );
   }
 
-  Widget _buildJoystick() {
+  Widget _buildDPad() {
+    const double btnSize = 60.0;
+    const double spacing = 10.0;
+
     return Positioned(
       bottom: 40,
-      left: 40,
+      left: 30,
       child: GestureDetector(
-        onPanUpdate: (details) {
-          final radius = 60.0;
-          final localPos = details.localPosition - const Offset(60, 60);
-          final dist = localPos.distance;
-          final normalized = dist > radius
-              ? localPos / dist * radius
-              : localPos;
-
-          setState(() {
-            _isPanning = false;
-            _joystickOffset = normalized;
-            _velX = normalized.dx / radius;
-            _velY = normalized.dy / radius;
-          });
-        },
+        onPanStart: (details) =>
+            _handleDPadGesture(details.localPosition, btnSize, spacing),
+        onPanUpdate: (details) =>
+            _handleDPadGesture(details.localPosition, btnSize, spacing),
         onPanEnd: (_) {
           setState(() {
-            _joystickOffset = Offset.zero;
-            _velX = 0;
-            _velY = 0;
+            _activeDirections.clear();
           });
         },
-        child: Container(
-          width: 120,
-          height: 120,
-          decoration: BoxDecoration(
-            color: Colors.black26,
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: _biomeHighlightColor.withOpacity(0.5),
-              width: 2,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Up
+            Row(
+              children: [
+                const SizedBox(width: btnSize + spacing),
+                _dpadButtonVisual('up', Icons.arrow_upward, btnSize),
+                const SizedBox(width: btnSize + spacing),
+              ],
             ),
-          ),
-          child: Stack(
-            children: [
-              Center(
-                child: Transform.translate(
-                  offset: _joystickOffset,
-                  child: Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: _biomeHighlightColor.withOpacity(0.8),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black45,
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Icon(Icons.drag_handle, color: _biomeDarkColor),
-                  ),
-                ),
-              ),
-            ],
-          ),
+            const SizedBox(height: spacing),
+            // Left, Empty, Right
+            Row(
+              children: [
+                _dpadButtonVisual('left', Icons.arrow_back, btnSize),
+                const SizedBox(width: btnSize + spacing),
+                _dpadButtonVisual('right', Icons.arrow_forward, btnSize),
+              ],
+            ),
+            const SizedBox(height: spacing),
+            // Down
+            Row(
+              children: [
+                const SizedBox(width: btnSize + spacing),
+                _dpadButtonVisual('down', Icons.arrow_downward, btnSize),
+                const SizedBox(width: btnSize + spacing),
+              ],
+            ),
+          ],
         ),
+      ),
+    );
+  }
+
+  void _handleDPadGesture(Offset localPos, double btnSize, double spacing) {
+    String? newDir;
+
+    // 3x3 grid detection logic
+    // Row 0: Up is at (1, 0)
+    // Row 1: Left at (0, 1), Right at (2, 1)
+    // Row 2: Down at (1, 2)
+
+    final double gridW = btnSize * 3 + spacing * 2;
+    final double gridH = btnSize * 3 + spacing * 2;
+
+    if (localPos.dx < 0 ||
+        localPos.dx > gridW ||
+        localPos.dy < 0 ||
+        localPos.dy > gridH) {
+      if (_activeDirections.isNotEmpty) {
+        setState(() => _activeDirections.clear());
+      }
+      return;
+    }
+
+    final int col = (localPos.dx / (btnSize + spacing)).floor().clamp(0, 2);
+    final int row = (localPos.dy / (btnSize + spacing)).floor().clamp(0, 2);
+
+    if (row == 0 && col == 1) {
+      newDir = 'up';
+    } else if (row == 1 && col == 0) {
+      newDir = 'left';
+    } else if (row == 1 && col == 2) {
+      newDir = 'right';
+    } else if (row == 2 && col == 1) {
+      newDir = 'down';
+    }
+
+    if (newDir != null) {
+      if (_activeDirections.isEmpty || _activeDirections.last != newDir) {
+        setState(() {
+          _isPanning = false;
+          _activeDirections.clear();
+          _activeDirections.add(newDir!);
+        });
+      }
+    } else {
+      if (_activeDirections.isNotEmpty) {
+        setState(() => _activeDirections.clear());
+      }
+    }
+  }
+
+  Widget _dpadButtonVisual(String direction, IconData icon, double size) {
+    final bool isActive = _activeDirections.contains(direction);
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: isActive
+            ? _biomeHighlightColor.withValues(alpha: 0.4)
+            : Colors.black45,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isActive
+              ? _biomeHighlightColor
+              : _biomeHighlightColor.withValues(alpha: 0.5),
+          width: isActive ? 3 : 2,
+        ),
+      ),
+      child: Icon(
+        icon,
+        color: isActive ? Colors.white : _biomeHighlightColor,
+        size: size * 0.6,
       ),
     );
   }
@@ -828,9 +735,9 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         Navigator.of(context).push(
           PageRouteBuilder(
             opaque: false,
-            pageBuilder: (_, animation, __) =>
+            pageBuilder: (_, animation, _) =>
                 PhoneScreen(initialBiome: widget.biomeName),
-            transitionsBuilder: (_, animation, __, child) {
+            transitionsBuilder: (_, animation, _, child) {
               return FadeTransition(opacity: animation, child: child);
             },
           ),
@@ -944,224 +851,6 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       ),
     );
   }
-
-  Widget _buildEncounterOverlay() {
-    final encounter = _currentEncounter!;
-    final organism = encounter.organism;
-    final bool isNameVisible =
-        _currentUser.discoveredOrganisms.contains(organism.name) ||
-        _isNameRevealed;
-
-    return AnimatedBuilder(
-      animation: _encounterSlideController,
-      builder: (context, child) {
-        return Container(
-          color: Colors.black.withOpacity(
-            0.6 * _encounterSlideController.value,
-          ),
-          child: SlideTransition(
-            position: _encounterSlideAnim,
-            child: Center(
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 24),
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: _biomeDarkColor.withOpacity(0.95),
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: _rarityHighlightColor, width: 3),
-                  boxShadow: [
-                    BoxShadow(
-                      color: _rarityHighlightColor.withOpacity(0.3),
-                      blurRadius: 20,
-                      spreadRadius: 2,
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Header
-                    Text(
-                      '⚠ WILD ENCOUNTER!',
-                      style: TextStyle(
-                        color: _rarityHighlightColor,
-                        fontFamily: 'PressStart2P',
-                        fontSize: 14,
-                        shadows: [
-                          Shadow(
-                            color: _rarityHighlightColor.withOpacity(0.5),
-                            blurRadius: 8,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    // Rarity badge
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: _rarityHighlightColor.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        organism.rarity.toUpperCase(),
-                        style: TextStyle(
-                          color: _getRarityColor(organism.rarity),
-                          fontFamily: 'PressStart2P',
-                          fontSize: 12,
-                          shadows: [
-                            Shadow(
-                              color: _getRarityHighlightColor(
-                                organism.rarity,
-                              ).withOpacity(0.6),
-                              blurRadius: 8,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    // Sprite
-                    SizedBox(
-                      height: 140,
-                      child: isNameVisible
-                          ? buildSilhouetteSprite(
-                              imageUrl: organism.sprite,
-                              height: 140,
-                              fit: BoxFit.contain,
-                            )
-                          : buildSilhouetteSprite(
-                              imageUrl: organism.sprite,
-                              silhouetteColor: Colors.black.withOpacity(0.8),
-                              outlineColor: _rarityHighlightColor,
-                              outlineWidth: 1.5,
-                              height: 140,
-                              fit: BoxFit.contain,
-                            ),
-                    ),
-                    const SizedBox(height: 10),
-                    // Name
-                    if (isNameVisible)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              _biomeBaseColor.withOpacity(0.6),
-                              _biomeDarkColor,
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: _biomeHighlightColor,
-                            width: 2,
-                          ),
-                        ),
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            organism.name.toUpperCase(),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontFamily: 'PressStart2P',
-                              fontSize: 16,
-                              shadows: [
-                                Shadow(
-                                  color: Colors.black,
-                                  offset: Offset(2, 2),
-                                  blurRadius: 2,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      )
-                    else
-                      Text(
-                        '???',
-                        style: TextStyle(
-                          color: _biomeHighlightColor,
-                          fontFamily: 'PressStart2P',
-                          fontSize: 20,
-                        ),
-                      ),
-                    const SizedBox(height: 18),
-                    // Action buttons
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        if (!isNameVisible)
-                          _actionBtn(
-                            'IDENTIFY',
-                            Icons.search,
-                            Colors.tealAccent,
-                            () => _revealName(organism),
-                          ),
-                        if (!isNameVisible) const SizedBox(width: 10),
-                        _actionBtn(
-                          'FIGHT',
-                          Icons.sports_mma,
-                          Colors.redAccent,
-                          () => _onFight(organism),
-                        ),
-                        const SizedBox(width: 10),
-                        _actionBtn(
-                          'RUN',
-                          Icons.directions_run,
-                          Colors.orangeAccent,
-                          _dismissEncounter,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _actionBtn(
-    String label,
-    IconData icon,
-    Color color,
-    VoidCallback onTap,
-  ) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.2),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color, width: 2),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: color, size: 22),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                color: color,
-                fontFamily: 'PressStart2P',
-                fontSize: 7,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 // ────────────────────────────────────────────────────────────────────
@@ -1172,7 +861,8 @@ class _BiomeMapPainter extends CustomPainter {
   final BiomeMapData mapData;
   final double playerX;
   final double playerY;
-  final double playerBobOffset;
+  final double cameraX;
+  final double cameraY;
   final double tileSize;
   final ui.Image? playerImage;
   final String playerDirection;
@@ -1183,7 +873,8 @@ class _BiomeMapPainter extends CustomPainter {
     required this.mapData,
     required this.playerX,
     required this.playerY,
-    required this.playerBobOffset,
+    required this.cameraX,
+    required this.cameraY,
     required this.tileSize,
     this.playerImage,
     required this.playerDirection,
@@ -1237,7 +928,12 @@ class _BiomeMapPainter extends CustomPainter {
     MapTile tile,
     List<List<dynamic>> grid,
   ) {
-    final rect = Rect.fromLTWH(c * tileSize, r * tileSize, tileSize, tileSize);
+    final rect = Rect.fromLTWH(
+      c * tileSize - cameraX,
+      r * tileSize - cameraY,
+      tileSize,
+      tileSize,
+    );
     final assets = BiomeDataManager.tileAssets[tile.tileId];
 
     if (assets != null && assets.isNotEmpty) {
@@ -1284,7 +980,7 @@ class _BiomeMapPainter extends CustomPainter {
         canvas.drawRect(rect, paint);
         break;
       case TileCategory.tallGrass:
-        paint.color = Colors.green.withOpacity(0.5);
+        paint.color = Colors.green.withValues(alpha: 0.5);
         canvas.drawRect(rect, paint);
         break;
       default:
@@ -1312,14 +1008,15 @@ class _BiomeMapPainter extends CustomPainter {
   }
 
   void _drawPlayer(Canvas canvas) {
-    final px = playerX + tileSize / 2;
-    final py = playerY + tileSize / 2 + playerBobOffset;
+    final px = (playerX - cameraX) + tileSize / 2;
+    final py = (playerY - cameraY) + tileSize / 2;
 
     ui.Image? img;
 
     if (playerSprites.containsKey(playerDirection) &&
         playerSprites[playerDirection]!.isNotEmpty) {
       final frames = playerSprites[playerDirection]!;
+      // walkFrame 0=idle, 1,2=walking
       if (walkFrame < frames.length) {
         img = frames[walkFrame];
       } else {
@@ -1359,7 +1056,8 @@ class _BiomeMapPainter extends CustomPainter {
   bool shouldRepaint(covariant _BiomeMapPainter oldDelegate) {
     return oldDelegate.playerX != playerX ||
         oldDelegate.playerY != playerY ||
-        oldDelegate.playerBobOffset != playerBobOffset ||
+        oldDelegate.cameraX != cameraX ||
+        oldDelegate.cameraY != cameraY ||
         oldDelegate.walkFrame != walkFrame ||
         oldDelegate.playerDirection != playerDirection;
   }

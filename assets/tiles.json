@@ -8,6 +8,14 @@
         "layer": "base"
     },
     {
+        "id": "fallen_leaves",
+        "name": "Fallen Leaves",
+        "category": "decorative",
+        "assetPath": "assets/tiles/fallen_leaves.png",
+        "isAutotiled": true,
+        "layer": "overlay"
+    },
+    {
         "id": "swamp_ground",
         "name": "Swamp Ground",
         "category": "ground",
@@ -51,7 +59,7 @@
         "id": "tall_grass",
         "name": "Tall Grass",
         "category": "tallGrass",
-        "assetPath": "assets/tiles/swamp_tall_grass.png",
+        "assetPath": "assets/tiles/tall_grass.png",
         "isAutotiled": true,
         "layer": "overlay"
     },
@@ -60,6 +68,14 @@
         "name": "Tree",
         "category": "solid",
         "assetPath": "assets/tiles/swamp_tree.png",
+        "isAutotiled": false,
+        "layer": "overlay"
+    },
+    {
+        "id": "pine_tree",
+        "name": "Pine Tree",
+        "category": "decorative",
+        "assetPath": "assets/tiles/pine_tree.png",
         "isAutotiled": false,
         "layer": "overlay"
     },
