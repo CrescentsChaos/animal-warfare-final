@@ -782,9 +782,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       bottom: 70,
       right: 40,
       child: GestureDetector(
-        onTapDown: (_) => setState(() => _isRunning = true),
-        onTapUp: (_) => setState(() => _isRunning = false),
-        onTapCancel: () => setState(() => _isRunning = false),
+        onTap: () => setState(() => _isRunning = !_isRunning),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 100),
           width: 70,
