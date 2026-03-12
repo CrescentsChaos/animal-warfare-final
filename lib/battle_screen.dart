@@ -1239,8 +1239,8 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                 Positioned.fill(
                   child: ImageFiltered(
                     imageFilter: ImageFilter.blur(
-                      sigmaX: 8,
-                      sigmaY: 8,
+                      sigmaX: 1.5,
+                      sigmaY: 1.5,
                       tileMode: TileMode.clamp,
                     ),
                     child: RawImage(

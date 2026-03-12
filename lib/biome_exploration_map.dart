@@ -99,6 +99,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   bool _isMovingToTarget = false;
   double _targetX = 0;
   double _targetY = 0;
+  bool _isRunning = false;
   String? _queuedDirection;
   Duration? _directionHoldStart;
 
@@ -935,8 +936,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       },
       child: Consumer<UserState>(
         builder: (context, userState, child) {
-          final user = userState.currentUser;
-          if (user == null) return const SizedBox.shrink();
+          final user = userState.currentUser!;
           final progress = user.stamina / 100;
           return Container(
             width: 100,
