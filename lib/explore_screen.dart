@@ -51,6 +51,7 @@ SpawnResult? getWeightedRandomOrganism(
   Map<String, int> inventory = const {},
   List<String> teamMoveNames = const [],
   required String currentTimeOfDay,
+  String? encounterType, // e.g., 'water', 'tallgrass', 'land'
 }) {
   // Normalize the selected biome name for case-insensitive search
   final String searchBiome = biomeName.toLowerCase();
@@ -63,7 +64,35 @@ SpawnResult? getWeightedRandomOrganism(
 
   // 1. Filter organisms by biome and rarity gate
   final biomeOrganisms = allOrganisms.where((org) {
-    if (!org.habitat.toLowerCase().contains(searchBiome)) return false;
+    final habitat = org.habitat.toLowerCase();
+    final categories = org.category.toLowerCase();
+
+    // Biome Check
+    if (!habitat.contains(searchBiome)) return false;
+
+    // Encounter Type Filtering
+    if (encounterType != null) {
+      final isAquatic =
+          categories.contains('aquatic') ||
+          habitat.contains('water') ||
+          habitat.contains('river') ||
+          habitat.contains('lake') ||
+          habitat.contains('ocean') ||
+          habitat.contains('sea');
+
+      if (encounterType == 'water') {
+        if (!isAquatic) return false;
+      } else if (encounterType == 'tallgrass') {
+        // Tallgrass usually has land/ambush creatures
+        if (isAquatic &&
+            !habitat.contains('swamp') &&
+            !habitat.contains('marsh')) {
+          return false;
+        }
+      } else if (encounterType == 'land') {
+        if (isAquatic) return false;
+      }
+    }
 
     // Rarity Gates
     final rarity = org.rarity.toLowerCase();
@@ -74,13 +103,9 @@ SpawnResult? getWeightedRandomOrganism(
     if (rarity == 'uncommon' && accountLevel < 10) return false;
 
     // Fishing Logic
-    // If the animal is aquatic (based on category or habitat) and drops fish-related items,
-    // require the appropriate fishing rod unless the player has Surf.
-    final categories = org.category.toLowerCase();
-    final habitat = org.habitat.toLowerCase();
     final drops = org.drops.toLowerCase();
 
-    final isAquatic =
+    final isAquaticOrg =
         categories.contains('aquatic') ||
         habitat.contains('river') ||
         habitat.contains('lake') ||
@@ -92,7 +117,7 @@ SpawnResult? getWeightedRandomOrganism(
 
     final isFishDrop = drops.contains('fillet') || drops.contains('shark fin');
 
-    if (isAquatic && isFishDrop && !hasSurf) {
+    if (isAquaticOrg && isFishDrop && !hasSurf) {
       if (rarity == 'common') {
         if (!hasOldRod && !hasGoodRod && !hasSuperRod) return false;
       } else if (rarity == 'uncommon' || rarity == 'rare') {
@@ -111,7 +136,6 @@ SpawnResult? getWeightedRandomOrganism(
     if (activeTime == 'any' || activeTime == currentTimeOfDay) {
       timeMatches = true;
     } else if (isCave && activeTime == 'night' && currentTimeOfDay == 'day') {
-      // Cave Exception: Night animals can spawn during the day
       timeMatches = true;
     } else if (activeTime == 'day' && currentTimeOfDay == 'night') {
       timeMatches = true;
@@ -133,7 +157,6 @@ SpawnResult? getWeightedRandomOrganism(
     (sum, org) => sum + _getRarityWeight(org.rarity),
   );
 
-  // If total weight is 0 (shouldn't happen with default weight of 1), return null
   if (totalWeight == 0) return null;
 
   // 3. Select a random weight value
@@ -154,7 +177,6 @@ SpawnResult? getWeightedRandomOrganism(
   // Fallback
   selectedOrganism ??= biomeOrganisms[random.nextInt(biomeOrganisms.length)];
 
-  // Determine if it was a rare encounter (off-time)
   final activeTime = selectedOrganism.activeTime.toLowerCase();
   bool timeMatches = false;
   if (activeTime == 'any' || activeTime == currentTimeOfDay) {
@@ -163,11 +185,7 @@ SpawnResult? getWeightedRandomOrganism(
     timeMatches = true;
   }
 
-  return SpawnResult(
-    organism: selectedOrganism,
-    isRare:
-        !timeMatches, // It's rare if the time didn't match but it spawned anyway
-  );
+  return SpawnResult(organism: selectedOrganism, isRare: !timeMatches);
 }
 
 // ------------------------------------------------------------------

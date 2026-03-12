@@ -534,7 +534,7 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
         setState(() {
           _currentEncounter = SpawnResult(
             organism: _persistentEncounter!.baseOrganism,
-            isRare: false, // Default or store this info in UserData if needed
+            isRare: false,
           );
           _isExploring = false;
           _rarityHighlightColor = _getRarityHighlightColor(
@@ -565,8 +565,6 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
             final organism = encounter.organism;
             _rarityHighlightColor = _getRarityHighlightColor(organism.rarity);
             _isNameRevealed = _isDiscovered(organism);
-
-            // Play cry when a new animal is found
             AudioService.instance.playOrganismCry(organism.cry);
           }
         });

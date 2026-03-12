@@ -1,0 +1,114 @@
+[
+    {
+        "id": "ground",
+        "name": "Ground",
+        "category": "ground",
+        "assetPath": "assets/tiles/ground.png",
+        "isAutotiled": true,
+        "layer": "base"
+    },
+    {
+        "id": "swamp_ground",
+        "name": "Swamp Ground",
+        "category": "ground",
+        "assetPath": "assets/tiles/swamp_ground.png",
+        "isAutotiled": true,
+        "layer": "base"
+    },
+    {
+        "id": "path",
+        "name": "Path",
+        "category": "path",
+        "assetPath": "assets/tiles/swamp_path.png",
+        "isAutotiled": true,
+        "layer": "base"
+    },
+    {
+        "id": "water",
+        "name": "Water",
+        "category": "water",
+        "assetPath": "assets/tiles/water.png",
+        "isAutotiled": true,
+        "layer": "base"
+    },
+    {
+        "id": "deep_water",
+        "name": "Deep Water",
+        "category": "water",
+        "assetPath": "assets/tiles/swamp_water_deep.png",
+        "isAutotiled": true,
+        "layer": "base"
+    },
+    {
+        "id": "mud",
+        "name": "Mud",
+        "category": "mud",
+        "assetPath": "assets/tiles/swamp_mud.png",
+        "isAutotiled": true,
+        "layer": "base"
+    },
+    {
+        "id": "tall_grass",
+        "name": "Tall Grass",
+        "category": "tallGrass",
+        "assetPath": "assets/tiles/swamp_tall_grass.png",
+        "isAutotiled": true,
+        "layer": "overlay"
+    },
+    {
+        "id": "tree",
+        "name": "Tree",
+        "category": "solid",
+        "assetPath": "assets/tiles/swamp_tree.png",
+        "isAutotiled": false,
+        "layer": "overlay"
+    },
+    {
+        "id": "dead_tree",
+        "name": "Dead Tree",
+        "category": "solid",
+        "assetPath": "assets/tiles/swamp_dead_tree.png",
+        "isAutotiled": false,
+        "layer": "overlay"
+    },
+    {
+        "id": "log",
+        "name": "Log",
+        "category": "solid",
+        "assetPath": "assets/tiles/swamp_log.png",
+        "isAutotiled": false,
+        "layer": "overlay"
+    },
+    {
+        "id": "rock",
+        "name": "Rock",
+        "category": "solid",
+        "assetPath": "assets/tiles/swamp_rock.png",
+        "isAutotiled": false,
+        "layer": "overlay"
+    },
+    {
+        "id": "lily_pad",
+        "name": "Lily Pad",
+        "category": "decorative",
+        "assetPath": "assets/tiles/swamp_lily_pad.png",
+        "isAutotiled": false,
+        "layer": "overlay"
+    },
+    {
+        "id": "mushroom",
+        "name": "Mushroom",
+        "category": "decorative",
+        "assetPath": "assets/tiles/swamp_mushroom.png",
+        "isAutotiled": false,
+        "layer": "overlay"
+    },
+    {
+        "id": "vine",
+        "name": "Vine",
+        "category": "decorative",
+        "assetPath": "assets/tiles/swamp_vine.png",
+        "isAutotiled": false,
+        "layer": "overlay"
+    }
+]

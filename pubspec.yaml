@@ -36,7 +36,7 @@ dependencies:
   firebase_core: ^2.27.0 
   firebase_auth: ^4.17.7 
   audioplayers: ^6.5.1
-  shared_preferences: ^2.2.0  # Required for current session state
+  shared_preferences: 2.3.5  # Required for current session state
   path_provider: ^2.1.0 
   permission_handler: ^11.3.1
   image_picker: ^1.2.0
@@ -101,9 +101,17 @@ flutter:
     - assets/status_overlays/
     - assets/items/
     - assets/shop_items.json
+    - assets/farming.json
+    - assets/achievements.json
     - assets/recipes.json
+    - assets/talismans.json
+    - assets/abilities.json
+    - assets/moves.json
     - assets/move_effects/
     - assets/farming/
+    - assets/tiles/
+    - assets/maps.json
+    - assets/tiles.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

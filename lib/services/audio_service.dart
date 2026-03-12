@@ -116,6 +116,10 @@ class AudioService {
   /// Play background music with looping
   Future<void> playMusic(String assetPath, {bool loop = true}) async {
     if (isTesting) return;
+
+    // Ensure volume is reset to current music volume setting (it might have been faded out)
+    await _musicPlayer.setVolume(_isMusicEnabled ? _musicVolume : 0.0);
+
     // If already playing this track, don't restart it (avoids stuttering)
     if (_currentMusicPath == assetPath &&
         (_musicPlayer.state == PlayerState.playing ||
@@ -156,6 +160,31 @@ class AudioService {
     } catch (e) {
       print('Error stopping music: $e');
     }
+  }
+
+  /// Fade out the current music smoothly
+  Future<void> fadeOutMusic({
+    Duration duration = const Duration(milliseconds: 1500),
+  }) async {
+    if (isTesting || _musicPlayer.state != PlayerState.playing) return;
+
+    final int steps = 15;
+    final double stepVolume = _musicVolume / steps;
+    final Duration stepDuration = Duration(
+      milliseconds: duration.inMilliseconds ~/ steps,
+    );
+
+    for (int i = steps; i >= 0; i--) {
+      try {
+        await _musicPlayer.setVolume(i * stepVolume);
+      } catch (e) {
+        print('Error during music fade out: $e');
+        break;
+      }
+      await Future.delayed(stepDuration);
+    }
+
+    await stopMusic();
   }
 
   /// Set music volume (0.0 to 1.0)

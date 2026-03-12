@@ -356,9 +356,9 @@ class _FogPainter extends CustomPainter {
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          Colors.white.withValues(alpha: 0.3),
-          Colors.white.withValues(alpha: 0.6),
-          Colors.white.withValues(alpha: 0.4),
+          Colors.white.withValues(alpha: 0.1),
+          Colors.white.withValues(alpha: 0.25),
+          Colors.white.withValues(alpha: 0.15),
         ],
         stops: const [0.0, 0.5, 1.0],
       ).createShader(Offset.zero & size);
@@ -371,7 +371,7 @@ class _FogPainter extends CustomPainter {
 
     for (int layer = 0; layer < 3; layer++) {
       final layerSpeed = 0.1 + (layer * 0.05);
-      final layerOpacity = 0.15 - (layer * 0.03);
+      final layerOpacity = 0.06 - (layer * 0.015);
 
       for (int i = 0; i < 4; i++) {
         final x =

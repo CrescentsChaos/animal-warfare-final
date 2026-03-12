@@ -1,0 +1,73 @@
+[
+    {
+        "id": "swamp",
+        "name": "Swamp",
+        "defaultTileId": "water",
+        "tiles": [
+            "ground",
+            "swamp_ground",
+            "path",
+            "water",
+            "deep_water",
+            "mud",
+            "tall_grass",
+            "tree",
+            "dead_tree",
+            "log",
+            "rock",
+            "lily_pad",
+            "mushroom",
+            "vine"
+        ],
+        "spawnPoint": {
+            "x": 10,
+            "y": 18
+        },
+        "layout": {
+            "base": [
+                "tree,tree,tree,tree,tree,tree,tree,tree,tree,tree,tree,tree,tree,tree,tree,tree,tree,tree,tree,tree",
+                "tree,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,water,deep_water,tree",
+                "tree,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,water,water,deep_water,tree",
+                "tree,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,water,water,deep_water,tree",
+                "tree,swamp_ground,mud,mud,mud,mud,mud,mud,mud,mud,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,water,water,tree",
+                "tree,swamp_ground,swamp_ground,mud,mud,mud,mud,mud,mud,mud,mud,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,water,water,tree",
+                "tree,swamp_ground,swamp_ground,swamp_ground,swamp_ground,path,path,path,path,path,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,water,water,tree",
+                "tree,swamp_ground,swamp_ground,swamp_ground,swamp_ground,path,swamp_ground,swamp_ground,swamp_ground,swamp_ground,path,path,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,water,water,tree",
+                "tree,swamp_ground,swamp_ground,swamp_ground,swamp_ground,path,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,path,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,water,water,tree",
+                "tree,swamp_ground,swamp_ground,swamp_ground,swamp_ground,path,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,path,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,water,water,tree",
+                "tree,swamp_ground,swamp_ground,swamp_ground,swamp_ground,path,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,path,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,water,water,tree",
+                "tree,swamp_ground,swamp_ground,swamp_ground,swamp_ground,path,path,path,path,path,path,path,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,water,water,tree",
+                "tree,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,water,water,tree",
+                "tree,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,water,water,tree",
+                "tree,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,water,water,tree",
+                "tree,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,water,water,tree",
+                "tree,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,water,water,tree",
+                "tree,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,tree",
+                "tree,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground,tree",
+                "tree,tree,tree,tree,tree,tree,tree,tree,tree,tree,tree,tree,tree,tree,tree,tree,tree,tree,tree,tree"
+            ],
+            "overlay": [
+                "tree,tree,tree,tree,tree,tree,tree,tree,tree,tree,tree,tree,tree,tree,tree,tree,tree,tree,tree,tree",
+                "tree,null,null,null,null,null,tall_grass,tall_grass,tall_grass,null,null,null,null,null,null,null,null,null,null,tree",
+                "tree,null,null,tall_grass,tall_grass,tall_grass,tall_grass,tall_grass,tall_grass,tall_grass,null,null,null,null,null,null,null,null,null,tree",
+                "tree,null,tall_grass,tall_grass,tall_grass,tall_grass,tall_grass,tall_grass,tall_grass,tall_grass,tall_grass,tall_grass,null,null,null,null,null,null,null,tree",
+                "tree,null,null,null,null,null,null,null,null,null,tall_grass,tall_grass,tall_grass,null,null,null,null,null,null,tree",
+                "tree,null,null,null,null,null,null,null,null,null,null,tall_grass,tall_grass,tall_grass,tall_grass,null,null,null,null,tree",
+                "tree,null,null,null,null,null,null,null,null,null,null,null,tall_grass,tall_grass,tall_grass,null,null,null,null,tree",
+                "tree,null,null,null,null,null,null,null,null,null,null,null,tall_grass,tall_grass,tall_grass,null,null,null,null,tree",
+                "tree,null,null,null,null,null,null,null,null,null,null,null,tall_grass,tall_grass,tall_grass,null,null,null,null,tree",
+                "tree,null,null,null,null,null,null,null,null,null,null,null,tall_grass,tall_grass,tall_grass,null,null,null,null,tree",
+                "tree,null,null,null,null,null,null,null,null,null,null,null,tall_grass,tall_grass,tall_grass,null,null,null,null,tree",
+                "tree,null,null,null,null,null,null,null,null,null,null,null,tall_grass,tall_grass,tall_grass,null,null,null,null,tree",
+                "tree,null,null,null,null,null,null,null,null,null,null,tall_grass,tall_grass,tall_grass,null,null,null,null,tree",
+                "tree,null,null,null,null,null,null,null,null,null,null,tall_grass,tall_grass,tall_grass,null,null,null,null,tree",
+                "tree,null,null,null,null,null,null,null,null,null,null,tall_grass,tall_grass,tall_grass,null,null,null,null,tree",
+                "tree,null,null,null,null,null,null,null,null,null,null,tall_grass,tall_grass,tall_grass,null,null,null,null,tree",
+                "tree,null,null,null,null,null,null,null,null,null,null,tall_grass,tall_grass,tall_grass,null,null,null,null,tree",
+                "tree,null,null,null,null,null,null,null,null,null,null,null,null,null,tall_grass,tall_grass,tall_grass,null,null,tree",
+                "tree,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,tree",
+                "tree,tree,tree,tree,tree,tree,tree,tree,tree,tree,tree,tree,tree,tree,tree,tree,tree,tree,tree,tree"
+            ]
+        }
+    }
+]

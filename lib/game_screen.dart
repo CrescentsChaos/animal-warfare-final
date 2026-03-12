@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:animal_warfare/explore_screen.dart';
+import 'package:animal_warfare/game/explore_selection_screen.dart';
 import 'package:animal_warfare/anidex_screen.dart';
 import 'package:animal_warfare/quiz_screen.dart';
 import 'package:animal_warfare/animal_box_screen.dart';
@@ -225,6 +226,28 @@ class _GameScreenState extends State<GameScreen> {
                       final authService = LocalAuthService();
                       _navigateTo(
                         ExploreScreen(
+                          currentUser: user,
+                          authService: authService,
+                        ),
+                      );
+                    },
+                  ),
+
+                  _buildMenuButton(
+                    text: 'Explore Map',
+                    subtitle: 'Walk through biomes & encounter animals',
+                    icon: Icons.map_rounded,
+                    color: const Color(0xFF66BB6A),
+                    onPressed: () {
+                      final user =
+                          Provider.of<UserState>(
+                            context,
+                            listen: false,
+                          ).currentUser ??
+                          widget.currentUser;
+                      final authService = LocalAuthService();
+                      _navigateTo(
+                        ExploreSelectionScreen(
                           currentUser: user,
                           authService: authService,
                         ),

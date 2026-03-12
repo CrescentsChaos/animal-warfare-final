@@ -2,6 +2,7 @@
 
 import 'dart:math';
 import 'dart:ui';
+import 'dart:ui' as ui;
 import 'package:animal_warfare/models/battle_replay.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'
@@ -46,6 +47,7 @@ class BattleScreen extends StatelessWidget {
   final TeamArchetype? opponentArchetype;
   final String? timeOfDay;
   final bool startAsleep;
+  final ui.Image? mapScreenshot;
 
   const BattleScreen({
     super.key,
@@ -60,6 +62,7 @@ class BattleScreen extends StatelessWidget {
     this.opponentArchetype,
     this.timeOfDay,
     this.startAsleep = false,
+    this.mapScreenshot,
   });
 
   @override
@@ -92,6 +95,7 @@ class BattleScreen extends StatelessWidget {
         timeOfDay: timeOfDay,
         opponentFullTeam: opponentTeam,
         startAsleep: startAsleep,
+        mapScreenshot: mapScreenshot,
       ),
     );
   }
@@ -105,9 +109,9 @@ class BattleScreenContent extends StatefulWidget {
   final bool isRogueMode;
   final String? timeOfDay;
 
-  /// Full opponent team for winrate recording (arena battles)
   final List<CapturedOrganism>? opponentFullTeam;
   final bool startAsleep;
+  final ui.Image? mapScreenshot;
 
   const BattleScreenContent({
     super.key,
@@ -119,6 +123,7 @@ class BattleScreenContent extends StatefulWidget {
     this.timeOfDay,
     this.opponentFullTeam,
     this.startAsleep = false,
+    this.mapScreenshot,
   });
 
   @override
@@ -428,9 +433,8 @@ class _BattleScreenContentState extends State<BattleScreenContent>
 
     switch (state) {
       case AppLifecycleState.paused:
-      case AppLifecycleState.inactive:
-        // App went to background - pause audio
-        bm.pauseAudio();
+        // App went to background (totally obscured) - pause audio
+        AudioService.instance.pauseAll();
         break;
       case AppLifecycleState.resumed:
         // App came back to foreground - resume audio
@@ -1230,42 +1234,64 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           offset: Offset(_screenShakeX, _screenShakeY),
           child: Stack(
             children: [
-              StreamBuilder<GameTime>(
-                stream: TimeService().timeStream,
-                builder: (context, snapshot) {
-                  final hour = TimeService().currentGameTime.hour;
-                  final timeOfDay = (hour >= 6 && hour < 18)
-                      ? 'day'
-                      : (hour >= 18 && hour < 21 ? 'evening' : 'night');
-
-                  return Container(
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage(_getAssetPath(widget.biomeName)),
-                        fit: BoxFit.cover,
-                        colorFilter: timeOfDay == 'day'
-                            ? ColorFilter.mode(
-                                const Color.fromARGB(
-                                  255,
-                                  0,
-                                  0,
-                                  0,
-                                ).withValues(alpha: 0.5),
-                                BlendMode.darken,
-                              )
-                            : ColorFilter.mode(
-                                timeOfDay == 'evening'
-                                    ? Colors.orangeAccent.withValues(alpha: 0.5)
-                                    : Colors.indigo[900]!.withValues(
-                                        alpha: 0.7,
-                                      ),
-                                BlendMode.multiply,
-                              ),
-                      ),
+              // Background: use blurred map screenshot if available, else biome asset
+              if (widget.mapScreenshot != null)
+                Positioned.fill(
+                  child: ImageFiltered(
+                    imageFilter: ImageFilter.blur(
+                      sigmaX: 8,
+                      sigmaY: 8,
+                      tileMode: TileMode.clamp,
                     ),
-                  );
-                },
-              ),
+                    child: RawImage(
+                      image: widget.mapScreenshot,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+              if (widget.mapScreenshot != null)
+                Positioned.fill(
+                  child: Container(color: Colors.black.withOpacity(0.35)),
+                ),
+              if (widget.mapScreenshot == null)
+                StreamBuilder<GameTime>(
+                  stream: TimeService().timeStream,
+                  builder: (context, snapshot) {
+                    final hour = TimeService().currentGameTime.hour;
+                    final timeOfDay = (hour >= 6 && hour < 18)
+                        ? 'day'
+                        : (hour >= 18 && hour < 21 ? 'evening' : 'night');
+
+                    return Container(
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image: AssetImage(_getAssetPath(widget.biomeName)),
+                          fit: BoxFit.cover,
+                          colorFilter: timeOfDay == 'day'
+                              ? ColorFilter.mode(
+                                  const Color.fromARGB(
+                                    255,
+                                    0,
+                                    0,
+                                    0,
+                                  ).withValues(alpha: 0.5),
+                                  BlendMode.darken,
+                                )
+                              : ColorFilter.mode(
+                                  timeOfDay == 'evening'
+                                      ? Colors.orangeAccent.withValues(
+                                          alpha: 0.5,
+                                        )
+                                      : Colors.indigo[900]!.withValues(
+                                          alpha: 0.7,
+                                        ),
+                                  BlendMode.multiply,
+                                ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
               if (battleManager.trickRoomTurns > 0) const _TrickRoomOverlay(),
               // Weather Overlay
               WeatherOverlay(weather: battleManager.currentWeather.weather),
@@ -3428,6 +3454,11 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     if (_isSwitchDialogShowing) return;
     if (_isHandlingBattleEnd) return; // FIX: Prevent duplicate execution
     _isHandlingBattleEnd = true;
+
+    // Start fading out the battle music
+    AudioService.instance.fadeOutMusic(
+      duration: const Duration(milliseconds: 2000),
+    );
 
     // Add delay to allow reading the final log message (shorter for fleeing)
     final delayMs = battleManager.result == BattleResult.fled ? 1000 : 2500;
