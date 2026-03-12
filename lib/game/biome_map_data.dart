@@ -51,6 +51,9 @@ class TileDefinition {
   final String symbol;
   final String layer;
 
+  final bool showInEditor;
+  final double? encounterRate;
+
   const TileDefinition({
     required this.id,
     required this.name,
@@ -59,6 +62,8 @@ class TileDefinition {
     required this.symbol,
     this.isAutotiled = false,
     this.layer = 'base',
+    this.showInEditor = true,
+    this.encounterRate,
   });
 
   bool get isWalkable {
@@ -90,6 +95,10 @@ class TileDefinition {
       symbol: json['symbol'] ?? json['id'][0].toUpperCase(),
       isAutotiled: json['isAutotiled'] ?? false,
       layer: json['layer'] ?? 'base',
+      showInEditor: json['showInEditor'] ?? true,
+      encounterRate: json['encounterRate'] != null
+          ? (json['encounterRate'] as num).toDouble()
+          : null,
     );
   }
 }
@@ -119,10 +128,15 @@ class BiomeConfig {
     Map<String, TileDefinition> allTiles,
   ) {
     final Map<String, TileDefinition> biomeTiles = {};
-    for (String tileId in json['tiles']) {
-      if (allTiles.containsKey(tileId)) {
-        biomeTiles[tileId] = allTiles[tileId]!;
+    if (json['tiles'] != null && (json['tiles'] as List).isNotEmpty) {
+      for (String tileId in json['tiles']) {
+        if (allTiles.containsKey(tileId)) {
+          biomeTiles[tileId] = allTiles[tileId]!;
+        }
       }
+    } else {
+      // Default: include all tiles
+      biomeTiles.addAll(allTiles);
     }
     Point<int>? spawn;
     if (json['spawnPoint'] != null) {
@@ -236,6 +250,8 @@ class MapTile {
 
   bool get hasEncounter => definition.hasEncounter;
 
+  double? get encounterRate => definition.encounterRate;
+
   MapTile copyWith({
     String? tileId,
     BiomeConfig? config,
@@ -342,6 +358,13 @@ class MapStringParser {
       final walkValues = walkLines?[r].split(',');
 
       for (int c = 0; c < width; c++) {
+        bool? walkOverride;
+        if (walkValues != null && c < walkValues.length) {
+          final val = walkValues[c].trim();
+          if (val == '1') walkOverride = true;
+          if (val == '0') walkOverride = false;
+        }
+
         // Base layer
         if (c < baseTiles.length) {
           final tileId = baseTiles[c].trim();
@@ -349,13 +372,6 @@ class MapStringParser {
               config.tiles[tileId] ??
               BiomeDataManager.allTiles[tileId] ??
               config.tiles[config.defaultTileId]!;
-
-          bool? walkOverride;
-          if (walkValues != null && c < walkValues.length) {
-            final val = walkValues[c].trim();
-            if (val == '1') walkOverride = true;
-            if (val == '0') walkOverride = false;
-          }
 
           grid[r][c] = MapTile(
             tileId: def.id,
@@ -373,7 +389,11 @@ class MapStringParser {
             final def =
                 config.tiles[tileId] ?? BiomeDataManager.allTiles[tileId];
             if (def != null) {
-              overlayGrid[r][c] = MapTile(tileId: def.id, config: config);
+              overlayGrid[r][c] = MapTile(
+                tileId: def.id,
+                config: config,
+                walkabilityOverride: walkOverride,
+              );
             }
           }
         }
@@ -576,14 +596,14 @@ class BiomeMapGenerator {
       }
     }
 
-    // ── 6. Border – ring the map edges with trees ──
+    // ── 6. Border – ring the map edges with solid border tiles ──
     for (int r = 0; r < height; r++) {
-      setTile(r, 0, MapTile(tileId: 'tree', config: config));
-      setTile(r, width - 1, MapTile(tileId: 'tree', config: config));
+      setTile(r, 0, MapTile(tileId: 'border', config: config));
+      setTile(r, width - 1, MapTile(tileId: 'border', config: config));
     }
     for (int c = 0; c < width; c++) {
-      setTile(0, c, MapTile(tileId: 'tree', config: config));
-      setTile(height - 1, c, MapTile(tileId: 'tree', config: config));
+      setTile(0, c, MapTile(tileId: 'border', config: config));
+      setTile(height - 1, c, MapTile(tileId: 'border', config: config));
     }
 
     return BiomeMapData(

@@ -72,13 +72,15 @@ class _MapEditorState extends State<MapEditor> {
   bool _showGrid = true;
   bool _autoBase = true;
   String _hoverInfo = '';
+  bool?
+  _dragWalkValue; // Store the target walkability for the current drag stroke
 
   // Biome context
   late String _biomeId;
   late BiomeConfig _biomeConfig;
   late List<String> _baseTiles;
   late List<String> _overlayTiles;
-  String _borderTile = 'tree';
+  // String _borderTile = 'tree'; // REMOVED - using 'border' literal or per-tile config
 
   // Undo/Redo
   final List<_EditorSnapshot> _undoStack = [];
@@ -101,6 +103,7 @@ class _MapEditorState extends State<MapEditor> {
     _baseTiles = [];
     _overlayTiles = [];
     for (final entry in _biomeConfig.tiles.entries) {
+      if (!entry.value.showInEditor) continue;
       if (entry.value.layer == 'overlay') {
         _overlayTiles.add(entry.key);
       } else {
@@ -108,11 +111,7 @@ class _MapEditorState extends State<MapEditor> {
       }
     }
 
-    // Determine the border tile (first solid/overlay tile, or 'tree')
-    _borderTile = _overlayTiles.firstWhere(
-      (t) => _biomeConfig.tiles[t]?.category == TileCategory.solid,
-      orElse: () => 'tree',
-    );
+    // Determine the border tile (removed field, using 'border' literally)
 
     _selectedTile = _biomeConfig.defaultTileId.isNotEmpty
         ? _biomeConfig.defaultTileId
@@ -149,21 +148,21 @@ class _MapEditorState extends State<MapEditor> {
     for (int c = 0; c < _cols; c++) {
       // Top row
       _grid[0][c] = _biomeConfig.defaultTileId;
-      _overlayGrid[0][c] = _borderTile;
+      _overlayGrid[0][c] = 'border';
       _isWalkable[0][c] = false;
       // Bottom row
       _grid[_rows - 1][c] = _biomeConfig.defaultTileId;
-      _overlayGrid[_rows - 1][c] = _borderTile;
+      _overlayGrid[_rows - 1][c] = 'border';
       _isWalkable[_rows - 1][c] = false;
     }
     for (int r = 0; r < _rows; r++) {
       // Left col
       _grid[r][0] = _biomeConfig.defaultTileId;
-      _overlayGrid[r][0] = _borderTile;
+      _overlayGrid[r][0] = 'border';
       _isWalkable[r][0] = false;
       // Right col
       _grid[r][_cols - 1] = _biomeConfig.defaultTileId;
-      _overlayGrid[r][_cols - 1] = _borderTile;
+      _overlayGrid[r][_cols - 1] = 'border';
       _isWalkable[r][_cols - 1] = false;
     }
   }
@@ -431,9 +430,16 @@ class _MapEditorState extends State<MapEditor> {
         if (isStart) _handleEyedropper(r, c);
         break;
       case EditorMode.walkability:
-        if (isStart) {
-          if (!_isBorderCell(r, c)) {
-            setState(() => _isWalkable[r][c] = !_isWalkable[r][c]);
+        if (!_isBorderCell(r, c)) {
+          if (isStart) {
+            // Toggle the first tile and set the drag value for subsequent tiles in this stroke
+            _dragWalkValue = !_isWalkable[r][c];
+            setState(() => _isWalkable[r][c] = _dragWalkValue!);
+          } else if (_dragWalkValue != null) {
+            // Continue applying the same value throughout the drag
+            if (_isWalkable[r][c] != _dragWalkValue) {
+              setState(() => _isWalkable[r][c] = _dragWalkValue!);
+            }
           }
         }
         break;
@@ -456,6 +462,7 @@ class _MapEditorState extends State<MapEditor> {
       _pushUndo();
       _saveToPrefs();
     }
+    _dragWalkValue = null; // Reset drag state
   }
 
   // ── Export: maps.json-compatible format ─────────────────────────
@@ -465,6 +472,9 @@ class _MapEditorState extends State<MapEditor> {
         "base": _grid.map((row) => row.join(',')).toList(),
         "overlay": _overlayGrid
             .map((row) => row.map((e) => e ?? 'null').join(','))
+            .toList(),
+        "walkability": _isWalkable
+            .map((row) => row.map((w) => w ? '1' : '0').join(','))
             .toList(),
       },
       "spawnPoint": {"x": _spawnC, "y": _spawnR},
@@ -1084,6 +1094,39 @@ class _EditorGridPainter extends CustomPainter {
         if (overlayId != null) {
           _drawTileAsset(canvas, rect, overlayId);
         }
+      }
+    }
+
+    // Grid lines - MOVED HERE to show above textures
+    if (showGrid) {
+      final paint = Paint()
+        ..color = Colors.white.withOpacity(0.2)
+        ..strokeWidth = 1.0;
+      for (int i = 0; i <= cols; i++) {
+        canvas.drawLine(
+          Offset(i * cellSize, 0),
+          Offset(i * cellSize, rows * cellSize),
+          paint,
+        );
+      }
+      for (int i = 0; i <= rows; i++) {
+        canvas.drawLine(
+          Offset(0, i * cellSize),
+          Offset(cols * cellSize, i * cellSize),
+          paint,
+        );
+      }
+    }
+
+    // Overlays (Walkability, Spawn) - should be top-most
+    for (int r = 0; r < rows; r++) {
+      for (int c = 0; c < cols; c++) {
+        final rect = Rect.fromLTWH(
+          c * cellSize,
+          r * cellSize,
+          cellSize,
+          cellSize,
+        );
 
         // 3. Walkability overlay
         if (mode == EditorMode.walkability) {

@@ -78,7 +78,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   // ── Animation & Physics ──
   int _stepCount = 0;
   late Ticker _ticker;
-  double _stepDistanceAccumulator = 0;
+  // double _stepDistanceAccumulator = 0; // REMOVED
 
   // ── Camera ──
   double _cameraX = 0;
@@ -94,6 +94,13 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   final Map<String, List<ui.Image>> _playerSprites = {};
 
   final Set<String> _activeDirections = {};
+
+  // ── Grid Movement ──
+  bool _isMovingToTarget = false;
+  double _targetX = 0;
+  double _targetY = 0;
+  String? _queuedDirection;
+  Duration? _directionHoldStart;
 
   @override
   void initState() {
@@ -148,9 +155,10 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
   void _onTick(Duration elapsed) {
     if (_encounterActive) {
-      // Force stop player when encounter begins
+      // Force stop player
       _velX = 0;
       _velY = 0;
+      _isMovingToTarget = false;
       _walkFrame = 0;
       _walkAnimAccumulator = 0.0;
       // We still update camera if not panning
@@ -159,82 +167,125 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       return;
     }
 
-    // Handle movement based on DPad
-    double vx = 0;
-    double vy = 0;
-    if (_activeDirections.isNotEmpty) {
-      // Prioritize the last pressed direction
-      final dir = _activeDirections.last;
-      _playerDirection = dir;
-      if (dir == 'up') {
-        vy = -1.0;
-      } else if (dir == 'down') {
-        vy = 1.0;
-      } else if (dir == 'left') {
-        vx = -1.0;
-      } else if (dir == 'right') {
-        vx = 1.0;
-      }
-    }
-    _velX = vx;
-    _velY = vy;
-
-    if (_velX == 0 && _velY == 0) {
-      // Always ensure camera follows if not panning (even if stopped)
-      if (!_isPanning) {
-        _scrollToPlayer(insideSetState: true);
-      }
-      // Reset walk animation when stopped
-      if (_walkFrame != 0) {
-        setState(() {
-          _walkFrame = 0;
-          _walkAnimAccumulator = 0.0;
-        });
-      } else {
-        setState(() {});
-      }
+    if (_isMovingToTarget) {
+      _moveTowardsTarget();
       return;
     }
 
-    const double speed = 5.0; // Snappier speed
-    final nextX = _playerX + _velX * speed;
-    final nextY = _playerY + _velY * speed;
+    // Handle movement initiation
+    if (_activeDirections.isNotEmpty || _queuedDirection != null) {
+      final dir = _queuedDirection ?? _activeDirections.last;
+      _queuedDirection = null;
 
-    // Discrete 4-way collision
-    bool canMove = _canWalkAt(nextX, nextY);
-
-    setState(() {
-      if (canMove) {
-        _playerX = nextX;
-        _playerY = nextY;
+      // Tap-to-turn: If new direction, set it and start hold timer
+      if (dir != _playerDirection) {
+        _directionHoldStart = elapsed;
+        setState(() {
+          _playerDirection = dir;
+          _walkFrame = 0;
+        });
+        return; // Wait for hold to step
       }
 
-      // Handle walk animation Accumulator
-      const double dist = speed;
-
-      _walkAnimAccumulator += dist;
-      if (_walkAnimAccumulator >= tileSize / 2) {
-        _walkAnimAccumulator -= tileSize / 2;
-        // Cycle: 1 -> 2 -> 1 (frame 0 is idle)
-        _walkFrame = (_walkFrame == 1) ? 2 : 1;
+      // If already facing the direction, check if we should initiate move
+      if (_directionHoldStart == null) {
+        // Fresh touch on same direction -> move immediately
+        _directionHoldStart = elapsed;
+        _initiateMove(dir);
+      } else {
+        // Continuous hold
+        final holdTime = elapsed - _directionHoldStart!;
+        if (holdTime.inMilliseconds > 100) {
+          _initiateMove(dir);
+        }
       }
+    } else {
+      // No active directions
+      _directionHoldStart = null;
+    }
+  }
 
-      _stepDistanceAccumulator += dist;
-      if (_stepDistanceAccumulator >= tileSize) {
-        _stepDistanceAccumulator -= tileSize;
+  void _initiateMove(String direction) {
+    double vx = 0;
+    double vy = 0;
+    if (direction == 'up')
+      vy = -1;
+    else if (direction == 'down')
+      vy = 1;
+    else if (direction == 'left')
+      vx = -1;
+    else if (direction == 'right')
+      vx = 1;
+
+    final double nextX = _playerX + vx * tileSize;
+    final double nextY = _playerY + vy * tileSize;
+
+    if (_canWalkAt(nextX, nextY)) {
+      setState(() {
+        _isMovingToTarget = true;
+        _targetX = nextX;
+        _targetY = nextY;
+        _playerDirection = direction;
+        _velX = vx;
+        _velY = vy;
+      });
+    } else {
+      setState(() {
+        _playerDirection = direction;
+        _velX = 0;
+        _velY = 0;
+      });
+    }
+  }
+
+  void _moveTowardsTarget() {
+    final double speed = _isRunning ? 8.0 : 4.0; // Px per frame
+    double dx = _targetX - _playerX;
+    double dy = _targetY - _playerY;
+    double dist = sqrt(dx * dx + dy * dy);
+
+    if (dist <= speed) {
+      // Reached target
+      setState(() {
+        _playerX = _targetX;
+        _playerY = _targetY;
+        _isMovingToTarget = false;
+        _velX = 0;
+        _velY = 0;
+        _walkFrame = 0; // Reset to idle frame
+
+        // Check encounter and count step exactly on tile
         _stepCount++;
         _checkStepEncounter(
           ((_playerY + tileSize / 2) / tileSize).floor(),
           ((_playerX + tileSize / 2) / tileSize).floor(),
         );
-      }
 
-      if (!_isPanning) {
-        _scrollToPlayer(insideSetState: true);
-      }
-    });
+        if (!_isPanning) {
+          _scrollToPlayer(insideSetState: true);
+        }
+      });
+    } else {
+      // Move closer
+      setState(() {
+        _playerX += _velX * speed;
+        _playerY += _velY * speed;
+
+        // Walk animation
+        _walkAnimAccumulator += speed;
+        if (_walkAnimAccumulator >= tileSize / 2) {
+          _walkAnimAccumulator -= tileSize / 2;
+          _walkFrame = (_walkFrame == 1) ? 2 : 1;
+        }
+
+        if (!_isPanning) {
+          _scrollToPlayer(insideSetState: true);
+        }
+      });
+    }
   }
 
+  // ── Collision ──
   bool _canWalkAt(double x, double y) {
     const margin = 10.0;
     final corners = [
@@ -255,7 +306,16 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       final baseTile = _mapData.grid[r][c];
       final overlayTile = _mapData.overlayGrid?[r][c];
 
-      bool walkable = baseTile.isWalkable && (overlayTile?.isWalkable ?? true);
+      // Prioritize explicit walkability overrides from the map data
+      // If either layer has an override, it's a cell-wide permission
+      bool walkable;
+      if (baseTile.walkabilityOverride != null) {
+        walkable = baseTile.walkabilityOverride!;
+      } else {
+        // Fallback to inherent tile solidity
+        walkable = baseTile.isWalkable && (overlayTile?.isWalkable ?? true);
+      }
+
       if (!walkable) return false;
     }
     return true;
@@ -272,8 +332,10 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         : baseTile;
 
     if (activeTile.hasEncounter) {
+      final double rate = activeTile.encounterRate ?? 0.40;
+
       final roll = Random().nextDouble();
-      if (roll < 0.40) {
+      if (roll < rate) {
         setState(() {
           _encounterActive = true;
           _velX = 0;
@@ -548,6 +610,8 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
             _buildWeatherChip(weather),
             // Step counter
             _buildStepCounter(),
+            // Run Button
+            _buildRunButton(),
             // D-Pad
             _buildDPad(),
           ],
@@ -604,89 +668,207 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   }
 
   Widget _buildDPad() {
-    const double btnSize = 60.0;
-    const double spacing = 10.0;
+    const double padSize = 180.0;
+    const double btnSize = 54.0;
 
     return Positioned(
       bottom: 40,
       left: 30,
-      child: GestureDetector(
-        onPanStart: (details) =>
-            _handleDPadGesture(details.localPosition, btnSize, spacing),
-        onPanUpdate: (details) =>
-            _handleDPadGesture(details.localPosition, btnSize, spacing),
-        onPanEnd: (_) {
-          setState(() {
-            _activeDirections.clear();
-          });
-        },
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Up
-            Row(
-              children: [
-                const SizedBox(width: btnSize + spacing),
-                _dpadButtonVisual('up', Icons.arrow_upward, btnSize),
-                const SizedBox(width: btnSize + spacing),
-              ],
-            ),
-            const SizedBox(height: spacing),
-            // Left, Empty, Right
-            Row(
-              children: [
-                _dpadButtonVisual('left', Icons.arrow_back, btnSize),
-                const SizedBox(width: btnSize + spacing),
-                _dpadButtonVisual('right', Icons.arrow_forward, btnSize),
-              ],
-            ),
-            const SizedBox(height: spacing),
-            // Down
-            Row(
-              children: [
-                const SizedBox(width: btnSize + spacing),
-                _dpadButtonVisual('down', Icons.arrow_downward, btnSize),
-                const SizedBox(width: btnSize + spacing),
-              ],
+      child: Container(
+        width: padSize,
+        height: padSize,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: RadialGradient(
+            colors: [
+              Colors.black.withValues(alpha: 0.6),
+              Colors.black.withValues(alpha: 0.3),
+            ],
+          ),
+          border: Border.all(
+            color: _biomeHighlightColor.withValues(alpha: 0.2),
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 15,
+              spreadRadius: 2,
             ),
           ],
+        ),
+        child: GestureDetector(
+          onPanStart: (details) =>
+              _handleDPadGesture(details.localPosition, padSize),
+          onPanUpdate: (details) =>
+              _handleDPadGesture(details.localPosition, padSize),
+          onPanEnd: (_) {
+            setState(() {
+              _activeDirections.clear();
+            });
+          },
+          child: Stack(
+            children: [
+              // Visual center
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: _biomeHighlightColor.withValues(alpha: 0.1),
+                    border: Border.all(
+                      color: _biomeHighlightColor.withValues(alpha: 0.2),
+                      width: 1,
+                    ),
+                  ),
+                ),
+              ),
+              // Directional Buttons
+              Align(
+                alignment: Alignment.topCenter,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: _dpadButtonVisual(
+                    'up',
+                    Icons.keyboard_arrow_up,
+                    btnSize,
+                  ),
+                ),
+              ),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: _dpadButtonVisual(
+                    'down',
+                    Icons.keyboard_arrow_down,
+                    btnSize,
+                  ),
+                ),
+              ),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: _dpadButtonVisual(
+                    'left',
+                    Icons.keyboard_arrow_left,
+                    btnSize,
+                  ),
+                ),
+              ),
+              Align(
+                alignment: Alignment.centerRight,
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: _dpadButtonVisual(
+                    'right',
+                    Icons.keyboard_arrow_right,
+                    btnSize,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  void _handleDPadGesture(Offset localPos, double btnSize, double spacing) {
+  Widget _buildRunButton() {
+    return Positioned(
+      bottom: 70,
+      right: 40,
+      child: GestureDetector(
+        onTapDown: (_) => setState(() => _isRunning = true),
+        onTapUp: (_) => setState(() => _isRunning = false),
+        onTapCancel: () => setState(() => _isRunning = false),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 100),
+          width: 70,
+          height: 70,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: _isRunning
+                  ? [Colors.orangeAccent, Colors.redAccent]
+                  : [
+                      Colors.black.withValues(alpha: 0.6),
+                      Colors.black.withValues(alpha: 0.4),
+                    ],
+            ),
+            border: Border.all(
+              color: _isRunning
+                  ? Colors.white
+                  : _biomeHighlightColor.withValues(alpha: 0.5),
+              width: 3,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: (_isRunning ? Colors.redAccent : Colors.black)
+                    .withValues(alpha: 0.4),
+                blurRadius: 10,
+                offset: const Offset(2, 4),
+              ),
+            ],
+          ),
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.bolt,
+                  color: _isRunning ? Colors.white : _biomeHighlightColor,
+                  size: 30,
+                ),
+                Text(
+                  'RUN',
+                  style: TextStyle(
+                    color: _isRunning ? Colors.white : _biomeHighlightColor,
+                    fontFamily: 'PressStart2P',
+                    fontSize: 7,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _handleDPadGesture(Offset localPos, double padSize) {
     String? newDir;
+    final center = padSize / 2;
+    final dx = localPos.dx - center;
+    final dy = localPos.dy - center;
+    final angle = atan2(dy, dx);
+    final dist = sqrt(dx * dx + dy * dy);
 
-    // 3x3 grid detection logic
-    // Row 0: Up is at (1, 0)
-    // Row 1: Left at (0, 1), Right at (2, 1)
-    // Row 2: Down at (1, 2)
-
-    final double gridW = btnSize * 3 + spacing * 2;
-    final double gridH = btnSize * 3 + spacing * 2;
-
-    if (localPos.dx < 0 ||
-        localPos.dx > gridW ||
-        localPos.dy < 0 ||
-        localPos.dy > gridH) {
-      if (_activeDirections.isNotEmpty) {
+    // Deadzone and outer boundaries
+    if (dist < 15) {
+      if (_activeDirections.isNotEmpty)
         setState(() => _activeDirections.clear());
-      }
       return;
     }
+    if (dist > padSize * 0.8) return; // Too far out
 
-    final int col = (localPos.dx / (btnSize + spacing)).floor().clamp(0, 2);
-    final int row = (localPos.dy / (btnSize + spacing)).floor().clamp(0, 2);
+    // Convert angle to direction
+    // Angles in radians: Right (0), Down (PI/2), Left (PI or -PI), Up (-PI/2)
+    const pi = 3.1415926535897932;
 
-    if (row == 0 && col == 1) {
-      newDir = 'up';
-    } else if (row == 1 && col == 0) {
-      newDir = 'left';
-    } else if (row == 1 && col == 2) {
+    if (angle > -pi / 4 && angle <= pi / 4) {
       newDir = 'right';
-    } else if (row == 2 && col == 1) {
+    } else if (angle > pi / 4 && angle <= 3 * pi / 4) {
       newDir = 'down';
+    } else if (angle > 3 * pi / 4 || angle <= -3 * pi / 4) {
+      newDir = 'left';
+    } else {
+      newDir = 'up';
     }
 
     if (newDir != null) {
@@ -697,34 +879,42 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
           _activeDirections.add(newDir!);
         });
       }
-    } else {
-      if (_activeDirections.isNotEmpty) {
-        setState(() => _activeDirections.clear());
-      }
     }
   }
 
   Widget _dpadButtonVisual(String direction, IconData icon, double size) {
     final bool isActive = _activeDirections.contains(direction);
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 150),
       width: size,
       height: size,
       decoration: BoxDecoration(
         color: isActive
-            ? _biomeHighlightColor.withValues(alpha: 0.4)
-            : Colors.black45,
-        borderRadius: BorderRadius.circular(10),
+            ? _biomeHighlightColor.withValues(alpha: 0.3)
+            : Colors.white.withValues(alpha: 0.05),
+        shape: BoxShape.circle,
         border: Border.all(
           color: isActive
               ? _biomeHighlightColor
-              : _biomeHighlightColor.withValues(alpha: 0.5),
-          width: isActive ? 3 : 2,
+              : _biomeHighlightColor.withValues(alpha: 0.2),
+          width: isActive ? 2.5 : 1.5,
         ),
+        boxShadow: isActive
+            ? [
+                BoxShadow(
+                  color: _biomeHighlightColor.withValues(alpha: 0.4),
+                  blurRadius: 10,
+                  spreadRadius: 1,
+                ),
+              ]
+            : [],
       ),
       child: Icon(
         icon,
-        color: isActive ? Colors.white : _biomeHighlightColor,
-        size: size * 0.6,
+        color: isActive
+            ? Colors.white
+            : _biomeHighlightColor.withValues(alpha: 0.7),
+        size: size * 0.7,
       ),
     );
   }

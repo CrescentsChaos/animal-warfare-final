@@ -37,7 +37,26 @@
         "category": "water",
         "assetPath": "assets/tiles/water.png",
         "isAutotiled": true,
-        "layer": "base"
+        "layer": "base",
+        "encounterRate": 0.1
+    },
+    {
+        "id": "pond_water",
+        "name": "Pond Water",
+        "category": "water",
+        "assetPath": "assets/tiles/pond_water.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1
+    },
+    {
+        "id": "wateredge_up",
+        "name": "Water Edge Up",
+        "category": "water",
+        "assetPath": "assets/tiles/wateredge_up.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1
     },
     {
         "id": "deep_water",
@@ -45,7 +64,8 @@
         "category": "water",
         "assetPath": "assets/tiles/swamp_water_deep.png",
         "isAutotiled": true,
-        "layer": "base"
+        "layer": "base",
+        "encounterRate": 0.1
     },
     {
         "id": "mud",
@@ -61,7 +81,8 @@
         "category": "tallGrass",
         "assetPath": "assets/tiles/tall_grass.png",
         "isAutotiled": true,
-        "layer": "overlay"
+        "layer": "overlay",
+        "encounterRate": 0.3
     },
     {
         "id": "tree",
@@ -74,8 +95,32 @@
     {
         "id": "pine_tree",
         "name": "Pine Tree",
-        "category": "decorative",
+        "category": "solid",
         "assetPath": "assets/tiles/pine_tree.png",
+        "isAutotiled": false,
+        "layer": "overlay"
+    },
+    {
+        "id": "long_vine",
+        "name": "Long Vine",
+        "category": "solid",
+        "assetPath": "assets/tiles/long_vine.png",
+        "isAutotiled": false,
+        "layer": "overlay"
+    },
+    {
+        "id": "fallen_log",
+        "name": "Fallen Log",
+        "category": "solid",
+        "assetPath": "assets/tiles/fallen_log.png",
+        "isAutotiled": false,
+        "layer": "overlay"
+    },
+    {
+        "id": "bush_grass",
+        "name": "Bush Grass",
+        "category": "solid",
+        "assetPath": "assets/tiles/bush_grass.png",
         "isAutotiled": false,
         "layer": "overlay"
     },
@@ -84,6 +129,14 @@
         "name": "Dead Tree",
         "category": "solid",
         "assetPath": "assets/tiles/swamp_dead_tree.png",
+        "isAutotiled": false,
+        "layer": "overlay"
+    },
+    {
+        "id": "floating_log",
+        "name": "Floating Log",
+        "category": "solid",
+        "assetPath": "assets/tiles/floating_log.png",
         "isAutotiled": false,
         "layer": "overlay"
     },
@@ -107,7 +160,23 @@
         "id": "lily_pad",
         "name": "Lily Pad",
         "category": "decorative",
-        "assetPath": "assets/tiles/swamp_lily_pad.png",
+        "assetPath": "assets/tiles/lilypad.png",
+        "isAutotiled": false,
+        "layer": "overlay"
+    },
+    {
+        "id": "small_lily",
+        "name": "Small Lily",
+        "category": "decorative",
+        "assetPath": "assets/tiles/small_lily.png",
+        "isAutotiled": false,
+        "layer": "overlay"
+    },
+    {
+        "id": "lilyflower",
+        "name": "Lily Flower",
+        "category": "decorative",
+        "assetPath": "assets/tiles/lilyflower.png",
         "isAutotiled": false,
         "layer": "overlay"
     },
@@ -126,5 +195,14 @@
         "assetPath": "assets/tiles/swamp_vine.png",
         "isAutotiled": false,
         "layer": "overlay"
+    },
+    {
+        "id": "border",
+        "name": "Border",
+        "category": "solid",
+        "assetPath": "assets/tiles/swamp_ground.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "showInEditor": false
     }
 ]
