@@ -10,6 +10,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:animal_warfare/models/organism.dart'; // Must import the model
 import 'biome_detail_screen.dart';
 import 'package:animal_warfare/local_auth_service.dart'; // ADDED: Import service
+import 'package:animal_warfare/game/biome_map_data.dart'; // ADDED: For TileCategory
 
 // --- Biome Spawning Logic (Uses Organism.habitat and Organism.rarity) ---
 
@@ -52,6 +53,8 @@ SpawnResult? getWeightedRandomOrganism(
   List<String> teamMoveNames = const [],
   required String currentTimeOfDay,
   String? encounterType, // e.g., 'water', 'tallgrass', 'land'
+  String? currentTileId,
+  TileCategory? currentTileCategory,
 }) {
   // Normalize the selected biome name for case-insensitive search
   final String searchBiome = biomeName.toLowerCase();
@@ -92,6 +95,42 @@ SpawnResult? getWeightedRandomOrganism(
       } else if (encounterType == 'land') {
         if (isAquatic) return false;
       }
+    }
+
+    // Tile-specific spawning
+    if (currentTileId != null &&
+        org.spawnTiles != 'any' &&
+        org.spawnTiles.isNotEmpty) {
+      final validTiles = org.spawnTiles
+          .toLowerCase()
+          .split(',')
+          .map((e) => e.trim())
+          .toList();
+      bool isMatch = false;
+
+      // Match ID
+      if (validTiles.contains(currentTileId.toLowerCase())) {
+        isMatch = true;
+      }
+
+      // Match Category
+      if (!isMatch && currentTileCategory != null) {
+        final catName = currentTileCategory
+            .toString()
+            .split('.')
+            .last
+            .toLowerCase();
+        if (validTiles.contains(catName)) {
+          isMatch = true;
+        }
+        // Handle generic 'grass' user requested
+        if (validTiles.contains('grass') &&
+            (catName == 'tallgrass' || catName == 'ground')) {
+          isMatch = true;
+        }
+      }
+
+      if (!isMatch) return false;
     }
 
     // Rarity Gates

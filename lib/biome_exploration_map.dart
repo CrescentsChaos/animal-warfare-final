@@ -20,6 +20,7 @@ import 'package:animal_warfare/local_auth_service.dart';
 import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/services/audio_service.dart';
 import 'package:animal_warfare/services/weather_service.dart';
+import 'package:animal_warfare/models/weather.dart';
 import 'package:animal_warfare/widgets/weather_overlay.dart';
 import 'package:animal_warfare/game/time_service.dart';
 import 'package:animal_warfare/widgets/game_clock_widget.dart';
@@ -76,7 +77,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   late Color _biomeHighlightColor;
 
   // ── Animation & Physics ──
-  int _stepCount = 0;
+  int _stepCount = 0; // internal counter for encounter logic
   late Ticker _ticker;
   // double _stepDistanceAccumulator = 0; // REMOVED
 
@@ -102,6 +103,19 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   bool _isRunning = false;
   String? _queuedDirection;
   Duration? _directionHoldStart;
+
+  // ── Interaction ──
+  String? _bubbleText;
+  Timer? _bubbleTimer;
+  Offset? _interactionTilePos;
+
+  // ── Swimming ──
+  bool _isSwimming = false;
+  double _swimBobTime = 0;
+  double _jumpTime = 0;
+  double _jumpOffset = 0;
+  String? _confirmationTitle;
+  VoidCallback? _onConfirm;
 
   @override
   void initState() {
@@ -168,6 +182,27 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       return;
     }
 
+    if (_isSwimming) {
+      _swimBobTime += elapsed.inMilliseconds / 1000.0;
+    }
+
+    if (_jumpTime > 0) {
+      _jumpTime -= elapsed.inMilliseconds / 1000.0;
+      if (_jumpTime < 0) {
+        _jumpTime = 0;
+      }
+      // Parabolic jump: y = 4 * height * (t/total) * (1 - t/total)
+      const double jumpDuration = 0.3;
+      const double jumpHeight = 20.0;
+      double t = (jumpDuration - _jumpTime) / jumpDuration;
+      if (t < 0) t = 0;
+      if (t > 1) t = 1;
+      _jumpOffset = -4 * jumpHeight * t * (1 - t);
+      setState(() {});
+    } else {
+      _jumpOffset = 0;
+    }
+
     if (_isMovingToTarget) {
       _moveTowardsTarget();
       return;
@@ -209,19 +244,42 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   void _initiateMove(String direction) {
     double vx = 0;
     double vy = 0;
-    if (direction == 'up')
+    if (direction == 'up') {
       vy = -1;
-    else if (direction == 'down')
+    } else if (direction == 'down') {
       vy = 1;
-    else if (direction == 'left')
+    } else if (direction == 'left') {
       vx = -1;
-    else if (direction == 'right')
+    } else if (direction == 'right') {
       vx = 1;
+    }
 
     final double nextX = _playerX + vx * tileSize;
     final double nextY = _playerY + vy * tileSize;
 
     if (_canWalkAt(nextX, nextY)) {
+      // Check for floating jump
+      final int currentR = (_playerY / tileSize).round();
+      final int currentC = (_playerX / tileSize).round();
+      final int targetR = (nextY / tileSize).round();
+      final int targetC = (nextX / tileSize).round();
+
+      final currentBase = _mapData.grid[currentR][currentC];
+      final currentOverlay = _mapData.overlayGrid?[currentR][currentC];
+      final targetBase = _mapData.grid[targetR][targetC];
+      final targetOverlay = _mapData.overlayGrid?[targetR][targetC];
+
+      final bool fromFloating =
+          currentBase.category == TileCategory.floating ||
+          currentOverlay?.category == TileCategory.floating;
+      final bool toFloating =
+          targetBase.category == TileCategory.floating ||
+          targetOverlay?.category == TileCategory.floating;
+
+      if (fromFloating || toFloating) {
+        _jumpTime = 0.3; // 300ms jump
+      }
+
       setState(() {
         _isMovingToTarget = true;
         _targetX = nextX;
@@ -307,17 +365,49 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       final baseTile = _mapData.grid[r][c];
       final overlayTile = _mapData.overlayGrid?[r][c];
 
-      // Prioritize explicit walkability overrides from the map data
-      // If either layer has an override, it's a cell-wide permission
-      bool walkable;
-      if (baseTile.walkabilityOverride != null) {
-        walkable = baseTile.walkabilityOverride!;
-      } else {
-        // Fallback to inherent tile solidity
-        walkable = baseTile.isWalkable && (overlayTile?.isWalkable ?? true);
+      final bool isWater =
+          baseTile.category == TileCategory.water ||
+          overlayTile?.category == TileCategory.water;
+      final bool isSolid =
+          baseTile.category == TileCategory.solid ||
+          overlayTile?.category == TileCategory.solid;
+      final bool isFloating =
+          baseTile.category == TileCategory.floating ||
+          overlayTile?.category == TileCategory.floating;
+      final bool isOneWay =
+          baseTile.category == TileCategory.oneway ||
+          overlayTile?.category == TileCategory.oneway;
+
+      if (isSolid) return false;
+
+      // Oneway logic: jump over from above but not from below
+      if (isOneWay) {
+        final currentR = (_playerY / tileSize).floor();
+        if (currentR > r) {
+          // Attempting to move UP onto a oneway tile
+          return false;
+        }
       }
 
-      if (!walkable) return false;
+      if (_isSwimming) {
+        // Must stay in water, but cannot swim THROUGH a lily pad (floating)
+        if (!isWater || isFloating) return false;
+      } else {
+        // If it's a floating tile, we can walk on it regardless of base tile (water)
+        if (isFloating) continue;
+
+        // Cannot enter water while walking
+        if (isWater) return false;
+
+        // Standard walkability check for land
+        bool walkable;
+        if (baseTile.walkabilityOverride != null) {
+          walkable = baseTile.walkabilityOverride!;
+        } else {
+          walkable = baseTile.isWalkable && (overlayTile?.isWalkable ?? true);
+        }
+        if (!walkable) return false;
+      }
     }
     return true;
   }
@@ -347,7 +437,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
           _walkAnimAccumulator = 0.0;
         });
 
-        _triggerEncounter(activeTile.category);
+        _triggerEncounter(activeTile);
       }
     }
   }
@@ -388,8 +478,13 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
   // Redundant _loadImage removed.
 
+  void _disposeTimers() {
+    _bubbleTimer?.cancel();
+  }
+
   @override
   void dispose() {
+    _disposeTimers();
     AudioService.instance.stopAll();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
@@ -410,7 +505,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   void _scrollToPlayer({bool insideSetState = false}) {
     if (!mounted || _viewSize == Size.zero) return;
 
-    // Target scroll position to keep player center at viewport center
+    // Snap camera to keep player centered
     double targetX = (_playerX + tileSize / 2) - (_viewSize.width / 2);
     double targetY = (_playerY + tileSize / 2) - (_viewSize.height / 2);
 
@@ -425,7 +520,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     }
   }
 
-  void _triggerEncounter(TileCategory category) {
+  void _triggerEncounter(MapTile activeTile) {
     final userState = Provider.of<UserState>(context, listen: false);
     final user = userState.currentUser;
     if (user == null) return;
@@ -442,12 +537,12 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
     // Map TileCategory to encounterType string
     String? encounterType;
-    if (category == TileCategory.water) {
+    if (activeTile.category == TileCategory.water) {
       encounterType = 'water';
-    } else if (category == TileCategory.tallGrass) {
+    } else if (activeTile.category == TileCategory.tallGrass) {
       encounterType = 'tallgrass';
-    } else if (category == TileCategory.ground ||
-        category == TileCategory.path) {
+    } else if (activeTile.category == TileCategory.ground ||
+        activeTile.category == TileCategory.path) {
       encounterType = 'land';
     }
 
@@ -461,6 +556,8 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
           .toList(),
       currentTimeOfDay: timeOfDay,
       encounterType: encounterType,
+      currentTileId: activeTile.tileId,
+      currentTileCategory: activeTile.category,
     );
 
     if (encounter != null) {
@@ -609,10 +706,15 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
             IgnorePointer(child: WeatherOverlay(weather: weather)),
             // Weather indicator chip
             _buildWeatherChip(weather),
-            // Step counter
-            _buildStepCounter(),
+            // Interaction Bubble
+            if (_bubbleText != null && _interactionTilePos != null)
+              _buildInteractionBubble(),
+            // Confirmation Dialog
+            if (_confirmationTitle != null) _buildConfirmationDialog(),
             // Run Button
             _buildRunButton(),
+            // Interact Button
+            _buildInteractButton(),
             // D-Pad
             _buildDPad(),
           ],
@@ -643,10 +745,19 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
                 _cameraX -= details.focalPointDelta.dx;
                 _cameraY -= details.focalPointDelta.dy;
 
-                // We allow panning slightly beyond bounds now if user wants infinite black,
-                // but let's keep some loose clamping or allow it for better feel.
+                // Restrict panning to player range
+                final double idealX =
+                    (_playerX + tileSize / 2) - (_viewSize.width / 2);
+                final double idealY =
+                    (_playerY + tileSize / 2) - (_viewSize.height / 2);
+                const double panRange = 200.0;
+                _cameraX = _cameraX.clamp(idealX - panRange, idealX + panRange);
+                _cameraY = _cameraY.clamp(idealY - panRange, idealY + panRange);
               });
             }
+          },
+          onScaleEnd: (details) {
+            _isPanning = false;
           },
           child: CustomPaint(
             size: viewSize,
@@ -661,6 +772,34 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
               playerDirection: _playerDirection,
               walkFrame: _walkFrame,
               playerSprites: _playerSprites,
+              isSwimming: _isSwimming,
+              bobbingOffset: _isSwimming ? (sin(_swimBobTime * 3) * 3) : 0,
+              jumpOffset: _jumpOffset,
+              isOnFloating: () {
+                // If moving, check both source and destination to keep height consistent
+                final int r1 = (_playerY / tileSize).floor();
+                final int c1 = (_playerX / tileSize).floor();
+                final int r2 = (_targetY / tileSize).floor();
+                final int c2 = (_targetX / tileSize).floor();
+
+                bool isFloat(int r, int c) {
+                  if (r < 0 ||
+                      r >= _mapData.height ||
+                      c < 0 ||
+                      c >= _mapData.width)
+                    return false;
+                  final base = _mapData.grid[r][c];
+                  final overlay = _mapData.overlayGrid?[r][c];
+                  return base.category == TileCategory.floating ||
+                      overlay?.category == TileCategory.floating;
+                }
+
+                if (_isMovingToTarget) {
+                  // If either is floating, keep the height up during the transition
+                  return isFloat(r1, c1) || isFloat(r2, c2);
+                }
+                return isFloat(r1, c1);
+              }(),
             ),
           ),
         );
@@ -669,12 +808,12 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   }
 
   Widget _buildDPad() {
-    const double padSize = 180.0;
-    const double btnSize = 54.0;
+    const double padSize = 160.0;
+    const double btnSize = 48.0;
 
     return Positioned(
-      bottom: 40,
-      left: 30,
+      bottom: 24,
+      left: 16,
       child: Container(
         width: padSize,
         height: padSize,
@@ -682,21 +821,14 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
           shape: BoxShape.circle,
           gradient: RadialGradient(
             colors: [
-              Colors.black.withValues(alpha: 0.6),
-              Colors.black.withValues(alpha: 0.3),
+              Colors.black.withValues(alpha: 0.5),
+              Colors.black.withValues(alpha: 0.2),
             ],
           ),
           border: Border.all(
-            color: _biomeHighlightColor.withValues(alpha: 0.2),
+            color: _biomeHighlightColor.withValues(alpha: 0.15),
             width: 1,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.3),
-              blurRadius: 15,
-              spreadRadius: 2,
-            ),
-          ],
         ),
         child: GestureDetector(
           onPanStart: (details) =>
@@ -713,13 +845,13 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
               // Visual center
               Center(
                 child: Container(
-                  width: 40,
-                  height: 40,
+                  width: 36,
+                  height: 36,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: _biomeHighlightColor.withValues(alpha: 0.1),
+                    color: _biomeHighlightColor.withValues(alpha: 0.08),
                     border: Border.all(
-                      color: _biomeHighlightColor.withValues(alpha: 0.2),
+                      color: _biomeHighlightColor.withValues(alpha: 0.15),
                       width: 1,
                     ),
                   ),
@@ -729,7 +861,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
               Align(
                 alignment: Alignment.topCenter,
                 child: Padding(
-                  padding: const EdgeInsets.only(top: 8),
+                  padding: const EdgeInsets.only(top: 6),
                   child: _dpadButtonVisual(
                     'up',
                     Icons.keyboard_arrow_up,
@@ -740,7 +872,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
               Align(
                 alignment: Alignment.bottomCenter,
                 child: Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.only(bottom: 6),
                   child: _dpadButtonVisual(
                     'down',
                     Icons.keyboard_arrow_down,
@@ -751,7 +883,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
               Align(
                 alignment: Alignment.centerLeft,
                 child: Padding(
-                  padding: const EdgeInsets.only(left: 8),
+                  padding: const EdgeInsets.only(left: 6),
                   child: _dpadButtonVisual(
                     'left',
                     Icons.keyboard_arrow_left,
@@ -762,7 +894,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
               Align(
                 alignment: Alignment.centerRight,
                 child: Padding(
-                  padding: const EdgeInsets.only(right: 8),
+                  padding: const EdgeInsets.only(right: 6),
                   child: _dpadButtonVisual(
                     'right',
                     Icons.keyboard_arrow_right,
@@ -779,14 +911,14 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
   Widget _buildRunButton() {
     return Positioned(
-      bottom: 70,
-      right: 40,
+      bottom: 100,
+      right: 90,
       child: GestureDetector(
         onTap: () => setState(() => _isRunning = !_isRunning),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 100),
-          width: 70,
-          height: 70,
+          width: 56,
+          height: 56,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             gradient: LinearGradient(
@@ -795,45 +927,286 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
               colors: _isRunning
                   ? [Colors.orangeAccent, Colors.redAccent]
                   : [
-                      Colors.black.withValues(alpha: 0.6),
-                      Colors.black.withValues(alpha: 0.4),
+                      Colors.black.withValues(alpha: 0.5),
+                      Colors.black.withValues(alpha: 0.3),
                     ],
             ),
             border: Border.all(
               color: _isRunning
                   ? Colors.white
-                  : _biomeHighlightColor.withValues(alpha: 0.5),
-              width: 3,
+                  : _biomeHighlightColor.withValues(alpha: 0.4),
+              width: 2.5,
             ),
-            boxShadow: [
-              BoxShadow(
-                color: (_isRunning ? Colors.redAccent : Colors.black)
-                    .withValues(alpha: 0.4),
-                blurRadius: 10,
-                offset: const Offset(2, 4),
-              ),
-            ],
           ),
           child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.bolt,
-                  color: _isRunning ? Colors.white : _biomeHighlightColor,
-                  size: 30,
-                ),
-                Text(
-                  'RUN',
-                  style: TextStyle(
-                    color: _isRunning ? Colors.white : _biomeHighlightColor,
-                    fontFamily: 'PressStart2P',
-                    fontSize: 7,
-                    fontWeight: FontWeight.bold,
-                  ),
+            child: Icon(
+              Icons.bolt,
+              color: _isRunning ? Colors.white : _biomeHighlightColor,
+              size: 26,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInteractButton() {
+    return Positioned(
+      bottom: 36,
+      right: 24,
+      child: GestureDetector(
+        onTap: _handleInteract,
+        child: Container(
+          width: 64,
+          height: 64,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.white,
+            border: Border.all(color: _biomeHighlightColor, width: 3),
+          ),
+          child: Center(
+            child: Text(
+              'A',
+              style: TextStyle(
+                color: _biomeDarkColor,
+                fontFamily: 'PressStart2P',
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _handleInteract() {
+    if (_encounterActive || _isMovingToTarget) return;
+
+    // Determine target coordinate based on facing direction
+    int targetR = (_playerY / tileSize).floor();
+    int targetC = (_playerX / tileSize).floor();
+
+    if (_playerDirection == 'up') {
+      targetR -= 1;
+    }
+    if (_playerDirection == 'down') {
+      targetR += 1;
+    }
+    if (_playerDirection == 'left') {
+      targetC -= 1;
+    }
+    if (_playerDirection == 'right') {
+      targetC += 1;
+    }
+
+    // Bounds check
+    if (targetR < 0 ||
+        targetR >= mapHeight ||
+        targetC < 0 ||
+        targetC >= mapWidth) {
+      return;
+    }
+
+    // Check overlay then base
+    final baseTileInfo = _mapData.grid[targetR][targetC];
+    final overlayTileInfo = _mapData.overlayGrid?[targetR][targetC];
+
+    final baseDef = BiomeDataManager.allTiles[baseTileInfo.tileId];
+    final overlayDef = overlayTileInfo != null
+        ? BiomeDataManager.allTiles[overlayTileInfo.tileId]
+        : null;
+
+    // Swimming interactions
+    final bool isWater =
+        baseDef?.category == TileCategory.water ||
+        overlayDef?.category == TileCategory.water;
+    final bool isLand =
+        baseDef?.category == TileCategory.ground ||
+        baseDef?.category == TileCategory.path ||
+        overlayDef?.category == TileCategory.ground ||
+        overlayDef?.category == TileCategory.path;
+
+    if (!_isSwimming && isWater) {
+      _showConfirmationDialog("Swim here?", () {
+        setState(() {
+          _isSwimming = true;
+          _jumpTime = 0.3; // Jump into water animation
+          _playerX = targetC * tileSize;
+          _playerY = targetR * tileSize;
+          _isMovingToTarget = false;
+        });
+      });
+      return;
+    } else if (_isSwimming && isLand) {
+      _showConfirmationDialog("Get out of water?", () {
+        setState(() {
+          _isSwimming = false;
+          _jumpTime = 0.3; // Jump out of water animation
+          _playerX = targetC * tileSize;
+          _playerY = targetR * tileSize;
+          _isMovingToTarget = false;
+        });
+      });
+      return;
+    } else if (_isSwimming &&
+        (baseDef?.category == TileCategory.floating ||
+            overlayDef?.category == TileCategory.floating)) {
+      _showConfirmationDialog("Jump on?", () {
+        setState(() {
+          _isSwimming = false;
+          _jumpTime = 0.3;
+          _playerX = targetC * tileSize;
+          _playerY = targetR * tileSize;
+          _isMovingToTarget = false;
+        });
+      });
+      return;
+    }
+
+    String? textToShow =
+        overlayDef?.interactionText ?? baseDef?.interactionText;
+
+    if (textToShow != null) {
+      setState(() {
+        _bubbleText = textToShow;
+        // Tile pos is targetR, targetC. We'll render it above the player or tile. Let's render above player.
+        _interactionTilePos = Offset(_playerX, _playerY - tileSize);
+      });
+
+      _bubbleTimer?.cancel();
+      _bubbleTimer = Timer(const Duration(seconds: 3), () {
+        if (mounted) {
+          setState(() {
+            _bubbleText = null;
+          });
+        }
+      });
+    }
+  }
+
+  Widget _buildInteractionBubble() {
+    if (_bubbleText == null ||
+        _interactionTilePos == null ||
+        _viewSize == Size.zero) {
+      return const SizedBox.shrink();
+    }
+
+    // Map world coords back to screen coordinates
+    double screenX = _interactionTilePos!.dx - _cameraX + tileSize / 2;
+    double screenY =
+        _interactionTilePos!.dy -
+        _cameraY -
+        10; // offset a bit above the target pos
+
+    return Positioned(
+      left: screenX - 100, // Roughly center max width 200
+      top: screenY - 50, // Height offset
+      child: IgnorePointer(
+        child: Container(
+          width: 200,
+          alignment: Alignment.bottomCenter,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.9),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: _biomeDarkColor, width: 2),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  blurRadius: 4,
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
+            child: Text(
+              _bubbleText!,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: _biomeDarkColor,
+                fontFamily: 'PressStart2P',
+                fontSize: 8,
+                height: 1.5,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showConfirmationDialog(String title, VoidCallback onConfirm) {
+    setState(() {
+      _confirmationTitle = title;
+      _onConfirm = onConfirm;
+    });
+  }
+
+  Widget _buildConfirmationDialog() {
+    return Center(
+      child: Container(
+        width: 250,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.8),
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(color: _biomeHighlightColor, width: 2),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              _confirmationTitle!,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white,
+                fontFamily: 'PressStart2P',
+                fontSize: 10,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildDialogButton("YES", () {
+                  _onConfirm?.call();
+                  setState(() {
+                    _confirmationTitle = null;
+                    _onConfirm = null;
+                  });
+                }),
+                _buildDialogButton("NO", () {
+                  setState(() {
+                    _confirmationTitle = null;
+                    _onConfirm = null;
+                  });
+                }),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDialogButton(String text, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        decoration: BoxDecoration(
+          color: _biomeDarkColor,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: _biomeHighlightColor, width: 1),
+        ),
+        child: Text(
+          text,
+          style: TextStyle(
+            color: Colors.white,
+            fontFamily: 'PressStart2P',
+            fontSize: 10,
           ),
         ),
       ),
@@ -850,8 +1223,9 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
     // Deadzone and outer boundaries
     if (dist < 15) {
-      if (_activeDirections.isNotEmpty)
+      if (_activeDirections.isNotEmpty) {
         setState(() => _activeDirections.clear());
+      }
       return;
     }
     if (dist > padSize * 0.8) return; // Too far out
@@ -870,14 +1244,12 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       newDir = 'up';
     }
 
-    if (newDir != null) {
-      if (_activeDirections.isEmpty || _activeDirections.last != newDir) {
-        setState(() {
-          _isPanning = false;
-          _activeDirections.clear();
-          _activeDirections.add(newDir!);
-        });
-      }
+    if (_activeDirections.isEmpty || _activeDirections.last != newDir) {
+      setState(() {
+        _isPanning = false;
+        _activeDirections.clear();
+        _activeDirections.add(newDir!);
+      });
     }
   }
 
@@ -994,7 +1366,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.cloud, color: _biomeHighlightColor, size: 16),
+            _getWeatherIcon(weather),
             const SizedBox(width: 6),
             Text(
               "${WeatherService().getForecast(widget.biomeName).first.temperatureCelsius.toStringAsFixed(1)}°C",
@@ -1010,35 +1382,46 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     );
   }
 
-  Widget _buildStepCounter() {
-    return Positioned(
-      top: 12,
-      left: 12,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: Colors.black54,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: _biomeHighlightColor, width: 1.5),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.directions_walk, color: _biomeHighlightColor, size: 14),
-            const SizedBox(width: 4),
-            Text(
-              '$_stepCount',
-              style: const TextStyle(
-                color: Colors.white,
-                fontFamily: 'PressStart2P',
-                fontSize: 8,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+  Widget _getWeatherIcon(Weather weather) {
+    switch (weather) {
+      case Weather.clear:
+        return const Icon(
+          Icons.wb_sunny_outlined,
+          color: Colors.yellow,
+          size: 16,
+        );
+      case Weather.rain:
+        return const Icon(Icons.umbrella, color: Colors.blue, size: 16);
+      case Weather.heavyRain:
+        return const Icon(
+          Icons.beach_access,
+          color: Colors.blueAccent,
+          size: 16,
+        );
+      case Weather.sunny:
+        return const Icon(Icons.wb_sunny, color: Colors.orange, size: 16);
+      case Weather.snowstorm:
+        return const Icon(
+          Icons.ac_unit,
+          color: Colors.lightBlueAccent,
+          size: 16,
+        );
+      case Weather.hail:
+        return const Icon(Icons.grain, color: Colors.white, size: 16);
+      case Weather.sandstorm:
+        return const Icon(Icons.waves, color: Colors.brown, size: 16);
+      case Weather.windstorm:
+        return const Icon(Icons.air, color: Colors.white70, size: 16);
+      case Weather.thunderstorm:
+        return const Icon(Icons.bolt, color: Colors.yellowAccent, size: 16);
+      case Weather.fog:
+        return const Icon(Icons.cloud_queue, color: Colors.grey, size: 16);
+      default:
+        return const Icon(Icons.wb_cloudy, color: Colors.white, size: 16);
+    }
   }
+
+  // Step counter removed per user request.
 }
 
 // ────────────────────────────────────────────────────────────────────
@@ -1056,6 +1439,10 @@ class _BiomeMapPainter extends CustomPainter {
   final String playerDirection;
   final int walkFrame;
   final Map<String, List<ui.Image>> playerSprites;
+  final bool isSwimming;
+  final double bobbingOffset;
+  final double jumpOffset;
+  final bool isOnFloating;
 
   _BiomeMapPainter({
     required this.mapData,
@@ -1068,6 +1455,10 @@ class _BiomeMapPainter extends CustomPainter {
     required this.playerDirection,
     required this.walkFrame,
     required this.playerSprites,
+    this.isSwimming = false,
+    this.bobbingOffset = 0,
+    this.jumpOffset = 0,
+    this.isOnFloating = false,
   });
 
   @override
@@ -1095,6 +1486,17 @@ class _BiomeMapPainter extends CustomPainter {
       final py = playerY + tileSize / 2;
       if (py >= r * tileSize && py < (r + 1) * tileSize) {
         _drawPlayer(canvas);
+
+        // Draw Semi-Solid OVER player
+        if (mapData.overlayGrid != null) {
+          final int playerC = (playerX / tileSize).floor();
+          if (playerC >= 0 && playerC < mapData.width) {
+            final tile = mapData.overlayGrid![r][playerC];
+            if (tile != null && tile.category == TileCategory.semiSolid) {
+              _drawTileAt(canvas, r, playerC, tile, mapData.overlayGrid!);
+            }
+          }
+        }
       }
 
       // Draw Tallgrass & other "above-player" overlays
@@ -1196,8 +1598,18 @@ class _BiomeMapPainter extends CustomPainter {
   }
 
   void _drawPlayer(Canvas canvas) {
-    final px = (playerX - cameraX) + tileSize / 2;
-    final py = (playerY - cameraY) + tileSize / 2;
+    double px = (playerX - cameraX) + tileSize / 2;
+    double py = (playerY - cameraY) + tileSize / 2;
+
+    py += jumpOffset;
+
+    if (isSwimming) {
+      py += bobbingOffset;
+    }
+
+    if (isOnFloating) {
+      py -= 11.0; // Shift up exactly 11 pixels as requested
+    }
 
     ui.Image? img;
 
@@ -1226,6 +1638,12 @@ class _BiomeMapPainter extends CustomPainter {
       final double x = px - drawW / 2;
       final double y = py - drawH / 2;
 
+      if (isSwimming) {
+        canvas.save();
+        // Submerge player
+        canvas.clipRect(Rect.fromLTWH(x, y, drawW, drawH * 0.6));
+      }
+
       final destRect = Rect.fromLTWH(x, y, drawW, drawH);
       canvas.drawImageRect(
         img,
@@ -1233,6 +1651,10 @@ class _BiomeMapPainter extends CustomPainter {
         destRect,
         Paint(),
       );
+
+      if (isSwimming) {
+        canvas.restore();
+      }
     } else {
       // Vector player
       final paint = Paint()..color = Colors.blue;
@@ -1247,6 +1669,9 @@ class _BiomeMapPainter extends CustomPainter {
         oldDelegate.cameraX != cameraX ||
         oldDelegate.cameraY != cameraY ||
         oldDelegate.walkFrame != walkFrame ||
-        oldDelegate.playerDirection != playerDirection;
+        oldDelegate.playerDirection != playerDirection ||
+        oldDelegate.isSwimming != isSwimming ||
+        oldDelegate.bobbingOffset != bobbingOffset ||
+        oldDelegate.jumpOffset != jumpOffset;
   }
 }

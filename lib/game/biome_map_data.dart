@@ -15,6 +15,9 @@ enum TileCategory {
   mud, // Slowing terrain or specific encounters
   tallGrass, // Ambush/encounter zones
   decorative, // Non-blocking visual flair (flowers, lily pads)
+  semiSolid, // Renders over the player when they are on it
+  floating, // Triggers a jump animation when moved onto
+  oneway, // Directional blocking (e.g., jump down only)
 }
 
 extension TileCategoryExtension on TileCategory {
@@ -34,6 +37,12 @@ extension TileCategoryExtension on TileCategory {
         return TileCategory.tallGrass;
       case 'decorative':
         return TileCategory.decorative;
+      case 'semiSolid':
+        return TileCategory.semiSolid;
+      case 'floating':
+        return TileCategory.floating;
+      case 'oneway':
+        return TileCategory.oneway;
       default:
         return TileCategory.ground;
     }
@@ -53,6 +62,8 @@ class TileDefinition {
 
   final bool showInEditor;
   final double? encounterRate;
+  final String biome;
+  final String? interactionText;
 
   const TileDefinition({
     required this.id,
@@ -64,12 +75,14 @@ class TileDefinition {
     this.layer = 'base',
     this.showInEditor = true,
     this.encounterRate,
+    this.biome = 'any',
+    this.interactionText,
   });
 
   bool get isWalkable {
     switch (category) {
       case TileCategory.solid:
-      case TileCategory.water: // Assuming water is unwalkable for now
+      case TileCategory.water:
         return false;
       default:
         return true;
@@ -99,6 +112,8 @@ class TileDefinition {
       encounterRate: json['encounterRate'] != null
           ? (json['encounterRate'] as num).toDouble()
           : null,
+      biome: json['biome'] ?? 'any',
+      interactionText: json['interactionText'],
     );
   }
 }

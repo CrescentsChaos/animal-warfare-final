@@ -93,6 +93,10 @@ class _MapEditorState extends State<MapEditor> {
   // Palette
   bool _isPaletteExpanded = true;
 
+  // Title Search
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
   @override
   void initState() {
     super.initState();
@@ -881,7 +885,7 @@ class _MapEditorState extends State<MapEditor> {
   Widget _buildPalette() {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
-      height: _isPaletteExpanded ? 220 : 56,
+      height: _isPaletteExpanded ? 260 : 56,
       decoration: const BoxDecoration(
         color: Color(0xFF16213E),
         border: Border(top: BorderSide(color: Colors.white10)),
@@ -920,30 +924,104 @@ class _MapEditorState extends State<MapEditor> {
               ),
             ),
           ),
-          if (_isPaletteExpanded)
+          if (_isPaletteExpanded) ...[
+            Padding(
+              padding: const EdgeInsets.fromLTRB(10, 8, 10, 0),
+              child: SizedBox(
+                height: 32,
+                child: TextField(
+                  controller: _searchController,
+                  style: const TextStyle(color: Colors.white, fontSize: 12),
+                  decoration: InputDecoration(
+                    hintText: 'Search tiles...',
+                    hintStyle: const TextStyle(color: Colors.white38),
+                    prefixIcon: const Icon(
+                      Icons.search,
+                      color: Colors.white38,
+                      size: 16,
+                    ),
+                    suffixIcon: _searchQuery.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(
+                              Icons.clear,
+                              color: Colors.white38,
+                              size: 16,
+                            ),
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() => _searchQuery = '');
+                            },
+                          )
+                        : null,
+                    filled: true,
+                    fillColor: Colors.white.withOpacity(0.05),
+                    contentPadding: const EdgeInsets.symmetric(
+                      vertical: 0,
+                      horizontal: 10,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                  onChanged: (val) {
+                    setState(() {
+                      _searchQuery = val.toLowerCase();
+                    });
+                  },
+                ),
+              ),
+            ),
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.all(10),
                 children: [
-                  _buildTileSection('BASE LAYER', _baseTiles),
+                  _buildTileSection(
+                    'BASE LAYER',
+                    _getFilteredTiles(_baseTiles),
+                  ),
                   const SizedBox(height: 12),
-                  _buildTileSection('OVERLAY LAYER', _overlayTiles),
+                  _buildTileSection(
+                    'OVERLAY LAYER',
+                    _getFilteredTiles(_overlayTiles),
+                  ),
                 ],
               ),
-            )
-          else
+            ),
+          ] else
             Expanded(
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                children: [..._baseTiles, ..._overlayTiles].map((tileId) {
-                  return _buildTileChip(tileId, compact: true);
-                }).toList(),
+                children:
+                    [
+                      ..._getFilteredTiles(_baseTiles),
+                      ..._getFilteredTiles(_overlayTiles),
+                    ].map((tileId) {
+                      return _buildTileChip(tileId, compact: true);
+                    }).toList(),
               ),
             ),
         ],
       ),
     );
+  }
+
+  List<String> _getFilteredTiles(List<String> tiles) {
+    if (_searchQuery.isEmpty) return tiles;
+    return tiles.where((tileId) {
+      final def = BiomeDataManager.allTiles[tileId];
+      if (def == null) return false;
+      return def.name.toLowerCase().contains(_searchQuery) ||
+          def.id.toLowerCase().contains(_searchQuery) ||
+          def.category.name.toLowerCase().contains(_searchQuery) ||
+          def.biome.toLowerCase().contains(_searchQuery);
+    }).toList();
+  }
+
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Widget _buildTileSection(String label, List<String> tiles) {

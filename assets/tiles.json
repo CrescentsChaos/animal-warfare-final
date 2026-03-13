@@ -5,7 +5,8 @@
         "category": "ground",
         "assetPath": "assets/tiles/ground.png",
         "isAutotiled": true,
-        "layer": "base"
+        "layer": "base",
+        "biome": "any"
     },
     {
         "id": "fallen_leaves",
@@ -13,7 +14,8 @@
         "category": "decorative",
         "assetPath": "assets/tiles/fallen_leaves.png",
         "isAutotiled": true,
-        "layer": "overlay"
+        "layer": "overlay",
+        "biome": "any"
     },
     {
         "id": "swamp_ground",
@@ -21,7 +23,8 @@
         "category": "ground",
         "assetPath": "assets/tiles/swamp_ground.png",
         "isAutotiled": true,
-        "layer": "base"
+        "layer": "base",
+        "biome": "swamp"
     },
     {
         "id": "path",
@@ -29,7 +32,8 @@
         "category": "path",
         "assetPath": "assets/tiles/swamp_path.png",
         "isAutotiled": true,
-        "layer": "base"
+        "layer": "base",
+        "biome": "swamp"
     },
     {
         "id": "water",
@@ -38,7 +42,8 @@
         "assetPath": "assets/tiles/water.png",
         "isAutotiled": true,
         "layer": "base",
-        "encounterRate": 0.1
+        "encounterRate": 0.1,
+        "biome": "any"
     },
     {
         "id": "pond_water",
@@ -47,7 +52,8 @@
         "assetPath": "assets/tiles/pond_water.png",
         "isAutotiled": true,
         "layer": "base",
-        "encounterRate": 0.1
+        "encounterRate": 0.1,
+        "biome": "swamp"
     },
     {
         "id": "dw_pond",
@@ -56,7 +62,8 @@
         "assetPath": "assets/tiles/dw_pond.png",
         "isAutotiled": true,
         "layer": "base",
-        "encounterRate": 0.1
+        "encounterRate": 0.1,
+        "biome": "swamp"
     },
     {
         "id": "dw_pond_we",
@@ -65,7 +72,8 @@
         "assetPath": "assets/tiles/dw_pond_we.png",
         "isAutotiled": true,
         "layer": "base",
-        "encounterRate": 0.1
+        "encounterRate": 0.1,
+        "biome": "swamp"
     },
     {
         "id": "dw_pond_we_2",
@@ -74,7 +82,8 @@
         "assetPath": "assets/tiles/dw_pond_we_2.png",
         "isAutotiled": true,
         "layer": "base",
-        "encounterRate": 0.1
+        "encounterRate": 0.1,
+        "biome": "swamp"
     },
     {
         "id": "dw_pond_we_1",
@@ -83,7 +92,8 @@
         "assetPath": "assets/tiles/dw_pond_we_1.png",
         "isAutotiled": true,
         "layer": "base",
-        "encounterRate": 0.1
+        "encounterRate": 0.1,
+        "biome": "swamp"
     },
     {
         "id": "dw_pond_we_3",
@@ -92,7 +102,8 @@
         "assetPath": "assets/tiles/dw_pond_we_3.png",
         "isAutotiled": true,
         "layer": "base",
-        "encounterRate": 0.1
+        "encounterRate": 0.1,
+        "biome": "swamp"
     },
     {
         "id": "dw_pond_corner_1",
@@ -101,7 +112,8 @@
         "assetPath": "assets/tiles/dw_pond_corner_1.png",
         "isAutotiled": true,
         "layer": "base",
-        "encounterRate": 0.1
+        "encounterRate": 0.1,
+        "biome": "swamp"
     },
     {
         "id": "dw_pond_corner_2",
@@ -110,7 +122,8 @@
         "assetPath": "assets/tiles/dw_pond_corner_2.png",
         "isAutotiled": true,
         "layer": "base",
-        "encounterRate": 0.1
+        "encounterRate": 0.1,
+        "biome": "swamp"
     },
     {
         "id": "dw_pond_corner_3",
@@ -119,7 +132,8 @@
         "assetPath": "assets/tiles/dw_pond_corner_3.png",
         "isAutotiled": true,
         "layer": "base",
-        "encounterRate": 0.1
+        "encounterRate": 0.1,
+        "biome": "swamp"
     },
     {
         "id": "dw_pond_corner_4",
@@ -128,7 +142,8 @@
         "assetPath": "assets/tiles/dw_pond_corner_4.png",
         "isAutotiled": true,
         "layer": "base",
-        "encounterRate": 0.1
+        "encounterRate": 0.1,
+        "biome": "swamp"
     },
     {
         "id": "dw_pond_bump_1",
@@ -137,7 +152,8 @@
         "assetPath": "assets/tiles/dw_pond_bump_1.png",
         "isAutotiled": true,
         "layer": "base",
-        "encounterRate": 0.1
+        "encounterRate": 0.1,
+        "biome": "swamp"
     },
     {
         "id": "dw_pond_bump_2",
@@ -146,7 +162,8 @@
         "assetPath": "assets/tiles/dw_pond_bump_2.png",
         "isAutotiled": true,
         "layer": "base",
-        "encounterRate": 0.1
+        "encounterRate": 0.1,
+        "biome": "swamp"
     },
     {
         "id": "dw_pond_bump_3",
@@ -155,7 +172,8 @@
         "assetPath": "assets/tiles/dw_pond_bump_3.png",
         "isAutotiled": true,
         "layer": "base",
-        "encounterRate": 0.1
+        "encounterRate": 0.1,
+        "biome": "swamp"
     },
     {
         "id": "dw_pond_bump_4",
@@ -164,7 +182,8 @@
         "assetPath": "assets/tiles/dw_pond_bump_4.png",
         "isAutotiled": true,
         "layer": "base",
-        "encounterRate": 0.1
+        "encounterRate": 0.1,
+        "biome": "swamp"
     },
     {
         "id": "pond_bump_1",
@@ -173,7 +192,8 @@
         "assetPath": "assets/tiles/pond_bump_1.png",
         "isAutotiled": true,
         "layer": "base",
-        "encounterRate": 0.1
+        "encounterRate": 0.1,
+        "biome": "swamp"
     },
     {
         "id": "pond_bump_2",
@@ -182,7 +202,8 @@
         "assetPath": "assets/tiles/pond_bump_2.png",
         "isAutotiled": true,
         "layer": "base",
-        "encounterRate": 0.1
+        "encounterRate": 0.1,
+        "biome": "swamp"
     },
     {
         "id": "pond_bump_3",
@@ -191,7 +212,8 @@
         "assetPath": "assets/tiles/pond_bump_3.png",
         "isAutotiled": true,
         "layer": "base",
-        "encounterRate": 0.1
+        "encounterRate": 0.1,
+        "biome": "swamp"
     },
     {
         "id": "pond_bump_4",
@@ -200,7 +222,8 @@
         "assetPath": "assets/tiles/pond_bump_4.png",
         "isAutotiled": true,
         "layer": "base",
-        "encounterRate": 0.1
+        "encounterRate": 0.1,
+        "biome": "swamp"
     },
     {
         "id": "pond_we",
@@ -209,7 +232,8 @@
         "assetPath": "assets/tiles/pond_we.png",
         "isAutotiled": true,
         "layer": "base",
-        "encounterRate": 0.1
+        "encounterRate": 0.1,
+        "biome": "swamp"
     },
     {
         "id": "pond_we_1",
@@ -218,7 +242,8 @@
         "assetPath": "assets/tiles/pond_we_1.png",
         "isAutotiled": true,
         "layer": "base",
-        "encounterRate": 0.1
+        "encounterRate": 0.1,
+        "biome": "swamp"
     },
     {
         "id": "pond_we_2",
@@ -227,7 +252,8 @@
         "assetPath": "assets/tiles/pond_we_2.png",
         "isAutotiled": true,
         "layer": "base",
-        "encounterRate": 0.1
+        "encounterRate": 0.1,
+        "biome": "swamp"
     },
     {
         "id": "pond_we_3",
@@ -236,7 +262,8 @@
         "assetPath": "assets/tiles/pond_we_3.png",
         "isAutotiled": true,
         "layer": "base",
-        "encounterRate": 0.1
+        "encounterRate": 0.1,
+        "biome": "swamp"
     },
     {
         "id": "pond_corner_1",
@@ -245,7 +272,8 @@
         "assetPath": "assets/tiles/pond_corner_1.png",
         "isAutotiled": true,
         "layer": "base",
-        "encounterRate": 0.1
+        "encounterRate": 0.1,
+        "biome": "swamp"
     },
     {
         "id": "pond_corner_2",
@@ -254,7 +282,8 @@
         "assetPath": "assets/tiles/pond_corner_2.png",
         "isAutotiled": true,
         "layer": "base",
-        "encounterRate": 0.1
+        "encounterRate": 0.1,
+        "biome": "swamp"
     },
     {
         "id": "pond_corner_3",
@@ -263,7 +292,8 @@
         "assetPath": "assets/tiles/pond_corner_3.png",
         "isAutotiled": true,
         "layer": "base",
-        "encounterRate": 0.1
+        "encounterRate": 0.1,
+        "biome": "swamp"
     },
     {
         "id": "pond_corner_4",
@@ -272,7 +302,8 @@
         "assetPath": "assets/tiles/pond_corner_4.png",
         "isAutotiled": true,
         "layer": "base",
-        "encounterRate": 0.1
+        "encounterRate": 0.1,
+        "biome": "swamp"
     },
     {
         "id": "wateredge_up",
@@ -281,7 +312,8 @@
         "assetPath": "assets/tiles/wateredge_up.png",
         "isAutotiled": true,
         "layer": "base",
-        "encounterRate": 0.1
+        "encounterRate": 0.1,
+        "biome": "any"
     },
     {
         "id": "deep_water",
@@ -290,7 +322,8 @@
         "assetPath": "assets/tiles/swamp_water_deep.png",
         "isAutotiled": true,
         "layer": "base",
-        "encounterRate": 0.1
+        "encounterRate": 0.1,
+        "biome": "swamp"
     },
     {
         "id": "mud",
@@ -298,7 +331,8 @@
         "category": "mud",
         "assetPath": "assets/tiles/swamp_mud.png",
         "isAutotiled": true,
-        "layer": "base"
+        "layer": "base",
+        "biome": "swamp"
     },
     {
         "id": "tall_grass",
@@ -307,7 +341,8 @@
         "assetPath": "assets/tiles/tall_grass.png",
         "isAutotiled": true,
         "layer": "overlay",
-        "encounterRate": 0.3
+        "encounterRate": 0.3,
+        "biome": "any"
     },
     {
         "id": "tree",
@@ -315,7 +350,9 @@
         "category": "solid",
         "assetPath": "assets/tiles/swamp_tree.png",
         "isAutotiled": false,
-        "layer": "overlay"
+        "layer": "overlay",
+        "biome": "swamp",
+        "interactionText": "It's a tree."
     },
     {
         "id": "pine_tree",
@@ -323,23 +360,28 @@
         "category": "solid",
         "assetPath": "assets/tiles/pine_tree.png",
         "isAutotiled": false,
-        "layer": "overlay"
+        "layer": "overlay",
+        "biome": "any",
+        "interactionText": "It's a tall pine tree."
     },
     {
         "id": "long_vine",
         "name": "Long Vine",
-        "category": "solid",
+        "category": "semiSolid",
         "assetPath": "assets/tiles/long_vine.png",
         "isAutotiled": false,
-        "layer": "overlay"
+        "layer": "overlay",
+        "biome": "swamp"
     },
     {
         "id": "fallen_log",
         "name": "Fallen Log",
-        "category": "solid",
+        "category": "oneway",
         "assetPath": "assets/tiles/fallen_log.png",
         "isAutotiled": false,
-        "layer": "overlay"
+        "layer": "overlay",
+        "biome": "any",
+        "interactionText": "It's a fallen log."
     },
     {
         "id": "bush_grass",
@@ -347,7 +389,9 @@
         "category": "solid",
         "assetPath": "assets/tiles/bush_grass.png",
         "isAutotiled": false,
-        "layer": "overlay"
+        "layer": "overlay",
+        "biome": "any",
+        "interactionText": "It's a bush grass."
     },
     {
         "id": "dead_tree",
@@ -355,7 +399,9 @@
         "category": "solid",
         "assetPath": "assets/tiles/swamp_dead_tree.png",
         "isAutotiled": false,
-        "layer": "overlay"
+        "layer": "overlay",
+        "biome": "swamp",
+        "interactionText": "A withered tree."
     },
     {
         "id": "floating_log",
@@ -363,7 +409,8 @@
         "category": "solid",
         "assetPath": "assets/tiles/floating_log.png",
         "isAutotiled": false,
-        "layer": "overlay"
+        "layer": "overlay",
+        "biome": "any"
     },
     {
         "id": "log",
@@ -371,7 +418,8 @@
         "category": "solid",
         "assetPath": "assets/tiles/swamp_log.png",
         "isAutotiled": false,
-        "layer": "overlay"
+        "layer": "overlay",
+        "biome": "swamp"
     },
     {
         "id": "rock",
@@ -379,47 +427,54 @@
         "category": "solid",
         "assetPath": "assets/tiles/swamp_rock.png",
         "isAutotiled": false,
-        "layer": "overlay"
+        "layer": "overlay",
+        "biome": "swamp",
+        "interactionText": "It's a solid rock."
     },
     {
         "id": "lily_pad",
         "name": "Lily Pad",
-        "category": "decorative",
+        "category": "floating",
         "assetPath": "assets/tiles/lilypad.png",
         "isAutotiled": false,
-        "layer": "overlay"
+        "layer": "overlay",
+        "biome": "any"
     },
     {
         "id": "lily_pad2",
         "name": "Lily Pad 2",
-        "category": "decorative",
+        "category": "floating",
         "assetPath": "assets/tiles/lilypad2.png",
         "isAutotiled": false,
-        "layer": "overlay"
+        "layer": "overlay",
+        "biome": "any"
     },
     {
         "id": "small_lily",
         "name": "Small Lily",
-        "category": "decorative",
+        "category": "floating",
         "assetPath": "assets/tiles/small_lily.png",
         "isAutotiled": false,
-        "layer": "overlay"
+        "layer": "overlay",
+        "biome": "any"
     },
     {
         "id": "lilyflower",
         "name": "White Water Lily",
-        "category": "decorative",
+        "category": "solid",
         "assetPath": "assets/tiles/lilyflower.png",
         "isAutotiled": false,
-        "layer": "overlay"
+        "layer": "overlay",
+        "biome": "any"
     },
     {
         "id": "lilyflower2",
         "name": "Pink Water Lily",
-        "category": "decorative",
+        "category": "solid",
         "assetPath": "assets/tiles/lilyflower2.png",
         "isAutotiled": false,
-        "layer": "overlay"
+        "layer": "overlay",
+        "biome": "any"
     },
     {
         "id": "mushroom",
@@ -427,55 +482,100 @@
         "category": "decorative",
         "assetPath": "assets/tiles/swamp_mushroom.png",
         "isAutotiled": false,
-        "layer": "overlay"
+        "layer": "overlay",
+        "biome": "swamp"
     },
     {
         "id": "pitcher_plant",
         "name": "Pitcher Plant",
-        "category": "decorative",
+        "category": "solid",
         "assetPath": "assets/tiles/pitcher_plant.png",
         "isAutotiled": false,
-        "layer": "overlay"
+        "layer": "overlay",
+        "biome": "swamp",
+        "interactionText": "It's a pitcher plant."
     },
     {
         "id": "vine",
         "name": "Vine",
-        "category": "decorative",
+        "category": "solid",
         "assetPath": "assets/tiles/swamp_vine.png",
         "isAutotiled": false,
-        "layer": "overlay"
+        "layer": "overlay",
+        "biome": "swamp",
+        "interactionText": "It's a vine."
     },
     {
         "id": "cattail_0",
         "name": "Cattail 0",
-        "category": "decorative",
+        "category": "semiSolid",
         "assetPath": "assets/tiles/cattail_0.png",
         "isAutotiled": false,
-        "layer": "overlay"
+        "layer": "overlay",
+        "biome": "swamp"
     },
     {
         "id": "cattail_1",
         "name": "Cattail 1",
-        "category": "decorative",
+        "category": "semiSolid",
         "assetPath": "assets/tiles/cattail_1.png",
         "isAutotiled": false,
-        "layer": "overlay"
+        "layer": "overlay",
+        "biome": "swamp"
     },
     {
         "id": "cattail_2",
         "name": "Cattail 2",
-        "category": "decorative",
+        "category": "semiSolid",
         "assetPath": "assets/tiles/cattail_2.png",
         "isAutotiled": false,
-        "layer": "overlay"
+        "layer": "overlay",
+        "biome": "swamp"
     },
     {
         "id": "cattail_3",
         "name": "Cattail 3",
-        "category": "decorative",
+        "category": "semiSolid",
         "assetPath": "assets/tiles/cattail_3.png",
         "isAutotiled": false,
-        "layer": "overlay"
+        "layer": "overlay",
+        "biome": "swamp"
+    },
+    {
+        "id": "cattail_4",
+        "name": "Cattail 4",
+        "category": "semiSolid",
+        "assetPath": "assets/tiles/cattail_4.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "swamp"
+    },
+    {
+        "id": "cattail_5",
+        "name": "Cattail 5",
+        "category": "semiSolid",
+        "assetPath": "assets/tiles/cattail_5.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "swamp"
+    },
+    {
+        "id": "cattail_6",
+        "name": "Cattail 6",
+        "category": "semiSolid",
+        "assetPath": "assets/tiles/cattail_6.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "swamp"
+    },
+    {
+        "id": "cattail_7",
+        "name": "Cattail 7",
+        "category": "semiSolid",
+        "assetPath": "assets/tiles/cattail_7.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "swamp"
     },
     {
         "id": "border",
@@ -484,6 +584,7 @@
         "assetPath": "assets/tiles/swamp_ground.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "showInEditor": false
+        "showInEditor": false,
+        "biome": "swamp"
     }
 ]

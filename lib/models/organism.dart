@@ -23,6 +23,8 @@ class Organism {
   final double weight; // NEW: Weight in kg
   final String activeTime; // NEW: Spawning time (any, day, night)
   final String cry; // NEW: Audio file for name for cry
+  final String
+  spawnTiles; // NEW: Spawning tiles (comma-separated, e.g., "tall_grass,water,any")
 
   Organism({
     required this.name,
@@ -45,6 +47,7 @@ class Organism {
     this.weight = 1.0, // Default 1.0 kg
     this.activeTime = 'any', // Default
     this.cry = 'default', // Default
+    this.spawnTiles = 'any', // Default
   });
 
   factory Organism.fromJson(Map<String, dynamic> json) {
@@ -93,6 +96,7 @@ class Organism {
       weight: (json['weight'] as num? ?? 1.0).toDouble(),
       activeTime: (json['active_time'] as String? ?? 'any'),
       cry: (json['cry'] as String? ?? 'default'),
+      spawnTiles: (json['spawn_tiles'] as String? ?? 'any'),
     );
   }
 
@@ -139,6 +143,7 @@ class Organism {
     double? weight,
     String? activeTime,
     String? cry,
+    String? spawnTiles,
   }) {
     return Organism(
       name: name ?? this.name,
@@ -161,6 +166,7 @@ class Organism {
       weight: weight ?? this.weight,
       activeTime: activeTime ?? this.activeTime,
       cry: cry ?? this.cry,
+      spawnTiles: spawnTiles ?? this.spawnTiles,
     );
   }
 
@@ -186,6 +192,7 @@ class Organism {
       'weight': weight,
       'active_time': activeTime,
       'cry': cry,
+      'spawn_tiles': spawnTiles,
     };
   }
 
@@ -248,5 +255,6 @@ class Organism {
     weight: 70.0,
     activeTime: 'any',
     cry: 'default',
+    spawnTiles: 'any',
   );
 }
