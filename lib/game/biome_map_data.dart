@@ -184,10 +184,37 @@ class BiomeConfig {
   }
 }
 
+class OverworldSpawnData {
+  final String pheno;
+  final int maxSpawns;
+  final double defaultSpeed;
+  final double visionRange;
+  final String moveTiles;
+
+  const OverworldSpawnData({
+    required this.pheno,
+    required this.maxSpawns,
+    required this.defaultSpeed,
+    required this.visionRange,
+    required this.moveTiles,
+  });
+
+  factory OverworldSpawnData.fromJson(Map<String, dynamic> json) {
+    return OverworldSpawnData(
+      pheno: json['pheno'] as String,
+      maxSpawns: json['max_spawns'] as int? ?? 5,
+      defaultSpeed: (json['default_speed'] as num?)?.toDouble() ?? 1.0,
+      visionRange: (json['vision_range'] as num?)?.toDouble() ?? 5.0,
+      moveTiles: json['move_tiles'] as String? ?? '',
+    );
+  }
+}
+
 class BiomeDataManager {
   static final Map<String, TileDefinition> allTiles = {};
   static final Map<String, BiomeConfig> biomes = {};
   static final Map<String, Map<String, ui.Image>> tileAssets = {};
+  static final Map<String, OverworldSpawnData> phenoSpawnData = {};
 
   static Future<void> loadData() async {
     // Load Tiles
@@ -206,23 +233,41 @@ class BiomeDataManager {
       biomes[biome.id] = biome;
     }
 
-    // Pre-load all tile assets
+    // Pre-load all tile assets in parallel for better performance
+    final List<Future<void>> loadTasks = [];
     for (final tile in allTiles.values) {
       tileAssets[tile.id] = {};
+
+      Future<void> loadInto(String dir, String path) async {
+        final img = await loadImage(path);
+        if (img != null) {
+          tileAssets[tile.id]![dir] = img;
+        }
+      }
+
       if (tile.isAutotiled) {
         for (final dir in ['center', 'up', 'down', 'left', 'right']) {
           final path = tile.assetPath.replaceAll('{dir}', dir);
-          final img = await loadImage(path);
-          if (img != null) {
-            tileAssets[tile.id]![dir] = img;
-          }
+          loadTasks.add(loadInto(dir, path));
         }
       } else {
-        final img = await loadImage(tile.assetPath);
-        if (img != null) {
-          tileAssets[tile.id]!['center'] = img;
-        }
+        loadTasks.add(loadInto('center', tile.assetPath));
       }
+    }
+    await Future.wait(loadTasks);
+
+    // Load Overworld Spawn Data
+    try {
+      final spawnsJsonStr = await rootBundle.loadString(
+        'assets/overworld_spawns.json',
+      );
+      final List<dynamic> spawnsJson = json.decode(spawnsJsonStr);
+      for (var s in spawnsJson) {
+        final data = OverworldSpawnData.fromJson(s);
+        phenoSpawnData[data.pheno] = data;
+      }
+    } catch (e) {
+      print('Error loading overworld_spawns.json: $e');
     }
   }
 
@@ -239,8 +284,27 @@ class BiomeDataManager {
   }
 
   static BiomeConfig getBiome(String id) {
-    // Fallback to the first available biome if not found (or swamp by default)
-    return biomes[id] ?? biomes.values.first;
+    if (biomes.containsKey(id)) {
+      return biomes[id]!;
+    }
+    // Create a virtual biome config for unrecognized IDs.
+    // This allows custom maps (like 'mangrove') to function with their correct name
+    // for spawning even if they don't have a specific map entry in maps.json.
+    final name = id
+        .split('_')
+        .map((s) {
+          if (s.isEmpty) return '';
+          return s[0].toUpperCase() + s.substring(1).toLowerCase();
+        })
+        .join(' ');
+
+    return BiomeConfig(
+      id: id,
+      name: name,
+      defaultTileId: '${id}_ground',
+      tiles:
+          allTiles, // Fallback to all tiles if specifically filtered list is unavailable
+    );
   }
 }
 
@@ -282,7 +346,7 @@ class MapTile {
 
 class BiomeMapData {
   final List<List<MapTile>> grid; // grid[row][col]
-  final List<List<MapTile?>>? overlayGrid;
+  final List<List<List<MapTile>>>? overlayGrid; // grid[row][col][layerIndex]
   final int height;
   final int width;
   final Point<int> spawnPoint;
@@ -363,8 +427,8 @@ class MapStringParser {
         (_) => MapTile(tileId: config.defaultTileId, config: config),
       ),
     );
-    final List<List<MapTile?>>? overlayGrid = overlayLines != null
-        ? List.generate(height, (_) => List<MapTile?>.filled(width, null))
+    final List<List<List<MapTile>>>? overlayGrid = overlayLines != null
+        ? List.generate(height, (_) => List.generate(width, (_) => <MapTile>[]))
         : null;
 
     for (int r = 0; r < height; r++) {
@@ -399,16 +463,23 @@ class MapStringParser {
         if (overlayGrid != null &&
             overlayTiles != null &&
             c < overlayTiles.length) {
-          final tileId = overlayTiles[c].trim();
-          if (tileId != 'null' && tileId.isNotEmpty) {
-            final def =
-                config.tiles[tileId] ?? BiomeDataManager.allTiles[tileId];
-            if (def != null) {
-              overlayGrid[r][c] = MapTile(
-                tileId: def.id,
-                config: config,
-                walkabilityOverride: walkOverride,
-              );
+          final raw = overlayTiles[c].trim();
+          if (raw != 'null' && raw.isNotEmpty && raw != '.') {
+            final parts = raw.split('|');
+            for (final p in parts) {
+              final tileId = p.trim();
+              if (tileId.isEmpty || tileId == '.') continue;
+              final def =
+                  config.tiles[tileId] ?? BiomeDataManager.allTiles[tileId];
+              if (def != null) {
+                overlayGrid[r][c].add(
+                  MapTile(
+                    tileId: def.id,
+                    config: config,
+                    walkabilityOverride: walkOverride,
+                  ),
+                );
+              }
             }
           }
         }

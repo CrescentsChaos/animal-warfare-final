@@ -1,14 +1,5 @@
 [
     {
-        "id": "ground",
-        "name": "Ground",
-        "category": "ground",
-        "assetPath": "assets/tiles/ground.png",
-        "isAutotiled": true,
-        "layer": "base",
-        "biome": "any"
-    },
-    {
         "id": "fallen_leaves",
         "name": "Fallen Leaves",
         "category": "decorative",
@@ -18,19 +9,37 @@
         "biome": "any"
     },
     {
+        "id": "floating_leaves",
+        "name": "Floating Leaves",
+        "category": "solid",
+        "assetPath": "assets/tiles/floating_leaves.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "any"
+    },
+    {
+        "id": "floating_stick",
+        "name": "Floating Stick",
+        "category": "solid",
+        "assetPath": "assets/tiles/floating_stick.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "any"
+    },
+    {
+        "id": "floating_stick_leaf",
+        "name": "Floating Stick & Leaf",
+        "category": "solid",
+        "assetPath": "assets/tiles/floating_stick_leaf.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "any"
+    },
+    {
         "id": "swamp_ground",
         "name": "Swamp Ground",
         "category": "ground",
         "assetPath": "assets/tiles/swamp_ground.png",
-        "isAutotiled": true,
-        "layer": "base",
-        "biome": "swamp"
-    },
-    {
-        "id": "path",
-        "name": "Path",
-        "category": "path",
-        "assetPath": "assets/tiles/swamp_path.png",
         "isAutotiled": true,
         "layer": "base",
         "biome": "swamp"
@@ -316,16 +325,6 @@
         "biome": "any"
     },
     {
-        "id": "deep_water",
-        "name": "Deep Water",
-        "category": "water",
-        "assetPath": "assets/tiles/swamp_water_deep.png",
-        "isAutotiled": true,
-        "layer": "base",
-        "encounterRate": 0.1,
-        "biome": "swamp"
-    },
-    {
         "id": "mud",
         "name": "Mud",
         "category": "mud",
@@ -345,16 +344,6 @@
         "biome": "any"
     },
     {
-        "id": "tree",
-        "name": "Tree",
-        "category": "solid",
-        "assetPath": "assets/tiles/swamp_tree.png",
-        "isAutotiled": false,
-        "layer": "overlay",
-        "biome": "swamp",
-        "interactionText": "It's a tree."
-    },
-    {
         "id": "pine_tree",
         "name": "Pine Tree",
         "category": "solid",
@@ -365,10 +354,128 @@
         "interactionText": "It's a tall pine tree."
     },
     {
+        "id": "blue_spruce_tree",
+        "name": "Blue Spruce Tree",
+        "category": "solid",
+        "assetPath": "assets/tiles/blue_spruce_tree.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Taiga,Tundra,Mountain",
+        "interactionText": "It's a blue spruce tree."
+    },
+    {
+        "id": "snowy_blue_spruce_tree",
+        "name": "Snowy Blue Spruce Tree",
+        "category": "solid",
+        "assetPath": "assets/tiles/snowy_blue_spruce_tree.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Taiga,Tundra,Mountain",
+        "interactionText": "It's a blue spruce tree."
+    },
+    {
+        "id": "english_elm_tree",
+        "name": "English Elm Tree",
+        "category": "solid",
+        "assetPath": "assets/tiles/english_elm_tree.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any",
+        "interactionText": "It's an english elm tree."
+    },
+    {
+        "id": "italian_cypress_tree",
+        "name": "Italian Cypress Tree",
+        "category": "solid",
+        "assetPath": "assets/tiles/italian_cypress_tree.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any",
+        "interactionText": "It's an italian cypress tree."
+    },
+    {
+        "id": "oak_tree",
+        "name": "Oak Tree",
+        "category": "solid",
+        "assetPath": "assets/tiles/oak_tree.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any",
+        "interactionText": "It's an oak tree."
+    },
+    {
+        "id": "snowy_oak_tree",
+        "name": "Snowy Oak Tree",
+        "category": "solid",
+        "assetPath": "assets/tiles/snowy_oak_tree.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Taiga,Tundra,Mountain",
+        "interactionText": "It's an oak tree."
+    },
+    {
+        "id": "white_oak_tree",
+        "name": "White Oak Tree",
+        "category": "solid",
+        "assetPath": "assets/tiles/white_oak_tree.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any",
+        "interactionText": "It's a white oak tree."
+    },
+    {
+        "id": "white_spruce_tree",
+        "name": "White Spruce Tree",
+        "category": "solid",
+        "assetPath": "assets/tiles/white_spruce_tree.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any",
+        "interactionText": "It's a white spruce tree."
+    },
+    {
+        "id": "cactus",
+        "name": "Cactus",
+        "category": "solid",
+        "assetPath": "assets/tiles/cactus.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "desert",
+        "interactionText": "It's a cactus."
+    },
+    {
+        "id": "flowering_cactus",
+        "name": "Flowering Cactus",
+        "category": "solid",
+        "assetPath": "assets/tiles/flowering_cactus.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "desert",
+        "interactionText": "It's a cactus."
+    },
+    {
         "id": "long_vine",
         "name": "Long Vine",
         "category": "semiSolid",
         "assetPath": "assets/tiles/long_vine.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "swamp"
+    },
+    {
+        "id": "flowering_long_vine",
+        "name": "Flowering Long Vine",
+        "category": "semiSolid",
+        "assetPath": "assets/tiles/flowering_long_vine.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "swamp"
+    },
+    {
+        "id": "fruitful_long_vine",
+        "name": "Fruitful Long Vine",
+        "category": "semiSolid",
+        "assetPath": "assets/tiles/fruitful_long_vine.png",
         "isAutotiled": false,
         "layer": "overlay",
         "biome": "swamp"
@@ -394,42 +501,44 @@
         "interactionText": "It's a bush grass."
     },
     {
-        "id": "dead_tree",
-        "name": "Dead Tree",
+        "id": "weed1",
+        "name": "Weed 1",
         "category": "solid",
-        "assetPath": "assets/tiles/swamp_dead_tree.png",
+        "assetPath": "assets/tiles/weed1.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "biome": "swamp",
-        "interactionText": "A withered tree."
+        "biome": "any",
+        "interactionText": "It's a weed."
     },
     {
-        "id": "floating_log",
-        "name": "Floating Log",
+        "id": "weed2",
+        "name": "Weed 2",
         "category": "solid",
-        "assetPath": "assets/tiles/floating_log.png",
+        "assetPath": "assets/tiles/weed2.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "biome": "any"
+        "biome": "any",
+        "interactionText": "It's a weed."
     },
     {
-        "id": "log",
-        "name": "Log",
+        "id": "icerock1",
+        "name": "Icerock 1",
         "category": "solid",
-        "assetPath": "assets/tiles/swamp_log.png",
+        "assetPath": "assets/tiles/icerock1.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "biome": "swamp"
+        "biome": "Mountain,Tundra,Polar",
+        "interactionText": "It's an ice rock."
     },
     {
-        "id": "rock",
-        "name": "Rock",
+        "id": "icerock2",
+        "name": "Icerock 2",
         "category": "solid",
-        "assetPath": "assets/tiles/swamp_rock.png",
+        "assetPath": "assets/tiles/icerock2.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "biome": "swamp",
-        "interactionText": "It's a solid rock."
+        "biome": "Mountain,Tundra,Polar",
+        "interactionText": "It's an ice rock."
     },
     {
         "id": "lily_pad",
@@ -477,13 +586,32 @@
         "biome": "any"
     },
     {
-        "id": "mushroom",
-        "name": "Mushroom",
+        "id": "flower1",
+        "name": "Flower 1",
         "category": "decorative",
-        "assetPath": "assets/tiles/swamp_mushroom.png",
+        "assetPath": "assets/tiles/flower1.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "biome": "swamp"
+        "biome": "any"
+    },
+    {
+        "id": "abandoned_railroad",
+        "name": "Abandoned Railroad",
+        "category": "decorative",
+        "assetPath": "assets/tiles/abandoned_railroad.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any"
+    },
+    {
+        "id": "lavender",
+        "name": "Lavender",
+        "category": "semiSolid",
+        "assetPath": "assets/tiles/lavender.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any",
+        "interactionText": "It's lavender."
     },
     {
         "id": "pitcher_plant",
@@ -496,14 +624,13 @@
         "interactionText": "It's a pitcher plant."
     },
     {
-        "id": "vine",
-        "name": "Vine",
+        "id": "floating_log",
+        "name": "Floating Log",
         "category": "solid",
-        "assetPath": "assets/tiles/swamp_vine.png",
+        "assetPath": "assets/tiles/floating_log.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "biome": "swamp",
-        "interactionText": "It's a vine."
+        "biome": "any"
     },
     {
         "id": "cattail_0",

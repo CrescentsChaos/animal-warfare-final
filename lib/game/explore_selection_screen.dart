@@ -66,7 +66,6 @@ class _ExploreSelectionScreenState extends State<ExploreSelectionScreen> {
 
   void _showCustomMapDialog() {
     final controller = TextEditingController();
-    String selectedBiomeId = 'swamp';
 
     showDialog(
       context: context,
@@ -85,20 +84,9 @@ class _ExploreSelectionScreenState extends State<ExploreSelectionScreen> {
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  DropdownButton<String>(
-                    value: selectedBiomeId,
-                    dropdownColor: AppColors.surface,
-                    style: const TextStyle(color: Colors.white),
-                    items: BiomeDataManager.biomes.keys.map((id) {
-                      return DropdownMenuItem(
-                        value: id,
-                        child: Text(id.toUpperCase()),
-                      );
-                    }).toList(),
-                    onChanged: (val) {
-                      if (val != null)
-                        setDialogState(() => selectedBiomeId = val);
-                    },
+                  const Text(
+                    'The biome will be auto-detected from the map data.',
+                    style: TextStyle(color: Colors.white54, fontSize: 10),
                   ),
                   const SizedBox(height: 10),
                   TextField(
@@ -152,13 +140,29 @@ class _ExploreSelectionScreenState extends State<ExploreSelectionScreen> {
                         mapData = {'base': lines};
                       }
 
-                      final config = BiomeDataManager.getBiome(selectedBiomeId);
+                      // Extract biomeId and biomeName from json if available
+                      String biomeId = 'swamp';
+                      String? biomeName;
+                      if (mapData is Map) {
+                        if (mapData.containsKey('id')) {
+                          biomeId = mapData['id'];
+                        }
+                        if (mapData.containsKey('name')) {
+                          biomeName = mapData['name'];
+                        }
+                      }
+
+                      final config = BiomeDataManager.getBiome(biomeId);
                       final customData = MapStringParser.parse(
                         mapData,
                         config: config,
                       );
                       Navigator.of(context).pop();
-                      _enterBiome(config.name, customData: customData);
+                      // Use biomeName from JSON if provided, else fallback to config name
+                      _enterBiome(
+                        biomeName ?? config.name,
+                        customData: customData,
+                      );
                     } catch (e) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('Error parsing map: $e')),

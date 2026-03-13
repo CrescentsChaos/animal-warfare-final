@@ -1,0 +1,23 @@
+[
+    {
+        "pheno": "dragonfly",
+        "max_spawns": 3,
+        "default_speed": 1.5,
+        "vision_range": 6.0,
+        "move_tiles": "swamp_ground,dw_pond,pond_water,tall_grass,dw_pond_we,dw_pond_we_1,dw_pond_we_2,dw_pond_we_3,pond_we,pond_we_1,pond_we_2,pond_we_3,wateredge_up"
+    },
+    {
+        "pheno": "giant_water_bug",
+        "max_spawns": 2,
+        "default_speed": 1.2,
+        "vision_range": 4.0,
+        "move_tiles": "dw_pond,pond_water,mud"
+    },
+    {
+        "pheno": "frog",
+        "max_spawns": 2,
+        "default_speed": 1.2,
+        "vision_range": 3.0,
+        "move_tiles": "swamp_ground,lily_pad,lily_pad2,tall_grass,dw_pond_we,dw_pond_we_1,dw_pond_we_2,dw_pond_we_3"
+    }
+]
