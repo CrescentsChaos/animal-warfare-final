@@ -5878,7 +5878,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     notifyListeners();
     if (!isTesting) await Future.delayed(const Duration(seconds: 1));
 
-    final runChance = (player.currentSpeed / opponent.currentSpeed) * 0.75;
+    final runChance = (player.currentSpeed / opponent.currentSpeed) * 1.5;
 
     final trapper = opponent.abilities.firstWhere(
       (ab) => ab.name == 'Arena Trap',
@@ -5918,7 +5918,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     bool hasRunAway = player.abilities.any((ab) => ab.name == 'Run Away');
 
-    if (hasRunAway || Random().nextDouble() < runChance.clamp(0.1, 1.0)) {
+    if (hasRunAway || Random().nextDouble() < runChance.clamp(0.4, 1.0)) {
       _result = BattleResult.fled;
       addToLog('You successfully ran away!');
       _cleanupStatusEffects();

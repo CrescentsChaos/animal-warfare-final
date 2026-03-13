@@ -25,6 +25,8 @@ class Organism {
   final String cry; // NEW: Audio file for name for cry
   final String
   spawnTiles; // NEW: Spawning tiles (comma-separated, e.g., "tall_grass,water,any")
+  final String
+  pheno; // NEW: Overworld sprite prefix (e.g., "giant_water_bug"), or "none"
 
   Organism({
     required this.name,
@@ -48,6 +50,7 @@ class Organism {
     this.activeTime = 'any', // Default
     this.cry = 'default', // Default
     this.spawnTiles = 'any', // Default
+    this.pheno = 'none', // Default
   });
 
   factory Organism.fromJson(Map<String, dynamic> json) {
@@ -97,6 +100,7 @@ class Organism {
       activeTime: (json['active_time'] as String? ?? 'any'),
       cry: (json['cry'] as String? ?? 'default'),
       spawnTiles: (json['spawn_tiles'] as String? ?? 'any'),
+      pheno: (json['pheno'] as String? ?? 'none'),
     );
   }
 
@@ -144,6 +148,7 @@ class Organism {
     String? activeTime,
     String? cry,
     String? spawnTiles,
+    String? pheno,
   }) {
     return Organism(
       name: name ?? this.name,
@@ -167,6 +172,7 @@ class Organism {
       activeTime: activeTime ?? this.activeTime,
       cry: cry ?? this.cry,
       spawnTiles: spawnTiles ?? this.spawnTiles,
+      pheno: pheno ?? this.pheno,
     );
   }
 
@@ -193,6 +199,7 @@ class Organism {
       'active_time': activeTime,
       'cry': cry,
       'spawn_tiles': spawnTiles,
+      'pheno': pheno,
     };
   }
 

@@ -305,9 +305,9 @@ class CapturedOrganism {
   }) {
     final rng = Random();
 
-    // Wild level: randomized around account level if not specified
+    // Wild level: randomized around account level if not specified, but never exceeds accountLevel
     int wildLevel =
-        level ?? (accountLevel + (rng.nextInt(5) - 2)).clamp(1, 100);
+        level ?? (accountLevel + (rng.nextInt(5) - 2)).clamp(1, accountLevel);
 
     // ROLL FOR SHINY AND ALPHA
     final isShinyRoll = rng.nextInt(100) == 0; // 1/100

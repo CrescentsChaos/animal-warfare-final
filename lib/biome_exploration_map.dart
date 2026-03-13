@@ -27,6 +27,7 @@ import 'package:animal_warfare/widgets/game_clock_widget.dart';
 import 'package:animal_warfare/shop_screen.dart';
 import 'package:animal_warfare/phone_screen.dart';
 import 'package:animal_warfare/theme.dart';
+import 'package:animal_warfare/game/overworld_sprite.dart';
 
 class BiomeExplorationMap extends StatefulWidget {
   final String biomeName;
@@ -117,6 +118,11 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   String? _confirmationTitle;
   VoidCallback? _onConfirm;
 
+  // ── Overworld Pheno Sprites ──
+  final List<OverworldSprite> _overworldSprites = [];
+  Timer? _phenoSpawnTimer;
+  double _phenoTickAccumulator = 0;
+
   @override
   void initState() {
     super.initState();
@@ -166,6 +172,12 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
     // Scroll to player after first build
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToPlayer());
+
+    // Start pheno spawn timer
+    _phenoSpawnTimer = Timer.periodic(
+      const Duration(seconds: 2), // INCREASED FREQUENCY
+      (_) => _trySpawnPhenoSprite(),
+    );
   }
 
   void _onTick(Duration elapsed) {
@@ -201,6 +213,26 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       setState(() {});
     } else {
       _jumpOffset = 0;
+    }
+
+    // ── Overworld sprite AI ──
+    final double dt = elapsed.inMilliseconds / 1000.0;
+    _phenoTickAccumulator += dt;
+    if (_phenoTickAccumulator >= 0.05) {
+      // ~20fps for AI
+      bool anyChanged = false;
+      for (final sprite in _overworldSprites) {
+        if (sprite.tick(_phenoTickAccumulator, _mapData, tileSize)) {
+          anyChanged = true;
+        }
+      }
+      // Remove expired sprites
+      _overworldSprites.removeWhere((s) => s.isExpired);
+      _phenoTickAccumulator = 0;
+      if (anyChanged && mounted) setState(() {});
+
+      // Check collision constantly (in case a sprite walks into the player)
+      _checkPhenoCollision();
     }
 
     if (_isMovingToTarget) {
@@ -323,6 +355,9 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         if (!_isPanning) {
           _scrollToPlayer(insideSetState: true);
         }
+
+        // Check collision with overworld sprites
+        _checkPhenoCollision();
       });
     } else {
       // Move closer
@@ -480,6 +515,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
   void _disposeTimers() {
     _bubbleTimer?.cancel();
+    _phenoSpawnTimer?.cancel();
   }
 
   @override
@@ -800,6 +836,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
                 }
                 return isFloat(r1, c1);
               }(),
+              overworldSprites: _overworldSprites,
             ),
           ),
         );
@@ -1422,6 +1459,134 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   }
 
   // Step counter removed per user request.
+
+  // ── Pheno Sprite Spawning ──
+  void _trySpawnPhenoSprite() {
+    if (!mounted || _encounterActive) return;
+
+    // Total overworld spawn limit
+    if (_overworldSprites.length >= 10) return;
+
+    final rng = Random();
+    for (final org in widget.allOrganisms) {
+      if (org.pheno == 'none' || org.pheno.isEmpty) continue;
+      if (org.habitat.toLowerCase() != widget.biomeName.toLowerCase()) continue;
+
+      // Max 5 of the same species
+      final sameSpeciesCount = _overworldSprites
+          .where((s) => s.organism.name == org.name)
+          .length;
+      if (sameSpeciesCount >= 5) continue;
+
+      // Rarity-based spawn chance (Increased for higher frequency)
+      double chance;
+      switch (org.rarity.toLowerCase()) {
+        case 'common':
+          chance = 0.20;
+          break;
+        case 'uncommon':
+          chance = 0.15;
+          break;
+        case 'rare':
+          chance = 0.10;
+          break;
+        case 'epic':
+          chance = 0.05;
+          break;
+        case 'legendary':
+          chance = 0.02;
+          break;
+        case 'mythical':
+          chance = 0.01;
+          break;
+        default:
+          chance = 0.10;
+      }
+
+      if (rng.nextDouble() > chance) continue;
+
+      // Find a valid tile on the map
+      final validTiles = _findValidPhenoTiles(org);
+      if (validTiles.isEmpty) continue;
+
+      final pos = validTiles[rng.nextInt(validTiles.length)];
+      final sprite = OverworldSprite(
+        organism: org,
+        row: pos[0],
+        col: pos[1],
+        tileSize: tileSize,
+      );
+
+      // Load sprites
+      _loadPhenoSprites(sprite);
+      _overworldSprites.add(sprite);
+      if (mounted) setState(() {});
+      break; // One spawn per tick
+    }
+  }
+
+  List<List<int>> _findValidPhenoTiles(Organism org) {
+    final tiles = <List<int>>[];
+    final spawnSet = org.spawnTiles
+        .split(',')
+        .map((e) => e.trim().toLowerCase())
+        .toSet();
+    final isAny = spawnSet.contains('any');
+
+    for (int r = 0; r < _mapData.height; r++) {
+      for (int c = 0; c < _mapData.width; c++) {
+        final base = _mapData.grid[r][c];
+        final overlay = _mapData.overlayGrid?[r][c];
+        if (base.category == TileCategory.solid ||
+            overlay?.category == TileCategory.solid)
+          continue;
+
+        if (isAny) {
+          tiles.add([r, c]);
+          continue;
+        }
+
+        if (spawnSet.contains(base.tileId.toLowerCase()) ||
+            spawnSet.contains(base.category.name.toLowerCase())) {
+          tiles.add([r, c]);
+        } else if (overlay != null &&
+            (spawnSet.contains(overlay.tileId.toLowerCase()) ||
+                spawnSet.contains(overlay.category.name.toLowerCase()))) {
+          tiles.add([r, c]);
+        }
+      }
+    }
+    return tiles;
+  }
+
+  Future<void> _loadPhenoSprites(OverworldSprite sprite) async {
+    final pheno = sprite.organism.pheno;
+    for (final dir in ['up', 'down', 'left', 'right']) {
+      final img = await BiomeDataManager.loadImage(
+        'assets/overworld/${pheno}_$dir.png',
+      );
+      if (img != null) {
+        sprite.sprites[dir] = img;
+      }
+    }
+    if (mounted) setState(() {});
+  }
+
+  void _checkPhenoCollision() {
+    if (_encounterActive) return;
+    final toRemove = <OverworldSprite>[];
+    for (final sprite in _overworldSprites) {
+      if (sprite.isCollidingWith(_playerX, _playerY, tileSize)) {
+        toRemove.add(sprite);
+        // Trigger encounter with this organism
+        AudioService.instance.playOrganismCry(sprite.organism.cry);
+        setState(() => _encounterActive = true);
+        _onFight(sprite.organism);
+        break;
+      }
+    }
+    _overworldSprites.removeWhere((s) => toRemove.contains(s));
+  }
 }
 
 // ────────────────────────────────────────────────────────────────────
@@ -1443,6 +1608,7 @@ class _BiomeMapPainter extends CustomPainter {
   final double bobbingOffset;
   final double jumpOffset;
   final bool isOnFloating;
+  final List<OverworldSprite> overworldSprites;
 
   _BiomeMapPainter({
     required this.mapData,
@@ -1459,6 +1625,7 @@ class _BiomeMapPainter extends CustomPainter {
     this.bobbingOffset = 0,
     this.jumpOffset = 0,
     this.isOnFloating = false,
+    this.overworldSprites = const [],
   });
 
   @override
@@ -1496,6 +1663,13 @@ class _BiomeMapPainter extends CustomPainter {
               _drawTileAt(canvas, r, playerC, tile, mapData.overlayGrid!);
             }
           }
+        }
+      }
+
+      // Draw overworld sprites on this row
+      for (final sprite in overworldSprites) {
+        if (sprite.row == r) {
+          _drawOverworldSprite(canvas, sprite);
         }
       }
 
@@ -1662,16 +1836,30 @@ class _BiomeMapPainter extends CustomPainter {
     }
   }
 
+  void _drawOverworldSprite(Canvas canvas, OverworldSprite sprite) {
+    final double px = sprite.pixelX - cameraX + tileSize / 2;
+    final double py = sprite.pixelY - cameraY + tileSize / 2;
+
+    ui.Image? img = sprite.sprites[sprite.direction];
+    if (img == null) return;
+
+    final double assetW = img.width.toDouble();
+    final double assetH = img.height.toDouble();
+    final double drawW = tileSize;
+    final double drawH = tileSize;
+    final double x = px - drawW / 2;
+    final double y = py - drawH / 2;
+
+    canvas.drawImageRect(
+      img,
+      Rect.fromLTWH(0, 0, assetW, assetH),
+      Rect.fromLTWH(x, y, drawW, drawH),
+      Paint(),
+    );
+  }
+
   @override
   bool shouldRepaint(covariant _BiomeMapPainter oldDelegate) {
-    return oldDelegate.playerX != playerX ||
-        oldDelegate.playerY != playerY ||
-        oldDelegate.cameraX != cameraX ||
-        oldDelegate.cameraY != cameraY ||
-        oldDelegate.walkFrame != walkFrame ||
-        oldDelegate.playerDirection != playerDirection ||
-        oldDelegate.isSwimming != isSwimming ||
-        oldDelegate.bobbingOffset != bobbingOffset ||
-        oldDelegate.jumpOffset != jumpOffset;
+    return true; // Always repaint (overworld sprites move independently)
   }
 }
