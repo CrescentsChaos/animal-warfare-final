@@ -50,6 +50,231 @@
         "encounterRate": 0.1
     },
     {
+        "id": "dw_pond",
+        "name": "Duckweed Pond",
+        "category": "water",
+        "assetPath": "assets/tiles/dw_pond.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1
+    },
+    {
+        "id": "dw_pond_we",
+        "name": "Duckweed Pond Wateredge Up",
+        "category": "water",
+        "assetPath": "assets/tiles/dw_pond_we.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1
+    },
+    {
+        "id": "dw_pond_we_2",
+        "name": "Duckweed Pond Wateredge Right",
+        "category": "water",
+        "assetPath": "assets/tiles/dw_pond_we_2.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1
+    },
+    {
+        "id": "dw_pond_we_1",
+        "name": "Duckweed Pond Wateredge Left",
+        "category": "water",
+        "assetPath": "assets/tiles/dw_pond_we_1.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1
+    },
+    {
+        "id": "dw_pond_we_3",
+        "name": "Duckweed Pond Wateredge Down",
+        "category": "water",
+        "assetPath": "assets/tiles/dw_pond_we_3.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1
+    },
+    {
+        "id": "dw_pond_corner_1",
+        "name": "Duckweed Pond Corner LU",
+        "category": "water",
+        "assetPath": "assets/tiles/dw_pond_corner_1.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1
+    },
+    {
+        "id": "dw_pond_corner_2",
+        "name": "Duckweed Pond Corner RU",
+        "category": "water",
+        "assetPath": "assets/tiles/dw_pond_corner_2.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1
+    },
+    {
+        "id": "dw_pond_corner_3",
+        "name": "Duckweed Pond Corner RD",
+        "category": "water",
+        "assetPath": "assets/tiles/dw_pond_corner_3.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1
+    },
+    {
+        "id": "dw_pond_corner_4",
+        "name": "Duckweed Pond Corner LD",
+        "category": "water",
+        "assetPath": "assets/tiles/dw_pond_corner_4.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1
+    },
+    {
+        "id": "dw_pond_bump_1",
+        "name": "Duckweed Pond Bump RD",
+        "category": "water",
+        "assetPath": "assets/tiles/dw_pond_bump_1.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1
+    },
+    {
+        "id": "dw_pond_bump_2",
+        "name": "Duckweed Pond Bump LD",
+        "category": "water",
+        "assetPath": "assets/tiles/dw_pond_bump_2.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1
+    },
+    {
+        "id": "dw_pond_bump_3",
+        "name": "Duckweed Pond Bump LU",
+        "category": "water",
+        "assetPath": "assets/tiles/dw_pond_bump_3.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1
+    },
+    {
+        "id": "dw_pond_bump_4",
+        "name": "Duckweed Pond Bump RU",
+        "category": "water",
+        "assetPath": "assets/tiles/dw_pond_bump_4.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1
+    },
+    {
+        "id": "pond_bump_1",
+        "name": "Pond Bump RD",
+        "category": "water",
+        "assetPath": "assets/tiles/pond_bump_1.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1
+    },
+    {
+        "id": "pond_bump_2",
+        "name": "Pond Bump LD",
+        "category": "water",
+        "assetPath": "assets/tiles/pond_bump_2.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1
+    },
+    {
+        "id": "pond_bump_3",
+        "name": "Pond Bump LU",
+        "category": "water",
+        "assetPath": "assets/tiles/pond_bump_3.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1
+    },
+    {
+        "id": "pond_bump_4",
+        "name": "Pond Bump RU",
+        "category": "water",
+        "assetPath": "assets/tiles/pond_bump_4.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1
+    },
+    {
+        "id": "pond_we",
+        "name": "Pond Wateredge Up",
+        "category": "water",
+        "assetPath": "assets/tiles/pond_we.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1
+    },
+    {
+        "id": "pond_we_1",
+        "name": "Pond Wateredge Right",
+        "category": "water",
+        "assetPath": "assets/tiles/pond_we_1.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1
+    },
+    {
+        "id": "pond_we_2",
+        "name": "Pond Wateredge Left",
+        "category": "water",
+        "assetPath": "assets/tiles/pond_we_2.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1
+    },
+    {
+        "id": "pond_we_3",
+        "name": "Pond Wateredge Down",
+        "category": "water",
+        "assetPath": "assets/tiles/pond_we_3.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1
+    },
+    {
+        "id": "pond_corner_1",
+        "name": "Pond Corner LU",
+        "category": "water",
+        "assetPath": "assets/tiles/pond_corner_1.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1
+    },
+    {
+        "id": "pond_corner_2",
+        "name": "Pond Corner RU",
+        "category": "water",
+        "assetPath": "assets/tiles/pond_corner_2.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1
+    },
+    {
+        "id": "pond_corner_3",
+        "name": "Pond Corner RD",
+        "category": "water",
+        "assetPath": "assets/tiles/pond_corner_3.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1
+    },
+    {
+        "id": "pond_corner_4",
+        "name": "Pond Corner LD",
+        "category": "water",
+        "assetPath": "assets/tiles/pond_corner_4.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1
+    },
+    {
         "id": "wateredge_up",
         "name": "Water Edge Up",
         "category": "water",
@@ -165,6 +390,14 @@
         "layer": "overlay"
     },
     {
+        "id": "lily_pad2",
+        "name": "Lily Pad 2",
+        "category": "decorative",
+        "assetPath": "assets/tiles/lilypad2.png",
+        "isAutotiled": false,
+        "layer": "overlay"
+    },
+    {
         "id": "small_lily",
         "name": "Small Lily",
         "category": "decorative",
@@ -174,9 +407,17 @@
     },
     {
         "id": "lilyflower",
-        "name": "Lily Flower",
+        "name": "White Water Lily",
         "category": "decorative",
         "assetPath": "assets/tiles/lilyflower.png",
+        "isAutotiled": false,
+        "layer": "overlay"
+    },
+    {
+        "id": "lilyflower2",
+        "name": "Pink Water Lily",
+        "category": "decorative",
+        "assetPath": "assets/tiles/lilyflower2.png",
         "isAutotiled": false,
         "layer": "overlay"
     },
@@ -189,10 +430,50 @@
         "layer": "overlay"
     },
     {
+        "id": "pitcher_plant",
+        "name": "Pitcher Plant",
+        "category": "decorative",
+        "assetPath": "assets/tiles/pitcher_plant.png",
+        "isAutotiled": false,
+        "layer": "overlay"
+    },
+    {
         "id": "vine",
         "name": "Vine",
         "category": "decorative",
         "assetPath": "assets/tiles/swamp_vine.png",
+        "isAutotiled": false,
+        "layer": "overlay"
+    },
+    {
+        "id": "cattail_0",
+        "name": "Cattail 0",
+        "category": "decorative",
+        "assetPath": "assets/tiles/cattail_0.png",
+        "isAutotiled": false,
+        "layer": "overlay"
+    },
+    {
+        "id": "cattail_1",
+        "name": "Cattail 1",
+        "category": "decorative",
+        "assetPath": "assets/tiles/cattail_1.png",
+        "isAutotiled": false,
+        "layer": "overlay"
+    },
+    {
+        "id": "cattail_2",
+        "name": "Cattail 2",
+        "category": "decorative",
+        "assetPath": "assets/tiles/cattail_2.png",
+        "isAutotiled": false,
+        "layer": "overlay"
+    },
+    {
+        "id": "cattail_3",
+        "name": "Cattail 3",
+        "category": "decorative",
+        "assetPath": "assets/tiles/cattail_3.png",
         "isAutotiled": false,
         "layer": "overlay"
     },
