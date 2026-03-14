@@ -62,6 +62,16 @@
         "isAutotiled": true,
         "layer": "base",
         "encounterRate": 0.1,
+        "biome": "any"
+    },
+    {
+        "id": "swamp_water",
+        "name": "Swamp Water",
+        "category": "water",
+        "assetPath": "assets/tiles/swamp_water.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1,
         "biome": "swamp"
     },
     {
@@ -72,7 +82,7 @@
         "isAutotiled": true,
         "layer": "base",
         "encounterRate": 0.1,
-        "biome": "swamp"
+        "biome": "any"
     },
     {
         "id": "dw_pond_we",
@@ -82,7 +92,7 @@
         "isAutotiled": true,
         "layer": "base",
         "encounterRate": 0.1,
-        "biome": "swamp"
+        "biome": "any"
     },
     {
         "id": "dw_pond_we_2",
@@ -92,7 +102,7 @@
         "isAutotiled": true,
         "layer": "base",
         "encounterRate": 0.1,
-        "biome": "swamp"
+        "biome": "any"
     },
     {
         "id": "dw_pond_we_1",
@@ -102,7 +112,7 @@
         "isAutotiled": true,
         "layer": "base",
         "encounterRate": 0.1,
-        "biome": "swamp"
+        "biome": "any"
     },
     {
         "id": "dw_pond_we_3",
@@ -112,7 +122,7 @@
         "isAutotiled": true,
         "layer": "base",
         "encounterRate": 0.1,
-        "biome": "swamp"
+        "biome": "any"
     },
     {
         "id": "dw_pond_corner_1",
@@ -122,7 +132,7 @@
         "isAutotiled": true,
         "layer": "base",
         "encounterRate": 0.1,
-        "biome": "swamp"
+        "biome": "any"
     },
     {
         "id": "dw_pond_corner_2",
@@ -132,7 +142,7 @@
         "isAutotiled": true,
         "layer": "base",
         "encounterRate": 0.1,
-        "biome": "swamp"
+        "biome": "any"
     },
     {
         "id": "dw_pond_corner_3",
@@ -142,7 +152,7 @@
         "isAutotiled": true,
         "layer": "base",
         "encounterRate": 0.1,
-        "biome": "swamp"
+        "biome": "any"
     },
     {
         "id": "dw_pond_corner_4",
@@ -152,7 +162,7 @@
         "isAutotiled": true,
         "layer": "base",
         "encounterRate": 0.1,
-        "biome": "swamp"
+        "biome": "any"
     },
     {
         "id": "dw_pond_bump_1",
@@ -162,7 +172,7 @@
         "isAutotiled": true,
         "layer": "base",
         "encounterRate": 0.1,
-        "biome": "swamp"
+        "biome": "any"
     },
     {
         "id": "dw_pond_bump_2",
@@ -172,7 +182,7 @@
         "isAutotiled": true,
         "layer": "base",
         "encounterRate": 0.1,
-        "biome": "swamp"
+        "biome": "any"
     },
     {
         "id": "dw_pond_bump_3",
@@ -182,7 +192,7 @@
         "isAutotiled": true,
         "layer": "base",
         "encounterRate": 0.1,
-        "biome": "swamp"
+        "biome": "any"
     },
     {
         "id": "dw_pond_bump_4",
@@ -192,7 +202,7 @@
         "isAutotiled": true,
         "layer": "base",
         "encounterRate": 0.1,
-        "biome": "swamp"
+        "biome": "any"
     },
     {
         "id": "pond_bump_1",
@@ -235,6 +245,46 @@
         "biome": "swamp"
     },
     {
+        "id": "swamp_bump_1",
+        "name": "Swamp Bump RD",
+        "category": "water",
+        "assetPath": "assets/tiles/swamp_bump_1.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1,
+        "biome": "swamp"
+    },
+    {
+        "id": "swamp_bump_2",
+        "name": "Swamp Bump LD",
+        "category": "water",
+        "assetPath": "assets/tiles/swamp_bump_2.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1,
+        "biome": "swamp"
+    },
+    {
+        "id": "swamp_bump_3",
+        "name": "Swamp Bump LU",
+        "category": "water",
+        "assetPath": "assets/tiles/swamp_bump_3.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1,
+        "biome": "swamp"
+    },
+    {
+        "id": "swamp_bump_4",
+        "name": "Swamp Bump RU",
+        "category": "water",
+        "assetPath": "assets/tiles/swamp_bump_4.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1,
+        "biome": "swamp"
+    },
+    {
         "id": "pond_we",
         "name": "Pond Wateredge Up",
         "category": "water",
@@ -269,6 +319,46 @@
         "name": "Pond Wateredge Down",
         "category": "water",
         "assetPath": "assets/tiles/pond_we_3.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1,
+        "biome": "swamp"
+    },
+    {
+        "id": "swamp_we",
+        "name": "Swamp Wateredge Up",
+        "category": "water",
+        "assetPath": "assets/tiles/swamp_we.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1,
+        "biome": "swamp"
+    },
+    {
+        "id": "swamp_we_1",
+        "name": "Swamp Wateredge Right",
+        "category": "water",
+        "assetPath": "assets/tiles/swamp_we_1.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1,
+        "biome": "swamp"
+    },
+    {
+        "id": "swamp_we_2",
+        "name": "Swamp Wateredge Left",
+        "category": "water",
+        "assetPath": "assets/tiles/swamp_we_2.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1,
+        "biome": "swamp"
+    },
+    {
+        "id": "swamp_we_3",
+        "name": "Swamp Wateredge Down",
+        "category": "water",
+        "assetPath": "assets/tiles/swamp_we_3.png",
         "isAutotiled": true,
         "layer": "base",
         "encounterRate": 0.1,
@@ -325,6 +415,46 @@
         "biome": "any"
     },
     {
+        "id": "swamp_corner_1",
+        "name": "Swamp Corner LU",
+        "category": "water",
+        "assetPath": "assets/tiles/swamp_corner_1.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1,
+        "biome": "swamp"
+    },
+    {
+        "id": "swamp_corner_2",
+        "name": "Swamp Corner RU",
+        "category": "water",
+        "assetPath": "assets/tiles/swamp_corner_2.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1,
+        "biome": "swamp"
+    },
+    {
+        "id": "swamp_corner_3",
+        "name": "Swamp Corner RD",
+        "category": "water",
+        "assetPath": "assets/tiles/swamp_corner_3.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1,
+        "biome": "swamp"
+    },
+    {
+        "id": "swamp_corner_4",
+        "name": "Swamp Corner LD",
+        "category": "water",
+        "assetPath": "assets/tiles/swamp_corner_4.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1,
+        "biome": "swamp"
+    },
+    {
         "id": "mud",
         "name": "Mud",
         "category": "mud",
@@ -347,7 +477,7 @@
         "id": "pine_tree",
         "name": "Pine Tree",
         "category": "solid",
-        "assetPath": "assets/tiles/pine_tree.png",
+        "assetPath": "assets/tiles/trees/pine_tree.png",
         "isAutotiled": false,
         "layer": "overlay",
         "biome": "any",
@@ -357,7 +487,7 @@
         "id": "blue_spruce_tree",
         "name": "Blue Spruce Tree",
         "category": "solid",
-        "assetPath": "assets/tiles/blue_spruce_tree.png",
+        "assetPath": "assets/tiles/trees/blue_spruce_tree.png",
         "isAutotiled": false,
         "layer": "overlay",
         "biome": "Taiga,Tundra,Mountain",
@@ -367,7 +497,7 @@
         "id": "snowy_blue_spruce_tree",
         "name": "Snowy Blue Spruce Tree",
         "category": "solid",
-        "assetPath": "assets/tiles/snowy_blue_spruce_tree.png",
+        "assetPath": "assets/tiles/trees/snowy_blue_spruce_tree.png",
         "isAutotiled": false,
         "layer": "overlay",
         "biome": "Taiga,Tundra,Mountain",
@@ -377,7 +507,7 @@
         "id": "english_elm_tree",
         "name": "English Elm Tree",
         "category": "solid",
-        "assetPath": "assets/tiles/english_elm_tree.png",
+        "assetPath": "assets/tiles/trees/english_elm_tree.png",
         "isAutotiled": false,
         "layer": "overlay",
         "biome": "any",
@@ -387,7 +517,7 @@
         "id": "italian_cypress_tree",
         "name": "Italian Cypress Tree",
         "category": "solid",
-        "assetPath": "assets/tiles/italian_cypress_tree.png",
+        "assetPath": "assets/tiles/trees/italian_cypress_tree.png",
         "isAutotiled": false,
         "layer": "overlay",
         "biome": "any",
@@ -397,7 +527,7 @@
         "id": "oak_tree",
         "name": "Oak Tree",
         "category": "solid",
-        "assetPath": "assets/tiles/oak_tree.png",
+        "assetPath": "assets/tiles/trees/oak_tree.png",
         "isAutotiled": false,
         "layer": "overlay",
         "biome": "any",
@@ -407,7 +537,7 @@
         "id": "snowy_oak_tree",
         "name": "Snowy Oak Tree",
         "category": "solid",
-        "assetPath": "assets/tiles/snowy_oak_tree.png",
+        "assetPath": "assets/tiles/trees/snowy_oak_tree.png",
         "isAutotiled": false,
         "layer": "overlay",
         "biome": "Taiga,Tundra,Mountain",
@@ -417,7 +547,7 @@
         "id": "white_oak_tree",
         "name": "White Oak Tree",
         "category": "solid",
-        "assetPath": "assets/tiles/white_oak_tree.png",
+        "assetPath": "assets/tiles/trees/white_oak_tree.png",
         "isAutotiled": false,
         "layer": "overlay",
         "biome": "any",
@@ -427,11 +557,61 @@
         "id": "white_spruce_tree",
         "name": "White Spruce Tree",
         "category": "solid",
-        "assetPath": "assets/tiles/white_spruce_tree.png",
+        "assetPath": "assets/tiles/trees/white_spruce_tree.png",
         "isAutotiled": false,
         "layer": "overlay",
         "biome": "any",
         "interactionText": "It's a white spruce tree."
+    },
+    {
+        "id": "mango_tree",
+        "name": "Mango Tree",
+        "category": "solid",
+        "assetPath": "assets/tiles/trees/mango_tree.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any",
+        "interactionText": "It's a mango tree."
+    },
+    {
+        "id": "mangrove_tree",
+        "name": "Mangrove Tree",
+        "category": "solid",
+        "assetPath": "assets/tiles/trees/mangrove_tree.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Swamp, Mangrove",
+        "interactionText": "It's a mangrove tree."
+    },
+    {
+        "id": "red_maple_tree",
+        "name": "Red Maple Tree",
+        "category": "solid",
+        "assetPath": "assets/tiles/trees/red_maple_tree.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any",
+        "interactionText": "It's a red maple tree."
+    },
+    {
+        "id": "willow_tree",
+        "name": "Willow Tree",
+        "category": "solid",
+        "assetPath": "assets/tiles/trees/willow_tree.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any",
+        "interactionText": "It's a willow tree."
+    },
+    {
+        "id": "redwood_tree",
+        "name": "Redwood Tree",
+        "category": "solid",
+        "assetPath": "assets/tiles/trees/redwood_tree.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Redwoods",
+        "interactionText": "It's a redwood tree."
     },
     {
         "id": "cactus",

@@ -301,9 +301,11 @@ class BiomeDataManager {
     return BiomeConfig(
       id: id,
       name: name,
-      defaultTileId: '${id}_ground',
       tiles:
           allTiles, // Fallback to all tiles if specifically filtered list is unavailable
+      defaultTileId: allTiles.containsKey('${id}_ground')
+          ? '${id}_ground'
+          : (allTiles.isNotEmpty ? allTiles.keys.first : 'ground'),
     );
   }
 }
@@ -321,7 +323,11 @@ class MapTile {
   });
 
   TileDefinition get definition =>
-      config.tiles[tileId] ?? config.tiles[config.defaultTileId]!;
+      config.tiles[tileId] ??
+      BiomeDataManager.allTiles[tileId] ??
+      config.tiles[config.defaultTileId] ??
+      BiomeDataManager.allTiles[config.defaultTileId] ??
+      BiomeDataManager.allTiles.values.first;
 
   TileCategory get category => definition.category;
 
@@ -450,7 +456,9 @@ class MapStringParser {
           final def =
               config.tiles[tileId] ??
               BiomeDataManager.allTiles[tileId] ??
-              config.tiles[config.defaultTileId]!;
+              config.tiles[config.defaultTileId] ??
+              BiomeDataManager.allTiles[config.defaultTileId] ??
+              BiomeDataManager.allTiles.values.first;
 
           grid[r][c] = MapTile(
             tileId: def.id,

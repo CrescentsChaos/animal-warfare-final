@@ -678,9 +678,11 @@ class _MapEditorState extends State<MapEditor> {
         if (_biomeIds.contains(importedName)) {
           _switchBiome(importedName);
         } else {
-          // Just use the ID but keep our selection if name doesn't match
+          // Refresh config for custom IDs
           final String newId = data['id'] ?? 'custom';
           _biomeId = newId;
+          _biomeConfig = BiomeDataManager.getBiome(_biomeId);
+          _refreshTileCategories();
         }
       }
 

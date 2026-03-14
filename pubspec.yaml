@@ -110,6 +110,7 @@ flutter:
     - assets/move_effects/
     - assets/farming/
     - assets/tiles/
+    - assets/tiles/trees/
     - assets/overworld/
     - assets/maps.json
     - assets/tiles.json
