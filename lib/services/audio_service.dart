@@ -22,6 +22,7 @@ class AudioService {
   double _musicVolume = 1.0;
   double _soundVolume = 1.0;
   String? _currentMusicPath;
+  final List<String> _musicStack = [];
   bool _isInitialized = false;
   SharedPreferences? _prefs;
 
@@ -151,12 +152,33 @@ class AudioService {
     }
   }
 
+  /// Push current music to stack and play new track
+  Future<void> pushMusic(String assetPath, {bool loop = true}) async {
+    if (isTesting) return;
+    if (_currentMusicPath != null) {
+      _musicStack.add(_currentMusicPath!);
+    }
+    await playMusic(assetPath, loop: loop);
+  }
+
+  /// Pop music from stack and resume it
+  Future<void> popMusic() async {
+    if (isTesting) return;
+    if (_musicStack.isNotEmpty) {
+      final previousTrack = _musicStack.removeLast();
+      await playMusic(previousTrack);
+    } else {
+      await stopMusic();
+    }
+  }
+
   /// Stop the current background music
   Future<void> stopMusic() async {
     if (isTesting) return;
     try {
       await _musicPlayer.stop();
       _currentMusicPath = null;
+      _musicStack.clear(); // Clear stack when explicitly stopping
     } catch (e) {
       print('Error stopping music: $e');
     }

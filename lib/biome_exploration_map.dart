@@ -78,9 +78,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   late Color _biomeHighlightColor;
 
   // ── Animation & Physics ──
-  int _stepCount = 0; // internal counter for encounter logic
   late Ticker _ticker;
-  // double _stepDistanceAccumulator = 0; // REMOVED
 
   // ── Camera ──
   double _cameraX = 0;
@@ -105,6 +103,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   bool _isRunning = false;
   String? _queuedDirection;
   Duration? _directionHoldStart;
+  bool _cameraSnapped = true;
 
   // ── Interaction ──
   String? _bubbleText;
@@ -124,6 +123,10 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   final List<OverworldSprite> _overworldSprites = [];
   Timer? _phenoSpawnTimer;
   double _phenoTickAccumulator = 0;
+
+  // ── Firefly Effect ──
+  final List<_FireflyParticle> _fireflies = [];
+  final List<Offset> _waterEdgeTiles = [];
 
   @override
   void initState() {
@@ -180,6 +183,74 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       const Duration(seconds: 2), // INCREASED FREQUENCY
       (_) => _trySpawnPhenoSprite(),
     );
+
+    // Initialize firefly spawn points
+    _initializeFireflyPoints();
+  }
+
+  void _initializeFireflyPoints() {
+    if (widget.biomeName.toLowerCase() != 'swamp') return;
+
+    _waterEdgeTiles.clear();
+    for (int r = 0; r < _mapData.height; r++) {
+      for (int c = 0; c < _mapData.width; c++) {
+        final tile = _mapData.grid[r][c];
+        final overlays = _mapData.overlayGrid?[r][c];
+
+        bool isLand =
+            tile.category == TileCategory.ground ||
+            tile.category == TileCategory.path ||
+            (overlays?.any((t) => t.category == TileCategory.tallGrass) ??
+                false);
+
+        if (isLand) {
+          // Check neighbors for water
+          bool nearWater = false;
+          for (int dr = -1; dr <= 1; dr++) {
+            for (int dc = -1; dc <= 1; dc++) {
+              if (dr == 0 && dc == 0) continue;
+              int nr = r + dr;
+              int nc = c + dc;
+              if (nr >= 0 &&
+                  nr < _mapData.height &&
+                  nc >= 0 &&
+                  nc < _mapData.width) {
+                final nTile = _mapData.grid[nr][nc];
+                final nOverlays = _mapData.overlayGrid?[nr][nc];
+                if (nTile.category == TileCategory.water ||
+                    (nOverlays?.any((t) => t.category == TileCategory.water) ??
+                        false)) {
+                  nearWater = true;
+                  break;
+                }
+              }
+            }
+            if (nearWater) break;
+          }
+          if (nearWater) {
+            _waterEdgeTiles.add(Offset(c.toDouble(), r.toDouble()));
+          }
+        }
+      }
+    }
+
+    // Spawn initial fireflies
+    final random = Random();
+    if (_waterEdgeTiles.isNotEmpty) {
+      for (int i = 0; i < 40; i++) {
+        final baseTile =
+            _waterEdgeTiles[random.nextInt(_waterEdgeTiles.length)];
+        _fireflies.add(
+          _FireflyParticle(
+            x: baseTile.dx * tileSize + random.nextDouble() * tileSize,
+            y: baseTile.dy * tileSize + random.nextDouble() * tileSize,
+            phase: random.nextDouble() * pi * 2,
+            speed: 0.2 + random.nextDouble() * 0.3,
+            driftDir: random.nextDouble() * pi * 2,
+          ),
+        );
+      }
+    }
   }
 
   void _onTick(Duration elapsed) {
@@ -230,8 +301,28 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         sprite.playerPixelX = _playerX;
         sprite.playerPixelY = _playerY;
 
-        if (sprite.tick(_phenoTickAccumulator, _mapData, tileSize)) {
+        if (sprite.tick(
+          _phenoTickAccumulator,
+          _mapData,
+          tileSize,
+          otherSprites: _overworldSprites,
+          pTargetX: _isMovingToTarget ? _targetX : _playerX,
+          pTargetY: _isMovingToTarget ? _targetY : _playerY,
+        )) {
           anyChanged = true;
+        }
+
+        // Handle ambient cries
+        if (sprite.shouldPlayCry) {
+          sprite.shouldPlayCry = false;
+          // Only play if within hearing range (e.g. 15 tiles)
+          final dx = sprite.pixelX - _playerX;
+          final dy = sprite.pixelY - _playerY;
+          final distSq = dx * dx + dy * dy;
+          final maxDist = 15 * tileSize;
+          if (distSq < maxDist * maxDist) {
+            AudioService.instance.playOrganismCry(sprite.organism.cry);
+          }
         }
       }
       // Remove expired sprites
@@ -243,9 +334,37 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       _checkPhenoCollision();
     }
 
+    // ── Update Fireflies ──
+    if (widget.biomeName.toLowerCase() == 'swamp') {
+      final hour = TimeService().currentGameTime.hour;
+      final bool isNight = hour >= 21 || hour < 6;
+      if (isNight) {
+        for (final f in _fireflies) {
+          f.x += cos(f.driftDir) * f.speed;
+          f.y += sin(f.driftDir) * f.speed;
+          f.driftDir += (Random().nextDouble() - 0.5) * 0.1;
+          f.phase += dt * 2;
+        }
+        if (mounted) setState(() {});
+      }
+    }
+
     if (_isMovingToTarget) {
       _moveTowardsTarget();
+      // Camera update AFTER movement — this frame's position, zero lag
+      _updateCamera();
       return;
+    }
+
+    // Advance animation even if blocked by obstacle
+    if (_activeDirections.isNotEmpty) {
+      final double speed = _isRunning ? 8.0 : 4.0;
+      _walkAnimAccumulator += speed;
+      if (_walkAnimAccumulator >= tileSize / 2) {
+        _walkAnimAccumulator -= tileSize / 2;
+        _walkFrame = (_walkFrame == 1) ? 2 : 1;
+      }
+      setState(() {});
     }
 
     // Handle movement initiation
@@ -253,31 +372,44 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       final dir = _queuedDirection ?? _activeDirections.last;
       _queuedDirection = null;
 
-      // Tap-to-turn: If new direction, set it and start hold timer
+      // Tap-to-turn: face direction first
       if (dir != _playerDirection) {
         _directionHoldStart = elapsed;
         setState(() {
           _playerDirection = dir;
           _walkFrame = 0;
         });
-        return; // Wait for hold to step
+        _updateCamera();
+        return;
       }
 
-      // If already facing the direction, check if we should initiate move
       if (_directionHoldStart == null) {
-        // Fresh touch on same direction -> move immediately
         _directionHoldStart = elapsed;
         _initiateMove(dir);
       } else {
-        // Continuous hold
         final holdTime = elapsed - _directionHoldStart!;
         if (holdTime.inMilliseconds > 100) {
           _initiateMove(dir);
         }
       }
     } else {
-      // No active directions
       _directionHoldStart = null;
+    }
+
+    _updateCamera();
+
+    // ── Encounter Alert Check (delay) ──
+    for (final sprite in _overworldSprites) {
+      if (sprite.isAlerted && sprite.alertTimer <= 0) {
+        // Alert animation finished, start encounter
+        sprite.isAlerted = false;
+        AudioService.instance.playOrganismCry(sprite.organism.cry);
+        setState(() => _encounterActive = true);
+        _onFight(sprite.organism);
+        // Clean up: remove the sprite from map
+        _overworldSprites.remove(sprite);
+        break; // Only start one battle
+      }
     }
   }
 
@@ -299,10 +431,10 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
     if (_canWalkAt(nextX, nextY)) {
       // Check for floating jump
-      final int currentR = (_playerY / tileSize).round();
-      final int currentC = (_playerX / tileSize).round();
-      final int targetR = (nextY / tileSize).round();
-      final int targetC = (nextX / tileSize).round();
+      final int currentR = (_playerY / tileSize).floor();
+      final int currentC = (_playerX / tileSize).floor();
+      final int targetR = (nextY / tileSize).floor();
+      final int targetC = (nextX / tileSize).floor();
 
       final currentBase = _mapData.grid[currentR][currentC];
       final currentOverlay = _mapData.overlayGrid?[currentR][currentC];
@@ -358,15 +490,10 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         _walkFrame = 0; // Reset to idle frame
 
         // Check encounter and count step exactly on tile
-        _stepCount++;
         _checkStepEncounter(
           ((_playerY + tileSize / 2) / tileSize).floor(),
           ((_playerX + tileSize / 2) / tileSize).floor(),
         );
-
-        if (!_isPanning) {
-          _scrollToPlayer(insideSetState: true);
-        }
 
         // Check collision with overworld sprites
         _checkPhenoCollision();
@@ -383,16 +510,13 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
           _walkAnimAccumulator -= tileSize / 2;
           _walkFrame = (_walkFrame == 1) ? 2 : 1;
         }
-
-        if (!_isPanning) {
-          _scrollToPlayer(insideSetState: true);
-        }
       });
     }
   }
 
   // ── Collision ──
-  bool _canWalkAt(double x, double y) {
+  bool _canWalkAt(double x, double y, {bool? isSwimmingOverride}) {
+    final bool isSwimming = isSwimmingOverride ?? _isSwimming;
     const margin = 10.0;
     final corners = [
       Offset(x + margin, y + margin),
@@ -437,7 +561,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         }
       }
 
-      if (_isSwimming) {
+      if (isSwimming) {
         // Must stay in water, but cannot swim THROUGH a lily pad (floating)
         if (!isWater || isFloating) return false;
       } else {
@@ -464,6 +588,18 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
           walkable = baseTile.isWalkable && overlaysWalkable;
         }
         if (!walkable) return false;
+      }
+
+      // ── Overworld Sprite Hitbox Check ──
+      for (final sprite in _overworldSprites) {
+        final int sr = (sprite.pixelY / tileSize).floor();
+        final int sc = (sprite.pixelX / tileSize).floor();
+        final int str = (sprite.targetPixelY / tileSize).floor();
+        final int stc = (sprite.targetPixelX / tileSize).floor();
+
+        if ((sr == r && sc == c) || (str == r && stc == c)) {
+          return false; // Blocked by animal
+        }
       }
     }
     return true;
@@ -571,22 +707,13 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
   void _scrollToPlayer({bool insideSetState = false}) {
     if (!mounted || _viewSize == Size.zero) return;
-
-    // Center camera on player, accounting for zoom
-    double targetX =
-        (_playerX + tileSize / 2) - (_viewSize.width / (2 * _zoomScale));
-    double targetY =
+    // Compute the ideal centered position and apply directly.
+    // The _onTick camera system handles all subsequent tracking automatically.
+    _cameraX = (_playerX + tileSize / 2) - (_viewSize.width / (2 * _zoomScale));
+    _cameraY =
         (_playerY + tileSize / 2) - (_viewSize.height / (2 * _zoomScale));
 
-    if (insideSetState) {
-      _cameraX = targetX;
-      _cameraY = targetY;
-    } else {
-      setState(() {
-        _cameraX = targetX;
-        _cameraY = targetY;
-      });
-    }
+    if (!insideSetState && mounted) setState(() {});
   }
 
   void _triggerEncounter(MapTile activeTile) {
@@ -636,6 +763,36 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       _onFight(encounter.organism);
     } else {
       setState(() => _encounterActive = false);
+    }
+  }
+
+  /// Updates camera position based on current player position.
+  /// Call this AFTER movement to ensure zero-lag centering.
+  void _updateCamera() {
+    if (_isPanning || _viewSize == Size.zero) return;
+
+    final double idealX =
+        (_playerX + tileSize / 2) - (_viewSize.width / (2 * _zoomScale));
+    final double idealY =
+        (_playerY + tileSize / 2) - (_viewSize.height / (2 * _zoomScale));
+
+    if (_cameraSnapped) {
+      // Pokémon-style: always exactly centered on player
+      _cameraX = idealX;
+      _cameraY = idealY;
+    } else {
+      // Gentle lerp recovery after a manual pan
+      const double lerpSpeed = 0.15;
+      _cameraX += (idealX - _cameraX) * lerpSpeed;
+      _cameraY += (idealY - _cameraY) * lerpSpeed;
+
+      final double dx = idealX - _cameraX;
+      final double dy = idealY - _cameraY;
+      if ((dx * dx + dy * dy) < 0.25) {
+        _cameraX = idealX;
+        _cameraY = idealY;
+        _cameraSnapped = true;
+      }
     }
   }
 
@@ -809,6 +966,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         return GestureDetector(
           onScaleStart: (details) {
             _isPanning = true;
+            _cameraSnapped = false;
           },
           onScaleUpdate: (details) {
             if (_isPanning && details.pointerCount == 1) {
@@ -830,7 +988,9 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
             }
           },
           onScaleEnd: (details) {
-            _isPanning = false;
+            setState(() {
+              _isPanning = false;
+            });
           },
           child: CustomPaint(
             size: viewSize,
@@ -881,6 +1041,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
                 return isFloat(r1, c1);
               }(),
               overworldSprites: _overworldSprites,
+              fireflies: _fireflies,
             ),
           ),
         );
@@ -912,8 +1073,12 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
           ),
         ),
         child: GestureDetector(
-          onPanStart: (details) =>
-              _handleDPadGesture(details.localPosition, padSize),
+          onPanStart: (details) {
+            setState(() {
+              _cameraSnapped = true; // Snap camera back immediately when moving
+            });
+            _handleDPadGesture(details.localPosition, padSize);
+          },
           onPanUpdate: (details) =>
               _handleDPadGesture(details.localPosition, padSize),
           onPanEnd: (_) {
@@ -1112,8 +1277,12 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     if (_encounterActive || _isMovingToTarget) return;
 
     // Determine target coordinate based on facing direction
-    int targetR = (_playerY / tileSize).floor();
-    int targetC = (_playerX / tileSize).floor();
+    // USE CENTER of player for tile detection instead of top-left
+    int currentR = ((_playerY + tileSize / 2) / tileSize).floor();
+    int currentC = ((_playerX + tileSize / 2) / tileSize).floor();
+
+    int targetR = currentR;
+    int targetC = currentC;
 
     if (_playerDirection == 'up') {
       targetR -= 1;
@@ -1128,7 +1297,26 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       targetC += 1;
     }
 
-    // Bounds check
+    // 1. Check for animal encounter
+    OverworldSprite? targetSprite;
+    for (final s in _overworldSprites) {
+      if (s.row == targetR && s.col == targetC) {
+        targetSprite = s;
+        break;
+      }
+    }
+
+    if (targetSprite != null) {
+      AudioService.instance.playOrganismCry(targetSprite.organism.cry);
+      setState(() {
+        _encounterActive = true;
+        _overworldSprites.remove(targetSprite);
+      });
+      _onFight(targetSprite.organism);
+      return;
+    }
+
+    // 2. Bounds check for tiles/signs
     if (targetR < 0 ||
         targetR >= mapHeight ||
         targetC < 0 ||
@@ -1156,37 +1344,49 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
           isWater = true;
         }
         if (def?.category == TileCategory.ground ||
-            def?.category == TileCategory.path)
+            def?.category == TileCategory.path) {
           isLand = true;
+        }
         if (def?.category == TileCategory.floating) isFloating = true;
         if (def?.interactionText != null) textToShow = def!.interactionText;
       }
     }
 
-    if (!_isSwimming && isWater) {
+    final bool canSwimHere = _canWalkAt(
+      targetC * tileSize,
+      targetR * tileSize,
+      isSwimmingOverride: true,
+    );
+    final bool canWalkHere = _canWalkAt(
+      targetC * tileSize,
+      targetR * tileSize,
+      isSwimmingOverride: false,
+    );
+
+    if (!_isSwimming && isWater && canSwimHere) {
       _showConfirmationDialog("Swim here?", () {
         setState(() {
           _isSwimming = true;
-          _isRunning = false; // Cannot run in water
-          _jumpTime = 0.3; // Jump into water animation
+          _isRunning = false;
+          _jumpTime = 0.3;
           _playerX = targetC * tileSize;
           _playerY = targetR * tileSize;
           _isMovingToTarget = false;
         });
       });
       return;
-    } else if (_isSwimming && isLand) {
+    } else if (_isSwimming && isLand && canWalkHere) {
       _showConfirmationDialog("Get out of water?", () {
         setState(() {
           _isSwimming = false;
-          _jumpTime = 0.3; // Jump out of water animation
+          _jumpTime = 0.3;
           _playerX = targetC * tileSize;
           _playerY = targetR * tileSize;
           _isMovingToTarget = false;
         });
       });
       return;
-    } else if (_isSwimming && isFloating) {
+    } else if (_isSwimming && isFloating && canWalkHere) {
       _showConfirmationDialog("Jump on?", () {
         setState(() {
           _isSwimming = false;
@@ -1199,22 +1399,64 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       return;
     }
 
-    if (textToShow != null) {
-      setState(() {
-        _bubbleText = textToShow;
-        // Tile pos is targetR, targetC. We'll render it above the player or tile. Let's render above player.
-        _interactionTilePos = Offset(_playerX, _playerY - tileSize);
-      });
-
-      _bubbleTimer?.cancel();
-      _bubbleTimer = Timer(const Duration(seconds: 3), () {
-        if (mounted) {
-          setState(() {
-            _bubbleText = null;
-          });
-        }
-      });
+    // 3. Enhanced environmental interactions
+    // Water edge (not swimming, facing water)
+    if (!_isSwimming && isWater && !canSwimHere) {
+      _showInteractionBubble('💧 The water looks deep...', icon: '💧');
+      return;
     }
+
+    // Tall grass rustle
+    bool isTallGrass =
+        baseDef?.category == TileCategory.tallGrass ||
+        (overlayTiles?.any((t) {
+              final def = BiomeDataManager.allTiles[t.tileId];
+              return def?.category == TileCategory.tallGrass;
+            }) ??
+            false);
+    if (isTallGrass) {
+      final messages = [
+        '🌿 The grass rustles...',
+        '🌱 Something might be hiding in here!',
+        '🍃 You feel a gust of wind through the grass.',
+      ];
+      final msg = messages[Random().nextInt(messages.length)];
+      _showInteractionBubble(msg);
+      return;
+    }
+
+    // Fishing spot (swimming, press A facing water)
+    if (_isSwimming && isWater) {
+      _showInteractionBubble('🎣 You could fish here!');
+      return;
+    }
+
+    // Rest spot
+    if (textToShow != null && textToShow.startsWith('REST:')) {
+      final restMsg = textToShow.substring(5);
+      _showConfirmationDialog(
+        restMsg.isNotEmpty ? restMsg : 'Rest here and recover?',
+        () {
+          _showInteractionBubble('💤 You feel refreshed!');
+        },
+      );
+      return;
+    }
+
+    if (textToShow != null) {
+      _showInteractionBubble(textToShow);
+    }
+  }
+
+  void _showInteractionBubble(String text, {String? icon}) {
+    setState(() {
+      _bubbleText = text;
+      _interactionTilePos = Offset(_playerX, _playerY - tileSize);
+    });
+    _bubbleTimer?.cancel();
+    _bubbleTimer = Timer(const Duration(seconds: 3), () {
+      if (mounted) setState(() => _bubbleText = null);
+    });
   }
 
   Widget _buildInteractionBubble() {
@@ -1615,11 +1857,41 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       final validTiles = _findValidPhenoTiles(org);
       if (validTiles.isEmpty) continue;
 
-      final pos = validTiles[rng.nextInt(validTiles.length)];
+      validTiles.shuffle(rng);
+      int? selectedRow;
+      int? selectedCol;
+
+      for (final pos in validTiles) {
+        final r = pos[0];
+        final c = pos[1];
+
+        // Ensure tile is not occupied by another sprite or player
+        bool occupied = false;
+        if ((_playerY / tileSize).round() == r &&
+            (_playerX / tileSize).round() == c) {
+          occupied = true;
+        } else {
+          for (final s in _overworldSprites) {
+            if (s.row == r && s.col == c) {
+              occupied = true;
+              break;
+            }
+          }
+        }
+
+        if (!occupied) {
+          selectedRow = r;
+          selectedCol = c;
+          break;
+        }
+      }
+
+      if (selectedRow == null || selectedCol == null) continue;
+
       final sprite = OverworldSprite(
         organism: org,
-        row: pos[0],
-        col: pos[1],
+        row: selectedRow,
+        col: selectedCol,
         tileSize: tileSize,
       );
 
@@ -1644,8 +1916,9 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         final base = _mapData.grid[r][c];
         final overlay = _mapData.overlayGrid?[r][c];
         if (base.category == TileCategory.solid ||
-            (overlay?.any((t) => t.category == TileCategory.solid) ?? false))
+            (overlay?.any((t) => t.category == TileCategory.solid) ?? false)) {
           continue;
+        }
 
         if (isAny) {
           tiles.add([r, c]);
@@ -1696,18 +1969,61 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   void _checkPhenoCollision() {
     if (_encounterActive) return;
     final toRemove = <OverworldSprite>[];
+    final rng = Random();
+
     for (final sprite in _overworldSprites) {
-      if (sprite.isCollidingWith(_playerX, _playerY, tileSize)) {
-        toRemove.add(sprite);
-        // Trigger encounter with this organism
-        AudioService.instance.playOrganismCry(sprite.organism.cry);
-        setState(() => _encounterActive = true);
-        _onFight(sprite.organism);
-        break;
+      if (sprite.isAlerted) continue;
+
+      // USE CENTER for distance/collision checks
+      final int pr = ((_playerY + tileSize / 2) / tileSize).floor();
+      final int pc = ((_playerX + tileSize / 2) / tileSize).floor();
+      final int sr = (sprite.pixelY / tileSize).floor();
+      final int sc = (sprite.pixelX / tileSize).floor();
+
+      // If they are on the same tile OR adjacent tiles (within 1 step)
+      bool isClose = (pr - sr).abs() <= 1 && (pc - sc).abs() <= 1;
+
+      if (isClose) {
+        if (!sprite.attackCalculated) {
+          sprite.attackCalculated = true;
+          sprite.attackDecision = rng.nextDouble() < 0.3;
+        }
+
+        if (sprite.attackDecision) {
+          // Trigger encounter animation instead of immediate battle
+          sprite.isAlerted = true;
+          sprite.alertTimer = 0.6; // 600ms alert
+          sprite.isMoving = false;
+          sprite.walkFrame = 0;
+          break;
+        }
+      } else {
+        // Reset if no longer colliding
+        sprite.attackCalculated = false;
+        sprite.attackDecision = false;
       }
     }
     _overworldSprites.removeWhere((s) => toRemove.contains(s));
   }
+}
+
+// ────────────────────────────────────────────────────────────────────
+// Firefly Particle definition
+// ────────────────────────────────────────────────────────────────────
+
+class _FireflyParticle {
+  double x, y;
+  double phase;
+  double speed;
+  double driftDir;
+
+  _FireflyParticle({
+    required this.x,
+    required this.y,
+    required this.phase,
+    required this.speed,
+    required this.driftDir,
+  });
 }
 
 // ────────────────────────────────────────────────────────────────────
@@ -1732,6 +2048,7 @@ class _BiomeMapPainter extends CustomPainter {
   final List<OverworldSprite> overworldSprites;
   final int currentHour;
   final double zoomScale;
+  final List<_FireflyParticle> fireflies;
 
   _BiomeMapPainter({
     required this.currentHour,
@@ -1751,13 +2068,13 @@ class _BiomeMapPainter extends CustomPainter {
     this.jumpOffset = 0,
     this.isOnFloating = false,
     this.overworldSprites = const [],
+    this.fireflies = const [],
   });
 
   @override
   void paint(Canvas canvas, Size size) {
     canvas.save();
     canvas.scale(zoomScale);
-    // Removed duplicate canvas.translate since manual offsets (- cameraX) are calculated per tile/sprite
 
     // 1. Ground Layer (Base Terrain + Floating Tiles)
     for (int r = 0; r < mapData.height; r++) {
@@ -1851,6 +2168,32 @@ class _BiomeMapPainter extends CustomPainter {
           ..color = Colors.indigo.shade900.withValues(alpha: 0.4)
           ..blendMode = BlendMode.srcOver,
       );
+
+      // Draw Fireflies
+      _drawFireflies(canvas);
+    }
+  }
+
+  void _drawFireflies(Canvas canvas) {
+    for (final f in fireflies) {
+      final double dx = f.x - cameraX;
+      final double dy = f.y - cameraY;
+
+      // Flicker opacity based on phase
+      final double opacity = (sin(f.phase) * 0.5 + 0.5) * 0.8;
+
+      final paint = Paint()
+        ..color = Colors.yellowAccent.withValues(alpha: opacity)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.0);
+
+      canvas.drawCircle(Offset(dx, dy), 1.5, paint);
+
+      // Core glow
+      canvas.drawCircle(
+        Offset(dx, dy),
+        0.8,
+        Paint()..color = Colors.white.withValues(alpha: opacity),
+      );
     }
   }
 
@@ -1861,12 +2204,11 @@ class _BiomeMapPainter extends CustomPainter {
     MapTile tile,
     List<List<dynamic>> grid,
   ) {
-    final rect = Rect.fromLTWH(
-      c * tileSize - cameraX,
-      r * tileSize - cameraY,
-      tileSize,
-      tileSize,
-    );
+    // Round to avoid jitter
+    final double finalX = (c * tileSize - cameraX);
+    final double finalY = (r * tileSize - cameraY);
+
+    final rect = Rect.fromLTWH(finalX, finalY, tileSize, tileSize);
     final assets = BiomeDataManager.tileAssets[tile.tileId];
 
     if (assets != null && assets.isNotEmpty) {
@@ -2026,8 +2368,18 @@ class _BiomeMapPainter extends CustomPainter {
     final double assetH = img.height.toDouble();
     final double drawW = tileSize;
     final double drawH = tileSize;
-    final double x = px - drawW / 2;
-    final double y = py - drawH / 2;
+
+    // Apply shake offset for alert animation
+    final double x = (px - drawW / 2) + sprite.shakeOffset;
+    final double y = (py + sprite.hopOffset + sprite.tileOffset) - drawH / 2;
+
+    if (sprite.tileOffset > 0) {
+      // If submerged (tileOffset > 0), clip the bottom part of the sprite
+      canvas.save();
+      canvas.clipRect(
+        Rect.fromLTWH(x, y, drawW, drawH * 0.85),
+      ); // Hide bottom 15%
+    }
 
     canvas.drawImageRect(
       img,
@@ -2035,6 +2387,10 @@ class _BiomeMapPainter extends CustomPainter {
       Rect.fromLTWH(x, y, drawW, drawH),
       Paint(),
     );
+
+    if (sprite.tileOffset > 0) {
+      canvas.restore();
+    }
   }
 
   @override

@@ -279,7 +279,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     final track = rand.nextBool()
         ? 'audio/battle_default.mp3'
         : 'audio/battle_default1.mp3';
-    AudioService.instance.playMusic(track);
+    AudioService.instance.pushMusic(track);
 
     _playerShakeController = AnimationController(
       vsync: this,
@@ -412,10 +412,8 @@ class _BattleScreenContentState extends State<BattleScreenContent>
       _battleManager!.removeListener(_handleStateTriggers);
     }
 
-    // FIX: Explicitly stop music when leaving the battle screen.
-    // This prevents the battle music from persisting into the home screen
-    // or next battle (which might not start its track immediately).
-    AudioService.instance.stopMusic();
+    // FIX: Pop the music from the stack to resume the previous track (e.g. biome theme)
+    AudioService.instance.popMusic();
 
     _playerShakeController.dispose();
     _opponentShakeController.dispose();

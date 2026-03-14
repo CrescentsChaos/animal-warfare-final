@@ -19,5 +19,12 @@
         "default_speed": 1.2,
         "vision_range": 3.0,
         "move_tiles": "swamp_ground,lily_pad,lily_pad2,tall_grass,dw_pond_we,dw_pond_we_1,dw_pond_we_2,dw_pond_we_3"
+    },
+    {
+        "pheno": "hfrog",
+        "max_spawns": 1,
+        "default_speed": 1.0,
+        "vision_range": 3.0,
+        "move_tiles": "swamp_ground,lily_pad,lily_pad2,tall_grass,dw_pond_we,dw_pond_we_1,dw_pond_we_2,dw_pond_we_3"
     }
 ]
