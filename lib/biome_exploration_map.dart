@@ -325,6 +325,25 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
           }
         }
       }
+      // ▶ Player-priority: If any sprite's TARGET tile is where the player
+      // currently stands, snap it back to its origin tile immediately.
+      final int playerRow = ((_playerY + tileSize / 2) / tileSize).floor();
+      final int playerCol = ((_playerX + tileSize / 2) / tileSize).floor();
+      for (final sprite in _overworldSprites) {
+        if (sprite.isMoving &&
+            sprite.targetRow == playerRow &&
+            sprite.targetCol == playerCol) {
+          // Snap it back — cancel move and return to current row/col
+          sprite.pixelX = sprite.col * tileSize;
+          sprite.pixelY = sprite.row * tileSize;
+          sprite.targetPixelX = sprite.pixelX;
+          sprite.targetPixelY = sprite.pixelY;
+          sprite.isMoving = false;
+          sprite.walkFrame = 0;
+          sprite.attackCalculated = false;
+          sprite.attackDecision = false;
+        }
+      }
       // Remove expired sprites
       _overworldSprites.removeWhere((s) => s.isExpired);
       _phenoTickAccumulator = 0;
@@ -591,13 +610,12 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       }
 
       // ── Overworld Sprite Hitbox Check ──
+      // Only block on the sprite's CURRENT pixel tile, not its target.
+      // This lets the player immediately walk onto a tile the animal is leaving.
       for (final sprite in _overworldSprites) {
         final int sr = (sprite.pixelY / tileSize).floor();
         final int sc = (sprite.pixelX / tileSize).floor();
-        final int str = (sprite.targetPixelY / tileSize).floor();
-        final int stc = (sprite.targetPixelX / tileSize).floor();
-
-        if ((sr == r && sc == c) || (str == r && stc == c)) {
+        if (sr == r && sc == c) {
           return false; // Blocked by animal
         }
       }
@@ -1980,19 +1998,32 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       final int sr = (sprite.pixelY / tileSize).floor();
       final int sc = (sprite.pixelX / tileSize).floor();
 
-      // If they are on the same tile OR adjacent tiles (within 1 step)
-      bool isClose = (pr - sr).abs() <= 1 && (pc - sc).abs() <= 1;
+      final int dr = pr - sr;
+      final int dc = pc - sc;
 
-      if (isClose) {
+      // 1. Cardinal adjacency check: Must be exactly 1 tile away vertically OR horizontally (not both/diagonal)
+      bool isAdjacent =
+          (dr.abs() == 1 && dc == 0) || (dc.abs() == 1 && dr == 0);
+
+      // 2. Facing check: The animal must be facing the tile the player is on
+      bool isFacing = false;
+      if (isAdjacent) {
+        if (dr == -1) isFacing = sprite.direction == 'up';
+        if (dr == 1) isFacing = sprite.direction == 'down';
+        if (dc == -1) isFacing = sprite.direction == 'left';
+        if (dc == 1) isFacing = sprite.direction == 'right';
+      }
+
+      if (isAdjacent && isFacing) {
         if (!sprite.attackCalculated) {
           sprite.attackCalculated = true;
-          sprite.attackDecision = rng.nextDouble() < 0.3;
+          sprite.attackDecision = rng.nextDouble() < 0.05;
         }
 
         if (sprite.attackDecision) {
           // Trigger encounter animation instead of immediate battle
           sprite.isAlerted = true;
-          sprite.alertTimer = 0.6; // 600ms alert
+          sprite.alertTimer = 0.8; // 800ms alert for two jumps
           sprite.isMoving = false;
           sprite.walkFrame = 0;
           break;
@@ -2369,16 +2400,16 @@ class _BiomeMapPainter extends CustomPainter {
     final double drawW = tileSize;
     final double drawH = tileSize;
 
-    // Apply shake offset for alert animation
-    final double x = (px - drawW / 2) + sprite.shakeOffset;
-    final double y = (py + sprite.hopOffset + sprite.tileOffset) - drawH / 2;
+    // Apply alert jump offset for encounter animation
+    final double x = px - drawW / 2;
+    final double y =
+        (py + sprite.hopOffset + sprite.tileOffset + sprite.alertJumpOffset) -
+        drawH / 2;
 
     if (sprite.tileOffset > 0) {
-      // If submerged (tileOffset > 0), clip the bottom part of the sprite
+      // Clip the sprite so `tileOffset` pixels are hidden below the waterline
       canvas.save();
-      canvas.clipRect(
-        Rect.fromLTWH(x, y, drawW, drawH * 0.85),
-      ); // Hide bottom 15%
+      canvas.clipRect(Rect.fromLTWH(x, y, drawW, drawH - sprite.tileOffset));
     }
 
     canvas.drawImageRect(

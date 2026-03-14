@@ -327,7 +327,7 @@ class OverworldSprite {
   // Alert/Encounter animation
   bool isAlerted = false;
   double alertTimer = 0.0;
-  double shakeOffset = 0.0;
+  double alertJumpOffset = 0.0;
 
   // Loaded directional sprites (up/down/left/right)
   Map<String, ui.Image> sprites = {};
@@ -478,7 +478,7 @@ class OverworldSprite {
           organism.habitat.toLowerCase().contains('water') ||
           organism.habitat.toLowerCase().contains('swamp') ||
           organism.pheno == 'frog' ||
-          organism.pheno == 'Hfrog';
+          organism.pheno == 'hfrog';
 
       if (inWater && isSemiAquatic) {
         tileSpeedMult = 1.5; // 50% speed boost in water
@@ -557,8 +557,14 @@ class OverworldSprite {
     if (isAlerted) {
       if (alertTimer > 0) {
         alertTimer -= dt;
-        // Shake effect
-        shakeOffset = sin(alertTimer * 50.0) * 2.5;
+        // Double Jump animation: two bounces
+        // progress goes from 0 to 1 as alertTimer goes from 0.8 to 0
+        const double totalAlertTime = 0.8;
+        double progress = ((totalAlertTime - alertTimer) / totalAlertTime)
+            .clamp(0.0, 1.0);
+        // Using abs(sin) for two distinct jumps
+        alertJumpOffset = -(sin(progress * 2 * pi).abs()) * 12.0;
+
         // Face the player while alerted
         final double dxP = playerPixelX - pixelX;
         final double dyP = playerPixelY - pixelY;
@@ -568,6 +574,8 @@ class OverworldSprite {
           direction = dxP > 0 ? 'right' : 'left';
         }
         changed = true;
+      } else {
+        alertJumpOffset = 0.0;
       }
     }
 
@@ -587,16 +595,23 @@ class OverworldSprite {
     bool isFloatingTile =
         tileAt.category == TileCategory.floating ||
         (overlaysAt?.any((t) => t.category == TileCategory.floating) ?? false);
-    bool isWaterTile =
+    bool isWaterTileNow =
         tileAt.category == TileCategory.water ||
         (overlaysAt?.any((t) => t.category == TileCategory.water) ?? false);
+
+    // Determine if this animal is semiaquatic (can enter water)
+    bool isSemiAquaticNow =
+        organism.spawnTiles.contains('water') ||
+        organism.habitat.toLowerCase().contains('water') ||
+        organism.habitat.toLowerCase().contains('swamp') ||
+        organism.pheno == 'frog' ||
+        organism.pheno == 'hfrog';
 
     double nextOffset = 0.0;
     if (isFloatingTile) {
       nextOffset = -7.0; // Elevated on lily pads
-    } else if (isWaterTile &&
-        (organism.pheno == 'frog' || organism.pheno == 'Hfrog')) {
-      nextOffset = 4.0; // Submerged
+    } else if (isWaterTileNow && isSemiAquaticNow) {
+      nextOffset = 12.0; // Submerged 12px in water (semiaquatic only)
     }
 
     if (tileOffset != nextOffset) {
@@ -711,7 +726,7 @@ class OverworldSprite {
     List<dynamic> selected;
 
     // --- Special Frog Behavior ---
-    if ((organism.pheno == 'frog' || organism.pheno == 'Hfrog') &&
+    if ((organism.pheno == 'frog' || organism.pheno == 'hfrog') &&
         distToPlayerRaw < visionRangePixels) {
       // Flee towards water
       List<dynamic> waterDirs = [];
@@ -758,7 +773,7 @@ class OverworldSprite {
       );
       isHopping =
           (organism.pheno == 'frog' ||
-          organism.pheno == 'Hfrog'); // Frogs always hop? Or only when moving?
+          organism.pheno == 'hfrog'); // Frogs always hop? Or only when moving?
     }
 
     _currentBurstDir = [selected[0] as int, selected[1] as int];
