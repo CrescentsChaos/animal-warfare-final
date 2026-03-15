@@ -991,43 +991,29 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   @override
   Widget build(BuildContext context) {
     final weather = WeatherService().getCurrentWeather(widget.biomeName);
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        centerTitle: true,
-        title: Text(widget.biomeName.toUpperCase()),
-        backgroundColor: _biomeDarkColor,
-        titleTextStyle: TextStyle(
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (bool didPop, dynamic result) {
+        if (didPop) {
+          _saveCurrentState();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        appBar: AppBar(
+          centerTitle: true,
+          title: Text(widget.biomeName.toUpperCase()),
+          backgroundColor: _biomeDarkColor,
+          titleTextStyle: TextStyle(
           color: _biomeHighlightColor,
           fontFamily: 'PressStart2P',
           fontSize: 14,
         ),
         leading: Padding(
-          padding: const EdgeInsets.only(left: 8.0, top: 4.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              GameClockWidget(highlightColor: _biomeHighlightColor),
-              const SizedBox(height: 4),
-              Padding(
-                padding: const EdgeInsets.only(left: 4.0),
-                child: Text(
-                  'coordinate: ${(_playerX / tileSize).floor()}, ${(_playerY / tileSize).floor()}',
-                  style: TextStyle(
-                    color: _biomeHighlightColor.withOpacity(0.9),
-                    fontFamily: 'PressStart2P',
-                    fontSize: 7,
-                    shadows: const [
-                      Shadow(color: Colors.black, blurRadius: 2, offset: Offset(1, 1))
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
+          padding: const EdgeInsets.only(left: 8.0, top: 2.0),
+          child: GameClockWidget(highlightColor: _biomeHighlightColor),
         ),
-        leadingWidth: 150,
+        leadingWidth: 100,
         actions: [
           IconButton(
             icon: Icon(Icons.shopping_cart, color: AppColors.highlightColor),
@@ -1063,11 +1049,37 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
             // D-Pad
             _buildDPad(),
             _buildZoomButtons(),
+            // Floating Coordinates
+            Positioned(
+              top: 10,
+              left: 10,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.6),
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(
+                    color: _biomeHighlightColor.withValues(alpha: 0.3),
+                    width: 0.5,
+                  ),
+                ),
+                child: Text(
+                  'COORD: ${(_playerX / tileSize).floor()}, ${(_playerY / tileSize).floor()}',
+                  style: TextStyle(
+                    color: _biomeHighlightColor,
+                    fontFamily: 'monospace',
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildMapView() {
     return LayoutBuilder(

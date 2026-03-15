@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:animal_warfare/theme.dart';
 import 'package:animal_warfare/biome_exploration_map.dart';
-import 'package:animal_warfare/game/map_editor.dart';
+import 'package:animal_warfare/game/tools_screen.dart';
 import 'package:animal_warfare/game/biome_map_data.dart';
 import 'package:animal_warfare/models/organism.dart';
-import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/local_auth_service.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
@@ -101,7 +100,7 @@ class _ExploreSelectionScreenState extends State<ExploreSelectionScreen> {
                       hintText:
                           'Paste Map Data String here...\n(e.g. W,T,G,P,...)',
                       hintStyle: TextStyle(
-                        color: Colors.white.withOpacity(0.5),
+                        color: Colors.white.withValues(alpha: 0.5),
                       ),
                     ),
                   ),
@@ -184,76 +183,199 @@ class _ExploreSelectionScreenState extends State<ExploreSelectionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(
-          'EXPLORE REGIONS',
-          style: GoogleFonts.pressStart2p(
-            fontSize: 14,
-            color: AppColors.highlight,
+    // Separate built-in biomes from custom ones
+    final builtins = BiomeDataManager.biomes.values
+        .where((b) => BiomeDataManager.builtinBiomeIds.contains(b.id))
+        .toList();
+    final customs = BiomeDataManager.biomes.values
+        .where((b) => !BiomeDataManager.builtinBiomeIds.contains(b.id))
+        .toList();
+
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          title: Text(
+            'EXPLORE REGIONS',
+            style: GoogleFonts.pressStart2p(
+              fontSize: 14,
+              color: AppColors.highlight,
+            ),
+          ),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.build_circle, color: Colors.orangeAccent),
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const ToolsScreen(),
+                  ),
+                );
+              },
+              tooltip: 'Open Tools',
+            ),
+          ],
+          bottom: TabBar(
+            indicatorColor: AppColors.highlight,
+            labelStyle: GoogleFonts.pressStart2p(fontSize: 10),
+            tabs: const [
+              Tab(text: 'BIOMES'),
+              Tab(text: 'CUSTOM'),
+            ],
           ),
         ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.build_circle, color: Colors.orangeAccent),
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const MapEditor(biomeId: 'swamp'),
-                ),
-              );
-            },
-            tooltip: 'Open Map Editor',
-          ),
-        ],
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : TabBarView(
                 children: [
-                  Text(
-                    'Select a biome to explore:',
-                    style: GoogleFonts.inter(
-                      color: AppColors.textSecondary,
-                      fontSize: 16,
-                    ),
+                  // Tab 1: Biomes
+                  ListView(
+                    padding: const EdgeInsets.all(24),
+                    children: [
+                      Text(
+                        'Regions of Animal Warfare:',
+                        style: GoogleFonts.inter(
+                          color: AppColors.textSecondary,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      ...builtins.map((b) => Padding(
+                            padding: const EdgeInsets.only(bottom: 16),
+                            child: _buildBiomeCard(
+                              name: b.name,
+                              description: _getBiomeDescription(b.id),
+                              icon: _getBiomeIcon(b.id),
+                              color: _getBiomeColor(b.id),
+                              onTap: () => _enterBiome(b.name),
+                            ),
+                          )),
+                      // Locked Placeholder
+                      _buildBiomeCard(
+                        name: 'Plains (Locked)',
+                        description:
+                            'Vast grasslands with high visibility. Coming soon.',
+                        icon: Icons.grass,
+                        color: Colors.grey,
+                        onTap: null,
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 24),
-                  _buildBiomeCard(
-                    name: 'Swamp',
-                    description:
-                        'Misty wetlands teeming with reptiles and mysterious flora.',
-                    icon: Icons.water,
-                    color: Colors.green.shade800,
-                    onTap: () => _enterBiome('Swamp'),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildBiomeCard(
-                    name: 'Plains (Locked)',
-                    description:
-                        'Vast grasslands with high visibility. Coming soon.',
-                    icon: Icons.grass,
-                    color: Colors.grey,
-                    onTap: null,
-                  ),
-                  const SizedBox(height: 24),
-                  _buildBiomeCard(
-                    name: 'Play Custom Map',
-                    description:
-                        'Import a map string created in the Map Editor and play immediately.',
-                    icon: Icons.map,
-                    color: Colors.blueAccent,
-                    onTap: _showCustomMapDialog,
+                  // Tab 2: Custom Maps
+                  ListView(
+                    padding: const EdgeInsets.all(24),
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Your Creations:',
+                            style: GoogleFonts.inter(
+                              color: AppColors.textSecondary,
+                              fontSize: 16,
+                            ),
+                          ),
+                          ElevatedButton.icon(
+                            onPressed: _showCustomMapDialog,
+                            icon: const Icon(Icons.input, size: 14),
+                            label: const Text('IMPORT STRING', style: TextStyle(fontSize: 10)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.highlight.withValues(alpha: 0.2),
+                              foregroundColor: AppColors.highlight,
+                              elevation: 0,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      if (customs.isEmpty)
+                        Center(
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 40),
+                            child: Column(
+                              children: [
+                                Icon(Icons.map_outlined, color: Colors.white24, size: 64),
+                                const SizedBox(height: 16),
+                                const Text(
+                                  'No custom maps found.\nCreate one in the Map Editor!',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(color: Colors.white38),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      else
+                        ...customs.map((b) => Padding(
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: _buildBiomeCard(
+                                name: b.name,
+                                description: 'Custom map created by you.',
+                                icon: Icons.map,
+                                color: Colors.blueAccent,
+                                onTap: () => _enterBiome(b.name),
+                                trailing: IconButton(
+                                  icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                                  onPressed: () => _confirmDelete(b),
+                                ),
+                              ),
+                            )),
+                    ],
                   ),
                 ],
               ),
-            ),
+      ),
+    );
+  }
+
+  String _getBiomeDescription(String id) {
+    if (id == 'swamp') return 'Misty wetlands teeming with reptiles and mysterious flora.';
+    return 'An uncharted region.';
+  }
+
+  IconData _getBiomeIcon(String id) {
+    if (id == 'swamp') return Icons.water;
+    return Icons.landscape;
+  }
+
+  Color _getBiomeColor(String id) {
+    if (id == 'swamp') return Colors.green.shade800;
+    return Colors.blueGrey;
+  }
+
+  void _confirmDelete(BiomeConfig biome) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: const Text('Delete Map?', style: TextStyle(color: Colors.white)),
+        content: Text('Are you sure you want to delete "${biome.name}"? This cannot be undone.',
+            style: const TextStyle(color: Colors.white70)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('CANCEL', style: TextStyle(color: Colors.white54)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              final success = await BiomeDataManager.deleteMap(biome.id);
+              if (success) {
+                if (!mounted) return;
+                setState(() {}); // Refresh list
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Deleted "${biome.name}"')),
+                );
+              }
+            },
+            child: const Text('DELETE', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
     );
   }
 
@@ -263,6 +385,7 @@ class _ExploreSelectionScreenState extends State<ExploreSelectionScreen> {
     required IconData icon,
     required Color color,
     required VoidCallback? onTap,
+    Widget? trailing,
   }) {
     final bool isLocked = onTap == null;
     return Opacity(
@@ -312,7 +435,9 @@ class _ExploreSelectionScreenState extends State<ExploreSelectionScreen> {
                     ],
                   ),
                 ),
-                if (!isLocked)
+                if (trailing != null)
+                  trailing
+                else if (!isLocked)
                   const Icon(Icons.chevron_right, color: Colors.white54),
               ],
             ),

@@ -2,6 +2,10 @@ import 'dart:math';
 import 'dart:convert';
 import 'dart:ui' as ui;
 import 'package:flutter/services.dart';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
+import 'package:path_provider/path_provider.dart';
+
 
 // ───────────────────────────────────────────────────────────────────
 // Core Definitions
@@ -263,6 +267,126 @@ class BiomeDataManager {
   static final Map<String, BiomeConfig> biomes = {};
   static final Map<String, Map<String, ui.Image>> tileAssets = {};
   static final Map<String, OverworldSpawnData> phenoSpawnData = {};
+  static final Set<String> assetBiomeIds = {};
+
+  static const List<String> builtinBiomeIds = ['swamp', 'plains'];
+
+  static Future<File> _getLocalMapsFile() async {
+    final directory = await getApplicationDocumentsDirectory();
+    return File('${directory.path}${Platform.pathSeparator}custom_maps.json');
+  }
+
+  static File? findMapsJsonFile() {
+    if (kIsWeb) return null;
+    
+    // 1. Try common relative paths
+    final List<String> commonPaths = [
+      'assets/maps.json',
+      '../assets/maps.json',
+      '../../assets/maps.json',
+    ];
+
+    for (final path in commonPaths) {
+      final f = File(path);
+      if (f.existsSync()) return f;
+    }
+
+    // 2. Try to find project root by looking for pubspec.yaml
+    try {
+      Directory current = Directory.current;
+      // Search up to 10 levels up
+      for (int i = 0; i < 10; i++) {
+        final pubspec = File('${current.path}${Platform.pathSeparator}pubspec.yaml');
+        if (pubspec.existsSync()) {
+          // Check common locations within project root
+          final List<String> assetLocations = [
+            'assets${Platform.pathSeparator}maps.json',
+            'lib${Platform.pathSeparator}assets${Platform.pathSeparator}maps.json',
+          ];
+          
+          for (final loc in assetLocations) {
+            final target = File('${current.path}${Platform.pathSeparator}$loc');
+            if (target.existsSync()) return target;
+          }
+          break; // Found root but no maps.json in expected asset folders
+        }
+        current = current.parent;
+        if (current.path == current.parent.path) break;
+      }
+    } catch (_) {}
+
+    return null;
+  }
+
+  static Future<bool> deleteMap(String mapId) async {
+    if (kIsWeb) return false;
+    
+    // First try to delete from local storage
+    try {
+      final localFile = await _getLocalMapsFile();
+      if (await localFile.exists()) {
+        final content = await localFile.readAsString();
+        final List<dynamic> maps = json.decode(content);
+        final index = maps.indexWhere((m) => m['id'] == mapId);
+        if (index != -1) {
+          maps.removeAt(index);
+          const encoder = JsonEncoder.withIndent('    ');
+          await localFile.writeAsString(encoder.convert(maps));
+          biomes.remove(mapId);
+          return true;
+        }
+      }
+    } catch (_) {}
+
+    final file = findMapsJsonFile();
+    if (file == null) return false;
+
+    try {
+      final content = await file.readAsString();
+      final List<dynamic> maps = json.decode(content);
+      final index = maps.indexWhere((m) => m['id'] == mapId);
+      if (index != -1) {
+        maps.removeAt(index);
+        const encoder = JsonEncoder.withIndent('    ');
+        await file.writeAsString(encoder.convert(maps));
+        biomes.remove(mapId);
+        return true;
+      }
+    } catch (_) {
+      // Error handled silently
+    }
+    return false;
+  }
+
+  static Future<bool> saveLocalMap(Map<String, dynamic> mapData) async {
+    if (kIsWeb) return false;
+    try {
+      final file = await _getLocalMapsFile();
+      List<dynamic> maps = [];
+      if (await file.exists()) {
+        final content = await file.readAsString();
+        maps = json.decode(content);
+      }
+      
+      final id = mapData['id'];
+      final index = maps.indexWhere((m) => m['id'] == id);
+      if (index != -1) {
+        maps[index] = mapData;
+      } else {
+        maps.add(mapData);
+      }
+      
+      const encoder = JsonEncoder.withIndent('    ');
+      await file.writeAsString(encoder.convert(maps));
+      
+      // Update cache
+      biomes[id] = BiomeConfig.fromJson(mapData, allTiles);
+      return true;
+    } catch (e) {
+      debugPrint('Error saving local map: $e');
+      return false;
+    }
+  }
 
   static Future<void> loadData() async {
     // Load Tiles
@@ -273,12 +397,30 @@ class BiomeDataManager {
       allTiles[tile.id] = tile;
     }
 
-    // Load Biomes
+    // Load Biomes from assets
     final mapsJsonStr = await rootBundle.loadString('assets/maps.json');
     final List<dynamic> mapsJson = json.decode(mapsJsonStr);
     for (var j in mapsJson) {
       final biome = BiomeConfig.fromJson(j, allTiles);
       biomes[biome.id] = biome;
+      assetBiomeIds.add(biome.id);
+    }
+
+    // Load custom maps from local storage (Mobile Fallback)
+    if (!kIsWeb) {
+      try {
+        final localFile = await _getLocalMapsFile();
+        if (await localFile.exists()) {
+          final localContent = await localFile.readAsString();
+          final List<dynamic> localMapsJson = json.decode(localContent);
+          for (var j in localMapsJson) {
+            final biome = BiomeConfig.fromJson(j, allTiles);
+            biomes[biome.id] = biome; // Overwrite or add
+          }
+        }
+      } catch (e) {
+        debugPrint('Error loading local custom maps: $e');
+      }
     }
 
     // Pre-load all tile assets in parallel for better performance
@@ -314,8 +456,8 @@ class BiomeDataManager {
         final data = OverworldSpawnData.fromJson(s);
         phenoSpawnData[data.pheno] = data;
       }
-    } catch (e) {
-      print('Error loading overworld_spawns.json: $e');
+    } catch (_) {
+      // Error handled silently
     }
   }
 

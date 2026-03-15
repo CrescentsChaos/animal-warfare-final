@@ -1047,7 +1047,7 @@ class _SettingsApp extends StatelessWidget {
                 trailing: Switch(
                   value: true,
                   onChanged: (v) {},
-                  activeColor: Colors.cyanAccent,
+                  activeThumbColor: Colors.cyanAccent,
                 ),
               ),
               ListTile(
@@ -1060,7 +1060,7 @@ class _SettingsApp extends StatelessWidget {
                 trailing: Switch(
                   value: true,
                   onChanged: (v) {},
-                  activeColor: Colors.cyanAccent,
+                  activeThumbColor: Colors.cyanAccent,
                 ),
               ),
               const SizedBox(height: 16),
@@ -1673,7 +1673,7 @@ class _VpnApp extends StatelessWidget {
               Switch(
                 value: isOn,
                 onChanged: onToggle,
-                activeColor: Colors.greenAccent,
+                activeThumbColor: Colors.greenAccent,
               ),
             ],
           ),
