@@ -42,7 +42,7 @@
                 "border,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,border",
                 "border,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,border",
                 "border,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,border",
-                "border,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,border",
+                "border,null,null,null,null,null,null,null,null,null,teleporter,null,null,null,null,null,null,null,null,border",
                 "border,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,border",
                 "border,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,border",
                 "border,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,border",
@@ -74,6 +74,56 @@
         "spawnPoint": {
             "x": 10,
             "y": 10
-        }
+        },
+        "transitions": [
+            {
+                "x": 10,
+                "y": 15,
+                "targetMap": "swamp_2",
+                "targetX": 2,
+                "targetY": 2
+            }
+        ]
+    },
+    {
+        "id": "swamp_2",
+        "name": "Secret Swamp",
+        "defaultTileId": "swamp_ground",
+        "layout": {
+            "base": [
+                "swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground",
+                "swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground",
+                "swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground",
+                "swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground",
+                "swamp_ground,swamp_ground,swamp_ground,swamp_ground,swamp_ground"
+            ],
+            "overlay": [
+                "border,border,border,border,border",
+                "border,null,null,null,border",
+                "border,null,null,null,border",
+                "border,null,teleporter,null,border",
+                "border,border,border,border,border"
+            ],
+            "walkability": [
+                "0,0,0,0,0",
+                "0,1,1,1,0",
+                "0,1,1,1,0",
+                "0,1,1,1,0",
+                "0,0,0,0,0"
+            ]
+        },
+        "spawnPoint": {
+            "x": 2,
+            "y": 2
+        },
+        "transitions": [
+            {
+                "x": 2,
+                "y": 3,
+                "targetMap": "swamp",
+                "targetX": 10,
+                "targetY": 16
+            }
+        ]
     }
 ]

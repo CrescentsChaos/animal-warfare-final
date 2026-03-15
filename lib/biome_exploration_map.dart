@@ -17,8 +17,9 @@ import 'package:animal_warfare/models/organism.dart';
 import 'package:animal_warfare/models/captured_organism.dart';
 import 'package:animal_warfare/battle_screen.dart';
 import 'package:animal_warfare/local_auth_service.dart';
-import 'package:animal_warfare/user_state.dart';
-import 'package:animal_warfare/services/audio_service.dart';
+import 'package:animal_warfare/models/saved_map_state.dart';
+import 'user_state.dart';
+import 'services/audio_service.dart';
 import 'package:animal_warfare/services/weather_service.dart';
 import 'package:animal_warfare/models/weather.dart';
 import 'package:animal_warfare/widgets/weather_overlay.dart';
@@ -165,6 +166,9 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     // Play biome music
     final fileName = widget.biomeName.toLowerCase().replaceAll(' ', '_');
     AudioService.instance.playMusic('audio/${fileName}_theme.mp3');
+
+    // Load saved state if available
+    _loadSavedState();
 
     // Camera initialization will happen in _scrollToPlayer or build
 
@@ -633,9 +637,9 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     MapTile? encounterTile;
     if (overlayTiles != null) {
       for (final t in overlayTiles) {
-        if (t.hasEncounter) {
+        if (t.hasEncounter || t.category == TileCategory.teleporter) {
           encounterTile = t;
-          break; // Use the first encounter tile found in overlays
+          break; // Use the first encounter or teleporter tile found in overlays
         }
       }
     }
@@ -659,7 +663,61 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
         _triggerEncounter(activeTile);
       }
+    } else if (activeTile.category == TileCategory.teleporter) {
+      _handleTeleport(row, col);
     }
+  }
+
+  void _handleTeleport(int row, int col) {
+    if (_mapData.config.transitions == null) return;
+    for (final t in _mapData.config.transitions!) {
+      if (t.x == col && t.y == row) {
+        _executeTransition(t);
+        return;
+      }
+    }
+  }
+
+  void _executeTransition(MapTransition t) {
+    // Determine target config
+    late BiomeConfig targetConfig;
+
+    try {
+      targetConfig = BiomeDataManager.getBiome(t.targetMap);
+    } catch (_) {
+      // Fallback
+      return; 
+    }
+
+    // Attempt to load map data to override spawn
+    final targetMapData = MapStringParser.parse(
+      targetConfig.layout ?? {'base': []},
+      config: targetConfig,
+      spawn: Point<int>(t.targetX, t.targetY),
+    );
+
+    // Stop movement and reset camera pan so next map is clean
+    setState(() {
+      _velX = 0;
+      _velY = 0;
+      _isMovingToTarget = false;
+      _walkFrame = 0;
+    });
+
+    Navigator.of(context).pushReplacement(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => BiomeExplorationMap(
+          biomeName: targetConfig.name,
+          allOrganisms: widget.allOrganisms,
+          currentUser: widget.currentUser,
+          authService: widget.authService,
+          customMapData: targetMapData,
+        ),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+      ),
+    );
   }
 
   Future<void> _loadAssets() async {
@@ -706,9 +764,31 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   @override
   void dispose() {
     _disposeTimers();
+    _saveCurrentState(); // Save state on exit
     AudioService.instance.stopAll();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  void _loadSavedState() {
+    final userState = Provider.of<UserState>(context, listen: false);
+    final saved = userState.getMapState(widget.biomeName.toLowerCase());
+    if (saved != null) {
+      _playerX = saved.playerX;
+      _playerY = saved.playerY;
+      _playerDirection = saved.playerDirection;
+    }
+  }
+
+  Future<void> _saveCurrentState() async {
+    final userState = Provider.of<UserState>(context, listen: false);
+    final state = SavedMapState(
+      playerX: _playerX,
+      playerY: _playerY,
+      playerDirection: _playerDirection,
+      savedSprites: [], // Could populate from _overworldSprites if needed
+    );
+    await userState.saveMapState(widget.biomeName.toLowerCase(), state);
   }
 
   @override
@@ -923,10 +1003,31 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
           fontSize: 14,
         ),
         leading: Padding(
-          padding: const EdgeInsets.only(left: 8.0, top: 4.0, bottom: 4.0),
-          child: GameClockWidget(highlightColor: _biomeHighlightColor),
+          padding: const EdgeInsets.only(left: 8.0, top: 4.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              GameClockWidget(highlightColor: _biomeHighlightColor),
+              const SizedBox(height: 4),
+              Padding(
+                padding: const EdgeInsets.only(left: 4.0),
+                child: Text(
+                  'coordinate: ${(_playerX / tileSize).floor()}, ${(_playerY / tileSize).floor()}',
+                  style: TextStyle(
+                    color: _biomeHighlightColor.withOpacity(0.9),
+                    fontFamily: 'PressStart2P',
+                    fontSize: 7,
+                    shadows: const [
+                      Shadow(color: Colors.black, blurRadius: 2, offset: Offset(1, 1))
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-        leadingWidth: 120,
+        leadingWidth: 150,
         actions: [
           IconButton(
             icon: Icon(Icons.shopping_cart, color: AppColors.highlightColor),
@@ -2238,8 +2339,10 @@ class _BiomeMapPainter extends CustomPainter {
     // Round to avoid jitter
     final double finalX = (c * tileSize - cameraX);
     final double finalY = (r * tileSize - cameraY);
-
     final rect = Rect.fromLTWH(finalX, finalY, tileSize, tileSize);
+
+    if (tile.category == TileCategory.teleporter) return; // HIDE teleporters in-game
+
     final assets = BiomeDataManager.tileAssets[tile.tileId];
 
     if (assets != null && assets.isNotEmpty) {

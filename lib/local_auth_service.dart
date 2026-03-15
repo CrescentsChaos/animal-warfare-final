@@ -10,6 +10,7 @@ import 'package:animal_warfare/models/organism.dart';
 import 'package:animal_warfare/models/quest.dart';
 import 'package:animal_warfare/models/rogue_like_state.dart';
 import 'package:animal_warfare/models/farm_slot.dart';
+import 'package:animal_warfare/models/saved_map_state.dart'; // NEW import
 
 import 'local_auth_storage_io.dart'
     if (dart.library.html) 'local_auth_storage_web.dart'
@@ -73,6 +74,9 @@ class UserData {
   /// Farming slots
   final List<FarmSlot> farmSlots;
 
+  /// Map state persistence
+  final Map<String, SavedMapState> savedMapStates;
+
   // --- Banking & Secret Auth Fields ---
   final int bankTaka;
   final int bankGold;
@@ -117,6 +121,7 @@ class UserData {
     Map<String, dynamic>? weatherData,
     List<String>? displayedAchievements,
     List<FarmSlot>? farmSlots,
+    Map<String, SavedMapState>? savedMapStates,
   }) : quizStats = quizStats ?? {},
        discoveredOrganisms = discoveredOrganisms ?? [],
        completedAchievements = completedAchievements ?? [],
@@ -131,6 +136,7 @@ class UserData {
        weatherData = weatherData ?? {},
        displayedAchievements = (displayedAchievements ?? []).take(3).toList(),
        farmSlots = farmSlots ?? List.generate(10, (i) => FarmSlot.empty(i)),
+       savedMapStates = savedMapStates ?? {},
        savedReplays = savedReplays ?? [];
 
   /// Returns displayName if set, otherwise falls back to username
@@ -173,6 +179,7 @@ class UserData {
     bool? isBlackMarketUnlocked,
     String? phoneWallpaper,
     List<Map<String, dynamic>>? savedReplays,
+    Map<String, SavedMapState>? savedMapStates,
   }) {
     return UserData(
       username: username ?? this.username,
@@ -214,6 +221,7 @@ class UserData {
       displayedAchievements:
           displayedAchievements ?? this.displayedAchievements,
       farmSlots: farmSlots ?? this.farmSlots,
+      savedMapStates: savedMapStates ?? this.savedMapStates,
     );
   }
 
@@ -307,6 +315,7 @@ class UserData {
     'isBlackMarketUnlocked': isBlackMarketUnlocked,
     'phoneWallpaper': phoneWallpaper,
     'savedReplays': savedReplays,
+    'savedMapStates': savedMapStates.map((k, v) => MapEntry(k, v.toJson())),
   };
 
   factory UserData.fromJson(
@@ -441,6 +450,13 @@ class UserData {
               ?.map((e) => FarmSlot.fromJson(e as Map<String, dynamic>))
               .toList() ??
           List.generate(10, (i) => FarmSlot.empty(i)),
+      savedMapStates:
+          (json['savedMapStates'] as Map?)?.map(
+            (k, v) => MapEntry(
+              k as String,
+              SavedMapState.fromJson(v as Map<String, dynamic>, allOrganisms ?? []),
+            ),
+          ) ?? {},
     );
   }
 }

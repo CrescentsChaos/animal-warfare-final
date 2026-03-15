@@ -18,6 +18,7 @@ enum TileCategory {
   semiSolid, // Renders over the player when they are on it
   floating, // Triggers a jump animation when moved onto
   oneway, // Directional blocking (e.g., jump down only)
+  teleporter, // Map transition point
 }
 
 extension TileCategoryExtension on TileCategory {
@@ -43,6 +44,8 @@ extension TileCategoryExtension on TileCategory {
         return TileCategory.floating;
       case 'oneway':
         return TileCategory.oneway;
+      case 'teleporter':
+        return TileCategory.teleporter;
       default:
         return TileCategory.ground;
     }
@@ -118,7 +121,6 @@ class TileDefinition {
   }
 }
 
-/// Holds the configuration for a biome's tiles.
 class BiomeConfig {
   final String id;
   final String name;
@@ -128,6 +130,7 @@ class BiomeConfig {
   final Map<String, List<String>>?
   layout; // e.g. {'base': [...], 'overlay': [...]}
   final Point<int>? spawnPoint;
+  final List<MapTransition>? transitions;
 
   const BiomeConfig({
     required this.id,
@@ -136,6 +139,7 @@ class BiomeConfig {
     required this.tiles,
     this.layout,
     this.spawnPoint,
+    this.transitions,
   });
 
   factory BiomeConfig.fromJson(
@@ -161,6 +165,13 @@ class BiomeConfig {
       );
     }
 
+    List<MapTransition>? parsedTransitions;
+    if (json['transitions'] != null && (json['transitions'] as List).isNotEmpty) {
+      parsedTransitions = (json['transitions'] as List)
+          .map((t) => MapTransition.fromJson(t))
+          .toList();
+    }
+
     Map<String, List<String>>? layout;
     if (json['layout'] != null) {
       if (json['layout'] is Map) {
@@ -180,7 +191,44 @@ class BiomeConfig {
       tiles: biomeTiles,
       layout: layout,
       spawnPoint: spawn,
+      transitions: parsedTransitions,
     );
+  }
+}
+
+class MapTransition {
+  final int x;
+  final int y;
+  final String targetMap;
+  final int targetX;
+  final int targetY;
+
+  const MapTransition({
+    required this.x,
+    required this.y,
+    required this.targetMap,
+    required this.targetX,
+    required this.targetY,
+  });
+
+  factory MapTransition.fromJson(Map<String, dynamic> json) {
+    return MapTransition(
+      x: (json['x'] as num).toInt(),
+      y: (json['y'] as num).toInt(),
+      targetMap: json['targetMap'] as String,
+      targetX: (json['targetX'] as num).toInt(),
+      targetY: (json['targetY'] as num).toInt(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'x': x,
+      'y': y,
+      'targetMap': targetMap,
+      'targetX': targetX,
+      'targetY': targetY,
+    };
   }
 }
 

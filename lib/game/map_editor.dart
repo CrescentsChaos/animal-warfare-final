@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
 import 'dart:async';
+import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'biome_map_data.dart';
 
@@ -17,6 +19,7 @@ enum EditorMode {
   eyedropper,
   walkability,
   spawnPoint,
+  teleporter,
 }
 
 enum PaletteState { collapsed, compact, full }
@@ -28,6 +31,7 @@ class _EditorSnapshot {
   final List<List<bool>> isWalkable;
   final int spawnR;
   final int spawnC;
+  final List<MapTransition> teleporters;
 
   _EditorSnapshot({
     required this.grid,
@@ -35,6 +39,7 @@ class _EditorSnapshot {
     required this.isWalkable,
     required this.spawnR,
     required this.spawnC,
+    required this.teleporters,
   });
 
   _EditorSnapshot deepCopy() => _EditorSnapshot(
@@ -45,6 +50,7 @@ class _EditorSnapshot {
     isWalkable: isWalkable.map((r) => List<bool>.from(r)).toList(),
     spawnR: spawnR,
     spawnC: spawnC,
+    teleporters: teleporters.map((t) => MapTransition.fromJson(t.toJson())).toList(),
   );
 }
 
@@ -76,6 +82,7 @@ class _MapEditorState extends State<MapEditor> {
   late List<List<bool>> _isWalkable;
   int _spawnR = 1;
   int _spawnC = 1;
+  List<MapTransition> _teleporters = [];
 
   static const List<String> _biomeIds = [
     'Volcano',
@@ -190,6 +197,7 @@ class _MapEditorState extends State<MapEditor> {
     );
     _spawnR = (_rows / 2).floor();
     _spawnC = (_cols / 2).floor();
+    _teleporters = [];
     _applyBorder();
     _pushUndo();
   }
@@ -245,6 +253,7 @@ class _MapEditorState extends State<MapEditor> {
       );
       _spawnR = (_rows / 2).floor();
       _spawnC = (_cols / 2).floor();
+      _teleporters = [];
       _applyBorder();
       _undoStack.clear();
       _redoStack.clear();
@@ -264,6 +273,7 @@ class _MapEditorState extends State<MapEditor> {
         isWalkable: _isWalkable.map((r) => List<bool>.from(r)).toList(),
         spawnR: _spawnR,
         spawnC: _spawnC,
+        teleporters: _teleporters.map((t) => MapTransition.fromJson(t.toJson())).toList(),
       ),
     );
     if (_undoStack.length > _maxUndoSize) _undoStack.removeAt(0);
@@ -313,6 +323,7 @@ class _MapEditorState extends State<MapEditor> {
       jsonEncode({'rows': _rows, 'cols': _cols}),
     );
     await prefs.setString('map_editor_biome_v3', _biomeId);
+    await prefs.setString('map_editor_teleporters_v3', jsonEncode(_teleporters.map((t) => t.toJson()).toList()));
   }
 
   Future<void> _loadFromPrefs() async {
@@ -330,6 +341,7 @@ class _MapEditorState extends State<MapEditor> {
     final String? overlayData = prefs.getString('map_editor_overlay_v3');
     final String? walkableData = prefs.getString('map_editor_walk_v3');
     final String? spawnData = prefs.getString('map_editor_spawn_v3');
+    final String? teleportsData = prefs.getString('map_editor_teleporters_v3');
 
     setState(() {
       if (savedBiome != null && savedBiome != _biomeId) {
@@ -367,6 +379,10 @@ class _MapEditorState extends State<MapEditor> {
         final sp = jsonDecode(spawnData);
         _spawnR = sp['r'] ?? _spawnR;
         _spawnC = sp['c'] ?? _spawnC;
+      }
+      if (teleportsData != null) {
+        final List<dynamic> decoded = jsonDecode(teleportsData);
+        _teleporters = decoded.map((t) => MapTransition.fromJson(t)).toList();
       }
     });
   }
@@ -412,6 +428,14 @@ class _MapEditorState extends State<MapEditor> {
   void _eraseTile(int r, int c) {
     if (r < 0 || r >= _rows || c < 0 || c >= _cols) return;
     if (_isBorderCell(r, c)) return;
+
+    if (_mode == EditorMode.teleporter) {
+       setState(() {
+         _teleporters.removeWhere((t) => t.x == c && t.y == r);
+       });
+       return;
+    }
+
     setState(() {
       // Erase overlay first by popping the stack; if empty, reset base
       if (_overlayGrid[r][c].isNotEmpty) {
@@ -536,9 +560,110 @@ class _MapEditorState extends State<MapEditor> {
           });
         }
         break;
+      case EditorMode.teleporter:
+        if (isStart && !_isBorderCell(r, c)) {
+          _showTeleporterDialog(r, c);
+        }
+        break;
       default:
         break;
     }
+  }
+
+  void _showTeleporterDialog(int r, int c) {
+    final existing = _teleporters.firstWhere((t) => t.x == c && t.y == r, orElse: () => MapTransition(x: c, y: r, targetMap: _biomeId, targetX: 10, targetY: 10));
+    final targetMapCtrl = TextEditingController(text: existing.targetMap);
+    final targetXCtrl = TextEditingController(text: existing.targetX.toString());
+    final targetYCtrl = TextEditingController(text: existing.targetY.toString());
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1E1E1E),
+        title: const Text('Configure Teleporter', style: TextStyle(color: Colors.white)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Target Map ID', style: TextStyle(color: Colors.white70, fontSize: 12)),
+            DropdownButton<String>(
+              isExpanded: true,
+              value: BiomeDataManager.biomes.keys.contains(targetMapCtrl.text)
+                  ? targetMapCtrl.text
+                  : BiomeDataManager.biomes.keys.first,
+              dropdownColor: const Color(0xFF2A2A2A),
+              style: const TextStyle(color: Colors.white),
+              items: BiomeDataManager.biomes.keys.map((id) {
+                return DropdownMenuItem(
+                  value: id,
+                  child: Text(id),
+                );
+              }).toList(),
+              onChanged: (val) {
+                if (val != null) {
+                  targetMapCtrl.text = val;
+                  (ctx as Element).markNeedsBuild(); // Force rebuild of the dialog to show selection
+                }
+              },
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: targetXCtrl,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: 'Target X', labelStyle: TextStyle(color: Colors.white70)),
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: TextField(
+                    controller: targetYCtrl,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: 'Target Y', labelStyle: TextStyle(color: Colors.white70)),
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          if (_teleporters.any((t) => t.x == c && t.y == r))
+            TextButton(
+               onPressed: () {
+                 setState(() {
+                   _teleporters.removeWhere((t) => t.x == c && t.y == r);
+                 });
+                 Navigator.pop(ctx);
+                 _onInteractionEnd();
+               },
+               child: const Text('REMOVE', style: TextStyle(color: Colors.red)),
+            ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('CANCEL', style: TextStyle(color: Colors.white54)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+            onPressed: () {
+              final mapId = targetMapCtrl.text.trim();
+              final tx = int.tryParse(targetXCtrl.text) ?? 10;
+              final ty = int.tryParse(targetYCtrl.text) ?? 10;
+              setState(() {
+                _teleporters.removeWhere((t) => t.x == c && t.y == r);
+                _teleporters.add(MapTransition(x: c, y: r, targetMap: mapId, targetX: tx, targetY: ty));
+              });
+              Navigator.pop(ctx);
+              _onInteractionEnd();
+            },
+            child: const Text('SAVE', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
   }
 
   void _onInteractionEnd() {
@@ -570,9 +695,68 @@ class _MapEditorState extends State<MapEditor> {
             .toList(),
       },
       "spawnPoint": {"x": _spawnC, "y": _spawnR},
+      "transitions": _teleporters.map((t) => t.toJson()).toList(),
     };
     const encoder = JsonEncoder.withIndent('    ');
     return encoder.convert(exportData);
+  }
+
+  Future<void> _saveToFile() async {
+    if (kIsWeb) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Direct save not supported on Web')),
+      );
+      return;
+    }
+
+    try {
+      final exportMapString = _exportForMapsJson();
+      final Map<String, dynamic> exportMap = json.decode(exportMapString);
+      
+      // Attempt to find maps.json
+      // Using a relative path which usually works if running from project root on Windows
+      final file = File('assets/maps.json');
+      if (!await file.exists()) {
+         ScaffoldMessenger.of(context).showSnackBar(
+           const SnackBar(content: Text('Error: Could not find assets/maps.json. Ensure you are running from the project root.')),
+         );
+         return;
+      }
+
+      final content = await file.readAsString();
+      final List<dynamic> maps = json.decode(content);
+      
+      final index = maps.indexWhere((m) => m['id'] == _biomeId);
+      if (index != -1) {
+        maps[index] = exportMap;
+      } else {
+        maps.add(exportMap);
+      }
+
+      const encoder = JsonEncoder.withIndent('    ');
+      await file.writeAsString(encoder.convert(maps));
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Successfully saved to assets/maps.json!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      
+      // Update the local cache in BiomeDataManager
+      final newConfig = BiomeConfig.fromJson(exportMap, BiomeDataManager.allTiles);
+      BiomeDataManager.biomes[_biomeId] = newConfig;
+      setState(() {
+        _biomeConfig = newConfig;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error saving to file: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void _switchBiome(String newName) {
@@ -738,6 +922,12 @@ class _MapEditorState extends State<MapEditor> {
         if (data['spawnPoint'] != null) {
           _spawnC = data['spawnPoint']['x'] ?? _cols ~/ 2;
           _spawnR = data['spawnPoint']['y'] ?? _rows ~/ 2;
+        }
+
+        if (data['transitions'] != null) {
+          _teleporters = (data['transitions'] as List).map((t) => MapTransition.fromJson(t)).toList();
+        } else {
+          _teleporters = [];
         }
 
         _pushUndo();
@@ -956,6 +1146,16 @@ class _MapEditorState extends State<MapEditor> {
               );
             },
           ),
+          // Save to File
+          IconButton(
+            icon: const Icon(
+              Icons.save,
+              size: 20,
+              color: Colors.lightBlueAccent,
+            ),
+            tooltip: 'Save Directly to maps.json',
+            onPressed: _saveToFile,
+          ),
           // Reset
           IconButton(
             icon: const Icon(
@@ -1053,6 +1253,7 @@ class _MapEditorState extends State<MapEditor> {
                       showGrid: _showGrid,
                       spawnR: _spawnR,
                       spawnC: _spawnC,
+                      teleporters: _teleporters,
                     ),
                   ),
                 ),
@@ -1133,6 +1334,8 @@ class _MapEditorState extends State<MapEditor> {
             _toolBtn(EditorMode.walkability, Icons.directions_walk, 'WALK'),
             const SizedBox(width: 8),
             _toolBtn(EditorMode.spawnPoint, Icons.person_pin_circle, 'SPAWN'),
+            const SizedBox(width: 8),
+            _toolBtn(EditorMode.teleporter, Icons.meeting_room, 'DOOR'),
             const SizedBox(width: 16),
             // Auto-base toggle
             Container(
@@ -1595,6 +1798,7 @@ class _EditorGridPainter extends CustomPainter {
   final bool showGrid;
   final int spawnR;
   final int spawnC;
+  final List<MapTransition> teleporters;
 
   _EditorGridPainter({
     required this.grid,
@@ -1604,6 +1808,7 @@ class _EditorGridPainter extends CustomPainter {
     required this.showGrid,
     required this.spawnR,
     required this.spawnC,
+    required this.teleporters,
   });
 
   @override
@@ -1705,10 +1910,45 @@ class _EditorGridPainter extends CustomPainter {
             rect.center - Offset(textPainter.width / 2, textPainter.height / 2),
           );
         }
+
+        // 5. Teleporter markers
+        for (final t in teleporters) {
+          if (r == t.y && c == t.x) {
+            final telePaint = Paint()
+              ..color = Colors.purpleAccent.withOpacity(0.4)
+              ..style = PaintingStyle.fill;
+            canvas.drawRect(rect.deflate(2), telePaint);
+
+            final borderPaint = Paint()
+              ..color = Colors.purpleAccent
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 2;
+            canvas.drawRect(rect.deflate(2), borderPaint);
+
+            // Draw "T" marker
+            final textPainter = TextPainter(
+              text: const TextSpan(
+                text: 'T',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.purpleAccent,
+                  fontFamily: 'PressStart2P',
+                ),
+              ),
+              textDirection: TextDirection.ltr,
+            );
+            textPainter.layout();
+            textPainter.paint(
+              canvas,
+              rect.center - Offset(textPainter.width / 2, textPainter.height / 2),
+            );
+          }
+        }
       }
     }
 
-    // 5. Grid lines - Final overlay to ensure it shows over everything
+    // 6. Grid lines - Final overlay to ensure it shows over everything
     if (showGrid) {
       final paint = Paint()
         ..color = Colors.white.withOpacity(0.3)

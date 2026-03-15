@@ -9,6 +9,51 @@
         "biome": "any"
     },
     {
+        "id": "straw_flakes",
+        "name": "Straw Flakes",
+        "category": "decorative",
+        "assetPath": "assets/tiles/straw_flakes.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "any"
+    },
+    {
+        "id": "2_leaves",
+        "name": "2 Leaves",
+        "category": "decorative",
+        "assetPath": "assets/tiles/2_leaves.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "any"
+    },
+    {
+        "id": "4_leaves",
+        "name": "4 Leaves",
+        "category": "decorative",
+        "assetPath": "assets/tiles/4_leaves.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "any"
+    },
+    {
+        "id": "clover",
+        "name": "Clover",
+        "category": "decorative",
+        "assetPath": "assets/tiles/clover.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "any"
+    },
+    {
+        "id": "mud_spot",
+        "name": "Mud Spot",
+        "category": "decorative",
+        "assetPath": "assets/tiles/mud_spot.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "Swamp"
+    },
+    {
         "id": "floating_leaves",
         "name": "Floating Leaves",
         "category": "solid",
@@ -43,6 +88,51 @@
         "isAutotiled": true,
         "layer": "base",
         "biome": "swamp"
+    },
+    {
+        "id": "broken_tile",
+        "name": "Broken Tile",
+        "category": "ground",
+        "assetPath": "assets/tiles/broken_tile.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "biome": "urban"
+    },
+    {
+        "id": "white_tile",
+        "name": "White Tile",
+        "category": "ground",
+        "assetPath": "assets/tiles/white_tile.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "biome": "urban"
+    },
+    {
+        "id": "yellow_stone",
+        "name": "Yellow Stone",
+        "category": "ground",
+        "assetPath": "assets/tiles/yellow_stone.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "biome": "Mountain"
+    },
+    {
+        "id": "red_stone",
+        "name": "Red Stone",
+        "category": "ground",
+        "assetPath": "assets/tiles/red_stone.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "biome": "Mountain"
+    },
+    {
+        "id": "obsidian",
+        "name": "Obsidian",
+        "category": "ground",
+        "assetPath": "assets/tiles/obsidian.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "biome": "Mountain"
     },
     {
         "id": "water",
@@ -681,6 +771,46 @@
         "interactionText": "It's a bush grass."
     },
     {
+        "id": "overgrown_rock",
+        "name": "Overgrown Rock",
+        "category": "solid",
+        "assetPath": "assets/tiles/overgrown_rock.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any",
+        "interactionText": "It's an overgrown rock."
+    },
+    {
+        "id": "rock_grass1",
+        "name": "Rock Grass 1",
+        "category": "solid",
+        "assetPath": "assets/tiles/rock_grass1.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any",
+        "interactionText": "It's a rock grass."
+    },
+    {
+        "id": "rock_grass2",
+        "name": "Rock Grass 2",
+        "category": "solid",
+        "assetPath": "assets/tiles/rock_grass2.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any",
+        "interactionText": "It's a rock grass."
+    },
+    {
+        "id": "rock_grass3",
+        "name": "Rock Grass 3",
+        "category": "solid",
+        "assetPath": "assets/tiles/rock_grass3.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any",
+        "interactionText": "It's a rock grass."
+    },
+    {
         "id": "weed1",
         "name": "Weed 1",
         "category": "solid",
@@ -778,7 +908,7 @@
         "id": "abandoned_railroad",
         "name": "Abandoned Railroad",
         "category": "decorative",
-        "assetPath": "assets/tiles/abandoned_railroad.png",
+        "assetPath": "assets/tiles/abandoned_rail.png",
         "isAutotiled": false,
         "layer": "overlay",
         "biome": "any"
@@ -885,13 +1015,43 @@
         "biome": "swamp"
     },
     {
+        "id": "water_grass",
+        "name": "Water Grass",
+        "category": "semiSolid",
+        "assetPath": "assets/tiles/water_grass.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "River,Lake,Mangrove"
+    },
+    {
+        "id": "water_long_grass",
+        "name": "Water Long Grass",
+        "category": "semiSolid",
+        "assetPath": "assets/tiles/water_long_grass.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "River,Lake,Mangrove"
+    },
+    {
         "id": "border",
         "name": "Border",
         "category": "solid",
-        "assetPath": "assets/tiles/swamp_ground.png",
+        "assetPath": "assets/tiles/border.png",
         "isAutotiled": false,
         "layer": "overlay",
         "showInEditor": false,
         "biome": "swamp"
+    },
+    {
+        "id": "teleporter",
+        "name": "Teleporter",
+        "category": "teleporter",
+        "assetPath": "assets/tiles/teleporter.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "isOverlay": true,
+        "showInEditor": true,
+        "biome": "any",
+        "interactionText": "It's a teleporter."
     }
 ]

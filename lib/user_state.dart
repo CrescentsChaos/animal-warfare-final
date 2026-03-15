@@ -13,6 +13,7 @@ import 'dart:math' as math;
 import 'package:animal_warfare/models/rogue_like_state.dart';
 import 'package:animal_warfare/models/farm_slot.dart';
 import 'package:animal_warfare/models/battle_replay.dart';
+import 'package:animal_warfare/models/saved_map_state.dart'; // NEW import
 import 'local_auth_service.dart';
 
 class UserState with ChangeNotifier {
@@ -1847,6 +1848,28 @@ class UserState with ChangeNotifier {
       return u.copyWith(inventory: inventory);
     });
     return success;
+  }
+
+  SavedMapState? getMapState(String mapId) {
+    return _currentUser?.savedMapStates[mapId];
+  }
+
+  Future<void> saveMapState(String mapId, SavedMapState state) async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) {
+      final newMapStates = Map<String, SavedMapState>.from(u.savedMapStates);
+      newMapStates[mapId] = state;
+      return u.copyWith(savedMapStates: newMapStates);
+    });
+  }
+
+  Future<void> clearMapState(String mapId) async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) {
+      final newMapStates = Map<String, SavedMapState>.from(u.savedMapStates);
+      newMapStates.remove(mapId);
+      return u.copyWith(savedMapStates: newMapStates);
+    });
   }
 
   @override
