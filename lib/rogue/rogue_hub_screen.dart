@@ -82,7 +82,7 @@ class _RogueHubScreenState extends State<RogueHubScreen>
                   child: Image.asset(
                     'assets/biomes/${(rogue.currentBiome ?? 'Jungle').toLowerCase()}.png',
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) =>
+                    errorBuilder: (_, _, _) =>
                         Container(color: Colors.black),
                   ),
                 ),
@@ -175,7 +175,7 @@ class _RogueHubScreenState extends State<RogueHubScreen>
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '${rogue.currentBiome?.toUpperCase() ?? 'REGION'}',
+                  rogue.currentBiome?.toUpperCase() ?? 'REGION',
                   style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontSize: 24,
@@ -651,7 +651,7 @@ class _RogueTeamCard extends StatelessWidget {
                                       member.equippedTalisman!.spritePath,
                                       width: 14,
                                       height: 14,
-                                      errorBuilder: (context, _, __) => Icon(
+                                      errorBuilder: (context, _, _) => Icon(
                                         Icons.auto_awesome,
                                         color: themeColor,
                                         size: 10,
@@ -728,7 +728,7 @@ class _RogueTeamCard extends StatelessWidget {
               : const ColorFilter.mode(Colors.transparent, BlendMode.multiply),
           child: Image.asset(
             'assets/sprites/${member.baseOrganism.name.toLowerCase().replaceAll(' ', '_').replaceAll('-', '_')}.png',
-            errorBuilder: (_, __, ___) =>
+            errorBuilder: (_, _, _) =>
                 const Icon(Icons.pets, color: Colors.white24),
           ),
         ),

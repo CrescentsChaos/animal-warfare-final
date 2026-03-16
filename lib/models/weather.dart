@@ -118,17 +118,21 @@ class WeatherEffect {
     switch (weather) {
       case Weather.rain:
       case Weather.heavyRain:
-        if (moveType == 'aquatic')
+        if (moveType == 'aquatic') {
           return weather == Weather.heavyRain ? 1.8 : 1.5;
-        if (moveType == 'blaze')
+        }
+        if (moveType == 'blaze') {
           return weather == Weather.heavyRain ? 0.3 : 0.5;
+        }
         break;
       case Weather.sunny:
       case Weather.intenseSun:
-        if (moveType == 'blaze')
+        if (moveType == 'blaze') {
           return weather == Weather.intenseSun ? 2.0 : 1.6;
-        if (moveType == 'aquatic')
+        }
+        if (moveType == 'aquatic') {
           return weather == Weather.intenseSun ? 0.0 : 0.4;
+        }
         break;
       case Weather.snowstorm:
         if (moveType == 'cryo') return 1.3;

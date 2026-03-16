@@ -28,6 +28,9 @@ import 'package:animal_warfare/widgets/game_clock_widget.dart';
 import 'package:animal_warfare/shop_screen.dart';
 import 'package:animal_warfare/phone_screen.dart';
 import 'package:animal_warfare/theme.dart';
+import 'package:animal_warfare/animal_box_screen.dart';
+import 'package:animal_warfare/anidex_screen.dart';
+import 'package:animal_warfare/crafting_screen.dart';
 import 'package:animal_warfare/game/overworld_sprite.dart';
 
 class BiomeExplorationMap extends StatefulWidget {
@@ -918,7 +921,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       playerFighter = user.capturedOrganisms.first;
     } else {
       playerFighter = CapturedOrganism.spawn(
-        Organism.HUMAN_ORGANISM.copyWith(name: user.username),
+        Organism.humanOrganism.copyWith(name: user.username),
         level: user.accountLevel,
       );
     }
@@ -1049,6 +1052,8 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
             // D-Pad
             _buildDPad(),
             _buildZoomButtons(),
+            // Animal Menu
+            _buildAnimalMenuButton(),
             // Floating Coordinates
             Positioned(
               top: 10,
@@ -1404,6 +1409,178 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     );
   }
 
+  Widget _buildAnimalMenuButton() {
+    return Positioned(
+      top: 200,
+      right: 16,
+      child: GestureDetector(
+        onTap: () => _showAnimalMenu(context),
+        child: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.black.withValues(alpha: 0.5),
+            border: Border.all(color: _biomeHighlightColor, width: 1.5),
+          ),
+          child: Icon(Icons.pets, color: _biomeHighlightColor, size: 22),
+        ),
+      ),
+    );
+  }
+
+  void _showAnimalMenu(BuildContext ctx) {
+    showModalBottomSheet(
+      context: ctx,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) {
+        return Container(
+          padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1A1A2E),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            border: Border.all(
+              color: _biomeHighlightColor.withValues(alpha: 0.3),
+              width: 1,
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 20),
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              _menuOption(
+                icon: Icons.inventory_2_rounded,
+                iconColor: Colors.amber,
+                title: 'Animal Box',
+                subtitle: 'Manage your collection & team',
+                onTap: () {
+                  Navigator.pop(sheetCtx);
+                  Navigator.push(
+                    ctx,
+                    MaterialPageRoute(
+                      builder: (_) => const AnimalBoxScreen(),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 10),
+              _menuOption(
+                icon: Icons.auto_awesome,
+                iconColor: Colors.blueAccent,
+                title: 'Inventory',
+                subtitle: 'Manage items & forging',
+                onTap: () {
+                  Navigator.pop(sheetCtx);
+                  Navigator.push(
+                    ctx,
+                    MaterialPageRoute(
+                      builder: (_) => const CraftingScreen(),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 10),
+              _menuOption(
+                icon: Icons.pets,
+                iconColor: Colors.purpleAccent,
+                title: 'Animal Dex',
+                subtitle: 'Browse the full species database',
+                onTap: () {
+                  Navigator.pop(sheetCtx);
+                  final userState = Provider.of<UserState>(ctx, listen: false);
+                  final user = userState.currentUser;
+                  if (user == null) return;
+                  Navigator.push(
+                    ctx,
+                    MaterialPageRoute(
+                      builder: (_) => AnidexScreen(
+                        currentUser: user,
+                        authService: LocalAuthService(),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _menuOption({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: _biomeHighlightColor.withValues(alpha: 0.2),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: iconColor.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: iconColor, size: 22),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontFamily: 'PressStart2P',
+                      fontSize: 10,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.white.withValues(alpha: 0.5),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.chevron_right,
+              color: Colors.white.withValues(alpha: 0.3),
+              size: 20,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _handleInteract() {
     if (_encounterActive || _isMovingToTarget) return;
 
@@ -1726,7 +1903,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     final dist = sqrt(dx * dx + dy * dy);
 
     // Deadzone and outer boundaries
-    if (dist < 15) {
+    if (dist < 2.0) {
       if (_activeDirections.isNotEmpty) {
         setState(() => _activeDirections.clear());
       }

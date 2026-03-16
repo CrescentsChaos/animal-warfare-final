@@ -82,14 +82,18 @@ class _RankedScreenState extends State<RankedScreen>
     int matches,
   ) {
     if (matches < 3) return (label: '?', color: Colors.grey, order: 99);
-    if (winrate >= 0.70 && matches >= 5)
+    if (winrate >= 0.70 && matches >= 5) {
       return (label: 'S', color: const Color(0xFFFF4E4E), order: 0);
-    if (winrate >= 0.55)
+    }
+    if (winrate >= 0.55) {
       return (label: 'A', color: Colors.orangeAccent, order: 1);
-    if (winrate >= 0.45)
+    }
+    if (winrate >= 0.45) {
       return (label: 'B', color: Colors.yellowAccent, order: 2);
-    if (winrate >= 0.30)
+    }
+    if (winrate >= 0.30) {
       return (label: 'C', color: Colors.cyanAccent, order: 3);
+    }
     return (label: 'D', color: Colors.blueGrey, order: 4);
   }
 

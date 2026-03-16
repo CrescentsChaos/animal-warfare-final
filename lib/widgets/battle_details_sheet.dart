@@ -696,7 +696,7 @@ class BattleDetailsSheet extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    '${e.key}',
+                    e.key,
                     style: TextStyle(
                       color: color.withValues(alpha: 0.7),
                       fontSize: 9,

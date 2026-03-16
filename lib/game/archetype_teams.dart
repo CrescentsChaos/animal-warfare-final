@@ -229,34 +229,34 @@ class ArchetypeTeamBuilder {
 
       case TeamArchetype.rainTeam:
         return _isRainSetter(c) ||
-            o.types.contains(ElementalType.aquatic) ||
+            o.elementalTypes.contains(ElementalType.aquatic) ||
             _hasRainAbility(o);
 
       case TeamArchetype.sunTeam:
         return _isSunSetter(c) ||
-            o.types.contains(ElementalType.blaze) ||
+            o.elementalTypes.contains(ElementalType.blaze) ||
             _hasSunAbility(o);
 
       case TeamArchetype.sandTeam:
         return _isSandSetter(c) ||
-            o.types.contains(ElementalType.rock) ||
-            o.types.contains(ElementalType.metal) ||
-            o.types.contains(ElementalType.earth) ||
+            o.elementalTypes.contains(ElementalType.rock) ||
+            o.elementalTypes.contains(ElementalType.metal) ||
+            o.elementalTypes.contains(ElementalType.earth) ||
             _hasSandAbility(o);
 
       case TeamArchetype.snowTeam:
         return _isSnowSetter(c) ||
-            o.types.contains(ElementalType.cryo) ||
+            o.elementalTypes.contains(ElementalType.cryo) ||
             _hasSnowAbility(o);
 
       case TeamArchetype.psychicTerrainAbuser:
         return _isPsychicTerrainSetter(c) ||
-            o.types.contains(ElementalType.aura) ||
+            o.elementalTypes.contains(ElementalType.aura) ||
             _hasPsychicTerrainAbility(o);
 
       case TeamArchetype.electricTerrainAbuser:
         return _isElectricTerrainSetter(c) ||
-            o.types.contains(ElementalType.electric) ||
+            o.elementalTypes.contains(ElementalType.electric) ||
             _hasElectricTerrainAbility(o);
 
       case TeamArchetype.hazardStacker:
@@ -402,40 +402,40 @@ class ArchetypeTeamBuilder {
       case TeamArchetype.rainTeam:
         double s = (o.attack + o.power).toDouble();
         if (_isRainSetter(c)) s += 500;
-        if (o.types.contains(ElementalType.aquatic)) s += 50;
+        if (o.elementalTypes.contains(ElementalType.aquatic)) s += 50;
         if (_hasRainAbility(o)) s += 100;
         return s;
 
       case TeamArchetype.psychicTerrainAbuser:
         double s = (o.attack + o.power).toDouble();
         if (_isPsychicTerrainSetter(c)) s += 500;
-        if (o.types.contains(ElementalType.aura)) s += 50;
+        if (o.elementalTypes.contains(ElementalType.aura)) s += 50;
         return s;
 
       case TeamArchetype.electricTerrainAbuser:
         double s = (o.attack + o.power).toDouble();
         if (_isElectricTerrainSetter(c)) s += 500;
-        if (o.types.contains(ElementalType.electric)) s += 50;
+        if (o.elementalTypes.contains(ElementalType.electric)) s += 50;
         return s;
 
       case TeamArchetype.sunTeam:
         double s = (o.attack + o.power).toDouble();
         if (_isSunSetter(c)) s += 500;
-        if (o.types.contains(ElementalType.blaze)) s += 50;
+        if (o.elementalTypes.contains(ElementalType.blaze)) s += 50;
         if (_hasSunAbility(o)) s += 100;
         return s;
 
       case TeamArchetype.sandTeam:
         double s = (o.attack + o.power + o.defense).toDouble();
         if (_isSandSetter(c)) s += 500;
-        if (o.types.contains(ElementalType.rock)) s += 50;
+        if (o.elementalTypes.contains(ElementalType.rock)) s += 50;
         if (_hasSandAbility(o)) s += 100;
         return s;
 
       case TeamArchetype.snowTeam:
         double s = (o.attack + o.power).toDouble();
         if (_isSnowSetter(c)) s += 500;
-        if (o.types.contains(ElementalType.cryo)) s += 50;
+        if (o.elementalTypes.contains(ElementalType.cryo)) s += 50;
         if (_hasSnowAbility(o)) s += 100;
         return s;
 
@@ -587,8 +587,9 @@ class ArchetypeTeamBuilder {
         double penalty = 150.0 * teamCount;
         if (archetype == TeamArchetype.stall && _isProtect(m)) penalty *= 0.3;
         if (archetype == TeamArchetype.hazardStacker &&
-            m.effects.any((e) => e.type == MoveEffectType.setHazard))
+            m.effects.any((e) => e.type == MoveEffectType.setHazard)) {
           penalty *= 0.5;
+        }
 
         baseScore -= penalty;
       }
@@ -612,7 +613,7 @@ class ArchetypeTeamBuilder {
     // 2. Try to ensure a STAB move or high damage move
     if (scored.isNotEmpty) {
       final stabIndex = scored.indexWhere(
-        (e) => c.organism.types.contains(e.key.type) && e.key.baseDamage > 0,
+        (e) => c.organism.elementalTypes.contains(e.key.type) && e.key.baseDamage > 0,
       );
       if (stabIndex != -1) {
         selected.add(scored.removeAt(stabIndex).key);
@@ -703,8 +704,9 @@ class ArchetypeTeamBuilder {
         if (m.effects.any((e) => e.stat == 'sandstorm')) s += 800;
         if (m.type == ElementalType.rock ||
             m.type == ElementalType.earth ||
-            m.type == ElementalType.metal)
+            m.type == ElementalType.metal) {
           s += 40;
+        }
         break;
 
       case TeamArchetype.snowTeam:
@@ -719,8 +721,9 @@ class ArchetypeTeamBuilder {
         if (m.type == ElementalType.aura) s += 100;
         if (m.name == 'Psychic' ||
             m.name == 'Psyshock' ||
-            m.name == 'Expanding Force')
+            m.name == 'Expanding Force') {
           s += 150;
+        }
         break;
 
       case TeamArchetype.electricTerrainAbuser:
@@ -728,8 +731,9 @@ class ArchetypeTeamBuilder {
         if (m.type == ElementalType.electric) s += 100;
         if (m.name == 'Thunderbolt' ||
             m.name == 'Thunder' ||
-            m.name == 'Volt Switch')
+            m.name == 'Volt Switch') {
           s += 150;
+        }
         break;
 
       case TeamArchetype.hazardStacker:
@@ -738,8 +742,9 @@ class ArchetypeTeamBuilder {
         if (m.name == 'Roar' ||
             m.name == 'Whirlwind' ||
             m.name == 'Dragon Tail' ||
-            m.name == 'Circle Throw')
+            m.name == 'Circle Throw') {
           s += 350; // hazard abuser core move
+        }
         if (_isProtect(m)) s += 80;
         if (m.baseDamage > 60) s += 20;
         break;
@@ -747,8 +752,9 @@ class ArchetypeTeamBuilder {
       case TeamArchetype.antiHazard:
         if (m.name == 'Rapid Spin' ||
             m.name == 'Defog' ||
-            m.name == 'Mortal Spin')
+            m.name == 'Mortal Spin') {
           s += 500;
+        }
         if (m.baseDamage > 60) s += 30;
         if (_isHeal(m)) s += 20;
         break;
@@ -770,13 +776,15 @@ class ArchetypeTeamBuilder {
 
       case TeamArchetype.statusSpread:
         if (_isStatusInflicting(m)) s += 300;
-        if (m.baseDamage > 0 && _isStatusInflicting(m))
+        if (m.baseDamage > 0 && _isStatusInflicting(m)) {
           s += 50; // damage+status
+        }
         // Hex gets massive bonus — doubles in power when target is statused
         if (m.name == 'Hex' ||
             m.name == 'Venoshock' ||
-            m.name == 'Wake-Up Slap')
+            m.name == 'Wake-Up Slap') {
           s += 250;
+        }
         if (m.baseDamage > 60 && !_isStatusInflicting(m)) s += 10;
         break;
 
@@ -784,8 +792,9 @@ class ArchetypeTeamBuilder {
         if (_isSelfStatBoost(m, ['attack', 'power', 'speed'])) s += 400;
         if (m.baseDamage > 60) s += 50;
         if (m.category == MoveCategory.status &&
-            !_isSelfStatBoost(m, ['attack', 'power', 'speed']))
+            !_isSelfStatBoost(m, ['attack', 'power', 'speed'])) {
           s -= 50;
+        }
         break;
 
       case TeamArchetype.trickRoom:
@@ -807,8 +816,9 @@ class ArchetypeTeamBuilder {
       case TeamArchetype.dualScreens:
         if (m.name == 'Reflect' ||
             m.name == 'Light Screen' ||
-            m.name == 'Aurora Veil')
+            m.name == 'Aurora Veil') {
           s += 800;
+        }
         if (m.baseDamage > 0) s += 20;
         break;
 
@@ -819,14 +829,16 @@ class ArchetypeTeamBuilder {
 
       case TeamArchetype.perishTrapper:
         if (m.name == 'Perish Song') s += 1000;
-        if (m.effects.any((e) => e.type == MoveEffectType.trapIndices))
+        if (m.effects.any((e) => e.type == MoveEffectType.trapIndices)) {
           s += 800;
+        }
         if (m.name == 'Protect') s += 200;
         break;
 
       case TeamArchetype.gimmickyAssist:
-        if (m.name == 'Metronome' || m.name == 'Assist' || m.name == 'Copycat')
+        if (m.name == 'Metronome' || m.name == 'Assist' || m.name == 'Copycat') {
           s += 1000;
+        }
         break;
 
       case TeamArchetype.criticalFocus:
@@ -841,8 +853,9 @@ class ArchetypeTeamBuilder {
         break;
 
       case TeamArchetype.restLoop:
-        if (m.name == 'Rest' || m.name == 'Sleep Talk' || m.name == 'Snore')
+        if (m.name == 'Rest' || m.name == 'Sleep Talk' || m.name == 'Snore') {
           s += 800;
+        }
         break;
 
       case TeamArchetype.evasionBuffer:
@@ -1308,8 +1321,8 @@ class ArchetypeTeamBuilder {
   };
 
   static String? _getGemForPrimarySTAB(CapturedOrganism c) {
-    if (c.baseOrganism.types.isEmpty) return null;
-    final primaryType = c.baseOrganism.types.first;
+    if (c.baseOrganism.elementalTypes.isEmpty) return null;
+    final primaryType = c.baseOrganism.elementalTypes.first;
     return _gemNames[primaryType];
   }
 
@@ -1349,7 +1362,7 @@ class ArchetypeTeamBuilder {
       candidates.add('Assault Vest');
     }
 
-    if (o.types.contains(ElementalType.toxic)) {
+    if (o.elementalTypes.contains(ElementalType.toxic)) {
       candidates.add('Black Sludge');
     }
 
@@ -1402,8 +1415,9 @@ class ArchetypeTeamBuilder {
       if (herb != null) return herb;
     }
 
-    if (candidates.isEmpty)
+    if (candidates.isEmpty) {
       return Talisman.findByName('Life Orb'); // Absolute fallback
+    }
 
     final name = candidates[_rng.nextInt(candidates.length)];
     return Talisman.findByName(name) ?? Talisman.findByName('Life Orb');

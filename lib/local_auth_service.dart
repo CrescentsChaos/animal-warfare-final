@@ -711,8 +711,9 @@ class LocalAuthService {
       final username = data['username'] as String?;
 
       if (username == null || username.isEmpty) {
-        if (kDebugMode)
+        if (kDebugMode) {
           print("ERROR: Imported JSON is missing a valid username.");
+        }
         return false;
       }
 

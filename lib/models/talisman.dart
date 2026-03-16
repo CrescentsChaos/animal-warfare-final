@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_print
 // lib/models/talisman.dart
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;

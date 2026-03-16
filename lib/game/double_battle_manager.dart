@@ -171,14 +171,18 @@ class DoubleBattleManager extends ChangeNotifier {
     turnHistory.add(BattleTurn(currentTurn));
     addLog('GO! ${_slotName(playerSlot1)} & ${_slotName(playerSlot2)}!');
     if (!isTesting) {
-      if (playerSlot1 != null)
+      if (playerSlot1 != null) {
         _audio.playOrganismCry(playerSlot1!.organism.baseOrganism.cry);
-      if (playerSlot2 != null)
+      }
+      if (playerSlot2 != null) {
         _audio.playOrganismCry(playerSlot2!.organism.baseOrganism.cry);
-      if (opponentSlot1 != null)
+      }
+      if (opponentSlot1 != null) {
         _audio.playOrganismCry(opponentSlot1!.organism.baseOrganism.cry);
-      if (opponentSlot2 != null)
+      }
+      if (opponentSlot2 != null) {
         _audio.playOrganismCry(opponentSlot2!.organism.baseOrganism.cry);
+      }
     }
 
     _startIntro();
@@ -374,8 +378,9 @@ class DoubleBattleManager extends ChangeNotifier {
         final targets = _getPossibleTargetsForAi(move);
         for (final target in targets) {
           final defender = _resolveTarget(target);
-          if (defender == null && move.targetCount != MoveTargetCount.multiple)
+          if (defender == null && move.targetCount != MoveTargetCount.multiple) {
             continue;
+          }
 
           // Evaluation target for multi-target moves (pick the most relevant one, typically slot 1 or 2)
           final evaluationDefender =
@@ -426,10 +431,12 @@ class DoubleBattleManager extends ChangeNotifier {
       return [DoubleTarget.allOpponents];
     }
     final alive = <DoubleTarget>[];
-    if (playerSlot1 != null && playerSlot1!.health > 0)
+    if (playerSlot1 != null && playerSlot1!.health > 0) {
       alive.add(DoubleTarget.playerSlot1);
-    if (playerSlot2 != null && playerSlot2!.health > 0)
+    }
+    if (playerSlot2 != null && playerSlot2!.health > 0) {
       alive.add(DoubleTarget.playerSlot2);
+    }
     return alive.isNotEmpty ? alive : [DoubleTarget.playerSlot1];
   }
 
@@ -753,8 +760,9 @@ class DoubleBattleManager extends ChangeNotifier {
     for (final entry in actionList) {
       if (_isBattleOver()) break;
       if (entry.attacker.health <= 0 &&
-          entry.action.type != SlotActionType.switchMon)
+          entry.action.type != SlotActionType.switchMon) {
         continue;
+      }
 
       await _executeAction(entry);
       await _processFaints();
@@ -1030,8 +1038,9 @@ class DoubleBattleManager extends ChangeNotifier {
 
     if (typeMod > 1.0) addLog('It\'s super effective!');
     if (typeMod < 1.0 && typeMod > 0) addLog('It\'s not very effective...');
-    if (typeMod == 0.0)
+    if (typeMod == 0.0) {
       addLog('It doesn\'t affect ${defender.organism.baseOrganism.name}!');
+    }
 
     // --- Rattled ---
     if (defender.abilities.any((ab) => ab.name == 'Rattled') &&

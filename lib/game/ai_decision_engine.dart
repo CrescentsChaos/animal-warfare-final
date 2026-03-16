@@ -544,8 +544,9 @@ class AIDecisionEngine {
             move.name == 'Spiky Shield' ||
             move.name == 'Detect') {
           score += 150;
-          if (opponentHasFatalStatus)
+          if (opponentHasFatalStatus) {
             score += 80; // Even better to stall with status ticking
+          }
         }
         if (move.effects.any(
           (e) =>
@@ -555,12 +556,13 @@ class AIDecisionEngine {
           score += defender.statusEffects.isEmpty ? 140 : -60;
         }
         if (move.effects.any((e) => e.type == MoveEffectType.heal)) {
-          if (attackerHpRatio < 0.25)
+          if (attackerHpRatio < 0.25) {
             score += 200;
-          else if (attackerHpRatio < 0.5)
+          } else if (attackerHpRatio < 0.5) {
             score += 100;
-          else
+          } else {
             score -= 60;
+          }
         }
         if (move.baseDamage > 0 && !canKO) score -= 80;
         if (canKO) score += 120;
@@ -569,8 +571,9 @@ class AIDecisionEngine {
       // ── Balanced: Slight STAB bonus, no major skew. ──
       case TeamArchetype.balanced:
         if (isStabMove && move.baseDamage > 0) score += 20;
-        if (move.category == MoveCategory.status && move.baseDamage == 0)
+        if (move.category == MoveCategory.status && move.baseDamage == 0) {
           score += 15;
+        }
         break;
 
       // ── Status Spread: Smart status targeting. ──
@@ -588,12 +591,14 @@ class AIDecisionEngine {
           final defIsPhysical = defender.currentAttack > defender.currentPower;
           if (move.effects.any((e) => e.type == MoveEffectType.statusBurn) &&
               defIsPhysical &&
-              defender.statusEffects.isEmpty)
+              defender.statusEffects.isEmpty) {
             score += 60;
+          }
           if (move.effects.any((e) => e.type == MoveEffectType.statusPoison) &&
               !defIsPhysical &&
-              defender.statusEffects.isEmpty)
+              defender.statusEffects.isEmpty) {
             score += 60;
+          }
         }
         break;
 
@@ -605,8 +610,9 @@ class AIDecisionEngine {
         if (!rainActive) {
           if (move.effects.any(
             (e) => e.stat == 'rain' || e.stat == 'heavyrain',
-          ))
+          )) {
             score += 400;
+          }
         } else {
           if (move.type == ElementalType.aquatic) score += 80;
           if (move.name == 'Thunder' || move.name == 'Hurricane') score += 60;
@@ -621,8 +627,9 @@ class AIDecisionEngine {
           if (move.type == ElementalType.aura) score += 80;
           if (move.name == 'Psychic' ||
               move.name == 'Psyshock' ||
-              move.name == 'Expanding Force')
+              move.name == 'Expanding Force') {
             score += 60;
+          }
           if (move.type == ElementalType.basic) score -= 60;
         }
         break;
@@ -635,8 +642,9 @@ class AIDecisionEngine {
           if (move.type == ElementalType.aura) score += 80;
           if (move.name == 'Thunderbolt' ||
               move.name == 'Thunder' ||
-              move.name == 'Volt Switch')
+              move.name == 'Volt Switch') {
             score += 60;
+          }
           if (move.type == ElementalType.earth) score -= 60;
         }
         break;
@@ -644,12 +652,14 @@ class AIDecisionEngine {
       case TeamArchetype.sunTeam:
         final sunActive = currentEffect.weather == Weather.sunny;
         if (!sunActive) {
-          if (move.effects.any((e) => e.stat == 'sunny' || e.stat == 'sun'))
+          if (move.effects.any((e) => e.stat == 'sunny' || e.stat == 'sun')) {
             score += 400;
+          }
         } else {
           if (move.type == ElementalType.blaze) score += 80;
-          if (move.name == 'Solar Beam' || move.name == 'Solar Blade')
+          if (move.name == 'Solar Beam' || move.name == 'Solar Blade') {
             score += 80;
+          }
           if (move.type == ElementalType.aquatic) score -= 60;
         }
         break;
@@ -662,8 +672,9 @@ class AIDecisionEngine {
         } else {
           if (move.type == ElementalType.rock ||
               move.type == ElementalType.earth ||
-              move.type == ElementalType.metal)
+              move.type == ElementalType.metal) {
             score += 60;
+          }
           if (move.name == 'Shore Up') score += 80;
         }
         break;
@@ -676,8 +687,9 @@ class AIDecisionEngine {
         if (!snowActive) {
           if (move.effects.any(
             (e) => e.stat == 'snowstorm' || e.stat == 'hail',
-          ))
+          )) {
             score += 400;
+          }
         } else {
           if (move.type == ElementalType.cryo) score += 80;
           if (move.name == 'Aurora Veil') score += 120;
@@ -726,8 +738,9 @@ class AIDecisionEngine {
           if (canKO) score += 150;
           if (move.priority > 0) score += 100;
         }
-        if (move.category == MoveCategory.status && move.baseDamage == 0)
+        if (move.category == MoveCategory.status && move.baseDamage == 0) {
           score -= 120;
+        }
         break;
 
       // ── Defensive Core: Bulk up, heal, never recoil. ──
@@ -741,12 +754,13 @@ class AIDecisionEngine {
           score += isSurvivalRisky ? -40 : 160;
         }
         if (move.effects.any((e) => e.type == MoveEffectType.heal)) {
-          if (attackerHpRatio < 0.5)
+          if (attackerHpRatio < 0.5) {
             score += 200;
-          else if (attackerHpRatio < 0.75)
+          } else if (attackerHpRatio < 0.75) {
             score += 80;
-          else
+          } else {
             score -= 80;
+          }
         }
         if (move.recoilPercent > 0) score -= 120;
         if (canKO) score += 80;
@@ -805,8 +819,9 @@ class AIDecisionEngine {
         // Don't bother with priority moves under TR
         if (move.priority > 0) score -= 60;
         // Status moves are only good on the setup turn
-        if (move.category == MoveCategory.status && move.name != 'Trick Room')
+        if (move.category == MoveCategory.status && move.name != 'Trick Room') {
           score -= 60;
+        }
         break;
 
       case TeamArchetype.tailwindSpeed:
@@ -821,8 +836,9 @@ class AIDecisionEngine {
           }
         }
         if (move.baseDamage > 0) score += 40;
-        if (isTailwindActive)
+        if (isTailwindActive) {
           score += 60; // Under tailwind, offense is rewarded
+        }
         if (isFaster) score += 40;
         break;
 
@@ -835,8 +851,9 @@ class AIDecisionEngine {
           score += targetHasAuroraVeil ? -600 : 500; // Highest priority if snow
         }
         // Once both main screens are up, attack!
-        if (targetHasReflect && targetHasLightScreen && move.baseDamage > 0)
+        if (targetHasReflect && targetHasLightScreen && move.baseDamage > 0) {
           score += 80;
+        }
         if (move.baseDamage > 0) score += 30;
         break;
 
@@ -850,8 +867,9 @@ class AIDecisionEngine {
 
       case TeamArchetype.perishTrapper:
         if (move.name == 'Perish Song') score += 500;
-        if (move.effects.any((e) => e.type == MoveEffectType.trapIndices))
+        if (move.effects.any((e) => e.type == MoveEffectType.trapIndices)) {
           score += 300;
+        }
         if (move.name == 'Protect') score += 100;
         break;
 
@@ -876,10 +894,11 @@ class AIDecisionEngine {
 
       case TeamArchetype.restLoop:
         if (move.name == 'Rest') {
-          if (attackerHpRatio < 0.4)
+          if (attackerHpRatio < 0.4) {
             score += 400;
-          else
+          } else {
             score -= 100;
+          }
         }
         if (move.name == 'Sleep Talk' || move.name == 'Snore') {
           final isAsleep = attacker.statusEffects.any(
@@ -903,8 +922,9 @@ class AIDecisionEngine {
       case TeamArchetype.toxicStall:
         if (move.name == 'Toxic') score += 300;
         if (move.name == 'Protect') score += 200;
-        if (move.effects.any((e) => e.type == MoveEffectType.heal))
+        if (move.effects.any((e) => e.type == MoveEffectType.heal)) {
           score += 150;
+        }
         break;
     }
 

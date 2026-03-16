@@ -591,12 +591,13 @@ class _ShopScreenState extends State<ShopScreen> {
 
   Widget _buildMysteryBox(ShopItem box, UserState userState) {
     Color boxColor;
-    if (box.id == 'bronze_box')
+    if (box.id == 'bronze_box') {
       boxColor = Colors.brown[400]!;
-    else if (box.id == 'silver_box')
+    } else if (box.id == 'silver_box') {
       boxColor = Colors.grey[300]!;
-    else
+    } else {
       boxColor = Colors.amber;
+    }
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -1305,7 +1306,7 @@ class _ShopScreenState extends State<ShopScreen> {
       width: 54,
       height: 54,
       fit: BoxFit.contain,
-      errorBuilder: (context, _, __) {
+      errorBuilder: (context, _, _) {
         IconData iconData;
         Color color;
         switch (item.category) {

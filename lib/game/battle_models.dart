@@ -40,8 +40,8 @@ class BattleOrganism {
   Terrain terrain = Terrain.none;
 
   String get name => isOpponent
-      ? 'Foe ${organism.baseOrganism.name}'
-      : organism.baseOrganism.name;
+      ? 'Foe ${organism.displayName}'
+      : organism.displayName;
 
   late int _health;
   int get health => _health;

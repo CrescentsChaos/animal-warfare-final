@@ -265,7 +265,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
   Animation<double>? _screenShakeXAnim;
   Animation<double>? _screenShakeYAnim;
 
-  Map<String, dynamic> _cumulativeXPResults = {};
+  final Map<String, dynamic> _cumulativeXPResults = {};
 
   @override
   void initState() {
@@ -894,8 +894,9 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                             battleManager.turnHistory.length - 1 - i;
                         final turn = battleManager.turnHistory[turnIndex];
 
-                        if (turn.logEntries.isEmpty)
+                        if (turn.logEntries.isEmpty) {
                           return const SizedBox.shrink();
+                        }
 
                         return _buildTurnLogGroup(
                           context,
@@ -1209,7 +1210,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     battleManager.onHeal = _onHeal;
     battleManager.onStatChange = (target, stat, value) {
       _onStatChange(target, stat, value);
-      final spriteKey = target == 'player'
+      final spriteKey = target == battleManager.player
           ? _playerSpriteKey
           : _opponentSpriteKey;
       spriteKey.currentState?.showStatChange(value > 0);
@@ -1249,7 +1250,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                 ),
               if (widget.mapScreenshot != null)
                 Positioned.fill(
-                  child: Container(color: Colors.black.withOpacity(0.35)),
+                  child: Container(color: Colors.black.withValues(alpha: 0.35)),
                 ),
               if (widget.mapScreenshot == null)
                 StreamBuilder<GameTime>(
@@ -2035,7 +2036,6 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     Key? spriteKey,
   }) {
     final displayLevel = widget.isArenaBattle ? 50 : organism.organism.level;
-    final base = organism.organism.baseOrganism;
     final maxHp = organism.maxHealth;
     final hpRatio = maxHp > 0 ? organism.health / maxHp : 0.0;
 
@@ -2071,7 +2071,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               bm.currentState == BattleState.choosingLead &&
                       widget.isArenaBattle
                   ? '??? LV.??'
-                  : '${base.name} LV.$displayLevel',
+                  : '${organism.organism.displayName} LV.$displayLevel',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
@@ -2282,7 +2282,6 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     BattleManager bm, {
     Key? spriteKey,
   }) {
-    final base = organism.organism.baseOrganism;
     final maxHp = organism.maxHealth;
     final hpRatio = maxHp > 0 ? organism.health / maxHp : 0.0;
 
@@ -2320,7 +2319,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               bm.currentState == BattleState.choosingLead &&
                       widget.isArenaBattle
                   ? '??? LV.??'
-                  : '${base.name} LV.$displayLevel',
+                  : '${organism.organism.displayName} LV.$displayLevel',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
@@ -2767,7 +2766,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
       child: Column(
         children: [
           Text(
-            'What will ${battleManager.player.organism.baseOrganism.name} do?',
+            'What will ${battleManager.player.organism.displayName} do?',
             style: TextStyle(
               color: _getBiomeThemeColor(),
               fontSize: isNarrow ? 9 : 10,
@@ -3396,7 +3395,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                 leading: Image.asset(
                   'assets/sprites/${animal.name.toLowerCase().replaceAll(' ', '_').replaceAll('-', '_').replaceAll("'", "_")}.png',
                   width: 32,
-                  errorBuilder: (_, __, ___) =>
+                  errorBuilder: (_, _, _) =>
                       const Icon(Icons.pets, color: Colors.white),
                 ),
                 title: Text(
@@ -3506,28 +3505,15 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           await _playerSpriteKey.currentState?.faint();
         }
 
-        // Handle death mechanic for non-Arena, non-Rogue battles
-        if (!widget.isArenaBattle && !widget.isRogueMode) {
-          final playerTeam = List<CapturedOrganism>.from(
-            battleManager.playerTeam,
-          );
-          for (final org in playerTeam) {
-            if (org.currentHealth <= 0) {
-              await userState.removeCapturedOrganism(org);
-            }
-          }
-        }
+        // Death mechanic removed — animals are no longer permanently lost after battle
 
         // Rogue-like specific progression
         if (widget.isRogueMode) {
           if (battleManager.result == BattleResult.win ||
               battleManager.result == BattleResult.capture) {
-            // Perma-death: Remove any fainted animals from the team
-            final currentTeam =
-                userState.currentUser?.rogueLikeState.team ?? [];
-            final List<CapturedOrganism> survivingTeam = currentTeam
-                .where((o) => o.currentHealth > 0)
-                .toList();
+            // Perma-death removed in Rogue Mode as well
+            final survivingTeam = List<CapturedOrganism>.from(
+                userState.currentUser?.rogueLikeState.team ?? []);
 
             // REORDER: Move the active animal (the one that finished the battle) to the lead position
             final activeOrg = battleManager.player.organism;
@@ -3675,6 +3661,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
         }
 
         // Show result dialog
+        if (!context.mounted) return;
         if (_pendingRogueCapture != null &&
             battleManager.result != BattleResult.loss) {
           _showCaptureReplaceDialog(context, _pendingRogueCapture!, userState);
@@ -3691,7 +3678,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
         _isHandlingBattleEnd = false; // Reset here
       } catch (e) {
         debugPrint('Error during battle end handling: $e');
-        if (mounted) {
+        if (context.mounted) {
           _showBattleResultDialog(context, battleManager, 0, null, userState);
         }
         _isHandlingBattleEnd = false; // Reset here
@@ -3804,7 +3791,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           }
           if (ctx.mounted) Navigator.pop(ctx);
 
-          if (mounted) {
+          if (context.mounted) {
             // Show result dialog after replacement
             _showBattleResultDialog(
               context,
@@ -3823,7 +3810,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
             });
           }
           Navigator.pop(ctx);
-          if (mounted) {
+          if (context.mounted) {
             // Show result dialog after discard
             _showBattleResultDialog(
               context,
@@ -3955,7 +3942,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                     ),
                   ),
                 )
-                .toList(),
+                ,
           ],
         ),
       ),
@@ -5002,7 +4989,7 @@ class _BattleResultDialogState extends State<_BattleResultDialog> {
                   width: 64,
                   height: 64,
                   fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) =>
+                  errorBuilder: (_, _, _) =>
                       const Icon(Icons.star, color: Colors.amber, size: 40),
                 ),
                 Positioned(
@@ -5154,7 +5141,7 @@ class _BattleResultDialogState extends State<_BattleResultDialog> {
                     width: 40,
                     height: 40,
                     fit: BoxFit.contain,
-                    errorBuilder: (_, __, ___) =>
+                    errorBuilder: (_, _, _) =>
                         const Icon(Icons.pets, color: Colors.white24, size: 24),
                   ),
                   const SizedBox(height: 4),
@@ -5339,7 +5326,7 @@ class _BattleResultDialogState extends State<_BattleResultDialog> {
             width: 56,
             height: 56,
             fit: BoxFit.contain,
-            errorBuilder: (_, __, ___) =>
+            errorBuilder: (_, _, _) =>
                 const Icon(Icons.pets, color: Colors.white12, size: 30),
           ),
         ),
@@ -5692,14 +5679,15 @@ class _BattleSpriteState extends State<_BattleSprite>
       final count = entry.value;
 
       String assetPath = '';
-      if (hazard == 'stealth_rock')
+      if (hazard == 'stealth_rock') {
         assetPath = 'assets/stealth_rock.png';
-      else if (hazard == 'spikes')
+      } else if (hazard == 'spikes') {
         assetPath = 'assets/spikes.png';
-      else if (hazard == 'toxic_spikes')
+      } else if (hazard == 'toxic_spikes') {
         assetPath = 'assets/toxic_spikes.png';
-      else if (hazard == 'sticky_web')
+      } else if (hazard == 'sticky_web') {
         assetPath = 'assets/sticky_web.png';
+      }
 
       if (assetPath.isEmpty) continue;
 
@@ -6149,7 +6137,7 @@ class _BattleSpriteState extends State<_BattleSprite>
                       overlayPath,
                       fit: BoxFit.contain,
                       opacity: const AlwaysStoppedAnimation(0.85),
-                      errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                      errorBuilder: (_, _, _) => const SizedBox.shrink(),
                     ),
                   ),
                 ),
@@ -6206,8 +6194,9 @@ class _ScreenShieldOverlayState extends State<_ScreenShieldOverlay>
         ? bm.playerAuroraVeilTurns > 0
         : bm.opponentAuroraVeilTurns > 0;
 
-    if (!hasReflect && !hasLightScreen && !hasAuroraVeil)
+    if (!hasReflect && !hasLightScreen && !hasAuroraVeil) {
       return const SizedBox.shrink();
+    }
 
     final List<Widget> shields = [];
 
@@ -6286,10 +6275,11 @@ class _ShieldPainter extends CustomPainter {
       double angle = i * math.pi / 3;
       double x = centerX + radius * math.cos(angle);
       double y = centerY + radius * math.sin(angle);
-      if (i == 0)
+      if (i == 0) {
         path.moveTo(x, y);
-      else
+      } else {
         path.lineTo(x, y);
+      }
     }
     path.close();
 
@@ -6904,7 +6894,7 @@ class _PartyScreenDialog extends StatelessWidget {
                             width: 44,
                             height: 44,
                             fit: BoxFit.contain,
-                            errorBuilder: (_, __, ___) => const Icon(
+                            errorBuilder: (_, _, _) => const Icon(
                               Icons.pets,
                               color: Colors.white54,
                               size: 36,

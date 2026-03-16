@@ -4,8 +4,7 @@ import 'package:animal_warfare/game/time_service.dart';
 class GameClockWidget extends StatefulWidget {
   final Color highlightColor;
 
-  const GameClockWidget({Key? key, required this.highlightColor})
-    : super(key: key);
+  const GameClockWidget({super.key, required this.highlightColor});
 
   @override
   State<GameClockWidget> createState() => _GameClockWidgetState();

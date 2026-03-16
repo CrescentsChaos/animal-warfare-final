@@ -1,7 +1,7 @@
+// ignore_for_file: deprecated_member_use
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -1154,7 +1154,7 @@ class _AWStudioState extends State<AWStudio> with TickerProviderStateMixin {
                 RadioListTile<String>(
                   title: Text('${size[0]} x ${size[1]}', style: const TextStyle(color: Colors.white, fontSize: 13)),
                   value: '${size[0]}x${size[1]}',
-                  groupValue: '${newW}x${newH}',
+                  groupValue: '${newW}x$newH',
                   activeColor: _accent,
                   onChanged: (v) { setD(() { newW = size[0]; newH = size[1]; }); },
                 ),
@@ -1915,7 +1915,7 @@ class _TileImportSheetState extends State<_TileImportSheet> {
               hintStyle: const TextStyle(color: Colors.white38),
               prefixIcon: const Icon(Icons.search, color: Colors.white54, size: 20),
               filled: true,
-              fillColor: Colors.white.withOpacity(0.05),
+              fillColor: Colors.white.withValues(alpha: 0.05),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
               contentPadding: EdgeInsets.zero,
             ),

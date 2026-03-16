@@ -130,8 +130,9 @@ class TypeMatchupSheet {
 
     // Check effectiveness from EVERY attacking type
     for (final attackerType in ElementalType.values) {
-      if (attackerType == ElementalType.basic)
+      if (attackerType == ElementalType.basic) {
         continue; // Basic moves usually just 1x
+      }
 
       double totalMulti = 1.0;
       for (final defType in defenderTypes) {

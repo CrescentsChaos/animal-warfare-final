@@ -374,8 +374,7 @@
         "type": "cryo",
         "accuracy": 100,
         "stamina": 15,
-        "category": "special",
-        "effects": []
+        "category": "special"
     },
     {
         "name": "Scratch",
@@ -384,8 +383,7 @@
         "type": "basic",
         "stamina": 35,
         "accuracy": 100,
-        "category": "physical",
-        "effects": []
+        "category": "physical"
     },
     {
         "name": "Headbutt",
@@ -394,8 +392,7 @@
         "type": "basic",
         "stamina": 15,
         "accuracy": 90,
-        "category": "physical",
-        "effects": []
+        "category": "physical"
     },
     {
         "name": "Stomp",
@@ -405,8 +402,7 @@
         "type": "basic",
         "stamina": 25,
         "accuracy": 95,
-        "category": "physical",
-        "effects": []
+        "category": "physical"
     },
     {
         "name": "Claw Swipe",
@@ -414,8 +410,7 @@
         "baseDamage": 20,
         "type": "basic",
         "stamina": 30,
-        "category": "physical",
-        "effects": []
+        "category": "physical"
     },
     {
         "name": "Crabhammer",
@@ -425,8 +420,7 @@
         "stamina": 10,
         "accuracy": 90,
         "category": "physical",
-        "critRate": 1,
-        "effects": []
+        "critRate": 1
     },
     {
         "name": "Kick",
@@ -435,8 +429,7 @@
         "animationType": "melee",
         "type": "martial",
         "stamina": 30,
-        "category": "physical",
-        "effects": []
+        "category": "physical"
     },
     {
         "name": "Punch",
@@ -446,8 +439,27 @@
         "type": "martial",
         "stamina": 30,
         "category": "physical",
-        "isPunch": true,
-        "effects": []
+        "isPunch": true
+    },
+    {
+        "name": "Uppercut",
+        "description": "A basic attack.",
+        "animationType": "melee",
+        "baseDamage": 60,
+        "type": "martial",
+        "stamina": 30,
+        "category": "physical",
+        "isPunch": true
+    },
+    {
+        "name": "Jab",
+        "description": "A basic attack.",
+        "animationType": "melee",
+        "baseDamage": 60,
+        "type": "martial",
+        "stamina": 30,
+        "category": "physical",
+        "isPunch": true
     },
     {
         "name": "Vice Grip",

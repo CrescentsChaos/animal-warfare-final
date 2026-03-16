@@ -3453,8 +3453,9 @@ class SpoutEffect extends StatelessWidget {
                 0.0,
                 1.0,
               );
-              if (individualP <= 0 || individualP >= 1.0)
+              if (individualP <= 0 || individualP >= 1.0) {
                 return const SizedBox.shrink();
+              }
 
               final dy = -150.0 * individualP;
               final dx = (rand.nextDouble() * 40 - 20) * individualP;
@@ -3488,8 +3489,9 @@ class SpoutEffect extends StatelessWidget {
                 0.0,
                 1.0,
               );
-              if (individualP <= 0 || individualP >= 1.0)
+              if (individualP <= 0 || individualP >= 1.0) {
                 return const SizedBox.shrink();
+              }
 
               final startY = -200.0;
               final endY = cy;

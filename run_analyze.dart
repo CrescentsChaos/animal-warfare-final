@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_print
 import 'dart:io';
 
 void main() async {
@@ -7,7 +8,7 @@ void main() async {
     'lib/battle_screen.dart',
     'lib/user_state.dart',
   ]);
-  final output = result.stdout.toString() + '\n' + result.stderr.toString();
+  final output = '${result.stdout}\n${result.stderr}';
   final lines = output.split('\n');
   for (final line in lines) {
     if (line.contains('error -')) {

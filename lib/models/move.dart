@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_print
 // lib/models/move.dart
 // Defines the structure for an animal's attack.
 //

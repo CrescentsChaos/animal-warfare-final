@@ -1069,10 +1069,11 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
           final maxStamina = move?.stamina ?? 1;
           final ppPerc = maxStamina > 0 ? stamina / maxStamina : 0.0;
           Color ppColor = Colors.greenAccent;
-          if (ppPerc <= 0.25)
+          if (ppPerc <= 0.25) {
             ppColor = Colors.redAccent;
-          else if (ppPerc <= 0.5)
+          } else if (ppPerc <= 0.5) {
             ppColor = Colors.orange;
+          }
 
           return Container(
             margin: const EdgeInsets.only(bottom: 10),
@@ -1583,17 +1584,19 @@ class _SummarySpriteState extends State<_SummarySprite> {
     final lp = _local();
     try {
       await rootBundle.load(lp);
-      if (mounted)
+      if (mounted) {
         setState(() {
           _src = 'local';
           _path = lp;
         });
+      }
     } catch (_) {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _src = 'network';
           _path = widget.organism.sprite;
         });
+      }
     }
   }
 
@@ -1618,7 +1621,7 @@ class _SummarySpriteState extends State<_SummarySprite> {
             height: widget.size,
             fit: BoxFit.contain,
             filterQuality: FilterQuality.none,
-            errorBuilder: (_, __, ___) => Icon(
+            errorBuilder: (_, _, _) => Icon(
               Icons.pets,
               size: widget.size * 0.5,
               color: Colors.white24,
@@ -1629,7 +1632,7 @@ class _SummarySpriteState extends State<_SummarySprite> {
             width: widget.size,
             height: widget.size,
             fit: BoxFit.contain,
-            errorBuilder: (_, __, ___) => Icon(
+            errorBuilder: (_, _, _) => Icon(
               Icons.pets,
               size: widget.size * 0.5,
               color: Colors.white24,
@@ -1669,10 +1672,11 @@ class _HexPatternPainter extends CustomPainter {
         center.dx + r * math.cos(angle),
         center.dy + r * math.sin(angle),
       );
-      if (i == 0)
+      if (i == 0) {
         path.moveTo(p.dx, p.dy);
-      else
+      } else {
         path.lineTo(p.dx, p.dy);
+      }
     }
     path.close();
     canvas.drawPath(path, paint);

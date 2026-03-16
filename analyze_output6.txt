@@ -1,0 +1,8 @@
+Analyzing animal_warfare...                                     
+
+   info - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre - lib\game\tile_designer.dart:1157:19 - deprecated_member_use
+   info - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre - lib\game\tile_designer.dart:1159:19 - deprecated_member_use
+   info - Don't invoke 'print' in production code - scripts\validate_movepools.dart:9:5 - avoid_print
+   info - Don't invoke 'print' in production code - scripts\validate_movepools.dart:40:3 - avoid_print
+   info - Don't invoke 'print' in production code - scripts\validate_movepools.dart:42:5 - avoid_print
+

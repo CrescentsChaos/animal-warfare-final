@@ -65,7 +65,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     HapticService.heavy();
     showDialog(
       context: context,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return AlertDialog(
           backgroundColor: AppColors.surface,
           shape: RoundedRectangleBorder(
@@ -90,7 +90,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           actions: <Widget>[
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => Navigator.of(dialogContext).pop(),
               child: Text(
                 'Cancel',
                 style: GoogleFonts.inter(color: AppColors.textSecondary),
@@ -98,7 +98,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             ElevatedButton(
               onPressed: () async {
-                Navigator.of(context).pop();
+                Navigator.of(dialogContext).pop();
                 await widget.authService.logout();
                 if (mounted) {
                   Navigator.of(context).pushAndRemoveUntil(
@@ -154,10 +154,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               context,
               listen: false,
             ).refreshCurrentUser();
-            Navigator.of(context).pushAndRemoveUntil(
-              _createFadeRoute(const MainScreen()),
-              (route) => false,
-            );
+            if (mounted) {
+              Navigator.of(context).pushAndRemoveUntil(
+                _createFadeRoute(const MainScreen()),
+                (route) => false,
+              );
+            }
           }
         } else {
           throw Exception('Invalid save file format.');

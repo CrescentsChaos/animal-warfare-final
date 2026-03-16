@@ -117,7 +117,7 @@ class _RogueStarterSelectScreenState extends State<RogueStarterSelectScreen> {
                                 'assets/sprites/${org.baseOrganism.name.toLowerCase().replaceAll(' ', '_').replaceAll('-', '_').replaceAll("'", "_")}.png',
                                 width: 80,
                                 height: 80,
-                                errorBuilder: (_, __, ___) => const Icon(
+                                errorBuilder: (_, _, _) => const Icon(
                                   Icons.pets,
                                   size: 40,
                                   color: Colors.white24,

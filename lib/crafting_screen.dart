@@ -74,7 +74,7 @@ class _CraftingScreenState extends State<CraftingScreen>
                   child: Image.asset(
                     'assets/main.png',
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                    errorBuilder: (_, _, _) => const SizedBox.shrink(),
                   ),
                 ),
               ),
@@ -277,6 +277,8 @@ class _RecipeCardState extends State<_RecipeCard>
     setState(() => _crafting = true);
     _glowCtrl.repeat(reverse: true);
     await Future.delayed(const Duration(milliseconds: 600));
+    if (!ctx.mounted) return;
+    
     final userState = Provider.of<UserState>(ctx, listen: false);
     final success = await userState.craftTalisman(
       widget.recipe.resultTalismanId,
@@ -284,7 +286,7 @@ class _RecipeCardState extends State<_RecipeCard>
     );
     _glowCtrl.stop();
     _glowCtrl.reset();
-    if (mounted) {
+    if (context.mounted) {
       setState(() => _crafting = false);
       ScaffoldMessenger.of(ctx).showSnackBar(
         SnackBar(
@@ -1272,7 +1274,7 @@ class _AnimalAvatar extends StatelessWidget {
     return Image.asset(
       path,
       fit: BoxFit.contain,
-      errorBuilder: (_, __, ___) => Center(
+      errorBuilder: (_, _, _) => Center(
         child: Text(
           organism.name.isNotEmpty ? organism.name[0].toUpperCase() : '?',
           style: const TextStyle(

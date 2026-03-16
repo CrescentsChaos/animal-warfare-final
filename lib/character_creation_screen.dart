@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:animal_warfare/local_auth_service.dart';
-import 'package:animal_warfare/main_screen.dart';
+import 'package:animal_warfare/starter_choice_screen.dart';
 import 'package:animal_warfare/theme.dart';
 import 'package:provider/provider.dart';
 import 'package:animal_warfare/user_state.dart';
@@ -90,8 +90,8 @@ class _CharacterCreationScreenState extends State<CharacterCreationScreen> {
         Navigator.of(context).pushAndRemoveUntil(
           PageRouteBuilder(
             transitionDuration: const Duration(milliseconds: 500),
-            pageBuilder: (_, a, __) => const MainScreen(),
-            transitionsBuilder: (_, a, __, child) =>
+            pageBuilder: (_, a, _) => const StarterChoiceScreen(),
+            transitionsBuilder: (_, a, _, child) =>
                 FadeTransition(opacity: a, child: child),
           ),
           (_) => false,

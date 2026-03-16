@@ -107,7 +107,7 @@ class _BiomeSelectScreenState extends State<BiomeSelectScreen> {
               Colors.black.withValues(alpha: 0.3),
               BlendMode.darken,
             ),
-            onError: (_, __) {}, // Fallback handled by color
+            onError: (_, _) {}, // Fallback handled by color
           ),
           color: Colors.grey[800],
         ),

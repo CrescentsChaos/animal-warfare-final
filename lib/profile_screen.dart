@@ -767,7 +767,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           child: Image.asset(
                             'assets/sprites/$fileName.png',
                             width: 44.h,
-                            errorBuilder: (_, __, ___) =>
+                            errorBuilder: (_, _, _) =>
                                 const Icon(Icons.pets, color: Colors.white10),
                           ),
                         ),

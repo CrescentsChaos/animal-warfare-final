@@ -156,11 +156,24 @@ class UserState with ChangeNotifier {
       final list = List<CapturedOrganism>.from(u.capturedOrganisms)
         ..add(newCapture);
 
+      final newIndex = list.length - 1;
+
+      // Auto-add to team if not full
+      final team = List<int>.from(u.battleTeam);
+      if (team.length < 5) {
+        team.add(newIndex);
+      }
+
+      final species = newCapture.name;
+
+      // Mark as discovered if not already
+      final discovered = Set<String>.from(u.discoveredOrganisms);
+      discovered.add(species);
+
       // Mark species as captured in stats
       final newStats = Map<String, Map<String, int>>.from(
         u.speciesStats.map((k, v) => MapEntry(k, Map<String, int>.from(v))),
       );
-      final species = newCapture.name;
       final existing =
           newStats[species] ?? {'matches': 0, 'wins': 0, 'captured': 0};
       newStats[species] = {
@@ -169,7 +182,12 @@ class UserState with ChangeNotifier {
         'captured': 1,
       };
 
-      return u.copyWith(capturedOrganisms: list, speciesStats: newStats);
+      return u.copyWith(
+        capturedOrganisms: list,
+        speciesStats: newStats,
+        battleTeam: team,
+        discoveredOrganisms: discovered.toList(),
+      );
     });
   }
 
@@ -867,7 +885,7 @@ class UserState with ChangeNotifier {
           rewards.add(
             RogueReward(
               type: RogueRewardType.captureItems,
-              label: '$count' + (count == 1 ? ' CAPTURE NET' : ' CAPTURE NETS'),
+              label: '$count${count == 1 ? ' CAPTURE NET' : ' CAPTURE NETS'}',
               itemId: 'capture_net',
               count: count,
             ),
@@ -1137,8 +1155,9 @@ class UserState with ChangeNotifier {
       if (indexA < 0 ||
           indexA >= team.length ||
           indexB < 0 ||
-          indexB >= team.length)
+          indexB >= team.length) {
         return u;
+      }
 
       final tA = team[indexA].equippedTalisman;
       final tB = team[indexB].equippedTalisman;
@@ -1675,8 +1694,9 @@ class UserState with ChangeNotifier {
 
     for (int i = 0; i < updatedSlots.length; i++) {
       final slot = updatedSlots[i];
-      if (slot.stage == PlantStage.empty || slot.stage == PlantStage.fruit)
+      if (slot.stage == PlantStage.empty || slot.stage == PlantStage.fruit) {
         continue;
+      }
 
       if (slot.lastStageTime != null) {
         final elapsed = now.difference(slot.lastStageTime!);
@@ -1742,8 +1762,9 @@ class UserState with ChangeNotifier {
       final slot = u.farmSlots[index];
       if (slot.stage == PlantStage.empty ||
           slot.stage == PlantStage.fruit ||
-          slot.isWatered)
+          slot.isWatered) {
         return u;
+      }
 
       final slots = List<FarmSlot>.from(u.farmSlots);
       slots[index] = slot.copyWith(isWatered: true);
@@ -1763,14 +1784,16 @@ class UserState with ChangeNotifier {
       final slot = u.farmSlots[index];
       if (slot.stage == PlantStage.empty ||
           slot.stage == PlantStage.fruit ||
-          slot.isFertilized)
+          slot.isFertilized) {
         return u;
+      }
 
       final inventory = Map<String, int>.from(u.inventory);
       inventory['organic_fertilizer'] =
           (inventory['organic_fertilizer'] ?? 1) - 1;
-      if (inventory['organic_fertilizer']! <= 0)
+      if (inventory['organic_fertilizer']! <= 0) {
         inventory.remove('organic_fertilizer');
+      }
 
       final slots = List<FarmSlot>.from(u.farmSlots);
       slots[index] = slot.copyWith(isFertilized: true);

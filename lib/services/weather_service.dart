@@ -30,44 +30,45 @@ class WeatherService {
     double baseTemp;
     final biome = biomeName.toLowerCase();
 
-    if (biome.contains('volcano'))
+    if (biome.contains('volcano')) {
       baseTemp = 45.0 + random.nextDouble() * 15.0;
-    else if (biome.contains('desert'))
+    } else if (biome.contains('desert')) {
       baseTemp = 35.0 + random.nextDouble() * 12.0;
-    else if (biome.contains('savanna'))
+    } else if (biome.contains('savanna')) {
       baseTemp = 28.0 + random.nextDouble() * 7.0;
-    else if (biome.contains('jungle') ||
+    } else if (biome.contains('jungle') ||
         biome.contains('rainforest') ||
-        biome.contains('redwoods'))
+        biome.contains('redwoods')) {
       baseTemp = 26.0 + random.nextDouble() * 6.0;
-    else if (biome.contains('mangrove') ||
+    } else if (biome.contains('mangrove') ||
         biome.contains('swamp') ||
-        biome.contains('wetlands'))
+        biome.contains('wetlands')) {
       baseTemp = 24.0 + random.nextDouble() * 6.0;
-    else if (biome.contains('urban'))
+    } else if (biome.contains('urban')) {
       baseTemp = 22.0 + random.nextDouble() * 8.0;
-    else if (biome.contains('coastal'))
+    } else if (biome.contains('coastal')) {
       baseTemp = 20.0 + random.nextDouble() * 10.0;
-    else if (biome.contains('coral reef') || biome.contains('kelp forest'))
+    } else if (biome.contains('coral reef') || biome.contains('kelp forest')) {
       baseTemp = 18.0 + random.nextDouble() * 6.0;
-    else if (biome.contains('river') ||
+    } else if (biome.contains('river') ||
         biome.contains('lake') ||
-        biome.contains('ocean'))
+        biome.contains('ocean')) {
       baseTemp = 15.0 + random.nextDouble() * 10.0;
-    else if (biome.contains('mountain'))
+    } else if (biome.contains('mountain')) {
       baseTemp = 5.0 + random.nextDouble() * 15.0;
-    else if (biome.contains('cave'))
+    } else if (biome.contains('cave')) {
       baseTemp = 12.0 + random.nextDouble() * 4.0; // Stable
-    else if (biome.contains('taiga'))
+    } else if (biome.contains('taiga')) {
       baseTemp = -5.0 + random.nextDouble() * 15.0;
-    else if (biome.contains('tundra'))
+    } else if (biome.contains('tundra')) {
       baseTemp = -15.0 + random.nextDouble() * 20.0;
-    else if (biome.contains('polar') || biome.contains('frozen ocean'))
+    } else if (biome.contains('polar') || biome.contains('frozen ocean')) {
       baseTemp = -40.0 + random.nextDouble() * 20.0;
-    else if (biome.contains('deep sea'))
+    } else if (biome.contains('deep sea')) {
       baseTemp = 2.0 + random.nextDouble() * 3.0; // Very cold and stable
-    else
+    } else {
       baseTemp = 20.0 + random.nextDouble() * 5.0; // Default
+    }
 
     // Day/Night Temperature Shifts
     final gameTime = TimeService().currentGameTime;
@@ -78,36 +79,40 @@ class WeatherService {
 
     double timeDelta = 0;
     if (biome.contains('desert')) {
-      if (isDay)
+      if (isDay) {
         timeDelta = 15.0;
-      else if (isNight)
+      } else if (isNight) {
         timeDelta = -15.0;
+      }
     } else if (biome.contains('polar') ||
         biome.contains('tundra') ||
         biome.contains('frozen ocean') ||
         biome.contains('deep sea')) {
       // Minimal shift in extreme cold/stable deep sea
-      if (isDay)
+      if (isDay) {
         timeDelta = 2.0;
-      else if (isNight)
+      } else if (isNight) {
         timeDelta = -2.0;
+      }
     } else if (biome.contains('urban')) {
       // Heat island effect: warmer at night
-      if (isDay)
+      if (isDay) {
         timeDelta = 3.0;
-      else if (isNight)
+      } else if (isNight) {
         timeDelta = 2.0;
+      }
     } else if (biome.contains('volcano') || biome.contains('cave')) {
       // Stable high heat or stable underground
       timeDelta = 0;
     } else {
       // Default cycle
-      if (isDay)
+      if (isDay) {
         timeDelta = 5.0;
-      else if (isEvening)
+      } else if (isEvening) {
         timeDelta = 0;
-      else if (isNight)
+      } else if (isNight) {
         timeDelta = -5.0;
+      }
     }
 
     // Weather Offsets

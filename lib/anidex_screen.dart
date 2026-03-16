@@ -247,7 +247,7 @@ class _AnidexScreenState extends State<AnidexScreen>
 
     // Fallback to current box (though speciesStats should be updated on capture)
     return userState.currentUser?.capturedOrganisms.any(
-          (co) => co.name == organism.name,
+          (co) => co.baseOrganism.name == organism.name,
         ) ??
         false;
   }
@@ -544,7 +544,7 @@ class _AnidexScreenState extends State<AnidexScreen>
                   child: Image.asset(
                     spritePath,
                     fit: BoxFit.contain,
-                    errorBuilder: (context, _, __) => Icon(
+                    errorBuilder: (context, _, _) => Icon(
                       _getItemIcon(item.category),
                       color: _getItemColor(item.category),
                       size: 28,
@@ -1094,10 +1094,11 @@ class __OrganismSpriteDisplayState extends State<_OrganismSpriteDisplay> {
 
   @override
   Widget build(BuildContext context) {
-    if (_imagePath == null)
+    if (_imagePath == null) {
       return const Center(
         child: CircularProgressIndicator(color: Colors.white12),
       );
+    }
 
     if (widget.isDiscovered) {
       if (!widget.isCaptured) {

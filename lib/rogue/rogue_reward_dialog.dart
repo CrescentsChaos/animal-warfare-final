@@ -114,7 +114,7 @@ class RogueRewardDialog extends StatelessWidget {
                                         reward.itemId != null
                                     ? Image.asset(
                                         'assets/items/${reward.itemId!.replaceAll('_', '-')}.png',
-                                        errorBuilder: (context, _, __) => Icon(
+                                        errorBuilder: (context, _, _) => Icon(
                                           isPremium
                                               ? Icons.star
                                               : _iconFor(reward.type),
@@ -253,7 +253,7 @@ class RogueRewardDialog extends StatelessWidget {
                                   width: 44,
                                   height: 44,
                                   fit: BoxFit.contain,
-                                  errorBuilder: (context, _, __) => const Icon(
+                                  errorBuilder: (context, _, _) => const Icon(
                                     Icons.pets,
                                     color: Colors.white24,
                                     size: 30,

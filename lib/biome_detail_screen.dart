@@ -108,38 +108,44 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
 
   Color _getBiomeHighlightColor(String biomeName) {
     final biome = biomeName.toLowerCase();
-    if (biome.contains('swamp') || biome.contains('mangrove'))
+    if (biome.contains('swamp') || biome.contains('mangrove')) {
       return const Color(0xFFCE93D8);
-    if (biome.contains('desert') || biome.contains('savanna'))
+    }
+    if (biome.contains('desert') || biome.contains('savanna')) {
       return const Color(0xFFFFD740);
+    }
     if (biome.contains('snow') ||
         biome.contains('ice') ||
         biome.contains('tundra') ||
         biome.contains('polar') ||
-        biome.contains('frozen'))
+        biome.contains('frozen')) {
       return const Color(0xFF40C4FF);
+    }
     if (biome.contains('volcan')) return const Color(0xFFFF5252);
     if (biome.contains('mountain') ||
         biome.contains('cave') ||
         biome.contains('urban') ||
-        biome.contains('taiga'))
+        biome.contains('taiga')) {
       return const Color(0xFFB0BEC5);
+    }
     if (biome.contains('forest') ||
         biome.contains('jungle') ||
         biome.contains('rainforest') ||
         biome.contains('kelp') ||
         biome.contains('wetlands') ||
         biome.contains('redwoods') ||
-        biome.contains('plains'))
+        biome.contains('plains')) {
       return const Color(0xFF69F0AE);
+    }
     if (biome.contains('ocean') ||
         biome.contains('beach') ||
         biome.contains('lake') ||
         biome.contains('river') ||
         biome.contains('deep sea') ||
         biome.contains('coral') ||
-        biome.contains('coastal'))
+        biome.contains('coastal')) {
       return const Color(0xFF448AFF);
+    }
     return const Color(0xFFDAA520);
   }
 
@@ -205,7 +211,7 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
     } else {
       _displayMessage("You have no organisms! Prepare to fight as Human!");
       playerFighter = CapturedOrganism.spawn(
-        Organism.HUMAN_ORGANISM.copyWith(name: user.username),
+        Organism.humanOrganism.copyWith(name: user.username),
         level: user.accountLevel,
       );
     }
@@ -404,13 +410,14 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
     final cost = _getIdentifyStaminaCost(organism.rarity);
     if (userState.currentUser == null ||
         userState.currentUser!.stamina < cost) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Not enough stamina! Need $cost stamina.'),
             backgroundColor: Colors.redAccent,
           ),
         );
+      }
       return;
     }
     await userState.decreaseStamina(cost);
@@ -431,8 +438,9 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
       await widget.authService.updateUser(_currentUser);
       userState.setCurrentUser(_currentUser);
       for (final title in newAchievements) {
-        if (mounted)
+        if (mounted) {
           _achievementService.showAchievementSnackbar(context, title);
+        }
       }
     }
     if (mounted) {
@@ -514,13 +522,14 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
       return;
     }
     if (user.stamina < 10) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Not enough stamina!'),
             backgroundColor: Colors.redAccent,
           ),
         );
+      }
       return;
     }
     await userState.decreaseStamina(10);
@@ -576,9 +585,9 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
     Navigator.of(context).push(
       PageRouteBuilder(
         opaque: false,
-        pageBuilder: (_, animation, __) =>
+        pageBuilder: (_, animation, _) =>
             PhoneScreen(initialBiome: widget.biomeName),
-        transitionsBuilder: (_, animation, __, child) {
+        transitionsBuilder: (_, animation, _, child) {
           return FadeTransition(opacity: animation, child: child);
         },
       ),
@@ -1207,13 +1216,14 @@ class __OrganismSpriteDisplayState extends State<_OrganismSpriteDisplay> {
 
   @override
   Widget build(BuildContext context) {
-    if (_imageSourceType == null)
+    if (_imageSourceType == null) {
       return SizedBox(
         height: widget.height,
         child: const Center(
           child: CircularProgressIndicator(color: Colors.white),
         ),
       );
+    }
     final String source = _imagePath;
     if (widget.isNameVisible) {
       return buildSilhouetteSprite(

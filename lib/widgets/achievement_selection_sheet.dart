@@ -45,6 +45,7 @@ class _AchievementSelectionSheetState extends State<AchievementSelectionSheet> {
 
   Future<void> _loadAchievements() async {
     await _achievementService.loadAchievements();
+    if (!mounted) return;
     final userState = Provider.of<UserState>(context, listen: false);
     final all = _achievementService.getAllAchievements();
 

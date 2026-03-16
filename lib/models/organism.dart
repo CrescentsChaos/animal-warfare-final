@@ -242,7 +242,7 @@ class Organism {
     }
   }
 
-  static final Organism HUMAN_ORGANISM = Organism(
+  static final Organism humanOrganism = Organism(
     name: 'Human',
     scientificName: 'Homo sapiens',
     habitat: 'Everywhere',

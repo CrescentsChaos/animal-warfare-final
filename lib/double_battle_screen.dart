@@ -112,11 +112,13 @@ class DoubleBattleScreen extends StatelessWidget {
     if (b.contains('swamp')) return const Color(0xFF2BB900);
     if (b.contains('desert')) return const Color(0xFFD4A017);
     if (b.contains('forest')) return const Color(0xFF2E7D32);
-    if (b.contains('ocean') || b.contains('lake'))
+    if (b.contains('ocean') || b.contains('lake')) {
       return const Color(0xFF0277BD);
+    }
     if (b.contains('mountain')) return const Color(0xFF757575);
-    if (b.contains('ice') || b.contains('tundra'))
+    if (b.contains('ice') || b.contains('tundra')) {
       return const Color(0xFF80DEEA);
+    }
     if (b.contains('volcan')) return const Color(0xFFD32F2F);
     return const Color(0xFF2BB900); // Default
   }
@@ -130,10 +132,12 @@ class DoubleBattleScreen extends StatelessWidget {
     if (b.contains('swamp')) return const Color(0xFF4ADE80);
     if (b.contains('desert')) return const Color(0xFFFFD700);
     if (b.contains('forest')) return const Color(0xFF81C784);
-    if (b.contains('ocean') || b.contains('lake'))
+    if (b.contains('ocean') || b.contains('lake')) {
       return const Color(0xFFB3E5FC);
-    if (b.contains('ice') || b.contains('tundra'))
+    }
+    if (b.contains('ice') || b.contains('tundra')) {
       return const Color(0xFFE0F7FA);
+    }
     if (b.contains('volcan')) return const Color(0xFFFF8A65);
     return const Color(0xFF4ADE80);
   }
@@ -1231,7 +1235,7 @@ class _DoubleBattleViewState extends State<_DoubleBattleView>
                             child: Image.asset(
                               'assets/sprites/${animal.name.toLowerCase().replaceAll(' ', '_').replaceAll('-', '_').replaceAll("'", "_")}.png',
                               fit: BoxFit.contain,
-                              errorBuilder: (_, __, ___) =>
+                              errorBuilder: (_, _, _) =>
                                   const Icon(Icons.pets, color: Colors.white),
                             ),
                           ),
@@ -1412,8 +1416,9 @@ class _DoubleBattleViewState extends State<_DoubleBattleView>
     if (biome.contains('snow')) return const Color(0xFF40C4FF);
     if (biome.contains('volcan')) return const Color(0xFFFF5252);
     if (biome.contains('mountain')) return const Color(0xFF90A4AE);
-    if (biome.contains('forest') || biome.contains('jungle'))
+    if (biome.contains('forest') || biome.contains('jungle')) {
       return const Color(0xFF69F0AE);
+    }
     if (biome.contains('ocean')) return const Color(0xFF448AFF);
     return const Color(0xFFDAA520);
   }
@@ -1493,10 +1498,12 @@ class _DoubleBattleViewState extends State<_DoubleBattleView>
 
   bool _isSlotFaded(BuildContext context, int slotIdx) {
     final bm = context.read<DoubleBattleManager>();
-    if (bm.currentState == DoubleBattleState.selectingForSlot1 && slotIdx == 2)
+    if (bm.currentState == DoubleBattleState.selectingForSlot1 && slotIdx == 2) {
       return true;
-    if (bm.currentState == DoubleBattleState.selectingForSlot2 && slotIdx == 1)
+    }
+    if (bm.currentState == DoubleBattleState.selectingForSlot2 && slotIdx == 1) {
       return true;
+    }
     return false;
   }
 
@@ -1972,7 +1979,7 @@ class _SlotSpriteState extends State<_SlotSprite>
         width: size,
         height: size,
         fit: BoxFit.contain,
-        errorBuilder: (_, __, ___) =>
+        errorBuilder: (_, _, _) =>
             Icon(Icons.pets, color: Colors.white54, size: size * 0.5),
       );
     } else {
@@ -1981,7 +1988,7 @@ class _SlotSpriteState extends State<_SlotSprite>
         width: size,
         height: size,
         fit: BoxFit.contain,
-        errorBuilder: (_, __, ___) =>
+        errorBuilder: (_, _, _) =>
             Icon(Icons.pets, color: Colors.white54, size: size * 0.5),
       );
     }

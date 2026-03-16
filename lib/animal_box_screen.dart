@@ -71,8 +71,8 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
             indicatorColor: AppColors.highlightColor,
             labelStyle: TextStyle(fontFamily: 'PressStart2P', fontSize: 10),
             tabs: [
-              Tab(text: 'Box', icon: Icon(Icons.inventory)),
               Tab(text: 'Team', icon: Icon(Icons.groups)),
+              Tab(text: 'Box', icon: Icon(Icons.inventory)),
             ],
           ),
         ),
@@ -89,8 +89,8 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
                 Expanded(
                   child: TabBarView(
                     children: [
-                      _buildBoxView(user, userState),
                       _buildTeamView(user, userState),
+                      _buildBoxView(user, userState),
                     ],
                   ),
                 ),
@@ -155,12 +155,15 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
   }
 
   Widget _buildBoxView(UserData user, UserState userState) {
+    // Filter out animals that are in the team
+    final teamSet = user.battleTeam.toSet();
     final captured = user.capturedOrganisms;
     if (captured.isEmpty) {
       return _buildEmptyState();
     }
 
     final filtered = captured.asMap().entries.where((entry) {
+      if (teamSet.contains(entry.key)) return false; // Skip team members
       final org = entry.value;
       final matchesSearch = org.name.toLowerCase().contains(
         _searchQuery.toLowerCase(),
@@ -348,7 +351,7 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            'The wild remains untamed.\nNo monsters captured yet.',
+            'The wild remains untamed.\nNo animals captured yet.',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 12,
@@ -372,7 +375,7 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
             Icon(Icons.shield_outlined, size: 80, color: Colors.grey[700]),
             const SizedBox(height: 16),
             Text(
-              'Your vanguard is empty.\nDraft up to 5 monsters to your team from the Box.',
+              'Your vanguard is empty.\nDraft up to 5 animals to your team from the Box.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 12,
@@ -1188,7 +1191,7 @@ class _AnimalCard extends StatelessWidget {
                                     captured.equippedTalisman!.spritePath,
                                     width: 14,
                                     height: 14,
-                                    errorBuilder: (_, __, ___) => const Icon(
+                                    errorBuilder: (_, _, _) => const Icon(
                                       Icons.stars,
                                       size: 14,
                                       color: Colors.amber,
@@ -1367,9 +1370,9 @@ class _AnimalCard extends StatelessWidget {
                 Navigator.push(
                   context,
                   PageRouteBuilder(
-                    pageBuilder: (_, __, ___) =>
+                    pageBuilder: (_, _, _) =>
                         AnimalSummaryScreen(captured: captured),
-                    transitionsBuilder: (_, animation, __, child) =>
+                    transitionsBuilder: (_, animation, _, child) =>
                         FadeTransition(opacity: animation, child: child),
                   ),
                 );
@@ -1782,10 +1785,11 @@ class _AnimalDetailsDialog extends StatelessWidget {
     Color color = Colors.grey;
     if (value >= 31) {
       color = Colors.orange;
-    } else if (value >= 25)
+    } else if (value >= 25) {
       color = Colors.greenAccent;
-    else if (value >= 15)
+    } else if (value >= 15) {
       color = Colors.blueAccent;
+    }
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2.0),
@@ -1981,9 +1985,7 @@ class _MoveSelectionDialogState extends State<_MoveSelectionDialog> {
             );
             if (context.mounted) Navigator.pop(context);
           },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
-          ),
+          style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
           child: const Text(
             'Save',
             style: TextStyle(fontFamily: 'PressStart2P', fontSize: 10),

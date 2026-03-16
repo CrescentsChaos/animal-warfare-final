@@ -38,7 +38,9 @@ class _MoveManageScreenState extends State<MoveManageScreen> {
     } else {
       _availableMoves = [];
       _selectedMoves = [];
-      Future.microtask(() => Navigator.pop(context));
+      Future.microtask(() {
+        if (mounted) Navigator.pop(context);
+      });
     }
   }
 
@@ -140,7 +142,7 @@ class _MoveManageScreenState extends State<MoveManageScreen> {
       body: ListView.separated(
         padding: const EdgeInsets.all(16),
         itemCount: _availableMoves.length,
-        separatorBuilder: (_, __) => const Divider(color: Colors.white24),
+        separatorBuilder: (_, _) => const Divider(color: Colors.white24),
         itemBuilder: (context, index) {
           final moveName = _availableMoves[index];
           final move = Move.findByName(moveName);

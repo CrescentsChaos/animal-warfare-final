@@ -65,12 +65,12 @@ class _SplashScreenState extends State<SplashScreen>
 
   Future<void> _precacheAssets() async {
     if (_assetsPrecached) return;
-    final BuildContext currentContext = context;
     await precacheImage(
       const AssetImage('assets/biomes/rainforest-bg.png'),
-      currentContext,
+      context,
     );
-    await precacheImage(const AssetImage('assets/logo.png'), currentContext);
+    if (!mounted) return;
+    await precacheImage(const AssetImage('assets/logo.png'), context);
     _assetsPrecached = true;
   }
 

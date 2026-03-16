@@ -327,7 +327,7 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
             onPressed: () async {
               Navigator.pop(ctx);
               await userState.endRogueRun();
-              if (mounted) {
+              if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Roguelike run reset!')),
                 );
@@ -420,7 +420,7 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
                   : 'ROGUE-LIKE',
               description: user.rogueLikeState.isActive
                   ? 'Resume your high-stakes run!'
-                  : 'Randomized floors. Permadeath. High rewards!\nRecord: Floor ${user.rogueLikeState.highestFloor}',
+                  : 'Randomized floors. High rewards!\nRecord: Floor ${user.rogueLikeState.highestFloor}',
               icon: Icons.vignette_rounded,
               accentColor: const Color(0xFF9C27B0),
               onTap: () => _startRogueLike(userState),
