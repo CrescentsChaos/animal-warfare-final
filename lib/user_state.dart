@@ -13,7 +13,8 @@ import 'dart:math' as math;
 import 'package:animal_warfare/models/rogue_like_state.dart';
 import 'package:animal_warfare/models/farm_slot.dart';
 import 'package:animal_warfare/models/battle_replay.dart';
-import 'package:animal_warfare/models/saved_map_state.dart'; // NEW import
+import 'package:animal_warfare/models/saved_map_state.dart';
+import 'package:animal_warfare/game/time_service.dart';
 import 'local_auth_service.dart';
 
 class UserState with ChangeNotifier {
@@ -152,9 +153,19 @@ class UserState with ChangeNotifier {
 
   Future<void> addCapturedOrganism(CapturedOrganism newCapture) async {
     if (_currentUser == null) return;
+    
+    // Ensure capture metadata is recorded if it's a fresh capture (not restored from JSON)
+    CapturedOrganism finalCapture = newCapture;
+    if (finalCapture.capturedAtReal == null) {
+      finalCapture = finalCapture.copyWith(
+        capturedAtReal: DateTime.now(),
+        capturedAtGame: TimeService().currentGameTime,
+      );
+    }
+
     await _readModifyWrite((u) {
       final list = List<CapturedOrganism>.from(u.capturedOrganisms)
-        ..add(newCapture);
+        ..add(finalCapture);
 
       final newIndex = list.length - 1;
 
@@ -164,7 +175,7 @@ class UserState with ChangeNotifier {
         team.add(newIndex);
       }
 
-      final species = newCapture.name;
+      final species = finalCapture.name;
 
       // Mark as discovered if not already
       final discovered = Set<String>.from(u.discoveredOrganisms);

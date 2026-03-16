@@ -16,6 +16,22 @@ class GameTime {
     required this.minute,
   });
 
+  Map<String, dynamic> toJson() => {
+    'year': year,
+    'month': month,
+    'day': day,
+    'hour': hour,
+    'minute': minute,
+  };
+
+  factory GameTime.fromJson(Map<String, dynamic> json) => GameTime(
+    year: json['year'] as int,
+    month: json['month'] as int,
+    day: json['day'] as int,
+    hour: json['hour'] as int,
+    minute: json['minute'] as int,
+  );
+
   /// 1-based day of the week (1 = Monday, 7 = Sunday)
   int get weekday {
     // Simple Zeller's congruence or just calculate based on total days since epoch

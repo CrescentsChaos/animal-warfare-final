@@ -32,6 +32,7 @@ import 'package:animal_warfare/animal_box_screen.dart';
 import 'package:animal_warfare/anidex_screen.dart';
 import 'package:animal_warfare/crafting_screen.dart';
 import 'package:animal_warfare/game/overworld_sprite.dart';
+import 'package:animal_warfare/game/overworld_npc.dart';
 
 class BiomeExplorationMap extends StatefulWidget {
   final String biomeName;
@@ -125,6 +126,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
   // ── Overworld Pheno Sprites ──
   final List<OverworldSprite> _overworldSprites = [];
+  final List<OverworldNPC> _gameNPCs = [];
   Timer? _phenoSpawnTimer;
   double _phenoTickAccumulator = 0;
 
@@ -151,6 +153,8 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
           config.layout!,
           config: config,
           spawn: config.spawnPoint,
+          name: config.name,
+          biomeId: config.biomeId,
         );
       } else {
         _mapData = BiomeMapGenerator.generate(
@@ -190,6 +194,13 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       const Duration(seconds: 2), // INCREASED FREQUENCY
       (_) => _trySpawnPhenoSprite(),
     );
+
+    // Initialize NPCs from map data
+    if (_mapData.npcs != null) {
+      for (final npcData in _mapData.npcs!) {
+        _gameNPCs.add(OverworldNPC(data: npcData));
+      }
+    }
 
     // Initialize firefly spawn points
     _initializeFireflyPoints();
@@ -356,7 +367,31 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       _phenoTickAccumulator = 0;
       if (anyChanged && mounted) setState(() {});
 
-      // Check collision constantly (in case a sprite walks into the player)
+      // ── NPC AI ──
+      final walkGrid = List.generate(
+        _mapData.height,
+        (r) => List.generate(_mapData.width, (c) {
+          // Point check - tiles only
+          return _canWalkAt(c * tileSize, r * tileSize, ignoreEntities: true);
+        }),
+      );
+
+      final totalTime = elapsed.inMilliseconds / 1000.0;
+      final int pR = ((_playerY + tileSize / 2) / tileSize).floor();
+      final int pC = ((_playerX + tileSize / 2) / tileSize).floor();
+
+      for (final npc in _gameNPCs) {
+        npc.tick(
+          _phenoTickAccumulator,
+          totalTime,
+          walkGrid,
+          playerRow: pR,
+          playerCol: pC,
+          otherNPCs: _gameNPCs,
+        );
+      }
+
+      // Check collision constantly
       _checkPhenoCollision();
     }
 
@@ -420,6 +455,11 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       }
     } else {
       _directionHoldStart = null;
+      if (!_isMovingToTarget && _walkFrame != 0) {
+        setState(() {
+          _walkFrame = 0;
+        });
+      }
     }
 
     _updateCamera();
@@ -541,7 +581,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   }
 
   // ── Collision ──
-  bool _canWalkAt(double x, double y, {bool? isSwimmingOverride}) {
+  bool _canWalkAt(double x, double y, {bool? isSwimmingOverride, bool ignoreEntities = false}) {
     final bool isSwimming = isSwimmingOverride ?? _isSwimming;
     const margin = 10.0;
     final corners = [
@@ -616,6 +656,8 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         if (!walkable) return false;
       }
 
+      if (ignoreEntities) continue;
+
       // ── Overworld Sprite Hitbox Check ──
       // Only block on the sprite's CURRENT pixel tile, not its target.
       // This lets the player immediately walk onto a tile the animal is leaving.
@@ -624,6 +666,16 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         final int sc = (sprite.pixelX / tileSize).floor();
         if (sr == r && sc == c) {
           return false; // Blocked by animal
+        }
+      }
+
+      // ── NPC Hitbox Check ──
+      for (final npc in _gameNPCs) {
+        if (npc.gridRow == r && npc.gridCol == c) {
+          return false; // Blocked by NPC
+        }
+        if (npc.isMoving && npc.targetRow == r && npc.targetCol == c) {
+          return false; // Tile is reserved by moving NPC
         }
       }
     }
@@ -672,8 +724,9 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   }
 
   void _handleTeleport(int row, int col) {
-    if (_mapData.config.transitions == null) return;
-    for (final t in _mapData.config.transitions!) {
+    final transitions = _mapData.transitions ?? _mapData.config.transitions;
+    if (transitions == null) return;
+    for (final t in transitions) {
       if (t.x == col && t.y == row) {
         _executeTransition(t);
         return;
@@ -697,6 +750,8 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       targetConfig.layout ?? {'base': []},
       config: targetConfig,
       spawn: Point<int>(t.targetX, t.targetY),
+      name: targetConfig.name,
+      biomeId: targetConfig.biomeId,
     );
 
     // Stop movement and reset camera pan so next map is clean
@@ -855,6 +910,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       encounterType: encounterType,
       currentTileId: activeTile.tileId,
       currentTileCategory: activeTile.category,
+      biomeId: _mapData.biomeId,
     );
 
     if (encounter != null) {
@@ -929,6 +985,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     final wildFighter = CapturedOrganism.spawn(
       wildOrganism,
       accountLevel: user.accountLevel,
+      captureLocation: widget.biomeName,
     );
 
     final hour = TimeService().currentGameTime.hour;
@@ -1005,7 +1062,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         backgroundColor: Colors.black,
         appBar: AppBar(
           centerTitle: true,
-          title: Text(widget.biomeName.toUpperCase()),
+          title: Text((_mapData.name ?? widget.biomeName).toUpperCase()),
           backgroundColor: _biomeDarkColor,
           titleTextStyle: TextStyle(
           color: _biomeHighlightColor,
@@ -1068,14 +1125,30 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
                     width: 0.5,
                   ),
                 ),
-                child: Text(
-                  'COORD: ${(_playerX / tileSize).floor()}, ${(_playerY / tileSize).floor()}',
-                  style: TextStyle(
-                    color: _biomeHighlightColor,
-                    fontFamily: 'monospace',
-                    fontSize: 9,
-                    fontWeight: FontWeight.bold,
-                  ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      (_mapData.name ?? widget.biomeName).toUpperCase(),
+                      style: TextStyle(
+                        color: _biomeHighlightColor,
+                        fontFamily: 'monospace',
+                        fontSize: 8,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'COORD: ${(_playerX / tileSize).floor()}, ${(_playerY / tileSize).floor()}',
+                      style: TextStyle(
+                        color: _biomeHighlightColor,
+                        fontFamily: 'monospace',
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -1178,6 +1251,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
               }(),
               overworldSprites: _overworldSprites,
               fireflies: _fireflies,
+              gameNPCs: _gameNPCs,
             ),
           ),
         );
@@ -1605,6 +1679,21 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       targetC += 1;
     }
 
+    // 0. Check for NPC interaction
+    OverworldNPC? targetNPC;
+    for (final npc in _gameNPCs) {
+      if (npc.gridRow == targetR && npc.gridCol == targetC) {
+        targetNPC = npc;
+        break;
+      }
+    }
+
+    if (targetNPC != null) {
+      // Speak!
+      _showNPCDialogue(targetNPC);
+      return;
+    }
+
     // 1. Check for animal encounter
     OverworldSprite? targetSprite;
     for (final s in _overworldSprites) {
@@ -1753,6 +1842,42 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
     if (textToShow != null) {
       _showInteractionBubble(textToShow);
+    }
+  }
+
+  void _showNPCDialogue(OverworldNPC npc) {
+    // Face the player
+    int currentR = ((_playerY + tileSize / 2) / tileSize).floor();
+    int currentC = ((_playerX + tileSize / 2) / tileSize).floor();
+
+    if (currentR < npc.gridRow) npc.direction = 'up';
+    if (currentR > npc.gridRow) npc.direction = 'down';
+    if (currentC < npc.gridCol) npc.direction = 'left';
+    if (currentC > npc.gridCol) npc.direction = 'right';
+
+    final displayName = npc.data.name.isNotEmpty ? '${npc.data.name}: ' : '';
+    _showInteractionBubble('$displayName${npc.data.dialogue.join('\n')}', icon: '💬');
+
+    // Here we could also trigger special scripts like SHOP: or MEDIC:
+    if (npc.data.scriptType == 'shopkeeper') {
+      Future.delayed(const Duration(milliseconds: 300), () {
+        if (mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ShopScreen(biome: widget.biomeName),
+            ),
+          );
+        }
+      });
+    } else if (npc.data.scriptType == 'medic') {
+      // Simple heal effect
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          _showInteractionBubble('✨ Your team has been fully healed!', icon: '💖');
+          // In a real implementation we'd call user_state to heal organisms
+        }
+      });
     }
   }
 
@@ -2370,6 +2495,7 @@ class _BiomeMapPainter extends CustomPainter {
   final int currentHour;
   final double zoomScale;
   final List<_FireflyParticle> fireflies;
+  final List<OverworldNPC> gameNPCs;
 
   _BiomeMapPainter({
     required this.currentHour,
@@ -2379,7 +2505,6 @@ class _BiomeMapPainter extends CustomPainter {
     required this.cameraX,
     required this.cameraY,
     required this.tileSize,
-    required this.zoomScale,
     this.playerImage,
     required this.playerDirection,
     required this.walkFrame,
@@ -2389,7 +2514,9 @@ class _BiomeMapPainter extends CustomPainter {
     this.jumpOffset = 0,
     this.isOnFloating = false,
     this.overworldSprites = const [],
+    this.zoomScale = 1.0,
     this.fireflies = const [],
+    required this.gameNPCs,
   });
 
   @override
@@ -2454,6 +2581,14 @@ class _BiomeMapPainter extends CustomPainter {
         final double sy = sprite.pixelY + tileSize / 2;
         if (sy >= r * tileSize && sy < (r + 1) * tileSize) {
           _drawOverworldSprite(canvas, sprite);
+        }
+      }
+
+      // Draw NPCs (sorted by row)
+      for (final npc in gameNPCs) {
+        final double ny = npc.worldY * tileSize + tileSize / 2;
+        if (ny >= r * tileSize && ny < (r + 1) * tileSize) {
+          _drawNPC(canvas, npc);
         }
       }
 
@@ -2714,6 +2849,50 @@ class _BiomeMapPainter extends CustomPainter {
     if (sprite.tileOffset > 0) {
       canvas.restore();
     }
+  }
+
+  void _drawNPC(Canvas canvas, OverworldNPC npc) {
+    // Correct world to pixel coordinates using tileSize
+    final double px = (npc.worldX * tileSize - cameraX) + tileSize / 2;
+    final double py = (npc.worldY * tileSize - cameraY) + tileSize / 2;
+
+    final assets = BiomeDataManager.npcAssets[npc.data.spriteKey];
+    if (assets == null) return;
+
+    final dirSprites = assets[npc.direction];
+    if (dirSprites == null || dirSprites.isEmpty) return;
+
+    final img = dirSprites[npc.walkFrame % dirSprites.length];
+
+    final double assetW = img.width.toDouble();
+    final double assetH = img.height.toDouble();
+    
+    // NPCs are typically 32x32 based on the requirement
+    final double drawW = tileSize;
+    final double drawH = tileSize;
+
+    final double x = px - drawW / 2;
+    final double y = py - drawH / 2;
+
+    // Draw shadow
+    final shadowPaint = Paint()
+      ..color = Colors.black.withValues(alpha: 0.2)
+      ..style = PaintingStyle.fill;
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(px, py + tileSize * 0.45),
+        width: tileSize * 0.7,
+        height: tileSize * 0.3,
+      ),
+      shadowPaint,
+    );
+
+    canvas.drawImageRect(
+      img,
+      Rect.fromLTWH(0, 0, assetW, assetH),
+      Rect.fromLTWH(x, y, drawW, drawH),
+      Paint(),
+    );
   }
 
   @override

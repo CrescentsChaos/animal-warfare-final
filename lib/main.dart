@@ -15,6 +15,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:animal_warfare/game/time_service.dart';
 import 'package:animal_warfare/models/recipe.dart';
 import 'package:animal_warfare/models/ability.dart';
+import 'package:animal_warfare/game/biome_map_data.dart';
 
 void main() async {
   // 1. Ensure Flutter bindings are initialized first
@@ -56,6 +57,8 @@ void main() async {
   await Ability.loadFromJson();
   // Load Recipes from JSON
   await Recipe.loadFromJson();
+  // Load Biome/Tile/NPC data
+  await BiomeDataManager.loadData();
 
   // 3. Initialize Firebase (Retained from your file)
   try {

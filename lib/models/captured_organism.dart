@@ -7,6 +7,7 @@ import 'package:animal_warfare/models/move.dart';
 import 'package:animal_warfare/models/nature.dart';
 import 'package:animal_warfare/models/status_effect.dart';
 import 'package:animal_warfare/models/elemental_type.dart';
+import 'package:animal_warfare/game/time_service.dart'; // NEW: for GameTime
 
 // Represents an individual instance of a captured or wild organism.
 // This is the model that holds the unique DNA (IVs).
@@ -63,6 +64,11 @@ class CapturedOrganism {
   // Nicknaming support
   final String? nickname;
 
+  // NEW: Capture Metadata
+  final DateTime? capturedAtReal;
+  final GameTime? capturedAtGame;
+  final String? captureLocation;
+
   String get displayName => nickname ?? baseOrganism.name;
 
   CapturedOrganism({
@@ -97,6 +103,9 @@ class CapturedOrganism {
     String? activeAbilityName,
     this.teraType,
     this.nickname,
+    this.capturedAtReal,
+    this.capturedAtGame,
+    this.captureLocation,
   }) : activeAbilityName =
            activeAbilityName ??
            (baseOrganism.abilities.split(',').first.trim().isEmpty
@@ -197,6 +206,9 @@ class CapturedOrganism {
     bool clearTeraType = false,
     String? nickname,
     bool clearNickname = false,
+    DateTime? capturedAtReal,
+    GameTime? capturedAtGame,
+    String? captureLocation,
   }) {
     return CapturedOrganism(
       id: id ?? this.id,
@@ -227,6 +239,9 @@ class CapturedOrganism {
       activeAbilityName: activeAbilityName ?? this.activeAbilityName,
       teraType: clearTeraType ? null : (teraType ?? this.teraType),
       nickname: clearNickname ? null : (nickname ?? this.nickname),
+      capturedAtReal: capturedAtReal ?? this.capturedAtReal,
+      capturedAtGame: capturedAtGame ?? this.capturedAtGame,
+      captureLocation: captureLocation ?? this.captureLocation,
     );
   }
 
@@ -302,6 +317,9 @@ class CapturedOrganism {
     int accountLevel = 1,
     Map<String, int>? ivs,
     String? ability,
+    DateTime? capturedAtReal,
+    GameTime? capturedAtGame,
+    String? captureLocation,
   }) {
     final rng = Random();
 
@@ -375,6 +393,9 @@ class CapturedOrganism {
         }
         return ElementalType.basic; // Absolute fallback
       }(),
+      capturedAtReal: capturedAtReal,
+      capturedAtGame: capturedAtGame,
+      captureLocation: captureLocation,
     );
 
     // Explicitly initialize moves now so they are set in stone
@@ -619,6 +640,9 @@ class CapturedOrganism {
     'activeAbilityName': activeAbilityName,
     'teraType': teraType?.toString().split('.').last,
     'nickname': nickname,
+    'capturedAtReal': capturedAtReal?.toIso8601String(),
+    'capturedAtGame': capturedAtGame?.toJson(),
+    'captureLocation': captureLocation,
   };
 
   /// Create CapturedOrganism from JSON
@@ -703,6 +727,13 @@ class CapturedOrganism {
           ? ElementalTypeX.fromString(json['teraType'] as String)
           : null,
       nickname: json['nickname'] as String?,
+      capturedAtReal: json['capturedAtReal'] != null
+          ? DateTime.parse(json['capturedAtReal'] as String)
+          : null,
+      capturedAtGame: json['capturedAtGame'] != null
+          ? GameTime.fromJson(json['capturedAtGame'] as Map<String, dynamic>)
+          : null,
+      captureLocation: json['captureLocation'] as String?,
     );
   }
 

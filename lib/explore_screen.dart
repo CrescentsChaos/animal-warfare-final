@@ -55,9 +55,10 @@ SpawnResult? getWeightedRandomOrganism(
   String? encounterType, // e.g., 'water', 'tallgrass', 'land'
   String? currentTileId,
   TileCategory? currentTileCategory,
+  String? biomeId,
 }) {
   // Normalize the selected biome name for case-insensitive search
-  final String searchBiome = biomeName.toLowerCase();
+  final String searchBiome = (biomeId ?? biomeName).toLowerCase();
   final bool isCave = searchBiome.contains('cave');
 
   final hasOldRod = inventory.containsKey('old_rod');

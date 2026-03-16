@@ -1,4 +1,0 @@
-Analyzing animal_warfare...                                     
-
-warning - The diagnostic 'deprecated_member_use' doesn't need to be ignored here because it's already being ignored - lib\game\tile_designer.dart:1154:28 - duplicate_ignore
-

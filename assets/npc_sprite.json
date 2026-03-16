@@ -1,0 +1,18 @@
+[
+  {
+    "id": "placeholder",
+    "name": "Generic NPC"
+  },
+  {
+    "id": "shopkeeper",
+    "name": "Shopkeeper"
+  },
+  {
+    "id": "medic",
+    "name": "Medic"
+  },
+  {
+    "id": "villager",
+    "name": "Villager"
+  }
+]

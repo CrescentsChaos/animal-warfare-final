@@ -9,6 +9,15 @@
         "biome": "any"
     },
     {
+        "id": "doormat_1",
+        "name": "Doormat 1",
+        "category": "decorative",
+        "assetPath": "assets/tiles/doormat_1.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "urban"
+    },
+    {
         "id": "straw_flakes",
         "name": "Straw Flakes",
         "category": "decorative",

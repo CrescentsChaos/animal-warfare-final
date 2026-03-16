@@ -477,6 +477,10 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
+        _sectionHeader('CAPTURE LOG'),
+        const SizedBox(height: 12),
+        _buildCaptureLog(base),
+        const SizedBox(height: 24),
         _sectionHeader('TRAINER INFO'),
         const SizedBox(height: 12),
         _infoGrid([
@@ -510,6 +514,34 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
         ),
       ],
     );
+  }
+
+  Widget _buildCaptureLog(Organism base) {
+    if (_current.capturedAtReal == null) {
+      return _descCard(
+        'Capture data unavailable for this organism.',
+        icon: Icons.history_edu,
+      );
+    }
+
+    final real = _current.capturedAtReal!;
+    final gameTime = _current.capturedAtGame;
+    final location = _current.captureLocation ?? 'Unknown Location';
+
+    final realDateStr = "${real.year}-${real.month.toString().padLeft(2, '0')}-${real.day.toString().padLeft(2, '0')}";
+    final realTimeStr = "${real.hour.toString().padLeft(2, '0')}:${real.minute.toString().padLeft(2, '0')}";
+
+    String gameStr = '-';
+    if (gameTime != null) {
+      gameStr = "${gameTime.day}/${gameTime.month}/${gameTime.year} ${gameTime.hour.toString().padLeft(2, '0')}:${gameTime.minute.toString().padLeft(2, '0')}";
+    }
+
+    return _infoGrid([
+      ('LOCATION', location.toUpperCase()),
+      ('REAL DATE', realDateStr),
+      ('REAL TIME', realTimeStr),
+      ('GAME TIME', gameStr),
+    ]);
   }
 
   Widget _infoGrid(List<(String, String)> data) {

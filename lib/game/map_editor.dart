@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:async';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:animal_warfare/models/npc_data.dart';
 import 'biome_map_data.dart';
 
 // ────────────────────────────────────────────────────────────────────
@@ -19,6 +20,8 @@ enum EditorMode {
   walkability,
   spawnPoint,
   teleporter,
+  npc,
+  move,
 }
 
 enum PaletteState { compact, full }
@@ -31,6 +34,7 @@ class _EditorSnapshot {
   final int spawnR;
   final int spawnC;
   final List<MapTransition> teleporters;
+  final List<NPCData> npcs;
 
   _EditorSnapshot({
     required this.grid,
@@ -39,6 +43,7 @@ class _EditorSnapshot {
     required this.spawnR,
     required this.spawnC,
     required this.teleporters,
+    required this.npcs,
   });
 
   _EditorSnapshot deepCopy() => _EditorSnapshot(
@@ -50,6 +55,7 @@ class _EditorSnapshot {
     spawnR: spawnR,
     spawnC: spawnC,
     teleporters: teleporters.map((t) => MapTransition.fromJson(t.toJson())).toList(),
+    npcs: npcs.map((n) => NPCData.fromJson(n.toJson())).toList(),
   );
 }
 
@@ -82,6 +88,7 @@ class _MapEditorState extends State<MapEditor> {
   int _spawnR = 1;
   int _spawnC = 1;
   List<MapTransition> _teleporters = [];
+  List<NPCData> _npcs = [];
 
   static const List<String> _biomeIds = [
     'Volcano',
@@ -118,6 +125,7 @@ class _MapEditorState extends State<MapEditor> {
   String _hoverInfo = '';
   bool?
   _dragWalkValue; // Store the target walkability for the current drag stroke
+  NPCData? _draggingNPC;
 
   // Biome context
   late String _biomeId;
@@ -200,6 +208,7 @@ class _MapEditorState extends State<MapEditor> {
     _spawnR = (_rows / 2).floor();
     _spawnC = (_cols / 2).floor();
     _teleporters = [];
+    _npcs = [];
     _applyBorder();
     _pushUndo();
   }
@@ -260,6 +269,7 @@ class _MapEditorState extends State<MapEditor> {
       _spawnR = (_rows / 2).floor();
       _spawnC = (_cols / 2).floor();
       _teleporters = [];
+      _npcs = [];
       _applyBorder();
       _undoStack.clear();
       _redoStack.clear();
@@ -304,6 +314,7 @@ class _MapEditorState extends State<MapEditor> {
         spawnR: _spawnR,
         spawnC: _spawnC,
         teleporters: _teleporters.map((t) => MapTransition.fromJson(t.toJson())).toList(),
+        npcs: _npcs.map((n) => NPCData.fromJson(n.toJson())).toList(),
       ),
     );
     if (_undoStack.length > _maxUndoSize) _undoStack.removeAt(0);
@@ -320,6 +331,8 @@ class _MapEditorState extends State<MapEditor> {
       _isWalkable = snap.isWalkable;
       _spawnR = snap.spawnR;
       _spawnC = snap.spawnC;
+      _teleporters = snap.teleporters;
+      _npcs = snap.npcs;
     });
     _saveToPrefs();
   }
@@ -334,6 +347,8 @@ class _MapEditorState extends State<MapEditor> {
       _isWalkable = snap.isWalkable;
       _spawnR = snap.spawnR;
       _spawnC = snap.spawnC;
+      _teleporters = snap.teleporters;
+      _npcs = snap.npcs;
     });
     _saveToPrefs();
   }
@@ -354,6 +369,7 @@ class _MapEditorState extends State<MapEditor> {
     );
     await prefs.setString('map_editor_biome_v3', _biomeId);
     await prefs.setString('map_editor_teleporters_v3', jsonEncode(_teleporters.map((t) => t.toJson()).toList()));
+    await prefs.setString('map_editor_npcs_v3', jsonEncode(_npcs.map((n) => n.toJson()).toList()));
   }
 
   Future<void> _loadFromPrefs() async {
@@ -372,6 +388,7 @@ class _MapEditorState extends State<MapEditor> {
     final String? walkableData = prefs.getString('map_editor_walk_v3');
     final String? spawnData = prefs.getString('map_editor_spawn_v3');
     final String? teleportsData = prefs.getString('map_editor_teleporters_v3');
+    final String? npcsData = prefs.getString('map_editor_npcs_v3');
 
     setState(() {
       if (savedBiome != null && savedBiome != _biomeId) {
@@ -414,6 +431,10 @@ class _MapEditorState extends State<MapEditor> {
       if (teleportsData != null) {
         final List<dynamic> decoded = jsonDecode(teleportsData);
         _teleporters = decoded.map((t) => MapTransition.fromJson(t)).toList();
+      }
+      if (npcsData != null) {
+        final List<dynamic> decoded = jsonDecode(npcsData);
+        _npcs = decoded.map((n) => NPCData.fromJson(n)).toList();
       }
     });
   }
@@ -596,10 +617,34 @@ class _MapEditorState extends State<MapEditor> {
           _showTeleporterDialog(r, c);
         }
         break;
+      case EditorMode.npc:
+        if (!_isBorderCell(r, c)) {
+          _showNPCDialog(r, c, isStart);
+        }
+        break;
+      case EditorMode.move:
+        if (isStart) {
+          try {
+            _draggingNPC = _npcs.firstWhere((n) => n.row == r && n.col == c);
+          } catch (_) {
+            _draggingNPC = null;
+          }
+        } else if (_draggingNPC != null) {
+          if (!_isBorderCell(r, c)) {
+             setState(() {
+               final idx = _npcs.indexOf(_draggingNPC!);
+               if (idx != -1) {
+                 _npcs[idx] = _draggingNPC!.copyWith(row: r, col: c);
+                 _draggingNPC = _npcs[idx];
+               }
+             });
+          }
+        }
+        break;
       default:
         break;
     }
-  }
+}
 
   void _showTeleporterDialog(int r, int c) {
     final existing = _teleporters.firstWhere((t) => t.x == c && t.y == r, orElse: () => MapTransition(x: c, y: r, targetMap: _biomeId, targetX: 10, targetY: 10));
@@ -697,6 +742,158 @@ class _MapEditorState extends State<MapEditor> {
     );
   }
 
+  void _showNPCDialog(int r, int c, bool isStart) {
+    NPCData? existing;
+    try {
+      existing = _npcs.firstWhere((n) => n.row == r && n.col == c);
+    } catch (_) {}
+
+    if (!isStart) {
+      return; // Tap and hold is not explicitly used for placement, just regular tap/longPress behavior in Flutter
+    }
+
+    // If tapping an empty tile in NPC mode, place a default NPC
+    if (existing == null) {
+      if (!isStart) return;
+      final newNpc = NPCData(
+        id: 'npc_${DateTime.now().millisecondsSinceEpoch}',
+        name: 'New NPC',
+        spriteKey: 'placeholder',
+        row: r,
+        col: c,
+        dialogue: ['Hello!'],
+      );
+      setState(() {
+        _npcs.add(newNpc);
+      });
+      _onInteractionEnd();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('NPC placed! Tap again to edit.')),
+      );
+      return;
+    }
+
+    // If tapping an existing NPC, open editor
+    final nameCtrl = TextEditingController(text: existing.name);
+    final scriptCtrl = TextEditingController(text: existing.scriptType);
+    final dialogueCtrl = TextEditingController(text: existing.dialogue.join('\n'));
+    final spriteCtrl = TextEditingController(text: existing.spriteKey);
+    String movementType = existing.movementType;
+    final rangeCtrl = TextEditingController(text: existing.movementRange.toString());
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          backgroundColor: const Color(0xFF1E1E1E),
+          title: const Text('Edit NPC', style: TextStyle(color: Colors.white)),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nameCtrl,
+                  decoration: const InputDecoration(labelText: 'Name', labelStyle: TextStyle(color: Colors.white70)),
+                  style: const TextStyle(color: Colors.white),
+                ),
+                const SizedBox(height: 8),
+                const Text('Sprite Asset', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                DropdownButton<String>(
+                  isExpanded: true,
+                  value: BiomeDataManager.npcTypes.contains(spriteCtrl.text) ? spriteCtrl.text : 'placeholder',
+                  dropdownColor: const Color(0xFF2A2A2A),
+                  style: const TextStyle(color: Colors.white),
+                  items: BiomeDataManager.npcTypes.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+                  onChanged: (val) {
+                    if (val != null) {
+                      setDialogState(() => spriteCtrl.text = val);
+                    }
+                  },
+                ),
+                const SizedBox(height: 8),
+                const Text('Script Type', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                DropdownButton<String>(
+                  isExpanded: true,
+                  value: ['none', 'shopkeeper', 'medic'].contains(scriptCtrl.text) ? scriptCtrl.text : 'none',
+                  dropdownColor: const Color(0xFF2A2A2A),
+                  style: const TextStyle(color: Colors.white),
+                  items: ['none', 'shopkeeper', 'medic'].map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+                  onChanged: (val) {
+                    if (val != null) {
+                      setDialogState(() => scriptCtrl.text = val);
+                    }
+                  },
+                ),
+                const SizedBox(height: 8),
+                const Text('Movement Type', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                DropdownButton<String>(
+                  isExpanded: true,
+                  value: movementType,
+                  dropdownColor: const Color(0xFF2A2A2A),
+                  style: const TextStyle(color: Colors.white),
+                  items: ['still', 'random', 'pattern'].map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+                  onChanged: (val) {
+                    if (val != null) {
+                      setDialogState(() => movementType = val);
+                    }
+                  },
+                ),
+                if (movementType != 'still')
+                  TextField(
+                    controller: rangeCtrl,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: 'Range (blocks)', labelStyle: TextStyle(color: Colors.white70)),
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                TextField(
+                  controller: dialogueCtrl,
+                  maxLines: 3,
+                  decoration: const InputDecoration(labelText: 'Dialogue (one per line)', labelStyle: TextStyle(color: Colors.white70)),
+                  style: const TextStyle(color: Colors.white),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  _npcs.removeWhere((n) => n.row == r && n.col == c);
+                });
+                Navigator.pop(ctx);
+                _onInteractionEnd();
+              },
+              child: const Text('DELETE', style: TextStyle(color: Colors.red)),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('CANCEL', style: TextStyle(color: Colors.white54)),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final updated = existing!.copyWith(
+                  name: nameCtrl.text.trim(),
+                  spriteKey: spriteCtrl.text.trim(),
+                  scriptType: scriptCtrl.text,
+                  dialogue: dialogueCtrl.text.split('\n').where((s) => s.trim().isNotEmpty).toList(),
+                  movementType: movementType,
+                  movementRange: int.tryParse(rangeCtrl.text) ?? 0,
+                );
+                setState(() {
+                  final idx = _npcs.indexWhere((n) => n.row == r && n.col == c);
+                  _npcs[idx] = updated;
+                });
+                Navigator.pop(ctx);
+                _onInteractionEnd();
+              },
+              child: const Text('SAVE'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _onInteractionEnd() {
     // Push undo after completing a paint stroke
     if (_mode != EditorMode.pan && _mode != EditorMode.eyedropper) {
@@ -704,6 +901,7 @@ class _MapEditorState extends State<MapEditor> {
       _saveToPrefs();
     }
     _dragWalkValue = null; // Reset drag state
+    _draggingNPC = null;
   }
 
   // ── Export: maps.json-compatible format ─────────────────────────
@@ -727,6 +925,7 @@ class _MapEditorState extends State<MapEditor> {
       },
       "spawnPoint": {"x": _spawnC, "y": _spawnR},
       "transitions": _teleporters.map((t) => t.toJson()).toList(),
+      "npcs": _npcs.map((n) => n.toJson()).toList(),
     };
     const encoder = JsonEncoder.withIndent('    ');
     return encoder.convert(exportData);
@@ -1030,9 +1229,17 @@ class _MapEditorState extends State<MapEditor> {
         }
 
         if (data['transitions'] != null) {
-          _teleporters = (data['transitions'] as List).map((t) => MapTransition.fromJson(t)).toList();
+          _teleporters = (data['transitions'] as List)
+              .map((t) => MapTransition.fromJson(t))
+              .toList();
         } else {
           _teleporters = [];
+        }
+
+        if (data['npcs'] != null) {
+          _npcs = (data['npcs'] as List).map((n) => NPCData.fromJson(n)).toList();
+        } else {
+          _npcs = [];
         }
 
         _pushUndo();
@@ -1320,17 +1527,38 @@ class _MapEditorState extends State<MapEditor> {
                     }
                   },
                   onTapUp: (_) => _onInteractionEnd(),
-                  child: CustomPaint(
-                    size: Size(_cols * 40.0, _rows * 40.0),
-                    painter: _EditorGridPainter(
-                      grid: _grid,
-                      overlayGrid: _overlayGrid,
-                      isWalkable: _isWalkable,
-                      mode: _mode,
-                      showGrid: _showGrid,
-                      spawnR: _spawnR,
-                      spawnC: _spawnC,
-                      teleporters: _teleporters,
+                  onLongPressStart: (d) {
+                    if (_pointerCount == 1) {
+                      const cs = 40.0;
+                      _handleInteraction(
+                        (d.localPosition.dy / cs).floor(),
+                        (d.localPosition.dx / cs).floor(),
+                        true,
+                      );
+                    }
+                  },
+                  child: MouseRegion(
+                    onHover: (d) {
+                      const cs = 40.0;
+                      final r = (d.localPosition.dy / cs).floor();
+                      final c = (d.localPosition.dx / cs).floor();
+                      if (r >= 0 && r < _rows && c >= 0 && c < _cols) {
+                        setState(() => _hoverInfo = '($r, $c)');
+                      }
+                    },
+                    child: CustomPaint(
+                      size: Size(_cols * 40.0, _rows * 40.0),
+                      painter: _EditorGridPainter(
+                        grid: _grid,
+                        overlayGrid: _overlayGrid,
+                        isWalkable: _isWalkable,
+                        mode: _mode,
+                        showGrid: _showGrid,
+                        spawnR: _spawnR,
+                        spawnC: _spawnC,
+                        teleporters: _teleporters,
+                        npcs: _npcs,
+                      ),
                     ),
                   ),
                 ),
@@ -1412,9 +1640,13 @@ class _MapEditorState extends State<MapEditor> {
             const SizedBox(width: 8),
             _toolBtn(EditorMode.walkability, Icons.directions_walk, 'WALK'),
             const SizedBox(width: 8),
-            _toolBtn(EditorMode.spawnPoint, Icons.person_pin_circle, 'SPAWN'),
+            _toolBtn(EditorMode.spawnPoint, Icons.flag, 'SPAWN'),
             const SizedBox(width: 8),
             _toolBtn(EditorMode.teleporter, Icons.meeting_room, 'DOOR'),
+            const SizedBox(width: 8),
+            _toolBtn(EditorMode.npc, Icons.person, 'NPC'),
+            const SizedBox(width: 8),
+            _toolBtn(EditorMode.move, Icons.open_with, 'MOVE'),
             const SizedBox(width: 16),
             // Auto-base toggle
             Container(
@@ -1894,6 +2126,7 @@ class _EditorGridPainter extends CustomPainter {
   final int spawnR;
   final int spawnC;
   final List<MapTransition> teleporters;
+  final List<NPCData> npcs;
 
   _EditorGridPainter({
     required this.grid,
@@ -1904,6 +2137,7 @@ class _EditorGridPainter extends CustomPainter {
     required this.spawnR,
     required this.spawnC,
     required this.teleporters,
+    required this.npcs,
   });
 
   @override
@@ -2043,7 +2277,66 @@ class _EditorGridPainter extends CustomPainter {
       }
     }
 
-    // 6. Grid lines - Final overlay to ensure it shows over everything
+    // 6. Draw NPCs
+    for (final npc in npcs) {
+      final rect = Rect.fromLTWH(
+        npc.col * cellSize,
+        npc.row * cellSize,
+        cellSize,
+        cellSize,
+      );
+
+      final assets = BiomeDataManager.npcAssets[npc.spriteKey];
+      if (assets != null && assets['down'] != null && assets['down']!.isNotEmpty) {
+        final img = assets['down']![0];
+        final double assetW = img.width.toDouble();
+        final double assetH = img.height.toDouble();
+        
+        canvas.drawImageRect(
+          img,
+          Rect.fromLTWH(0, 0, assetW, assetH),
+          rect,
+          Paint(),
+        );
+      } else {
+        final paint = Paint()
+          ..color = Colors.purpleAccent.withValues(alpha: 0.8)
+          ..style = PaintingStyle.fill;
+        canvas.drawCircle(rect.center, cellSize * 0.35, paint);
+      }
+
+      // Label
+      final tp = TextPainter(
+        text: TextSpan(
+          text: npc.name,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 8,
+            fontWeight: FontWeight.bold,
+            backgroundColor: Colors.black54,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      );
+      tp.layout();
+      tp.paint(canvas, Offset(rect.center.dx - tp.width / 2, rect.bottom - 10));
+
+      // Script Indicator
+      if (npc.scriptType != 'none') {
+        final sym = npc.scriptType == 'shopkeeper' ? '\$' : '+';
+        final symPaint = TextPainter(
+          text: TextSpan(
+            text: sym,
+            style: TextStyle(color: Colors.amber, fontSize: 10, fontWeight: FontWeight.bold),
+          ),
+          textDirection: TextDirection.ltr,
+        );
+        symPaint.layout();
+        symPaint.paint(canvas, rect.topLeft + const Offset(5, 5));
+      }
+    }
+
+    // 7. Grid lines - Final overlay
     if (showGrid) {
       final paint = Paint()
         ..color = Colors.white.withValues(alpha: 0.3)

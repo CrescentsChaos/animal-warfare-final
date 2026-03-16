@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:animal_warfare/models/npc_data.dart';
 
 
 // ───────────────────────────────────────────────────────────────────
@@ -129,6 +130,7 @@ class BiomeConfig {
   final String id;
   final String name;
   final String defaultTileId;
+  final String? biomeId;
   final Map<String, TileDefinition> tiles;
 
   final Map<String, List<String>>?
@@ -141,10 +143,33 @@ class BiomeConfig {
     required this.name,
     required this.defaultTileId,
     required this.tiles,
+    this.biomeId,
     this.layout,
     this.spawnPoint,
     this.transitions,
   });
+
+  BiomeConfig copyWith({
+    String? id,
+    String? name,
+    String? defaultTileId,
+    String? biomeId,
+    Map<String, TileDefinition>? tiles,
+    Map<String, List<String>>? layout,
+    Point<int>? spawnPoint,
+    List<MapTransition>? transitions,
+  }) {
+    return BiomeConfig(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      defaultTileId: defaultTileId ?? this.defaultTileId,
+      biomeId: biomeId ?? this.biomeId,
+      tiles: tiles ?? this.tiles,
+      layout: layout ?? this.layout,
+      spawnPoint: spawnPoint ?? this.spawnPoint,
+      transitions: transitions ?? this.transitions,
+    );
+  }
 
   factory BiomeConfig.fromJson(
     Map<String, dynamic> json,
@@ -192,6 +217,7 @@ class BiomeConfig {
       id: json['id'],
       name: json['name'],
       defaultTileId: json['defaultTileId'],
+      biomeId: json['biomeId'],
       tiles: biomeTiles,
       layout: layout,
       spawnPoint: spawn,
@@ -268,6 +294,8 @@ class BiomeDataManager {
   static final Map<String, Map<String, ui.Image>> tileAssets = {};
   static final Map<String, OverworldSpawnData> phenoSpawnData = {};
   static final Set<String> assetBiomeIds = {};
+  static final Map<String, Map<String, List<ui.Image>>> npcAssets = {};
+  static final List<String> npcTypes = [];
 
   static const List<String> builtinBiomeIds = ['swamp', 'plains'];
 
@@ -456,8 +484,49 @@ class BiomeDataManager {
         final data = OverworldSpawnData.fromJson(s);
         phenoSpawnData[data.pheno] = data;
       }
-    } catch (_) {
-      // Error handled silently
+    } catch (e) {
+      debugPrint('Error loading spawns: $e');
+    }
+
+    // Load NPC Metadata
+    try {
+      final npcJsonStr = await rootBundle.loadString('assets/npc_sprite.json');
+      final List<dynamic> npcJson = json.decode(npcJsonStr);
+      npcTypes.clear();
+      for (var n in npcJson) {
+        npcTypes.add(n['id']);
+      }
+    } catch (e) {
+      debugPrint('Error loading NPC metadata: $e');
+      if (npcTypes.isEmpty) {
+        npcTypes.addAll(['placeholder', 'shopkeeper', 'medic', 'villager']);
+      }
+    }
+
+    // Load NPC assets
+    for (var type in npcTypes) {
+      npcAssets[type] = {};
+      bool foundAny = false;
+      for (var dir in ['up', 'down', 'left', 'right']) {
+        npcAssets[type]![dir] = [];
+        for (var frame = 0; frame <= 3; frame++) {
+          final path = 'assets/overworld/npc/${type}_${dir}_$frame.png';
+          final img = await loadImage(path);
+          if (img != null) {
+            npcAssets[type]![dir]!.add(img);
+            foundAny = true;
+          }
+        }
+      }
+      
+      // Fallback to placeholder if this type has no assets
+      if (!foundAny && type != 'placeholder') {
+        debugPrint('NPC type "$type" assets not found, falling back to placeholder.');
+        final placeholder = npcAssets['placeholder'];
+        if (placeholder != null) {
+          npcAssets[type] = placeholder;
+        }
+      }
     }
   }
 
@@ -547,6 +616,10 @@ class BiomeMapData {
   final int width;
   final Point<int> spawnPoint;
   final BiomeConfig config;
+  final String? name;
+  final String? biomeId;
+  final List<MapTransition>? transitions;
+  final List<NPCData>? npcs;
 
   const BiomeMapData({
     required this.grid,
@@ -555,6 +628,10 @@ class BiomeMapData {
     required this.width,
     required this.spawnPoint,
     required this.config,
+    this.name,
+    this.biomeId,
+    this.transitions,
+    this.npcs,
   });
 }
 
@@ -563,10 +640,14 @@ class MapStringParser {
     dynamic data, {
     required BiomeConfig config,
     Point<int>? spawn,
+    String? name,
+    String? biomeId,
   }) {
     List<String> baseLines = [];
     List<String>? overlayLines;
     List<String>? walkLines;
+
+    List<NPCData>? npcs;
 
     if (data is Map) {
       if (data.containsKey('layout')) {
@@ -594,6 +675,24 @@ class MapStringParser {
           spawn = Point((sp['x'] as num).toInt(), (sp['y'] as num).toInt());
         }
       }
+      if (data.containsKey('name')) {
+        name = data['name'] as String;
+      }
+      if (data.containsKey('biomeId')) {
+        biomeId = data['biomeId'] as String;
+      }
+      if (data.containsKey('transitions')) {
+        config = config.copyWith(
+          transitions: (data['transitions'] as List)
+              .map((t) => MapTransition.fromJson(t))
+              .toList(),
+        );
+      }
+      if (data.containsKey('npcs')) {
+        npcs = (data['npcs'] as List)
+            .map((n) => NPCData.fromJson(n))
+            .toList();
+      }
     } else if (data is List) {
       baseLines = List<String>.from(data);
     }
@@ -605,6 +704,9 @@ class MapStringParser {
         width: 0,
         spawnPoint: spawn ?? const Point(0, 0),
         config: config,
+        name: name,
+        biomeId: biomeId,
+        transitions: config.transitions,
       );
     }
 
@@ -691,6 +793,10 @@ class MapStringParser {
       width: width,
       spawnPoint: spawn ?? Point(width ~/ 2, height ~/ 2),
       config: config,
+      name: name,
+      biomeId: biomeId,
+      transitions: config.transitions,
+      npcs: npcs,
     );
   }
 }
@@ -896,6 +1002,9 @@ class BiomeMapGenerator {
       width: width,
       spawnPoint: Point(spawnC, spawnR),
       config: config,
+      name: config.name,
+      biomeId: config.biomeId,
+      transitions: config.transitions,
     );
   }
 }
