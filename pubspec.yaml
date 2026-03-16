@@ -119,6 +119,7 @@ flutter:
     - assets/tiles.json
     - assets/overworld_spawns.json
     - assets/npc_sprite.json
+    - assets/npc_teams.json
     - assets/overworld/npc/
 
   # An image asset can refer to one or more resolution-specific "variants", see

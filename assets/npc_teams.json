@@ -1,0 +1,92 @@
+[
+  {
+    "teamId": "trainer_01",
+    "trainerName": "Ranger Jake",
+    "animals": [
+      {
+        "name": "Northern Cardinal",
+        "level": 10,
+        "nature": "Adamant",
+        "ivs": {
+          "health": 15,
+          "attack": 20,
+          "defense": 10,
+          "power": 10,
+          "resistance": 10,
+          "speed": 15
+        },
+        "kvs": {
+          "health": 0,
+          "attack": 0,
+          "defense": 0,
+          "power": 0,
+          "resistance": 0,
+          "speed": 0
+        },
+        "moves": [
+          "Tackle",
+          "Bubble"
+        ],
+        "ability": null
+      }
+    ]
+  },
+  {
+    "teamId": "trainer_02",
+    "trainerName": "Scholar Mira",
+    "animals": [
+      {
+        "name": "Northern Cardinal",
+        "level": 12,
+        "nature": "Modest",
+        "ivs": {
+          "health": 10,
+          "attack": 10,
+          "defense": 15,
+          "power": 20,
+          "resistance": 15,
+          "speed": 10
+        },
+        "kvs": {
+          "health": 0,
+          "attack": 0,
+          "defense": 0,
+          "power": 0,
+          "resistance": 0,
+          "speed": 0
+        },
+        "moves": [
+          "Tackle",
+          "Bubble"
+        ],
+        "ability": null
+      },
+      {
+        "name": "Northern Cardinal",
+        "level": 14,
+        "nature": "Timid",
+        "ivs": {
+          "health": 12,
+          "attack": 8,
+          "defense": 12,
+          "power": 18,
+          "resistance": 12,
+          "speed": 25
+        },
+        "kvs": {
+          "health": 0,
+          "attack": 0,
+          "defense": 0,
+          "power": 0,
+          "resistance": 0,
+          "speed": 0
+        },
+        "moves": [
+          "Tackle",
+          "Bubble"
+        ],
+        "ability": null
+      }
+    ]
+  }
+]

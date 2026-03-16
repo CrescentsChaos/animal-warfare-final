@@ -780,6 +780,9 @@ class _MapEditorState extends State<MapEditor> {
     final spriteCtrl = TextEditingController(text: existing.spriteKey);
     String movementType = existing.movementType;
     final rangeCtrl = TextEditingController(text: existing.movementRange.toString());
+    final visionCtrl = TextEditingController(text: existing.visionRange.toString());
+    final teamIdCtrl = TextEditingController(text: existing.teamId);
+    final defeatTextCtrl = TextEditingController(text: existing.defeatText);
 
     showDialog(
       context: context,
@@ -814,10 +817,10 @@ class _MapEditorState extends State<MapEditor> {
                 const Text('Script Type', style: TextStyle(color: Colors.white70, fontSize: 12)),
                 DropdownButton<String>(
                   isExpanded: true,
-                  value: ['none', 'shopkeeper', 'medic'].contains(scriptCtrl.text) ? scriptCtrl.text : 'none',
+                  value: ['none', 'shopkeeper', 'medic', 'trainer'].contains(scriptCtrl.text) ? scriptCtrl.text : 'none',
                   dropdownColor: const Color(0xFF2A2A2A),
                   style: const TextStyle(color: Colors.white),
-                  items: ['none', 'shopkeeper', 'medic'].map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+                  items: ['none', 'shopkeeper', 'medic', 'trainer'].map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
                   onChanged: (val) {
                     if (val != null) {
                       setDialogState(() => scriptCtrl.text = val);
@@ -851,6 +854,28 @@ class _MapEditorState extends State<MapEditor> {
                   decoration: const InputDecoration(labelText: 'Dialogue (one per line)', labelStyle: TextStyle(color: Colors.white70)),
                   style: const TextStyle(color: Colors.white),
                 ),
+                if (scriptCtrl.text == 'trainer') ...[
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: visionCtrl,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: 'Vision Range (tiles)', labelStyle: TextStyle(color: Colors.white70)),
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: teamIdCtrl,
+                    decoration: const InputDecoration(labelText: 'Team ID (from npc_teams.json)', labelStyle: TextStyle(color: Colors.white70)),
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: defeatTextCtrl,
+                    maxLines: 2,
+                    decoration: const InputDecoration(labelText: 'Defeat Text', labelStyle: TextStyle(color: Colors.white70)),
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ],
               ],
             ),
           ),
@@ -878,6 +903,9 @@ class _MapEditorState extends State<MapEditor> {
                   dialogue: dialogueCtrl.text.split('\n').where((s) => s.trim().isNotEmpty).toList(),
                   movementType: movementType,
                   movementRange: int.tryParse(rangeCtrl.text) ?? 0,
+                  visionRange: int.tryParse(visionCtrl.text) ?? 0,
+                  teamId: teamIdCtrl.text.trim(),
+                  defeatText: defeatTextCtrl.text.trim(),
                 );
                 setState(() {
                   final idx = _npcs.indexWhere((n) => n.row == r && n.col == c);

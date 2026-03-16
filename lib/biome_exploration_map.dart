@@ -33,6 +33,7 @@ import 'package:animal_warfare/anidex_screen.dart';
 import 'package:animal_warfare/crafting_screen.dart';
 import 'package:animal_warfare/game/overworld_sprite.dart';
 import 'package:animal_warfare/game/overworld_npc.dart';
+import 'package:animal_warfare/game/npc_team_loader.dart';
 
 class BiomeExplorationMap extends StatefulWidget {
   final String biomeName;
@@ -314,56 +315,63 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     if (_phenoTickAccumulator >= 0.05) {
       // ~20fps for AI
       bool anyChanged = false;
-      for (final sprite in _overworldSprites) {
-        // Feed player position for nature affinity logic
-        sprite.playerPixelX = _playerX;
-        sprite.playerPixelY = _playerY;
 
-        if (sprite.tick(
-          _phenoTickAccumulator,
-          _mapData,
-          tileSize,
-          otherSprites: _overworldSprites,
-          pTargetX: _isMovingToTarget ? _targetX : _playerX,
-          pTargetY: _isMovingToTarget ? _targetY : _playerY,
-        )) {
-          anyChanged = true;
-        }
+      // Only tick sprites if no encounter is active
+      if (!_encounterActive) {
+        for (final sprite in _overworldSprites) {
+          // Feed player position for nature affinity logic
+          sprite.playerPixelX = _playerX;
+          sprite.playerPixelY = _playerY;
 
-        // Handle ambient cries
-        if (sprite.shouldPlayCry) {
-          sprite.shouldPlayCry = false;
-          // Only play if within hearing range (e.g. 15 tiles)
-          final dx = sprite.pixelX - _playerX;
-          final dy = sprite.pixelY - _playerY;
-          final distSq = dx * dx + dy * dy;
-          final maxDist = 15 * tileSize;
-          if (distSq < maxDist * maxDist) {
-            AudioService.instance.playOrganismCry(sprite.organism.cry);
+          if (sprite.tick(
+            _phenoTickAccumulator,
+            _mapData,
+            tileSize,
+            otherSprites: _overworldSprites,
+            pTargetX: _isMovingToTarget ? _targetX : _playerX,
+            pTargetY: _isMovingToTarget ? _targetY : _playerY,
+          )) {
+            anyChanged = true;
+          }
+
+          // Handle ambient cries
+          if (sprite.shouldPlayCry) {
+            sprite.shouldPlayCry = false;
+            // Only play if within hearing range (e.g. 15 tiles)
+            final dx = sprite.pixelX - _playerX;
+            final dy = sprite.pixelY - _playerY;
+            final distSq = dx * dx + dy * dy;
+            final maxDist = 15 * tileSize;
+            if (distSq < maxDist * maxDist) {
+              AudioService.instance.playOrganismCry(sprite.organism.cry);
+            }
           }
         }
-      }
-      // ▶ Player-priority: If any sprite's TARGET tile is where the player
-      // currently stands, snap it back to its origin tile immediately.
-      final int playerRow = ((_playerY + tileSize / 2) / tileSize).floor();
-      final int playerCol = ((_playerX + tileSize / 2) / tileSize).floor();
-      for (final sprite in _overworldSprites) {
-        if (sprite.isMoving &&
-            sprite.targetRow == playerRow &&
-            sprite.targetCol == playerCol) {
-          // Snap it back — cancel move and return to current row/col
-          sprite.pixelX = sprite.col * tileSize;
-          sprite.pixelY = sprite.row * tileSize;
-          sprite.targetPixelX = sprite.pixelX;
-          sprite.targetPixelY = sprite.pixelY;
-          sprite.isMoving = false;
-          sprite.walkFrame = 0;
-          sprite.attackCalculated = false;
-          sprite.attackDecision = false;
+        
+        // ▶ Player-priority: If any sprite's TARGET tile is where the player
+        // currently stands, snap it back to its origin tile immediately.
+        final int playerRow = ((_playerY + tileSize / 2) / tileSize).floor();
+        final int playerCol = ((_playerX + tileSize / 2) / tileSize).floor();
+        for (final sprite in _overworldSprites) {
+          if (sprite.isMoving &&
+              sprite.targetRow == playerRow &&
+              sprite.targetCol == playerCol) {
+            // Snap it back — cancel move and return to current row/col
+            sprite.pixelX = sprite.col * tileSize;
+            sprite.pixelY = sprite.row * tileSize;
+            sprite.targetPixelX = sprite.pixelX;
+            sprite.targetPixelY = sprite.pixelY;
+            sprite.isMoving = false;
+            sprite.walkFrame = 0;
+            sprite.attackCalculated = false;
+            sprite.attackDecision = false;
+          }
         }
+        
+        // Remove expired sprites
+        _overworldSprites.removeWhere((s) => s.isExpired);
       }
-      // Remove expired sprites
-      _overworldSprites.removeWhere((s) => s.isExpired);
+      
       _phenoTickAccumulator = 0;
       if (anyChanged && mounted) setState(() {});
 
@@ -381,8 +389,11 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       final int pC = ((_playerX + tileSize / 2) / tileSize).floor();
 
       for (final npc in _gameNPCs) {
+        // If an encounter is active, ONLY tick the approaching NPC
+        if (_encounterActive && npc != _approachingNPC) continue;
+
         npc.tick(
-          _phenoTickAccumulator,
+          _phenoTickAccumulator, // We pass original accumulator here (though it's 0 now, actually O_npc.tick uses totalTime for AI, and dt for movement. Wait! _phenoTickAccumulator is zeroed!)
           totalTime,
           walkGrid,
           playerRow: pR,
@@ -392,7 +403,24 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       }
 
       // Check collision constantly
-      _checkPhenoCollision();
+      if (!_encounterActive) {
+        _checkPhenoCollision();
+      }
+
+      // ── NPC Vision Check (Trainer Battle Trigger) ──
+      if (!_encounterActive) {
+        _checkNPCVision(pR, pC);
+      }
+
+      // ── NPC Approach Completion ──
+      if (_approachingNPC != null &&
+          !_approachingNPC!.isApproaching &&
+          !_approachingNPC!.isMoving &&
+          !_approachingNPC!.hasTriggeredBattle) {
+        final npc = _approachingNPC!;
+        npc.hasTriggeredBattle = true;
+        _startTrainerBattle(npc);
+      }
     }
 
     // ── Update Fireflies ──
@@ -1858,8 +1886,16 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     final displayName = npc.data.name.isNotEmpty ? '${npc.data.name}: ' : '';
     _showInteractionBubble('$displayName${npc.data.dialogue.join('\n')}', icon: '💬');
 
-    // Here we could also trigger special scripts like SHOP: or MEDIC:
-    if (npc.data.scriptType == 'shopkeeper') {
+    // Script-based interactions
+    if (npc.data.scriptType == 'trainer') {
+      // Don't interact normally with trainers — they handle via vision
+      if (!npc.isDefeated) {
+        _startTrainerBattle(npc);
+      } else {
+        _showInteractionBubble('${npc.data.name}: ${npc.data.defeatText.isNotEmpty ? npc.data.defeatText : "..."}', icon: '💬');
+      }
+      return;
+    } else if (npc.data.scriptType == 'shopkeeper') {
       Future.delayed(const Duration(milliseconds: 300), () {
         if (mounted) {
           Navigator.push(
@@ -1877,6 +1913,125 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
           _showInteractionBubble('✨ Your team has been fully healed!', icon: '💖');
           // In a real implementation we'd call user_state to heal organisms
         }
+      });
+    }
+  }
+
+  // ── Trainer NPC Vision & Battle Flow ──
+  OverworldNPC? _approachingNPC;
+
+  void _checkNPCVision(int playerRow, int playerCol) {
+    if (_encounterActive || _approachingNPC != null) return;
+
+    for (final npc in _gameNPCs) {
+      if (npc.canSeePlayer(playerRow, playerCol)) {
+        // Freeze the player
+        setState(() {
+          _encounterActive = true;
+          _velX = 0;
+          _velY = 0;
+          _isMovingToTarget = false;
+          _walkFrame = 0;
+        });
+
+        // NPC starts approaching
+        npc.startApproach(playerRow, playerCol);
+        _approachingNPC = npc;
+
+        // Show "!" above NPC
+        _showInteractionBubble('!', icon: '❗');
+        break;
+      }
+    }
+  }
+
+  void _startTrainerBattle(OverworldNPC npc) async {
+    final userState = Provider.of<UserState>(context, listen: false);
+    final user = userState.currentUser;
+    if (user == null) return;
+
+    // Show initial dialogue
+    final displayName = npc.data.name.isNotEmpty ? '${npc.data.name}: ' : '';
+    final dialogueText = npc.data.dialogue.isNotEmpty ? npc.data.dialogue.join('\n') : 'Let\'s battle!';
+    _showInteractionBubble('$displayName$dialogueText', icon: '💬');
+
+    // Wait for player to read dialogue
+    await Future.delayed(const Duration(milliseconds: 2000));
+    if (!mounted) return;
+
+    // Build opponent team from npc_teams.json
+    final opponentTeam = NpcTeamLoader.buildTeam(npc.data.teamId, widget.allOrganisms);
+    if (opponentTeam.isEmpty) {
+      print('BiomeExplorationMap: Opponent team is empty for ${npc.data.teamId}. Cannot start battle.');
+      _showInteractionBubble('I have no animals to fight with...', icon: '💬');
+      
+      await Future.delayed(const Duration(milliseconds: 2000));
+      if (!mounted) return;
+      
+      setState(() => _encounterActive = false);
+      _approachingNPC = null;
+      npc.hasTriggeredBattle = false;
+      return;
+    }
+
+    // Get player's fighter
+    CapturedOrganism playerFighter;
+    if (user.teamOrganisms.isNotEmpty) {
+      playerFighter = user.teamOrganisms.first;
+    } else if (user.capturedOrganisms.isNotEmpty) {
+      playerFighter = user.capturedOrganisms.first;
+    } else {
+      playerFighter = CapturedOrganism.spawn(
+        Organism.humanOrganism.copyWith(name: user.username),
+        level: user.accountLevel,
+      );
+    }
+
+    final trainerName = NpcTeamLoader.getTrainerName(npc.data.teamId);
+    final mapScreenshot = await _captureMapScreenshot();
+
+    final hour = TimeService().currentGameTime.hour;
+    String timeOfDay;
+    if (hour >= 6 && hour < 18) {
+      timeOfDay = 'day';
+    } else if (hour >= 18 && hour < 21) {
+      timeOfDay = 'evening';
+    } else {
+      timeOfDay = 'night';
+    }
+
+    AudioService.instance.pauseAll();
+    if (!mounted) return;
+
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => BattleScreen(
+          playerOrganism: playerFighter,
+          opponentOrganism: opponentTeam.first,
+          biomeName: widget.biomeName,
+          playerTeam: user.teamOrganisms,
+          opponentTeam: opponentTeam,
+          battleTitle: 'VS $trainerName',
+          timeOfDay: timeOfDay,
+          mapScreenshot: mapScreenshot,
+        ),
+      ),
+    );
+    AudioService.instance.resumeAll();
+
+    if (mounted) {
+      // Mark as defeated
+      npc.isDefeated = true;
+      npc.hasTriggeredBattle = true;
+      _approachingNPC = null;
+
+      // Show defeat text
+      if (npc.data.defeatText.isNotEmpty) {
+        _showInteractionBubble('${npc.data.name}: ${npc.data.defeatText}', icon: '💬');
+      }
+
+      setState(() {
+        _encounterActive = false;
       });
     }
   }

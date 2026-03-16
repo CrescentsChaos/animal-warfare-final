@@ -6,10 +6,13 @@ class NPCData {
   final String spriteKey;
   final int row;
   final int col;
-  final String scriptType; // e.g., 'shopkeeper', 'medic', 'none'
+  final String scriptType; // e.g., 'shopkeeper', 'medic', 'trainer', 'none'
   final List<String> dialogue;
   final String movementType; // 'still', 'random', 'pattern'
   final int movementRange;
+  final int visionRange; // tiles the NPC can see to detect the player
+  final String teamId; // links to npc_teams.json entry
+  final String defeatText; // text shown after the trainer is defeated
 
   NPCData({
     required this.id,
@@ -21,6 +24,9 @@ class NPCData {
     this.dialogue = const [],
     this.movementType = 'still',
     this.movementRange = 0,
+    this.visionRange = 0,
+    this.teamId = '',
+    this.defeatText = '',
   });
 
   factory NPCData.fromJson(Map<String, dynamic> json) {
@@ -34,6 +40,9 @@ class NPCData {
       dialogue: List<String>.from(json['dialogue'] ?? []),
       movementType: json['movementType'] as String? ?? 'still',
       movementRange: json['movementRange'] as int? ?? 0,
+      visionRange: json['visionRange'] as int? ?? 0,
+      teamId: json['teamId'] as String? ?? '',
+      defeatText: json['defeatText'] as String? ?? '',
     );
   }
 
@@ -48,6 +57,9 @@ class NPCData {
       'dialogue': dialogue,
       'movementType': movementType,
       'movementRange': movementRange,
+      'visionRange': visionRange,
+      'teamId': teamId,
+      'defeatText': defeatText,
     };
   }
 
@@ -61,6 +73,9 @@ class NPCData {
     List<String>? dialogue,
     String? movementType,
     int? movementRange,
+    int? visionRange,
+    String? teamId,
+    String? defeatText,
   }) {
     return NPCData(
       id: id ?? this.id,
@@ -72,6 +87,9 @@ class NPCData {
       dialogue: dialogue ?? this.dialogue,
       movementType: movementType ?? this.movementType,
       movementRange: movementRange ?? this.movementRange,
+      visionRange: visionRange ?? this.visionRange,
+      teamId: teamId ?? this.teamId,
+      defeatText: defeatText ?? this.defeatText,
     );
   }
 }
