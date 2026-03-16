@@ -133,6 +133,7 @@ class _MapEditorState extends State<MapEditor> {
 
   // Transform
   final TransformationController _transController = TransformationController();
+  int _pointerCount = 0;
 
   // Palette
   PaletteState _paletteState = PaletteState.compact;
@@ -1277,38 +1278,46 @@ class _MapEditorState extends State<MapEditor> {
             child: InteractiveViewer(
               transformationController: _transController,
               constrained: false,
-              scaleEnabled: _mode == EditorMode.pan,
-              panEnabled: _mode == EditorMode.pan,
+              scaleEnabled: true,
+              panEnabled: true,
               boundaryMargin: const EdgeInsets.all(1000),
               minScale: 0.1,
               maxScale: 3.0,
-              child: AbsorbPointer(
-                absorbing: _mode == EditorMode.pan,
+              child: Listener(
+                onPointerDown: (_) => setState(() => _pointerCount++),
+                onPointerUp: (_) => setState(() => _pointerCount--),
+                onPointerCancel: (_) => setState(() => _pointerCount--),
                 child: GestureDetector(
                   onPanStart: (d) {
-                    const cs = 40.0;
-                    _handleInteraction(
-                      (d.localPosition.dy / cs).floor(),
-                      (d.localPosition.dx / cs).floor(),
-                      true,
-                    );
+                    if (_pointerCount == 1) {
+                      const cs = 40.0;
+                      _handleInteraction(
+                        (d.localPosition.dy / cs).floor(),
+                        (d.localPosition.dx / cs).floor(),
+                        true,
+                      );
+                    }
                   },
                   onPanUpdate: (d) {
-                    const cs = 40.0;
-                    _handleInteraction(
-                      (d.localPosition.dy / cs).floor(),
-                      (d.localPosition.dx / cs).floor(),
-                      false,
-                    );
+                    if (_pointerCount == 1) {
+                      const cs = 40.0;
+                      _handleInteraction(
+                        (d.localPosition.dy / cs).floor(),
+                        (d.localPosition.dx / cs).floor(),
+                        false,
+                      );
+                    }
                   },
                   onPanEnd: (_) => _onInteractionEnd(),
                   onTapDown: (d) {
-                    const cs = 40.0;
-                    _handleInteraction(
-                      (d.localPosition.dy / cs).floor(),
-                      (d.localPosition.dx / cs).floor(),
-                      true,
-                    );
+                    if (_pointerCount == 1) {
+                      const cs = 40.0;
+                      _handleInteraction(
+                        (d.localPosition.dy / cs).floor(),
+                        (d.localPosition.dx / cs).floor(),
+                        true,
+                      );
+                    }
                   },
                   onTapUp: (_) => _onInteractionEnd(),
                   child: CustomPaint(

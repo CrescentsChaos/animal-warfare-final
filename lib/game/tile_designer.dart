@@ -17,7 +17,7 @@ import 'package:animal_warfare/game/biome_map_data.dart';
 // Constants & Enums
 // ─────────────────────────────────────────────────────────────
 
-enum DesignerTool { pencil, eraser, fill, eraseFill, eyedropper, line, rect, circle, select }
+enum DesignerTool { pencil, eraser, fill, eraseFill, eyedropper, line, rect, circle, select, lassoSelect }
 enum ShapeFill { outline, filled }
 enum CanvasBgMode { darkTransparent, lightTransparent, white }
 
@@ -143,6 +143,7 @@ class _AWStudioState extends State<AWStudio> with TickerProviderStateMixin {
 
   // Selection
   Rect? _selectionRect;
+  List<Point<int>>? _lassoPath;
   List<List<Color>>? _clipboardPixels;
   bool _isMovingSelection = false;
   List<List<Color>>? _movingPixels;
@@ -162,6 +163,7 @@ class _AWStudioState extends State<AWStudio> with TickerProviderStateMixin {
   bool _showGrid = true;
   CanvasBgMode _bgMode = CanvasBgMode.darkTransparent;
   final TransformationController _zoomController = TransformationController();
+  int _pointerCount = 0;
 
   // Tabs
   late TabController _tabController;
@@ -461,18 +463,29 @@ class _AWStudioState extends State<AWStudio> with TickerProviderStateMixin {
       case DesignerTool.circle:
         _shapeStart = Point(x, y); _previewPixels = _copyPixels(); break;
       case DesignerTool.select:
+      case DesignerTool.lassoSelect:
         if (_selectionRect != null && _selectionRect!.contains(Offset(x.toDouble(), y.toDouble()))) {
           if (!_isMovingSelection) {
             _isMovingSelection = true;
-            _movingPixels = _snapshotRect(_selectionRect!);
+            _movingPixels = _snapshotRect(_selectionRect!, mask: (_lassoPath != null) ? _lassoPath : null);
             _pushUndo();
-            _fillTargetRect(_selectionRect!, Colors.transparent);
+            if (_lassoPath != null) {
+              _fillTargetMask(_lassoPath!, Colors.transparent);
+            } else {
+              _fillTargetRect(_selectionRect!, Colors.transparent);
+            }
           }
           _lastMovePixel = Point(x, y);
         } else {
           _commitMovingSelection();
-          _shapeStart = Point(x, y);
-          _selectionRect = Rect.fromLTRB(x.toDouble(), y.toDouble(), x.toDouble() + 1, y.toDouble() + 1);
+          if (_tool == DesignerTool.select) {
+            _lassoPath = null;
+            _shapeStart = Point(x, y);
+            _selectionRect = Rect.fromLTRB(x.toDouble(), y.toDouble(), x.toDouble() + 1, y.toDouble() + 1);
+          } else {
+            _lassoPath = [Point(x, y)];
+            _selectionRect = null;
+          }
         }
         break;
     }
@@ -493,7 +506,7 @@ class _AWStudioState extends State<AWStudio> with TickerProviderStateMixin {
         _drawLine(_lastDragPixel!.x, _lastDragPixel!.y, x, y, Colors.transparent);
       }
       _lastDragPixel = Point(x, y); setState(() {});
-    } else if (_tool == DesignerTool.select) {
+    } else if (_tool == DesignerTool.select || _tool == DesignerTool.lassoSelect) {
       if (_isMovingSelection && _lastMovePixel != null) {
         final dx = x - _lastMovePixel!.x;
         final dy = y - _lastMovePixel!.y;
@@ -502,13 +515,19 @@ class _AWStudioState extends State<AWStudio> with TickerProviderStateMixin {
           _lastMovePixel = Point(x, y);
           setState(() {});
         }
-      } else if (_shapeStart != null) {
+      } else if (_tool == DesignerTool.select && _shapeStart != null) {
         final sx = _shapeStart!.x.toDouble();
         final sy = _shapeStart!.y.toDouble();
         final ex = x.toDouble() + (x >= sx ? 1 : 0);
         final ey = y.toDouble() + (y >= sy ? 1 : 0);
         _selectionRect = Rect.fromLTRB(min(sx, ex), min(sy, ey), max(sx, ex), max(sy, ey));
+        _lassoPath = null;
         setState(() {});
+      } else if (_tool == DesignerTool.lassoSelect && _lassoPath != null) {
+        if (_lassoPath!.isEmpty || _lassoPath!.last != Point(x, y)) {
+          _lassoPath!.add(Point(x, y));
+          setState(() {});
+        }
       }
     } else if (_shapeStart != null && _previewPixels != null) {
       _layers[_activeLayerIndex].pixels = _copyPixels(_previewPixels!).map((r) => List<Color>.from(r)).toList();
@@ -523,13 +542,49 @@ class _AWStudioState extends State<AWStudio> with TickerProviderStateMixin {
         default: break;
       }
       setState(() {});
+    } else if (_tool == DesignerTool.lassoSelect && _lassoPath != null) {
+      if (_lassoPath!.isEmpty || _lassoPath!.last != Point(x, y)) {
+        _lassoPath!.add(Point(x, y));
+        setState(() {});
+      }
     }
+  }
+
+
+
+  bool _isPointInPolygon(Point<int> p, List<Point<int>> polygon) {
+    if (polygon.length < 3) return false;
+    bool inside = false;
+    for (int i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+      if (((polygon[i].y > p.y) != (polygon[j].y > p.y)) &&
+          (p.x < (polygon[j].x - polygon[i].x) * (p.y - polygon[i].y) / (polygon[j].y - polygon[i].y) + polygon[i].x)) {
+        inside = !inside;
+      }
+    }
+    return inside;
   }
 
   void _onCanvasDragEnd() {
     // We no longer commit immediately here. 
     // This allows the selection to stay "floating" (moving) until user clicks away or changes tool.
     
+    if (_tool == DesignerTool.lassoSelect && _lassoPath != null && _lassoPath!.length > 2) {
+      // Calculate bounding box
+      int minX = _lassoPath![0].x, maxX = _lassoPath![0].x;
+      int minY = _lassoPath![0].y, maxY = _lassoPath![0].y;
+      for (final p in _lassoPath!) {
+        minX = min(minX, p.x); maxX = max(maxX, p.x);
+        minY = min(minY, p.y); maxY = max(maxY, p.y);
+      }
+      
+      _selectionRect = Rect.fromLTRB(minX.toDouble(), minY.toDouble(), maxX.toDouble() + 1, maxY.toDouble() + 1);
+      
+      // We don't lift immediately here, we just set the _selectionRect.
+      // Copy/Cut/Move will need to know about the lasso path to mask properly.
+      // For now, setting the rect allows basic rectangular operations on the bounding box.
+      // But we should probably keep the _lassoPath to use as a mask.
+    }
+
     if (_shapeStart != null) {
       if (_tool != DesignerTool.select) {
         _undoStack.add(_snapshotLayers());
@@ -562,7 +617,15 @@ class _AWStudioState extends State<AWStudio> with TickerProviderStateMixin {
       for (int y = sy; y < ey; y++) {
         final row = <Color>[];
         for (int x = sx; x < ex; x++) {
-          row.add(_pixels[y][x]);
+          if (_tool == DesignerTool.lassoSelect && _lassoPath != null) {
+            if (_isPointInPolygon(Point(x, y), _lassoPath!)) {
+              row.add(_pixels[y][x]);
+            } else {
+              row.add(Colors.transparent);
+            }
+          } else {
+            row.add(_pixels[y][x]);
+          }
         }
         _clipboardPixels!.add(row);
       }
@@ -586,7 +649,13 @@ class _AWStudioState extends State<AWStudio> with TickerProviderStateMixin {
       
       for (int y = sy; y < ey; y++) {
         for (int x = sx; x < ex; x++) {
-          _pixels[y][x] = Colors.transparent;
+          if (_tool == DesignerTool.lassoSelect && _lassoPath != null) {
+            if (_isPointInPolygon(Point(x, y), _lassoPath!)) {
+              _pixels[y][x] = Colors.transparent;
+            }
+          } else {
+            _pixels[y][x] = Colors.transparent;
+          }
         }
       }
     }
@@ -636,7 +705,7 @@ class _AWStudioState extends State<AWStudio> with TickerProviderStateMixin {
     setState(() {});
   }
 
-  List<List<Color>> _snapshotRect(Rect rect) {
+  List<List<Color>> _snapshotRect(Rect rect, {List<Point<int>>? mask}) {
     final sx = rect.left.toInt().clamp(0, _canvasW);
     final sy = rect.top.toInt().clamp(0, _canvasH);
     final ex = rect.right.toInt().clamp(0, _canvasW);
@@ -644,7 +713,14 @@ class _AWStudioState extends State<AWStudio> with TickerProviderStateMixin {
     final w = ex - sx;
     final h = ey - sy;
     if (w <= 0 || h <= 0) return [];
-    return List.generate(h, (y) => List.generate(w, (x) => _layers[_activeLayerIndex].pixels[sy + y][sx + x]));
+    return List.generate(h, (y) => List.generate(w, (x) {
+      final tx = sx + x;
+      final ty = sy + y;
+      if (mask != null) {
+        return _isPointInPolygon(Point(tx, ty), mask) ? _layers[_activeLayerIndex].pixels[ty][tx] : Colors.transparent;
+      }
+      return _layers[_activeLayerIndex].pixels[ty][tx];
+    }));
   }
 
   void _fillTargetRect(Rect rect, Color color) {
@@ -655,6 +731,16 @@ class _AWStudioState extends State<AWStudio> with TickerProviderStateMixin {
     for (int y = sy; y < ey; y++) {
       for (int x = sx; x < ex; x++) {
         _layers[_activeLayerIndex].pixels[y][x] = color;
+      }
+    }
+  }
+
+  void _fillTargetMask(List<Point<int>> mask, Color color) {
+    for (int y = 0; y < _canvasH; y++) {
+      for (int x = 0; x < _canvasW; x++) {
+        if (_isPointInPolygon(Point(x, y), mask)) {
+          _layers[_activeLayerIndex].pixels[y][x] = color;
+        }
       }
     }
   }
@@ -1198,26 +1284,40 @@ class _AWStudioState extends State<AWStudio> with TickerProviderStateMixin {
           transformationController: _zoomController,
           constrained: false,
           boundaryMargin: const EdgeInsets.all(200),
-          minScale: 0.5, maxScale: 20.0,
+          minScale: 0.5,
+          maxScale: 20.0,
           child: Center(
-            child: GestureDetector(
-              onPanStart: (d) => _onCanvasTap(d.localPosition, cellSize),
-              onPanUpdate: (d) => _onCanvasDrag(d.localPosition, cellSize),
-              onPanEnd: (_) => _onCanvasDragEnd(),
-              onTapDown: (d) => _onCanvasTap(d.localPosition, cellSize),
-              onTapUp: (_) => _onCanvasDragEnd(),
-              child: CustomPaint(
-                size: Size(totalW, totalH),
-                painter: _PixelCanvasPainter(
-                  layers: _layers, 
-                  cellSize: cellSize, 
-                  canvasW: _canvasW, 
-                  canvasH: _canvasH, 
-                  showGrid: _showGrid, 
-                  bgMode: _bgMode, 
-                  selectionRect: _selectionRect,
-                  movingPixels: _movingPixels,
-                  isMoving: _isMovingSelection,
+            child: Listener(
+              onPointerDown: (_) => setState(() => _pointerCount++),
+              onPointerUp: (_) => setState(() => _pointerCount--),
+              onPointerCancel: (_) => setState(() => _pointerCount--),
+              child: GestureDetector(
+                onPanStart: (d) {
+                  if (_pointerCount == 1) _onCanvasTap(d.localPosition, cellSize);
+                },
+                onPanUpdate: (d) {
+                  if (_pointerCount == 1) _onCanvasDrag(d.localPosition, cellSize);
+                },
+                onPanEnd: (_) => _onCanvasDragEnd(),
+                onTapDown: (d) {
+                  if (_pointerCount == 1) _onCanvasTap(d.localPosition, cellSize);
+                },
+                onTapUp: (_) => _onCanvasDragEnd(),
+                child: CustomPaint(
+                  size: Size(totalW, totalH),
+                  painter: _PixelCanvasPainter(
+                    layers: _layers,
+                    cellSize: cellSize,
+                    canvasW: _canvasW,
+                    canvasH: _canvasH,
+                    showGrid: _showGrid,
+                    bgMode: _bgMode,
+                    selectionRect: _selectionRect,
+                    movingPixels: _movingPixels,
+                    isMoving: _isMovingSelection,
+                    tool: _tool,
+                    lassoPath: _lassoPath,
+                  ),
                 ),
               ),
             ),
@@ -1271,6 +1371,7 @@ class _AWStudioState extends State<AWStudio> with TickerProviderStateMixin {
             _toolBtn(DesignerTool.eraseFill, Icons.format_color_reset, 'EraseFill'),
             _toolBtn(DesignerTool.eyedropper, Icons.colorize, 'Pick'),
             _toolBtn(DesignerTool.select, Icons.select_all, 'Select'),
+            _toolBtn(DesignerTool.lassoSelect, Icons.gesture, 'Lasso'),
             _toolBtn(DesignerTool.line, Icons.timeline, 'Line'),
             _toolBtn(DesignerTool.rect, Icons.rectangle_outlined, 'Rect'),
             _toolBtn(DesignerTool.circle, Icons.circle_outlined, 'Circle'),
@@ -1665,11 +1766,13 @@ class _PixelCanvasPainter extends CustomPainter {
   final Rect? selectionRect;
   final List<List<Color>>? movingPixels;
   final bool isMoving;
+  final DesignerTool tool;
+  final List<Point<int>>? lassoPath;
 
   _PixelCanvasPainter({
     required this.layers, required this.cellSize,
     required this.canvasW, required this.canvasH, required this.showGrid,
-    required this.bgMode, this.selectionRect, this.movingPixels, this.isMoving = false,
+    required this.bgMode, required this.tool, this.selectionRect, this.movingPixels, this.isMoving = false, this.lassoPath,
   });
 
   @override
@@ -1739,6 +1842,23 @@ class _PixelCanvasPainter extends CustomPainter {
       
       canvas.drawRect(sRect, Paint()..color = Colors.blueAccent..style = PaintingStyle.stroke..strokeWidth = 2.0);
       canvas.drawRect(sRect, Paint()..color = Colors.white..style = PaintingStyle.stroke..strokeWidth = 1.0);
+    }
+
+    // -- Draw Lasso Path --
+    final lp = lassoPath;
+    if (tool == DesignerTool.lassoSelect && lp != null && lp.length > 1) {
+      final lassoPaint = Paint()
+        ..color = Colors.cyanAccent
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.0;
+        
+      final path = Path();
+      path.moveTo(lp[0].x * cellSize + cellSize / 2, lp[0].y * cellSize + cellSize / 2);
+      for (int i = 1; i < lp.length; i++) {
+        path.lineTo(lp[i].x * cellSize + cellSize / 2, lp[i].y * cellSize + cellSize / 2);
+      }
+      
+      canvas.drawPath(path, lassoPaint);
     }
   }
 
