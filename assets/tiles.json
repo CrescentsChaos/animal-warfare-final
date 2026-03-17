@@ -557,7 +557,7 @@
         "id": "mud",
         "name": "Mud",
         "category": "mud",
-        "assetPath": "assets/tiles/swamp_mud.png",
+        "assetPath": "assets/tiles/ground/mud.png",
         "isAutotiled": true,
         "layer": "base",
         "biome": "swamp"
@@ -1062,5 +1062,85 @@
         "showInEditor": true,
         "biome": "any",
         "interactionText": "It's a teleporter."
+    },
+    {
+        "id": "mud_e1",
+        "name": "Mud Edge 1",
+        "category": "mud",
+        "assetPath": "assets/tiles/ground/mud_e1.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1,
+        "biome": "Swamp"
+    },
+    {
+        "id": "mud_e2",
+        "name": "Mud Edge 2",
+        "category": "m",
+        "assetPath": "assets/tiles/ground/mud_e2.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1,
+        "biome": "Swamp"
+    },
+    {
+        "id": "mud_e3",
+        "name": "Mud Edge 3",
+        "category": "mud",
+        "assetPath": "assets/tiles/ground/mud_e3.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1,
+        "biome": "Swamp"
+    },
+    {
+        "id": "mud_e4",
+        "name": "Mud Edge 4",
+        "category": "mud",
+        "assetPath": "assets/tiles/ground/mud_e4.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1,
+        "biome": "Swamp"
+    },
+    {
+        "id": "mud_corner_1",
+        "name": "Mud Corner 1",
+        "category": "mud",
+        "assetPath": "assets/tiles/ground/mud_corner_1.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1,
+        "biome": "Swamp"
+    },
+    {
+        "id": "mud_corner_2",
+        "name": "Mud Corner 2",
+        "category": "mud",
+        "assetPath": "assets/tiles/ground/mud_corner_2.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1,
+        "biome": "Swamp"
+    },
+    {
+        "id": "mud_corner_3",
+        "name": "Mud Corner 3",
+        "category": "mud",
+        "assetPath": "assets/tiles/ground/mud_corner_3.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1,
+        "biome": "Swamp"
+    },
+    {
+        "id": "mud_corner_4",
+        "name": "Mud Corner 4",
+        "category": "mud",
+        "assetPath": "assets/tiles/ground/mud_corner_4.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1,
+        "biome": "Swamp"
     }
 ]
