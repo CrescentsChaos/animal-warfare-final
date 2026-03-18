@@ -39,7 +39,12 @@ class OverworldNPC {
       gridRow = data.row,
       gridCol = data.col;
 
-  bool get isTrainer => data.scriptType == 'trainer' && data.teamId.isNotEmpty;
+  bool get isTrainer =>
+      (data.scriptType == 'trainer' ||
+       data.scriptType == 'rival' ||
+       data.scriptType == 'major_trainer' ||
+       data.scriptType == 'evil_team') &&
+      data.teamId.isNotEmpty;
 
   void tick(
     double dt,

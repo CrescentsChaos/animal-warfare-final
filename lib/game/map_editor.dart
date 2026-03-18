@@ -481,15 +481,24 @@ class _MapEditorState extends State<MapEditor> {
     if (r < 0 || r >= _rows || c < 0 || c >= _cols) return;
     if (_isBorderCell(r, c)) return;
 
-    if (_mode == EditorMode.teleporter) {
-       setState(() {
-         _teleporters.removeWhere((t) => t.x == c && t.y == r);
-       });
-       return;
-    }
-
     setState(() {
-      // Erase overlay first by popping the stack; if empty, reset base
+      // If we are in eraser mode, delete teleporters AND NPCs at this coordinate
+      if (_mode == EditorMode.eraser) {
+        _teleporters.removeWhere((t) => t.x == c && t.y == r);
+        _npcs.removeWhere((n) => n.row == r && n.col == c);
+      } 
+      // Specialized delete for teleporter mode interaction 
+      else if (_mode == EditorMode.teleporter) {
+        _teleporters.removeWhere((t) => t.x == c && t.y == r);
+        return; // Don't erase the tiles themselves if just clearing data in specialized mode
+      }
+      // Specialized delete for npc mode interaction
+      else if (_mode == EditorMode.npc) {
+        _npcs.removeWhere((n) => n.row == r && n.col == c);
+        return;
+      }
+
+      // Standard tile eraser logic
       if (_overlayGrid[r][c].isNotEmpty) {
         _overlayGrid[r][c].removeLast();
       } else {

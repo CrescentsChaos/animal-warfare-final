@@ -958,6 +958,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       } else if (ability.name == 'Gorilla Tactics') {
         // 1.5x Atk buff - handled in damage calculation via gorillaTacticsActive flag
         user.gorillaTacticsActive = true;
+        user.isChoiceLocked = true;
         addToLog('${user.name}\'s Gorilla Tactics locked in its first move!');
         notifyListeners();
         if (!isTesting) {
@@ -1517,7 +1518,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     }
 
     // --- NEW: Throat Chop / Soundproof Check ---
-    if (attacker.throatChopTurns > 0 && move.isSoundBased) {
+    if (attacker.throatChopTurns > 0 && move.type == ElementalType.sound) {
       addToLog(
         '${attacker.name} cannot use sound-based moves due to Throat Chop!',
       );
@@ -1527,7 +1528,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     }
 
     if (defender.abilities.any((ab) => ab.name == 'Soundproof') &&
-        move.isSoundBased) {
+        move.type == ElementalType.sound) {
       addToLog('${defender.name} is immune to sound-based moves!');
       notifyListeners();
       if (!isTesting) await Future.delayed(const Duration(milliseconds: 2000));
@@ -3406,16 +3407,21 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       }
 
       // Apply Choice Lock if applicable
-      if (attacker.organism.equippedTalisman != null &&
-          !attacker.isChoiceLocked) {
-        for (final effect in attacker.organism.equippedTalisman!.effects) {
-          if (effect.type == TalismanEffectType.choiceLock) {
-            attacker.isChoiceLocked = true;
-            attacker.lockedMove = move;
-            // attacker.isItemRevealed = true; // Maybe not reveal immediately on lock, but on "move blocked"?
-            // For now, let's reveal it if they are locked, so the player knows why.
-            attacker.isItemRevealed = true;
+      if (attacker.lockedMove == null) {
+        // Item lock
+        if (attacker.organism.equippedTalisman != null) {
+          for (final effect in attacker.organism.equippedTalisman!.effects) {
+            if (effect.type == TalismanEffectType.choiceLock) {
+              attacker.isChoiceLocked = true;
+              attacker.lockedMove = move;
+              attacker.isItemRevealed = true;
+            }
           }
+        }
+        // Gorilla Tactics lock
+        if (attacker.gorillaTacticsActive) {
+          attacker.isChoiceLocked = true;
+          attacker.lockedMove = move;
         }
       }
     }
@@ -6707,6 +6713,30 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       moveType = ElementalType.cryo;
     }
 
+    // Aerilate: Basic -> Flying
+    if (moveType == ElementalType.basic &&
+        attacker.abilities.any((ab) => ab.name == 'Aerilate')) {
+      moveType = ElementalType.flying;
+    }
+
+    // Pixilate: Basic -> Mystic
+    if (moveType == ElementalType.basic &&
+        attacker.abilities.any((ab) => ab.name == 'Pixilate')) {
+      moveType = ElementalType.mystic;
+    }
+
+    // Galvanize: Basic -> Electric
+    if (moveType == ElementalType.basic &&
+        attacker.abilities.any((ab) => ab.name == 'Galvanize')) {
+      moveType = ElementalType.electric;
+    }
+
+    // Liquid Voice: Sound -> Aquatic
+    if (move.type == ElementalType.sound &&
+        attacker.abilities.any((ab) => ab.name == 'Liquid Voice')) {
+      moveType = ElementalType.aquatic;
+    }
+
     // Hidden Power
     if (move.name == 'Hidden Power' ||
         move.effects.any((e) => e.type == MoveEffectType.hiddenPower)) {
@@ -7189,17 +7219,21 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       moveType = ElementalType.basic;
     }
 
-    // Liquid Voice
-    if (attacker.abilities.any((ab) => ab.name == 'Liquid Voice') &&
-        move.isSoundBased &&
-        move.type == ElementalType.basic) {
-      moveType = ElementalType.aquatic;
+    // --- Type-changing power boost (Aerilate, Pixilate, Refrigerate, Galvanize, Liquid Voice) ---
+    bool typeChangedByAbility = false;
+    if (move.type == ElementalType.basic &&
+        (attacker.abilities.any((ab) => ab.name == 'Aerilate') ||
+            attacker.abilities.any((ab) => ab.name == 'Pixilate') ||
+            attacker.abilities.any((ab) => ab.name == 'Refrigerate') ||
+            attacker.abilities.any((ab) => ab.name == 'Galvanize'))) {
+      typeChangedByAbility = true;
+    } else if (move.type == ElementalType.sound &&
+        attacker.abilities.any((ab) => ab.name == 'Liquid Voice')) {
+      typeChangedByAbility = true;
     }
 
-    // Galvanize
-    if (attacker.abilities.any((ab) => ab.name == 'Galvanize') &&
-        move.type == ElementalType.basic) {
-      moveType = ElementalType.electric;
+    if (typeChangedByAbility) {
+      damageCalc *= 1.2;
     }
 
     bool isContact =
@@ -7224,7 +7258,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     }
 
     // --- Punk Rock ---
-    if (move.isSoundBased) {
+    if (move.type == ElementalType.sound) {
       if (attacker.abilities.any((ab) => ab.name == 'Punk Rock')) {
         damageCalc *= 1.3;
       }
@@ -7451,7 +7485,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     // Liquid Voice (Damage Boost)
     if (attacker.abilities.any((ab) => ab.name == 'Liquid Voice') &&
-        move.isSoundBased) {
+        move.type == ElementalType.sound) {
       damageCalc *= 1.2;
     }
 

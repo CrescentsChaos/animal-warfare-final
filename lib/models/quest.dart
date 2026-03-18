@@ -12,6 +12,9 @@ class Quest {
   final QuestStatus status;
   final String npcId;
   final String category;
+  final String giverNpcId; // which NPC gave the quest
+  final List<String> rewardItemIds; // item rewards on completion
+  final String completionFlag; // flag to set on completion (for blocker NPCs)
 
   Quest({
     required this.id,
@@ -23,6 +26,9 @@ class Quest {
     this.status = QuestStatus.active,
     this.npcId = 'jeremy_wade',
     this.category = 'River Monsters',
+    this.giverNpcId = '',
+    this.rewardItemIds = const [],
+    this.completionFlag = '',
   });
 
   Quest copyWith({
@@ -39,6 +45,9 @@ class Quest {
       status: status ?? this.status,
       npcId: npcId,
       category: category,
+      giverNpcId: giverNpcId,
+      rewardItemIds: rewardItemIds,
+      completionFlag: completionFlag,
     );
   }
 
@@ -54,6 +63,9 @@ class Quest {
     'status': status.index,
     'npcId': npcId,
     'category': category,
+    'giverNpcId': giverNpcId,
+    'rewardItemIds': rewardItemIds,
+    'completionFlag': completionFlag,
   };
 
   factory Quest.fromJson(Map<String, dynamic> json) => Quest(
@@ -66,5 +78,9 @@ class Quest {
     status: QuestStatus.values[json['status']],
     npcId: json['npcId'] ?? 'jeremy_wade',
     category: json['category'] ?? 'River Monsters',
+    giverNpcId: json['giverNpcId'] as String? ?? '',
+    rewardItemIds: List<String>.from(json['rewardItemIds'] ?? []),
+    completionFlag: json['completionFlag'] as String? ?? '',
   );
 }
+

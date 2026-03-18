@@ -1842,10 +1842,9 @@
         "soundEffect": "audio/effects/bug_buzz.mp3",
         "baseDamage": 90,
         "accuracy": 100,
-        "type": "arthropod",
+        "type": "sound",
         "stamina": 15,
         "category": "special",
-        "isSoundBased": true,
         "effects": [
             {
                 "type": "statChange",
@@ -4453,8 +4452,7 @@
         "type": "sound",
         "stamina": 10,
         "accuracy": 100,
-        "category": "special",
-        "isSoundBased": true
+        "category": "special"
     },
     {
         "name": "Honking Havoc",
@@ -4916,11 +4914,10 @@
         "name": "Perish Song",
         "description": "Any animal that hears this song will faint in three turns unless it switches out of battle.",
         "baseDamage": 0,
-        "type": "basic",
+        "type": "sound",
         "accuracy": 100,
         "stamina": 5,
         "category": "status",
-        "isSoundBased": true,
         "effects": [
             {
                 "type": "perishSong",
@@ -5758,11 +5755,10 @@
         "name": "Jungle Healing",
         "description": "The user becomes one with the jungle, restoring its own HP and curing its status conditions.",
         "baseDamage": 0,
-        "type": "grass",
+        "type": "sound",
         "accuracy": 100,
         "stamina": 10,
         "category": "status",
-        "isSoundBased": true,
         "effects": [
             {
                 "type": "jungleHealing",
@@ -6137,7 +6133,6 @@
         "stamina": 20,
         "category": "status",
         "priority": -6,
-        "isSoundBased": true,
         "effects": [
             {
                 "type": "forceSwitch",

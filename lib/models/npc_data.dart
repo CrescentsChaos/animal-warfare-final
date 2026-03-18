@@ -6,13 +6,25 @@ class NPCData {
   final String spriteKey;
   final int row;
   final int col;
-  final String scriptType; // e.g., 'shopkeeper', 'medic', 'trainer', 'none'
+  final String scriptType; // 'trainer', 'shopkeeper', 'medic', 'quest_giver', 'fetch_quest', 'story', 'blocker', 'item_giver', 'rival', 'professor', 'major_trainer', 'evil_team', 'request_board', 'none'
   final List<String> dialogue;
   final String movementType; // 'still', 'random', 'pattern'
   final int movementRange;
   final int visionRange; // tiles the NPC can see to detect the player
   final String teamId; // links to npc_teams.json entry
   final String defeatText; // text shown after the trainer is defeated
+
+  // --- Event & Quest Fields ---
+  final String questId; // links to a quest definition (for quest_giver)
+  final String requiredFlag; // flag needed for this NPC to be active / unblock
+  final String setsFlag; // flag to set after interaction (trainer defeat, story read, etc.)
+  final String itemRewardId; // item to give (for item_giver)
+  final int itemRewardCount; // quantity of item reward
+  final String itemRequiredId; // item needed for fetch_quest
+  final int itemRequiredCount; // quantity needed for fetch_quest
+  final String organismRequiredId; // specific organism needed
+  final List<String> postEventDialogue; // dialogue after event is done
+  final String condition; // generic condition expression, e.g. "flag:beat_gym_1"
 
   NPCData({
     required this.id,
@@ -27,6 +39,16 @@ class NPCData {
     this.visionRange = 0,
     this.teamId = '',
     this.defeatText = '',
+    this.questId = '',
+    this.requiredFlag = '',
+    this.setsFlag = '',
+    this.itemRewardId = '',
+    this.itemRewardCount = 1,
+    this.itemRequiredId = '',
+    this.itemRequiredCount = 1,
+    this.organismRequiredId = '',
+    this.postEventDialogue = const [],
+    this.condition = '',
   });
 
   factory NPCData.fromJson(Map<String, dynamic> json) {
@@ -43,6 +65,19 @@ class NPCData {
       visionRange: json['visionRange'] as int? ?? 0,
       teamId: json['teamId'] as String? ?? '',
       defeatText: json['defeatText'] as String? ?? '',
+      questId: json['questId'] as String? ?? '',
+      requiredFlag: json['requiredFlag'] as String? ?? '',
+      setsFlag: json['setsFlag'] as String? ?? '',
+      itemRewardId: json['itemRewardId'] as String? ?? '',
+      itemRewardCount: json['itemRewardCount'] as int? ?? 1,
+      itemRequiredId: json['itemRequiredId'] as String? ?? '',
+      itemRequiredCount: json['itemRequiredCount'] as int? ?? 1,
+      organismRequiredId: json['organismRequiredId'] as String? ?? '',
+      postEventDialogue: (json['postEventDialogue'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
+      condition: json['condition'] as String? ?? '',
     );
   }
 
@@ -60,6 +95,16 @@ class NPCData {
       'visionRange': visionRange,
       'teamId': teamId,
       'defeatText': defeatText,
+      'questId': questId,
+      'requiredFlag': requiredFlag,
+      'setsFlag': setsFlag,
+      'itemRewardId': itemRewardId,
+      'itemRewardCount': itemRewardCount,
+      'itemRequiredId': itemRequiredId,
+      'itemRequiredCount': itemRequiredCount,
+      'organismRequiredId': organismRequiredId,
+      'postEventDialogue': postEventDialogue,
+      'condition': condition,
     };
   }
 
@@ -76,6 +121,16 @@ class NPCData {
     int? visionRange,
     String? teamId,
     String? defeatText,
+    String? questId,
+    String? requiredFlag,
+    String? setsFlag,
+    String? itemRewardId,
+    int? itemRewardCount,
+    String? itemRequiredId,
+    int? itemRequiredCount,
+    String? organismRequiredId,
+    List<String>? postEventDialogue,
+    String? condition,
   }) {
     return NPCData(
       id: id ?? this.id,
@@ -90,6 +145,17 @@ class NPCData {
       visionRange: visionRange ?? this.visionRange,
       teamId: teamId ?? this.teamId,
       defeatText: defeatText ?? this.defeatText,
+      questId: questId ?? this.questId,
+      requiredFlag: requiredFlag ?? this.requiredFlag,
+      setsFlag: setsFlag ?? this.setsFlag,
+      itemRewardId: itemRewardId ?? this.itemRewardId,
+      itemRewardCount: itemRewardCount ?? this.itemRewardCount,
+      itemRequiredId: itemRequiredId ?? this.itemRequiredId,
+      itemRequiredCount: itemRequiredCount ?? this.itemRequiredCount,
+      organismRequiredId: organismRequiredId ?? this.organismRequiredId,
+      postEventDialogue: postEventDialogue ?? this.postEventDialogue,
+      condition: condition ?? this.condition,
     );
   }
 }
+

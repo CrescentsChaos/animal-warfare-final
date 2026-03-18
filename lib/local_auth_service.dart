@@ -11,6 +11,7 @@ import 'package:animal_warfare/models/quest.dart';
 import 'package:animal_warfare/models/rogue_like_state.dart';
 import 'package:animal_warfare/models/farm_slot.dart';
 import 'package:animal_warfare/models/saved_map_state.dart'; // NEW import
+import 'package:animal_warfare/models/event_flags.dart';
 
 import 'local_auth_storage_io.dart'
     if (dart.library.html) 'local_auth_storage_web.dart'
@@ -77,6 +78,9 @@ class UserData {
   /// Map state persistence
   final Map<String, SavedMapState> savedMapStates;
 
+  /// Persistent world event state
+  final EventFlags eventFlags;
+
   // --- Banking & Secret Auth Fields ---
   final int bankTaka;
   final int bankGold;
@@ -122,6 +126,7 @@ class UserData {
     List<String>? displayedAchievements,
     List<FarmSlot>? farmSlots,
     Map<String, SavedMapState>? savedMapStates,
+    EventFlags? eventFlags,
   }) : quizStats = quizStats ?? {},
        discoveredOrganisms = discoveredOrganisms ?? [],
        completedAchievements = completedAchievements ?? [],
@@ -137,6 +142,7 @@ class UserData {
        displayedAchievements = (displayedAchievements ?? []).take(3).toList(),
        farmSlots = farmSlots ?? List.generate(10, (i) => FarmSlot.empty(i)),
        savedMapStates = savedMapStates ?? {},
+       eventFlags = eventFlags ?? const EventFlags(),
        savedReplays = savedReplays ?? [];
 
   /// Returns displayName if set, otherwise falls back to username
@@ -180,6 +186,7 @@ class UserData {
     String? phoneWallpaper,
     List<Map<String, dynamic>>? savedReplays,
     Map<String, SavedMapState>? savedMapStates,
+    EventFlags? eventFlags,
   }) {
     return UserData(
       username: username ?? this.username,
@@ -222,6 +229,7 @@ class UserData {
           displayedAchievements ?? this.displayedAchievements,
       farmSlots: farmSlots ?? this.farmSlots,
       savedMapStates: savedMapStates ?? this.savedMapStates,
+      eventFlags: eventFlags ?? this.eventFlags,
     );
   }
 
@@ -316,6 +324,7 @@ class UserData {
     'phoneWallpaper': phoneWallpaper,
     'savedReplays': savedReplays,
     'savedMapStates': savedMapStates.map((k, v) => MapEntry(k, v.toJson())),
+    'eventFlags': eventFlags.toJson(),
   };
 
   factory UserData.fromJson(
@@ -457,6 +466,9 @@ class UserData {
               SavedMapState.fromJson(v as Map<String, dynamic>, allOrganisms ?? []),
             ),
           ) ?? {},
+      eventFlags: json['eventFlags'] != null
+          ? EventFlags.fromJson(json['eventFlags'] as Map<String, dynamic>)
+          : const EventFlags(),
     );
   }
 }

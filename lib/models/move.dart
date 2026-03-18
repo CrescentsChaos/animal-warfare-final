@@ -233,7 +233,7 @@ class Move {
 
   final bool isPunch;
   final bool isBite;
-  final bool isSoundBased;
+
   final bool isSelfDestruct;
   final bool isContact;
   final bool isPowder;
@@ -285,7 +285,7 @@ class Move {
     this.animationType,
     this.isPunch = false,
     this.isBite = false,
-    this.isSoundBased = false,
+
     this.isSelfDestruct = false,
     this.isPowder = false,
     this.isPulse = false,
@@ -367,7 +367,7 @@ class Move {
       isContact: json['isContact'] as bool?,
       isPunch: json['isPunch'] as bool? ?? false,
       isBite: json['isBite'] as bool? ?? false,
-      isSoundBased: json['isSoundBased'] as bool? ?? false,
+
       isPowder:
           json['isPowder'] as bool? ??
           (json['name'] == 'Spore' ||
@@ -422,7 +422,6 @@ class Move {
     bool? failIfTargetNotAttacking,
     bool? isPunch,
     bool? isBite,
-    bool? isSoundBased,
     bool? isSelfDestruct,
     bool? isContact,
     bool? isPowder,
@@ -459,7 +458,6 @@ class Move {
           failIfTargetNotAttacking ?? this.failIfTargetNotAttacking,
       isPunch: isPunch ?? this.isPunch,
       isBite: isBite ?? this.isBite,
-      isSoundBased: isSoundBased ?? this.isSoundBased,
       isSelfDestruct: isSelfDestruct ?? this.isSelfDestruct,
       isContact: isContact ?? this.isContact,
       isPowder: isPowder ?? this.isPowder,

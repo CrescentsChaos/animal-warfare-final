@@ -485,12 +485,40 @@ class DoubleBattleManager extends ChangeNotifier {
     // is separate, we'll implement a concise version here.
     ElementalType moveType = move.type;
 
-    // Weather Ball
+    // Weather Ball (Concise version for Doubles)
     if (move.name == 'Weather Ball' ||
         move.effects.any((e) => e.type == MoveEffectType.weatherBall)) {
-      // In DoubleBattleManager we don't have a currentWeather object like in BattleManager?
-      // Let's check the fields. (Actually, DoubleBattleManager seems to lack weather state)
-      // I will implement based on field if it exists, otherwise return base.
+      // Weather context could be added here if environment is shared
+    }
+
+    // Refrigerate: Basic -> Cryo
+    if (moveType == ElementalType.basic &&
+        attacker.abilities.any((ab) => ab.name == 'Refrigerate')) {
+      moveType = ElementalType.cryo;
+    }
+
+    // Aerilate: Basic -> Flying
+    if (moveType == ElementalType.basic &&
+        attacker.abilities.any((ab) => ab.name == 'Aerilate')) {
+      moveType = ElementalType.flying;
+    }
+
+    // Pixilate: Basic -> Mystic
+    if (moveType == ElementalType.basic &&
+        attacker.abilities.any((ab) => ab.name == 'Pixilate')) {
+      moveType = ElementalType.mystic;
+    }
+
+    // Galvanize: Basic -> Electric
+    if (moveType == ElementalType.basic &&
+        attacker.abilities.any((ab) => ab.name == 'Galvanize')) {
+      moveType = ElementalType.electric;
+    }
+
+    // Liquid Voice: Sound -> Aquatic
+    if (move.type == ElementalType.sound &&
+        attacker.abilities.any((ab) => ab.name == 'Liquid Voice')) {
+      moveType = ElementalType.aquatic;
     }
 
     // Hidden Power
@@ -587,6 +615,23 @@ class DoubleBattleManager extends ChangeNotifier {
     // Use dynamic move type
     final moveType = getDisplayType(attacker, move);
 
+    // --- Type-changing power boost ---
+    bool typeChangedByAbility = false;
+    if (move.type == ElementalType.basic &&
+        (attacker.abilities.any((ab) => ab.name == 'Aerilate') ||
+            attacker.abilities.any((ab) => ab.name == 'Pixilate') ||
+            attacker.abilities.any((ab) => ab.name == 'Refrigerate') ||
+            attacker.abilities.any((ab) => ab.name == 'Galvanize'))) {
+      typeChangedByAbility = true;
+    } else if (move.type == ElementalType.sound &&
+               attacker.abilities.any((ab) => ab.name == 'Liquid Voice')) {
+      typeChangedByAbility = true;
+    }
+
+    if (typeChangedByAbility) {
+      dmg *= 1.2;
+    }
+
     // Type effectiveness
     double typeMod = 1.0;
     for (final defType in defender.types) {
@@ -681,10 +726,18 @@ class DoubleBattleManager extends ChangeNotifier {
     if (org.organism.selectedMoveNames.isEmpty) {
       org.organism.initializeDefaultMoves();
     }
-    final moves = org.organism.selectedMoveNames
+    List<Move> moves = org.organism.selectedMoveNames
         .map((n) => Move.findOrCreate(n))
         .toList();
     if (moves.isEmpty) moves.add(Move.findOrCreate('Struggle'));
+
+    // Choice Lock / Gorilla Tactics Lock
+    if (org.isChoiceLocked && org.lockedMove != null) {
+      if (moves.any((m) => m.name == org.lockedMove!.name)) {
+        moves = [moves.firstWhere((m) => m.name == org.lockedMove!.name)];
+      }
+    }
+
     return moves;
   }
 
@@ -851,6 +904,25 @@ class DoubleBattleManager extends ChangeNotifier {
           0,
           move.stamina,
         );
+
+    // Apply Choice Lock if applicable
+    if (attacker.lockedMove == null) {
+      // Item lock
+      if (attacker.organism.equippedTalisman != null) {
+        for (final effect in attacker.organism.equippedTalisman!.effects) {
+          if (effect.type == TalismanEffectType.choiceLock) {
+            attacker.isChoiceLocked = true;
+            attacker.lockedMove = move;
+            attacker.isItemRevealed = true;
+          }
+        }
+      }
+      // Gorilla Tactics lock
+      if (attacker.abilities.any((a) => a.name == 'Gorilla Tactics')) {
+        attacker.isChoiceLocked = true;
+        attacker.lockedMove = move;
+      }
+    }
 
     addLog('${attacker.organism.baseOrganism.name} used ${move.name}!');
 

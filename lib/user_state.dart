@@ -14,6 +14,7 @@ import 'package:animal_warfare/models/rogue_like_state.dart';
 import 'package:animal_warfare/models/farm_slot.dart';
 import 'package:animal_warfare/models/battle_replay.dart';
 import 'package:animal_warfare/models/saved_map_state.dart';
+import 'package:animal_warfare/models/event_flags.dart';
 import 'package:animal_warfare/game/time_service.dart';
 import 'local_auth_service.dart';
 
@@ -1904,6 +1905,48 @@ class UserState with ChangeNotifier {
       newMapStates.remove(mapId);
       return u.copyWith(savedMapStates: newMapStates);
     });
+  }
+
+  // ── Event Flags ──
+
+  EventFlags get eventFlags => _currentUser?.eventFlags ?? const EventFlags();
+
+  bool hasFlag(String flag) => eventFlags.hasFlag(flag);
+  bool isTrainerDefeated(String npcId) => eventFlags.isTrainerDefeated(npcId);
+
+  Future<void> setFlag(String flag) async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) => u.copyWith(
+      eventFlags: u.eventFlags.withFlag(flag),
+    ));
+  }
+
+  Future<void> markTrainerDefeated(String npcId) async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) => u.copyWith(
+      eventFlags: u.eventFlags.withTrainerDefeated(npcId),
+    ));
+  }
+
+  Future<void> markQuestCompleted(String questId) async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) => u.copyWith(
+      eventFlags: u.eventFlags.withQuestCompleted(questId),
+    ));
+  }
+
+  Future<void> markItemCollected(String itemId) async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) => u.copyWith(
+      eventFlags: u.eventFlags.withItemCollected(itemId),
+    ));
+  }
+
+  Future<void> updateCurrentMapId(String mapId) async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) => u.copyWith(
+      eventFlags: u.eventFlags.copyWith(currentMapId: mapId),
+    ));
   }
 
   @override

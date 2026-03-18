@@ -1900,5 +1900,40 @@
     "description": "Powers up Dragon-type moves.",
     "trigger": "none",
     "effectType": "none"
+  },
+  {
+    "name": "Aerilate",
+    "description": "Basic-type moves become Flying-type moves. The power of those moves is boosted by 20%.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 1.2
+  },
+  {
+    "name": "Pixilate",
+    "description": "Basic-type moves become Mystic-type moves. The power of those moves is boosted by 20%.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 1.2
+  },
+  {
+    "name": "Refrigerate",
+    "description": "Basic-type moves become Cryo-type moves. The power of those moves is boosted by 20%.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 1.2
+  },
+  {
+    "name": "Galvanize",
+    "description": "Basic-type moves become Electric-type moves. The power of those moves is boosted by 20%.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 1.2
+  },
+  {
+    "name": "Liquid Voice",
+    "description": "Sound-based moves become Aquatic-type moves. The power of those moves is boosted by 20%.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 1.2
   }
-]
+]

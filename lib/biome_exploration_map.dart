@@ -35,6 +35,7 @@ import 'package:animal_warfare/crafting_screen.dart';
 import 'package:animal_warfare/game/overworld_sprite.dart';
 import 'package:animal_warfare/game/overworld_npc.dart';
 import 'package:animal_warfare/game/npc_team_loader.dart';
+import 'package:animal_warfare/models/quest.dart';
 
 class BiomeExplorationMap extends StatefulWidget {
   final String biomeName;
@@ -199,8 +200,25 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
     // Initialize NPCs from map data
     if (_mapData.npcs != null) {
+      final userState = Provider.of<UserState>(context, listen: false);
       for (final npcData in _mapData.npcs!) {
-        _gameNPCs.add(OverworldNPC(data: npcData));
+        // Skip blocker NPCs whose requiredFlag is already satisfied
+        if (npcData.scriptType == 'blocker' &&
+            npcData.requiredFlag.isNotEmpty &&
+            userState.hasFlag(npcData.requiredFlag)) {
+          continue;
+        }
+        final npc = OverworldNPC(data: npcData);
+        // Restore defeated state from persistent event flags
+        if ((npcData.scriptType == 'trainer' ||
+             npcData.scriptType == 'rival' ||
+             npcData.scriptType == 'major_trainer' ||
+             npcData.scriptType == 'evil_team') &&
+            userState.isTrainerDefeated(npcData.id)) {
+          npc.isDefeated = true;
+          npc.hasTriggeredBattle = true;
+        }
+        _gameNPCs.add(npc);
       }
     }
 
@@ -769,7 +787,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     }
   }
 
-  void _executeTransition(MapTransition t) {
+  Future<void> _executeTransition(MapTransition t) async {
     // Determine target config
     late BiomeConfig targetConfig;
 
@@ -796,6 +814,9 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       _isMovingToTarget = false;
       _walkFrame = 0;
     });
+
+    await _saveCurrentState();
+    if (!mounted) return;
 
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
@@ -876,22 +897,34 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
   Future<void> _saveCurrentState() async {
     final userState = Provider.of<UserState>(context, listen: false);
+    // Collect defeated NPC IDs from this session
+    final defeatedIds = <String>{};
+    for (final npc in _gameNPCs) {
+      if (npc.isDefeated) {
+        defeatedIds.add(npc.data.id);
+      }
+    }
     final state = SavedMapState(
       playerX: _playerX,
       playerY: _playerY,
       playerDirection: _playerDirection,
       isSwimming: _isSwimming,
-      savedSprites: [], // Could populate from _overworldSprites if needed
+      savedSprites: [],
+      defeatedNpcIds: defeatedIds,
     );
     await userState.saveMapState(widget.biomeName.toLowerCase(), state);
+    // Persist the current map as the last-visited zone
+    await userState.updateCurrentMapId(widget.biomeName.toLowerCase());
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (!mounted) return;
     if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.inactive) {
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.detached) {
       AudioService.instance.pauseAll();
+      _saveCurrentState();
     } else if (state == AppLifecycleState.resumed) {
       final fileName = widget.biomeName.toLowerCase().replaceAll(' ', '_');
       AudioService.instance.playMusic('audio/${fileName}_theme.mp3');
@@ -1913,7 +1946,10 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     _showInteractionBubble('$displayName${npc.data.dialogue.join('\n')}', icon: '💬');
 
     // Script-based interactions
-    if (npc.data.scriptType == 'trainer') {
+    if (npc.data.scriptType == 'trainer' ||
+        npc.data.scriptType == 'rival' ||
+        npc.data.scriptType == 'major_trainer' ||
+        npc.data.scriptType == 'evil_team') {
       // Don't interact normally with trainers — they handle via vision
       if (!npc.isDefeated) {
         _startTrainerBattle(npc);
@@ -1940,7 +1976,217 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
           // In a real implementation we'd call user_state to heal organisms
         }
       });
+    } else if (npc.data.scriptType == 'quest_giver') {
+      _handleQuestGiverNPC(npc);
+    } else if (npc.data.scriptType == 'story') {
+      _handleStoryNPC(npc);
+    } else if (npc.data.scriptType == 'blocker') {
+      _handleBlockerNPC(npc);
+    } else if (npc.data.scriptType == 'item_giver') {
+      _handleItemGiverNPC(npc);
+    } else if (npc.data.scriptType == 'fetch_quest') {
+      _handleFetchQuestNPC(npc);
+    } else if (npc.data.scriptType == 'professor') {
+      _handleProfessorNPC(npc);
+    } else if (npc.data.scriptType == 'request_board') {
+      _handleRequestBoardNPC(npc);
     }
+  }
+
+  void _handleQuestGiverNPC(OverworldNPC npc) {
+    final userState = Provider.of<UserState>(context, listen: false);
+    final user = userState.currentUser;
+    if (user == null) return;
+
+    // Check if the quest is already completed in event flags
+    if (npc.data.questId.isNotEmpty &&
+        userState.eventFlags.isQuestCompleted(npc.data.questId)) {
+      // Post-event dialogue
+      final postDialogue = npc.data.postEventDialogue.isNotEmpty
+          ? npc.data.postEventDialogue.join('\n')
+          : 'Thanks for your help!';
+      _showInteractionBubble('${npc.data.name}: $postDialogue', icon: '💬');
+      return;
+    }
+
+    // Check if the quest is already active
+    final existingQuest = user.activeQuests
+        .where((q) => q.id == npc.data.questId)
+        .toList();
+    if (existingQuest.isNotEmpty) {
+      final q = existingQuest.first;
+      if (q.isCompleted) {
+        // Complete the quest!
+        _showInteractionBubble('${npc.data.name}: Excellent work!', icon: '✅');
+        userState.markQuestCompleted(npc.data.questId);
+        if (npc.data.setsFlag.isNotEmpty) {
+          userState.setFlag(npc.data.setsFlag);
+        }
+      } else {
+        _showInteractionBubble(
+            '${npc.data.name}: ${q.description} (${q.currentCount}/${q.targetCount})',
+            icon: '📋');
+      }
+      return;
+    }
+
+    // Offer the quest
+    final displayName = npc.data.name.isNotEmpty ? '${npc.data.name}: ' : '';
+    _showInteractionBubble(
+        '$displayName${npc.data.dialogue.join('\n')}', icon: '❗');
+    // TODO: Add quest accept UI — for now auto-accept
+    if (npc.data.questId.isNotEmpty) {
+      final quest = Quest(
+        id: npc.data.questId,
+        description: npc.data.dialogue.isNotEmpty ? npc.data.dialogue.first : 'Complete the quest.',
+        targetOrganismName: '', // Would be populated from quest data
+        targetCount: 1,
+        rewardMoney: 500,
+        giverNpcId: npc.data.id,
+        completionFlag: npc.data.setsFlag,
+      );
+      userState.acceptQuest(quest);
+    }
+  }
+
+  void _handleStoryNPC(OverworldNPC npc) {
+    final userState = Provider.of<UserState>(context, listen: false);
+
+    // Check if story has been read (flag already set)
+    if (npc.data.setsFlag.isNotEmpty && userState.hasFlag(npc.data.setsFlag)) {
+      // Post-event dialogue
+      final postDialogue = npc.data.postEventDialogue.isNotEmpty
+          ? npc.data.postEventDialogue.join('\n')
+          : '...';
+      _showInteractionBubble('${npc.data.name}: $postDialogue', icon: '💬');
+      return;
+    }
+
+    // Show story dialogue
+    final displayName = npc.data.name.isNotEmpty ? '${npc.data.name}: ' : '';
+    _showInteractionBubble(
+        '$displayName${npc.data.dialogue.join('\n')}', icon: '📖');
+
+    // Set flag after reading
+    if (npc.data.setsFlag.isNotEmpty) {
+      userState.setFlag(npc.data.setsFlag);
+    }
+  }
+
+  void _handleBlockerNPC(OverworldNPC npc) {
+    final userState = Provider.of<UserState>(context, listen: false);
+
+    // If requiredFlag is now satisfied, remove the NPC from the map
+    if (npc.data.requiredFlag.isNotEmpty &&
+        userState.hasFlag(npc.data.requiredFlag)) {
+      _gameNPCs.remove(npc);
+      _showInteractionBubble('The path is now clear!', icon: '✅');
+      setState(() {});
+      return;
+    }
+
+    // Show blocking dialogue
+    final displayName = npc.data.name.isNotEmpty ? '${npc.data.name}: ' : '';
+    _showInteractionBubble(
+        '$displayName${npc.data.dialogue.join('\n')}', icon: '⛔');
+  }
+
+  void _handleItemGiverNPC(OverworldNPC npc) {
+    final userState = Provider.of<UserState>(context, listen: false);
+
+    // Check if item already collected
+    final itemKey = '${npc.data.id}_item';
+    if (userState.eventFlags.isItemCollected(itemKey)) {
+      final postDialogue = npc.data.postEventDialogue.isNotEmpty
+          ? npc.data.postEventDialogue.join('\n')
+          : 'I have nothing more for you.';
+      _showInteractionBubble('${npc.data.name}: $postDialogue', icon: '💬');
+      return;
+    }
+
+    // Give the item
+    final displayName = npc.data.name.isNotEmpty ? '${npc.data.name}: ' : '';
+    _showInteractionBubble(
+        '$displayName${npc.data.dialogue.join('\n')}', icon: '🎁');
+
+    if (npc.data.itemRewardId.isNotEmpty) {
+      userState.addLoot(npc.data.itemRewardId, npc.data.itemRewardCount);
+      userState.markItemCollected(itemKey);
+      if (npc.data.setsFlag.isNotEmpty) {
+        userState.setFlag(npc.data.setsFlag);
+      }
+    }
+  }
+
+  void _handleFetchQuestNPC(OverworldNPC npc) {
+    final userState = Provider.of<UserState>(context, listen: false);
+    final user = userState.currentUser;
+    if (user == null) return;
+
+    // Check if already done
+    if (npc.data.setsFlag.isNotEmpty && userState.hasFlag(npc.data.setsFlag)) {
+      final postDialogue = npc.data.postEventDialogue.isNotEmpty
+          ? npc.data.postEventDialogue.join('\n')
+          : 'Thanks for your help!';
+      _showInteractionBubble('${npc.data.name}: $postDialogue', icon: '💬');
+      return;
+    }
+
+    // Determine what is needed
+    bool hasRequirements = false;
+    if (npc.data.itemRequiredId.isNotEmpty) {
+      final count = user.inventory[npc.data.itemRequiredId] ?? 0;
+      hasRequirements = count >= npc.data.itemRequiredCount;
+    } else if (npc.data.organismRequiredId.isNotEmpty) {
+      hasRequirements = user.capturedOrganisms.any((o) =>
+          o.baseOrganism.name.toLowerCase() ==
+          npc.data.organismRequiredId.toLowerCase());
+    } else {
+      hasRequirements = true;
+    }
+
+    if (hasRequirements) {
+      _showInteractionBubble('${npc.data.name}: You have what I need! Thank you!', icon: '✅');
+      if (npc.data.itemRequiredId.isNotEmpty) {
+        userState.addLoot(npc.data.itemRequiredId, -npc.data.itemRequiredCount);
+      }
+      
+      if (npc.data.itemRewardId.isNotEmpty) {
+        userState.addLoot(npc.data.itemRewardId, npc.data.itemRewardCount);
+      }
+      if (npc.data.setsFlag.isNotEmpty) {
+        userState.setFlag(npc.data.setsFlag);
+      }
+    } else {
+      final displayName = npc.data.name.isNotEmpty ? '${npc.data.name}: ' : '';
+      _showInteractionBubble('$displayName${npc.data.dialogue.join('\n')}', icon: '❗');
+    }
+  }
+
+  void _handleProfessorNPC(OverworldNPC npc) {
+    final userState = Provider.of<UserState>(context, listen: false);
+    final user = userState.currentUser;
+    if (user == null) return;
+
+    final dexCount = user.discoveredOrganisms.length;
+    
+    // Check milestone (using itemRequiredCount as milestone target)
+    if (npc.data.itemRewardId.isNotEmpty && npc.data.itemRequiredCount > 0) {
+      final itemKey = '${npc.data.id}_milestone';
+      if (!userState.hasFlag(itemKey) && dexCount >= npc.data.itemRequiredCount) {
+        _showInteractionBubble('${npc.data.name}: Excellent! You found ${npc.data.itemRequiredCount} species! Take this reward!', icon: '🎁');
+        userState.addLoot(npc.data.itemRewardId, npc.data.itemRewardCount);
+        userState.setFlag(itemKey);
+        return;
+      }
+    }
+    
+    _showInteractionBubble('${npc.data.name}: You have discovered $dexCount species so far! Keep up the good work!', icon: '🔬');
+  }
+
+  void _handleRequestBoardNPC(OverworldNPC npc) {
+    // A request board acts similarly to a generic quest giver setup
+    _handleQuestGiverNPC(npc);
   }
 
   // ── Trainer NPC Vision & Battle Flow ──
@@ -2059,6 +2305,13 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         npc.isDefeated = true;
         npc.hasTriggeredBattle = true;
 
+        // Persist to event flags
+        final userState = Provider.of<UserState>(context, listen: false);
+        await userState.markTrainerDefeated(npc.data.id);
+        if (npc.data.setsFlag.isNotEmpty) {
+          await userState.setFlag(npc.data.setsFlag);
+        }
+
         // Show defeat text
         if (npc.data.defeatText.isNotEmpty) {
           _showInteractionBubble('${npc.data.name}: ${npc.data.defeatText}',
@@ -2077,6 +2330,9 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
         _showInteractionBubble('You were defeated and returned to spawn.',
             icon: '💀');
+        
+        // Save the updated position
+        _saveCurrentState();
       } else {
         // Fled or cancelled
         npc.hasTriggeredBattle = false;

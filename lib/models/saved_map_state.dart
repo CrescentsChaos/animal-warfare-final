@@ -61,6 +61,7 @@ class SavedMapState {
   final String playerDirection;
   final bool isSwimming;
   final List<SavedSpriteState> savedSprites;
+  final Set<String> defeatedNpcIds;
 
   // We optionally save the whole map grid here if it was procedural
   // but for now let's just save the layout strings if it's dynamic
@@ -73,6 +74,7 @@ class SavedMapState {
     required this.playerDirection,
     this.isSwimming = false,
     required this.savedSprites,
+    this.defeatedNpcIds = const {},
     this.customBaseLayout,
     this.customOverlayLayout,
   });
@@ -83,6 +85,7 @@ class SavedMapState {
     'playerDirection': playerDirection,
     'isSwimming': isSwimming,
     'savedSprites': savedSprites.map((s) => s.toJson()).toList(),
+    'defeatedNpcIds': defeatedNpcIds.toList(),
     'customBaseLayout': customBaseLayout,
     'customOverlayLayout': customOverlayLayout,
   };
@@ -96,6 +99,7 @@ class SavedMapState {
       savedSprites: (json['savedSprites'] as List?)
           ?.map((e) => SavedSpriteState.fromJson(e, allOrganisms))
           .toList() ?? [],
+      defeatedNpcIds: Set<String>.from(json['defeatedNpcIds'] ?? []),
       customBaseLayout: (json['customBaseLayout'] as List?)?.map((e) => e as String).toList(),
       customOverlayLayout: (json['customOverlayLayout'] as List?)?.map((e) => e as String).toList(),
     );
