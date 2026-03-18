@@ -7,7 +7,7 @@ class OverworldNPC {
   final NPCData data;
   double worldX;
   double worldY;
-  
+
   // Current tile position
   int gridRow;
   int gridCol;
@@ -33,15 +33,18 @@ class OverworldNPC {
   bool isApproaching = false;
   bool hasTriggeredBattle = false; // prevents re-trigger during approach
 
-  OverworldNPC({required this.data}) 
-    : worldX = data.col.toDouble(), 
+  OverworldNPC({required this.data})
+    : worldX = data.col.toDouble(),
       worldY = data.row.toDouble(),
       gridRow = data.row,
       gridCol = data.col;
 
   bool get isTrainer => data.scriptType == 'trainer' && data.teamId.isNotEmpty;
 
-  void tick(double dt, double totalTime, List<List<bool>> walkability, {
+  void tick(
+    double dt,
+    double totalTime,
+    List<List<bool>> walkability, {
     int? playerRow,
     int? playerCol,
     List<OverworldNPC>? otherNPCs,
@@ -50,14 +53,25 @@ class OverworldNPC {
       _updateMovement(dt);
     } else if (isApproaching && playerRow != null && playerCol != null) {
       // Continue approaching the player
-      _stepTowardPlayer(playerRow, playerCol, walkability, otherNPCs: otherNPCs);
+      _stepTowardPlayer(
+        playerRow,
+        playerCol,
+        walkability,
+        otherNPCs: otherNPCs,
+      );
     } else {
-      _handleAI(totalTime, walkability, playerRow: playerRow, playerCol: playerCol, otherNPCs: otherNPCs);
+      _handleAI(
+        totalTime,
+        walkability,
+        playerRow: playerRow,
+        playerCol: playerCol,
+        otherNPCs: otherNPCs,
+      );
     }
 
     // Animation frame
     if (isMoving) {
-      currentFrame = (totalTime * 8).floor() % 4; 
+      currentFrame = (totalTime * 8).floor() % 4;
     } else {
       currentFrame = 0;
     }
@@ -66,7 +80,7 @@ class OverworldNPC {
   void _updateMovement(double dt) {
     const speed = 2.0; // Tiles per second
     moveProgress += dt * speed;
-    
+
     if (moveProgress >= 1.0) {
       worldX = targetCol.toDouble();
       worldY = targetRow.toDouble();
@@ -80,7 +94,9 @@ class OverworldNPC {
     }
   }
 
-  void _handleAI(double totalTime, List<List<bool>> walkability, {
+  void _handleAI(
+    double totalTime,
+    List<List<bool>> walkability, {
     int? playerRow,
     int? playerCol,
     List<OverworldNPC>? otherNPCs,
@@ -99,30 +115,43 @@ class OverworldNPC {
     lastMoveTime = totalTime;
 
     if (data.movementType == 'random') {
-      _tryRandomMove(walkability, playerRow: playerRow, playerCol: playerCol, otherNPCs: otherNPCs);
+      _tryRandomMove(
+        walkability,
+        playerRow: playerRow,
+        playerCol: playerCol,
+        otherNPCs: otherNPCs,
+      );
     }
   }
 
-  void _tryRandomMove(List<List<bool>> walkability, {
+  void _tryRandomMove(
+    List<List<bool>> walkability, {
     int? playerRow,
     int? playerCol,
     List<OverworldNPC>? otherNPCs,
   }) {
-    final dirs = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+    final dirs = [
+      [-1, 0],
+      [1, 0],
+      [0, -1],
+      [0, 1],
+    ];
     final dir = dirs[_random.nextInt(4)];
-    
+
     int nextR = gridRow + dir[0];
     int nextC = gridCol + dir[1];
 
     // Stay within range of original spawn
-    if ((nextR - data.row).abs() > data.movementRange || 
+    if ((nextR - data.row).abs() > data.movementRange ||
         (nextC - data.col).abs() > data.movementRange) {
       return;
     }
 
     // Boundary check
-    if (nextR < 0 || nextR >= walkability.length || 
-        nextC < 0 || nextC >= walkability[0].length) {
+    if (nextR < 0 ||
+        nextR >= walkability.length ||
+        nextC < 0 ||
+        nextC >= walkability[0].length) {
       return;
     }
 
@@ -141,7 +170,10 @@ class OverworldNPC {
       for (final other in otherNPCs) {
         if (other == this) continue;
         if (other.gridRow == nextR && other.gridCol == nextC) return;
-        if (other.isMoving && other.targetRow == nextR && other.targetCol == nextC) return;
+        if (other.isMoving &&
+            other.targetRow == nextR &&
+            other.targetCol == nextC)
+          return;
       }
     }
 
@@ -158,16 +190,29 @@ class OverworldNPC {
 
   /// Check if the player is within the NPC's vision range (directional cone).
   bool canSeePlayer(int pRow, int pCol) {
-    if (!isTrainer || isDefeated || isApproaching || hasTriggeredBattle) return false;
+    if (!isTrainer || isDefeated || isApproaching || hasTriggeredBattle)
+      return false;
     if (data.visionRange <= 0) return false;
 
     // Check tiles in the NPC's facing direction
     int dr = 0, dc = 0;
     switch (direction) {
-      case 'up':    dr = -1; dc = 0; break;
-      case 'down':  dr = 1;  dc = 0; break;
-      case 'left':  dr = 0;  dc = -1; break;
-      case 'right': dr = 0;  dc = 1; break;
+      case 'up':
+        dr = -1;
+        dc = 0;
+        break;
+      case 'down':
+        dr = 1;
+        dc = 0;
+        break;
+      case 'left':
+        dr = 0;
+        dc = -1;
+        break;
+      case 'right':
+        dr = 0;
+        dc = 1;
+        break;
     }
 
     for (int i = 1; i <= data.visionRange; i++) {
@@ -194,7 +239,10 @@ class OverworldNPC {
     }
   }
 
-  void _stepTowardPlayer(int pRow, int pCol, List<List<bool>> walkability, {
+  void _stepTowardPlayer(
+    int pRow,
+    int pCol,
+    List<List<bool>> walkability, {
     List<OverworldNPC>? otherNPCs,
   }) {
     if (isMoving) return;
@@ -221,8 +269,12 @@ class OverworldNPC {
       final nextR = gridRow + dir[0];
       final nextC = gridCol + dir[1];
 
-      if (nextR < 0 || nextR >= walkability.length ||
-          nextC < 0 || nextC >= walkability[0].length) continue;
+      if (nextR < 0 ||
+          nextR >= walkability.length ||
+          nextC < 0 ||
+          nextC >= walkability[0].length) {
+        continue;
+      }
       if (!walkability[nextR][nextC]) continue;
 
       // Check NPC collision
@@ -230,7 +282,10 @@ class OverworldNPC {
       if (otherNPCs != null) {
         for (final other in otherNPCs) {
           if (other == this) continue;
-          if (other.gridRow == nextR && other.gridCol == nextC) { blocked = true; break; }
+          if (other.gridRow == nextR && other.gridCol == nextC) {
+            blocked = true;
+            break;
+          }
         }
       }
       if (blocked) continue;

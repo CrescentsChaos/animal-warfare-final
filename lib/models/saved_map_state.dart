@@ -59,6 +59,7 @@ class SavedMapState {
   final double playerX;
   final double playerY;
   final String playerDirection;
+  final bool isSwimming;
   final List<SavedSpriteState> savedSprites;
 
   // We optionally save the whole map grid here if it was procedural
@@ -70,6 +71,7 @@ class SavedMapState {
     required this.playerX,
     required this.playerY,
     required this.playerDirection,
+    this.isSwimming = false,
     required this.savedSprites,
     this.customBaseLayout,
     this.customOverlayLayout,
@@ -79,6 +81,7 @@ class SavedMapState {
     'playerX': playerX,
     'playerY': playerY,
     'playerDirection': playerDirection,
+    'isSwimming': isSwimming,
     'savedSprites': savedSprites.map((s) => s.toJson()).toList(),
     'customBaseLayout': customBaseLayout,
     'customOverlayLayout': customOverlayLayout,
@@ -89,6 +92,7 @@ class SavedMapState {
       playerX: (json['playerX'] as num).toDouble(),
       playerY: (json['playerY'] as num).toDouble(),
       playerDirection: json['playerDirection'] as String? ?? 'down',
+      isSwimming: json['isSwimming'] as bool? ?? false,
       savedSprites: (json['savedSprites'] as List?)
           ?.map((e) => SavedSpriteState.fromJson(e, allOrganisms))
           .toList() ?? [],

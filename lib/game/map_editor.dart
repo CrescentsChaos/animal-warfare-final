@@ -1185,24 +1185,45 @@ class _MapEditorState extends State<MapEditor> {
 
   void _handleImport(String jsonStr) {
     try {
-      final data = jsonDecode(jsonStr);
+      dynamic decoded = jsonDecode(jsonStr);
+      Map<String, dynamic>? data;
+
+      if (decoded is List) {
+        // If it's a list (like maps.json), try to find a matching ID, otherwise take the first one
+        final list = decoded.whereType<Map<String, dynamic>>();
+        if (list.isEmpty) throw 'JSON list is empty or contains invalid objects';
+
+        data = list.firstWhere(
+          (m) => m['id'] == _biomeId || m['name']?.toString().toLowerCase() == _biomeId.toLowerCase(),
+          orElse: () => list.first,
+        );
+      } else if (decoded is Map<String, dynamic>) {
+        data = decoded;
+      }
+
+      if (data == null) {
+        throw 'Invalid JSON format: Expected Map or List of Maps';
+      }
+
+      final Map<String, dynamic> dataMap = data;
 
       // Update Biome if present
-      if (data['name'] != null) {
-        final importedName = data['name'] as String;
+      if (dataMap['name'] != null) {
+        final importedName = dataMap['name'] as String;
         // Verify if it's in our allowed list
         if (_biomeIds.contains(importedName)) {
           _switchBiome(importedName);
         } else {
           // Refresh config for custom IDs
-          final String newId = data['id'] ?? 'custom';
+          final String newId = dataMap['id']?.toString() ?? 'custom';
           _biomeId = newId;
           _biomeConfig = BiomeDataManager.getBiome(_biomeId);
           _refreshTileCategories();
         }
       }
 
-      final layout = data['layout'] as Map<String, dynamic>;
+      final layout = dataMap['layout'] as Map<String, dynamic>?;
+      if (layout == null) throw 'Missing "layout" key in map data';
       final baseLines = List<String>.from(layout['base'] ?? []);
       final overlayLines = layout['overlay'] != null
           ? List<String>.from(layout['overlay'])
@@ -1251,21 +1272,21 @@ class _MapEditorState extends State<MapEditor> {
           );
         }
 
-        if (data['spawnPoint'] != null) {
-          _spawnC = data['spawnPoint']['x'] ?? _cols ~/ 2;
-          _spawnR = data['spawnPoint']['y'] ?? _rows ~/ 2;
+        if (dataMap['spawnPoint'] != null) {
+          _spawnC = dataMap['spawnPoint']['x'] ?? _cols ~/ 2;
+          _spawnR = dataMap['spawnPoint']['y'] ?? _rows ~/ 2;
         }
 
-        if (data['transitions'] != null) {
-          _teleporters = (data['transitions'] as List)
+        if (dataMap['transitions'] != null) {
+          _teleporters = (dataMap['transitions'] as List)
               .map((t) => MapTransition.fromJson(t))
               .toList();
         } else {
           _teleporters = [];
         }
 
-        if (data['npcs'] != null) {
-          _npcs = (data['npcs'] as List).map((n) => NPCData.fromJson(n)).toList();
+        if (dataMap['npcs'] != null) {
+          _npcs = (dataMap['npcs'] as List).map((n) => NPCData.fromJson(n)).toList();
         } else {
           _npcs = [];
         }
@@ -1523,7 +1544,7 @@ class _MapEditorState extends State<MapEditor> {
                 onPointerUp: (_) => setState(() => _pointerCount--),
                 onPointerCancel: (_) => setState(() => _pointerCount--),
                 child: GestureDetector(
-                  onPanStart: (d) {
+                  onPanStart: _mode == EditorMode.pan ? null : (d) {
                     if (_pointerCount == 1) {
                       const cs = 40.0;
                       _handleInteraction(
@@ -1533,7 +1554,7 @@ class _MapEditorState extends State<MapEditor> {
                       );
                     }
                   },
-                  onPanUpdate: (d) {
+                  onPanUpdate: _mode == EditorMode.pan ? null : (d) {
                     if (_pointerCount == 1) {
                       const cs = 40.0;
                       _handleInteraction(
@@ -1543,8 +1564,8 @@ class _MapEditorState extends State<MapEditor> {
                       );
                     }
                   },
-                  onPanEnd: (_) => _onInteractionEnd(),
-                  onTapDown: (d) {
+                  onPanEnd: _mode == EditorMode.pan ? null : (_) => _onInteractionEnd(),
+                  onTapDown: _mode == EditorMode.pan ? null : (d) {
                     if (_pointerCount == 1) {
                       const cs = 40.0;
                       _handleInteraction(
@@ -1554,8 +1575,8 @@ class _MapEditorState extends State<MapEditor> {
                       );
                     }
                   },
-                  onTapUp: (_) => _onInteractionEnd(),
-                  onLongPressStart: (d) {
+                  onTapUp: _mode == EditorMode.pan ? null : (_) => _onInteractionEnd(),
+                  onLongPressStart: _mode == EditorMode.pan ? null : (d) {
                     if (_pointerCount == 1) {
                       const cs = 40.0;
                       _handleInteraction(

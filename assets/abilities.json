@@ -401,7 +401,7 @@
     "description": "Boosts the Speed stat if hit by a Arthropod, Spectral, or Darkness-type attack.",
     "trigger": "onDamageTaken",
     "effectType": "statChange",
-    "stat": "speed",
+    "targetStat": "speed",
     "magnitude": 1,
     "conditions": [
       "type_arthropod",

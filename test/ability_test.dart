@@ -78,6 +78,17 @@ void main() {
     Ability.addTestAbility(const Ability(name: 'Infiltrator', description: ''));
     Ability.addTestAbility(const Ability(name: 'Overcoat', description: ''));
     Ability.addTestAbility(const Ability(name: 'Wonder Skin', description: ''));
+    Ability.addTestAbility(
+      const Ability(
+        name: 'Rattled',
+        description: '',
+        trigger: AbilityTrigger.onDamageTaken,
+        effectType: AbilityEffectType.statChange,
+        targetStat: 'speed',
+        magnitude: 1.0,
+        conditions: ['type_arthropod', 'type_spectral', 'type_darkness'],
+      ),
+    );
 
     // Register moves
     Move.addTestMove(
@@ -106,6 +117,50 @@ void main() {
         category: MoveCategory.physical,
         type: ElementalType.basic,
         description: 'Test',
+      ),
+    );
+    Move.addTestMove(
+      const Move(
+        name: 'Bug Bite',
+        baseDamage: 50,
+        category: MoveCategory.physical,
+        type: ElementalType.arthropod,
+        description: 'Test',
+      ),
+    );
+    Move.addTestMove(
+      const Move(
+        name: 'Shadow Ball',
+        baseDamage: 80,
+        category: MoveCategory.special,
+        type: ElementalType.spectral,
+        description: 'Test',
+      ),
+    );
+    Move.addTestMove(
+      const Move(
+        name: 'Bite',
+        baseDamage: 60,
+        category: MoveCategory.physical,
+        type: ElementalType.darkness,
+        description: 'Test',
+      ),
+    );
+    Move.addTestMove(
+      const Move(
+        name: 'Growl',
+        baseDamage: 0,
+        category: MoveCategory.status,
+        type: ElementalType.basic,
+        description: 'Test',
+        effects: [
+          MoveEffect(
+            type: MoveEffectType.statChange,
+            stat: 'attack',
+            value: -1,
+            chance: 100,
+          ),
+        ],
       ),
     );
   });
@@ -443,6 +498,95 @@ void main() {
         ),
         false,
       );
+    });
+  });
+
+  group('Rattled Ability Tests', () {
+    test('Rattled triggers on Dark, Ghost (Spectral), and Bug (Arthropod) hits',
+        () async {
+      final attackerBase = createTestOrganism();
+      final defenderBase = createTestOrganism();
+      final attackerCaptured = createCaptured(attackerBase);
+      final defenderCaptured = createCaptured(defenderBase, ability: 'Rattled');
+
+      final manager = BattleManager(
+        attackerCaptured,
+        defenderCaptured,
+        isTesting: true,
+      );
+      manager.ignoreRandom = true;
+
+      // Initial speed stage should be 0
+      expect(manager.opponent.speedStage, 0);
+
+      // Hit with Bug Bite (Arthropod)
+      await manager.testExecuteTurn(
+        manager.player,
+        manager.opponent,
+        Move.findByName('Bug Bite')!,
+      );
+      expect(manager.opponent.speedStage, 1);
+
+      // Hit with Shadow Ball (Spectral)
+      await manager.testExecuteTurn(
+        manager.player,
+        manager.opponent,
+        Move.findByName('Shadow Ball')!,
+      );
+      expect(manager.opponent.speedStage, 2);
+
+      // Hit with Bite (Darkness)
+      await manager.testExecuteTurn(
+        manager.player,
+        manager.opponent,
+        Move.findByName('Bite')!,
+      );
+      expect(manager.opponent.speedStage, 3);
+    });
+
+    test('Rattled does NOT trigger on other types', () async {
+      final attackerBase = createTestOrganism();
+      final defenderBase = createTestOrganism();
+      final attackerCaptured = createCaptured(attackerBase);
+      final defenderCaptured = createCaptured(defenderBase, ability: 'Rattled');
+
+      final manager = BattleManager(
+        attackerCaptured,
+        defenderCaptured,
+        isTesting: true,
+      );
+      manager.ignoreRandom = true;
+
+      // Hit with Struggle (Basic)
+      await manager.testExecuteTurn(
+        manager.player,
+        manager.opponent,
+        Move.findByName('Struggle')!,
+      );
+      expect(manager.opponent.speedStage, 0);
+    });
+
+    test('Rattled triggers on stat loss (as per instruction)', () async {
+      final attackerBase = createTestOrganism();
+      final defenderBase = createTestOrganism();
+      final attackerCaptured = createCaptured(attackerBase);
+      final defenderCaptured = createCaptured(defenderBase, ability: 'Rattled');
+
+      final manager = BattleManager(
+        attackerCaptured,
+        defenderCaptured,
+        isTesting: true,
+      );
+      manager.ignoreRandom = true;
+
+      // Use Growl (Stat loss only, no damage)
+      await manager.testExecuteTurn(
+        manager.player,
+        manager.opponent,
+        Move.findByName('Growl')!,
+      );
+      expect(manager.opponent.attackStage, -1);
+      expect(manager.opponent.speedStage, 1);
     });
   });
 }

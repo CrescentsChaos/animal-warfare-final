@@ -1044,18 +1044,10 @@ class DoubleBattleManager extends ChangeNotifier {
 
     // --- Rattled ---
     if (defender.abilities.any((ab) => ab.name == 'Rattled') &&
-        finalDmg > 0 &&
-        (move.type == ElementalType.arthropod ||
-            move.type == ElementalType.spectral ||
-            move.type == ElementalType.darkness ||
-            move.category ==
-                MoveCategory
-                    .status /* Intimidate is handled separately, sound in _executeTurn but wait, sound is a type or effect? Sound is a MoveEffect or Type */ )) {
-      // Assuming for now Sound is ElementalType.sound
+        finalDmg > 0) {
       if (move.type == ElementalType.arthropod ||
           move.type == ElementalType.spectral ||
-          move.type == ElementalType.darkness ||
-          move.type == ElementalType.sound) {
+          move.type == ElementalType.darkness) {
         await _applyStatChange(defender, 'speed', 1);
       }
     }
@@ -1268,6 +1260,10 @@ class DoubleBattleManager extends ChangeNotifier {
     if (stages < 0 && org.abilities.any((ab) => ab.name == 'Defiant')) {
       addLog("${org.organism.baseOrganism.name}'s Defiant triggered!");
       await _applyStatChange(org, 'attack', 2);
+    }
+    if (stages < 0 && org.abilities.any((ab) => ab.name == 'Rattled')) {
+      addLog("${org.organism.baseOrganism.name}'s Rattled triggered!");
+      await _applyStatChange(org, 'speed', 1);
     }
 
     notifyListeners();

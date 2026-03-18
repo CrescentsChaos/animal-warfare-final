@@ -12,6 +12,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:provider/provider.dart';
 
 import 'package:animal_warfare/game/biome_map_data.dart';
+import 'package:animal_warfare/game/battle_manager.dart';
 import 'package:animal_warfare/explore_screen.dart';
 import 'package:animal_warfare/models/organism.dart';
 import 'package:animal_warfare/models/captured_organism.dart';
@@ -285,8 +286,8 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       _walkAnimAccumulator = 0.0;
       // We still update camera if not panning
       if (!_isPanning) _scrollToPlayer(insideSetState: true);
-      setState(() {});
-      return;
+      // Removed early return to allow world simulation (like trainer approach)
+      // to continue while player is frozen.
     }
 
     if (_isSwimming) {
@@ -372,8 +373,9 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         _overworldSprites.removeWhere((s) => s.isExpired);
       }
       
+      final currentTickDt = _phenoTickAccumulator;
       _phenoTickAccumulator = 0;
-      if (anyChanged && mounted) setState(() {});
+      if ((anyChanged || _encounterActive) && mounted) setState(() {});
 
       // ── NPC AI ──
       final walkGrid = List.generate(
@@ -393,7 +395,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         if (_encounterActive && npc != _approachingNPC) continue;
 
         npc.tick(
-          _phenoTickAccumulator, // We pass original accumulator here (though it's 0 now, actually O_npc.tick uses totalTime for AI, and dt for movement. Wait! _phenoTickAccumulator is zeroed!)
+          currentTickDt,
           totalTime,
           walkGrid,
           playerRow: pR,
@@ -438,55 +440,58 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       }
     }
 
-    if (_isMovingToTarget) {
-      _moveTowardsTarget();
-      // Camera update AFTER movement — this frame's position, zero lag
-      _updateCamera();
-      return;
-    }
-
-    // Advance animation even if blocked by obstacle
-    if (_activeDirections.isNotEmpty) {
-      final double speed = _isRunning ? 8.0 : 4.0;
-      _walkAnimAccumulator += speed;
-      if (_walkAnimAccumulator >= tileSize / 2) {
-        _walkAnimAccumulator -= tileSize / 2;
-        _walkFrame = (_walkFrame == 1) ? 2 : 1;
-      }
-      setState(() {});
-    }
-
-    // Handle movement initiation
-    if (_activeDirections.isNotEmpty || _queuedDirection != null) {
-      final dir = _queuedDirection ?? _activeDirections.last;
-      _queuedDirection = null;
-
-      // Tap-to-turn: face direction first
-      if (dir != _playerDirection) {
-        _directionHoldStart = elapsed;
-        setState(() {
-          _playerDirection = dir;
-          _walkFrame = 0;
-        });
+    // Player controls (only if not in an encounter)
+    if (!_encounterActive) {
+      if (_isMovingToTarget) {
+        _moveTowardsTarget();
+        // Camera update AFTER movement — this frame's position, zero lag
         _updateCamera();
         return;
       }
 
-      if (_directionHoldStart == null) {
-        _directionHoldStart = elapsed;
-        _initiateMove(dir);
-      } else {
-        final holdTime = elapsed - _directionHoldStart!;
-        if (holdTime.inMilliseconds > 100) {
-          _initiateMove(dir);
+      // Advance animation if directions are held
+      if (_activeDirections.isNotEmpty) {
+        final double speed = _isRunning ? 8.0 : 4.0;
+        _walkAnimAccumulator += speed;
+        if (_walkAnimAccumulator >= tileSize / 2) {
+          _walkAnimAccumulator -= tileSize / 2;
+          _walkFrame = (_walkFrame == 1) ? 2 : 1;
         }
+        setState(() {});
       }
-    } else {
-      _directionHoldStart = null;
-      if (!_isMovingToTarget && _walkFrame != 0) {
-        setState(() {
-          _walkFrame = 0;
-        });
+
+      // Handle movement initiation
+      if (_activeDirections.isNotEmpty || _queuedDirection != null) {
+        final dir = _queuedDirection ?? _activeDirections.last;
+        _queuedDirection = null;
+
+        // Tap-to-turn: face direction first
+        if (dir != _playerDirection) {
+          _directionHoldStart = elapsed;
+          setState(() {
+            _playerDirection = dir;
+            _walkFrame = 0;
+          });
+          _updateCamera();
+          return;
+        }
+
+        if (_directionHoldStart == null) {
+          _directionHoldStart = elapsed;
+          _initiateMove(dir);
+        } else {
+          final holdTime = elapsed - _directionHoldStart!;
+          if (holdTime.inMilliseconds > 100) {
+            _initiateMove(dir);
+          }
+        }
+      } else {
+        _directionHoldStart = null;
+        if (!_isMovingToTarget && _walkFrame != 0) {
+          setState(() {
+            _walkFrame = 0;
+          });
+        }
       }
     }
 
@@ -738,6 +743,8 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
           _encounterActive = true;
           _velX = 0;
           _velY = 0;
+          _isMovingToTarget = false;
+          _activeDirections.clear();
           _playerX = col * tileSize;
           _playerY = row * tileSize;
           _walkFrame = 0;
@@ -863,6 +870,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       _playerX = saved.playerX;
       _playerY = saved.playerY;
       _playerDirection = saved.playerDirection;
+      _isSwimming = saved.isSwimming;
     }
   }
 
@@ -872,6 +880,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       playerX: _playerX,
       playerY: _playerY,
       playerDirection: _playerDirection,
+      isSwimming: _isSwimming,
       savedSprites: [], // Could populate from _overworldSprites if needed
     );
     await userState.saveMapState(widget.biomeName.toLowerCase(), state);
@@ -1031,7 +1040,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
     AudioService.instance.pauseAll();
     if (!mounted) return;
-    await Navigator.of(context).push(
+    final BattleResult? result = await Navigator.of(context).push<BattleResult>(
       MaterialPageRoute(
         builder: (context) => BattleScreen(
           playerOrganism: playerFighter,
@@ -1046,6 +1055,23 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     AudioService.instance.resumeAll();
 
     if (mounted) {
+      if (result == BattleResult.loss) {
+        // Teleport to spawn on whiteout
+        _playerX = _mapData.spawnPoint.x * tileSize;
+        _playerY = _mapData.spawnPoint.y * tileSize;
+
+        // Reset movement states
+        _isMovingToTarget = false;
+        _velX = 0;
+        _velY = 0;
+
+        // Update camera
+        _scrollToPlayer();
+
+        _showInteractionBubble('You were defeated and returned to spawn.',
+            icon: '💀');
+      }
+
       setState(() {
         _encounterActive = false;
       });
@@ -1932,6 +1958,11 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
           _velY = 0;
           _isMovingToTarget = false;
           _walkFrame = 0;
+          _activeDirections.clear();
+
+          // Snap to tile center to avoid stopping between tiles
+          _playerX = playerCol * tileSize;
+          _playerY = playerRow * tileSize;
         });
 
         // NPC starts approaching
@@ -2003,7 +2034,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     AudioService.instance.pauseAll();
     if (!mounted) return;
 
-    await Navigator.of(context).push(
+    final BattleResult? result = await Navigator.of(context).push<BattleResult>(
       MaterialPageRoute(
         builder: (context) => BattleScreen(
           playerOrganism: playerFighter,
@@ -2012,6 +2043,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
           playerTeam: user.teamOrganisms,
           opponentTeam: opponentTeam,
           battleTitle: 'VS $trainerName',
+          isTrainerBattle: true,
           timeOfDay: timeOfDay,
           mapScreenshot: mapScreenshot,
         ),
@@ -2020,18 +2052,44 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     AudioService.instance.resumeAll();
 
     if (mounted) {
-      // Mark as defeated
-      npc.isDefeated = true;
-      npc.hasTriggeredBattle = true;
-      _approachingNPC = null;
+      bool won = result == BattleResult.win || result == BattleResult.capture;
 
-      // Show defeat text
-      if (npc.data.defeatText.isNotEmpty) {
-        _showInteractionBubble('${npc.data.name}: ${npc.data.defeatText}', icon: '💬');
+      if (won) {
+        // Mark as defeated permanently
+        npc.isDefeated = true;
+        npc.hasTriggeredBattle = true;
+
+        // Show defeat text
+        if (npc.data.defeatText.isNotEmpty) {
+          _showInteractionBubble('${npc.data.name}: ${npc.data.defeatText}',
+              icon: '💬');
+        }
+      } else if (result == BattleResult.loss) {
+        // Teleport to spawn
+        _playerX = _mapData.spawnPoint.x * tileSize;
+        _playerY = _mapData.spawnPoint.y * tileSize;
+
+        // Update camera
+        _scrollToPlayer();
+
+        // Allow re-challenge
+        npc.hasTriggeredBattle = false;
+
+        _showInteractionBubble('You were defeated and returned to spawn.',
+            icon: '💀');
+      } else {
+        // Fled or cancelled
+        npc.hasTriggeredBattle = false;
       }
 
+      _approachingNPC = null;
       setState(() {
         _encounterActive = false;
+        // Always reset movement state when returning from battle
+        _isMovingToTarget = false;
+        _velX = 0;
+        _velY = 0;
+        _walkFrame = 0;
       });
     }
   }

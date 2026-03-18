@@ -42,6 +42,7 @@ class BattleScreen extends StatelessWidget {
   final List<CapturedOrganism>? playerTeam;
   final String? battleTitle;
   final bool isArenaBattle;
+  final bool isTrainerBattle;
   final List<CapturedOrganism>? opponentTeam;
   final bool isRogueMode;
   final TeamArchetype? opponentArchetype;
@@ -57,6 +58,7 @@ class BattleScreen extends StatelessWidget {
     this.playerTeam,
     this.battleTitle,
     this.isArenaBattle = false,
+    this.isTrainerBattle = false,
     this.opponentTeam,
     this.isRogueMode = false,
     this.opponentArchetype,
@@ -78,6 +80,7 @@ class BattleScreen extends StatelessWidget {
           opponentTeam: opponentTeam,
           isArenaBattle: isArenaBattle,
           isRogueMode: isRogueMode,
+          isTrainerBattle: isTrainerBattle,
           opponentArchetype: opponentArchetype,
           accountLevel: userState.currentUser?.accountLevel ?? 100,
           initialPlayerIndex: isRogueMode
@@ -92,6 +95,7 @@ class BattleScreen extends StatelessWidget {
         battleTitle: battleTitle,
         isArenaBattle: isArenaBattle,
         isRogueMode: isRogueMode,
+        isTrainerBattle: isTrainerBattle,
         timeOfDay: timeOfDay,
         opponentFullTeam: opponentTeam,
         startAsleep: startAsleep,
@@ -107,6 +111,7 @@ class BattleScreenContent extends StatefulWidget {
   final String? battleTitle;
   final bool isArenaBattle;
   final bool isRogueMode;
+  final bool isTrainerBattle;
   final String? timeOfDay;
 
   final List<CapturedOrganism>? opponentFullTeam;
@@ -120,6 +125,7 @@ class BattleScreenContent extends StatefulWidget {
     this.battleTitle,
     this.isArenaBattle = false,
     this.isRogueMode = false,
+    this.isTrainerBattle = false,
     this.timeOfDay,
     this.opponentFullTeam,
     this.startAsleep = false,
@@ -3242,7 +3248,9 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                 child: ElevatedButton.icon(
                   onPressed: isTurnLocked
                       ? null
-                      : (widget.isArenaBattle || widget.isRogueMode)
+                      : (widget.isArenaBattle ||
+                              widget.isRogueMode ||
+                              widget.isTrainerBattle)
                       ? () async {
                           final confirm = await showDialog<bool>(
                             context: context,
@@ -3296,7 +3304,9 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                         }
                       : battleManager.attemptRun,
                   icon: Icon(
-                    (widget.isArenaBattle || widget.isRogueMode)
+                    (widget.isArenaBattle ||
+                            widget.isRogueMode ||
+                            widget.isTrainerBattle)
                         ? Icons.flag
                         : Icons.directions_run,
                     size: isNarrow ? 14 : 18,
@@ -3304,7 +3314,9 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                   label: FittedBox(
                     fit: BoxFit.scaleDown,
                     child: Text(
-                      (widget.isArenaBattle || widget.isRogueMode)
+                      (widget.isArenaBattle ||
+                              widget.isRogueMode ||
+                              widget.isTrainerBattle)
                           ? 'Forfeit'
                           : 'Run',
                       style: const TextStyle(

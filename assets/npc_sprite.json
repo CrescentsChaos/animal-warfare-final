@@ -4,15 +4,11 @@
     "name": "Generic NPC"
   },
   {
-    "id": "shopkeeper",
-    "name": "Shopkeeper"
+    "id": "littleboy",
+    "name": "Little Boy"
   },
   {
-    "id": "medic",
-    "name": "Medic"
-  },
-  {
-    "id": "villager",
-    "name": "Villager"
+    "id": "player",
+    "name": "Player"
   }
 ]

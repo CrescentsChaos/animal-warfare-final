@@ -144,6 +144,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   String? get droppedLoot => _droppedLoot;
   final bool isArenaBattle;
   final bool isRogueMode;
+  final bool isTrainerBattle;
   List<CapturedOrganism> opponentTeam = [];
   int currentOpponentIndex = 0;
   final bool startAsleep;
@@ -284,6 +285,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     List<CapturedOrganism>? opponentTeam,
     this.isArenaBattle = false,
     this.isRogueMode = false,
+    this.isTrainerBattle = false,
     this.accountLevel = 100, // Default to max if not provided
     int? initialPlayerIndex,
     this.isTesting = false,
@@ -3161,6 +3163,10 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           if (ab.trigger == AbilityTrigger.onDamageTaken ||
               (ab.trigger == AbilityTrigger.onContact && move.isContact)) {
             bool conditionMet = true;
+            bool hasTypeCondition =
+                ab.conditions.any((c) => c.startsWith('type_'));
+            bool typeConditionMet = !hasTypeCondition;
+
             for (final cond in ab.conditions) {
               if (cond == 'crit' && !isCrit) conditionMet = false;
               if (cond == 'hp_below_50' &&
@@ -3169,7 +3175,14 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
                 conditionMet = false;
               }
               if (cond == 'contact' && !move.isContact) conditionMet = false;
+              if (cond.startsWith('type_')) {
+                final typeStr = cond.substring(5).toLowerCase();
+                final type = ElementalTypeX.fromString(typeStr);
+                if (move.type == type) typeConditionMet = true;
+              }
             }
+
+            if (!typeConditionMet) conditionMet = false;
 
             if (conditionMet) {
               if (ab.effectType == AbilityEffectType.statChange) {
@@ -3208,25 +3221,6 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           }
         }
 
-        // --- Rattled Ability (Consolidated) ---
-        // Triggered only if from specific types or Intimidate (handled in stat change)
-        if (defender.abilities.any((ab) => ab.name == 'Rattled') &&
-            effectiveDamage > 0 &&
-            !substituteTookDamage) {
-          final rattles = [
-            ElementalType.darkness,
-            ElementalType.arthropod,
-            ElementalType.spectral,
-            ElementalType.sound,
-          ];
-          if (rattles.contains(move.type)) {
-            await notifyAbilityTrigger(
-              defender,
-              defender.abilities.firstWhere((ab) => ab.name == 'Rattled'),
-            );
-            await applyStatChange(defender, 'speed', 1);
-          }
-        }
 
         // --- Weak Armor ---
         if (defender.abilities.any((ab) => ab.name == 'Weak Armor') &&
@@ -5944,6 +5938,12 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
   Future<void> attemptRun() async {
     if (currentState != BattleState.waitingForInput) return;
+
+    if (isArenaBattle || isRogueMode || isTrainerBattle) {
+      addToLog("You can't run from this battle!");
+      notifyListeners();
+      return;
+    }
 
     currentState = BattleState.applyingEffects;
     addToLog('Attempting to run...');
