@@ -1,0 +1,461 @@
+Brace balance became 0 at line 34: }
+Brace balance became 0 at line 41: }
+Brace balance became 0 at line 1015: }
+Brace balance became 0 at line 1039: }
+Brace balance became 0 at line 1049: }
+Brace balance became 0 at line 1059: }
+Brace balance became 0 at line 1071: }
+Brace balance became 0 at line 1110: }
+Brace balance became 0 at line 1513: }
+Brace balance became 0 at line 1522: }) async {
+Brace balance became 0 at line 2305: }
+Brace balance became 0 at line 2317: }
+Brace balance became 0 at line 2325: }
+Brace balance became 0 at line 2332: }
+Brace balance became 0 at line 3488: }
+Brace balance became 0 at line 3518: }
+Brace balance became 0 at line 3532: }
+Brace balance became 0 at line 3546: }
+Brace balance became 0 at line 3556: }
+Brace balance became 0 at line 3582: }
+Brace balance became 0 at line 3589: }
+Brace balance became 0 at line 3599: }
+Brace balance became -1 at line 3600: }
+Brace balance became 0 at line 3610: }
+Brace balance became -1 at line 3612: }
+Brace balance became 0 at line 3624: }
+Brace balance became 0 at line 3663: }
+Brace balance became 0 at line 3679: }
+Brace balance became 0 at line 3698: }
+Brace balance became 0 at line 3717: }
+Brace balance became 0 at line 3732: }
+Brace balance became -1 at line 3734: }
+Brace balance became -1 at line 3736: Future<void> _processOpponentTurn({required bool isCounter}) async {
+Brace balance became 0 at line 3745: }
+Brace balance became -1 at line 3746: }
+Brace balance became -1 at line 3757: }) async {
+Brace balance became 0 at line 3766: }
+Brace balance became 0 at line 3779: }
+Brace balance became 0 at line 3786: }
+Brace balance became 0 at line 3805: }
+Brace balance became 0 at line 3856: }
+Brace balance became 0 at line 3865: }
+Brace balance became 0 at line 3877: }
+Brace balance became 0 at line 3923: }
+Brace balance became 0 at line 3948: }
+Brace balance became -1 at line 3951: }
+Brace balance became 0 at line 4651: }
+Brace balance became 0 at line 4660: }
+Brace balance became -1 at line 4663: }
+Brace balance became -1 at line 4670: }
+Brace balance became -2 at line 4671: }
+Brace balance became -2 at line 4679: }) async {
+Brace balance became -1 at line 4686: }
+Brace balance became -1 at line 4691: }
+Brace balance became 0 at line 4708: }
+Brace balance became -1 at line 4709: }
+Brace balance became -1 at line 4717: } else {
+Brace balance became 0 at line 4726: }
+Brace balance became -1 at line 4727: }
+Brace balance became -2 at line 4728: }
+Brace balance became -2 at line 4735: }) async {
+Brace balance became 0 at line 4747: }
+Brace balance became 0 at line 4764: } else if (statName == 'attack' &&
+Brace balance became 0 at line 4780: } else if (statName == 'accuracy' &&
+Brace balance became 0 at line 4784: } else if (statName == 'speed' &&
+Brace balance became 0 at line 4789: } else if (statName == 'defense' &&
+Brace balance became 0 at line 4794: } else if (statName == 'power' &&
+Brace balance became 0 at line 4801: }
+Brace balance became 0 at line 4809: }
+Brace balance became 0 at line 4829: }
+Brace balance became -1 at line 4830: }
+Brace balance became 0 at line 4847: }
+Brace balance became -1 at line 4848: }
+Brace balance became 0 at line 4876: }
+Brace balance became -1 at line 4877: }
+Brace balance became -1 at line 4882: }
+Brace balance became -1 at line 4886: } else if (statName == 'defense') {
+Brace balance became -1 at line 4888: } else if (statName == 'power') {
+Brace balance became -1 at line 4890: } else if (statName == 'resistance') {
+Brace balance became -1 at line 4895: } else if (statName == 'speed') {
+Brace balance became -1 at line 4897: } else if (statName == 'accuracy') {
+Brace balance became -1 at line 4902: } else if (statName == 'evasion') {
+Brace balance became -1 at line 4904: }
+Brace balance became 0 at line 4920: } else if (absValue == 2) {
+Brace balance became 0 at line 4922: } else if (absValue >= 3) {
+Brace balance became 0 at line 4924: } else {
+Brace balance became 0 at line 4926: }
+Brace balance became 0 at line 4937: } else {
+Brace balance became 0 at line 4941: }
+Brace balance became -1 at line 4945: }
+Brace balance became 0 at line 4970: }
+Brace balance became -1 at line 4971: }
+Brace balance became 0 at line 4986: }
+Brace balance became -1 at line 4987: }
+Brace balance became -2 at line 4988: }
+Brace balance became 0 at line 5014: }
+Brace balance became 0 at line 5023: }
+Brace balance became -1 at line 5024: }
+Brace balance became 0 at line 5107: }
+Brace balance became -1 at line 5108: }
+Brace balance became 0 at line 5119: }
+Brace balance became -1 at line 5120: }
+Brace balance became 0 at line 5132: }
+Brace balance became -1 at line 5133: }
+Brace balance became 0 at line 5144: }
+Brace balance became -1 at line 5145: }
+Brace balance became 0 at line 5152: }
+Brace balance became -1 at line 5153: }
+Brace balance became 0 at line 5158: }
+Brace balance became -1 at line 5159: }
+Brace balance became -1 at line 5165: }
+Brace balance became 0 at line 5170: }
+Brace balance became -1 at line 5171: }
+Brace balance became 0 at line 5176: }
+Brace balance became -1 at line 5177: }
+Brace balance became 0 at line 5182: }
+Brace balance became -1 at line 5183: }
+Brace balance became 0 at line 5188: }
+Brace balance became -1 at line 5189: }
+Brace balance became 0 at line 5194: }
+Brace balance became -1 at line 5195: }
+Brace balance became -2 at line 5196: }
+Brace balance became 0 at line 5215: }
+Brace balance became -1 at line 5216: }
+Brace balance became -1 at line 5227: }
+Brace balance became 0 at line 5246: }
+Brace balance became -1 at line 5247: }
+Brace balance became 0 at line 5258: }
+Brace balance became -1 at line 5259: }
+Brace balance became 0 at line 5274: }
+Brace balance became -1 at line 5275: }
+Brace balance became 0 at line 5287: }
+Brace balance became -1 at line 5289: }
+Brace balance became 0 at line 5309: }
+Brace balance became -1 at line 5310: }
+Brace balance became 0 at line 5357: } else if (se.type == StatusEffectType.burn) {
+Brace balance became 0 at line 5371: } else if (se.type == StatusEffectType.bleed) {
+Brace balance became 0 at line 5383: } else if (se.type == StatusEffectType.regen) {
+Brace balance became 0 at line 5401: }
+Brace balance became -1 at line 5402: }
+Brace balance became 0 at line 5427: }
+Brace balance became -1 at line 5429: } else if (currentWeather.weather == Weather.hail) {
+Brace balance became 0 at line 5441: }
+Brace balance became -1 at line 5443: } else if (currentWeather.weather == Weather.typhoon ||
+Brace balance became 0 at line 5461: }
+Brace balance became -1 at line 5463: } else if (currentWeather.weather == Weather.tornado) {
+Brace balance became 0 at line 5473: }
+Brace balance became -1 at line 5475: } else if (currentWeather.weather == Weather.tsunami) {
+Brace balance became 0 at line 5485: }
+Brace balance became -1 at line 5487: } else if (currentWeather.weather == Weather.earthquake) {
+Brace balance became 0 at line 5497: }
+Brace balance became -1 at line 5499: } else if (currentWeather.weather == Weather.volcanoEruption) {
+Brace balance became 0 at line 5509: }
+Brace balance became -1 at line 5511: } else if (currentWeather.weather == Weather.blizzard) {
+Brace balance became 0 at line 5521: }
+Brace balance became -1 at line 5523: }
+Brace balance became -1 at line 5538: }
+Brace balance became 0 at line 5548: }
+Brace balance became 0 at line 5555: }
+Brace balance became 0 at line 5562: }
+Brace balance became 0 at line 5570: }
+Brace balance became -1 at line 5571: }
+Brace balance became 0 at line 5600: }
+Brace balance became -1 at line 5601: }
+Brace balance became 0 at line 5615: }
+Brace balance became 0 at line 5627: }
+Brace balance became -1 at line 5630: }
+Brace balance became 0 at line 5640: }
+Brace balance became -1 at line 5641: }
+Brace balance became 0 at line 5662: } else if (itemName == 'Flame Orb' &&
+Brace balance became 0 at line 5678: }
+Brace balance became -1 at line 5679: }
+Brace balance became -1 at line 5690: }
+Brace balance became 0 at line 5723: } else {
+Brace balance became 0 at line 5725: }
+Brace balance became -1 at line 5726: }
+Brace balance became -1 at line 5731: }
+Brace balance became -1 at line 5737: }
+Brace balance became 0 at line 5755: }
+Brace balance became -1 at line 5763: }
+Brace balance became 0 at line 5793: }
+Brace balance became -1 at line 5794: }
+Brace balance became 0 at line 5815: }
+Brace balance became -1 at line 5816: }
+Brace balance became 0 at line 5836: }
+Brace balance became -1 at line 5837: }
+Brace balance became 0 at line 5852: }
+Brace balance became -1 at line 5853: }
+Brace balance became 0 at line 5867: }
+Brace balance became -1 at line 5868: }
+Brace balance became -1 at line 5875: }
+Brace balance became -1 at line 5897: }
+Brace balance became 0 at line 5915: }
+Brace balance became -1 at line 5916: }
+Brace balance became 0 at line 5925: } else if (target.health > target.maxHealth / 2 &&
+Brace balance became 0 at line 5930: }
+Brace balance became -1 at line 5931: }
+Brace balance became 0 at line 5938: } else if (target.health >= target.maxHealth / 4 &&
+Brace balance became 0 at line 5943: }
+Brace balance became -1 at line 5944: }
+Brace balance became 0 at line 5951: }
+Brace balance became -1 at line 5952: }
+Brace balance became -1 at line 5959: }
+Brace balance became -1 at line 5963: }
+Brace balance became -1 at line 5968: }
+Brace balance became -2 at line 5974: }
+Brace balance became -2 at line 5978: Future<void> attemptCapture({String netId = 'capture_net'}) async {
+Brace balance became -1 at line 5991: } else if (netId == 'ultra_net') {
+Brace balance became -1 at line 5994: }
+Brace balance became -1 at line 6007: } else if (opponent.organism.baseOrganism.rarity.toLowerCase() ==
+Brace balance became -1 at line 6010: } else if (opponent.organism.baseOrganism.rarity.toLowerCase() ==
+Brace balance became -1 at line 6013: }
+Brace balance became 0 at line 6027: }
+Brace balance became -1 at line 6028: }
+Brace balance became -1 at line 6039: } else {
+Brace balance became -1 at line 6045: }
+Brace balance became -1 at line 6052: }
+Brace balance became -2 at line 6053: }
+Brace balance became -1 at line 6085: },
+Brace balance became -2 at line 6090: }
+Brace balance became -1 at line 6099: }
+Brace balance became -1 at line 6142: }
+Brace balance became -1 at line 6152: } else {
+Brace balance became -1 at line 6159: }
+Brace balance became -2 at line 6160: }
+Brace balance became -2 at line 6170: }
+Brace balance became -2 at line 6177: void activatePrismorph({required bool isPlayer}) {
+Brace balance became -1 at line 6186: } else {
+Brace balance became -1 at line 6188: }
+Brace balance became -1 at line 6195: }
+Brace balance became -2 at line 6214: }
+Brace balance became 0 at line 6227: } else if (player.semiInvulnerable != null) {
+Brace balance became 0 at line 6229: } else {
+Brace balance became 0 at line 6231: }
+Brace balance became -1 at line 6234: }
+Brace balance became 0 at line 6239: } else {
+Brace balance became 0 at line 6241: }
+Brace balance became -1 at line 6245: }
+Brace balance became 0 at line 6273: }
+Brace balance became -1 at line 6276: }
+Brace balance became 0 at line 6312: } else if (magnetTrapper.name == 'Magnet Pull' &&
+Brace balance became 0 at line 6317: } else if (shadowTrapper.name == 'Shadow Tag' &&
+Brace balance became 0 at line 6322: }
+Brace balance became 0 at line 6332: }
+Brace balance became -1 at line 6333: }
+Brace balance became -1 at line 6344: }
+Brace balance became 0 at line 6352: }
+Brace balance became -1 at line 6353: }
+Brace balance became -1 at line 6358: }
+Brace balance became -1 at line 6370: }
+Brace balance became -1 at line 6375: } else {
+Brace balance became -1 at line 6377: }
+Brace balance became -1 at line 6385: }
+Brace balance became -1 at line 6401: }
+Brace balance became -2 at line 6406: }
+Brace balance became -1 at line 6413: } else if (move.name == 'Shell Trap') {
+Brace balance became -1 at line 6417: }
+Brace balance became -2 at line 6418: }
+Brace balance became -1 at line 6437: }
+Brace balance became 0 at line 6470: }
+Brace balance became 0 at line 6474: }
+Brace balance became -1 at line 6478: }
+Brace balance became -2 at line 6481: }
+Brace balance became 0 at line 6487: '${target.name}\'s perish count fell to ${target.perishTurnCount}!',
+Brace balance became 0 at line 6494: }
+Brace balance became -1 at line 6497: }
+Brace balance became -2 at line 6498: }
+Brace balance became -1 at line 6533: }
+Brace balance became -2 at line 6542: }
+Brace balance became 0 at line 6566: }
+Brace balance became 0 at line 6575: }
+Brace balance became -1 at line 6580: }
+Brace balance became 0 at line 6715: }
+Brace balance became 0 at line 6728: }
+Brace balance became 0 at line 6733: }
+Brace balance became 0 at line 6741: }
+Brace balance became -1 at line 6748: }
+Brace balance became -2 at line 6750: }
+Brace balance became -1 at line 6761: }
+Brace balance became 0 at line 6769: }
+Brace balance became -1 at line 6770: }
+Brace balance became -1 at line 6784: }
+Brace balance became -1 at line 6809: }
+Brace balance became -2 at line 6818: }
+Brace balance became 0 at line 6829: }
+Brace balance became 0 at line 6858: }
+Brace balance became -1 at line 6859: }
+Brace balance became -1 at line 6865: }
+Brace balance became -1 at line 6871: }
+Brace balance became -1 at line 6877: }
+Brace balance became -1 at line 6883: }
+Brace balance became -1 at line 6889: }
+Brace balance became -1 at line 6895: }
+Brace balance became -1 at line 6901: }
+Brace balance became -1 at line 6907: }
+Brace balance became 0 at line 6925: }
+Brace balance became -1 at line 6930: }
+Brace balance became 0 at line 6939: }
+Brace balance became -1 at line 6940: }
+Brace balance became 0 at line 6949: }
+Brace balance became -1 at line 6950: }
+Brace balance became -1 at line 6955: }
+Brace balance became 0 at line 6964: }
+Brace balance became -1 at line 6965: }
+Brace balance became 0 at line 6987: }
+Brace balance became -1 at line 6988: }
+Brace balance became -2 at line 6991: }
+Brace balance became -2 at line 6999: }) {
+Brace balance became 0 at line 7008: }
+Brace balance became -1 at line 7010: }
+Brace balance became 0 at line 7014: }
+Brace balance became -1 at line 7016: }
+Brace balance became -1 at line 7024: }
+Brace balance became 0 at line 7035: }
+Brace balance became -1 at line 7036: }
+Brace balance became -1 at line 7043: }
+Brace balance became -1 at line 7051: }
+Brace balance became -1 at line 7055: }
+Brace balance became -1 at line 7060: } else if (!useIgnoreRandom && Random().nextDouble() * 100 < critChance) {
+Brace balance became -1 at line 7062: }
+Brace balance became -1 at line 7068: }
+Brace balance became 0 at line 7073: }
+Brace balance became -1 at line 7075: }
+Brace balance became -1 at line 7084: }
+Brace balance became 0 at line 7090: } else {
+Brace balance became 0 at line 7092: }
+Brace balance became -1 at line 7093: }
+Brace balance became 0 at line 7097: } else {
+Brace balance became 0 at line 7099: }
+Brace balance became -1 at line 7100: }
+Brace balance became 0 at line 7109: } else {
+Brace balance became 0 at line 7111: }
+Brace balance became -1 at line 7113: }
+Brace balance became -1 at line 7126: }
+Brace balance became -1 at line 7131: }
+Brace balance became -1 at line 7137: }
+Brace balance became 0 at line 7144: }
+Brace balance became -1 at line 7145: }
+Brace balance became -1 at line 7152: }
+Brace balance became 0 at line 7164: }
+Brace balance became 0 at line 7170: }
+Brace balance became 0 at line 7175: }
+Brace balance became -1 at line 7178: }
+Brace balance became -1 at line 7183: }
+Brace balance became -1 at line 7190: }
+Brace balance became 0 at line 7202: }
+Brace balance became 0 at line 7218: }
+Brace balance became 0 at line 7233: }
+Brace balance became 0 at line 7244: }
+Brace balance became -1 at line 7254: }
+Brace balance became -1 at line 7274: }
+Brace balance became -1 at line 7284: }
+Brace balance became -1 at line 7292: }
+Brace balance became -2 at line 7295: }
+Brace balance became 0 at line 7301: }
+Brace balance became -1 at line 7309: }
+Brace balance became -1 at line 7318: }
+Brace balance became -2 at line 7319: }
+Brace balance became -2 at line 7324: }
+Brace balance became -2 at line 7329: }
+Brace balance became -2 at line 7338: }
+Brace balance became -2 at line 7348: }
+Brace balance became -2 at line 7357: }
+Brace balance became -2 at line 7367: }
+Brace balance became -2 at line 7372: }
+Brace balance became -2 at line 7381: }
+Brace balance became 0 at line 7396: }
+Brace balance became -1 at line 7397: }
+Brace balance became 0 at line 7403: }
+Brace balance became -1 at line 7404: }
+Brace balance became -1 at line 7409: }
+Brace balance became -1 at line 7416: }
+Brace balance became -1 at line 7424: }
+Brace balance became -1 at line 7431: }
+Brace balance became 0 at line 7439: }
+Brace balance became -1 at line 7440: }
+Brace balance became 0 at line 7452: }
+Brace balance became -1 at line 7453: }
+Brace balance became 0 at line 7458: } else {
+Brace balance became 0 at line 7461: }
+Brace balance became -1 at line 7462: }
+Brace balance became -1 at line 7470: }
+Brace balance became -1 at line 7484: }
+Brace balance became 0 at line 7493: }
+Brace balance became -1 at line 7494: }
+Brace balance became -1 at line 7501: }).toList();
+Brace balance became 0 at line 7512: }
+Brace balance became -1 at line 7513: }
+Brace balance became -2 at line 7516: }
+Brace balance became -1 at line 7521: }
+Brace balance became -1 at line 7524: }
+Brace balance became -1 at line 7532: }
+Brace balance became 0 at line 7558: }
+Brace balance became -1 at line 7559: }
+Brace balance became 0 at line 7570: }
+Brace balance became 0 at line 7577: }
+Brace balance became -1 at line 7578: }
+Brace balance became -2 at line 7581: }
+Brace balance became 0 at line 7612: }
+Brace balance became -1 at line 7613: }
+Brace balance became -1 at line 7617: }
+Brace balance became -2 at line 7619: }
+Brace balance became -1 at line 7625: }
+Brace balance became -2 at line 7626: }
+Brace balance became -2 at line 7634: }) {
+Brace balance became -1 at line 7642: }
+Brace balance became -2 at line 7671: }
+Brace balance became -1 at line 7682: }
+Brace balance became -1 at line 7696: } else if (player.abilities.any((ab) => ab.name == 'Magnet Pull') &&
+Brace balance became -1 at line 7699: } else if (player.abilities.any((ab) => ab.name == 'Shadow Tag') &&
+Brace balance became -1 at line 7702: }
+Brace balance became 0 at line 7739: }
+Brace balance became -1 at line 7741: },
+Brace balance became 0 at line 7753: }
+Brace balance became -1 at line 7755: },
+Brace balance became -1 at line 7762: }
+Brace balance became -2 at line 7765: }
+Brace balance became 0 at line 7785: }
+Brace balance became 0 at line 7826: } else if (effect.type == TalismanEffectType.berryHealFlat) {
+Brace balance became 0 at line 7863: }
+Brace balance became -1 at line 7864: }
+Brace balance became -2 at line 7865: }
+Brace balance became 0 at line 7896: } else if (effect.type == TalismanEffectType.berryCritBoost) {
+Brace balance became 0 at line 7909: }
+Brace balance became -1 at line 7910: }
+Brace balance became -2 at line 7911: }
+Brace balance became 0 at line 7928: } else {
+Brace balance became 0 at line 7949: }
+Brace balance became 0 at line 7987: }
+Brace balance became -1 at line 7988: }
+Brace balance became -2 at line 7989: }
+Brace balance became 0 at line 8004: }
+Brace balance became -1 at line 8005: }
+Brace balance became -1 at line 8016: final hazardCounts = <String, int>{};
+Brace balance became -1 at line 8019: }
+Brace balance became 0 at line 8038: } else if (hazard == 'stealth_rock') {
+Brace balance became 0 at line 8056: } else if (hazard == 'toxic_spikes' && isGrounded) {
+Brace balance became 0 at line 8067: } else if (hazard == 'sticky_web' && isGrounded) {
+Brace balance became 0 at line 8070: }
+Brace balance became -1 at line 8072: }
+Brace balance became 0 at line 8077: }
+Brace balance became -1 at line 8079: }
+Brace balance became -2 at line 8080: }
+Brace balance became 0 at line 8093: });
+Brace balance became -1 at line 8094: }
+Brace balance became -2 at line 8095: }
+Brace balance became -2 at line 8100: }
+Brace balance became 0 at line 8138: }
+Brace balance became -1 at line 8139: }
+Brace balance became 0 at line 8146: }
+Brace balance became -1 at line 8151: } else {
+Brace balance became -1 at line 8158: }
+Brace balance became -2 at line 8159: }
+Brace balance became -1 at line 8171: }
+Brace balance became -2 at line 8172: }
+Brace balance became -1 at line 8181: }
+Brace balance became -2 at line 8182: }
+Brace balance became -2 at line 8186: }
+Brace balance became -1 at line 8243: }
+Brace balance became -2 at line 8244: }
+Brace balance became -3 at line 8245: }

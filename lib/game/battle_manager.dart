@@ -65,6 +65,11 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       speed *= 2.0;
     }
 
+    // Lead Coat: This Pokémon's Speed is 0.9x.
+    if (org.abilities.any((ab) => ab.name == 'Lead Coat')) {
+      speed *= 0.9;
+    }
+
     // Ability Speed Modifiers handled in org.currentSpeed
 
     // Custap Berry: Priority boost (simulated with large speed boost at low HP)
@@ -681,11 +686,24 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
               duration: 3,
               source: user,
             );
+          } else if (ability.name == "Let's Roll") {
+            await notifyAbilityTrigger(user, ability);
+            user.usedDefenseCurl = true;
+            await applyStatChange(user, 'defense', 1, source: user);
+          } else if (ability.name == 'Coil Up') {
+            await notifyAbilityTrigger(user, ability);
+            user.coilUpActive = true;
+            addToLog('${user.name} is coiled up and ready to strike!');
           }
           break;
         case AbilityEffectType.hazardRemoval:
         case AbilityEffectType.none:
-          if (ability.effectType == AbilityEffectType.hazardRemoval ||
+          if (ability.name == 'Ancient Idol') {
+            await notifyAbilityTrigger(user, ability);
+            trickRoomTurns = 5;
+            addToLog('Dimensions were twisted by the Ancient Idol!');
+            notifyListeners();
+          } else if (ability.effectType == AbilityEffectType.hazardRemoval ||
               ability.name == 'Pickup') {
             await notifyAbilityTrigger(user, ability);
             if (user.isPlayer) {
@@ -1310,6 +1328,34 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         }
       }
 
+      // Blitz Boxer Priority (+1 for punching moves at full HP)
+      if (player.health == player.maxHealth && activeMove.isPunch &&
+          player.abilities.any((ab) => ab.name == 'Blitz Boxer')) {
+        playerPriority += 1;
+      }
+      if (opponent.health == opponent.maxHealth && currentTurnOpponentMove!.isPunch &&
+          opponent.abilities.any((ab) => ab.name == 'Blitz Boxer')) {
+        opponentPriority += 1;
+      }
+
+      // Coil Up Priority: +1 priority once to the first biting move used.
+      if (player.coilUpActive && activeMove.isBite) {
+        playerPriority += 1;
+      }
+      if (opponent.coilUpActive && currentTurnOpponentMove!.isBite) {
+        opponentPriority += 1;
+      }
+
+      // Perfectionist Priority (-1 for moves with BP > 100)
+      if (activeMove.baseDamage > 100 &&
+          player.abilities.any((ab) => ab.name == 'Perfectionist')) {
+        playerPriority -= 1;
+      }
+      if (currentTurnOpponentMove!.baseDamage > 100 &&
+          opponent.abilities.any((ab) => ab.name == 'Perfectionist')) {
+        opponentPriority -= 1;
+      }
+
       bool playerQuickClawTriggered = false;
       if (player.organism.equippedTalisman != null &&
           player.organism.equippedTalisman!.effects.any(
@@ -1749,7 +1795,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         bool isSunny = currentWeather.weather == Weather.sunny;
         bool skipCharge = false;
 
-        if (isSolarMove && isSunny) {
+        if (isSolarMove && (isSunny || attacker.abilities.any((ab) => ab.name == 'Chloroplast'))) {
           skipCharge = true;
         }
 
@@ -2213,6 +2259,13 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           isImmuneFromAbility = true;
           break;
         }
+        if (ab.name == 'Aerodynamics' && move.type == ElementalType.flying) {
+          addToLog('${defender.name}\'s Aerodynamics absorbed the attack!');
+          await notifyAbilityTrigger(defender, ab);
+          await applyStatChange(defender, 'speed', 1);
+          isImmuneFromAbility = true;
+          break;
+        }
       }
     }
 
@@ -2271,6 +2324,13 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       hits = 2;
     }
 
+    // Raging Boxer: Punching moves hit twice.
+    if (attacker.abilities.any((ab) => ab.name == 'Raging Boxer')) {
+      if (move.isPunch && hits == 1 && move.baseDamage > 0) {
+        hits = 2;
+      }
+    }
+
     for (int i = 0; i < hits; i++) {
       if (defender.health <= 0) break; // Stop if opponent fainted
 
@@ -2317,7 +2377,6 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         if (hasParentalBond && i == 1) {
           damageCalc *= 0.25;
         }
-
         bool isCrit = damageResult.isCrit;
         double typeMod = damageResult.typeMultiplier;
 
@@ -2458,6 +2517,20 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         } else if (move.category == MoveCategory.special) {
           defender.lastSpecialDamageTaken = effectiveDamage;
           defender.lastPhysicalDamageTaken = 0;
+        }
+
+        // Magical Dust: If hit by a contact move, gives Mystic type to the attacker.
+        if (move.isContact == true &&
+            defender.abilities.any((ab) => ab.name == 'Magical Dust') &&
+            !attacker.types.contains(ElementalType.mystic)) {
+          attacker.battleTypes = [ElementalType.mystic];
+          addToLog(
+              '${attacker.name} was covered in Magical Dust and became Mystic-type!');
+        }
+
+        // Coil Up Consumption: One-time use per entry
+        if (attacker.coilUpActive && move.isBite) {
+          attacker.coilUpActive = false;
         }
 
         if (move.name == 'Brick Break' || move.name == 'Psychic Fangs') {
@@ -2691,6 +2764,10 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
         if (defender.health <= 0) {
           _getStats(attacker.organism.id).totalKills += 1;
+          // Rampage: No recharge after a KO
+          if (attacker.abilities.any((ab) => ab.name == 'Rampage')) {
+            attacker.mustRecharge = false;
+          }
         }
 
         // Defender On-Hit Abilities
@@ -3050,6 +3127,20 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             );
             await notifyAbilityTrigger(defender, ab);
             await applyStatChange(defender, 'defense', 1);
+          }
+          // Inflatable: Boost Defense and Resistance when hit
+          if (defender.abilities.any((ab) => ab.name == 'Inflatable')) {
+            final ab = defender.abilities.firstWhere((a) => a.name == 'Inflatable');
+            await notifyAbilityTrigger(defender, ab);
+            await applyStatChange(defender, 'defense', 1);
+            await applyStatChange(defender, 'resistance', 1);
+          }
+          // Ground Shock: Paralyze attacker on contact
+          if (defender.abilities.any((ab) => ab.name == 'Ground Shock') &&
+              move.isContact && attacker.health > 0) {
+            final ab = defender.abilities.firstWhere((a) => a.name == 'Ground Shock');
+            await notifyAbilityTrigger(defender, ab);
+            await applyStatusEffect(attacker, StatusEffectType.paralysis, source: defender);
           }
           // Water Compaction: Boost Defense 2 stages when hit by Water move
           if (defender.abilities.any((ab) => ab.name == 'Water Compaction') &&
@@ -3665,9 +3756,13 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     BattleOrganism? source,
   }) async {
     int finalChance = chance;
-    if (source != null &&
-        source.abilities.any((ab) => ab.name == 'Serene Grace')) {
-      finalChance *= 2;
+    if (source != null) {
+      if (source.abilities.any((ab) => ab.name == 'Serene Grace')) {
+        finalChance *= 2;
+      }
+      if (source.abilities.any((ab) => ab.name == 'Pyromancy') && type == StatusEffectType.burn) {
+        finalChance *= 5;
+      }
     }
 
     if (Random().nextInt(100) >= finalChance) return false;
@@ -3955,6 +4050,16 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             duration: effect.value > 0 ? effect.value : null,
           );
           break;
+        case MoveEffectType.none:
+          // Loud Bang: Sound-based moves have 50% chance to confuse the foe.
+          if (move.type == ElementalType.sound &&
+              attacker.abilities.any((ab) => ab.name == 'Loud Bang') &&
+              !defender.statusEffects
+                  .any((se) => se.type == StatusEffectType.confusion)) {
+            await applyStatusEffect(defender, StatusEffectType.confusion,
+                chance: 50);
+          }
+          break;
         case MoveEffectType.weather:
           await setWeatherHelper(
             effect.stat.isNotEmpty
@@ -3968,10 +4073,15 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           break;
         case MoveEffectType.statChange:
           if (Random().nextInt(100) < effect.chance) {
+            int val = effect.value;
+            // Chloroplast: Growth act as if used in Sunny Weather
+            if (move.name == 'Growth' && (currentWeather.weather == Weather.sunny || attacker.abilities.any((ab) => ab.name == 'Chloroplast'))) {
+              val = 2;
+            }
             await applyStatChange(
               target,
               effect.stat,
-              effect.value,
+              val,
               source: attacker,
             );
             // Log is handled in _applyStatChange
@@ -4550,6 +4660,13 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       }
       attacker.lastMoveName = move.name;
       attacker.hasMovedThisTurn = true;
+    }
+
+    // Growing Tooth: Boost Attack after using a bite move
+    if (move.isBite && attacker.abilities.any((ab) => ab.name == 'Growing Tooth')) {
+      final ab = attacker.abilities.firstWhere((a) => a.name == 'Growing Tooth');
+      await notifyAbilityTrigger(attacker, ab);
+      await applyStatChange(attacker, 'attack', 1);
     }
   }
 
@@ -5139,6 +5256,36 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           await Future.delayed(const Duration(milliseconds: 1500));
         }
       }
+    }
+
+    // Self Sufficient: Recovers 1/16 of max HP at the end of each turn.
+    if (target.abilities.any((ab) => ab.name == 'Self Sufficient')) {
+      if (target.health > 0 &&
+          target.health < target.maxHealth &&
+          target.healBlockTurns == 0) {
+        final heal = (target.maxHealth / 16).round().clamp(1, 9999);
+        target.health += heal;
+        target.health = target.health.clamp(0, target.maxHealth);
+        addToLog('${target.name} restored HP due to Self Sufficient!');
+        notifyListeners();
+        if (!isTesting) {
+          await Future.delayed(const Duration(milliseconds: 1500));
+        }
+      }
+    }
+
+    // Solar Power: Loses 1/8 max HP each turn in Sunny weather.
+    if (currentWeather.weather == Weather.sunny &&
+        target.abilities.any((ab) => ab.name == 'Solar Power')) {
+      final damage = (target.maxHealth / 8).round().clamp(1, 9999);
+      target.health -= damage;
+      target.health = target.health.clamp(0, target.maxHealth);
+      addToLog('${target.name} is hurt by the sun (Solar Power)!');
+      notifyListeners();
+      if (!isTesting) {
+        await Future.delayed(const Duration(milliseconds: 1500));
+      }
+      if (_checkBattleEnd()) return;
     }
 
     // Status Damage & Healing (Iterate over all active effects)
@@ -6676,8 +6823,12 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     // Weather Ball
     if (move.name == 'Weather Ball' ||
         move.effects.any((e) => e.type == MoveEffectType.weatherBall)) {
-      if (currentWeather.weather != Weather.none) {
-        switch (currentWeather.weather) {
+      Weather effectiveWeather = currentWeather.weather;
+      if (attacker.abilities.any((ab) => ab.name == 'Chloroplast')) {
+        effectiveWeather = Weather.sunny;
+      }
+      if (effectiveWeather != Weather.none) {
+        switch (effectiveWeather) {
           case Weather.rain:
           case Weather.fog:
           case Weather.heavyRain:
@@ -6731,10 +6882,28 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       moveType = ElementalType.electric;
     }
 
+    // Immolate: Basic -> Blaze
+    if (moveType == ElementalType.basic &&
+        attacker.abilities.any((ab) => ab.name == 'Immolate')) {
+      moveType = ElementalType.blaze;
+    }
+
+    // Crystallize: Rock -> Cryo
+    if (moveType == ElementalType.rock &&
+        attacker.abilities.any((ab) => ab.name == 'Crystallize')) {
+      moveType = ElementalType.cryo;
+    }
+
     // Liquid Voice: Sound -> Aquatic
-    if (move.type == ElementalType.sound &&
+    if (moveType == ElementalType.sound &&
         attacker.abilities.any((ab) => ab.name == 'Liquid Voice')) {
       moveType = ElementalType.aquatic;
+    }
+
+    // Sand Song: Sound -> Earth
+    if (moveType == ElementalType.sound &&
+        attacker.abilities.any((ab) => ab.name == 'Sand Song')) {
+      moveType = ElementalType.earth;
     }
 
     // Hidden Power
@@ -6866,17 +7035,13 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       }
     }
 
-    // Ability crit boosts (Super Luck)
+    // Ability crit boosts
     if (attacker.abilities.any((ab) => ab.name == 'Super Luck')) {
-      if (critChance <= 6.25) {
-        critChance = 12.5;
-      } else if (critChance <= 12.5) {
-        critChance = 50.0;
-      } else {
-        critChance = 100.0;
-      }
+      if (critChance <= 6.25) critChance = 12.5;
+      else if (critChance <= 12.5) critChance = 50.0;
+      else critChance = 100.0;
     }
-
+    
     // Hyper Cutter crit boost on contact
     if (attacker.abilities.any((ab) => ab.name == 'Hyper Cutter') &&
         move.isContact) {
@@ -6902,6 +7067,11 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       critChance = 100.0;
     }
 
+    // Perfectionist crit boost
+    if (attacker.abilities.any((ab) => ab.name == 'Perfectionist')) {
+      critChance += 30.0;
+    }
+
     // Merciless Ability: Guaranteed crit against poisoned targets
     if (attacker.abilities.any((ab) => ab.name == 'Merciless') &&
         defender.statusEffects.any(
@@ -6914,10 +7084,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     if (useIgnoreRandom) isCrit = false;
 
-    // Battle Armor / Shell Armor blocks crits
-    if (defender.abilities.any(
-      (ab) => ab.name == 'Battle Armor' || ab.name == 'Shell Armor',
-    )) {
+    if (defender.abilities.any((ab) => ab.name == 'Battle Armor' || ab.name == 'Shell Armor')) {
       isCrit = false;
     }
 
@@ -6973,23 +7140,17 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     // Unaware: Ignores opponent's stat changes (both positive and negative)
     if (attacker.abilities.any((ab) => ab.name == 'Unaware')) {
-      // Attacker has Unaware: ignore defender's DEF/RES stage buffs/debuffs
       if (move.category == MoveCategory.special) {
-        def = defender.organism.getResistance(atLevel: defender.level);
-        def = (def * defender.getAbilityStatMultiplier('resistance')).round();
+        def = (defender.organism.getResistance(atLevel: defender.level) * defender.getAbilityStatMultiplier('resistance')).round();
       } else {
-        def = defender.organism.getDefense(atLevel: defender.level);
-        def = (def * defender.getAbilityStatMultiplier('defense')).round();
+        def = (defender.organism.getDefense(atLevel: defender.level) * defender.getAbilityStatMultiplier('defense')).round();
       }
     }
     if (defender.abilities.any((ab) => ab.name == 'Unaware')) {
-      // Defender has Unaware: ignore attacker's ATK/PWR stage buffs/debuffs
       if (move.category == MoveCategory.special) {
-        atk = attacker.organism.getPower(atLevel: attacker.level);
-        atk = (atk * attacker.getAbilityStatMultiplier('power')).round();
+        atk = (attacker.organism.getPower(atLevel: attacker.level) * attacker.getAbilityStatMultiplier('power')).round();
       } else {
-        atk = attacker.organism.getAttack(atLevel: attacker.level);
-        atk = (atk * attacker.getAbilityStatMultiplier('attack')).round();
+        atk = (attacker.organism.getAttack(atLevel: attacker.level) * attacker.getAbilityStatMultiplier('attack')).round();
       }
     }
 
@@ -7019,17 +7180,13 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     // Burn Halves Physical Damage (Unless Guts or Flare Boost)
     int baseDamage = move.baseDamage;
 
-    final hpRatioEffect = move.effects.firstWhere(
-      (e) => e.type == MoveEffectType.hpRatioDamage,
-      orElse: () => const MoveEffect(type: MoveEffectType.none),
-    );
+    // HP Ratio moves
+    final hpRatioEffect = move.effects.firstWhere((e) => e.type == MoveEffectType.hpRatioDamage, orElse: () => const MoveEffect(type: MoveEffectType.none));
     if (hpRatioEffect.type != MoveEffectType.none) {
       if (move.name == 'Crush Grip' || move.name == 'Hard Press') {
-        baseDamage = (baseDamage * (defender.health / defender.maxHealth))
-            .round();
+        baseDamage = (baseDamage * (defender.health / defender.maxHealth)).round();
       } else {
-        baseDamage = (baseDamage * (attacker.health / attacker.maxHealth))
-            .round();
+        baseDamage = (baseDamage * (attacker.health / attacker.maxHealth)).round();
       }
       baseDamage = max(1, baseDamage);
     }
@@ -7184,8 +7341,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     baseDamage = (baseDamage * pursuitMultiplier).round();
 
     // 3. Core Damage Formula
-    double damageCalc =
-        ((2 * attacker.level / 5 + 2) * baseDamage * atk / def) / 50 + 2;
+    double damageCalc = ((2 * attacker.level / 5 + 2) * baseDamage * atk / def) / 50 + 2;
 
     ElementalType moveType = move.type;
 
@@ -7211,13 +7367,47 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     moveType = getDisplayType(attacker, move);
 
-    // Normalize: Override move type to Basic (Normal equivalent), and make it ignore resistances
-    bool normalizeActive = attacker.abilities.any(
-      (ab) => ab.name == 'Normalize',
-    );
+    // Normalize check
+    bool normalizeActive = attacker.abilities.any((ab) => ab.name == 'Normalize');
     if (normalizeActive) {
       moveType = ElementalType.basic;
     }
+
+    // --- New Ability Power Boosts ---
+    double abilityPowerMult = 1.0;
+    for (final ab in attacker.abilities) {
+      if (ab.name == 'Whiteout' &&
+          currentWeather.weather == Weather.snowstorm &&
+          moveType == ElementalType.cryo) {
+        abilityPowerMult *= 1.5;
+      }
+      if (ab.name == 'Sand Song' && move.type == ElementalType.sound) {
+        abilityPowerMult *= 1.2;
+      }
+      if (ab.name == 'Vengeance' && moveType == ElementalType.spectral) {
+        abilityPowerMult *= (attacker.health <= attacker.maxHealth / 3) ? 1.5 : 1.2;
+      }
+      if (ab.name == 'Antarctic Bird' &&
+          (moveType == ElementalType.cryo || moveType == ElementalType.flying)) {
+        abilityPowerMult *= 1.3;
+    }
+      if (ab.name == 'Immolate' && move.type == ElementalType.basic) {
+        abilityPowerMult *= 1.2;
+      }
+      if (ab.name == 'Crystallize' && move.type == ElementalType.rock) {
+        abilityPowerMult *= 1.2;
+      }
+      if (ab.name == 'Electrocytes' && moveType == ElementalType.electric) {
+        abilityPowerMult *= 1.25;
+      }
+      if (ab.name == 'Aurora Borealis') {
+        final hasAuroraVeil = attacker.isPlayer
+            ? playerAuroraVeilTurns > 0
+            : opponentAuroraVeilTurns > 0;
+        if (hasAuroraVeil) abilityPowerMult *= 1.3;
+      }
+    }
+    damageCalc *= abilityPowerMult;
 
     // --- Type-changing power boost (Aerilate, Pixilate, Refrigerate, Galvanize, Liquid Voice) ---
     bool typeChangedByAbility = false;
@@ -7248,8 +7438,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     // --- Mega Launcher ---
     if (move.isPulse &&
         attacker.abilities.any((ab) => ab.name == 'Mega Launcher')) {
-      damageCalc *= 1.5;
-    }
+        damageCalc *= 1.5;
+      }
 
     // --- Strong Jaw ---
     if (move.isBite &&
@@ -7277,10 +7467,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     // Weather Modifiers
     double weatherMod = 1.0;
-    bool cloudNine =
-        attacker.abilities.any((ab) => ab.name == 'Cloud Nine') ||
-        defender.abilities.any((ab) => ab.name == 'Cloud Nine');
-
+    bool cloudNine = attacker.abilities.any((ab) => ab.name == 'Cloud Nine') || defender.abilities.any((ab) => ab.name == 'Cloud Nine');
     if (!cloudNine) {
       weatherMod = currentWeather.getDamageMultiplier(
         moveType.toString().split('.').last.toLowerCase(),
@@ -7309,10 +7496,10 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         defender.organism.equippedTalisman!.effects.any(
           (e) => e.type == TalismanEffectType.airBalloon,
         );
-
+    
     for (final defType in defender.types) {
       double eff = TypeChart.getEffectiveness(moveType, defType);
-
+      
       // Corrosion: Poison hits Steel super effectively
       if (moveType == ElementalType.toxic &&
           defType == ElementalType.metal &&
@@ -7356,13 +7543,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         eff = 1.0;
       }
 
-      // Water Absorb / Dry Skin Water Immunity
-
-      if (moveType == ElementalType.aquatic &&
-          !moldBreakerActive &&
-          defender.abilities.any(
-            (ab) => ab.name == 'Water Absorb' || ab.name == 'Dry Skin',
-          )) {
+      // Water Absorb / Dry Skin
+      if (moveType == ElementalType.aquatic && !moldBreakerActive && defender.abilities.any((ab) => ab.name == 'Water Absorb' || ab.name == 'Dry Skin')) {
         eff = 0.0;
       }
 
@@ -7384,6 +7566,11 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       typeMod *= eff;
     }
 
+    // Exploit Weakness
+    if (typeMod > 1.0 && attacker.abilities.any((ab) => ab.name == 'Exploit Weakness')) {
+      damageCalc *= 1.25;
+    }
+
     // Tinted Lens
     if (typeMod < 1.0 &&
         attacker.abilities.any((ab) => ab.name == 'Tinted Lens')) {
@@ -7399,7 +7586,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     if (defender.abilities.any((ab) => ab.name == 'Wonder Guard') &&
         !moldBreakerActive) {
       if (typeMod <= 1.0 && move.baseDamage > 0) {
-        typeMod = 0.0;
+      typeMod = 0.0;
       }
     }
 
@@ -7452,6 +7639,20 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         stabBonus = 2.0;
       }
       damageCalc *= stabBonus;
+    }
+
+    // Prism Scales
+    if (move.category == MoveCategory.special &&
+        defender.abilities.any((ab) => ab.name == 'Prism Scales') &&
+        !moldBreakerActive) {
+      damageCalc *= 0.7;
+    }
+
+    // Christmas Spirit
+    if (currentWeather.weather == Weather.snowstorm &&
+        defender.abilities.any((ab) => ab.name == 'Christmas Spirit') &&
+        !moldBreakerActive) {
+      damageCalc *= 0.5;
     }
 
     // Stakeout
@@ -7563,65 +7764,63 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       }
 
       // Elemental Boosters
-      bool isElementalBoost = false;
-      if (ab.name == 'Overgrow' && move.type == ElementalType.grass) {
-        isElementalBoost = true;
-      }
-      if (ab.name == 'Blaze' && move.type == ElementalType.blaze) {
-        isElementalBoost = true;
-      }
-      if (ab.name == 'Torrent' && move.type == ElementalType.aquatic) {
-        isElementalBoost = true;
-      }
-      if (ab.name == 'Swarm' && move.type == ElementalType.arthropod) {
-        isElementalBoost = true;
+      if ((ab.name == 'Overgrow' && moveType == ElementalType.grass) ||
+          (ab.name == 'Blaze' && moveType == ElementalType.blaze) ||
+          (ab.name == 'Torrent' && moveType == ElementalType.aquatic) ||
+          (ab.name == 'Swarm' && moveType == ElementalType.arthropod)) {
+        damageCalc *= (attacker.health <= attacker.maxHealth / 3) ? 1.5 : 1.2;
       }
 
-      if (isElementalBoost) {
-        if (attacker.health <= attacker.maxHealth / 3) {
-          damageCalc *= 1.5;
-        } else {
-          damageCalc *= 1.2;
-        }
+      if (ab.name == 'Iron Fist' && move.isPunch) damageCalc *= 1.2;
+      if (ab.name == 'Strong Jaw' && move.isBite) damageCalc *= 1.5;
+      if (ab.name == 'Tough Claws' && isContact) damageCalc *= 1.3;
+      if (ab.name == 'Reckless' && move.recoilPercent > 0) damageCalc *= 1.2;
+      if (ab.name == 'Technician' && baseDamage <= 60) damageCalc *= 1.5;
+      if (ab.name == 'Stakeout' && (defender.isPlayer ? playerJustSwitched : opponentJustSwitched)) damageCalc *= 2.0;
+      
+      // NEW ABILITIES
+      if (ab.name == 'Whiteout' && currentWeather.weather == Weather.snowstorm && moveType == ElementalType.cryo) damageCalc *= 1.5;
+      if (ab.name == 'Sand Song' && move.type == ElementalType.sound && currentWeather.weather == Weather.sandstorm) damageCalc *= 1.5;
+      if (ab.name == 'Vengeance' && moveType == ElementalType.spectral) {
+        final team = attacker.isPlayer ? playerTeam : opponentTeam;
+        final faintedCount = team.where((o) => o.currentHealth <= 0).length;
+        damageCalc *= (1.0 + (faintedCount * 0.1));
+      }
+      if (ab.name == 'Antarctic Bird' && (moveType == ElementalType.cryo || moveType == ElementalType.flying)) damageCalc *= 1.3;
+      
+      // Type Shifters (Basic -> Something)
+      if (move.type == ElementalType.basic) {
+        if (ab.name == 'Aerilate') { moveType = ElementalType.flying; damageCalc *= 1.2; }
+        else if (ab.name == 'Pixilate') { moveType = ElementalType.mystic; damageCalc *= 1.2; }
+        else if (ab.name == 'Refrigerate') { moveType = ElementalType.cryo; damageCalc *= 1.2; }
+        else if (ab.name == 'Galvanize') { moveType = ElementalType.electric; damageCalc *= 1.2; }
+        else if (ab.name == 'Liquid Voice') { moveType = ElementalType.aquatic; damageCalc *= 1.2; }
+        else if (ab.name == 'Immolate') { moveType = ElementalType.blaze; damageCalc *= 1.2; }
+        else if (ab.name == 'Crystallize') { moveType = ElementalType.rock; damageCalc *= 1.2; }
+        else if (ab.name == 'Tectonize') { moveType = ElementalType.earth; damageCalc *= 1.2; }
+        else if (ab.name == 'Hydrate') { moveType = ElementalType.aquatic; damageCalc *= 1.2; }
+        else if (ab.name == 'Fighting Spirit') { moveType = ElementalType.martial; damageCalc *= 1.2; }
       }
 
-      // Normalize: 1.1x damage boost
-      if (ab.name == 'Normalize') {
-        damageCalc *= 1.1;
+      if (ab.name == 'Electrocytes' && moveType == ElementalType.electric) damageCalc *= 1.25;
+      if (ab.name == 'Aurora Borealis' && (attacker.isPlayer ? playerAuroraVeilTurns > 0 : opponentAuroraVeilTurns > 0)) damageCalc *= 1.3;
+      if (ab.name == 'Avenger' && attacker.partyMemberFaintedLastTurn) damageCalc *= 1.5;
+      if (ab.name == 'Amphibious' && moveType == ElementalType.aquatic) damageCalc *= 1.5;
+      if (ab.name == 'Earthbound' && moveType == ElementalType.earth) damageCalc *= (attacker.health <= attacker.maxHealth / 3) ? 1.5 : 1.2;
+      if (ab.name == 'Fossilized' && moveType == ElementalType.rock) damageCalc *= 1.2;
+      if (ab.name == 'Dreamcatcher') {
+        bool anyAsleep = player.statusEffects.any((se) => se.type == StatusEffectType.sleep) || opponent.statusEffects.any((se) => se.type == StatusEffectType.sleep);
+        if (anyAsleep) damageCalc *= 2.0;
       }
-
-      if (ab.name == 'Stakeout' &&
-          (defender.isPlayer ? playerJustSwitched : opponentJustSwitched)) {
-        damageCalc *= 2.0;
-      }
-      if (ab.name == 'Analytic') {
-        bool movingLast =
-            (attacker.isPlayer && opponentMovedThisTurn) ||
-            (attacker.isOpponent && playerMovedThisTurn);
-        if (movingLast) {
-          damageCalc *= 1.3;
-        }
-      }
-
-      // Transistor: 1.5x boost to Electric-type moves
-      if (ab.name == 'Transistor' && moveType == ElementalType.electric) {
-        damageCalc *= 1.5;
-      }
-
-      // Dragon's Maw: 1.5x boost to Dragon-type moves
-      if (ab.name == "Dragon's Maw" && moveType == ElementalType.drake) {
-        damageCalc *= 1.5;
-      }
-
-      // Steely Spirit: 1.3x boost to Steel (Metal) type moves
-      if (ab.name == 'Steely Spirit' && moveType == ElementalType.metal) {
-        damageCalc *= 1.3;
-      }
-
-      // Gorilla Tactics: 1.5x attack boost (already granted via currentAttack)
-      // but also clamp the move selection (handled in move selection logic)
-
-      // Note: Guts is handled in BattleOrganism.currentAttack
+      if (ab.name == 'Nocturnal' && moveType == ElementalType.darkness) damageCalc *= 1.25;
+      if (ab.name == 'Dragonslayer' && moveType == ElementalType.drake) damageCalc *= 1.5;
+      
+      // Defensive parts of some abilities
+      if (ab.name == 'Dragonslayer' && moveType == ElementalType.drake) damageCalc *= 0.5;
+      if (ab.name == 'Transistor' && moveType == ElementalType.electric) damageCalc *= 1.5;
+      if (ab.name == "Dragon's Maw" && moveType == ElementalType.drake) damageCalc *= 1.5;
+      if (ab.name == 'Steely Spirit' && moveType == ElementalType.metal) damageCalc *= 1.3;
+      if (ab.name == 'Normalize') damageCalc *= 1.1;
     }
 
     for (final ab in defender.abilities) {
@@ -7822,24 +8021,13 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     }
 
     // Screens
-    final bool hasAuroraVeil = defender.isPlayer
-        ? playerAuroraVeilTurns > 0
-        : opponentAuroraVeilTurns > 0;
-    final bool hasReflect = defender.isPlayer
-        ? playerReflectTurns > 0
-        : opponentReflectTurns > 0;
-    final bool hasLightScreen = defender.isPlayer
-        ? playerLightScreenTurns > 0
-        : opponentLightScreenTurns > 0;
-
+    final bool hasAuroraVeil = defender.isPlayer ? playerAuroraVeilTurns > 0 : opponentAuroraVeilTurns > 0;
+    final bool hasReflect = defender.isPlayer ? playerReflectTurns > 0 : opponentReflectTurns > 0;
+    final bool hasLightScreen = defender.isPlayer ? playerLightScreenTurns > 0 : opponentLightScreenTurns > 0;
     if (!isCrit && !attacker.abilities.any((ab) => ab.name == 'Infiltrator')) {
-      if (hasAuroraVeil) {
-        damageCalc *= 0.5;
-      } else if (move.category == MoveCategory.physical && hasReflect) {
-        damageCalc *= 0.5;
-      } else if (move.category == MoveCategory.special && hasLightScreen) {
-        damageCalc *= 0.5;
-      }
+      if (hasAuroraVeil) damageCalc *= 0.5;
+      else if (move.category == MoveCategory.physical && hasReflect) damageCalc *= 0.5;
+      else if (move.category == MoveCategory.special && hasLightScreen) damageCalc *= 0.5;
     }
 
     // Earthquake double damage on underground
@@ -7856,8 +8044,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     }
 
     // Final variation
+    // Random Variance (0.85 to 1.0)
     if (!useIgnoreRandom) {
-      // Random Variance (0.85 to 1.0)
       damageCalc *= (0.85 + (Random().nextDouble() * 0.15));
     }
 

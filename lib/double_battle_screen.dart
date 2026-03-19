@@ -2147,9 +2147,10 @@ class _SlotSpriteState extends State<_SlotSprite>
           alignment: Alignment.center,
           clipBehavior: Clip.none,
           children: [
-            Positioned(bottom: -size * 0.05, child: _buildPlatform(size)),
-
-            // Titan Group (Outline + Sprite)
+            Positioned(
+              bottom: -size * 0.05 + 35.0,
+              child: _buildPlatform(size),
+            ), // Titan Group (Outline + Sprite)
             Transform.translate(
               offset: Offset(0, titanYOffset),
               child: Transform.scale(

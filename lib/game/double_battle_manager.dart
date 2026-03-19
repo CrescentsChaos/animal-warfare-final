@@ -378,7 +378,8 @@ class DoubleBattleManager extends ChangeNotifier {
         final targets = _getPossibleTargetsForAi(move);
         for (final target in targets) {
           final defender = _resolveTarget(target);
-          if (defender == null && move.targetCount != MoveTargetCount.multiple) {
+          if (defender == null &&
+              move.targetCount != MoveTargetCount.multiple) {
             continue;
           }
 
@@ -624,7 +625,7 @@ class DoubleBattleManager extends ChangeNotifier {
             attacker.abilities.any((ab) => ab.name == 'Galvanize'))) {
       typeChangedByAbility = true;
     } else if (move.type == ElementalType.sound &&
-               attacker.abilities.any((ab) => ab.name == 'Liquid Voice')) {
+        attacker.abilities.any((ab) => ab.name == 'Liquid Voice')) {
       typeChangedByAbility = true;
     }
 
@@ -1115,8 +1116,7 @@ class DoubleBattleManager extends ChangeNotifier {
     }
 
     // --- Rattled ---
-    if (defender.abilities.any((ab) => ab.name == 'Rattled') &&
-        finalDmg > 0) {
+    if (defender.abilities.any((ab) => ab.name == 'Rattled') && finalDmg > 0) {
       if (move.type == ElementalType.arthropod ||
           move.type == ElementalType.spectral ||
           move.type == ElementalType.darkness) {

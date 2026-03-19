@@ -91,6 +91,7 @@ class TileDefinition {
     switch (category) {
       case TileCategory.solid:
       case TileCategory.water:
+      case TileCategory.oneway:
         return false;
       default:
         return true;

@@ -522,7 +522,12 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         sprite.isAlerted = false;
         AudioService.instance.playOrganismCry(sprite.organism.cry);
         setState(() => _encounterActive = true);
-        _onFight(sprite.organism);
+        
+        final pr = (_playerY / tileSize).floor().clamp(0, _mapData.height - 1);
+        final pc = (_playerX / tileSize).floor().clamp(0, _mapData.width - 1);
+        final tileId = _mapData.grid[pr][pc].tileId;
+        _onFight(sprite.organism, tileId);
+        
         // Clean up: remove the sprite from map
         _overworldSprites.remove(sprite);
         break; // Only start one battle
@@ -578,6 +583,39 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         _playerDirection = direction;
         _velX = vx;
         _velY = vy;
+      });
+    } else if (direction == 'down') {
+      // Special: Jump over oneway ledges if moving down
+      final int targetR = (nextY / tileSize).floor();
+      final int targetC = (nextX / tileSize).floor();
+      if (targetR >= 0 && targetR < _mapData.height && targetC >= 0 && targetC < _mapData.width) {
+        final tile = _mapData.grid[targetR][targetC];
+        final overlays = _mapData.overlayGrid?[targetR][targetC];
+        final bool isOneWay = tile.category == TileCategory.oneway || 
+                             (overlays?.any((t) => t.category == TileCategory.oneway) ?? false);
+                             
+        if (isOneWay) {
+          final double jumpX = nextX;
+          final double jumpY = nextY + tileSize;
+          if (_canWalkAt(jumpX, jumpY)) {
+             setState(() {
+                _isMovingToTarget = true;
+                _targetX = jumpX;
+                _targetY = jumpY;
+                _playerDirection = direction;
+                _velX = 0;
+                _velY = vy; // Move at normal speed but over 2 tiles
+                _jumpTime = 0.4; // Slightly longer jump
+             });
+             return;
+          }
+        }
+      }
+      
+      setState(() {
+        _playerDirection = direction;
+        _velX = 0;
+        _velY = 0;
       });
     } else {
       setState(() {
@@ -663,20 +701,8 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
           baseTile.category == TileCategory.floating ||
           (overlayTile?.any((t) => t.category == TileCategory.floating) ??
               false);
-      final bool isOneWay =
-          baseTile.category == TileCategory.oneway ||
-          (overlayTile?.any((t) => t.category == TileCategory.oneway) ?? false);
 
       if (isSolid) return false;
-
-      // Oneway logic: jump over from above but not from below
-      if (isOneWay) {
-        final currentR = (_playerY / tileSize).floor();
-        if (currentR > r) {
-          // Attempting to move UP onto a oneway tile
-          return false;
-        }
-      }
 
       if (isSwimming) {
         // Must stay in water, but cannot swim THROUGH a lily pad (floating)
@@ -987,7 +1013,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       AudioService.instance.playOrganismCry(encounter.organism.cry);
       setState(() => _encounterActive = true);
       // Immediately start the battle (no popup)
-      _onFight(encounter.organism);
+      _onFight(encounter.organism, activeTile.tileId);
     } else {
       setState(() => _encounterActive = false);
     }
@@ -1035,7 +1061,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     return null;
   }
 
-  void _onFight(Organism wildOrganism) async {
+  void _onFight(Organism wildOrganism, String encounterTileId) async {
     final userState = Provider.of<UserState>(context, listen: false);
     final user = userState.currentUser;
     if (user == null) return;
@@ -1082,6 +1108,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
           playerTeam: user.teamOrganisms,
           timeOfDay: timeOfDay,
           mapScreenshot: mapScreenshot,
+          encounterTileId: encounterTileId,
         ),
       ),
     );
@@ -1796,7 +1823,10 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         _encounterActive = true;
         _overworldSprites.remove(targetSprite);
       });
-      _onFight(targetSprite.organism);
+      final pr = (_playerY / tileSize).floor().clamp(0, _mapData.height - 1);
+      final pc = (_playerX / tileSize).floor().clamp(0, _mapData.width - 1);
+      final tileId = _mapData.grid[pr][pc].tileId;
+      _onFight(targetSprite.organism, tileId);
       return;
     }
 

@@ -49,6 +49,7 @@ class BattleScreen extends StatelessWidget {
   final String? timeOfDay;
   final bool startAsleep;
   final ui.Image? mapScreenshot;
+  final String? encounterTileId;
 
   const BattleScreen({
     super.key,
@@ -65,6 +66,7 @@ class BattleScreen extends StatelessWidget {
     this.timeOfDay,
     this.startAsleep = false,
     this.mapScreenshot,
+    this.encounterTileId,
   });
 
   @override
@@ -100,6 +102,7 @@ class BattleScreen extends StatelessWidget {
         opponentFullTeam: opponentTeam,
         startAsleep: startAsleep,
         mapScreenshot: mapScreenshot,
+        encounterTileId: encounterTileId,
       ),
     );
   }
@@ -117,6 +120,7 @@ class BattleScreenContent extends StatefulWidget {
   final List<CapturedOrganism>? opponentFullTeam;
   final bool startAsleep;
   final ui.Image? mapScreenshot;
+  final String? encounterTileId;
 
   const BattleScreenContent({
     super.key,
@@ -130,6 +134,7 @@ class BattleScreenContent extends StatefulWidget {
     this.opponentFullTeam,
     this.startAsleep = false,
     this.mapScreenshot,
+    this.encounterTileId,
   });
 
   @override
@@ -6003,7 +6008,7 @@ class _BattleSpriteState extends State<_BattleSprite>
           children: [
             // Platform
             Positioned(
-              bottom: -size * 0.05,
+              bottom: -size * 0.05 + 35.0,
               child: Transform(
                 transform: Matrix4.identity()
                   ..setEntry(3, 2, 0.001)

@@ -1,0 +1,39 @@
+diff --git a/lib/battle_screen.dart b/lib/battle_screen.dart
+index ba1bd5c..503bcce 100644
+--- a/lib/battle_screen.dart
++++ b/lib/battle_screen.dart
+@@ -6001,11 +6001,11 @@ class _BattleSpriteState extends State<_BattleSprite>
+           alignment: Alignment.center,
+           clipBehavior: Clip.none,
+           children: [
+             // Platform
+             Positioned(
+-              bottom: -size * 0.05,
++              bottom: -size * 0.05 + 35.0,
+               child: Transform(
+                 transform: Matrix4.identity()
+                   ..setEntry(3, 2, 0.001)
+                   ..rotateX(1.1),
+                 alignment: Alignment.center,
+diff --git a/lib/double_battle_screen.dart b/lib/double_battle_screen.dart
+index 67c3f24..dba168e 100644
+--- a/lib/double_battle_screen.dart
++++ b/lib/double_battle_screen.dart
+@@ -2145,13 +2145,14 @@ class _SlotSpriteState extends State<_SlotSprite>
+         ),
+         child: Stack(
+           alignment: Alignment.center,
+           clipBehavior: Clip.none,
+           children: [
+-            Positioned(bottom: -size * 0.05, child: _buildPlatform(size)),
+-
+-            // Titan Group (Outline + Sprite)
++            Positioned(
++              bottom: -size * 0.05 + 35.0,
++              child: _buildPlatform(size),
++            ), // Titan Group (Outline + Sprite)
+             Transform.translate(
+               offset: Offset(0, titanYOffset),
+               child: Transform.scale(
+                 scale: titanScale,
+                 child: Stack(

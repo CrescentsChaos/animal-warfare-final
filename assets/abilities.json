@@ -1935,5 +1935,315 @@
     "trigger": "onCalculateDamage",
     "effectType": "damageMultiplier",
     "magnitude": 1.2
+  },
+  {
+    "name": "Chloroplast",
+    "description": "Weather Ball, Solar Beam/Blade, and Growth act as if Sunny weather is active.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Whiteout",
+    "description": "Grants a 1.5x power boost to Cryo-type moves under snowstorm.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 1.5,
+    "conditions": ["weather_snowstorm", "type_cryo"]
+  },
+  {
+    "name": "Pyromancy",
+    "description": "Increases the chance of inflicting Burn by 5x.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Prism Scales",
+    "description": "Takes 30% less damage from Special attacks.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 0.7,
+    "conditions": ["category_special"]
+  },
+  {
+    "name": "Sand Song",
+    "description": "Sound-type moves get a 1.2x boost and become Earth-type.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 1.2,
+    "conditions": ["type_sound"]
+  },
+  {
+    "name": "Rampage",
+    "description": "The user does not need to recharge after knocking out an opponent.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Vengeance",
+    "description": "Boosts Spectral-type moves by 1.2x, or 1.5x when below 1/3 HP.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 1.2,
+    "conditions": ["type_spectral"]
+  },
+  {
+    "name": "Blitz Boxer",
+    "description": "At full HP, gives +1 priority to the user's punching moves.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Antarctic Bird",
+    "description": "Cryo-type and Flying-type moves get a 1.3x power boost.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 1.3
+  },
+  {
+    "name": "Immolate",
+    "description": "Basic-type moves become Blaze-type moves and get a 1.2x boost.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 1.2,
+    "conditions": ["type_basic"]
+  },
+  {
+    "name": "Crystallize",
+    "description": "Rock-type moves become Cryo-type moves and get a 1.2x boost.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 1.2,
+    "conditions": ["type_rock"]
+  },
+  {
+    "name": "Electrocytes",
+    "description": "Boosts the power of Electric-type moves by 1.25x.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 1.25,
+    "conditions": ["type_electric"]
+  },
+  {
+    "name": "Aerodynamics",
+    "description": "Boosts Speed instead of being hit by Flying-type moves.",
+    "trigger": "onDamageTaken",
+    "effectType": "preventDamage",
+    "conditions": ["type_flying"]
+  },
+  {
+    "name": "Christmas Spirit",
+    "description": "Takes 50% less damage if snowstorm is active.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 0.5,
+    "conditions": ["weather_snowstorm"]
+  },
+  {
+    "name": "Exploit Weakness",
+    "description": "Moves that are super effective deal 1.25x damage.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 1.25
+  },
+  {
+    "name": "Ground Shock",
+    "description": "30% chance to paralyze the attacker on contact.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Ancient Idol",
+    "description": "Sets Trick Room for 5 turns on entry.",
+    "trigger": "onEntry",
+    "effectType": "trickRoom"
+  },
+  {
+    "name": "Perfectionist",
+    "description": "-1 Priority for moves with >100 BP. Critical hit chance increased.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Growing Tooth",
+    "description": "Boosts Attack by 1 stage after using a bite move.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Inflatable",
+    "description": "Boosts Defense and Resistance by 1 stage when hit.",
+    "trigger": "onDamageTaken",
+    "effectType": "statChange",
+    "targetStat": "defense,resistance",
+    "magnitude": 1
+  },
+  {
+    "name": "Aurora Borealis",
+    "description": "Boosts damage by 1.3x when Aurora Veil is active.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 1.3
+  },
+  {
+    "name": "Avenger",
+    "description": "If a party Pokémon fainted last turn, the next move deals 1.5x damage.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 1.5
+  },
+  {
+    "name": "Let's Roll",
+    "description": "Casts Defense Curl on entry, boosting Defense stage by 1.",
+    "trigger": "onEntry",
+    "effectType": "statChange",
+    "targetStat": "defense",
+    "magnitude": 1
+  },
+  {
+    "name": "Loud Bang",
+    "description": "Sound-based moves have a 50% chance to confuse the foe.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Lead Coat",
+    "description": "Takes 40% less damage from Physical moves. Speed is reduced to 0.9x.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 0.6,
+    "conditions": ["category_physical"]
+  },
+  {
+    "name": "Amphibious",
+    "description": "Boosts the base damage of Aquatic-type moves by 1.5x.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 1.5,
+    "conditions": ["type_aquatic"]
+  },
+  {
+    "name": "Earthbound",
+    "description": "Boosts Earth-type moves by 1.2x, or 1.5x when under 1/3 HP.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 1.2,
+    "conditions": ["type_earth"]
+  },
+  {
+    "name": "Fighting Spirit",
+    "description": "Basic-type moves become Martial-type moves and get a 1.2x boost.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 1.2,
+    "conditions": ["type_basic"]
+  },
+  {
+    "name": "Feline Prowess",
+    "description": "Doubles the user's Power stat.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Coil Up",
+    "description": "On entry, gives +1 priority once to the first biting move used.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Fossilized",
+    "description": "Halves damage taken from Rock moves. Boosts own Rock moves by 1.2x.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 1.2,
+    "conditions": ["type_rock"]
+  },
+  {
+    "name": "Magical Dust",
+    "description": "If hit by a contact move, changes the attacker's type to Mystic.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Dreamcatcher",
+    "description": "Doubles move base damage if any Pokémon on the field is asleep.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 2.0
+  },
+  {
+    "name": "Nocturnal",
+    "description": "Boosts own Darkness moves by 1.25x. Takes 25% less damage from Darkness or Mystic moves.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 1.25,
+    "conditions": ["type_darkness"]
+  },
+  {
+    "name": "Self Sufficient",
+    "description": "Recovers 1/16 of max HP at the end of each turn.",
+    "trigger": "onTurnEnd",
+    "effectType": "heal",
+    "magnitude": 0.0625
+  },
+  {
+    "name": "Tectonize",
+    "description": "Basic-type moves become Earth-type moves and get a 1.1x boost.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 1.1,
+    "conditions": ["type_basic"]
+  },
+  {
+    "name": "Liquified",
+    "description": "Takes half damage from contact moves, but Aquatic moves deal 2x damage.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 0.5,
+    "conditions": ["isContact"]
+  },
+  {
+    "name": "Dragonslayer",
+    "description": "Deals 1.5x damage to Drake-type Pokémon. Takes 0.5x damage from Drake-type moves.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 1.5,
+    "conditions": ["target_type_drake"]
+  },
+  {
+    "name": "Mountaineer",
+    "description": "Immune to Rock-type attacks and Stealth Rock damage on entry.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Hydrate",
+    "description": "Basic-type moves become Aquatic-type moves and get a 1.1x boost.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 1.1,
+    "conditions": ["type_basic"]
+  },
+  {
+    "name": "Permafrost",
+    "description": "Takes 25% less damage from Super-effective moves.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 0.75,
+    "conditions": ["super_effective"]
+  },
+  {
+    "name": "Primal Armor",
+    "description": "Takes 50% less damage from Super-effective moves.",
+    "trigger": "onCalculateDamage",
+    "effectType": "damageMultiplier",
+    "magnitude": 0.5,
+    "conditions": ["super_effective"]
+  },
+  {
+    "name": "Raging Boxer",
+    "description": "Punching moves hit twice. 1st hit at 100% power, 2nd hit at 40%.",
+    "trigger": "none",
+    "effectType": "none"
   }
-]
+]
+

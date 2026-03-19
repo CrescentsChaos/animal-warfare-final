@@ -297,6 +297,8 @@ class BattleOrganism {
   ElementalType? activeTeraType; // set when Prismorph activates
 
   String? lastHitById;
+  bool coilUpActive = false;
+  bool partyMemberFaintedLastTurn = false;
 
   // New state variables for advanced mechanics
   int? perishTurnCount;

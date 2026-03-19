@@ -1042,6 +1042,15 @@
         "biome": "River,Lake,Mangrove"
     },
     {
+        "id": "darkgrass",
+        "name": "Dark Grass",
+        "category": "semiSolid",
+        "assetPath": "assets/tiles/darkgrass.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Swamp"
+    },
+    {
         "id": "border",
         "name": "Border",
         "category": "solid",
@@ -1062,6 +1071,26 @@
         "showInEditor": true,
         "biome": "any",
         "interactionText": "It's a teleporter."
+    },
+    {
+        "id": "grass_ground",
+        "name": "Grass Ground",
+        "category": "ground",
+        "assetPath": "assets/tiles/ground/grass_ground.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1,
+        "biome": "any"
+    },
+    {
+        "id": "brickwaste",
+        "name": "Brick Waste",
+        "category": "ground",
+        "assetPath": "assets/tiles/ground/brickwaste.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "encounterRate": 0.1,
+        "biome": "any"
     },
     {
         "id": "mud_e1",

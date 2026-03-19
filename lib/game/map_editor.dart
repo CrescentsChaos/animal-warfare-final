@@ -1543,8 +1543,8 @@ class _MapEditorState extends State<MapEditor> {
             child: InteractiveViewer(
               transformationController: _transController,
               constrained: false,
-              scaleEnabled: true,
-              panEnabled: true,
+              scaleEnabled: _mode == EditorMode.pan,
+              panEnabled: _mode == EditorMode.pan,
               boundaryMargin: const EdgeInsets.all(1000),
               minScale: 0.1,
               maxScale: 3.0,
@@ -1554,47 +1554,41 @@ class _MapEditorState extends State<MapEditor> {
                 onPointerCancel: (_) => setState(() => _pointerCount--),
                 child: GestureDetector(
                   onPanStart: _mode == EditorMode.pan ? null : (d) {
-                    if (_pointerCount == 1) {
-                      const cs = 40.0;
-                      _handleInteraction(
-                        (d.localPosition.dy / cs).floor(),
-                        (d.localPosition.dx / cs).floor(),
-                        true,
-                      );
-                    }
+                    const cs = 40.0;
+                    _handleInteraction(
+                      (d.localPosition.dy / cs).floor(),
+                      (d.localPosition.dx / cs).floor(),
+                      true,
+                    );
                   },
                   onPanUpdate: _mode == EditorMode.pan ? null : (d) {
-                    if (_pointerCount == 1) {
-                      const cs = 40.0;
-                      _handleInteraction(
-                        (d.localPosition.dy / cs).floor(),
-                        (d.localPosition.dx / cs).floor(),
-                        false,
-                      );
-                    }
+                    const cs = 40.0;
+                    _handleInteraction(
+                      (d.localPosition.dy / cs).floor(),
+                      (d.localPosition.dx / cs).floor(),
+                      false,
+                    );
                   },
                   onPanEnd: _mode == EditorMode.pan ? null : (_) => _onInteractionEnd(),
                   onTapDown: _mode == EditorMode.pan ? null : (d) {
-                    if (_pointerCount == 1) {
-                      const cs = 40.0;
-                      _handleInteraction(
-                        (d.localPosition.dy / cs).floor(),
-                        (d.localPosition.dx / cs).floor(),
-                        true,
-                      );
-                    }
+                    const cs = 40.0;
+                    _handleInteraction(
+                      (d.localPosition.dy / cs).floor(),
+                      (d.localPosition.dx / cs).floor(),
+                      true,
+                    );
                   },
+                  onTap: _mode == EditorMode.pan ? null : () {}, // Just to ensure it triggers arena
                   onTapUp: _mode == EditorMode.pan ? null : (_) => _onInteractionEnd(),
                   onLongPressStart: _mode == EditorMode.pan ? null : (d) {
-                    if (_pointerCount == 1) {
-                      const cs = 40.0;
-                      _handleInteraction(
-                        (d.localPosition.dy / cs).floor(),
-                        (d.localPosition.dx / cs).floor(),
-                        true,
-                      );
-                    }
+                    const cs = 40.0;
+                    _handleInteraction(
+                      (d.localPosition.dy / cs).floor(),
+                      (d.localPosition.dx / cs).floor(),
+                      true,
+                    );
                   },
+                  behavior: HitTestBehavior.opaque,
                   child: MouseRegion(
                     onHover: (d) {
                       const cs = 40.0;
