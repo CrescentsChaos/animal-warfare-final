@@ -14,7 +14,7 @@ class EventFlags {
     this.completedQuests = const {},
     this.storyFlags = const {},
     this.collectedItems = const {},
-    this.currentMapId = 'swamp',
+    this.currentMapId = 'littleroot_town',
   });
 
   EventFlags copyWith({
@@ -68,7 +68,7 @@ class EventFlags {
       completedQuests: Set<String>.from(json['completedQuests'] ?? []),
       storyFlags: Set<String>.from(json['storyFlags'] ?? []),
       collectedItems: Set<String>.from(json['collectedItems'] ?? []),
-      currentMapId: json['currentMapId'] as String? ?? 'swamp',
+      currentMapId: json['currentMapId'] as String? ?? 'littleroot_town',
     );
   }
 }

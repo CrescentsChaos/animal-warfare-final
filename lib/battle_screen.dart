@@ -2064,7 +2064,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
       decoration: BoxDecoration(
         color: barColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _getBiomeThemeColor(), width: 2),
+        border: Border.all(color: Colors.black, width: 2),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.5),
@@ -2276,6 +2276,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                 mirror: false, // Mirrored from previous State
                 biomeName: widget.biomeName,
                 hazards: hazards,
+                encounterTileId: widget.encounterTileId,
               ),
             ),
           ),
@@ -2312,7 +2313,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
       decoration: BoxDecoration(
         color: barColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _getBiomeThemeColor(), width: 2),
+        border: Border.all(color: Colors.black, width: 2),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.5),
@@ -2512,6 +2513,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                 mirror: true,
                 biomeName: widget.biomeName,
                 hazards: hazards,
+                encounterTileId: widget.encounterTileId,
               ),
             ),
           ),
@@ -2761,9 +2763,9 @@ class _BattleScreenContentState extends State<BattleScreenContent>
       ),
       padding: EdgeInsets.all(isNarrow ? 8 : 10),
       decoration: BoxDecoration(
-        color: overlayColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _getBiomeThemeColor(), width: 2),
+        color: Colors.black.withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.black, width: 2),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(
@@ -3254,8 +3256,8 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                   onPressed: isTurnLocked
                       ? null
                       : (widget.isArenaBattle ||
-                              widget.isRogueMode ||
-                              widget.isTrainerBattle)
+                            widget.isRogueMode ||
+                            widget.isTrainerBattle)
                       ? () async {
                           final confirm = await showDialog<bool>(
                             context: context,
@@ -3530,7 +3532,8 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               battleManager.result == BattleResult.capture) {
             // Perma-death removed in Rogue Mode as well
             final survivingTeam = List<CapturedOrganism>.from(
-                userState.currentUser?.rogueLikeState.team ?? []);
+              userState.currentUser?.rogueLikeState.team ?? [],
+            );
 
             // REORDER: Move the active animal (the one that finished the battle) to the lead position
             final activeOrg = battleManager.player.organism;
@@ -3895,9 +3898,9 @@ class _BattleScreenContentState extends State<BattleScreenContent>
       builder: (ctx) => Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: _getBiomeSecondaryColor().withValues(alpha: 0.9),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          border: Border.all(color: _getBiomeThemeColor(), width: 2),
+          color: Colors.black87,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: Colors.black, width: 2),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -3911,55 +3914,53 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               ),
             ),
             const SizedBox(height: 16),
-            ...nets
-                .map(
-                  (net) => Padding(
-                    padding: const EdgeInsets.only(bottom: 8.0),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(ctx);
-                        if (widget.isRogueMode) {
-                          userState.addRogueLoot(net['id'] as String, -1);
-                        } else {
-                          userState.addLoot(net['id'] as String, -1);
-                        }
-                        bm.attemptCapture(netId: net['id'] as String);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: net['color'] as Color,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 12,
-                          horizontal: 16,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: const BorderSide(color: Colors.white, width: 2),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            net['name'] as String,
-                            style: const TextStyle(
-                              fontFamily: 'PressStart2P',
-                              fontSize: 10,
-                            ),
-                          ),
-                          Text(
-                            'x${net['count']}',
-                            style: const TextStyle(
-                              fontFamily: 'PressStart2P',
-                              fontSize: 10,
-                            ),
-                          ),
-                        ],
-                      ),
+            ...nets.map(
+              (net) => Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    if (widget.isRogueMode) {
+                      userState.addRogueLoot(net['id'] as String, -1);
+                    } else {
+                      userState.addLoot(net['id'] as String, -1);
+                    }
+                    bm.attemptCapture(netId: net['id'] as String);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: net['color'] as Color,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 16,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: const BorderSide(color: Colors.white, width: 2),
                     ),
                   ),
-                )
-                ,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        net['name'] as String,
+                        style: const TextStyle(
+                          fontFamily: 'PressStart2P',
+                          fontSize: 10,
+                        ),
+                      ),
+                      Text(
+                        'x${net['count']}',
+                        style: const TextStyle(
+                          fontFamily: 'PressStart2P',
+                          fontSize: 10,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -3995,7 +3996,7 @@ class _CaptureReplaceDialog extends StatelessWidget {
         decoration: BoxDecoration(
           color: secondaryColor,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.highlightColor, width: 3),
+          border: Border.all(color: Colors.black, width: 3),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -5040,46 +5041,45 @@ class _BattleResultDialogState extends State<_BattleResultDialog> {
                 children: [
                   Text(
                     org.name.toUpperCase(),
-                    style: const TextStyle(
-                      fontFamily: 'PressStart2P',
-                      fontSize: 11,
-                      color: Colors.white,
-                      letterSpacing: 1.2,
+                    style: GoogleFonts.orbitron(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
                   const SizedBox(height: 4),
                   Text(
-                    side,
+                    side.toUpperCase(),
                     style: const TextStyle(
                       fontFamily: 'PressStart2P',
                       fontSize: 7,
                       color: Colors.amber,
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      _buildMiniStat(
-                        Icons.flash_on,
-                        '${stats.totalDamageDealt}',
-                        Colors.redAccent,
-                      ),
-                      const SizedBox(width: 12),
-                      _buildMiniStat(
-                        Icons.close,
-                        '${stats.totalKills}',
-                        Colors.cyan,
-                      ),
-                    ],
-                  ),
-                ],
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        _buildMiniStat(
+                          Icons.flash_on,
+                          '${stats.totalDamageDealt}',
+                          Colors.redAccent,
+                        ),
+                        const SizedBox(width: 12),
+                        _buildMiniStat(
+                          Icons.close,
+                          '${stats.totalKills}',
+                          Colors.cyan,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-    );
-  }
+      );
+    }
 
   Widget _buildMiniStat(IconData icon, String value, Color color) {
     return Row(
@@ -5541,6 +5541,7 @@ class _BattleSprite extends StatefulWidget {
   final String biomeName;
   final List<String> hazards;
   final bool hideAnimal; // Added
+  final String? encounterTileId;
 
   const _BattleSprite({
     super.key,
@@ -5551,6 +5552,7 @@ class _BattleSprite extends StatefulWidget {
     required this.biomeName,
     required this.hazards,
     this.hideAnimal = false, // Added
+    this.encounterTileId,
   });
 
   @override
@@ -5561,6 +5563,7 @@ class _BattleSpriteState extends State<_BattleSprite>
     with TickerProviderStateMixin {
   String? _imageSourceType;
   late String _imagePath;
+  String _platformImagePath = 'assets/platforms/default.png';
   late AnimationController _pulseController;
   late AnimationController _bounceController;
   late Animation<double> _bounceAnimation;
@@ -5578,6 +5581,7 @@ class _BattleSpriteState extends State<_BattleSprite>
   void initState() {
     super.initState();
     _determineImageSource();
+    _determinePlatformImage();
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 3),
@@ -5648,6 +5652,9 @@ class _BattleSpriteState extends State<_BattleSprite>
       _entryController.reset();
       _entryController.forward();
     }
+    if (widget.encounterTileId != oldWidget.encounterTileId) {
+      _determinePlatformImage();
+    }
   }
 
   String _getLocalPath() {
@@ -5676,6 +5683,28 @@ class _BattleSpriteState extends State<_BattleSprite>
           _imageSourceType = 'network';
           _imagePath = widget.organism.displaySprite;
         });
+      }
+    }
+  }
+
+  Future<void> _determinePlatformImage() async {
+    final tileId = widget.encounterTileId;
+    if (tileId == null) {
+      if (mounted) setState(() => _platformImagePath = 'assets/platforms/default.png');
+      return;
+    }
+    
+    final pPath = 'assets/platforms/$tileId.png';
+    try {
+      await rootBundle.load(pPath);
+      if (mounted) setState(() => _platformImagePath = pPath);
+    } catch (_) {
+      try {
+        final wPath = 'assets/platforms/$tileId.webp';
+        await rootBundle.load(wPath);
+        if (mounted) setState(() => _platformImagePath = wPath);
+      } catch (_) {
+        if (mounted) setState(() => _platformImagePath = 'assets/platforms/default.png');
       }
     }
   }
@@ -5813,37 +5842,6 @@ class _BattleSpriteState extends State<_BattleSprite>
             errorBuilder: (context, error, stackTrace) =>
                 const Icon(Icons.pets, color: Colors.white54, size: 40),
           );
-
-    Color platformColor;
-    final biome = widget.biomeName.toLowerCase();
-    if (biome.contains('swamp')) {
-      platformColor = const Color(0xFF4E342E);
-    } else if (biome.contains('desert') || biome.contains('savanna')) {
-      platformColor = const Color(0xFFE0C487);
-    } else if (biome.contains('snow') ||
-        biome.contains('ice') ||
-        biome.contains('tundra')) {
-      platformColor = const Color(0xFFE0F7FA);
-    } else if (biome.contains('volcan')) {
-      platformColor = const Color(0xFF3E2723);
-    } else if (biome.contains('mountain')) {
-      platformColor = const Color(0xFF757575);
-    } else if (biome.contains('forest') || biome.contains('jungle')) {
-      platformColor = const Color(0xFF2E7D32);
-    } else if (biome.contains('ocean') ||
-        biome.contains('beach') ||
-        biome.contains('lake') ||
-        biome.contains('river')) {
-      platformColor = const Color(0xFF0277BD);
-    } else {
-      platformColor = const Color(0xFF8D6E63);
-    }
-
-    final platformOutlineColor = HSLColor.fromColor(platformColor)
-        .withLightness(
-          (HSLColor.fromColor(platformColor).lightness - 0.2).clamp(0.0, 1.0),
-        )
-        .toColor();
 
     const double sat = 1.3;
     const List<double> matrix = <double>[
@@ -6006,38 +6004,13 @@ class _BattleSpriteState extends State<_BattleSprite>
           alignment: Alignment.center,
           clipBehavior: Clip.none,
           children: [
-            // Platform
+            // Platform Image
             Positioned(
-              bottom: -size * 0.05 + 35.0,
-              child: Transform(
-                transform: Matrix4.identity()
-                  ..setEntry(3, 2, 0.001)
-                  ..rotateX(1.1),
-                alignment: Alignment.center,
-                child: Container(
-                  width: size * 1.3,
-                  height: size * 0.9,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: platformOutlineColor, width: 3),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.5),
-                        blurRadius: 10,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
-                    gradient: RadialGradient(
-                      center: Alignment.center,
-                      radius: 0.9,
-                      colors: [
-                        platformColor,
-                        platformColor.withValues(alpha: 0.0),
-                      ],
-                      stops: const [0.3, 1.0],
-                    ),
-                  ),
-                ),
+              bottom: -size * 0.05 + 20.0,
+              child: Image.asset(
+                _platformImagePath,
+                width: size * 1.5,
+                fit: BoxFit.contain,
               ),
             ),
             // Sprite Group
@@ -6482,15 +6455,8 @@ class _AbilityPopUpState extends State<_AbilityPopUp>
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
               color: Colors.black.withValues(alpha: 0.5),
-              border: Border.all(color: widget.themeColor, width: 2),
+              border: Border.all(color: Colors.black, width: 2),
               borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.5),
-                  blurRadius: 10,
-                  offset: const Offset(4, 4),
-                ),
-              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -6801,8 +6767,8 @@ class _PartyScreenDialog extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFF1A2A1A),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        border: Border.all(color: themeColor.withValues(alpha: 0.4), width: 2),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.black.withValues(alpha: 0.4), width: 2),
       ),
       padding: const EdgeInsets.fromLTRB(12, 16, 12, 8),
       child: Column(
@@ -7109,7 +7075,7 @@ class _PartyScreenDialog extends StatelessWidget {
           decoration: BoxDecoration(
             color: const Color(0xFF1A1A1A),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: themeColor, width: 2),
+            border: Border.all(color: Colors.black, width: 2),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,

@@ -20832,7 +20832,7 @@
         "rarity": "Epic",
         "resistance": 60,
         "scientific_name": "Megachile pluto",
-        "spawn_tiles": "tall_grass",
+        "spawn_tiles": "honey_tree",
         "speed": 30,
         "sprite": "https://i.postimg.cc/7PX6jGvR/Wallaces-Giant-Bee.png",
         "weight": 1
@@ -20855,7 +20855,7 @@
         "rarity": "Common",
         "resistance": 95,
         "scientific_name": "Apis mellifera",
-        "spawn_tiles": "tall_grass",
+        "spawn_tiles": "honey_tree",
         "speed": 60,
         "sprite": "https://i.postimg.cc/T2QwBL8S/Western-Honey-Bee.png",
         "weight": 1
@@ -24075,7 +24075,7 @@
         "rarity": "Common",
         "resistance": 60,
         "scientific_name": "Halictidae",
-        "spawn_tiles": "tall_grass",
+        "spawn_tiles": "honey_tree",
         "speed": 110,
         "sprite": "https://i.postimg.cc/Xvxgx1PR/Sweat-Bee.png",
         "weight": 1
@@ -49375,7 +49375,7 @@
         "rarity": "Common",
         "resistance": 70,
         "scientific_name": "Ceratina smaragdula",
-        "spawn_tiles": "tall_grass",
+        "spawn_tiles": "honey_tree",
         "speed": 45,
         "sprite": "emerald_small_carpenter_bee.png",
         "weight": 1
@@ -49894,7 +49894,7 @@
         "cry": "bee",
         "defense": 55,
         "description": "The Lucifer bee is a small tropical stingless bee known for its defensive biting behavior. Colonies aggressively protect their nests and produce resin rich honey in forest habitats.",
-        "drops": "Resin Wax, Stingless Honey",
+        "drops": "Honeycomb, Honey",
         "habitat": "Rainforest, Jungle",
         "health": 60,
         "moves": "Pin Missile, Venom Sting, Focus Energ, Brutal Swing, Bug Buzz, Lunge, Drill Run, Toxic, Brick Break, Protect, Aerial Ace, Swords Dance, Giga Drain, Hyper Beam, Agility, Sludge Bomb, Giga Impact, Solar Beam, Poison Jab, X-Scissor, U-turn, Substitute, Toxic Spikes, Outrage, Electricweb",
@@ -49904,7 +49904,7 @@
         "rarity": "Uncommon",
         "resistance": 50,
         "scientific_name": "Trigona sp",
-        "spawn_tiles": "tall_grass",
+        "spawn_tiles": "honey_tree",
         "speed": 85,
         "sprite": "lucifer_bee.png",
         "weight": 1

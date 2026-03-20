@@ -49,11 +49,11 @@ class _ExploreSelectionScreenState extends State<ExploreSelectionScreen> {
     }
   }
 
-  void _enterBiome(String biomeName, {BiomeMapData? customData}) {
+  void _enterBiome(String biomeId, {BiomeMapData? customData}) {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => BiomeExplorationMap(
-          biomeName: biomeName,
+          biomeName: biomeId,
           allOrganisms: _allOrganisms,
           currentUser: widget.currentUser,
           authService: widget.authService,
@@ -139,15 +139,11 @@ class _ExploreSelectionScreenState extends State<ExploreSelectionScreen> {
                         mapData = {'base': lines};
                       }
 
-                      // Extract biomeId and biomeName from json if available
+                      // Extract biomeId from json if available
                       String biomeId = 'swamp';
-                      String? biomeName;
                       if (mapData is Map) {
                         if (mapData.containsKey('id')) {
                           biomeId = mapData['id'];
-                        }
-                        if (mapData.containsKey('name')) {
-                          biomeName = mapData['name'];
                         }
                       }
 
@@ -157,9 +153,9 @@ class _ExploreSelectionScreenState extends State<ExploreSelectionScreen> {
                         config: config,
                       );
                       Navigator.of(context).pop();
-                      // Use biomeName from JSON if provided, else fallback to config name
+                      // Use the map ID for biome lookup
                       _enterBiome(
-                        biomeName ?? config.name,
+                        biomeId,
                         customData: customData,
                       );
                     } catch (e) {
@@ -183,12 +179,12 @@ class _ExploreSelectionScreenState extends State<ExploreSelectionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Separate built-in biomes from custom ones
+    // Separate asset biomes (from maps.json) from custom user-created ones
     final builtins = BiomeDataManager.biomes.values
-        .where((b) => BiomeDataManager.builtinBiomeIds.contains(b.id))
+        .where((b) => BiomeDataManager.assetBiomeIds.contains(b.id))
         .toList();
     final customs = BiomeDataManager.biomes.values
-        .where((b) => !BiomeDataManager.builtinBiomeIds.contains(b.id))
+        .where((b) => !BiomeDataManager.assetBiomeIds.contains(b.id))
         .toList();
 
     return DefaultTabController(
@@ -250,18 +246,9 @@ class _ExploreSelectionScreenState extends State<ExploreSelectionScreen> {
                               description: _getBiomeDescription(b.id),
                               icon: _getBiomeIcon(b.id),
                               color: _getBiomeColor(b.id),
-                              onTap: () => _enterBiome(b.name),
+                              onTap: () => _enterBiome(b.id),
                             ),
                           )),
-                      // Locked Placeholder
-                      _buildBiomeCard(
-                        name: 'Plains (Locked)',
-                        description:
-                            'Vast grasslands with high visibility. Coming soon.',
-                        icon: Icons.grass,
-                        color: Colors.grey,
-                        onTap: null,
-                      ),
                     ],
                   ),
                   // Tab 2: Custom Maps
@@ -316,7 +303,7 @@ class _ExploreSelectionScreenState extends State<ExploreSelectionScreen> {
                                 description: 'Custom map created by you.',
                                 icon: Icons.map,
                                 color: Colors.blueAccent,
-                                onTap: () => _enterBiome(b.name),
+                                onTap: () => _enterBiome(b.id),
                                 trailing: IconButton(
                                   icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
                                   onPressed: () => _confirmDelete(b),
@@ -394,7 +381,7 @@ class _ExploreSelectionScreenState extends State<ExploreSelectionScreen> {
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: color.withValues(alpha: 0.5), width: 2),
+          border: Border.all(color: Colors.black.withValues(alpha: 0.5), width: 2),
         ),
         child: InkWell(
           onTap: onTap,

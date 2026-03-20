@@ -115,6 +115,7 @@ flutter:
     - assets/tiles/
     - assets/tiles/trees/
     - assets/tiles/ground/
+    - assets/tiles/building/
     - assets/overworld/
     - assets/maps.json
     - assets/tiles.json

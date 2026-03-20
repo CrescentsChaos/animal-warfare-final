@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:animal_warfare/explore_screen.dart';
-import 'package:animal_warfare/game/explore_selection_screen.dart';
 import 'package:animal_warfare/anidex_screen.dart';
 import 'package:animal_warfare/quiz_screen.dart';
 import 'package:animal_warfare/animal_box_screen.dart';
@@ -10,6 +9,7 @@ import 'package:animal_warfare/local_auth_service.dart';
 import 'package:animal_warfare/phone_screen.dart';
 import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/crafting_screen.dart';
+import 'package:animal_warfare/tool_screen.dart';
 import 'package:animal_warfare/battle_tab_screen.dart';
 import 'package:animal_warfare/services/audio_service.dart';
 import 'package:animal_warfare/theme.dart';
@@ -234,20 +234,20 @@ class _GameScreenState extends State<GameScreen> {
                   ),
 
                   _buildMenuButton(
-                    text: 'Explore Map',
+                    text: 'Map & Tools',
                     subtitle: 'Walk through biomes & encounter animals',
                     icon: Icons.map_rounded,
                     color: const Color(0xFF66BB6A),
                     onPressed: () {
-                      final user =
-                          Provider.of<UserState>(
-                            context,
-                            listen: false,
-                          ).currentUser ??
-                          widget.currentUser;
+                      final userState = Provider.of<UserState>(
+                        context,
+                        listen: false,
+                      );
+                      final user = userState.currentUser ?? widget.currentUser;
                       final authService = LocalAuthService();
+
                       _navigateTo(
-                        ExploreSelectionScreen(
+                        ToolScreen(
                           currentUser: user,
                           authService: authService,
                         ),

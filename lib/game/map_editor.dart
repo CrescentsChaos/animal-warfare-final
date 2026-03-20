@@ -54,7 +54,9 @@ class _EditorSnapshot {
     isWalkable: isWalkable.map((r) => List<bool>.from(r)).toList(),
     spawnR: spawnR,
     spawnC: spawnC,
-    teleporters: teleporters.map((t) => MapTransition.fromJson(t.toJson())).toList(),
+    teleporters: teleporters
+        .map((t) => MapTransition.fromJson(t.toJson()))
+        .toList(),
     npcs: npcs.map((n) => NPCData.fromJson(n.toJson())).toList(),
   );
 }
@@ -122,6 +124,7 @@ class _MapEditorState extends State<MapEditor> {
   EditorMode _mode = EditorMode.pan;
   bool _showGrid = true;
   bool _autoBase = true;
+  bool _isIndoor = false;
   String _hoverInfo = '';
   bool?
   _dragWalkValue; // Store the target walkability for the current drag stroke
@@ -157,6 +160,7 @@ class _MapEditorState extends State<MapEditor> {
     super.initState();
     _biomeId = widget.biomeId;
     _biomeConfig = BiomeDataManager.getBiome(_biomeId);
+    _isIndoor = _biomeConfig.isIndoor;
     _refreshTileCategories();
 
     _selectedTile = _biomeConfig.defaultTileId.isNotEmpty
@@ -190,9 +194,7 @@ class _MapEditorState extends State<MapEditor> {
   }
 
   void _initGrid() {
-    final defaultBase = _biomeConfig.defaultTileId.isNotEmpty
-        ? _biomeConfig.defaultTileId
-        : (_baseTiles.isNotEmpty ? _baseTiles.first : 'swamp_ground');
+    const String defaultBase = 'empty';
     _grid = List.generate(
       _rows,
       (_) => List.generate(_cols, (_) => defaultBase),
@@ -214,33 +216,13 @@ class _MapEditorState extends State<MapEditor> {
   }
 
   void _applyBorder() {
-    // Fill outermost ring with border tile on BOTH layers
+    // outermost ring: non-walkable and non-drawable boundary
     for (int c = 0; c < _cols; c++) {
-      // Top row
-      _grid[0][c] = _biomeConfig.defaultTileId;
-      if (!_overlayGrid[0][c].contains('border')) {
-        _overlayGrid[0][c].add('border');
-      }
       _isWalkable[0][c] = false;
-      // Bottom row
-      _grid[_rows - 1][c] = _biomeConfig.defaultTileId;
-      if (!_overlayGrid[_rows - 1][c].contains('border')) {
-        _overlayGrid[_rows - 1][c].add('border');
-      }
       _isWalkable[_rows - 1][c] = false;
     }
     for (int r = 0; r < _rows; r++) {
-      // Left col
-      _grid[r][0] = _biomeConfig.defaultTileId;
-      if (!_overlayGrid[r][0].contains('border')) {
-        _overlayGrid[r][0].add('border');
-      }
       _isWalkable[r][0] = false;
-      // Right col
-      _grid[r][_cols - 1] = _biomeConfig.defaultTileId;
-      if (!_overlayGrid[r][_cols - 1].contains('border')) {
-        _overlayGrid[r][_cols - 1].add('border');
-      }
       _isWalkable[r][_cols - 1] = false;
     }
   }
@@ -251,9 +233,7 @@ class _MapEditorState extends State<MapEditor> {
 
   void _resetMap() {
     setState(() {
-      final defaultBase = _biomeConfig.defaultTileId.isNotEmpty
-          ? _biomeConfig.defaultTileId
-          : (_baseTiles.isNotEmpty ? _baseTiles.first : 'swamp_ground');
+      const defaultBase = 'empty';
       _grid = List.generate(
         _rows,
         (_) => List.generate(_cols, (_) => defaultBase),
@@ -284,11 +264,17 @@ class _MapEditorState extends State<MapEditor> {
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1E1E1E),
         title: const Text('Reset Map?', style: TextStyle(color: Colors.white)),
-        content: const Text('This will clear everything.', style: TextStyle(color: Colors.white70)),
+        content: const Text(
+          'This will clear everything.',
+          style: TextStyle(color: Colors.white70),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('CANCEL', style: TextStyle(color: Colors.white54)),
+            child: const Text(
+              'CANCEL',
+              style: TextStyle(color: Colors.white54),
+            ),
           ),
           TextButton(
             onPressed: () {
@@ -313,7 +299,9 @@ class _MapEditorState extends State<MapEditor> {
         isWalkable: _isWalkable.map((r) => List<bool>.from(r)).toList(),
         spawnR: _spawnR,
         spawnC: _spawnC,
-        teleporters: _teleporters.map((t) => MapTransition.fromJson(t.toJson())).toList(),
+        teleporters: _teleporters
+            .map((t) => MapTransition.fromJson(t.toJson()))
+            .toList(),
         npcs: _npcs.map((n) => NPCData.fromJson(n.toJson())).toList(),
       ),
     );
@@ -368,8 +356,14 @@ class _MapEditorState extends State<MapEditor> {
       jsonEncode({'rows': _rows, 'cols': _cols}),
     );
     await prefs.setString('map_editor_biome_v3', _biomeId);
-    await prefs.setString('map_editor_teleporters_v3', jsonEncode(_teleporters.map((t) => t.toJson()).toList()));
-    await prefs.setString('map_editor_npcs_v3', jsonEncode(_npcs.map((n) => n.toJson()).toList()));
+    await prefs.setString(
+      'map_editor_teleporters_v3',
+      jsonEncode(_teleporters.map((t) => t.toJson()).toList()),
+    );
+    await prefs.setString(
+      'map_editor_npcs_v3',
+      jsonEncode(_npcs.map((n) => n.toJson()).toList()),
+    );
   }
 
   Future<void> _loadFromPrefs() async {
@@ -486,8 +480,8 @@ class _MapEditorState extends State<MapEditor> {
       if (_mode == EditorMode.eraser) {
         _teleporters.removeWhere((t) => t.x == c && t.y == r);
         _npcs.removeWhere((n) => n.row == r && n.col == c);
-      } 
-      // Specialized delete for teleporter mode interaction 
+      }
+      // Specialized delete for teleporter mode interaction
       else if (_mode == EditorMode.teleporter) {
         _teleporters.removeWhere((t) => t.x == c && t.y == r);
         return; // Don't erase the tiles themselves if just clearing data in specialized mode
@@ -640,37 +634,56 @@ class _MapEditorState extends State<MapEditor> {
           }
         } else if (_draggingNPC != null) {
           if (!_isBorderCell(r, c)) {
-             setState(() {
-               final idx = _npcs.indexOf(_draggingNPC!);
-               if (idx != -1) {
-                 _npcs[idx] = _draggingNPC!.copyWith(row: r, col: c);
-                 _draggingNPC = _npcs[idx];
-               }
-             });
+            setState(() {
+              final idx = _npcs.indexOf(_draggingNPC!);
+              if (idx != -1) {
+                _npcs[idx] = _draggingNPC!.copyWith(row: r, col: c);
+                _draggingNPC = _npcs[idx];
+              }
+            });
           }
         }
         break;
       default:
         break;
     }
-}
+  }
 
   void _showTeleporterDialog(int r, int c) {
-    final existing = _teleporters.firstWhere((t) => t.x == c && t.y == r, orElse: () => MapTransition(x: c, y: r, targetMap: _biomeId, targetX: 10, targetY: 10));
+    final existing = _teleporters.firstWhere(
+      (t) => t.x == c && t.y == r,
+      orElse: () => MapTransition(
+        x: c,
+        y: r,
+        targetMap: _biomeId,
+        targetX: 10,
+        targetY: 10,
+      ),
+    );
     final targetMapCtrl = TextEditingController(text: existing.targetMap);
-    final targetXCtrl = TextEditingController(text: existing.targetX.toString());
-    final targetYCtrl = TextEditingController(text: existing.targetY.toString());
+    final targetXCtrl = TextEditingController(
+      text: existing.targetX.toString(),
+    );
+    final targetYCtrl = TextEditingController(
+      text: existing.targetY.toString(),
+    );
 
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1E1E1E),
-        title: const Text('Configure Teleporter', style: TextStyle(color: Colors.white)),
+        title: const Text(
+          'Configure Teleporter',
+          style: TextStyle(color: Colors.white),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Target Map ID', style: TextStyle(color: Colors.white70, fontSize: 12)),
+            const Text(
+              'Target Map ID',
+              style: TextStyle(color: Colors.white70, fontSize: 12),
+            ),
             DropdownButton<String>(
               isExpanded: true,
               value: BiomeDataManager.biomes.keys.contains(targetMapCtrl.text)
@@ -679,15 +692,13 @@ class _MapEditorState extends State<MapEditor> {
               dropdownColor: const Color(0xFF2A2A2A),
               style: const TextStyle(color: Colors.white),
               items: BiomeDataManager.biomes.keys.map((id) {
-                return DropdownMenuItem(
-                  value: id,
-                  child: Text(id),
-                );
+                return DropdownMenuItem(value: id, child: Text(id));
               }).toList(),
               onChanged: (val) {
                 if (val != null) {
                   targetMapCtrl.text = val;
-                  (ctx as Element).markNeedsBuild(); // Force rebuild of the dialog to show selection
+                  (ctx as Element)
+                      .markNeedsBuild(); // Force rebuild of the dialog to show selection
                 }
               },
             ),
@@ -698,7 +709,10 @@ class _MapEditorState extends State<MapEditor> {
                   child: TextField(
                     controller: targetXCtrl,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Target X', labelStyle: TextStyle(color: Colors.white70)),
+                    decoration: const InputDecoration(
+                      labelText: 'Target X',
+                      labelStyle: TextStyle(color: Colors.white70),
+                    ),
                     style: const TextStyle(color: Colors.white),
                   ),
                 ),
@@ -707,7 +721,10 @@ class _MapEditorState extends State<MapEditor> {
                   child: TextField(
                     controller: targetYCtrl,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Target Y', labelStyle: TextStyle(color: Colors.white70)),
+                    decoration: const InputDecoration(
+                      labelText: 'Target Y',
+                      labelStyle: TextStyle(color: Colors.white70),
+                    ),
                     style: const TextStyle(color: Colors.white),
                   ),
                 ),
@@ -718,18 +735,21 @@ class _MapEditorState extends State<MapEditor> {
         actions: [
           if (_teleporters.any((t) => t.x == c && t.y == r))
             TextButton(
-               onPressed: () {
-                 setState(() {
-                   _teleporters.removeWhere((t) => t.x == c && t.y == r);
-                 });
-                 Navigator.pop(ctx);
-                 _onInteractionEnd();
-               },
-               child: const Text('REMOVE', style: TextStyle(color: Colors.red)),
+              onPressed: () {
+                setState(() {
+                  _teleporters.removeWhere((t) => t.x == c && t.y == r);
+                });
+                Navigator.pop(ctx);
+                _onInteractionEnd();
+              },
+              child: const Text('REMOVE', style: TextStyle(color: Colors.red)),
             ),
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('CANCEL', style: TextStyle(color: Colors.white54)),
+            child: const Text(
+              'CANCEL',
+              style: TextStyle(color: Colors.white54),
+            ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
@@ -739,7 +759,15 @@ class _MapEditorState extends State<MapEditor> {
               final ty = int.tryParse(targetYCtrl.text) ?? 10;
               setState(() {
                 _teleporters.removeWhere((t) => t.x == c && t.y == r);
-                _teleporters.add(MapTransition(x: c, y: r, targetMap: mapId, targetX: tx, targetY: ty));
+                _teleporters.add(
+                  MapTransition(
+                    x: c,
+                    y: r,
+                    targetMap: mapId,
+                    targetX: tx,
+                    targetY: ty,
+                  ),
+                );
               });
               Navigator.pop(ctx);
               _onInteractionEnd();
@@ -785,11 +813,17 @@ class _MapEditorState extends State<MapEditor> {
     // If tapping an existing NPC, open editor
     final nameCtrl = TextEditingController(text: existing.name);
     final scriptCtrl = TextEditingController(text: existing.scriptType);
-    final dialogueCtrl = TextEditingController(text: existing.dialogue.join('\n'));
+    final dialogueCtrl = TextEditingController(
+      text: existing.dialogue.join('\n'),
+    );
     final spriteCtrl = TextEditingController(text: existing.spriteKey);
     String movementType = existing.movementType;
-    final rangeCtrl = TextEditingController(text: existing.movementRange.toString());
-    final visionCtrl = TextEditingController(text: existing.visionRange.toString());
+    final rangeCtrl = TextEditingController(
+      text: existing.movementRange.toString(),
+    );
+    final visionCtrl = TextEditingController(
+      text: existing.visionRange.toString(),
+    );
     final teamIdCtrl = TextEditingController(text: existing.teamId);
     final defeatTextCtrl = TextEditingController(text: existing.defeatText);
 
@@ -805,17 +839,27 @@ class _MapEditorState extends State<MapEditor> {
               children: [
                 TextField(
                   controller: nameCtrl,
-                  decoration: const InputDecoration(labelText: 'Name', labelStyle: TextStyle(color: Colors.white70)),
+                  decoration: const InputDecoration(
+                    labelText: 'Name',
+                    labelStyle: TextStyle(color: Colors.white70),
+                  ),
                   style: const TextStyle(color: Colors.white),
                 ),
                 const SizedBox(height: 8),
-                const Text('Sprite Asset', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                const Text(
+                  'Sprite Asset',
+                  style: TextStyle(color: Colors.white70, fontSize: 12),
+                ),
                 DropdownButton<String>(
                   isExpanded: true,
-                  value: BiomeDataManager.npcTypes.contains(spriteCtrl.text) ? spriteCtrl.text : 'placeholder',
+                  value: BiomeDataManager.npcTypes.contains(spriteCtrl.text)
+                      ? spriteCtrl.text
+                      : 'placeholder',
                   dropdownColor: const Color(0xFF2A2A2A),
                   style: const TextStyle(color: Colors.white),
-                  items: BiomeDataManager.npcTypes.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+                  items: BiomeDataManager.npcTypes
+                      .map((s) => DropdownMenuItem(value: s, child: Text(s)))
+                      .toList(),
                   onChanged: (val) {
                     if (val != null) {
                       setDialogState(() => spriteCtrl.text = val);
@@ -823,13 +867,26 @@ class _MapEditorState extends State<MapEditor> {
                   },
                 ),
                 const SizedBox(height: 8),
-                const Text('Script Type', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                const Text(
+                  'Script Type',
+                  style: TextStyle(color: Colors.white70, fontSize: 12),
+                ),
                 DropdownButton<String>(
                   isExpanded: true,
-                  value: ['none', 'shopkeeper', 'medic', 'trainer'].contains(scriptCtrl.text) ? scriptCtrl.text : 'none',
+                  value:
+                      [
+                        'none',
+                        'shopkeeper',
+                        'medic',
+                        'trainer',
+                      ].contains(scriptCtrl.text)
+                      ? scriptCtrl.text
+                      : 'none',
                   dropdownColor: const Color(0xFF2A2A2A),
                   style: const TextStyle(color: Colors.white),
-                  items: ['none', 'shopkeeper', 'medic', 'trainer'].map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+                  items: ['none', 'shopkeeper', 'medic', 'trainer']
+                      .map((s) => DropdownMenuItem(value: s, child: Text(s)))
+                      .toList(),
                   onChanged: (val) {
                     if (val != null) {
                       setDialogState(() => scriptCtrl.text = val);
@@ -837,13 +894,18 @@ class _MapEditorState extends State<MapEditor> {
                   },
                 ),
                 const SizedBox(height: 8),
-                const Text('Movement Type', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                const Text(
+                  'Movement Type',
+                  style: TextStyle(color: Colors.white70, fontSize: 12),
+                ),
                 DropdownButton<String>(
                   isExpanded: true,
                   value: movementType,
                   dropdownColor: const Color(0xFF2A2A2A),
                   style: const TextStyle(color: Colors.white),
-                  items: ['still', 'random', 'pattern'].map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+                  items: ['still', 'random', 'pattern']
+                      .map((s) => DropdownMenuItem(value: s, child: Text(s)))
+                      .toList(),
                   onChanged: (val) {
                     if (val != null) {
                       setDialogState(() => movementType = val);
@@ -854,13 +916,19 @@ class _MapEditorState extends State<MapEditor> {
                   TextField(
                     controller: rangeCtrl,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Range (blocks)', labelStyle: TextStyle(color: Colors.white70)),
+                    decoration: const InputDecoration(
+                      labelText: 'Range (blocks)',
+                      labelStyle: TextStyle(color: Colors.white70),
+                    ),
                     style: const TextStyle(color: Colors.white),
                   ),
                 TextField(
                   controller: dialogueCtrl,
                   maxLines: 3,
-                  decoration: const InputDecoration(labelText: 'Dialogue (one per line)', labelStyle: TextStyle(color: Colors.white70)),
+                  decoration: const InputDecoration(
+                    labelText: 'Dialogue (one per line)',
+                    labelStyle: TextStyle(color: Colors.white70),
+                  ),
                   style: const TextStyle(color: Colors.white),
                 ),
                 if (scriptCtrl.text == 'trainer') ...[
@@ -868,20 +936,29 @@ class _MapEditorState extends State<MapEditor> {
                   TextField(
                     controller: visionCtrl,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Vision Range (tiles)', labelStyle: TextStyle(color: Colors.white70)),
+                    decoration: const InputDecoration(
+                      labelText: 'Vision Range (tiles)',
+                      labelStyle: TextStyle(color: Colors.white70),
+                    ),
                     style: const TextStyle(color: Colors.white),
                   ),
                   const SizedBox(height: 8),
                   TextField(
                     controller: teamIdCtrl,
-                    decoration: const InputDecoration(labelText: 'Team ID (from npc_teams.json)', labelStyle: TextStyle(color: Colors.white70)),
+                    decoration: const InputDecoration(
+                      labelText: 'Team ID (from npc_teams.json)',
+                      labelStyle: TextStyle(color: Colors.white70),
+                    ),
                     style: const TextStyle(color: Colors.white),
                   ),
                   const SizedBox(height: 8),
                   TextField(
                     controller: defeatTextCtrl,
                     maxLines: 2,
-                    decoration: const InputDecoration(labelText: 'Defeat Text', labelStyle: TextStyle(color: Colors.white70)),
+                    decoration: const InputDecoration(
+                      labelText: 'Defeat Text',
+                      labelStyle: TextStyle(color: Colors.white70),
+                    ),
                     style: const TextStyle(color: Colors.white),
                   ),
                 ],
@@ -901,7 +978,10 @@ class _MapEditorState extends State<MapEditor> {
             ),
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('CANCEL', style: TextStyle(color: Colors.white54)),
+              child: const Text(
+                'CANCEL',
+                style: TextStyle(color: Colors.white54),
+              ),
             ),
             ElevatedButton(
               onPressed: () {
@@ -909,7 +989,10 @@ class _MapEditorState extends State<MapEditor> {
                   name: nameCtrl.text.trim(),
                   spriteKey: spriteCtrl.text.trim(),
                   scriptType: scriptCtrl.text,
-                  dialogue: dialogueCtrl.text.split('\n').where((s) => s.trim().isNotEmpty).toList(),
+                  dialogue: dialogueCtrl.text
+                      .split('\n')
+                      .where((s) => s.trim().isNotEmpty)
+                      .toList(),
                   movementType: movementType,
                   movementRange: int.tryParse(rangeCtrl.text) ?? 0,
                   visionRange: int.tryParse(visionCtrl.text) ?? 0,
@@ -947,8 +1030,29 @@ class _MapEditorState extends State<MapEditor> {
       "id": _biomeId,
       "name": _biomeConfig.name,
       "defaultTileId": _biomeConfig.defaultTileId,
+      "biomeId": _biomeConfig.biomeId ?? _biomeId,
+      "isIndoor": _isIndoor,
       "layout": {
-        "base": _grid.map((row) => row.join(',')).toList(),
+        "base": _grid.asMap().entries.map((entryR) {
+          final r = entryR.key;
+          final row = entryR.value;
+          return row
+              .asMap()
+              .entries
+              .map((entryC) {
+                final c = entryC.key;
+                final cell = entryC.value;
+                if (cell == 'empty' && _isBorderCell(r, c)) {
+                  return 'null'; // Use null for non-drawable boundary to satisfy "no tile" requirement
+                }
+                return cell == 'empty'
+                    ? (_biomeConfig.defaultTileId.isNotEmpty
+                          ? _biomeConfig.defaultTileId
+                          : 'town_grass')
+                    : cell;
+              })
+              .join(',');
+        }).toList(),
         "overlay": _overlayGrid
             .map(
               (row) => row
@@ -979,20 +1083,20 @@ class _MapEditorState extends State<MapEditor> {
     try {
       final exportMapString = _exportForMapsJson();
       Map<String, dynamic> exportMap = json.decode(exportMapString);
-      
+
       // Redirect if this is a built-in map from assets
       if (BiomeDataManager.assetBiomeIds.contains(_biomeId)) {
         final timestamp = DateTime.now().millisecondsSinceEpoch;
         final newId = 'custom_${_biomeId}_$timestamp';
         final newName = '${_biomeConfig.name} (Custom)';
-        
+
         exportMap['id'] = newId;
         exportMap['name'] = newName;
-        
+
         setState(() {
           _biomeId = newId;
         });
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Creating new custom map: $newName'),
@@ -1012,59 +1116,79 @@ class _MapEditorState extends State<MapEditor> {
               backgroundColor: Colors.blueAccent,
             ),
           );
-          
-          final newConfig = BiomeConfig.fromJson(exportMap, BiomeDataManager.allTiles);
-          setState(() { _biomeConfig = newConfig; });
+
+          final newConfig = BiomeConfig.fromJson(
+            exportMap,
+            BiomeDataManager.allTiles,
+          );
+          setState(() {
+            _biomeConfig = newConfig;
+          });
           return;
         }
 
         if (!mounted) return;
         showDialog(
-           context: context,
-           builder: (ctx) => AlertDialog(
-             backgroundColor: const Color(0xFF141420),
-             title: const Text('Export Map JSON', style: TextStyle(color: Colors.white)),
-             content: SingleChildScrollView(
-               child: Column(
-                 mainAxisSize: MainAxisSize.min,
-                 crossAxisAlignment: CrossAxisAlignment.stretch,
-                 children: [
-                   const Text(
-                     'Direct save is not supported on this platform/build. Copy the JSON below and paste it into maps.json manually, or import it later string.',
-                     style: TextStyle(color: Colors.white70, fontSize: 12),
-                   ),
-                   const SizedBox(height: 16),
-                   Container(
-                     padding: const EdgeInsets.all(8),
-                     color: Colors.black26,
-                     height: 150,
-                     child: SelectableText(
-                       exportMapString,
-                       style: const TextStyle(color: Colors.white54, fontSize: 10, fontFamily: 'monospace'),
-                     ),
-                   ),
-                 ],
-               ),
-             ),
-             actions: [
-               TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('CLOSE', style: TextStyle(color: Colors.white54))),
-               ElevatedButton(
-                 onPressed: () {
-                   Clipboard.setData(ClipboardData(text: exportMapString));
-                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Copied to clipboard!')));
-                   Navigator.pop(ctx);
-                 },
-                 child: const Text('COPY'),
-               )
-             ],
-           ),
-         );
-         return;
+          context: context,
+          builder: (ctx) => AlertDialog(
+            backgroundColor: const Color(0xFF141420),
+            title: const Text(
+              'Export Map JSON',
+              style: TextStyle(color: Colors.white),
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Text(
+                    'Direct save is not supported on this platform/build. Copy the JSON below and paste it into maps.json manually, or import it later string.',
+                    style: TextStyle(color: Colors.white70, fontSize: 12),
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    color: Colors.black26,
+                    height: 150,
+                    child: SelectableText(
+                      exportMapString,
+                      style: const TextStyle(
+                        color: Colors.white54,
+                        fontSize: 10,
+                        fontFamily: 'monospace',
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text(
+                  'CLOSE',
+                  style: TextStyle(color: Colors.white54),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: exportMapString));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Copied to clipboard!')),
+                  );
+                  Navigator.pop(ctx);
+                },
+                child: const Text('COPY'),
+              ),
+            ],
+          ),
+        );
+        return;
       }
 
       final content = await file.readAsString();
       final List<dynamic> maps = json.decode(content);
-      
+
       final index = maps.indexWhere((m) => m['id'] == _biomeId);
       if (index != -1) {
         maps[index] = exportMap;
@@ -1082,9 +1206,12 @@ class _MapEditorState extends State<MapEditor> {
           backgroundColor: Colors.green,
         ),
       );
-      
+
       // Update the local cache in BiomeDataManager
-      final newConfig = BiomeConfig.fromJson(exportMap, BiomeDataManager.allTiles);
+      final newConfig = BiomeConfig.fromJson(
+        exportMap,
+        BiomeDataManager.allTiles,
+      );
       BiomeDataManager.biomes[_biomeId] = newConfig;
       setState(() {
         _biomeConfig = newConfig;
@@ -1200,10 +1327,13 @@ class _MapEditorState extends State<MapEditor> {
       if (decoded is List) {
         // If it's a list (like maps.json), try to find a matching ID, otherwise take the first one
         final list = decoded.whereType<Map<String, dynamic>>();
-        if (list.isEmpty) throw 'JSON list is empty or contains invalid objects';
+        if (list.isEmpty)
+          throw 'JSON list is empty or contains invalid objects';
 
         data = list.firstWhere(
-          (m) => m['id'] == _biomeId || m['name']?.toString().toLowerCase() == _biomeId.toLowerCase(),
+          (m) =>
+              m['id'] == _biomeId ||
+              m['name']?.toString().toLowerCase() == _biomeId.toLowerCase(),
           orElse: () => list.first,
         );
       } else if (decoded is Map<String, dynamic>) {
@@ -1295,10 +1425,14 @@ class _MapEditorState extends State<MapEditor> {
         }
 
         if (dataMap['npcs'] != null) {
-          _npcs = (dataMap['npcs'] as List).map((n) => NPCData.fromJson(n)).toList();
+          _npcs = (dataMap['npcs'] as List)
+              .map((n) => NPCData.fromJson(n))
+              .toList();
         } else {
           _npcs = [];
         }
+
+        _isIndoor = dataMap['isIndoor'] as bool? ?? false;
 
         _pushUndo();
       });
@@ -1468,12 +1602,20 @@ class _MapEditorState extends State<MapEditor> {
             onPressed: () => setState(() => _showGrid = !_showGrid),
           ),
           IconButton(
-            icon: const Icon(Icons.save, size: 20, color: Colors.lightBlueAccent),
+            icon: const Icon(
+              Icons.save,
+              size: 20,
+              color: Colors.lightBlueAccent,
+            ),
             tooltip: 'Save Directly to maps.json',
             onPressed: _saveToFile,
           ),
           PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert, size: 20, color: MapEditor.premiumGold),
+            icon: const Icon(
+              Icons.more_vert,
+              size: 20,
+              color: MapEditor.premiumGold,
+            ),
             color: MapEditor.premiumSurface,
             onSelected: (value) {
               switch (value) {
@@ -1487,7 +1629,9 @@ class _MapEditorState extends State<MapEditor> {
                   Clipboard.setData(ClipboardData(text: _exportForMapsJson()));
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('Copied! Paste into maps.json under layout/spawnPoint keys.'),
+                      content: Text(
+                        'Copied! Paste into maps.json under layout/spawnPoint keys.',
+                      ),
                       backgroundColor: Colors.green,
                     ),
                   );
@@ -1501,29 +1645,57 @@ class _MapEditorState extends State<MapEditor> {
               const PopupMenuItem(
                 value: 'resize',
                 child: ListTile(
-                  leading: Icon(Icons.aspect_ratio, color: MapEditor.premiumGold, size: 18),
-                  title: Text('Resize Map', style: TextStyle(color: Colors.white, fontSize: 12)),
+                  leading: Icon(
+                    Icons.aspect_ratio,
+                    color: MapEditor.premiumGold,
+                    size: 18,
+                  ),
+                  title: Text(
+                    'Resize Map',
+                    style: TextStyle(color: Colors.white, fontSize: 12),
+                  ),
                 ),
               ),
               const PopupMenuItem(
                 value: 'import',
                 child: ListTile(
-                  leading: Icon(Icons.file_upload, color: Colors.orangeAccent, size: 18),
-                  title: Text('Import JSON', style: TextStyle(color: Colors.white, fontSize: 12)),
+                  leading: Icon(
+                    Icons.file_upload,
+                    color: Colors.orangeAccent,
+                    size: 18,
+                  ),
+                  title: Text(
+                    'Import JSON',
+                    style: TextStyle(color: Colors.white, fontSize: 12),
+                  ),
                 ),
               ),
               const PopupMenuItem(
                 value: 'copy',
                 child: ListTile(
-                  leading: Icon(Icons.copy_all, color: Colors.greenAccent, size: 18),
-                  title: Text('Copy Layout', style: TextStyle(color: Colors.white, fontSize: 12)),
+                  leading: Icon(
+                    Icons.copy_all,
+                    color: Colors.greenAccent,
+                    size: 18,
+                  ),
+                  title: Text(
+                    'Copy Layout',
+                    style: TextStyle(color: Colors.white, fontSize: 12),
+                  ),
                 ),
               ),
               const PopupMenuItem(
                 value: 'reset',
                 child: ListTile(
-                  leading: Icon(Icons.delete_sweep, color: Colors.redAccent, size: 18),
-                  title: Text('Reset Map', style: TextStyle(color: Colors.white, fontSize: 12)),
+                  leading: Icon(
+                    Icons.delete_sweep,
+                    color: Colors.redAccent,
+                    size: 18,
+                  ),
+                  title: Text(
+                    'Reset Map',
+                    style: TextStyle(color: Colors.white, fontSize: 12),
+                  ),
                 ),
               ),
             ],
@@ -1553,41 +1725,55 @@ class _MapEditorState extends State<MapEditor> {
                 onPointerUp: (_) => setState(() => _pointerCount--),
                 onPointerCancel: (_) => setState(() => _pointerCount--),
                 child: GestureDetector(
-                  onPanStart: _mode == EditorMode.pan ? null : (d) {
-                    const cs = 40.0;
-                    _handleInteraction(
-                      (d.localPosition.dy / cs).floor(),
-                      (d.localPosition.dx / cs).floor(),
-                      true,
-                    );
-                  },
-                  onPanUpdate: _mode == EditorMode.pan ? null : (d) {
-                    const cs = 40.0;
-                    _handleInteraction(
-                      (d.localPosition.dy / cs).floor(),
-                      (d.localPosition.dx / cs).floor(),
-                      false,
-                    );
-                  },
-                  onPanEnd: _mode == EditorMode.pan ? null : (_) => _onInteractionEnd(),
-                  onTapDown: _mode == EditorMode.pan ? null : (d) {
-                    const cs = 40.0;
-                    _handleInteraction(
-                      (d.localPosition.dy / cs).floor(),
-                      (d.localPosition.dx / cs).floor(),
-                      true,
-                    );
-                  },
-                  onTap: _mode == EditorMode.pan ? null : () {}, // Just to ensure it triggers arena
-                  onTapUp: _mode == EditorMode.pan ? null : (_) => _onInteractionEnd(),
-                  onLongPressStart: _mode == EditorMode.pan ? null : (d) {
-                    const cs = 40.0;
-                    _handleInteraction(
-                      (d.localPosition.dy / cs).floor(),
-                      (d.localPosition.dx / cs).floor(),
-                      true,
-                    );
-                  },
+                  onPanStart: _mode == EditorMode.pan
+                      ? null
+                      : (d) {
+                          const cs = 40.0;
+                          _handleInteraction(
+                            (d.localPosition.dy / cs).floor(),
+                            (d.localPosition.dx / cs).floor(),
+                            true,
+                          );
+                        },
+                  onPanUpdate: _mode == EditorMode.pan
+                      ? null
+                      : (d) {
+                          const cs = 40.0;
+                          _handleInteraction(
+                            (d.localPosition.dy / cs).floor(),
+                            (d.localPosition.dx / cs).floor(),
+                            false,
+                          );
+                        },
+                  onPanEnd: _mode == EditorMode.pan
+                      ? null
+                      : (_) => _onInteractionEnd(),
+                  onTapDown: _mode == EditorMode.pan
+                      ? null
+                      : (d) {
+                          const cs = 40.0;
+                          _handleInteraction(
+                            (d.localPosition.dy / cs).floor(),
+                            (d.localPosition.dx / cs).floor(),
+                            true,
+                          );
+                        },
+                  onTap: _mode == EditorMode.pan
+                      ? null
+                      : () {}, // Just to ensure it triggers arena
+                  onTapUp: _mode == EditorMode.pan
+                      ? null
+                      : (_) => _onInteractionEnd(),
+                  onLongPressStart: _mode == EditorMode.pan
+                      ? null
+                      : (d) {
+                          const cs = 40.0;
+                          _handleInteraction(
+                            (d.localPosition.dy / cs).floor(),
+                            (d.localPosition.dx / cs).floor(),
+                            true,
+                          );
+                        },
                   behavior: HitTestBehavior.opaque,
                   child: MouseRegion(
                     onHover: (d) {
@@ -1655,19 +1841,20 @@ class _MapEditorState extends State<MapEditor> {
                   fontSize: 10,
                   fontFamily: 'PressStart2P',
                 ),
-                items: (_biomeIds.contains(_biomeConfig.name)
-                        ? _biomeIds
-                        : [..._biomeIds, _biomeConfig.name])
-                    .map(
-                      (b) => DropdownMenuItem(
-                        value: b,
-                        child: Text(
-                          b.toUpperCase(),
-                          style: const TextStyle(letterSpacing: 1),
-                        ),
-                      ),
-                    )
-                    .toList(),
+                items:
+                    (_biomeIds.contains(_biomeConfig.name)
+                            ? _biomeIds
+                            : [..._biomeIds, _biomeConfig.name])
+                        .map(
+                          (b) => DropdownMenuItem(
+                            value: b,
+                            child: Text(
+                              b.toUpperCase(),
+                              style: const TextStyle(letterSpacing: 1),
+                            ),
+                          ),
+                        )
+                        .toList(),
                 onChanged: (v) {
                   if (v != null) _switchBiome(v);
                 },
@@ -1728,7 +1915,51 @@ class _MapEditorState extends State<MapEditor> {
                       value: _autoBase,
                       onChanged: (v) => setState(() => _autoBase = v),
                       activeThumbColor: MapEditor.premiumGold,
-                      activeTrackColor: MapEditor.premiumGold.withValues(alpha: 0.3),
+                      activeTrackColor: MapEditor.premiumGold.withValues(
+                        alpha: 0.3,
+                      ),
+                      inactiveThumbColor: Colors.grey,
+                      inactiveTrackColor: Colors.white10,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            // Indoor toggle
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: MapEditor.premiumSurface,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                  color: _isIndoor ? Colors.cyan.withValues(alpha: 0.5) : MapEditor.premiumGold.withValues(alpha: 0.2),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    _isIndoor ? Icons.home : Icons.wb_sunny,
+                    color: _isIndoor ? Colors.cyan : MapEditor.premiumGold,
+                    size: 14,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    _isIndoor ? 'IN' : 'OUT',
+                    style: TextStyle(
+                      color: _isIndoor ? Colors.cyan : MapEditor.premiumGold,
+                      fontSize: 9,
+                      fontFamily: 'PressStart2P',
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Transform.scale(
+                    scale: 0.7,
+                    child: Switch(
+                      value: _isIndoor,
+                      onChanged: (v) => setState(() => _isIndoor = v),
+                      activeThumbColor: Colors.cyan,
+                      activeTrackColor: Colors.cyan.withValues(alpha: 0.3),
                       inactiveThumbColor: Colors.grey,
                       inactiveTrackColor: Colors.white10,
                     ),
@@ -1851,7 +2082,9 @@ class _MapEditorState extends State<MapEditor> {
 
   void _cyclePaletteState() {
     setState(() {
-      _paletteState = _paletteState == PaletteState.compact ? PaletteState.full : PaletteState.compact;
+      _paletteState = _paletteState == PaletteState.compact
+          ? PaletteState.full
+          : PaletteState.compact;
     });
     // Auto-scroll to selected tile when changing state
     Future.delayed(const Duration(milliseconds: 300), _scrollToSelectedTile);
@@ -1869,7 +2102,10 @@ class _MapEditorState extends State<MapEditor> {
       );
     } else if (_paletteState == PaletteState.compact) {
       // Fallback for compact mode if context is null
-      final allTiles = [..._getFilteredTiles(_baseTiles), ..._getFilteredTiles(_overlayTiles)];
+      final allTiles = [
+        ..._getFilteredTiles(_baseTiles),
+        ..._getFilteredTiles(_overlayTiles),
+      ];
       final index = allTiles.indexOf(_selectedTile);
       if (index != -1) {
         const double itemWidth = 48.0;
@@ -1900,131 +2136,135 @@ class _MapEditorState extends State<MapEditor> {
       child: SafeArea(
         top: false,
         child: Column(
-        children: [
-          // Handle
-          GestureDetector(
-            onTap: _cyclePaletteState,
-            child: Container(
-              width: double.infinity,
-              height: 28,
-              color: MapEditor.premiumSurface,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    _paletteState == PaletteState.compact
-                        ? Icons.keyboard_double_arrow_up
-                        : Icons.keyboard_arrow_down,
-                    color: MapEditor.premiumGold.withValues(alpha: 0.5),
-                    size: 18,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    'TILES — ${_biomeConfig.name.toUpperCase()} (${_paletteState.name.toUpperCase()})',
-                    style: const TextStyle(
-                      color: MapEditor.premiumGold,
-                      fontSize: 8,
-                      fontFamily: 'PressStart2P',
-                      letterSpacing: 1,
+          children: [
+            // Handle
+            GestureDetector(
+              onTap: _cyclePaletteState,
+              child: Container(
+                width: double.infinity,
+                height: 28,
+                color: MapEditor.premiumSurface,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      _paletteState == PaletteState.compact
+                          ? Icons.keyboard_double_arrow_up
+                          : Icons.keyboard_arrow_down,
+                      color: MapEditor.premiumGold.withValues(alpha: 0.5),
+                      size: 18,
                     ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          if (true) ...[
-            if (_paletteState == PaletteState.full)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(10, 8, 10, 0),
-                child: SizedBox(
-                  height: 36,
-                  child: TextField(
-                    controller: _searchController,
-                    style: const TextStyle(color: Colors.white, fontSize: 12),
-                    decoration: InputDecoration(
-                      hintText: 'Search all tiles...',
-                      hintStyle: TextStyle(
-                        color: MapEditor.premiumGold.withValues(alpha: 0.3),
-                      ),
-                      prefixIcon: Icon(
-                        Icons.search,
-                        color: MapEditor.premiumGold.withValues(alpha: 0.3),
-                        size: 16,
-                      ),
-                      suffixIcon: _searchQuery.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.clear, size: 16),
-                              color: MapEditor.premiumGold.withValues(alpha: 0.5),
-                              onPressed: () {
-                                _searchController.clear();
-                                setState(() => _searchQuery = '');
-                              },
-                            )
-                          : null,
-                      filled: true,
-                      fillColor: MapEditor.premiumGold.withValues(alpha: 0.05),
-                      contentPadding: const EdgeInsets.symmetric(
-                        vertical: 0,
-                        horizontal: 10,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                          color: MapEditor.premiumGold.withValues(alpha: 0.2),
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: MapEditor.premiumGoldMuted,
-                        ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'TILES — ${_biomeConfig.name.toUpperCase()} (${_paletteState.name.toUpperCase()})',
+                      style: const TextStyle(
+                        color: MapEditor.premiumGold,
+                        fontSize: 8,
+                        fontFamily: 'PressStart2P',
+                        letterSpacing: 1,
                       ),
                     ),
-                    onChanged: (val) {
-                      setState(() {
-                        _searchQuery = val.toLowerCase();
-                      });
-                    },
-                  ),
+                  ],
                 ),
               ),
-            Expanded(
-              child: _paletteState == PaletteState.compact
-                  ? ListView(
-                      controller: _paletteScrollController,
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 12,
-                      ),
-                      children:
-                          [
-                                ..._getFilteredTiles(_baseTiles),
-                                ..._getFilteredTiles(_overlayTiles),
-                              ]
-                              .map(
-                                (tileId) =>
-                                    _buildTileChip(tileId, compact: true),
-                              )
-                              .toList(),
-                    )
-                  : ListView(
-                      controller: _paletteScrollController,
-                      padding: const EdgeInsets.all(16),
-                      physics: const BouncingScrollPhysics(),
-                      children: _getTilesByBiome().entries.map((entry) {
-                        final filtered = _getFilteredTiles(entry.value);
-                        if (filtered.isEmpty) return const SizedBox.shrink();
-                        return _buildTileSection(entry.key, filtered);
-                      }).toList(),
-                    ),
             ),
+            if (true) ...[
+              if (_paletteState == PaletteState.full)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(10, 8, 10, 0),
+                  child: SizedBox(
+                    height: 36,
+                    child: TextField(
+                      controller: _searchController,
+                      style: const TextStyle(color: Colors.white, fontSize: 12),
+                      decoration: InputDecoration(
+                        hintText: 'Search all tiles...',
+                        hintStyle: TextStyle(
+                          color: MapEditor.premiumGold.withValues(alpha: 0.3),
+                        ),
+                        prefixIcon: Icon(
+                          Icons.search,
+                          color: MapEditor.premiumGold.withValues(alpha: 0.3),
+                          size: 16,
+                        ),
+                        suffixIcon: _searchQuery.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.clear, size: 16),
+                                color: MapEditor.premiumGold.withValues(
+                                  alpha: 0.5,
+                                ),
+                                onPressed: () {
+                                  _searchController.clear();
+                                  setState(() => _searchQuery = '');
+                                },
+                              )
+                            : null,
+                        filled: true,
+                        fillColor: MapEditor.premiumGold.withValues(
+                          alpha: 0.05,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 0,
+                          horizontal: 10,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: MapEditor.premiumGold.withValues(alpha: 0.2),
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: MapEditor.premiumGoldMuted,
+                          ),
+                        ),
+                      ),
+                      onChanged: (val) {
+                        setState(() {
+                          _searchQuery = val.toLowerCase();
+                        });
+                      },
+                    ),
+                  ),
+                ),
+              Expanded(
+                child: _paletteState == PaletteState.compact
+                    ? ListView(
+                        controller: _paletteScrollController,
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 12,
+                        ),
+                        children:
+                            [
+                                  ..._getFilteredTiles(_baseTiles),
+                                  ..._getFilteredTiles(_overlayTiles),
+                                ]
+                                .map(
+                                  (tileId) =>
+                                      _buildTileChip(tileId, compact: true),
+                                )
+                                .toList(),
+                      )
+                    : ListView(
+                        controller: _paletteScrollController,
+                        padding: const EdgeInsets.all(16),
+                        physics: const BouncingScrollPhysics(),
+                        children: _getTilesByBiome().entries.map((entry) {
+                          final filtered = _getFilteredTiles(entry.value);
+                          if (filtered.isEmpty) return const SizedBox.shrink();
+                          return _buildTileSection(entry.key, filtered);
+                        }).toList(),
+                      ),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   List<String> _getFilteredTiles(List<String> tiles) {
     if (_searchQuery.isEmpty) return tiles;
@@ -2207,7 +2447,8 @@ class _EditorGridPainter extends CustomPainter {
         );
 
         // 1. Draw Base Layer
-        _drawTileAsset(canvas, rect, grid[r][c]);
+        final isBorder = r == 0 || r == rows - 1 || c == 0 || c == cols - 1;
+        _drawTileAsset(canvas, rect, grid[r][c], isBoundary: isBorder);
 
         // 2. Draw Overlay Layers
         final overlays = overlayGrid[r][c];
@@ -2322,7 +2563,8 @@ class _EditorGridPainter extends CustomPainter {
             textPainter.layout();
             textPainter.paint(
               canvas,
-              rect.center - Offset(textPainter.width / 2, textPainter.height / 2),
+              rect.center -
+                  Offset(textPainter.width / 2, textPainter.height / 2),
             );
           }
         }
@@ -2339,11 +2581,13 @@ class _EditorGridPainter extends CustomPainter {
       );
 
       final assets = BiomeDataManager.npcAssets[npc.spriteKey];
-      if (assets != null && assets['down'] != null && assets['down']!.isNotEmpty) {
+      if (assets != null &&
+          assets['down'] != null &&
+          assets['down']!.isNotEmpty) {
         final img = assets['down']![0];
         final double assetW = img.width.toDouble();
         final double assetH = img.height.toDouble();
-        
+
         canvas.drawImageRect(
           img,
           Rect.fromLTWH(0, 0, assetW, assetH),
@@ -2379,7 +2623,11 @@ class _EditorGridPainter extends CustomPainter {
         final symPaint = TextPainter(
           text: TextSpan(
             text: sym,
-            style: TextStyle(color: Colors.amber, fontSize: 10, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: Colors.amber,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           textDirection: TextDirection.ltr,
         );
@@ -2410,7 +2658,35 @@ class _EditorGridPainter extends CustomPainter {
     }
   }
 
-  void _drawTileAsset(Canvas canvas, Rect rect, String tileId) {
+  void _drawTileAsset(
+    Canvas canvas,
+    Rect rect,
+    String tileId, {
+    bool isBoundary = false,
+  }) {
+    // Handle the visual boundary for non-drawable cells
+    if (isBoundary) {
+      final boundaryPaint = Paint()
+        ..color = Colors.black.withValues(alpha: 0.2)
+        ..style = PaintingStyle.fill;
+      canvas.drawRect(rect, boundaryPaint);
+
+      final linePaint = Paint()
+        ..color = Colors.white10
+        ..strokeWidth = 1
+        ..style = PaintingStyle.stroke;
+      canvas.drawRect(rect.deflate(0.5), linePaint);
+    }
+
+    if (tileId == 'empty' || tileId == '') {
+      // Make 'null' / 'empty' tiles completely black as requested
+      final paint = Paint()
+        ..color = const Color.fromARGB(255, 78, 78, 78)
+        ..style = PaintingStyle.fill;
+      canvas.drawRect(rect, paint);
+      return;
+    }
+
     final assets = BiomeDataManager.tileAssets[tileId];
     if (assets != null && assets.isNotEmpty) {
       final img = assets['center'] ?? assets.values.first;
@@ -2418,8 +2694,9 @@ class _EditorGridPainter extends CustomPainter {
       final double assetH = img.height.toDouble();
 
       // Proportional scaling for all assets (like tall trees) relative to a 32px base.
-      double drawW = cellSize * (assetW / 32.0);
-      double drawH = cellSize * (assetH / 32.0);
+      // Width/Height in the definition is used only for walkability coverage.
+      final double drawW = cellSize * (assetW / 32.0);
+      final double drawH = cellSize * (assetH / 32.0);
 
       final double drawX = rect.center.dx - drawW / 2;
       final double drawY = rect.bottom - drawH;

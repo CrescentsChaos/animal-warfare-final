@@ -41,9 +41,9 @@ class OverworldNPC {
 
   bool get isTrainer =>
       (data.scriptType == 'trainer' ||
-       data.scriptType == 'rival' ||
-       data.scriptType == 'major_trainer' ||
-       data.scriptType == 'evil_team') &&
+          data.scriptType == 'rival' ||
+          data.scriptType == 'major_trainer' ||
+          data.scriptType == 'evil_team') &&
       data.teamId.isNotEmpty;
 
   void tick(
@@ -177,8 +177,9 @@ class OverworldNPC {
         if (other.gridRow == nextR && other.gridCol == nextC) return;
         if (other.isMoving &&
             other.targetRow == nextR &&
-            other.targetCol == nextC)
+            other.targetCol == nextC) {
           return;
+        }
       }
     }
 
@@ -195,8 +196,9 @@ class OverworldNPC {
 
   /// Check if the player is within the NPC's vision range (directional cone).
   bool canSeePlayer(int pRow, int pCol) {
-    if (!isTrainer || isDefeated || isApproaching || hasTriggeredBattle)
+    if (!isTrainer || isDefeated || isApproaching || hasTriggeredBattle) {
       return false;
+    }
     if (data.visionRange <= 0) return false;
 
     // Check tiles in the NPC's facing direction

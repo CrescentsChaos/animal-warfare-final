@@ -133,9 +133,19 @@ class TimeService {
 
   Timer? _timer;
 
+  /// Accumulated time offset from sleeping / time skips.
+  /// This only ever increases, so the clock never goes backward.
+  Duration _gameTimeOffset = Duration.zero;
+
   Stream<GameTime> get timeStream => _timeController.stream;
 
   GameTime get currentGameTime => _calculateGameTime(DateTime.now().toUtc());
+
+  /// Advances in-game time by [hours] hours permanently.
+  void advanceTime(int hours) {
+    _gameTimeOffset += Duration(hours: hours);
+    _timeController.add(currentGameTime);
+  }
 
   void start() {
     if (_timer != null) return;
@@ -161,10 +171,10 @@ class TimeService {
     final int gameElapsedMicroseconds =
         realElapsed.inMicroseconds * speedMultiplier;
 
-    // Add to base game time
-    final DateTime gameDateTime = _baseGameTime.add(
-      Duration(microseconds: gameElapsedMicroseconds),
-    );
+    // Add to base game time, then apply any permanent offset from sleeping
+    final DateTime gameDateTime = _baseGameTime
+        .add(Duration(microseconds: gameElapsedMicroseconds))
+        .add(_gameTimeOffset);
 
     return GameTime(
       year: gameDateTime.year,

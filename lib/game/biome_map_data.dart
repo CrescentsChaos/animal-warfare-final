@@ -24,6 +24,7 @@ enum TileCategory {
   floating, // Triggers a jump animation when moved onto
   oneway, // Directional blocking (e.g., jump down only)
   teleporter, // Map transition point
+  none, // Representing a truly empty tile slot
 }
 
 extension TileCategoryExtension on TileCategory {
@@ -51,6 +52,8 @@ extension TileCategoryExtension on TileCategory {
         return TileCategory.oneway;
       case 'teleporter':
         return TileCategory.teleporter;
+      case 'none':
+        return TileCategory.none;
       default:
         return TileCategory.ground;
     }
@@ -72,6 +75,8 @@ class TileDefinition {
   final double? encounterRate;
   final String biome;
   final String? interactionText;
+  final int width;
+  final int height;
 
   const TileDefinition({
     required this.id,
@@ -85,6 +90,8 @@ class TileDefinition {
     this.encounterRate,
     this.biome = 'any',
     this.interactionText,
+    this.width = 1,
+    this.height = 1,
   });
 
   bool get isWalkable {
@@ -123,6 +130,8 @@ class TileDefinition {
           : null,
       biome: json['biome'] ?? 'any',
       interactionText: json['interactionText'],
+      width: json['width'] ?? 1,
+      height: json['height'] ?? 1,
     );
   }
 }
@@ -133,6 +142,7 @@ class BiomeConfig {
   final String defaultTileId;
   final String? biomeId;
   final Map<String, TileDefinition> tiles;
+  final bool isIndoor;
 
   final Map<String, List<String>>?
   layout; // e.g. {'base': [...], 'overlay': [...]}
@@ -145,6 +155,7 @@ class BiomeConfig {
     required this.defaultTileId,
     required this.tiles,
     this.biomeId,
+    this.isIndoor = false,
     this.layout,
     this.spawnPoint,
     this.transitions,
@@ -156,6 +167,7 @@ class BiomeConfig {
     String? defaultTileId,
     String? biomeId,
     Map<String, TileDefinition>? tiles,
+    bool? isIndoor,
     Map<String, List<String>>? layout,
     Point<int>? spawnPoint,
     List<MapTransition>? transitions,
@@ -166,6 +178,7 @@ class BiomeConfig {
       defaultTileId: defaultTileId ?? this.defaultTileId,
       biomeId: biomeId ?? this.biomeId,
       tiles: tiles ?? this.tiles,
+      isIndoor: isIndoor ?? this.isIndoor,
       layout: layout ?? this.layout,
       spawnPoint: spawnPoint ?? this.spawnPoint,
       transitions: transitions ?? this.transitions,
@@ -219,6 +232,7 @@ class BiomeConfig {
       name: json['name'],
       defaultTileId: json['defaultTileId'],
       biomeId: json['biomeId'],
+      isIndoor: json['isIndoor'] as bool? ?? false,
       tiles: biomeTiles,
       layout: layout,
       spawnPoint: spawn,
@@ -561,12 +575,27 @@ class BiomeDataManager {
     return BiomeConfig(
       id: id,
       name: name,
-      tiles:
-          allTiles, // Fallback to all tiles if specifically filtered list is unavailable
+      tiles: allTiles,
       defaultTileId: allTiles.containsKey('${id}_ground')
           ? '${id}_ground'
-          : (allTiles.isNotEmpty ? allTiles.keys.first : 'ground'),
+          : _findBestBaseTile(allTiles),
     );
+  }
+
+  static String _findBestBaseTile(Map<String, TileDefinition> tiles) {
+    // 1. Try to find a ground tile for the biome? (Hard since we don't know the biome here easily without more logic)
+    // Actually, let's just find the first 'base' layer tile that is 'ground'.
+    for (final def in tiles.values) {
+      if (def.layer == 'base' && (def.category == TileCategory.ground || def.id.contains('ground') || def.id.contains('grass'))) {
+        return def.id;
+      }
+    }
+    // 2. Any base layer tile
+    for (final def in tiles.values) {
+      if (def.layer == 'base') return def.id;
+    }
+    // 3. Fallback to anything but 'null'
+    return tiles.isNotEmpty ? tiles.keys.first : 'grass_ground';
   }
 }
 
@@ -575,11 +604,13 @@ class MapTile {
   final String tileId;
   final BiomeConfig config;
   final bool? walkabilityOverride;
+  final TileCategory? categoryOverride;
 
   const MapTile({
     required this.tileId,
     required this.config,
     this.walkabilityOverride,
+    this.categoryOverride,
   });
 
   TileDefinition get definition =>
@@ -589,7 +620,7 @@ class MapTile {
       BiomeDataManager.allTiles[config.defaultTileId] ??
       BiomeDataManager.allTiles.values.first;
 
-  TileCategory get category => definition.category;
+  TileCategory get category => categoryOverride ?? definition.category;
 
   bool get isWalkable => walkabilityOverride ?? definition.isWalkable;
 
@@ -601,11 +632,13 @@ class MapTile {
     String? tileId,
     BiomeConfig? config,
     bool? walkabilityOverride,
+    TileCategory? categoryOverride,
   }) {
     return MapTile(
       tileId: tileId ?? this.tileId,
       config: config ?? this.config,
       walkabilityOverride: walkabilityOverride ?? this.walkabilityOverride,
+      categoryOverride: categoryOverride ?? this.categoryOverride,
     );
   }
 }
@@ -619,6 +652,7 @@ class BiomeMapData {
   final BiomeConfig config;
   final String? name;
   final String? biomeId;
+  final bool isIndoor;
   final List<MapTransition>? transitions;
   final List<NPCData>? npcs;
 
@@ -631,6 +665,7 @@ class BiomeMapData {
     required this.config,
     this.name,
     this.biomeId,
+    this.isIndoor = false,
     this.transitions,
     this.npcs,
   });
@@ -643,6 +678,7 @@ class MapStringParser {
     Point<int>? spawn,
     String? name,
     String? biomeId,
+    List<MapTransition>? transitions,
   }) {
     List<String> baseLines = [];
     List<String>? overlayLines;
@@ -669,8 +705,8 @@ class MapStringParser {
       if (data.containsKey('walkability')) {
         walkLines = List<String>.from(data['walkability'] ?? []);
       }
-      // NEW: Extract spawnPoint if present in the map data
-      if (data.containsKey('spawnPoint')) {
+      // NEW: Extract spawnPoint if present in the map data, but only if not explicitly provided
+      if (spawn == null && data.containsKey('spawnPoint')) {
         final sp = data['spawnPoint'];
         if (sp is Map) {
           spawn = Point((sp['x'] as num).toInt(), (sp['y'] as num).toInt());
@@ -746,6 +782,16 @@ class MapStringParser {
         // Base layer
         if (c < baseTiles.length) {
           final tileId = baseTiles[c].trim();
+          
+          if (tileId == 'null' || tileId.isEmpty || tileId == '.') {
+            grid[r][c] = MapTile(
+              tileId: 'empty',
+              config: config,
+              walkabilityOverride: walkOverride ?? false, // Default empty to unwalkable
+            );
+            continue;
+          }
+
           final def =
               config.tiles[tileId] ??
               BiomeDataManager.allTiles[tileId] ??
@@ -787,6 +833,79 @@ class MapStringParser {
       }
     }
 
+    // ── Multi-tile walkability override pass ──
+    // For tiles with width/height > 1, mark all covered grid cells as unwalkable.
+    // The tile is anchor-drawn bottom-center at (r, c), so the covered area is:
+    //   rows: r - (height - 1) .. r
+    //   cols: c - floor(width / 2) .. c + floor((width - 1) / 2)
+    void _applyMultiTileWalkability(int r, int c, TileDefinition def) {
+      if (def.width <= 1 && def.height <= 1) return;
+      
+      // Multi-tile structures like houses (solid) or bridges (ground/path).
+      // Solid/Water tiles force walkability to off.
+      // Ground/Path tiles force walkability to on (enabling bridges).
+      // Decorative/TallGrass/etc. should not forcibly change walkability of underlying tiles.
+      final bool? override;
+      if (def.category == TileCategory.solid || def.category == TileCategory.water) {
+        override = false;
+      } else if (def.category == TileCategory.ground || def.category == TileCategory.path) {
+        override = true;
+      } else {
+        return;
+      }
+
+      final int startRow = r - (def.height - 1);
+      final int startCol = c - (def.width ~/ 2);
+      final int endCol = c + ((def.width - 1) ~/ 2);
+
+      for (int nr = startRow; nr <= r; nr++) {
+        for (int nc = startCol; nc <= endCol; nc++) {
+          if (nr < 0 || nr >= height || nc < 0 || nc >= width) continue;
+          if (nr == r && nc == c) continue; // Skip the anchor cell itself
+          grid[nr][nc] = grid[nr][nc].copyWith(walkabilityOverride: override);
+        }
+      }
+    }
+
+    // Scan base grid for multi-tile structures first
+    for (int r = 0; r < height; r++) {
+      for (int c = 0; c < width; c++) {
+        _applyMultiTileWalkability(r, c, grid[r][c].definition);
+      }
+    }
+
+    // Scan overlay grid for multi-tile structures second (overwrites base)
+    if (overlayGrid != null) {
+      for (int r = 0; r < height; r++) {
+        for (int c = 0; c < width; c++) {
+          for (final tile in overlayGrid[r][c]) {
+            _applyMultiTileWalkability(r, c, tile.definition);
+          }
+        }
+      }
+    }
+
+    // Mark teleporters from transitions
+    final actualTransitions = transitions ?? config.transitions;
+    if (actualTransitions != null) {
+      for (final t in actualTransitions) {
+        if (t.y >= 0 && t.y < height && t.x >= 0 && t.x < width) {
+          // Mark top-most tile at this coordinate as a teleporter
+          if (overlayGrid != null && overlayGrid[t.y][t.x].isNotEmpty) {
+            final lastIdx = overlayGrid[t.y][t.x].length - 1;
+            overlayGrid[t.y][t.x][lastIdx] =
+                overlayGrid[t.y][t.x][lastIdx].copyWith(
+              categoryOverride: TileCategory.teleporter,
+            );
+          } else {
+            grid[t.y][t.x] = grid[t.y][t.x].copyWith(
+              categoryOverride: TileCategory.teleporter,
+            );
+          }
+        }
+      }
+    }
+
     return BiomeMapData(
       grid: grid,
       overlayGrid: overlayGrid,
@@ -796,7 +915,8 @@ class MapStringParser {
       config: config,
       name: name,
       biomeId: biomeId,
-      transitions: config.transitions,
+      isIndoor: config.isIndoor,
+      transitions: transitions ?? config.transitions,
       npcs: npcs,
     );
   }

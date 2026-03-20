@@ -9,6 +9,24 @@
         "biome": "any"
     },
     {
+        "id": "herb_1",
+        "name": "Herb 1",
+        "category": "decorative",
+        "assetPath": "assets/tiles/herb_1.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "any"
+    },
+    {
+        "id": "herb_2",
+        "name": "Herb 2",
+        "category": "decorative",
+        "assetPath": "assets/tiles/herb_2.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "any"
+    },
+    {
         "id": "doormat_1",
         "name": "Doormat 1",
         "category": "decorative",
@@ -85,6 +103,54 @@
         "name": "Floating Stick & Leaf",
         "category": "solid",
         "assetPath": "assets/tiles/floating_stick_leaf.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "any"
+    },
+    {
+        "id": "bridge_1",
+        "name": "Bridge 1",
+        "category": "path",
+        "assetPath": "assets/tiles/bridge_1.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "any",
+        "height": 2
+    },
+    {
+        "id": "bridge_2",
+        "name": "Bridge 2",
+        "category": "path",
+        "assetPath": "assets/tiles/bridge_2.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "any",
+        "height": 2
+    },
+    {
+        "id": "bridge_3",
+        "name": "Bridge 3",
+        "category": "path",
+        "assetPath": "assets/tiles/bridge_3.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "any",
+        "height": 2
+    },
+    {
+        "id": "bed_1",
+        "name": "Bed Bottom",
+        "category": "solid",
+        "assetPath": "assets/tiles/bed_1.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "any"
+    },
+    {
+        "id": "bed_2",
+        "name": "Bed Top",
+        "category": "decorative",
+        "assetPath": "assets/tiles/bed_2.png",
         "isAutotiled": true,
         "layer": "overlay",
         "biome": "any"
@@ -573,6 +639,181 @@
         "biome": "any"
     },
     {
+        "id": "house_1",
+        "name": "House 1",
+        "category": "solid",
+        "assetPath": "assets/tiles/building/house_1.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any",
+        "width": 4,
+        "height": 2
+    },
+    {
+        "id": "house_2",
+        "name": "House 2",
+        "category": "solid",
+        "assetPath": "assets/tiles/building/house_2.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any",
+        "width": 5,
+        "height": 2
+    },
+    {
+        "id": "house_3",
+        "name": "House 3",
+        "category": "solid",
+        "assetPath": "assets/tiles/building/house_3.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any",
+        "width": 5,
+        "height": 2
+    },
+    {
+        "id": "lab_1",
+        "name": "Lab 1",
+        "category": "solid",
+        "assetPath": "assets/tiles/building/lab_1.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any",
+        "width": 8,
+        "height": 2
+    },
+    {
+        "id": "tv_1",
+        "name": "BOX TV",
+        "category": "solid",
+        "assetPath": "assets/tiles/tv_1.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any",
+        "width": 2,
+        "height": 2
+    },
+    {
+        "id": "tv_2",
+        "name": "LED TV",
+        "category": "solid",
+        "assetPath": "assets/tiles/tv_2.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any",
+        "width": 2,
+        "height": 1
+    },
+    {
+        "id": "boat_1",
+        "name": "Boat ARG",
+        "category": "solid",
+        "assetPath": "assets/tiles/boat_1.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any",
+        "width": 3,
+        "height": 2
+    },
+    {
+        "id": "boat_2",
+        "name": "Boat ASR",
+        "category": "solid",
+        "assetPath": "assets/tiles/boat_2.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any",
+        "width": 3,
+        "height": 2
+    },
+    {
+        "id": "boat_3",
+        "name": "Boat BD",
+        "category": "solid",
+        "assetPath": "assets/tiles/boat_3.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any",
+        "width": 3,
+        "height": 2
+    },
+    {
+        "id": "boat_4",
+        "name": "Boat JP",
+        "category": "solid",
+        "assetPath": "assets/tiles/boat_4.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any",
+        "width": 3,
+        "height": 2
+    },
+    {
+        "id": "boat_display",
+        "name": "Boat Display",
+        "category": "solid",
+        "assetPath": "assets/tiles/boat_display.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any",
+        "width": 3,
+        "height": 2
+    },
+    {
+        "id": "lamp_post_1",
+        "name": "Lamp Post 1",
+        "category": "solid",
+        "assetPath": "assets/tiles/lamp_post_1.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any"
+    },
+    {
+        "id": "log_wall",
+        "name": "Log Wall",
+        "category": "solid",
+        "assetPath": "assets/tiles/log_wall.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any"
+    },
+    {
+        "id": "fence_left",
+        "name": "Fence Left",
+        "category": "solid",
+        "assetPath": "assets/tiles/fence_left.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any"
+    },
+    {
+        "id": "fence_right",
+        "name": "Fence Right",
+        "category": "solid",
+        "assetPath": "assets/tiles/fence_right.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any"
+    },
+    {
+        "id": "fence_mid",
+        "name": "Fence Mid",
+        "category": "solid",
+        "assetPath": "assets/tiles/fence_mid.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any"
+    },
+    {
+        "id": "fence_up",
+        "name": "Fence Up",
+        "category": "solid",
+        "assetPath": "assets/tiles/fence_up.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any"
+    },
+    {
         "id": "pine_tree",
         "name": "Pine Tree",
         "category": "solid",
@@ -580,7 +821,17 @@
         "isAutotiled": false,
         "layer": "overlay",
         "biome": "any",
-        "interactionText": "It's a tall pine tree."
+        "interactionText": "It's a pine tree."
+    },
+    {
+        "id": "honey_tree",
+        "name": "Honey Tree",
+        "category": "solid",
+        "assetPath": "assets/tiles/trees/honey_tree.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any",
+        "interactionText": "It's a honey tree."
     },
     {
         "id": "blue_spruce_tree",
@@ -770,6 +1021,33 @@
         "interactionText": "It's a fallen log."
     },
     {
+        "id": "ledge_left",
+        "name": "Ledge Left",
+        "category": "oneway",
+        "assetPath": "assets/tiles/ledge_left.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any"
+    },
+    {
+        "id": "ledge_right",
+        "name": "Ledge Right",
+        "category": "oneway",
+        "assetPath": "assets/tiles/ledge_right.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any"
+    },
+    {
+        "id": "ledge_mid",
+        "name": "Ledge Mid",
+        "category": "oneway",
+        "assetPath": "assets/tiles/ledge_mid.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any"
+    },
+    {
         "id": "bush_grass",
         "name": "Bush Grass",
         "category": "solid",
@@ -778,6 +1056,16 @@
         "layer": "overlay",
         "biome": "any",
         "interactionText": "It's a bush grass."
+    },
+    {
+        "id": "bush_tub_1",
+        "name": "Bush Tub 1",
+        "category": "solid",
+        "assetPath": "assets/tiles/bush_tub_1.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any",
+        "interactionText": "It's a bush tub."
     },
     {
         "id": "overgrown_rock",
@@ -909,6 +1197,15 @@
         "name": "Flower 1",
         "category": "decorative",
         "assetPath": "assets/tiles/flower1.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any"
+    },
+    {
+        "id": "flower2",
+        "name": "Flower 2",
+        "category": "decorative",
+        "assetPath": "assets/tiles/flower2.png",
         "isAutotiled": false,
         "layer": "overlay",
         "biome": "any"
@@ -1079,8 +1376,16 @@
         "assetPath": "assets/tiles/ground/grass_ground.png",
         "isAutotiled": true,
         "layer": "base",
-        "encounterRate": 0.1,
         "biome": "any"
+    },
+    {
+        "id": "town_grass",
+        "name": "Town Grass",
+        "category": "ground",
+        "assetPath": "assets/tiles/ground/town_grass.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "biome": "Urban"
     },
     {
         "id": "brickwaste",
@@ -1123,10 +1428,10 @@
         "biome": "Swamp"
     },
     {
-        "id": "mud_e4",
-        "name": "Mud Edge 4",
+        "id": "mud_e",
+        "name": "Mud Edge",
         "category": "mud",
-        "assetPath": "assets/tiles/ground/mud_e4.png",
+        "assetPath": "assets/tiles/ground/mud_e.png",
         "isAutotiled": true,
         "layer": "base",
         "encounterRate": 0.1,

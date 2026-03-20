@@ -54,7 +54,10 @@ class BiomeExplorationMap extends StatefulWidget {
     required this.authService,
     this.customMapData,
     this.playerSpritePath,
+    this.initialDirection,
   });
+
+  final String? initialDirection;
 
   @override
   State<BiomeExplorationMap> createState() => _BiomeExplorationMapState();
@@ -136,23 +139,25 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   // ── Firefly Effect ──
   final List<_FireflyParticle> _fireflies = [];
   final List<Offset> _waterEdgeTiles = [];
+  double _loaderFadeOpacity = 0.0;
+  bool _isMapLoading = false;
+  late String _currentBiomeName;
+  late String _currentMapName;
+  bool _isIndoor = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
 
-    // Colors
-    _biomeBaseColor = _getBiomeBaseColor(widget.biomeName);
-    _biomeDarkColor = _getDarkerColor(_biomeBaseColor);
-    _biomeHighlightColor = _getBiomeHighlightColor(widget.biomeName);
-    // Generate or load map
+    // Initial map load
+    BiomeMapData initialData;
     if (widget.customMapData != null) {
-      _mapData = widget.customMapData!;
+      initialData = widget.customMapData!;
     } else {
       final config = BiomeDataManager.getBiome(widget.biomeName.toLowerCase());
       if (config.layout != null) {
-        _mapData = MapStringParser.parse(
+        initialData = MapStringParser.parse(
           config.layout!,
           config: config,
           spawn: config.spawnPoint,
@@ -160,27 +165,19 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
           biomeId: config.biomeId,
         );
       } else {
-        _mapData = BiomeMapGenerator.generate(
+        initialData = BiomeMapGenerator.generate(
           width: 80,
           height: 80,
           config: config,
         );
       }
     }
-    mapWidth = _mapData.width;
-    mapHeight = _mapData.height;
 
-    _playerX = _mapData.spawnPoint.x * tileSize;
-    _playerY = _mapData.spawnPoint.y * tileSize;
+    _initializeMapData(initialData);
 
     // Play biome music
     final fileName = widget.biomeName.toLowerCase().replaceAll(' ', '_');
     AudioService.instance.playMusic('audio/${fileName}_theme.mp3');
-
-    // Load saved state if available
-    _loadSavedState();
-
-    // Camera initialization will happen in _scrollToPlayer or build
 
     // Ticker for smooth movement
     _ticker = createTicker(_onTick);
@@ -197,8 +194,33 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       const Duration(seconds: 2), // INCREASED FREQUENCY
       (_) => _trySpawnPhenoSprite(),
     );
+  }
+
+  void _initializeMapData(BiomeMapData data, {bool fromTeleport = false}) {
+    _mapData = data;
+    _currentBiomeName = data.biomeId ?? data.config.id;
+    _currentMapName = data.name ?? data.config.name;
+    _isIndoor = data.isIndoor;
+    mapWidth = _mapData.width;
+    mapHeight = _mapData.height;
+
+    _playerX = _mapData.spawnPoint.x * tileSize;
+    _playerY = _mapData.spawnPoint.y * tileSize;
+    _targetX = _playerX;
+    _targetY = _playerY;
+    _isMovingToTarget = false;
+
+    _biomeBaseColor = _getBiomeBaseColor(_currentMapName);
+    _biomeDarkColor = _getDarkerColor(_biomeBaseColor);
+    _biomeHighlightColor = _getBiomeHighlightColor(_currentMapName);
+
+    // Load saved state if available, unless we are teleporting to a specific target
+    if (!fromTeleport) {
+      _loadSavedState();
+    }
 
     // Initialize NPCs from map data
+    _gameNPCs.clear();
     if (_mapData.npcs != null) {
       final userState = Provider.of<UserState>(context, listen: false);
       for (final npcData in _mapData.npcs!) {
@@ -211,9 +233,9 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         final npc = OverworldNPC(data: npcData);
         // Restore defeated state from persistent event flags
         if ((npcData.scriptType == 'trainer' ||
-             npcData.scriptType == 'rival' ||
-             npcData.scriptType == 'major_trainer' ||
-             npcData.scriptType == 'evil_team') &&
+                npcData.scriptType == 'rival' ||
+                npcData.scriptType == 'major_trainer' ||
+                npcData.scriptType == 'evil_team') &&
             userState.isTrainerDefeated(npcData.id)) {
           npc.isDefeated = true;
           npc.hasTriggeredBattle = true;
@@ -228,6 +250,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
   void _initializeFireflyPoints() {
     if (widget.biomeName.toLowerCase() != 'swamp') return;
+    if (_isIndoor) return; // No fireflies indoors
 
     _waterEdgeTiles.clear();
     for (int r = 0; r < _mapData.height; r++) {
@@ -694,14 +717,19 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       final bool isWater =
           baseTile.category == TileCategory.water ||
           (overlayTile?.any((t) => t.category == TileCategory.water) ?? false);
-      final bool isSolid =
-          baseTile.category == TileCategory.solid ||
-          (overlayTile?.any((t) => t.category == TileCategory.solid) ?? false);
       final bool isFloating =
           baseTile.category == TileCategory.floating ||
           (overlayTile?.any((t) => t.category == TileCategory.floating) ??
               false);
+      final bool isSolid =
+          baseTile.category == TileCategory.solid ||
+          (overlayTile?.any((t) => t.category == TileCategory.solid) ?? false);
+      final bool isTeleporter =
+          baseTile.category == TileCategory.teleporter ||
+          (overlayTile?.any((t) => t.category == TileCategory.teleporter) ??
+              false);
 
+      if (isTeleporter) continue; // Teleporters are always walkable
       if (isSolid) return false;
 
       if (isSwimming) {
@@ -778,6 +806,11 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
     final activeTile = encounterTile ?? baseTile;
 
+    if (activeTile.category == TileCategory.teleporter) {
+      _handleTeleport(row, col);
+      return;
+    }
+
     if (activeTile.hasEncounter) {
       final double rate = activeTile.encounterRate ?? 0.40;
 
@@ -798,7 +831,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         _triggerEncounter(activeTile);
       }
     } else if (activeTile.category == TileCategory.teleporter) {
-      _handleTeleport(row, col);
+      // This is now handled at the start of _checkStepEncounter for priority
     }
   }
 
@@ -816,48 +849,56 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   Future<void> _executeTransition(MapTransition t) async {
     // Determine target config
     late BiomeConfig targetConfig;
-
     try {
-      targetConfig = BiomeDataManager.getBiome(t.targetMap);
+      targetConfig = BiomeDataManager.getBiome(t.targetMap.toLowerCase());
     } catch (_) {
-      // Fallback
-      return; 
+      return;
     }
 
-    // Attempt to load map data to override spawn
+    // Parse target map data with specific spawn coordinates from transition
     final targetMapData = MapStringParser.parse(
       targetConfig.layout ?? {'base': []},
       config: targetConfig,
       spawn: Point<int>(t.targetX, t.targetY),
       name: targetConfig.name,
       biomeId: targetConfig.biomeId,
+      transitions: targetConfig.transitions,
     );
 
-    // Stop movement and reset camera pan so next map is clean
     setState(() {
-      _velX = 0;
-      _velY = 0;
-      _isMovingToTarget = false;
-      _walkFrame = 0;
+      _isMapLoading = true;
+      _loaderFadeOpacity = 1.0;
     });
 
+    // Wait for fade out
+    await Future.delayed(const Duration(milliseconds: 400));
     await _saveCurrentState();
     if (!mounted) return;
 
-    Navigator.of(context).pushReplacement(
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => BiomeExplorationMap(
-          biomeName: targetConfig.name,
-          allOrganisms: widget.allOrganisms,
-          currentUser: widget.currentUser,
-          authService: widget.authService,
-          customMapData: targetMapData,
-        ),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(opacity: animation, child: child);
-        },
-      ),
-    );
+    // Preserve current direction for the next map
+    final entryDirection = _playerDirection;
+
+    // Initialize new map data in-place
+    setState(() {
+      _initializeMapData(targetMapData, fromTeleport: true);
+      
+      // Override direction if transition specifies it, otherwise keep current
+      _playerDirection = entryDirection;
+      
+      // Update music/audio if biome changed
+      final fileName = targetConfig.name.toLowerCase().replaceAll(' ', '_');
+      AudioService.instance.playMusic('audio/${fileName}_theme.mp3');
+
+      // Snap camera
+      _scrollToPlayer(insideSetState: true);
+      _loaderFadeOpacity = 0.0;
+    });
+
+    // Wait for fade in
+    await Future.delayed(const Duration(milliseconds: 400));
+    if (mounted) {
+      setState(() => _isMapLoading = false);
+    }
   }
 
   Future<void> _loadAssets() async {
@@ -912,12 +953,16 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
   void _loadSavedState() {
     final userState = Provider.of<UserState>(context, listen: false);
-    final saved = userState.getMapState(widget.biomeName.toLowerCase());
+    final saved = userState.getMapState(_mapData.config.id);
     if (saved != null) {
       _playerX = saved.playerX;
       _playerY = saved.playerY;
       _playerDirection = saved.playerDirection;
       _isSwimming = saved.isSwimming;
+    }
+
+    if (widget.initialDirection != null) {
+      _playerDirection = widget.initialDirection!;
     }
   }
 
@@ -938,9 +983,9 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       savedSprites: [],
       defeatedNpcIds: defeatedIds,
     );
-    await userState.saveMapState(widget.biomeName.toLowerCase(), state);
+    await userState.saveMapState(_mapData.config.id, state);
     // Persist the current map as the last-visited zone
-    await userState.updateCurrentMapId(widget.biomeName.toLowerCase());
+    await userState.updateCurrentMapId(_mapData.config.id);
   }
 
   @override
@@ -995,7 +1040,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     }
 
     final encounter = getWeightedRandomOrganism(
-      widget.biomeName,
+      _currentBiomeName,
       widget.allOrganisms,
       accountLevel: user.accountLevel,
       inventory: user.inventory,
@@ -1006,7 +1051,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       encounterType: encounterType,
       currentTileId: activeTile.tileId,
       currentTileCategory: activeTile.category,
-      biomeId: _mapData.biomeId,
+      biomeId: _currentBiomeName,
     );
 
     if (encounter != null) {
@@ -1081,7 +1126,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     final wildFighter = CapturedOrganism.spawn(
       wildOrganism,
       accountLevel: user.accountLevel,
-      captureLocation: widget.biomeName,
+      captureLocation: _currentMapName,
     );
 
     final hour = TimeService().currentGameTime.hour;
@@ -1104,7 +1149,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         builder: (context) => BattleScreen(
           playerOrganism: playerFighter,
           opponentOrganism: wildFighter,
-          biomeName: widget.biomeName,
+          biomeName: _currentBiomeName,
           playerTeam: user.teamOrganisms,
           timeOfDay: timeOfDay,
           mapScreenshot: mapScreenshot,
@@ -1164,19 +1209,21 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   // ── BUILD ──
   @override
   Widget build(BuildContext context) {
-    final weather = WeatherService().getCurrentWeather(widget.biomeName);
+    final weather = WeatherService().getCurrentWeather(_currentBiomeName);
     return PopScope(
-      canPop: true,
-      onPopInvokedWithResult: (bool didPop, dynamic result) {
-        if (didPop) {
-          _saveCurrentState();
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, dynamic result) async {
+        if (didPop) return;
+        await _saveCurrentState();
+        if (context.mounted) {
+          Navigator.of(context).pop();
         }
       },
       child: Scaffold(
         backgroundColor: Colors.black,
         appBar: AppBar(
           centerTitle: true,
-          title: Text((_mapData.name ?? widget.biomeName).toUpperCase()),
+          title: Text(_currentMapName.toUpperCase()),
           backgroundColor: _biomeDarkColor,
           titleTextStyle: TextStyle(
           color: _biomeHighlightColor,
@@ -1194,7 +1241,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => ShopScreen(biome: widget.biomeName),
+                builder: (context) => ShopScreen(biome: _currentBiomeName),
               ),
             ),
           ),
@@ -1208,9 +1255,9 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
             // Map
             _buildMapView(),
             // Weather overlay
-            IgnorePointer(child: WeatherOverlay(weather: weather)),
+            if (!_isIndoor) IgnorePointer(child: WeatherOverlay(weather: weather)),
             // Weather indicator chip
-            _buildWeatherChip(weather),
+            if (!_isIndoor) _buildWeatherChip(weather),
             // Interaction Bubble
             if (_bubbleText != null && _interactionTilePos != null)
               _buildInteractionBubble(),
@@ -1244,7 +1291,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      (_mapData.name ?? widget.biomeName).toUpperCase(),
+                      _currentMapName.toUpperCase(),
                       style: TextStyle(
                         color: _biomeHighlightColor,
                         fontFamily: 'monospace',
@@ -1266,6 +1313,17 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
                 ),
               ),
             ),
+            // Loading Overlay
+            if (_isMapLoading || _loaderFadeOpacity > 0)
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: AnimatedOpacity(
+                    opacity: _loaderFadeOpacity,
+                    duration: const Duration(milliseconds: 400),
+                    child: Container(color: Colors.black),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
@@ -2315,7 +2373,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         builder: (context) => BattleScreen(
           playerOrganism: playerFighter,
           opponentOrganism: opponentTeam.first,
-          biomeName: widget.biomeName,
+          biomeName: _currentBiomeName,
           playerTeam: user.teamOrganisms,
           opponentTeam: opponentTeam,
           battleTitle: 'VS $trainerName',
@@ -2602,7 +2660,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
           PageRouteBuilder(
             opaque: false,
             pageBuilder: (_, animation, _) =>
-                PhoneScreen(initialBiome: widget.biomeName),
+                PhoneScreen(initialBiome: _currentBiomeName),
             transitionsBuilder: (_, animation, _, child) {
               return FadeTransition(opacity: animation, child: child);
             },
@@ -2674,7 +2732,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
             _getWeatherIcon(weather),
             const SizedBox(width: 6),
             Text(
-              "${WeatherService().getForecast(widget.biomeName).first.temperatureCelsius.toStringAsFixed(1)}°C",
+              "${WeatherService().getForecast(_currentBiomeName).first.temperatureCelsius.toStringAsFixed(1)}°C",
               style: const TextStyle(
                 color: Colors.white,
                 fontFamily: 'PressStart2P',
@@ -2745,7 +2803,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
           .split(',')
           .map((e) => e.trim().toLowerCase())
           .toSet();
-      if (!habitats.contains(widget.biomeName.toLowerCase())) continue;
+      if (!habitats.contains(_currentBiomeName.toLowerCase())) continue;
 
       // Max of the same phenotype based on config or default 5
       final spawnData = BiomeDataManager.phenoSpawnData[org.pheno];
