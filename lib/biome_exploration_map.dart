@@ -129,6 +129,9 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   Duration _lastElapsedTime = Duration.zero;
   String? _confirmationTitle;
   VoidCallback? _onConfirm;
+  bool _showSleepMenu = false;
+  double _sleepFadeOpacity = 0.0;
+  bool _isSleeping = false;
 
   // ── Overworld Pheno Sprites ──
   final List<OverworldSprite> _overworldSprites = [];
@@ -1263,6 +1266,8 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
               _buildInteractionBubble(),
             // Confirmation Dialog
             if (_confirmationTitle != null) _buildConfirmationDialog(),
+            // Sleep Menu
+            if (_showSleepMenu) _buildSleepDialog(),
             // Run Button
             _buildRunButton(),
             // Interact Button
@@ -1313,14 +1318,28 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
                 ),
               ),
             ),
-            // Loading Overlay
-            if (_isMapLoading || _loaderFadeOpacity > 0)
+            // Loading / Sleeping Overlay
+            if (_isMapLoading || _loaderFadeOpacity > 0 || _isSleeping)
               Positioned.fill(
                 child: IgnorePointer(
                   child: AnimatedOpacity(
-                    opacity: _loaderFadeOpacity,
-                    duration: const Duration(milliseconds: 400),
-                    child: Container(color: Colors.black),
+                    opacity: _isSleeping ? _sleepFadeOpacity : _loaderFadeOpacity,
+                    duration: const Duration(milliseconds: 600),
+                    child: Container(
+                      color: Colors.black,
+                      child: Center(
+                        child: _isSleeping && _sleepFadeOpacity > 0.5
+                            ? const Text(
+                                "Zzz...",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontFamily: 'PressStart2P',
+                                  fontSize: 16,
+                                ),
+                              )
+                            : const SizedBox.shrink(),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -1392,6 +1411,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
               //up and down during swimming
               bobbingOffset: _isSwimming ? (sin(_swimBobTime * 1.2) * 0.8) : 0,
               jumpOffset: _jumpOffset,
+              isIndoor: _isIndoor,
               isOnFloating: () {
                 // If moving, check both source and destination to keep height consistent
                 final int r1 = (_playerY / tileSize).floor();
@@ -1908,6 +1928,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         baseDef?.category == TileCategory.path;
     bool isFloating = baseDef?.category == TileCategory.floating;
     String? textToShow = baseDef?.interactionText;
+    String? tileName = baseDef?.name;
 
     if (overlayTiles != null) {
       for (final ot in overlayTiles) {
@@ -1921,6 +1942,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         }
         if (def?.category == TileCategory.floating) isFloating = true;
         if (def?.interactionText != null) textToShow = def!.interactionText;
+        if (def?.name != null) tileName = def!.name;
       }
     }
 
@@ -2004,14 +2026,9 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     }
 
     // Rest spot
-    if (textToShow != null && textToShow.startsWith('REST:')) {
-      final restMsg = textToShow.substring(5);
-      _showConfirmationDialog(
-        restMsg.isNotEmpty ? restMsg : 'Rest here and recover?',
-        () {
-          _showInteractionBubble('💤 You feel refreshed!');
-        },
-      );
+    if ((textToShow != null && textToShow.startsWith('REST:')) ||
+        (tileName != null && tileName.contains('Bed Bottom'))) {
+      setState(() => _showSleepMenu = true);
       return;
     }
 
@@ -2554,6 +2571,85 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     );
   }
 
+  Widget _buildSleepDialog() {
+    return Center(
+      child: Container(
+        width: 280,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.9),
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(color: _biomeHighlightColor, width: 2),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              "Rest for how long?",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white,
+                fontFamily: 'PressStart2P',
+                fontSize: 10,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                _buildDialogButton("1H", () => _rest(1)),
+                _buildDialogButton("2H", () => _rest(2)),
+                _buildDialogButton("4H", () => _rest(4)),
+                _buildDialogButton("6H", () => _rest(6)),
+                _buildDialogButton("12H", () => _rest(12)),
+              ],
+            ),
+            const SizedBox(height: 16),
+            _buildDialogButton("CANCEL", () {
+              setState(() => _showSleepMenu = false);
+            }),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _rest(int hours) async {
+    setState(() {
+      _showSleepMenu = false;
+      _isSleeping = true;
+      _sleepFadeOpacity = 1.0;
+    });
+
+    // Wait for the screen to fade to black
+    await Future.delayed(const Duration(milliseconds: 600));
+    if (!mounted) return;
+
+    TimeService().advanceTime(hours);
+
+    // Keep screen black for a moment while "Zzz..." shows
+    await Future.delayed(const Duration(milliseconds: 1400));
+    if (!mounted) return;
+
+    setState(() {
+      _sleepFadeOpacity = 0.0;
+    });
+
+    // Wait for the screen to fade back in
+    await Future.delayed(const Duration(milliseconds: 600));
+    if (!mounted) return;
+
+    setState(() {
+      _isSleeping = false;
+    });
+
+    _showInteractionBubble('💤 Rested for $hours hours!');
+  }
+
   Widget _buildDialogButton(String text, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
@@ -3053,6 +3149,7 @@ class _BiomeMapPainter extends CustomPainter {
   final double zoomScale;
   final List<_FireflyParticle> fireflies;
   final List<OverworldNPC> gameNPCs;
+  final bool isIndoor;
 
   _BiomeMapPainter({
     required this.currentHour,
@@ -3074,6 +3171,7 @@ class _BiomeMapPainter extends CustomPainter {
     this.zoomScale = 1.0,
     this.fireflies = const [],
     required this.gameNPCs,
+    this.isIndoor = false,
   });
 
   @override
@@ -3165,25 +3263,27 @@ class _BiomeMapPainter extends CustomPainter {
     canvas.restore();
 
     // 3. Daylight Filter Overlay
-    if (currentHour >= 18 && currentHour < 21) {
-      // Evening / Sunset
-      canvas.drawRect(
-        Rect.fromLTWH(0, 0, size.width, size.height),
-        Paint()
-          ..color = Colors.deepOrange.withValues(alpha: 0.2)
-          ..blendMode = BlendMode.srcOver,
-      );
-    } else if (currentHour >= 21 || currentHour < 6) {
-      // Night
-      canvas.drawRect(
-        Rect.fromLTWH(0, 0, size.width, size.height),
-        Paint()
-          ..color = Colors.indigo.shade900.withValues(alpha: 0.4)
-          ..blendMode = BlendMode.srcOver,
-      );
+    if (!isIndoor) {
+      if (currentHour >= 18 && currentHour < 21) {
+        // Evening / Sunset
+        canvas.drawRect(
+          Rect.fromLTWH(0, 0, size.width, size.height),
+          Paint()
+            ..color = Colors.deepOrange.withValues(alpha: 0.2)
+            ..blendMode = BlendMode.srcOver,
+        );
+      } else if (currentHour >= 21 || currentHour < 6) {
+        // Night
+        canvas.drawRect(
+          Rect.fromLTWH(0, 0, size.width, size.height),
+          Paint()
+            ..color = Colors.indigo.shade900.withValues(alpha: 0.4)
+            ..blendMode = BlendMode.srcOver,
+        );
 
-      // Draw Fireflies
-      _drawFireflies(canvas);
+        // Draw Fireflies
+        _drawFireflies(canvas);
+      }
     }
   }
 

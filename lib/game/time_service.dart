@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Represents the in-game time.
 class GameTime {
@@ -117,7 +118,20 @@ class TimeService {
 
   factory TimeService() => _instance;
 
-  TimeService._internal();
+  TimeService._internal() {
+    _loadOffset();
+  }
+
+  Future<void> _loadOffset() async {
+    final prefs = await SharedPreferences.getInstance();
+    final minutes = prefs.getInt('game_time_offset_minutes') ?? 0;
+    _gameTimeOffset = Duration(minutes: minutes);
+  }
+
+  Future<void> _saveOffset() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('game_time_offset_minutes', _gameTimeOffset.inMinutes);
+  }
 
   // 1 real hour = 4 in-game hours.
   // So the speed multiplier is 4.
@@ -144,6 +158,7 @@ class TimeService {
   /// Advances in-game time by [hours] hours permanently.
   void advanceTime(int hours) {
     _gameTimeOffset += Duration(hours: hours);
+    _saveOffset();
     _timeController.add(currentGameTime);
   }
 
