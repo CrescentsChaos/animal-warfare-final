@@ -4,6 +4,7 @@
         "name": "Littleroot Town",
         "defaultTileId": "grass_ground",
         "biomeId": "urban",
+        "isIndoor": false,
         "layout": {
             "base": [
                 "null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null",
@@ -111,6 +112,13 @@
                 "y": 23,
                 "targetMap": "route_101",
                 "targetX": 15,
+                "targetY": 2
+            },
+            {
+                "x": 16,
+                "y": 13,
+                "targetMap": "player_house",
+                "targetX": 8,
                 "targetY": 2
             }
         ],
