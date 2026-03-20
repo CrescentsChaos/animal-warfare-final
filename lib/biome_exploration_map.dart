@@ -3222,7 +3222,7 @@ class _BiomeMapPainter extends CustomPainter {
     final double finalY = (r * tileSize - cameraY);
     final rect = Rect.fromLTWH(finalX, finalY, tileSize, tileSize);
 
-    if (tile.category == TileCategory.teleporter) return; // HIDE teleporters in-game
+    if (tile.tileId == 'teleporter') return; // HIDE the default debug teleporter tile in-game
 
     final assets = BiomeDataManager.tileAssets[tile.tileId];
 

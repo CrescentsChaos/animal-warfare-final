@@ -123,8 +123,8 @@
             ],
             "overlay": [
                 "null,null,null,null,null,null,null,null,null,null,null,null,null,null,null",
-                "null,null,null,null,null,null,null,null,null,null,null,null,null,null,null",
-                "null,null,null,null,null,null,null,null,null,null,null,null,null,null,null",
+                "null,null,bed_2,null,tv_2,null,null,null,null,null,null,null,null,null,null",
+                "null,null,bed_1,null,null,null,null,null,null,null,null,null,null,null,null",
                 "null,null,null,null,null,null,null,null,null,null,null,null,null,null,null",
                 "null,null,null,null,null,null,null,null,null,null,null,null,null,null,null",
                 "null,null,null,null,null,null,null,null,null,null,null,null,null,null,null",
@@ -135,8 +135,8 @@
             ],
             "walkability": [
                 "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
-                "0,1,1,1,1,1,1,1,1,1,1,1,1,1,0",
-                "0,1,1,1,1,1,1,1,1,1,1,1,1,1,0",
+                "0,1,1,1,0,1,1,1,1,1,1,1,1,1,0",
+                "0,1,0,1,1,1,1,1,1,1,1,1,1,1,0",
                 "0,1,1,1,1,1,1,1,1,1,1,1,1,1,0",
                 "0,1,1,1,1,1,1,1,1,1,1,1,1,1,0",
                 "0,1,1,1,1,1,1,1,1,1,1,1,1,1,0",
