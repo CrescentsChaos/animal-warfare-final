@@ -208,7 +208,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     mapHeight = _mapData.height;
 
     _playerX = _mapData.spawnPoint.x * tileSize;
-    _playerY = _mapData.spawnPoint.y * tileSize;
+    _playerY = (_mapData.height - 1 - _mapData.spawnPoint.y) * tileSize;
     _targetX = _playerX;
     _targetY = _playerY;
     _isMovingToTarget = false;
@@ -233,7 +233,9 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
             userState.hasFlag(npcData.requiredFlag)) {
           continue;
         }
-        final npc = OverworldNPC(data: npcData);
+        final npc = OverworldNPC(
+          data: npcData.copyWith(row: _mapData.height - 1 - npcData.row),
+        );
         // Restore defeated state from persistent event flags
         if ((npcData.scriptType == 'trainer' ||
                 npcData.scriptType == 'rival' ||
@@ -732,7 +734,18 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
           (overlayTile?.any((t) => t.category == TileCategory.teleporter) ??
               false);
 
-      if (isTeleporter) continue; // Teleporters are always walkable
+      bool hasTransition = false;
+      final transitions = _mapData.transitions ?? _mapData.config.transitions;
+      if (transitions != null) {
+        for (final t in transitions) {
+          if (t.x == c && (_mapData.height - 1 - t.y) == r) {
+            hasTransition = true;
+            break;
+          }
+        }
+      }
+
+      if (isTeleporter || hasTransition) continue; // Teleporters are always walkable
       if (isSolid) return false;
 
       if (isSwimming) {
@@ -793,6 +806,10 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   void _checkStepEncounter(int row, int col) {
     if (_encounterActive) return;
 
+    if (_handleTeleport(row, col)) {
+      return;
+    }
+
     // Check both base and overlay for encounter tiles (like tallgrass)
     final baseTile = _mapData.grid[row][col];
     final overlayTiles = _mapData.overlayGrid?[row][col];
@@ -800,19 +817,14 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     MapTile? encounterTile;
     if (overlayTiles != null) {
       for (final t in overlayTiles) {
-        if (t.hasEncounter || t.category == TileCategory.teleporter) {
+        if (t.hasEncounter) {
           encounterTile = t;
-          break; // Use the first encounter or teleporter tile found in overlays
+          break; // Use the first encounter tile found in overlays
         }
       }
     }
 
     final activeTile = encounterTile ?? baseTile;
-
-    if (activeTile.category == TileCategory.teleporter) {
-      _handleTeleport(row, col);
-      return;
-    }
 
     if (activeTile.hasEncounter) {
       final double rate = activeTile.encounterRate ?? 0.40;
@@ -833,20 +845,19 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
         _triggerEncounter(activeTile);
       }
-    } else if (activeTile.category == TileCategory.teleporter) {
-      // This is now handled at the start of _checkStepEncounter for priority
     }
   }
 
-  void _handleTeleport(int row, int col) {
+  bool _handleTeleport(int row, int col) {
     final transitions = _mapData.transitions ?? _mapData.config.transitions;
-    if (transitions == null) return;
+    if (transitions == null) return false;
     for (final t in transitions) {
-      if (t.x == col && t.y == row) {
+      if (t.x == col && (_mapData.height - 1 - t.y) == row) {
         _executeTransition(t);
-        return;
+        return true;
       }
     }
+    return false;
   }
 
   Future<void> _executeTransition(MapTransition t) async {
@@ -1306,7 +1317,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'COORD: ${(_playerX / tileSize).floor()}, ${(_playerY / tileSize).floor()}',
+                      'COORD: ${(_playerX / tileSize).floor()}, ${_mapData.height - 1 - (_playerY / tileSize).floor()}',
                       style: TextStyle(
                         color: _biomeHighlightColor,
                         fontFamily: 'monospace',

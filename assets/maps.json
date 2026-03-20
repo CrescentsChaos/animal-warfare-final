@@ -94,10 +94,24 @@
         "transitions": [
             {
                 "x": 8,
-                "y": 11,
+                "y": 13,
                 "targetMap": "player_house",
                 "targetX": 8,
-                "targetY": 7
+                "targetY": 2
+            },
+            {
+                "x": 14,
+                "y": 23,
+                "targetMap": "route_101",
+                "targetX": 14,
+                "targetY": 2
+            },
+            {
+                "x": 15,
+                "y": 23,
+                "targetMap": "route_101",
+                "targetX": 15,
+                "targetY": 2
             }
         ],
         "npcs": []
@@ -123,7 +137,7 @@
             ],
             "overlay": [
                 "null,null,null,null,null,null,null,null,null,null,null,null,null,null,null",
-                "null,null,bed_2,null,tv_2,null,null,null,null,null,null,null,null,null,null",
+                "null,null,bed_2,null,null,tv_2,null,null,null,null,null,null,null,null,null",
                 "null,null,bed_1,null,null,null,null,null,null,null,null,null,null,null,null",
                 "null,null,null,null,null,null,null,null,null,null,null,null,null,null,null",
                 "null,null,null,null,null,null,null,null,null,null,null,null,null,null,null",
@@ -135,7 +149,7 @@
             ],
             "walkability": [
                 "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
-                "0,1,1,1,0,1,1,1,1,1,1,1,1,1,0",
+                "0,1,1,1,1,0,1,1,1,1,1,1,1,1,0",
                 "0,1,0,1,1,1,1,1,1,1,1,1,1,1,0",
                 "0,1,1,1,1,1,1,1,1,1,1,1,1,1,0",
                 "0,1,1,1,1,1,1,1,1,1,1,1,1,1,0",
@@ -148,15 +162,126 @@
         },
         "spawnPoint": {
             "x": 7,
-            "y": 5
+            "y": 4
         },
         "transitions": [
             {
                 "x": 8,
-                "y": 8,
+                "y": 1,
                 "targetMap": "littleroot_town",
                 "targetX": 8,
                 "targetY": 12
+            }
+        ],
+        "npcs": []
+    },
+    {
+        "id": "route_101",
+        "name": "Route 101",
+        "defaultTileId": "swamp_ground",
+        "biomeId": "urban",
+        "isIndoor": false,
+        "layout": {
+            "base": [
+                "null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null",
+                "null,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,null",
+                "null,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,null",
+                "null,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,null",
+                "null,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,null",
+                "null,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,null",
+                "null,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,null",
+                "null,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,null",
+                "null,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,null",
+                "null,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,null",
+                "null,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,null",
+                "null,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,null",
+                "null,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,null",
+                "null,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,null",
+                "null,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,null",
+                "null,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,null",
+                "null,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,null",
+                "null,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,null",
+                "null,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,null",
+                "null,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,null",
+                "null,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,null",
+                "null,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,null",
+                "null,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,null",
+                "null,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,town_grass,null",
+                "null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null"
+            ],
+            "overlay": [
+                "null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null",
+                "null,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,null,null,null,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,null",
+                "null,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,null,null,null,null,null,null,null,null,null,null,null,tall_grass,tall_grass,tall_grass,tall_grass,oak_tree,oak_tree,null",
+                "null,oak_tree,oak_tree,oak_tree,tall_grass,tall_grass,tall_grass,null,null,null,null,null,null,null,null,null,null,null,null,null,tall_grass,tall_grass,tall_grass,oak_tree,null",
+                "null,oak_tree,oak_tree,tall_grass,tall_grass,tall_grass,tall_grass,null,null,null,null,null,null,null,null,null,null,tall_grass,tall_grass,tall_grass,tall_grass,tall_grass,tall_grass,oak_tree,null",
+                "null,oak_tree,oak_tree,tall_grass,tall_grass,tall_grass,tall_grass,null,english_elm_tree,null,english_elm_tree,null,english_elm_tree,null,null,null,oak_tree,tall_grass,tall_grass,tall_grass,tall_grass,tall_grass,tall_grass,oak_tree,null",
+                "null,oak_tree,oak_tree,tall_grass,tall_grass,tall_grass,tall_grass,english_elm_tree,null,english_elm_tree,null,english_elm_tree,null,english_elm_tree,null,null,null,oak_tree,oak_tree,tall_grass,tall_grass,tall_grass,tall_grass,oak_tree,null",
+                "null,oak_tree,oak_tree,tall_grass,tall_grass,tall_grass,tall_grass,null,null,null,null,null,null,null,null,null,oak_tree,null,oak_tree,tall_grass,tall_grass,tall_grass,tall_grass,oak_tree,null",
+                "null,oak_tree,oak_tree,tall_grass,tall_grass,tall_grass,tall_grass,null,null,null,null,null,null,null,null,null,null,oak_tree,oak_tree,tall_grass,tall_grass,null,tall_grass,oak_tree,null",
+                "null,oak_tree,oak_tree,tall_grass,tall_grass,tall_grass,null,null,null,null,null,null,null,null,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,tall_grass,tall_grass,null,null,oak_tree,null",
+                "null,oak_tree,oak_tree,tall_grass,tall_grass,null,null,null,null,null,null,mango_tree,null,mango_tree,null,oak_tree,null,oak_tree,null,oak_tree,null,null,null,oak_tree,null",
+                "null,oak_tree,oak_tree,tall_grass,tall_grass,tall_grass,null,null,null,null,null,null,honey_tree,null,null,oak_tree,oak_tree,null,null,null,null,null,null,oak_tree,null",
+                "null,oak_tree,oak_tree,tall_grass,tall_grass,null,null,null,null,null,null,mango_tree,null,mango_tree,null,oak_tree,null,oak_tree,null,null,null,null,null,oak_tree,null",
+                "null,oak_tree,oak_tree,tall_grass,null,null,null,null,null,null,null,null,null,null,null,oak_tree,null,null,null,null,null,null,null,oak_tree,null",
+                "null,oak_tree,oak_tree,null,null,null,null,null,null,english_elm_tree,null,english_elm_tree,null,ledge_left,ledge_right,oak_tree,oak_tree,oak_tree,null,null,null,null,null,oak_tree,null",
+                "null,oak_tree,ledge_left,ledge_mid,ledge_mid,ledge_mid,ledge_mid,ledge_right,english_elm_tree,null,english_elm_tree,null,english_elm_tree,null,null,oak_tree,oak_tree,tall_grass,tall_grass,null,null,null,null,oak_tree,null",
+                "null,oak_tree,oak_tree,null,null,null,null,null,null,null,null,null,null,null,null,tall_grass,tall_grass,tall_grass,tall_grass,tall_grass,tall_grass,null,null,oak_tree,null",
+                "null,oak_tree,oak_tree,tall_grass,tall_grass,null,null,null,null,null,null,null,null,null,null,tall_grass,tall_grass,tall_grass,tall_grass,tall_grass,tall_grass,null,null,oak_tree,null",
+                "null,oak_tree,oak_tree,tall_grass,tall_grass,tall_grass,tall_grass,null,null,null,null,null,null,null,null,tall_grass,tall_grass,tall_grass,tall_grass,tall_grass,tall_grass,null,null,oak_tree,null",
+                "null,oak_tree,tall_grass,tall_grass,tall_grass,tall_grass,tall_grass,tall_grass,null,null,null,ledge_left,ledge_mid,ledge_mid,ledge_mid,ledge_right,oak_tree,tall_grass,tall_grass,tall_grass,tall_grass,null,null,oak_tree,null",
+                "null,oak_tree,tall_grass,tall_grass,tall_grass,tall_grass,tall_grass,tall_grass,null,null,null,null,null,null,null,null,oak_tree,oak_tree,tall_grass,tall_grass,null,null,oak_tree,oak_tree,null",
+                "null,oak_tree,oak_tree,tall_grass,tall_grass,tall_grass,tall_grass,null,null,null,null,null,null,null,null,null,oak_tree,oak_tree,tall_grass,tall_grass,null,null,oak_tree,oak_tree,null",
+                "null,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,null,null,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,null",
+                "null,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,null,null,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,oak_tree,null",
+                "null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null"
+            ],
+            "walkability": [
+                "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+                "0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0",
+                "0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0",
+                "0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0",
+                "0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0",
+                "0,0,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,1,1,1,1,1,0,0",
+                "0,0,0,1,1,1,1,0,1,0,1,0,1,0,1,1,1,0,0,1,1,1,1,0,0",
+                "0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,1,1,1,1,0,0",
+                "0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,0,0",
+                "0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,1,1,1,1,0,0",
+                "0,0,0,1,1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,0",
+                "0,0,0,1,1,1,1,1,1,1,1,1,0,1,1,0,0,1,1,1,1,1,1,0,0",
+                "0,0,0,1,1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,1,1,1,1,0,0",
+                "0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,0,0",
+                "0,0,0,1,1,1,1,1,1,0,1,0,1,0,0,0,0,0,1,1,1,1,1,0,0",
+                "0,0,0,0,0,0,0,0,0,1,0,1,0,1,1,0,0,1,1,1,1,1,1,0,0",
+                "0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0",
+                "0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0",
+                "0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0",
+                "0,0,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,1,1,1,1,1,1,0,0",
+                "0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,0,0,0",
+                "0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,0,0,0",
+                "0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0",
+                "0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0",
+                "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
+            ]
+        },
+        "spawnPoint": {
+            "x": 9,
+            "y": 9
+        },
+        "transitions": [
+            {
+                "x": 14,
+                "y": 1,
+                "targetMap": "littleroot_town",
+                "targetX": 14,
+                "targetY": 22
+            },
+            {
+                "x": 15,
+                "y": 1,
+                "targetMap": "littleroot_town",
+                "targetX": 15,
+                "targetY": 22
             }
         ],
         "npcs": []

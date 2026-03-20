@@ -1064,9 +1064,19 @@ class _MapEditorState extends State<MapEditor> {
             .map((row) => row.map((w) => w ? '1' : '0').join(','))
             .toList(),
       },
-      "spawnPoint": {"x": _spawnC, "y": _spawnR},
-      "transitions": _teleporters.map((t) => t.toJson()).toList(),
-      "npcs": _npcs.map((n) => n.toJson()).toList(),
+      "spawnPoint": {"x": _spawnC, "y": _rows - 1 - _spawnR},
+      "transitions": _teleporters.map((t) => {
+        'x': t.x,
+        'y': _rows - 1 - t.y,
+        'targetMap': t.targetMap,
+        'targetX': t.targetX,
+        'targetY': t.targetY,
+      }).toList(),
+      "npcs": _npcs.map((n) {
+        final j = n.toJson();
+        j['row'] = _rows - 1 - j['row'];
+        return j;
+      }).toList(),
     };
     const encoder = JsonEncoder.withIndent('    ');
     return encoder.convert(exportData);
@@ -1413,21 +1423,29 @@ class _MapEditorState extends State<MapEditor> {
 
         if (dataMap['spawnPoint'] != null) {
           _spawnC = dataMap['spawnPoint']['x'] ?? _cols ~/ 2;
-          _spawnR = dataMap['spawnPoint']['y'] ?? _rows ~/ 2;
+          _spawnR = _rows - 1 - (dataMap['spawnPoint']['y'] as int? ?? _rows ~/ 2);
         }
 
         if (dataMap['transitions'] != null) {
-          _teleporters = (dataMap['transitions'] as List)
-              .map((t) => MapTransition.fromJson(t))
-              .toList();
+          _teleporters = (dataMap['transitions'] as List).map((t) {
+            final trans = MapTransition.fromJson(t);
+            return MapTransition(
+              x: trans.x,
+              y: _rows - 1 - trans.y,
+              targetMap: trans.targetMap,
+              targetX: trans.targetX,
+              targetY: trans.targetY,
+            );
+          }).toList();
         } else {
           _teleporters = [];
         }
 
         if (dataMap['npcs'] != null) {
-          _npcs = (dataMap['npcs'] as List)
-              .map((n) => NPCData.fromJson(n))
-              .toList();
+          _npcs = (dataMap['npcs'] as List).map((n) {
+            final npc = NPCData.fromJson(n);
+            return npc.copyWith(row: _rows - 1 - npc.row);
+          }).toList();
         } else {
           _npcs = [];
         }
@@ -1781,7 +1799,8 @@ class _MapEditorState extends State<MapEditor> {
                       final r = (d.localPosition.dy / cs).floor();
                       final c = (d.localPosition.dx / cs).floor();
                       if (r >= 0 && r < _rows && c >= 0 && c < _cols) {
-                        setState(() => _hoverInfo = '($r, $c)');
+                        final displayY = _rows - 1 - r;
+                        setState(() => _hoverInfo = '($c, $displayY)');
                       }
                     },
                     child: CustomPaint(
