@@ -1070,13 +1070,17 @@ class _MapEditorState extends State<MapEditor> {
             .toList(),
       },
       "spawnPoint": {"x": _spawnC, "y": _rows - 1 - _spawnR},
-      "transitions": _teleporters.map((t) => {
-        'x': t.x,
-        'y': _rows - 1 - t.y,
-        'targetMap': t.targetMap,
-        'targetX': t.targetX,
-        'targetY': t.targetY,
-      }).toList(),
+      "transitions": _teleporters
+          .map(
+            (t) => {
+              'x': t.x,
+              'y': _rows - 1 - t.y,
+              'targetMap': t.targetMap,
+              'targetX': t.targetX,
+              'targetY': t.targetY,
+            },
+          )
+          .toList(),
       "npcs": _npcs.map((n) {
         final j = n.toJson();
         j['row'] = _rows - 1 - j['row'];
@@ -1342,8 +1346,9 @@ class _MapEditorState extends State<MapEditor> {
       if (decoded is List) {
         // If it's a list (like maps.json), try to find a matching ID, otherwise take the first one
         final list = decoded.whereType<Map<String, dynamic>>();
-        if (list.isEmpty)
+        if (list.isEmpty) {
           throw 'JSON list is empty or contains invalid objects';
+        }
 
         data = list.firstWhere(
           (m) =>
@@ -1428,7 +1433,8 @@ class _MapEditorState extends State<MapEditor> {
 
         if (dataMap['spawnPoint'] != null) {
           _spawnC = dataMap['spawnPoint']['x'] ?? _cols ~/ 2;
-          _spawnR = _rows - 1 - (dataMap['spawnPoint']['y'] as int? ?? _rows ~/ 2);
+          _spawnR =
+              _rows - 1 - (dataMap['spawnPoint']['y'] as int? ?? _rows ~/ 2);
         }
 
         if (dataMap['transitions'] != null) {
@@ -1738,88 +1744,88 @@ class _MapEditorState extends State<MapEditor> {
             child: Stack(
               children: [
                 InteractiveViewer(
-              transformationController: _transController,
-              constrained: false,
-              scaleEnabled: _mode == EditorMode.pan,
-              panEnabled: _mode == EditorMode.pan,
-              boundaryMargin: const EdgeInsets.all(1000),
-              minScale: 0.1,
-              maxScale: 3.0,
-              child: Listener(
-                onPointerDown: (_) => setState(() => _pointerCount++),
-                onPointerUp: (_) => setState(() => _pointerCount--),
-                onPointerCancel: (_) => setState(() => _pointerCount--),
-                child: GestureDetector(
-                  onPanStart: _mode == EditorMode.pan
-                      ? null
-                      : (d) {
-                          const cs = 40.0;
-                          _handleInteraction(
-                            (d.localPosition.dy / cs).floor(),
-                            (d.localPosition.dx / cs).floor(),
-                            true,
-                          );
-                        },
-                  onPanUpdate: _mode == EditorMode.pan
-                      ? null
-                      : (d) {
-                          const cs = 40.0;
-                          _handleInteraction(
-                            (d.localPosition.dy / cs).floor(),
-                            (d.localPosition.dx / cs).floor(),
-                            false,
-                          );
-                        },
-                  onPanEnd: _mode == EditorMode.pan
-                      ? null
-                      : (_) => _onInteractionEnd(),
-                  onTapDown: _mode == EditorMode.pan
-                      ? null
-                      : (d) {
-                          const cs = 40.0;
-                          _handleInteraction(
-                            (d.localPosition.dy / cs).floor(),
-                            (d.localPosition.dx / cs).floor(),
-                            true,
-                          );
-                        },
-                  onTap: _mode == EditorMode.pan
-                      ? null
-                      : () {}, // Just to ensure it triggers arena
-                  onTapUp: _mode == EditorMode.pan
-                      ? null
-                      : (_) => _onInteractionEnd(),
-                  onLongPressStart: _mode == EditorMode.pan
-                      ? null
-                      : (d) {
-                          const cs = 40.0;
-                          _handleInteraction(
-                            (d.localPosition.dy / cs).floor(),
-                            (d.localPosition.dx / cs).floor(),
-                            true,
-                          );
-                        },
-                  behavior: HitTestBehavior.opaque,
-                  child: MouseRegion(
-                    child: CustomPaint(
-                      size: Size(_cols * 40.0, _rows * 40.0),
-                      painter: _EditorGridPainter(
-                        grid: _grid,
-                        overlayGrid: _overlayGrid,
-                        isWalkable: _isWalkable,
-                        mode: _mode,
-                        showGrid: _showGrid,
-                        spawnR: _spawnR,
-                        spawnC: _spawnC,
-                        teleporters: _teleporters,
-                        npcs: _npcs,
+                  transformationController: _transController,
+                  constrained: false,
+                  scaleEnabled: _mode == EditorMode.pan,
+                  panEnabled: _mode == EditorMode.pan,
+                  boundaryMargin: const EdgeInsets.all(1000),
+                  minScale: 0.1,
+                  maxScale: 3.0,
+                  child: Listener(
+                    onPointerDown: (_) => setState(() => _pointerCount++),
+                    onPointerUp: (_) => setState(() => _pointerCount--),
+                    onPointerCancel: (_) => setState(() => _pointerCount--),
+                    child: GestureDetector(
+                      onPanStart: _mode == EditorMode.pan
+                          ? null
+                          : (d) {
+                              const cs = 40.0;
+                              _handleInteraction(
+                                (d.localPosition.dy / cs).floor(),
+                                (d.localPosition.dx / cs).floor(),
+                                true,
+                              );
+                            },
+                      onPanUpdate: _mode == EditorMode.pan
+                          ? null
+                          : (d) {
+                              const cs = 40.0;
+                              _handleInteraction(
+                                (d.localPosition.dy / cs).floor(),
+                                (d.localPosition.dx / cs).floor(),
+                                false,
+                              );
+                            },
+                      onPanEnd: _mode == EditorMode.pan
+                          ? null
+                          : (_) => _onInteractionEnd(),
+                      onTapDown: _mode == EditorMode.pan
+                          ? null
+                          : (d) {
+                              const cs = 40.0;
+                              _handleInteraction(
+                                (d.localPosition.dy / cs).floor(),
+                                (d.localPosition.dx / cs).floor(),
+                                true,
+                              );
+                            },
+                      onTap: _mode == EditorMode.pan
+                          ? null
+                          : () {}, // Just to ensure it triggers arena
+                      onTapUp: _mode == EditorMode.pan
+                          ? null
+                          : (_) => _onInteractionEnd(),
+                      onLongPressStart: _mode == EditorMode.pan
+                          ? null
+                          : (d) {
+                              const cs = 40.0;
+                              _handleInteraction(
+                                (d.localPosition.dy / cs).floor(),
+                                (d.localPosition.dx / cs).floor(),
+                                true,
+                              );
+                            },
+                      behavior: HitTestBehavior.opaque,
+                      child: MouseRegion(
+                        child: CustomPaint(
+                          size: Size(_cols * 40.0, _rows * 40.0),
+                          painter: _EditorGridPainter(
+                            grid: _grid,
+                            overlayGrid: _overlayGrid,
+                            isWalkable: _isWalkable,
+                            mode: _mode,
+                            showGrid: _showGrid,
+                            spawnR: _spawnR,
+                            spawnC: _spawnC,
+                            teleporters: _teleporters,
+                            npcs: _npcs,
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ),
-            Positioned(
+                Positioned(
                   top: 16,
                   left: 16,
                   child: IgnorePointer(
@@ -1828,7 +1834,9 @@ class _MapEditorState extends State<MapEditor> {
                       children: [
                         if (_lastClickedCoord.isNotEmpty)
                           _coordChip(
-                              'CLICKED: $_lastClickedCoord', Colors.orangeAccent),
+                            'CLICKED: $_lastClickedCoord',
+                            Colors.orangeAccent,
+                          ),
                       ],
                     ),
                   ),
@@ -1966,7 +1974,9 @@ class _MapEditorState extends State<MapEditor> {
                 color: MapEditor.premiumSurface,
                 borderRadius: BorderRadius.circular(6),
                 border: Border.all(
-                  color: _isIndoor ? Colors.cyan.withValues(alpha: 0.5) : MapEditor.premiumGold.withValues(alpha: 0.2),
+                  color: _isIndoor
+                      ? Colors.cyan.withValues(alpha: 0.5)
+                      : MapEditor.premiumGold.withValues(alpha: 0.2),
                 ),
               ),
               child: Row(

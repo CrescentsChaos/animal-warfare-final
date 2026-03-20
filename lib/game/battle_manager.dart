@@ -7831,26 +7831,31 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       if (ab.name == 'Reckless' && move.recoilPercent > 0) damageCalc *= 1.2;
       if (ab.name == 'Technician' && baseDamage <= 60) damageCalc *= 1.5;
       if (ab.name == 'Stakeout' &&
-          (defender.isPlayer ? playerJustSwitched : opponentJustSwitched))
+          (defender.isPlayer ? playerJustSwitched : opponentJustSwitched)) {
         damageCalc *= 2.0;
+      }
 
       // NEW ABILITIES
       if (ab.name == 'Whiteout' &&
           currentWeather.weather == Weather.snowstorm &&
-          moveType == ElementalType.cryo)
+          moveType == ElementalType.cryo) {
         damageCalc *= 1.5;
+      }
       if (ab.name == 'Sand Song' &&
           move.type == ElementalType.sound &&
-          currentWeather.weather == Weather.sandstorm)
+          currentWeather.weather == Weather.sandstorm) {
         damageCalc *= 1.5;
+      }
       if (ab.name == 'Vengeance' && moveType == ElementalType.spectral) {
         final team = attacker.isPlayer ? playerTeam : opponentTeam;
         final faintedCount = team.where((o) => o.currentHealth <= 0).length;
         damageCalc *= (1.0 + (faintedCount * 0.1));
       }
       if (ab.name == 'Antarctic Bird' &&
-          (moveType == ElementalType.cryo || moveType == ElementalType.flying))
+          (moveType == ElementalType.cryo ||
+              moveType == ElementalType.flying)) {
         damageCalc *= 1.3;
+      }
 
       // Type Shifters (Basic -> Something)
       if (move.type == ElementalType.basic) {
@@ -7887,21 +7892,27 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         }
       }
 
-      if (ab.name == 'Electrocytes' && moveType == ElementalType.electric)
+      if (ab.name == 'Electrocytes' && moveType == ElementalType.electric) {
         damageCalc *= 1.25;
+      }
       if (ab.name == 'Aurora Borealis' &&
           (attacker.isPlayer
               ? playerAuroraVeilTurns > 0
-              : opponentAuroraVeilTurns > 0))
+              : opponentAuroraVeilTurns > 0)) {
         damageCalc *= 1.3;
-      if (ab.name == 'Avenger' && attacker.partyMemberFaintedLastTurn)
+      }
+      if (ab.name == 'Avenger' && attacker.partyMemberFaintedLastTurn) {
         damageCalc *= 1.5;
-      if (ab.name == 'Amphibious' && moveType == ElementalType.aquatic)
+      }
+      if (ab.name == 'Amphibious' && moveType == ElementalType.aquatic) {
         damageCalc *= 1.5;
-      if (ab.name == 'Earthbound' && moveType == ElementalType.earth)
+      }
+      if (ab.name == 'Earthbound' && moveType == ElementalType.earth) {
         damageCalc *= (attacker.health <= attacker.maxHealth / 3) ? 1.5 : 1.2;
-      if (ab.name == 'Fossilized' && moveType == ElementalType.rock)
+      }
+      if (ab.name == 'Fossilized' && moveType == ElementalType.rock) {
         damageCalc *= 1.2;
+      }
       if (ab.name == 'Dreamcatcher') {
         bool anyAsleep =
             player.statusEffects.any(
@@ -7912,20 +7923,26 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             );
         if (anyAsleep) damageCalc *= 2.0;
       }
-      if (ab.name == 'Nocturnal' && moveType == ElementalType.darkness)
+      if (ab.name == 'Nocturnal' && moveType == ElementalType.darkness) {
         damageCalc *= 1.25;
-      if (ab.name == 'Dragonslayer' && moveType == ElementalType.drake)
+      }
+      if (ab.name == 'Dragonslayer' && moveType == ElementalType.drake) {
         damageCalc *= 1.5;
+      }
 
       // Defensive parts of some abilities
-      if (ab.name == 'Dragonslayer' && moveType == ElementalType.drake)
+      if (ab.name == 'Dragonslayer' && moveType == ElementalType.drake) {
         damageCalc *= 0.5;
-      if (ab.name == 'Transistor' && moveType == ElementalType.electric)
+      }
+      if (ab.name == 'Transistor' && moveType == ElementalType.electric) {
         damageCalc *= 1.5;
-      if (ab.name == "Dragon's Maw" && moveType == ElementalType.drake)
+      }
+      if (ab.name == "Dragon's Maw" && moveType == ElementalType.drake) {
         damageCalc *= 1.5;
-      if (ab.name == 'Steely Spirit' && moveType == ElementalType.metal)
+      }
+      if (ab.name == 'Steely Spirit' && moveType == ElementalType.metal) {
         damageCalc *= 1.3;
+      }
       if (ab.name == 'Normalize') damageCalc *= 1.1;
     }
 

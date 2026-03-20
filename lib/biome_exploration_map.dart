@@ -141,6 +141,8 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
   // ── Firefly Effect ──
   final List<_FireflyParticle> _fireflies = [];
+  final List<_GrassParticle> _grassParticles = [];
+  double _grassAnimTime = 0;
   final List<Offset> _waterEdgeTiles = [];
   double _loaderFadeOpacity = 0.0;
   bool _isMapLoading = false;
@@ -416,7 +418,29 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         }
 
         // Remove expired sprites
-        _overworldSprites.removeWhere((s) => s.isExpired);
+        _overworldSprites.removeWhere((s) {
+          if (s.isExpired) return true;
+          // Spawn grass particles if sprite is moving in tall grass
+          if (s.isMoving) {
+            final int sr = ((s.pixelY + tileSize / 2) / tileSize).floor();
+            final int sc = ((s.pixelX + tileSize / 2) / tileSize).floor();
+            if (sr >= 0 &&
+                sr < _mapData.height &&
+                sc >= 0 &&
+                sc < _mapData.width &&
+                (_mapData.overlayGrid?[sr][sc]
+                        .any((t) => t.category == TileCategory.tallGrass) ??
+                    false)) {
+              if (Random().nextDouble() < 0.2) {
+                _spawnGrassParticles(
+                  s.pixelX + tileSize / 2,
+                  s.pixelY + tileSize,
+                );
+              }
+            }
+          }
+          return false;
+        });
       }
 
       final currentTickDt = _phenoTickAccumulator;
@@ -471,6 +495,19 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       }
     }
 
+    // ── Update Grass Particles ──
+    _grassAnimTime += dt;
+    for (int i = _grassParticles.length - 1; i >= 0; i--) {
+      final p = _grassParticles[i];
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.life -= dt * 1.5;
+      p.angle += p.vx * dt * 0.1;
+      if (p.life <= 0) {
+        _grassParticles.removeAt(i);
+      }
+    }
+
     // ── Update Fireflies ──
     if (widget.biomeName.toLowerCase() == 'swamp') {
       final hour = TimeService().currentGameTime.hour;
@@ -482,14 +519,31 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
           f.driftDir += (Random().nextDouble() - 0.5) * 0.1;
           f.phase += dt * 2;
         }
-        if (mounted) setState(() {});
       }
     }
+
+    if (mounted) setState(() {});
 
     // Player controls (only if not in an encounter)
     if (!_encounterActive) {
       if (_isMovingToTarget) {
         _moveTowardsTarget();
+
+        // Spawn grass particles if moving through tall grass
+        final int pr = ((_playerY + tileSize / 2) / tileSize).floor();
+        final int pc = ((_playerX + tileSize / 2) / tileSize).floor();
+        if (pr >= 0 &&
+            pr < _mapData.height &&
+            pc >= 0 &&
+            pc < _mapData.width &&
+            (_mapData.overlayGrid?[pr][pc]
+                    .any((t) => t.category == TileCategory.tallGrass) ??
+                false)) {
+          if (Random().nextDouble() < 0.3) {
+            _spawnGrassParticles(_playerX + tileSize / 2, _playerY + tileSize);
+          }
+        }
+
         // Camera update AFTER movement — this frame's position, zero lag
         _updateCamera();
         return;
@@ -754,8 +808,9 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         }
       }
 
-      if (isTeleporter || hasTransition)
+      if (isTeleporter || hasTransition) {
         continue; // Teleporters are always walkable
+      }
       if (isSolid) return false;
 
       if (isSwimming) {
@@ -1472,7 +1527,9 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
               }(),
               overworldSprites: _overworldSprites,
               fireflies: _fireflies,
+              grassParticles: _grassParticles,
               gameNPCs: _gameNPCs,
+              grassAnimTime: _grassAnimTime,
             ),
           ),
         );
@@ -1809,8 +1866,10 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
                 onTap: () async {
                   Navigator.pop(sheetCtx);
                   await _saveCurrentState();
-                  _showInteractionBubble('Game progress has been saved!',
-                      icon: '💾');
+                  _showInteractionBubble(
+                    'Game progress has been saved!',
+                    icon: '💾',
+                  );
                 },
               ),
             ],
@@ -2987,12 +3046,10 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
       // Max of the same phenotype based on config or default 5
       final spawnData = BiomeDataManager.phenoSpawnData[org.pheno];
-      final maxSpawns = spawnData?.maxSpawns ?? 5;
-
       final currentPhenoCount = _overworldSprites
           .where((s) => s.organism.pheno == org.pheno)
           .length;
-      if (currentPhenoCount >= maxSpawns) continue;
+      if (currentPhenoCount >= (spawnData?.maxSpawns ?? 5)) continue;
 
       // Rarity-based spawn chance (Increased for higher frequency)
       double chance;
@@ -3190,10 +3247,6 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   }
 }
 
-// ────────────────────────────────────────────────────────────────────
-// Firefly Particle definition
-// ────────────────────────────────────────────────────────────────────
-
 class _FireflyParticle {
   double x, y;
   double phase;
@@ -3207,6 +3260,56 @@ class _FireflyParticle {
     required this.speed,
     required this.driftDir,
   });
+}
+
+// ────────────────────────────────────────────────────────────────────
+// Grass Particle definition
+// ────────────────────────────────────────────────────────────────────
+
+class _GrassParticle {
+  double x, y;
+  double vx, vy;
+  double life; // 1.0 to 0.0
+  double size;
+  double angle;
+  final Color color;
+
+  _GrassParticle({
+    required this.x,
+    required this.y,
+    required this.vx,
+    required this.vy,
+    required this.life,
+    required this.size,
+    required this.angle,
+    required this.color,
+  });
+}
+
+extension _GrassParticleExtension on _BiomeExplorationMapState {
+  void _spawnGrassParticles(double centerX, double centerY) {
+    final rng = Random();
+    for (int i = 0; i < 2; i++) {
+      final double vx = (rng.nextDouble() - 0.5) * 40;
+      final double vy = -(rng.nextDouble() * 30 + 10);
+      _grassParticles.add(
+        _GrassParticle(
+          x: centerX + (rng.nextDouble() - 0.5) * 10,
+          y: centerY - 4,
+          vx: vx,
+          vy: vy,
+          life: 1.0,
+          size: 2.0 + rng.nextDouble() * 3.0,
+          angle: rng.nextDouble() * pi * 2,
+          color: Color.lerp(
+            const Color(0xFF4B6F44),
+            const Color(0xFF8BC34A),
+            rng.nextDouble(),
+          )!,
+        ),
+      );
+    }
+  }
 }
 
 // ────────────────────────────────────────────────────────────────────
@@ -3232,7 +3335,9 @@ class _BiomeMapPainter extends CustomPainter {
   final int currentHour;
   final double zoomScale;
   final List<_FireflyParticle> fireflies;
+  final List<_GrassParticle> grassParticles;
   final List<OverworldNPC> gameNPCs;
+  final double grassAnimTime;
   final bool isIndoor;
 
   _BiomeMapPainter({
@@ -3254,7 +3359,9 @@ class _BiomeMapPainter extends CustomPainter {
     this.overworldSprites = const [],
     this.zoomScale = 1.0,
     this.fireflies = const [],
+    this.grassParticles = const [],
     required this.gameNPCs,
+    this.grassAnimTime = 0,
     this.isIndoor = false,
   });
 
@@ -3368,6 +3475,31 @@ class _BiomeMapPainter extends CustomPainter {
         // Draw Fireflies
         _drawFireflies(canvas);
       }
+
+      // Draw Grass Particles (on top of most things but below weather)
+      _drawGrassParticles(canvas);
+    }
+  }
+
+  void _drawGrassParticles(Canvas canvas) {
+    for (final p in grassParticles) {
+      final double dx = (p.x - cameraX) * zoomScale;
+      final double dy = (p.y - cameraY) * zoomScale;
+
+      final paint = Paint()..color = p.color.withValues(alpha: p.life);
+
+      canvas.save();
+      canvas.translate(dx, dy);
+      canvas.rotate(p.angle);
+      canvas.drawRect(
+        Rect.fromCenter(
+          center: Offset.zero,
+          width: p.size * zoomScale,
+          height: p.size * 2 * zoomScale,
+        ),
+        paint,
+      );
+      canvas.restore();
     }
   }
 
@@ -3406,8 +3538,9 @@ class _BiomeMapPainter extends CustomPainter {
     final double finalY = (r * tileSize - cameraY);
     final rect = Rect.fromLTWH(finalX, finalY, tileSize, tileSize);
 
-    if (tile.tileId == 'teleporter')
+    if (tile.tileId == 'teleporter') {
       return; // HIDE the default debug teleporter tile in-game
+    }
 
     final assets = BiomeDataManager.tileAssets[tile.tileId];
 
@@ -3430,12 +3563,40 @@ class _BiomeMapPainter extends CustomPainter {
       final double drawX = rect.center.dx - drawW / 2;
       final double drawY = rect.bottom - drawH;
 
+      canvas.save();
+      if (tile.category == TileCategory.tallGrass) {
+        // Find if any entity is on this tile
+        bool entityHere = false;
+        final px = (playerX / tileSize).floor();
+        final py = (playerY / tileSize).floor();
+        if (px == c && py == r) entityHere = true;
+        if (!entityHere) {
+          for (final s in overworldSprites) {
+            if (s.col == c && s.row == r) {
+              entityHere = true;
+              break;
+            }
+          }
+        }
+
+        // Apply gentle sway
+        final double swaySpeed = entityHere ? 4.0 : 2.0;
+        final double swayIntensity = entityHere ? 0.08 : 0.03;
+        final double sway = sin(grassAnimTime * swaySpeed + (c + r * 1.5)) *
+            swayIntensity;
+
+        canvas.translate(rect.center.dx, rect.bottom);
+        canvas.rotate(sway);
+        canvas.translate(-rect.center.dx, -rect.bottom);
+      }
+
       canvas.drawImageRect(
         img,
         Rect.fromLTWH(0, 0, assetW, assetH),
         Rect.fromLTWH(drawX, drawY, drawW, drawH),
         Paint(),
       );
+      canvas.restore();
       return;
     }
 

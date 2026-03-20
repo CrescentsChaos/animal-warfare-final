@@ -7,7 +7,6 @@ import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:animal_warfare/models/npc_data.dart';
 
-
 // ───────────────────────────────────────────────────────────────────
 // Core Definitions
 // ───────────────────────────────────────────────────────────────────
@@ -209,7 +208,8 @@ class BiomeConfig {
     }
 
     List<MapTransition>? parsedTransitions;
-    if (json['transitions'] != null && (json['transitions'] as List).isNotEmpty) {
+    if (json['transitions'] != null &&
+        (json['transitions'] as List).isNotEmpty) {
       parsedTransitions = (json['transitions'] as List)
           .map((t) => MapTransition.fromJson(t))
           .toList();
@@ -321,7 +321,7 @@ class BiomeDataManager {
 
   static File? findMapsJsonFile() {
     if (kIsWeb) return null;
-    
+
     // 1. Try common relative paths
     final List<String> commonPaths = [
       'assets/maps.json',
@@ -339,14 +339,16 @@ class BiomeDataManager {
       Directory current = Directory.current;
       // Search up to 10 levels up
       for (int i = 0; i < 10; i++) {
-        final pubspec = File('${current.path}${Platform.pathSeparator}pubspec.yaml');
+        final pubspec = File(
+          '${current.path}${Platform.pathSeparator}pubspec.yaml',
+        );
         if (pubspec.existsSync()) {
           // Check common locations within project root
           final List<String> assetLocations = [
             'assets${Platform.pathSeparator}maps.json',
             'lib${Platform.pathSeparator}assets${Platform.pathSeparator}maps.json',
           ];
-          
+
           for (final loc in assetLocations) {
             final target = File('${current.path}${Platform.pathSeparator}$loc');
             if (target.existsSync()) return target;
@@ -363,7 +365,7 @@ class BiomeDataManager {
 
   static Future<bool> deleteMap(String mapId) async {
     if (kIsWeb) return false;
-    
+
     // First try to delete from local storage
     try {
       final localFile = await _getLocalMapsFile();
@@ -410,7 +412,7 @@ class BiomeDataManager {
         final content = await file.readAsString();
         maps = json.decode(content);
       }
-      
+
       final id = mapData['id'];
       final index = maps.indexWhere((m) => m['id'] == id);
       if (index != -1) {
@@ -418,10 +420,10 @@ class BiomeDataManager {
       } else {
         maps.add(mapData);
       }
-      
+
       const encoder = JsonEncoder.withIndent('    ');
       await file.writeAsString(encoder.convert(maps));
-      
+
       // Update cache
       biomes[id] = BiomeConfig.fromJson(mapData, allTiles);
       return true;
@@ -533,10 +535,12 @@ class BiomeDataManager {
           }
         }
       }
-      
+
       // Fallback to placeholder if this type has no assets
       if (!foundAny && type != 'placeholder') {
-        debugPrint('NPC type "$type" assets not found, falling back to placeholder.');
+        debugPrint(
+          'NPC type "$type" assets not found, falling back to placeholder.',
+        );
         final placeholder = npcAssets['placeholder'];
         if (placeholder != null) {
           npcAssets[type] = placeholder;
@@ -586,7 +590,10 @@ class BiomeDataManager {
     // 1. Try to find a ground tile for the biome? (Hard since we don't know the biome here easily without more logic)
     // Actually, let's just find the first 'base' layer tile that is 'ground'.
     for (final def in tiles.values) {
-      if (def.layer == 'base' && (def.category == TileCategory.ground || def.id.contains('ground') || def.id.contains('grass'))) {
+      if (def.layer == 'base' &&
+          (def.category == TileCategory.ground ||
+              def.id.contains('ground') ||
+              def.id.contains('grass'))) {
         return def.id;
       }
     }
@@ -726,9 +733,7 @@ class MapStringParser {
         );
       }
       if (data.containsKey('npcs')) {
-        npcs = (data['npcs'] as List)
-            .map((n) => NPCData.fromJson(n))
-            .toList();
+        npcs = (data['npcs'] as List).map((n) => NPCData.fromJson(n)).toList();
       }
     } else if (data is List) {
       baseLines = List<String>.from(data);
@@ -782,12 +787,13 @@ class MapStringParser {
         // Base layer
         if (c < baseTiles.length) {
           final tileId = baseTiles[c].trim();
-          
+
           if (tileId == 'null' || tileId.isEmpty || tileId == '.') {
             grid[r][c] = MapTile(
               tileId: 'empty',
               config: config,
-              walkabilityOverride: walkOverride ?? false, // Default empty to unwalkable
+              walkabilityOverride:
+                  walkOverride ?? false, // Default empty to unwalkable
             );
             continue;
           }
@@ -838,17 +844,19 @@ class MapStringParser {
     // The tile is anchor-drawn bottom-center at (r, c), so the covered area is:
     //   rows: r - (height - 1) .. r
     //   cols: c - floor(width / 2) .. c + floor((width - 1) / 2)
-    void _applyMultiTileWalkability(int r, int c, TileDefinition def) {
+    void applyMultiTileWalkability(int r, int c, TileDefinition def) {
       if (def.width <= 1 && def.height <= 1) return;
-      
+
       // Multi-tile structures like houses (solid) or bridges (ground/path).
       // Solid/Water tiles force walkability to off.
       // Ground/Path tiles force walkability to on (enabling bridges).
       // Decorative/TallGrass/etc. should not forcibly change walkability of underlying tiles.
       final bool? override;
-      if (def.category == TileCategory.solid || def.category == TileCategory.water) {
+      if (def.category == TileCategory.solid ||
+          def.category == TileCategory.water) {
         override = false;
-      } else if (def.category == TileCategory.ground || def.category == TileCategory.path) {
+      } else if (def.category == TileCategory.ground ||
+          def.category == TileCategory.path) {
         override = true;
       } else {
         return;
@@ -870,7 +878,7 @@ class MapStringParser {
     // Scan base grid for multi-tile structures first
     for (int r = 0; r < height; r++) {
       for (int c = 0; c < width; c++) {
-        _applyMultiTileWalkability(r, c, grid[r][c].definition);
+        applyMultiTileWalkability(r, c, grid[r][c].definition);
       }
     }
 
@@ -879,7 +887,7 @@ class MapStringParser {
       for (int r = 0; r < height; r++) {
         for (int c = 0; c < width; c++) {
           for (final tile in overlayGrid[r][c]) {
-            _applyMultiTileWalkability(r, c, tile.definition);
+            applyMultiTileWalkability(r, c, tile.definition);
           }
         }
       }
@@ -893,10 +901,8 @@ class MapStringParser {
           // Mark top-most tile at this coordinate as a teleporter
           if (overlayGrid != null && overlayGrid[t.y][t.x].isNotEmpty) {
             final lastIdx = overlayGrid[t.y][t.x].length - 1;
-            overlayGrid[t.y][t.x][lastIdx] =
-                overlayGrid[t.y][t.x][lastIdx].copyWith(
-              categoryOverride: TileCategory.teleporter,
-            );
+            overlayGrid[t.y][t.x][lastIdx] = overlayGrid[t.y][t.x][lastIdx]
+                .copyWith(categoryOverride: TileCategory.teleporter);
           } else {
             grid[t.y][t.x] = grid[t.y][t.x].copyWith(
               categoryOverride: TileCategory.teleporter,

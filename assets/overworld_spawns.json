@@ -26,5 +26,26 @@
         "default_speed": 1.0,
         "vision_range": 3.0,
         "move_tiles": "swamp_ground,lily_pad,lily_pad2,tall_grass,dw_pond_we,dw_pond_we_1,dw_pond_we_2,dw_pond_we_3"
+    },
+    {
+        "pheno": "cockroach",
+        "max_spawns": 3,
+        "default_speed": 1.5,
+        "vision_range": 6.0,
+        "move_tiles": "tall_grass,town_grass"
+    },
+    {
+        "pheno": "centipede",
+        "max_spawns": 1,
+        "default_speed": 1.5,
+        "vision_range": 6.0,
+        "move_tiles": "tall_grass,town_grass"
+    },
+    {
+        "pheno": "bee",
+        "max_spawns": 3,
+        "default_speed": 1.5,
+        "vision_range": 6.0,
+        "move_tiles": "honey_tree,town_grass,flower1, flower2"
     }
 ]

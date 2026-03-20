@@ -98,8 +98,6 @@ flutter:
     - assets/audio/
     - assets/audio/effects/
     - assets/audio/cries/
-    # If your placeholder is at the root of assets, include it too:
-    - assets/placeholder_400x200.png 
     - assets/sprites/
     - assets/status_overlays/
     - assets/items/
