@@ -159,16 +159,43 @@
         "id": "swamp_ground",
         "name": "Swamp Ground",
         "category": "ground",
-        "assetPath": "assets/tiles/swamp_ground.png",
+        "assetPath": "assets/tiles/ground/swamp_ground.png",
         "isAutotiled": true,
         "layer": "base",
         "biome": "swamp"
     },
     {
+        "id": "steps_down_1",
+        "name": "Steps Down 1",
+        "category": "ground",
+        "assetPath": "assets/tiles/ground/steps_down_1.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "biome": "any"
+    },
+    {
+        "id": "steps_down_2",
+        "name": "Steps Down 2",
+        "category": "ground",
+        "assetPath": "assets/tiles/ground/steps_down_2.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "biome": "any"
+    },
+    {
+        "id": "steps_down_3",
+        "name": "Steps Down 3",
+        "category": "ground",
+        "assetPath": "assets/tiles/ground/steps_down_3.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "biome": "any"
+    },
+    {
         "id": "broken_tile",
         "name": "Broken Tile",
         "category": "ground",
-        "assetPath": "assets/tiles/broken_tile.png",
+        "assetPath": "assets/tiles/ground/broken_tile.png",
         "isAutotiled": true,
         "layer": "base",
         "biome": "urban"
@@ -177,7 +204,7 @@
         "id": "white_tile",
         "name": "White Tile",
         "category": "ground",
-        "assetPath": "assets/tiles/white_tile.png",
+        "assetPath": "assets/tiles/ground/white_tile.png",
         "isAutotiled": true,
         "layer": "base",
         "biome": "urban"
@@ -186,7 +213,7 @@
         "id": "yellow_stone",
         "name": "Yellow Stone",
         "category": "ground",
-        "assetPath": "assets/tiles/yellow_stone.png",
+        "assetPath": "assets/tiles/ground/yellow_stone.png",
         "isAutotiled": true,
         "layer": "base",
         "biome": "Mountain"
@@ -195,7 +222,7 @@
         "id": "red_stone",
         "name": "Red Stone",
         "category": "ground",
-        "assetPath": "assets/tiles/red_stone.png",
+        "assetPath": "assets/tiles/ground/red_stone.png",
         "isAutotiled": true,
         "layer": "base",
         "biome": "Mountain"
