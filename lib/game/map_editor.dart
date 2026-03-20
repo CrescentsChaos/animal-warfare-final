@@ -125,7 +125,7 @@ class _MapEditorState extends State<MapEditor> {
   bool _showGrid = true;
   bool _autoBase = true;
   bool _isIndoor = false;
-  String _hoverInfo = '';
+  String _lastClickedCoord = '';
   bool?
   _dragWalkValue; // Store the target walkability for the current drag stroke
   NPCData? _draggingNPC;
@@ -578,7 +578,12 @@ class _MapEditorState extends State<MapEditor> {
     if (_mode == EditorMode.pan) return;
     if (r < 0 || r >= _rows || c < 0 || c >= _cols) return;
 
-    setState(() => _hoverInfo = '($r, $c)');
+    final displayY = _rows - 1 - r;
+    if (isStart) {
+      setState(() {
+        _lastClickedCoord = '($c, $displayY)';
+      });
+    }
 
     switch (_mode) {
       case EditorMode.draw:
@@ -1730,7 +1735,9 @@ class _MapEditorState extends State<MapEditor> {
         children: [
           _buildToolBar(),
           Expanded(
-            child: InteractiveViewer(
+            child: Stack(
+              children: [
+                InteractiveViewer(
               transformationController: _transController,
               constrained: false,
               scaleEnabled: _mode == EditorMode.pan,
@@ -1794,15 +1801,6 @@ class _MapEditorState extends State<MapEditor> {
                         },
                   behavior: HitTestBehavior.opaque,
                   child: MouseRegion(
-                    onHover: (d) {
-                      const cs = 40.0;
-                      final r = (d.localPosition.dy / cs).floor();
-                      final c = (d.localPosition.dx / cs).floor();
-                      if (r >= 0 && r < _rows && c >= 0 && c < _cols) {
-                        final displayY = _rows - 1 - r;
-                        setState(() => _hoverInfo = '($c, $displayY)');
-                      }
-                    },
                     child: CustomPaint(
                       size: Size(_cols * 40.0, _rows * 40.0),
                       painter: _EditorGridPainter(
@@ -1820,6 +1818,22 @@ class _MapEditorState extends State<MapEditor> {
                   ),
                 ),
               ),
+            ),
+            Positioned(
+                  top: 16,
+                  left: 16,
+                  child: IgnorePointer(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (_lastClickedCoord.isNotEmpty)
+                          _coordChip(
+                              'CLICKED: $_lastClickedCoord', Colors.orangeAccent),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           if (_mode == EditorMode.draw ||
@@ -1987,24 +2001,26 @@ class _MapEditorState extends State<MapEditor> {
               ),
             ),
             const SizedBox(width: 8),
-            // Coordinate display
-            if (_hoverInfo.isNotEmpty)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.05),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  _hoverInfo,
-                  style: const TextStyle(
-                    color: Colors.cyanAccent,
-                    fontSize: 10,
-                    fontFamily: 'monospace',
-                  ),
-                ),
-              ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _coordChip(String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 8,
+          fontFamily: 'monospace',
+          fontWeight: FontWeight.bold,
         ),
       ),
     );

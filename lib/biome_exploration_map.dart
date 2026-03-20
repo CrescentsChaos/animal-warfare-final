@@ -97,7 +97,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   Size _viewSize = Size.zero;
   final GlobalKey _mapBoundaryKey = GlobalKey();
   bool _isPanning = false;
-  double _zoomScale = 1.0;
+  double _zoomScale = 2.0; //default camera zoom
 
   // ── Directional Animation ──
   String _playerDirection = 'down';
@@ -394,7 +394,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
             }
           }
         }
-        
+
         // ▶ Player-priority: If any sprite's TARGET tile is where the player
         // currently stands, snap it back to its origin tile immediately.
         final int playerRow = ((_playerY + tileSize / 2) / tileSize).floor();
@@ -414,11 +414,11 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
             sprite.attackDecision = false;
           }
         }
-        
+
         // Remove expired sprites
         _overworldSprites.removeWhere((s) => s.isExpired);
       }
-      
+
       final currentTickDt = _phenoTickAccumulator;
       _phenoTickAccumulator = 0;
       if ((anyChanged || _encounterActive) && mounted) setState(() {});
@@ -550,12 +550,12 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         sprite.isAlerted = false;
         AudioService.instance.playOrganismCry(sprite.organism.cry);
         setState(() => _encounterActive = true);
-        
+
         final pr = (_playerY / tileSize).floor().clamp(0, _mapData.height - 1);
         final pc = (_playerX / tileSize).floor().clamp(0, _mapData.width - 1);
         final tileId = _mapData.grid[pr][pc].tileId;
         _onFight(sprite.organism, tileId);
-        
+
         // Clean up: remove the sprite from map
         _overworldSprites.remove(sprite);
         break; // Only start one battle
@@ -616,30 +616,34 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       // Special: Jump over oneway ledges if moving down
       final int targetR = (nextY / tileSize).floor();
       final int targetC = (nextX / tileSize).floor();
-      if (targetR >= 0 && targetR < _mapData.height && targetC >= 0 && targetC < _mapData.width) {
+      if (targetR >= 0 &&
+          targetR < _mapData.height &&
+          targetC >= 0 &&
+          targetC < _mapData.width) {
         final tile = _mapData.grid[targetR][targetC];
         final overlays = _mapData.overlayGrid?[targetR][targetC];
-        final bool isOneWay = tile.category == TileCategory.oneway || 
-                             (overlays?.any((t) => t.category == TileCategory.oneway) ?? false);
-                             
+        final bool isOneWay =
+            tile.category == TileCategory.oneway ||
+            (overlays?.any((t) => t.category == TileCategory.oneway) ?? false);
+
         if (isOneWay) {
           final double jumpX = nextX;
           final double jumpY = nextY + tileSize;
           if (_canWalkAt(jumpX, jumpY)) {
-             setState(() {
-                _isMovingToTarget = true;
-                _targetX = jumpX;
-                _targetY = jumpY;
-                _playerDirection = direction;
-                _velX = 0;
-                _velY = vy; // Move at normal speed but over 2 tiles
-                _jumpTime = 0.4; // Slightly longer jump
-             });
-             return;
+            setState(() {
+              _isMovingToTarget = true;
+              _targetX = jumpX;
+              _targetY = jumpY;
+              _playerDirection = direction;
+              _velX = 0;
+              _velY = vy; // Move at normal speed but over 2 tiles
+              _jumpTime = 0.4; // Slightly longer jump
+            });
+            return;
           }
         }
       }
-      
+
       setState(() {
         _playerDirection = direction;
         _velX = 0;
@@ -698,7 +702,12 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   }
 
   // ── Collision ──
-  bool _canWalkAt(double x, double y, {bool? isSwimmingOverride, bool ignoreEntities = false}) {
+  bool _canWalkAt(
+    double x,
+    double y, {
+    bool? isSwimmingOverride,
+    bool ignoreEntities = false,
+  }) {
     final bool isSwimming = isSwimmingOverride ?? _isSwimming;
     const margin = 10.0;
     final corners = [
@@ -745,7 +754,8 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         }
       }
 
-      if (isTeleporter || hasTransition) continue; // Teleporters are always walkable
+      if (isTeleporter || hasTransition)
+        continue; // Teleporters are always walkable
       if (isSolid) return false;
 
       if (isSwimming) {
@@ -895,10 +905,10 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     // Initialize new map data in-place
     setState(() {
       _initializeMapData(targetMapData, fromTeleport: true);
-      
+
       // Override direction if transition specifies it, otherwise keep current
       _playerDirection = entryDirection;
-      
+
       // Update music/audio if biome changed
       final fileName = targetConfig.name.toLowerCase().replaceAll(' ', '_');
       AudioService.instance.playMusic('audio/${fileName}_theme.mp3');
@@ -1187,8 +1197,10 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         // Update camera
         _scrollToPlayer();
 
-        _showInteractionBubble('You were defeated and returned to spawn.',
-            icon: '💀');
+        _showInteractionBubble(
+          'You were defeated and returned to spawn.',
+          icon: '💀',
+        );
       }
 
       setState(() {
@@ -1240,126 +1252,132 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
           title: Text(_currentMapName.toUpperCase()),
           backgroundColor: _biomeDarkColor,
           titleTextStyle: TextStyle(
-          color: _biomeHighlightColor,
-          fontFamily: 'PressStart2P',
-          fontSize: 14,
-        ),
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 8.0, top: 2.0),
-          child: GameClockWidget(highlightColor: _biomeHighlightColor),
-        ),
-        leadingWidth: 100,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.shopping_cart, color: AppColors.highlightColor),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ShopScreen(biome: _currentBiomeName),
-              ),
-            ),
+            color: _biomeHighlightColor,
+            fontFamily: 'PressStart2P',
+            fontSize: 14,
           ),
-          _buildStaminaBar(context),
-        ],
-      ),
-      body: RepaintBoundary(
-        key: _mapBoundaryKey,
-        child: Stack(
-          children: [
-            // Map
-            _buildMapView(),
-            // Weather overlay
-            if (!_isIndoor) IgnorePointer(child: WeatherOverlay(weather: weather)),
-            // Weather indicator chip
-            if (!_isIndoor) _buildWeatherChip(weather),
-            // Interaction Bubble
-            if (_bubbleText != null && _interactionTilePos != null)
-              _buildInteractionBubble(),
-            // Confirmation Dialog
-            if (_confirmationTitle != null) _buildConfirmationDialog(),
-            // Sleep Menu
-            if (_showSleepMenu) _buildSleepDialog(),
-            // Run Button
-            _buildRunButton(),
-            // Interact Button
-            _buildInteractButton(),
-            // D-Pad
-            _buildDPad(),
-            _buildZoomButtons(),
-            // Animal Menu
-            _buildAnimalMenuButton(),
-            // Floating Coordinates
-            Positioned(
-              top: 10,
-              left: 10,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(
-                    color: _biomeHighlightColor.withValues(alpha: 0.3),
-                    width: 0.5,
-                  ),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _currentMapName.toUpperCase(),
-                      style: TextStyle(
-                        color: _biomeHighlightColor,
-                        fontFamily: 'monospace',
-                        fontSize: 8,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'COORD: ${(_playerX / tileSize).floor()}, ${_mapData.height - 1 - (_playerY / tileSize).floor()}',
-                      style: TextStyle(
-                        color: _biomeHighlightColor,
-                        fontFamily: 'monospace',
-                        fontSize: 9,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
+          leading: Padding(
+            padding: const EdgeInsets.only(left: 8.0, top: 2.0),
+            child: GameClockWidget(highlightColor: _biomeHighlightColor),
+          ),
+          leadingWidth: 100,
+          actions: [
+            IconButton(
+              icon: Icon(Icons.shopping_cart, color: AppColors.highlightColor),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ShopScreen(biome: _currentBiomeName),
                 ),
               ),
             ),
-            // Loading / Sleeping Overlay
-            if (_isMapLoading || _loaderFadeOpacity > 0 || _isSleeping)
-              Positioned.fill(
-                child: IgnorePointer(
-                  child: AnimatedOpacity(
-                    opacity: _isSleeping ? _sleepFadeOpacity : _loaderFadeOpacity,
-                    duration: const Duration(milliseconds: 600),
-                    child: Container(
-                      color: Colors.black,
-                      child: Center(
-                        child: _isSleeping && _sleepFadeOpacity > 0.5
-                            ? const Text(
-                                "Zzz...",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontFamily: 'PressStart2P',
-                                  fontSize: 16,
-                                ),
-                              )
-                            : const SizedBox.shrink(),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+            _buildStaminaBar(context),
           ],
         ),
+        body: RepaintBoundary(
+          key: _mapBoundaryKey,
+          child: Stack(
+            children: [
+              // Map
+              _buildMapView(),
+              // Weather overlay
+              if (!_isIndoor)
+                IgnorePointer(child: WeatherOverlay(weather: weather)),
+              // Weather indicator chip
+              if (!_isIndoor) _buildWeatherChip(weather),
+              // Interaction Bubble
+              if (_bubbleText != null && _interactionTilePos != null)
+                _buildInteractionBubble(),
+              // Confirmation Dialog
+              if (_confirmationTitle != null) _buildConfirmationDialog(),
+              // Sleep Menu
+              if (_showSleepMenu) _buildSleepDialog(),
+              // Run Button
+              _buildRunButton(),
+              // Interact Button
+              _buildInteractButton(),
+              // D-Pad
+              _buildDPad(),
+              _buildZoomButtons(),
+              // Animal Menu
+              _buildAnimalMenuButton(),
+              // Floating Coordinates
+              Positioned(
+                top: 10,
+                left: 10,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.6),
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(
+                      color: _biomeHighlightColor.withValues(alpha: 0.3),
+                      width: 0.5,
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _currentMapName.toUpperCase(),
+                        style: TextStyle(
+                          color: _biomeHighlightColor,
+                          fontFamily: 'monospace',
+                          fontSize: 8,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'COORD: ${(_playerX / tileSize).floor()}, ${_mapData.height - 1 - (_playerY / tileSize).floor()}',
+                        style: TextStyle(
+                          color: _biomeHighlightColor,
+                          fontFamily: 'monospace',
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              // Loading / Sleeping Overlay
+              if (_isMapLoading || _loaderFadeOpacity > 0 || _isSleeping)
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: AnimatedOpacity(
+                      opacity: _isSleeping
+                          ? _sleepFadeOpacity
+                          : _loaderFadeOpacity,
+                      duration: const Duration(milliseconds: 600),
+                      child: Container(
+                        color: Colors.black,
+                        child: Center(
+                          child: _isSleeping && _sleepFadeOpacity > 0.5
+                              ? const Text(
+                                  "Zzz...",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontFamily: 'PressStart2P',
+                                    fontSize: 16,
+                                  ),
+                                )
+                              : const SizedBox.shrink(),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   Widget _buildMapView() {
     return LayoutBuilder(
@@ -1742,9 +1760,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
                   Navigator.pop(sheetCtx);
                   Navigator.push(
                     ctx,
-                    MaterialPageRoute(
-                      builder: (_) => const AnimalBoxScreen(),
-                    ),
+                    MaterialPageRoute(builder: (_) => const AnimalBoxScreen()),
                   );
                 },
               ),
@@ -1758,9 +1774,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
                   Navigator.pop(sheetCtx);
                   Navigator.push(
                     ctx,
-                    MaterialPageRoute(
-                      builder: (_) => const CraftingScreen(),
-                    ),
+                    MaterialPageRoute(builder: (_) => const CraftingScreen()),
                   );
                 },
               ),
@@ -1784,6 +1798,19 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
                       ),
                     ),
                   );
+                },
+              ),
+              const SizedBox(height: 10),
+              _menuOption(
+                icon: Icons.save_rounded,
+                iconColor: Colors.greenAccent,
+                title: 'Save Game',
+                subtitle: 'Record your progress immediately',
+                onTap: () async {
+                  Navigator.pop(sheetCtx);
+                  await _saveCurrentState();
+                  _showInteractionBubble('Game progress has been saved!',
+                      icon: '💾');
                 },
               ),
             ],
@@ -2059,7 +2086,10 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     if (currentC > npc.gridCol) npc.direction = 'right';
 
     final displayName = npc.data.name.isNotEmpty ? '${npc.data.name}: ' : '';
-    _showInteractionBubble('$displayName${npc.data.dialogue.join('\n')}', icon: '💬');
+    _showInteractionBubble(
+      '$displayName${npc.data.dialogue.join('\n')}',
+      icon: '💬',
+    );
 
     // Script-based interactions
     if (npc.data.scriptType == 'trainer' ||
@@ -2070,7 +2100,10 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       if (!npc.isDefeated) {
         _startTrainerBattle(npc);
       } else {
-        _showInteractionBubble('${npc.data.name}: ${npc.data.defeatText.isNotEmpty ? npc.data.defeatText : "..."}', icon: '💬');
+        _showInteractionBubble(
+          '${npc.data.name}: ${npc.data.defeatText.isNotEmpty ? npc.data.defeatText : "..."}',
+          icon: '💬',
+        );
       }
       return;
     } else if (npc.data.scriptType == 'shopkeeper') {
@@ -2088,7 +2121,10 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       // Simple heal effect
       Future.delayed(const Duration(milliseconds: 500), () {
         if (mounted) {
-          _showInteractionBubble('✨ Your team has been fully healed!', icon: '💖');
+          _showInteractionBubble(
+            '✨ Your team has been fully healed!',
+            icon: '💖',
+          );
           // In a real implementation we'd call user_state to heal organisms
         }
       });
@@ -2140,8 +2176,9 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         }
       } else {
         _showInteractionBubble(
-            '${npc.data.name}: ${q.description} (${q.currentCount}/${q.targetCount})',
-            icon: '📋');
+          '${npc.data.name}: ${q.description} (${q.currentCount}/${q.targetCount})',
+          icon: '📋',
+        );
       }
       return;
     }
@@ -2149,12 +2186,16 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     // Offer the quest
     final displayName = npc.data.name.isNotEmpty ? '${npc.data.name}: ' : '';
     _showInteractionBubble(
-        '$displayName${npc.data.dialogue.join('\n')}', icon: '❗');
+      '$displayName${npc.data.dialogue.join('\n')}',
+      icon: '❗',
+    );
     // TODO: Add quest accept UI — for now auto-accept
     if (npc.data.questId.isNotEmpty) {
       final quest = Quest(
         id: npc.data.questId,
-        description: npc.data.dialogue.isNotEmpty ? npc.data.dialogue.first : 'Complete the quest.',
+        description: npc.data.dialogue.isNotEmpty
+            ? npc.data.dialogue.first
+            : 'Complete the quest.',
         targetOrganismName: '', // Would be populated from quest data
         targetCount: 1,
         rewardMoney: 500,
@@ -2181,7 +2222,9 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     // Show story dialogue
     final displayName = npc.data.name.isNotEmpty ? '${npc.data.name}: ' : '';
     _showInteractionBubble(
-        '$displayName${npc.data.dialogue.join('\n')}', icon: '📖');
+      '$displayName${npc.data.dialogue.join('\n')}',
+      icon: '📖',
+    );
 
     // Set flag after reading
     if (npc.data.setsFlag.isNotEmpty) {
@@ -2204,7 +2247,9 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     // Show blocking dialogue
     final displayName = npc.data.name.isNotEmpty ? '${npc.data.name}: ' : '';
     _showInteractionBubble(
-        '$displayName${npc.data.dialogue.join('\n')}', icon: '⛔');
+      '$displayName${npc.data.dialogue.join('\n')}',
+      icon: '⛔',
+    );
   }
 
   void _handleItemGiverNPC(OverworldNPC npc) {
@@ -2223,7 +2268,9 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     // Give the item
     final displayName = npc.data.name.isNotEmpty ? '${npc.data.name}: ' : '';
     _showInteractionBubble(
-        '$displayName${npc.data.dialogue.join('\n')}', icon: '🎁');
+      '$displayName${npc.data.dialogue.join('\n')}',
+      icon: '🎁',
+    );
 
     if (npc.data.itemRewardId.isNotEmpty) {
       userState.addLoot(npc.data.itemRewardId, npc.data.itemRewardCount);
@@ -2254,19 +2301,24 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       final count = user.inventory[npc.data.itemRequiredId] ?? 0;
       hasRequirements = count >= npc.data.itemRequiredCount;
     } else if (npc.data.organismRequiredId.isNotEmpty) {
-      hasRequirements = user.capturedOrganisms.any((o) =>
-          o.baseOrganism.name.toLowerCase() ==
-          npc.data.organismRequiredId.toLowerCase());
+      hasRequirements = user.capturedOrganisms.any(
+        (o) =>
+            o.baseOrganism.name.toLowerCase() ==
+            npc.data.organismRequiredId.toLowerCase(),
+      );
     } else {
       hasRequirements = true;
     }
 
     if (hasRequirements) {
-      _showInteractionBubble('${npc.data.name}: You have what I need! Thank you!', icon: '✅');
+      _showInteractionBubble(
+        '${npc.data.name}: You have what I need! Thank you!',
+        icon: '✅',
+      );
       if (npc.data.itemRequiredId.isNotEmpty) {
         userState.addLoot(npc.data.itemRequiredId, -npc.data.itemRequiredCount);
       }
-      
+
       if (npc.data.itemRewardId.isNotEmpty) {
         userState.addLoot(npc.data.itemRewardId, npc.data.itemRewardCount);
       }
@@ -2275,7 +2327,10 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       }
     } else {
       final displayName = npc.data.name.isNotEmpty ? '${npc.data.name}: ' : '';
-      _showInteractionBubble('$displayName${npc.data.dialogue.join('\n')}', icon: '❗');
+      _showInteractionBubble(
+        '$displayName${npc.data.dialogue.join('\n')}',
+        icon: '❗',
+      );
     }
   }
 
@@ -2285,19 +2340,26 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     if (user == null) return;
 
     final dexCount = user.discoveredOrganisms.length;
-    
+
     // Check milestone (using itemRequiredCount as milestone target)
     if (npc.data.itemRewardId.isNotEmpty && npc.data.itemRequiredCount > 0) {
       final itemKey = '${npc.data.id}_milestone';
-      if (!userState.hasFlag(itemKey) && dexCount >= npc.data.itemRequiredCount) {
-        _showInteractionBubble('${npc.data.name}: Excellent! You found ${npc.data.itemRequiredCount} species! Take this reward!', icon: '🎁');
+      if (!userState.hasFlag(itemKey) &&
+          dexCount >= npc.data.itemRequiredCount) {
+        _showInteractionBubble(
+          '${npc.data.name}: Excellent! You found ${npc.data.itemRequiredCount} species! Take this reward!',
+          icon: '🎁',
+        );
         userState.addLoot(npc.data.itemRewardId, npc.data.itemRewardCount);
         userState.setFlag(itemKey);
         return;
       }
     }
-    
-    _showInteractionBubble('${npc.data.name}: You have discovered $dexCount species so far! Keep up the good work!', icon: '🔬');
+
+    _showInteractionBubble(
+      '${npc.data.name}: You have discovered $dexCount species so far! Keep up the good work!',
+      icon: '🔬',
+    );
   }
 
   void _handleRequestBoardNPC(OverworldNPC npc) {
@@ -2345,7 +2407,9 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
     // Show initial dialogue
     final displayName = npc.data.name.isNotEmpty ? '${npc.data.name}: ' : '';
-    final dialogueText = npc.data.dialogue.isNotEmpty ? npc.data.dialogue.join('\n') : 'Let\'s battle!';
+    final dialogueText = npc.data.dialogue.isNotEmpty
+        ? npc.data.dialogue.join('\n')
+        : 'Let\'s battle!';
     _showInteractionBubble('$displayName$dialogueText', icon: '💬');
 
     // Wait for player to read dialogue
@@ -2353,14 +2417,19 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     if (!mounted) return;
 
     // Build opponent team from npc_teams.json
-    final opponentTeam = NpcTeamLoader.buildTeam(npc.data.teamId, widget.allOrganisms);
+    final opponentTeam = NpcTeamLoader.buildTeam(
+      npc.data.teamId,
+      widget.allOrganisms,
+    );
     if (opponentTeam.isEmpty) {
-      print('BiomeExplorationMap: Opponent team is empty for ${npc.data.teamId}. Cannot start battle.');
+      print(
+        'BiomeExplorationMap: Opponent team is empty for ${npc.data.teamId}. Cannot start battle.',
+      );
       _showInteractionBubble('I have no animals to fight with...', icon: '💬');
-      
+
       await Future.delayed(const Duration(milliseconds: 2000));
       if (!mounted) return;
-      
+
       setState(() => _encounterActive = false);
       _approachingNPC = null;
       npc.hasTriggeredBattle = false;
@@ -2430,8 +2499,10 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
         // Show defeat text
         if (npc.data.defeatText.isNotEmpty) {
-          _showInteractionBubble('${npc.data.name}: ${npc.data.defeatText}',
-              icon: '💬');
+          _showInteractionBubble(
+            '${npc.data.name}: ${npc.data.defeatText}',
+            icon: '💬',
+          );
         }
       } else if (result == BattleResult.loss) {
         // Teleport to spawn
@@ -2444,9 +2515,11 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         // Allow re-challenge
         npc.hasTriggeredBattle = false;
 
-        _showInteractionBubble('You were defeated and returned to spawn.',
-            icon: '💀');
-        
+        _showInteractionBubble(
+          'You were defeated and returned to spawn.',
+          icon: '💀',
+        );
+
         // Save the updated position
         _saveCurrentState();
       } else {
@@ -3333,7 +3406,8 @@ class _BiomeMapPainter extends CustomPainter {
     final double finalY = (r * tileSize - cameraY);
     final rect = Rect.fromLTWH(finalX, finalY, tileSize, tileSize);
 
-    if (tile.tileId == 'teleporter') return; // HIDE the default debug teleporter tile in-game
+    if (tile.tileId == 'teleporter')
+      return; // HIDE the default debug teleporter tile in-game
 
     final assets = BiomeDataManager.tileAssets[tile.tileId];
 
@@ -3534,7 +3608,7 @@ class _BiomeMapPainter extends CustomPainter {
 
     final double assetW = img.width.toDouble();
     final double assetH = img.height.toDouble();
-    
+
     // NPCs are typically 32x32 based on the requirement
     final double drawW = tileSize;
     final double drawH = tileSize;
