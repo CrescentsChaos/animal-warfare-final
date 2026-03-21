@@ -146,6 +146,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   final List<Offset> _waterEdgeTiles = [];
   double _loaderFadeOpacity = 0.0;
   bool _isMapLoading = false;
+  bool _isTransitioning = false;
   late String _currentBiomeName;
   late String _currentMapName;
   bool _isIndoor = false;
@@ -914,6 +915,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   }
 
   bool _handleTeleport(int row, int col) {
+    if (_isTransitioning) return false;
     final transitions = _mapData.transitions ?? _mapData.config.transitions;
     if (transitions == null) return false;
     for (final t in transitions) {
@@ -926,11 +928,15 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   }
 
   Future<void> _executeTransition(MapTransition t) async {
+    if (_isTransitioning) return;
+    _isTransitioning = true;
+
     // Determine target config
     late BiomeConfig targetConfig;
     try {
       targetConfig = BiomeDataManager.getBiome(t.targetMap.toLowerCase());
     } catch (_) {
+      _isTransitioning = false;
       return;
     }
 
@@ -956,6 +962,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
     // Preserve current direction for the next map
     final entryDirection = _playerDirection;
+    final String oldBiomeId = _currentBiomeName;
 
     // Initialize new map data in-place
     setState(() {
@@ -965,8 +972,11 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       _playerDirection = entryDirection;
 
       // Update music/audio if biome changed
-      final fileName = targetConfig.name.toLowerCase().replaceAll(' ', '_');
-      AudioService.instance.playMusic('audio/${fileName}_theme.mp3');
+      final newBiomeId = targetConfig.biomeId ?? targetConfig.id;
+      if (newBiomeId != oldBiomeId || !AudioService.instance.isInitialized) {
+        final fileName = newBiomeId.toLowerCase().replaceAll(' ', '_');
+        AudioService.instance.playMusic('audio/${fileName}_theme.mp3');
+      }
 
       // Snap camera
       _scrollToPlayer(insideSetState: true);
@@ -976,7 +986,12 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     // Wait for fade in
     await Future.delayed(const Duration(milliseconds: 400));
     if (mounted) {
-      setState(() => _isMapLoading = false);
+      setState(() {
+        _isMapLoading = false;
+        _isTransitioning = false;
+      });
+    } else {
+      _isTransitioning = false;
     }
   }
 
@@ -1242,7 +1257,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       if (result == BattleResult.loss) {
         // Teleport to spawn on whiteout
         _playerX = _mapData.spawnPoint.x * tileSize;
-        _playerY = _mapData.spawnPoint.y * tileSize;
+        _playerY = (_mapData.height - 1 - _mapData.spawnPoint.y) * tileSize;
 
         // Reset movement states
         _isMovingToTarget = false;

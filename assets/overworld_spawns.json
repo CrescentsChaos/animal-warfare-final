@@ -47,5 +47,26 @@
         "default_speed": 1.5,
         "vision_range": 6.0,
         "move_tiles": "honey_tree,town_grass,flower1, flower2"
+    },
+    {
+        "pheno": "grass_yellow",
+        "max_spawns": 2,
+        "default_speed": 1.5,
+        "vision_range": 6.0,
+        "move_tiles": "town_grass,flower1, flower2"
+    },
+    {
+        "pheno": "blue_morpho",
+        "max_spawns": 2,
+        "default_speed": 1.5,
+        "vision_range": 6.0,
+        "move_tiles": "town_grass,flower1, flower2"
+    },
+    {
+        "pheno": "monarch_butterfly",
+        "max_spawns": 2,
+        "default_speed": 1.5,
+        "vision_range": 6.0,
+        "move_tiles": "town_grass,flower1, flower2"
     }
 ]
