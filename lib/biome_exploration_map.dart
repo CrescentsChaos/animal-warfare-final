@@ -214,7 +214,11 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     _playerY = (_mapData.height - 1 - _mapData.spawnPoint.y) * tileSize;
     _targetX = _playerX;
     _targetY = _playerY;
+    _velX = 0;
+    _velY = 0;
+    _walkFrame = 0;
     _isMovingToTarget = false;
+    _overworldSprites.clear();
 
     _biomeBaseColor = _getBiomeBaseColor(_currentMapName);
     _biomeDarkColor = _getDarkerColor(_biomeBaseColor);
@@ -525,8 +529,8 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
     if (mounted) setState(() {});
 
-    // Player controls (only if not in an encounter)
-    if (!_encounterActive) {
+    // Player controls (only if not in an encounter and not transitioning)
+    if (!_encounterActive && !_isTransitioning) {
       if (_isMovingToTarget) {
         _moveTowardsTarget();
 
@@ -931,67 +935,71 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     if (_isTransitioning) return;
     _isTransitioning = true;
 
-    // Determine target config
-    late BiomeConfig targetConfig;
     try {
+      // Determine target config
+      late BiomeConfig targetConfig;
       targetConfig = BiomeDataManager.getBiome(t.targetMap.toLowerCase());
-    } catch (_) {
-      _isTransitioning = false;
-      return;
-    }
 
-    // Parse target map data with specific spawn coordinates from transition
-    final targetMapData = MapStringParser.parse(
-      targetConfig.layout ?? {'base': []},
-      config: targetConfig,
-      spawn: Point<int>(t.targetX, t.targetY),
-      name: targetConfig.name,
-      biomeId: targetConfig.biomeId,
-      transitions: targetConfig.transitions,
-    );
+      // Parse target map data with specific spawn coordinates from transition
+      final targetMapData = MapStringParser.parse(
+        targetConfig.layout ?? {'base': []},
+        config: targetConfig,
+        spawn: Point<int>(t.targetX, t.targetY),
+        name: targetConfig.name,
+        biomeId: targetConfig.biomeId,
+        transitions: targetConfig.transitions,
+      );
 
-    setState(() {
-      _isMapLoading = true;
-      _loaderFadeOpacity = 1.0;
-    });
-
-    // Wait for fade out
-    await Future.delayed(const Duration(milliseconds: 400));
-    await _saveCurrentState();
-    if (!mounted) return;
-
-    // Preserve current direction for the next map
-    final entryDirection = _playerDirection;
-    final String oldBiomeId = _currentBiomeName;
-
-    // Initialize new map data in-place
-    setState(() {
-      _initializeMapData(targetMapData, fromTeleport: true);
-
-      // Override direction if transition specifies it, otherwise keep current
-      _playerDirection = entryDirection;
-
-      // Update music/audio if biome changed
-      final newBiomeId = targetConfig.biomeId ?? targetConfig.id;
-      if (newBiomeId != oldBiomeId || !AudioService.instance.isInitialized) {
-        final fileName = newBiomeId.toLowerCase().replaceAll(' ', '_');
-        AudioService.instance.playMusic('audio/${fileName}_theme.mp3');
-      }
-
-      // Snap camera
-      _scrollToPlayer(insideSetState: true);
-      _loaderFadeOpacity = 0.0;
-    });
-
-    // Wait for fade in
-    await Future.delayed(const Duration(milliseconds: 400));
-    if (mounted) {
       setState(() {
-        _isMapLoading = false;
-        _isTransitioning = false;
+        _isMapLoading = true;
+        _loaderFadeOpacity = 1.0;
       });
-    } else {
-      _isTransitioning = false;
+
+      // Wait for fade out
+      await Future.delayed(const Duration(milliseconds: 400));
+      await _saveCurrentState();
+      if (!mounted) return;
+
+      // Preserve current direction for the next map
+      final entryDirection = _playerDirection;
+      final String oldBiomeId = _currentBiomeName;
+
+      // Initialize new map data in-place
+      setState(() {
+        _initializeMapData(targetMapData, fromTeleport: true);
+
+        // Override direction if transition specifies it, otherwise keep current
+        _playerDirection = entryDirection;
+
+        // Update music/audio if biome changed
+        final newBiomeId = targetConfig.biomeId ?? targetConfig.id;
+        if (newBiomeId != oldBiomeId || !AudioService.instance.isInitialized) {
+          final fileName = newBiomeId.toLowerCase().replaceAll(' ', '_');
+          AudioService.instance.playMusic('audio/${fileName}_theme.mp3');
+        }
+
+        // Snap camera
+        _scrollToPlayer(insideSetState: true);
+        _loaderFadeOpacity = 0.0;
+      });
+
+      // Wait for fade in
+      await Future.delayed(const Duration(milliseconds: 400));
+      if (mounted) {
+        setState(() {
+          _isMapLoading = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Map Transition Error: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isTransitioning = false;
+        });
+      } else {
+        _isTransitioning = false;
+      }
     }
   }
 
@@ -2150,14 +2158,13 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   }
 
   void _showNPCDialogue(OverworldNPC npc) {
-    // Face the player
-    int currentR = ((_playerY + tileSize / 2) / tileSize).floor();
-    int currentC = ((_playerX + tileSize / 2) / tileSize).floor();
-
-    if (currentR < npc.gridRow) npc.direction = 'up';
-    if (currentR > npc.gridRow) npc.direction = 'down';
-    if (currentC < npc.gridCol) npc.direction = 'left';
-    if (currentC > npc.gridCol) npc.direction = 'right';
+    if (npc.data.scriptType == 'signpost') {
+      _showInteractionBubble(
+        npc.data.dialogue.join('\n'),
+        icon: '🪧',
+      );
+      return;
+    }
 
     final displayName = npc.data.name.isNotEmpty ? '${npc.data.name}: ' : '';
     _showInteractionBubble(
@@ -2615,7 +2622,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
   void _showInteractionBubble(String text, {String? icon}) {
     setState(() {
-      _bubbleText = text;
+      _bubbleText = icon != null ? '$icon $text' : text;
       _interactionTilePos = Offset(_playerX, _playerY - tileSize);
     });
     _bubbleTimer?.cancel();

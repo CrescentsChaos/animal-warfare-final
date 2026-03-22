@@ -108,6 +108,123 @@
         "biome": "any"
     },
     {
+        "id": "footstool_1",
+        "name": "Footstool 1",
+        "category": "solid",
+        "assetPath": "assets/tiles/footstool_1.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "urban"
+    },
+    {
+        "id": "footstool_2",
+        "name": "Footstool 2",
+        "category": "solid",
+        "assetPath": "assets/tiles/footstool_2.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "urban"
+    },
+    {
+        "id": "trash_can_1",
+        "name": "Road Trash Can",
+        "category": "solid",
+        "assetPath": "assets/tiles/trash_can_1.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "urban"
+    },
+    {
+        "id": "trash_can_2",
+        "name": "Green Trash Can",
+        "category": "solid",
+        "assetPath": "assets/tiles/trash_can_2.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "urban"
+    },
+    {
+        "id": "trash_can_3",
+        "name": "Blue Trash Can",
+        "category": "solid",
+        "assetPath": "assets/tiles/trash_can_3.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "urban"
+    },
+    {
+        "id": "trash_can_4",
+        "name": "Red Trash Can",
+        "category": "solid",
+        "assetPath": "assets/tiles/trash_can_4.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "urban"
+    },
+    {
+        "id": "signpost_1",
+        "name": "Wooden Signpost",
+        "category": "solid",
+        "assetPath": "assets/tiles/signpost_1.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "any"
+    },
+    {
+        "id": "box_1",
+        "name": "Box 1",
+        "category": "solid",
+        "assetPath": "assets/tiles/box_1.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "urban"
+    },
+    {
+        "id": "umbrella_1",
+        "name": "Orange Umbrella",
+        "category": "solid",
+        "assetPath": "assets/tiles/umbrella_1.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "coastal"
+    },
+    {
+        "id": "umbrella_2",
+        "name": "Green Umbrella",
+        "category": "solid",
+        "assetPath": "assets/tiles/umbrella_2.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "coastal"
+    },
+    {
+        "id": "umbrella_3",
+        "name": "Purple Umbrella",
+        "category": "solid",
+        "assetPath": "assets/tiles/umbrella_3.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "coastal"
+    },
+    {
+        "id": "umbrella_4",
+        "name": "Red Umbrella",
+        "category": "solid",
+        "assetPath": "assets/tiles/umbrella_4.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "coastal"
+    },
+    {
+        "id": "umbrella_5",
+        "name": "Yellow Umbrella",
+        "category": "solid",
+        "assetPath": "assets/tiles/umbrella_5.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "coastal"
+    },
+    {
         "id": "bridge_1",
         "name": "Bridge 1",
         "category": "path",
@@ -116,6 +233,42 @@
         "layer": "overlay",
         "biome": "any",
         "height": 2
+    },
+    {
+        "id": "post_1",
+        "name": "Post 1",
+        "category": "solid",
+        "assetPath": "assets/tiles/post_1.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "urban"
+    },
+    {
+        "id": "refrigerator_1",
+        "name": "White Refrigerator",
+        "category": "solid",
+        "assetPath": "assets/tiles/refrigerator_1.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "urban"
+    },
+    {
+        "id": "refrigerator_2",
+        "name": "Black Refrigerator",
+        "category": "solid",
+        "assetPath": "assets/tiles/refrigerator_2.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "urban"
+    },
+    {
+        "id": "rock_pile",
+        "name": "Rock Pile",
+        "category": "solid",
+        "assetPath": "assets/tiles/rock_pile.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "any"
     },
     {
         "id": "bridge_2",
@@ -841,6 +994,17 @@
         "biome": "any"
     },
     {
+        "id": "radar_tower",
+        "name": "Radar Tower",
+        "category": "solid",
+        "assetPath": "assets/tiles/radar_tower.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any",
+        "width": 2,
+        "height": 2
+    },
+    {
         "id": "pine_tree",
         "name": "Pine Tree",
         "category": "solid",
@@ -1018,6 +1182,24 @@
         "isAutotiled": false,
         "layer": "overlay",
         "biome": "swamp"
+    },
+    {
+        "id": "awning",
+        "name": "Awning",
+        "category": "semiSolid",
+        "assetPath": "assets/tiles/awning.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "urban"
+    },
+    {
+        "id": "beach_chair",
+        "name": "Beach Chair",
+        "category": "solid",
+        "assetPath": "assets/tiles/beach_chair.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "coastal"
     },
     {
         "id": "flowering_long_vine",
@@ -1238,6 +1420,42 @@
         "biome": "any"
     },
     {
+        "id": "water_patch1",
+        "name": "Water Patch LU",
+        "category": "decorative",
+        "assetPath": "assets/tiles/water_patch1.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any"
+    },
+    {
+        "id": "water_patch2",
+        "name": "Water Patch RU",
+        "category": "decorative",
+        "assetPath": "assets/tiles/water_patch2.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any"
+    },
+    {
+        "id": "water_patch3",
+        "name": "Water Patch LD",
+        "category": "decorative",
+        "assetPath": "assets/tiles/water_patch3.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any"
+    },
+    {
+        "id": "water_patch4",
+        "name": "Water Patch RD",
+        "category": "decorative",
+        "assetPath": "assets/tiles/water_patch4.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any"
+    },
+    {
         "id": "abandoned_railroad",
         "name": "Abandoned Railroad",
         "category": "decorative",
@@ -1404,6 +1622,51 @@
         "isAutotiled": true,
         "layer": "base",
         "biome": "any"
+    },
+    {
+        "id": "regular_sand",
+        "name": "Regular Sand",
+        "category": "ground",
+        "assetPath": "assets/tiles/ground/regular_sand.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "biome": "any"
+    },
+    {
+        "id": "snow_ground",
+        "name": "Snow",
+        "category": "ground",
+        "assetPath": "assets/tiles/ground/snow_ground.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "biome": "Tundra, Polar, Frozen Ocean, Mountain"
+    },
+    {
+        "id": "beach_sand",
+        "name": "Beach Sand",
+        "category": "ground",
+        "assetPath": "assets/tiles/ground/beach_sand.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "biome": "coastal"
+    },
+    {
+        "id": "black_sand",
+        "name": "Black Sand",
+        "category": "ground",
+        "assetPath": "assets/tiles/ground/black_sand.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "biome": "coastal"
+    },
+    {
+        "id": "desert_sand",
+        "name": "Desert Sand",
+        "category": "ground",
+        "assetPath": "assets/tiles/ground/desert_sand.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "biome": "desert"
     },
     {
         "id": "town_grass",

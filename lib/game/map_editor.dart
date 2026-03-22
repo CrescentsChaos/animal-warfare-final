@@ -574,9 +574,18 @@ class _MapEditorState extends State<MapEditor> {
     });
   }
 
-  void _handleInteraction(int r, int c, bool isStart) {
+  void _handleInteraction(int r, int c, bool isStart, {bool isLongPress = false}) {
     if (_mode == EditorMode.pan) return;
     if (r < 0 || r >= _rows || c < 0 || c >= _cols) return;
+
+    // Check for signpost tiles on long press
+    final overlays = _overlayGrid[r][c];
+    bool isSignpostTile = overlays.any((id) => id.startsWith('signpost_')) || _grid[r][c].startsWith('signpost_');
+
+    if (isLongPress && isSignpostTile) {
+      _showSignpostDialog(r, c);
+      return;
+    }
 
     final displayY = _rows - 1 - r;
     if (isStart) {
@@ -1015,6 +1024,105 @@ class _MapEditorState extends State<MapEditor> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showSignpostDialog(int r, int c) {
+    NPCData? existing;
+    try {
+      existing = _npcs.firstWhere(
+        (n) => n.row == r && n.col == c && n.scriptType == 'signpost',
+      );
+    } catch (_) {}
+
+    final dialogueCtrl = TextEditingController(
+      text: existing?.dialogue.join('\n') ?? '',
+    );
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1E1E1E),
+        title: const Text(
+          'Edit Signpost',
+          style: TextStyle(color: Colors.white, fontFamily: 'PressStart2P', fontSize: 12),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Signpost Text:',
+              style: TextStyle(color: Colors.white70, fontSize: 10),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: dialogueCtrl,
+              maxLines: 5,
+              autofocus: true,
+              style: const TextStyle(color: Colors.white, fontSize: 12),
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: Colors.black26,
+                hintText: 'Enter message...',
+                hintStyle: const TextStyle(color: Colors.white24, fontSize: 12),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          if (existing != null)
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  _npcs.remove(existing);
+                });
+                Navigator.pop(ctx);
+                _onInteractionEnd();
+              },
+              child: const Text('DELETE', style: TextStyle(color: Colors.red)),
+            ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text(
+              'CANCEL',
+              style: TextStyle(color: Colors.white54),
+            ),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.blueAccent),
+            onPressed: () {
+              final text = dialogueCtrl.text.trim();
+              if (text.isNotEmpty) {
+                final npc = NPCData(
+                  id: existing?.id ?? 'sign_${DateTime.now().millisecondsSinceEpoch}',
+                  name: 'Signpost',
+                  spriteKey: 'none',
+                  scriptType: 'signpost',
+                  row: r,
+                  col: c,
+                  dialogue: text
+                      .split('\n')
+                      .where((s) => s.trim().isNotEmpty)
+                      .toList(),
+                );
+                setState(() {
+                  if (existing != null) {
+                    final idx = _npcs.indexOf(existing!);
+                    _npcs[idx] = npc;
+                  } else {
+                    _npcs.add(npc);
+                  }
+                });
+              }
+              Navigator.pop(ctx);
+              _onInteractionEnd();
+            },
+            child: const Text('SAVE', style: TextStyle(color: Colors.white)),
+          ),
+        ],
       ),
     );
   }
@@ -1803,6 +1911,7 @@ class _MapEditorState extends State<MapEditor> {
                                 (d.localPosition.dy / cs).floor(),
                                 (d.localPosition.dx / cs).floor(),
                                 true,
+                                isLongPress: true,
                               );
                             },
                       behavior: HitTestBehavior.opaque,
