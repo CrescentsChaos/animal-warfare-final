@@ -1515,8 +1515,15 @@ class UserState with ChangeNotifier {
         accountLevel: newAccountLevel,
       );
     });
-
     return results;
+  }
+
+  /// Toggles the Sickle tool state (on/off).
+  Future<void> toggleSickle() async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) => u.copyWith(
+      eventFlags: u.eventFlags.toggleSickle(),
+    ));
   }
 
   /// Updates or clears a persistent exploration encounter for a biome.
@@ -1947,6 +1954,46 @@ class UserState with ChangeNotifier {
     await _readModifyWrite((u) => u.copyWith(
       eventFlags: u.eventFlags.copyWith(currentMapId: mapId),
     ));
+  }
+
+  Future<void> updateTileCooldown(String mapId, int row, int col) async {
+    if (_currentUser == null) return;
+    final key = '$mapId:$row:$col';
+    await _readModifyWrite((u) => u.copyWith(
+      eventFlags: u.eventFlags.withTileCooldown(key),
+    ));
+  }
+
+  bool isTileOnCooldown(String mapId, int row, int col) {
+    if (_currentUser == null) return false;
+    final key = '$mapId:$row:$col';
+    return _currentUser!.eventFlags.isTileOnCooldown(key);
+  }
+
+  Future<void> cutGrass(String mapId, int row, int col) async {
+    if (_currentUser == null) return;
+    final key = '$mapId:$row:$col';
+    final now = TimeService().currentInGameDateTime.millisecondsSinceEpoch;
+    await _readModifyWrite((u) => u.copyWith(
+      eventFlags: u.eventFlags.withCutGrass(key, now),
+    ));
+  }
+
+  Future<void> clearExpiredGrass() async {
+    if (_currentUser == null) return;
+    final now = TimeService().currentInGameDateTime.millisecondsSinceEpoch;
+    await _readModifyWrite((u) {
+      final newCutTiles = Map<String, int>.from(u.eventFlags.cutGrassTiles);
+      final initialCount = newCutTiles.length;
+      newCutTiles.removeWhere((key, timestamp) {
+        // Regrow after 24 in-game hours (86,400,000 ms)
+        return now - timestamp > 86400000;
+      });
+      if (newCutTiles.length == initialCount) return u;
+      return u.copyWith(
+        eventFlags: u.eventFlags.copyWith(cutGrassTiles: newCutTiles),
+      );
+    });
   }
 
   @override

@@ -74,6 +74,7 @@ class TileDefinition {
   final double? encounterRate;
   final String biome;
   final String? interactionText;
+  final String? drop;
   final int width;
   final int height;
 
@@ -89,6 +90,7 @@ class TileDefinition {
     this.encounterRate,
     this.biome = 'any',
     this.interactionText,
+    this.drop,
     this.width = 1,
     this.height = 1,
   });
@@ -129,6 +131,7 @@ class TileDefinition {
           : null,
       biome: json['biome'] ?? 'any',
       interactionText: json['interactionText'],
+      drop: json['drop'],
       width: json['width'] ?? 1,
       height: json['height'] ?? 1,
     );

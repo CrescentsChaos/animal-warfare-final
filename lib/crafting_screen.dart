@@ -686,17 +686,21 @@ class _MaterialsTabState extends State<_MaterialsTab> {
 
                     return InkWell(
                       onTap: () {
-                        final config =
-                            userState.farmingConfig['seed_picking']?[entry.key
-                                .toLowerCase()];
-                        final hasTweezers = (inventory['tweezers'] ?? 0) > 0;
-                        if (config != null && hasTweezers) {
-                          _showSeedPickingDialog(
-                            context,
-                            userState,
-                            entry.key,
-                            config,
-                          );
+                        if (entry.key == 'sickle') {
+                          userState.toggleSickle();
+                        } else {
+                          final config =
+                              userState.farmingConfig['seed_picking']?[entry.key
+                                  .toLowerCase()];
+                          final hasTweezers = (inventory['tweezers'] ?? 0) > 0;
+                          if (config != null && hasTweezers) {
+                            _showSeedPickingDialog(
+                              context,
+                              userState,
+                              entry.key,
+                              config,
+                            );
+                          }
                         }
                       },
                       borderRadius: BorderRadius.circular(12),
@@ -745,14 +749,20 @@ class _MaterialsTabState extends State<_MaterialsTab> {
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    usedIn > 0
-                                        ? 'Used in $usedIn recipe${usedIn > 1 ? 's' : ''}'
-                                        : 'Drop item',
+                                    entry.key == 'sickle'
+                                        ? 'STATUS: ${userState.eventFlags.isSickleActive ? "ON" : "OFF"}'
+                                        : (usedIn > 0
+                                            ? 'Used in $usedIn recipe${usedIn > 1 ? 's' : ''}'
+                                            : 'Drop item'),
                                     style: TextStyle(
                                       fontSize: 9,
-                                      color: Colors.white.withValues(
-                                        alpha: 0.35,
-                                      ),
+                                      color: entry.key == 'sickle' &&
+                                              userState.eventFlags
+                                                  .isSickleActive
+                                          ? Colors.greenAccent
+                                          : Colors.white.withValues(
+                                              alpha: 0.35,
+                                            ),
                                     ),
                                   ),
                                 ],

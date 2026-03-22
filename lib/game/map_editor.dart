@@ -2833,9 +2833,9 @@ class _EditorGridPainter extends CustomPainter {
     }
 
     if (tileId == 'empty' || tileId == '') {
-      // Make 'null' / 'empty' tiles completely black as requested
+      // Make 'null' / 'empty' tiles grey in the editor as requested.
       final paint = Paint()
-        ..color = const Color.fromARGB(255, 78, 78, 78)
+        ..color = const Color(0xFF4E4E4E) // #4E4E4E is a neutral grey
         ..style = PaintingStyle.fill;
       canvas.drawRect(rect, paint);
       return;

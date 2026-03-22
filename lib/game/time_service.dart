@@ -155,6 +155,13 @@ class TimeService {
 
   GameTime get currentGameTime => _calculateGameTime(DateTime.now().toUtc());
 
+  /// Gets the current in-game time as a DateTime object.
+  DateTime get currentInGameDateTime {
+    final Duration realElapsed = DateTime.now().toUtc().difference(_baseRealTime);
+    final int gameElapsedMicroseconds = realElapsed.inMicroseconds * speedMultiplier;
+    return _baseGameTime.add(Duration(microseconds: gameElapsedMicroseconds)).add(_gameTimeOffset);
+  }
+
   /// Advances in-game time by [hours] hours permanently.
   void advanceTime(int hours) {
     _gameTimeOffset += Duration(hours: hours);

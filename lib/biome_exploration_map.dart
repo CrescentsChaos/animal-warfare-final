@@ -138,6 +138,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   final List<OverworldNPC> _gameNPCs = [];
   Timer? _phenoSpawnTimer;
   double _phenoTickAccumulator = 0;
+  double _regrowthCheckAccumulator = 0;
 
   // ── Firefly Effect ──
   final List<_FireflyParticle> _fireflies = [];
@@ -150,6 +151,12 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   late String _currentBiomeName;
   late String _currentMapName;
   bool _isIndoor = false;
+
+  // ── Headbutt / Tree Shake ──
+  /// Maps tile position "row:col" to remaining shake time (seconds).
+  final Map<String, double> _tileShakeTimers = {};
+  /// Maps tile position "row:col" to current horizontal shake offset (pixels).
+  final Map<String, double> _tileShakeOffsets = {};
 
   @override
   void initState() {
@@ -258,6 +265,30 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
     // Initialize firefly spawn points
     _initializeFireflyPoints();
+
+    // Apply cut grass states
+    if (_mapData.overlayGrid != null) {
+      final userState = Provider.of<UserState>(context, listen: false);
+      final cutTiles = userState.currentUser?.eventFlags.cutGrassTiles ?? {};
+      final mapId = widget.biomeName;
+
+      for (int r = 0; r < _mapData.height; r++) {
+        for (int c = 0; c < _mapData.width; c++) {
+          final key = '$mapId:$r:$c';
+          if (cutTiles.containsKey(key)) {
+            // Replace tall grass with cutdown_grass
+            _mapData.overlayGrid![r][c].removeWhere((t) {
+              final def = BiomeDataManager.allTiles[t.tileId];
+              return def?.category == TileCategory.tallGrass;
+            });
+            _mapData.overlayGrid![r][c].add(MapTile(
+              tileId: 'cutdown_grass',
+              config: _mapData.config,
+            ));
+          }
+        }
+      }
+    }
   }
 
   void _initializeFireflyPoints() {
@@ -362,6 +393,25 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       setState(() {});
     } else {
       _jumpOffset = 0;
+    }
+
+    // ── Grass Regrowth Check (every 5 seconds) ──
+    _regrowthCheckAccumulator += dt;
+    if (_regrowthCheckAccumulator >= 5.0) {
+      _regrowthCheckAccumulator = 0;
+      final userState = Provider.of<UserState>(context, listen: false);
+      final initialCutCount = userState.currentUser?.eventFlags.cutGrassTiles.length ?? 0;
+      
+      userState.clearExpiredGrass().then((_) {
+        // If some grass regrew, we might need to refresh the map view
+        final newCutCount = userState.currentUser?.eventFlags.cutGrassTiles.length ?? 0;
+        if (newCutCount != initialCutCount) {
+          // Re-sync the local map data for the current map
+          // This is a bit expensive but ensures consistency
+          _initializeMapData(_mapData, fromTeleport: true); 
+          setState(() {});
+        }
+      });
     }
 
     // ── Overworld sprite AI ──
@@ -513,6 +563,23 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       }
     }
 
+    // ── Update Tree Shake Offsets ──
+    final keysToRemove = <String>[];
+    for (final key in _tileShakeTimers.keys.toList()) {
+      _tileShakeTimers[key] = _tileShakeTimers[key]! - dt;
+      if (_tileShakeTimers[key]! <= 0) {
+        keysToRemove.add(key);
+        _tileShakeOffsets.remove(key);
+      } else {
+        // Oscillate: sin wave that decays over the shake duration
+        final remaining = _tileShakeTimers[key]!;
+        _tileShakeOffsets[key] = sin(remaining * 30) * remaining * 4.0;
+      }
+    }
+    for (final key in keysToRemove) {
+      _tileShakeTimers.remove(key);
+    }
+
     // ── Update Fireflies ──
     if (widget.biomeName.toLowerCase() == 'swamp') {
       final hour = TimeService().currentGameTime.hour;
@@ -556,7 +623,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
       // Advance animation if directions are held
       if (_activeDirections.isNotEmpty) {
-        final double speed = _isRunning ? 8.0 : 4.0;
+        final double speed = _isRunning ? 3.04 : 1.52;
         _walkAnimAccumulator += speed;
         if (_walkAnimAccumulator >= tileSize / 2) {
           _walkAnimAccumulator -= tileSize / 2;
@@ -719,8 +786,8 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
   void _moveTowardsTarget() {
     final double speed = _isSwimming
-        ? 2.5
-        : (_isRunning ? 8.0 : 4.0); // Px per frame
+        ? 0.76 // Half speed for swimming
+        : (_isRunning ? 3.04 : 1.52); // Px per frame
     double dx = _targetX - _playerX;
     double dy = _targetY - _playerY;
     double dist = sqrt(dx * dx + dy * dy);
@@ -1553,6 +1620,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
               grassParticles: _grassParticles,
               gameNPCs: _gameNPCs,
               grassAnimTime: _grassAnimTime,
+              tileShakeOffsets: _tileShakeOffsets,
             ),
           ),
         );
@@ -2120,15 +2188,64 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       return;
     }
 
-    // Tall grass rustle
-    bool isTallGrass =
-        baseDef?.category == TileCategory.tallGrass ||
-        (overlayTiles?.any((t) {
-              final def = BiomeDataManager.allTiles[t.tileId];
-              return def?.category == TileCategory.tallGrass;
-            }) ??
-            false);
+    // ── Headbutt / Tree Interaction ──
+    // Check if the target tile is a tree (solid overlay with "tree" in its id)
+    bool isTree = false;
+    String? treeTileId;
+    if (overlayTiles != null) {
+      for (final ot in overlayTiles) {
+        final def = BiomeDataManager.allTiles[ot.tileId];
+        if (def != null &&
+            def.category == TileCategory.solid &&
+            ot.tileId.toLowerCase().contains('tree')) {
+          isTree = true;
+          treeTileId = ot.tileId;
+          break;
+        }
+      }
+    }
+    if (!isTree && baseDef != null &&
+        baseDef.category == TileCategory.solid &&
+        baseTileInfo.tileId.toLowerCase().contains('tree')) {
+      isTree = true;
+      treeTileId = baseTileInfo.tileId;
+    }
+
+    if (isTree && treeTileId != null) {
+      _tryHeadbutt(targetR, targetC, treeTileId);
+      return;
+    }
+
+    // Tall grass rustle / Sickle cut
+    bool isTallGrass = false;
+    if (overlayTiles != null) {
+      for (final ot in overlayTiles) {
+        final def = BiomeDataManager.allTiles[ot.tileId];
+        if (def != null && def.category == TileCategory.tallGrass) {
+          isTallGrass = true;
+          break;
+        }
+      }
+    }
+    if (!isTallGrass && baseDef != null && baseDef.category == TileCategory.tallGrass) {
+      isTallGrass = true;
+    }
+
     if (isTallGrass) {
+      final userState = Provider.of<UserState>(context, listen: false);
+      final hasSickle = (userState.currentUser?.inventory['sickle'] ?? 0) > 0;
+      final isSickleActive = userState.eventFlags.isSickleActive;
+
+      if (hasSickle && isSickleActive) {
+        _tryCutGrass(targetR, targetC);
+        return;
+      }
+
+      if (hasSickle && !isSickleActive) {
+        _showInteractionBubble('🌿 The Sickle is OFF. Turn it ON in the inventory to cut grass.', icon: '🩹');
+        return;
+      }
+
       final messages = [
         '🌿 The grass rustles...',
         '🌱 Something might be hiding in here!',
@@ -2154,6 +2271,164 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
     if (textToShow != null) {
       _showInteractionBubble(textToShow);
+    }
+  }
+
+  /// Attempts to cut a tall grass tile with the sickle.
+  void _tryCutGrass(int r, int c) {
+    final userState = Provider.of<UserState>(context, listen: false);
+    final String mapId = widget.biomeName;
+
+    // 1. Update persistent state
+    userState.cutGrass(mapId, r, c);
+
+    // 2. Visual effect: particles
+    for (int i = 0; i < 5; i++) {
+      _spawnGrassParticles(
+        c * tileSize + tileSize / 2,
+        r * tileSize + tileSize / 2,
+      );
+    }
+
+    // 3. Update the map grid locally for immediate feedback
+    if (_mapData.overlayGrid != null) {
+      _mapData.overlayGrid![r][c].clear();
+      _mapData.overlayGrid![r][c].add(MapTile(
+        tileId: 'cutdown_grass',
+        config: _mapData.config,
+      ));
+    }
+
+    setState(() {});
+    _showInteractionBubble('🍃 Swish! You cut the tall grass.', icon: '🪡');
+  }
+
+  /// Checks if any party animal has the "Headbutt" move.
+  bool _checkHeadbuttMove() {
+    final userState = Provider.of<UserState>(context, listen: false);
+    final user = userState.currentUser;
+    if (user == null) return false;
+
+    for (final org in user.teamOrganisms) {
+      for (final moveName in org.selectedMoveNames) {
+        final name = moveName.toLowerCase();
+        if (name == 'headbutt' || name == 'zen headbutt') return true;
+      }
+    }
+    return false;
+  }
+
+  /// Attempts to headbutt a tree at the given tile position.
+  void _tryHeadbutt(int r, int c, String tileId) {
+    if (_encounterActive || _isTransitioning) return;
+
+    final String mapId = widget.biomeName;
+    final String key = '$mapId:$r:$c';
+    final userState = Provider.of<UserState>(context, listen: false);
+
+    // 1. Check if any party animal has headbutt
+    if (!_checkHeadbuttMove()) {
+      _showInteractionBubble('🌲 A sturdy tree. Maybe a headbutt could shake it...', icon: '🌲');
+      return;
+    }
+
+    // 2. Check cooldown
+    if (userState.isTileOnCooldown(mapId, r, c)) {
+      final lastTime = userState.currentUser?.eventFlags.tileCooldowns[key] ?? 0;
+      final now = DateTime.now().millisecondsSinceEpoch;
+      final remainingMs = (5 * 60 * 1000) - (now - lastTime);
+      final mins = (remainingMs / 60000).floor();
+      final secs = ((remainingMs % 60000) / 1000).floor();
+      _showInteractionBubble('🌲 Cooldown: ${mins}m ${secs}s remaining.', icon: '⌛');
+      return;
+    }
+
+    // 3. Start the shake animation
+    final shakeKey = '$r:$c';
+    _tileShakeTimers[shakeKey] = 0.8; // 800ms shake
+    _tileShakeOffsets[shakeKey] = 0;
+
+    // 4. Set cooldown
+    userState.updateTileCooldown(mapId, r, c);
+
+    // 5. Determine drops based on tile definition
+    final tileDef = BiomeDataManager.allTiles[tileId];
+    if (tileDef == null) return;
+
+    final rng = Random();
+    if (tileDef.drop != null && tileDef.drop!.isNotEmpty) {
+      final drops = tileDef.drop!
+          .split(',')
+          .map((s) => s.trim())
+          .where((s) => s.isNotEmpty)
+          .toList();
+
+      if (drops.isNotEmpty && rng.nextDouble() < 0.30) {
+        final dropId = drops[rng.nextInt(drops.length)];
+        userState.addLoot(dropId, 1);
+
+        String displayName = dropId[0].toUpperCase() + dropId.substring(1).replaceAll('_', ' ');
+        _showInteractionBubble(
+          '🌲 Headbutt! A $displayName fell from the tree!',
+          icon: '🍎',
+        );
+        return;
+      }
+    }
+
+    // 6. 20% chance for encounter if no drop
+    if (rng.nextDouble() < 0.20) {
+      _triggerHeadbuttEncounter(r, c, tileId);
+    } else {
+      _showInteractionBubble('🌲 Headbutt! ...nothing happened.', icon: '🌲');
+    }
+  }
+
+  /// Triggers an encounter from a headbutted tree if any organism has this tile as spawn.
+  void _triggerHeadbuttEncounter(int r, int c, String tileId) {
+    final userState = Provider.of<UserState>(context, listen: false);
+    final user = userState.currentUser;
+    if (user == null) return;
+
+    final hour = TimeService().currentGameTime.hour;
+    String timeOfDay;
+    if (hour >= 6 && hour < 18) {
+      timeOfDay = 'day';
+    } else if (hour >= 18 && hour < 21) {
+      timeOfDay = 'evening';
+    } else {
+      timeOfDay = 'night';
+    }
+
+    // Find organisms that can spawn on this tile type
+    final encounter = getWeightedRandomOrganism(
+      _currentBiomeName,
+      widget.allOrganisms,
+      accountLevel: user.accountLevel,
+      inventory: user.inventory,
+      teamMoveNames: user.teamOrganisms
+          .expand((o) => o.selectedMoveNames)
+          .toList(),
+      currentTimeOfDay: timeOfDay,
+      encounterType: 'land',
+      currentTileId: tileId,
+      currentTileCategory: TileCategory.solid,
+      biomeId: _currentBiomeName,
+    );
+
+    if (encounter != null) {
+      _showInteractionBubble(
+        '🌲 Headbutt! A wild ${encounter.organism.name} fell from the tree!',
+        icon: '⚔️',
+      );
+      Future.delayed(const Duration(milliseconds: 800), () {
+        if (!mounted) return;
+        AudioService.instance.playOrganismCry(encounter.organism.cry);
+        setState(() => _encounterActive = true);
+        _onFight(encounter.organism, tileId);
+      });
+    } else {
+      _showInteractionBubble('🌲 Headbutt! ...nothing happened.', icon: '🌲');
     }
   }
 
@@ -3154,6 +3429,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
   List<List<int>> _findValidPhenoTiles(Organism org) {
     final tiles = <List<int>>[];
+    final addedTiles = <String>{}; // track "r:c" to avoid duplicates
     final spawnSet = org.spawnTiles
         .split(',')
         .map((e) => e.trim().toLowerCase().replaceAll('_', ''))
@@ -3164,13 +3440,59 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       for (int c = 0; c < _mapData.width; c++) {
         final base = _mapData.grid[r][c];
         final overlay = _mapData.overlayGrid?[r][c];
-        if (base.category == TileCategory.solid ||
-            (overlay?.any((t) => t.category == TileCategory.solid) ?? false)) {
-          continue;
+        final isSolid = base.category == TileCategory.solid ||
+            (overlay?.any((t) => t.category == TileCategory.solid) ?? false);
+
+        if (isSolid) {
+          // Check if this solid tile matches the spawn criteria
+          bool solidMatch = false;
+          if (!isAny) {
+            if (spawnSet.contains(base.tileId.toLowerCase().replaceAll('_', '')) ||
+                spawnSet.contains(
+                  base.category.name.toLowerCase().replaceAll('_', ''),
+                )) {
+              solidMatch = true;
+            } else if (overlay != null) {
+              for (final ot in overlay) {
+                if (spawnSet.contains(
+                      ot.tileId.toLowerCase().replaceAll('_', ''),
+                    ) ||
+                    spawnSet.contains(
+                      ot.category.name.toLowerCase().replaceAll('_', ''),
+                    )) {
+                  solidMatch = true;
+                  break;
+                }
+              }
+            }
+          }
+
+          if (solidMatch) {
+            // Add non-solid adjacent tiles instead
+            for (final d in [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
+              final nr = r + d[0];
+              final nc = c + d[1];
+              if (nr < 0 || nr >= _mapData.height || nc < 0 || nc >= _mapData.width) continue;
+              final adjBase = _mapData.grid[nr][nc];
+              final adjOverlay = _mapData.overlayGrid?[nr][nc];
+              final adjSolid = adjBase.category == TileCategory.solid ||
+                  (adjOverlay?.any((t) => t.category == TileCategory.solid) ?? false);
+              if (!adjSolid) {
+                final key = '$nr:$nc';
+                if (addedTiles.add(key)) {
+                  tiles.add([nr, nc]);
+                }
+              }
+            }
+          }
+          continue; // Don't add the solid tile itself
         }
 
         if (isAny) {
-          tiles.add([r, c]);
+          final key = '$r:$c';
+          if (addedTiles.add(key)) {
+            tiles.add([r, c]);
+          }
           continue;
         }
 
@@ -3195,7 +3517,10 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         }
 
         if (match) {
-          tiles.add([r, c]);
+          final key = '$r:$c';
+          if (addedTiles.add(key)) {
+            tiles.add([r, c]);
+          }
         }
       }
     }
@@ -3361,6 +3686,7 @@ class _BiomeMapPainter extends CustomPainter {
   final List<OverworldNPC> gameNPCs;
   final double grassAnimTime;
   final bool isIndoor;
+  final Map<String, double> tileShakeOffsets;
 
   _BiomeMapPainter({
     required this.currentHour,
@@ -3385,6 +3711,7 @@ class _BiomeMapPainter extends CustomPainter {
     required this.gameNPCs,
     this.grassAnimTime = 0,
     this.isIndoor = false,
+    this.tileShakeOffsets = const {},
   });
 
   @override
@@ -3555,13 +3882,26 @@ class _BiomeMapPainter extends CustomPainter {
     MapTile tile,
     List<List<dynamic>> grid,
   ) {
-    // Round to avoid jitter
-    final double finalX = (c * tileSize - cameraX);
+    // Round to avoid jitter + apply shake offset if present (only for trees)
+    final shakeKey = '$r:$c';
+    final double shakeOff = (tile.tileId.toLowerCase().contains('tree'))
+        ? (tileShakeOffsets[shakeKey] ?? 0.0)
+        : 0.0;
+    final double finalX = (c * tileSize - cameraX) + shakeOff;
     final double finalY = (r * tileSize - cameraY);
     final rect = Rect.fromLTWH(finalX, finalY, tileSize, tileSize);
 
     if (tile.tileId == 'teleporter') {
       return; // HIDE the default debug teleporter tile in-game
+    }
+
+    if (tile.tileId == 'empty' || tile.tileId == '') {
+      // Make 'null' / 'empty' tiles black in the map as requested.
+      final paint = Paint()
+        ..color = Colors.black
+        ..style = PaintingStyle.fill;
+      canvas.drawRect(rect, paint);
+      return;
     }
 
     final assets = BiomeDataManager.tileAssets[tile.tileId];

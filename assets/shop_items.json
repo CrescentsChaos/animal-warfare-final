@@ -724,5 +724,44 @@
         "description": "A sparkling, high-density diamond. The ultimate luxury asset.",
         "price": 2800000,
         "category": "asset"
+    },
+    {
+        "id": "mango",
+        "name": "Mango",
+        "description": "A sweet, juicy mango fruit.",
+        "price": 500,
+        "category": "fruits",
+        "biomes": [
+            "Jungle",
+            "Rainforest"
+        ]
+    },
+    {
+        "id": "honey",
+        "name": "Honey",
+        "description": "Sweet golden honey collected from a tree.",
+        "price": 800,
+        "category": "fruits"
+    },
+    {
+        "id": "acorn",
+        "name": "Acorn",
+        "description": "A small nut from an oak tree.",
+        "price": 50,
+        "category": "fruits"
+    },
+    {
+        "id": "pine_cone",
+        "name": "Pine Cone",
+        "description": "A woody cone from a pine tree.",
+        "price": 50,
+        "category": "fruits"
+    },
+    {
+        "id": "sickle",
+        "name": "Sickle",
+        "description": "A sharp tool used for cutting tall grass. Grass regrows in 1 game day.",
+        "price": 300,
+        "category": "tools"
     }
 ]

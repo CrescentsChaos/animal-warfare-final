@@ -262,6 +262,26 @@
         "biome": "urban"
     },
     {
+        "id": "stove_1",
+        "name": "Red Stove",
+        "category": "solid",
+        "assetPath": "assets/tiles/stove_1.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "urban",
+        "width": 2
+    },
+    {
+        "id": "stove_2",
+        "name": "Blue Stove",
+        "category": "solid",
+        "assetPath": "assets/tiles/stove_2.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "urban",
+        "width": 2
+    },
+    {
         "id": "rock_pile",
         "name": "Rock Pile",
         "category": "solid",
@@ -815,7 +835,16 @@
         "assetPath": "assets/tiles/tall_grass.png",
         "isAutotiled": true,
         "layer": "overlay",
-        "encounterRate": 0.3,
+        "encounterRate": 0.2,
+        "biome": "any"
+    },
+    {
+        "id": "cutdown_grass",
+        "name": "Cutdown Grass",
+        "category": "decorative",
+        "assetPath": "assets/tiles/cutdown_grass.png",
+        "isAutotiled": true,
+        "layer": "overlay",
         "biome": "any"
     },
     {
@@ -1005,6 +1034,36 @@
         "height": 2
     },
     {
+        "id": "small_tmount",
+        "name": "Small Termite Mount",
+        "category": "solid",
+        "assetPath": "assets/tiles/small_tmount.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "savanna",
+        "interactionText": "It's a Termite mount."
+    },
+    {
+        "id": "med_tmount",
+        "name": "Medium Termite Mount",
+        "category": "solid",
+        "assetPath": "assets/tiles/med_tmount.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "savanna",
+        "interactionText": "It's a Termite mount."
+    },
+    {
+        "id": "tall_tmount",
+        "name": "Tall Termite Mount",
+        "category": "solid",
+        "assetPath": "assets/tiles/tall_tmount.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "savanna",
+        "interactionText": "It's a Termite mount."
+    },
+    {
         "id": "pine_tree",
         "name": "Pine Tree",
         "category": "solid",
@@ -1012,7 +1071,8 @@
         "isAutotiled": false,
         "layer": "overlay",
         "biome": "any",
-        "interactionText": "It's a pine tree."
+        "interactionText": "It's a pine tree.",
+        "drop": "pine_cone"
     },
     {
         "id": "honey_tree",
@@ -1022,7 +1082,8 @@
         "isAutotiled": false,
         "layer": "overlay",
         "biome": "any",
-        "interactionText": "It's a honey tree."
+        "interactionText": "It's a honey tree.",
+        "drop": "honey"
     },
     {
         "id": "blue_spruce_tree",
@@ -1072,7 +1133,8 @@
         "isAutotiled": false,
         "layer": "overlay",
         "biome": "any",
-        "interactionText": "It's an oak tree."
+        "interactionText": "It's an oak tree.",
+        "drop": "acorn"
     },
     {
         "id": "snowy_oak_tree",
@@ -1112,7 +1174,8 @@
         "isAutotiled": false,
         "layer": "overlay",
         "biome": "any",
-        "interactionText": "It's a mango tree."
+        "interactionText": "It's a mango tree.",
+        "drop": "mango"
     },
     {
         "id": "mangrove_tree",
@@ -1624,6 +1687,24 @@
         "biome": "any"
     },
     {
+        "id": "mount_ground1",
+        "name": "Mountain Ground 1",
+        "category": "ground",
+        "assetPath": "assets/tiles/ground/mount_ground1.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "biome": "mountain"
+    },
+    {
+        "id": "mount_e1",
+        "name": "Mountain Edge 1",
+        "category": "ground",
+        "assetPath": "assets/tiles/ground/mount_e1.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "biome": "mountain"
+    },
+    {
         "id": "regular_sand",
         "name": "Regular Sand",
         "category": "ground",
@@ -1640,6 +1721,15 @@
         "isAutotiled": true,
         "layer": "base",
         "biome": "Tundra, Polar, Frozen Ocean, Mountain"
+    },
+    {
+        "id": "black",
+        "name": "Black",
+        "category": "solid",
+        "assetPath": "assets/tiles/ground/black.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "biome": "any"
     },
     {
         "id": "beach_sand",
