@@ -149,6 +149,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   bool _isMapLoading = false;
   bool _isTransitioning = false;
   late String _currentBiomeName;
+  late String _currentMapId;
   late String _currentMapName;
   bool _isIndoor = false;
 
@@ -211,6 +212,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
   void _initializeMapData(BiomeMapData data, {bool fromTeleport = false}) {
     _mapData = data;
+    _currentMapId = data.config.id;
     _currentBiomeName = data.biomeId ?? data.config.id;
     _currentMapName = data.name ?? data.config.name;
     _isIndoor = data.isIndoor;
@@ -270,21 +272,21 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     if (_mapData.overlayGrid != null) {
       final userState = Provider.of<UserState>(context, listen: false);
       final cutTiles = userState.currentUser?.eventFlags.cutGrassTiles ?? {};
-      final mapId = widget.biomeName;
+      final mapId = _currentMapId;
 
       for (int r = 0; r < _mapData.height; r++) {
         for (int c = 0; c < _mapData.width; c++) {
           final key = '$mapId:$r:$c';
           if (cutTiles.containsKey(key)) {
-            // Replace tall grass with cutdown_grass
+            // Replace tall grass with cutdown_grass, ensuring no duplicates
             _mapData.overlayGrid![r][c].removeWhere((t) {
               final def = BiomeDataManager.allTiles[t.tileId];
-              return def?.category == TileCategory.tallGrass;
+              return def?.category == TileCategory.tallGrass ||
+                  t.tileId == 'cutdown_grass';
             });
-            _mapData.overlayGrid![r][c].add(MapTile(
-              tileId: 'cutdown_grass',
-              config: _mapData.config,
-            ));
+            _mapData.overlayGrid![r][c].add(
+              MapTile(tileId: 'cutdown_grass', config: _mapData.config),
+            );
           }
         }
       }
@@ -599,6 +601,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     // Player controls (only if not in an encounter and not transitioning)
     if (!_encounterActive && !_isTransitioning) {
       if (_isMovingToTarget) {
+        _walkAnimAccumulator += (_isRunning ? 4.4 : 2.2) * 0.05;
         _moveTowardsTarget();
 
         // Spawn grass particles if moving through tall grass
@@ -787,7 +790,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   void _moveTowardsTarget() {
     final double speed = _isSwimming
         ? 0.76 // Half speed for swimming
-        : (_isRunning ? 3.04 : 1.52); // Px per frame
+        : (_isRunning ? 4.4 : 2.2); // Px per frame
     double dx = _targetX - _playerX;
     double dy = _targetY - _playerY;
     double dist = sqrt(dx * dx + dy * dy);
@@ -1277,6 +1280,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
   void _onFight(Organism wildOrganism, String encounterTileId) async {
     final userState = Provider.of<UserState>(context, listen: false);
+    userState.discoverOrganism(wildOrganism.name);
     final user = userState.currentUser;
     if (user == null) return;
 
@@ -1630,104 +1634,30 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
   Widget _buildDPad() {
     const double padSize = 160.0;
-    const double btnSize = 48.0;
 
     return Positioned(
       bottom: 24,
       left: 16,
-      child: Container(
-        width: padSize,
-        height: padSize,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: RadialGradient(
-            colors: [
-              Colors.black.withValues(alpha: 0.5),
-              Colors.black.withValues(alpha: 0.2),
-            ],
-          ),
-          border: Border.all(
-            color: _biomeHighlightColor.withValues(alpha: 0.15),
-            width: 1,
-          ),
-        ),
-        child: GestureDetector(
-          onPanStart: (details) {
-            setState(() {
-              _cameraSnapped = true; // Snap camera back immediately when moving
-            });
-            _handleDPadGesture(details.localPosition, padSize);
-          },
-          onPanUpdate: (details) =>
-              _handleDPadGesture(details.localPosition, padSize),
-          onPanEnd: (_) {
-            setState(() {
-              _activeDirections.clear();
-            });
-          },
-          child: Stack(
-            children: [
-              // Visual center
-              Center(
-                child: Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: _biomeHighlightColor.withValues(alpha: 0.08),
-                    border: Border.all(
-                      color: _biomeHighlightColor.withValues(alpha: 0.15),
-                      width: 1,
-                    ),
-                  ),
-                ),
-              ),
-              // Directional Buttons
-              Align(
-                alignment: Alignment.topCenter,
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 6),
-                  child: _dpadButtonVisual(
-                    'up',
-                    Icons.keyboard_arrow_up,
-                    btnSize,
-                  ),
-                ),
-              ),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 6),
-                  child: _dpadButtonVisual(
-                    'down',
-                    Icons.keyboard_arrow_down,
-                    btnSize,
-                  ),
-                ),
-              ),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 6),
-                  child: _dpadButtonVisual(
-                    'left',
-                    Icons.keyboard_arrow_left,
-                    btnSize,
-                  ),
-                ),
-              ),
-              Align(
-                alignment: Alignment.centerRight,
-                child: Padding(
-                  padding: const EdgeInsets.only(right: 6),
-                  child: _dpadButtonVisual(
-                    'right',
-                    Icons.keyboard_arrow_right,
-                    btnSize,
-                  ),
-                ),
-              ),
-            ],
+      child: GestureDetector(
+        onPanStart: (details) {
+          setState(() {
+            _cameraSnapped = true; // Snap camera back immediately when moving
+          });
+          _handleDPadGesture(details.localPosition, padSize);
+        },
+        onPanUpdate: (details) =>
+            _handleDPadGesture(details.localPosition, padSize),
+        onPanEnd: (_) {
+          setState(() {
+            _activeDirections.clear();
+          });
+        },
+        child: CustomPaint(
+          size: const Size(padSize, padSize),
+          painter: _DPadPainter(
+            activeDir: _activeDirections.isNotEmpty ? _activeDirections.last : '',
+            highlightColor: _biomeHighlightColor,
+            borderColor: _biomeHighlightColor,
           ),
         ),
       ),
@@ -2277,7 +2207,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   /// Attempts to cut a tall grass tile with the sickle.
   void _tryCutGrass(int r, int c) {
     final userState = Provider.of<UserState>(context, listen: false);
-    final String mapId = widget.biomeName;
+    final String mapId = _currentMapId;
 
     // 1. Update persistent state
     userState.cutGrass(mapId, r, c);
@@ -2292,11 +2222,17 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
     // 3. Update the map grid locally for immediate feedback
     if (_mapData.overlayGrid != null) {
-      _mapData.overlayGrid![r][c].clear();
-      _mapData.overlayGrid![r][c].add(MapTile(
-        tileId: 'cutdown_grass',
-        config: _mapData.config,
-      ));
+      final alreadyCut =
+          _mapData.overlayGrid![r][c].any((t) => t.tileId == 'cutdown_grass');
+      if (!alreadyCut) {
+        _mapData.overlayGrid![r][c].removeWhere((t) {
+          final def = BiomeDataManager.allTiles[t.tileId];
+          return def?.category == TileCategory.tallGrass;
+        });
+        _mapData.overlayGrid![r][c].add(
+          MapTile(tileId: 'cutdown_grass', config: _mapData.config),
+        );
+      }
     }
 
     setState(() {});
@@ -2777,6 +2713,9 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       npc.data.teamId,
       widget.allOrganisms,
     );
+    for (final opponent in opponentTeam) {
+      userState.discoverOrganism(opponent.baseOrganism.name);
+    }
     if (opponentTeam.isEmpty) {
       print(
         'BiomeExplorationMap: Opponent team is empty for ${npc.data.teamId}. Cannot start battle.',
@@ -3120,18 +3059,19 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     final angle = atan2(dy, dx);
     final dist = sqrt(dx * dx + dy * dy);
 
-    // Deadzone and outer boundaries
-    if (dist < 2.0) {
+    // Deadzone - much smaller for higher responsiveness
+    if (dist < 0.5) {
       if (_activeDirections.isNotEmpty) {
         setState(() => _activeDirections.clear());
       }
       return;
     }
-    if (dist > padSize * 0.8) return; // Too far out
 
     // Convert angle to direction
-    // Angles in radians: Right (0), Down (PI/2), Left (PI or -PI), Up (-PI/2)
-    const pi = 3.1415926535897932;
+    // Right: -PI/4 to PI/4
+    // Down: PI/4 to 3PI/4
+    // Left: 3PI/4 to -3PI/4 (wrap)
+    // Up: -3PI/4 to -PI/4
 
     if (angle > -pi / 4 && angle <= pi / 4) {
       newDir = 'right';
@@ -3152,42 +3092,6 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     }
   }
 
-  Widget _dpadButtonVisual(String direction, IconData icon, double size) {
-    final bool isActive = _activeDirections.contains(direction);
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 150),
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: isActive
-            ? _biomeHighlightColor.withValues(alpha: 0.3)
-            : Colors.white.withValues(alpha: 0.05),
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: isActive
-              ? _biomeHighlightColor
-              : _biomeHighlightColor.withValues(alpha: 0.2),
-          width: isActive ? 2.5 : 1.5,
-        ),
-        boxShadow: isActive
-            ? [
-                BoxShadow(
-                  color: _biomeHighlightColor.withValues(alpha: 0.4),
-                  blurRadius: 10,
-                  spreadRadius: 1,
-                ),
-              ]
-            : [],
-      ),
-      child: Icon(
-        icon,
-        color: isActive
-            ? Colors.white
-            : _biomeHighlightColor.withValues(alpha: 0.7),
-        size: size * 0.7,
-      ),
-    );
-  }
 
   Widget _buildStaminaBar(BuildContext context) {
     return GestureDetector(
@@ -4164,4 +4068,131 @@ class _BiomeMapPainter extends CustomPainter {
   bool shouldRepaint(covariant _BiomeMapPainter oldDelegate) {
     return true; // Always repaint (overworld sprites move independently)
   }
+}
+
+class _DPadPainter extends CustomPainter {
+  final String activeDir;
+  final Color highlightColor;
+  final Color borderColor;
+
+  _DPadPainter({
+    required this.activeDir,
+    required this.highlightColor,
+    required this.borderColor,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2;
+
+    // 1. Draw solid background
+    final bgPaint = Paint()
+      ..color = Colors.black.withValues(alpha: 0.4)
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(center, radius, bgPaint);
+
+    // 2. Draw active quadrant highlight
+    if (activeDir.isNotEmpty) {
+      final highlightPaint = Paint()
+        ..color = highlightColor.withValues(alpha: 0.25)
+        ..style = PaintingStyle.fill;
+
+      final path = Path();
+      path.moveTo(center.dx, center.dy);
+
+      double startAngle;
+      if (activeDir == 'right') {
+        startAngle = -pi / 4;
+      } else if (activeDir == 'down') {
+        startAngle = pi / 4;
+      } else if (activeDir == 'left') {
+        startAngle = 3 * pi / 4;
+      } else {
+        startAngle = -3 * pi / 4; // Up
+      }
+
+      path.arcTo(
+        Rect.fromCircle(center: center, radius: radius),
+        startAngle,
+        pi / 2,
+        false,
+      );
+      path.close();
+      canvas.drawPath(path, highlightPaint);
+    }
+
+    // 3. Draw diagonal dividers (X)
+    final linePaint = Paint()
+      ..color = borderColor.withValues(alpha: 0.3)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+
+    final double off = radius * 0.7071; // cos(45)
+    canvas.drawLine(
+      center + Offset(-off, -off),
+      center + Offset(off, off),
+      linePaint,
+    );
+    canvas.drawLine(
+      center + Offset(off, -off),
+      center + Offset(-off, off),
+      linePaint,
+    );
+
+    // 4. Draw outer border
+    final borderPaint = Paint()
+      ..color = borderColor.withValues(alpha: 0.5)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5;
+    canvas.drawCircle(center, radius, borderPaint);
+
+    // 5. Draw Labels (U, D, L, R)
+    _drawLabel(
+      canvas,
+      center + Offset(0, -radius * 0.65),
+      'U',
+      activeDir == 'up',
+    );
+    _drawLabel(
+      canvas,
+      center + Offset(0, radius * 0.65),
+      'D',
+      activeDir == 'down',
+    );
+    _drawLabel(
+      canvas,
+      center + Offset(-radius * 0.65, 0),
+      'L',
+      activeDir == 'left',
+    );
+    _drawLabel(
+      canvas,
+      center + Offset(radius * 0.65, 0),
+      'R',
+      activeDir == 'right',
+    );
+  }
+
+  void _drawLabel(Canvas canvas, Offset pos, String text, bool isActive) {
+    final tp = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: TextStyle(
+          color: isActive ? Colors.white : borderColor.withValues(alpha: 0.6),
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+          fontFamily: 'PressStart2P',
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    );
+    tp.layout();
+    tp.paint(canvas, pos - Offset(tp.width / 2, tp.height / 2));
+  }
+
+  @override
+  bool shouldRepaint(covariant _DPadPainter oldDelegate) =>
+      oldDelegate.activeDir != activeDir ||
+      oldDelegate.highlightColor != highlightColor;
 }

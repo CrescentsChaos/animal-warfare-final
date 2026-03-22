@@ -34,6 +34,7 @@ import 'package:animal_warfare/widgets/weather_overlay.dart';
 import 'package:animal_warfare/widgets/terrain_overlay.dart';
 import 'package:animal_warfare/widgets/item_icon.dart';
 import 'package:animal_warfare/widgets/battle_details_sheet.dart';
+import 'package:animal_warfare/game/biome_map_data.dart';
 
 class BattleScreen extends StatelessWidget {
   final CapturedOrganism playerOrganism;
@@ -5690,10 +5691,21 @@ class _BattleSpriteState extends State<_BattleSprite>
   Future<void> _determinePlatformImage() async {
     final tileId = widget.encounterTileId;
     if (tileId == null) {
-      if (mounted) setState(() => _platformImagePath = 'assets/platforms/default.png');
+      if (mounted) {
+        setState(() => _platformImagePath = 'assets/platforms/default.png');
+      }
       return;
     }
-    
+
+    // Check if it's a tall grass tile
+    final tileDef = BiomeDataManager.allTiles[tileId];
+    if (tileDef?.category == TileCategory.tallGrass) {
+      if (mounted) {
+        setState(() => _platformImagePath = 'assets/platforms/forest.webp');
+      }
+      return;
+    }
+
     final pPath = 'assets/platforms/$tileId.png';
     try {
       await rootBundle.load(pPath);
@@ -5704,7 +5716,9 @@ class _BattleSpriteState extends State<_BattleSprite>
         await rootBundle.load(wPath);
         if (mounted) setState(() => _platformImagePath = wPath);
       } catch (_) {
-        if (mounted) setState(() => _platformImagePath = 'assets/platforms/default.png');
+        if (mounted) {
+          setState(() => _platformImagePath = 'assets/platforms/default.png');
+        }
       }
     }
   }

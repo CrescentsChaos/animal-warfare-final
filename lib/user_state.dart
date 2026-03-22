@@ -203,6 +203,20 @@ class UserState with ChangeNotifier {
     });
   }
 
+  Future<void> discoverOrganism(String species) async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) {
+      if (u.discoveredOrganisms.contains(species)) return u;
+
+      final discovered = Set<String>.from(u.discoveredOrganisms);
+      discovered.add(species);
+
+      return u.copyWith(
+        discoveredOrganisms: discovered.toList(),
+      );
+    });
+  }
+
   Future<void> refreshCurrentUser() async => loadCurrentUser();
   Future<void> loadCurrentUser() async {
     _currentUser = await _authService.getCurrentUser();

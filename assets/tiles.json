@@ -180,6 +180,87 @@
         "biome": "urban"
     },
     {
+        "id": "box_2",
+        "name": "Box 2",
+        "category": "solid",
+        "assetPath": "assets/tiles/box_2.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "urban"
+    },
+    {
+        "id": "bottles_1",
+        "name": "Bottles 1",
+        "category": "solid",
+        "assetPath": "assets/tiles/bottles_1.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "urban"
+    },
+    {
+        "id": "balloons_1",
+        "name": "Balloons 1",
+        "category": "solid",
+        "assetPath": "assets/tiles/balloons_1.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "urban"
+    },
+    {
+        "id": "balloons_2",
+        "name": "Balloons 2",
+        "category": "solid",
+        "assetPath": "assets/tiles/balloons_2.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "urban"
+    },
+    {
+        "id": "pipe_1",
+        "name": "Pipe 1",
+        "category": "solid",
+        "assetPath": "assets/tiles/pipe_1.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "urban"
+    },
+    {
+        "id": "pot_1",
+        "name": "Pot 1",
+        "category": "solid",
+        "assetPath": "assets/tiles/pot_1.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "urban"
+    },
+    {
+        "id": "pot_2",
+        "name": "Pot 2",
+        "category": "solid",
+        "assetPath": "assets/tiles/pot_2.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "urban"
+    },
+    {
+        "id": "pot_3",
+        "name": "Pot 3",
+        "category": "solid",
+        "assetPath": "assets/tiles/pot_3.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "urban"
+    },
+    {
+        "id": "cauldron",
+        "name": "Cauldron",
+        "category": "solid",
+        "assetPath": "assets/tiles/cauldron.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "urban"
+    },
+    {
         "id": "umbrella_1",
         "name": "Orange Umbrella",
         "category": "solid",
@@ -311,6 +392,46 @@
         "height": 2
     },
     {
+        "id": "bridge_4",
+        "name": "Bridge 4",
+        "category": "path",
+        "assetPath": "assets/tiles/bridge_4.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "any",
+        "height": 2
+    },
+    {
+        "id": "bridge_5",
+        "name": "Bridge 5",
+        "category": "path",
+        "assetPath": "assets/tiles/bridge_5.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "any",
+        "height": 2
+    },
+    {
+        "id": "bridge_6",
+        "name": "Bridge 6",
+        "category": "path",
+        "assetPath": "assets/tiles/bridge_6.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "any",
+        "height": 2
+    },
+    {
+        "id": "bridge_7",
+        "name": "Bridge 7",
+        "category": "path",
+        "assetPath": "assets/tiles/bridge_7.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "any",
+        "height": 2
+    },
+    {
         "id": "bed_1",
         "name": "Bed Bottom",
         "category": "solid",
@@ -381,6 +502,24 @@
         "isAutotiled": true,
         "layer": "base",
         "biome": "urban"
+    },
+    {
+        "id": "white_bricks",
+        "name": "White Bricks",
+        "category": "ground",
+        "assetPath": "assets/tiles/ground/white_bricks.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "biome": "urban"
+    },
+    {
+        "id": "cave_entrance",
+        "name": "Cave Entrance",
+        "category": "decorative",
+        "assetPath": "assets/tiles/cave_entrance.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "Mountain"
     },
     {
         "id": "yellow_stone",
@@ -1265,6 +1404,24 @@
         "biome": "coastal"
     },
     {
+        "id": "ibed_1",
+        "name": "Inflatable Bed 1",
+        "category": "solid",
+        "assetPath": "assets/tiles/ibed_1.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "coastal"
+    },
+    {
+        "id": "ibed_2",
+        "name": "Inflatable Bed 2",
+        "category": "solid",
+        "assetPath": "assets/tiles/ibed_2.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "coastal"
+    },
+    {
         "id": "flowering_long_vine",
         "name": "Flowering Long Vine",
         "category": "semiSolid",
@@ -1338,6 +1495,16 @@
         "layer": "overlay",
         "biome": "any",
         "interactionText": "It's a bush tub."
+    },
+    {
+        "id": "flowertub_1",
+        "name": "Flower Tub 1",
+        "category": "solid",
+        "assetPath": "assets/tiles/flowertub_1.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any",
+        "interactionText": "It's a flower tub."
     },
     {
         "id": "overgrown_rock",
@@ -1483,6 +1650,24 @@
         "biome": "any"
     },
     {
+        "id": "flower3",
+        "name": "Flower 3",
+        "category": "decorative",
+        "assetPath": "assets/tiles/flower3.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any"
+    },
+    {
+        "id": "flower4",
+        "name": "Flower 4",
+        "category": "decorative",
+        "assetPath": "assets/tiles/flower4.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any"
+    },
+    {
         "id": "water_patch1",
         "name": "Water Patch LU",
         "category": "decorative",
@@ -1523,6 +1708,15 @@
         "name": "Abandoned Railroad",
         "category": "decorative",
         "assetPath": "assets/tiles/abandoned_rail.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any"
+    },
+    {
+        "id": "dirt_patch",
+        "name": "Dirt Patch",
+        "category": "decorative",
+        "assetPath": "assets/tiles/dirt_patch.png",
         "isAutotiled": false,
         "layer": "overlay",
         "biome": "any"
@@ -1656,14 +1850,125 @@
         "biome": "Swamp"
     },
     {
-        "id": "border",
-        "name": "Border",
+        "id": "border_1",
+        "name": "Border 1",
         "category": "solid",
-        "assetPath": "assets/tiles/border.png",
+        "assetPath": "assets/tiles/border_1.png",
         "isAutotiled": false,
         "layer": "overlay",
         "showInEditor": false,
-        "biome": "swamp"
+        "biome": "any"
+    },
+    {
+        "id": "border_2",
+        "name": "Border 2",
+        "category": "solid",
+        "assetPath": "assets/tiles/border_2.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "showInEditor": false,
+        "biome": "any"
+    },
+    {
+        "id": "border_3",
+        "name": "Border 3",
+        "category": "solid",
+        "assetPath": "assets/tiles/border_3.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "showInEditor": false,
+        "biome": "any"
+    },
+    {
+        "id": "border_4",
+        "name": "Border 4",
+        "category": "solid",
+        "assetPath": "assets/tiles/border_4.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "showInEditor": false,
+        "biome": "any"
+    },
+    {
+        "id": "plank_1",
+        "name": "Plank 1",
+        "category": "path",
+        "assetPath": "assets/tiles/plank_1.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "showInEditor": false,
+        "biome": "any"
+    },
+    {
+        "id": "plank_2",
+        "name": "Plank 2",
+        "category": "path",
+        "assetPath": "assets/tiles/plank_2.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "showInEditor": false,
+        "biome": "any"
+    },
+    {
+        "id": "plank_3",
+        "name": "Plank 3",
+        "category": "path",
+        "assetPath": "assets/tiles/plank_3.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "showInEditor": false,
+        "biome": "any"
+    },
+    {
+        "id": "plank_4",
+        "name": "Plank 4",
+        "category": "path",
+        "assetPath": "assets/tiles/plank_4.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "showInEditor": false,
+        "biome": "any"
+    },
+    {
+        "id": "plank_5",
+        "name": "Plank 5",
+        "category": "path",
+        "assetPath": "assets/tiles/plank_5.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "showInEditor": false,
+        "biome": "any"
+    },
+    {
+        "id": "plank_6",
+        "name": "Plank 6",
+        "category": "path",
+        "assetPath": "assets/tiles/plank_6.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "showInEditor": false,
+        "biome": "any"
+    },
+    {
+        "id": "plank_7",
+        "name": "Plank 7",
+        "category": "path",
+        "assetPath": "assets/tiles/plank_7.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "showInEditor": false,
+        "biome": "any"
+    },
+    {
+        "id": "ladder_1",
+        "name": "Ladder 1",
+        "category": "path",
+        "assetPath": "assets/tiles/ladder_1.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "showInEditor": false,
+        "biome": "any",
+        "height": 2
     },
     {
         "id": "teleporter",
@@ -1700,6 +2005,69 @@
         "name": "Mountain Edge 1",
         "category": "ground",
         "assetPath": "assets/tiles/ground/mount_e1.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "biome": "mountain"
+    },
+    {
+        "id": "mount_e2",
+        "name": "Mountain Edge 2",
+        "category": "ground",
+        "assetPath": "assets/tiles/ground/mount_e2.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "biome": "mountain"
+    },
+    {
+        "id": "mount_e3",
+        "name": "Mountain Edge 3",
+        "category": "ground",
+        "assetPath": "assets/tiles/ground/mount_e3.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "biome": "mountain"
+    },
+    {
+        "id": "mount_e4",
+        "name": "Mountain Edge 4",
+        "category": "ground",
+        "assetPath": "assets/tiles/ground/mount_e4.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "biome": "mountain"
+    },
+    {
+        "id": "mount_e5",
+        "name": "Mountain Edge 5",
+        "category": "ground",
+        "assetPath": "assets/tiles/ground/mount_e5.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "biome": "mountain"
+    },
+    {
+        "id": "mount_e6",
+        "name": "Mountain Edge 6",
+        "category": "ground",
+        "assetPath": "assets/tiles/ground/mount_e6.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "biome": "mountain"
+    },
+    {
+        "id": "mount_e7",
+        "name": "Mountain Edge 7",
+        "category": "ground",
+        "assetPath": "assets/tiles/ground/mount_e7.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "biome": "mountain"
+    },
+    {
+        "id": "mount_e8",
+        "name": "Mountain Edge 8",
+        "category": "ground",
+        "assetPath": "assets/tiles/ground/mount_e8.png",
         "isAutotiled": true,
         "layer": "base",
         "biome": "mountain"
