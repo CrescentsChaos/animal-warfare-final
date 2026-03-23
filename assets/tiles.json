@@ -316,6 +316,26 @@
         "height": 2
     },
     {
+        "id": "iron_pillars",
+        "name": "Iron Pillars",
+        "category": "solid",
+        "assetPath": "assets/tiles/iron_pillars.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "any",
+        "height": 2
+    },
+    {
+        "id": "wooden_bridge",
+        "name": "Wooden Bridge",
+        "category": "path",
+        "assetPath": "assets/tiles/wooden_bridge.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "any",
+        "height": 2
+    },
+    {
         "id": "post_1",
         "name": "Post 1",
         "category": "solid",
@@ -490,6 +510,51 @@
         "name": "Broken Tile",
         "category": "ground",
         "assetPath": "assets/tiles/ground/broken_tile.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "biome": "urban"
+    },
+    {
+        "id": "floor_1",
+        "name": "Floor 1",
+        "category": "ground",
+        "assetPath": "assets/tiles/ground/floor_1.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "biome": "urban"
+    },
+    {
+        "id": "office_floor_1",
+        "name": "Office Floor 1",
+        "category": "ground",
+        "assetPath": "assets/tiles/ground/office_floor_1.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "biome": "urban"
+    },
+    {
+        "id": "office_floor_2",
+        "name": "Office Floor 2",
+        "category": "ground",
+        "assetPath": "assets/tiles/ground/office_floor_2.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "biome": "urban"
+    },
+    {
+        "id": "office_floor_3",
+        "name": "Office Floor 3",
+        "category": "ground",
+        "assetPath": "assets/tiles/ground/office_floor_3.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "biome": "urban"
+    },
+    {
+        "id": "office_floor_4",
+        "name": "Office Floor 4",
+        "category": "ground",
+        "assetPath": "assets/tiles/ground/office_floor_4.png",
         "isAutotiled": true,
         "layer": "base",
         "biome": "urban"
@@ -1053,6 +1118,50 @@
         "height": 1
     },
     {
+        "id": "sofa_1",
+        "name": "Sofa 1",
+        "category": "solid",
+        "assetPath": "assets/tiles/sofa_1.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any",
+        "width": 1,
+        "height": 2
+    },
+    {
+        "id": "sofa_2",
+        "name": "Sofa 2",
+        "category": "solid",
+        "assetPath": "assets/tiles/sofa_2.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any",
+        "width": 1,
+        "height": 2
+    },
+    {
+        "id": "sofa_3",
+        "name": "Sofa 3",
+        "category": "solid",
+        "assetPath": "assets/tiles/sofa_3.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any",
+        "width": 1,
+        "height": 2
+    },
+    {
+        "id": "sofa_4",
+        "name": "Sofa 4",
+        "category": "solid",
+        "assetPath": "assets/tiles/sofa_4.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any",
+        "width": 1,
+        "height": 2
+    },
+    {
         "id": "boat_1",
         "name": "Boat ARG",
         "category": "solid",
@@ -1124,6 +1233,24 @@
         "isAutotiled": false,
         "layer": "overlay",
         "biome": "any"
+    },
+    {
+        "id": "white_wall_1",
+        "name": "White Wall T",
+        "category": "solid",
+        "assetPath": "assets/tiles/white_wall_1.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "urban"
+    },
+    {
+        "id": "white_wall_2",
+        "name": "White Wall B",
+        "category": "solid",
+        "assetPath": "assets/tiles/white_wall_2.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "urban"
     },
     {
         "id": "fence_left",
@@ -1547,6 +1674,42 @@
         "interactionText": "It's a rock grass."
     },
     {
+        "id": "searock_1",
+        "name": "Sea Rock 1",
+        "category": "solid",
+        "assetPath": "assets/tiles/searock_1.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "coastal"
+    },
+    {
+        "id": "searock_2",
+        "name": "Sea Rock 2",
+        "category": "solid",
+        "assetPath": "assets/tiles/searock_2.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "coastal"
+    },
+    {
+        "id": "searock_3",
+        "name": "Sea Rock 3",
+        "category": "solid",
+        "assetPath": "assets/tiles/searock_3.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "coastal"
+    },
+    {
+        "id": "searock_4",
+        "name": "Sea Rock 4",
+        "category": "solid",
+        "assetPath": "assets/tiles/searock_4.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "coastal"
+    },
+    {
         "id": "weed1",
         "name": "Weed 1",
         "category": "solid",
@@ -1666,6 +1829,24 @@
         "isAutotiled": false,
         "layer": "overlay",
         "biome": "any"
+    },
+    {
+        "id": "phone_1",
+        "name": "Phone 1",
+        "category": "decorative",
+        "assetPath": "assets/tiles/phone_1.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "urban"
+    },
+    {
+        "id": "locker_1",
+        "name": "Locker 1",
+        "category": "decorative",
+        "assetPath": "assets/tiles/locker_1.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "urban"
     },
     {
         "id": "water_patch1",
@@ -1960,6 +2141,256 @@
         "biome": "any"
     },
     {
+        "id": "brick_roads_1",
+        "name": "Brick Roads 1",
+        "category": "path",
+        "assetPath": "assets/tiles/brick_roads_1.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "showInEditor": false,
+        "biome": "any"
+    },
+    {
+        "id": "brick_roads_2",
+        "name": "Brick Roads 2",
+        "category": "path",
+        "assetPath": "assets/tiles/brick_roads_2.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "showInEditor": false,
+        "biome": "any"
+    },
+    {
+        "id": "brick_roads_3",
+        "name": "Brick Roads 3",
+        "category": "path",
+        "assetPath": "assets/tiles/brick_roads_3.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "showInEditor": false,
+        "biome": "any"
+    },
+    {
+        "id": "brick_roads_4",
+        "name": "Brick Roads 4",
+        "category": "path",
+        "assetPath": "assets/tiles/brick_roads_4.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "showInEditor": false,
+        "biome": "any"
+    },
+    {
+        "id": "brick_roads_5",
+        "name": "Brick Roads 5",
+        "category": "path",
+        "assetPath": "assets/tiles/brick_roads_5.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "showInEditor": false,
+        "biome": "any"
+    },
+    {
+        "id": "stone_wall_1",
+        "name": "Stone Wall 1",
+        "category": "solid",
+        "assetPath": "assets/tiles/stone_wall_1.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "showInEditor": false,
+        "biome": "urban"
+    },
+    {
+        "id": "stone_wall_2",
+        "name": "Stone Wall 2",
+        "category": "solid",
+        "assetPath": "assets/tiles/stone_wall_2.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "showInEditor": false,
+        "biome": "urban"
+    },
+    {
+        "id": "stone_wall_3",
+        "name": "Stone Wall 3",
+        "category": "solid",
+        "assetPath": "assets/tiles/stone_wall_3.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "showInEditor": false,
+        "biome": "urban"
+    },
+    {
+        "id": "stone_wall_4",
+        "name": "Stone Wall 4",
+        "category": "solid",
+        "assetPath": "assets/tiles/stone_wall_4.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "showInEditor": false,
+        "biome": "urban"
+    },
+    {
+        "id": "stone_wall_5",
+        "name": "Stone Wall 5",
+        "category": "solid",
+        "assetPath": "assets/tiles/stone_wall_5.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "showInEditor": false,
+        "biome": "urban"
+    },
+    {
+        "id": "stone_wall_6",
+        "name": "Stone Wall 6",
+        "category": "solid",
+        "assetPath": "assets/tiles/stone_wall_6.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "showInEditor": false,
+        "biome": "urban"
+    },
+    {
+        "id": "stone_wall_7",
+        "name": "Stone Wall 7",
+        "category": "solid",
+        "assetPath": "assets/tiles/stone_wall_7.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "showInEditor": false,
+        "biome": "urban"
+    },
+    {
+        "id": "stone_wall_8",
+        "name": "Stone Wall 8",
+        "category": "solid",
+        "assetPath": "assets/tiles/stone_wall_8.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "showInEditor": false,
+        "biome": "urban"
+    },
+    {
+        "id": "stone_wall_9",
+        "name": "Stone Wall 9",
+        "category": "solid",
+        "assetPath": "assets/tiles/stone_wall_9.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "showInEditor": false,
+        "biome": "urban"
+    },
+    {
+        "id": "stone_wall_10",
+        "name": "Stone Wall 10",
+        "category": "solid",
+        "assetPath": "assets/tiles/stone_wall_10.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "showInEditor": false,
+        "biome": "urban"
+    },
+    {
+        "id": "stone_wall_11",
+        "name": "Stone Wall 11",
+        "category": "solid",
+        "assetPath": "assets/tiles/stone_wall_11.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "showInEditor": false,
+        "biome": "urban"
+    },
+    {
+        "id": "stone_wall_12",
+        "name": "Stone Wall 12",
+        "category": "solid",
+        "assetPath": "assets/tiles/stone_wall_12.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "showInEditor": false,
+        "biome": "urban"
+    },
+    {
+        "id": "stone_wall_13",
+        "name": "Stone Wall 13",
+        "category": "solid",
+        "assetPath": "assets/tiles/stone_wall_13.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "showInEditor": false,
+        "biome": "urban"
+    },
+    {
+        "id": "stone_wall_14",
+        "name": "Stone Wall 14",
+        "category": "solid",
+        "assetPath": "assets/tiles/stone_wall_14.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "showInEditor": false,
+        "biome": "urban"
+    },
+    {
+        "id": "stone_wall_15",
+        "name": "Stone Wall 15",
+        "category": "solid",
+        "assetPath": "assets/tiles/stone_wall_15.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "showInEditor": false,
+        "biome": "urban"
+    },
+    {
+        "id": "stone_wall_16",
+        "name": "Stone Wall 16",
+        "category": "solid",
+        "assetPath": "assets/tiles/stone_wall_16.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "showInEditor": false,
+        "biome": "urban"
+    },
+    {
+        "id": "iron_railing_1",
+        "name": "Iron Railing 1",
+        "category": "solid",
+        "assetPath": "assets/tiles/iron_railing_1.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "showInEditor": false,
+        "biome": "urban"
+    },
+    {
+        "id": "iron_railing_2",
+        "name": "Iron Railing 2",
+        "category": "solid",
+        "assetPath": "assets/tiles/iron_railing_2.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "showInEditor": false,
+        "biome": "urban"
+    },
+    {
+        "id": "iron_railing_3",
+        "name": "Iron Railing 3",
+        "category": "solid",
+        "assetPath": "assets/tiles/iron_railing_3.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "showInEditor": false,
+        "biome": "urban"
+    },
+    {
+        "id": "iron_railing_4",
+        "name": "Iron Railing 4",
+        "category": "solid",
+        "assetPath": "assets/tiles/iron_railing_4.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "showInEditor": false,
+        "biome": "urban"
+    },
+    {
         "id": "ladder_1",
         "name": "Ladder 1",
         "category": "path",
@@ -1969,6 +2400,18 @@
         "showInEditor": false,
         "biome": "any",
         "height": 2
+    },
+    {
+        "id": "table_1",
+        "name": "Table 1",
+        "category": "solid",
+        "assetPath": "assets/tiles/table_1.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "showInEditor": false,
+        "biome": "any",
+        "height": 2,
+        "width": 2
     },
     {
         "id": "teleporter",
@@ -1990,6 +2433,33 @@
         "isAutotiled": true,
         "layer": "base",
         "biome": "any"
+    },
+    {
+        "id": "honey_comb_1",
+        "name": "Honey Comb 1",
+        "category": "ground",
+        "assetPath": "assets/tiles/ground/honey_comb_1.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "biome": "jungle,rainforest"
+    },
+    {
+        "id": "honey_comb_2",
+        "name": "Honey Comb 2",
+        "category": "ground",
+        "assetPath": "assets/tiles/ground/honey_comb_2.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "biome": "jungle,rainforest"
+    },
+    {
+        "id": "honey_comb_3",
+        "name": "Honey Comb 3",
+        "category": "ground",
+        "assetPath": "assets/tiles/ground/honey_comb_3.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "biome": "jungle,rainforest"
     },
     {
         "id": "mount_ground1",
