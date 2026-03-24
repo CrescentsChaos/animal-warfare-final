@@ -2047,7 +2047,6 @@
         "assetPath": "assets/tiles/border_2.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "showInEditor": false,
         "biome": "any"
     },
     {
@@ -2057,7 +2056,6 @@
         "assetPath": "assets/tiles/border_3.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "showInEditor": false,
         "biome": "any"
     },
     {
@@ -2067,7 +2065,6 @@
         "assetPath": "assets/tiles/border_4.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "showInEditor": false,
         "biome": "any"
     },
     {
@@ -2077,7 +2074,6 @@
         "assetPath": "assets/tiles/plank_1.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "showInEditor": false,
         "biome": "any"
     },
     {
@@ -2087,7 +2083,6 @@
         "assetPath": "assets/tiles/plank_2.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "showInEditor": false,
         "biome": "any"
     },
     {
@@ -2097,7 +2092,6 @@
         "assetPath": "assets/tiles/plank_3.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "showInEditor": false,
         "biome": "any"
     },
     {
@@ -2107,7 +2101,6 @@
         "assetPath": "assets/tiles/plank_4.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "showInEditor": false,
         "biome": "any"
     },
     {
@@ -2117,7 +2110,6 @@
         "assetPath": "assets/tiles/plank_5.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "showInEditor": false,
         "biome": "any"
     },
     {
@@ -2127,7 +2119,6 @@
         "assetPath": "assets/tiles/plank_6.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "showInEditor": false,
         "biome": "any"
     },
     {
@@ -2137,7 +2128,6 @@
         "assetPath": "assets/tiles/plank_7.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "showInEditor": false,
         "biome": "any"
     },
     {
@@ -2147,7 +2137,6 @@
         "assetPath": "assets/tiles/brick_roads_1.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "showInEditor": false,
         "biome": "any"
     },
     {
@@ -2157,7 +2146,6 @@
         "assetPath": "assets/tiles/brick_roads_2.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "showInEditor": false,
         "biome": "any"
     },
     {
@@ -2167,7 +2155,6 @@
         "assetPath": "assets/tiles/brick_roads_3.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "showInEditor": false,
         "biome": "any"
     },
     {
@@ -2177,7 +2164,6 @@
         "assetPath": "assets/tiles/brick_roads_4.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "showInEditor": false,
         "biome": "any"
     },
     {
@@ -2187,7 +2173,6 @@
         "assetPath": "assets/tiles/brick_roads_5.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "showInEditor": false,
         "biome": "any"
     },
     {
@@ -2197,7 +2182,6 @@
         "assetPath": "assets/tiles/stone_wall_1.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "showInEditor": false,
         "biome": "urban"
     },
     {
@@ -2207,7 +2191,6 @@
         "assetPath": "assets/tiles/stone_wall_2.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "showInEditor": false,
         "biome": "urban"
     },
     {
@@ -2217,7 +2200,6 @@
         "assetPath": "assets/tiles/stone_wall_3.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "showInEditor": false,
         "biome": "urban"
     },
     {
@@ -2227,7 +2209,6 @@
         "assetPath": "assets/tiles/stone_wall_4.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "showInEditor": false,
         "biome": "urban"
     },
     {
@@ -2237,7 +2218,6 @@
         "assetPath": "assets/tiles/stone_wall_5.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "showInEditor": false,
         "biome": "urban"
     },
     {
@@ -2247,7 +2227,6 @@
         "assetPath": "assets/tiles/stone_wall_6.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "showInEditor": false,
         "biome": "urban"
     },
     {
@@ -2257,7 +2236,6 @@
         "assetPath": "assets/tiles/stone_wall_7.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "showInEditor": false,
         "biome": "urban"
     },
     {
@@ -2267,7 +2245,6 @@
         "assetPath": "assets/tiles/stone_wall_8.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "showInEditor": false,
         "biome": "urban"
     },
     {
@@ -2277,7 +2254,6 @@
         "assetPath": "assets/tiles/stone_wall_9.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "showInEditor": false,
         "biome": "urban"
     },
     {
@@ -2287,7 +2263,6 @@
         "assetPath": "assets/tiles/stone_wall_10.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "showInEditor": false,
         "biome": "urban"
     },
     {
@@ -2297,7 +2272,6 @@
         "assetPath": "assets/tiles/stone_wall_11.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "showInEditor": false,
         "biome": "urban"
     },
     {
@@ -2307,7 +2281,6 @@
         "assetPath": "assets/tiles/stone_wall_12.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "showInEditor": false,
         "biome": "urban"
     },
     {
@@ -2317,7 +2290,6 @@
         "assetPath": "assets/tiles/stone_wall_13.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "showInEditor": false,
         "biome": "urban"
     },
     {
@@ -2327,7 +2299,6 @@
         "assetPath": "assets/tiles/stone_wall_14.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "showInEditor": false,
         "biome": "urban"
     },
     {
@@ -2337,7 +2308,6 @@
         "assetPath": "assets/tiles/stone_wall_15.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "showInEditor": false,
         "biome": "urban"
     },
     {
@@ -2347,7 +2317,6 @@
         "assetPath": "assets/tiles/stone_wall_16.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "showInEditor": false,
         "biome": "urban"
     },
     {
@@ -2357,7 +2326,6 @@
         "assetPath": "assets/tiles/iron_railing_1.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "showInEditor": false,
         "biome": "urban"
     },
     {
@@ -2367,7 +2335,6 @@
         "assetPath": "assets/tiles/iron_railing_2.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "showInEditor": false,
         "biome": "urban"
     },
     {
@@ -2377,7 +2344,6 @@
         "assetPath": "assets/tiles/iron_railing_3.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "showInEditor": false,
         "biome": "urban"
     },
     {
@@ -2387,7 +2353,6 @@
         "assetPath": "assets/tiles/iron_railing_4.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "showInEditor": false,
         "biome": "urban"
     },
     {
@@ -2397,7 +2362,6 @@
         "assetPath": "assets/tiles/ladder_1.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "showInEditor": false,
         "biome": "any",
         "height": 2
     },
@@ -2408,7 +2372,6 @@
         "assetPath": "assets/tiles/table_1.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "showInEditor": false,
         "biome": "any",
         "height": 2,
         "width": 2
@@ -2473,73 +2436,73 @@
     {
         "id": "mount_e1",
         "name": "Mountain Edge 1",
-        "category": "ground",
+        "category": "solid",
         "assetPath": "assets/tiles/ground/mount_e1.png",
         "isAutotiled": true,
-        "layer": "base",
+        "layer": "overlay",
         "biome": "mountain"
     },
     {
         "id": "mount_e2",
         "name": "Mountain Edge 2",
-        "category": "ground",
+        "category": "solid",
         "assetPath": "assets/tiles/ground/mount_e2.png",
         "isAutotiled": true,
-        "layer": "base",
+        "layer": "overlay",
         "biome": "mountain"
     },
     {
         "id": "mount_e3",
         "name": "Mountain Edge 3",
-        "category": "ground",
+        "category": "solid",
         "assetPath": "assets/tiles/ground/mount_e3.png",
         "isAutotiled": true,
-        "layer": "base",
+        "layer": "overlay",
         "biome": "mountain"
     },
     {
         "id": "mount_e4",
         "name": "Mountain Edge 4",
-        "category": "ground",
+        "category": "solid",
         "assetPath": "assets/tiles/ground/mount_e4.png",
         "isAutotiled": true,
-        "layer": "base",
+        "layer": "overlay",
         "biome": "mountain"
     },
     {
         "id": "mount_e5",
         "name": "Mountain Edge 5",
-        "category": "ground",
+        "category": "solid",
         "assetPath": "assets/tiles/ground/mount_e5.png",
         "isAutotiled": true,
-        "layer": "base",
+        "layer": "overlay",
         "biome": "mountain"
     },
     {
         "id": "mount_e6",
         "name": "Mountain Edge 6",
-        "category": "ground",
+        "category": "solid",
         "assetPath": "assets/tiles/ground/mount_e6.png",
         "isAutotiled": true,
-        "layer": "base",
+        "layer": "overlay",
         "biome": "mountain"
     },
     {
         "id": "mount_e7",
         "name": "Mountain Edge 7",
-        "category": "ground",
+        "category": "solid",
         "assetPath": "assets/tiles/ground/mount_e7.png",
         "isAutotiled": true,
-        "layer": "base",
+        "layer": "overlay",
         "biome": "mountain"
     },
     {
         "id": "mount_e8",
         "name": "Mountain Edge 8",
-        "category": "ground",
+        "category": "solid",
         "assetPath": "assets/tiles/ground/mount_e8.png",
         "isAutotiled": true,
-        "layer": "base",
+        "layer": "overlay",
         "biome": "mountain"
     },
     {
