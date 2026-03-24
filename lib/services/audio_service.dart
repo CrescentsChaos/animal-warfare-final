@@ -1,5 +1,5 @@
-// ignore_for_file: avoid_print
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Service for managing game audio including sound effects and background music
@@ -81,38 +81,51 @@ class AudioService {
     _musicPlayer.setReleaseMode(ReleaseMode.loop);
     await _musicPlayer
         .setVolume(_isMusicEnabled ? _musicVolume : 0.0)
-        .catchError((e) => print('Error setting initial music volume: $e'));
+        .catchError((e) => debugPrint('Error setting initial music volume: $e'));
 
-    // Sound effects should play once
-    _soundPlayer.setReleaseMode(ReleaseMode.release);
+    // Sound effects should play once. 
+    // Key Fix: Use ReleaseMode.stop instead of .release to avoid resource release issues 
+    // on Android when reusing the same player for rapid SFX.
+    _soundPlayer.setReleaseMode(ReleaseMode.stop);
     await _soundPlayer
         .setVolume(_isSoundEnabled ? _soundVolume : 0.0)
-        .catchError((e) => print('Error setting initial sound volume: $e'));
+        .catchError((e) => debugPrint('Error setting initial sound volume: $e'));
 
     _isInitialized = true;
   }
 
   /// Play a sound effect once
   Future<void> playSound(String assetPath) async {
-    if (isTesting) return;
+    if (isTesting || !_isSoundEnabled) return;
     try {
-      // Volume is controlled separately via _soundVolume and _isSoundEnabled
-      // When disabled, volume is set to 0.0, so we don't need an early return here
+      await _soundPlayer.stop(); // Stop any currently playing SFX
       await _soundPlayer.play(AssetSource(assetPath));
     } catch (e) {
-      print('Error playing sound: $e');
+      debugPrint('Error playing sound ($assetPath): $e');
+      // If it's a "cries" asset, try fallback
+      if (assetPath.contains('audio/cries/')) {
+        await _playFallbackCry();
+      }
+    }
+  }
+
+  /// Internal helper to play a default cry when the specific one fails
+  Future<void> _playFallbackCry() async {
+    try {
+      await _soundPlayer.stop();
+      await _soundPlayer.play(AssetSource('audio/cries/default.mp3'));
+    } catch (e) {
+      debugPrint('Critical: Fallback audio also failed: $e');
     }
   }
 
   /// Play an organism's cry
   Future<void> playOrganismCry(String cryName) async {
-    if (isTesting) return;
-    try {
-      // Path construction: assets/audio/cries/ + cryName + .mp3
-      await playSound('audio/cries/$cryName.mp3');
-    } catch (e) {
-      print('Error playing organism cry: $e');
-    }
+    if (isTesting || !_isSoundEnabled) return;
+    if (cryName.isEmpty) return;
+    
+    final path = 'audio/cries/$cryName.mp3';
+    await playSound(path);
   }
 
   /// Play background music with looping
@@ -141,7 +154,7 @@ class AudioService {
         await _musicPlayer.setReleaseMode(ReleaseMode.release);
       }
     } catch (e) {
-      print('Error setting release mode: $e');
+      debugPrint('Error setting release mode: $e');
     }
 
     if (!_isMusicEnabled) return;
@@ -149,7 +162,7 @@ class AudioService {
     try {
       await _musicPlayer.play(AssetSource(assetPath));
     } catch (e) {
-      print('Error playing music: $e');
+      debugPrint('Error playing music: $e');
     }
   }
 
@@ -181,7 +194,7 @@ class AudioService {
       _currentMusicPath = null;
       _musicStack.clear(); // Clear stack when explicitly stopping
     } catch (e) {
-      print('Error stopping music: $e');
+      debugPrint('Error stopping music: $e');
     }
   }
 
@@ -201,7 +214,7 @@ class AudioService {
       try {
         await _musicPlayer.setVolume(i * stepVolume);
       } catch (e) {
-        print('Error during music fade out: $e');
+        debugPrint('Error during music fade out: $e');
         break;
       }
       await Future.delayed(stepDuration);
@@ -217,7 +230,7 @@ class AudioService {
       try {
         await _musicPlayer.setVolume(_musicVolume);
       } catch (e) {
-        print('Error setting music volume: $e');
+        debugPrint('Error setting music volume: $e');
       }
     }
     // Async save, don't await to avoid stalling UI
@@ -231,7 +244,7 @@ class AudioService {
       try {
         await _soundPlayer.setVolume(_soundVolume);
       } catch (e) {
-        print('Error setting sound volume: $e');
+        debugPrint('Error setting sound volume: $e');
       }
     }
     // Async save, don't await
@@ -252,7 +265,7 @@ class AudioService {
         }
       }
     } catch (e) {
-      print('Error toggling music: $e');
+      debugPrint('Error toggling music: $e');
     }
     _prefs?.setBool('isMusicEnabled', _isMusicEnabled);
   }
@@ -267,7 +280,7 @@ class AudioService {
         await _soundPlayer.setVolume(_soundVolume);
       }
     } catch (e) {
-      print('Error toggling sound: $e');
+      debugPrint('Error toggling sound: $e');
     }
     _prefs?.setBool('isSoundEnabled', _isSoundEnabled);
   }
@@ -296,7 +309,7 @@ class AudioService {
         await _soundPlayer.pause();
       }
     } catch (e) {
-      print('Error pausing audio: $e');
+      debugPrint('Error pausing audio: $e');
     }
   }
 
@@ -313,7 +326,7 @@ class AudioService {
         }
       }
     } catch (e) {
-      print('Error resuming audio: $e');
+      debugPrint('Error resuming audio: $e');
     }
   }
 
@@ -324,7 +337,7 @@ class AudioService {
       await _soundPlayer.stop();
       _currentMusicPath = null;
     } catch (e) {
-      print('Error stopping all audio: $e');
+      debugPrint('Error stopping all audio: $e');
     }
   }
 

@@ -3554,12 +3554,16 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           }
         }
 
+        // Record the post-battle state (HP, Stamina, Status) to persistence.
+        // This ensures damage persists even if subsequent UserState operations reload from disk.
+        if (!widget.isRogueMode) {
+          await userState.updateTeamAfterBattle(battleManager.playerTeam);
+        }
+
         // Arena battle prize money (not for rogue mode usually, or different rewards)
         Map<String, dynamic> xpResults =
             _cumulativeXPResults; // Use cumulative results
         if (!widget.isRogueMode) {
-          // Fully heal team after battle in exploration/arena
-          await userState.fullyHealTeam();
 
           if (battleManager.result == BattleResult.win ||
               battleManager.result == BattleResult.capture) {

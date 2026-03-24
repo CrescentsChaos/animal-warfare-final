@@ -68,5 +68,12 @@
         "default_speed": 1.5,
         "vision_range": 6.0,
         "move_tiles": "town_grass,flower1, flower2"
+    },
+    {
+        "pheno": "gaboon_viper",
+        "max_spawns": 1,
+        "default_speed": 1.5,
+        "vision_range": 6.0,
+        "move_tiles": "desert_sand"
     }
 ]

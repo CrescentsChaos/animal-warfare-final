@@ -349,6 +349,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   isDanger: true,
                 ),
                 _buildActionTile(
+                  title: 'Unstuck Player',
+                  icon: Icons.refresh_rounded,
+                  onTap: () {
+                    final userState = Provider.of<UserState>(context, listen: false);
+                    userState.requestUnstuck();
+                    Navigator.of(context).pop();
+                  },
+                ),
+                _buildActionTile(
                   title: 'Delete Account',
                   icon: Icons.delete_forever_rounded,
                   onTap: () {

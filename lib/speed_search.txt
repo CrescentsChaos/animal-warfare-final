@@ -1,0 +1,383 @@
+anidex_screen.dart:        case 'SPEED':
+anidex_screen.dart:          result = b.speed.compareTo(a.speed);
+anidex_screen.dart:      'SPEED',
+animal_box_screen.dart:            _buildStatRow('SPD GV', ivs['speed'] ?? 0),
+animal_box_screen.dart:              'Speed',
+animal_box_screen.dart:              captured.getSpeed(atLevel: 50),
+animal_box_screen.dart:              _getNatureColor('speed', captured.nature),
+battle_screen.dart:  bool _isFastMode = false; // Hold message box to speed up text 3x
+battle_screen.dart:                      speed: Duration(milliseconds: _isFastMode ? 17 : 50),
+battle_screen.dart:        _buildStatItem('SPD', org.effectiveSpeed),
+battle_screen.dart:          member.effectiveSpeed,
+battle_screen.dart:          newCapture.effectiveSpeed,
+battle_screen.dart:  final Duration speed;
+battle_screen.dart:    this.speed = const Duration(milliseconds: 50),
+battle_screen.dart:    _timer = Timer.periodic(widget.speed, (timer) {
+biome_exploration_map.dart:            speed: 0.2 + random.nextDouble() * 0.3,
+biome_exploration_map.dart:          f.x += cos(f.driftDir) * f.speed;
+biome_exploration_map.dart:          f.y += sin(f.driftDir) * f.speed;
+biome_exploration_map.dart:        final double speed = _isRunning ? 3.04 : 1.52;
+biome_exploration_map.dart:        _walkAnimAccumulator += speed;
+biome_exploration_map.dart:              _velY = vy; // Move at normal speed but over 2 tiles
+biome_exploration_map.dart:    final double speed = _isSwimming
+biome_exploration_map.dart:        ? 0.76 // Half speed for swimming
+biome_exploration_map.dart:    if (dist <= speed) {
+biome_exploration_map.dart:        _playerX += _velX * speed;
+biome_exploration_map.dart:        _playerY += _velY * speed;
+biome_exploration_map.dart:        _walkAnimAccumulator += speed;
+biome_exploration_map.dart:      const double lerpSpeed = 0.15;
+biome_exploration_map.dart:      _cameraX += (idealX - _cameraX) * lerpSpeed;
+biome_exploration_map.dart:      _cameraY += (idealY - _cameraY) * lerpSpeed;
+biome_exploration_map.dart:  double speed;
+biome_exploration_map.dart:    required this.speed,
+biome_exploration_map.dart:        final double swaySpeed = entityHere ? 4.0 : 2.0;
+biome_exploration_map.dart:        final double sway = sin(grassAnimTime * swaySpeed + (c + r * 1.5)) *
+double_battle_screen.dart:                isPlayer ? '${bo.currentSpeed}' : '???',
+double_battle_screen.dart:                bo.speedStage,
+game\ai_decision_engine.dart:  tailwindSpeed, // 45: Set Tailwind; outspeed everything
+game\ai_decision_engine.dart:    // Trait 3: Speed comparison awareness
+game\ai_decision_engine.dart:    final isFaster = attacker.currentSpeed > defender.currentSpeed;
+game\ai_decision_engine.dart:            case 'speed':
+game\ai_decision_engine.dart:              currentStage = attacker.speedStage;
+game\ai_decision_engine.dart:        // They attack non-stop. Setup moves are dangerous unless we outspeed.
+game\ai_decision_engine.dart:            attacker.speedStage < 2;
+game\ai_decision_engine.dart:                (e.stat == 'attack' || e.stat == 'power' || e.stat == 'speed'),
+game\ai_decision_engine.dart:            // Trick Room flips speed. If we are already faster, using Trick Room
+game\ai_decision_engine.dart:      case TeamArchetype.tailwindSpeed:
+game\ai_decision_engine.dart:    final isSlower = activeMon.currentSpeed < opponent.currentSpeed;
+game\ai_decision_engine.dart:        if (bench.any((b) => b.currentSpeed > activeMon.currentSpeed)) {
+game\ai_decision_engine.dart:        (activeMon.currentSpeed > 100 || activeMon.currentAttack > 100) &&
+game\ai_decision_engine.dart:          bMon.currentSpeed > opponent.currentSpeed) {
+game\ai_decision_engine.dart:  /// Heuristic: Highest combined Speed + Attack/Power.
+game\ai_decision_engine.dart:      // Evaluate mixed offense potential + speed
+game\ai_decision_engine.dart:          mon.currentSpeed.toDouble() +
+game\archetype_teams.dart:        return (o.attack + o.speed > 160) || o.speed > 90;
+game\archetype_teams.dart:        return o.speed > 80;
+game\archetype_teams.dart:                (e.stat == 'attack' || e.stat == 'power' || e.stat == 'speed'),
+game\archetype_teams.dart:        final isSlowHeavy = o.speed < 55 && (o.attack > 90 || o.power > 90);
+game\archetype_teams.dart:      case TeamArchetype.tailwindSpeed:
+game\archetype_teams.dart:        return c.moves.any((m) => m.name == 'Tailwind') || o.speed > 100;
+game\archetype_teams.dart:        return (o.attack + o.speed).toDouble();
+game\archetype_teams.dart:          o.speed,
+game\archetype_teams.dart:        return hasSpinner ? (1000 + o.speed).toDouble() : o.speed.toDouble();
+game\archetype_teams.dart:        return (o.speed + o.attack).toDouble();
+game\archetype_teams.dart:        // Setup user potential = setup move + high offensive stat + speed
+game\archetype_teams.dart:                (e.stat == 'attack' || e.stat == 'power' || e.stat == 'speed'),
+game\archetype_teams.dart:        return ((hasSetup ? 500 : 0) + o.attack + o.speed).toDouble();
+game\archetype_teams.dart:        // TR setter bonus; slow attackers score by inverse speed + bulk
+game\archetype_teams.dart:        final speedPenalty = (100 - o.speed).clamp(0, 100).toDouble();
+game\archetype_teams.dart:        return ((hasTR ? 800 : 0) + speedPenalty + o.attack + o.health)
+game\archetype_teams.dart:      case TeamArchetype.tailwindSpeed:
+game\archetype_teams.dart:        return ((hasTW ? 1000 : 0) + o.speed + o.attack).toDouble();
+game\archetype_teams.dart:        return (critCount * 300 + (hasFocus ? 500 : 0) + o.speed).toDouble();
+game\archetype_teams.dart:        return (evasionCount * 600 + o.speed + o.defense).toDouble();
+game\archetype_teams.dart:        if (_isSelfStatBoost(m, ['attack', 'power', 'speed'])) s += 400;
+game\archetype_teams.dart:            !_isSelfStatBoost(m, ['attack', 'power', 'speed'])) {
+game\archetype_teams.dart:      case TeamArchetype.tailwindSpeed:
+game\archetype_teams.dart:        return c.baseOrganism.speed.toDouble();
+game\archetype_teams.dart:            ? (1000 + c.baseOrganism.speed).toDouble()
+game\archetype_teams.dart:            : c.baseOrganism.speed.toDouble();
+game\archetype_teams.dart:        return hasSpinner ? 1000 : c.baseOrganism.speed.toDouble();
+game\archetype_teams.dart:        return _isRainSetter(_wrap(c)) ? 1000 : c.baseOrganism.speed.toDouble();
+game\archetype_teams.dart:        return _isSunSetter(_wrap(c)) ? 1000 : c.baseOrganism.speed.toDouble();
+game\archetype_teams.dart:        return _isSandSetter(_wrap(c)) ? 1000 : c.baseOrganism.speed.toDouble();
+game\archetype_teams.dart:        return _isSnowSetter(_wrap(c)) ? 1000 : c.baseOrganism.speed.toDouble();
+game\archetype_teams.dart:            : c.baseOrganism.speed.toDouble();
+game\archetype_teams.dart:            : c.baseOrganism.speed.toDouble();
+game\archetype_teams.dart:            : (100 - c.baseOrganism.speed).clamp(0, 100).toDouble();
+game\archetype_teams.dart:          return m != null && _isSelfStatBoost(m, ['attack', 'power', 'speed']);
+game\archetype_teams.dart:            ? (1000 + c.baseOrganism.speed).toDouble()
+game\archetype_teams.dart:            : c.baseOrganism.speed.toDouble();
+game\archetype_teams.dart:            ? (500 + c.baseOrganism.speed).toDouble()
+game\archetype_teams.dart:            : c.baseOrganism.speed.toDouble();
+game\archetype_teams.dart:        return c.baseOrganism.speed.toDouble();
+game\archetype_teams.dart:      case TeamArchetype.tailwindSpeed:
+game\archetype_teams.dart:            : c.baseOrganism.speed.toDouble();
+game\archetype_teams.dart:        return c.baseOrganism.speed.toDouble();
+game\archetype_teams.dart:            : c.baseOrganism.speed.toDouble();
+game\archetype_teams.dart:            : c.baseOrganism.speed.toDouble();
+game\archetype_teams.dart:            : c.baseOrganism.speed.toDouble();
+game\archetype_teams.dart:      'speed': minIV + _rng.nextInt(32 - minIV),
+game\archetype_teams.dart:    // Choice items logic: Only if speed is decent or they are bulky
+game\archetype_teams.dart:    if (o.speed > 90 || o.health > 100) {
+game\archetype_teams.dart:    if (o.speed > 80 && o.speed < 110) {
+game\archetype_teams.dart:    // High speed but frail
+game\archetype_teams.dart:    if (o.speed > 100 && o.health < 80) {
+game\archetype_teams.dart:      case TeamArchetype.tailwindSpeed:
+game\archetype_teams.dart:        o.speed > 300;
+game\battle_manager.dart:  int _getEffectiveSpeed(BattleOrganism org) {
+game\battle_manager.dart:    double speed = org.currentSpeed.toDouble();
+game\battle_manager.dart:      speed *= 2.0;
+game\battle_manager.dart:    // Lead Coat: This Pokémon's Speed is 0.9x.
+game\battle_manager.dart:      speed *= 0.9;
+game\battle_manager.dart:    // Ability Speed Modifiers handled in org.currentSpeed
+game\battle_manager.dart:    // Custap Berry: Priority boost (simulated with large speed boost at low HP)
+game\battle_manager.dart:          speed *= 100.0;
+game\battle_manager.dart:    int finalSpeed = speed.round();
+game\battle_manager.dart:    // Trick Room: Effectively inverts speed for turn order.
+game\battle_manager.dart:    // However, _getEffectiveSpeed is used for comparison.
+game\battle_manager.dart:    // If Trick Room is active, we can return a "pseudo-speed" that is higher for lower speeds.
+game\battle_manager.dart:    // A common way is (10000 - speed) for speeds under 10000.
+game\battle_manager.dart:      finalSpeed = 10000 - finalSpeed;
+game\battle_manager.dart:    return finalSpeed;
+game\battle_manager.dart:    // 2. Speed Check
+game\battle_manager.dart:            target.speedStage = min(0, target.speedStage);
+game\battle_manager.dart:            await applyStatChange(user, 'speed', 1, source: user);
+game\battle_manager.dart:            user.speedStage = target.speedStage;
+game\battle_manager.dart:              await applyStatChange(user, 'speed', stageChange);
+game\battle_manager.dart:            user.speedStage = target.speedStage;
+game\battle_manager.dart:          // Speed Check (same priority)
+game\battle_manager.dart:          if (_getEffectiveSpeed(player) >= _getEffectiveSpeed(opponent)) {
+game\battle_manager.dart:            _getEffectiveSpeed(player) >= _getEffectiveSpeed(opponent);
+game\battle_manager.dart:      // Blunder Policy: Speed boost on miss
+game\battle_manager.dart:              effect.stat ?? 'speed',
+game\battle_manager.dart:          await applyStatChange(defender, 'speed', 1);
+game\battle_manager.dart:          await applyStatChange(defender, 'speed', 1);
+game\battle_manager.dart:              'speed': attacker.currentSpeed,
+game\battle_manager.dart:            await applyStatChange(attacker, 'speed', -1, source: defender);
+game\battle_manager.dart:            await applyStatChange(attacker, 'speed', -1, source: defender);
+game\battle_manager.dart:            int stagesNeeded = 6 - defender.speedStage;
+game\battle_manager.dart:                'speed',
+game\battle_manager.dart:              addToLog('${defender.name}\'s Steam Engine maximized its Speed!');
+game\battle_manager.dart:          // Gooey / Tangling Hair: Lower attacker speed on contact
+game\battle_manager.dart:            await applyStatChange(attacker, 'speed', -1);
+game\battle_manager.dart:          await applyStatChange(defender, 'speed', 2);
+game\battle_manager.dart:      await applyStatChange(attacker, 'speed', 1);
+game\battle_manager.dart:      await applyStatChange(target, 'speed', 1);
+game\battle_manager.dart:      // We don't return false because Steadfast doesn't prevent Flinch/Stun, it just boosts speed.
+game\battle_manager.dart:            'speed',
+game\battle_manager.dart:            await applyStatChange(attacker, 'speed', 2);
+game\battle_manager.dart:      await _changeStat(target, 'speed', value, source: source);
+game\battle_manager.dart:      } else if (statName == 'speed' &&
+game\battle_manager.dart:        // Sticky Hold prevents Speed drops
+game\battle_manager.dart:          await applyStatChange(target, 'speed', 1);
+game\battle_manager.dart:          await applyStatChange(target, 'speed', 1);
+game\battle_manager.dart:    } else if (statName == 'speed') {
+game\battle_manager.dart:      target.speedStage = (target.speedStage + effectiveValue).clamp(-6, 6);
+game\battle_manager.dart:      if (target.speedStage < 0) target.speedStage = 0;
+game\battle_manager.dart:        'speed',
+game\battle_manager.dart:    // Speed Boost Check
+game\battle_manager.dart:    if (target.abilities.any((ab) => ab.name == 'Speed Boost')) {
+game\battle_manager.dart:      final ab = target.abilities.firstWhere((a) => a.name == 'Speed Boost');
+game\battle_manager.dart:      await applyStatChange(target, 'speed', 1);
+game\battle_manager.dart:        'speed',
+game\battle_manager.dart:      speed: 40,
+game\battle_manager.dart:        'speed': 15,
+game\battle_manager.dart:    final runChance = (player.currentSpeed / opponent.currentSpeed) * 1.5;
+game\battle_manager.dart:        'speed',
+game\battle_manager.dart:        case 'speed':
+game\battle_manager.dart:          atk = attacker.currentSpeed;
+game\battle_manager.dart:      baseDamage = (25 * defender.currentSpeed / attacker.currentSpeed).round();
+game\battle_manager.dart:      captured.speedStage = 0;
+game\battle_manager.dart:      opponent.speedStage = 0;
+game\battle_manager.dart:        await applyStatChange(target, 'speed', -1);
+game\battle_models.dart:  int _speedStage = 0;
+game\battle_models.dart:  int get speedStage => _speedStage;
+game\battle_models.dart:  set speedStage(int value) {
+game\battle_models.dart:    _speedStage = value;
+game\battle_models.dart:    if (isRogueMode) organism.speedStage = value;
+game\battle_models.dart:    _speedStage = 0;
+game\battle_models.dart:      organism.speedStage = 0;
+game\battle_models.dart:       _speedStage = organism.speedStage,
+game\battle_models.dart:      } else if (ability.name == 'Swift Hunter' && statName == 'speed') {
+game\battle_models.dart:        } else if (ability.name == 'Quick Feet' && statName == 'speed') {
+game\battle_models.dart:          statName == 'speed') {
+game\battle_models.dart:          statName == 'speed') {
+game\battle_models.dart:          statName == 'speed') {
+game\battle_models.dart:          statName == 'speed') {
+game\battle_models.dart:          statName == 'speed') {
+game\battle_models.dart:  int get currentSpeed {
+game\battle_models.dart:    double speed = organism.getSpeed(atLevel: level).toDouble();
+game\battle_models.dart:    speed *= getAbilityStatMultiplier('speed');
+game\battle_models.dart:    speed *= _getStatStageMultiplier(speedStage);
+game\battle_models.dart:    // Unburden: doubles speed if item is consumed
+game\battle_models.dart:      speed *= 2.0;
+game\battle_models.dart:        if (effect.type == TalismanEffectType.speedBoost) {
+game\battle_models.dart:          speed *= effect.magnitude;
+game\battle_models.dart:            effect.stat == 'speed') {
+game\battle_models.dart:          speed *= effect.magnitude;
+game\battle_models.dart:            effect.stat == 'speed' &&
+game\battle_models.dart:          speed *= effect.magnitude;
+game\battle_models.dart:      if (se.type == StatusEffectType.fear) speed *= 0.9;
+game\battle_models.dart:      if (se.type == StatusEffectType.paralysis) speed *= 0.25;
+game\battle_models.dart:    return speed.round();
+game\biome_map_data.dart:  final double defaultSpeed;
+game\biome_map_data.dart:    required this.defaultSpeed,
+game\biome_map_data.dart:      defaultSpeed: (json['default_speed'] as num?)?.toDouble() ?? 1.0,
+game\double_battle_manager.dart:// Turn structure: select actions for both player slots → AI picks → speed-order execution.
+game\double_battle_manager.dart:  executing, // All four actions resolving in speed order
+game\double_battle_manager.dart:        'speed',
+game\double_battle_manager.dart:          speed: _effectiveSpeed(playerSlot1!),
+game\double_battle_manager.dart:          speed: _effectiveSpeed(playerSlot2!),
+game\double_battle_manager.dart:          speed: _effectiveSpeed(opponentSlot1!),
+game\double_battle_manager.dart:          speed: _effectiveSpeed(opponentSlot2!),
+game\double_battle_manager.dart:      if (b.speed != a.speed) return b.speed - a.speed;
+game\double_battle_manager.dart:      // Blunder Policy: Speed boost on miss
+game\double_battle_manager.dart:            await _applyStatChange(attacker, effect.stat ?? 'speed', 2);
+game\double_battle_manager.dart:        await _applyStatChange(defender, 'speed', 1);
+game\double_battle_manager.dart:      await _applyStatChange(defender, 'speed', 2);
+game\double_battle_manager.dart:      case 'speed':
+game\double_battle_manager.dart:        org.speedStage = (org.speedStage + stages).clamp(-6, 6);
+game\double_battle_manager.dart:      await _applyStatChange(org, 'speed', 1);
+game\double_battle_manager.dart:  int _effectiveSpeed(BattleOrganism org) {
+game\double_battle_manager.dart:    double speed = org.currentSpeed.toDouble();
+game\double_battle_manager.dart:    // Custap Berry: Priority boost (simulated with large speed boost at low HP)
+game\double_battle_manager.dart:          speed *= 100.0;
+game\double_battle_manager.dart:    return speed.round();
+game\double_battle_manager.dart:  final int speed;
+game\double_battle_manager.dart:    required this.speed,
+game\move_animations.dart:              final speed = 40.0 + rand.nextDouble() * 60.0;
+game\move_animations.dart:              final dx = math.cos(angle) * speed * scatterP;
+game\move_animations.dart:              final dy = math.sin(angle) * speed * scatterP;
+game\overworld_npc.dart:    const speed = 2.0; // Tiles per second
+game\overworld_npc.dart:    moveProgress += dt * speed;
+game\overworld_sprite.dart:  /// Movement speed in pixels per AI tick (player is ~2.0).
+game\overworld_sprite.dart:  final double speed;
+game\overworld_sprite.dart:    required this.speed,
+game\overworld_sprite.dart:        speed: 1.4,
+game\overworld_sprite.dart:        speed: 1.5,
+game\overworld_sprite.dart:        speed: 0.7,
+game\overworld_sprite.dart:        speed: 1.0,
+game\overworld_sprite.dart:        speed: 1.8,
+game\overworld_sprite.dart:        speed: 1.8,
+game\overworld_sprite.dart:        speed: 1.0,
+game\overworld_sprite.dart:        speed: 0.6,
+game\overworld_sprite.dart:        speed: 0.8,
+game\overworld_sprite.dart:        speed: 0.5,
+game\overworld_sprite.dart:        speed: 0.7,
+game\overworld_sprite.dart:        speed: 1.6,
+game\overworld_sprite.dart:        speed: 2.0,
+game\overworld_sprite.dart:        speed: 1.4,
+game\overworld_sprite.dart:        speed: 1.3,
+game\overworld_sprite.dart:        speed: 0.3,
+game\overworld_sprite.dart:        speed: 0.4,
+game\overworld_sprite.dart:        speed: 0.5,
+game\overworld_sprite.dart:        speed: 0.5,
+game\overworld_sprite.dart:        speed: 0.6,
+game\overworld_sprite.dart:        speed: 0.8,
+game\overworld_sprite.dart:        speed: 0.9,
+game\overworld_sprite.dart:        speed: 1.0,
+game\overworld_sprite.dart:        speed: 1.1,
+game\overworld_sprite.dart:        speed: 1.0,
+game\overworld_sprite.dart:      final double spawnSpeedMult =
+game\overworld_sprite.dart:          BiomeDataManager.phenoSpawnData[organism.pheno]?.defaultSpeed ?? 1.0;
+game\overworld_sprite.dart:      // Tile-based speed modifier (frogs and other semi-aquatic animals go faster in water)
+game\overworld_sprite.dart:      double tileSpeedMult = 1.0;
+game\overworld_sprite.dart:        tileSpeedMult = 1.5; // 50% speed boost in water
+game\overworld_sprite.dart:      final double speed = _profile.speed * spawnSpeedMult * tileSpeedMult;
+game\overworld_sprite.dart:      if (dist <= speed) {
+game\overworld_sprite.dart:        pixelX += vx * speed;
+game\overworld_sprite.dart:        pixelY += vy * speed;
+game\overworld_sprite.dart:        walkAnimAccumulator += speed;
+game\time_service.dart:  // So the speed multiplier is 4.
+game\time_service.dart:  static const int speedMultiplier = 4;
+game\time_service.dart:    final int gameElapsedMicroseconds = realElapsed.inMicroseconds * speedMultiplier;
+game\time_service.dart:        realElapsed.inMicroseconds * speedMultiplier;
+models\ability.dart:  final String targetStat; // e.g., 'attack', 'defense', 'speed'
+models\captured_organism.dart:  individualValues; // 'health', 'attack', 'defense', 'power', 'resistance', 'speed'
+models\captured_organism.dart:  int speedStage;
+models\captured_organism.dart:  killValues; // 'health', 'attack', 'defense', 'power', 'resistance', 'speed'
+models\captured_organism.dart:    this.speedStage = 0,
+models\captured_organism.dart:             'speed': 0,
+models\captured_organism.dart:      'speed',
+models\captured_organism.dart:    int? speedStage,
+models\captured_organism.dart:      speedStage: speedStage ?? this.speedStage,
+models\captured_organism.dart:          'speed': rng.nextInt(maxIV + 1),
+models\captured_organism.dart:  int getSpeed({int? atLevel}) =>
+models\captured_organism.dart:                'speed',
+models\captured_organism.dart:                baseOrganism.speed,
+models\captured_organism.dart:                individualValues['speed']!,
+models\captured_organism.dart:                kv: killValues['speed'] ?? 0,
+models\captured_organism.dart:              nature.getMultiplier('speed'))
+models\captured_organism.dart:  int get effectiveSpeed => getSpeed();
+models\captured_organism.dart:    'speedStage': speedStage,
+models\captured_organism.dart:      speedStage: json['speedStage'] as int? ?? 0,
+models\captured_organism.dart:        statKey = 'speed';
+models\move.dart:  damageStat; // 'attack', 'defense', 'speed', 'power', 'resistance'
+models\move.dart:  final String targetDefenseStat; // 'defense', 'resistance', 'speed', etc.
+models\nature.dart:enum NatureStat { attack, defense, power, resistance, speed, none }
+models\nature.dart:      increasedStat: NatureStat.speed,
+models\nature.dart:      decreasedStat: NatureStat.speed,
+models\nature.dart:      decreasedStat: NatureStat.speed,
+models\nature.dart:      decreasedStat: NatureStat.speed,
+models\nature.dart:      decreasedStat: NatureStat.speed,
+models\nature.dart:      decreasedStat: NatureStat.speed,
+models\nature.dart:    // +Speed
+models\nature.dart:      increasedStat: NatureStat.speed,
+models\nature.dart:      increasedStat: NatureStat.speed,
+models\nature.dart:      increasedStat: NatureStat.speed,
+models\nature.dart:      increasedStat: NatureStat.speed,
+models\organism.dart:  final int speed;
+models\organism.dart:    required this.speed,
+models\organism.dart:      speed: (json['speed'] as int? ?? 10),
+models\organism.dart:    int? speed,
+models\organism.dart:      speed: speed ?? this.speed,
+models\organism.dart:      'speed': speed,
+models\organism.dart:      'speed': speed,
+models\organism.dart:    speed: 50,
+models\status_effect.dart:  stickyWeb, // Hazard: Lower speed on switch-in
+models\status_effect.dart:        return 'Speed is reduced by 75% and may fail to move.';
+models\status_effect.dart:        return 'Lowers the speed of incoming animals.';
+models\talisman.dart:  speedBoost,
+models\talisman.dart:  // Accuracy/Speed
+models\talisman.dart:  missStatBoost, // Blunder Policy: +2 speed on miss
+models\talisman.dart:  final String? stat; // For stat-specific effects (e.g., "attack", "speed")
+models\weather.dart:  snowstorm, // Ice boost, speed reduced
+quest_screen.dart:        speed: 0,
+replay_viewer_screen.dart:  double _playbackSpeed = 1.0;
+replay_viewer_screen.dart:      Duration(milliseconds: (800 ~/ _playbackSpeed).toInt()),
+replay_viewer_screen.dart:  void _changeSpeed() {
+replay_viewer_screen.dart:      if (_playbackSpeed == 1.0) {
+replay_viewer_screen.dart:        _playbackSpeed = 2.0;
+replay_viewer_screen.dart:      } else if (_playbackSpeed == 2.0) {
+replay_viewer_screen.dart:        _playbackSpeed = 4.0;
+replay_viewer_screen.dart:        _playbackSpeed = 1.0;
+replay_viewer_screen.dart:                onTap: _isFinished ? null : _changeSpeed,
+replay_viewer_screen.dart:                label: '${_playbackSpeed.toInt()}X',
+starter_choice_screen.dart:      'speed': 15,
+starter_choice_screen.dart:      ('SPD', starter.effectiveSpeed, Colors.cyanAccent),
+theme.dart:  static const Color statSpeedColor = Color(0xFF40C4FF); // Light Blue
+user_state.dart:          o.individualValues['speed'] == organism.individualValues['speed'],
+widgets\anidex_details_sheet.dart:          'SPEED',
+widgets\anidex_details_sheet.dart:          org.speed,
+widgets\anidex_details_sheet.dart:          AppColors.statSpeedColor,
+widgets\anidex_details_sheet.dart:          Icons.speed,
+widgets\anidex_details_sheet.dart:          currentVal: showScaledStats ? capturedOrg?.effectiveSpeed : null,
+widgets\animal_summary_screen.dart:    final curSpd = _current.effectiveSpeed;
+widgets\animal_summary_screen.dart:    final l50Spd = _current.getSpeed(atLevel: 50);
+widgets\animal_summary_screen.dart:          'SPEED',
+widgets\animal_summary_screen.dart:          AppColors.statSpeedColor,
+widgets\animal_summary_screen.dart:          nature.getMultiplier('speed'),
+widgets\animal_summary_screen.dart:      ('Speed', ivs['speed'] ?? 0, AppColors.statSpeedColor),
+widgets\animal_summary_screen.dart:      ('Speed', 'speed', AppColors.statSpeedColor),
+widgets\battle_details_sheet.dart:    final baseSpd = bo.organism.effectiveSpeed;
+widgets\battle_details_sheet.dart:          'SPEED',
+widgets\battle_details_sheet.dart:          isPlayer ? bo.currentSpeed : baseSpd,
+widgets\battle_details_sheet.dart:          AppColors.statSpeedColor,
+widgets\battle_details_sheet.dart:      MapEntry('SPD', bo.speedStage),
+widgets\terrain_overlay.dart:          speed: math.Random(i + 3).nextDouble() * 2.5 + 1.5,
+widgets\terrain_overlay.dart:          ((line.x * size.width + progress * line.speed * size.width) %
+widgets\terrain_overlay.dart:  final double speed;
+widgets\terrain_overlay.dart:    required this.speed,
+widgets\weather_overlay.dart:      final speedMult = 1.0 + (math.Random(i).nextDouble() * 0.5);
+widgets\weather_overlay.dart:      final y = ((drop.dy + progress * speedMult) % 1.0) * size.height;
+widgets\weather_overlay.dart:           speed: math.Random(i + 3).nextDouble() * (isHeavy ? 1.0 : 0.5) + 0.2,
+widgets\weather_overlay.dart:          (flake.y * size.height + (flake.speed * progress * size.height)) %
+widgets\weather_overlay.dart:  final double speed;
+widgets\weather_overlay.dart:    required this.speed,
+widgets\weather_overlay.dart:          speed: math.Random(i + 3).nextDouble() * 2.0 + 1.5,
+widgets\weather_overlay.dart:          ((p.x * size.width - progress * p.speed * size.width) % size.width);
+widgets\weather_overlay.dart:  final double speed;
+widgets\weather_overlay.dart:    required this.speed,
+widgets\weather_overlay.dart:      final layerSpeed = 0.1 + (layer * 0.05);
+widgets\weather_overlay.dart:            ((progress * layerSpeed + i * 0.25 + layer * 0.1) % 1.0) *
+widgets\weather_overlay.dart:      final speedMult = 2.0 + (math.Random(i).nextDouble() * 1.0);
+widgets\weather_overlay.dart:      final y = ((drop.dy + progress * speedMult) % 1.0) * size.height;
+widgets\weather_overlay.dart:      final speed = 25.0 + random.nextDouble() * 30.0; // Faster bombardment
+widgets\weather_overlay.dart:      double yPos = (initialY + progress * speed * 30) % size.height;
+widgets\weather_overlay.dart:          speed: math.Random(i + 3).nextDouble() * 3.0 + 2.0,
+widgets\weather_overlay.dart:          ((line.x * size.width + progress * line.speed * size.width) %
+widgets\weather_overlay.dart:  final double speed;
+widgets\weather_overlay.dart:    required this.speed,
+widgets\weather_overlay.dart:          speed: math.Random(i + 3).nextDouble() * 5.0 + 4.0,
+widgets\weather_overlay.dart:          ((line.x * size.width + progress * line.speed * size.width) %

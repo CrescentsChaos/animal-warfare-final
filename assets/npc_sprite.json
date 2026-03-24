@@ -10,5 +10,17 @@
   {
     "id": "player",
     "name": "Player"
+  },
+  {
+    "id": "motw",
+    "name": "Menace of the Nature"
+  },
+  {
+    "id": "mmed",
+    "name": "Male Medic"
+  },
+  {
+    "id": "fmed",
+    "name": "Female Medic"
   }
 ]

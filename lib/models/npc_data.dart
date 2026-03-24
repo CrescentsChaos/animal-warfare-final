@@ -4,8 +4,9 @@ class NPCData {
   final String id;
   final String name;
   final String spriteKey;
-  final int row;
-  final int col;
+  final int y;
+  final int x;
+  final String facing; // 'down', 'up', 'left', 'right'
   final String scriptType; // 'trainer', 'shopkeeper', 'medic', 'quest_giver', 'fetch_quest', 'story', 'blocker', 'item_giver', 'rival', 'professor', 'major_trainer', 'evil_team', 'request_board', 'none'
   final List<String> dialogue;
   final String movementType; // 'still', 'random', 'pattern'
@@ -25,13 +26,15 @@ class NPCData {
   final String organismRequiredId; // specific organism needed
   final List<String> postEventDialogue; // dialogue after event is done
   final String condition; // generic condition expression, e.g. "flag:beat_gym_1"
+  final int rewardMoney; // money given after trainer defeat (Taka)
 
   NPCData({
     required this.id,
     required this.name,
     required this.spriteKey,
-    required this.row,
-    required this.col,
+    required this.y,
+    required this.x,
+    this.facing = 'down',
     this.scriptType = 'none',
     this.dialogue = const [],
     this.movementType = 'still',
@@ -49,6 +52,7 @@ class NPCData {
     this.organismRequiredId = '',
     this.postEventDialogue = const [],
     this.condition = '',
+    this.rewardMoney = 0,
   });
 
   factory NPCData.fromJson(Map<String, dynamic> json) {
@@ -56,8 +60,9 @@ class NPCData {
       id: json['id'] as String,
       name: json['name'] as String,
       spriteKey: json['spriteKey'] as String,
-      row: json['row'] as int,
-      col: json['col'] as int,
+      y: json['y'] as int? ?? json['row'] as int,
+      x: json['x'] as int? ?? json['col'] as int,
+      facing: json['facing'] as String? ?? 'down',
       scriptType: json['scriptType'] as String? ?? 'none',
       dialogue: List<String>.from(json['dialogue'] ?? []),
       movementType: json['movementType'] as String? ?? 'still',
@@ -78,6 +83,7 @@ class NPCData {
               .toList() ??
           const [],
       condition: json['condition'] as String? ?? '',
+      rewardMoney: json['rewardMoney'] as int? ?? 0,
     );
   }
 
@@ -86,8 +92,9 @@ class NPCData {
       'id': id,
       'name': name,
       'spriteKey': spriteKey,
-      'row': row,
-      'col': col,
+      'y': y,
+      'x': x,
+      'facing': facing,
       'scriptType': scriptType,
       'dialogue': dialogue,
       'movementType': movementType,
@@ -105,6 +112,7 @@ class NPCData {
       'organismRequiredId': organismRequiredId,
       'postEventDialogue': postEventDialogue,
       'condition': condition,
+      'rewardMoney': rewardMoney,
     };
   }
 
@@ -112,8 +120,9 @@ class NPCData {
     String? id,
     String? name,
     String? spriteKey,
-    int? row,
-    int? col,
+    int? y,
+    int? x,
+    String? facing,
     String? scriptType,
     List<String>? dialogue,
     String? movementType,
@@ -131,13 +140,15 @@ class NPCData {
     String? organismRequiredId,
     List<String>? postEventDialogue,
     String? condition,
+    int? rewardMoney,
   }) {
     return NPCData(
       id: id ?? this.id,
       name: name ?? this.name,
       spriteKey: spriteKey ?? this.spriteKey,
-      row: row ?? this.row,
-      col: col ?? this.col,
+      y: y ?? this.y,
+      x: x ?? this.x,
+      facing: facing ?? this.facing,
       scriptType: scriptType ?? this.scriptType,
       dialogue: dialogue ?? this.dialogue,
       movementType: movementType ?? this.movementType,
@@ -155,7 +166,7 @@ class NPCData {
       organismRequiredId: organismRequiredId ?? this.organismRequiredId,
       postEventDialogue: postEventDialogue ?? this.postEventDialogue,
       condition: condition ?? this.condition,
+      rewardMoney: rewardMoney ?? this.rewardMoney,
     );
   }
 }
-

@@ -419,6 +419,27 @@ class UserState with ChangeNotifier {
     });
   }
 
+  /// Updates the current team's state (HP, Status, Stamina) after a battle.
+  Future<void> updateTeamAfterBattle(List<CapturedOrganism> updatedTeam) async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) {
+      final organisms = List<CapturedOrganism>.from(u.capturedOrganisms);
+      final teamIndices = u.battleTeam;
+
+      for (int i = 0; i < updatedTeam.length; i++) {
+        if (i < teamIndices.length) {
+          final originalIndex = teamIndices[i];
+          if (originalIndex >= 0 && originalIndex < organisms.length) {
+            // Update the organism at that index with the battle results
+            organisms[originalIndex] = updatedTeam[i];
+          }
+        }
+      }
+
+      return u.copyWith(capturedOrganisms: organisms);
+    });
+  }
+
   /// Fully heals all animals in the current team (HP, Status, Stamina).
   Future<void> fullyHealTeam() async {
     if (_currentUser == null) return;
@@ -2008,6 +2029,18 @@ class UserState with ChangeNotifier {
         eventFlags: u.eventFlags.copyWith(cutGrassTiles: newCutTiles),
       );
     });
+  }
+
+  bool _unstuckRequested = false;
+  bool get unstuckRequested => _unstuckRequested;
+
+  void requestUnstuck() {
+    _unstuckRequested = true;
+    notifyListeners();
+  }
+
+  void consumeUnstuckRequest() {
+    _unstuckRequested = false;
   }
 
   @override

@@ -403,17 +403,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       // so the biome music started in BiomeDetailScreen continues to play.
     }
 
-    // Restore stamina at start of battle
-    for (var organism in playerTeam) {
-      if (organism.selectedMoveNames.isNotEmpty) {
-        for (var moveName in organism.selectedMoveNames) {
-          final moveDef = Move.findByName(moveName);
-          if (moveDef != null) {
-            organism.moveStamina[moveName] = moveDef.stamina;
-          }
-        }
-      }
-    }
+    // Removed stamina restoration at start of battle to allow persistence
 
     if (isArenaBattle && !isRogueMode) {
       // In Arena mode (non-rogue), we let the player choose a lead BEFORE any announcements

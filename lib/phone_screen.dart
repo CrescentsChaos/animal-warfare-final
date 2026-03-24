@@ -1066,6 +1066,23 @@ class _SettingsApp extends StatelessWidget {
               const SizedBox(height: 16),
               ListTile(
                 contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.refresh, color: Colors.orangeAccent),
+                title: const Text(
+                  'Unstuck Player',
+                  style: TextStyle(color: Colors.orangeAccent, fontSize: 14),
+                ),
+                subtitle: const Text(
+                  'Teleport to spawn point',
+                  style: TextStyle(color: Colors.white38, fontSize: 10),
+                ),
+                onTap: () {
+                  userState.requestUnstuck();
+                  onBack();
+                },
+              ),
+              const SizedBox(height: 8),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.logout, color: Colors.redAccent),
                 title: const Text(
                   'Log Out',

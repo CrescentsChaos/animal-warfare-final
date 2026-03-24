@@ -33,7 +33,7 @@
         "assetPath": "assets/tiles/doormat_1.png",
         "isAutotiled": true,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "straw_flakes",
@@ -114,7 +114,7 @@
         "assetPath": "assets/tiles/footstool_1.png",
         "isAutotiled": true,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "footstool_2",
@@ -123,7 +123,7 @@
         "assetPath": "assets/tiles/footstool_2.png",
         "isAutotiled": true,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "trash_can_1",
@@ -132,7 +132,7 @@
         "assetPath": "assets/tiles/trash_can_1.png",
         "isAutotiled": true,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "trash_can_2",
@@ -141,7 +141,7 @@
         "assetPath": "assets/tiles/trash_can_2.png",
         "isAutotiled": true,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "trash_can_3",
@@ -150,7 +150,7 @@
         "assetPath": "assets/tiles/trash_can_3.png",
         "isAutotiled": true,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "trash_can_4",
@@ -159,7 +159,7 @@
         "assetPath": "assets/tiles/trash_can_4.png",
         "isAutotiled": true,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "signpost_1",
@@ -177,7 +177,7 @@
         "assetPath": "assets/tiles/box_1.png",
         "isAutotiled": true,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "box_2",
@@ -186,7 +186,7 @@
         "assetPath": "assets/tiles/box_2.png",
         "isAutotiled": true,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "bottles_1",
@@ -195,7 +195,7 @@
         "assetPath": "assets/tiles/bottles_1.png",
         "isAutotiled": true,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "balloons_1",
@@ -204,7 +204,7 @@
         "assetPath": "assets/tiles/balloons_1.png",
         "isAutotiled": true,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "balloons_2",
@@ -213,7 +213,7 @@
         "assetPath": "assets/tiles/balloons_2.png",
         "isAutotiled": true,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "pipe_1",
@@ -222,7 +222,7 @@
         "assetPath": "assets/tiles/pipe_1.png",
         "isAutotiled": true,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "pot_1",
@@ -231,7 +231,7 @@
         "assetPath": "assets/tiles/pot_1.png",
         "isAutotiled": true,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "pot_2",
@@ -240,7 +240,7 @@
         "assetPath": "assets/tiles/pot_2.png",
         "isAutotiled": true,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "pot_3",
@@ -249,7 +249,7 @@
         "assetPath": "assets/tiles/pot_3.png",
         "isAutotiled": true,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "cauldron",
@@ -258,7 +258,7 @@
         "assetPath": "assets/tiles/cauldron.png",
         "isAutotiled": true,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "umbrella_1",
@@ -336,13 +336,33 @@
         "height": 2
     },
     {
+        "id": "floating_bridge_1",
+        "name": "Floating Bridge 1",
+        "category": "path",
+        "assetPath": "assets/tiles/floating_bridge_1.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "any",
+        "height": 2
+    },
+    {
+        "id": "floating_bridge_2",
+        "name": "Floating Bridge 2",
+        "category": "path",
+        "assetPath": "assets/tiles/floating_bridge_2.png",
+        "isAutotiled": true,
+        "layer": "overlay",
+        "biome": "any",
+        "width": 2
+    },
+    {
         "id": "post_1",
         "name": "Post 1",
         "category": "solid",
         "assetPath": "assets/tiles/post_1.png",
         "isAutotiled": true,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "refrigerator_1",
@@ -351,7 +371,7 @@
         "assetPath": "assets/tiles/refrigerator_1.png",
         "isAutotiled": true,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "refrigerator_2",
@@ -360,7 +380,7 @@
         "assetPath": "assets/tiles/refrigerator_2.png",
         "isAutotiled": true,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "stove_1",
@@ -369,7 +389,7 @@
         "assetPath": "assets/tiles/stove_1.png",
         "isAutotiled": true,
         "layer": "overlay",
-        "biome": "urban",
+        "biome": "Urban",
         "width": 2
     },
     {
@@ -379,7 +399,7 @@
         "assetPath": "assets/tiles/stove_2.png",
         "isAutotiled": true,
         "layer": "overlay",
-        "biome": "urban",
+        "biome": "Urban",
         "width": 2
     },
     {
@@ -512,7 +532,25 @@
         "assetPath": "assets/tiles/ground/broken_tile.png",
         "isAutotiled": true,
         "layer": "base",
-        "biome": "urban"
+        "biome": "Urban"
+    },
+    {
+        "id": "med_floor_1",
+        "name": "Medical Floor 1",
+        "category": "ground",
+        "assetPath": "assets/tiles/ground/med_floor_1.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "biome": "Urban"
+    },
+    {
+        "id": "med_floor_2",
+        "name": "Medical Floor 2",
+        "category": "ground",
+        "assetPath": "assets/tiles/ground/med_floor_2.png",
+        "isAutotiled": true,
+        "layer": "base",
+        "biome": "Urban"
     },
     {
         "id": "floor_1",
@@ -521,7 +559,7 @@
         "assetPath": "assets/tiles/ground/floor_1.png",
         "isAutotiled": true,
         "layer": "base",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "office_floor_1",
@@ -530,7 +568,7 @@
         "assetPath": "assets/tiles/ground/office_floor_1.png",
         "isAutotiled": true,
         "layer": "base",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "office_floor_2",
@@ -539,7 +577,7 @@
         "assetPath": "assets/tiles/ground/office_floor_2.png",
         "isAutotiled": true,
         "layer": "base",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "office_floor_3",
@@ -548,7 +586,7 @@
         "assetPath": "assets/tiles/ground/office_floor_3.png",
         "isAutotiled": true,
         "layer": "base",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "office_floor_4",
@@ -557,7 +595,7 @@
         "assetPath": "assets/tiles/ground/office_floor_4.png",
         "isAutotiled": true,
         "layer": "base",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "white_tile",
@@ -566,7 +604,7 @@
         "assetPath": "assets/tiles/ground/white_tile.png",
         "isAutotiled": true,
         "layer": "base",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "white_bricks",
@@ -575,7 +613,7 @@
         "assetPath": "assets/tiles/ground/white_bricks.png",
         "isAutotiled": true,
         "layer": "base",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "cave_entrance",
@@ -1058,7 +1096,7 @@
         "assetPath": "assets/tiles/building/house_1.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "biome": "any",
+        "biome": "Urban",
         "width": 4,
         "height": 2
     },
@@ -1069,7 +1107,7 @@
         "assetPath": "assets/tiles/building/house_2.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "biome": "any",
+        "biome": "Urban",
         "width": 5,
         "height": 2
     },
@@ -1080,8 +1118,19 @@
         "assetPath": "assets/tiles/building/house_3.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "biome": "any",
+        "biome": "Urban",
         "width": 5,
+        "height": 2
+    },
+    {
+        "id": "med_center",
+        "name": "Med Center",
+        "category": "solid",
+        "assetPath": "assets/tiles/building/med_center.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Urban",
+        "width": 4,
         "height": 2
     },
     {
@@ -1091,8 +1140,30 @@
         "assetPath": "assets/tiles/building/lab_1.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "biome": "any",
+        "biome": "Urban",
         "width": 7,
+        "height": 2
+    },
+    {
+        "id": "glass_table_1",
+        "name": "Glass Table 1",
+        "category": "solid",
+        "assetPath": "assets/tiles/glass_table_1.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any",
+        "width": 2,
+        "height": 2
+    },
+    {
+        "id": "pc_1",
+        "name": "Animal Storage",
+        "category": "solid",
+        "assetPath": "assets/tiles/pc_1.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Urban",
+        "width": 1,
         "height": 2
     },
     {
@@ -1241,7 +1312,7 @@
         "assetPath": "assets/tiles/white_wall_1.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "white_wall_2",
@@ -1250,7 +1321,151 @@
         "assetPath": "assets/tiles/white_wall_2.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
+    },
+    {
+        "id": "med_wall_1",
+        "name": "Med Wall 1",
+        "category": "solid",
+        "assetPath": "assets/tiles/med_wall_1.png",
+        "isAutotiled": false,
+        "layer": "base",
+        "biome": "Urban"
+    },
+    {
+        "id": "med_wall_2",
+        "name": "Med Wall 2",
+        "category": "solid",
+        "assetPath": "assets/tiles/med_wall_2.png",
+        "isAutotiled": false,
+        "layer": "base",
+        "biome": "Urban"
+    },
+    {
+        "id": "med_wall_3",
+        "name": "Med Wall 3",
+        "category": "solid",
+        "assetPath": "assets/tiles/med_wall_3.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Urban"
+    },
+    {
+        "id": "med_wall_4",
+        "name": "Med Wall 4",
+        "category": "solid",
+        "assetPath": "assets/tiles/med_wall_4.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Urban"
+    },
+    {
+        "id": "med_wall_5",
+        "name": "Med Wall 5",
+        "category": "solid",
+        "assetPath": "assets/tiles/med_wall_5.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Urban"
+    },
+    {
+        "id": "med_wall_6",
+        "name": "Med Wall 6",
+        "category": "solid",
+        "assetPath": "assets/tiles/med_wall_6.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Urban"
+    },
+    {
+        "id": "med_wall_7",
+        "name": "Med Wall 7",
+        "category": "solid",
+        "assetPath": "assets/tiles/med_wall_7.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Urban"
+    },
+    {
+        "id": "med_wall_8",
+        "name": "Med Wall 8",
+        "category": "solid",
+        "assetPath": "assets/tiles/med_wall_8.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Urban"
+    },
+    {
+        "id": "med_wall_9",
+        "name": "Med Wall 9",
+        "category": "solid",
+        "assetPath": "assets/tiles/med_wall_9.png",
+        "isAutotiled": false,
+        "layer": "base",
+        "biome": "Urban"
+    },
+    {
+        "id": "med_wall_10",
+        "name": "Med Wall 10",
+        "category": "solid",
+        "assetPath": "assets/tiles/med_wall_10.png",
+        "isAutotiled": false,
+        "layer": "base",
+        "biome": "Urban"
+    },
+    {
+        "id": "med_wall_11",
+        "name": "Med Wall 11",
+        "category": "solid",
+        "assetPath": "assets/tiles/med_wall_11.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Urban"
+    },
+    {
+        "id": "med_wall_12",
+        "name": "Med Wall 12",
+        "category": "solid",
+        "assetPath": "assets/tiles/med_wall_12.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Urban"
+    },
+    {
+        "id": "med_wall_13",
+        "name": "Med Wall 13",
+        "category": "solid",
+        "assetPath": "assets/tiles/med_wall_13.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Urban"
+    },
+    {
+        "id": "med_wall_14",
+        "name": "Med Wall 14",
+        "category": "solid",
+        "assetPath": "assets/tiles/med_wall_14.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Urban"
+    },
+    {
+        "id": "med_wall_15",
+        "name": "Med Wall 15",
+        "category": "solid",
+        "assetPath": "assets/tiles/med_wall_15.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Urban"
+    },
+    {
+        "id": "med_wall_16",
+        "name": "Med Wall 16",
+        "category": "solid",
+        "assetPath": "assets/tiles/med_wall_16.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Urban"
     },
     {
         "id": "fence_left",
@@ -1337,6 +1552,18 @@
         "isAutotiled": false,
         "layer": "overlay",
         "biome": "any",
+        "interactionText": "It's a pine tree.",
+        "drop": "pine_cone"
+    },
+    {
+        "id": "pine_tree_2",
+        "name": "Pine Tree 2",
+        "category": "solid",
+        "assetPath": "assets/tiles/trees/pine_tree_2.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "any",
+        "width": 1,
         "interactionText": "It's a pine tree.",
         "drop": "pine_cone"
     },
@@ -1519,7 +1746,7 @@
         "assetPath": "assets/tiles/awning.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "beach_chair",
@@ -1837,7 +2064,7 @@
         "assetPath": "assets/tiles/phone_1.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "locker_1",
@@ -1846,7 +2073,29 @@
         "assetPath": "assets/tiles/locker_1.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
+    },
+    {
+        "id": "med_pc",
+        "name": "Medical PC",
+        "category": "decorative",
+        "assetPath": "assets/tiles/med_pc.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Urban",
+        "width": 1,
+        "height": 2
+    },
+    {
+        "id": "med_report_1",
+        "name": "Medical Report 1",
+        "category": "decorative",
+        "assetPath": "assets/tiles/med_report_1.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Urban",
+        "width": 2,
+        "height": 2
     },
     {
         "id": "water_patch1",
@@ -1901,6 +2150,150 @@
         "isAutotiled": false,
         "layer": "overlay",
         "biome": "any"
+    },
+    {
+        "id": "chair_1",
+        "name": "Chair 1",
+        "category": "decorative",
+        "assetPath": "assets/tiles/chair_1.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Urban"
+    },
+    {
+        "id": "chair_2",
+        "name": "Chair 2",
+        "category": "decorative",
+        "assetPath": "assets/tiles/chair_2.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Urban"
+    },
+    {
+        "id": "chair_3",
+        "name": "Chair 3",
+        "category": "decorative",
+        "assetPath": "assets/tiles/chair_3.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Urban"
+    },
+    {
+        "id": "chair_4",
+        "name": "Chair 4",
+        "category": "decorative",
+        "assetPath": "assets/tiles/chair_4.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Urban"
+    },
+    {
+        "id": "chair_5",
+        "name": "Chair 5",
+        "category": "decorative",
+        "assetPath": "assets/tiles/chair_5.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Urban"
+    },
+    {
+        "id": "chair_6",
+        "name": "Chair 6",
+        "category": "decorative",
+        "assetPath": "assets/tiles/chair_6.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Urban"
+    },
+    {
+        "id": "med_counter_1",
+        "name": "Medical Counter 1",
+        "category": "solid",
+        "assetPath": "assets/tiles/med_counter_1.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Urban"
+    },
+    {
+        "id": "med_counter_2",
+        "name": "Medical Counter 2",
+        "category": "solid",
+        "assetPath": "assets/tiles/med_counter_2.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Urban"
+    },
+    {
+        "id": "med_counter_3",
+        "name": "Medical Counter 3",
+        "category": "solid",
+        "assetPath": "assets/tiles/med_counter_3.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Urban"
+    },
+    {
+        "id": "med_counter_4",
+        "name": "Medical Counter 4",
+        "category": "solid",
+        "assetPath": "assets/tiles/med_counter_4.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Urban"
+    },
+    {
+        "id": "med_counter_5",
+        "name": "Medical Counter 5",
+        "category": "solid",
+        "assetPath": "assets/tiles/med_counter_5.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Urban"
+    },
+    {
+        "id": "med_counter_6",
+        "name": "Medical Counter 6",
+        "category": "solid",
+        "assetPath": "assets/tiles/med_counter_6.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Urban"
+    },
+    {
+        "id": "med_counter_7",
+        "name": "Medical Counter 7",
+        "category": "solid",
+        "assetPath": "assets/tiles/med_counter_7.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Urban"
+    },
+    {
+        "id": "med_counter_8",
+        "name": "Medical Counter 8",
+        "category": "solid",
+        "assetPath": "assets/tiles/med_counter_8.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Urban"
+    },
+    {
+        "id": "med_counter_9",
+        "name": "Medical Counter 9",
+        "category": "solid",
+        "assetPath": "assets/tiles/med_counter_9.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Urban"
+    },
+    {
+        "id": "med_counter_10",
+        "name": "Medical Counter 10",
+        "category": "solid",
+        "assetPath": "assets/tiles/med_counter_10.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Urban"
     },
     {
         "id": "lavender",
@@ -2068,6 +2461,46 @@
         "biome": "any"
     },
     {
+        "id": "escalator_1",
+        "name": "Escalator 1",
+        "category": "solid",
+        "assetPath": "assets/tiles/escalator_1.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Urban",
+        "height": 2
+    },
+    {
+        "id": "escalator_2",
+        "name": "Escalator 2",
+        "category": "solid",
+        "assetPath": "assets/tiles/escalator_2.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Urban",
+        "height": 2
+    },
+    {
+        "id": "escalator_3",
+        "name": "Escalator 3",
+        "category": "solid",
+        "assetPath": "assets/tiles/escalator_3.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Urban",
+        "height": 2
+    },
+    {
+        "id": "escalator_4",
+        "name": "Escalator 4",
+        "category": "solid",
+        "assetPath": "assets/tiles/escalator_4.png",
+        "isAutotiled": false,
+        "layer": "overlay",
+        "biome": "Urban",
+        "height": 2
+    },
+    {
         "id": "plank_1",
         "name": "Plank 1",
         "category": "path",
@@ -2182,7 +2615,7 @@
         "assetPath": "assets/tiles/stone_wall_1.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "stone_wall_2",
@@ -2191,7 +2624,7 @@
         "assetPath": "assets/tiles/stone_wall_2.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "stone_wall_3",
@@ -2200,7 +2633,7 @@
         "assetPath": "assets/tiles/stone_wall_3.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "stone_wall_4",
@@ -2209,7 +2642,7 @@
         "assetPath": "assets/tiles/stone_wall_4.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "stone_wall_5",
@@ -2218,7 +2651,7 @@
         "assetPath": "assets/tiles/stone_wall_5.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "stone_wall_6",
@@ -2227,7 +2660,7 @@
         "assetPath": "assets/tiles/stone_wall_6.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "stone_wall_7",
@@ -2236,7 +2669,7 @@
         "assetPath": "assets/tiles/stone_wall_7.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "stone_wall_8",
@@ -2245,7 +2678,7 @@
         "assetPath": "assets/tiles/stone_wall_8.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "stone_wall_9",
@@ -2254,7 +2687,7 @@
         "assetPath": "assets/tiles/stone_wall_9.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "stone_wall_10",
@@ -2263,7 +2696,7 @@
         "assetPath": "assets/tiles/stone_wall_10.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "stone_wall_11",
@@ -2272,7 +2705,7 @@
         "assetPath": "assets/tiles/stone_wall_11.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "stone_wall_12",
@@ -2281,7 +2714,7 @@
         "assetPath": "assets/tiles/stone_wall_12.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "stone_wall_13",
@@ -2290,7 +2723,7 @@
         "assetPath": "assets/tiles/stone_wall_13.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "stone_wall_14",
@@ -2299,7 +2732,7 @@
         "assetPath": "assets/tiles/stone_wall_14.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "stone_wall_15",
@@ -2308,7 +2741,7 @@
         "assetPath": "assets/tiles/stone_wall_15.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "stone_wall_16",
@@ -2317,7 +2750,7 @@
         "assetPath": "assets/tiles/stone_wall_16.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "iron_railing_1",
@@ -2326,7 +2759,7 @@
         "assetPath": "assets/tiles/iron_railing_1.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "iron_railing_2",
@@ -2335,7 +2768,7 @@
         "assetPath": "assets/tiles/iron_railing_2.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "iron_railing_3",
@@ -2344,7 +2777,7 @@
         "assetPath": "assets/tiles/iron_railing_3.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "iron_railing_4",
@@ -2353,7 +2786,7 @@
         "assetPath": "assets/tiles/iron_railing_4.png",
         "isAutotiled": false,
         "layer": "overlay",
-        "biome": "urban"
+        "biome": "Urban"
     },
     {
         "id": "ladder_1",

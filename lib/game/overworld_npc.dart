@@ -14,7 +14,7 @@ class OverworldNPC {
 
   // Animation & Movement
   int currentFrame = 0;
-  String direction = 'down';
+  late String direction;
   bool isMoving = false;
   double moveProgress = 0.0;
   int targetRow = -1;
@@ -34,10 +34,11 @@ class OverworldNPC {
   bool hasTriggeredBattle = false; // prevents re-trigger during approach
 
   OverworldNPC({required this.data})
-    : worldX = data.col.toDouble(),
-      worldY = data.row.toDouble(),
-      gridRow = data.row,
-      gridCol = data.col;
+    : worldX = data.x.toDouble(),
+      worldY = data.y.toDouble(),
+      gridRow = data.y,
+      gridCol = data.x,
+      direction = data.facing;
 
   bool get isTrainer =>
       (data.scriptType == 'trainer' ||
@@ -45,6 +46,20 @@ class OverworldNPC {
           data.scriptType == 'major_trainer' ||
           data.scriptType == 'evil_team') &&
       data.teamId.isNotEmpty;
+
+  void resetPosition() {
+    worldX = data.x.toDouble();
+    worldY = data.y.toDouble();
+    gridRow = data.y;
+    gridCol = data.x;
+    direction = data.facing;
+    isMoving = false;
+    moveProgress = 0.0;
+    targetRow = -1;
+    targetCol = -1;
+    isApproaching = false;
+    currentFrame = 0;
+  }
 
   void tick(
     double dt,
@@ -126,6 +141,9 @@ class OverworldNPC {
         playerCol: playerCol,
         otherNPCs: otherNPCs,
       );
+    } else if (data.movementType == 'look_around') {
+      final dirs = ['up', 'down', 'left', 'right'];
+      direction = dirs[_random.nextInt(4)];
     }
   }
 
@@ -147,8 +165,8 @@ class OverworldNPC {
     int nextC = gridCol + dir[1];
 
     // Stay within range of original spawn
-    if ((nextR - data.row).abs() > data.movementRange ||
-        (nextC - data.col).abs() > data.movementRange) {
+    if ((nextR - data.y).abs() > data.movementRange ||
+        (nextC - data.x).abs() > data.movementRange) {
       return;
     }
 

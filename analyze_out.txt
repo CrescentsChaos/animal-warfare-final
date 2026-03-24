@@ -1,0 +1,18 @@
+Analyzing animal_warfare...
+
+warning - lib\game\map_editor.dart:1113:55 - The '!' will have no effect because the receiver can't be null. Try removing the '!' operator. - unnecessary_non_null_assertion
+   info - convert_coords.dart:7:5 - Don't invoke 'print' in production code. Try using a logging framework. - avoid_print
+   info - convert_coords.dart:70:3 - Don't invoke 'print' in production code. Try using a logging framework. - avoid_print
+   info - lib\biome_exploration_map.dart:1096:45 - Unnecessary braces in a string interpolation. Try removing the braces. - unnecessary_brace_in_string_interps
+   info - lib\biome_exploration_map.dart:2729:7 - Don't invoke 'print' in production code. Try using a logging framework. - avoid_print
+   info - lib\game\battle_manager.dart:7062:9 - Statements in an if should be enclosed in a block. Try wrapping the statement in a block. - curly_braces_in_flow_control_structures
+   info - lib\game\battle_manager.dart:7064:9 - Statements in an if should be enclosed in a block. Try wrapping the statement in a block. - curly_braces_in_flow_control_structures
+   info - lib\game\battle_manager.dart:8160:9 - Statements in an if should be enclosed in a block. Try wrapping the statement in a block. - curly_braces_in_flow_control_structures
+   info - lib\game\battle_manager.dart:8162:9 - Statements in an if should be enclosed in a block. Try wrapping the statement in a block. - curly_braces_in_flow_control_structures
+   info - lib\game\biome_map_data.dart:538:64 - Unnecessary braces in a string interpolation. Try removing the braces. - unnecessary_brace_in_string_interps
+   info - lib\game\npc_team_loader.dart:20:7 - Don't invoke 'print' in production code. Try using a logging framework. - avoid_print
+   info - lib\game\npc_team_loader.dart:22:7 - Don't invoke 'print' in production code. Try using a logging framework. - avoid_print
+   info - lib\game\npc_team_loader.dart:23:7 - Don't invoke 'print' in production code. Try using a logging framework. - avoid_print
+   info - lib\game\npc_team_loader.dart:72:9 - Don't invoke 'print' in production code. Try using a logging framework. - avoid_print
+
+14 issues found.

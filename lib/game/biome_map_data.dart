@@ -150,6 +150,7 @@ class BiomeConfig {
   layout; // e.g. {'base': [...], 'overlay': [...]}
   final Point<int>? spawnPoint;
   final List<MapTransition>? transitions;
+  final List<NPCData>? npcs;
 
   const BiomeConfig({
     required this.id,
@@ -161,6 +162,7 @@ class BiomeConfig {
     this.layout,
     this.spawnPoint,
     this.transitions,
+    this.npcs,
   });
 
   BiomeConfig copyWith({
@@ -173,6 +175,7 @@ class BiomeConfig {
     Map<String, List<String>>? layout,
     Point<int>? spawnPoint,
     List<MapTransition>? transitions,
+    List<NPCData>? npcs,
   }) {
     return BiomeConfig(
       id: id ?? this.id,
@@ -184,6 +187,7 @@ class BiomeConfig {
       layout: layout ?? this.layout,
       spawnPoint: spawnPoint ?? this.spawnPoint,
       transitions: transitions ?? this.transitions,
+      npcs: npcs ?? this.npcs,
     );
   }
 
@@ -230,6 +234,13 @@ class BiomeConfig {
       }
     }
 
+    List<NPCData>? parsedNpcs;
+    if (json['npcs'] != null && (json['npcs'] as List).isNotEmpty) {
+      parsedNpcs = (json['npcs'] as List)
+          .map((n) => NPCData.fromJson(n))
+          .toList();
+    }
+
     return BiomeConfig(
       id: json['id'],
       name: json['name'],
@@ -240,6 +251,7 @@ class BiomeConfig {
       layout: layout,
       spawnPoint: spawn,
       transitions: parsedTransitions,
+      npcs: parsedNpcs,
     );
   }
 }
@@ -531,10 +543,20 @@ class BiomeDataManager {
         npcAssets[type]![dir] = [];
         for (var frame = 0; frame <= 3; frame++) {
           final path = 'assets/overworld/npc/${type}_${dir}_$frame.png';
-          final img = await loadImage(path);
+          var img = await loadImage(path);
+          
+          // Fallback: if frame 0 is missing, try without the _0 suffix
+          if (img == null && frame == 0) {
+            final fallbackPath = 'assets/overworld/npc/${type}_${dir}.png';
+            img = await loadImage(fallbackPath);
+          }
+
           if (img != null) {
             npcAssets[type]![dir]!.add(img);
             foundAny = true;
+            
+            // If we found a fallback (non-numbered) image, we treat it as a single-frame animation
+            if (!path.contains('_$frame.png')) break; 
           }
         }
       }
@@ -565,8 +587,9 @@ class BiomeDataManager {
   }
 
   static BiomeConfig getBiome(String id) {
-    if (biomes.containsKey(id)) {
-      return biomes[id]!;
+    final String standardizedId = id.toLowerCase().replaceAll(' ', '_');
+    if (biomes.containsKey(standardizedId)) {
+      return biomes[standardizedId]!;
     }
     // Create a virtual biome config for unrecognized IDs.
     // This allows custom maps (like 'mangrove') to function with their correct name
@@ -689,12 +712,13 @@ class MapStringParser {
     String? name,
     String? biomeId,
     List<MapTransition>? transitions,
+    List<NPCData>? npcs,
   }) {
     List<String> baseLines = [];
     List<String>? overlayLines;
     List<String>? walkLines;
 
-    List<NPCData>? npcs;
+    List<NPCData>? parsedNpcs = npcs;
 
     if (data is Map) {
       if (data.containsKey('layout')) {
@@ -736,7 +760,7 @@ class MapStringParser {
         );
       }
       if (data.containsKey('npcs')) {
-        npcs = (data['npcs'] as List).map((n) => NPCData.fromJson(n)).toList();
+        parsedNpcs = (data['npcs'] as List).map((n) => NPCData.fromJson(n)).toList();
       }
     } else if (data is List) {
       baseLines = List<String>.from(data);
@@ -926,7 +950,7 @@ class MapStringParser {
       biomeId: biomeId,
       isIndoor: config.isIndoor,
       transitions: transitions ?? config.transitions,
-      npcs: npcs,
+      npcs: parsedNpcs,
     );
   }
 }

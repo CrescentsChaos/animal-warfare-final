@@ -211,6 +211,12 @@ class _MapEditorState extends State<MapEditor> {
     _spawnC = (_cols / 2).floor();
     _teleporters = [];
     _npcs = [];
+    if (_biomeConfig.npcs != null) {
+      // Import NPCs from config, inverting Y coordinates back to top-down grid indices
+      for (final npcData in _biomeConfig.npcs!) {
+        _npcs.add(npcData.copyWith(y: _rows - 1 - npcData.y));
+      }
+    }
     _applyBorder();
     _pushUndo();
   }
@@ -479,7 +485,7 @@ class _MapEditorState extends State<MapEditor> {
       // If we are in eraser mode, delete teleporters AND NPCs at this coordinate
       if (_mode == EditorMode.eraser) {
         _teleporters.removeWhere((t) => t.x == c && t.y == r);
-        _npcs.removeWhere((n) => n.row == r && n.col == c);
+        _npcs.removeWhere((n) => n.y == r && n.x == c);
       }
       // Specialized delete for teleporter mode interaction
       else if (_mode == EditorMode.teleporter) {
@@ -488,7 +494,7 @@ class _MapEditorState extends State<MapEditor> {
       }
       // Specialized delete for npc mode interaction
       else if (_mode == EditorMode.npc) {
-        _npcs.removeWhere((n) => n.row == r && n.col == c);
+        _npcs.removeWhere((n) => n.y == r && n.x == c);
         return;
       }
 
@@ -642,7 +648,7 @@ class _MapEditorState extends State<MapEditor> {
       case EditorMode.move:
         if (isStart) {
           try {
-            _draggingNPC = _npcs.firstWhere((n) => n.row == r && n.col == c);
+            _draggingNPC = _npcs.firstWhere((n) => n.y == r && n.x == c);
           } catch (_) {
             _draggingNPC = null;
           }
@@ -651,7 +657,7 @@ class _MapEditorState extends State<MapEditor> {
             setState(() {
               final idx = _npcs.indexOf(_draggingNPC!);
               if (idx != -1) {
-                _npcs[idx] = _draggingNPC!.copyWith(row: r, col: c);
+                _npcs[idx] = _draggingNPC!.copyWith(y: r, x: c);
                 _draggingNPC = _npcs[idx];
               }
             });
@@ -796,7 +802,7 @@ class _MapEditorState extends State<MapEditor> {
   void _showNPCDialog(int r, int c, bool isStart) {
     NPCData? existing;
     try {
-      existing = _npcs.firstWhere((n) => n.row == r && n.col == c);
+      existing = _npcs.firstWhere((n) => n.y == r && n.x == c);
     } catch (_) {}
 
     if (!isStart) {
@@ -810,8 +816,8 @@ class _MapEditorState extends State<MapEditor> {
         id: 'npc_${DateTime.now().millisecondsSinceEpoch}',
         name: 'New NPC',
         spriteKey: 'placeholder',
-        row: r,
-        col: c,
+        y: r,
+        x: c,
         dialogue: ['Hello!'],
       );
       setState(() {
@@ -832,6 +838,7 @@ class _MapEditorState extends State<MapEditor> {
     );
     final spriteCtrl = TextEditingController(text: existing.spriteKey);
     String movementType = existing.movementType;
+    String facing = existing.facing;
     final rangeCtrl = TextEditingController(
       text: existing.movementRange.toString(),
     );
@@ -840,6 +847,7 @@ class _MapEditorState extends State<MapEditor> {
     );
     final teamIdCtrl = TextEditingController(text: existing.teamId);
     final defeatTextCtrl = TextEditingController(text: existing.defeatText);
+    final rewardMoneyCtrl = TextEditingController(text: existing.rewardMoney.toString());
 
     showDialog(
       context: context,
@@ -909,6 +917,25 @@ class _MapEditorState extends State<MapEditor> {
                 ),
                 const SizedBox(height: 8),
                 const Text(
+                  'Facing Direction',
+                  style: TextStyle(color: Colors.white70, fontSize: 12),
+                ),
+                DropdownButton<String>(
+                  isExpanded: true,
+                  value: facing,
+                  dropdownColor: const Color(0xFF2A2A2A),
+                  style: const TextStyle(color: Colors.white),
+                  items: ['down', 'up', 'left', 'right']
+                      .map((s) => DropdownMenuItem(value: s, child: Text(s)))
+                      .toList(),
+                  onChanged: (val) {
+                    if (val != null) {
+                      setDialogState(() => facing = val);
+                    }
+                  },
+                ),
+                const SizedBox(height: 8),
+                const Text(
                   'Movement Type',
                   style: TextStyle(color: Colors.white70, fontSize: 12),
                 ),
@@ -917,7 +944,7 @@ class _MapEditorState extends State<MapEditor> {
                   value: movementType,
                   dropdownColor: const Color(0xFF2A2A2A),
                   style: const TextStyle(color: Colors.white),
-                  items: ['still', 'random', 'pattern']
+                  items: ['still', 'random', 'pattern', 'look_around']
                       .map((s) => DropdownMenuItem(value: s, child: Text(s)))
                       .toList(),
                   onChanged: (val) {
@@ -926,7 +953,7 @@ class _MapEditorState extends State<MapEditor> {
                     }
                   },
                 ),
-                if (movementType != 'still')
+                if (movementType == 'random' || movementType == 'pattern')
                   TextField(
                     controller: rangeCtrl,
                     keyboardType: TextInputType.number,
@@ -975,6 +1002,16 @@ class _MapEditorState extends State<MapEditor> {
                     ),
                     style: const TextStyle(color: Colors.white),
                   ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: rewardMoneyCtrl,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Reward Taka (Money)',
+                      labelStyle: TextStyle(color: Colors.white70),
+                    ),
+                    style: const TextStyle(color: Colors.white),
+                  ),
                 ],
               ],
             ),
@@ -983,7 +1020,7 @@ class _MapEditorState extends State<MapEditor> {
             TextButton(
               onPressed: () {
                 setState(() {
-                  _npcs.removeWhere((n) => n.row == r && n.col == c);
+                  _npcs.removeWhere((n) => n.y == r && n.x == c);
                 });
                 Navigator.pop(ctx);
                 _onInteractionEnd();
@@ -1007,14 +1044,16 @@ class _MapEditorState extends State<MapEditor> {
                       .split('\n')
                       .where((s) => s.trim().isNotEmpty)
                       .toList(),
+                  facing: facing,
                   movementType: movementType,
                   movementRange: int.tryParse(rangeCtrl.text) ?? 0,
                   visionRange: int.tryParse(visionCtrl.text) ?? 0,
                   teamId: teamIdCtrl.text.trim(),
                   defeatText: defeatTextCtrl.text.trim(),
+                  rewardMoney: int.tryParse(rewardMoneyCtrl.text) ?? 0,
                 );
                 setState(() {
-                  final idx = _npcs.indexWhere((n) => n.row == r && n.col == c);
+                  final idx = _npcs.indexWhere((n) => n.y == r && n.x == c);
                   _npcs[idx] = updated;
                 });
                 Navigator.pop(ctx);
@@ -1032,7 +1071,7 @@ class _MapEditorState extends State<MapEditor> {
     NPCData? existing;
     try {
       existing = _npcs.firstWhere(
-        (n) => n.row == r && n.col == c && n.scriptType == 'signpost',
+        (n) => n.y == r && n.x == c && n.scriptType == 'signpost',
       );
     } catch (_) {}
 
@@ -1101,8 +1140,8 @@ class _MapEditorState extends State<MapEditor> {
                   name: 'Signpost',
                   spriteKey: 'none',
                   scriptType: 'signpost',
-                  row: r,
-                  col: c,
+                  y: r,
+                  x: c,
                   dialogue: text
                       .split('\n')
                       .where((s) => s.trim().isNotEmpty)
@@ -1110,7 +1149,7 @@ class _MapEditorState extends State<MapEditor> {
                 );
                 setState(() {
                   if (existing != null) {
-                    final idx = _npcs.indexOf(existing!);
+                    final idx = _npcs.indexOf(existing);
                     _npcs[idx] = npc;
                   } else {
                     _npcs.add(npc);
@@ -1191,7 +1230,7 @@ class _MapEditorState extends State<MapEditor> {
           .toList(),
       "npcs": _npcs.map((n) {
         final j = n.toJson();
-        j['row'] = _rows - 1 - j['row'];
+        j['y'] = _rows - 1 - j['y'];
         return j;
       }).toList(),
     };
@@ -1563,7 +1602,7 @@ class _MapEditorState extends State<MapEditor> {
         if (dataMap['npcs'] != null) {
           _npcs = (dataMap['npcs'] as List).map((n) {
             final npc = NPCData.fromJson(n);
-            return npc.copyWith(row: _rows - 1 - npc.row);
+            return npc.copyWith(y: _rows - 1 - npc.y);
           }).toList();
         } else {
           _npcs = [];
@@ -2728,8 +2767,8 @@ class _EditorGridPainter extends CustomPainter {
     // 6. Draw NPCs
     for (final npc in npcs) {
       final rect = Rect.fromLTWH(
-        npc.col * cellSize,
-        npc.row * cellSize,
+        npc.x * cellSize,
+        npc.y * cellSize,
         cellSize,
         cellSize,
       );
