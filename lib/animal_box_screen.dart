@@ -17,7 +17,8 @@ import 'package:animal_warfare/widgets/organism_sprite_widget.dart';
 import 'dart:async';
 
 class AnimalBoxScreen extends StatefulWidget {
-  const AnimalBoxScreen({super.key});
+  final bool teamOnly;
+  const AnimalBoxScreen({super.key, this.teamOnly = false});
 
   @override
   State<AnimalBoxScreen> createState() => _AnimalBoxScreenState();
@@ -61,6 +62,29 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.teamOnly) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Animal Storage'),
+          backgroundColor: AppColors.surface,
+        ),
+        body: Consumer<UserState>(
+          builder: (context, userState, _) {
+            final user = userState.currentUser;
+            if (user == null) {
+              return const Center(child: Text('Not logged in.'));
+            }
+            return Column(
+              children: [
+                _buildAccountHeader(user),
+                Expanded(child: _buildTeamView(user, userState)),
+              ],
+            );
+          },
+        ),
+      );
+    }
+
     return DefaultTabController(
       length: 2,
       child: Scaffold(

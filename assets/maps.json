@@ -5,6 +5,8 @@
         "defaultTileId": "grass_ground",
         "biomeId": "urban",
         "isIndoor": false,
+        "minLevel": 2,
+        "maxLevel": 5,
         "layout": {
             "base": [
                 "null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null",
@@ -130,6 +132,8 @@
         "defaultTileId": "swamp_ground",
         "biomeId": "urban",
         "isIndoor": true,
+        "minLevel": 1,
+        "maxLevel": 1,
         "layout": {
             "base": [
                 "null,null,null,null,null,null,null,null,null,null,null,null,null,null,null",
@@ -189,6 +193,8 @@
         "defaultTileId": "swamp_ground",
         "biomeId": "urban",
         "isIndoor": false,
+        "minLevel": 2,
+        "maxLevel": 4,
         "layout": {
             "base": [
                 "null,null,null,null,null,null,null,null,null,null,null,null,null,null,null",
@@ -356,6 +362,8 @@
         "defaultTileId": "swamp_ground",
         "biomeId": "urban",
         "isIndoor": false,
+        "minLevel": 3,
+        "maxLevel": 6,
         "layout": {
             "base": [
                 "null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null",
@@ -458,7 +466,9 @@
         "name": "Pearshaw Medical Center",
         "defaultTileId": "swamp_ground",
         "biomeId": "urban",
-        "isIndoor": false,
+        "isIndoor": true,
+        "minLevel": 1,
+        "maxLevel": 1,
         "layout": {
             "base": [
                 "null,null,null,null,null,null,null,null,null,null,null,null,null,null,null",

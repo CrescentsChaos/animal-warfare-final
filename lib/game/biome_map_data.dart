@@ -145,6 +145,8 @@ class BiomeConfig {
   final String? biomeId;
   final Map<String, TileDefinition> tiles;
   final bool isIndoor;
+  final int minLevel;
+  final int maxLevel;
 
   final Map<String, List<String>>?
   layout; // e.g. {'base': [...], 'overlay': [...]}
@@ -159,6 +161,8 @@ class BiomeConfig {
     required this.tiles,
     this.biomeId,
     this.isIndoor = false,
+    this.minLevel = 1,
+    this.maxLevel = 5,
     this.layout,
     this.spawnPoint,
     this.transitions,
@@ -172,6 +176,8 @@ class BiomeConfig {
     String? biomeId,
     Map<String, TileDefinition>? tiles,
     bool? isIndoor,
+    int? minLevel,
+    int? maxLevel,
     Map<String, List<String>>? layout,
     Point<int>? spawnPoint,
     List<MapTransition>? transitions,
@@ -184,6 +190,8 @@ class BiomeConfig {
       biomeId: biomeId ?? this.biomeId,
       tiles: tiles ?? this.tiles,
       isIndoor: isIndoor ?? this.isIndoor,
+      minLevel: minLevel ?? this.minLevel,
+      maxLevel: maxLevel ?? this.maxLevel,
       layout: layout ?? this.layout,
       spawnPoint: spawnPoint ?? this.spawnPoint,
       transitions: transitions ?? this.transitions,
@@ -247,6 +255,8 @@ class BiomeConfig {
       defaultTileId: json['defaultTileId'],
       biomeId: json['biomeId'],
       isIndoor: json['isIndoor'] as bool? ?? false,
+      minLevel: json['minLevel'] as int? ?? 1,
+      maxLevel: json['maxLevel'] as int? ?? 5,
       tiles: biomeTiles,
       layout: layout,
       spawnPoint: spawn,
@@ -686,6 +696,8 @@ class BiomeMapData {
   final String? name;
   final String? biomeId;
   final bool isIndoor;
+  final int minLevel;
+  final int maxLevel;
   final List<MapTransition>? transitions;
   final List<NPCData>? npcs;
 
@@ -699,6 +711,8 @@ class BiomeMapData {
     this.name,
     this.biomeId,
     this.isIndoor = false,
+    this.minLevel = 1,
+    this.maxLevel = 5,
     this.transitions,
     this.npcs,
   });
@@ -949,6 +963,8 @@ class MapStringParser {
       name: name,
       biomeId: biomeId,
       isIndoor: config.isIndoor,
+      minLevel: config.minLevel,
+      maxLevel: config.maxLevel,
       transitions: transitions ?? config.transitions,
       npcs: parsedNpcs,
     );
@@ -1158,6 +1174,9 @@ class BiomeMapGenerator {
       config: config,
       name: config.name,
       biomeId: config.biomeId,
+      isIndoor: config.isIndoor,
+      minLevel: config.minLevel,
+      maxLevel: config.maxLevel,
       transitions: config.transitions,
     );
   }

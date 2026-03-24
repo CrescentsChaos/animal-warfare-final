@@ -133,6 +133,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   bool _showSleepMenu = false;
   double _sleepFadeOpacity = 0.0;
   bool _isSleeping = false;
+  VoidCallback? _onBubbleDismiss;
 
   // ── Overworld Pheno Sprites ──
   final List<OverworldSprite> _overworldSprites = [];
@@ -1341,9 +1342,13 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       );
     }
 
+    final rng = Random();
+    final wildLevel = _mapData.minLevel +
+        rng.nextInt(_mapData.maxLevel - _mapData.minLevel + 1);
+
     final wildFighter = CapturedOrganism.spawn(
       wildOrganism,
-      accountLevel: user.accountLevel,
+      level: wildLevel,
       captureLocation: _currentMapName,
     );
 
@@ -1379,6 +1384,10 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
     if (mounted) {
       if (result == BattleResult.loss) {
+        // Heal full team on whiteout
+        final userState = context.read<UserState>();
+        await userState.healFullTeam();
+
         // Teleport to spawn on whiteout
         _playerX = _mapData.spawnPoint.x * tileSize;
         _playerY = (_mapData.height - 1 - _mapData.spawnPoint.y) * tileSize;
@@ -2008,6 +2017,10 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   }
 
   void _handleInteract() {
+    if (_bubbleText != null) {
+      _dismissDialogue();
+      return;
+    }
     if (_encounterActive || _isMovingToTarget) return;
 
     // Determine target coordinate based on facing direction
@@ -2289,6 +2302,28 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       return;
     }
 
+    // ── PC / Animal Storage Interaction ──
+    bool isPCTile = false;
+    if (overlayTiles != null) {
+      for (final ot in overlayTiles) {
+        if (ot.tileId == 'pc_1') {
+          isPCTile = true;
+          break;
+        }
+      }
+    }
+    if (!isPCTile && baseTileInfo.tileId == 'pc_1') {
+      isPCTile = true;
+    }
+
+    if (isPCTile) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const AnimalBoxScreen(teamOnly: true)),
+      );
+      return;
+    }
+
     if (textToShow != null) {
       _showInteractionBubble(textToShow);
     }
@@ -2466,14 +2501,16 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     _showInteractionBubble(
       '$displayName${npc.data.dialogue.join('\n')}',
       speaker: npc,
+      onDismiss: () => _handleNPCInteraction(npc),
     );
+  }
 
-    // Script-based interactions
+  void _handleNPCInteraction(OverworldNPC npc) {
+    if (!mounted) return;
     if (npc.data.scriptType == 'trainer' ||
         npc.data.scriptType == 'rival' ||
         npc.data.scriptType == 'major_trainer' ||
         npc.data.scriptType == 'evil_team') {
-      // Don't interact normally with trainers — they handle via vision
       if (!npc.isDefeated) {
         _startTrainerBattle(npc);
       } else {
@@ -2482,28 +2519,20 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
           speaker: npc,
         );
       }
-      return;
     } else if (npc.data.scriptType == 'shopkeeper') {
-      Future.delayed(const Duration(milliseconds: 300), () {
-        if (mounted) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ShopScreen(biome: widget.biomeName),
-            ),
-          );
-        }
-      });
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ShopScreen(biome: _currentBiomeName),
+        ),
+      );
     } else if (npc.data.scriptType == 'medic') {
-      // Actual heal effect
-      Future.delayed(const Duration(milliseconds: 500), () async {
+      _userState.fullyHealTeam().then((_) {
         if (mounted) {
-          await _userState.fullyHealTeam();
           _showInteractionBubble(
-            'Your team has been fully healed and revived!',
+            'Your animals have been fully healed and revived!',
             speaker: npc,
           );
-          // Play a heal sound if available
           AudioService.instance.playSound('audio/effects/heal.mp3');
         }
       });
@@ -2764,7 +2793,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         _approachingNPC = npc;
 
         // Show "!" above NPC
-        _showInteractionBubble('!', speaker: npc);
+        _showInteractionBubble('!', speaker: npc, duration: const Duration(seconds: 1));
         break;
       }
     }
@@ -2780,79 +2809,85 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     final dialogueText = npc.data.dialogue.isNotEmpty
         ? npc.data.dialogue.join('\n')
         : 'Let\'s battle!';
-    _showInteractionBubble('$displayName$dialogueText', speaker: npc);
 
-    // Wait for player to read dialogue
-    await Future.delayed(const Duration(milliseconds: 2000));
-    if (!mounted) return;
+    _showInteractionBubble(
+      '$displayName$dialogueText',
+      speaker: npc,
+      onDismiss: () async {
+        if (!mounted) return;
 
-    // Build opponent team from npc_teams.json
-    final opponentTeam = NpcTeamLoader.buildTeam(
-      npc.data.teamId,
-      widget.allOrganisms,
+        // Build opponent team from npc_teams.json
+        final opponentTeam = NpcTeamLoader.buildTeam(
+          npc.data.teamId,
+          widget.allOrganisms,
+        );
+        for (final opponent in opponentTeam) {
+          userState.discoverOrganism(opponent.baseOrganism.name);
+        }
+        if (opponentTeam.isEmpty) {
+          debugPrint(
+            'BiomeExplorationMap: Opponent team is empty for ${npc.data.teamId}. Cannot start battle.',
+          );
+          _showInteractionBubble('I have no animals to fight with...', duration: const Duration(seconds: 2));
+
+          setState(() => _encounterActive = false);
+          _approachingNPC = null;
+          npc.hasTriggeredBattle = false;
+          return;
+        }
+
+        // Get player's fighter
+        CapturedOrganism playerFighter;
+        if (user.teamOrganisms.isNotEmpty) {
+          playerFighter = user.teamOrganisms.first;
+        } else if (user.capturedOrganisms.isNotEmpty) {
+          playerFighter = user.capturedOrganisms.first;
+        } else {
+          playerFighter = CapturedOrganism.spawn(
+            Organism.humanOrganism.copyWith(name: user.username),
+            level: user.accountLevel,
+          );
+        }
+
+        final trainerName = NpcTeamLoader.getTrainerName(npc.data.teamId);
+        final mapScreenshot = await _captureMapScreenshot();
+
+        final hour = TimeService().currentGameTime.hour;
+        String timeOfDay;
+        if (hour >= 6 && hour < 18) {
+          timeOfDay = 'day';
+        } else if (hour >= 18 && hour < 21) {
+          timeOfDay = 'evening';
+        } else {
+          timeOfDay = 'night';
+        }
+
+        AudioService.instance.pauseAll();
+        if (!mounted) return;
+
+        final BattleResult? result = await Navigator.of(context).push<BattleResult>(
+          MaterialPageRoute(
+            builder: (context) => BattleScreen(
+              playerOrganism: playerFighter,
+              opponentOrganism: opponentTeam.first,
+              opponentTeam: opponentTeam,
+              mapScreenshot: mapScreenshot,
+              isTrainerBattle: true,
+              battleTitle: 'VS $trainerName',
+              timeOfDay: timeOfDay,
+              biomeName: _currentBiomeName,
+            ),
+          ),
+        );
+
+        if (mounted) {
+          _handleBattleResult(result, npc);
+        }
+      },
     );
-    for (final opponent in opponentTeam) {
-      userState.discoverOrganism(opponent.baseOrganism.name);
-    }
-    if (opponentTeam.isEmpty) {
-      debugPrint(
-        'BiomeExplorationMap: Opponent team is empty for ${npc.data.teamId}. Cannot start battle.',
-      );
-      _showInteractionBubble('I have no animals to fight with...');
-
-      await Future.delayed(const Duration(milliseconds: 2000));
-      if (!mounted) return;
-
-      setState(() => _encounterActive = false);
-      _approachingNPC = null;
-      npc.hasTriggeredBattle = false;
-      return;
-    }
-
-    // Get player's fighter
-    CapturedOrganism playerFighter;
-    if (user.teamOrganisms.isNotEmpty) {
-      playerFighter = user.teamOrganisms.first;
-    } else if (user.capturedOrganisms.isNotEmpty) {
-      playerFighter = user.capturedOrganisms.first;
-    } else {
-      playerFighter = CapturedOrganism.spawn(
-        Organism.humanOrganism.copyWith(name: user.username),
-        level: user.accountLevel,
-      );
-    }
-
-    final trainerName = NpcTeamLoader.getTrainerName(npc.data.teamId);
-    final mapScreenshot = await _captureMapScreenshot();
-
-    final hour = TimeService().currentGameTime.hour;
-    String timeOfDay;
-    if (hour >= 6 && hour < 18) {
-      timeOfDay = 'day';
-    } else if (hour >= 18 && hour < 21) {
-      timeOfDay = 'evening';
-    } else {
-      timeOfDay = 'night';
-    }
-
-    AudioService.instance.pauseAll();
-    if (!mounted) return;
-
-    final BattleResult? result = await Navigator.of(context).push<BattleResult>(
-      MaterialPageRoute(
-        builder: (context) => BattleScreen(
-          playerOrganism: playerFighter,
-          opponentOrganism: opponentTeam.first,
-          biomeName: _currentBiomeName,
-          playerTeam: user.teamOrganisms,
-          opponentTeam: opponentTeam,
-          battleTitle: 'VS $trainerName',
-          isTrainerBattle: true,
-          timeOfDay: timeOfDay,
-          mapScreenshot: mapScreenshot,
-        ),
-      ),
-    );
+  }
+  void _handleBattleResult(BattleResult? result, OverworldNPC npc) async {
+    final userState = _userState;
     AudioService.instance.resumeAll();
 
     if (mounted) {
@@ -2864,46 +2899,20 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         npc.hasTriggeredBattle = true;
 
         // Persist to event flags
-        final userState = _userState;
         await userState.markTrainerDefeated(npc.data.id);
         if (npc.data.setsFlag.isNotEmpty) {
           await userState.setFlag(npc.data.setsFlag);
         }
 
-        // Show defeat text
+        // Show defeat text and then rewards
         if (npc.data.defeatText.isNotEmpty) {
           _showInteractionBubble(
             '${npc.data.name}: ${npc.data.defeatText}',
             speaker: npc,
+            onDismiss: () => _showBattleRewards(npc),
           );
-        }
-
-        // --- REWARD SYSTEM ---
-        if (npc.data.rewardMoney > 0) {
-          userState.addMoney(npc.data.rewardMoney);
-          // Small delay before reward bubble so it doesn't overwrite defeat text immediately
-          Future.delayed(const Duration(milliseconds: 2500), () {
-            if (mounted) {
-              _showInteractionBubble(
-                'Received ৳${npc.data.rewardMoney} for winning!',
-                speaker: npc,
-              );
-            }
-          });
-        }
-
-        if (npc.data.itemRewardId.isNotEmpty) {
-          userState.addLoot(npc.data.itemRewardId, npc.data.itemRewardCount);
-          String displayName = npc.data.itemRewardId[0].toUpperCase() + 
-                               npc.data.itemRewardId.substring(1).replaceAll('_', ' ');
-          Future.delayed(const Duration(milliseconds: 5000), () {
-            if (mounted) {
-              _showInteractionBubble(
-                'Received $displayName x${npc.data.itemRewardCount}!',
-                speaker: npc,
-              );
-            }
-          });
+        } else {
+          _showBattleRewards(npc);
         }
       } else if (result == BattleResult.loss) {
         // Teleport to spawn
@@ -2942,16 +2951,62 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     }
   }
 
-  void _showInteractionBubble(String text, {Offset? worldPos, OverworldNPC? speaker}) {
+  void _showBattleRewards(OverworldNPC npc) {
+    if (!mounted) return;
+    
+    final userState = _userState;
+    
+    if (npc.data.rewardMoney > 0) {
+      userState.addMoney(npc.data.rewardMoney);
+      _showInteractionBubble(
+        'Received ৳${npc.data.rewardMoney} for winning!',
+        speaker: npc,
+        onDismiss: () => _showItemReward(npc),
+      );
+    } else {
+      _showItemReward(npc);
+    }
+  }
+
+  void _showItemReward(OverworldNPC npc) {
+    if (!mounted) return;
+    
+    if (npc.data.itemRewardId.isNotEmpty) {
+      _userState.addLoot(npc.data.itemRewardId, npc.data.itemRewardCount);
+      String displayName = npc.data.itemRewardId[0].toUpperCase() + 
+                           npc.data.itemRewardId.substring(1).replaceAll('_', ' ');
+      _showInteractionBubble(
+        'Received $displayName x${npc.data.itemRewardCount}!',
+        speaker: npc,
+      );
+    }
+  }
+
+  void _showInteractionBubble(String text, {Offset? worldPos, OverworldNPC? speaker, VoidCallback? onDismiss, Duration? duration}) {
     setState(() {
       _bubbleText = text;
       _interactionWorldPos = worldPos ?? Offset(_playerX, _playerY - tileSize);
       _interactionNPC = speaker;
+      _onBubbleDismiss = onDismiss;
     });
+
     _bubbleTimer?.cancel();
-    _bubbleTimer = Timer(const Duration(seconds: 3), () {
-      if (mounted) setState(() => _bubbleText = null);
+    if (duration != null) {
+      _bubbleTimer = Timer(duration, () {
+        if (mounted) _dismissDialogue();
+      });
+    }
+  }
+
+  void _dismissDialogue() {
+    if (!mounted) return;
+    _bubbleTimer?.cancel();
+    final callback = _onBubbleDismiss;
+    setState(() {
+      _bubbleText = null;
+      _onBubbleDismiss = null;
     });
+    callback?.call();
   }
 
   Widget _buildInteractionBubble() {
@@ -2976,7 +3031,8 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       left: horizontalMargin,
       right: horizontalMargin,
       top: screenY - 75, // Height offset to sit above player/tile
-      child: IgnorePointer(
+      child: GestureDetector(
+        onTap: _dismissDialogue,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -2996,48 +3052,83 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
                   ),
                 ],
               ),
-              child: Builder(
-                builder: (context) {
-                  final text = _bubbleText!;
-                  final splitIdx = text.indexOf(': ');
-                  if (splitIdx != -1) {
-                    final name = text.substring(0, splitIdx);
-                    final msg = text.substring(splitIdx + 2);
-                    return RichText(
-                      textAlign: TextAlign.center,
-                      text: TextSpan(
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontFamily: 'PressStart2P',
-                          fontSize: 10,
-                          height: 1.6,
-                        ),
+              child: Stack(
+                children: [
+                  Center(
+                    child: Builder(
+                      builder: (context) {
+                        final text = _bubbleText!;
+                        final splitIdx = text.indexOf(': ');
+                        if (splitIdx != -1) {
+                          final name = text.substring(0, splitIdx);
+                          final msg = text.substring(splitIdx + 2);
+                          return RichText(
+                            textAlign: TextAlign.center,
+                            text: TextSpan(
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontFamily: 'PressStart2P',
+                                fontSize: 10,
+                                height: 1.6,
+                              ),
+                              children: [
+                                TextSpan(
+                                  text: '$name\n',
+                                  style: const TextStyle(
+                                    color: Color(0xFFFFD700), // Gold for name
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const TextSpan(text: '\n'), // Extra spacing
+                                TextSpan(text: msg),
+                              ],
+                            ),
+                          );
+                        }
+                        return Text(
+                          text,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontFamily: 'PressStart2P',
+                            fontSize: 10,
+                            height: 1.6,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  // "Click to continue" indicator
+                  Positioned(
+                    bottom: 2,
+                    right: 4,
+                    child: TweenAnimationBuilder<double>(
+                      tween: Tween(begin: 0.3, end: 1.0),
+                      duration: const Duration(milliseconds: 800),
+                      builder: (context, value, child) {
+                        return Opacity(
+                          opacity: value,
+                          child: child,
+                        );
+                      },
+                      onEnd: () {},
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          TextSpan(
-                            text: '$name\n',
-                            style: const TextStyle(
-                              color: Color(0xFFFFD700), // Gold for name
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
+                          Text(
+                            '▼',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontFamily: 'PressStart2P',
+                              fontSize: 8,
                             ),
                           ),
-                          const TextSpan(text: '\n'), // Extra spacing
-                          TextSpan(text: msg),
                         ],
                       ),
-                    );
-                  }
-                  return Text(
-                    text,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontFamily: 'PressStart2P',
-                      fontSize: 10,
-                      height: 1.6,
                     ),
-                  );
-                },
+                  ),
+                ],
               ),
             ),
             // Dynamic Pointer Tail
@@ -3047,7 +3138,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
                 // screenX is absolute on the screen. The Column is at horizontalMargin.
                 // So the tail's local offset within the Column is screenX - horizontalMargin.
                 double tailLocalX = screenX - horizontalMargin;
-                
+
                 // Clamp it to be within the bubble's bounds
                 tailLocalX = tailLocalX.clamp(20.0, bubbleWidth - 20.0);
 

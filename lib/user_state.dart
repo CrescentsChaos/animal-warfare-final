@@ -203,6 +203,24 @@ class UserState with ChangeNotifier {
     });
   }
 
+  Future<void> healFullTeam() async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) {
+      final healedList = u.capturedOrganisms.map((org) {
+        // Create a new instance with full health and no status effects
+        final healed = org.copyWith(
+          currentHealth: org.maxHealth,
+          statusEffects: [],
+        );
+        // Restore all move stamina
+        healed.restoreAllStamina();
+        return healed;
+      }).toList();
+
+      return u.copyWith(capturedOrganisms: healedList);
+    });
+  }
+
   Future<void> discoverOrganism(String species) async {
     if (_currentUser == null) return;
     await _readModifyWrite((u) {
@@ -741,15 +759,15 @@ class UserState with ChangeNotifier {
     final options = <CapturedOrganism>[];
     final random = math.Random();
 
-    // Try to pick 3 balanced starters (around level 5)
+    // Try to pick 3 balanced starters (level 5)
     while (options.length < 3 && options.length < selectionPool.length) {
       final base = selectionPool[random.nextInt(selectionPool.length)];
       if (base.name == 'Human') continue;
       if (options.any((o) => o.baseOrganism.name == base.name)) continue;
 
       options.add(
-        CapturedOrganism.spawn(base, level: 1),
-      ); // Starter level set to 1
+        CapturedOrganism.spawn(base, level: 5),
+      ); // Starter level set to 5
     }
 
     return options;
@@ -1443,7 +1461,8 @@ class UserState with ChangeNotifier {
   }) async {
     if (_currentUser == null) return {};
 
-    final effectiveCap = levelCap ?? _currentUser!.accountLevel;
+    // Initial level cap is 7. Can be increased later.
+    final effectiveCap = levelCap ?? 7;
 
     // Rebalanced XP constants
     final baseXP = defeatedLevel * 10; // Animal battle XP

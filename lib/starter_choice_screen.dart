@@ -121,11 +121,11 @@ class _StarterChoiceScreenState extends State<StarterChoiceScreen>
     return CapturedOrganism(
       baseOrganism: base,
       individualValues: ivs,
-      currentHealth: CapturedOrganism.calculateStat('health', base.health, 15, level: 1),
+      currentHealth: CapturedOrganism.calculateStat('health', base.health, 15, level: 5),
       nature: bashful,
-      initialLevel: 1,
-      level: 1,
-      xp: CapturedOrganism.xpForLevel(1),
+      initialLevel: 5,
+      level: 5,
+      xp: CapturedOrganism.xpForLevel(5),
       teraType: base.elementalTypes.isNotEmpty
           ? base.elementalTypes.first
           : ElementalType.basic,
@@ -558,7 +558,7 @@ class _StarterChoiceScreenState extends State<StarterChoiceScreen>
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
-              'Nature: BASHFUL  •  Level: 1',
+              'Nature: BASHFUL  •  Level: 5',
               style: TextStyle(
                 fontSize: 10.sp,
                 color: AppColors.highlightColor,
