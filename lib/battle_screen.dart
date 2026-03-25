@@ -3481,11 +3481,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
 
         // Handle capture - add organism to collection
         if (battleManager.result == BattleResult.capture) {
-          final wildOpponent = battleManager.opponent.organism;
-          final newCapturedInstance = wildOpponent.copyWith(
-            currentHealth: wildOpponent.maxHealth, // Heal to full on capture
-          );
-          newCapturedInstance.restoreAllStamina(); // Restore stamina on capture
+          final newCapturedInstance = battleManager.opponent.organism;
 
           if (widget.isRogueMode) {
             final team = userState.currentUser?.rogueLikeState.team ?? [];

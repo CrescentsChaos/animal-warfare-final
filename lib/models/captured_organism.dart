@@ -267,19 +267,26 @@ class CapturedOrganism {
     }
 
     int newLevel = max(level, levelFromXP); // FIX: Never de-level
-    int restoredHealth = currentHealth;
+    int finalHealth = currentHealth;
 
     if (newLevel > level) {
       leveledUp = true;
-      // Calculate new max HP for the new level
-      restoredHealth = getMaxHealth(atLevel: newLevel);
+      final oldMax = getMaxHealth(atLevel: level);
+      final newMax = getMaxHealth(atLevel: newLevel);
+      if (oldMax > 0) {
+        // Scale health proportionally (e.g. 50/100 -> 55/110)
+        finalHealth = (currentHealth * newMax / oldMax).round();
+        // Ensure we don't accidentally decrease HP due to rounding,
+        // and cap at new max.
+        finalHealth = finalHealth.clamp(currentHealth, newMax);
+      }
     }
 
     return {
       'xp': newXP,
       'level': newLevel,
       'leveledUp': leveledUp,
-      'health': restoredHealth,
+      'health': finalHealth,
     };
   }
 

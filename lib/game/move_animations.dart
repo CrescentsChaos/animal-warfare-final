@@ -416,11 +416,14 @@ class BraveBirdEffect extends StatelessWidget {
               opacity: fade.clamp(0.0, 1.0),
               child: Transform.rotate(
                 angle: rotation,
-                child: Image.asset(
-                  'assets/move_effects/bird.png',
-                  width: 40,
-                  height: 40,
-                  fit: BoxFit.contain,
+                child: Transform.scale(
+                  scaleY: isPlayer ? 1.0 : -1.0,
+                  child: Image.asset(
+                    'assets/move_effects/bird.png',
+                    width: 40,
+                    height: 40,
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ),
             ),
@@ -755,42 +758,95 @@ class SurfEffect extends StatelessWidget {
 }
 
 // ----------------------------------------------------------------
-// Hurricane Effect (Swirling Vortex)
+// Hurricane Effect (Tornado Travelling from Attacker to Target)
 // ----------------------------------------------------------------
 class HurricaneEffect extends StatelessWidget {
   final double progress;
+  final bool isPlayer;
 
-  const HurricaneEffect({super.key, required this.progress});
+  static const _tornadoFrames = [
+    'assets/move_effects/tornado_1.png',
+    'assets/move_effects/tornado_2.png',
+    'assets/move_effects/tornado_3.png',
+  ];
+
+  const HurricaneEffect({
+    super.key,
+    required this.progress,
+    required this.isPlayer,
+  });
 
   @override
   Widget build(BuildContext context) {
-    const size = 250.0;
+    const size = 200.0;
     final p = progress.clamp(0.0, 1.0);
-    final opacity = p < 0.2 ? p / 0.2 : (p > 0.8 ? (1.0 - p) / 0.2 : 1.0);
+
+    // Pick the tornado frame based on progress (cycles through 3 frames multiple times)
+    final frameIndex = ((p * 12).floor()) % _tornadoFrames.length;
+    final framePath = _tornadoFrames[frameIndex];
+
+    final cx = size / 2;
+    final cy = size / 2;
+
+    // Travel from attacker (bottom-left) to target (center)
+    double startX = cx - 210;
+    double startY = cy + 150;
+    double endX = cx;
+    double endY = cy;
+
+    // Ease-in travel: accelerates as it approaches the target
+    final travel = Curves.easeIn.transform(p);
+
+    double currentX = startX + (endX - startX) * travel;
+    double currentY = startY + (endY - startY) * travel;
+
+    // Arc curve: tornado arcs upward for dramatic effect
+    double arc = math.sin(travel * math.pi) * 50.0;
+    currentY -= arc;
+
+    // Mirror for opponent attacks
+    if (!isPlayer) {
+      currentX = cx + (cx - currentX);
+      currentY = cy + (cy - currentY);
+    }
+
+    // Scale: grows from small to large as it approaches the target
+    final scale = 0.5 + travel * 1.0;
+
+    // Opacity: fade in at start, hold, fade out at end
+    final opacity = p < 0.1
+        ? p / 0.1
+        : (p > 0.85 ? (1.0 - p) / 0.15 : 1.0);
+
+    // Slight wobble rotation for organic feel
+    final wobbleAngle = math.sin(p * math.pi * 8) * 0.15;
 
     return SizedBox(
       width: size,
       height: size,
-      child: Opacity(
-        opacity: opacity,
-        child: AnimatedBuilder(
-          animation: AlwaysStoppedAnimation(p),
-          builder: (context, _) {
-            return Transform.rotate(
-              angle: p * math.pi * 10,
-              child: Transform.scale(
-                scale: 0.8 + p * 0.4,
-                child: Image.asset(
-                  'assets/move_effects/air_slash.png',
-                  width: size,
-                  height: size,
-                  color: Colors.white70,
-                  colorBlendMode: BlendMode.modulate,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned(
+            left: currentX - 60,
+            top: currentY - 60,
+            child: Opacity(
+              opacity: opacity.clamp(0.0, 1.0),
+              child: Transform.rotate(
+                angle: wobbleAngle,
+                child: Transform.scale(
+                  scale: scale,
+                  child: Image.asset(
+                    framePath,
+                    width: 120,
+                    height: 120,
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ),
-            );
-          },
-        ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1460,7 +1516,10 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
             showWhenUnlinked: false,
             followerAnchor: Alignment.center,
             targetAnchor: Alignment.center,
-            child: HurricaneEffect(progress: _progress.value),
+            child: HurricaneEffect(
+              progress: _progress.value,
+              isPlayer: isPlayer,
+            ),
           );
         },
       );
