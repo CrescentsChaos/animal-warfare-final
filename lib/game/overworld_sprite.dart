@@ -378,7 +378,7 @@ class OverworldSprite {
   }
 
   /// Check if a tile at (r, c) is valid for this sprite to walk on.
-  bool _canMoveTo(int r, int c, BiomeMapData mapData) {
+  bool canMoveTo(int r, int c, BiomeMapData mapData) {
     if (r < 0 || r >= mapData.height || c < 0 || c >= mapData.width) {
       return false;
     }
@@ -393,7 +393,15 @@ class OverworldSprite {
     }
 
     final validTilesSet = _validMovementTiles;
-    if (validTilesSet.isEmpty) return true; // 'any'
+
+    // If 'any', return based on the tile's walkability
+    // This blocks phenos from walking on water, ledges (oneway), and null/empty tiles
+    if (validTilesSet.isEmpty) {
+      return baseTile.isWalkable;
+    }
+
+    // Specialized checks: blocked if explicitly marked unwalkable (multi-tile structures)
+    if (baseTile.walkabilityOverride == false) return false;
 
     // Check tile IDs
     final normalizedId = baseTile.tileId.toLowerCase().replaceAll('_', '');
@@ -663,7 +671,7 @@ class OverworldSprite {
       final nc = col + (d[1] as int);
 
       // 1. Basic terrain check
-      if (!_canMoveTo(nr, nc, mapData)) return false;
+      if (!canMoveTo(nr, nc, mapData)) return false;
 
       // 2. Sprite-to-sprite collision avoidance
       for (final other in otherSprites) {

@@ -89,6 +89,11 @@ class UserData {
   final String phoneWallpaper;
   final List<Map<String, dynamic>> savedReplays;
 
+  // --- White Out / Respawn Fields ---
+  final String? lastMedicalCenterMapId;
+  final int? lastMedicalCenterRow;
+  final int? lastMedicalCenterCol;
+
   UserData({
     required this.username,
     required this.password,
@@ -107,6 +112,9 @@ class UserData {
     this.isBlackMarketUnlocked = false,
     this.phoneWallpaper = 'plains-bg.png',
     List<Map<String, dynamic>>? savedReplays,
+    this.lastMedicalCenterMapId,
+    this.lastMedicalCenterRow,
+    this.lastMedicalCenterCol,
     Map<String, dynamic>? quizStats,
     List<String>? discoveredOrganisms,
     List<String>? completedAchievements,
@@ -187,6 +195,9 @@ class UserData {
     List<Map<String, dynamic>>? savedReplays,
     Map<String, SavedMapState>? savedMapStates,
     EventFlags? eventFlags,
+    String? lastMedicalCenterMapId,
+    int? lastMedicalCenterRow,
+    int? lastMedicalCenterCol,
   }) {
     return UserData(
       username: username ?? this.username,
@@ -230,6 +241,10 @@ class UserData {
       farmSlots: farmSlots ?? this.farmSlots,
       savedMapStates: savedMapStates ?? this.savedMapStates,
       eventFlags: eventFlags ?? this.eventFlags,
+      lastMedicalCenterMapId:
+          lastMedicalCenterMapId ?? this.lastMedicalCenterMapId,
+      lastMedicalCenterRow: lastMedicalCenterRow ?? this.lastMedicalCenterRow,
+      lastMedicalCenterCol: lastMedicalCenterCol ?? this.lastMedicalCenterCol,
     );
   }
 
@@ -325,6 +340,9 @@ class UserData {
     'savedReplays': savedReplays,
     'savedMapStates': savedMapStates.map((k, v) => MapEntry(k, v.toJson())),
     'eventFlags': eventFlags.toJson(),
+    'lastMedicalCenterMapId': lastMedicalCenterMapId,
+    'lastMedicalCenterRow': lastMedicalCenterRow,
+    'lastMedicalCenterCol': lastMedicalCenterCol,
   };
 
   factory UserData.fromJson(
@@ -469,6 +487,9 @@ class UserData {
       eventFlags: json['eventFlags'] != null
           ? EventFlags.fromJson(json['eventFlags'] as Map<String, dynamic>)
           : const EventFlags(),
+      lastMedicalCenterMapId: json['lastMedicalCenterMapId'] as String?,
+      lastMedicalCenterRow: json['lastMedicalCenterRow'] as int?,
+      lastMedicalCenterCol: json['lastMedicalCenterCol'] as int?,
     );
   }
 }

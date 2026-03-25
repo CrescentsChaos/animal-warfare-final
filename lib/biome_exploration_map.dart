@@ -1137,6 +1137,86 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     }
   }
 
+  Future<void> _handleWhiteOut() async {
+    if (_isTransitioning) return;
+    _isTransitioning = true;
+
+    try {
+      final userState = _userState;
+      final user = userState.currentUser;
+
+      // 1. Heal team
+      await userState.healFullTeam();
+
+      // 2. Determine target map and spawn
+      String targetMapId = user?.lastMedicalCenterMapId ?? 'player_house';
+      int targetCol = user?.lastMedicalCenterCol ?? 3; // Col corresponds to X
+      int targetRow = user?.lastMedicalCenterRow ?? 6; // Row corresponds to Y
+
+      // If we are defaulting to player_house, we should use its defined spawn if no coordinates are saved
+      if (user?.lastMedicalCenterMapId == null) {
+        // player_house spawn is x=3, y=6 according to maps.json
+        targetCol = 3;
+        targetRow = 6;
+      }
+
+      // 3. Load target map data
+      final targetConfig = BiomeDataManager.getBiome(targetMapId);
+      final targetMapData = MapStringParser.parse(
+        targetConfig.layout ?? {'base': []},
+        config: targetConfig,
+        spawn: Point<int>(targetCol, targetRow),
+        npcs: targetConfig.npcs,
+        name: targetConfig.name,
+        biomeId: targetConfig.biomeId,
+        transitions: targetConfig.transitions,
+      );
+
+      // 4. Fade out
+      setState(() {
+        _isMapLoading = true;
+        _loaderFadeOpacity = 1.0;
+      });
+      await Future.delayed(const Duration(milliseconds: 400));
+
+      // 5. Initialize and Fade in
+      if (!mounted) return;
+      setState(() {
+        _initializeMapData(targetMapData, fromTeleport: true);
+        _playerDirection = 'down'; // Reset direction
+
+        final newBiomeId = targetConfig.biomeId ?? targetConfig.id;
+        final fileName = newBiomeId.toLowerCase().replaceAll(' ', '_');
+        AudioService.instance.playMusic('audio/${fileName}_theme.mp3');
+
+        _scrollToPlayer(insideSetState: true);
+        _loaderFadeOpacity = 0.0;
+      });
+
+      await Future.delayed(const Duration(milliseconds: 400));
+      if (mounted) {
+        setState(() {
+          _isMapLoading = false;
+          _isMovingToTarget = false;
+          _velX = 0;
+          _velY = 0;
+        });
+
+        _showInteractionBubble('You whited out and were brought to safety.');
+      }
+    } catch (e) {
+      debugPrint('White Out Error: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isTransitioning = false;
+        });
+      } else {
+        _isTransitioning = false;
+      }
+    }
+  }
+
   Future<void> _loadAssets() async {
     // 1. Try specified path or default
     final String mainPath = widget.playerSpritePath ?? 'assets/player.png';
@@ -1410,23 +1490,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
     if (mounted) {
       if (result == BattleResult.loss) {
-        // Heal full team on whiteout
-        final userState = context.read<UserState>();
-        await userState.healFullTeam();
-
-        // Teleport to spawn on whiteout
-        _playerX = _mapData.spawnPoint.x * tileSize;
-        _playerY = (_mapData.height - 1 - _mapData.spawnPoint.y) * tileSize;
-
-        // Reset movement states
-        _isMovingToTarget = false;
-        _velX = 0;
-        _velY = 0;
-
-        // Update camera
-        _scrollToPlayer();
-
-        _showInteractionBubble('You were defeated and returned to spawn.');
+        await _handleWhiteOut();
       }
 
       setState(() {
@@ -2695,6 +2759,12 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         ),
       );
     } else if (npc.data.scriptType == 'medic') {
+      final int playerCol = ((_playerX + tileSize / 2) / tileSize).floor();
+      final int playerRow = ((_playerY + tileSize / 2) / tileSize).floor();
+      // Convert to config-style coordinate (0 is bottom)
+      final int spawnY = _mapData.height - 1 - playerRow;
+      _userState.setLastMedicalCenter(_currentMapId, spawnY, playerCol);
+
       _userState.fullyHealTeam().then((_) {
         if (mounted) {
           _showInteractionBubble(
@@ -3169,20 +3239,13 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
           }
         }
       } else if (result == BattleResult.loss) {
-        // Teleport to spawn
-        _playerX = _mapData.spawnPoint.x * tileSize;
-        _playerY = (_mapData.height - 1 - _mapData.spawnPoint.y) * tileSize;
+        await _handleWhiteOut();
 
         // Reset NPC back to initially defined location
         npc.resetPosition();
 
-        // Update camera
-        _scrollToPlayer();
-
         // Allow re-challenge
         npc.hasTriggeredBattle = false;
-
-        _showInteractionBubble('You were defeated and returned to spawn.');
 
         // Save the updated position
         _saveCurrentState();

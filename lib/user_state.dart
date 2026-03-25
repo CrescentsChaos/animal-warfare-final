@@ -486,6 +486,16 @@ class UserState with ChangeNotifier {
     });
   }
 
+  /// Sets the last visited medical center spawn point.
+  Future<void> setLastMedicalCenter(String mapId, int row, int col) async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) => u.copyWith(
+      lastMedicalCenterMapId: mapId,
+      lastMedicalCenterRow: row,
+      lastMedicalCenterCol: col,
+    ));
+  }
+
   Future<bool> craftTalisman(
     String talismanId,
     Map<String, int> requiredLoot,
