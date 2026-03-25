@@ -132,49 +132,47 @@
         "defaultTileId": "swamp_ground",
         "biomeId": "urban",
         "isIndoor": true,
-        "minLevel": 1,
-        "maxLevel": 1,
         "layout": {
             "base": [
                 "null,null,null,null,null,null,null,null,null,null,null,null,null,null,null",
+                "null,steps_down_1,steps_down_1,steps_down_1,steps_down_1,steps_down_1,white_tile,steps_down_1,steps_down_1,black,steps_down_1,steps_down_1,steps_down_1,steps_down_1,null",
                 "null,white_tile,white_tile,white_tile,white_tile,white_tile,white_tile,white_tile,white_tile,black,white_tile,white_tile,white_tile,white_tile,null",
-                "null,white_tile,white_tile,white_tile,white_tile,white_tile,white_tile,white_tile,white_tile,black,white_tile,white_tile,white_tile,white_tile,null",
-                "null,white_tile,white_tile,white_tile,white_tile,white_tile,white_tile,broken_tile,white_tile,black,white_tile,white_tile,white_tile,white_tile,null",
-                "null,white_tile,white_tile,white_tile,white_tile,white_tile,white_tile,white_tile,white_tile,white_tile,white_tile,white_tile,white_tile,white_tile,null",
-                "null,white_tile,white_tile,broken_tile,white_tile,white_tile,white_tile,white_tile,white_tile,white_tile,white_tile,white_tile,white_tile,white_tile,null",
-                "null,white_tile,white_tile,white_tile,white_tile,white_tile,white_tile,white_tile,white_tile,black,white_tile,white_tile,white_tile,white_tile,null",
-                "null,white_tile,white_tile,white_tile,white_tile,white_tile,white_tile,white_tile,white_tile,black,white_tile,white_tile,white_tile,white_tile,null",
+                "null,office_floor_3,office_floor_3,office_floor_3,office_floor_3,office_floor_3,office_floor_3,office_floor_3,office_floor_3,black,white_tile,white_tile,white_tile,white_tile,null",
+                "null,office_floor_3,office_floor_3,office_floor_3,office_floor_3,office_floor_3,office_floor_3,office_floor_3,office_floor_3,office_floor_3,white_tile,white_tile,white_tile,white_tile,null",
+                "null,office_floor_3,office_floor_3,office_floor_3,office_floor_3,office_floor_3,office_floor_3,office_floor_3,office_floor_3,office_floor_3,white_tile,white_tile,white_tile,white_tile,null",
+                "null,office_floor_3,office_floor_3,office_floor_3,office_floor_3,office_floor_3,office_floor_3,office_floor_3,office_floor_3,black,white_tile,white_tile,white_tile,white_tile,null",
+                "null,office_floor_3,office_floor_3,office_floor_3,office_floor_3,office_floor_3,office_floor_3,office_floor_3,office_floor_3,black,white_tile,white_tile,white_tile,white_tile,null",
                 "null,black,black,black,black,black,black,black,white_tile,black,black,black,black,black,null",
                 "null,null,null,null,null,null,null,null,null,null,null,null,null,null,null"
             ],
             "overlay": [
                 "null,null,null,null,null,null,null,null,null,null,null,null,null,null,null",
-                "null,null,bed_2,null,null,tv_2,null,box_1,null,null,null,stove_1,null,refrigerator_1,null",
+                "null,white_wall_2,white_wall_2,white_wall_2,white_wall_2,white_wall_2,white_wall_2,white_wall_2,white_wall_2,null,white_wall_2,white_wall_2,white_wall_2,white_wall_2,null",
+                "null,white_wall_1|locker_1,white_wall_1,white_wall_1|phone_1,white_wall_1,white_wall_1,white_wall_1,white_wall_1,white_wall_1,null,white_wall_1,white_wall_1,white_wall_1,white_wall_1,null",
+                "null,null,bed_2,null,null,tv_1,null,chair_1,null,null,null,stove_1,null,refrigerator_1,null",
                 "null,null,bed_1,null,null,null,null,null,null,null,null,null,null,null,null",
                 "null,null,null,null,null,null,null,null,null,null,null,null,null,null,null",
-                "null,null,null,null,null,null,null,null,null,null,null,null,null,null,null",
-                "null,null,null,null,null,null,null,null,null,null,null,null,null,null,null",
-                "null,null,null,null,null,null,null,null,null,null,null,null,null,null,null",
-                "null,trash_can_4,null,null,null,null,null,null,null,null,null,null,null,trash_can_4,null",
+                "null,null,null,null,null,null,null,null,null,null,null,null,null,pot_2,null",
+                "null,trash_can_4,null,null,null,null,null,null,null,null,box_2,box_1,null,trash_can_4,null",
                 "null,null,null,null,null,null,null,null,doormat_1,null,null,null,null,null,null",
                 "null,null,null,null,null,null,null,null,null,null,null,null,null,null,null"
             ],
             "walkability": [
                 "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
-                "0,1,1,1,1,0,1,0,1,0,1,0,1,0,0",
-                "0,1,0,1,1,1,1,1,1,0,1,1,1,1,0",
-                "0,1,1,1,1,1,1,1,1,0,1,1,1,1,0",
+                "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+                "0,1,0,1,0,0,0,0,0,0,0,0,0,0,0",
+                "0,1,1,1,1,0,1,1,1,0,1,0,1,0,0",
+                "0,1,0,1,1,1,1,1,1,1,1,1,1,1,0",
                 "0,1,1,1,1,1,1,1,1,1,1,1,1,1,0",
-                "0,1,1,1,1,1,1,1,1,1,1,1,1,1,0",
-                "0,1,1,1,1,1,1,1,1,0,1,1,1,1,0",
-                "0,0,1,1,1,1,1,1,1,0,1,1,1,0,0",
+                "0,1,1,1,1,1,1,1,1,0,1,1,1,0,0",
+                "0,0,1,1,1,1,1,1,1,0,0,0,1,0,0",
                 "0,0,0,0,0,0,0,0,1,0,0,0,0,0,0",
                 "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
             ]
         },
         "spawnPoint": {
-            "x": 7,
-            "y": 4
+            "x": 3,
+            "y": 6
         },
         "transitions": [
             {
