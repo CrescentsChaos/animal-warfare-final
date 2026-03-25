@@ -1024,13 +1024,13 @@ class RockEffect extends StatelessWidget {
 // Ice Beam / Elemental Beam Effect
 // ----------------------------------------------------------------
 class BeamEffect extends StatelessWidget {
-  final String imagePath;
+  final List<String> imagePaths;
   final double progress;
   final bool isPlayer;
 
   const BeamEffect({
     super.key,
-    required this.imagePath,
+    required this.imagePaths,
     required this.progress,
     required this.isPlayer,
   });
@@ -1082,7 +1082,7 @@ class BeamEffect extends StatelessWidget {
               child: Transform.scale(
                 scale: scale,
                 child: Image.asset(
-                  imagePath,
+                  imagePaths[index % imagePaths.length],
                   width: 30,
                   height: 30,
                   fit: BoxFit.contain,
@@ -1806,24 +1806,21 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
     }
 
     if (move.animationType == 'beam_column') {
-      String imagePath;
-      final rand = math.Random(42);
+      List<String> imagePaths;
       if (move.name.toLowerCase() == 'hyper beam') {
-        final options = [
+        imagePaths = [
           'assets/move_effects/redball.png',
           'assets/move_effects/yellowball.png',
           'assets/move_effects/smallyellowball.png',
           'assets/move_effects/smallredball.png',
         ];
-        imagePath = options[rand.nextInt(options.length)];
       } else if (move.name.toLowerCase() == 'solar beam') {
-        final options = [
+        imagePaths = [
           'assets/move_effects/yellowball.png',
           'assets/move_effects/smallyellowball.png',
         ];
-        imagePath = options[rand.nextInt(options.length)];
       } else {
-        imagePath = 'assets/move_effects/ice.png';
+        imagePaths = ['assets/move_effects/ice.png'];
       }
       return AnimatedBuilder(
         animation: _progress,
@@ -1834,7 +1831,7 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
             followerAnchor: Alignment.center,
             targetAnchor: Alignment.center,
             child: BeamEffect(
-              imagePath: imagePath,
+              imagePaths: imagePaths,
               progress: _progress.value,
               isPlayer: isPlayer,
             ),
