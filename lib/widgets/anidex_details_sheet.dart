@@ -548,6 +548,22 @@ class AnidexDetailsSheet {
           Icons.speed,
           currentVal: showScaledStats ? capturedOrg?.effectiveSpeed : null,
         ),
+        const SizedBox(height: 16),
+        _buildStatRow(
+          'TOTAL (BST)',
+          org.bst,
+          1000, // Reasonable max for BST display
+          AppColors.highlightColor,
+          Icons.assessment,
+          currentVal: showScaledStats ? (capturedOrg != null ? (
+            capturedOrg.maxHealth +
+            capturedOrg.effectiveAttack +
+            capturedOrg.effectiveDefense +
+            capturedOrg.effectivePower +
+            capturedOrg.effectiveResistance +
+            capturedOrg.effectiveSpeed
+          ) : null) : null,
+        ),
       ],
     );
   }

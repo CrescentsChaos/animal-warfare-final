@@ -1124,14 +1124,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     bool disobeyed = false;
     // Fix: Satisfaction and level disobedience should NOT apply in Rogue-like mode
     if (!isRogueMode) {
-      final lvlDiff = playerOrganism.level - accountLevel;
-      if (lvlDiff > 0 && !isArenaBattle) {
-        // higher level = higher disobedience chance
-        final disChance = (lvlDiff * 0.1).clamp(0.0, 0.8);
-        if (Random().nextDouble() < disChance) {
-          disobeyed = true;
-        }
-      } else if (playerOrganism.satisfaction < 100) {
+      if (playerOrganism.satisfaction < 100) {
         // low satisfaction disobedience
         final disChance = ((100 - playerOrganism.satisfaction) / 200).clamp(
           0.0,
@@ -6556,13 +6549,18 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     if (player.health <= 0) {
       lastPlayerFaintTurn = currentTurn;
       // Check if team has more healthy animals
-      final nextHealthyIndex = playerTeam.indexWhere(
-        (org) =>
-            org.currentHealth > 0 &&
-            playerTeam.indexOf(org) != currentPlayerIndex,
-      );
+      bool hasOtherHealthy = false;
 
-      if (nextHealthyIndex != -1) {
+      for (int i = 0; i < playerTeam.length; i++) {
+        if (i != currentPlayerIndex && playerTeam[i].currentHealth > 0) {
+          hasOtherHealthy = true;
+
+        }
+      }
+
+
+
+      if (hasOtherHealthy) {
         addToLog(
           'Your ${player.organism.baseOrganism.name} fainted! Choose an animal to send out.',
         );

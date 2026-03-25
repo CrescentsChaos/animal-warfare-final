@@ -153,6 +153,7 @@ class BiomeConfig {
   final Point<int>? spawnPoint;
   final List<MapTransition>? transitions;
   final List<NPCData>? npcs;
+  final List<MapEvent>? events;
 
   const BiomeConfig({
     required this.id,
@@ -167,6 +168,7 @@ class BiomeConfig {
     this.spawnPoint,
     this.transitions,
     this.npcs,
+    this.events,
   });
 
   BiomeConfig copyWith({
@@ -182,6 +184,7 @@ class BiomeConfig {
     Point<int>? spawnPoint,
     List<MapTransition>? transitions,
     List<NPCData>? npcs,
+    List<MapEvent>? events,
   }) {
     return BiomeConfig(
       id: id ?? this.id,
@@ -196,6 +199,7 @@ class BiomeConfig {
       spawnPoint: spawnPoint ?? this.spawnPoint,
       transitions: transitions ?? this.transitions,
       npcs: npcs ?? this.npcs,
+      events: events ?? this.events,
     );
   }
 
@@ -249,6 +253,13 @@ class BiomeConfig {
           .toList();
     }
 
+    List<MapEvent>? parsedEvents;
+    if (json['events'] != null && (json['events'] as List).isNotEmpty) {
+      parsedEvents = (json['events'] as List)
+          .map((e) => MapEvent.fromJson(e))
+          .toList();
+    }
+
     return BiomeConfig(
       id: json['id'],
       name: json['name'],
@@ -262,6 +273,7 @@ class BiomeConfig {
       spawnPoint: spawn,
       transitions: parsedTransitions,
       npcs: parsedNpcs,
+      events: parsedEvents,
     );
   }
 }
@@ -298,6 +310,60 @@ class MapTransition {
       'targetMap': targetMap,
       'targetX': targetX,
       'targetY': targetY,
+    };
+  }
+}
+
+class MapEvent {
+  final int x;
+  final int y;
+  final String type; // 'rival_battle', 'scripted_monologue', 'trainer_ambush'
+  final String? scriptId;
+  final String? requiredFlag;
+  final String? setsFlag;
+  final bool oneTime;
+  final String? spriteKey; // for spawning an NPC during event
+  final List<String>? dialogue;
+
+  const MapEvent({
+    required this.x,
+    required this.y,
+    required this.type,
+    this.scriptId,
+    this.requiredFlag,
+    this.setsFlag,
+    this.oneTime = true,
+    this.spriteKey,
+    this.dialogue,
+  });
+
+  factory MapEvent.fromJson(Map<String, dynamic> json) {
+    return MapEvent(
+      x: (json['x'] as num).toInt(),
+      y: (json['y'] as num).toInt(),
+      type: json['type'] as String,
+      scriptId: json['scriptId'] as String?,
+      requiredFlag: json['requiredFlag'] as String?,
+      setsFlag: json['setsFlag'] as String?,
+      oneTime: json['oneTime'] as bool? ?? true,
+      spriteKey: json['spriteKey'] as String?,
+      dialogue: json['dialogue'] != null
+          ? List<String>.from(json['dialogue'])
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'x': x,
+      'y': y,
+      'type': type,
+      'scriptId': scriptId,
+      'requiredFlag': requiredFlag,
+      'setsFlag': setsFlag,
+      'oneTime': oneTime,
+      'spriteKey': spriteKey,
+      'dialogue': dialogue,
     };
   }
 }
@@ -554,19 +620,19 @@ class BiomeDataManager {
         for (var frame = 0; frame <= 3; frame++) {
           final path = 'assets/overworld/npc/${type}_${dir}_$frame.png';
           var img = await loadImage(path);
-          
+
           // Fallback: if frame 0 is missing, try without the _0 suffix
           if (img == null && frame == 0) {
-            final fallbackPath = 'assets/overworld/npc/${type}_${dir}.png';
+            final fallbackPath = 'assets/overworld/npc/${type}_$dir.png';
             img = await loadImage(fallbackPath);
           }
 
           if (img != null) {
             npcAssets[type]![dir]!.add(img);
             foundAny = true;
-            
+
             // If we found a fallback (non-numbered) image, we treat it as a single-frame animation
-            if (!path.contains('_$frame.png')) break; 
+            if (!path.contains('_$frame.png')) break;
           }
         }
       }
@@ -700,6 +766,7 @@ class BiomeMapData {
   final int maxLevel;
   final List<MapTransition>? transitions;
   final List<NPCData>? npcs;
+  final List<MapEvent>? events;
 
   const BiomeMapData({
     required this.grid,
@@ -715,6 +782,7 @@ class BiomeMapData {
     this.maxLevel = 5,
     this.transitions,
     this.npcs,
+    this.events,
   });
 }
 
@@ -727,12 +795,14 @@ class MapStringParser {
     String? biomeId,
     List<MapTransition>? transitions,
     List<NPCData>? npcs,
+    List<MapEvent>? events,
   }) {
     List<String> baseLines = [];
     List<String>? overlayLines;
     List<String>? walkLines;
 
     List<NPCData>? parsedNpcs = npcs;
+    List<MapEvent>? parsedEvents = events;
 
     if (data is Map) {
       if (data.containsKey('layout')) {
@@ -774,7 +844,14 @@ class MapStringParser {
         );
       }
       if (data.containsKey('npcs')) {
-        parsedNpcs = (data['npcs'] as List).map((n) => NPCData.fromJson(n)).toList();
+        parsedNpcs = (data['npcs'] as List)
+            .map((n) => NPCData.fromJson(n))
+            .toList();
+      }
+      if (data.containsKey('events')) {
+        parsedEvents = (data['events'] as List)
+            .map((e) => MapEvent.fromJson(e))
+            .toList();
       }
     } else if (data is List) {
       baseLines = List<String>.from(data);
@@ -967,6 +1044,7 @@ class MapStringParser {
       maxLevel: config.maxLevel,
       transitions: transitions ?? config.transitions,
       npcs: parsedNpcs,
+      events: parsedEvents,
     );
   }
 }

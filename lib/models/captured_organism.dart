@@ -256,19 +256,9 @@ class CapturedOrganism {
 
   /// Awards XP to the organism, handles level ups and account level capping.
   /// Returns a map with 'leveledUp' (bool) and 'xp' (int) and 'level' (int).
-  Map<String, dynamic> gainXP(
-    int amount,
-    int accountLevelCap, {
-    bool ignoreCap = false,
-  }) {
+  Map<String, dynamic> gainXP(int amount) {
     int newXP = xp + amount;
     bool leveledUp = false;
-
-    if (!ignoreCap) {
-      int effectiveCap = max(initialLevel, accountLevelCap);
-      int maxAllowedXP = xpForLevel(effectiveCap + 1) - 1;
-      newXP = min(newXP, maxAllowedXP);
-    }
 
     // Calculate level from total XP
     int levelFromXP = 1;

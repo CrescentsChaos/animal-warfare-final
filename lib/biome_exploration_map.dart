@@ -35,6 +35,7 @@ import 'package:animal_warfare/crafting_screen.dart';
 import 'package:animal_warfare/game/overworld_sprite.dart';
 import 'package:animal_warfare/game/overworld_npc.dart';
 import 'package:animal_warfare/game/npc_team_loader.dart';
+import 'package:animal_warfare/game/archetype_teams.dart';
 import 'package:animal_warfare/models/quest.dart';
 
 class BiomeExplorationMap extends StatefulWidget {
@@ -134,6 +135,8 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   double _sleepFadeOpacity = 0.0;
   bool _isSleeping = false;
   VoidCallback? _onBubbleDismiss;
+  List<String> _dialogueQueue = [];
+  int _dialogueIndex = 0;
 
   // ── Overworld Pheno Sprites ──
   final List<OverworldSprite> _overworldSprites = [];
@@ -159,6 +162,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   // ── Headbutt / Tree Shake ──
   /// Maps tile position "row:col" to remaining shake time (seconds).
   final Map<String, double> _tileShakeTimers = {};
+
   /// Maps tile position "row:col" to current horizontal shake offset (pixels).
   final Map<String, double> _tileShakeOffsets = {};
 
@@ -169,7 +173,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    
+
     // Listen for unstuck requests from the phone app
     _userState = Provider.of<UserState>(context, listen: false);
     _userState.addListener(_onUserStateChange);
@@ -243,9 +247,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       _scrollToPlayer(insideSetState: true);
     });
 
-    _showInteractionBubble(
-      'Sent to spawn point.',
-    );
+    _showInteractionBubble('Sent to spawn point.');
   }
 
   void _initializeMapData(BiomeMapData data, {bool fromTeleport = false}) {
@@ -255,7 +257,9 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     _currentBiomeName = data.biomeId ?? data.config.id;
     _isIndoor = data.isIndoor;
 
-    debugPrint('EXPLORATION: Initializing map $_currentMapId (${data.width}x${data.height}) with ${data.npcs?.length ?? 0} NPCs');
+    debugPrint(
+      'EXPLORATION: Initializing map $_currentMapId (${data.width}x${data.height}) with ${data.npcs?.length ?? 0} NPCs',
+    );
     mapWidth = _mapData.width;
     mapHeight = _mapData.height;
 
@@ -288,6 +292,18 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
             _userState.hasFlag(npcData.requiredFlag)) {
           continue;
         }
+        // Skip trainers that disappear on defeat
+        if (npcData.disappearsOnDefeat &&
+            _userState.isTrainerDefeated(npcData.id)) {
+          continue;
+        }
+        // Skip event NPCs whose event is already completed
+        if ((npcData.scriptType == 'event_trainer' ||
+                npcData.scriptType == 'event_npc') &&
+            npcData.setsFlag.isNotEmpty &&
+            _userState.hasFlag(npcData.setsFlag)) {
+          continue;
+        }
         final npc = OverworldNPC(
           data: npcData.copyWith(y: _mapData.height - 1 - npcData.y),
         );
@@ -295,7 +311,8 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         if ((npcData.scriptType == 'trainer' ||
                 npcData.scriptType == 'rival' ||
                 npcData.scriptType == 'major_trainer' ||
-                npcData.scriptType == 'evil_team') &&
+                npcData.scriptType == 'evil_team' ||
+                npcData.scriptType == 'event_trainer') &&
             _userState.isTrainerDefeated(npcData.id)) {
           npc.isDefeated = true;
           npc.hasTriggeredBattle = true;
@@ -441,15 +458,17 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     if (_regrowthCheckAccumulator >= 5.0) {
       _regrowthCheckAccumulator = 0;
       final userState = _userState;
-      final initialCutCount = userState.currentUser?.eventFlags.cutGrassTiles.length ?? 0;
-      
+      final initialCutCount =
+          userState.currentUser?.eventFlags.cutGrassTiles.length ?? 0;
+
       userState.clearExpiredGrass().then((_) {
         // If some grass regrew, we might need to refresh the map view
-        final newCutCount = userState.currentUser?.eventFlags.cutGrassTiles.length ?? 0;
+        final newCutCount =
+            userState.currentUser?.eventFlags.cutGrassTiles.length ?? 0;
         if (newCutCount != initialCutCount) {
           // Re-sync the local map data for the current map
           // This is a bit expensive but ensures consistency
-          _initializeMapData(_mapData, fromTeleport: true); 
+          _initializeMapData(_mapData, fromTeleport: true);
           setState(() {});
         }
       });
@@ -524,8 +543,9 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
                 sr < _mapData.height &&
                 sc >= 0 &&
                 sc < _mapData.width &&
-                (_mapData.overlayGrid?[sr][sc]
-                        .any((t) => t.category == TileCategory.tallGrass) ??
+                (_mapData.overlayGrid?[sr][sc].any(
+                      (t) => t.category == TileCategory.tallGrass,
+                    ) ??
                     false)) {
               if (_rng.nextDouble() < 0.2) {
                 _spawnGrassParticles(
@@ -637,8 +657,8 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
     if (mounted) setState(() {});
 
-    // Player controls (only if not in an encounter and not transitioning)
-    if (!_encounterActive && !_isTransitioning) {
+    // Player controls (only if not in an encounter, not in dialogue, and not transitioning)
+    if (!_encounterActive && _bubbleText == null && !_isTransitioning) {
       if (_isMovingToTarget) {
         _walkAnimAccumulator += (_isRunning ? 4.4 : 2.2) * 0.05;
         _moveTowardsTarget();
@@ -650,8 +670,9 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
             pr < _mapData.height &&
             pc >= 0 &&
             pc < _mapData.width &&
-            (_mapData.overlayGrid?[pr][pc]
-                    .any((t) => t.category == TileCategory.tallGrass) ??
+            (_mapData.overlayGrid?[pr][pc].any(
+                  (t) => t.category == TileCategory.tallGrass,
+                ) ??
                 false)) {
           if (_rng.nextDouble() < 0.3) {
             _spawnGrassParticles(_playerX + tileSize / 2, _playerY + tileSize);
@@ -846,6 +867,10 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
         // Check encounter and count step exactly on tile
         _checkStepEncounter(
+          ((_playerY + tileSize / 2) / tileSize).floor(),
+          ((_playerX + tileSize / 2) / tileSize).floor(),
+        );
+        _checkTileEvents(
           ((_playerY + tileSize / 2) / tileSize).floor(),
           ((_playerX + tileSize / 2) / tileSize).floor(),
         );
@@ -1129,16 +1154,16 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       for (int i = 0; i < 3; i++) {
         final path = '${basePath}_${dir}_$i.png';
         var frameImg = await BiomeDataManager.loadImage(path);
-        
+
         // Fallback: if frame 0 is missing, try without the _0 suffix
         if (frameImg == null && i == 0) {
-          final fallbackPath = '${basePath}_${dir}.png';
+          final fallbackPath = '${basePath}_$dir.png';
           frameImg = await BiomeDataManager.loadImage(fallbackPath);
         }
 
         if (frameImg != null) {
           frames.add(frameImg);
-          
+
           // If we found a fallback (non-numbered) image, we treat it as a single-frame animation
           if (!path.contains('_$i.png')) break;
         }
@@ -1343,7 +1368,8 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     }
 
     final rng = Random();
-    final wildLevel = _mapData.minLevel +
+    final wildLevel =
+        _mapData.minLevel +
         rng.nextInt(_mapData.maxLevel - _mapData.minLevel + 1);
 
     final wildFighter = CapturedOrganism.spawn(
@@ -1400,14 +1426,102 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         // Update camera
         _scrollToPlayer();
 
-        _showInteractionBubble(
-          'You were defeated and returned to spawn.',
-        );
+        _showInteractionBubble('You were defeated and returned to spawn.');
       }
 
       setState(() {
         _encounterActive = false;
       });
+    }
+  }
+
+  void _checkTileEvents(int row, int col) {
+    final events = _mapData.events;
+    if (events == null || events.isEmpty) return;
+
+    for (final event in events) {
+      final eventRow = _mapData.height - 1 - event.y;
+      if (event.x == col && eventRow == row) {
+        if (event.requiredFlag != null &&
+            !_userState.hasFlag(event.requiredFlag!)) {
+          continue;
+        }
+        if (event.oneTime) {
+          final eventId = 'event_${_currentMapId}_${event.x}_${event.y}';
+          if (_userState.hasFlag(event.setsFlag ?? eventId)) {
+            continue;
+          }
+        }
+        _handleMapEvent(event);
+        return;
+      }
+    }
+  }
+
+  Future<void> _handleMapEvent(MapEvent event) async {
+    final eventId = 'event_${_currentMapId}_${event.x}_${event.y}';
+    final flagToSet = event.setsFlag ?? eventId;
+    if (event.oneTime) {
+      await _userState.setFlag(flagToSet);
+    }
+
+    switch (event.type) {
+      case 'rival_battle':
+        if (event.dialogue != null && event.dialogue!.isNotEmpty) {
+          _showDialogue(event.dialogue!);
+        }
+        _startRivalEvent(event);
+        break;
+      case 'scripted_monologue':
+        if (event.dialogue != null) {
+          _showDialogue(event.dialogue!);
+        }
+        break;
+    }
+  }
+
+  void _startRivalEvent(MapEvent event) async {
+    final user = _userState.currentUser;
+    if (user == null) return;
+
+    // Use ArchetypeTeamBuilder for a dynamic rival team
+    final archetypeResult = ArchetypeTeamBuilder.build(
+      widget.allOrganisms,
+      level: user.accountLevel + 2,
+      teamSize: 3,
+    );
+    final rivalTeam = archetypeResult.team;
+
+    if (rivalTeam.isEmpty) return;
+    final opponent = rivalTeam.first;
+    final mapScreenshot = await _captureMapScreenshot();
+
+    AudioService.instance.pauseAll();
+    if (!mounted) return;
+
+    final result = await Navigator.of(context).push<BattleResult>(
+      MaterialPageRoute(
+        builder: (context) => BattleScreen(
+          playerOrganism: user.teamOrganisms.first,
+          opponentOrganism: opponent,
+          opponentTeam: rivalTeam,
+          playerTeam: user.teamOrganisms,
+          biomeName: _currentBiomeName,
+          isTrainerBattle: true,
+          battleTitle: 'VS Rival Gary',
+          mapScreenshot: mapScreenshot,
+        ),
+      ),
+    );
+    AudioService.instance.resumeAll();
+
+    if (result == BattleResult.win) {
+      _showInteractionBubble('Gary: Smelling ya later!');
+    } else if (result == BattleResult.loss) {
+      await _userState.healFullTeam();
+      _playerX = _mapData.spawnPoint.x * tileSize;
+      _playerY = (_mapData.height - 1 - _mapData.spawnPoint.y) * tileSize;
+      _scrollToPlayer();
     }
   }
 
@@ -1487,8 +1601,18 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
                 IgnorePointer(child: WeatherOverlay(weather: weather)),
               // Weather indicator chip
               if (!_isIndoor) _buildWeatherChip(weather),
+              // Interaction Bubble Dismiss Overlay
+              if (_bubbleText != null)
+                Positioned.fill(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: _dismissDialogue,
+                    child: Container(color: Colors.transparent),
+                  ),
+                ),
               // Interaction Bubble
-              if (_bubbleText != null && (_interactionWorldPos != null || _interactionNPC != null))
+              if (_bubbleText != null &&
+                  (_interactionWorldPos != null || _interactionNPC != null))
                 _buildInteractionBubble(),
               // Confirmation Dialog
               if (_confirmationTitle != null) _buildConfirmationDialog(),
@@ -1708,7 +1832,9 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         child: CustomPaint(
           size: const Size(padSize, padSize),
           painter: _DPadPainter(
-            activeDir: _activeDirections.isNotEmpty ? _activeDirections.last : '',
+            activeDir: _activeDirections.isNotEmpty
+                ? _activeDirections.last
+                : '',
             highlightColor: _biomeHighlightColor,
             borderColor: _biomeHighlightColor,
           ),
@@ -1885,13 +2011,15 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
               _menuOption(
                 icon: Icons.inventory_2_rounded,
                 iconColor: Colors.amber,
-                title: 'Animal Box',
-                subtitle: 'Manage your collection & team',
+                title: 'Animal Party',
+                subtitle: 'Manage your active team',
                 onTap: () {
                   Navigator.pop(sheetCtx);
                   Navigator.push(
                     ctx,
-                    MaterialPageRoute(builder: (_) => const AnimalBoxScreen()),
+                    MaterialPageRoute(
+                      builder: (_) => const AnimalBoxScreen(teamOnly: true),
+                    ),
                   );
                 },
               ),
@@ -1939,9 +2067,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
                 onTap: () async {
                   Navigator.pop(sheetCtx);
                   await _saveCurrentState();
-                  _showInteractionBubble(
-                    'Game progress has been saved!',
-                  );
+                  _showInteractionBubble('Game progress has been saved!');
                 },
               ),
             ],
@@ -2048,10 +2174,14 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     // Invert Y for logs to match maps.json (Bottom-Up)
     int displayR = mapHeight - 1 - currentR;
     int displayTargetR = mapHeight - 1 - targetR;
-    debugPrint('INTERACT: player at ($currentC, $displayR), target ($targetC, $displayTargetR)');
+    debugPrint(
+      'INTERACT: player at ($currentC, $displayR), target ($targetC, $displayTargetR)',
+    );
     for (final n in _gameNPCs) {
-        int displayNPCR = mapHeight - 1 - n.gridRow;
-        debugPrint('  NPC ${n.data.id} at (${n.gridCol}, $displayNPCR) type ${n.data.scriptType}');
+      int displayNPCR = mapHeight - 1 - n.gridRow;
+      debugPrint(
+        '  NPC ${n.data.id} at (${n.gridCol}, $displayNPCR) type ${n.data.scriptType}',
+      );
     }
 
     // 0. Check for NPC interaction
@@ -2071,7 +2201,10 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
     // 0b. Check for NPC interaction behind a counter (distance 2)
     // First, check if the immediate target is a counter
-    if (targetR >= 0 && targetR < mapHeight && targetC >= 0 && targetC < mapWidth) {
+    if (targetR >= 0 &&
+        targetR < mapHeight &&
+        targetC >= 0 &&
+        targetC < mapWidth) {
       final overlayTilesAtTarget = _mapData.overlayGrid?[targetR][targetC];
       bool isCounter = false;
       if (overlayTilesAtTarget != null) {
@@ -2082,7 +2215,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
           }
         }
       }
-      
+
       if (isCounter) {
         // Check distance 2
         int targetR2 = targetR;
@@ -2092,7 +2225,10 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         if (_playerDirection == 'left') targetC2 -= 1;
         if (_playerDirection == 'right') targetC2 += 1;
 
-        if (targetR2 >= 0 && targetR2 < mapHeight && targetC2 >= 0 && targetC2 < mapWidth) {
+        if (targetR2 >= 0 &&
+            targetR2 < mapHeight &&
+            targetC2 >= 0 &&
+            targetC2 < mapWidth) {
           OverworldNPC? behindCounterNPC;
           for (final npc in _gameNPCs) {
             if (npc.gridRow == targetR2 && npc.gridCol == targetC2) {
@@ -2238,7 +2374,8 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         }
       }
     }
-    if (!isTree && baseDef != null &&
+    if (!isTree &&
+        baseDef != null &&
         baseDef.category == TileCategory.solid &&
         baseTileInfo.tileId.toLowerCase().contains('tree')) {
       isTree = true;
@@ -2261,7 +2398,9 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         }
       }
     }
-    if (!isTallGrass && baseDef != null && baseDef.category == TileCategory.tallGrass) {
+    if (!isTallGrass &&
+        baseDef != null &&
+        baseDef.category == TileCategory.tallGrass) {
       isTallGrass = true;
     }
 
@@ -2275,7 +2414,9 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       }
 
       if (hasSickle && !isSickleActive) {
-        _showInteractionBubble('The Sickle is OFF. Turn it ON in the inventory to cut grass.');
+        _showInteractionBubble(
+          'The Sickle is OFF. Turn it ON in the inventory to cut grass.',
+        );
         return;
       }
 
@@ -2316,10 +2457,10 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       isPCTile = true;
     }
 
-    if (isPCTile) {
+    if (isPCTile && _playerDirection == 'up') {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => const AnimalBoxScreen(teamOnly: true)),
+        MaterialPageRoute(builder: (_) => const AnimalBoxScreen()),
       );
       return;
     }
@@ -2347,8 +2488,9 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
     // 3. Update the map grid locally for immediate feedback
     if (_mapData.overlayGrid != null) {
-      final alreadyCut =
-          _mapData.overlayGrid![r][c].any((t) => t.tileId == 'cutdown_grass');
+      final alreadyCut = _mapData.overlayGrid![r][c].any(
+        (t) => t.tileId == 'cutdown_grass',
+      );
       if (!alreadyCut) {
         _mapData.overlayGrid![r][c].removeWhere((t) {
           final def = BiomeDataManager.allTiles[t.tileId];
@@ -2388,13 +2530,16 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
     // 1. Check if any party animal has headbutt
     if (!_checkHeadbuttMove()) {
-      _showInteractionBubble('A sturdy tree. Maybe a headbutt could shake it...');
+      _showInteractionBubble(
+        'A sturdy tree. Maybe a headbutt could shake it...',
+      );
       return;
     }
 
     // 2. Check cooldown
     if (userState.isTileOnCooldown(mapId, r, c)) {
-      final lastTime = userState.currentUser?.eventFlags.tileCooldowns[key] ?? 0;
+      final lastTime =
+          userState.currentUser?.eventFlags.tileCooldowns[key] ?? 0;
       final now = DateTime.now().millisecondsSinceEpoch;
       final remainingMs = (5 * 60 * 1000) - (now - lastTime);
       final mins = (remainingMs / 60000).floor();
@@ -2427,10 +2572,9 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         final dropId = drops[rng.nextInt(drops.length)];
         userState.addLoot(dropId, 1);
 
-        String displayName = dropId[0].toUpperCase() + dropId.substring(1).replaceAll('_', ' ');
-        _showInteractionBubble(
-          'Headbutt! A $displayName fell from the tree!',
-        );
+        String displayName =
+            dropId[0].toUpperCase() + dropId.substring(1).replaceAll('_', ' ');
+        _showInteractionBubble('Headbutt! A $displayName fell from the tree!');
         return;
       }
     }
@@ -2491,15 +2635,38 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
   void _showNPCDialogue(OverworldNPC npc) {
     if (npc.data.scriptType == 'signpost') {
+      _showDialogue(npc.data.dialogue);
+      return;
+    }
+
+    // Make NPC face the player
+    final pRow = (_playerY / tileSize).floor();
+    final pCol = (_playerX / tileSize).floor();
+    npc.faceToward(pRow, pCol);
+
+    // If this is a defeated trainer, skip pre-battle dialogue and only show defeat text
+    final isTrainerType = npc.data.scriptType == 'trainer' ||
+        npc.data.scriptType == 'rival' ||
+        npc.data.scriptType == 'major_trainer' ||
+        npc.data.scriptType == 'evil_team' ||
+        npc.data.scriptType == 'event_trainer';
+    if (isTrainerType && npc.isDefeated) {
       _showInteractionBubble(
-        npc.data.dialogue.join('\n'),
+        '${npc.data.name}: ${npc.data.defeatText.isNotEmpty ? npc.data.defeatText : "..."}',
+        speaker: npc,
       );
       return;
     }
 
     final displayName = npc.data.name.isNotEmpty ? '${npc.data.name}: ' : '';
-    _showInteractionBubble(
-      '$displayName${npc.data.dialogue.join('\n')}',
+    // Prepend display name to the first line if name exists
+    final lines = List<String>.from(npc.data.dialogue);
+    if (lines.isNotEmpty && displayName.isNotEmpty) {
+      lines[0] = '$displayName${lines[0]}';
+    }
+
+    _showDialogue(
+      lines,
       speaker: npc,
       onDismiss: () => _handleNPCInteraction(npc),
     );
@@ -2510,7 +2677,8 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     if (npc.data.scriptType == 'trainer' ||
         npc.data.scriptType == 'rival' ||
         npc.data.scriptType == 'major_trainer' ||
-        npc.data.scriptType == 'evil_team') {
+        npc.data.scriptType == 'evil_team' ||
+        npc.data.scriptType == 'event_trainer') {
       if (!npc.isDefeated) {
         _startTrainerBattle(npc);
       } else {
@@ -2550,7 +2718,34 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       _handleProfessorNPC(npc);
     } else if (npc.data.scriptType == 'request_board') {
       _handleRequestBoardNPC(npc);
+    } else if (npc.data.scriptType == 'event_npc') {
+      _handleEventNPC(npc);
     }
+  }
+
+  void _handleEventNPC(OverworldNPC npc) {
+    final userState = _userState;
+
+    // Show dialogue and then disappear
+    final displayName = npc.data.name.isNotEmpty ? '${npc.data.name}: ' : '';
+    final lines = List<String>.from(npc.data.dialogue);
+    if (lines.isNotEmpty && displayName.isNotEmpty) {
+      lines[0] = '$displayName${lines[0]}';
+    }
+
+    _showDialogue(
+      lines,
+      speaker: npc,
+      onDismiss: () {
+        // Set the event flag
+        if (npc.data.setsFlag.isNotEmpty) {
+          userState.setFlag(npc.data.setsFlag);
+        }
+        // Remove the NPC from the map
+        _gameNPCs.remove(npc);
+        setState(() {});
+      },
+    );
   }
 
   void _handleQuestGiverNPC(OverworldNPC npc) {
@@ -2562,10 +2757,14 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     if (npc.data.questId.isNotEmpty &&
         userState.eventFlags.isQuestCompleted(npc.data.questId)) {
       // Post-event dialogue
-      final postDialogue = npc.data.postEventDialogue.isNotEmpty
-          ? npc.data.postEventDialogue.join('\n')
-          : 'Thanks for your help!';
-      _showInteractionBubble('${npc.data.name}: $postDialogue');
+      final lines = npc.data.postEventDialogue.isNotEmpty
+          ? List<String>.from(npc.data.postEventDialogue)
+          : ['Thanks for your help!'];
+      final displayName = npc.data.name.isNotEmpty ? '${npc.data.name}: ' : '';
+      if (lines.isNotEmpty && displayName.isNotEmpty) {
+        lines[0] = '$displayName${lines[0]}';
+      }
+      _showDialogue(lines);
       return;
     }
 
@@ -2592,9 +2791,12 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
     // Offer the quest
     final displayName = npc.data.name.isNotEmpty ? '${npc.data.name}: ' : '';
-    _showInteractionBubble(
-      '$displayName${npc.data.dialogue.join('\n')}',
-    );
+    final lines = List<String>.from(npc.data.dialogue);
+    if (lines.isNotEmpty && displayName.isNotEmpty) {
+      lines[0] = '$displayName${lines[0]}';
+    }
+
+    _showDialogue(lines);
     // TODO: Add quest accept UI — for now auto-accept
     if (npc.data.questId.isNotEmpty) {
       final quest = Quest(
@@ -2618,18 +2820,25 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     // Check if story has been read (flag already set)
     if (npc.data.setsFlag.isNotEmpty && userState.hasFlag(npc.data.setsFlag)) {
       // Post-event dialogue
-      final postDialogue = npc.data.postEventDialogue.isNotEmpty
-          ? npc.data.postEventDialogue.join('\n')
-          : '...';
-      _showInteractionBubble('${npc.data.name}: $postDialogue');
+      final lines = npc.data.postEventDialogue.isNotEmpty
+          ? List<String>.from(npc.data.postEventDialogue)
+          : ['...'];
+      final displayName = npc.data.name.isNotEmpty ? '${npc.data.name}: ' : '';
+      if (lines.isNotEmpty && displayName.isNotEmpty) {
+        lines[0] = '$displayName${lines[0]}';
+      }
+      _showDialogue(lines);
       return;
     }
 
     // Show story dialogue
     final displayName = npc.data.name.isNotEmpty ? '${npc.data.name}: ' : '';
-    _showInteractionBubble(
-      '$displayName${npc.data.dialogue.join('\n')}',
-    );
+    final lines = List<String>.from(npc.data.dialogue);
+    if (lines.isNotEmpty && displayName.isNotEmpty) {
+      lines[0] = '$displayName${lines[0]}';
+    }
+
+    _showDialogue(lines);
 
     // Set flag after reading
     if (npc.data.setsFlag.isNotEmpty) {
@@ -2651,9 +2860,12 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
     // Show blocking dialogue
     final displayName = npc.data.name.isNotEmpty ? '${npc.data.name}: ' : '';
-    _showInteractionBubble(
-      '$displayName${npc.data.dialogue.join('\n')}',
-    );
+    final lines = List<String>.from(npc.data.dialogue);
+    if (lines.isNotEmpty && displayName.isNotEmpty) {
+      lines[0] = '$displayName${lines[0]}';
+    }
+
+    _showDialogue(lines);
   }
 
   void _handleItemGiverNPC(OverworldNPC npc) {
@@ -2662,18 +2874,25 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     // Check if item already collected
     final itemKey = '${npc.data.id}_item';
     if (userState.eventFlags.isItemCollected(itemKey)) {
-      final postDialogue = npc.data.postEventDialogue.isNotEmpty
-          ? npc.data.postEventDialogue.join('\n')
-          : 'I have nothing more for you.';
-      _showInteractionBubble('${npc.data.name}: $postDialogue');
+      final lines = npc.data.postEventDialogue.isNotEmpty
+          ? List<String>.from(npc.data.postEventDialogue)
+          : ['I have nothing more for you.'];
+      final displayName = npc.data.name.isNotEmpty ? '${npc.data.name}: ' : '';
+      if (lines.isNotEmpty && displayName.isNotEmpty) {
+        lines[0] = '$displayName${lines[0]}';
+      }
+      _showDialogue(lines);
       return;
     }
 
     // Give the item
     final displayName = npc.data.name.isNotEmpty ? '${npc.data.name}: ' : '';
-    _showInteractionBubble(
-      '$displayName${npc.data.dialogue.join('\n')}',
-    );
+    final lines = List<String>.from(npc.data.dialogue);
+    if (lines.isNotEmpty && displayName.isNotEmpty) {
+      lines[0] = '$displayName${lines[0]}';
+    }
+
+    _showDialogue(lines);
 
     if (npc.data.itemRewardId.isNotEmpty) {
       userState.addLoot(npc.data.itemRewardId, npc.data.itemRewardCount);
@@ -2691,10 +2910,14 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
     // Check if already done
     if (npc.data.setsFlag.isNotEmpty && userState.hasFlag(npc.data.setsFlag)) {
-      final postDialogue = npc.data.postEventDialogue.isNotEmpty
-          ? npc.data.postEventDialogue.join('\n')
-          : 'Thanks for your help!';
-      _showInteractionBubble('${npc.data.name}: $postDialogue');
+      final lines = npc.data.postEventDialogue.isNotEmpty
+          ? List<String>.from(npc.data.postEventDialogue)
+          : ['Thanks for your help!'];
+      final displayName = npc.data.name.isNotEmpty ? '${npc.data.name}: ' : '';
+      if (lines.isNotEmpty && displayName.isNotEmpty) {
+        lines[0] = '$displayName${lines[0]}';
+      }
+      _showDialogue(lines);
       return;
     }
 
@@ -2729,9 +2952,12 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       }
     } else {
       final displayName = npc.data.name.isNotEmpty ? '${npc.data.name}: ' : '';
-      _showInteractionBubble(
-        '$displayName${npc.data.dialogue.join('\n')}',
-      );
+      final lines = List<String>.from(npc.data.dialogue);
+      if (lines.isNotEmpty && displayName.isNotEmpty) {
+        lines[0] = '$displayName${lines[0]}';
+      }
+
+      _showDialogue(lines);
     }
   }
 
@@ -2793,7 +3019,11 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         _approachingNPC = npc;
 
         // Show "!" above NPC
-        _showInteractionBubble('!', speaker: npc, duration: const Duration(seconds: 1));
+        _showInteractionBubble(
+          '!',
+          speaker: npc,
+          duration: const Duration(seconds: 1),
+        );
         break;
       }
     }
@@ -2806,12 +3036,16 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
     // Show initial dialogue
     final displayName = npc.data.name.isNotEmpty ? '${npc.data.name}: ' : '';
-    final dialogueText = npc.data.dialogue.isNotEmpty
-        ? npc.data.dialogue.join('\n')
-        : 'Let\'s battle!';
+    final lines = npc.data.dialogue.isNotEmpty
+        ? List<String>.from(npc.data.dialogue)
+        : ['Let\'s battle!'];
 
-    _showInteractionBubble(
-      '$displayName$dialogueText',
+    if (lines.isNotEmpty && displayName.isNotEmpty) {
+      lines[0] = '$displayName${lines[0]}';
+    }
+
+    _showDialogue(
+      lines,
       speaker: npc,
       onDismiss: () async {
         if (!mounted) return;
@@ -2828,7 +3062,10 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
           debugPrint(
             'BiomeExplorationMap: Opponent team is empty for ${npc.data.teamId}. Cannot start battle.',
           );
-          _showInteractionBubble('I have no animals to fight with...', duration: const Duration(seconds: 2));
+          _showInteractionBubble(
+            'I have no animals to fight with...',
+            duration: const Duration(seconds: 2),
+          );
 
           setState(() => _encounterActive = false);
           _approachingNPC = null;
@@ -2865,20 +3102,22 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         AudioService.instance.pauseAll();
         if (!mounted) return;
 
-        final BattleResult? result = await Navigator.of(context).push<BattleResult>(
-          MaterialPageRoute(
-            builder: (context) => BattleScreen(
-              playerOrganism: playerFighter,
-              opponentOrganism: opponentTeam.first,
-              opponentTeam: opponentTeam,
-              mapScreenshot: mapScreenshot,
-              isTrainerBattle: true,
-              battleTitle: 'VS $trainerName',
-              timeOfDay: timeOfDay,
-              biomeName: _currentBiomeName,
-            ),
-          ),
-        );
+        final BattleResult? result = await Navigator.of(context)
+            .push<BattleResult>(
+              MaterialPageRoute(
+                builder: (context) => BattleScreen(
+                  playerOrganism: playerFighter,
+                  opponentOrganism: opponentTeam.first,
+                  playerTeam: user.teamOrganisms,
+                  opponentTeam: opponentTeam,
+                  mapScreenshot: mapScreenshot,
+                  isTrainerBattle: true,
+                  battleTitle: 'VS $trainerName',
+                  timeOfDay: timeOfDay,
+                  biomeName: _currentBiomeName,
+                ),
+              ),
+            );
 
         if (mounted) {
           _handleBattleResult(result, npc);
@@ -2886,6 +3125,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       },
     );
   }
+
   void _handleBattleResult(BattleResult? result, OverworldNPC npc) async {
     final userState = _userState;
     AudioService.instance.resumeAll();
@@ -2909,10 +3149,24 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
           _showInteractionBubble(
             '${npc.data.name}: ${npc.data.defeatText}',
             speaker: npc,
-            onDismiss: () => _showBattleRewards(npc),
+            onDismiss: () {
+              _showBattleRewards(npc);
+              // Remove event trainers from the map after defeat
+              if (npc.data.scriptType == 'event_trainer' ||
+                  npc.data.disappearsOnDefeat) {
+                _gameNPCs.remove(npc);
+                setState(() {});
+              }
+            },
           );
         } else {
           _showBattleRewards(npc);
+          // Remove event trainers from the map after defeat
+          if (npc.data.scriptType == 'event_trainer' ||
+              npc.data.disappearsOnDefeat) {
+            _gameNPCs.remove(npc);
+            setState(() {});
+          }
         }
       } else if (result == BattleResult.loss) {
         // Teleport to spawn
@@ -2928,9 +3182,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         // Allow re-challenge
         npc.hasTriggeredBattle = false;
 
-        _showInteractionBubble(
-          'You were defeated and returned to spawn.',
-        );
+        _showInteractionBubble('You were defeated and returned to spawn.');
 
         // Save the updated position
         _saveCurrentState();
@@ -2953,9 +3205,9 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
   void _showBattleRewards(OverworldNPC npc) {
     if (!mounted) return;
-    
+
     final userState = _userState;
-    
+
     if (npc.data.rewardMoney > 0) {
       userState.addMoney(npc.data.rewardMoney);
       _showInteractionBubble(
@@ -2970,11 +3222,12 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
   void _showItemReward(OverworldNPC npc) {
     if (!mounted) return;
-    
+
     if (npc.data.itemRewardId.isNotEmpty) {
       _userState.addLoot(npc.data.itemRewardId, npc.data.itemRewardCount);
-      String displayName = npc.data.itemRewardId[0].toUpperCase() + 
-                           npc.data.itemRewardId.substring(1).replaceAll('_', ' ');
+      String displayName =
+          npc.data.itemRewardId[0].toUpperCase() +
+          npc.data.itemRewardId.substring(1).replaceAll('_', ' ');
       _showInteractionBubble(
         'Received $displayName x${npc.data.itemRewardCount}!',
         speaker: npc,
@@ -2982,35 +3235,131 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     }
   }
 
-  void _showInteractionBubble(String text, {Offset? worldPos, OverworldNPC? speaker, VoidCallback? onDismiss, Duration? duration}) {
+  void _showDialogue(
+    List<String> lines, {
+    Offset? worldPos,
+    OverworldNPC? speaker,
+    VoidCallback? onDismiss,
+    Duration? duration,
+  }) {
+    if (lines.isEmpty) return;
+
+    // Attempt to determine the speaker prefix from the first line or the speaker object
+    String? prefix;
+    if (lines.first.contains(': ')) {
+      prefix = '${lines.first.split(': ')[0]}: ';
+    } else if (speaker != null && speaker.data.name.isNotEmpty) {
+      prefix = '${speaker.data.name}: ';
+    }
+
+    // Flatten lines into a single list of pages, splitting any \n in individual lines
+    final allPages = <String>[];
+    for (final line in lines) {
+      final splitPages = line.split('\n').where((s) => s.trim().isNotEmpty);
+      for (final p in splitPages) {
+        if (prefix != null && !p.startsWith(prefix)) {
+          allPages.add('$prefix$p');
+        } else {
+          allPages.add(p);
+        }
+      }
+    }
+
+    if (allPages.isEmpty) return;
+
     setState(() {
-      _bubbleText = text;
+      _dialogueQueue = allPages;
+      _dialogueIndex = 0;
+      _bubbleText = _dialogueQueue[0];
       _interactionWorldPos = worldPos ?? Offset(_playerX, _playerY - tileSize);
       _interactionNPC = speaker;
       _onBubbleDismiss = onDismiss;
     });
 
     _bubbleTimer?.cancel();
-    if (duration != null) {
-      _bubbleTimer = Timer(duration, () {
-        if (mounted) _dismissDialogue();
-      });
+    final effectiveDuration = duration ?? const Duration(seconds: 8);
+    _bubbleTimer = Timer(effectiveDuration, () {
+      if (mounted) _dismissDialogue();
+    });
+  }
+
+  void _showInteractionBubble(
+    String text, {
+    Offset? worldPos,
+    OverworldNPC? speaker,
+    VoidCallback? onDismiss,
+    Duration? duration,
+  }) {
+    // Split by \n for multi-page support
+    final pages = text.split('\n').where((s) => s.trim().isNotEmpty).toList();
+    if (pages.isEmpty) return;
+
+    // Attempt to determine the speaker prefix from the first line or the speaker object
+    String? prefix;
+    if (pages.first.contains(': ')) {
+      prefix = '${pages.first.split(': ')[0]}: ';
+    } else if (speaker != null && speaker.data.name.isNotEmpty) {
+      prefix = '${speaker.data.name}: ';
     }
+
+    final allPages = <String>[];
+    for (final p in pages) {
+      if (prefix != null && !p.startsWith(prefix)) {
+        allPages.add('$prefix$p');
+      } else {
+        allPages.add(p);
+      }
+    }
+
+    setState(() {
+      _dialogueQueue = allPages;
+      _dialogueIndex = 0;
+      _bubbleText = _dialogueQueue[0];
+      _interactionWorldPos = worldPos ?? Offset(_playerX, _playerY - tileSize);
+      _interactionNPC = speaker;
+      _onBubbleDismiss = onDismiss;
+    });
+
+    _bubbleTimer?.cancel();
+    // Non-last pages don't auto-dismiss usually, or have longer timers.
+    // For simplicity, we keep a timer but it resets on page advance.
+    final effectiveDuration = duration ?? const Duration(seconds: 8);
+    _bubbleTimer = Timer(effectiveDuration, () {
+      if (mounted) _dismissDialogue();
+    });
   }
 
   void _dismissDialogue() {
     if (!mounted) return;
     _bubbleTimer?.cancel();
+
+    // Check if there are more pages in the queue
+    if (_dialogueIndex < _dialogueQueue.length - 1) {
+      setState(() {
+        _dialogueIndex++;
+        _bubbleText = _dialogueQueue[_dialogueIndex];
+      });
+      // Reset timer for the next page
+      _bubbleTimer = Timer(const Duration(seconds: 8), () {
+        if (mounted) _dismissDialogue();
+      });
+      return;
+    }
+
     final callback = _onBubbleDismiss;
     setState(() {
       _bubbleText = null;
+      _dialogueQueue = [];
+      _dialogueIndex = 0;
       _onBubbleDismiss = null;
     });
     callback?.call();
   }
 
   Widget _buildInteractionBubble() {
-    if (_bubbleText == null || (_interactionWorldPos == null && _interactionNPC == null) || _viewSize == Size.zero) {
+    if (_bubbleText == null ||
+        (_interactionWorldPos == null && _interactionNPC == null) ||
+        _viewSize == Size.zero) {
       return const SizedBox.shrink();
     }
 
@@ -3020,7 +3369,9 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         : _interactionWorldPos!;
 
     // Map world coords back to screen coordinates
-    double screenX = (targetWorldPos.dx - _cameraX) * _zoomScale + (tileSize * _zoomScale) / 2;
+    double screenX =
+        (targetWorldPos.dx - _cameraX) * _zoomScale +
+        (tileSize * _zoomScale) / 2;
     double screenY = (targetWorldPos.dy - _cameraY) * _zoomScale;
 
     // The bubble should span the screen (with margins)
@@ -3107,10 +3458,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
                       tween: Tween(begin: 0.3, end: 1.0),
                       duration: const Duration(milliseconds: 800),
                       builder: (context, value, child) {
-                        return Opacity(
-                          opacity: value,
-                          child: child,
-                        );
+                        return Opacity(opacity: value, child: child);
                       },
                       onEnd: () {},
                       child: const Row(
@@ -3147,14 +3495,19 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
                   height: 14,
                   alignment: Alignment.topLeft,
                   child: Transform.translate(
-                    offset: Offset(tailLocalX - 7, -2), // -7 to center 14px tail
+                    offset: Offset(
+                      tailLocalX - 7,
+                      -2,
+                    ), // -7 to center 14px tail
                     child: Transform.rotate(
                       angle: 3.14159 / 4,
                       child: Container(
                         width: 14,
                         height: 14,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF161B22).withValues(alpha: 0.95),
+                          color: const Color(
+                            0xFF161B22,
+                          ).withValues(alpha: 0.95),
                           border: const Border(
                             bottom: BorderSide(color: Colors.white, width: 2),
                             right: BorderSide(color: Colors.white, width: 2),
@@ -3368,7 +3721,6 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       });
     }
   }
-
 
   Widget _buildStaminaBar(BuildContext context) {
     return GestureDetector(
@@ -3621,14 +3973,17 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       for (int c = 0; c < _mapData.width; c++) {
         final base = _mapData.grid[r][c];
         final overlay = _mapData.overlayGrid?[r][c];
-        final isSolid = base.category == TileCategory.solid ||
+        final isSolid =
+            base.category == TileCategory.solid ||
             (overlay?.any((t) => t.category == TileCategory.solid) ?? false);
 
         if (isSolid) {
           // Check if this solid tile matches the spawn criteria
           bool solidMatch = false;
           if (!isAny) {
-            if (spawnSet.contains(base.tileId.toLowerCase().replaceAll('_', '')) ||
+            if (spawnSet.contains(
+                  base.tileId.toLowerCase().replaceAll('_', ''),
+                ) ||
                 spawnSet.contains(
                   base.category.name.toLowerCase().replaceAll('_', ''),
                 )) {
@@ -3650,14 +4005,25 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
           if (solidMatch) {
             // Add non-solid adjacent tiles instead
-            for (final d in [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
+            for (final d in [
+              [-1, 0],
+              [1, 0],
+              [0, -1],
+              [0, 1],
+            ]) {
               final nr = r + d[0];
               final nc = c + d[1];
-              if (nr < 0 || nr >= _mapData.height || nc < 0 || nc >= _mapData.width) continue;
+              if (nr < 0 ||
+                  nr >= _mapData.height ||
+                  nc < 0 ||
+                  nc >= _mapData.width)
+                continue;
               final adjBase = _mapData.grid[nr][nc];
               final adjOverlay = _mapData.overlayGrid?[nr][nc];
-              final adjSolid = adjBase.category == TileCategory.solid ||
-                  (adjOverlay?.any((t) => t.category == TileCategory.solid) ?? false);
+              final adjSolid =
+                  adjBase.category == TileCategory.solid ||
+                  (adjOverlay?.any((t) => t.category == TileCategory.solid) ??
+                      false);
               if (!adjSolid) {
                 final key = '$nr:$nc';
                 if (addedTiles.add(key)) {
@@ -4125,8 +4491,8 @@ class _BiomeMapPainter extends CustomPainter {
         // Apply gentle sway
         final double swaySpeed = entityHere ? 4.0 : 2.0;
         final double swayIntensity = entityHere ? 0.08 : 0.03;
-        final double sway = sin(grassAnimTime * swaySpeed + (c + r * 1.5)) *
-            swayIntensity;
+        final double sway =
+            sin(grassAnimTime * swaySpeed + (c + r * 1.5)) * swayIntensity;
 
         canvas.translate(rect.center.dx, rect.bottom);
         canvas.rotate(sway);

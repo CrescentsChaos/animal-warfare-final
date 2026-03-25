@@ -335,7 +335,7 @@
                 "facing": "left",
                 "scriptType": "trainer",
                 "dialogue": [
-                    "You are cooked!"
+                    "Hey, kid. That's the wrong way!\nYou are cooked!"
                 ],
                 "movementType": "still",
                 "movementRange": 0,

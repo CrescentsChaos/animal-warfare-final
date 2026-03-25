@@ -14,6 +14,7 @@ class NPCData {
   final int visionRange; // tiles the NPC can see to detect the player
   final String teamId; // links to npc_teams.json entry
   final String defeatText; // text shown after the trainer is defeated
+  final bool disappearsOnDefeat; // if true, the trainer leaves the map after defeat
 
   // --- Event & Quest Fields ---
   final String questId; // links to a quest definition (for quest_giver)
@@ -53,6 +54,7 @@ class NPCData {
     this.postEventDialogue = const [],
     this.condition = '',
     this.rewardMoney = 0,
+    this.disappearsOnDefeat = false,
   });
 
   factory NPCData.fromJson(Map<String, dynamic> json) {
@@ -84,6 +86,7 @@ class NPCData {
           const [],
       condition: json['condition'] as String? ?? '',
       rewardMoney: json['rewardMoney'] as int? ?? 0,
+      disappearsOnDefeat: json['disappearsOnDefeat'] as bool? ?? false,
     );
   }
 
@@ -113,6 +116,7 @@ class NPCData {
       'postEventDialogue': postEventDialogue,
       'condition': condition,
       'rewardMoney': rewardMoney,
+      'disappearsOnDefeat': disappearsOnDefeat,
     };
   }
 
@@ -141,6 +145,7 @@ class NPCData {
     List<String>? postEventDialogue,
     String? condition,
     int? rewardMoney,
+    bool? disappearsOnDefeat,
   }) {
     return NPCData(
       id: id ?? this.id,
@@ -167,6 +172,7 @@ class NPCData {
       postEventDialogue: postEventDialogue ?? this.postEventDialogue,
       condition: condition ?? this.condition,
       rewardMoney: rewardMoney ?? this.rewardMoney,
+      disappearsOnDefeat: disappearsOnDefeat ?? this.disappearsOnDefeat,
     );
   }
 }

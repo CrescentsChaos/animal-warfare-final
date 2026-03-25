@@ -65,7 +65,7 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
     if (widget.teamOnly) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Animal Storage'),
+          title: const Text('Animal Party'),
           backgroundColor: AppColors.surface,
         ),
         body: Consumer<UserState>(
@@ -89,7 +89,7 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Animal Box'),
+          title: const Text('Animal Storage'),
           backgroundColor: AppColors.surface,
           bottom: const TabBar(
             indicatorColor: AppColors.highlightColor,

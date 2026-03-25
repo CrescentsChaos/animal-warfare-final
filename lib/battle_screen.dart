@@ -646,22 +646,13 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     final bm = Provider.of<BattleManager>(context, listen: false);
 
     // Award XP
-    int? levelCap;
-    if (widget.isRogueMode) {
-      // In Roguelike, animals can level up to the current floor's cap (floor * 10).
-      // The only cap is the floor-based one, no account level restriction.
-      final rogueState = userState.currentUser?.rogueLikeState;
-      final currentFloor = rogueState?.floor ?? 1;
-      levelCap = (currentFloor * 10).clamp(10, 100);
-    }
+
 
     if (!widget.isArenaBattle) {
       final results = await userState.awardBattleXP(
         defeatedLevel: victim.level,
         killerId: killer.organism.id,
         teamIds: bm.playerTeam.map((o) => o.id).toList(),
-        levelCap: levelCap,
-        ignoreCap: widget.isRogueMode,
       );
 
       if (!mounted) return;

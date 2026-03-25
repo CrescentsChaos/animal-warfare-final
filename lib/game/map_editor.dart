@@ -22,6 +22,7 @@ enum EditorMode {
   teleporter,
   npc,
   move,
+  event,
 }
 
 enum PaletteState { compact, full }
@@ -35,6 +36,7 @@ class _EditorSnapshot {
   final int spawnC;
   final List<MapTransition> teleporters;
   final List<NPCData> npcs;
+  final List<MapEvent> events;
 
   _EditorSnapshot({
     required this.grid,
@@ -44,6 +46,7 @@ class _EditorSnapshot {
     required this.spawnC,
     required this.teleporters,
     required this.npcs,
+    required this.events,
   });
 
   _EditorSnapshot deepCopy() => _EditorSnapshot(
@@ -58,6 +61,7 @@ class _EditorSnapshot {
         .map((t) => MapTransition.fromJson(t.toJson()))
         .toList(),
     npcs: npcs.map((n) => NPCData.fromJson(n.toJson())).toList(),
+    events: events.map((e) => MapEvent.fromJson(e.toJson())).toList(),
   );
 }
 
@@ -91,6 +95,7 @@ class _MapEditorState extends State<MapEditor> {
   int _spawnC = 1;
   List<MapTransition> _teleporters = [];
   List<NPCData> _npcs = [];
+  List<MapEvent> _events = [];
 
   static const List<String> _biomeIds = [
     'Volcano',
@@ -211,11 +216,15 @@ class _MapEditorState extends State<MapEditor> {
     _spawnC = (_cols / 2).floor();
     _teleporters = [];
     _npcs = [];
+    _events = [];
     if (_biomeConfig.npcs != null) {
       // Import NPCs from config, inverting Y coordinates back to top-down grid indices
       for (final npcData in _biomeConfig.npcs!) {
         _npcs.add(npcData.copyWith(y: _rows - 1 - npcData.y));
       }
+    }
+    if (_biomeConfig.events != null) {
+      _events = List<MapEvent>.from(_biomeConfig.events!);
     }
     _applyBorder();
     _pushUndo();
@@ -256,6 +265,7 @@ class _MapEditorState extends State<MapEditor> {
       _spawnC = (_cols / 2).floor();
       _teleporters = [];
       _npcs = [];
+      _events = [];
       _applyBorder();
       _undoStack.clear();
       _redoStack.clear();
@@ -309,6 +319,7 @@ class _MapEditorState extends State<MapEditor> {
             .map((t) => MapTransition.fromJson(t.toJson()))
             .toList(),
         npcs: _npcs.map((n) => NPCData.fromJson(n.toJson())).toList(),
+        events: _events.map((e) => MapEvent.fromJson(e.toJson())).toList(),
       ),
     );
     if (_undoStack.length > _maxUndoSize) _undoStack.removeAt(0);
@@ -327,6 +338,7 @@ class _MapEditorState extends State<MapEditor> {
       _spawnC = snap.spawnC;
       _teleporters = snap.teleporters;
       _npcs = snap.npcs;
+      _events = snap.events;
     });
     _saveToPrefs();
   }
@@ -343,6 +355,7 @@ class _MapEditorState extends State<MapEditor> {
       _spawnC = snap.spawnC;
       _teleporters = snap.teleporters;
       _npcs = snap.npcs;
+      _events = snap.events;
     });
     _saveToPrefs();
   }
@@ -370,6 +383,10 @@ class _MapEditorState extends State<MapEditor> {
       'map_editor_npcs_v3',
       jsonEncode(_npcs.map((n) => n.toJson()).toList()),
     );
+    await prefs.setString(
+      'map_editor_events_v3',
+      jsonEncode(_events.map((e) => e.toJson()).toList()),
+    );
   }
 
   Future<void> _loadFromPrefs() async {
@@ -389,6 +406,7 @@ class _MapEditorState extends State<MapEditor> {
     final String? spawnData = prefs.getString('map_editor_spawn_v3');
     final String? teleportsData = prefs.getString('map_editor_teleporters_v3');
     final String? npcsData = prefs.getString('map_editor_npcs_v3');
+    final String? eventsData = prefs.getString('map_editor_events_v3');
 
     setState(() {
       if (savedBiome != null && savedBiome != _biomeId) {
@@ -435,6 +453,10 @@ class _MapEditorState extends State<MapEditor> {
       if (npcsData != null) {
         final List<dynamic> decoded = jsonDecode(npcsData);
         _npcs = decoded.map((n) => NPCData.fromJson(n)).toList();
+      }
+      if (eventsData != null) {
+        final List<dynamic> decoded = jsonDecode(eventsData);
+        _events = decoded.map((e) => MapEvent.fromJson(e)).toList();
       }
     });
   }
@@ -664,6 +686,11 @@ class _MapEditorState extends State<MapEditor> {
           }
         }
         break;
+      case EditorMode.event:
+        if (isStart && !_isBorderCell(r, c)) {
+          _showEventDialog(r, c);
+        }
+        break;
       default:
         break;
     }
@@ -848,6 +875,12 @@ class _MapEditorState extends State<MapEditor> {
     final teamIdCtrl = TextEditingController(text: existing.teamId);
     final defeatTextCtrl = TextEditingController(text: existing.defeatText);
     final rewardMoneyCtrl = TextEditingController(text: existing.rewardMoney.toString());
+    final requiredFlagCtrl = TextEditingController(text: existing.requiredFlag);
+    final setsFlagCtrl = TextEditingController(text: existing.setsFlag);
+    final postEventDialogueCtrl = TextEditingController(
+      text: existing.postEventDialogue.join('\n'),
+    );
+    bool disappearsOnDefeat = existing.disappearsOnDefeat;
 
     showDialog(
       context: context,
@@ -901,12 +934,41 @@ class _MapEditorState extends State<MapEditor> {
                         'shopkeeper',
                         'medic',
                         'trainer',
+                        'rival',
+                        'major_trainer',
+                        'evil_team',
+                        'event_trainer',
+                        'event_npc',
+                        'quest_giver',
+                        'story',
+                        'blocker',
+                        'item_giver',
+                        'fetch_quest',
+                        'professor',
+                        'request_board',
                       ].contains(scriptCtrl.text)
                       ? scriptCtrl.text
                       : 'none',
                   dropdownColor: const Color(0xFF2A2A2A),
                   style: const TextStyle(color: Colors.white),
-                  items: ['none', 'shopkeeper', 'medic', 'trainer']
+                  items: [
+                    'none',
+                    'shopkeeper',
+                    'medic',
+                    'trainer',
+                    'rival',
+                    'major_trainer',
+                    'evil_team',
+                    'event_trainer',
+                    'event_npc',
+                    'quest_giver',
+                    'story',
+                    'blocker',
+                    'item_giver',
+                    'fetch_quest',
+                    'professor',
+                    'request_board',
+                  ]
                       .map((s) => DropdownMenuItem(value: s, child: Text(s)))
                       .toList(),
                   onChanged: (val) {
@@ -972,7 +1034,11 @@ class _MapEditorState extends State<MapEditor> {
                   ),
                   style: const TextStyle(color: Colors.white),
                 ),
-                if (scriptCtrl.text == 'trainer') ...[
+                if (scriptCtrl.text == 'trainer' ||
+                    scriptCtrl.text == 'rival' ||
+                    scriptCtrl.text == 'major_trainer' ||
+                    scriptCtrl.text == 'evil_team' ||
+                    scriptCtrl.text == 'event_trainer') ...[
                   const SizedBox(height: 8),
                   TextField(
                     controller: visionCtrl,
@@ -1008,6 +1074,55 @@ class _MapEditorState extends State<MapEditor> {
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(
                       labelText: 'Reward Taka (Money)',
+                      labelStyle: TextStyle(color: Colors.white70),
+                    ),
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: disappearsOnDefeat,
+                        onChanged: (val) {
+                          setDialogState(() => disappearsOnDefeat = val ?? false);
+                        },
+                        activeColor: Colors.blueAccent,
+                      ),
+                      const Text(
+                        'Disappears on Defeat',
+                        style: TextStyle(color: Colors.white70),
+                      ),
+                    ],
+                  ),
+                ],
+                // Flag fields for event-capable types
+                if (scriptCtrl.text != 'none' &&
+                    scriptCtrl.text != 'shopkeeper' &&
+                    scriptCtrl.text != 'medic') ...[
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: requiredFlagCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'Required Flag (show if set)',
+                      labelStyle: TextStyle(color: Colors.white70),
+                    ),
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: setsFlagCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'Sets Flag (on completion)',
+                      labelStyle: TextStyle(color: Colors.white70),
+                    ),
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: postEventDialogueCtrl,
+                    maxLines: 2,
+                    decoration: const InputDecoration(
+                      labelText: 'Post-Event Dialogue',
                       labelStyle: TextStyle(color: Colors.white70),
                     ),
                     style: const TextStyle(color: Colors.white),
@@ -1051,6 +1166,13 @@ class _MapEditorState extends State<MapEditor> {
                   teamId: teamIdCtrl.text.trim(),
                   defeatText: defeatTextCtrl.text.trim(),
                   rewardMoney: int.tryParse(rewardMoneyCtrl.text) ?? 0,
+                  requiredFlag: requiredFlagCtrl.text.trim(),
+                  setsFlag: setsFlagCtrl.text.trim(),
+                  postEventDialogue: postEventDialogueCtrl.text
+                      .split('\n')
+                      .where((s) => s.trim().isNotEmpty)
+                      .toList(),
+                  disappearsOnDefeat: disappearsOnDefeat,
                 );
                 setState(() {
                   final idx = _npcs.indexWhere((n) => n.y == r && n.x == c);
@@ -1160,6 +1282,111 @@ class _MapEditorState extends State<MapEditor> {
               _onInteractionEnd();
             },
             child: const Text('SAVE', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showEventDialog(int r, int c) {
+    MapEvent? existing;
+    try {
+      existing = _events.firstWhere((e) => e.x == c && e.y == r);
+    } catch (_) {}
+
+    const List<String> eventTypes = [
+      'rival_battle',
+      'scripted_monologue',
+      'trainer_ambush',
+      'sign',
+    ];
+
+    final typeNotifier = ValueNotifier<String>(existing?.type ?? 'sign');
+    final dialogueCtrl = TextEditingController(text: existing?.dialogue?.join('\n') ?? '');
+    final scriptCtrl = TextEditingController(text: existing?.scriptId ?? '');
+    final flagCtrl = TextEditingController(text: existing?.requiredFlag ?? '');
+    final setFlagCtrl = TextEditingController(text: existing?.setsFlag ?? '');
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1E1E1E),
+        title: const Text('Configure Event', style: TextStyle(color: Colors.white)),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ValueListenableBuilder<String>(
+                valueListenable: typeNotifier,
+                builder: (context, type, _) {
+                  return DropdownButton<String>(
+                    isExpanded: true,
+                    value: type,
+                    dropdownColor: const Color(0xFF2A2A2A),
+                    style: const TextStyle(color: Colors.white),
+                    items: eventTypes.map((t) {
+                      return DropdownMenuItem(value: t, child: Text(t.toUpperCase()));
+                    }).toList(),
+                    onChanged: (val) => typeNotifier.value = val!,
+                  );
+                },
+              ),
+              TextField(
+                controller: dialogueCtrl,
+                decoration: const InputDecoration(labelText: 'Dialogue (Optional)', labelStyle: TextStyle(color: Colors.white70)),
+                style: const TextStyle(color: Colors.white),
+                maxLines: 2,
+              ),
+              TextField(
+                controller: scriptCtrl,
+                decoration: const InputDecoration(labelText: 'Script/Trainer ID', labelStyle: TextStyle(color: Colors.white70)),
+                style: const TextStyle(color: Colors.white),
+              ),
+              TextField(
+                controller: flagCtrl,
+                decoration: const InputDecoration(labelText: 'Require Flag', labelStyle: TextStyle(color: Colors.white70)),
+                style: const TextStyle(color: Colors.white),
+              ),
+              TextField(
+                controller: setFlagCtrl,
+                decoration: const InputDecoration(labelText: 'Sets Flag', labelStyle: TextStyle(color: Colors.white70)),
+                style: const TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          if (existing != null)
+            TextButton(
+              onPressed: () {
+                setState(() => _events.removeWhere((e) => e.x == c && e.y == r));
+                Navigator.pop(ctx);
+                _onInteractionEnd();
+              },
+              child: const Text('REMOVE', style: TextStyle(color: Colors.red)),
+            ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('CANCEL', style: TextStyle(color: Colors.white54)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                _events.removeWhere((e) => e.x == c && e.y == r);
+                _events.add(MapEvent(
+                  x: c,
+                  y: r,
+                  type: typeNotifier.value,
+                  dialogue: dialogueCtrl.text.trim().isEmpty ? null : dialogueCtrl.text.split('\n'),
+                  scriptId: scriptCtrl.text.trim().isEmpty ? null : scriptCtrl.text.trim(),
+                  requiredFlag: flagCtrl.text.trim().isEmpty ? null : flagCtrl.text.trim(),
+                  setsFlag: setFlagCtrl.text.trim().isEmpty ? null : setFlagCtrl.text.trim(),
+                ));
+              });
+              Navigator.pop(ctx);
+              _onInteractionEnd();
+            },
+            child: const Text('SAVE'),
           ),
         ],
       ),
@@ -1967,6 +2194,7 @@ class _MapEditorState extends State<MapEditor> {
                             spawnC: _spawnC,
                             teleporters: _teleporters,
                             npcs: _npcs,
+                            events: _events,
                           ),
                         ),
                       ),
@@ -2075,6 +2303,8 @@ class _MapEditorState extends State<MapEditor> {
             _toolBtn(EditorMode.npc, Icons.person, 'NPC'),
             const SizedBox(width: 8),
             _toolBtn(EditorMode.move, Icons.open_with, 'MOVE'),
+            const SizedBox(width: 8),
+            _toolBtn(EditorMode.event, Icons.event_note, 'EVNT'),
             const SizedBox(width: 16),
             // Auto-base toggle
             Container(
@@ -2612,6 +2842,7 @@ class _EditorGridPainter extends CustomPainter {
   final int spawnC;
   final List<MapTransition> teleporters;
   final List<NPCData> npcs;
+  final List<MapEvent> events;
 
   _EditorGridPainter({
     required this.grid,
@@ -2623,6 +2854,7 @@ class _EditorGridPainter extends CustomPainter {
     required this.spawnC,
     required this.teleporters,
     required this.npcs,
+    required this.events,
   });
 
   @override
@@ -2761,10 +2993,45 @@ class _EditorGridPainter extends CustomPainter {
             );
           }
         }
+        // 6. Map Event Markers
+        if (mode == EditorMode.event) {
+          for (final e in events) {
+            if (r == e.y && c == e.x) {
+              final eventPaint = Paint()
+                ..color = Colors.orangeAccent.withValues(alpha: 0.4)
+                ..style = PaintingStyle.fill;
+              canvas.drawRect(rect.deflate(2), eventPaint);
+
+              final borderPaint = Paint()
+                ..color = Colors.orangeAccent
+                ..style = PaintingStyle.stroke
+                ..strokeWidth = 2;
+              canvas.drawRect(rect.deflate(2), borderPaint);
+
+              final textPainter = TextPainter(
+                text: const TextSpan(
+                  text: 'E',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.orangeAccent,
+                    fontFamily: 'PressStart2P',
+                  ),
+                ),
+                textDirection: TextDirection.ltr,
+              );
+              textPainter.layout();
+              textPainter.paint(
+                canvas,
+                rect.center - Offset(textPainter.width / 2, textPainter.height / 2),
+              );
+            }
+          }
+        }
       }
     }
 
-    // 6. Draw NPCs
+    // 7. Draw NPCs
     for (final npc in npcs) {
       final rect = Rect.fromLTWH(
         npc.x * cellSize,

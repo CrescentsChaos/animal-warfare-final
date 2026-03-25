@@ -222,6 +222,9 @@ class Organism {
     return stats.entries.reduce((a, b) => a.value >= b.value ? a : b).key;
   }
 
+  /// Returns the Base Stat Total (BST).
+  int get bst => health + attack + defense + power + resistance + speed;
+
   /// Returns KV yield based on rarity.
   static int kvYield(String rarity) {
     switch (rarity.toLowerCase()) {

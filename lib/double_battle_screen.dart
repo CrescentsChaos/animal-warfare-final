@@ -829,20 +829,13 @@ class _DoubleBattleViewState extends State<_DoubleBattleView>
     final bm = Provider.of<DoubleBattleManager>(context, listen: false);
 
     // Award XP
-    int? levelCap;
-    if (widget.isRogueMode) {
-      final rogueState = userState.currentUser?.rogueLikeState;
-      final currentFloor = rogueState?.floor ?? 1;
-      levelCap = (currentFloor * 10).clamp(10, 100);
-    }
+
 
     if (!widget.isArenaBattle) {
       final results = await userState.awardBattleXP(
         defeatedLevel: victim.level,
         killerId: killer.organism.id,
         teamIds: bm.playerTeam.map((o) => o.id).toList(),
-        levelCap: levelCap,
-        ignoreCap: widget.isRogueMode,
       );
 
       if (!mounted) return;

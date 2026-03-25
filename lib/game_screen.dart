@@ -268,7 +268,7 @@ class _GameScreenState extends State<GameScreen> {
                     subtitle: 'Manage your collection & team',
                     icon: Icons.inventory_2_rounded,
                     color: const Color(0xFF42A5F5),
-                    onPressed: () => _navigateTo(const AnimalBoxScreen()),
+                    onPressed: () => _navigateTo(const AnimalBoxScreen(teamOnly: true)),
                   ),
 
                   _buildMenuButton(

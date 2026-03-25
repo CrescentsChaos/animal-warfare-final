@@ -123,6 +123,7 @@
                         <button class="sort-chip" data-sort="resistance"
                             onclick="App.setSort('resistance')">RES</button>
                         <button class="sort-chip" data-sort="speed" onclick="App.setSort('speed')">SPD</button>
+                        <button class="sort-chip" data-sort="bst" onclick="App.setSort('bst')">BST</button>
                     </div>
                     <button class="order-btn" id="order-btn" onclick="App.toggleOrder()">
                         <span id="order-label">ASCENDING</span>
@@ -283,6 +284,10 @@
                         case 'power': r = (b.power || 0) - (a.power || 0); break;
                         case 'resistance': r = (b.resistance || 0) - (a.resistance || 0); break;
                         case 'speed': r = (b.speed || 0) - (a.speed || 0); break;
+                        case 'bst':
+                            r = ((b.health || 0) + (b.attack || 0) + (b.defense || 0) + (b.power || 0) + (b.resistance || 0) + (b.speed || 0)) -
+                                ((a.health || 0) + (a.attack || 0) + (a.defense || 0) + (a.power || 0) + (a.resistance || 0) + (a.speed || 0));
+                            break;
                         default: r = (a.name || '').localeCompare(b.name || ''); break;
                     }
                     return this.ascending ? r : -r;

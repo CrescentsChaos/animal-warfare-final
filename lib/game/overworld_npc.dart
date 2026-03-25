@@ -44,7 +44,8 @@ class OverworldNPC {
       (data.scriptType == 'trainer' ||
           data.scriptType == 'rival' ||
           data.scriptType == 'major_trainer' ||
-          data.scriptType == 'evil_team') &&
+          data.scriptType == 'evil_team' ||
+          data.scriptType == 'event_trainer') &&
       data.teamId.isNotEmpty;
 
   void resetPosition() {
@@ -251,10 +252,10 @@ class OverworldNPC {
   /// Begin approaching the player tile-by-tile.
   void startApproach(int pRow, int pCol) {
     isApproaching = true;
-    _faceToward(pRow, pCol);
+    faceToward(pRow, pCol);
   }
 
-  void _faceToward(int pRow, int pCol) {
+  void faceToward(int pRow, int pCol) {
     final dr = pRow - gridRow;
     final dc = pCol - gridCol;
     if (dr.abs() > dc.abs()) {
@@ -276,7 +277,7 @@ class OverworldNPC {
     final dist = (gridRow - pRow).abs() + (gridCol - pCol).abs();
     if (dist <= 1) {
       // We've arrived — face the player and stop approaching
-      _faceToward(pRow, pCol);
+      faceToward(pRow, pCol);
       isApproaching = false;
       return;
     }
@@ -317,7 +318,7 @@ class OverworldNPC {
 
       // Don't step onto the player's tile
       if (nextR == pRow && nextC == pCol) {
-        _faceToward(pRow, pCol);
+        faceToward(pRow, pCol);
         isApproaching = false;
         return;
       }
@@ -335,7 +336,7 @@ class OverworldNPC {
     }
 
     // Can't move — just stop approaching
-    _faceToward(pRow, pCol);
+    faceToward(pRow, pCol);
     isApproaching = false;
   }
 }

@@ -1456,13 +1456,11 @@ class UserState with ChangeNotifier {
     required int defeatedLevel,
     required String? killerId,
     required List<String> teamIds,
-    int? levelCap, // Optional cap
-    bool ignoreCap = false,
   }) async {
     if (_currentUser == null) return {};
 
     // Initial level cap is 7. Can be increased later.
-    final effectiveCap = levelCap ?? 7;
+
 
     // Rebalanced XP constants
     final baseXP = defeatedLevel * 10; // Animal battle XP
@@ -1488,11 +1486,7 @@ class UserState with ChangeNotifier {
           int share = (org.id == killerId) ? baseXP : (baseXP / 2).floor();
           if (share > 0) {
             // Normal team: use the effectiveCap (floor-based for roguelike)
-            final xpResult = org.gainXP(
-              share,
-              effectiveCap,
-              ignoreCap: ignoreCap,
-            );
+            final xpResult = org.gainXP(share);
             if (xpResult['leveledUp'] as bool) {
               results['animalLeveledUp'][org.id] = true;
             }
@@ -1527,7 +1521,7 @@ class UserState with ChangeNotifier {
       if (accountLeveledUp) {
         for (int i = 0; i < organisms.length; i++) {
           final org = organisms[i];
-          final xpResult = org.gainXP(0, effectiveCap);
+          final xpResult = org.gainXP(0);
           if (xpResult['leveledUp'] as bool) {
             results['animalLeveledUp'][org.id] = true;
             organisms[i] = org.copyWith(level: xpResult['level'] as int);
@@ -1544,8 +1538,8 @@ class UserState with ChangeNotifier {
             int share = (org.id == killerId) ? baseXP : (baseXP / 2).floor();
             if (share > 0) {
               // Roguelike team: remove all level caps
-              const rogueCap = 9999;
-              final xpResult = org.gainXP(share, rogueCap);
+
+              final xpResult = org.gainXP(share);
               if (xpResult['leveledUp'] as bool) {
                 results['animalLeveledUp'][org.id] = true;
               }
