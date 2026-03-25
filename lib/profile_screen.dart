@@ -290,26 +290,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ],
       ),
-      child:
-          user.effectiveDisplayName.toUpperCase() == user.rankName.toUpperCase()
-          ? Text(
-              'LV. ${user.accountLevel}',
-              style: GoogleFonts.orbitron(
-                color: user.rankColor,
-                fontSize: 9.sp,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.5,
-              ),
-            )
-          : Text(
-              user.rankName.toUpperCase(),
-              style: GoogleFonts.orbitron(
-                color: user.rankColor,
-                fontSize: 9.sp,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.5,
-              ),
-            ),
+      child: Text(
+        '${user.rankName}  ·  LV. ${user.accountLevel}',
+        style: GoogleFonts.orbitron(
+          color: user.rankColor,
+          fontSize: 9.sp,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 1.5,
+        ),
+      ),
     );
   }
 
@@ -518,7 +507,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               border: Border.all(
                 color: Colors.white.withValues(alpha: 0.1),
                 width: 2,
-                style: BorderStyle.none,
               ),
             ),
             child: Icon(Icons.add_rounded, color: Colors.white10, size: 36.sp),

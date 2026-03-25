@@ -516,7 +516,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                 // Rebuild periodically or on timer if needed, but for now
                 // we'll just listen to the time stream to update visuals
                 stream: Stream.periodic(
-                  const Duration(seconds: 1),
+                  const Duration(seconds: 60),
                 ).map((_) => null),
                 builder: (context, _) {
                   return GridView.builder(

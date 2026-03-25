@@ -108,6 +108,8 @@ class BattleOrganism {
   bool isImprisoning = false;
   Move? rolloutMove;
   String? activeForm;
+  bool magicCoatActive = false;
+  int stockpileCount = 0;
 
   /// Reset battle-specific flags (called when switching out or starting battle)
   void resetBattleState() {
@@ -138,6 +140,7 @@ class BattleOrganism {
     rolloutMove = null;
     laserFocusTurns = 0;
     focusEnergyActive = false;
+    magicCoatActive = false;
     thrashTurnCount = 0;
     thrashMove = null;
     throatChopTurns = 0;
@@ -163,6 +166,9 @@ class BattleOrganism {
     lastMoveName = null;
     tempAbilities.clear();
     anticipationShieldActive = false;
+    lastMoveFailed = false;
+    furyCutterCount = 0;
+    stockpileCount = 0;
 
     // GIMMICK RESET: Prismorph persists.
     // NOTE: isPrismorphed/hasPrismorph/activeTeraType are NOT reset here;
@@ -345,6 +351,8 @@ class BattleOrganism {
   bool unburdenActive = false;
   bool isAbilitySuppressed = false;
   bool anticipationShieldActive = false;
+  bool lastMoveFailed = false;
+  int furyCutterCount = 0;
 
   // Ability-state fields for Gen 8 abilities
   bool iceFaceActive = false; // Ice Face protection is intact

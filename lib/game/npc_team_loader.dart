@@ -1,6 +1,7 @@
 // lib/game/npc_team_loader.dart
 
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:animal_warfare/models/organism.dart';
 import 'package:animal_warfare/models/captured_organism.dart';
@@ -17,10 +18,10 @@ class NpcTeamLoader {
       final jsonStr = await rootBundle.loadString('assets/npc_teams.json');
       final List<dynamic> parsed = json.decode(jsonStr) as List<dynamic>;
       _teamsData = parsed.map((e) => e as Map<String, dynamic>).toList();
-      print('NpcTeamLoader: Successfully loaded ${_teamsData?.length} teams.');
+      debugPrint('NpcTeamLoader: Successfully loaded ${_teamsData?.length} teams.');
     } catch (e, stack) {
-      print('NpcTeamLoader Error loading npc_teams.json: $e');
-      print(stack);
+      debugPrint('NpcTeamLoader Error loading npc_teams.json: $e');
+      debugPrint(stack.toString());
       _teamsData = [];
     }
   }
@@ -69,7 +70,7 @@ class NpcTeamLoader {
           (o) => o.name.toLowerCase() == name.toLowerCase(),
         );
       } catch (_) {
-        print('NpcTeamLoader: Skipped unknown organism "$name" for team $teamId');
+        debugPrint('NpcTeamLoader: Skipped unknown organism "$name" for team $teamId');
         continue; // Skip unknown organisms
       }
 

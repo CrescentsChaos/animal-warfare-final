@@ -55,7 +55,7 @@
         "name": "Agility",
         "description": "The user charges its body with energy, sharply raising its Speed stat.",
         "baseDamage": 0,
-        "type": "electric",
+        "type": "aura",
         "stamina": 15,
         "category": "status",
         "effects": [
@@ -242,6 +242,125 @@
             {
                 "type": "statusBurn",
                 "target": "opponent",
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Thunder Wave",
+        "description": "Paralyzes the opponent.",
+        "baseDamage": 0,
+        "type": "electric",
+        "accuracy": 90,
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statusParalysis",
+                "target": "opponent",
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Double Team",
+        "description": "Raises self Evasion.",
+        "baseDamage": 0,
+        "type": "basic",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "evasion",
+                "value": 1,
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Leer",
+        "description": "Lowers foes defense.",
+        "baseDamage": 0,
+        "type": "basic",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "target",
+                "stat": "defense",
+                "value": -1,
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Growl",
+        "description": "Lowers foes attack.",
+        "baseDamage": 0,
+        "type": "basic",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "target",
+                "stat": "attack",
+                "value": -1,
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Snarl",
+        "description": "Lowers foes power.",
+        "baseDamage": 55,
+        "type": "darkness",
+        "accuracy": 95,
+        "stamina": 15,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "target",
+                "stat": "power",
+                "value": -1,
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Charm",
+        "description": "Lowers foes attack by 2.",
+        "baseDamage": 0,
+        "type": "mystic",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "target",
+                "stat": "attack",
+                "value": -2,
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Screech",
+        "description": "Lowers foes defense by 2.",
+        "baseDamage": 0,
+        "type": "basic",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "target",
+                "stat": "defense",
+                "value": -2,
                 "chance": 100
             }
         ]
@@ -1736,6 +1855,25 @@
         ]
     },
     {
+        "name": "Gunk Shot",
+        "animationType": "blob",
+        "description": "30% chance to poison the target.",
+        "soundEffect": "audio/effects/flamethrower.mp3",
+        "baseDamage": 120,
+        "accuracy": 80,
+        "type": "toxic",
+        "stamina": 15,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statusPoison",
+                "target": "opponent",
+                "value": 1,
+                "chance": 30
+            }
+        ]
+    },
+    {
         "name": "Heat Wave",
         "description": "10% chance to burn the target.",
         "soundEffect": "audio/effects/flamethrower.mp3",
@@ -2169,6 +2307,40 @@
         ]
     },
     {
+        "name": "Psybeam",
+        "description": "May confuse the target.",
+        "baseDamage": 65,
+        "accuracy": 100,
+        "type": "aura",
+        "stamina": 20,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statusConfusion",
+                "target": "opponent",
+                "value": 3,
+                "chance": 10
+            }
+        ]
+    },
+    {
+        "name": "Confuse",
+        "description": "May confuse the target.",
+        "baseDamage": 50,
+        "accuracy": 100,
+        "type": "aura",
+        "stamina": 20,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statusConfusion",
+                "target": "opponent",
+                "value": 3,
+                "chance": 10
+            }
+        ]
+    },
+    {
         "name": "Tail Whip",
         "description": "Lowers the opponent's defense.",
         "soundEffect": "audio/effects/agile.mp3",
@@ -2547,6 +2719,15 @@
         "category": "physical"
     },
     {
+        "name": "Leafage",
+        "description": "User pounds the foe with leaves.",
+        "baseDamage": 40,
+        "accuracy": 100,
+        "type": "grass",
+        "stamina": 35,
+        "category": "physical"
+    },
+    {
         "name": "Pounce",
         "description": "User pounces at the foe.",
         "baseDamage": 60,
@@ -2779,6 +2960,21 @@
         ]
     },
     {
+        "name": "Dragon Breath",
+        "description": "30% chance to paralyze the foe.",
+        "baseDamage": 60,
+        "type": "drake",
+        "stamina": 20,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statusParalysis",
+                "value": 3,
+                "chance": 30
+            }
+        ]
+    },
+    {
         "name": "Body Slam",
         "description": "May paralyze the foe.",
         "baseDamage": 90,
@@ -2792,6 +2988,30 @@
                 "chance": 10
             }
         ]
+    },
+    {
+        "name": "Dragon Claw",
+        "description": "Inflicts regular damage.",
+        "baseDamage": 80,
+        "type": "drake",
+        "stamina": 15,
+        "category": "physical"
+    },
+    {
+        "name": "Dragon Pulse",
+        "description": "Inflicts regular damage.",
+        "baseDamage": 80,
+        "type": "drake",
+        "stamina": 15,
+        "category": "special"
+    },
+    {
+        "name": "Seed Bomb",
+        "description": "Inflicts regular damage.",
+        "baseDamage": 80,
+        "type": "grass",
+        "stamina": 15,
+        "category": "physical"
     },
     {
         "name": "Thunderbolt",
@@ -3171,6 +3391,17 @@
         "category": "physical"
     },
     {
+        "name": "Fury Swipes",
+        "description": "Hits 2-5 times.",
+        "baseDamage": 18,
+        "minHits": 2,
+        "maxHits": 5,
+        "accuracy": 80,
+        "type": "basic",
+        "stamina": 10,
+        "category": "physical"
+    },
+    {
         "name": "Dual Wingbeat",
         "description": "Hits 2 times.",
         "baseDamage": 40,
@@ -3243,6 +3474,28 @@
         "minHits": 2,
         "maxHits": 5,
         "type": "grass",
+        "stamina": 20,
+        "accuracy": 100,
+        "category": "physical"
+    },
+    {
+        "name": "Rock Blast",
+        "description": "Hits 2-5 times.",
+        "baseDamage": 25,
+        "minHits": 2,
+        "maxHits": 5,
+        "type": "rock",
+        "stamina": 20,
+        "accuracy": 100,
+        "category": "physical"
+    },
+    {
+        "name": "Arm Thrust",
+        "description": "Hits 2-5 times.",
+        "baseDamage": 25,
+        "minHits": 2,
+        "maxHits": 5,
+        "type": "martial",
         "stamina": 20,
         "accuracy": 100,
         "category": "physical"
@@ -3328,6 +3581,28 @@
         "critRate": 1
     },
     {
+        "name": "Air Cutter",
+        "animationType": "slash",
+        "description": "High crit rate.",
+        "baseDamage": 60,
+        "accuracy": 95,
+        "type": "flying",
+        "stamina": 15,
+        "category": "physical",
+        "critRate": 1
+    },
+    {
+        "name": "Shadow Claw",
+        "animationType": "slash",
+        "description": "High crit rate.",
+        "baseDamage": 70,
+        "accuracy": 100,
+        "type": "spectral",
+        "stamina": 15,
+        "category": "physical",
+        "critRate": 1
+    },
+    {
         "name": "Stone Edge",
         "description": "High crit rate.",
         "baseDamage": 100,
@@ -3389,6 +3664,57 @@
             {
                 "type": "statChange",
                 "target": "opponent",
+                "stat": "speed",
+                "value": -1
+            }
+        ]
+    },
+    {
+        "name": "Trailblaze",
+        "description": "Boosts Speed.",
+        "baseDamage": 50,
+        "accuracy": 100,
+        "type": "grass",
+        "stamina": 20,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "speed",
+                "value": 1
+            }
+        ]
+    },
+    {
+        "name": "Breaking Swipe",
+        "description": "Lowers foes Attack.",
+        "baseDamage": 60,
+        "accuracy": 100,
+        "type": "drake",
+        "stamina": 20,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "attack",
+                "value": -1
+            }
+        ]
+    },
+    {
+        "name": "Hammer Arm",
+        "description": "Lowers self Speed.",
+        "baseDamage": 100,
+        "accuracy": 90,
+        "type": "martial",
+        "stamina": 20,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "self",
                 "stat": "speed",
                 "value": -1
             }
@@ -3604,6 +3930,40 @@
         ]
     },
     {
+        "name": "Dragon Rush",
+        "description": "The user lunges at the target with a powerful, reckless charge. 20% chance to Stun.",
+        "baseDamage": 100,
+        "accuracy": 80,
+        "type": "drake",
+        "stamina": 12,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusStun",
+                "target": "opponent",
+                "value": 1,
+                "chance": 20
+            }
+        ]
+    },
+    {
+        "name": "Twister",
+        "description": "20% chance to Stun.",
+        "baseDamage": 40,
+        "accuracy": 100,
+        "type": "flying",
+        "stamina": 12,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statusStun",
+                "target": "opponent",
+                "value": 1,
+                "chance": 20
+            }
+        ]
+    },
+    {
         "name": "Iron Defense",
         "description": "The user hardens its body's surface like iron, sharply raising its Defense stat.",
         "baseDamage": 0,
@@ -3615,6 +3975,40 @@
                 "type": "statChange",
                 "target": "self",
                 "stat": "defense",
+                "value": 2,
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Harden",
+        "description": "The user hardens its body's surface like iron, sharply raising its Defense stat.",
+        "baseDamage": 0,
+        "type": "arthropod",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "defense",
+                "value": 1,
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Amnesia",
+        "description": "The user clears its mind, sharply raising its Resistance stat.",
+        "baseDamage": 0,
+        "type": "aura",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "resistance",
                 "value": 2,
                 "chance": 100
             }
@@ -3759,8 +4153,26 @@
         "recoilPercent": 0.25,
         "type": "basic",
         "stamina": 15,
-        "category": "physical",
-        "effects": []
+        "category": "physical"
+    },
+    {
+        "name": "Wild Charge",
+        "description": "Hurts user.",
+        "baseDamage": 90,
+        "recoilPercent": 0.25,
+        "type": "electric",
+        "stamina": 15,
+        "category": "physical"
+    },
+    {
+        "name": "Head Charge",
+        "description": "Hurts user.",
+        "baseDamage": 100,
+        "recoilPercent": 0.25,
+        "accuracy": 100,
+        "type": "basic",
+        "stamina": 15,
+        "category": "physical"
     },
     {
         "name": "Head Smash",
@@ -3857,6 +4269,21 @@
         "name": "Toxic",
         "description": "100% chance to poison the target.",
         "animationType": "single_attack",
+        "baseDamage": 0,
+        "type": "toxic",
+        "stamina": 15,
+        "accuracy": 90,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statusPoison",
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Poison Gas",
+        "description": "100% chance to poison the target.",
         "baseDamage": 0,
         "type": "toxic",
         "stamina": 15,
@@ -4202,6 +4629,24 @@
         ]
     },
     {
+        "name": "Mud-Slap",
+        "description": "100% chance to drop foes accuracy.",
+        "baseDamage": 20,
+        "type": "earth",
+        "stamina": 10,
+        "accuracy ": 100,
+        "category": "special",
+        "effects": [
+            {
+                "type": "StatChange",
+                "target": "opponent",
+                "stat": "accuracy",
+                "value": -1,
+                "chance": 30
+            }
+        ]
+    },
+    {
         "name": "Shell Shift",
         "description": "The user shifts its shell, which raises Defense and Resistance but lowers Speed.",
         "baseDamage": 0,
@@ -4513,6 +4958,21 @@
         ]
     },
     {
+        "name": "Hone Claws",
+        "description": "Raises both Attack and Accuracy stats.",
+        "baseDamage": 0,
+        "type": "darkness",
+        "stamina": 12,
+        "category": "status",
+        "effects": [
+            {
+                "type": "multiStatChange",
+                "stat": "attack:1,accuracy:1",
+                "target": "self"
+            }
+        ]
+    },
+    {
         "name": "Crippling Bite",
         "description": "A deep, jagged bite that causes heavy bleeding and hampers the foe's movement.",
         "soundEffect": "audio/effects/chomp.mp3",
@@ -4658,6 +5118,31 @@
                 "type": "semiInvulnerable",
                 "target": "self",
                 "stat": "airborne"
+            }
+        ]
+    },
+    {
+        "name": "Sky Attack",
+        "description": "The user flies up high on the first turn, then attacks on the second. 30% chance to stun the opponent. Also, has high critical rate",
+        "soundEffect": "audio/effects/agile.mp3",
+        "baseDamage": 140,
+        "accuracy": 90,
+        "type": "flying",
+        "stamina": 15,
+        "critRate": 1,
+        "category": "physical",
+        "isMultiTurn": true,
+        "effects": [
+            {
+                "type": "semiInvulnerable",
+                "target": "self",
+                "stat": "airborne"
+            },
+            {
+                "type": "statusStun",
+                "target": "opponent",
+                "value": 3,
+                "chance": 30
             }
         ]
     },
@@ -5219,6 +5704,36 @@
         ]
     },
     {
+        "name": "Whirlpool",
+        "description": "The target becomes trapped within a fierce vortex of water that rages for two to five turns.",
+        "baseDamage": 35,
+        "type": "aquatic",
+        "accuracy": 85,
+        "stamina": 15,
+        "category": "special",
+        "effects": [
+            {
+                "type": "clamping",
+                "target": "opponent"
+            }
+        ]
+    },
+    {
+        "name": "Bind",
+        "description": "The target becomes trapped within its tentacles that rages for two to five turns.",
+        "baseDamage": 15,
+        "type": "basic",
+        "accuracy": 85,
+        "stamina": 15,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "clamping",
+                "target": "opponent"
+            }
+        ]
+    },
+    {
         "name": "Sand Tomb",
         "description": "The user traps the target inside a harshly raging sandstorm for two to five turns. Traps the opponent.",
         "baseDamage": 35,
@@ -5690,6 +6205,20 @@
         ]
     },
     {
+        "name": "Venoshock",
+        "description": "This relentless attack deals double damage to a target affected by a status condition.",
+        "baseDamage": 65,
+        "type": "toxic",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "special",
+        "effects": [
+            {
+                "type": "hexDamage"
+            }
+        ]
+    },
+    {
         "name": "Hidden Power",
         "description": "A unique attack that varies in type depending on the animal using it.",
         "baseDamage": 60,
@@ -5779,13 +6308,32 @@
     },
     {
         "name": "Aura Sphere",
-        "description": "The user slashes the target after making a deep bow. This move never misses.",
+        "description": "The user fires a sphere of pure aura. This move never misses.",
         "baseDamage": 80,
         "type": "martial",
         "accuracy": 0,
         "stamina": 20,
         "category": "special",
+        "animationType": "slash"
+    },
+    {
+        "name": "Aerial Ace",
+        "description": "The user slashes the target with its shell blade. This move never misses.",
+        "baseDamage": 60,
+        "type": "flying",
+        "accuracy": 0,
+        "stamina": 10,
+        "category": "physical",
         "isContact": true
+    },
+    {
+        "name": "Magical Leaf",
+        "description": "This move never misses.",
+        "baseDamage": 60,
+        "type": "grass",
+        "accuracy": 0,
+        "stamina": 10,
+        "category": "special"
     },
     {
         "name": "Ceaseless Edge",
@@ -5882,7 +6430,14 @@
         "accuracy": 100,
         "stamina": 5,
         "category": "physical",
-        "isContact": true
+        "isContact": true,
+        "effects": [
+            {
+                "type": "setHazard",
+                "target": "opponent",
+                "stat": "stealth_rock"
+            }
+        ]
     },
     {
         "name": "Mind Blown",
@@ -6142,6 +6697,23 @@
         ]
     },
     {
+        "name": "Dragon Tail",
+        "description": "The user strikes the target with its tail. It may also make the target flinch.",
+        "baseDamage": 60,
+        "type": "drake",
+        "accuracy": 100,
+        "stamina": 20,
+        "category": "physical",
+        "priority": -6,
+        "effects": [
+            {
+                "type": "forceSwitch",
+                "target": "opponent",
+                "chance": 100
+            }
+        ]
+    },
+    {
         "name": "Endeavor",
         "description": "Reduces the target's HP to the same level as the user's current HP.",
         "baseDamage": 1,
@@ -6222,6 +6794,16 @@
         "description": "The user takes a deep breath and focuses, raising its critical-hit ratio greatly.",
         "baseDamage": 0,
         "type": "basic",
+        "accuracy": 100,
+        "stamina": 15,
+        "category": "status",
+        "effects": []
+    },
+    {
+        "name": "Dragon Cheer",
+        "description": "The user roars and focuses, raising its critical-hit ratio greatly.",
+        "baseDamage": 0,
+        "type": "drake",
         "accuracy": 100,
         "stamina": 15,
         "category": "status",
@@ -6467,5 +7049,302 @@
         "category": "physical",
         "drainPercent": 0.5,
         "effects": []
+    },
+    {
+        "name": "Stomping Tantrum",
+        "description": "Driven by frustration, the user attacks the target. If the user's previous move failed, the power of this move doubles.",
+        "baseDamage": 75,
+        "type": "earth",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "physical",
+        "animationType": "melee",
+        "effects": []
+    },
+    {
+        "name": "Fury Cutter",
+        "description": "The target is slashed with scythes or claws. Its power doubles each time it hits, but it resets if it misses.",
+        "baseDamage": 10,
+        "type": "arthropod",
+        "accuracy": 95,
+        "stamina": 20,
+        "category": "physical",
+        "animationType": "slash",
+        "effects": []
+    },
+    {
+        "name": "Curse",
+        "description": "A move that works differently for Spectral types than for others.",
+        "baseDamage": 0,
+        "type": "spectral",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statusCurse",
+                "target": "opponent",
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Dragon Rage",
+        "description": "The user attacks the target with a wave of fire. This move always deals 40 HP damage.",
+        "baseDamage": 0,
+        "type": "drake",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "special",
+        "effects": [
+            {
+                "type": "fixedDamage",
+                "value": 40
+            }
+        ]
+    },
+    {
+        "name": "Seismic Toss",
+        "description": "The target is thrown by the user's level of power. It always deals damage equal to the user's level.",
+        "baseDamage": 0,
+        "type": "martial",
+        "accuracy": 100,
+        "stamina": 20,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "levelDamage"
+            }
+        ]
+    },
+    {
+        "name": "Psywave",
+        "description": "The target is attacked with a random psychic wave. It deals random level-based damage.",
+        "baseDamage": 0,
+        "type": "aura",
+        "accuracy": 100,
+        "stamina": 15,
+        "category": "special",
+        "effects": [
+            {
+                "type": "psywave"
+            }
+        ]
+    },
+    {
+        "name": "Sleep Talk",
+        "description": "While asleep, the user randomly uses one of its other moves.",
+        "baseDamage": 0,
+        "type": "sound",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "status",
+        "animationType": "status",
+        "effects": [
+            {
+                "type": "sleepTalk"
+            }
+        ]
+    },
+    {
+        "name": "Snore",
+        "description": "This attack can be used only while the user is asleep. It may also make the target flinch.",
+        "baseDamage": 50,
+        "type": "sound",
+        "accuracy": 100,
+        "stamina": 15,
+        "category": "special",
+        "effects": [
+            {
+                "type": "snore"
+            },
+            {
+                "type": "statusStun",
+                "target": "opponent",
+                "chance": 30
+            }
+        ]
+    },
+    {
+        "name": "Magic Coat",
+        "description": "A barrier reflects back the target's status-changing moves.",
+        "baseDamage": 0,
+        "type": "aura",
+        "accuracy": 100,
+        "stamina": 15,
+        "animationType": "status",
+        "priority": 4,
+        "effects": [
+            {
+                "type": "magicCoat"
+            }
+        ]
+    },
+    {
+        "name": "Tera Blast",
+        "description": "If the user has Prismorphed, this move becomes the same type as the user's Tera Type.",
+        "baseDamage": 80,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "special",
+        "effects": [
+            {
+                "type": "teraBlast"
+            }
+        ]
+    },
+    {
+        "name": "Defog",
+        "description": "A strong wind blows away the target's barriers such as Reflect or Light Screen. This also lowers the target's evasiveness.",
+        "baseDamage": 0,
+        "type": "flying",
+        "accuracy": 100,
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "defog",
+                "target": "opponent"
+            }
+        ]
+    },
+    {
+        "name": "Safeguard",
+        "description": "The user creates a protective field that prevents status conditions for five turns.",
+        "baseDamage": 0,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 25,
+        "category": "status",
+        "effects": [
+            {
+                "type": "safeguard",
+                "target": "self"
+            }
+        ]
+    },
+    {
+        "name": "Growth",
+        "description": "The user's body grows all at once, raising the Attack and Power stats.",
+        "baseDamage": 0,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 20,
+        "category": "status",
+        "effects": [
+            {
+                "type": "growth",
+                "target": "self"
+            }
+        ]
+    },
+    {
+        "name": "Rapid Spin",
+        "description": "A spin attack that can also eliminate such moves as Bind, Wrap, and Spikes.",
+        "baseDamage": 50,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 40,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "rapidSpin",
+                "target": "self"
+            }
+        ]
+    },
+    {
+        "name": "Thief",
+        "description": "The user attacks and steals the target's held item simultaneously. The user can't steal anything if it already holds an item.",
+        "baseDamage": 60,
+        "type": "darkness",
+        "accuracy": 100,
+        "stamina": 25,
+        "category": "physical",
+        "isContact": true,
+        "effects": [
+            {
+                "type": "thief",
+                "target": "opponent"
+            }
+        ]
+    },
+    {
+        "name": "Ice Spinner",
+        "description": "The user covers its feet in thin ice and twirls around, slamming into the target. This move's spinning motion also destroys the terrain.",
+        "baseDamage": 80,
+        "type": "cryo",
+        "accuracy": 100,
+        "stamina": 15,
+        "category": "physical",
+        "isContact": true,
+        "effects": [
+            {
+                "type": "iceSpinner",
+                "target": "opponent"
+            }
+        ]
+    },
+    {
+        "name": "Stockpile",
+        "description": "The user charges up power and raises both its Defense and Resistance stats. The move can be used three times.",
+        "baseDamage": 0,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 20,
+        "category": "status",
+        "effects": [
+            {
+                "type": "stockpile",
+                "target": "self"
+            }
+        ]
+    },
+    {
+        "name": "Swallow",
+        "description": "The power stored using the move Stockpile is absorbed by the user to heal its HP. Storing more power heals more HP.",
+        "baseDamage": 0,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "status",
+        "effects": [
+            {
+                "type": "swallow",
+                "target": "self"
+            }
+        ]
+    },
+    {
+        "name": "Spit Up",
+        "description": "The power stored using the move Stockpile is released at once in an attack. The more power is stored, the greater the move's power.",
+        "baseDamage": 0,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "special",
+        "effects": [
+            {
+                "type": "spitUp",
+                "target": "opponent"
+            }
+        ]
+    },
+    {
+        "name": "Payback",
+        "description": "The user stores power, then attacks. If the user moves after the target, this attack's power will be doubled.",
+        "baseDamage": 50,
+        "type": "darkness",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "physical",
+        "isContact": true,
+        "effects": [
+            {
+                "type": "payback",
+                "target": "opponent"
+            }
+        ]
     }
 ]

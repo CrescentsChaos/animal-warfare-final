@@ -136,6 +136,23 @@ enum MoveEffectType {
   multiAttack,
   judgement,
   thrash,
+  statusCurse,
+  fixedDamage,
+  levelDamage,
+  psywave,
+  sleepTalk,
+  snore,
+  magicCoat,
+  teraBlast,
+  safeguard,
+  growth,
+  rapidSpin,
+  thief,
+  iceSpinner,
+  stockpile,
+  swallow,
+  spitUp,
+  payback,
 }
 
 enum MoveCategory { physical, special, status }

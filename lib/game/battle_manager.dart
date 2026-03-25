@@ -1,7 +1,6 @@
 // lib/game/battle_manager.dart
 import 'dart:async';
 import 'dart:math';
-// ignore_for_file: avoid_print
 import 'package:flutter/foundation.dart';
 import 'package:animal_warfare/models/captured_organism.dart';
 import 'package:animal_warfare/models/organism.dart';
@@ -185,6 +184,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   int opponentLightScreenTurns = 0;
   int opponentReflectTurns = 0;
   int opponentAuroraVeilTurns = 0;
+  int playerSafeguardTurns = 0;
+  int opponentSafeguardTurns = 0;
 
   // New Field Effect Counters
   int trickRoomTurns = 0;
@@ -1419,7 +1420,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     if (playerGoesFirst) {
       // Player Turn
       if (!playerMovedThisTurn && (!playerJustSwitched || isResumingTurn)) {
-        if (await _canMove(player)) {
+        if (await _canMove(player, activeMove)) {
           await _executeTurn(
             player,
             opponent,
@@ -1441,7 +1442,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
       // Opponent Turn
       if (!opponentMovedThisTurn && !opponentJustSwitched) {
-        if (await _canMove(opponent)) {
+        if (await _canMove(opponent, currentTurnOpponentMove!)) {
           await _executeTurn(
             opponent,
             player,
@@ -1456,7 +1457,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     } else {
       // Opponent Turn
       if (!opponentMovedThisTurn && !opponentJustSwitched) {
-        if (await _canMove(opponent)) {
+        if (await _canMove(opponent, currentTurnOpponentMove!)) {
           await _executeTurn(
             opponent,
             player,
@@ -1471,7 +1472,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
       // Player Turn
       if (!playerMovedThisTurn && (!playerJustSwitched || isResumingTurn)) {
-        if (await _canMove(player)) {
+        if (await _canMove(player, activeMove)) {
           await _executeTurn(
             player,
             opponent,
@@ -1686,6 +1687,36 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         );
         return;
       }
+    } else if (move.effects.any((e) => e.type == MoveEffectType.sleepTalk)) {
+      if (attacker.statusEffect.type != StatusEffectType.sleep &&
+          !attacker.abilities.any((ab) => ab.name == 'Comatose')) {
+        addToLog('But it failed! (Must be asleep to use Sleep Talk)');
+        return;
+      }
+      final otherKnownMoves = attacker.organism.selectedMoveNames
+          .where((m) =>
+              m != 'Sleep Talk' &&
+              m != 'Metronome' &&
+              m != 'Assist' &&
+              m != 'Copycat' &&
+              m != 'Chatter' &&
+              m != 'Circle Throw' &&
+              m != 'Focus Punch' &&
+              m != 'Mimic' &&
+              m != 'Mirror Move' &&
+              m != 'Sketch' &&
+              m != 'Sky Drop' &&
+              m != 'Struggle' &&
+              m != 'Whirlwind' &&
+              m != 'Roar')
+          .toList();
+      if (otherKnownMoves.isNotEmpty) {
+        final randomMoveName =
+            otherKnownMoves[Random().nextInt(otherKnownMoves.length)];
+        actualMove = Move.findByName(randomMoveName) ?? move;
+        addToLog('${attacker.name} used Sleep Talk!');
+        isCallingMove = true;
+      }
     }
 
     if (isCallingMove) {
@@ -1695,7 +1726,18 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       move = actualMove;
     }
 
-    if (move.name == 'Focus Energy') {
+    // Magic Coat Check
+    if (move.category == MoveCategory.status &&
+        move.baseDamage == 0 &&
+        defender.magicCoatActive &&
+        move.effects.any((e) => e.target == 'opponent')) {
+      addToLog('${defender.name} reflected the ${move.name} with Magic Coat!');
+      // Reflect the move's effects back at the attacker
+      await _applyMoveEffect(defender, attacker, move.effects, move);
+      return;
+    }
+
+    if (move.name == 'Focus Energy' || move.name == 'Dragon Cheer') {
       attacker.focusEnergyActive = true;
       addToLog('${attacker.name} is getting pumped!');
       notifyListeners();
@@ -2041,6 +2083,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       if (Random().nextInt(100) >= accuracy) {
         addToLog('${attacker.name}\'s attack missed!');
         attacker.rolloutTurnCount = 0;
+        attacker.lastMoveFailed = true;
+        attacker.furyCutterCount = 0;
         notifyListeners();
         if (!isTesting) {
           await Future.delayed(const Duration(milliseconds: 3000));
@@ -2073,6 +2117,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         addToLog('${attacker.name} kept going and crashed!');
         if (_checkBattleEnd()) return;
       }
+      attacker.lastMoveFailed = true;
+      attacker.furyCutterCount = 0;
       notifyListeners();
       if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
       return;
@@ -2149,7 +2195,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     if (defender.isProtected &&
         move.name != 'Feint' &&
         move.name != 'Mighty Cleave' &&
-        move.name != 'Snipe Shot') {
+        move.name != 'Snipe Shot' &&
+        move.name != 'Tera Blast') {
       final bool attackerHasUnseenFist = attacker.abilities.any(
         (ab) => ab.name == 'Unseen Fist',
       );
@@ -2180,6 +2227,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     if (move.failIfTargetNotAttacking) {
       if (opponentMove == null || opponentMove.baseDamage == 0) {
         addToLog('...but it failed!');
+        attacker.lastMoveFailed = true;
+        attacker.furyCutterCount = 0;
         notifyListeners();
         if (!isTesting) {
           await Future.delayed(const Duration(milliseconds: 3000));
@@ -2265,6 +2314,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       addToLog('${defender.name}\'s Magic Bounce reflects the move back!');
       await notifyAbilityTrigger(defender, ab);
       // Re-run the move on the attacker instead
+      attacker.lastMoveFailed = true; // Reflected counts as a miss for original target? Usually yes for Stomping Tantrum logic.
+      attacker.furyCutterCount = 0;
       await _applyMoveEffect(defender, attacker, move.effects, move);
       notifyListeners();
       if (!isTesting) await Future.delayed(const Duration(milliseconds: 2000));
@@ -2272,6 +2323,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     }
 
     if (isImmuneFromAbility) {
+      attacker.lastMoveFailed = true;
+      attacker.furyCutterCount = 0;
       notifyListeners();
       if (!isTesting) await Future.delayed(const Duration(milliseconds: 2000));
       return;
@@ -2289,6 +2342,14 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         addToLog('${attacker.name} changed to Blade Form!');
         notifyListeners();
       }
+    }
+
+    attacker.lastMoveFailed = false;
+
+    // Fury Cutter logic
+    if (move.name == 'Fury Cutter') {
+      attacker.furyCutterCount = (attacker.furyCutterCount + 1).clamp(0, 4);
+      // Note: multiplier in calculateDamage handles the power (2^count)
     }
 
     // Multi-Hit Loop
@@ -3456,8 +3517,14 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           }
         }
 
-        if (typeMod > 1.0) addToLog('It\'s super effective!');
-        if (typeMod < 1.0 && typeMod > 0) {
+        if (typeMod >= 3.9) {
+          addToLog('It\'s extremely effective!');
+        } else if (typeMod > 1.1) {
+          addToLog('It\'s super effective!');
+        }
+        if (typeMod > 0 && typeMod <= 0.26) {
+          addToLog('It\'s barely effective...');
+        } else if (typeMod > 0 && typeMod < 0.9) {
           addToLog('It\'s not very effective...');
         }
         if (typeMod == 0) addToLog('It had no effect!');
@@ -3596,9 +3663,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     }
   }
 
-  Future<bool> _canMove(BattleOrganism org) async {
+  Future<bool> _canMove(BattleOrganism org, Move move) async {
     // If blocked, ensure multi-turn states are cleared so user doesn't get stuck
-    final bool canNormallyMove = await _canMoveLogic(org);
+    final bool canNormallyMove = await _canMoveLogic(org, move);
     if (!canNormallyMove) {
       org.chargingMove = null;
       org.semiInvulnerable = null;
@@ -3608,7 +3675,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     return canNormallyMove;
   }
 
-  Future<bool> _canMoveLogic(BattleOrganism org) async {
+  Future<bool> _canMoveLogic(BattleOrganism org, Move move) async {
     if (org.mustRecharge) {
       addToLog('${org.organism.baseOrganism.name} must recharge!');
       org.mustRecharge = false; // Recharge turn is used now
@@ -3619,7 +3686,18 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
       return false;
     }
+    if (move.name == 'Swallow' || move.name == 'Spit Up' || 
+        move.effects.any((e) => e.type == MoveEffectType.swallow || e.type == MoveEffectType.spitUp)) {
+      if (org.stockpileCount == 0) {
+        addToLog('${org.name} tried to use ${move.name}, but it hadn\'t stockpiled anything!');
+        return false;
+      }
+    }
     if (org.statusEffect.type == StatusEffectType.sleep) {
+      // Snore and Sleep Talk can be used while asleep
+      if (move.name == 'Snore' || move.name == 'Sleep Talk') {
+        return true;
+      }
       if (org.statusEffect.duration <= 0) {
         addToLog('${org.organism.baseOrganism.name} woke up!');
         org.clearStatusEffects(); // Clear all statuses, or just sleep? For now, clear all.
@@ -3737,7 +3815,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     Move opponentMove = pickOpponentMove();
     lastOpponentAction = opponentMove;
 
-    if (await _canMove(opponent)) {
+    if (await _canMove(opponent, opponentMove)) {
       await _executeTurn(opponent, player, opponentMove);
     }
   }
@@ -3781,6 +3859,15 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         type != StatusEffectType.blind &&
         type != StatusEffectType.marked) {
       return false;
+    }
+
+    // Safeguard check
+    if (type != StatusEffectType.none) {
+      if ((target.isPlayer && playerSafeguardTurns > 0) ||
+          (target.isOpponent && opponentSafeguardTurns > 0)) {
+        addToLog('${target.name} is protected by Safeguard!');
+        return false;
+      }
     }
 
     // 1. Ability Trigger: onStatusAttempt (Prevention)
@@ -4021,6 +4108,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             case MoveEffectType.statusStealth:
               statusType = StatusEffectType.stealth;
               break;
+            case MoveEffectType.statusCurse:
+              statusType = StatusEffectType.curse;
+              break;
             default:
               statusType = StatusEffectType.none;
           }
@@ -4084,6 +4174,23 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             }
             await applyStatChange(target, effect.stat, val, source: attacker);
             // Log is handled in _applyStatChange
+          }
+          break;
+        case MoveEffectType.statusCurse:
+          // Special logic for the move "Curse"
+          if (attacker.types.contains(ElementalType.spectral)) {
+            // Spectral effect: 50% HP cost for DoT on opponent
+            final cost = (attacker.maxHealth / 2).round();
+            attacker.health -= cost;
+            addToLog('${attacker.name} cut its own HP and put a curse on ${defender.name}!');
+            await applyStatusEffect(defender, StatusEffectType.curse, chance: 100);
+            if (_checkBattleEnd()) return;
+          } else {
+            // Non-Spectral effect: -1 Speed, +1 Attack, +1 Defense
+            addToLog('${attacker.name} used a curse!');
+            await applyStatChange(attacker, 'speed', -1);
+            await applyStatChange(attacker, 'attack', 1);
+            await applyStatChange(attacker, 'defense', 1);
           }
           break;
         case MoveEffectType.multiStatChange:
@@ -4391,6 +4498,18 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         case MoveEffectType.semiInvulnerable:
           attacker.semiInvulnerable = effect.stat;
           break;
+        case MoveEffectType.snore:
+          if (Random().nextInt(100) < 30) {
+            await applyStatusEffect(defender, StatusEffectType.stun);
+          }
+          break;
+        case MoveEffectType.magicCoat:
+          attacker.magicCoatActive = true;
+          addToLog('${attacker.name} shrouded itself with a Magic Coat!');
+          break;
+        case MoveEffectType.sleepTalk:
+        case MoveEffectType.teraBlast:
+          break;
         case MoveEffectType.forceSwitch:
           // 1. Ability Trigger: Sticky Hold / Abyss Dweller (Prevention)
           bool isStable = target.abilities.any(
@@ -4583,8 +4702,92 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           opponentLightScreenTurns = 0;
           playerAuroraVeilTurns = 0;
           opponentAuroraVeilTurns = 0;
-          addToLog('The fog blew away the hazards and screens!');
+          playerSafeguardTurns = 0;
+          opponentSafeguardTurns = 0;
+          if (currentTerrain.terrain != Terrain.none) {
+            currentTerrain = const TerrainEffect(terrain: Terrain.none, duration: 0);
+          }
+          addToLog('The fog blew away the hazards, screens, and terrain!');
           await applyStatChange(defender, 'evasion', -1, source: attacker);
+          break;
+        case MoveEffectType.safeguard:
+          if (attacker.isPlayer) {
+            playerSafeguardTurns = 5;
+          } else {
+            opponentSafeguardTurns = 5;
+          }
+          addToLog('A mystic veil protects ${attacker.isPlayer ? "your" : "the opposing"} team!');
+          break;
+        case MoveEffectType.rapidSpin:
+          if (attacker.isPlayer) {
+            playerHazards.clear();
+          } else {
+            opponentHazards.clear();
+          }
+          attacker.clampingTurns = 0;
+          attacker.isTrapped = false;
+          addToLog('${attacker.name} blew away the entry hazards and binding effects!');
+          break;
+        case MoveEffectType.iceSpinner:
+          if (currentTerrain.terrain != Terrain.none) {
+            currentTerrain = const TerrainEffect(terrain: Terrain.none, duration: 0);
+            addToLog('The terrain disappeared!');
+          }
+          break;
+        case MoveEffectType.thief:
+          if (attacker.organism.equippedTalisman == null && defender.organism.equippedTalisman != null) {
+            attacker.organism.equippedTalisman = defender.organism.equippedTalisman;
+            defender.organism.equippedTalisman = null;
+            addToLog('${attacker.name} stole ${defender.name}\'s item!');
+            notifyListeners();
+          }
+          break;
+        case MoveEffectType.stockpile:
+          if (attacker.stockpileCount < 3) {
+            attacker.stockpileCount++;
+            addToLog('${attacker.name} stockpiled energy (Count: ${attacker.stockpileCount})!');
+            await applyStatChange(attacker, 'defense', 1);
+            await applyStatChange(attacker, 'resistance', 1);
+          } else {
+            addToLog('But it failed! (Max stockpile)');
+          }
+          break;
+        case MoveEffectType.swallow:
+          if (attacker.stockpileCount > 0) {
+            int healPercent = 25;
+            if (attacker.stockpileCount == 2) healPercent = 50;
+            if (attacker.stockpileCount >= 3) healPercent = 100;
+            
+            final healedAmount = (attacker.maxHealth * healPercent / 100).round();
+            if (attacker.health < attacker.maxHealth) {
+              attacker.health = (attacker.health + healedAmount).clamp(0, attacker.maxHealth);
+              addToLog('${attacker.name} swallowed its stockpiled energy to heal!');
+              await _audioService.playSound('audio/effects/heal.mp3');
+              await applyStatChange(attacker, 'defense', -attacker.stockpileCount);
+              await applyStatChange(attacker, 'resistance', -attacker.stockpileCount);
+              attacker.stockpileCount = 0;
+            } else {
+              addToLog('But its HP is already full!');
+            }
+          } else {
+            addToLog('But it failed! (No stockpile)');
+          }
+          break;
+        case MoveEffectType.spitUp:
+          if (attacker.stockpileCount > 0) {
+            await applyStatChange(attacker, 'defense', -attacker.stockpileCount);
+            await applyStatChange(attacker, 'resistance', -attacker.stockpileCount);
+            attacker.stockpileCount = 0;
+          } else {
+            addToLog('But it failed! (No stockpile)');
+          }
+          break;
+        case MoveEffectType.growth:
+          int stages = currentWeather.weather == Weather.sunny ? 2 : 1;
+          await applyStatChange(attacker, 'attack', stages);
+          await applyStatChange(attacker, 'power', stages);
+          break;
+        case MoveEffectType.payback:
           break;
         case MoveEffectType.acupressure:
           final stats = [
@@ -5073,9 +5276,13 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
                 addToLog('A critical hit!');
               }
 
-              if (typeMod > 1.0) {
+              if (typeMod >= 3.9) {
+                addToLog("It's extremely effective!");
+              } else if (typeMod > 1.1) {
                 addToLog("It's super effective!");
-              } else if (typeMod > 0 && typeMod < 1.0) {
+              } else if (typeMod > 0 && typeMod <= 0.26) {
+                addToLog("It's barely effective...");
+              } else if (typeMod > 0 && typeMod < 0.9) {
                 addToLog("It's not very effective...");
               } else if (typeMod == 0) {
                 addToLog('It had no effect!');
@@ -5193,6 +5400,18 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       opponentAuroraVeilTurns--;
       if (opponentAuroraVeilTurns == 0) {
         addToLog('The opposing team\'s Aurora Veil wore off!');
+      }
+    }
+    if (playerSafeguardTurns > 0) {
+      playerSafeguardTurns--;
+      if (playerSafeguardTurns == 0) {
+        addToLog('Your team\'s Safeguard wore off!');
+      }
+    }
+    if (opponentSafeguardTurns > 0) {
+      opponentSafeguardTurns--;
+      if (opponentSafeguardTurns == 0) {
+        addToLog('The opposing team\'s Safeguard wore off!');
       }
     }
   }
@@ -5380,6 +5599,16 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           if (!isTesting) {
             await Future.delayed(const Duration(milliseconds: 3000));
           }
+        }
+        if (_checkBattleEnd()) return;
+      } else if (se.type == StatusEffectType.curse) {
+        final curseDamage = (target.maxHealth * 0.25).round().clamp(1, 9999);
+        target.health -= curseDamage;
+        target.health = target.health.clamp(0, target.maxHealth);
+        addToLog('${target.organism.baseOrganism.name} is hurt by the curse!');
+        notifyListeners();
+        if (!isTesting) {
+          await Future.delayed(const Duration(milliseconds: 1500));
         }
         if (_checkBattleEnd()) return;
       } else if (se.type == StatusEffectType.regen) {
@@ -5973,6 +6202,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     target.shellTrapTriggered = false;
     target.focusPunchFailed = false;
     target.tookDamageThisTurn = false;
+    target.magicCoatActive = false;
   }
 
   // --- Capture and Run Logic ---
@@ -6554,11 +6784,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       for (int i = 0; i < playerTeam.length; i++) {
         if (i != currentPlayerIndex && playerTeam[i].currentHealth > 0) {
           hasOtherHealthy = true;
-
         }
       }
-
-
 
       if (hasOtherHealthy) {
         addToLog(
@@ -6994,6 +7221,10 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       }
     }
 
+    if (move.name == 'Tera Blast' && attacker.isPrismorphed) {
+      moveType = attacker.activeTeraType ?? moveType;
+    }
+
     return moveType;
   }
 
@@ -7022,7 +7253,34 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       return const DamageResult(0, 1.0, false);
     }
 
-    if (move.baseDamage <= 0) return const DamageResult(0, 1.0, false);
+    // --- Fixed and Level-Based Damage Moves ---
+    final fixedDamageEffect = move.effects.firstWhere(
+      (e) => e.type == MoveEffectType.fixedDamage,
+      orElse: () => const MoveEffect(type: MoveEffectType.none),
+    );
+    if (fixedDamageEffect.type != MoveEffectType.none) {
+      return DamageResult(fixedDamageEffect.value.toInt(), 1.0, false);
+    }
+
+    final levelDamageEffect = move.effects.firstWhere(
+      (e) => e.type == MoveEffectType.levelDamage,
+      orElse: () => const MoveEffect(type: MoveEffectType.none),
+    );
+    if (levelDamageEffect.type != MoveEffectType.none) {
+      return DamageResult(attacker.level, 1.0, false);
+    }
+
+    final psywaveEffect = move.effects.firstWhere(
+      (e) => e.type == MoveEffectType.psywave,
+      orElse: () => const MoveEffect(type: MoveEffectType.none),
+    );
+    if (psywaveEffect.type != MoveEffectType.none) {
+      // Psywave: Deals random damage between 0.5x and 1.5x of the user's level
+      final multiplier = (Random().nextInt(101) + 50) / 100.0; // 0.5 to 1.5
+      final damage = max(1, (attacker.level * multiplier).floor());
+      return DamageResult(damage, 1.0, false);
+    }
+
 
     // Pursuit Intercept Power Double
     double pursuitMultiplier = 1.0;
@@ -7046,10 +7304,11 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     if (attacker.abilities.any((ab) => ab.name == 'Super Luck')) {
       if (critChance <= 6.25) {
         critChance = 12.5;
-      } else if (critChance <= 12.5)
+      } else if (critChance <= 12.5) {
         critChance = 50.0;
-      else
+      } else {
         critChance = 100.0;
+      }
     }
 
     // Hyper Cutter crit boost on contact
@@ -7180,29 +7439,34 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     // Toxic Boost and Flare Boost now handled in getAbilityStatMultiplier
 
-    // Stat overrides
-    if (move.damageStat.isNotEmpty) {
-      switch (move.damageStat) {
-        case 'attack':
-          atk = attacker.currentAttack;
-          break;
-        case 'power':
-          atk = attacker.currentPower;
-          break;
-        case 'defense':
-          atk = attacker.currentDefense;
-          break;
-        case 'resistance':
-          atk = attacker.currentResistance;
-          break;
-        case 'speed':
-          atk = attacker.currentSpeed;
-          break;
+
+
+    // Tera Blast Stat Swap
+    if (move.name == 'Tera Blast' && attacker.isPrismorphed) {
+      if (attacker.currentAttack > attacker.currentPower) {
+        atk = attacker.currentAttack;
+        def = defender.currentDefense;
+      } else {
+        atk = attacker.currentPower;
+        def = defender.currentResistance;
       }
     }
 
     // Burn Halves Physical Damage (Unless Guts or Flare Boost)
     int baseDamage = move.baseDamage;
+
+    // Spit Up Damage
+    if (move.name == 'Spit Up' || move.effects.any((e) => e.type == MoveEffectType.spitUp)) {
+      if (attacker.stockpileCount == 0) return const DamageResult(0, 1.0, false);
+      baseDamage = 100 * attacker.stockpileCount;
+    }
+
+    // Payback Damage Double
+    if (move.name == 'Payback' || move.effects.any((e) => e.type == MoveEffectType.payback)) {
+      if (defender.hasMovedThisTurn) {
+        baseDamage *= 2;
+      }
+    }
 
     // HP Ratio moves
     final hpRatioEffect = move.effects.firstWhere(
@@ -7239,6 +7503,18 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       } else {
         baseDamage = 20;
       }
+    }
+    
+    // Stomping Tantrum power double
+    if (move.name == 'Stomping Tantrum' && attacker.lastMoveFailed) {
+      baseDamage *= 2;
+    }
+
+    // Fury Cutter power doubling
+    if (move.name == 'Fury Cutter') {
+      double furyMult = pow(2, attacker.furyCutterCount).toDouble();
+      if (furyMult > 16.0) furyMult = 16.0;
+      baseDamage = (baseDamage * furyMult).round();
     }
 
     final happinessEffect = move.effects.firstWhere(
@@ -7368,6 +7644,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     }
 
     baseDamage = (baseDamage * pursuitMultiplier).round();
+
+    if (baseDamage <= 0) return const DamageResult(0, 1.0, false);
 
     // 3. Core Damage Formula
     double damageCalc =
@@ -8144,10 +8422,11 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     if (!isCrit && !attacker.abilities.any((ab) => ab.name == 'Infiltrator')) {
       if (hasAuroraVeil) {
         damageCalc *= 0.5;
-      } else if (move.category == MoveCategory.physical && hasReflect)
+      } else if (move.category == MoveCategory.physical && hasReflect) {
         damageCalc *= 0.5;
-      else if (move.category == MoveCategory.special && hasLightScreen)
+      } else if (move.category == MoveCategory.special && hasLightScreen) {
         damageCalc *= 0.5;
+      }
     }
 
     // Earthquake double damage on underground
@@ -8982,7 +9261,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     if (validMoves.isEmpty) return;
 
     // Use scoreMove which prepares all necessary AI context
-    if (isTesting) print('[BattleManager] Starting move suggestion...');
+    if (isTesting) debugPrint('[BattleManager] Starting move suggestion...');
     double bestScore = -double.infinity;
     Move? bestMove;
 
@@ -9018,7 +9297,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     if (bestMove != null) {
       if (isTesting) {
-        print(
+        debugPrint(
           '[BattleManager] Suggested move: ${bestMove.name} with score $bestScore',
         );
       }
@@ -9027,7 +9306,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       addToLog('${player.name} suggests using ${bestMove.name}!');
       notifyListeners();
     } else {
-      if (isTesting) print('[BattleManager] FAILED to find a suggested move');
+      if (isTesting) {
+        debugPrint('[BattleManager] FAILED to find a suggested move');
+      }
       suggestedMoveName = null;
       suggestionProcessed =
           true; // Still mark as processed to avoid re-suggesting

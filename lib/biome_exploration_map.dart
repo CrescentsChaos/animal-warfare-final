@@ -4079,8 +4079,9 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
               if (nr < 0 ||
                   nr >= _mapData.height ||
                   nc < 0 ||
-                  nc >= _mapData.width)
+                  nc >= _mapData.width) {
                 continue;
+              }
               final adjBase = _mapData.grid[nr][nc];
               final adjOverlay = _mapData.overlayGrid?[nr][nc];
               final adjSolid =
@@ -4329,9 +4330,17 @@ class _BiomeMapPainter extends CustomPainter {
     canvas.save();
     canvas.scale(zoomScale);
 
+    // Calculate visible range (viewport culling)
+    final int startCol = (cameraX / tileSize).floor().clamp(0, mapData.width);
+    final int endCol =
+        ((cameraX + size.width / zoomScale) / tileSize).ceil().clamp(0, mapData.width);
+    final int startRow = (cameraY / tileSize).floor().clamp(0, mapData.height);
+    final int endRow =
+        ((cameraY + size.height / zoomScale) / tileSize).ceil().clamp(0, mapData.height);
+
     // 1. Ground Layer (Base Terrain + Floating Tiles)
-    for (int r = 0; r < mapData.height; r++) {
-      for (int c = 0; c < mapData.width; c++) {
+    for (int r = startRow; r < endRow; r++) {
+      for (int c = startCol; c < endCol; c++) {
         // Draw base terrain
         _drawTileAt(canvas, r, c, mapData.grid[r][c], mapData.grid);
 
@@ -4348,10 +4357,10 @@ class _BiomeMapPainter extends CustomPainter {
     }
 
     // 2. Object & Player Sorting Layer
-    for (int r = 0; r < mapData.height; r++) {
+    for (int r = startRow; r < endRow; r++) {
       // Draw non-tallgrass, non-floating overlay objects
       if (mapData.overlayGrid != null) {
-        for (int c = 0; c < mapData.width; c++) {
+        for (int c = startCol; c < endCol; c++) {
           final overlays = mapData.overlayGrid![r][c];
           for (final tile in overlays) {
             if (tile.category != TileCategory.tallGrass &&
@@ -4399,7 +4408,7 @@ class _BiomeMapPainter extends CustomPainter {
 
       // Draw Tallgrass & other "above-player" overlays
       if (mapData.overlayGrid != null) {
-        for (int c = 0; c < mapData.width; c++) {
+        for (int c = startCol; c < endCol; c++) {
           final overlays = mapData.overlayGrid![r][c];
           for (final tile in overlays) {
             if (tile.category == TileCategory.tallGrass) {

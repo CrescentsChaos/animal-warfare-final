@@ -240,9 +240,11 @@ class _BattleScreenContentState extends State<BattleScreenContent>
 
   // Helper: Get effectiveness text
   String _getEffectivenessText(double multiplier) {
-    if (multiplier > 1.0) return 'Super Effective!';
+    if (multiplier >= 3.9) return 'Extremely Effective!';
+    if (multiplier > 1.1) return 'Super Effective!';
     if (multiplier == 0.0) return 'Immune';
-    if (multiplier < 1.0) return 'Not Effective';
+    if (multiplier <= 0.26) return 'Barely Effective';
+    if (multiplier < 0.9) return 'Not Effective';
     return '';
   }
 
@@ -3093,7 +3095,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                                       : 'PRISMORPH'),
                             style: TextStyle(
                               fontFamily: 'PressStart2P',
-                              fontSize: isNarrow ? 7 : 9,
+                              fontSize: isNarrow ? 6 : 8,
                             ),
                           ),
                           onPressed: canEnablePrismorph
@@ -6157,20 +6159,20 @@ class _ScreenShieldOverlay extends StatefulWidget {
 
 class _ScreenShieldOverlayState extends State<_ScreenShieldOverlay>
     with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
+  late AnimationController _pulseController;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
+    _pulseController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 3),
-    )..repeat();
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _pulseController.dispose();
     super.dispose();
   }
 
@@ -6188,106 +6190,52 @@ class _ScreenShieldOverlayState extends State<_ScreenShieldOverlay>
     final hasAuroraVeil = isPlayer
         ? bm.playerAuroraVeilTurns > 0
         : bm.opponentAuroraVeilTurns > 0;
+    final hasSafeguard = isPlayer
+        ? bm.playerSafeguardTurns > 0
+        : bm.opponentSafeguardTurns > 0;
 
-    if (!hasReflect && !hasLightScreen && !hasAuroraVeil) {
+    if (!hasReflect && !hasLightScreen && !hasAuroraVeil && !hasSafeguard) {
       return const SizedBox.shrink();
     }
 
-    final List<Widget> shields = [];
-
-    if (hasAuroraVeil) {
-      shields.add(
-        CustomPaint(
-          painter: _ShieldPainter(
-            color: Colors.cyanAccent.withValues(alpha: 0.2),
-            progress: _controller.value,
-            scale: 1.1,
-          ),
-        ),
-      );
-    }
-    if (hasReflect) {
-      shields.add(
-        CustomPaint(
-          painter: _ShieldPainter(
-            color: Colors.orangeAccent.withValues(alpha: 0.5),
-            progress: _controller.value,
-            offset: hasAuroraVeil ? 2.0 : 0.0,
-          ),
-        ),
-      );
-    }
-    if (hasLightScreen) {
-      shields.add(
-        CustomPaint(
-          painter: _ShieldPainter(
-            color: Colors.yellowAccent.withValues(alpha: 0.5),
-            progress: _controller.value,
-            scale: hasReflect || hasAuroraVeil ? 0.9 : 1.0,
-          ),
-        ),
-      );
-    }
+    // Collect active screens: (assetPath, layerIndex) — layerIndex shifts them
+    final List<String> activeScreens = [];
+    if (hasAuroraVeil) activeScreens.add('assets/aurora_veil.png');
+    if (hasReflect) activeScreens.add('assets/reflect.png');
+    if (hasLightScreen) activeScreens.add('assets/light_screen.png');
+    if (hasSafeguard) activeScreens.add('assets/safeguard.png');
 
     return AnimatedBuilder(
-      animation: _controller,
+      animation: _pulseController,
       builder: (context, child) {
-        return Positioned.fill(child: Stack(children: shields));
+        final double pulse = 0.55 + 0.45 * math.sin(_pulseController.value * math.pi);
+        final List<Widget> layers = [];
+
+        for (int i = 0; i < activeScreens.length; i++) {
+          // Slight scale offset for stacking so each layer is visible
+          final double scaleOffset = 1.0 + (i * 0.06);
+          layers.add(
+            Positioned.fill(
+              child: Transform.scale(
+                scale: scaleOffset,
+                alignment: Alignment.center,
+                child: Opacity(
+                  opacity: pulse * 0.85,
+                  child: Image.asset(
+                    activeScreens[i],
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
+
+        return Stack(clipBehavior: Clip.none, children: layers);
       },
     );
   }
-}
-
-class _ShieldPainter extends CustomPainter {
-  final Color color;
-  final double progress;
-
-  final double scale;
-  final double offset;
-
-  _ShieldPainter({
-    required this.color,
-    required this.progress,
-    this.scale = 1.0,
-    this.offset = 0.0,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color.withValues(
-        alpha: color.a * (0.6 + 0.4 * math.sin(progress * 2 * math.pi)),
-      )
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3.0;
-
-    final path = Path();
-    final centerX = size.width / 2 + offset;
-    final centerY = size.height / 2 + offset;
-    final radius = size.width * 0.48 * scale;
-
-    for (int i = 0; i < 6; i++) {
-      double angle = i * math.pi / 3;
-      double x = centerX + radius * math.cos(angle);
-      double y = centerY + radius * math.sin(angle);
-      if (i == 0) {
-        path.moveTo(x, y);
-      } else {
-        path.lineTo(x, y);
-      }
-    }
-    path.close();
-
-    canvas.drawPath(path, paint);
-
-    final fillPaint = Paint()
-      ..color = color.withValues(alpha: color.a * 0.15)
-      ..style = PaintingStyle.fill;
-    canvas.drawPath(path, fillPaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant _ShieldPainter oldDelegate) => true;
 }
 
 class _PrismorphSparklePainter extends CustomPainter {
@@ -8049,7 +7997,7 @@ class _GimmickBannerState extends State<_GimmickBanner>
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 32,
+                            fontSize: 24,
                             fontWeight: FontWeight.bold,
                             fontFamily: 'PressStart2P',
                             letterSpacing: 4,
@@ -8062,7 +8010,7 @@ class _GimmickBannerState extends State<_GimmickBanner>
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 24,
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
                           fontFamily: 'PressStart2P',
                           shadows: [

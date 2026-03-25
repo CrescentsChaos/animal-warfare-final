@@ -318,6 +318,17 @@ class _GameScreenState extends State<GameScreen> {
                       ),
                     ),
                   ),
+
+                  const SizedBox(height: 24),
+                  Center(
+                    child: Text(
+                      'v$kAppVersion',
+                      style: GoogleFonts.inter(
+                        color: AppColors.textMuted.withValues(alpha: 0.5),
+                        fontSize: 11,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),

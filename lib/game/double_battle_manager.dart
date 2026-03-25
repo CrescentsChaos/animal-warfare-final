@@ -1109,8 +1109,16 @@ class DoubleBattleManager extends ChangeNotifier {
 
     defender.tookDamageThisTurn = true;
 
-    if (typeMod > 1.0) addLog('It\'s super effective!');
-    if (typeMod < 1.0 && typeMod > 0) addLog('It\'s not very effective...');
+    if (typeMod >= 3.9) {
+      addLog('It\'s extremely effective!');
+    } else if (typeMod > 1.1) {
+      addLog('It\'s super effective!');
+    }
+    if (typeMod > 0 && typeMod <= 0.26) {
+      addLog('It\'s barely effective...');
+    } else if (typeMod > 0 && typeMod < 0.9) {
+      addLog('It\'s not very effective...');
+    }
     if (typeMod == 0.0) {
       addLog('It doesn\'t affect ${defender.organism.baseOrganism.name}!');
     }

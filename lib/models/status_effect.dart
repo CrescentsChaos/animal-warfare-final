@@ -28,6 +28,7 @@ enum StatusEffectType {
   soaked, // Type changed to Aquatic
   charmed, // Power halved when attacking the charmer
   smokescreen, // Accuracy reduced
+  curse, // Takes 25% max HP damage each turn (Spectral effect)
 }
 
 extension StatusEffectTypeX on StatusEffectType {
@@ -114,6 +115,8 @@ class StatusEffect {
         return 'Charmed';
       case StatusEffectType.smokescreen:
         return 'Smokescreen';
+      case StatusEffectType.curse:
+        return 'Curse';
       default:
         return 'None';
     }
@@ -169,6 +172,8 @@ class StatusEffect {
         return 'fell in love!';
       case StatusEffectType.smokescreen:
         return 'is surrounded by smoke!';
+      case StatusEffectType.curse:
+        return 'was cursed!';
       default:
         return '';
     }
@@ -206,6 +211,8 @@ class StatusEffect {
         return Colors.pinkAccent;
       case StatusEffectType.smokescreen:
         return Colors.blueGrey[800]!;
+      case StatusEffectType.curse:
+        return Colors.black;
       default:
         return Colors.grey;
     }
@@ -265,6 +272,8 @@ class StatusEffect {
         return 'Power is halved when attacking the charmer.';
       case StatusEffectType.smokescreen:
         return 'Accuracy is significantly reduced.';
+      case StatusEffectType.curse:
+        return 'Takes 25% max HP damage each turn.';
       default:
         return 'No current effect.';
     }
