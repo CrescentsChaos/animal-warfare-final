@@ -63,6 +63,7 @@ class AIDecisionEngine {
     bool targetHasLightScreen = false,
     bool targetHasAuroraVeil = false,
     bool targetHasSubstitute = false,
+    bool targetHasSafeguard = false,
   }) {
     double score = 0.0;
 
@@ -100,6 +101,9 @@ class AIDecisionEngine {
       score -= 700;
     }
     if ((move.name == 'Aurora Veil') && targetHasAuroraVeil) {
+      score -= 700;
+    }
+    if ((move.name == 'Safeguard') && targetHasSafeguard) {
       score -= 700;
     }
 

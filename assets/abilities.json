@@ -2244,6 +2244,19 @@
     "description": "Punching moves hit twice. 1st hit at 100% power, 2nd hit at 40%.",
     "trigger": "none",
     "effectType": "none"
+  },
+  {
+    "name": "Contrary",
+    "description": "Reverses stat changes. Drops become boosts, improvements become reductions.",
+    "trigger": "none",
+    "effectType": "none"
+  },
+  {
+    "name": "Technician",
+    "description": "Boosts moves with base power <= 60 by 50%.",
+    "trigger": "onCalculateDamage",
+    "effectType": "none"
   }
 ]
+
 

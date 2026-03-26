@@ -109,19 +109,24 @@ class ArchetypeTeamBuilder {
     final picked = shuffled.take(teamSize).toList();
 
     final team = picked.map((o) {
-      final moves = _resolveMovelist(o);
-      final randomMoves = (List.of(moves)..shuffle(_rng)).take(4).toList();
-      final ability = _selectAbility(null, o, randomMoves);
+      final cand = _OrgCandidate(o, _resolveMovelist(o));
+
+      // Rare chance to apply a specialized build even in Chaos mode
+      final special = _tryApplySpecialBuild(null, cand, level, minIV);
+      if (special != null) {
+        return withTalismans ? _assignTalisman(null, special) : special;
+      }
+
+      final moves = (List.of(cand.moves)..shuffle(_rng)).take(4).toList();
+      final ability = _selectAbility(null, o, moves);
       final c = _makeOrganism(
         o,
-        randomMoves,
+        moves,
         level: level,
         minIV: minIV,
         activeAbilityName: ability,
       );
-      return withTalismans
-          ? _assignTalisman(null, c)
-          : c; // Archetype null for chaos
+      return withTalismans ? _assignTalisman(null, c) : c;
     }).toList();
 
     return team;
@@ -175,6 +180,13 @@ class ArchetypeTeamBuilder {
     // 5. Build CapturedOrganisms with archetype-tuned movesets
     final teamMoves = <String>[];
     var team = picked.map((c) {
+      // Rare chance to apply a specialized build if the animal fits
+      final special = _tryApplySpecialBuild(archetype, c, level, minIV);
+      if (special != null) {
+        teamMoves.addAll(special.selectedMoveNames);
+        return withTalismans ? _assignTalisman(archetype, special) : special;
+      }
+
       final moves = _selectMoves(archetype, c, teamMoves);
       teamMoves.addAll(moves.map((m) => m.name));
 
@@ -194,6 +206,73 @@ class ArchetypeTeamBuilder {
     team = _orderLead(archetype, team);
 
     return team;
+  }
+
+  /// Specialized Build Engine:
+  /// Identifies if a candidate fits a unique "style" and applies it.
+  static CapturedOrganism? _tryApplySpecialBuild(
+    TeamArchetype? archetype,
+    _OrgCandidate c,
+    int level,
+    int minIV,
+  ) {
+    // 30% chance to even attempt a special build for an eligible animal
+    if (_rng.nextDouble() > 0.3) return null;
+
+    final availableBuilds = SpecialBuilds.all
+        .where((b) => b.fitness(c.organism, c.moves))
+        .toList();
+    if (availableBuilds.isEmpty) return null;
+
+    final build = availableBuilds[_rng.nextInt(availableBuilds.length)];
+
+    // Force required ability
+    final ability = build.requiredAbility;
+
+    // Resolve moves: start with required moves
+    final moves = <Move>[];
+    for (final mName in build.requiredMoves) {
+      final m = Move.findByName(mName);
+      if (m != null) moves.add(m);
+    }
+
+    // Style-specific heuristics:
+    if (build.name == 'Skill Link Multi-Hit') {
+      final multiHits = c.moves.where((m) => m.maxHits > 1).toList();
+      moves.addAll(multiHits);
+    }
+    if (build.name == 'No Guard Accuracy-Fixer') {
+      final inaccurate = c.moves
+          .where((m) => m.accuracy < 85 && m.baseDamage > 0)
+          .toList();
+      moves.addAll(inaccurate);
+    }
+
+    // Fill remaining slots from the general pool
+    if (moves.length < 4) {
+      final remaining = c.moves.where((m) => !moves.contains(m)).toList();
+      // Prefer high power for the remaining slots
+      remaining.sort((a, b) => b.baseDamage.compareTo(a.baseDamage));
+      moves.addAll(remaining.take(4 - moves.length));
+    }
+
+    final captured = _makeOrganism(
+      c.organism,
+      moves.take(4).toList(),
+      level: level,
+      minIV: minIV,
+      activeAbilityName: ability,
+    );
+
+    // Apply build-specific talisman if defined
+    if (build.requiredTalisman != null) {
+      final t = Talisman.findByName(build.requiredTalisman!);
+      if (t != null) {
+        return captured.copyWith(equippedTalisman: t);
+      }
+    }
+
+    return captured;
   }
 
   // ─────────────────────────────────────────────────────────────────
@@ -613,7 +692,9 @@ class ArchetypeTeamBuilder {
     // 2. Try to ensure a STAB move or high damage move
     if (scored.isNotEmpty) {
       final stabIndex = scored.indexWhere(
-        (e) => c.organism.elementalTypes.contains(e.key.type) && e.key.baseDamage > 0,
+        (e) =>
+            c.organism.elementalTypes.contains(e.key.type) &&
+            e.key.baseDamage > 0,
       );
       if (stabIndex != -1) {
         selected.add(scored.removeAt(stabIndex).key);
@@ -836,7 +917,9 @@ class ArchetypeTeamBuilder {
         break;
 
       case TeamArchetype.gimmickyAssist:
-        if (m.name == 'Metronome' || m.name == 'Assist' || m.name == 'Copycat') {
+        if (m.name == 'Metronome' ||
+            m.name == 'Assist' ||
+            m.name == 'Copycat') {
           s += 1000;
         }
         break;
@@ -1171,6 +1254,9 @@ class ArchetypeTeamBuilder {
     TeamArchetype? archetype,
     CapturedOrganism c,
   ) {
+    // If a specialized build already assigned a talisman, stick with it!
+    if (c.equippedTalisman != null) return c;
+
     // 0. Preliminary: Check for 4x Weaknesses and assign Resist Berry
     final resistBerry = _getResistBerryFor4xWeakness(c);
     if (resistBerry != null) {
@@ -1623,6 +1709,108 @@ class ArchetypeTeamBuilder {
         .toList();
     return _OrgCandidate(c.baseOrganism, moves);
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CUSTOM SPECIALIZED BUILDS REGISTRY
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Represents a specific animal 'style' or 'combo'.
+/// Add your own builds to [SpecialBuilds.all] below!
+class AnimalBuild {
+  final String name;
+  final String description;
+
+  /// Returns true if this organism is a valid candidate for this build.
+  final bool Function(Organism o, List<Move> allMoves) fitness;
+
+  /// Moves that MUST be included in the build.
+  final List<String> requiredMoves;
+
+  /// The ability the animal MUST have.
+  final String requiredAbility;
+
+  /// Optional preferred talisman name.
+  final String? requiredTalisman;
+
+  const AnimalBuild({
+    required this.name,
+    required this.description,
+    required this.fitness,
+    required this.requiredMoves,
+    required this.requiredAbility,
+    this.requiredTalisman,
+  });
+}
+
+class SpecialBuilds {
+  static final List<AnimalBuild> all = [
+    AnimalBuild(
+      name: 'Skill Link Multi-Hit',
+      description: 'Guarantees maximum hits for multi-hit moves.',
+      fitness: (o, moves) =>
+          o.abilities.contains('Skill Link') && moves.any((m) => m.maxHits > 1),
+      requiredMoves: [], // Will pick from multi-hit moves automatically
+      requiredAbility: 'Skill Link',
+      requiredTalisman: 'Scope Lens',
+    ),
+    AnimalBuild(
+      name: 'No Guard Accuracy-Fixer',
+      description: 'Never misses, allowing for high-power low-accuracy moves.',
+      fitness: (o, moves) =>
+          o.abilities.contains('No Guard') &&
+          moves.any((m) => m.accuracy < 85 && m.baseDamage > 0),
+      requiredMoves: [],
+      requiredAbility: 'No Guard',
+      requiredTalisman: 'Life Orb',
+    ),
+    AnimalBuild(
+      name: 'Reckless Recoil User',
+      description: 'Powers up recoil moves.',
+      fitness: (o, moves) =>
+          o.abilities.contains('Reckless') &&
+          moves.any((m) => m.recoilPercent > 0),
+      requiredMoves: [],
+      requiredAbility: 'Reckless',
+      requiredTalisman: 'Shell Bell',
+    ),
+    AnimalBuild(
+      name: 'Serene Grace Flincher',
+      description:
+          'Maximizes secondary effect chances for status or flinching.',
+      fitness: (o, moves) =>
+          o.abilities.contains('Serene Grace') &&
+          moves.any(
+            (m) => m.effects.any(
+              (e) =>
+                  e.type == MoveEffectType.statChangeChance ||
+                  e.type == MoveEffectType.statusStun,
+            ),
+          ),
+      requiredAbility: 'Serene Grace',
+      requiredMoves: [],
+      requiredTalisman: 'King\'s Rock',
+    ),
+    AnimalBuild(
+      name: 'Crit Abuser',
+      description: 'Abuses high crit rate moves.',
+      fitness: (o, moves) =>
+          o.abilities.contains('Super Luck') &&
+          moves.any((m) => m.critRate > 0),
+      requiredMoves: [],
+      requiredAbility: 'Super Luck',
+      requiredTalisman: 'Scope Lens',
+    ),
+    AnimalBuild(
+      name: 'Guts Physical Attacker',
+      description:
+          'Boosts Attack significantly when afflicted by a status condition.',
+      fitness: (o, moves) => o.abilities.contains('Guts') && o.attack > o.power,
+      requiredAbility: 'Guts',
+      requiredMoves: ["Facade"],
+      requiredTalisman: 'Flame Orb',
+    ),
+  ];
 }
 
 // ─────────────────────────────────────────────────────────────────

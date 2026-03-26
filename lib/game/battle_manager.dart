@@ -7726,7 +7726,14 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     baseDamage = (baseDamage * pursuitMultiplier).round();
 
+    // Technician Boost: 1.5x for moves with <= 60 BP
+    if (attacker.abilities.any((ab) => ab.name == 'Technician') &&
+        baseDamage <= 60) {
+      baseDamage = (baseDamage * 1.5).round();
+    }
+
     if (baseDamage <= 0) return const DamageResult(0, 1.0, false);
+
 
     // 3. Core Damage Formula
     double damageCalc =
@@ -8905,6 +8912,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           ? playerAuroraVeilTurns > 0
           : opponentAuroraVeilTurns > 0,
       targetHasSubstitute: defender.substituteHealth > 0,
+      targetHasSafeguard: defender.isPlayer
+          ? playerSafeguardTurns > 0
+          : opponentSafeguardTurns > 0,
     );
   }
 
