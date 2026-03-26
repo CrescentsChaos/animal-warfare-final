@@ -69,6 +69,7 @@ enum MoveEffectType {
   statusFear,
   statusMarked,
   statusStealth,
+  statusCharmed,
   // New Effect Types for Complex Moves
   multiStatChange,
   recharge,

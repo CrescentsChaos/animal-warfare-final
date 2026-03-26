@@ -1,0 +1,294 @@
+TOTAL MISSING MOVES: 293
+MISSING: [After You] | Sample User: Cleaner Wrasse
+MISSING: [Ally Switch] | Sample User: Cleaner Shrimp
+MISSING: [Baton Pass] | Sample User: Emperor Tamarin
+MISSING: [Beat Up] | Sample User: Black Lion Tamarin
+MISSING: [Bestow] | Sample User: Ring-tailed Coati
+MISSING: [Bide] | Sample User: Risso's Dolphin
+MISSING: [Burn Up] | Sample User: Black Mountain Skink
+MISSING: [Burning Jealousy] | Sample User: Scarlet Snake
+MISSING: [Clear Smog] | Sample User: Black Mountain Skink
+MISSING: [Corrosive Gas] | Sample User: Oilfish
+MISSING: [Death Roll] | Sample User: Spectacled Caiman
+MISSING: [Destiny Bond] | Sample User: Barreleye Fish
+MISSING: [Disable] | Sample User: Mimic Poison Frog
+MISSING: [Display] | Sample User: Scarlet Badis
+MISSING: [Dizzy Punch] | Sample User: Red Kangaroo
+MISSING: [Dodge] | Sample User: Pea Puffer
+MISSING: [Double Hit] | Sample User: Rhesus Monkey
+MISSING: [Double Kick] | Sample User: Pronghorn Antelope
+MISSING: [Dragon Fang] | Sample User: Sling-jaw Wrasse
+MISSING: [Draining Kiss] | Sample User: Giant Oarfish
+MISSING: [Dream Eater] | Sample User: Eurasian Eagle-Owl
+MISSING: [Drift] | Sample User: Pacific Footballfish
+MISSING: [Drum Beating] | Sample User: Silverback Gorilla
+MISSING: [Dynamic Punch] | Sample User: Surinam Toad
+MISSING: [Echoed Voice] | Sample User: Red-whiskered Bulbul
+MISSING: [Eerie Impulse] | Sample User: Blueface Angelfish
+MISSING: [Electrify] | Sample User: Golden Silk Orb Weaver
+MISSING: [Electro Ball] | Sample User: Merlin
+MISSING: [Electroweb] | Sample User: Iberian Solifuge
+MISSING: [Embargo] | Sample User: Long-tailed Jaeger
+MISSING: [Endure] | Sample User: Short-Beaked Echidna
+MISSING: [Entrainment] | Sample User: Quokka
+MISSING: [Esper Wing] | Sample User: Eurasian Eagle-Owl
+MISSING: [Evade] | Sample User: Southern Pufferfish
+MISSING: [Explosion] | Sample User: Giant Ground Pangolin
+MISSING: [Extrasensory] | Sample User: Eurasian Eagle-Owl
+MISSING: [Extremespeed] | Sample User: Red Racer
+MISSING: [Facet] | Sample User: Blessed Poison Frog
+MISSING: [Faint Attack] | Sample User: California Glossy Snake
+MISSING: [Fairy Wind] | Sample User: Freshwater Angelfish
+MISSING: [Fake Tears] | Sample User: Moorish Idol
+MISSING: [False Surrender] | Sample User: Crescent Betta
+MISSING: [Fang Lock] | Sample User: Straightline Dragonfish
+MISSING: [Fast Attack] | Sample User: Bluefish
+MISSING: [Feint] | Sample User: Ant-mimic Ground Beetle
+MISSING: [Feint Attack] | Sample User: Chain Pickerel
+MISSING: [Fell Stinger] | Sample User: Iberian Solifuge
+MISSING: [Fiery Wrath] | Sample User: Pasquet's Parrot
+MISSING: [Fire Lash] | Sample User: Amazonian Giant Centipede
+MISSING: [Flame Burst] | Sample User: Blood Star
+MISSING: [Flame Charge] | Sample User: Lilac-breasted Roller
+MISSING: [Flame Wheel] | Sample User: Flame Angelfish
+MISSING: [Flatter] | Sample User: Peacock Spider
+MISSING: [Flee] | Sample User: Blue Malayan Coral Snake
+MISSING: [Fling] | Sample User: Crab-eating Macaque
+MISSING: [Float] | Sample User: Southern Pufferfish
+MISSING: [Fog Cloud] | Sample User: Lake Junin Giant Frog
+MISSING: [Follow Me] | Sample User: Emperor Tamarin
+MISSING: [Foresight] | Sample User: White-eyed Buzzard
+MISSING: [Forest's Curse] | Sample User: Schaus Swallowtail
+MISSING: [Forest’s Curse] | Sample User: Eastern Newt
+MISSING: [Foul Play] | Sample User: Spotted Hyena
+MISSING: [Fury Attack] | Sample User: European Bee-eater
+MISSING: [Gash] | Sample User: Dairy Cow Isopod
+MISSING: [Gastly Bite] | Sample User: Striped Bug
+MISSING: [Gastro Acid] | Sample User: Great Basin Rattlesnake
+MISSING: [Gaze] | Sample User: Oenpelli Rock Python
+MISSING: [Gear Grind] | Sample User: Warrior Wasp
+MISSING: [Glower] | Sample User: Common Fangtooth
+MISSING: [Gnash] | Sample User: Lancetfish
+MISSING: [Grass Whistle] | Sample User: Kaibab Squirrel
+MISSING: [Grudge] | Sample User: Chinese Paddlefish
+MISSING: [Guard Swap] | Sample User: Chinese Paddlefish
+MISSING: [Gulp] | Sample User: Brandt's Cormorant
+MISSING: [Gulp Missile] | Sample User: Gulper Eel
+MISSING: [Gust] | Sample User: Chinese Gliding Tree Frog
+MISSING: [Hail] | Sample User: Common Eider
+MISSING: [Hard Roller] | Sample User: Giant Wood Moth
+MISSING: [Haze] | Sample User: Sidewinder
+MISSING: [Heal Pulse] | Sample User: Cleaner Wrasse
+MISSING: [Heart Stamp] | Sample User: Red-lipped Batfish
+MISSING: [Heart Swap] | Sample User: Asian Sheepshead Wrasse
+MISSING: [Heat Crash] | Sample User: Black Mountain Skink
+MISSING: [Helping Hand] | Sample User: African Bush Elephant
+MISSING: [Hold] | Sample User: Bactrian Camel
+MISSING: [Horn Smash] | Sample User: Bighorn Sheep
+MISSING: [Howl] | Sample User: African Wild Dog
+MISSING: [Hydro Pulse] | Sample User: Banggai Cardinalfish
+MISSING: [Hyper Fang] | Sample User: Sugar Glider
+MISSING: [Hypnosis] | Sample User: Calico Cat
+MISSING: [Incinerate] | Sample User: Rainbow Agama
+MISSING: [Inferno] | Sample User: Amazonian Giant Centipede
+MISSING: [Infestation] | Sample User: Iberian Solifuge
+MISSING: [Inflate] | Sample User: Southern Pufferfish
+MISSING: [Ingrain] | Sample User: Eurasian Bittern
+MISSING: [Ink Spray] | Sample User: Flying Squid
+MISSING: [Instruct] | Sample User: Sumatran Orangutan
+MISSING: [Iron Roller] | Sample User: Whirligig Beetle
+MISSING: [Iron Wing] | Sample User: Blackstart
+MISSING: [Jaw Lock] | Sample User: Alligator Snapping Turtle
+MISSING: [Jungle Fife] | Sample User: Common Palm Civet
+MISSING: [Karate Chop] | Sample User: Coral Banded Shrimp
+MISSING: [Last Respects] | Sample User: Muskellunge
+MISSING: [Lava Plume] | Sample User: Albemarle Lava Lizard
+MISSING: [Leach Life] | Sample User: Thorn Bug
+MISSING: [Leaf Litter] | Sample User: Surinam Horned Frog
+MISSING: [Leaf Mirage] | Sample User: Decary's Leaf Chameleon
+MISSING: [Leaf Tornado] | Sample User: Leafy Sea Dragon
+MISSING: [Leap] | Sample User: Indian Bullfrog
+MISSING: [Leech Seed] | Sample User: Mangrove Red Snapper
+MISSING: [Life Dew] | Sample User: Freshwater Angelfish
+MISSING: [Lock-On] | Sample User: Tubesnout
+MISSING: [Low Sweep] | Sample User: Harlequin Shrimp
+MISSING: [Luminous Crash] | Sample User: California Pink Glow Worm
+MISSING: [Lunar Blessing] | Sample User: Luna Lionfish
+MISSING: [Lure] | Sample User: Tentacled Snake
+MISSING: [Lure Flash] | Sample User: Pacific Footballfish
+MISSING: [Luster Purge] | Sample User: Coral Beauty Angelfish
+MISSING: [Mach Punch] | Sample User: Black Lion Tamarin
+MISSING: [Magnet Rise] | Sample User: Japanese Eel
+MISSING: [Magnetic Flux] | Sample User: Pacific Electric Ray
+MISSING: [Make It Rain] | Sample User: Champagne d'Argent
+MISSING: [Me First] | Sample User: Common Raven
+MISSING: [Mega Horn] | Sample User: Black Boer Goat
+MISSING: [Mega Kick] | Sample User: Red-necked Wallaby
+MISSING: [Metal Burst] | Sample User: Shoulderspine Bigscale
+MISSING: [Metal Claw] | Sample User: Grizzly Bear
+MISSING: [Milk Drink] | Sample User: Holstein Cow
+MISSING: [Mimic] | Sample User: Common Raven
+MISSING: [Mind Reader] | Sample User: Gangetic River Dolphin
+MISSING: [Minimize] | Sample User: Burmese Python
+MISSING: [Mirror Move] | Sample User: Red-whiskered Bulbul
+MISSING: [Mirror Shot] | Sample User: Coral Beauty Angelfish
+MISSING: [Mist] | Sample User: Snowy Owl
+MISSING: [Moongeist Beam] | Sample User: Queen Parrotfish
+MISSING: [Moonview] | Sample User: Luna Lionfish
+MISSING: [Mud Bomb] | Sample User: Giant Whiptail Stingray
+MISSING: [Mud Shot] | Sample User: Sidewinder
+MISSING: [Mud Sport] | Sample User: Rio Grande Cichlid
+MISSING: [Mystical Fire] | Sample User: Flame Angelfish
+MISSING: [Natural Gift] | Sample User: Palm-nut Vulture
+MISSING: [Nature Power] | Sample User: Kelp Greenling
+MISSING: [Needle Arm] | Sample User: Eastern Long-Beaked Echidna
+MISSING: [Night Daze] | Sample User: Moon Wrasse
+MISSING: [Night Shade] | Sample User: Common Raven
+MISSING: [Nipping Snap] | Sample User: Ocellaris Clownfish
+MISSING: [Nuzzle] | Sample User: Sugar Glider
+MISSING: [Oblivion Wing] | Sample User: Eurasian Eagle-Owl
+MISSING: [Octazooka] | Sample User: Giant Squid
+MISSING: [Odor Sleuth] | Sample User: African Wild Dog
+MISSING: [Ominous Wind] | Sample User: Common Loon
+MISSING: [Origin Pulse] | Sample User: Orca
+MISSING: [Overdrive] | Sample User: Screaming Piha
+MISSING: [Pain Split] | Sample User: Reef Stonefish
+MISSING: [Parabolic Charge] | Sample User: Lemonpeel Angelfish
+MISSING: [Parting Shot] | Sample User: Black Lion Tamarin
+MISSING: [Petal Blizzard] | Sample User: Stoplight Parrotfish
+MISSING: [Phantom Force] | Sample User: Common Loon
+MISSING: [Play Nice] | Sample User: Quokka
+MISSING: [Pluck] | Sample User: Lanner Falcon
+MISSING: [Poison Fang] | Sample User: Great Basin Rattlesnake
+MISSING: [Poison Powder] | Sample User: Tropical Orb Weaver
+MISSING: [Poison Sting] | Sample User: Clark's Anemonefish
+MISSING: [Poison Tail] | Sample User: Common Garter Snake
+MISSING: [Pollen Puff] | Sample User: Glasswing Butterfly
+MISSING: [Poltergeist] | Sample User: Deep-sea Lizardfish
+MISSING: [Powder] | Sample User: White Springtail
+MISSING: [Power Whip] | Sample User: Giant Grouper
+MISSING: [Power-Up Punch] | Sample User: Nile Crocodile
+MISSING: [Psych Up] | Sample User: Sumatran Orangutan
+MISSING: [Psychic Fang] | Sample User: Stoplight Loosejaw
+MISSING: [Psychic Noise] | Sample User: Galaxy Frog
+MISSING: [Psycho Boost] | Sample User: Brain-eating Amoeba
+MISSING: [Psyshield Bash] | Sample User: Elk
+MISSING: [Punishment] | Sample User: Little Friarbird
+MISSING: [Quash] | Sample User: Common Raven
+MISSING: [Quick Guard] | Sample User: Common Buzzard
+MISSING: [Rage] | Sample User: African Tiger Fish
+MISSING: [Rage Powder] | Sample User: Monarch Butterfly
+MISSING: [Ram] | Sample User: Bighorn Sheep
+MISSING: [Razor Leaf] | Sample User: Spotted Nutcracker
+MISSING: [Razor Shell] | Sample User: Giant Water Bug
+MISSING: [Razor Wind] | Sample User: Nile Crocodile
+MISSING: [Recycle] | Sample User: Brushtail Possum
+MISSING: [Reef Clicking] | Sample User: Ocellaris Clownfish
+MISSING: [Refresh] | Sample User: Slender Suckerfish
+MISSING: [Retreat] | Sample User: Pea Puffer
+MISSING: [Revelation Dance] | Sample User: Spinner Dolphin
+MISSING: [Revenge] | Sample User: Bluegill
+MISSING: [Rising Voltage] | Sample User: Merlin
+MISSING: [Rock Climb] | Sample User: Alpine Ibex
+MISSING: [Rock Throw] | Sample User: Cougar
+MISSING: [Rock Wrecker] | Sample User: Leatherback Sea Turtle
+MISSING: [Role Play] | Sample User: Rose-ringed Parakeet
+MISSING: [Rolling Kick] | Sample User: Black Wallaroo
+MISSING: [Rototiller] | Sample User: Eastern Long-Beaked Echidna
+MISSING: [Round] | Sample User: Red-whiskered Bulbul
+MISSING: [Ruination] | Sample User: Spotted Hyena
+MISSING: [Safegaurd] | Sample User: Cleaner Wrasse
+MISSING: [Salt Cure] | Sample User: Rock Beauty Angelfish
+MISSING: [Sand-Attack] | Sample User: Bald Eagle
+MISSING: [Sandsear Storm] | Sample User: Royal Bengal Tiger
+MISSING: [Scissors Cross] | Sample User: Coral Banded Shrimp
+MISSING: [Self-Destruct] | Sample User: Purple Sea Urchin
+MISSING: [Shadow Punch] | Sample User: Dusky Parrotfish
+MISSING: [Shadow Sneak] | Sample User: Moorish Idol
+MISSING: [Shed Tail] | Sample User: Earthworm
+MISSING: [Shock Wave] | Sample User: Merlin
+MISSING: [Signal Beam] | Sample User: Iberian Solifuge
+MISSING: [Silk Trap] | Sample User: Cecropia Moth
+MISSING: [Silver Wind] | Sample User: Freshwater Angelfish
+MISSING: [Skill Swap] | Sample User: Rose-ringed Parakeet
+MISSING: [Skitter Out] | Sample User: Barbados Threadsnake
+MISSING: [Skitter Smack] | Sample User: Giant Water Bug
+MISSING: [Sky Drop] | Sample User: Red-shouldered Hawk
+MISSING: [Sky Uppercut] | Sample User: Caracal
+MISSING: [Slack Off] | Sample User: Cotton-top Tamarin
+MISSING: [Slam] | Sample User: Spearfish Remora
+MISSING: [Sleep Powder] | Sample User: Glasswing Butterfly
+MISSING: [Sludge] | Sample User: Clark's Anemonefish
+MISSING: [Sludge Wave] | Sample User: Candy Stripe Pistol Shrimp
+MISSING: [Smack Down] | Sample User: Hemprich's Hornbill
+MISSING: [Smog] | Sample User: Giant Squid
+MISSING: [Smokescreen] | Sample User: Fire Shrimp
+MISSING: [Snap Trap] | Sample User: Southern Flounder
+MISSING: [Snatch] | Sample User: Long-tailed Jaeger
+MISSING: [Sniper] | Sample User: Three-spot Seahorse
+MISSING: [Snowscape] | Sample User: Black Heron
+MISSING: [Soaking] | Sample User: Green Sunfish
+MISSING: [Soft-Boiled] | Sample User: Spotted Dove
+MISSING: [Sonic Boom] | Sample User: Lemonpeel Angelfish
+MISSING: [Spark] | Sample User: Cotton-top Tamarin
+MISSING: [Sparkling Aria] | Sample User: Amazonian Manatee
+MISSING: [Speed Swap] | Sample User: Chinese Paddlefish
+MISSING: [Spider Web] | Sample User: Tropical Orb Weaver
+MISSING: [Spike Shield] | Sample User: White Perch
+MISSING: [Spiky Shield] | Sample User: Thorny Devil
+MISSING: [Spit] | Sample User: Alpaca
+MISSING: [Spite] | Sample User: Dusky Parrotfish
+MISSING: [Spore] | Sample User: Gilbert's Potoroo
+MISSING: [Steamroller] | Sample User: Common Rough Woodlouse
+MISSING: [Steel Beam] | Sample User: Giant Ground Pangolin
+MISSING: [Steel Roller] | Sample User: Champagne d'Argent
+MISSING: [Steel Wing] | Sample User: Bald Eagle
+MISSING: [Stored Power] | Sample User: Risso's Dolphin
+MISSING: [Strange Steam] | Sample User: Brazilian Treehopper
+MISSING: [Strength Sap] | Sample User: Mangrove Red Snapper
+MISSING: [Strike] | Sample User: Tentacled Snake
+MISSING: [String Shot] | Sample User: Peppermint Shrimp
+MISSING: [Struggle Bug] | Sample User: European Bee-eater
+MISSING: [Stuff Cheeks] | Sample User: Kaibab Squirrel
+MISSING: [Stun Spore] | Sample User: Tropical Orb Weaver
+MISSING: [Submission] | Sample User: Coral Banded Shrimp
+MISSING: [Suck Up] | Sample User: Whalesucker
+MISSING: [Sunsteel Strike] | Sample User: African Lion
+MISSING: [Super Fang] | Sample User: Meerkat
+MISSING: [Supersonic] | Sample User: Harbor Porpoise
+MISSING: [Surging Strikes] | Sample User: Surinam Toad
+MISSING: [Sweet Kiss] | Sample User: Queen Angelfish
+MISSING: [Sweet Scent] | Sample User: Mauritian Flying Fox
+MISSING: [Swift] | Sample User: Snowy Owl
+MISSING: [Swift Swim] | Sample User: Ice Krill
+MISSING: [Switcheroo] | Sample User: Crab-eating Macaque
+MISSING: [Sword Dance] | Sample User: Norwegian Lemming
+MISSING: [Tail Glow] | Sample User: Regal Angelfish
+MISSING: [Tail Slap] | Sample User: Snowy Owl
+MISSING: [Tail Wind] | Sample User: Cleaner Wrasse
+MISSING: [Talon Strike] | Sample User: Philippines Eagle
+MISSING: [Teeter Dance] | Sample User: Spinner Dolphin
+MISSING: [Telekinesis] | Sample User: Sumatran Orangutan
+MISSING: [Terrain Pulse] | Sample User: Risso's Dolphin
+MISSING: [Thunder Punch] | Sample User: Grizzly Bear
+MISSING: [Thundershock] | Sample User: Supersaiyan Goby
+MISSING: [Torment] | Sample User: Long-tailed Jaeger
+MISSING: [Toxic Thread] | Sample User: Iberian Solifuge
+MISSING: [Transform] | Sample User: Common Mormon Swallowtail
+MISSING: [Tri Attack] | Sample User: Common Ostrich
+MISSING: [Trick] | Sample User: Striped Dolphin
+MISSING: [Triple Dive] | Sample User: Colossal Squid
+MISSING: [Twin Beam] | Sample User: Southern Giraffe
+MISSING: [Uproar] | Sample User: Blue Wildebeest
+MISSING: [Venom Drench] | Sample User: Spotted Skunk
+MISSING: [Vine Whip] | Sample User: Boomslang
+MISSING: [Vital Throw] | Sample User: Giant Panda
+MISSING: [Water Pledge] | Sample User: Northern Leopard Frog
+MISSING: [Water Shuriken] | Sample User: Pantropical Spotted Dolphin
+MISSING: [Water Sport] | Sample User: Double-crested Cormorant
+MISSING: [Wide Guard] | Sample User: Nile Perch
+MISSING: [Wing Attack] | Sample User: Mute Swan
+MISSING: [Wrap] | Sample User: Black Jansen's Ratsnake
+MISSING: [Wring Out] | Sample User: Giant Squid
+MISSING: [Yawn] | Sample User: Slender Suckerfish
+MISSING: [Zing Zap] | Sample User: Wasp Mantidfly

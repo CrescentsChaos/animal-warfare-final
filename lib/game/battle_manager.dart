@@ -53,6 +53,117 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   late BattleOrganism player;
   late BattleOrganism opponent;
 
+  int _calculateMoveAccuracy(
+    BattleOrganism attacker,
+    BattleOrganism defender,
+    Move move,
+  ) {
+    int accuracy = move.accuracy;
+
+    // Guaranteed hit checks
+    bool targetIsMarked = defender.statusEffects.any(
+      (se) => se.type == StatusEffectType.marked,
+    );
+    bool hasNoGuard =
+        attacker.abilities.any((ab) => ab.name == 'No Guard') ||
+        defender.abilities.any((ab) => ab.name == 'No Guard');
+
+    if (targetIsMarked ||
+        hasNoGuard ||
+        move.name == 'Kowtow Cleave' ||
+        move.name == 'Smart Strike' ||
+        (move.name == 'Focus Blast' &&
+            attacker.abilities.any((ab) => ab.name == 'Inner Focus')) ||
+        defender.glaiveRushVulnerable) {
+      return 100;
+    }
+
+    if (attacker.statusEffect.type == StatusEffectType.blind) {
+      accuracy = (accuracy * 0.75).round();
+    }
+
+    // Weather-based accuracy modifier
+    accuracy = (accuracy * currentWeather.accuracyModifier).round();
+
+    // Ability accuracy boost (Compound Eyes, Illuminate)
+    accuracy = (accuracy * attacker.getAbilityStatMultiplier('accuracy'))
+        .round();
+
+    // Victory Star: 1.2x accuracy boost for all moves
+    if (attacker.abilities.any((ab) => ab.name == 'Victory Star')) {
+      accuracy = (accuracy * 1.2).round();
+    }
+
+    // Hustle: 0.9x accuracy
+    if (attacker.abilities.any((ab) => ab.name == 'Hustle')) {
+      accuracy = (accuracy * 0.9).round();
+    }
+
+    // Wonder Skin: Halve accuracy of status moves targeting this defender
+    if (move.category == MoveCategory.status &&
+        defender.abilities.any((ab) => ab.name == 'Wonder Skin')) {
+      accuracy = (accuracy * 0.5).round();
+    }
+
+    if (attacker.organism.equippedTalisman != null &&
+        !attacker.talismanConsumed) {
+      for (final effect in attacker.organism.equippedTalisman!.effects) {
+        if (effect.type == TalismanEffectType.wideLens) {
+          accuracy = (accuracy * effect.magnitude).round();
+        } else if (effect.type == TalismanEffectType.zoomLens &&
+            ((attacker == player && opponentMovedThisTurn) ||
+                (attacker == opponent && playerMovedThisTurn))) {
+          // Zoom lens only helps when moving second
+          accuracy = (accuracy * effect.magnitude).round();
+        }
+      }
+    }
+
+    // Bright Powder accuracy reduction
+    if (defender.organism.equippedTalisman != null &&
+        !defender.talismanConsumed) {
+      for (final effect in defender.organism.equippedTalisman!.effects) {
+        if (effect.stat == 'evasion') {
+          accuracy = (accuracy * (1.0 / effect.magnitude)).round();
+        }
+      }
+    }
+
+    // Evasion stage modifier
+    if (defender.evasionStage != 0 && move.name != 'Sacred Sword') {
+      double evasionMultiplier = 1.0;
+      if (defender.evasionStage > 0) {
+        evasionMultiplier = 3.0 / (3.0 + defender.evasionStage);
+      } else {
+        evasionMultiplier = (3.0 - defender.evasionStage) / 3.0;
+      }
+      accuracy = (accuracy * evasionMultiplier).round();
+    }
+
+    // Tangled Feet: 2x evasion when confused (0.5x accuracy)
+    if (defender.abilities.any((ab) => ab.name == 'Tangled Feet') &&
+        defender.statusEffects.any(
+          (se) => se.type == StatusEffectType.confusion,
+        )) {
+      accuracy = (accuracy * 0.5).round();
+    }
+
+    // Stealth evasion (50% chance of getting hit over opponents actual accuracy)
+    if (defender.statusEffects.any(
+      (se) => se.type == StatusEffectType.stealth,
+    )) {
+      // Echolocation ignores stealth evasion
+      bool attackerHasEcholocation = attacker.abilities.any(
+        (ab) => ab.name == 'Echolocation',
+      );
+      if (!attackerHasEcholocation) {
+        accuracy = (accuracy * 0.5).round();
+      }
+    }
+
+    return accuracy;
+  }
+
   int _getEffectiveSpeed(BattleOrganism org) {
     double speed = org.currentSpeed.toDouble();
 
@@ -283,6 +394,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     return moves;
   }
 
+  final Random _random;
+
   BattleManager(
     CapturedOrganism initialPlayer,
     this.opponentOrganism, {
@@ -297,7 +410,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     this.isTesting = false,
     TeamArchetype? opponentArchetype,
     this.startAsleep = false,
-  }) : playerTeam = (team?.isNotEmpty ?? false) ? team! : [initialPlayer],
+    Random? random,
+  }) : _random = random ?? Random(),
+       playerTeam = (team?.isNotEmpty ?? false) ? team! : [initialPlayer],
        opponentTeam = (opponentTeam?.isNotEmpty ?? false)
            ? opponentTeam!
            : [opponentOrganism] {
@@ -1694,21 +1809,23 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         return;
       }
       final otherKnownMoves = attacker.organism.selectedMoveNames
-          .where((m) =>
-              m != 'Sleep Talk' &&
-              m != 'Metronome' &&
-              m != 'Assist' &&
-              m != 'Copycat' &&
-              m != 'Chatter' &&
-              m != 'Circle Throw' &&
-              m != 'Focus Punch' &&
-              m != 'Mimic' &&
-              m != 'Mirror Move' &&
-              m != 'Sketch' &&
-              m != 'Sky Drop' &&
-              m != 'Struggle' &&
-              m != 'Whirlwind' &&
-              m != 'Roar')
+          .where(
+            (m) =>
+                m != 'Sleep Talk' &&
+                m != 'Metronome' &&
+                m != 'Assist' &&
+                m != 'Copycat' &&
+                m != 'Chatter' &&
+                m != 'Circle Throw' &&
+                m != 'Focus Punch' &&
+                m != 'Mimic' &&
+                m != 'Mirror Move' &&
+                m != 'Sketch' &&
+                m != 'Sky Drop' &&
+                m != 'Struggle' &&
+                m != 'Whirlwind' &&
+                m != 'Roar',
+          )
           .toList();
       if (otherKnownMoves.isNotEmpty) {
         final randomMoveName =
@@ -1972,150 +2089,40 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       }
     }
 
-    // 1. Accuracy Check (Blindness + Weather affects accuracy)
-    int accuracy = move.accuracy;
+    // 1. Accuracy Check
+    int accuracy = _calculateMoveAccuracy(attacker, defender, move);
 
-    // Guaranteed hit checks
-    bool targetIsMarked = defender.statusEffects.any(
-      (se) => se.type == StatusEffectType.marked,
-    );
-    bool hasNoGuard =
-        attacker.abilities.any((ab) => ab.name == 'No Guard') ||
-        defender.abilities.any((ab) => ab.name == 'No Guard');
-
-    if (targetIsMarked ||
-        hasNoGuard ||
-        move.name == 'Kowtow Cleave' ||
-        move.name == 'Smart Strike' ||
-        (move.name == 'Focus Blast' &&
-            attacker.abilities.any((ab) => ab.name == 'Inner Focus')) ||
-        defender.glaiveRushVulnerable) {
-      accuracy = 100;
-    } else {
-      if (attacker.statusEffect.type == StatusEffectType.blind) {
-        accuracy = (accuracy * 0.75)
-            .round(); // Reduce accuracy by 25% if blinded
-      }
-
-      // Weather-based accuracy modifier
-      accuracy = (accuracy * currentWeather.accuracyModifier).round();
-
-      // Ability accuracy boost (Compound Eyes, Illuminate)
-      accuracy = (accuracy * attacker.getAbilityStatMultiplier('accuracy'))
-          .round();
-
-      // Victory Star: 1.2x accuracy boost for all moves
-      if (attacker.abilities.any((ab) => ab.name == 'Victory Star')) {
-        accuracy = (accuracy * 1.2).round();
-      }
-
-      // Hustle: 0.9x accuracy
-      if (attacker.abilities.any((ab) => ab.name == 'Hustle')) {
-        accuracy = (accuracy * 0.9).round();
-      }
-
-      // Wonder Skin: Halve accuracy of status moves targeting this defender
-      if (move.category == MoveCategory.status &&
-          defender.abilities.any((ab) => ab.name == 'Wonder Skin')) {
-        accuracy = (accuracy * 0.5).round();
-      }
-
-      if (attacker.organism.equippedTalisman != null &&
-          !attacker.talismanConsumed) {
-        for (final effect in attacker.organism.equippedTalisman!.effects) {
-          if (effect.type == TalismanEffectType.wideLens) {
-            accuracy = (accuracy * effect.magnitude).round();
-          } else if (effect.type == TalismanEffectType.zoomLens &&
-              ((attacker == player && opponentMovedThisTurn) ||
-                  (attacker == opponent && playerMovedThisTurn))) {
-            // Zoom lens only helps when moving second
-            accuracy = (accuracy * effect.magnitude).round();
-          }
-        }
-      }
-
-      // Bright Powder accuracy reduction
-      if (defender.organism.equippedTalisman != null &&
-          !defender.talismanConsumed) {
-        for (final effect in defender.organism.equippedTalisman!.effects) {
-          if (effect.stat == 'evasion') {
-            accuracy = (accuracy * (1.0 / effect.magnitude)).round();
-          }
-        }
-      }
-
-      // Evasion stage modifier
-      if (defender.evasionStage != 0 && move.name != 'Sacred Sword') {
-        double evasionMultiplier = 1.0;
-        // Standard Pokemon evasion formula: 3/(3+stage) for positive, (3-stage)/3 for negative
-        if (defender.evasionStage > 0) {
-          evasionMultiplier = 3.0 / (3.0 + defender.evasionStage);
-        } else {
-          evasionMultiplier = (3.0 - defender.evasionStage) / 3.0;
-        }
-        accuracy = (accuracy * evasionMultiplier).round();
-      }
-
-      // Tangled Feet: 2x evasion when confused (0.5x accuracy)
-      if (defender.abilities.any((ab) => ab.name == 'Tangled Feet') &&
-          defender.statusEffects.any(
-            (se) => se.type == StatusEffectType.confusion,
-          )) {
-        accuracy = (accuracy * 0.5).round();
-      }
-
-      // Stealth evasion (50% chance of getting hit over opponents actual accuracy)
-      if (defender.statusEffects.any(
-        (se) => se.type == StatusEffectType.stealth,
-      )) {
-        // Echolocation ignores stealth evasion
-        bool attackerHasEcholocation = attacker.abilities.any(
-          (ab) => ab.name == 'Echolocation',
-        );
-        if (!attackerHasEcholocation) {
-          accuracy = (accuracy * 0.5).round();
-        }
-      }
-    }
-
-    // Rollout/Ice Ball accuracy check: Accuracy resets if it misses
-    if (move.name == 'Rollout' || move.name == 'Ice Ball') {
-      if (Random().nextInt(100) >= accuracy) {
+    // Initial hit accuracy roll
+    if (!ignoreRandom && _random.nextInt(100) >= accuracy) {
+      if (move.name == 'Rollout' || move.name == 'Ice Ball') {
         addToLog('${attacker.name}\'s attack missed!');
         attacker.rolloutTurnCount = 0;
-        attacker.lastMoveFailed = true;
-        attacker.furyCutterCount = 0;
-        notifyListeners();
-        if (!isTesting) {
-          await Future.delayed(const Duration(milliseconds: 3000));
-        }
-        return;
-      }
-    } else if (Random().nextInt(100) >= accuracy && !ignoreRandom) {
-      addToLog('...but it missed!');
+      } else {
+        addToLog('...but it missed!');
 
-      // Blunder Policy: Speed boost on miss
-      if (attacker.organism.equippedTalisman != null &&
-          !attacker.talismanConsumed) {
-        for (final effect in attacker.organism.equippedTalisman!.effects) {
-          if (effect.type == TalismanEffectType.missStatBoost) {
-            attacker.talismanConsumed = true;
-            attacker.isItemRevealed = true;
-            _getStats(attacker.organism.id).isItemRevealed = true;
-            await applyStatChange(
-              attacker,
-              effect.stat ?? 'speed',
-              effect.magnitude.toInt(),
-            );
+        // Blunder Policy: Speed boost on miss
+        if (attacker.organism.equippedTalisman != null &&
+            !attacker.talismanConsumed) {
+          for (final effect in attacker.organism.equippedTalisman!.effects) {
+            if (effect.type == TalismanEffectType.missStatBoost) {
+              attacker.talismanConsumed = true;
+              attacker.isItemRevealed = true;
+              _getStats(attacker.organism.id).isItemRevealed = true;
+              await applyStatChange(
+                attacker,
+                effect.stat ?? 'speed',
+                effect.magnitude.toInt(),
+              );
+            }
           }
         }
-      }
 
-      if (move.name == 'High Jump Kick') {
-        final recoilDamage = (attacker.maxHealth / 2).round();
-        attacker.health -= recoilDamage;
-        addToLog('${attacker.name} kept going and crashed!');
-        if (_checkBattleEnd()) return;
+        if (move.name == 'High Jump Kick') {
+          final recoilDamage = (attacker.maxHealth / 2).round();
+          attacker.health -= recoilDamage;
+          addToLog('${attacker.name} kept going and crashed!');
+          if (_checkBattleEnd()) return;
+        }
       }
       attacker.lastMoveFailed = true;
       attacker.furyCutterCount = 0;
@@ -2314,7 +2321,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       addToLog('${defender.name}\'s Magic Bounce reflects the move back!');
       await notifyAbilityTrigger(defender, ab);
       // Re-run the move on the attacker instead
-      attacker.lastMoveFailed = true; // Reflected counts as a miss for original target? Usually yes for Stomping Tantrum logic.
+      attacker.lastMoveFailed =
+          true; // Reflected counts as a miss for original target? Usually yes for Stomping Tantrum logic.
       attacker.furyCutterCount = 0;
       await _applyMoveEffect(defender, attacker, move.effects, move);
       notifyListeners();
@@ -2360,7 +2368,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       } else if (ignoreRandom) {
         hits = move.minHits;
       } else {
-        hits = move.minHits + Random().nextInt(move.maxHits - move.minHits + 1);
+        hits = move.minHits + _random.nextInt(move.maxHits - move.minHits + 1);
       }
     }
 
@@ -2382,11 +2390,31 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     for (int i = 0; i < hits; i++) {
       if (defender.health <= 0) break; // Stop if opponent fainted
 
-      // Play sound effect for each hit after the first (first already played before loop)
+      // Check accuracy for subsequent hits (Population Bomb style)
       if (i > 0) {
         if (attacker.health <= 0) {
           break; // Stop if attacker fainted (e.g. from previous recoil)
         }
+
+        // Skill Link and No Guard bypass subsequent accuracy checks
+        bool skipCheck =
+            attacker.abilities.any((ab) => ab.name == 'Skill Link') ||
+            attacker.abilities.any((ab) => ab.name == 'No Guard') ||
+            defender.abilities.any((ab) => ab.name == 'No Guard');
+
+        if (!skipCheck && !ignoreRandom) {
+          int currentAccuracy = _calculateMoveAccuracy(
+            attacker,
+            defender,
+            move,
+          );
+          if (_random.nextInt(100) >= currentAccuracy) {
+            addToLog('${attacker.name}\'s attack missed!');
+            break;
+          }
+        }
+
+        // Play sound effect for each hit after the first (first already played before loop)
         String soundPath =
             move.soundEffect ??
             _audioService.getDefaultSoundEffect(
@@ -3686,10 +3714,17 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
       return false;
     }
-    if (move.name == 'Swallow' || move.name == 'Spit Up' || 
-        move.effects.any((e) => e.type == MoveEffectType.swallow || e.type == MoveEffectType.spitUp)) {
+    if (move.name == 'Swallow' ||
+        move.name == 'Spit Up' ||
+        move.effects.any(
+          (e) =>
+              e.type == MoveEffectType.swallow ||
+              e.type == MoveEffectType.spitUp,
+        )) {
       if (org.stockpileCount == 0) {
-        addToLog('${org.name} tried to use ${move.name}, but it hadn\'t stockpiled anything!');
+        addToLog(
+          '${org.name} tried to use ${move.name}, but it hadn\'t stockpiled anything!',
+        );
         return false;
       }
     }
@@ -4062,12 +4097,16 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         case MoveEffectType.statusPoison:
         case MoveEffectType.statusFear:
         case MoveEffectType.statusMarked:
+        case MoveEffectType.statusCharmed:
         case MoveEffectType.statusStealth:
           // --- 1. Consolidate Status Mapping ---
           StatusEffectType statusType;
           switch (effect.type) {
             case MoveEffectType.statusPoison:
               statusType = StatusEffectType.poison;
+              break;
+            case MoveEffectType.statusCharmed:
+              statusType = StatusEffectType.charmed;
               break;
             case MoveEffectType.statusBurn:
               statusType = StatusEffectType.burn;
@@ -4182,8 +4221,14 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             // Spectral effect: 50% HP cost for DoT on opponent
             final cost = (attacker.maxHealth / 2).round();
             attacker.health -= cost;
-            addToLog('${attacker.name} cut its own HP and put a curse on ${defender.name}!');
-            await applyStatusEffect(defender, StatusEffectType.curse, chance: 100);
+            addToLog(
+              '${attacker.name} cut its own HP and put a curse on ${defender.name}!',
+            );
+            await applyStatusEffect(
+              defender,
+              StatusEffectType.curse,
+              chance: 100,
+            );
             if (_checkBattleEnd()) return;
           } else {
             // Non-Spectral effect: -1 Speed, +1 Attack, +1 Defense
@@ -4705,7 +4750,10 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           playerSafeguardTurns = 0;
           opponentSafeguardTurns = 0;
           if (currentTerrain.terrain != Terrain.none) {
-            currentTerrain = const TerrainEffect(terrain: Terrain.none, duration: 0);
+            currentTerrain = const TerrainEffect(
+              terrain: Terrain.none,
+              duration: 0,
+            );
           }
           addToLog('The fog blew away the hazards, screens, and terrain!');
           await applyStatChange(defender, 'evasion', -1, source: attacker);
@@ -4716,7 +4764,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           } else {
             opponentSafeguardTurns = 5;
           }
-          addToLog('A mystic veil protects ${attacker.isPlayer ? "your" : "the opposing"} team!');
+          addToLog(
+            'A mystic veil protects ${attacker.isPlayer ? "your" : "the opposing"} team!',
+          );
           break;
         case MoveEffectType.rapidSpin:
           if (attacker.isPlayer) {
@@ -4726,17 +4776,24 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           }
           attacker.clampingTurns = 0;
           attacker.isTrapped = false;
-          addToLog('${attacker.name} blew away the entry hazards and binding effects!');
+          addToLog(
+            '${attacker.name} blew away the entry hazards and binding effects!',
+          );
           break;
         case MoveEffectType.iceSpinner:
           if (currentTerrain.terrain != Terrain.none) {
-            currentTerrain = const TerrainEffect(terrain: Terrain.none, duration: 0);
+            currentTerrain = const TerrainEffect(
+              terrain: Terrain.none,
+              duration: 0,
+            );
             addToLog('The terrain disappeared!');
           }
           break;
         case MoveEffectType.thief:
-          if (attacker.organism.equippedTalisman == null && defender.organism.equippedTalisman != null) {
-            attacker.organism.equippedTalisman = defender.organism.equippedTalisman;
+          if (attacker.organism.equippedTalisman == null &&
+              defender.organism.equippedTalisman != null) {
+            attacker.organism.equippedTalisman =
+                defender.organism.equippedTalisman;
             defender.organism.equippedTalisman = null;
             addToLog('${attacker.name} stole ${defender.name}\'s item!');
             notifyListeners();
@@ -4745,7 +4802,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         case MoveEffectType.stockpile:
           if (attacker.stockpileCount < 3) {
             attacker.stockpileCount++;
-            addToLog('${attacker.name} stockpiled energy (Count: ${attacker.stockpileCount})!');
+            addToLog(
+              '${attacker.name} stockpiled energy (Count: ${attacker.stockpileCount})!',
+            );
             await applyStatChange(attacker, 'defense', 1);
             await applyStatChange(attacker, 'resistance', 1);
           } else {
@@ -4757,14 +4816,28 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             int healPercent = 25;
             if (attacker.stockpileCount == 2) healPercent = 50;
             if (attacker.stockpileCount >= 3) healPercent = 100;
-            
-            final healedAmount = (attacker.maxHealth * healPercent / 100).round();
+
+            final healedAmount = (attacker.maxHealth * healPercent / 100)
+                .round();
             if (attacker.health < attacker.maxHealth) {
-              attacker.health = (attacker.health + healedAmount).clamp(0, attacker.maxHealth);
-              addToLog('${attacker.name} swallowed its stockpiled energy to heal!');
+              attacker.health = (attacker.health + healedAmount).clamp(
+                0,
+                attacker.maxHealth,
+              );
+              addToLog(
+                '${attacker.name} swallowed its stockpiled energy to heal!',
+              );
               await _audioService.playSound('audio/effects/heal.mp3');
-              await applyStatChange(attacker, 'defense', -attacker.stockpileCount);
-              await applyStatChange(attacker, 'resistance', -attacker.stockpileCount);
+              await applyStatChange(
+                attacker,
+                'defense',
+                -attacker.stockpileCount,
+              );
+              await applyStatChange(
+                attacker,
+                'resistance',
+                -attacker.stockpileCount,
+              );
               attacker.stockpileCount = 0;
             } else {
               addToLog('But its HP is already full!');
@@ -4775,8 +4848,16 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           break;
         case MoveEffectType.spitUp:
           if (attacker.stockpileCount > 0) {
-            await applyStatChange(attacker, 'defense', -attacker.stockpileCount);
-            await applyStatChange(attacker, 'resistance', -attacker.stockpileCount);
+            await applyStatChange(
+              attacker,
+              'defense',
+              -attacker.stockpileCount,
+            );
+            await applyStatChange(
+              attacker,
+              'resistance',
+              -attacker.stockpileCount,
+            );
             attacker.stockpileCount = 0;
           } else {
             addToLog('But it failed! (No stockpile)');
@@ -7281,7 +7362,6 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       return DamageResult(damage, 1.0, false);
     }
 
-
     // Pursuit Intercept Power Double
     double pursuitMultiplier = 1.0;
     if (move.name == 'Pursuit' && isPursuitIntercept) {
@@ -7439,8 +7519,6 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     // Toxic Boost and Flare Boost now handled in getAbilityStatMultiplier
 
-
-
     // Tera Blast Stat Swap
     if (move.name == 'Tera Blast' && attacker.isPrismorphed) {
       if (attacker.currentAttack > attacker.currentPower) {
@@ -7456,13 +7534,16 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     int baseDamage = move.baseDamage;
 
     // Spit Up Damage
-    if (move.name == 'Spit Up' || move.effects.any((e) => e.type == MoveEffectType.spitUp)) {
-      if (attacker.stockpileCount == 0) return const DamageResult(0, 1.0, false);
+    if (move.name == 'Spit Up' ||
+        move.effects.any((e) => e.type == MoveEffectType.spitUp)) {
+      if (attacker.stockpileCount == 0)
+        return const DamageResult(0, 1.0, false);
       baseDamage = 100 * attacker.stockpileCount;
     }
 
     // Payback Damage Double
-    if (move.name == 'Payback' || move.effects.any((e) => e.type == MoveEffectType.payback)) {
+    if (move.name == 'Payback' ||
+        move.effects.any((e) => e.type == MoveEffectType.payback)) {
       if (defender.hasMovedThisTurn) {
         baseDamage *= 2;
       }
@@ -7504,7 +7585,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         baseDamage = 20;
       }
     }
-    
+
     // Stomping Tantrum power double
     if (move.name == 'Stomping Tantrum' && attacker.lastMoveFailed) {
       baseDamage *= 2;

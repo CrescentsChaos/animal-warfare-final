@@ -1,6 +1,6 @@
 [
     {
-        "name": "Death Roll",
+        "name": "Deathroll",
         "description": "The user grabs the target and spins violently, tearing and crushing at the same time.",
         "baseDamage": 80,
         "type": "aquatic",
@@ -35,6 +35,23 @@
         ]
     },
     {
+        "name": "Inferno Dance",
+        "description": "The user charges its body with energy, sharply raising its Power stat.",
+        "baseDamage": 0,
+        "type": "blaze",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "power",
+                "value": 2,
+                "chance": 100
+            }
+        ]
+    },
+    {
         "name": "Nasty Plot",
         "description": "The user charges its body with energy, sharply raising its Power stat.",
         "baseDamage": 0,
@@ -56,6 +73,23 @@
         "description": "The user charges its body with energy, sharply raising its Speed stat.",
         "baseDamage": 0,
         "type": "aura",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "speed",
+                "value": 2,
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Autotomize",
+        "description": "The user sheds weight, sharply raising its Speed stat.",
+        "baseDamage": 0,
+        "type": "metal",
         "stamina": 15,
         "category": "status",
         "effects": [
@@ -127,8 +161,7 @@
         "type": "cryo",
         "accuracy": 100,
         "stamina": 8,
-        "category": "physical",
-        "effects": []
+        "category": "physical"
     },
     {
         "name": "Mountain Gale",
@@ -137,8 +170,7 @@
         "type": "cryo",
         "accuracy": 85,
         "stamina": 8,
-        "category": "physical",
-        "effects": []
+        "category": "physical"
     },
     {
         "name": "Ice Beam",
@@ -214,6 +246,23 @@
         ]
     },
     {
+        "name": "Blaze Kick",
+        "description": "10% chance to burn the opponent. High critrate.",
+        "baseDamage": 85,
+        "type": "blaze",
+        "accuracy": 90,
+        "stamina": 15,
+        "critRate": 1,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusBurn",
+                "target": "opponent",
+                "chance": 10
+            }
+        ]
+    },
+    {
         "name": "Scald",
         "description": "30% chance to burn the opponent.",
         "baseDamage": 80,
@@ -241,6 +290,22 @@
         "effects": [
             {
                 "type": "statusBurn",
+                "target": "opponent",
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Attract",
+        "description": "Charms the opponent.",
+        "baseDamage": 0,
+        "type": "mystic",
+        "accuracy": 100,
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statusCharmed",
                 "target": "opponent",
                 "chance": 100
             }
@@ -472,7 +537,7 @@
     },
     {
         "name": "Powder Snow",
-        "description": "10% chance to freeze the opponent.",
+        "description": "10% chance to sleep the opponent.",
         "baseDamage": 40,
         "type": "cryo",
         "accuracy": 100,
@@ -480,7 +545,7 @@
         "category": "special",
         "effects": [
             {
-                "type": "statusFreeze",
+                "type": "statusSleep",
                 "target": "opponent",
                 "chance": 10
             }
@@ -586,8 +651,7 @@
         "baseDamage": 55,
         "type": "basic",
         "stamina": 30,
-        "category": "physical",
-        "effects": []
+        "category": "physical"
     },
     {
         "name": "Crushing Pincer",
@@ -838,9 +902,27 @@
         ]
     },
     {
-        "name": "Bubblebeam",
+        "name": "Bubble Beam",
         "description": "10% chance to drop foes speed",
         "baseDamage": 65,
+        "accuracy": 100,
+        "type": "aquatic",
+        "stamina": 20,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "speed",
+                "value": -1,
+                "chance": 10
+            }
+        ]
+    },
+    {
+        "name": "Bubble",
+        "description": "10% chance to drop foes speed",
+        "baseDamage": 40,
         "accuracy": 100,
         "type": "aquatic",
         "stamina": 20,
@@ -918,8 +1000,7 @@
         "type": "cryo",
         "stamina": 10,
         "critRate": 3,
-        "category": "special",
-        "effects": []
+        "category": "special"
     },
     {
         "name": "Vortex Suction",
@@ -960,8 +1041,7 @@
         "type": "basic",
         "stamina": 30,
         "accuracy": 95,
-        "category": "physical",
-        "effects": []
+        "category": "physical"
     },
     {
         "name": "Rock Smash",
@@ -988,8 +1068,7 @@
         "type": "aquatic",
         "stamina": 10,
         "accuracy": 100,
-        "category": "physical",
-        "effects": []
+        "category": "physical"
     },
     {
         "name": "Flash",
@@ -1112,6 +1191,23 @@
         ]
     },
     {
+        "name": "Chatter",
+        "description": "Confuses the target.",
+        "baseDamage": 65,
+        "type": "sound",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statusConfusion",
+                "target": "opponent",
+                "value": 3,
+                "chance": 100
+            }
+        ]
+    },
+    {
         "name": "Scary Face",
         "description": "A terrifying glare that halts the opponent in their tracks.",
         "baseDamage": 0,
@@ -1124,6 +1220,22 @@
                 "target": "opponent",
                 "value": 2
             },
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "speed",
+                "value": -2
+            }
+        ]
+    },
+    {
+        "name": "Cotton Spore",
+        "description": "Lowers foes speed by 2.",
+        "baseDamage": 0,
+        "type": "grass",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
             {
                 "type": "statChange",
                 "target": "opponent",
@@ -1627,8 +1739,8 @@
         ]
     },
     {
-        "name": "Bulk Up",
-        "description": "Raises the user's Attack and Defense by one stage",
+        "name": "Coaching",
+        "description": "Raises the user's Power and Resistance by one stage",
         "baseDamage": 0,
         "type": "martial",
         "stamina": 15,
@@ -1637,7 +1749,7 @@
             {
                 "type": "multiStatChange",
                 "target": "self",
-                "stat": "attack:,defense:1",
+                "stat": "power:1,resistance:1",
                 "value": 1,
                 "chance": 100
             }
@@ -1832,6 +1944,42 @@
                 "target": "opponent",
                 "value": 1,
                 "chance": 10
+            }
+        ]
+    },
+    {
+        "name": "Fire Blast",
+        "description": "10% chance to burn the target.",
+        "soundEffect": "audio/effects/flamethrower.mp3",
+        "baseDamage": 110,
+        "accuracy": 85,
+        "type": "blaze",
+        "stamina": 8,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statusBurn",
+                "target": "opponent",
+                "value": 1,
+                "chance": 10
+            }
+        ]
+    },
+    {
+        "name": "Blue Flare",
+        "description": "20% chance to burn the target.",
+        "soundEffect": "audio/effects/flamethrower.mp3",
+        "baseDamage": 130,
+        "accuracy": 85,
+        "type": "blaze",
+        "stamina": 8,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statusBurn",
+                "target": "opponent",
+                "value": 1,
+                "chance": 20
             }
         ]
     },
@@ -2032,6 +2180,15 @@
         ]
     },
     {
+        "name": "Dazzling Gleam",
+        "description": "Inflicts regular damage.",
+        "baseDamage": 80,
+        "accuracy": 100,
+        "type": "mystic",
+        "stamina": 10,
+        "category": "special"
+    },
+    {
         "name": "Shadow Ball",
         "description": "20% chance to lower the target's resistance.",
         "animationType": "slash",
@@ -2047,6 +2204,24 @@
                 "stat": "resistance",
                 "value": -1,
                 "chance": 20
+            }
+        ]
+    },
+    {
+        "name": "Flash Cannon",
+        "description": "10% chance to lower the target's resistance.",
+        "baseDamage": 80,
+        "accuracy": 100,
+        "type": "metal",
+        "stamina": 15,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "resistance",
+                "value": -1,
+                "chance": 10
             }
         ]
     },
@@ -2086,6 +2261,15 @@
                 "chance": 10
             }
         ]
+    },
+    {
+        "name": "Expanding Force",
+        "description": "10% chance to lower the target's resistance.",
+        "baseDamage": 80,
+        "accuracy": 100,
+        "type": "aura",
+        "stamina": 15,
+        "category": "special"
     },
     {
         "name": "Wide Gape",
@@ -2324,7 +2508,7 @@
         ]
     },
     {
-        "name": "Confuse",
+        "name": "Confusion",
         "description": "May confuse the target.",
         "baseDamage": 50,
         "accuracy": 100,
@@ -2728,14 +2912,22 @@
         "category": "physical"
     },
     {
+        "name": "Branch Poke",
+        "description": "User pokes the foe with a branch.",
+        "baseDamage": 40,
+        "accuracy": 100,
+        "type": "grass",
+        "stamina": 35,
+        "category": "physical"
+    },
+    {
         "name": "Pounce",
         "description": "User pounces at the foe.",
         "baseDamage": 60,
         "accuracy": 85,
         "type": "basic",
         "stamina": 15,
-        "category": "physical",
-        "effects": []
+        "category": "physical"
     },
     {
         "name": "Lunge",
@@ -2790,8 +2982,7 @@
         "type": "arthropod",
         "isBite": true,
         "stamina": 15,
-        "category": "physical",
-        "effects": []
+        "category": "physical"
     },
     {
         "name": "Bite",
@@ -2941,8 +3132,7 @@
         "baseDamage": 40,
         "type": "aquatic",
         "stamina": 25,
-        "category": "special",
-        "effects": []
+        "category": "special"
     },
     {
         "name": "Thunder Shock",
@@ -3030,6 +3220,39 @@
         ]
     },
     {
+        "name": "Discharge",
+        "description": "May paralyze the foe.",
+        "soundEffect": "audio/effects/thunderbolt.mp3",
+        "baseDamage": 80,
+        "type": "electric",
+        "stamina": 20,
+        "targetCount": "multiple",
+        "category": "special",
+        "effects": [
+            {
+                "type": "statusParalysis",
+                "value": 3,
+                "chance": 30
+            }
+        ]
+    },
+    {
+        "name": "Zap Cannon",
+        "description": "Paralyzes the foe.",
+        "soundEffect": "audio/effects/thunderbolt.mp3",
+        "baseDamage": 120,
+        "type": "electric",
+        "stamina": 20,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statusParalysis",
+                "value": 3,
+                "chance": 100
+            }
+        ]
+    },
+    {
         "name": "Paralyzing Harpoon",
         "description": "May paralyze the foe.",
         "baseDamage": 90,
@@ -3073,6 +3296,22 @@
                 "type": "statusSleep",
                 "value": 3,
                 "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Soothing Scent",
+        "description": "10% chance to put the foe to sleep.",
+        "baseDamage": 0,
+        "accuracy": 80,
+        "type": "grass",
+        "stamina": 12,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statusSleep",
+                "value": 3,
+                "chance": 10
             }
         ]
     },
@@ -3255,8 +3494,7 @@
         "priority": 1,
         "type": "metal",
         "stamina": 30,
-        "category": "physical",
-        "effects": []
+        "category": "physical"
     },
     {
         "name": "Aqua Jet",
@@ -3287,8 +3525,17 @@
         "priority": 1,
         "type": "cryo",
         "stamina": 30,
-        "category": "physical",
-        "effects": []
+        "category": "physical"
+    },
+    {
+        "name": "Zen Shard",
+        "description": "Strikes first.",
+        "soundEffect": "audio/effects/agile.mp3",
+        "baseDamage": 40,
+        "priority": 1,
+        "type": "aura",
+        "stamina": 30,
+        "category": "physical"
     },
     {
         "name": "Dash",
@@ -3298,8 +3545,7 @@
         "priority": 1,
         "type": "basic",
         "stamina": 15,
-        "category": "physical",
-        "effects": []
+        "category": "physical"
     },
     {
         "name": "Feline Reflexes",
@@ -3345,8 +3591,18 @@
         "baseDamage": 120,
         "accuracy": 100,
         "type": "blaze",
-        "stamina": 15,
+        "stamina": 12,
         "recoilPercent": 0.33,
+        "category": "physical"
+    },
+    {
+        "name": "Inferno Onrush",
+        "description": "A reckless, life-risking tackle. This also damages the user quite a lot.",
+        "baseDamage": 110,
+        "accuracy": 100,
+        "type": "blaze",
+        "stamina": 15,
+        "recoilPercent": 0.2,
         "category": "physical"
     },
     {
@@ -3409,6 +3665,50 @@
         "maxHits": 2,
         "accuracy": 90,
         "type": "flying",
+        "stamina": 15,
+        "category": "physical"
+    },
+    {
+        "name": "Dual Chop",
+        "description": "Hits 2 times.",
+        "baseDamage": 40,
+        "minHits": 2,
+        "maxHits": 2,
+        "accuracy": 90,
+        "type": "drake",
+        "stamina": 15,
+        "category": "physical"
+    },
+    {
+        "name": "Bonemareng",
+        "description": "Hits 2 times.",
+        "baseDamage": 50,
+        "minHits": 2,
+        "maxHits": 2,
+        "accuracy": 90,
+        "type": "earth",
+        "stamina": 10,
+        "category": "physical"
+    },
+    {
+        "name": "Thundering Hurricane",
+        "description": "Hits 2 times.",
+        "baseDamage": 50,
+        "minHits": 1,
+        "maxHits": 4,
+        "accuracy": 90,
+        "type": "electric",
+        "stamina": 15,
+        "category": "special"
+    },
+    {
+        "name": "Double Horn",
+        "description": "Hits 2 times.",
+        "baseDamage": 50,
+        "minHits": 2,
+        "maxHits": 2,
+        "accuracy": 80,
+        "type": "arthropod",
         "stamina": 15,
         "category": "physical"
     },
@@ -3479,6 +3779,28 @@
         "category": "physical"
     },
     {
+        "name": "Comet Punch",
+        "description": "Hits 2-5 times.",
+        "baseDamage": 25,
+        "minHits": 2,
+        "maxHits": 5,
+        "type": "basic",
+        "stamina": 20,
+        "accuracy": 85,
+        "category": "physical"
+    },
+    {
+        "name": "Bone Rush",
+        "description": "Hits 2-5 times.",
+        "baseDamage": 25,
+        "minHits": 2,
+        "maxHits": 5,
+        "type": "earth",
+        "stamina": 20,
+        "accuracy": 90,
+        "category": "physical"
+    },
+    {
         "name": "Rock Blast",
         "description": "Hits 2-5 times.",
         "baseDamage": 25,
@@ -3508,8 +3830,7 @@
         "maxHits": 2,
         "type": "aquatic",
         "stamina": 15,
-        "category": "physical",
-        "effects": []
+        "category": "physical"
     },
     {
         "name": "Camouflage",
@@ -3581,8 +3902,37 @@
         "critRate": 1
     },
     {
+        "name": "Cross Poison",
+        "description": "High crit rate.",
+        "baseDamage": 70,
+        "accuracy": 100,
+        "type": "toxic",
+        "stamina": 15,
+        "category": "physical",
+        "critRate": 1
+    },
+    {
+        "name": "Sharp Sting",
+        "description": "High crit rate.",
+        "baseDamage": 70,
+        "accuracy": 100,
+        "type": "arthropod",
+        "stamina": 15,
+        "category": "physical",
+        "critRate": 1
+    },
+    {
+        "name": "Attack Order",
+        "description": "High crit rate.",
+        "baseDamage": 90,
+        "accuracy": 100,
+        "type": "arthropod",
+        "stamina": 15,
+        "category": "physical",
+        "critRate": 1
+    },
+    {
         "name": "Air Cutter",
-        "animationType": "slash",
         "description": "High crit rate.",
         "baseDamage": 60,
         "accuracy": 95,
@@ -3593,7 +3943,6 @@
     },
     {
         "name": "Shadow Claw",
-        "animationType": "slash",
         "description": "High crit rate.",
         "baseDamage": 70,
         "accuracy": 100,
@@ -3717,6 +4066,129 @@
                 "target": "self",
                 "stat": "speed",
                 "value": -1
+            }
+        ]
+    },
+    {
+        "name": "Charge Beam",
+        "description": "70% chance to raise power by 1.",
+        "baseDamage": 50,
+        "accuracy": 90,
+        "type": "electric",
+        "stamina": 10,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "power",
+                "value": 1,
+                "chance": 70
+            }
+        ]
+    },
+    {
+        "name": "Torch Song",
+        "description": "Raises power by 1.",
+        "baseDamage": 80,
+        "accuracy": 100,
+        "type": "blaze",
+        "stamina": 10,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "power",
+                "value": 1,
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Fiery Dance",
+        "description": "50% chance to raise power by 1.",
+        "baseDamage": 80,
+        "accuracy": 100,
+        "type": "blaze",
+        "stamina": 10,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "power",
+                "value": 1,
+                "chance": 50
+            }
+        ]
+    },
+    {
+        "name": "Crush Claw",
+        "description": "50% chance to lower foes defense by 1.",
+        "baseDamage": 75,
+        "accuracy": 95,
+        "type": "basic",
+        "stamina": 10,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "defense",
+                "value": -1,
+                "chance": 50
+            }
+        ]
+    },
+    {
+        "name": "Overheat",
+        "description": "Lowers self power by 2.",
+        "baseDamage": 130,
+        "accuracy": 90,
+        "type": "blaze",
+        "stamina": 8,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "power",
+                "value": -2
+            }
+        ]
+    },
+    {
+        "name": "Draco Meteor",
+        "description": "Lowers self power by 2.",
+        "baseDamage": 130,
+        "accuracy": 90,
+        "type": "drake",
+        "stamina": 8,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "power",
+                "value": -2
+            }
+        ]
+    },
+    {
+        "name": "Psydrive",
+        "description": "Lowers self power by 2.",
+        "baseDamage": 130,
+        "accuracy": 90,
+        "type": "aura",
+        "stamina": 8,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "power",
+                "value": -2
             }
         ]
     },
@@ -3981,6 +4453,57 @@
         ]
     },
     {
+        "name": "Cotton Guard",
+        "description": "Drastically raises its Defense stat.",
+        "baseDamage": 0,
+        "type": "grass",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "defense",
+                "value": 3,
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Barrier",
+        "description": "The user creates a barrier, sharply raising its Defense stat.",
+        "baseDamage": 0,
+        "type": "aura",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "defense",
+                "value": 2,
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Acid Armor",
+        "description": "The user dissolves its body in acid, sharply raising its Defense stat.",
+        "baseDamage": 0,
+        "type": "toxic",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "defense",
+                "value": 2,
+                "chance": 100
+            }
+        ]
+    },
+    {
         "name": "Harden",
         "description": "The user hardens its body's surface like iron, sharply raising its Defense stat.",
         "baseDamage": 0,
@@ -4116,8 +4639,7 @@
         "drainPercent": 0.5,
         "type": "darkness",
         "stamina": 10,
-        "category": "physical",
-        "effects": []
+        "category": "physical"
     },
     {
         "name": "Coil",
@@ -4156,6 +4678,25 @@
         "category": "physical"
     },
     {
+        "name": "Chloroblast",
+        "description": "The user releases a blinding flash of light, damages the user and lowers own speed.",
+        "baseDamage": 120,
+        "accuracy": 100,
+        "type": "grass",
+        "stamina": 15,
+        "recoilPercent": 0.5,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "speed",
+                "value": -1,
+                "chance": 100
+            }
+        ]
+    },
+    {
         "name": "Wild Charge",
         "description": "Hurts user.",
         "baseDamage": 90,
@@ -4192,8 +4733,7 @@
         "recoilPercent": 0.33,
         "type": "flying",
         "stamina": 15,
-        "category": "physical",
-        "effects": []
+        "category": "physical"
     },
     {
         "name": "Slash",
@@ -4202,8 +4742,7 @@
         "critRate": 1,
         "type": "basic",
         "stamina": 15,
-        "category": "physical",
-        "effects": []
+        "category": "physical"
     },
     {
         "name": "Confuse Ray",
@@ -4314,8 +4853,7 @@
         "drainPercent": 0.5,
         "type": "grass",
         "stamina": 25,
-        "category": "special",
-        "effects": []
+        "category": "special"
     },
     {
         "name": "Dig",
@@ -4460,8 +4998,7 @@
         "type": "darkness",
         "stamina": 5,
         "category": "physical",
-        "failIfTargetNotAttacking": true,
-        "effects": []
+        "failIfTargetNotAttacking": true
     },
     {
         "name": "Brutal Swing",
@@ -4469,8 +5006,7 @@
         "baseDamage": 60,
         "type": "darkness",
         "stamina": 20,
-        "category": "physical",
-        "effects": []
+        "category": "physical"
     },
     {
         "name": "Shell Smash",
@@ -4580,7 +5116,7 @@
         "baseDamage": 85,
         "type": "aquatic",
         "stamina": 15,
-        "accuracy ": 100,
+        "accuracy": 100,
         "category": "physical",
         "effects": [
             {
@@ -4599,7 +5135,7 @@
         "type": "mystic",
         "stamina": 15,
         "priority": 4,
-        "accuracy ": 100,
+        "accuracy": 100,
         "category": "status",
         "effects": [
             {
@@ -4616,7 +5152,7 @@
         "baseDamage": 90,
         "type": "aquatic",
         "stamina": 15,
-        "accuracy ": 85,
+        "accuracy": 85,
         "category": "special",
         "effects": [
             {
@@ -4634,7 +5170,7 @@
         "baseDamage": 20,
         "type": "earth",
         "stamina": 10,
-        "accuracy ": 100,
+        "accuracy": 100,
         "category": "special",
         "effects": [
             {
@@ -4739,6 +5275,81 @@
         ]
     },
     {
+        "name": "Confide",
+        "description": "Lowers foes power by 1.",
+        "baseDamage": 0,
+        "type": "sound",
+        "stamina": 15,
+        "accuracy": 100,
+        "category": "status",
+        "effects": [
+            {
+                "type": "StatChange",
+                "target": "opponent",
+                "stat": "power",
+                "value": -1
+            }
+        ]
+    },
+    {
+        "name": "Captivate",
+        "description": "Lowers foes resistance by 2 and charms.",
+        "baseDamage": 0,
+        "type": "mystic",
+        "stamina": 15,
+        "accuracy": 85,
+        "category": "status",
+        "effects": [
+            {
+                "type": "StatChange",
+                "target": "opponent",
+                "stat": "resistance",
+                "value": -2
+            },
+            {
+                "type": "statusCharmed",
+                "target": "opponent",
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Acid",
+        "description": "Lowers foes resistance by 2.",
+        "baseDamage": 40,
+        "type": "toxic",
+        "stamina": 15,
+        "accuracy": 100,
+        "category": "special",
+        "effects": [
+            {
+                "type": "StatChange",
+                "target": "opponent",
+                "stat": "resistance",
+                "value": -1,
+                "chance": 10
+            }
+        ]
+    },
+    {
+        "name": "Acid Spray",
+        "description": "Lowers foes resistance by 2.",
+        "baseDamage": 40,
+        "type": "toxic",
+        "stamina": 15,
+        "accuracy": 100,
+        "category": "special",
+        "effects": [
+            {
+                "type": "StatChange",
+                "target": "opponent",
+                "stat": "resistance",
+                "value": -2,
+                "chance": 100
+            }
+        ]
+    },
+    {
         "name": "Ancient Power",
         "description": "The user attacks with a prehistoric power. This may also raise all the user's stats at once.",
         "animationType": "rock",
@@ -4756,6 +5367,22 @@
         ]
     },
     {
+        "name": "Celebrate",
+        "description": "Raises all the user's stats at once.",
+        "baseDamage": 0,
+        "type": "cryo",
+        "stamina": 5,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statChangeChance",
+                "stat": "attack:1,defense:1,speed:1,power:1,resistance:1",
+                "target": "self",
+                "chance": 100
+            }
+        ]
+    },
+    {
         "name": "Assurance",
         "description": "If the target has already taken some damage in the same turn, this move's power is doubled.",
         "baseDamage": 60,
@@ -4763,8 +5390,27 @@
         "stamina": 10,
         "category": "physical",
         "multiplierCondition": "target_damaged",
-        "conditionalMultiplier": 2.0,
-        "effects": []
+        "conditionalMultiplier": 2.0
+    },
+    {
+        "name": "Avalanche",
+        "description": "If the target has already taken some damage in the same turn, this move's power is doubled.",
+        "baseDamage": 60,
+        "type": "cryo",
+        "stamina": 10,
+        "category": "physical",
+        "multiplierCondition": "target_damaged",
+        "conditionalMultiplier": 2.0
+    },
+    {
+        "name": "Second Strike",
+        "description": "If the target has already taken some damage in the same turn, this move's power is tripled.",
+        "baseDamage": 20,
+        "type": "aquatic",
+        "stamina": 10,
+        "category": "physical",
+        "multiplierCondition": "target_damaged",
+        "conditionalMultiplier": 3
     },
     {
         "name": "Baneful Bunker",
@@ -4780,6 +5426,23 @@
             {
                 "type": "protect",
                 "stat": "poison"
+            }
+        ]
+    },
+    {
+        "name": "Burning Bulwark",
+        "description": "In addition to protecting the user from attacks, this move also burns any attacker that makes direct contact.",
+        "soundEffect": "audio/effects/protect.mp3",
+        "animationType": "protect",
+        "baseDamage": 0,
+        "type": "blaze",
+        "stamina": 10,
+        "category": "status",
+        "priority": 4,
+        "effects": [
+            {
+                "type": "protect",
+                "stat": "burn"
             }
         ]
     },
@@ -4928,8 +5591,7 @@
         "type": "martial",
         "stamina": 10,
         "category": "physical",
-        "damageStat": "defense",
-        "effects": []
+        "damageStat": "defense"
     },
     {
         "name": "Bullet Punch",
@@ -4939,8 +5601,7 @@
         "type": "martial",
         "stamina": 5,
         "category": "physical",
-        "priority": 1,
-        "effects": []
+        "priority": 1
     },
     {
         "name": "Bulk Up",
@@ -4968,6 +5629,36 @@
             {
                 "type": "multiStatChange",
                 "stat": "attack:1,accuracy:1",
+                "target": "self"
+            }
+        ]
+    },
+    {
+        "name": "Cosmic Power",
+        "description": "Raises both Defense and Resistance stats.",
+        "baseDamage": 0,
+        "type": "rock",
+        "stamina": 20,
+        "category": "status",
+        "effects": [
+            {
+                "type": "multiStatChange",
+                "stat": "defense:1,resistance:1",
+                "target": "self"
+            }
+        ]
+    },
+    {
+        "name": "Defend Order",
+        "description": "Raises both Defense and Resistance stats.",
+        "baseDamage": 0,
+        "type": "arthropod",
+        "stamina": 20,
+        "category": "status",
+        "effects": [
+            {
+                "type": "multiStatChange",
+                "stat": "defense:1,resistance:1",
                 "target": "self"
             }
         ]
@@ -5122,6 +5813,16 @@
         ]
     },
     {
+        "name": "Beak Blast",
+        "description": "The user charges up a powerful beak attack, then unleashes it on the next turn.",
+        "baseDamage": 100,
+        "accuracy": 100,
+        "type": "flying",
+        "stamina": 15,
+        "category": "physical",
+        "isMultiTurn": true
+    },
+    {
         "name": "Sky Attack",
         "description": "The user flies up high on the first turn, then attacks on the second. 30% chance to stun the opponent. Also, has high critical rate",
         "soundEffect": "audio/effects/agile.mp3",
@@ -5138,6 +5839,23 @@
                 "target": "self",
                 "stat": "airborne"
             },
+            {
+                "type": "statusStun",
+                "target": "opponent",
+                "value": 3,
+                "chance": 30
+            }
+        ]
+    },
+    {
+        "name": "Astonish",
+        "description": "30% chance to stun the opponent.",
+        "baseDamage": 30,
+        "accuracy": 100,
+        "type": "spectral",
+        "stamina": 15,
+        "category": "physical",
+        "effects": [
             {
                 "type": "statusStun",
                 "target": "opponent",
@@ -5224,8 +5942,7 @@
         "category": "physical",
         "baseDamage": 65,
         "accuracy": 100,
-        "stamina": 20,
-        "effects": []
+        "stamina": 20
     },
     {
         "name": "Acrobatics",
@@ -5696,6 +6413,21 @@
         "accuracy": 85,
         "stamina": 15,
         "category": "special",
+        "effects": [
+            {
+                "type": "clamping",
+                "target": "opponent"
+            }
+        ]
+    },
+    {
+        "name": "Clamp",
+        "description": "The target becomes trapped within a shell that crushes for two to five turns.",
+        "baseDamage": 35,
+        "type": "aquatic",
+        "accuracy": 85,
+        "stamina": 15,
+        "category": "physical",
         "effects": [
             {
                 "type": "clamping",
@@ -6336,6 +7068,24 @@
         "category": "special"
     },
     {
+        "name": "Disarming Voice",
+        "description": "Lowers the target's power.",
+        "baseDamage": 40,
+        "type": "mystic",
+        "accuracy": 0,
+        "stamina": 10,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "power",
+                "value": -1,
+                "chance": 100
+            }
+        ]
+    },
+    {
         "name": "Ceaseless Edge",
         "description": "The user slashes the target with its shell blade. This move also leaves sharp shell splinters as Spikes around the target's feet.",
         "baseDamage": 65,
@@ -6524,6 +7274,16 @@
         "targetDefenseStat": "defense"
     },
     {
+        "name": "Psystrike",
+        "description": "The user materializes an odd psychic wave to attack the target. This move deals physical damage.",
+        "baseDamage": 100,
+        "type": "aura",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "special",
+        "targetDefenseStat": "defense"
+    },
+    {
         "name": "Shell Trap",
         "description": "The user sets a trap with its shell. If the user is hit by a physical attack, the trap explodes and deals massive damage.",
         "baseDamage": 150,
@@ -6637,8 +7397,7 @@
         "type": "metal",
         "accuracy": 0,
         "stamina": 20,
-        "category": "physical",
-        "effects": []
+        "category": "physical"
     },
     {
         "name": "Retaliate",
@@ -6649,8 +7408,7 @@
         "stamina": 10,
         "category": "physical",
         "multiplierCondition": "teammate_fainted_last_turn",
-        "conditionalMultiplier": 2.0,
-        "effects": []
+        "conditionalMultiplier": 2.0
     },
     {
         "name": "Laser Focus",
@@ -6659,8 +7417,7 @@
         "type": "basic",
         "accuracy": 100,
         "stamina": 15,
-        "category": "status",
-        "effects": []
+        "category": "status"
     },
     {
         "name": "Whirlwind",
@@ -6681,7 +7438,7 @@
     },
     {
         "name": "Roar",
-        "description": "The user frightens the target with loud noise. In the wild, the battle ends.",
+        "description": "Force switches opponent.",
         "baseDamage": 0,
         "type": "basic",
         "accuracy": 100,
@@ -6698,10 +7455,27 @@
     },
     {
         "name": "Dragon Tail",
-        "description": "The user strikes the target with its tail. It may also make the target flinch.",
+        "description": "Force switches opponent.",
         "baseDamage": 60,
         "type": "drake",
         "accuracy": 100,
+        "stamina": 20,
+        "category": "physical",
+        "priority": -6,
+        "effects": [
+            {
+                "type": "forceSwitch",
+                "target": "opponent",
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Circle Throw",
+        "description": "Force switches opponent.",
+        "baseDamage": 60,
+        "type": "martial",
+        "accuracy": 90,
         "stamina": 20,
         "category": "physical",
         "priority": -6,
@@ -6796,8 +7570,7 @@
         "type": "basic",
         "accuracy": 100,
         "stamina": 15,
-        "category": "status",
-        "effects": []
+        "category": "status"
     },
     {
         "name": "Dragon Cheer",
@@ -6806,8 +7579,7 @@
         "type": "drake",
         "accuracy": 100,
         "stamina": 15,
-        "category": "status",
-        "effects": []
+        "category": "status"
     },
     {
         "name": "Brick Break",
@@ -6886,8 +7658,7 @@
         "stamina": 20,
         "category": "special",
         "multiplierCondition": "target_hp_below_50",
-        "conditionalMultiplier": 2.0,
-        "effects": []
+        "conditionalMultiplier": 2.0
     },
     {
         "name": "Scale Shot",
@@ -6898,8 +7669,7 @@
         "stamina": 20,
         "category": "physical",
         "minHits": 2,
-        "maxHits": 5,
-        "effects": []
+        "maxHits": 5
     },
     {
         "name": "Psychic Fangs",
@@ -6930,8 +7700,7 @@
         "accuracy": 100,
         "stamina": 15,
         "category": "special",
-        "critRate": 1,
-        "effects": []
+        "critRate": 1
     },
     {
         "name": "Pursuit",
@@ -6940,8 +7709,7 @@
         "type": "darkness",
         "accuracy": 100,
         "stamina": 20,
-        "category": "physical",
-        "effects": []
+        "category": "physical"
     },
     {
         "name": "Mega Drain",
@@ -6952,8 +7720,7 @@
         "accuracy": 100,
         "stamina": 15,
         "category": "special",
-        "drainPercent": 0.5,
-        "effects": []
+        "drainPercent": 0.5
     },
     {
         "name": "Giga Drain",
@@ -6964,8 +7731,29 @@
         "accuracy": 100,
         "stamina": 10,
         "category": "special",
-        "drainPercent": 0.5,
-        "effects": []
+        "drainPercent": 0.5
+    },
+    {
+        "name": "Bubble Drain",
+        "description": "A nutrient-draining attack. The user's HP is restored by half the damage taken by the target.",
+        "baseDamage": 60,
+        "animationType": "drain",
+        "type": "aquatic",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "special",
+        "drainPercent": 0.3
+    },
+    {
+        "name": "Giant Bloom",
+        "description": "A nutrient-draining attack. The user's HP is restored by half the damage taken by the target.",
+        "baseDamage": 100,
+        "animationType": "drain",
+        "type": "grass",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "special",
+        "drainPercent": 0.3
     },
     {
         "name": "Drain Punch",
@@ -6976,8 +7764,7 @@
         "accuracy": 100,
         "stamina": 10,
         "category": "physical",
-        "drainPercent": 0.5,
-        "effects": []
+        "drainPercent": 0.5
     },
     {
         "name": "Horn Leech",
@@ -6988,8 +7775,7 @@
         "accuracy": 100,
         "stamina": 10,
         "category": "physical",
-        "drainPercent": 0.5,
-        "effects": []
+        "drainPercent": 0.5
     },
     {
         "name": "Surf",
@@ -7001,8 +7787,7 @@
         "type": "aquatic",
         "accuracy": 100,
         "stamina": 15,
-        "category": "special",
-        "effects": []
+        "category": "special"
     },
     {
         "name": "Hurricane",
@@ -7025,7 +7810,6 @@
         "name": "Thunder",
         "description": "A wicked thunderbolt is dropped on the target to inflict damage. It may also leave the target with paralysis.",
         "baseDamage": 110,
-        "animationType": "thunder",
         "type": "electric",
         "accuracy": 70,
         "stamina": 10,
@@ -7047,8 +7831,7 @@
         "accuracy": 100,
         "stamina": 10,
         "category": "physical",
-        "drainPercent": 0.5,
-        "effects": []
+        "drainPercent": 0.5
     },
     {
         "name": "Stomping Tantrum",
@@ -7058,8 +7841,7 @@
         "accuracy": 100,
         "stamina": 10,
         "category": "physical",
-        "animationType": "melee",
-        "effects": []
+        "animationType": "melee"
     },
     {
         "name": "Fury Cutter",
@@ -7069,8 +7851,7 @@
         "accuracy": 95,
         "stamina": 20,
         "category": "physical",
-        "animationType": "slash",
-        "effects": []
+        "animationType": "slash"
     },
     {
         "name": "Curse",
@@ -7271,6 +8052,22 @@
         ]
     },
     {
+        "name": "Covet",
+        "description": "The user attacks and steals the target's held item simultaneously. The user can't steal anything if it already holds an item.",
+        "baseDamage": 60,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 25,
+        "category": "physical",
+        "isContact": true,
+        "effects": [
+            {
+                "type": "thief",
+                "target": "opponent"
+            }
+        ]
+    },
+    {
         "name": "Ice Spinner",
         "description": "The user covers its feet in thin ice and twirls around, slamming into the target. This move's spinning motion also destroys the terrain.",
         "baseDamage": 80,
@@ -7346,5 +8143,31 @@
                 "target": "opponent"
             }
         ]
+    },
+    {
+        "name": "Charge",
+        "description": "The user clears its mind, sharply raising its Resistance stat.",
+        "baseDamage": 0,
+        "type": "electric",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "resistance",
+                "value": 1,
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Darkest Lariat",
+        "description": "Ignores the target's stat changes.",
+        "baseDamage": 85,
+        "type": "darkness",
+        "stamina": 15,
+        "accuracy": 100,
+        "category": "physical"
     }
 ]
