@@ -177,6 +177,7 @@ class BattleOrganism {
     // Disable reset
     itemDisabledTurns = 0;
     disabledMoves.clear();
+    poisonTurnCount = 0;
 
     hasMovedThisTurn = false;
   }
@@ -254,6 +255,7 @@ class BattleOrganism {
   void clearStatusEffects() {
     _statusEffects.clear();
     organism.statusEffects = _statusEffects;
+    poisonTurnCount = 0;
   }
 
   // New flags for complex moves
@@ -311,6 +313,7 @@ class BattleOrganism {
   bool isTrapped = false; // For trapping effects like Mean Look
   int throatChopTurns = 0;
   int clampingTurns = 0;
+  int poisonTurnCount = 0;
   bool isFirstTurnOutOfBall = true;
   bool wasSwitchedInThisTurn = false;
   bool isSwitchingOut = false;

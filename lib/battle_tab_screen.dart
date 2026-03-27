@@ -69,6 +69,7 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
     required List<CapturedOrganism> opponentTeam,
     required String battleTitle,
     TeamArchetype? opponentArchetype,
+    bool shouldPersistResults = true,
   }) async {
     if (playerTeam.isEmpty || opponentTeam.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -100,6 +101,7 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
           battleTitle: battleTitle,
           isArenaBattle: true,
           opponentArchetype: opponentArchetype,
+          shouldPersistResults: shouldPersistResults,
         ),
       ),
     );
@@ -408,6 +410,7 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
                 opponentTeam: aiRes.team,
                 battleTitle: 'vs AI',
                 opponentArchetype: aiRes.archetype,
+                shouldPersistResults: true,
               );
             },
           ),
@@ -444,6 +447,7 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
                 opponentTeam: aiRes.team,
                 battleTitle: 'Randoms',
                 opponentArchetype: aiRes.archetype,
+                shouldPersistResults: false,
               );
             },
           ),

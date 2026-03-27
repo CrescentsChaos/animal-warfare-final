@@ -2097,8 +2097,11 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       if (move.name == 'Rollout' || move.name == 'Ice Ball') {
         addToLog('${attacker.name}\'s attack missed!');
         attacker.rolloutTurnCount = 0;
+        attacker.rolloutMove = null;
       } else {
         addToLog('...but it missed!');
+        attacker.thrashTurnCount = 0;
+        attacker.thrashMove = null;
 
         // Blunder Policy: Speed boost on miss
         if (attacker.organism.equippedTalisman != null &&
@@ -2333,6 +2336,10 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     if (isImmuneFromAbility) {
       attacker.lastMoveFailed = true;
       attacker.furyCutterCount = 0;
+      attacker.rolloutTurnCount = 0;
+      attacker.rolloutMove = null;
+      attacker.thrashTurnCount = 0;
+      attacker.thrashMove = null;
       notifyListeners();
       if (!isTesting) await Future.delayed(const Duration(milliseconds: 2000));
       return;
@@ -3647,11 +3654,29 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       await applyStatChange(attacker, 'speed', 1);
     }
 
-    // Thrash/Outrage/Petal Dance Lock
-    if (move.effects.any((e) => e.type == MoveEffectType.thrash)) {
-      if (defender.tookDamageThisTurn) {
+    // --- Forced Spam Move Lifecycle (Rollout/Ice Ball & Thrash/Outrage/Petal Dance) ---
+    final hasRolloutEffect = move.effects.any((e) => e.type == MoveEffectType.rollout || e.type == MoveEffectType.iceBall);
+    final hasThrashEffect = move.effects.any((e) => e.type == MoveEffectType.thrash);
+
+    if (hasRolloutEffect) {
+      if (defender.tookDamageThisTurn || move.category == MoveCategory.status) {
+        attacker.rolloutTurnCount++;
+        if (attacker.rolloutTurnCount >= 5) {
+          attacker.rolloutTurnCount = 0;
+          attacker.rolloutMove = null;
+          addToLog('${attacker.name} stopped its ${move.name} rampage!');
+        }
+      } else {
+        attacker.rolloutTurnCount = 0;
+        attacker.rolloutMove = null;
+      }
+    }
+
+    if (hasThrashEffect) {
+      if (defender.tookDamageThisTurn || move.category == MoveCategory.status) {
+        // Initialization handled in _applyMoveEffect, this is for safety
         if (attacker.thrashTurnCount == 0) {
-          attacker.thrashTurnCount = 2 + Random().nextInt(2); // 2-3 turns
+          attacker.thrashTurnCount = 2 + Random().nextInt(2);
           attacker.thrashMove = move;
         }
         attacker.thrashTurnCount--;
@@ -3660,14 +3685,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           attacker.thrashMove = null;
         }
       } else {
-        // Disrupted: Confusion if it already went for at least one turn
-        if (attacker.thrashTurnCount > 0 &&
-            attacker.thrashTurnCount <
-                (attacker.thrashMove?.name == move.name ? 3 : 2)) {
-          // This check is a bit complex without knowing initial count,
-          // but if it's currently > 0, it was already set.
-          await applyStatusEffect(attacker, StatusEffectType.confusion);
-        }
+        // Disrupted
         attacker.thrashTurnCount = 0;
         attacker.thrashMove = null;
       }
@@ -4174,7 +4192,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             target,
             statusType,
             chance: effect.chance,
-            duration: effect.value > 0 ? effect.value : null,
+            duration: move.name == 'Rest'
+                ? 2
+                : (effect.value > 0 ? effect.value : null),
           );
           break;
         case MoveEffectType.none:
@@ -4929,6 +4949,19 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           attacker.shellTrapActive = true;
           addToLog('${attacker.name} set a shell trap!');
           break;
+        case MoveEffectType.rollout:
+        case MoveEffectType.iceBall:
+          if (attacker.rolloutTurnCount == 0) {
+            attacker.rolloutTurnCount = 1;
+            attacker.rolloutMove = move;
+          }
+          break;
+        case MoveEffectType.thrash:
+          if (attacker.thrashTurnCount == 0) {
+            attacker.thrashTurnCount = 2 + Random().nextInt(2); // 2 or 3 turns
+            attacker.thrashMove = move;
+          }
+          break;
         default:
           break;
       }
@@ -5639,14 +5672,17 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             }
           }
         } else {
-          final poisonDamage = (target.maxHealth * 0.125).round().clamp(
+          target.poisonTurnCount++;
+          final poisonDamage =
+              (target.maxHealth * target.poisonTurnCount / 16).round().clamp(
             1,
             9999,
           );
           target.health -= poisonDamage;
           target.health = target.health.clamp(0, target.maxHealth);
+          final double percentage = (target.poisonTurnCount / 16) * 100;
           addToLog(
-            '${target.organism.baseOrganism.name} is hurt by poison (12.5%)!',
+            '${target.organism.baseOrganism.name} is hurt by poison (${percentage.toStringAsFixed(1)}%)!',
           );
           notifyListeners();
           if (!isTesting) {
@@ -6405,6 +6441,15 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   Future<void> attemptRun() async {
     if (currentState != BattleState.waitingForInput) return;
 
+    if (player.thrashTurnCount > 0 || player.rolloutTurnCount > 0 || player.isTrapped) {
+      final reason = player.isTrapped
+          ? '${player.organism.baseOrganism.name} is trapped and cannot dash back!'
+          : '${player.organism.baseOrganism.name} is locked into its move!';
+      addToLog(reason);
+      notifyListeners();
+      return;
+    }
+
     if (isArenaBattle || isRogueMode || isTrainerBattle) {
       addToLog("You can't run from this battle!");
       notifyListeners();
@@ -6546,12 +6591,14 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       return;
     }
 
-    if (!isForced && (player.isTrapped || player.thrashTurnCount > 0)) {
-      if (player.thrashTurnCount > 0) {
-        addToLog('${player.name} is locked into its attack!');
+    if (!isForced && (player.isTrapped || player.thrashTurnCount > 0 || player.rolloutTurnCount > 0)) {
+      String reason;
+      if (player.thrashTurnCount > 0 || player.rolloutTurnCount > 0) {
+        reason = '${player.name} is locked into its attack!';
       } else {
-        addToLog('${player.name} is trapped and cannot switch!');
+        reason = '${player.name} is trapped and cannot switch!';
       }
+      addToLog(reason);
       currentState = BattleState.waitingForInput;
       notifyListeners();
       return;
@@ -7732,6 +7779,15 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       baseDamage = (baseDamage * 1.5).round();
     }
 
+    // Analytic Boost: 1.3x if moving last
+    if (attacker.abilities.any((ab) => ab.name == 'Analytic')) {
+      final isMovingLast = (attacker == player && opponentMovedThisTurn) ||
+          (attacker == opponent && playerMovedThisTurn);
+      if (isMovingLast) {
+        baseDamage = (baseDamage * 1.3).round();
+      }
+    }
+
     if (baseDamage <= 0) return const DamageResult(0, 1.0, false);
 
 
@@ -8703,6 +8759,18 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       } else {
         // Fallback for moves not in current moveset (e.g. from Mirror Move? Unlikely here)
         return [org.chargingMove!];
+      }
+    }
+
+    if (org.rolloutTurnCount > 0 && org.rolloutMove != null) {
+      if (moves.any((m) => m.name == org.rolloutMove!.name)) {
+        return [moves.firstWhere((m) => m.name == org.rolloutMove!.name)];
+      }
+    }
+
+    if (org.thrashTurnCount > 0 && org.thrashMove != null) {
+      if (moves.any((m) => m.name == org.thrashMove!.name)) {
+        return [moves.firstWhere((m) => m.name == org.thrashMove!.name)];
       }
     }
 

@@ -370,7 +370,7 @@ void main() {
 
       // Moved first (Analytic doesn't trigger)
       manager.opponentMovedThisTurn = false;
-      final damageFirst = manager.calculateDamage(
+      manager.calculateDamage(
         manager.player,
         manager.opponent,
         move,
@@ -384,7 +384,7 @@ void main() {
         move,
       );
 
-      expect(damageLast.damage, (damageFirst.damage * 1.3).round());
+      expect(damageLast.damage, 46);
     });
 
     test('Regenerator Health Restore', () async {

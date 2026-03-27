@@ -51,6 +51,7 @@ class BattleScreen extends StatelessWidget {
   final bool startAsleep;
   final ui.Image? mapScreenshot;
   final String? encounterTileId;
+  final bool shouldPersistResults;
 
   const BattleScreen({
     super.key,
@@ -68,6 +69,7 @@ class BattleScreen extends StatelessWidget {
     this.startAsleep = false,
     this.mapScreenshot,
     this.encounterTileId,
+    this.shouldPersistResults = true,
   });
 
   @override
@@ -104,6 +106,7 @@ class BattleScreen extends StatelessWidget {
         startAsleep: startAsleep,
         mapScreenshot: mapScreenshot,
         encounterTileId: encounterTileId,
+        shouldPersistResults: shouldPersistResults,
       ),
     );
   }
@@ -123,6 +126,8 @@ class BattleScreenContent extends StatefulWidget {
   final ui.Image? mapScreenshot;
   final String? encounterTileId;
 
+  final bool shouldPersistResults;
+
   const BattleScreenContent({
     super.key,
     required this.biomeName,
@@ -136,6 +141,7 @@ class BattleScreenContent extends StatefulWidget {
     this.startAsleep = false,
     this.mapScreenshot,
     this.encounterTileId,
+    this.shouldPersistResults = true,
   });
 
   @override
@@ -232,7 +238,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     if (move.category == MoveCategory.status) return 1.0;
 
     double multiplier = 1.0;
-    for (final type in opponent.organism.baseOrganism.elementalTypes) {
+    for (final type in opponent.types) {
       multiplier *= TypeChart.getEffectiveness(move.type, type);
     }
     return multiplier;
@@ -3545,7 +3551,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
 
         // Record the post-battle state (HP, Stamina, Status) to persistence.
         // This ensures damage persists even if subsequent UserState operations reload from disk.
-        if (!widget.isRogueMode) {
+        if (!widget.isRogueMode && widget.shouldPersistResults) {
           await userState.updateTeamAfterBattle(battleManager.playerTeam);
         }
 
@@ -5888,7 +5894,7 @@ class _BattleSpriteState extends State<_BattleSprite>
     );
 
     final spriteOutlineColor = Colors.black.withValues(alpha: 0.8);
-    const double outlineOffset = 1.5;
+    const double outlineOffset = 1.0;
 
     final outlineImage = ColorFiltered(
       colorFilter: ColorFilter.mode(spriteOutlineColor, BlendMode.srcIn),
@@ -6629,60 +6635,20 @@ class _TrickRoomOverlayState extends State<_TrickRoomOverlay>
       child: AnimatedBuilder(
         animation: _controller,
         builder: (context, child) {
-          return Container(
-            decoration: BoxDecoration(
-              gradient: RadialGradient(
-                colors: [
-                  Colors.deepPurple.withValues(
-                    alpha: 0.2 + _controller.value * 0.2,
-                  ),
-                  Colors.deepPurple.withValues(
-                    alpha: 0.5 + _controller.value * 0.3,
-                  ),
-                ],
-                center: Alignment.center,
-                radius: 1.2,
-              ),
-            ),
-            child: CustomPaint(
-              painter: _TrickRoomPainter(progress: _controller.value),
-              size: Size.infinite,
+          final double pulseAlpha = 0.5 + (_controller.value * 0.5);
+          return Opacity(
+            opacity: pulseAlpha,
+            child: Image.asset(
+              'assets/move_effects/trick_room.png',
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
             ),
           );
         },
       ),
     );
   }
-}
-
-class _TrickRoomPainter extends CustomPainter {
-  final double progress;
-
-  _TrickRoomPainter({required this.progress});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.cyanAccent.withValues(alpha: 0.2 + progress * 0.2)
-      ..strokeWidth = 2.0
-      ..style = PaintingStyle.stroke;
-    canvas.drawRect(
-      Rect.fromLTWH(0, 0, size.width, size.height),
-      Paint()..color = Colors.deepPurple.withValues(alpha: 0.5),
-    );
-
-    final step = 50.0;
-    for (double x = 0; x < size.width; x += step) {
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
-    }
-    for (double y = 0; y < size.height; y += step) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _TrickRoomPainter oldDelegate) =>
-      oldDelegate.progress != progress;
 }
 
 // ============================================================

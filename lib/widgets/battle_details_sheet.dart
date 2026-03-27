@@ -53,7 +53,7 @@ class BattleDetailsSheet extends StatelessWidget {
       isCaptured = true;
     }
 
-    final Color themeColor = _getTypeColor(org.elementalTypes.first);
+    final Color themeColor = _getTypeColor(bo.types.first);
 
     return DraggableScrollableSheet(
       initialChildSize: 0.7,
@@ -298,7 +298,7 @@ class BattleDetailsSheet extends StatelessWidget {
               if (discovered)
                 Wrap(
                   spacing: 6,
-                  children: org.elementalTypes
+                  children: bo.types
                       .map((type) => _buildTypeTag(type))
                       .toList(),
                 )
@@ -315,7 +315,7 @@ class BattleDetailsSheet extends StatelessWidget {
                 const SizedBox(height: 12),
                 GestureDetector(
                   onTap: () =>
-                      TypeMatchupSheet.show(context, org.elementalTypes),
+                      TypeMatchupSheet.show(context, bo.types),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
@@ -896,30 +896,23 @@ class BattleDetailsSheet extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              move.name.toUpperCase(),
-                              overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.outfit(
-                                color: Colors.white,
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            '${move.category.name.toUpperCase()} | PWR: ${move.baseDamage} | STAMINA: $currentStamina/$maxStamina',
-                            style: const TextStyle(
-                              fontFamily: 'PressStart2P',
-                              color: Colors.white38,
-                              fontSize: 5,
-                            ),
-                          ),
-                        ],
+                      Text(
+                        move.name.toUpperCase(),
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${move.category.name.toUpperCase()} | PWR: ${move.baseDamage} | STAMINA: $currentStamina/$maxStamina',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white54,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(

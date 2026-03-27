@@ -246,6 +246,24 @@
         ]
     },
     {
+        "name": "Thunder Punch",
+        "animationType": "elemental_melee",
+        "description": "10% chance to paralyze the opponent.",
+        "baseDamage": 75,
+        "type": "electric",
+        "accuracy": 95,
+        "stamina": 15,
+        "category": "physical",
+        "isPunch": true,
+        "effects": [
+            {
+                "type": "statusParalysis",
+                "target": "opponent",
+                "chance": 10
+            }
+        ]
+    },
+    {
         "name": "Blaze Kick",
         "description": "10% chance to burn the opponent. High critrate.",
         "baseDamage": 85,
@@ -259,6 +277,30 @@
                 "type": "statusBurn",
                 "target": "opponent",
                 "chance": 10
+            }
+        ]
+    },
+    {
+        "name": "Toxic Thread",
+        "animationType": "elemental_melee",
+        "description": "Poisons and lowers the speed of the opponent.",
+        "baseDamage": 0,
+        "type": "poison",
+        "accuracy": 95,
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statusPoison",
+                "target": "opponent",
+                "chance": 100
+            },
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "speed",
+                "value": -1,
+                "chance": 100
             }
         ]
     },
@@ -758,6 +800,21 @@
         ]
     },
     {
+        "name": "Zing Zap",
+        "description": "30% chance to stun the target.",
+        "baseDamage": 80,
+        "type": "electric",
+        "stamina": 5,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusStun",
+                "value": 1,
+                "chance": 30
+            }
+        ]
+    },
+    {
         "name": "Agony Sting",
         "description": "A strong wing attack.",
         "baseDamage": 75,
@@ -792,11 +849,26 @@
     },
     {
         "name": "Glide",
-        "description": "A strong wing attack.",
+        "description": "20% chance to stun the target.",
         "baseDamage": 60,
         "type": "flying",
         "stamina": 20,
         "category": "physical",
+        "effects": [
+            {
+                "type": "statusStun",
+                "value": 1,
+                "chance": 20
+            }
+        ]
+    },
+    {
+        "name": "Extrasensory",
+        "description": "20% chance to stun the target.",
+        "baseDamage": 80,
+        "type": "aura",
+        "stamina": 20,
+        "category": "special",
         "effects": [
             {
                 "type": "statusStun",
@@ -1208,6 +1280,23 @@
         ]
     },
     {
+        "name": "Dizzy Punch",
+        "description": "20% chance to confuse the target.",
+        "baseDamage": 70,
+        "type": "basic",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusConfusion",
+                "target": "opponent",
+                "value": 3,
+                "chance": 20
+            }
+        ]
+    },
+    {
         "name": "Scary Face",
         "description": "A terrifying glare that halts the opponent in their tracks.",
         "baseDamage": 0,
@@ -1410,6 +1499,7 @@
         "type": "grass",
         "stamina": 10,
         "category": "special",
+        "animationType": "leaf_storm",
         "effects": [
             {
                 "type": "statChange",
@@ -2128,7 +2218,7 @@
         "soundEffect": "audio/effects/bug_buzz.mp3",
         "baseDamage": 90,
         "accuracy": 100,
-        "type": "sound",
+        "type": "arthropod",
         "stamina": 15,
         "category": "special",
         "effects": [
@@ -4019,6 +4109,74 @@
         ]
     },
     {
+        "name": "Drum Beating",
+        "description": "Lowers foes Speed.",
+        "baseDamage": 80,
+        "accuracy": 100,
+        "type": "grass",
+        "stamina": 20,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "speed",
+                "value": -1
+            }
+        ]
+    },
+    {
+        "name": "Electroweb",
+        "description": "Lowers foes Speed.",
+        "baseDamage": 55,
+        "accuracy": 95,
+        "type": "electric",
+        "stamina": 20,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "speed",
+                "value": -1
+            }
+        ]
+    },
+    {
+        "name": "Fire Lash",
+        "description": "Lowers foes defense.",
+        "baseDamage": 80,
+        "accuracy": 100,
+        "type": "blaze",
+        "stamina": 20,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "defense",
+                "value": -1
+            }
+        ]
+    },
+    {
+        "name": "Dynamic Punch",
+        "description": "100% chance to confuse the target.",
+        "baseDamage": 100,
+        "accuracy": 50,
+        "type": "martial",
+        "stamina": 20,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusConfusion",
+                "target": "opponent",
+                "value": 1,
+                "chance": 100
+            }
+        ]
+    },
+    {
         "name": "Trailblaze",
         "description": "Boosts Speed.",
         "baseDamage": 50,
@@ -5261,9 +5419,26 @@
         "name": "Metal Sound",
         "description": "Lowers foes resistance by 2.",
         "baseDamage": 0,
-        "type": "sound",
+        "type": "metal",
         "stamina": 15,
         "accuracy": 85,
+        "category": "status",
+        "effects": [
+            {
+                "type": "StatChange",
+                "target": "opponent",
+                "stat": "resistance",
+                "value": -2
+            }
+        ]
+    },
+    {
+        "name": "Fake Tears",
+        "description": "Lowers foes resistance by 2.",
+        "baseDamage": 0,
+        "type": "darkness",
+        "stamina": 15,
+        "accuracy": 100,
         "category": "status",
         "effects": [
             {
@@ -7732,6 +7907,16 @@
         "stamina": 10,
         "category": "special",
         "drainPercent": 0.5
+    },
+    {
+        "name": "Draining Kiss",
+        "description": "A draining attack. The user's HP is restored by 3/4 the damage taken by the target.",
+        "baseDamage": 50,
+        "type": "mystic",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "special",
+        "drainPercent": 0.75
     },
     {
         "name": "Bubble Drain",
