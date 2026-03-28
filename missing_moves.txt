@@ -1,4 +1,4 @@
-TOTAL MISSING MOVES: 266
+TOTAL MISSING MOVES: 263
 MISSING: [After You] | Sample User: Cleaner Wrasse
 MISSING: [Ally Switch] | Sample User: Cleaner Shrimp
 MISSING: [Baton Pass] | Sample User: Emperor Tamarin
@@ -19,7 +19,6 @@ MISSING: [Echoed Voice] | Sample User: Red-whiskered Bulbul
 MISSING: [Eerie Impulse] | Sample User: Blueface Angelfish
 MISSING: [Electrify] | Sample User: Golden Silk Orb Weaver
 MISSING: [Electro Ball] | Sample User: Merlin
-MISSING: [Electroweb] | Sample User: Iberian Solifuge
 MISSING: [Embargo] | Sample User: Long-tailed Jaeger
 MISSING: [Endure] | Sample User: Short-Beaked Echidna
 MISSING: [Entrainment] | Sample User: Quokka
@@ -27,13 +26,11 @@ MISSING: [Esper Wing] | Sample User: Eurasian Eagle-Owl
 MISSING: [Explosion] | Sample User: Giant Ground Pangolin
 MISSING: [Faint Attack] | Sample User: California Glossy Snake
 MISSING: [Fairy Wind] | Sample User: Freshwater Angelfish
-MISSING: [Fake Tears] | Sample User: Moorish Idol
 MISSING: [False Surrender] | Sample User: Crescent Betta
 MISSING: [Feint] | Sample User: Ant-mimic Ground Beetle
 MISSING: [Feint Attack] | Sample User: Chain Pickerel
 MISSING: [Fell Stinger] | Sample User: Iberian Solifuge
 MISSING: [Fiery Wrath] | Sample User: Pasquet's Parrot
-MISSING: [Fire Lash] | Sample User: Amazonian Giant Centipede
 MISSING: [Flame Burst] | Sample User: Blood Star
 MISSING: [Flame Charge] | Sample User: Lilac-breasted Roller
 MISSING: [Flame Wheel] | Sample User: Flame Angelfish

@@ -2688,11 +2688,28 @@ class _DefaultSpecialEffect extends StatelessWidget {
     required this.type,
   });
 
+  /// The canvas size. All sub-methods use center-relative coordinates, so
+  /// the actual SizedBox is _kCanvas × _kCanvas and the center offset
+  /// (_kHalf, _kHalf) is applied by [_centered].
+  static const double _kCanvas = 500.0;
+
+  /// Wraps a Stack (with center-relative Positioned children) in a properly
+  /// sized SizedBox so that CompositedTransformFollower's
+  /// followerAnchor: Alignment.center anchors correctly.
+  Widget _centered(Widget child) {
+    return SizedBox(
+      width: _kCanvas,
+      height: _kCanvas,
+      child: child,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final p = progress.clamp(0.0, 1.0);
 
-    // Attacker position relative to target center (0,0)
+    // Attacker position relative to target center (0,0).
+    // Sub-methods use these center-relative coords; _proj offsets by _kHalf.
     final baseX = isPlayer ? -210.0 : 210.0;
     final baseY = isPlayer ? 150.0 : -150.0;
 
@@ -2705,38 +2722,39 @@ class _DefaultSpecialEffect extends StatelessWidget {
       case ElementalType.basic:
       case ElementalType.martial:
       case ElementalType.metal:
-        return _straightShot(p, tX, tY, dir);
+        return _centered(_straightShot(p, tX, tY, dir));
       case ElementalType.aquatic:
       case ElementalType.sound:
-        return _wavePath(p, tX, tY, dir);
+        return _centered(_wavePath(p, tX, tY, dir));
       case ElementalType.earth:
       case ElementalType.toxic:
       case ElementalType.rock:
-        return _lobArc(p, tX, tY, dir);
+        return _centered(_lobArc(p, tX, tY, dir));
       case ElementalType.cryo:
       case ElementalType.mystic:
       case ElementalType.holy:
-        return _spiralPath(p, tX, tY, dir);
+        return _centered(_spiralPath(p, tX, tY, dir));
       case ElementalType.electric:
       case ElementalType.aura:
-        return _zigzagBolt(p, tX, tY, dir);
+        return _centered(_zigzagBolt(p, tX, tY, dir));
       case ElementalType.arthropod:
       case ElementalType.grass:
-        return _swarmShot(p, tX, tY, dir);
+        return _centered(_swarmShot(p, tX, tY, dir));
       case ElementalType.blaze:
       case ElementalType.drake:
-        return _blazeTrail(p, tX, tY, dir);
+        return _centered(_blazeTrail(p, tX, tY, dir));
       case ElementalType.darkness:
       case ElementalType.spectral:
       case ElementalType.flying:
-        return _phaseShot(p, tX, tY, dir);
+        return _centered(_phaseShot(p, tX, tY, dir));
     }
   }
 
   Widget _proj(double x, double y, double opacity, double scale, double rot) {
+    const half = _kCanvas / 2; // 250 — center of the SizedBox
     return Positioned(
-      left: x - 60,
-      top: y - 60,
+      left: half + x - 60,
+      top: half + y - 60,
       child: Opacity(
         opacity: opacity.clamp(0.0, 1.0),
         child: Transform.rotate(
@@ -2772,8 +2790,8 @@ class _DefaultSpecialEffect extends StatelessWidget {
         _proj(tX, tY + arcY, _fadeEnds(p), 0.7 + math.sin(p * math.pi) * 0.3, rot),
         if (p < 0.2)
           Positioned(
-            left: (isPlayer ? -210.0 : 210.0) - 75,
-            top: (isPlayer ? 150.0 : -150.0) - 75,
+            left: _kCanvas / 2 + (isPlayer ? -210.0 : 210.0) - 75,
+            top: _kCanvas / 2 + (isPlayer ? 150.0 : -150.0) - 75,
             child: Opacity(
               opacity: (1.0 - p / 0.2).clamp(0.0, 1.0),
               child: Transform.scale(
@@ -2826,8 +2844,8 @@ class _DefaultSpecialEffect extends StatelessWidget {
       children: [
         // Shadow on ground
         Positioned(
-          left: tX - 30,
-          top: tY + 30,
+          left: _kCanvas / 2 + tX - 30,
+          top: _kCanvas / 2 + tY + 30,
           child: Opacity(
             opacity: _fadeEnds(p) * 0.3,
             child: Transform.scale(
@@ -2903,8 +2921,8 @@ class _DefaultSpecialEffect extends StatelessWidget {
         // Afterimage flashes at each zig point
         for (int i = 0; i < currentSeg; i++) ...[
           Positioned(
-            left: (baseX * (1.0 - (i / segCount))) - 30,
-            top: (baseY * (1.0 - (i / segCount))) + (i.isEven ? -40 : 40) - 30,
+            left: _kCanvas / 2 + (baseX * (1.0 - (i / segCount))) - 30,
+            top: _kCanvas / 2 + (baseY * (1.0 - (i / segCount))) + (i.isEven ? -40 : 40) - 30,
             child: Opacity(
               opacity: (0.4 * (1.0 - p)).clamp(0.0, 1.0),
               child: Image.asset(
@@ -2967,8 +2985,8 @@ class _DefaultSpecialEffect extends StatelessWidget {
           final curTX = baseX * (1.0 - trailP);
           final curTY = baseY * (1.0 - trailP);
           return Positioned(
-            left: curTX - 30,
-            top: curTY + math.sin(trailP * 30 + i) * 8 - 30,
+            left: _kCanvas / 2 + curTX - 30,
+            top: _kCanvas / 2 + curTY + math.sin(trailP * 30 + i) * 8 - 30,
             child: Opacity(
               opacity: (0.6 - i * 0.1).clamp(0.0, 1.0) * _fadeEnds(p),
               child: Transform.scale(
@@ -3006,8 +3024,8 @@ class _DefaultSpecialEffect extends StatelessWidget {
         // Afterglow at each phase-in point
         if (p > 0.15 && p < 0.85)
           Positioned(
-            left: tX - 40 + dir * 20,
-            top: tY - 40,
+            left: _kCanvas / 2 + tX - 40 + dir * 20,
+            top: _kCanvas / 2 + tY - 40,
             child: Opacity(
               opacity: ((1.0 - flickerOp) * 0.3).clamp(0.0, 1.0),
               child: Transform.scale(

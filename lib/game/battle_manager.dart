@@ -3385,10 +3385,10 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
                 );
               } else if (ab.effectType == AbilityEffectType.typeChange) {
                 await notifyAbilityTrigger(defender, ab);
-                final newType = ElementalTypeX.fromString(ab.value);
+                final newType = ab.value.isNotEmpty ? ElementalTypeX.fromString(ab.value) : move.type;
                 defender.battleTypes = [newType];
                 addToLog(
-                  '${defender.organism.baseOrganism.name} changed its type to ${ab.value.toUpperCase()}!',
+                  '${defender.organism.baseOrganism.name} changed its type to ${newType.name.toUpperCase()}!',
                 );
                 notifyListeners();
                 if (!isTesting) {
@@ -3507,10 +3507,10 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
                 }
               } else if (ab.effectType == AbilityEffectType.typeChange) {
                 await notifyAbilityTrigger(attacker, ab);
-                final newType = ElementalTypeX.fromString(ab.value);
+                final newType = ab.value.isNotEmpty ? ElementalTypeX.fromString(ab.value) : move.type;
                 defender.battleTypes = [newType];
                 addToLog(
-                  '${defender.name} was turned into a ${ab.value.toUpperCase()} type!',
+                  '${defender.name} was turned into a ${newType.name.toUpperCase()} type!',
                 );
                 notifyListeners();
                 if (!isTesting) {
