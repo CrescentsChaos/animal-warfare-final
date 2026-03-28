@@ -7,6 +7,7 @@ import 'package:animal_warfare/local_auth_service.dart';
 import 'package:animal_warfare/models/organism.dart';
 import 'package:animal_warfare/widgets/organism_sprite_widget.dart';
 import 'package:animal_warfare/theme.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 enum QuizType {
@@ -100,6 +101,10 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
   // 🟢 NEW: Store the current user data locally so we can update it
   late UserData _currentUser;
 
+  final AudioPlayer _quizPlayer = AudioPlayer()..setReleaseMode(ReleaseMode.stop);
+  final AudioPlayer _correctPlayer = AudioPlayer()..setReleaseMode(ReleaseMode.stop);
+  final AudioPlayer _wrongPlayer = AudioPlayer()..setReleaseMode(ReleaseMode.stop);
+
   // 🔴 REMOVED: Soft hardcoded colors
 
   static const int _numberOfOptions = 4;
@@ -111,9 +116,28 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
     // 🟢 NEW: Initialize local user data
     _currentUser = widget.currentUser;
 
+    _quizPlayer.setSource(AssetSource('audio/quiz.mp3'));
+    _correctPlayer.setSource(AssetSource('audio/correct.mp3'));
+    _wrongPlayer.setSource(AssetSource('audio/wrong.mp3'));
+
     _loadOrganisms().then((_) {
       _startNewQuestion();
     });
+  }
+
+  @override
+  void dispose() {
+    _quizPlayer.dispose();
+    _correctPlayer.dispose();
+    _wrongPlayer.dispose();
+    super.dispose();
+  }
+
+  Future<void> _playSound(AudioPlayer player) async {
+    if (player.state == PlayerState.playing) {
+      await player.stop();
+    }
+    await player.resume();
   }
 
   Future<void> _loadOrganisms() async {
@@ -174,6 +198,8 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
       _selectedAnswer = null;
       _isAnswered = false;
     });
+
+    _playSound(_quizPlayer);
   }
 
   String _getAnswerText(Organism organism) {
@@ -213,6 +239,12 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
     });
 
     final bool isCorrect = answer == _correctAnswer;
+
+    if (isCorrect) {
+      _playSound(_correctPlayer);
+    } else {
+      _playSound(_wrongPlayer);
+    }
 
     // 🟢 FIX: Update quiz stats using the CURRENT local user data
     await widget.authService.updateQuizStats(

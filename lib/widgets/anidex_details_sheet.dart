@@ -895,13 +895,25 @@ class AnidexDetailsSheet {
                                     ).withValues(alpha: 0.5),
                                   ),
                                 ),
-                                child: Text(
-                                  move.type.name.toUpperCase(),
-                                  style: TextStyle(
-                                    color: _getTypeColor(move.type),
-                                    fontSize: 8,
-                                    fontFamily: 'PressStart2P',
-                                  ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Image.asset(
+                                      move.type.iconPath,
+                                      width: 14,
+                                      height: 14,
+                                      errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      move.type.name.toUpperCase(),
+                                      style: TextStyle(
+                                        color: _getTypeColor(move.type),
+                                        fontSize: 8,
+                                        fontFamily: 'PressStart2P',
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                               const SizedBox(width: 8),
@@ -970,13 +982,25 @@ class AnidexDetailsSheet {
                     color: _getTypeColor(move.type),
                     borderRadius: BorderRadius.circular(4),
                   ),
-                  child: Text(
-                    move.type.name.toUpperCase(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Image.asset(
+                        move.type.iconPath,
+                        width: 16,
+                        height: 16,
+                        errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        move.type.name.toUpperCase(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(width: 8),

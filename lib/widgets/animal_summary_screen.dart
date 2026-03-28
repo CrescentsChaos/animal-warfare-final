@@ -1542,15 +1542,50 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
   Widget _typeChip(ElementalType type) {
     final c = _typeColor(type);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(
-        color: c.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: c.withValues(alpha: 0.5)),
+        color: c.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: c.withValues(alpha: 0.4), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 2,
+            offset: const Offset(0, 1),
+          ),
+        ],
       ),
-      child: Text(
-        type.name.toUpperCase(),
-        style: TextStyle(fontFamily: 'PressStart2P', fontSize: 6, color: c),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Image.asset(
+            type.iconPath,
+            width: 14,
+            height: 14,
+            filterQuality: FilterQuality.medium,
+            errorBuilder: (_, __, ___) => Icon(
+              Icons.category,
+              size: 10,
+              color: c.withValues(alpha: 0.5),
+            ),
+          ),
+          const SizedBox(width: 5),
+          Text(
+            type.name.toUpperCase(),
+            style: TextStyle(
+              fontFamily: 'PressStart2P',
+              fontSize: 6,
+              color: c,
+              shadows: [
+                Shadow(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  offset: const Offset(0.5, 0.5),
+                  blurRadius: 0.5,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

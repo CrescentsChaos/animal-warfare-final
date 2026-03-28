@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:animal_warfare/splash_screen.dart';
+import 'package:animal_warfare/start_screen.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:provider/provider.dart';
 import 'package:animal_warfare/user_state.dart';
@@ -127,7 +127,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           home: child,
         );
       },
-      child: const SplashScreen(),
+      child: const StartScreen(),
     );
   }
 }

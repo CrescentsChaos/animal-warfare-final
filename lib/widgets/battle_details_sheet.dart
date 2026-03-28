@@ -361,20 +361,33 @@ class BattleDetailsSheet extends StatelessWidget {
   Widget _buildTypeTag(ElementalType type) {
     final color = _getTypeColor(type);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withValues(alpha: 0.4), width: 1),
       ),
-      child: Text(
-        type.name.toUpperCase(),
-        style: TextStyle(
-          color: color,
-          fontSize: 10,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 1,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Image.asset(
+            type.iconPath,
+            width: 16,
+            height: 16,
+            errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            type.name.toUpperCase(),
+            style: TextStyle(
+              color: color,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1,
+              fontFamily: 'PressStart2P',
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -773,50 +786,7 @@ class BattleDetailsSheet extends StatelessWidget {
     }
   }
 
-  IconData _getTypeIcon(ElementalType type) {
-    switch (type) {
-      case ElementalType.basic:
-        return Icons.circle_outlined;
-      case ElementalType.flying:
-        return Icons.air;
-      case ElementalType.aquatic:
-        return Icons.water_drop;
-      case ElementalType.earth:
-        return Icons.landscape;
-      case ElementalType.cryo:
-        return Icons.ac_unit;
-      case ElementalType.toxic:
-        return Icons.science;
-      case ElementalType.rock:
-        return Icons.hexagon_outlined;
-      case ElementalType.arthropod:
-        return Icons.bug_report;
-      case ElementalType.electric:
-        return Icons.flash_on;
-      case ElementalType.spectral:
-        return Icons.visibility_outlined;
-      case ElementalType.martial:
-        return Icons.sports_mma;
-      case ElementalType.blaze:
-        return Icons.local_fire_department;
-      case ElementalType.grass:
-        return Icons.grass;
-      case ElementalType.mystic:
-        return Icons.auto_awesome;
-      case ElementalType.darkness:
-        return Icons.nightlight_round;
-      case ElementalType.drake:
-        return Icons.pets;
-      case ElementalType.metal:
-        return Icons.settings;
-      case ElementalType.aura:
-        return Icons.psychology;
-      case ElementalType.sound:
-        return Icons.volume_up;
-      case ElementalType.holy:
-        return Icons.brightness_high;
-    }
-  }
+  // _getTypeIcon was used for old IconData icons - removing in favor of direct Image.asset usage
 
   Widget _buildLoadout(Organism org, bool captured, Color themeColor) {
     if (!captured && !isPlayer) {
@@ -885,10 +855,15 @@ class BattleDetailsSheet extends StatelessWidget {
                     color: _getTypeColor(move.type).withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    _getTypeIcon(move.type),
-                    color: _getTypeColor(move.type),
-                    size: 16,
+                  child: Image.asset(
+                    move.type.iconPath,
+                    width: 18,
+                    height: 18,
+                    errorBuilder: (_, __, ___) => Icon(
+                      Icons.category,
+                      color: _getTypeColor(move.type),
+                      size: 16,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 16),

@@ -917,8 +917,8 @@ class ThunderEffect extends StatelessWidget {
                 opacity: opacity * (0.6 + 0.4 * flash),
                 child: Image.asset(
                   lightningFrame,
-                  width: 150,
-                  height: 500,
+                  width: 100,
+                  height: 300,
                   fit: BoxFit.contain,
                 ),
               ),
@@ -930,8 +930,8 @@ class ThunderEffect extends StatelessWidget {
                 opacity: opacity,
                 child: Image.asset(
                   'assets/move_effects/black_cloud.png',
-                  width: 300,
-                  height: 200,
+                  width: 150,
+                  height: 100,
                   fit: BoxFit.contain,
                 ),
               ),
@@ -1463,7 +1463,9 @@ class LeafStormEffect extends StatelessWidget {
           // Visuals
           final asset = leafAssets[rand.nextInt(leafAssets.length)];
           final rotation = localP * math.pi * 8 + (index * 0.5);
-          final opacity = p < 0.1 ? p / 0.1 : (p > 0.85 ? (1.0 - p) / 0.15 : 1.0);
+          final opacity = p < 0.1
+              ? p / 0.1
+              : (p > 0.85 ? (1.0 - p) / 0.15 : 1.0);
           final scale = 0.5 + rand.nextDouble() * 0.7;
 
           return Positioned(
@@ -1546,7 +1548,6 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
 
   @override
   Widget build(BuildContext context) {
-
     final move = widget.data.move;
     final isPlayer = widget.data.isPlayerAttacking;
     final attackerLink = isPlayer ? widget.playerLink : widget.opponentLink;
@@ -2392,16 +2393,18 @@ class _DefaultSpecialEffect extends StatelessWidget {
 
     // Travel path: from offscreen (200px away) into the target center
     final travelX = (1.0 - p) * 200 * direction;
-    
+
     // Vertical wobble (Sine wave)
     final wobbleY = math.sin(p * math.pi * 4) * 15;
-    
+
     // Rotation (continuous spin)
     final rotation = p * math.pi * 6 * direction;
 
     // Opacity: fade in at start, fade out at end
-    final opacity = (p < 0.1 ? p / 0.1 : (p > 0.8 ? (1.0 - p) / 0.2 : 1.0)) * opacityMultiplier;
-    
+    final opacity =
+        (p < 0.1 ? p / 0.1 : (p > 0.8 ? (1.0 - p) / 0.2 : 1.0)) *
+        opacityMultiplier;
+
     // Scale: slight pulse
     final scale = (0.7 + math.sin(p * math.pi) * 0.3) * scaleMultiplier;
 
@@ -2443,19 +2446,12 @@ class _DefaultStatusEffect extends StatelessWidget {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        for (int i = 0; i < 6; i++)
-          _buildAuraParticle(
-            index: i,
-            p: p,
-          ),
+        for (int i = 0; i < 6; i++) _buildAuraParticle(index: i, p: p),
       ],
     );
   }
 
-  Widget _buildAuraParticle({
-    required int index,
-    required double p,
-  }) {
+  Widget _buildAuraParticle({required int index, required double p}) {
     // Stagger the progress for each particle slightly
     final staggeredP = (p * 1.2 - (index * 0.1)).clamp(0.0, 1.0);
     if (staggeredP <= 0 || staggeredP >= 1.0) return const SizedBox.shrink();
@@ -2464,13 +2460,17 @@ class _DefaultStatusEffect extends StatelessWidget {
     final startAngle = index * math.pi * 2 / 6;
     final currentAngle = startAngle + (staggeredP * math.pi * 2);
     final radius = 20.0 + (staggeredP * 50.0);
-    
+
     final x = math.cos(currentAngle) * radius;
-    final y = math.sin(currentAngle) * radius * 0.5 - (staggeredP * 80.0); // Rise upwards
+    final y =
+        math.sin(currentAngle) * radius * 0.5 -
+        (staggeredP * 80.0); // Rise upwards
 
     // Visuals
     final opacity = math.sin(staggeredP * math.pi).clamp(0.0, 1.0);
-    final scale = (0.4 + math.sin(staggeredP * math.pi) * 0.6) * (0.8 + (index % 3) * 0.2);
+    final scale =
+        (0.4 + math.sin(staggeredP * math.pi) * 0.6) *
+        (0.8 + (index % 3) * 0.2);
     final rotation = staggeredP * math.pi * 2 * (index.isEven ? 1 : -1);
 
     return Positioned(

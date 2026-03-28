@@ -75,6 +75,8 @@ extension ElementalTypeX on ElementalType {
         return const Color.fromARGB(255, 255, 208, 0);
     }
   }
+
+  String get iconPath => 'assets/icon/$name.png';
 }
 
 class TypeChart {

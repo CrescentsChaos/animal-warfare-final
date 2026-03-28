@@ -9,6 +9,7 @@ import 'package:animal_warfare/services/market_service.dart';
 import 'package:animal_warfare/game/time_service.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'dart:math' as math;
+import 'package:animal_warfare/services/audio_service.dart';
 
 class ShopScreen extends StatefulWidget {
   final String? biome;
@@ -217,6 +218,7 @@ class _ShopScreenState extends State<ShopScreen> {
                         Navigator.pop(ctx);
                         await userState.addMoney(-total);
                         await userState.addLoot(item.id, qty);
+                        AudioService.instance.playSound('audio/item_buy.mp3');
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
@@ -554,6 +556,7 @@ class _ShopScreenState extends State<ShopScreen> {
 
                   await userState.addMoney(-price);
                   await userState.addLoot(item.id, 1);
+                  AudioService.instance.playSound('audio/item_buy.mp3');
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(

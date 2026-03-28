@@ -181,27 +181,44 @@ class TypeMatchupSheet {
       ),
       margin: EdgeInsets.only(right: small ? 0 : 8),
       decoration: BoxDecoration(
-        color: type.color,
-        borderRadius: BorderRadius.circular(small ? 4 : 8),
+        color: type.color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(small ? 6 : 10),
+        border: Border.all(color: type.color.withValues(alpha: 0.4), width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 4,
-            offset: const Offset(2, 2),
+            offset: const Offset(1, 1),
           ),
         ],
       ),
-      child: Text(
-        type.name.toUpperCase(),
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: small ? 8 : 10,
-          fontFamily: 'PressStart2P',
-          fontWeight: FontWeight.bold,
-          shadows: const [
-            Shadow(color: Colors.black45, blurRadius: 2, offset: Offset(1, 1)),
-          ],
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Image.asset(
+            type.iconPath,
+            width: small ? 14 : 18,
+            height: small ? 14 : 18,
+            errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            type.name.toUpperCase(),
+            style: TextStyle(
+              color: type.color,
+              fontSize: small ? 7 : 9,
+              fontFamily: 'PressStart2P',
+              fontWeight: FontWeight.bold,
+              shadows: const [
+                Shadow(
+                  color: Colors.black26,
+                  blurRadius: 1,
+                  offset: Offset(0.5, 0.5),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

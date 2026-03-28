@@ -1972,6 +1972,10 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
               chargeMessage =
                   '${attacker.organism.baseOrganism.name} burrowed underearth!';
               break;
+            case 'Sky Attack':
+              chargeMessage =
+                  '${attacker.organism.baseOrganism.name} became cloaked with a harsh light!';
+              break;
             case 'Dive':
               chargeMessage =
                   '${attacker.organism.baseOrganism.name} dove underwater!';
@@ -2002,7 +2006,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
                   '${attacker.organism.baseOrganism.name} is preparing an attack!';
           }
           addToLog(chargeMessage);
-
+          notifyListeners();
+          if (!isTesting) await Future.delayed(const Duration(seconds: 2));
           // Apply first-turn effects (for Meteor Beam/Skull Bash)
           if (chargeEffect.type == MoveEffectType.meteorBeam) {
             await applyStatChange(attacker, 'power', 1);
@@ -3655,8 +3660,13 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     }
 
     // --- Forced Spam Move Lifecycle (Rollout/Ice Ball & Thrash/Outrage/Petal Dance) ---
-    final hasRolloutEffect = move.effects.any((e) => e.type == MoveEffectType.rollout || e.type == MoveEffectType.iceBall);
-    final hasThrashEffect = move.effects.any((e) => e.type == MoveEffectType.thrash);
+    final hasRolloutEffect = move.effects.any(
+      (e) =>
+          e.type == MoveEffectType.rollout || e.type == MoveEffectType.iceBall,
+    );
+    final hasThrashEffect = move.effects.any(
+      (e) => e.type == MoveEffectType.thrash,
+    );
 
     if (hasRolloutEffect) {
       if (defender.tookDamageThisTurn || move.category == MoveCategory.status) {
@@ -5656,7 +5666,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           (ab) => ab.name == 'Poison Heal',
         );
 
-        if (hasPoisonHeal) {
+        if (hasPoisonHeal &&
+            target.health < target.maxHealth &&
+            target.healBlockTurns == 0) {
           final heal = (target.maxHealth * 0.125).round().clamp(1, 9999);
           target.health += heal;
           target.health = target.health.clamp(0, target.maxHealth);
@@ -5673,11 +5685,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           }
         } else {
           target.poisonTurnCount++;
-          final poisonDamage =
-              (target.maxHealth * target.poisonTurnCount / 16).round().clamp(
-            1,
-            9999,
-          );
+          final poisonDamage = (target.maxHealth * target.poisonTurnCount / 16)
+              .round()
+              .clamp(1, 9999);
           target.health -= poisonDamage;
           target.health = target.health.clamp(0, target.maxHealth);
           final double percentage = (target.poisonTurnCount / 16) * 100;
@@ -5887,7 +5897,10 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     // Ability turn-end effects
     for (final ab in target.abilities) {
-      if (ab.name == 'Rain Dish' && currentWeather.weather == Weather.rain) {
+      if (ab.name == 'Rain Dish' &&
+          currentWeather.weather == Weather.rain &&
+          target.health < target.maxHealth &&
+          target.healBlockTurns == 0) {
         final heal = (target.maxHealth * 0.125).round().clamp(1, 9999);
         target.health += heal;
         target.health = target.health.clamp(0, target.maxHealth);
@@ -5929,7 +5942,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         target.itemDisabledTurns <= 0 &&
         !foeHasUnnerve) {
       for (final effect in target.organism.equippedTalisman!.effects) {
-        if (effect.type == TalismanEffectType.onTurnHeal) {
+        if (effect.type == TalismanEffectType.onTurnHeal &&
+            target.health < target.maxHealth &&
+            target.healBlockTurns == 0) {
           final healAmount = (target.maxHealth * effect.magnitude).round();
           target.health += healAmount;
           target.health = target.health.clamp(0, target.maxHealth);
@@ -6441,7 +6456,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   Future<void> attemptRun() async {
     if (currentState != BattleState.waitingForInput) return;
 
-    if (player.thrashTurnCount > 0 || player.rolloutTurnCount > 0 || player.isTrapped) {
+    if (player.thrashTurnCount > 0 ||
+        player.rolloutTurnCount > 0 ||
+        player.isTrapped) {
       final reason = player.isTrapped
           ? '${player.organism.baseOrganism.name} is trapped and cannot dash back!'
           : '${player.organism.baseOrganism.name} is locked into its move!';
@@ -6591,7 +6608,10 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       return;
     }
 
-    if (!isForced && (player.isTrapped || player.thrashTurnCount > 0 || player.rolloutTurnCount > 0)) {
+    if (!isForced &&
+        (player.isTrapped ||
+            player.thrashTurnCount > 0 ||
+            player.rolloutTurnCount > 0)) {
       String reason;
       if (player.thrashTurnCount > 0 || player.rolloutTurnCount > 0) {
         reason = '${player.name} is locked into its attack!';
@@ -7781,7 +7801,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     // Analytic Boost: 1.3x if moving last
     if (attacker.abilities.any((ab) => ab.name == 'Analytic')) {
-      final isMovingLast = (attacker == player && opponentMovedThisTurn) ||
+      final isMovingLast =
+          (attacker == player && opponentMovedThisTurn) ||
           (attacker == opponent && playerMovedThisTurn);
       if (isMovingLast) {
         baseDamage = (baseDamage * 1.3).round();
@@ -7789,7 +7810,6 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     }
 
     if (baseDamage <= 0) return const DamageResult(0, 1.0, false);
-
 
     // 3. Core Damage Formula
     double damageCalc =
