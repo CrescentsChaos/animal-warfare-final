@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:animal_warfare/game/battle_manager.dart';
-import 'package:animal_warfare/game/battle_models.dart';
 import 'package:animal_warfare/models/captured_organism.dart';
 import 'package:animal_warfare/models/organism.dart';
 import 'package:animal_warfare/models/move.dart';
@@ -45,7 +44,7 @@ void main() {
         effects: [MoveEffect(type: MoveEffectType.magicCoat)],
       ),
     );
-     Move.addTestMove(
+    Move.addTestMove(
       const Move(
         name: 'Tera Blast',
         baseDamage: 80,
@@ -100,7 +99,8 @@ void main() {
       rarity: 'Common',
       description: '',
       weight: 1.0,
-      types: types?.map((e) => e.toString().split('.').last).toList() ?? ['basic'],
+      types:
+          types?.map((e) => e.toString().split('.').last).toList() ?? ['basic'],
     );
   }
 
@@ -133,24 +133,36 @@ void main() {
       final defender = createCaptured(base);
 
       final manager = BattleManager(attacker, defender, isTesting: true);
-      manager.player.addStatusEffect(const StatusEffect(type: StatusEffectType.sleep, duration: 3));
+      manager.player.addStatusEffect(
+        const StatusEffect(type: StatusEffectType.sleep, duration: 3),
+      );
 
       // Use Sleep Talk
-      await manager.testExecuteTurn(manager.player, manager.opponent, Move.findByName('Sleep Talk')!);
+      await manager.testExecuteTurn(
+        manager.player,
+        manager.opponent,
+        Move.findByName('Sleep Talk')!,
+      );
 
       // Since Tackle is the only other move, it should be called (and deal damage)
       expect(manager.opponent.health, lessThan(200));
     });
 
     test('Snore deals damage while asleep', () async {
-       final base = createTestOrganism();
+      final base = createTestOrganism();
       final attacker = createCaptured(base, moves: ['Snore']);
       final defender = createCaptured(base);
 
       final manager = BattleManager(attacker, defender, isTesting: true);
-      manager.player.addStatusEffect(const StatusEffect(type: StatusEffectType.sleep, duration: 3));
+      manager.player.addStatusEffect(
+        const StatusEffect(type: StatusEffectType.sleep, duration: 3),
+      );
 
-      await manager.testExecuteTurn(manager.player, manager.opponent, Move.findByName('Snore')!);
+      await manager.testExecuteTurn(
+        manager.player,
+        manager.opponent,
+        Move.findByName('Snore')!,
+      );
 
       expect(manager.opponent.health, lessThan(200));
     });
@@ -164,21 +176,43 @@ void main() {
       manager.ignoreRandom = true;
 
       // Player uses Magic Coat (sets flag)
-      await manager.testExecuteTurn(manager.player, manager.opponent, Move.findByName('Magic Coat')!);
+      await manager.testExecuteTurn(
+        manager.player,
+        manager.opponent,
+        Move.findByName('Magic Coat')!,
+      );
       expect(manager.player.magicCoatActive, true);
 
       // Opponent uses Toxic
-      await manager.testExecuteTurn(manager.opponent, manager.player, Move.findByName('Toxic')!);
+      await manager.testExecuteTurn(
+        manager.opponent,
+        manager.player,
+        Move.findByName('Toxic')!,
+      );
 
       // Player should NOT be poisoned, but Opponent SHOULD be (reflected)
-      expect(manager.player.statusEffects.any((se) => se.type == StatusEffectType.poison), false);
-      expect(manager.opponent.statusEffects.any((se) => se.type == StatusEffectType.poison), true);
+      expect(
+        manager.player.statusEffects.any(
+          (se) => se.type == StatusEffectType.poison,
+        ),
+        false,
+      );
+      expect(
+        manager.opponent.statusEffects.any(
+          (se) => se.type == StatusEffectType.poison,
+        ),
+        true,
+      );
     });
 
     test('Tera Blast changes type and uses higher offense when Prismorphed', () {
       final baseNormal = createTestOrganism(attack: 200, power: 50);
-      
-      final attacker = createCaptured(baseNormal, moves: ['Tera Blast'], teraType: ElementalType.blaze);
+
+      final attacker = createCaptured(
+        baseNormal,
+        moves: ['Tera Blast'],
+        teraType: ElementalType.blaze,
+      );
       final defender = createCaptured(baseNormal);
 
       final manager = BattleManager(attacker, defender, isTesting: true);
@@ -187,16 +221,24 @@ void main() {
       final move = Move.findByName('Tera Blast')!;
 
       // Normal state: Special, Basic type
-      final damageNormal = manager.calculateDamage(manager.player, manager.opponent, move);
+      final damageNormal = manager.calculateDamage(
+        manager.player,
+        manager.opponent,
+        move,
+      );
       expect(manager.getDisplayType(manager.player, move), ElementalType.basic);
 
       // Prismorphed state: Blaze type (from createTestOrganism), uses Attack instead of Power
       manager.player.isPrismorphed = true;
       manager.player.activeTeraType = ElementalType.blaze;
-      
-      final damageTera = manager.calculateDamage(manager.player, manager.opponent, move);
+
+      final damageTera = manager.calculateDamage(
+        manager.player,
+        manager.opponent,
+        move,
+      );
       expect(manager.getDisplayType(manager.player, move), ElementalType.blaze);
-      
+
       // Since attack (200) > power (50), damage should be much higher
       expect(damageTera.damage, greaterThan(damageNormal.damage));
     });

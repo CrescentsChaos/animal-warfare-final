@@ -24,8 +24,10 @@ class _StartScreenState extends State<StartScreen>
       vsync: this,
       duration: const Duration(seconds: 2), // Gentle 2s fade in
     );
-    _fadeAnimation =
-        Tween<double>(begin: 0.0, end: 1.0).animate(_fadeController);
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(_fadeController);
 
     _initStartSequence();
   }
@@ -51,8 +53,8 @@ class _StartScreenState extends State<StartScreen>
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
           transitionDuration: const Duration(milliseconds: 1000),
-          pageBuilder: (_, __, ___) => const SplashScreen(),
-          transitionsBuilder: (_, animation, __, child) {
+          pageBuilder: (_, _, _) => const SplashScreen(),
+          transitionsBuilder: (_, animation, _, child) {
             return FadeTransition(opacity: animation, child: child);
           },
         ),
@@ -77,10 +79,7 @@ class _StartScreenState extends State<StartScreen>
           child: SizedBox(
             width: double.infinity,
             height: double.infinity,
-            child: Image.asset(
-              'assets/start.png',
-              fit: BoxFit.cover,
-            ),
+            child: Image.asset('assets/start.png', fit: BoxFit.cover),
           ),
         ),
       ),

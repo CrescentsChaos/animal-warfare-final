@@ -7101,7 +7101,7 @@
         "name": "Hex",
         "description": "This relentless attack deals double damage to a target affected by a status condition.",
         "baseDamage": 65,
-        "type": "ghastly",
+        "type": "spectral",
         "accuracy": 100,
         "stamina": 10,
         "category": "special",

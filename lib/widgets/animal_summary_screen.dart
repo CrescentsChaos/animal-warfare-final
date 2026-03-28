@@ -528,12 +528,15 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
     final gameTime = _current.capturedAtGame;
     final location = _current.captureLocation ?? 'Unknown Location';
 
-    final realDateStr = "${real.year}-${real.month.toString().padLeft(2, '0')}-${real.day.toString().padLeft(2, '0')}";
-    final realTimeStr = "${real.hour.toString().padLeft(2, '0')}:${real.minute.toString().padLeft(2, '0')}";
+    final realDateStr =
+        "${real.year}-${real.month.toString().padLeft(2, '0')}-${real.day.toString().padLeft(2, '0')}";
+    final realTimeStr =
+        "${real.hour.toString().padLeft(2, '0')}:${real.minute.toString().padLeft(2, '0')}";
 
     String gameStr = '-';
     if (gameTime != null) {
-      gameStr = "${gameTime.day}/${gameTime.month}/${gameTime.year} ${gameTime.hour.toString().padLeft(2, '0')}:${gameTime.minute.toString().padLeft(2, '0')}";
+      gameStr =
+          "${gameTime.day}/${gameTime.month}/${gameTime.year} ${gameTime.hour.toString().padLeft(2, '0')}:${gameTime.minute.toString().padLeft(2, '0')}";
     }
 
     return _infoGrid([
@@ -1563,11 +1566,8 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
             width: 14,
             height: 14,
             filterQuality: FilterQuality.medium,
-            errorBuilder: (_, __, ___) => Icon(
-              Icons.category,
-              size: 10,
-              color: c.withValues(alpha: 0.5),
-            ),
+            errorBuilder: (_, _, _) =>
+                Icon(Icons.category, size: 10, color: c.withValues(alpha: 0.5)),
           ),
           const SizedBox(width: 5),
           Text(

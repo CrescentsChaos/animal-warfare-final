@@ -204,3 +204,52 @@ class WeatherEffect {
     }
   }
 }
+
+extension WeatherExtension on Weather {
+  String get name => toString().split('.').last;
+
+  String get iconPath {
+    switch (this) {
+      case Weather.clear:
+        return 'assets/icon/clear.png';
+      case Weather.rain:
+        return 'assets/icon/rain.png';
+      case Weather.heavyRain:
+        return 'assets/icon/heavy_rain.png';
+      case Weather.snowstorm:
+        return 'assets/icon/snowstorm.png';
+      case Weather.hail:
+        return 'assets/icon/hail.png';
+      case Weather.fog:
+        return 'assets/icon/fog.png';
+      case Weather.sunny:
+        return 'assets/icon/sunny.png';
+      case Weather.intenseSun:
+        return 'assets/icon/intense_sun.png';
+      case Weather.sandstorm:
+        return 'assets/icon/sandstorm.png';
+      case Weather.windstorm:
+        return 'assets/icon/windstorm.png';
+      case Weather.strongWinds:
+        return 'assets/icon/strong_winds.png';
+      case Weather.thunderstorm:
+        return 'assets/icon/thunderstorm.png';
+      case Weather.typhoon:
+        return 'assets/icon/hurricane.png'; // No typhoon icon, using hurricane
+      case Weather.tornado:
+        return 'assets/icon/tornado.png';
+      case Weather.hurricane:
+        return 'assets/icon/hurricane.png';
+      case Weather.tsunami:
+        return 'assets/icon/tsunami.png';
+      case Weather.earthquake:
+        return 'assets/icon/earthquake.png';
+      case Weather.volcanoEruption:
+        return 'assets/icon/volcano_eruption.png';
+      case Weather.blizzard:
+        return 'assets/icon/snowstorm.png'; // No blizzard icon, using snowstorm
+      default:
+        return 'assets/icon/clear.png';
+    }
+  }
+}

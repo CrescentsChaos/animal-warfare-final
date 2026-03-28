@@ -5,7 +5,28 @@ enum Terrain {
   electric, // Prevents Sleep
   grassy,   // Heals slightly
   misty,    // Prevents Status Effects
-  psychic,  // Boosts Psychic API (if we had types, for now just a placeholder)
+  psychic,  // Boosts Mystic moves
+}
+
+extension TerrainExtension on Terrain {
+  String get iconPath {
+    switch (this) {
+      case Terrain.electric:
+        return 'assets/icon/electric_terrain.png';
+      case Terrain.grassy:
+        return 'assets/icon/grassy_terrain.png';
+      case Terrain.misty:
+        return 'assets/icon/misty_terrain.png';
+      case Terrain.psychic:
+        return 'assets/icon/psychic_terrain.png';
+      default:
+        return '';
+    }
+  }
+
+  String get name {
+    return toString().split('.').last;
+  }
 }
 
 class TerrainEffect {

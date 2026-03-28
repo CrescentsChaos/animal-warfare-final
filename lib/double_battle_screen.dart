@@ -16,6 +16,8 @@ import 'package:animal_warfare/models/elemental_type.dart';
 import 'package:animal_warfare/theme.dart';
 import 'package:animal_warfare/game/ai_decision_engine.dart';
 import 'package:animal_warfare/user_state.dart';
+import 'package:animal_warfare/models/weather.dart';
+import 'package:animal_warfare/models/terrain.dart';
 
 // ════════════════════════════════════════════════════════════
 // Type color helper
@@ -235,20 +237,33 @@ class DoubleBattleScreen extends StatelessWidget {
                         return Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 6,
-                            vertical: 2,
+                            vertical: 3,
                           ),
                           decoration: BoxDecoration(
-                            color: typeColor,
+                            color: typeColor.withValues(alpha: 0.8),
                             borderRadius: BorderRadius.circular(4),
                           ),
-                          child: Text(
-                            cat.trim().toUpperCase(),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 8,
-                              fontFamily: 'PressStart2P',
-                              fontWeight: FontWeight.bold,
-                            ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Image.asset(
+                                type.iconPath,
+                                width: 12,
+                                height: 12,
+                                errorBuilder: (_, _, _) =>
+                                    const SizedBox.shrink(),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                cat.trim().toUpperCase(),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 8,
+                                  fontFamily: 'PressStart2P',
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
                           ),
                         );
                       }).toList(),
@@ -278,17 +293,32 @@ class DoubleBattleScreen extends StatelessWidget {
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: bo.organism.teraType!.color,
+                          color: bo.organism.teraType!.color.withValues(
+                            alpha: 0.8,
+                          ),
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: Text(
-                          bo.organism.teraType!.name.toUpperCase(),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 8,
-                            fontFamily: 'PressStart2P',
-                            fontWeight: FontWeight.bold,
-                          ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Image.asset(
+                              bo.organism.teraType!.iconPath,
+                              width: 12,
+                              height: 12,
+                              errorBuilder: (_, _, _) =>
+                                  const SizedBox.shrink(),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              bo.organism.teraType!.name.toUpperCase(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 8,
+                                fontFamily: 'PressStart2P',
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -532,35 +562,20 @@ class DoubleBattleScreen extends StatelessWidget {
                         children: [
                           Row(
                             children: [
+                              Image.asset(
+                                displayType.iconPath,
+                                width: 10,
+                                height: 10,
+                                errorBuilder: (_, _, _) =>
+                                    const SizedBox.shrink(),
+                              ),
+                              const SizedBox(width: 4),
                               Text(
                                 m.toUpperCase(),
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 8,
                                   fontFamily: 'PressStart2P',
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 4,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: _typeColor(displayType),
-                                  borderRadius: BorderRadius.circular(2),
-                                ),
-                                child: Text(
-                                  displayType.name.toUpperCase().substring(
-                                    0,
-                                    3,
-                                  ),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 5,
-                                    fontFamily: 'PressStart2P',
-                                    fontWeight: FontWeight.bold,
-                                  ),
                                 ),
                               ),
                             ],
@@ -609,32 +624,20 @@ class DoubleBattleScreen extends StatelessWidget {
                       children: [
                         Row(
                           children: [
+                            Image.asset(
+                              displayType.iconPath,
+                              width: 10,
+                              height: 10,
+                              errorBuilder: (_, _, _) =>
+                                  const SizedBox.shrink(),
+                            ),
+                            const SizedBox(width: 4),
                             Text(
                               m.toUpperCase(),
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 8,
                                 fontFamily: 'PressStart2P',
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 4,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: _typeColor(displayType),
-                                borderRadius: BorderRadius.circular(2),
-                              ),
-                              child: Text(
-                                displayType.name.toUpperCase().substring(0, 3),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 5,
-                                  fontFamily: 'PressStart2P',
-                                  fontWeight: FontWeight.bold,
-                                ),
                               ),
                             ),
                           ],
@@ -830,7 +833,6 @@ class _DoubleBattleViewState extends State<_DoubleBattleView>
 
     // Award XP
 
-
     if (!widget.isArenaBattle) {
       final results = await userState.awardBattleXP(
         defeatedLevel: victim.level,
@@ -1012,6 +1014,8 @@ class _DoubleBattleViewState extends State<_DoubleBattleView>
                             ),
                           ),
 
+                          const SizedBox(height: 32),
+                          _buildFieldEffects(bm),
                           const SizedBox(height: 32),
 
                           // ── Player Rows ──
@@ -1383,6 +1387,242 @@ class _DoubleBattleViewState extends State<_DoubleBattleView>
     );
   }
 
+  Widget _buildFieldEffects(DoubleBattleManager bm) {
+    final showEffects = bm.currentState != DoubleBattleState.intro;
+    if (!showEffects) return const SizedBox.shrink();
+
+    List<Widget> effects = [];
+
+    // Weather & Terrain
+    if (bm.currentWeather.weather != Weather.none) {
+      effects.add(
+        _buildFieldEffectIcon(
+          iconPath: bm.currentWeather.weather.iconPath,
+          turns: 0,
+          tooltip: bm.currentWeather.weather.name.toUpperCase(),
+        ),
+      );
+    }
+    if (bm.currentTerrain.terrain != Terrain.none) {
+      effects.add(
+        _buildFieldEffectIcon(
+          iconPath: bm.currentTerrain.terrain.iconPath,
+          turns: 0,
+          tooltip: bm.currentTerrain.terrain.name.toUpperCase(),
+        ),
+      );
+    }
+
+    // Global effects
+    if (bm.trickRoomTurns > 0) {
+      effects.add(
+        _buildFieldEffectIcon(
+          iconPath: 'assets/icon/trick_room.png',
+          turns: bm.trickRoomTurns,
+          tooltip: 'TRICK ROOM',
+        ),
+      );
+    }
+
+    // Ally screens
+    if (bm.playerReflectTurns > 0) {
+      effects.add(
+        _buildFieldEffectIcon(
+          iconPath: 'assets/icon/reflect.png',
+          turns: bm.playerReflectTurns,
+          tooltip: 'ALLY REFLECT',
+          outlineColor: Colors.greenAccent,
+        ),
+      );
+    }
+    if (bm.playerLightScreenTurns > 0) {
+      effects.add(
+        _buildFieldEffectIcon(
+          iconPath: 'assets/icon/light_screen.png',
+          turns: bm.playerLightScreenTurns,
+          tooltip: 'ALLY LIGHT SCREEN',
+          outlineColor: Colors.greenAccent,
+        ),
+      );
+    }
+    if (bm.playerSafeguardTurns > 0) {
+      effects.add(
+        _buildFieldEffectIcon(
+          iconPath: 'assets/icon/safeguard.png',
+          turns: bm.playerSafeguardTurns,
+          tooltip: 'ALLY SAFEGUARD',
+          outlineColor: Colors.greenAccent,
+        ),
+      );
+    }
+    if (bm.playerTailwindTurns > 0) {
+      effects.add(
+        _buildFieldEffectIcon(
+          iconPath: 'assets/icon/tailwind.png',
+          turns: bm.playerTailwindTurns,
+          tooltip: 'ALLY TAILWIND',
+          outlineColor: Colors.greenAccent,
+        ),
+      );
+    }
+    if (bm.playerAuroraVeilTurns > 0) {
+      effects.add(
+        _buildFieldEffectIcon(
+          iconPath: 'assets/icon/aurora_veil.png',
+          turns: bm.playerAuroraVeilTurns,
+          tooltip: 'ALLY AURORA VEIL',
+          outlineColor: Colors.greenAccent,
+        ),
+      );
+    }
+
+    // Foe screens
+    if (bm.opponentReflectTurns > 0) {
+      effects.add(
+        _buildFieldEffectIcon(
+          iconPath: 'assets/icon/reflect.png',
+          turns: bm.opponentReflectTurns,
+          tooltip: 'FOE REFLECT',
+          outlineColor: Colors.redAccent,
+        ),
+      );
+    }
+    if (bm.opponentLightScreenTurns > 0) {
+      effects.add(
+        _buildFieldEffectIcon(
+          iconPath: 'assets/icon/light_screen.png',
+          turns: bm.opponentLightScreenTurns,
+          tooltip: 'FOE LIGHT SCREEN',
+          outlineColor: Colors.redAccent,
+        ),
+      );
+    }
+    if (bm.opponentSafeguardTurns > 0) {
+      effects.add(
+        _buildFieldEffectIcon(
+          iconPath: 'assets/icon/safeguard.png',
+          turns: bm.opponentSafeguardTurns,
+          tooltip: 'FOE SAFEGUARD',
+          outlineColor: Colors.redAccent,
+        ),
+      );
+    }
+    if (bm.opponentTailwindTurns > 0) {
+      effects.add(
+        _buildFieldEffectIcon(
+          iconPath: 'assets/icon/tailwind.png',
+          turns: bm.opponentTailwindTurns,
+          tooltip: 'FOE TAILWIND',
+          outlineColor: Colors.redAccent,
+        ),
+      );
+    }
+    if (bm.opponentAuroraVeilTurns > 0) {
+      effects.add(
+        _buildFieldEffectIcon(
+          iconPath: 'assets/icon/aurora_veil.png',
+          turns: bm.opponentAuroraVeilTurns,
+          tooltip: 'FOE AURORA VEIL',
+          outlineColor: Colors.redAccent,
+        ),
+      );
+    }
+
+    if (effects.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.black26,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white10, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Wrap(
+        spacing: 12,
+        runSpacing: 12,
+        alignment: WrapAlignment.center,
+        children: effects,
+      ),
+    );
+  }
+
+  Widget _buildFieldEffectIcon({
+    required String iconPath,
+    required int turns,
+    Color? outlineColor,
+    String? tooltip,
+  }) {
+    return Tooltip(
+      message: tooltip ?? '',
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(2),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: outlineColor != null
+                  ? Border.all(color: outlineColor, width: 2)
+                  : Border.all(color: Colors.white24, width: 1),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black54,
+                  blurRadius: 4,
+                  offset: Offset(1, 1),
+                ),
+              ],
+            ),
+            child: ClipOval(
+              child: Image.asset(
+                iconPath,
+                width: 30,
+                height: 30,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) => const Icon(
+                  Icons.help_outline,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+            ),
+          ),
+          if (turns > 0)
+            Padding(
+              padding: const EdgeInsets.only(top: 4.0),
+              child: Container(
+                width: 14,
+                height: 14,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: Colors.black87,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white24, width: 0.5),
+                ),
+                child: Text(
+                  '$turns',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 7,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'PressStart2P',
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
   String _getBiomeBackground() {
     // Sync with BattleScreen logic
     var name = widget.biomeName;
@@ -1462,6 +1702,7 @@ class _DoubleBattleViewState extends State<_DoubleBattleView>
           isRight: !isPlayerSide,
           isClickable: _isTargeting,
           primaryColor: primaryColor,
+          showIcons: bm.currentState != DoubleBattleState.intro,
         ),
       ),
     );
@@ -1491,10 +1732,12 @@ class _DoubleBattleViewState extends State<_DoubleBattleView>
 
   bool _isSlotFaded(BuildContext context, int slotIdx) {
     final bm = context.read<DoubleBattleManager>();
-    if (bm.currentState == DoubleBattleState.selectingForSlot1 && slotIdx == 2) {
+    if (bm.currentState == DoubleBattleState.selectingForSlot1 &&
+        slotIdx == 2) {
       return true;
     }
-    if (bm.currentState == DoubleBattleState.selectingForSlot2 && slotIdx == 1) {
+    if (bm.currentState == DoubleBattleState.selectingForSlot2 &&
+        slotIdx == 1) {
       return true;
     }
     return false;
@@ -1682,6 +1925,7 @@ class _HpBar extends StatelessWidget {
   final bool isRight;
   final bool isClickable;
   final Color primaryColor;
+  final bool showIcons;
 
   const _HpBar({
     required this.slot,
@@ -1689,6 +1933,7 @@ class _HpBar extends StatelessWidget {
     required this.isRight,
     this.isClickable = false,
     required this.primaryColor,
+    required this.showIcons,
   });
 
   @override
@@ -1740,19 +1985,21 @@ class _HpBar extends StatelessWidget {
       },
       child: Container(
         constraints: const BoxConstraints(minWidth: 160, maxWidth: 200),
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.55),
-          borderRadius: BorderRadius.circular(12),
+          color: const Color(0xFF1E1E2A),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isClickable ? const Color(0xFF4ADE80) : primaryColor,
-            width: 2,
+            color: isClickable
+                ? const Color(0xFF4ADE80)
+                : Colors.white.withValues(alpha: 0.1),
+            width: 1.5,
           ),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.4),
-              blurRadius: 6,
-              offset: const Offset(2, 2),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
             ),
             if (isClickable)
               BoxShadow(
@@ -1768,16 +2015,29 @@ class _HpBar extends StatelessWidget {
               ? CrossAxisAlignment.end
               : CrossAxisAlignment.start,
           children: [
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                slot!.organism.baseOrganism.name.toUpperCase(),
-                style: AppTextStyles.body(
-                  context,
-                  baseSize: 10,
-                  color: Colors.white,
-                ).copyWith(fontWeight: FontWeight.bold),
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: isRight
+                        ? Alignment.centerRight
+                        : Alignment.centerLeft,
+                    child: Text(
+                      slot!.organism.baseOrganism.name.toUpperCase(),
+                      style: AppTextStyles.body(
+                        context,
+                        baseSize: 10,
+                        color: Colors.white,
+                      ).copyWith(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+                if (showIcons) ...[
+                  const SizedBox(width: 6),
+                  _buildTypeIcons(slot!),
+                ],
+              ],
             ),
             const SizedBox(height: 6),
             TweenAnimationBuilder<double>(
@@ -1840,6 +2100,37 @@ class _HpBar extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildTypeIcons(BattleOrganism slot) {
+    // Current types (includes Prismorphing)
+    final types = slot.types;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: types.map((t) {
+        return Padding(
+          padding: const EdgeInsets.only(left: 4),
+          child: Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.6),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.white10, width: 1.5),
+            ),
+            child: Tooltip(
+              message: t.name.toUpperCase(),
+              child: Image.asset(
+                t.iconPath,
+                width: 14,
+                height: 14,
+                errorBuilder: (_, _, _) =>
+                    const Icon(Icons.category, size: 10, color: Colors.white24),
+              ),
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 }
@@ -2434,7 +2725,7 @@ class _ActionPanel extends StatelessWidget {
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(left: 4),
-              child: ElevatedButton(
+              child: ElevatedButton.icon(
                 onPressed: canPrismorph
                     ? () {
                         bm.activatePrismorph(
@@ -2447,26 +2738,38 @@ class _ActionPanel extends StatelessWidget {
                         );
                       }
                     : null,
+                icon: Image.asset(
+                  slot.organism.teraType!.iconPath,
+                  width: 22,
+                  height: 22,
+                  fit: BoxFit.contain,
+                ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: isPrismorphing
-                      ? Colors.cyan
-                      : Colors.cyan.shade900,
+                  backgroundColor: isPrismorphing || bm.playerPrismorphUsed
+                      ? Colors.grey[800]
+                      : slot.organism.teraType!.color,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  elevation: canPrismorph ? 8 : 0,
+                  shadowColor: slot.organism.teraType?.color,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    side: isPrismorphing
-                        ? const BorderSide(color: Colors.white, width: 2)
-                        : BorderSide.none,
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(
+                      color: canPrismorph
+                          ? Colors.white.withValues(alpha: 0.6)
+                          : Colors.white10,
+                      width: 2,
+                    ),
                   ),
                 ),
-                child: Text(
+                label: Text(
                   isPrismorphing
-                      ? 'PRISMORPHED (${slot.activeTeraType?.name})'
+                      ? 'PRISMORPHED (${slot.activeTeraType?.name.toUpperCase()})'
                       : 'PRISMORPH',
                   style: const TextStyle(
                     fontFamily: 'PressStart2P',
                     fontSize: 8,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),

@@ -638,15 +638,6 @@ class _WeatherAppState extends State<_WeatherApp> {
                   Row(
                     children: [
                       _getWeatherIcon(f.weather),
-                      const SizedBox(width: 8),
-                      Text(
-                        f.weather.name.toUpperCase(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontFamily: 'PressStart2P',
-                          fontSize: 7,
-                        ),
-                      ),
                     ],
                   ),
                   const SizedBox(height: 6),
@@ -668,42 +659,14 @@ class _WeatherAppState extends State<_WeatherApp> {
   }
 
   Widget _getWeatherIcon(Weather weather) {
-    switch (weather) {
-      case Weather.clear:
-        return const Icon(
-          Icons.wb_sunny_outlined,
-          color: Colors.yellow,
-          size: 18,
-        );
-      case Weather.rain:
-        return const Icon(Icons.umbrella, color: Colors.blue, size: 18);
-      case Weather.heavyRain:
-        return const Icon(
-          Icons.beach_access,
-          color: Colors.blueAccent,
-          size: 18,
-        );
-      case Weather.sunny:
-        return const Icon(Icons.wb_sunny, color: Colors.orange, size: 18);
-      case Weather.snowstorm:
-        return const Icon(
-          Icons.ac_unit,
-          color: Colors.lightBlueAccent,
-          size: 18,
-        );
-      case Weather.hail:
-        return const Icon(Icons.grain, color: Colors.white, size: 18);
-      case Weather.sandstorm:
-        return const Icon(Icons.waves, color: Colors.brown, size: 18);
-      case Weather.windstorm:
-        return const Icon(Icons.air, color: Colors.white70, size: 18);
-      case Weather.thunderstorm:
-        return const Icon(Icons.bolt, color: Colors.yellowAccent, size: 18);
-      case Weather.fog:
-        return const Icon(Icons.cloud_queue, color: Colors.grey, size: 18);
-      default:
-        return const Icon(Icons.wb_cloudy, color: Colors.white, size: 18);
-    }
+    return Image.asset(
+      weather.iconPath,
+      width: 28,
+      height: 28,
+      fit: BoxFit.contain,
+      errorBuilder: (context, error, stackTrace) =>
+          const Icon(Icons.wb_sunny_outlined, color: Colors.yellow, size: 24),
+    );
   }
 }
 

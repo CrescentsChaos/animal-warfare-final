@@ -6589,6 +6589,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   }
 
   Future<void> switchAnimal(int index) async {
+    if (index == currentPlayerIndex) return;
     bool isForced = currentState == BattleState.waitingForPlayerSwitch;
     if (currentState != BattleState.waitingForInput && !isForced) return;
     // Prevent switching during two-turn moves or recharge
@@ -7603,8 +7604,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     // Spit Up Damage
     if (move.name == 'Spit Up' ||
         move.effects.any((e) => e.type == MoveEffectType.spitUp)) {
-      if (attacker.stockpileCount == 0)
+      if (attacker.stockpileCount == 0) {
         return const DamageResult(0, 1.0, false);
+      }
       baseDamage = 100 * attacker.stockpileCount;
     }
 

@@ -337,55 +337,6 @@ class _ExploreScreenState extends State<ExploreScreen> {
     final forecast = WeatherService().getForecast(biomeName);
     final today = forecast.first;
 
-    IconData icon;
-    Color color;
-
-    switch (weather) {
-      case Weather.clear:
-        icon = Icons.wb_sunny_outlined;
-        color = Colors.yellow;
-        break;
-      case Weather.rain:
-        icon = Icons.umbrella;
-        color = Colors.blue;
-        break;
-      case Weather.heavyRain:
-        icon = Icons.beach_access;
-        color = Colors.blueAccent;
-        break;
-      case Weather.sunny:
-        icon = Icons.wb_sunny;
-        color = Colors.orange;
-        break;
-      case Weather.snowstorm:
-        icon = Icons.ac_unit;
-        color = Colors.lightBlueAccent;
-        break;
-      case Weather.hail:
-        icon = Icons.grain;
-        color = Colors.white;
-        break;
-      case Weather.sandstorm:
-        icon = Icons.waves;
-        color = Colors.brown;
-        break;
-      case Weather.windstorm:
-        icon = Icons.air;
-        color = Colors.white70;
-        break;
-      case Weather.thunderstorm:
-        icon = Icons.bolt;
-        color = Colors.yellowAccent;
-        break;
-      case Weather.fog:
-        icon = Icons.cloud_queue;
-        color = Colors.grey;
-        break;
-      default:
-        icon = Icons.wb_cloudy;
-        color = Colors.white;
-    }
-
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
       decoration: BoxDecoration(
@@ -395,7 +346,18 @@ class _ExploreScreenState extends State<ExploreScreen> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: color, size: 12),
+          Image.asset(
+            weather.iconPath,
+            width: 12,
+            height: 12,
+            fit: BoxFit.contain,
+            errorBuilder:
+                (context, error, stackTrace) => const Icon(
+                  Icons.wb_cloudy,
+                  color: Colors.white,
+                  size: 12,
+                ),
+          ),
           const SizedBox(width: 4),
           Text(
             "${today.temperatureCelsius.toStringAsFixed(0)}°C",

@@ -655,7 +655,6 @@ class _BattleScreenContentState extends State<BattleScreenContent>
 
     // Award XP
 
-
     if (!widget.isArenaBattle) {
       final results = await userState.awardBattleXP(
         defeatedLevel: victim.level,
@@ -1004,11 +1003,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
         children: [
           Padding(
             padding: const EdgeInsets.only(top: 1),
-            child: Icon(
-              entryIcon,
-              color: accentColor,
-              size: 14,
-            ),
+            child: Icon(entryIcon, color: accentColor, size: 14),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -1565,7 +1560,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                       ),
                       decoration: BoxDecoration(
                         color: Colors.blue.withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: Colors.lightBlueAccent,
                           width: 1,
@@ -1604,7 +1599,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                     ),
                     decoration: BoxDecoration(
                       color: _getBiomeThemeColor(),
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: BorderRadius.circular(16),
                     ),
                     child: Text(
                       'FLOOR ${rogueState.floor} - ${rogueState.encounterIndex + 1}/5',
@@ -1659,12 +1654,14 @@ class _BattleScreenContentState extends State<BattleScreenContent>
         bm.playerTailwindTurns > 0 ||
         bm.playerReflectTurns > 0 ||
         bm.playerLightScreenTurns > 0 ||
+        bm.playerSafeguardTurns > 0 ||
         bm.playerAuroraVeilTurns > 0;
 
     final hasOpponentSide =
         bm.opponentTailwindTurns > 0 ||
         bm.opponentReflectTurns > 0 ||
         bm.opponentLightScreenTurns > 0 ||
+        bm.opponentSafeguardTurns > 0 ||
         bm.opponentAuroraVeilTurns > 0;
 
     if (!hasGlobal && !hasPlayerSide && !hasOpponentSide) {
@@ -1672,7 +1669,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 8),
+      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -1681,7 +1678,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               padding: const EdgeInsets.only(bottom: 4),
               child: Wrap(
                 alignment: WrapAlignment.center,
-                spacing: 4,
+                spacing: 8,
                 runSpacing: 4,
                 children: [
                   if (bm.currentWeather.weather != Weather.none)
@@ -1689,10 +1686,10 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                   if (bm.currentTerrain.terrain != Terrain.none)
                     _buildTerrainIndicator(bm.currentTerrain.terrain),
                   if (bm.trickRoomTurns > 0)
-                    _buildEffectIndicator(
-                      'TRICK ROOM (${bm.trickRoomTurns})',
-                      Colors.deepPurple.shade700,
-                      Icons.architecture,
+                    _buildFieldEffectIcon(
+                      iconPath: 'assets/icon/trick_room.png',
+                      turns: bm.trickRoomTurns,
+                      tooltip: 'TRICK ROOM',
                     ),
                 ],
               ),
@@ -1704,32 +1701,43 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                 Expanded(
                   child: Wrap(
                     alignment: WrapAlignment.center,
-                    spacing: 2,
-                    runSpacing: 2,
+                    spacing: 6,
+                    runSpacing: 4,
                     children: [
                       if (bm.playerTailwindTurns > 0)
-                        _buildEffectIndicator(
-                          'TWIND (${bm.playerTailwindTurns})',
-                          Colors.lightBlue,
-                          Icons.air,
+                        _buildFieldEffectIcon(
+                          iconPath: 'assets/icon/tailwind.png',
+                          turns: bm.playerTailwindTurns,
+                          outlineColor: Colors.greenAccent,
+                          tooltip: 'ALLY TAILWIND',
                         ),
                       if (bm.playerReflectTurns > 0)
-                        _buildEffectIndicator(
-                          'REFL (${bm.playerReflectTurns})',
-                          const Color.fromARGB(235, 255, 21, 204),
-                          Icons.shield,
+                        _buildFieldEffectIcon(
+                          iconPath: 'assets/icon/reflect.png',
+                          turns: bm.playerReflectTurns,
+                          outlineColor: Colors.greenAccent,
+                          tooltip: 'ALLY REFLECT',
                         ),
                       if (bm.playerLightScreenTurns > 0)
-                        _buildEffectIndicator(
-                          'L.SCR (${bm.playerLightScreenTurns})',
-                          const Color.fromARGB(216, 251, 193, 45),
-                          Icons.wb_sunny,
+                        _buildFieldEffectIcon(
+                          iconPath: 'assets/icon/light_screen.png',
+                          turns: bm.playerLightScreenTurns,
+                          outlineColor: Colors.greenAccent,
+                          tooltip: 'ALLY LIGHT SCREEN',
+                        ),
+                      if (bm.playerSafeguardTurns > 0)
+                        _buildFieldEffectIcon(
+                          iconPath: 'assets/icon/safeguard.png',
+                          turns: bm.playerSafeguardTurns,
+                          outlineColor: Colors.greenAccent,
+                          tooltip: 'ALLY SAFEGUARD',
                         ),
                       if (bm.playerAuroraVeilTurns > 0)
-                        _buildEffectIndicator(
-                          'AURV (${bm.playerAuroraVeilTurns})',
-                          Colors.cyan,
-                          Icons.star,
+                        _buildFieldEffectIcon(
+                          iconPath: 'assets/icon/aurora_veil.png',
+                          turns: bm.playerAuroraVeilTurns,
+                          outlineColor: Colors.greenAccent,
+                          tooltip: 'ALLY AURORA VEIL',
                         ),
                     ],
                   ),
@@ -1737,39 +1745,50 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                 if (hasPlayerSide && hasOpponentSide)
                   Container(
                     width: 1,
-                    height: 16,
+                    height: 32,
                     color: Colors.white24,
                     margin: const EdgeInsets.symmetric(horizontal: 4),
                   ),
                 Expanded(
                   child: Wrap(
                     alignment: WrapAlignment.center,
-                    spacing: 2,
-                    runSpacing: 2,
+                    spacing: 6,
+                    runSpacing: 4,
                     children: [
                       if (bm.opponentTailwindTurns > 0)
-                        _buildEffectIndicator(
-                          'FOE TWIND (${bm.opponentTailwindTurns})',
-                          Colors.lightBlue.shade800,
-                          Icons.air,
+                        _buildFieldEffectIcon(
+                          iconPath: 'assets/icon/tailwind.png',
+                          turns: bm.opponentTailwindTurns,
+                          outlineColor: Colors.redAccent,
+                          tooltip: 'FOE TAILWIND',
                         ),
                       if (bm.opponentReflectTurns > 0)
-                        _buildEffectIndicator(
-                          'FOE REFL (${bm.opponentReflectTurns})',
-                          const Color.fromARGB(255, 255, 28, 198),
-                          Icons.shield,
+                        _buildFieldEffectIcon(
+                          iconPath: 'assets/icon/reflect.png',
+                          turns: bm.opponentReflectTurns,
+                          outlineColor: Colors.redAccent,
+                          tooltip: 'FOE REFLECT',
                         ),
                       if (bm.opponentLightScreenTurns > 0)
-                        _buildEffectIndicator(
-                          'FOE L.SCR (${bm.opponentLightScreenTurns})',
-                          const Color.fromARGB(221, 245, 193, 23),
-                          Icons.wb_sunny,
+                        _buildFieldEffectIcon(
+                          iconPath: 'assets/icon/light_screen.png',
+                          turns: bm.opponentLightScreenTurns,
+                          outlineColor: Colors.redAccent,
+                          tooltip: 'FOE LIGHT SCREEN',
+                        ),
+                      if (bm.opponentSafeguardTurns > 0)
+                        _buildFieldEffectIcon(
+                          iconPath: 'assets/icon/safeguard.png',
+                          turns: bm.opponentSafeguardTurns,
+                          outlineColor: Colors.redAccent,
+                          tooltip: 'FOE SAFEGUARD',
                         ),
                       if (bm.opponentAuroraVeilTurns > 0)
-                        _buildEffectIndicator(
-                          'FOE AURV (${bm.opponentAuroraVeilTurns})',
-                          Colors.cyan.shade800,
-                          Icons.star,
+                        _buildFieldEffectIcon(
+                          iconPath: 'assets/icon/aurora_veil.png',
+                          turns: bm.opponentAuroraVeilTurns,
+                          outlineColor: Colors.redAccent,
+                          tooltip: 'FOE AURORA VEIL',
                         ),
                     ],
                   ),
@@ -1781,75 +1800,92 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     );
   }
 
+  Widget _buildFieldEffectIcon({
+    required String iconPath,
+    required int turns,
+    Color? outlineColor,
+    String? tooltip,
+  }) {
+    return Tooltip(
+      message: tooltip ?? '',
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(2),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: outlineColor != null
+                  ? Border.all(color: outlineColor, width: 2)
+                  : Border.all(color: Colors.white24, width: 1),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black54,
+                  blurRadius: 4,
+                  offset: Offset(1, 1),
+                ),
+              ],
+            ),
+            child: ClipOval(
+              child: Image.asset(
+                iconPath,
+                width: 32,
+                height: 32,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) => const Icon(
+                  Icons.help_outline,
+                  color: Colors.white,
+                  size: 24,
+                ),
+              ),
+            ),
+          ),
+          if (turns > 0)
+            Padding(
+              padding: const EdgeInsets.only(top: 4.0),
+              child: Container(
+                width: 14,
+                height: 14,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: Colors.black87,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white24, width: 0.5),
+                ),
+                child: Text(
+                  '$turns',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 7,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'PressStart2P',
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildWeatherIndicator(Weather weather) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-      decoration: BoxDecoration(
-        color: const Color.fromARGB(176, 33, 149, 243).withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: Colors.white70),
-      ),
-      child: Text(
-        weather.toString().split('.').last.toUpperCase(),
-        style: const TextStyle(
-          color: Colors.white,
-          fontFamily: 'PressStart2P',
-          fontSize: 9,
-        ),
-      ),
+    if (weather == Weather.clear || weather == Weather.none) {
+      return const SizedBox.shrink();
+    }
+    return _buildFieldEffectIcon(
+      iconPath: weather.iconPath,
+      turns: 0, // Weather duration usually not shown as a number in main UI
+      tooltip: weather.name.toUpperCase(),
     );
   }
 
   Widget _buildTerrainIndicator(Terrain terrain) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-      decoration: BoxDecoration(
-        color: const Color.fromARGB(197, 176, 39, 39).withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: Colors.white70),
-      ),
-      child: Text(
-        terrain.toString().split('.').last.toUpperCase(),
-        style: const TextStyle(
-          color: Colors.white,
-          fontFamily: 'PressStart2P',
-          fontSize: 9,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEffectIndicator(String text, Color color, IconData icon) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 1, vertical: 1),
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.0),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.4)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.5),
-            blurRadius: 2,
-            offset: const Offset(1, 1),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: Colors.white, size: 9),
-          const SizedBox(width: 3),
-          Text(
-            text,
-            style: const TextStyle(
-              color: Colors.white,
-              fontFamily: 'PressStart2P',
-              fontSize: 8.5,
-            ),
-          ),
-        ],
-      ),
+    if (terrain == Terrain.none) return const SizedBox.shrink();
+    return _buildFieldEffectIcon(
+      iconPath: terrain.iconPath,
+      turns: 0,
+      tooltip: terrain.name.toUpperCase(),
     );
   }
 
@@ -1973,6 +2009,45 @@ class _BattleScreenContentState extends State<BattleScreenContent>
 
   // Removed _buildTeamIndicators — logic moved to status bars
 
+  Widget _buildTypeIconColumn(
+    List<ElementalType> types,
+    BattleState currentState,
+  ) {
+    if (currentState == BattleState.choosingLead) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: types
+          .map(
+            (type) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 2),
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.6),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.white10, width: 1.5),
+                ),
+                child: Tooltip(
+                  message: type.name.toUpperCase(),
+                  child: Image.asset(
+                    type.iconPath,
+                    width: 20,
+                    height: 20,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) =>
+                        Icon(Icons.help_outline, color: type.color, size: 16),
+                  ),
+                ),
+              ),
+            ),
+          )
+          .toList(),
+    );
+  }
+
   Widget _buildOpponentStatus(
     BuildContext context,
     BattleOrganism organism,
@@ -1999,8 +2074,8 @@ class _BattleScreenContentState extends State<BattleScreenContent>
       padding: EdgeInsets.all(isNarrow ? 5 : 8),
       decoration: BoxDecoration(
         color: barColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.black, width: 2),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white10, width: 1.5),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.5),
@@ -2035,7 +2110,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           _buildOpponentTeamIndicator(context, bm),
           const SizedBox(height: 4),
           ClipRRect(
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(16),
             child: TweenAnimationBuilder<double>(
               duration: const Duration(milliseconds: 1200),
               curve: Curves.easeInOut,
@@ -2096,7 +2171,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                           ),
                           decoration: BoxDecoration(
                             color: se.color,
-                            borderRadius: BorderRadius.circular(4),
+                            borderRadius: BorderRadius.circular(16),
                           ),
                           child: Text(
                             se.name.toUpperCase(),
@@ -2150,16 +2225,23 @@ class _BattleScreenContentState extends State<BattleScreenContent>
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Flexible(
-            child: GestureDetector(
-              onTap: () async {
-                _isDetailsSheetOpen = true;
-                await BattleDetailsSheet.show(context, organism, false);
-                _isDetailsSheetOpen = false;
-              },
-              child: statusBox,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                GestureDetector(
+                  onTap: () async {
+                    _isDetailsSheetOpen = true;
+                    await BattleDetailsSheet.show(context, organism, false);
+                    _isDetailsSheetOpen = false;
+                  },
+                  child: statusBox,
+                ),
+                const SizedBox(width: 4),
+                _buildTypeIconColumn(organism.types, bm.currentState),
+              ],
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 4),
           CompositedTransformTarget(
             link: _opponentLink,
             child: AnimatedSwitcher(
@@ -2248,8 +2330,8 @@ class _BattleScreenContentState extends State<BattleScreenContent>
       padding: EdgeInsets.all(isNarrow ? 5 : 8),
       decoration: BoxDecoration(
         color: barColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.black, width: 2),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white10, width: 1.5),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.5),
@@ -2283,7 +2365,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           _buildPlayerTeamIndicator(context, bm),
           const SizedBox(height: 4),
           ClipRRect(
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(16),
             child: TweenAnimationBuilder<double>(
               duration: const Duration(milliseconds: 1200),
               curve: Curves.easeInOut,
@@ -2343,7 +2425,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                           ),
                           decoration: BoxDecoration(
                             color: se.color,
-                            borderRadius: BorderRadius.circular(4),
+                            borderRadius: BorderRadius.circular(16),
                           ),
                           child: Text(
                             se.name.toUpperCase(),
@@ -2453,15 +2535,22 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               ),
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 4),
           Flexible(
-            child: GestureDetector(
-              onTap: () async {
-                _isDetailsSheetOpen = true;
-                await BattleDetailsSheet.show(context, organism, true);
-                _isDetailsSheetOpen = false;
-              },
-              child: statusBox,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildTypeIconColumn(organism.types, bm.currentState),
+                const SizedBox(width: 4),
+                GestureDetector(
+                  onTap: () async {
+                    _isDetailsSheetOpen = true;
+                    await BattleDetailsSheet.show(context, organism, true);
+                    _isDetailsSheetOpen = false;
+                  },
+                  child: statusBox,
+                ),
+              ],
             ),
           ),
         ],
@@ -2477,7 +2566,10 @@ class _BattleScreenContentState extends State<BattleScreenContent>
   }) {
     return GestureDetector(
       onTap: () {
-        final battleManager = Provider.of<BattleManager>(context, listen: false);
+        final battleManager = Provider.of<BattleManager>(
+          context,
+          listen: false,
+        );
         _showBattleLog(context, battleManager);
       },
       onLongPress: () => setState(() => _isFastMode = true),
@@ -2629,7 +2721,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                 decoration: BoxDecoration(
                   color: move.category.color,
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: Text(
                   move.category.name.toUpperCase(),
@@ -2705,7 +2797,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.black, width: 2),
+        border: Border.all(color: Colors.white10, width: 1.5),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(
@@ -2744,7 +2836,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                   backgroundColor: _getBiomeThemeColor(),
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(16),
                     side: const BorderSide(color: Colors.white, width: 2),
                   ),
                   elevation: 4,
@@ -2897,10 +2989,22 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                                           fontFamily: 'PressStart2P',
                                           fontWeight: FontWeight.bold,
                                           shadows: const [
-                                            Shadow(color: Colors.black, offset: Offset(-1, -1)),
-                                            Shadow(color: Colors.black, offset: Offset(1, -1)),
-                                            Shadow(color: Colors.black, offset: Offset(1, 1)),
-                                            Shadow(color: Colors.black, offset: Offset(-1, 1)),
+                                            Shadow(
+                                              color: Colors.black,
+                                              offset: Offset(-1, -1),
+                                            ),
+                                            Shadow(
+                                              color: Colors.black,
+                                              offset: Offset(1, -1),
+                                            ),
+                                            Shadow(
+                                              color: Colors.black,
+                                              offset: Offset(1, 1),
+                                            ),
+                                            Shadow(
+                                              color: Colors.black,
+                                              offset: Offset(-1, 1),
+                                            ),
                                           ],
                                         ),
                                       ),
@@ -2919,8 +3023,9 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                                           ),
                                           decoration: BoxDecoration(
                                             color: move.category.color,
-                                            borderRadius:
-                                                BorderRadius.circular(3),
+                                            borderRadius: BorderRadius.circular(
+                                              3,
+                                            ),
                                           ),
                                           child: Text(
                                             categoryText.substring(0, 4),
@@ -2929,10 +3034,22 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                                               fontFamily: 'PressStart2P',
                                               color: Colors.white,
                                               shadows: [
-                                                Shadow(color: Colors.black, offset: Offset(-1, -1)),
-                                                Shadow(color: Colors.black, offset: Offset(1, -1)),
-                                                Shadow(color: Colors.black, offset: Offset(1, 1)),
-                                                Shadow(color: Colors.black, offset: Offset(-1, 1)),
+                                                Shadow(
+                                                  color: Colors.black,
+                                                  offset: Offset(-1, -1),
+                                                ),
+                                                Shadow(
+                                                  color: Colors.black,
+                                                  offset: Offset(1, -1),
+                                                ),
+                                                Shadow(
+                                                  color: Colors.black,
+                                                  offset: Offset(1, 1),
+                                                ),
+                                                Shadow(
+                                                  color: Colors.black,
+                                                  offset: Offset(-1, 1),
+                                                ),
                                               ],
                                             ),
                                           ),
@@ -2944,18 +3061,32 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                                           style: TextStyle(
                                             fontSize: isNarrow ? 7 : 8,
                                             fontFamily: 'PressStart2P',
-                                            color: ((battleManager
-                                                        .playerOrganism
-                                                        .moveStamina[move.name] ??
-                                                    0) >
-                                                0)
+                                            color:
+                                                ((battleManager
+                                                            .playerOrganism
+                                                            .moveStamina[move
+                                                            .name] ??
+                                                        0) >
+                                                    0)
                                                 ? Colors.white
                                                 : Colors.redAccent,
                                             shadows: const [
-                                              Shadow(color: Colors.black, offset: Offset(-1, -1)),
-                                              Shadow(color: Colors.black, offset: Offset(1, -1)),
-                                              Shadow(color: Colors.black, offset: Offset(1, 1)),
-                                              Shadow(color: Colors.black, offset: Offset(-1, 1)),
+                                              Shadow(
+                                                color: Colors.black,
+                                                offset: Offset(-1, -1),
+                                              ),
+                                              Shadow(
+                                                color: Colors.black,
+                                                offset: Offset(1, -1),
+                                              ),
+                                              Shadow(
+                                                color: Colors.black,
+                                                offset: Offset(1, 1),
+                                              ),
+                                              Shadow(
+                                                color: Colors.black,
+                                                offset: Offset(-1, 1),
+                                              ),
                                             ],
                                           ),
                                         ),
@@ -2975,9 +3106,10 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                                               vertical: 1,
                                             ),
                                             decoration: BoxDecoration(
-                                              color: (effectivenessText
-                                                          .toLowerCase()
-                                                          .contains('super'))
+                                              color:
+                                                  (effectivenessText
+                                                      .toLowerCase()
+                                                      .contains('super'))
                                                   ? Colors.yellow.shade800
                                                   : Colors.grey.shade700,
                                               borderRadius:
@@ -2995,10 +3127,22 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                                                 color: Colors.white,
                                                 fontWeight: FontWeight.bold,
                                                 shadows: [
-                                                  Shadow(color: Colors.black, offset: Offset(-1, -1)),
-                                                  Shadow(color: Colors.black, offset: Offset(1, -1)),
-                                                  Shadow(color: Colors.black, offset: Offset(1, 1)),
-                                                  Shadow(color: Colors.black, offset: Offset(-1, 1)),
+                                                  Shadow(
+                                                    color: Colors.black,
+                                                    offset: Offset(-1, -1),
+                                                  ),
+                                                  Shadow(
+                                                    color: Colors.black,
+                                                    offset: Offset(1, -1),
+                                                  ),
+                                                  Shadow(
+                                                    color: Colors.black,
+                                                    offset: Offset(1, 1),
+                                                  ),
+                                                  Shadow(
+                                                    color: Colors.black,
+                                                    offset: Offset(-1, 1),
+                                                  ),
                                                 ],
                                               ),
                                             ),
@@ -3045,13 +3189,15 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                     if (isCapableOfPrismorph)
                       Expanded(
                         child: ElevatedButton.icon(
-                          icon: const Text(
-                            '💎',
-                            style: TextStyle(fontSize: 16),
+                          icon: Image.asset(
+                            p.organism.teraType!.iconPath,
+                            width: 24,
+                            height: 24,
+                            fit: BoxFit.contain,
                           ),
                           label: Text(
                             p.isPrismorphed
-                                ? 'PRISMORPH [${p.organism.teraType?.name ?? '?'}]'
+                                ? 'PRISMORPHED [${p.organism.teraType?.name.toUpperCase() ?? '?'}]'
                                 : (teamPrismorphUsed
                                       ? 'PRISMORPH USED'
                                       : 'PRISMORPH'),
@@ -3064,25 +3210,20 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                               ? () => bm.activatePrismorph(isPlayer: true)
                               : null,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: p.isPrismorphed
-                                ? const Color(0xFF7B00D4)
-                                : const Color(0xFF4A0080),
-                            disabledBackgroundColor:
-                                (teamPrismorphUsed || participantPrismorphed)
+                            backgroundColor:
+                                p.isPrismorphed || teamPrismorphUsed
                                 ? Colors.grey[800]
-                                : const Color(
-                                    0xFF4A0080,
-                                  ).withValues(alpha: 0.5),
+                                : p.organism.teraType!.color,
                             foregroundColor: Colors.white,
-                            disabledForegroundColor: Colors.white38,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            elevation: canEnablePrismorph ? 8 : 0,
+                            shadowColor: p.organism.teraType?.color,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(12),
                               side: BorderSide(
-                                color: p.isPrismorphed
-                                    ? Colors.purpleAccent
-                                    : (canEnablePrismorph
-                                          ? Colors.purple.withValues(alpha: 0.5)
-                                          : Colors.transparent),
+                                color: canEnablePrismorph
+                                    ? Colors.white.withValues(alpha: 0.6)
+                                    : Colors.white10,
                                 width: 2,
                               ),
                             ),
@@ -3515,7 +3656,6 @@ class _BattleScreenContentState extends State<BattleScreenContent>
         Map<String, dynamic> xpResults =
             _cumulativeXPResults; // Use cumulative results
         if (!widget.isRogueMode) {
-
           if (battleManager.result == BattleResult.win ||
               battleManager.result == BattleResult.capture) {
             // XP is now awarded via onOpponentFainted callback
@@ -3856,7 +3996,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
         decoration: BoxDecoration(
           color: Colors.black87,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.black, width: 2),
+          border: Border.all(color: Colors.white10, width: 1.5),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -3891,7 +4031,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                       horizontal: 16,
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(16),
                       side: const BorderSide(color: Colors.white, width: 2),
                     ),
                   ),
@@ -4032,7 +4172,7 @@ class _CaptureReplaceDialog extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.cyan.shade900.withValues(alpha: 0.4),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.cyanAccent, width: 2),
       ),
       child: Column(
@@ -4080,7 +4220,7 @@ class _CaptureReplaceDialog extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 4),
       color: Colors.black26,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         side: const BorderSide(color: Colors.white10),
       ),
       child: InkWell(
@@ -4486,7 +4626,7 @@ class _BattleResultDialogState extends State<_BattleResultDialog> {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: Colors.amber,
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Text(
                   'MVP',
@@ -4697,7 +4837,7 @@ class _BattleResultDialogState extends State<_BattleResultDialog> {
               ),
               padding: const EdgeInsets.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
               ),
             ),
           ),
@@ -4732,7 +4872,7 @@ class _BattleResultDialogState extends State<_BattleResultDialog> {
                       : Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(16),
                   ),
                 ),
                 child: const Text(
@@ -5011,11 +5151,11 @@ class _BattleResultDialogState extends State<_BattleResultDialog> {
                   Text(
                     org.name.toUpperCase(),
                     style: GoogleFonts.orbitron(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
                     ),
+                  ),
                   const SizedBox(height: 4),
                   Text(
                     side.toUpperCase(),
@@ -5025,30 +5165,30 @@ class _BattleResultDialogState extends State<_BattleResultDialog> {
                       color: Colors.amber,
                     ),
                   ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        _buildMiniStat(
-                          Icons.flash_on,
-                          '${stats.totalDamageDealt}',
-                          Colors.redAccent,
-                        ),
-                        const SizedBox(width: 12),
-                        _buildMiniStat(
-                          Icons.close,
-                          '${stats.totalKills}',
-                          Colors.cyan,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      _buildMiniStat(
+                        Icons.flash_on,
+                        '${stats.totalDamageDealt}',
+                        Colors.redAccent,
+                      ),
+                      const SizedBox(width: 12),
+                      _buildMiniStat(
+                        Icons.close,
+                        '${stats.totalKills}',
+                        Colors.cyan,
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-      );
-    }
+      ),
+    );
+  }
 
   Widget _buildMiniStat(IconData icon, String value, Color color) {
     return Row(
@@ -5204,7 +5344,7 @@ class _BattleResultDialogState extends State<_BattleResultDialog> {
                   ),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: Colors.white12),
                   ),
                   child: Text(
@@ -5301,7 +5441,7 @@ class _BattleResultDialogState extends State<_BattleResultDialog> {
       height: 64,
       decoration: BoxDecoration(
         color: Colors.black26,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white10),
       ),
       child: Center(
@@ -5661,9 +5801,9 @@ class _BattleSpriteState extends State<_BattleSprite>
     if (tileId == null) {
       if (mounted) {
         if (widget.biomeName == 'Battle Arena') {
-          setState(() => _platformImagePath = 'assets/platforms/Ceramic.webp');
-        } else {
           setState(() => _platformImagePath = 'assets/platforms/default.png');
+        } else {
+          setState(() => _platformImagePath = 'assets/platforms/default1.png');
         }
       }
       return;
@@ -5748,7 +5888,7 @@ class _BattleSpriteState extends State<_BattleSprite>
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
                 color: Colors.black.withValues(alpha: 0.85),
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: Colors.amber, width: 1.5),
                 boxShadow: [
                   BoxShadow(
@@ -6187,7 +6327,8 @@ class _ScreenShieldOverlayState extends State<_ScreenShieldOverlay>
     return AnimatedBuilder(
       animation: _pulseController,
       builder: (context, child) {
-        final double pulse = 0.55 + 0.45 * math.sin(_pulseController.value * math.pi);
+        final double pulse =
+            0.55 + 0.45 * math.sin(_pulseController.value * math.pi);
         final List<Widget> layers = [];
 
         for (int i = 0; i < activeScreens.length; i++) {
@@ -6387,8 +6528,8 @@ class _AbilityPopUpState extends State<_AbilityPopUp>
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
               color: Colors.black.withValues(alpha: 0.5),
-              border: Border.all(color: Colors.black, width: 2),
-              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white10, width: 1.5),
+              borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -6659,8 +6800,11 @@ class _PartyScreenDialog extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFF1A2A1A),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.4), width: 2),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.black.withValues(alpha: 0.4),
+          width: 2,
+        ),
       ),
       padding: const EdgeInsets.fromLTRB(12, 16, 12, 8),
       child: Column(
@@ -6966,8 +7110,8 @@ class _PartyScreenDialog extends StatelessWidget {
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: const Color(0xFF1A1A1A),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.black, width: 2),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white10, width: 1.5),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,

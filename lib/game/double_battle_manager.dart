@@ -114,6 +114,26 @@ class DoubleBattleManager extends ChangeNotifier {
 
   bool playerPrismorphUsed = false;
   bool opponentPrismorphUsed = false;
+
+  // Field Effects (Turns)
+  int playerReflectTurns = 0;
+  int playerLightScreenTurns = 0;
+  int playerSafeguardTurns = 0;
+  int playerTailwindTurns = 0;
+  int playerAuroraVeilTurns = 0;
+
+  int opponentReflectTurns = 0;
+  int opponentLightScreenTurns = 0;
+  int opponentSafeguardTurns = 0;
+  int opponentTailwindTurns = 0;
+  int opponentAuroraVeilTurns = 0;
+
+  int trickRoomTurns = 0;
+  int gravityTurns = 0;
+  int terrainTurnsLeft = 0;
+  TerrainEffect currentTerrain = const TerrainEffect(terrain: Terrain.none);
+  WeatherEffect currentWeather = const WeatherEffect(weather: Weather.none);
+
   // Pending gimmick notification (read by UI listener, cleared after handling)
   String? pendingGimmickType;
   BattleOrganism? pendingGimmickTarget;
@@ -1506,6 +1526,78 @@ class DoubleBattleManager extends ChangeNotifier {
         }
       }
     }
+
+    // --- Field Effect Turn Decrements ---
+    if (playerReflectTurns > 0) {
+      playerReflectTurns--;
+      if (playerReflectTurns == 0) addLog('Your Reflect wore off!');
+    }
+    if (playerLightScreenTurns > 0) {
+      playerLightScreenTurns--;
+      if (playerLightScreenTurns == 0) addLog('Your Light Screen wore off!');
+    }
+    if (playerSafeguardTurns > 0) {
+      playerSafeguardTurns--;
+      if (playerSafeguardTurns == 0) addLog('Your Safeguard wore off!');
+    }
+    if (playerTailwindTurns > 0) {
+      playerTailwindTurns--;
+      if (playerTailwindTurns == 0) addLog('Your Tailwind petered out!');
+    }
+    if (playerAuroraVeilTurns > 0) {
+      playerAuroraVeilTurns--;
+      if (playerAuroraVeilTurns == 0) addLog('Your Aurora Veil wore off!');
+    }
+
+    if (opponentReflectTurns > 0) {
+      opponentReflectTurns--;
+      if (opponentReflectTurns == 0) addLog('Foe\'s Reflect wore off!');
+    }
+    if (opponentLightScreenTurns > 0) {
+      opponentLightScreenTurns--;
+      if (opponentLightScreenTurns == 0) addLog('Foe\'s Light Screen wore off!');
+    }
+    if (opponentSafeguardTurns > 0) {
+      opponentSafeguardTurns--;
+      if (opponentSafeguardTurns == 0) addLog('Foe\'s Safeguard wore off!');
+    }
+    if (opponentTailwindTurns > 0) {
+      opponentTailwindTurns--;
+      if (opponentTailwindTurns == 0) addLog('Foe\'s Tailwind petered out!');
+    }
+    if (opponentAuroraVeilTurns > 0) {
+      opponentAuroraVeilTurns--;
+      if (opponentAuroraVeilTurns == 0) addLog('Foe\'s Aurora Veil wore off!');
+    }
+
+    if (trickRoomTurns > 0) {
+      trickRoomTurns--;
+      if (trickRoomTurns == 0) addLog('The dimensions returned to normal!');
+    }
+    if (gravityTurns > 0) {
+      gravityTurns--;
+      if (gravityTurns == 0) addLog('Gravity returned to normal!');
+    }
+    if (terrainTurnsLeft > 0) {
+      terrainTurnsLeft--;
+      if (terrainTurnsLeft == 0) {
+        addLog('The ${currentTerrain.terrain.name} terrain subsided.');
+        currentTerrain = const TerrainEffect(terrain: Terrain.none);
+      }
+    }
+    if (currentWeather.duration > 0 && currentWeather.weather != Weather.none) {
+      final newDuration = currentWeather.duration - 1;
+      if (newDuration <= 0) {
+        addLog(currentWeather.endMessage);
+        currentWeather = const WeatherEffect(weather: Weather.none);
+      } else {
+        currentWeather = WeatherEffect(
+          weather: currentWeather.weather,
+          duration: newDuration,
+        );
+      }
+    }
+
     notifyListeners();
   }
 

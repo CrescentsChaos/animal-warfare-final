@@ -555,14 +555,16 @@ class AnidexDetailsSheet {
           1000, // Reasonable max for BST display
           AppColors.highlightColor,
           Icons.assessment,
-          currentVal: showScaledStats ? (capturedOrg != null ? (
-            capturedOrg.maxHealth +
-            capturedOrg.effectiveAttack +
-            capturedOrg.effectiveDefense +
-            capturedOrg.effectivePower +
-            capturedOrg.effectiveResistance +
-            capturedOrg.effectiveSpeed
-          ) : null) : null,
+          currentVal: showScaledStats
+              ? (capturedOrg != null
+                    ? (capturedOrg.maxHealth +
+                          capturedOrg.effectiveAttack +
+                          capturedOrg.effectiveDefense +
+                          capturedOrg.effectivePower +
+                          capturedOrg.effectiveResistance +
+                          capturedOrg.effectiveSpeed)
+                    : null)
+              : null,
         ),
       ],
     );
@@ -902,7 +904,8 @@ class AnidexDetailsSheet {
                                       move.type.iconPath,
                                       width: 14,
                                       height: 14,
-                                      errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                                      errorBuilder: (_, _, _) =>
+                                          const SizedBox.shrink(),
                                     ),
                                     const SizedBox(width: 4),
                                     Text(
@@ -989,7 +992,7 @@ class AnidexDetailsSheet {
                         move.type.iconPath,
                         width: 16,
                         height: 16,
-                        errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                        errorBuilder: (_, _, _) => const SizedBox.shrink(),
                       ),
                       const SizedBox(width: 6),
                       Text(

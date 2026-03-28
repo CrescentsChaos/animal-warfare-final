@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:animal_warfare/game/battle_manager.dart';
-import 'package:animal_warfare/game/battle_models.dart';
 import 'package:animal_warfare/models/captured_organism.dart';
 import 'package:animal_warfare/models/organism.dart';
 import 'package:animal_warfare/models/move.dart';
@@ -23,8 +22,16 @@ void main() {
         type: ElementalType.aura,
         description: 'Sleep for 2 turns to heal.',
         effects: [
-          MoveEffect(type: MoveEffectType.heal, target: 'self', value: 100), // Heals 100%
-          MoveEffect(type: MoveEffectType.statusSleep, target: 'self', value: 0),
+          MoveEffect(
+            type: MoveEffectType.heal,
+            target: 'self',
+            value: 100,
+          ), // Heals 100%
+          MoveEffect(
+            type: MoveEffectType.statusSleep,
+            target: 'self',
+            value: 0,
+          ),
         ],
       ),
     );
@@ -38,7 +45,7 @@ void main() {
         effects: [MoveEffect(type: MoveEffectType.statusPoison)],
       ),
     );
-     Move.addTestMove(
+    Move.addTestMove(
       const Move(
         name: 'Tackle',
         baseDamage: 40,
@@ -102,13 +109,28 @@ void main() {
       manager.player.health = 50;
 
       // Use Rest
-      await manager.testExecuteTurn(manager.player, manager.opponent, Move.findByName('Rest')!);
+      await manager.testExecuteTurn(
+        manager.player,
+        manager.opponent,
+        Move.findByName('Rest')!,
+      );
 
       expect(manager.player.health, manager.player.maxHealth);
-      expect(manager.player.statusEffects.any((se) => se.type == StatusEffectType.sleep), true);
-      
-      final sleepEffect = manager.player.statusEffects.firstWhere((se) => se.type == StatusEffectType.sleep);
-      expect(sleepEffect.duration, 2, reason: 'Rest sleep duration must be exactly 2 turns');
+      expect(
+        manager.player.statusEffects.any(
+          (se) => se.type == StatusEffectType.sleep,
+        ),
+        true,
+      );
+
+      final sleepEffect = manager.player.statusEffects.firstWhere(
+        (se) => se.type == StatusEffectType.sleep,
+      );
+      expect(
+        sleepEffect.duration,
+        2,
+        reason: 'Rest sleep duration must be exactly 2 turns',
+      );
     });
 
     test('Poison damage should scale each turn (Badly Poisoned)', () async {
@@ -122,32 +144,54 @@ void main() {
       final int maxHp = manager.opponent.maxHealth;
 
       // Poison the opponent
-      await manager.testExecuteTurn(manager.player, manager.opponent, Move.findByName('Toxic')!);
-      expect(manager.opponent.statusEffects.any((se) => se.type == StatusEffectType.poison), true);
-      expect(manager.opponent.poisonTurnCount, 0, reason: 'poisonTurnCount should start at 0');
+      await manager.testExecuteTurn(
+        manager.player,
+        manager.opponent,
+        Move.findByName('Toxic')!,
+      );
+      expect(
+        manager.opponent.statusEffects.any(
+          (se) => se.type == StatusEffectType.poison,
+        ),
+        true,
+      );
+      expect(
+        manager.opponent.poisonTurnCount,
+        0,
+        reason: 'poisonTurnCount should start at 0',
+      );
 
       // End turn 1: damage = maxHp * 1 / 16
-      await manager.testApplyTurnEffects(manager.opponent); 
+      await manager.testApplyTurnEffects(manager.opponent);
       expect(manager.opponent.poisonTurnCount, 1);
       final turn1Damage = maxHp - manager.opponent.health;
-      expect(turn1Damage, (maxHp * 1 / 16).round().clamp(1, 9999), 
-          reason: 'Turn 1 damage should be 1/16 of max HP');
+      expect(
+        turn1Damage,
+        (maxHp * 1 / 16).round().clamp(1, 9999),
+        reason: 'Turn 1 damage should be 1/16 of max HP',
+      );
 
       // End turn 2: additional damage = maxHp * 2 / 16
       final healthAfterTurn1 = manager.opponent.health;
       await manager.testApplyTurnEffects(manager.opponent);
       expect(manager.opponent.poisonTurnCount, 2);
       final turn2Damage = healthAfterTurn1 - manager.opponent.health;
-      expect(turn2Damage, (maxHp * 2 / 16).round().clamp(1, 9999), 
-          reason: 'Turn 2 damage should be 2/16 of max HP');
+      expect(
+        turn2Damage,
+        (maxHp * 2 / 16).round().clamp(1, 9999),
+        reason: 'Turn 2 damage should be 2/16 of max HP',
+      );
 
       // End turn 3: additional damage = maxHp * 3 / 16
       final healthAfterTurn2 = manager.opponent.health;
       await manager.testApplyTurnEffects(manager.opponent);
       expect(manager.opponent.poisonTurnCount, 3);
       final turn3Damage = healthAfterTurn2 - manager.opponent.health;
-      expect(turn3Damage, (maxHp * 3 / 16).round().clamp(1, 9999), 
-          reason: 'Turn 3 damage should be 3/16 of max HP');
+      expect(
+        turn3Damage,
+        (maxHp * 3 / 16).round().clamp(1, 9999),
+        reason: 'Turn 3 damage should be 3/16 of max HP',
+      );
     });
 
     test('PoisonTurnCount should reset when status is cleared', () async {
@@ -156,14 +200,20 @@ void main() {
       final defender = createCaptured(base);
 
       final manager = BattleManager(attacker, defender, isTesting: true);
-      
+
       // Simulate poison and scaling
-      manager.opponent.addStatusEffect(const StatusEffect(type: StatusEffectType.poison));
+      manager.opponent.addStatusEffect(
+        const StatusEffect(type: StatusEffectType.poison),
+      );
       manager.opponent.poisonTurnCount = 5;
 
       // Clear status
       manager.opponent.clearStatusEffects();
-      expect(manager.opponent.poisonTurnCount, 0, reason: 'poisonTurnCount must reset when poison is cleared');
+      expect(
+        manager.opponent.poisonTurnCount,
+        0,
+        reason: 'poisonTurnCount must reset when poison is cleared',
+      );
     });
 
     test('PoisonTurnCount should reset when organism switches out', () async {
@@ -172,14 +222,20 @@ void main() {
       final defender = createCaptured(base);
 
       final manager = BattleManager(attacker, defender, isTesting: true);
-      
+
       // Simulate poison and scaling
-      manager.player.addStatusEffect(const StatusEffect(type: StatusEffectType.poison));
+      manager.player.addStatusEffect(
+        const StatusEffect(type: StatusEffectType.poison),
+      );
       manager.player.poisonTurnCount = 3;
 
       // Reset battle state (happens during switch out)
       manager.player.resetBattleState();
-      expect(manager.player.poisonTurnCount, 0, reason: 'poisonTurnCount must reset when switching out');
+      expect(
+        manager.player.poisonTurnCount,
+        0,
+        reason: 'poisonTurnCount must reset when switching out',
+      );
     });
   });
 }

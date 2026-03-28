@@ -1134,8 +1134,8 @@ class _AnimalCard extends StatelessWidget {
                           );
                           return Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 5,
-                              vertical: 2,
+                              horizontal: 6,
+                              vertical: 3,
                             ),
                             decoration: BoxDecoration(
                               color: _getAnimalTypeColor(
@@ -1143,13 +1143,26 @@ class _AnimalCard extends StatelessWidget {
                               ).withValues(alpha: 0.8),
                               borderRadius: BorderRadius.circular(4),
                             ),
-                            child: Text(
-                              cat.trim().toUpperCase(),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 6,
-                                fontFamily: 'PressStart2P',
-                              ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Image.asset(
+                                  type.iconPath,
+                                  width: 10,
+                                  height: 10,
+                                  errorBuilder: (_, _, _) =>
+                                      const SizedBox.shrink(),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  cat.trim().toUpperCase(),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 6,
+                                    fontFamily: 'PressStart2P',
+                                  ),
+                                ),
+                              ],
                             ),
                           );
                         }).toList(),

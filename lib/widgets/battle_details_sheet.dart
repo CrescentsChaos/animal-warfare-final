@@ -11,6 +11,10 @@ import 'package:animal_warfare/widgets/anidex_details_sheet.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:animal_warfare/widgets/type_matchup_sheet.dart';
 import 'package:animal_warfare/widgets/item_icon.dart';
+import 'package:animal_warfare/game/battle_manager.dart';
+import 'package:animal_warfare/game/double_battle_manager.dart';
+import 'package:animal_warfare/models/weather.dart';
+import 'package:animal_warfare/models/terrain.dart';
 
 class BattleDetailsSheet extends StatelessWidget {
   final BattleOrganism bo;
@@ -139,7 +143,7 @@ class BattleDetailsSheet extends StatelessWidget {
                     // Status Effects & Battle State
                     _buildSectionHeader('CONDITION', themeColor),
                     const SizedBox(height: 16),
-                    _buildBattleStatus(themeColor),
+                    _buildBattleStatus(context, themeColor),
 
                     const SizedBox(height: 32),
 
@@ -314,8 +318,7 @@ class BattleDetailsSheet extends StatelessWidget {
               if (discovered) ...[
                 const SizedBox(height: 12),
                 GestureDetector(
-                  onTap: () =>
-                      TypeMatchupSheet.show(context, bo.types),
+                  onTap: () => TypeMatchupSheet.show(context, bo.types),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
@@ -374,7 +377,7 @@ class BattleDetailsSheet extends StatelessWidget {
             type.iconPath,
             width: 16,
             height: 16,
-            errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+            errorBuilder: (_, _, _) => const SizedBox.shrink(),
           ),
           const SizedBox(width: 8),
           Text(
@@ -559,8 +562,96 @@ class BattleDetailsSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildBattleStatus(Color themeColor) {
+  Widget _buildBattleStatus(BuildContext context, Color themeColor) {
     final hpRatio = bo.maxHealth > 0 ? bo.health / bo.maxHealth : 0.0;
+
+    // Collect Field Effects
+    
+    // Attempt to get manager from context
+    BattleManager? bm;
+    DoubleBattleManager? dbm;
+    try {
+      bm = context.read<BattleManager>();
+    } catch (_) {}
+    try {
+      dbm = context.read<DoubleBattleManager>();
+    } catch (_) {}
+
+    final List<Map<String, dynamic>> activeField = [];
+
+    if (bm != null) {
+      if (bm.currentWeather.weather != Weather.none) {
+        activeField.add({
+          'name': bm.currentWeather.weather.name.toUpperCase(),
+          'turns': 0,
+          'icon': bm.currentWeather.weather.iconPath,
+          'color': Colors.blueAccent,
+        });
+      }
+      if (bm.currentTerrain.terrain != Terrain.none) {
+        activeField.add({
+          'name': bm.currentTerrain.terrain.name.toUpperCase(),
+          'turns': 0,
+          'icon': bm.currentTerrain.terrain.iconPath,
+          'color': Colors.greenAccent,
+        });
+      }
+      
+      if (bm.trickRoomTurns > 0) {
+        activeField.add({'name': 'TRICK ROOM', 'turns': bm.trickRoomTurns, 'icon': 'assets/icon/trick_room.png', 'color': Colors.purpleAccent});
+      }
+      
+      final isPlayerSide = isPlayer;
+      if (isPlayerSide) {
+        if (bm.playerReflectTurns > 0) activeField.add({'name': 'REFLECT', 'turns': bm.playerReflectTurns, 'icon': 'assets/icon/reflect.png', 'color': Colors.greenAccent});
+        if (bm.playerLightScreenTurns > 0) activeField.add({'name': 'LIGHT SCREEN', 'turns': bm.playerLightScreenTurns, 'icon': 'assets/icon/light_screen.png', 'color': Colors.greenAccent});
+        if (bm.playerSafeguardTurns > 0) activeField.add({'name': 'SAFEGUARD', 'turns': bm.playerSafeguardTurns, 'icon': 'assets/icon/safeguard.png', 'color': Colors.greenAccent});
+        if (bm.playerTailwindTurns > 0) activeField.add({'name': 'TAILWIND', 'turns': bm.playerTailwindTurns, 'icon': 'assets/icon/tailwind.png', 'color': Colors.greenAccent});
+        if (bm.playerAuroraVeilTurns > 0) activeField.add({'name': 'AURORA VEIL', 'turns': bm.playerAuroraVeilTurns, 'icon': 'assets/icon/aurora_veil.png', 'color': Colors.greenAccent});
+      } else {
+        if (bm.opponentReflectTurns > 0) activeField.add({'name': 'REFLECT', 'turns': bm.opponentReflectTurns, 'icon': 'assets/icon/reflect.png', 'color': Colors.redAccent});
+        if (bm.opponentLightScreenTurns > 0) activeField.add({'name': 'LIGHT SCREEN', 'turns': bm.opponentLightScreenTurns, 'icon': 'assets/icon/light_screen.png', 'color': Colors.redAccent});
+        if (bm.opponentSafeguardTurns > 0) activeField.add({'name': 'SAFEGUARD', 'turns': bm.opponentSafeguardTurns, 'icon': 'assets/icon/safeguard.png', 'color': Colors.redAccent});
+        if (bm.opponentTailwindTurns > 0) activeField.add({'name': 'TAILWIND', 'turns': bm.opponentTailwindTurns, 'icon': 'assets/icon/tailwind.png', 'color': Colors.redAccent});
+        if (bm.opponentAuroraVeilTurns > 0) activeField.add({'name': 'AURORA VEIL', 'turns': bm.opponentAuroraVeilTurns, 'icon': 'assets/icon/aurora_veil.png', 'color': Colors.redAccent});
+      }
+    } else if (dbm != null) {
+      if (dbm.currentWeather.weather != Weather.none) {
+        activeField.add({
+          'name': dbm.currentWeather.weather.name.toUpperCase(),
+          'turns': 0,
+          'icon': dbm.currentWeather.weather.iconPath,
+          'color': Colors.blueAccent,
+        });
+      }
+      if (dbm.currentTerrain.terrain != Terrain.none) {
+        activeField.add({
+          'name': dbm.currentTerrain.terrain.name.toUpperCase(),
+          'turns': 0,
+          'icon': dbm.currentTerrain.terrain.iconPath,
+          'color': Colors.greenAccent,
+        });
+      }
+      
+      if (dbm.trickRoomTurns > 0) {
+        activeField.add({'name': 'TRICK ROOM', 'turns': dbm.trickRoomTurns, 'icon': 'assets/icon/trick_room.png', 'color': Colors.purpleAccent});
+      }
+      
+      final isPlayerSide = isPlayer;
+      if (isPlayerSide) {
+        if (dbm.playerReflectTurns > 0) activeField.add({'name': 'REFLECT', 'turns': dbm.playerReflectTurns, 'icon': 'assets/icon/reflect.png', 'color': Colors.greenAccent});
+        if (dbm.playerLightScreenTurns > 0) activeField.add({'name': 'LIGHT SCREEN', 'turns': dbm.playerLightScreenTurns, 'icon': 'assets/icon/light_screen.png', 'color': Colors.greenAccent});
+        if (dbm.playerSafeguardTurns > 0) activeField.add({'name': 'SAFEGUARD', 'turns': dbm.playerSafeguardTurns, 'icon': 'assets/icon/safeguard.png', 'color': Colors.greenAccent});
+        if (dbm.playerTailwindTurns > 0) activeField.add({'name': 'TAILWIND', 'turns': dbm.playerTailwindTurns, 'icon': 'assets/icon/tailwind.png', 'color': Colors.greenAccent});
+        if (dbm.playerAuroraVeilTurns > 0) activeField.add({'name': 'AURORA VEIL', 'turns': dbm.playerAuroraVeilTurns, 'icon': 'assets/icon/aurora_veil.png', 'color': Colors.greenAccent});
+      } else {
+        if (dbm.opponentReflectTurns > 0) activeField.add({'name': 'REFLECT', 'turns': dbm.opponentReflectTurns, 'icon': 'assets/icon/reflect.png', 'color': Colors.redAccent});
+        if (dbm.opponentLightScreenTurns > 0) activeField.add({'name': 'LIGHT SCREEN', 'turns': dbm.opponentLightScreenTurns, 'icon': 'assets/icon/light_screen.png', 'color': Colors.redAccent});
+        if (dbm.opponentSafeguardTurns > 0) activeField.add({'name': 'SAFEGUARD', 'turns': dbm.opponentSafeguardTurns, 'icon': 'assets/icon/safeguard.png', 'color': Colors.redAccent});
+        if (dbm.opponentTailwindTurns > 0) activeField.add({'name': 'TAILWIND', 'turns': dbm.opponentTailwindTurns, 'icon': 'assets/icon/tailwind.png', 'color': Colors.redAccent});
+        if (dbm.opponentAuroraVeilTurns > 0) activeField.add({'name': 'AURORA VEIL', 'turns': dbm.opponentAuroraVeilTurns, 'icon': 'assets/icon/aurora_veil.png', 'color': Colors.redAccent});
+      }
+    }
 
     return Column(
       children: [
@@ -609,18 +700,7 @@ class BattleDetailsSheet extends StatelessWidget {
         const SizedBox(height: 20),
 
         // Status Effects
-        if (bo.statusEffects.isEmpty)
-          const Center(
-            child: Text(
-              'NO ACTIVE STATUS EFFECTS',
-              style: TextStyle(
-                color: Colors.white10,
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          )
-        else
+        if (bo.statusEffects.isNotEmpty) ...[
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -628,13 +708,74 @@ class BattleDetailsSheet extends StatelessWidget {
                 .map((se) => _buildStatusTag(se))
                 .toList(),
           ),
+          const SizedBox(height: 20),
+        ],
 
-        const SizedBox(height: 20),
+        // Field Status
+        if (activeField.isNotEmpty) ...[
+          const Row(
+            children: [
+              Text(
+                'FIELD STATUS',
+                style: TextStyle(
+                  color: Colors.white54,
+                  fontSize: 9,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: activeField.map((f) => _buildFieldStatusTag(f)).toList(),
+          ),
+          const SizedBox(height: 20),
+        ],
 
-        // Stat Stages (Only for player or if user wants them visible? Usually stages are visible in roguelikes)
-        // For now, let's show stages as "Modifiers" but hide raw resulting numbers for opponent
+        // Stat Stages
         _buildStatModifiers(themeColor),
       ],
+    );
+  }
+
+  Widget _buildFieldStatusTag(Map<String, dynamic> f) {
+    final Color color = f['color'] as Color;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Image.asset(f['icon'], width: 14, height: 14, errorBuilder: (_, __, ___) => const Icon(Icons.help, size: 14, color: Colors.white24)),
+          const SizedBox(width: 8),
+          Text(
+            f['name'],
+            style: TextStyle(
+              color: color,
+              fontSize: 9,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'PressStart2P',
+            ),
+          ),
+          if (f['turns'] > 0) ...[
+            const SizedBox(width: 8),
+            Text(
+              '${f['turns']}T',
+              style: const TextStyle(
+                color: Colors.white38,
+                fontSize: 8,
+                fontFamily: 'PressStart2P',
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 
@@ -859,7 +1000,7 @@ class BattleDetailsSheet extends StatelessWidget {
                     move.type.iconPath,
                     width: 18,
                     height: 18,
-                    errorBuilder: (_, __, ___) => Icon(
+                    errorBuilder: (_, _, _) => Icon(
                       Icons.category,
                       color: _getTypeColor(move.type),
                       size: 16,

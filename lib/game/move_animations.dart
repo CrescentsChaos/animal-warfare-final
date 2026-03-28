@@ -1553,6 +1553,62 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
     final attackerLink = isPlayer ? widget.playerLink : widget.opponentLink;
     final targetLink = isPlayer ? widget.opponentLink : widget.playerLink;
 
+    final moveName = move.name.toLowerCase();
+
+    if (moveName == 'earth power') {
+      return AnimatedBuilder(
+        animation: _progress,
+        builder: (context, _) {
+          return CompositedTransformFollower(
+            link: targetLink,
+            showWhenUnlinked: false,
+            followerAnchor: Alignment.center,
+            targetAnchor: Alignment.center,
+            child: _EarthPowerEffect(
+              progress: _progress.value,
+              isPlayer: isPlayer,
+            ),
+          );
+        },
+      );
+    }
+
+    if (moveName == 'earthquake') {
+      return AnimatedBuilder(
+        animation: _progress,
+        builder: (context, _) {
+          return CompositedTransformFollower(
+            link: targetLink,
+            showWhenUnlinked: false,
+            followerAnchor: Alignment.center,
+            targetAnchor: Alignment.center,
+            child: _EarthquakeEffect(
+              progress: _progress.value,
+              isPlayer: isPlayer,
+            ),
+          );
+        },
+      );
+    }
+
+    if (moveName == 'fissure') {
+      return AnimatedBuilder(
+        animation: _progress,
+        builder: (context, _) {
+          return CompositedTransformFollower(
+            link: targetLink,
+            showWhenUnlinked: false,
+            followerAnchor: Alignment.center,
+            targetAnchor: Alignment.center,
+            child: _FissureEffect(
+              progress: _progress.value,
+              isPlayer: isPlayer,
+            ),
+          );
+        },
+      );
+    }
+
     if (move.animationType == 'blob') {
       final isFire =
           move.type == ElementalType.blaze ||
@@ -2228,6 +2284,7 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
               imagePath: img,
               progress: _progress.value,
               isPlayer: isPlayer,
+              type: move.type,
             ),
           );
         },
@@ -2248,6 +2305,7 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
               imagePath: img,
               progress: _progress.value,
               isPlayer: isPlayer,
+              type: move.type,
             ),
           );
         },
@@ -2267,6 +2325,7 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
           child: _DefaultStatusEffect(
             imagePath: img,
             progress: _progress.value,
+            type: move.type,
           ),
         );
       },
@@ -2275,146 +2334,413 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
 }
 
 // ----------------------------------------------------------------
-// Default Physical Effect — image impact at the target
+// Default Physical Effect — type-specific impact at the target
 // ----------------------------------------------------------------
 class _DefaultPhysicalEffect extends StatelessWidget {
   final String imagePath;
   final double progress;
   final bool isPlayer;
+  final ElementalType type;
 
   const _DefaultPhysicalEffect({
     required this.imagePath,
     required this.progress,
     required this.isPlayer,
+    required this.type,
   });
 
   @override
   Widget build(BuildContext context) {
     const size = 200.0;
     final p = progress.clamp(0.0, 1.0);
+    switch (type) {
+      case ElementalType.basic:
+      case ElementalType.martial:
+      case ElementalType.metal:
+        return _slamImpact(size, p);
+      case ElementalType.aquatic:
+      case ElementalType.toxic:
+      case ElementalType.cryo:
+        return _scatterBurst(size, p);
+      case ElementalType.darkness:
+      case ElementalType.flying:
+      case ElementalType.drake:
+      case ElementalType.arthropod:
+        return _slashMarks(size, p);
+      case ElementalType.earth:
+      case ElementalType.rock:
+        return _groundEruption(size, p);
+      case ElementalType.electric:
+      case ElementalType.sound:
+      case ElementalType.aura:
+        return _multiStrike(size, p);
+      case ElementalType.blaze:
+      case ElementalType.grass:
+      case ElementalType.mystic:
+      case ElementalType.spectral:
+      case ElementalType.holy:
+        return _burstRing(size, p);
+    }
+  }
 
-    // Phase 1: quick scale-up slam (0.0 → 0.4)
-    // Phase 2: hold + fade out (0.4 → 1.0)
-    final scaleP = (p / 0.4).clamp(0.0, 1.0);
-    final scale = 0.3 + scaleP * 0.7;
-    final opacity = p < 0.4 ? 1.0 : (1.0 - ((p - 0.4) / 0.6)).clamp(0.0, 1.0);
-
+  // Elastic bounce slam with shockwave ring
+  Widget _slamImpact(double size, double p) {
+    final scale = Curves.elasticOut.transform((p / 0.3).clamp(0.0, 1.0));
+    final opacity = p < 0.35
+        ? 1.0
+        : (1.0 - ((p - 0.35) / 0.65)).clamp(0.0, 1.0);
+    final shakeX = p < 0.4
+        ? math.sin(p * math.pi * 20) * 6 * (1.0 - p * 2.5)
+        : 0.0;
+    final shakeY = p < 0.4
+        ? math.cos(p * math.pi * 16) * 4 * (1.0 - p * 2.5)
+        : 0.0;
+    final ringP = ((p - 0.15) / 0.5).clamp(0.0, 1.0);
     return SizedBox(
       width: size,
       height: size,
-      child: Opacity(
-        opacity: opacity,
-        child: Transform.scale(
-          scale: scale,
-          child: Image.asset(
-            imagePath,
-            width: size,
-            height: size,
-            fit: BoxFit.contain,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          if (ringP > 0)
+            Opacity(
+              opacity: ((1.0 - ringP) * 0.5).clamp(0.0, 1.0),
+              child: Transform.scale(
+                scale: 0.3 + ringP * 1.5,
+                child: Container(
+                  width: size * 0.7,
+                  height: size * 0.7,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: type.color.withValues(alpha: 0.6),
+                      width: 3,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          Transform.translate(
+            offset: Offset(shakeX, shakeY),
+            child: Opacity(
+              opacity: opacity,
+              child: Transform.scale(
+                scale: scale,
+                child: Image.asset(
+                  imagePath,
+                  width: size,
+                  height: size,
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
           ),
-        ),
+        ],
+      ),
+    );
+  }
+
+  // Center flash + particles scatter radially outward
+  Widget _scatterBurst(double size, double p) {
+    final flashOp = p < 0.25
+        ? 1.0
+        : (1.0 - ((p - 0.25) / 0.25)).clamp(0.0, 1.0);
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Stack(
+        alignment: Alignment.center,
+        clipBehavior: Clip.none,
+        children: [
+          if (p < 0.5)
+            Opacity(
+              opacity: flashOp,
+              child: Transform.scale(
+                scale: 0.5 + (p / 0.25).clamp(0.0, 1.0) * 0.5,
+                child: Image.asset(
+                  imagePath,
+                  width: size * 0.5,
+                  height: size * 0.5,
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+          ...List.generate(8, (i) {
+            final sp = ((p - 0.1) / 0.9).clamp(0.0, 1.0);
+            if (sp <= 0) return const SizedBox.shrink();
+            final angle = (i / 8) * math.pi * 2 + 0.3;
+            final dist = sp * size * 0.5;
+            return Positioned(
+              left: size / 2 + math.cos(angle) * dist - 20,
+              top: size / 2 + math.sin(angle) * dist - 20,
+              child: Opacity(
+                opacity: (1.0 - sp).clamp(0.0, 1.0),
+                child: Transform.rotate(
+                  angle: sp * math.pi * 2,
+                  child: Transform.scale(
+                    scale: 0.3 + sp * 0.3,
+                    child: Image.asset(
+                      imagePath,
+                      width: 40,
+                      height: 40,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  // Sequential diagonal energy slash marks
+  Widget _slashMarks(double size, double p) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Stack(
+        alignment: Alignment.center,
+        clipBehavior: Clip.none,
+        children: List.generate(3, (i) {
+          final sp = ((p - i * 0.2) / 0.4).clamp(0.0, 1.0);
+          if (sp <= 0 || sp >= 1.0) return const SizedBox.shrink();
+          final angle = -math.pi / 4 + (i - 1) * (math.pi / 5);
+          final slideIn = Curves.easeOut.transform((sp * 2).clamp(0.0, 1.0));
+          final fadeOut = sp > 0.5
+              ? (1.0 - (sp - 0.5) * 2).clamp(0.0, 1.0)
+              : 1.0;
+          return Positioned(
+            left:
+                size / 2 +
+                (1.0 - slideIn) * 40 * math.cos(angle) -
+                50 +
+                (i - 1) * 15,
+            top:
+                size / 2 +
+                (1.0 - slideIn) * 40 * math.sin(angle) -
+                50 +
+                (i - 1) * 10,
+            child: Opacity(
+              opacity: fadeOut,
+              child: Transform.rotate(
+                angle: angle,
+                child: Transform.scale(
+                  scaleX: 0.5 + slideIn * 0.8,
+                  child: Image.asset(
+                    imagePath,
+                    width: 100,
+                    height: 100,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
+  // Particles erupt upward from below
+  Widget _groundEruption(double size, double p) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Stack(
+        alignment: Alignment.center,
+        clipBehavior: Clip.none,
+        children: List.generate(6, (i) {
+          final sp = ((p - i * 0.1) / 0.6).clamp(0.0, 1.0);
+          if (sp <= 0 || sp >= 1.0) return const SizedBox.shrink();
+          final rand = math.Random(i);
+          final dx = (rand.nextDouble() - 0.5) * size * 0.7;
+          final dy = size * 0.4 - sp * size * 0.9;
+          return Positioned(
+            left: size / 2 + dx - 25,
+            top: size / 2 + dy - 25,
+            child: Opacity(
+              opacity: (sp > 0.7 ? (1.0 - sp) / 0.3 : 1.0).clamp(0.0, 1.0),
+              child: Transform.rotate(
+                angle: sp * math.pi * 3,
+                child: Transform.scale(
+                  scale: 0.4 + rand.nextDouble() * 0.5,
+                  child: Image.asset(
+                    imagePath,
+                    width: 50,
+                    height: 50,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
+  // Rapid staggered hits at random offsets
+  Widget _multiStrike(double size, double p) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Stack(
+        alignment: Alignment.center,
+        clipBehavior: Clip.none,
+        children: List.generate(5, (i) {
+          final sp = ((p - i * 0.15) / 0.25).clamp(0.0, 1.0);
+          if (sp <= 0 || sp >= 1.0) return const SizedBox.shrink();
+          final rand = math.Random(i * 7);
+          final dx = (rand.nextDouble() - 0.5) * 60;
+          final dy = (rand.nextDouble() - 0.5) * 60;
+          final scale = Curves.easeOut.transform((sp / 0.3).clamp(0.0, 1.0));
+          final opacity = sp > 0.5 ? (1.0 - sp) / 0.5 : 1.0;
+          return Positioned(
+            left: size / 2 + dx - 40,
+            top: size / 2 + dy - 40,
+            child: Opacity(
+              opacity: opacity.clamp(0.0, 1.0),
+              child: Transform.scale(
+                scale: scale * 0.8,
+                child: Image.asset(
+                  imagePath,
+                  width: 80,
+                  height: 80,
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
+  // Expanding ring of orbiting particles with center flash
+  Widget _burstRing(double size, double p) {
+    final ringR = p * size * 0.5;
+    final fade =
+        (p < 0.2 ? p / 0.2 : 1.0) * (p > 0.6 ? (1.0 - (p - 0.6) / 0.4) : 1.0);
+    final flashOp = p < 0.3 ? (1.0 - p / 0.3) : 0.0;
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Stack(
+        alignment: Alignment.center,
+        clipBehavior: Clip.none,
+        children: [
+          if (flashOp > 0)
+            Opacity(
+              opacity: flashOp.clamp(0.0, 1.0),
+              child: Transform.scale(
+                scale: 0.5 + p * 2,
+                child: Image.asset(
+                  imagePath,
+                  width: 60,
+                  height: 60,
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+          ...List.generate(10, (i) {
+            final angle = (i / 10) * math.pi * 2 + p * math.pi;
+            return Positioned(
+              left: size / 2 + math.cos(angle) * ringR - 20,
+              top: size / 2 + math.sin(angle) * ringR - 20,
+              child: Opacity(
+                opacity: fade.clamp(0.0, 1.0),
+                child: Transform.rotate(
+                  angle: angle + p * math.pi * 4,
+                  child: Transform.scale(
+                    scale: 0.3 + math.sin(p * math.pi) * 0.4,
+                    child: Image.asset(
+                      imagePath,
+                      width: 40,
+                      height: 40,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }),
+        ],
       ),
     );
   }
 }
 
 // ----------------------------------------------------------------
-// Default Special Effect — image projectile towards the target
+// Default Special Effect — type-specific projectile toward target
 // ----------------------------------------------------------------
 class _DefaultSpecialEffect extends StatelessWidget {
   final String imagePath;
   final double progress;
   final bool isPlayer;
+  final ElementalType type;
 
   const _DefaultSpecialEffect({
     required this.imagePath,
     required this.progress,
     required this.isPlayer,
+    required this.type,
   });
 
   @override
   Widget build(BuildContext context) {
     final p = progress.clamp(0.0, 1.0);
-    final direction = isPlayer ? 1 : -1;
 
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        // 1. Muzzle Flash (brief burst at the origin)
-        if (p < 0.2)
-          Positioned(
-            left: direction * 200.0,
-            top: 0,
-            child: Opacity(
-              opacity: (1.0 - (p / 0.2)).clamp(0.0, 1.0),
-              child: Transform.scale(
-                scale: 0.5 + (p / 0.2) * 2.5,
-                child: Image.asset(
-                  imagePath,
-                  width: 150,
-                  height: 150,
-                  color: Colors.white.withValues(alpha: 0.8),
-                  colorBlendMode: BlendMode.srcIn,
-                ),
-              ),
-            ),
-          ),
+    // Attacker position relative to target center (0,0)
+    final baseX = isPlayer ? -210.0 : 210.0;
+    final baseY = isPlayer ? 150.0 : -150.0;
 
-        // 2. Trailing Echoes (3 faded clones behind the main projectile)
-        for (int i = 1; i <= 3; i++)
-          _buildProjectile(
-            p: (p - (i * 0.05)).clamp(0.0, 1.0),
-            opacityMultiplier: 0.4 - (i * 0.1),
-            scaleMultiplier: 0.8 - (i * 0.1),
-            direction: direction,
-            isTrail: true,
-          ),
+    // Current linear trajectory point
+    final tX = baseX * (1.0 - p);
+    final tY = baseY * (1.0 - p);
+    final dir = isPlayer ? 1 : -1;
 
-        // 3. Main Projectile
-        _buildProjectile(
-          p: p,
-          opacityMultiplier: 1.0,
-          scaleMultiplier: 1.0,
-          direction: direction,
-          isTrail: false,
-        ),
-      ],
-    );
+    switch (type) {
+      case ElementalType.basic:
+      case ElementalType.martial:
+      case ElementalType.metal:
+        return _straightShot(p, tX, tY, dir);
+      case ElementalType.aquatic:
+      case ElementalType.sound:
+        return _wavePath(p, tX, tY, dir);
+      case ElementalType.earth:
+      case ElementalType.toxic:
+      case ElementalType.rock:
+        return _lobArc(p, tX, tY, dir);
+      case ElementalType.cryo:
+      case ElementalType.mystic:
+      case ElementalType.holy:
+        return _spiralPath(p, tX, tY, dir);
+      case ElementalType.electric:
+      case ElementalType.aura:
+        return _zigzagBolt(p, tX, tY, dir);
+      case ElementalType.arthropod:
+      case ElementalType.grass:
+        return _swarmShot(p, tX, tY, dir);
+      case ElementalType.blaze:
+      case ElementalType.drake:
+        return _blazeTrail(p, tX, tY, dir);
+      case ElementalType.darkness:
+      case ElementalType.spectral:
+      case ElementalType.flying:
+        return _phaseShot(p, tX, tY, dir);
+    }
   }
 
-  Widget _buildProjectile({
-    required double p,
-    required double opacityMultiplier,
-    required double scaleMultiplier,
-    required int direction,
-    required bool isTrail,
-  }) {
-    if (p <= 0 || p >= 1.0) return const SizedBox.shrink();
-
-    // Travel path: from offscreen (200px away) into the target center
-    final travelX = (1.0 - p) * 200 * direction;
-
-    // Vertical wobble (Sine wave)
-    final wobbleY = math.sin(p * math.pi * 4) * 15;
-
-    // Rotation (continuous spin)
-    final rotation = p * math.pi * 6 * direction;
-
-    // Opacity: fade in at start, fade out at end
-    final opacity =
-        (p < 0.1 ? p / 0.1 : (p > 0.8 ? (1.0 - p) / 0.2 : 1.0)) *
-        opacityMultiplier;
-
-    // Scale: slight pulse
-    final scale = (0.7 + math.sin(p * math.pi) * 0.3) * scaleMultiplier;
-
+  Widget _proj(double x, double y, double opacity, double scale, double rot) {
     return Positioned(
-      left: travelX - 60, // Center on target
-      top: wobbleY - 60,
+      left: x - 60,
+      top: y - 60,
       child: Opacity(
         opacity: opacity.clamp(0.0, 1.0),
         child: Transform.rotate(
-          angle: rotation,
+          angle: rot,
           child: Transform.scale(
             scale: scale,
             child: Image.asset(
@@ -2428,69 +2754,610 @@ class _DefaultSpecialEffect extends StatelessWidget {
       ),
     );
   }
-}
 
-// ----------------------------------------------------------------
-// Default Status Effect — pulsing image aura at the caster
-// ----------------------------------------------------------------
-class _DefaultStatusEffect extends StatelessWidget {
-  final String imagePath;
-  final double progress;
+  double _fadeEnds(double p) =>
+      (p < 0.1 ? p / 0.1 : (p > 0.8 ? (1.0 - p) / 0.2 : 1.0));
 
-  const _DefaultStatusEffect({required this.imagePath, required this.progress});
-
-  @override
-  Widget build(BuildContext context) {
-    final p = progress.clamp(0.0, 1.0);
-
+  // Fast linear with echo trail
+  Widget _straightShot(double p, double tX, double tY, int dir) {
+    final arcY = math.sin(p * math.pi * 4) * 15;
+    final rot = p * math.pi * 6 * dir;
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        for (int i = 0; i < 6; i++) _buildAuraParticle(index: i, p: p),
+        if (p > 0.05)
+          _proj(tX + dir * 40, tY + arcY + 5, _fadeEnds(p) * 0.3, 0.6, rot * 0.8),
+        if (p > 0.1)
+          _proj(tX + dir * 80, tY + arcY + 10, _fadeEnds(p) * 0.15, 0.4, rot * 0.6),
+        _proj(tX, tY + arcY, _fadeEnds(p), 0.7 + math.sin(p * math.pi) * 0.3, rot),
+        if (p < 0.2)
+          Positioned(
+            left: (isPlayer ? -210.0 : 210.0) - 75,
+            top: (isPlayer ? 150.0 : -150.0) - 75,
+            child: Opacity(
+              opacity: (1.0 - p / 0.2).clamp(0.0, 1.0),
+              child: Transform.scale(
+                scale: 0.5 + (p / 0.2) * 2.5,
+                child: Image.asset(
+                  imagePath,
+                  width: 150,
+                  height: 150,
+                  color: Colors.white.withValues(alpha: 0.8),
+                  colorBlendMode: BlendMode.srcIn,
+                ),
+              ),
+            ),
+          ),
       ],
     );
   }
 
-  Widget _buildAuraParticle({required int index, required double p}) {
-    // Stagger the progress for each particle slightly
-    final staggeredP = (p * 1.2 - (index * 0.1)).clamp(0.0, 1.0);
-    if (staggeredP <= 0 || staggeredP >= 1.0) return const SizedBox.shrink();
+  // Sinusoidal wavy trajectory
+  Widget _wavePath(double p, double tX, double tY, int dir) {
+    final waveY = math.sin(p * math.pi * 6) * 30;
+    final rot = p * math.pi * 3 * dir;
 
-    // Spiral math
-    final startAngle = index * math.pi * 2 / 6;
-    final currentAngle = startAngle + (staggeredP * math.pi * 2);
-    final radius = 20.0 + (staggeredP * 50.0);
+    final baseX = isPlayer ? -210.0 : 210.0;
+    final baseY = isPlayer ? 150.0 : -150.0;
 
-    final x = math.cos(currentAngle) * radius;
-    final y =
-        math.sin(currentAngle) * radius * 0.5 -
-        (staggeredP * 80.0); // Rise upwards
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        for (int i = 1; i <= 2; i++)
+          _proj(
+            (baseX * (1.0 - (p - i * 0.06).clamp(0.0, 1.0))),
+            (baseY * (1.0 - (p - i * 0.06).clamp(0.0, 1.0))) + math.sin((p - i * 0.06).clamp(0.0, 1.0) * math.pi * 6) * 30,
+            _fadeEnds(p) * (0.4 - i * 0.1),
+            0.5,
+            rot * 0.7,
+          ),
+        _proj(tX, tY + waveY, _fadeEnds(p), 0.8 + math.sin(p * math.pi) * 0.2, rot),
+      ],
+    );
+  }
 
-    // Visuals
-    final opacity = math.sin(staggeredP * math.pi).clamp(0.0, 1.0);
-    final scale =
-        (0.4 + math.sin(staggeredP * math.pi) * 0.6) *
-        (0.8 + (index % 3) * 0.2);
-    final rotation = staggeredP * math.pi * 2 * (index.isEven ? 1 : -1);
+  // Parabolic arc (lobbing)
+  Widget _lobArc(double p, double tX, double tY, int dir) {
+    final arcY = -math.sin(p * math.pi) * 120; // Arc upward
+    final rot = p * math.pi * 2 * dir;
+    final scale = 0.5 + math.sin(p * math.pi) * 0.5;
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        // Shadow on ground
+        Positioned(
+          left: tX - 30,
+          top: tY + 30,
+          child: Opacity(
+            opacity: _fadeEnds(p) * 0.3,
+            child: Transform.scale(
+              scaleY: 0.3,
+              scaleX: scale,
+              child: Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.black.withValues(alpha: 0.4),
+                ),
+              ),
+            ),
+          ),
+        ),
+        _proj(tX, tY + arcY, _fadeEnds(p), scale, rot),
+      ],
+    );
+  }
 
-    return Positioned(
-      left: x - 40,
-      top: y - 40,
-      child: Opacity(
-        opacity: opacity,
-        child: Transform.rotate(
-          angle: rotation,
+  // Helical spiral path
+  Widget _spiralPath(double p, double tX, double tY, int dir) {
+    final spiralR = 25.0 * (1.0 - p * 0.5);
+    final spiralY = math.sin(p * math.pi * 8) * spiralR;
+    final spiralX2 = math.cos(p * math.pi * 8) * spiralR * 0.5;
+
+    final baseX = isPlayer ? -210.0 : 210.0;
+    final baseY = isPlayer ? 150.0 : -150.0;
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        // Ghost trails
+        for (int i = 1; i <= 3; i++)
+          _proj(
+            (baseX * (1.0 - (p - i * 0.04).clamp(0.0, 1.0))) +
+                dir * i * 15 +
+                math.cos((p - i * 0.04) * math.pi * 8) * spiralR * 0.5,
+            (baseY * (1.0 - (p - i * 0.04).clamp(0.0, 1.0))) +
+                math.sin((p - i * 0.04) * math.pi * 8) * spiralR,
+            _fadeEnds(p) * (0.3 - i * 0.08),
+            0.5 - i * 0.1,
+            p * math.pi * 4,
+          ),
+        _proj(
+          tX + spiralX2,
+          tY + spiralY,
+          _fadeEnds(p),
+          0.7 + math.sin(p * math.pi) * 0.3,
+          p * math.pi * 4 * dir,
+        ),
+      ],
+    );
+  }
+
+  // Lightning zigzag path
+  Widget _zigzagBolt(double p, double tX, double tY, int dir) {
+    // Create 4 zigzag segments
+    final segCount = 4;
+    final segP = p * segCount;
+    final currentSeg = segP.floor().clamp(0, segCount - 1);
+    final segFrac = segP - currentSeg;
+
+    final baseX = isPlayer ? -210.0 : 210.0;
+    final baseY = isPlayer ? 150.0 : -150.0;
+
+    // Zigzag positions
+    final zigY = (currentSeg.isEven ? -1 : 1) * segFrac * 40;
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        // Afterimage flashes at each zig point
+        for (int i = 0; i < currentSeg; i++) ...[
+          Positioned(
+            left: (baseX * (1.0 - (i / segCount))) - 30,
+            top: (baseY * (1.0 - (i / segCount))) + (i.isEven ? -40 : 40) - 30,
+            child: Opacity(
+              opacity: (0.4 * (1.0 - p)).clamp(0.0, 1.0),
+              child: Image.asset(
+                imagePath,
+                width: 60,
+                height: 60,
+                fit: BoxFit.contain,
+                color: type.color.withValues(alpha: 0.5),
+                colorBlendMode: BlendMode.modulate,
+              ),
+            ),
+          ),
+        ],
+        _proj(tX, tY + zigY, _fadeEnds(p), 0.8, p * math.pi * 10 * dir),
+      ],
+    );
+  }
+
+  // Cloud of small swarming particles
+  Widget _swarmShot(double p, double tX, double tY, int dir) {
+    final baseX = isPlayer ? -210.0 : 210.0;
+    final baseY = isPlayer ? 150.0 : -150.0;
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: List.generate(7, (i) {
+        final rand = math.Random(i * 13);
+        final lp = (p - (i * 0.03)).clamp(0.0, 1.0);
+        if (lp <= 0) return const SizedBox.shrink();
+
+        final curTX = baseX * (1.0 - lp);
+        final curTY = baseY * (1.0 - lp);
+
+        final offX = math.sin(lp * math.pi * 6 + i * 1.2) * 20;
+        final offY = math.cos(lp * math.pi * 5 + i * 0.8) * 20;
+
+        return _proj(
+          curTX + offX,
+          curTY + offY,
+          _fadeEnds(lp) * (0.5 + rand.nextDouble() * 0.5),
+          0.3 + rand.nextDouble() * 0.3,
+          lp * math.pi * 4,
+        );
+      }),
+    );
+  }
+
+  // Straight shot with growing smoke/fire trail
+  Widget _blazeTrail(double p, double tX, double tY, int dir) {
+    final baseX = isPlayer ? -210.0 : 210.0;
+    final baseY = isPlayer ? 150.0 : -150.0;
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        // Trail particles behind the main projectile
+        ...List.generate(5, (i) {
+          final trailP = (p - i * 0.04).clamp(0.0, 1.0);
+          if (trailP <= 0) return const SizedBox.shrink();
+          final curTX = baseX * (1.0 - trailP);
+          final curTY = baseY * (1.0 - trailP);
+          return Positioned(
+            left: curTX - 30,
+            top: curTY + math.sin(trailP * 30 + i) * 8 - 30,
+            child: Opacity(
+              opacity: (0.6 - i * 0.1).clamp(0.0, 1.0) * _fadeEnds(p),
+              child: Transform.scale(
+                scale: 0.3 + i * 0.08,
+                child: Image.asset(
+                  imagePath,
+                  width: 60,
+                  height: 60,
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+          );
+        }),
+        _proj(
+          tX,
+          tY + math.sin(p * 20) * 3,
+          _fadeEnds(p),
+          0.9,
+          p * math.pi * 2 * dir,
+        ),
+      ],
+    );
+  }
+
+  // Blinks in and out (phasing teleport)
+  Widget _phaseShot(double p, double tX, double tY, int dir) {
+    // The projectile appears and disappears as it travels
+    final phaseVisible = math.sin(p * math.pi * 8) > -0.2;
+    final flickerOp = phaseVisible ? _fadeEnds(p) : 0.0;
+    final scale = 0.6 + math.sin(p * math.pi * 3) * 0.3;
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        // Afterglow at each phase-in point
+        if (p > 0.15 && p < 0.85)
+          Positioned(
+            left: tX - 40 + dir * 20,
+            top: tY - 40,
+            child: Opacity(
+              opacity: ((1.0 - flickerOp) * 0.3).clamp(0.0, 1.0),
+              child: Transform.scale(
+                scale: 1.2,
+                child: Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: type.color.withValues(alpha: 0.15),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        _proj(tX, tY, flickerOp, scale, p * math.pi * 4 * dir),
+      ],
+    );
+  }
+}
+
+// ----------------------------------------------------------------
+// Default Status Effect — type-specific pulsing aura at the caster
+// ----------------------------------------------------------------
+class _DefaultStatusEffect extends StatelessWidget {
+  final String imagePath;
+  final double progress;
+  final ElementalType type;
+
+  const _DefaultStatusEffect({
+    required this.imagePath,
+    required this.progress,
+    required this.type,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final p = progress.clamp(0.0, 1.0);
+    switch (type) {
+      case ElementalType.basic:
+      case ElementalType.blaze:
+      case ElementalType.spectral:
+        return _risingSpiral(p);
+      case ElementalType.aquatic:
+      case ElementalType.sound:
+      case ElementalType.aura:
+        return _ripplePulse(p);
+      case ElementalType.rock:
+      case ElementalType.earth:
+      case ElementalType.metal:
+        return _orbitFragments(p);
+      case ElementalType.grass:
+      case ElementalType.cryo:
+      case ElementalType.mystic:
+      case ElementalType.holy:
+        return _shimmerRain(p);
+      case ElementalType.electric:
+      case ElementalType.arthropod:
+        return _sparkFlash(p);
+      case ElementalType.toxic:
+      case ElementalType.darkness:
+        return _smokeRise(p);
+      case ElementalType.martial:
+      case ElementalType.drake:
+      case ElementalType.flying:
+        return _powerFocus(p);
+    }
+  }
+
+  // Particles spiral upward with rotation
+  Widget _risingSpiral(double p) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: List.generate(6, (i) {
+        final sp = (p * 1.2 - i * 0.1).clamp(0.0, 1.0);
+        if (sp <= 0 || sp >= 1.0) return const SizedBox.shrink();
+        final angle = (i / 6) * math.pi * 2 + sp * math.pi * 2;
+        final radius = 20.0 + sp * 50.0;
+        final x = math.cos(angle) * radius;
+        final y = math.sin(angle) * radius * 0.5 - sp * 80.0;
+        final opacity = math.sin(sp * math.pi).clamp(0.0, 1.0);
+        final scale =
+            (0.4 + math.sin(sp * math.pi) * 0.6) * (0.8 + (i % 3) * 0.2);
+        return Positioned(
+          left: x - 40,
+          top: y - 40,
+          child: Opacity(
+            opacity: opacity,
+            child: Transform.rotate(
+              angle: sp * math.pi * 2 * (i.isEven ? 1 : -1),
+              child: Transform.scale(
+                scale: scale,
+                child: Image.asset(
+                  imagePath,
+                  width: 80,
+                  height: 80,
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+          ),
+        );
+      }),
+    );
+  }
+
+  // Expanding concentric ring waves
+  Widget _ripplePulse(double p) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        ...List.generate(3, (i) {
+          final rp = (p * 1.5 - i * 0.25).clamp(0.0, 1.0);
+          if (rp <= 0 || rp >= 1.0) return const SizedBox.shrink();
+          final ringSize = 40.0 + rp * 120;
+          final opacity = (1.0 - rp) * 0.6;
+          return Positioned(
+            left: -ringSize / 2,
+            top: -ringSize / 2,
+            child: Opacity(
+              opacity: opacity.clamp(0.0, 1.0),
+              child: Container(
+                width: ringSize,
+                height: ringSize,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: type.color.withValues(alpha: 0.7),
+                    width: 2.5,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }),
+        // Center image pulsing
+        Opacity(
+          opacity: math.sin(p * math.pi).clamp(0.0, 1.0),
           child: Transform.scale(
-            scale: scale,
+            scale: 0.5 + math.sin(p * math.pi) * 0.3,
             child: Image.asset(
               imagePath,
-              width: 80,
-              height: 80,
+              width: 60,
+              height: 60,
               fit: BoxFit.contain,
             ),
           ),
         ),
-      ),
+      ],
+    );
+  }
+
+  // Fragments orbit in a horizontal ring
+  Widget _orbitFragments(double p) {
+    final fade = (p < 0.15 ? p / 0.15 : (p > 0.85 ? (1.0 - p) / 0.15 : 1.0));
+    return Stack(
+      clipBehavior: Clip.none,
+      children: List.generate(5, (i) {
+        final angle = (i / 5) * math.pi * 2 + p * math.pi * 4;
+        final radius = 50.0 + math.sin(p * math.pi * 2) * 10;
+        final x = math.cos(angle) * radius;
+        final y = math.sin(angle) * radius * 0.35; // Flattened for perspective
+        final behind = math.sin(angle) < 0;
+        final scale = behind ? 0.3 : 0.5;
+        return Positioned(
+          left: x - 25,
+          top: y - 25,
+          child: Opacity(
+            opacity: (fade * (behind ? 0.5 : 1.0)).clamp(0.0, 1.0),
+            child: Transform.scale(
+              scale: scale,
+              child: Transform.rotate(
+                angle: p * math.pi * 6,
+                child: Image.asset(
+                  imagePath,
+                  width: 50,
+                  height: 50,
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+          ),
+        );
+      }),
+    );
+  }
+
+  // Particles gently drift downward like rain/snow
+  Widget _shimmerRain(double p) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: List.generate(8, (i) {
+        final rand = math.Random(i * 11);
+        final delay = i * 0.08;
+        final sp = (p * 1.5 - delay).clamp(0.0, 1.0);
+        if (sp <= 0 || sp >= 1.0) return const SizedBox.shrink();
+        final x = (rand.nextDouble() - 0.5) * 120;
+        final startY = -60.0;
+        final y = startY + sp * 140;
+        final drift = math.sin(sp * math.pi * 3 + i) * 15;
+        final opacity = math.sin(sp * math.pi).clamp(0.0, 1.0);
+        final scale = 0.2 + rand.nextDouble() * 0.3;
+        return Positioned(
+          left: x + drift - 20,
+          top: y - 20,
+          child: Opacity(
+            opacity: opacity,
+            child: Transform.rotate(
+              angle: sp * math.pi * 2 * (i.isEven ? 1 : -1),
+              child: Transform.scale(
+                scale: scale,
+                child: Image.asset(
+                  imagePath,
+                  width: 40,
+                  height: 40,
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+          ),
+        );
+      }),
+    );
+  }
+
+  // Random sparks flashing at random positions
+  Widget _sparkFlash(double p) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: List.generate(8, (i) {
+        final rand = math.Random(i * 31);
+        // Each spark has a very short lifetime at a random moment
+        final sparkCenter = rand.nextDouble() * 0.8 + 0.1;
+        final sparkDist = (p - sparkCenter).abs();
+        if (sparkDist > 0.08) return const SizedBox.shrink();
+        final sparkP = 1.0 - sparkDist / 0.08;
+        final x = (rand.nextDouble() - 0.5) * 100;
+        final y = (rand.nextDouble() - 0.5) * 100;
+        return Positioned(
+          left: x - 25,
+          top: y - 25,
+          child: Opacity(
+            opacity: sparkP.clamp(0.0, 1.0),
+            child: Transform.scale(
+              scale: 0.3 + sparkP * 0.4,
+              child: Image.asset(
+                imagePath,
+                width: 50,
+                height: 50,
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+        );
+      }),
+    );
+  }
+
+  // Wisps of colored smoke floating upward
+  Widget _smokeRise(double p) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: List.generate(5, (i) {
+        final delay = i * 0.12;
+        final sp = (p * 1.4 - delay).clamp(0.0, 1.0);
+        if (sp <= 0 || sp >= 1.0) return const SizedBox.shrink();
+        final rand = math.Random(i * 17);
+        final x = (rand.nextDouble() - 0.5) * 60;
+        final y = -sp * 100;
+        final drift = math.sin(sp * math.pi * 2 + i) * 25;
+        final opacity = math.sin(sp * math.pi) * 0.7;
+        final scale = 0.3 + sp * 0.6;
+        return Positioned(
+          left: x + drift - 30,
+          top: y - 30,
+          child: Opacity(
+            opacity: opacity.clamp(0.0, 1.0),
+            child: Transform.scale(
+              scale: scale,
+              child: Image.asset(
+                imagePath,
+                width: 60,
+                height: 60,
+                fit: BoxFit.contain,
+                color: type.color.withValues(alpha: 0.6),
+                colorBlendMode: BlendMode.modulate,
+              ),
+            ),
+          ),
+        );
+      }),
+    );
+  }
+
+  // Converging energy lines toward center then burst outward
+  Widget _powerFocus(double p) {
+    final isConverging = p < 0.5;
+    final phase = isConverging ? p / 0.5 : (p - 0.5) / 0.5;
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        ...List.generate(6, (i) {
+          final angle = (i / 6) * math.pi * 2;
+          double radius;
+          if (isConverging) {
+            radius = 80.0 * (1.0 - Curves.easeIn.transform(phase));
+          } else {
+            radius = Curves.easeOut.transform(phase) * 100.0;
+          }
+          final x = math.cos(angle) * radius;
+          final y = math.sin(angle) * radius;
+          final opacity = isConverging
+              ? phase.clamp(0.0, 1.0)
+              : (1.0 - phase).clamp(0.0, 1.0);
+          final scale = isConverging ? 0.3 + phase * 0.3 : 0.6 - phase * 0.3;
+          return Positioned(
+            left: x - 30,
+            top: y - 30,
+            child: Opacity(
+              opacity: opacity,
+              child: Transform.rotate(
+                angle: angle + p * math.pi * 4,
+                child: Transform.scale(
+                  scale: scale,
+                  child: Image.asset(
+                    imagePath,
+                    width: 60,
+                    height: 60,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }),
+        // Center flash at convergence point
+        if (p > 0.4 && p < 0.6)
+          Opacity(
+            opacity: (1.0 - ((p - 0.5).abs() / 0.1)).clamp(0.0, 1.0),
+            child: Transform.scale(
+              scale: 0.8,
+              child: Image.asset(
+                imagePath,
+                width: 80,
+                height: 80,
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+      ],
     );
   }
 }
@@ -2767,6 +3634,191 @@ class SpoutEffect extends StatelessWidget {
               );
             }),
         ],
+      ),
+    );
+  }
+}
+
+// ----------------------------------------------------------------
+// Ground Move Effects (Earth Power, Earthquake, Fissure)
+// ----------------------------------------------------------------
+
+class _ShakeEffect extends StatelessWidget {
+  final Widget child;
+  final double progress;
+  final double intensity;
+
+  const _ShakeEffect({
+    required this.child,
+    required this.progress,
+    this.intensity = 10.0,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (progress <= 0 || progress >= 1.0) {
+      return child;
+    }
+    // Shake logic using sine waves
+    final shakeX = math.sin(progress * 100) * intensity * (1 - progress);
+    final shakeY = math.cos(progress * 80) * (intensity * 0.8) * (1 - progress);
+    return Transform.translate(
+      offset: Offset(shakeX, shakeY),
+      child: child,
+    );
+  }
+}
+
+class _EarthPowerEffect extends StatelessWidget {
+  final double progress;
+  final bool isPlayer;
+
+  const _EarthPowerEffect({required this.progress, required this.isPlayer});
+
+  @override
+  Widget build(BuildContext context) {
+    const size = 250.0;
+    final p = progress.clamp(0.0, 1.0);
+
+    // 0.0 - 0.3: power_1
+    // 0.3 - 0.6: power_2
+    // 0.6 - 1.0: power_3
+    String asset = 'assets/move_effects/earth_power_1.png';
+    double opacity = 1.0;
+    double scale = 1.0;
+
+    if (p < 0.3) {
+      asset = 'assets/move_effects/earth_power_1.png';
+      opacity = p / 0.3;
+      scale = 0.8 + p * 0.2;
+    } else if (p < 0.6) {
+      asset = 'assets/move_effects/earth_power_2.png';
+      opacity = 1.0;
+      scale = 1.0 + (p - 0.3) * 0.5;
+    } else {
+      asset = 'assets/move_effects/earth_power_3.png';
+      opacity = (1.0 - p) / 0.4;
+      scale = 1.15 + (p - 0.6) * 0.25;
+    }
+
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Center(
+        child: Opacity(
+          opacity: opacity.clamp(0.0, 1.0),
+          child: Transform.scale(
+            scale: scale,
+            child: Image.asset(asset, fit: BoxFit.contain),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _EarthquakeEffect extends StatelessWidget {
+  final double progress;
+  final bool isPlayer;
+
+  const _EarthquakeEffect({required this.progress, required this.isPlayer});
+
+  @override
+  Widget build(BuildContext context) {
+    const size = 300.0;
+    final p = progress.clamp(0.0, 1.0);
+
+    // Fade in cracks, then heavy pulse
+    final crackOpacity = p < 0.2 ? p / 0.2 : (p > 0.8 ? (1.0 - p) / 0.2 : 1.0);
+    final crackScale = 0.9 + math.sin(p * math.pi * 4) * 0.1;
+
+    return _ShakeEffect(
+      progress: p,
+      intensity: 15.0,
+      child: SizedBox(
+        width: size,
+        height: size,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Opacity(
+              opacity: crackOpacity.clamp(0.0, 1.0),
+              child: Transform.scale(
+                scale: crackScale,
+                child: Image.asset(
+                  'assets/move_effects/earth_crack.png',
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+            // Floating debris
+            ...List.generate(5, (index) {
+              final rand = math.Random(index);
+              final dp = (p * 1.5 - (index * 0.1)).clamp(0.0, 1.0);
+              if (dp <= 0 || dp >= 1.0) return const SizedBox.shrink();
+
+              final dx = (rand.nextDouble() - 0.5) * 150;
+              final dy = -dp * 100 + rand.nextDouble() * 20;
+
+              return Positioned(
+                left: 150 + dx,
+                top: 150 + dy,
+                child: Opacity(
+                  opacity: (1.0 - dp),
+                  child: Transform.rotate(
+                    angle: dp * math.pi,
+                    child: Image.asset(
+                      'assets/move_effects/rock.png',
+                      width: 20 + rand.nextDouble() * 20,
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FissureEffect extends StatelessWidget {
+  final double progress;
+  final bool isPlayer;
+
+  const _FissureEffect({required this.progress, required this.isPlayer});
+
+  @override
+  Widget build(BuildContext context) {
+    const size = 350.0;
+    final p = progress.clamp(0.0, 1.0);
+
+    // Fissure opens up and swallows
+    final fissureOpacity = p < 0.1 ? p / 0.1 : (p > 0.9 ? (1.0 - p) / 0.1 : 1.0);
+    // Expand horizontally to "open"
+    final openScaleX = p < 0.5 ? 0.2 + p * 1.6 : 1.0;
+    final openScaleY = 1.0 + math.sin(p * math.pi * 8) * 0.05;
+
+    return _ShakeEffect(
+      progress: p,
+      intensity: 25.0,
+      child: SizedBox(
+        width: size,
+        height: size,
+        child: Center(
+          child: Opacity(
+            opacity: fissureOpacity.clamp(0.0, 1.0),
+            child: Transform(
+              transform: Matrix4.identity()
+                ..scale(openScaleX, openScaleY),
+              alignment: Alignment.center,
+              child: Image.asset(
+                'assets/move_effects/fissure.png',
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
