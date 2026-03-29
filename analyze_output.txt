@@ -1,0 +1,29 @@
+Analyzing double_battle_manager.dart...
+
+  error - double_battle_manager.dart:48:7 - Missing concrete implementations of 'AbilityHelpers.applyStatChange', 'AbilityHelpers.applyStatusEffect', 'AbilityHelpers.notifyAbilityTrigger', 'getter AbilityHelpers.terrainTurnsLeft', and 3 more. Try implementing the missing methods, or make the class abstract. - non_abstract_class_inherits_abstract_member
+  error - double_battle_manager.dart:74:3 - Undefined class 'CurrentWeather'. Try changing the name to the name of an existing class, or creating a class with the name 'CurrentWeather'. - undefined_class
+  error - double_battle_manager.dart:74:35 - The method 'CurrentWeather' isn't defined for the type 'DoubleBattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'CurrentWeather'. - undefined_method
+  error - double_battle_manager.dart:78:3 - Undefined class 'CurrentTerrain'. Try changing the name to the name of an existing class, or creating a class with the name 'CurrentTerrain'. - undefined_class
+  error - double_battle_manager.dart:78:35 - The method 'CurrentTerrain' isn't defined for the type 'DoubleBattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'CurrentTerrain'. - undefined_method
+  error - double_battle_manager.dart:82:3 - Undefined class 'FieldHazards'. Try changing the name to the name of an existing class, or creating a class with the name 'FieldHazards'. - undefined_class
+  error - double_battle_manager.dart:82:32 - The method 'FieldHazards' isn't defined for the type 'DoubleBattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'FieldHazards'. - undefined_method
+  error - double_battle_manager.dart:83:3 - Undefined class 'FieldHazards'. Try changing the name to the name of an existing class, or creating a class with the name 'FieldHazards'. - undefined_class
+  error - double_battle_manager.dart:83:34 - The method 'FieldHazards' isn't defined for the type 'DoubleBattleManager'. Try correcting the name to the name of an existing method, or defining a method named 'FieldHazards'. - undefined_method
+  error - double_battle_manager.dart:260:3 - Undefined class 'CurrentTerrain'. Try changing the name to the name of an existing class, or creating a class with the name 'CurrentTerrain'. - undefined_class
+  error - double_battle_manager.dart:263:3 - Undefined class 'CurrentWeather'. Try changing the name to the name of an existing class, or creating a class with the name 'CurrentWeather'. - undefined_class
+warning - double_battle_manager.dart:15:9 - The library 'package:animal_warfare/game/battle_manager.dart' doesn't export a member with the shown name 'CurrentWeather'. Try removing the name from the list of shown members. - undefined_shown_name
+warning - double_battle_manager.dart:16:9 - The library 'package:animal_warfare/game/battle_manager.dart' doesn't export a member with the shown name 'CurrentTerrain'. Try removing the name from the list of shown members. - undefined_shown_name
+warning - double_battle_manager.dart:17:9 - The library 'package:animal_warfare/game/battle_manager.dart' doesn't export a member with the shown name 'FieldHazards'. Try removing the name from the list of shown members. - undefined_shown_name
+warning - double_battle_manager.dart:243:8 - The method doesn't override an inherited method. Try updating this class to match the superclass, or removing the override annotation. - override_on_non_overriding_member
+warning - double_battle_manager.dart:248:21 - The getter doesn't override an inherited getter. Try updating this class to match the superclass, or removing the override annotation. - override_on_non_overriding_member
+warning - double_battle_manager.dart:251:7 - The setter doesn't override an inherited setter. Try updating this class to match the superclass, or removing the override annotation. - override_on_non_overriding_member
+warning - double_battle_manager.dart:254:22 - The getter doesn't override an inherited getter. Try updating this class to match the superclass, or removing the override annotation. - override_on_non_overriding_member
+warning - double_battle_manager.dart:257:22 - The getter doesn't override an inherited getter. Try updating this class to match the superclass, or removing the override annotation. - override_on_non_overriding_member
+warning - double_battle_manager.dart:260:22 - The getter doesn't override an inherited getter. Try updating this class to match the superclass, or removing the override annotation. - override_on_non_overriding_member
+warning - double_battle_manager.dart:263:22 - The getter doesn't override an inherited getter. Try updating this class to match the superclass, or removing the override annotation. - override_on_non_overriding_member
+warning - double_battle_manager.dart:266:8 - The method doesn't override an inherited method. Try updating this class to match the superclass, or removing the override annotation. - override_on_non_overriding_member
+   info - double_battle_manager.dart:74:18 - The member 'currentWeather' overrides an inherited member but isn't annotated with '@override'. Try adding the '@override' annotation. - annotate_overrides
+   info - double_battle_manager.dart:78:18 - The member 'currentTerrain' overrides an inherited member but isn't annotated with '@override'. Try adding the '@override' annotation. - annotate_overrides
+   info - double_battle_manager.dart:140:8 - The member 'addToLog' overrides an inherited member but isn't annotated with '@override'. Try adding the '@override' annotation. - annotate_overrides
+
+25 issues found.

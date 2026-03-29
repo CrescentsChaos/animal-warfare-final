@@ -1,0 +1,31 @@
+Analyzing animal_warfare...                                     
+
+   info - Don't invoke 'print' in production code - convert_coords.dart:7:5 - avoid_print
+   info - Don't invoke 'print' in production code - convert_coords.dart:70:3 - avoid_print
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:1637:11 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:1654:11 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:2765:15 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:5217:13 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:5230:15 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:5239:13 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:5254:13 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:5262:13 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:5274:13 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:5282:13 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:5291:13 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:5305:13 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:5319:13 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:5327:13 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:5346:13 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:5361:13 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:5373:13 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:5397:13 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:5415:13 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:6889:13 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:6903:11 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:6914:11 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\game\battle_manager.dart:6927:13 - curly_braces_in_flow_control_structures
+   info - 'scale' is deprecated and shouldn't be used. Use scaleByVector3, scaleByVector4, or scaleByDouble instead - lib\game\move_animations.dart:3831:19 - deprecated_member_use
+   info - Don't invoke 'print' in production code - migrate_maps_json.dart:7:5 - avoid_print
+   info - Don't invoke 'print' in production code - migrate_maps_json.dart:92:3 - avoid_print
+

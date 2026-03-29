@@ -39,9 +39,8 @@ class BattleOrganism {
   Weather weather = Weather.none;
   Terrain terrain = Terrain.none;
 
-  String get name => isOpponent
-      ? 'Foe ${organism.displayName}'
-      : organism.displayName;
+  String get name =>
+      isOpponent ? 'Foe ${organism.displayName}' : organism.displayName;
 
   late int _health;
   int get health => _health;
@@ -114,6 +113,14 @@ class BattleOrganism {
   bool isJawLocked = false;
   bool batonPassPending = false;
 
+  // ============================================================
+  // DOUBLE BATTLE FIELDS
+  // ============================================================
+  bool helpingHandBoosted = false;
+  bool isFollowMeTarget = false;
+  int slotIndex = 0; // 0 for left, 1 for right
+  bool isPartner = false; // Is this organism in slot 1?
+
   /// Reset battle-specific flags (called when switching out or starting battle)
   void resetBattleState() {
     isChoiceLocked = false;
@@ -136,6 +143,8 @@ class BattleOrganism {
 
     // Advanced move state reset
     substituteHealth = 0;
+    helpingHandBoosted = false;
+    isFollowMeTarget = false;
     rolloutTurnCount = 0;
     usedDefenseCurl = false;
     futureSightTurns = 0;
@@ -174,7 +183,6 @@ class BattleOrganism {
     stockpileCount = 0;
     isLeechSeeded = false;
     isJawLocked = false;
-    batonPassPending = false;
 
     // GIMMICK RESET: Prismorph persists.
     // NOTE: isPrismorphed/hasPrismorph/activeTeraType are NOT reset here;
@@ -185,7 +193,7 @@ class BattleOrganism {
     poisonTurnCount = 0;
 
     hasMovedThisTurn = false;
-    
+
     // Complex Move States
     isBiding = false;
     bideDamage = 0;
@@ -366,8 +374,6 @@ class BattleOrganism {
   bool statsLoweredThisTurn = false;
   bool isMiracleEyed = false;
   bool shellTrapTriggered = false;
-  bool helpingHandBoosted = false;
-  bool isFollowMeTarget = false;
   String? lastMoveName;
   bool truantSkipTurn = false;
   bool unburdenActive = false;
@@ -486,13 +492,14 @@ class BattleOrganism {
       }
     }
 
-    List<ElementalType> finalTypes = _battleTypes ?? List.from(organism.baseOrganism.elementalTypes);
-    
+    List<ElementalType> finalTypes =
+        _battleTypes ?? List.from(organism.baseOrganism.elementalTypes);
+
     // Burn Up removes Fire typing
     if (isBurnedUp) {
       finalTypes.remove(ElementalType.blaze);
     }
-    
+
     // Forest's Curse adds Grass typing
     if (hasForestsCurse && !finalTypes.contains(ElementalType.grass)) {
       finalTypes.add(ElementalType.grass);

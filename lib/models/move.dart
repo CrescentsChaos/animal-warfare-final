@@ -206,6 +206,18 @@ enum MoveCategory { physical, special, status }
 /// [multiple] — hits all opponents simultaneously (75 % damage each).
 enum MoveTargetCount { single, multiple }
 
+/// Advanced double battle targeting
+enum MoveTarget {
+  singleOpponent, // Targets one opponent (default)
+  bothOpponents, // Targets both opponents (Earthquake, Surf)
+  singleAlly, // Targets one ally (Helping Hand)
+  allAdjacent, // Hits both opponents + partner (Earthquake in gens 4+)
+  self, // Targets self only (Swords Dance)
+  allAllies, // Targets self + partner (Aromatherapy)
+  field, // Field-wide effect (Rain Dance)
+  singleAny, // Can target any single animal (friend or foe)
+}
+
 extension MoveCategoryExtension on MoveCategory {
   Color get color {
     switch (this) {
@@ -289,6 +301,7 @@ class Move {
   final MoveCategory category; // NEW: physical, special, status
   final String? customUsageText; // Custom text when using the move
   final MoveTargetCount targetCount; // single (default) or multiple
+  final MoveTarget doublesTarget; // Advanced target resolution
   final String?
   animationType; // NEW: Animation type flag (e.g., 'blob', 'slash', 'brave_bird')
 
@@ -406,6 +419,7 @@ class Move {
     this.soundEffect,
     this.battleMusic,
     this.targetCount = MoveTargetCount.single,
+    this.doublesTarget = MoveTarget.singleOpponent,
     this.animationType,
     this.isPunch = false,
     this.isBite = false,
@@ -476,7 +490,7 @@ class Move {
     this.isTerrainPulse = false,
     bool? isContact,
   }) : isContact =
-            isContact ?? (category == MoveCategory.physical && baseDamage > 0);
+           isContact ?? (category == MoveCategory.physical && baseDamage > 0);
 
   // Compatibility getter
   MoveEffect get effect => effects.isNotEmpty
@@ -572,6 +586,12 @@ class Move {
               orElse: () => MoveTargetCount.single,
             )
           : MoveTargetCount.single,
+      doublesTarget: json['doublesTarget'] != null
+          ? MoveTarget.values.firstWhere(
+              (e) => e.toString().split('.').last == json['doublesTarget'],
+              orElse: () => MoveTarget.singleOpponent,
+            )
+          : MoveTarget.singleOpponent,
       animationType: json['animationType'] as String?,
       isPulse: json['isPulse'] as bool? ?? false,
       isBallBomb: json['isBallBomb'] as bool? ?? false,
@@ -580,13 +600,17 @@ class Move {
       isDive: json['isDive'] as bool? ?? false,
       isFuryCutter:
           json['isFuryCutter'] as bool? ?? (json['name'] == 'Fury Cutter'),
-      isFirstTurnOnly: json['isFirstTurnOnly'] as bool? ??
+      isFirstTurnOnly:
+          json['isFirstTurnOnly'] as bool? ??
           (json['name'] == 'Fake Out' || json['name'] == 'First Impression'),
-      ignoresDefenseStages: json['ignoresDefenseStages'] as bool? ??
+      ignoresDefenseStages:
+          json['ignoresDefenseStages'] as bool? ??
           (json['name'] == 'Sacred Sword' || json['name'] == 'Chip Away'),
-      isStompingTantrum: json['isStompingTantrum'] as bool? ??
+      isStompingTantrum:
+          json['isStompingTantrum'] as bool? ??
           (json['name'] == 'Stomping Tantrum'),
-      isStatusAilmentDouble: json['isStatusAilmentDouble'] as bool? ??
+      isStatusAilmentDouble:
+          json['isStatusAilmentDouble'] as bool? ??
           (json['name'] == 'Hex' || json['name'] == 'Lash Out'),
       isAcrobatics:
           json['isAcrobatics'] as bool? ?? (json['name'] == 'Acrobatics'),
@@ -595,65 +619,102 @@ class Move {
       isBrine: json['isBrine'] as bool? ?? (json['name'] == 'Brine'),
       isRest: json['isRest'] as bool? ?? (json['name'] == 'Rest'),
       isGrowth: json['isGrowth'] as bool? ?? (json['name'] == 'Growth'),
-      isNeverMiss: json['isNeverMiss'] as bool? ??
+      isNeverMiss:
+          json['isNeverMiss'] as bool? ??
           (json['name'] == 'Kowtow Cleave' ||
               json['name'] == 'Smart Strike' ||
               json['name'] == 'Aura Sphere'),
-      isRolloutStyle: json['isRolloutStyle'] as bool? ??
+      isRolloutStyle:
+          json['isRolloutStyle'] as bool? ??
           (json['name'] == 'Rollout' || json['name'] == 'Ice Ball'),
-      hitsHiddenUnderground: json['hitsHiddenUnderground'] as bool? ??
+      hitsHiddenUnderground:
+          json['hitsHiddenUnderground'] as bool? ??
           (json['name'] == 'Earthquake' || json['name'] == 'Magnitude'),
-      hitsHiddenUnderwater: json['hitsHiddenUnderwater'] as bool? ??
+      hitsHiddenUnderwater:
+          json['hitsHiddenUnderwater'] as bool? ??
           (json['name'] == 'Surf' || json['name'] == 'Whirlpool'),
-      hitsHiddenAirborne: json['hitsHiddenAirborne'] as bool? ??
+      hitsHiddenAirborne:
+          json['hitsHiddenAirborne'] as bool? ??
           (json['name'] == 'Hurricane' ||
               json['name'] == 'Thunder' ||
               json['name'] == 'Sky Uppercut' ||
               json['name'] == 'Smack Down' ||
               json['name'] == 'Feline Reflexes'),
-      isFocusPunchStyle: json['isFocusPunchStyle'] as bool? ??
+      isFocusPunchStyle:
+          json['isFocusPunchStyle'] as bool? ??
           (json['name'] == 'Focus Punch' || json['name'] == 'Shell Trap'),
-      isHighJumpKick: json['isHighJumpKick'] as bool? ?? (json['name'] == 'High Jump Kick'),
+      isHighJumpKick:
+          json['isHighJumpKick'] as bool? ?? (json['name'] == 'High Jump Kick'),
       isBeatUp: json['isBeatUp'] as bool? ?? (json['name'] == 'Beat Up'),
-      isDreamEater: json['isDreamEater'] as bool? ?? (json['name'] == 'Dream Eater'),
+      isDreamEater:
+          json['isDreamEater'] as bool? ?? (json['name'] == 'Dream Eater'),
       isFling: json['isFling'] as bool? ?? (json['name'] == 'Fling'),
-      isClearSmog: json['isClearSmog'] as bool? ?? (json['name'] == 'Clear Smog'),
-      isBatonPass: json['isBatonPass'] as bool? ?? (json['name'] == 'Baton Pass'),
-      isLeechSeed: json['isLeechSeed'] as bool? ?? (json['name'] == 'Leech Seed'),
+      isClearSmog:
+          json['isClearSmog'] as bool? ?? (json['name'] == 'Clear Smog'),
+      isBatonPass:
+          json['isBatonPass'] as bool? ?? (json['name'] == 'Baton Pass'),
+      isLeechSeed:
+          json['isLeechSeed'] as bool? ?? (json['name'] == 'Leech Seed'),
       isJawLock: json['isJawLock'] as bool? ?? (json['name'] == 'Jaw Lock'),
       isPursuit: json['isPursuit'] as bool? ?? (json['name'] == 'Pursuit'),
-      isFocusBlast: json['isFocusBlast'] as bool? ?? (json['name'] == 'Focus Blast'),
-      isFreezeDry: json['isFreezeDry'] as bool? ?? (json['name'] == 'Freeze-Dry'),
+      isFocusBlast:
+          json['isFocusBlast'] as bool? ?? (json['name'] == 'Focus Blast'),
+      isFreezeDry:
+          json['isFreezeDry'] as bool? ?? (json['name'] == 'Freeze-Dry'),
       isFacade: json['isFacade'] as bool? ?? (json['name'] == 'Facade'),
       isKnockOff: json['isKnockOff'] as bool? ?? (json['name'] == 'Knock Off'),
-      isFinalGambit: json['isFinalGambit'] as bool? ?? (json['name'] == 'Final Gambit'),
+      isFinalGambit:
+          json['isFinalGambit'] as bool? ?? (json['name'] == 'Final Gambit'),
       isLashOut: json['isLashOut'] as bool? ?? (json['name'] == 'Lash Out'),
-      isMightyCleave: json['isMightyCleave'] as bool? ?? (json['name'] == 'Mighty Cleave'),
+      isMightyCleave:
+          json['isMightyCleave'] as bool? ?? (json['name'] == 'Mighty Cleave'),
       isCounter: json['isCounter'] as bool? ?? (json['name'] == 'Counter'),
-      isMirrorCoat: json['isMirrorCoat'] as bool? ?? (json['name'] == 'Mirror Coat'),
-      isGrassyGlide: json['isGrassyGlide'] as bool? ?? (json['name'] == 'Grassy Glide'),
+      isMirrorCoat:
+          json['isMirrorCoat'] as bool? ?? (json['name'] == 'Mirror Coat'),
+      isGrassyGlide:
+          json['isGrassyGlide'] as bool? ?? (json['name'] == 'Grassy Glide'),
       isFoulPlay: json['isFoulPlay'] as bool? ?? (json['name'] == 'Foul Play'),
       isBide: json['isBide'] as bool? ?? (json['name'] == 'Bide'),
       isBurnUp: json['isBurnUp'] as bool? ?? (json['name'] == 'Burn Up'),
-      isDestinyBond: json['isDestinyBond'] as bool? ?? (json['name'] == 'Destiny Bond'),
+      isDestinyBond:
+          json['isDestinyBond'] as bool? ?? (json['name'] == 'Destiny Bond'),
       isDisable: json['isDisable'] as bool? ?? (json['name'] == 'Disable'),
-      isEchoedVoice: json['isEchoedVoice'] as bool? ?? (json['name'] == 'Echoed Voice'),
-      isElectrify: json['isElectrify'] as bool? ?? (json['name'] == 'Electrify'),
+      isEchoedVoice:
+          json['isEchoedVoice'] as bool? ?? (json['name'] == 'Echoed Voice'),
+      isElectrify:
+          json['isElectrify'] as bool? ?? (json['name'] == 'Electrify'),
       isEmbargo: json['isEmbargo'] as bool? ?? (json['name'] == 'Embargo'),
       isEndure: json['isEndure'] as bool? ?? (json['name'] == 'Endure'),
-      isForesight: json['isForesight'] as bool? ?? (json['name'] == 'Foresight' || json['name'] == 'Odor Sleuth'),
-      isForestsCurse: json['isForestsCurse'] as bool? ?? (json['name'] == "Forest's Curse"),
-      isGastroAcid: json['isGastroAcid'] as bool? ?? (json['name'] == 'Gastro Acid'),
+      isForesight:
+          json['isForesight'] as bool? ??
+          (json['name'] == 'Foresight' || json['name'] == 'Odor Sleuth'),
+      isForestsCurse:
+          json['isForestsCurse'] as bool? ?? (json['name'] == "Forest's Curse"),
+      isGastroAcid:
+          json['isGastroAcid'] as bool? ?? (json['name'] == 'Gastro Acid'),
       isGrudge: json['isGrudge'] as bool? ?? (json['name'] == 'Grudge'),
-      isSkillSwap: json['isSkillSwap'] as bool? ?? (json['name'] == 'Skill Swap'),
-      isGuardSwap: json['isGuardSwap'] as bool? ?? (json['name'] == 'Guard Swap'),
-      isSuperFang: json['isSuperFang'] as bool? ?? (json['name'] == 'Super Fang' || json['name'] == "Nature's Madness"),
+      isSkillSwap:
+          json['isSkillSwap'] as bool? ?? (json['name'] == 'Skill Swap'),
+      isGuardSwap:
+          json['isGuardSwap'] as bool? ?? (json['name'] == 'Guard Swap'),
+      isSuperFang:
+          json['isSuperFang'] as bool? ??
+          (json['name'] == 'Super Fang' || json['name'] == "Nature's Madness"),
       isIngrain: json['isIngrain'] as bool? ?? (json['name'] == 'Ingrain'),
-      isLastRespects: json['isLastRespects'] as bool? ?? (json['name'] == 'Last Respects'),
-      isHaze: json['isHaze'] as bool? ?? (json['name'] == 'Haze' || json['name'] == 'Clear Smog'),
-      isLunarBlessing: json['isLunarBlessing'] as bool? ?? (json['name'] == 'Lunar Blessing' || json['name'] == 'Jungle Healing'),
-      isWringOut: json['isWringOut'] as bool? ?? (json['name'] == 'Wring Out' || json['name'] == 'Crush Grip'),
-      isTerrainPulse: json['isTerrainPulse'] as bool? ?? (json['name'] == 'Terrain Pulse'),
+      isLastRespects:
+          json['isLastRespects'] as bool? ?? (json['name'] == 'Last Respects'),
+      isHaze:
+          json['isHaze'] as bool? ??
+          (json['name'] == 'Haze' || json['name'] == 'Clear Smog'),
+      isLunarBlessing:
+          json['isLunarBlessing'] as bool? ??
+          (json['name'] == 'Lunar Blessing' ||
+              json['name'] == 'Jungle Healing'),
+      isWringOut:
+          json['isWringOut'] as bool? ??
+          (json['name'] == 'Wring Out' || json['name'] == 'Crush Grip'),
+      isTerrainPulse:
+          json['isTerrainPulse'] as bool? ?? (json['name'] == 'Terrain Pulse'),
     );
   }
 

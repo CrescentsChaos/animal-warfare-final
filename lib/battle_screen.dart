@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'
     show rootBundle, SystemChrome, DeviceOrientation;
 import 'package:google_fonts/google_fonts.dart';
+
 import 'package:provider/provider.dart';
 import 'package:animal_warfare/models/captured_organism.dart';
 import 'package:animal_warfare/game/battle_manager.dart';
@@ -278,6 +279,8 @@ class _BattleScreenContentState extends State<BattleScreenContent>
   int _moveAnimIdCounter = 0;
   double _screenShakeX = 0;
   double _screenShakeY = 0;
+  
+
   AnimationController? _screenShakeController;
 
   final GlobalKey<_BattleSpriteState> _playerSpriteKey = GlobalKey();
@@ -1473,8 +1476,10 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                 (anim) => anims.MoveAnimationOverlay(
                   key: ValueKey(anim.id),
                   data: anim,
-                  playerLink: _playerLink,
-                  opponentLink: _opponentLink,
+                  player1Link: _playerLink,
+                  player2Link: LayerLink(), 
+                  opponent1Link: _opponentLink,
+                  opponent2Link: LayerLink(),
                 ),
               ),
               // Stat Change Indicators

@@ -12,7 +12,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:animal_warfare/widgets/type_matchup_sheet.dart';
 import 'package:animal_warfare/widgets/item_icon.dart';
 import 'package:animal_warfare/game/battle_manager.dart';
-import 'package:animal_warfare/game/double_battle_manager.dart';
 import 'package:animal_warfare/models/weather.dart';
 import 'package:animal_warfare/models/terrain.dart';
 
@@ -569,12 +568,8 @@ class BattleDetailsSheet extends StatelessWidget {
 
     // Attempt to get manager from context
     BattleManager? bm;
-    DoubleBattleManager? dbm;
     try {
       bm = context.read<BattleManager>();
-    } catch (_) {}
-    try {
-      dbm = context.read<DoubleBattleManager>();
     } catch (_) {}
 
     final List<Map<String, dynamic>> activeField = [];
@@ -685,117 +680,6 @@ class BattleDetailsSheet extends StatelessWidget {
           activeField.add({
             'name': 'AURORA VEIL',
             'turns': bm.opponentAuroraVeilTurns,
-            'icon': 'assets/icon/aurora_veil.png',
-            'color': Colors.redAccent,
-          });
-        }
-      }
-    } else if (dbm != null) {
-      if (dbm.currentWeather.weather != Weather.none) {
-        activeField.add({
-          'name': dbm.currentWeather.weather.name.toUpperCase(),
-          'turns': 0,
-          'icon': dbm.currentWeather.weather.iconPath,
-          'color': Colors.blueAccent,
-        });
-      }
-      if (dbm.currentTerrain.terrain != Terrain.none) {
-        activeField.add({
-          'name': dbm.currentTerrain.terrain.name.toUpperCase(),
-          'turns': 0,
-          'icon': dbm.currentTerrain.terrain.iconPath,
-          'color': Colors.greenAccent,
-        });
-      }
-
-      if (dbm.trickRoomTurns > 0) {
-        activeField.add({
-          'name': 'TRICK ROOM',
-          'turns': dbm.trickRoomTurns,
-          'icon': 'assets/icon/trick_room.png',
-          'color': Colors.purpleAccent,
-        });
-      }
-
-      final isPlayerSide = isPlayer;
-      if (isPlayerSide) {
-        if (dbm.playerReflectTurns > 0) {
-          activeField.add({
-            'name': 'REFLECT',
-            'turns': dbm.playerReflectTurns,
-            'icon': 'assets/icon/reflect.png',
-            'color': Colors.greenAccent,
-          });
-        }
-        if (dbm.playerLightScreenTurns > 0) {
-          activeField.add({
-            'name': 'LIGHT SCREEN',
-            'turns': dbm.playerLightScreenTurns,
-            'icon': 'assets/icon/light_screen.png',
-            'color': Colors.greenAccent,
-          });
-        }
-        if (dbm.playerSafeguardTurns > 0) {
-          activeField.add({
-            'name': 'SAFEGUARD',
-            'turns': dbm.playerSafeguardTurns,
-            'icon': 'assets/icon/safeguard.png',
-            'color': Colors.greenAccent,
-          });
-        }
-        if (dbm.playerTailwindTurns > 0) {
-          activeField.add({
-            'name': 'TAILWIND',
-            'turns': dbm.playerTailwindTurns,
-            'icon': 'assets/icon/tailwind.png',
-            'color': Colors.greenAccent,
-          });
-        }
-        if (dbm.playerAuroraVeilTurns > 0) {
-          activeField.add({
-            'name': 'AURORA VEIL',
-            'turns': dbm.playerAuroraVeilTurns,
-            'icon': 'assets/icon/aurora_veil.png',
-            'color': Colors.greenAccent,
-          });
-        }
-      } else {
-        if (dbm.opponentReflectTurns > 0) {
-          activeField.add({
-            'name': 'REFLECT',
-            'turns': dbm.opponentReflectTurns,
-            'icon': 'assets/icon/reflect.png',
-            'color': Colors.redAccent,
-          });
-        }
-        if (dbm.opponentLightScreenTurns > 0) {
-          activeField.add({
-            'name': 'LIGHT SCREEN',
-            'turns': dbm.opponentLightScreenTurns,
-            'icon': 'assets/icon/light_screen.png',
-            'color': Colors.redAccent,
-          });
-        }
-        if (dbm.opponentSafeguardTurns > 0) {
-          activeField.add({
-            'name': 'SAFEGUARD',
-            'turns': dbm.opponentSafeguardTurns,
-            'icon': 'assets/icon/safeguard.png',
-            'color': Colors.redAccent,
-          });
-        }
-        if (dbm.opponentTailwindTurns > 0) {
-          activeField.add({
-            'name': 'TAILWIND',
-            'turns': dbm.opponentTailwindTurns,
-            'icon': 'assets/icon/tailwind.png',
-            'color': Colors.redAccent,
-          });
-        }
-        if (dbm.opponentAuroraVeilTurns > 0) {
-          activeField.add({
-            'name': 'AURORA VEIL',
-            'turns': dbm.opponentAuroraVeilTurns,
             'icon': 'assets/icon/aurora_veil.png',
             'color': Colors.redAccent,
           });

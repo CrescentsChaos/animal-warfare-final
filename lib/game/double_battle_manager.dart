@@ -205,6 +205,7 @@ class DoubleBattleManager extends ChangeNotifier {
       }
     }
 
+    _triggerEntryAbilities();
     _startIntro();
   }
 
@@ -256,10 +257,80 @@ class DoubleBattleManager extends ChangeNotifier {
     }
   }
 
+  Future<void> _triggerEntryAbilities() async {
+    final allSlots = _allActiveSlots();
+    for (final slot in allSlots) {
+      if (slot.abilities.any((a) => a.name == 'Intimidate') &&
+          !slot.isAbilityRevealed) {
+        slot.isAbilityRevealed = true;
+        addLog('${slot.name}\'s Intimidate cut the opponents\' attack!');
+        final opposingSlots = (slot == playerSlot1 || slot == playerSlot2)
+            ? [opponentSlot1, opponentSlot2]
+            : [playerSlot1, playerSlot2];
+        for (final foe in opposingSlots) {
+          if (foe != null && foe.health > 0) {
+            await _applyStatChange(foe, 'attack', -1);
+          }
+        }
+      }
+    }
+    notifyListeners();
+  }
+
   int _popBench(List<int> bench) {
     final idx = bench.first;
     bench.removeAt(0);
+    notifyListeners();
     return idx;
+  }
+
+  // ──────────────────────────────────────────────
+  // AI Action Selection
+  // ──────────────────────────────────────────────
+
+  List<SlotAction> _pickAiActions() {
+    final actions = <SlotAction>[];
+
+    if (opponentSlot1 != null && opponentSlot1!.health > 0) {
+      actions.add(_pickAiMove(opponentSlot1!, 1));
+    }
+    if (opponentSlot2 != null && opponentSlot2!.health > 0) {
+      actions.add(_pickAiMove(opponentSlot2!, 2));
+    }
+
+    return actions;
+  }
+
+  SlotAction _pickAiMove(BattleOrganism attacker, int slotIdx) {
+    final moves = getMovesFor(attacker);
+    if (moves.isEmpty) {
+      return const SlotAction.move(null, DoubleTarget.playerSlot1);
+    }
+
+    // Basic AI: Pick a random move and a random player target
+    final move = moves[Random().nextInt(moves.length)];
+    
+    // Determine target based on move
+    DoubleTarget targetSelection = DoubleTarget.playerSlot1;
+    if (move.doublesTarget == MoveTarget.bothOpponents || 
+        move.doublesTarget == MoveTarget.allAdjacent ||
+        move.doublesTarget == MoveTarget.field) {
+      targetSelection = DoubleTarget.allOpponents;
+    } else if (move.doublesTarget == MoveTarget.singleAlly ||
+               move.doublesTarget == MoveTarget.allAllies) {
+      targetSelection = slotIdx == 1 ? DoubleTarget.opponentSlot2 : DoubleTarget.opponentSlot1;
+    } else {
+      // Pick random player target
+      final playerAlive = [playerSlot1, playerSlot2].where((s) => s != null && s.health > 0).toList();
+      if (playerAlive.isEmpty) {
+        targetSelection = DoubleTarget.playerSlot1;
+      } else {
+        final chosen = playerAlive[Random().nextInt(playerAlive.length)];
+        targetSelection = (chosen == playerSlot1) ? DoubleTarget.playerSlot1 : DoubleTarget.playerSlot2;
+      }
+    }
+
+    return SlotAction.move(move, targetSelection);
   }
 
   Future<void> _startIntro() async {
@@ -337,128 +408,6 @@ class DoubleBattleManager extends ChangeNotifier {
       notifyListeners();
       await _executeAllActions();
     }
-  }
-
-  List<SlotAction> _pickAiActions() {
-    final actions = <SlotAction>[];
-
-    // Context preparation
-    final aiTeamBO = opponentTeam
-        .map(
-          (org) =>
-              BattleOrganism(org, isRogueMode: isRogueMode, isOpponent: true),
-        )
-        .toList();
-    final playerTeamBO = playerTeam
-        .map(
-          (org) =>
-              BattleOrganism(org, isRogueMode: isRogueMode, isOpponent: false),
-        )
-        .toList();
-
-    for (int i = 0; i < 2; i++) {
-      final aiSlot = i == 0 ? opponentSlot1 : opponentSlot2;
-      if (aiSlot == null || aiSlot.health <= 0) continue;
-
-      // --- Wild Animal Gimmick Adjustments ---
-      final isWild = !isRogueMode && !isArenaBattle;
-
-      if (isWild && currentTurn == 1 && !aiSlot.hasPrismorphedThisBattle) {
-        final teraType = aiSlot.organism.teraType;
-        final baseTypes = aiSlot.organism.baseOrganism.types
-            .map(
-              (t) => ElementalType.values.firstWhere(
-                (e) =>
-                    e.toString().split('.').last.toLowerCase() ==
-                    t.toLowerCase(),
-                orElse: () => ElementalType.basic,
-              ),
-            )
-            .toList();
-
-        if (teraType != null && !baseTypes.contains(teraType)) {
-          // Force Prismorph on turn 1 for special tera types
-          activatePrismorph(isPlayer: false, slotIdx: i == 0 ? 1 : 2);
-        }
-      }
-
-      // AI GIMMICK TRIGGER: 60% HP
-      if (aiSlot.health / aiSlot.maxHealth <= 0.6) {
-        if (!opponentPrismorphUsed && !aiSlot.hasPrismorphedThisBattle) {
-          activatePrismorph(isPlayer: false, slotIdx: i == 0 ? 1 : 2);
-        }
-      }
-
-      // Re-fetch moves after potential gimmick activation
-      final moves = getMovesFor(aiSlot);
-      double bestScore = -double.infinity;
-      SlotAction? bestAction;
-
-      for (final move in moves) {
-        final targets = _getPossibleTargetsForAi(move);
-        for (final target in targets) {
-          final defender = _resolveTarget(target);
-          if (defender == null &&
-              move.targetCount != MoveTargetCount.multiple) {
-            continue;
-          }
-
-          // Evaluation target for multi-target moves (pick the most relevant one, typically slot 1 or 2)
-          final evaluationDefender =
-              defender ?? playerSlot1 ?? playerSlot2 ?? playerTeamBO[0];
-
-          final damageResult = calculateDamage(
-            aiSlot,
-            evaluationDefender,
-            move,
-            multiTargetPenalty: move.targetCount == MoveTargetCount.multiple
-                ? 0.75
-                : 1.0,
-          );
-
-          final score = AIDecisionEngine.calculateMoveScore(
-            move: move,
-            attacker: aiSlot,
-            defender: evaluationDefender,
-            damageResult: damageResult,
-            targetHazards: const [], // TODO: Implement hazards in Doubles
-            currentEffect: const WeatherEffect(weather: Weather.none),
-            currentTerrain: const TerrainEffect(terrain: Terrain.none),
-            aiTeam: aiTeamBO,
-            playerTeam: playerTeamBO,
-            playerHistory: playerHistory,
-            archetype: opponentArchetype,
-          );
-
-          if (score > bestScore) {
-            bestScore = score;
-            bestAction = SlotAction.move(move, target);
-          }
-        }
-      }
-
-      if (bestAction != null) {
-        actions.add(bestAction);
-      } else if (moves.isNotEmpty) {
-        // Fallback to first move if no score found
-        actions.add(SlotAction.move(moves[0], DoubleTarget.playerSlot1));
-      }
-    }
-    return actions;
-  }
-
-  List<DoubleTarget> _getPossibleTargetsForAi(Move move) {
-    if (move.targetCount == MoveTargetCount.multiple) {
-      return [DoubleTarget.allOpponents];
-    }
-    final alive = <DoubleTarget>[];
-    if (playerSlot1 != null && playerSlot1!.health > 0) {
-      alive.add(DoubleTarget.playerSlot1);
-    }
-    if (playerSlot2 != null && playerSlot2!.health > 0) {
-      alive.add(DoubleTarget.playerSlot2);
-    }
-    return alive.isNotEmpty ? alive : [DoubleTarget.playerSlot1];
   }
 
   void _checkMimic(BattleOrganism org) {
@@ -620,6 +569,11 @@ class DoubleBattleManager extends ChangeNotifier {
     double atkStat = move.category == MoveCategory.special
         ? attacker.currentPower.toDouble()
         : attacker.currentAttack.toDouble();
+
+    // --- Helping Hand ---
+    if (attacker.helpingHandBoosted) {
+      atkStat *= 1.5;
+    }
     double defStat = move.category == MoveCategory.special
         ? defender.currentResistance.toDouble()
         : defender.currentDefense.toDouble();
@@ -649,15 +603,16 @@ class DoubleBattleManager extends ChangeNotifier {
 
     int baseDamage = move.baseDamage;
     if (move.isWringOut) {
-      baseDamage = (120 * defender.health / defender.maxHealth).clamp(1, 120).toInt();
+      baseDamage = (120 * defender.health / defender.maxHealth)
+          .clamp(1, 120)
+          .toInt();
     }
     if (move.isTerrainPulse && currentTerrain.terrain != Terrain.none) {
       baseDamage = 100;
     }
 
     double dmg =
-        ((2 * attacker.level / 5 + 2) * baseDamage * atkStat / defStat) /
-            50 +
+        ((2 * attacker.level / 5 + 2) * baseDamage * atkStat / defStat) / 50 +
         2;
 
     // Use dynamic move type
@@ -997,7 +952,9 @@ class DoubleBattleManager extends ChangeNotifier {
       if (attacker.bideTurns > 0) {
         addLog("${attacker.name} is biding its time!");
         notifyListeners();
-        if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+        if (!isTesting) {
+          await Future.delayed(const Duration(milliseconds: 1500));
+        }
         return;
       } else {
         // Bide release
@@ -1011,20 +968,46 @@ class DoubleBattleManager extends ChangeNotifier {
           final opposingSlots = entry.isPlayer
               ? [opponentSlot1, opponentSlot2]
               : [playerSlot1, playerSlot2];
-          targetOrg = opposingSlots.firstWhere((s) => s != null && s.health > 0, orElse: () => null);
+          targetOrg = opposingSlots.firstWhere(
+            (s) => s != null && s.health > 0,
+            orElse: () => null,
+          );
         }
 
         if (targetOrg == null || damage <= 0) {
           addLog("${attacker.name} unleashed its energy... but it failed!");
         } else {
           addLog("${attacker.name} unleashed its energy!");
-          targetOrg.health = (targetOrg.health - damage).clamp(0, targetOrg.maxHealth);
+          targetOrg.health = (targetOrg.health - damage).clamp(
+            0,
+            targetOrg.maxHealth,
+          );
           if (onDamage != null) onDamage!(targetOrg, damage);
         }
         notifyListeners();
-        if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+        if (!isTesting) {
+          await Future.delayed(const Duration(milliseconds: 1500));
+        }
         return;
       }
+    }
+
+    // --- Helping Hand ---
+    if (move.name == 'Helping Hand') {
+      final partners = entry.isPlayer
+          ? [playerSlot1, playerSlot2]
+          : [opponentSlot1, opponentSlot2];
+      final partner = partners.firstWhere(
+        (s) => s != null && s != attacker,
+        orElse: () => null,
+      );
+      if (partner != null && partner.health > 0) {
+        partner.helpingHandBoosted = true;
+        addLog('${attacker.name} is ready to help ${partner.name}!');
+      } else {
+        addLog('But it failed!');
+      }
+      return;
     }
 
     if (move.targetCount == MoveTargetCount.multiple) {
@@ -1049,15 +1032,47 @@ class DoubleBattleManager extends ChangeNotifier {
     } else {
       // Single target
       BattleOrganism? defender = _resolveTarget(target);
-      
+
       // --- Redirection Check ---
       final opposingSlots = entry.isPlayer
           ? [opponentSlot1, opponentSlot2]
           : [playerSlot1, playerSlot2];
+      final allOtherSlots = _allActiveSlots()
+          .where((s) => s != attacker)
+          .toList();
+
+      bool redirected = false;
+
+      // Follow me
       for (final slot in opposingSlots) {
         if (slot != null && slot.health > 0 && slot.isFollowMeTarget) {
           defender = slot;
+          redirected = true;
           break;
+        }
+      }
+
+      // Lightning Rod
+      if (!redirected && move.type == ElementalType.electric) {
+        for (final slot in allOtherSlots) {
+          if (slot.health > 0 &&
+              slot.abilities.any((a) => a.name == 'Lightning Rod')) {
+            defender = slot;
+            redirected = true;
+            break;
+          }
+        }
+      }
+
+      // Storm Drain
+      if (!redirected && move.type == ElementalType.aquatic) {
+        for (final slot in allOtherSlots) {
+          if (slot.health > 0 &&
+              slot.abilities.any((a) => a.name == 'Storm Drain')) {
+            defender = slot;
+            redirected = true;
+            break;
+          }
         }
       }
 
@@ -1117,8 +1132,19 @@ class DoubleBattleManager extends ChangeNotifier {
 
     // Status-only moves: apply effects and return
     if (move.baseDamage == 0) {
+      // Protect check for status moves
+      if (defender.isProtected && move.name != 'Feint' && move.doublesTarget != MoveTarget.self) {
+        addLog('${defender.name} protected itself!');
+        return;
+      }
       await _applyEffects(attacker, defender, move);
       notifyListeners();
+      return;
+    }
+    
+    // Protect check for attacks
+    if (defender.isProtected && move.name != 'Feint') {
+      addLog('${defender.name} protected itself!');
       return;
     }
 
@@ -1162,16 +1188,16 @@ class DoubleBattleManager extends ChangeNotifier {
 
     // Endure
     if (defender.isEnduring && finalDmg >= defender.health) {
-      finalDmg = defender.health - 1;
+      finalDmg = (defender.health - 1).toInt();
       addLog('${defender.name} braced itself and endured the hit!');
     }
 
     defender.health = (defender.health - finalDmg).clamp(0, defender.maxHealth);
-    
+
     if (finalDmg > 0) {
       defender.lastHitById = attacker.organism.id;
       if (onDamage != null) onDamage!(defender, finalDmg);
-      
+
       // Bide Accumulation
       if (defender.isBiding) {
         defender.bideDamage += finalDmg;
@@ -1186,9 +1212,13 @@ class DoubleBattleManager extends ChangeNotifier {
         addLog('${attacker.name} was taken down by Destiny Bond!');
       }
       // Grudge
-      if (defender.grudgeActive && attacker.health > 0 && attacker.organism.moveStamina.containsKey(move.name)) {
+      if (defender.grudgeActive &&
+          attacker.health > 0 &&
+          attacker.organism.moveStamina.containsKey(move.name)) {
         attacker.organism.moveStamina[move.name] = 0;
-        addLog("${attacker.name}'s ${move.name} lost all its stamina due to the Grudge!");
+        addLog(
+          "${attacker.name}'s ${move.name} lost all its stamina due to the Grudge!",
+        );
       }
     }
 
@@ -1452,7 +1482,10 @@ class DoubleBattleManager extends ChangeNotifier {
           break;
         case MoveEffectType.lunarBlessing:
           final heal = (attacker.maxHealth * 0.25).round();
-          attacker.health = (attacker.health + heal).clamp(0, attacker.maxHealth);
+          attacker.health = (attacker.health + heal).clamp(
+            0,
+            attacker.maxHealth,
+          );
           attacker.clearStatusEffects();
           addLog('${attacker.name} received a lunar blessing!');
           break;
@@ -1472,6 +1505,10 @@ class DoubleBattleManager extends ChangeNotifier {
         case MoveEffectType.grudge:
           attacker.grudgeActive = true;
           addLog("${attacker.name} wants its foe to bear a grudge!");
+          break;
+        case MoveEffectType.protect:
+          attacker.isProtected = true;
+          addLog('${attacker.name} protected itself!');
           break;
         default:
           break;
@@ -1616,6 +1653,7 @@ class DoubleBattleManager extends ChangeNotifier {
       slot.isEnduring = false;
       slot.isDestinyBondActive = false;
       slot.isFollowMeTarget = false;
+      slot.helpingHandBoosted = false;
       slot.isElectrified = false;
 
       // --- Yawn Delay ---
@@ -1740,7 +1778,9 @@ class DoubleBattleManager extends ChangeNotifier {
     }
     if (opponentLightScreenTurns > 0) {
       opponentLightScreenTurns--;
-      if (opponentLightScreenTurns == 0) addLog('Foe\'s Light Screen wore off!');
+      if (opponentLightScreenTurns == 0) {
+        addLog('Foe\'s Light Screen wore off!');
+      }
     }
     if (opponentSafeguardTurns > 0) {
       opponentSafeguardTurns--;
@@ -1870,6 +1910,11 @@ class DoubleBattleManager extends ChangeNotifier {
       if (!isTesting) await Future.delayed(const Duration(milliseconds: 1000));
     }
 
+    // Trigger entry abilities for newly sent out opponents
+    if (opponentSlot1 != null || opponentSlot2 != null) {
+      await _triggerEntryAbilities();
+    }
+
     // Player replacements (requires UI interaction)
     if (playerSlot1 == null && playerBench.isNotEmpty) {
       switchNeededSlot = 1;
@@ -1927,6 +1972,8 @@ class DoubleBattleManager extends ChangeNotifier {
     switchNeededSlot = null;
     notifyListeners();
     if (!isTesting) await Future.delayed(const Duration(milliseconds: 1000));
+
+    await _triggerEntryAbilities();
 
     // Check if another switch is needed
     if (await _processReplacements()) {

@@ -10,20 +10,21 @@ class BlobStreamEffect extends StatelessWidget {
   final String imagePath;
   final double progress;
   final bool isPlayer;
+  final Offset? attackerOffset; // Relative to target center
 
   const BlobStreamEffect({
     super.key,
     required this.imagePath,
     required this.progress,
     required this.isPlayer,
+    this.attackerOffset,
   });
 
   @override
   Widget build(BuildContext context) {
     const size = 160.0;
-    final flipX = !isPlayer; // Flipped if opponent uses it
+    // flipX is not used now because we use dynamic offsets
 
-    // A stream of overlapping blob particles
     const numParticles = 25;
 
     return SizedBox(
@@ -33,7 +34,6 @@ class BlobStreamEffect extends StatelessWidget {
         alignment: Alignment.center,
         clipBehavior: Clip.none,
         children: List.generate(numParticles, (index) {
-          // Each particle starts a tiny bit later
           final delay = index * 0.025;
           final p = progress * 1.5 - delay;
 
@@ -45,23 +45,22 @@ class BlobStreamEffect extends StatelessWidget {
           final cx = size / 2;
           final cy = size / 2;
 
-          // Movement from attacker area (bottom-left) to target (top-right)
-          // Refined: starts exactly from middle of attacker sprite (cx=80, cy=80)
-          // Previous startX was cx - 100, startY was cy + 110
-          double startX =
-              cx - 210; // Approximate attacker center in relative coordinates
-          double startY = cy + 150;
+          // Default 1v1 offset if none provided
+          final defaultOffset = isPlayer ? const Offset(-210, 150) : const Offset(210, -150);
+          final offset = attackerOffset ?? defaultOffset;
+
+          double startX = cx + offset.dx;
+          double startY = cy + offset.dy;
           double endX = cx;
           double endY = cy;
 
           double currentX = startX + (endX - startX) * travel;
           double currentY = startY + (endY - startY) * travel;
 
-          // Arc curve: arcs upwards for player
+          // Arc curve
           double arc = math.sin(travel * math.pi) * 40.0;
           currentY -= arc;
 
-          // Add some random wobble for organic stream feel
           double wobble = math.sin(travel * math.pi * 4 + index) * 10.0;
           currentY += wobble;
           currentX += wobble * 0.5;
@@ -74,19 +73,13 @@ class BlobStreamEffect extends StatelessWidget {
             scale = 0.3 + travel * 3.5;
           } else if (travel > 0.8) {
             opacity = (1.0 - travel) / 0.2;
-            scale = 1.0 + (travel - 0.8) * 2.5; // Explodes slightly at the end
+            scale = 1.0 + (travel - 0.8) * 2.5;
           } else {
-            scale = 0.8 + (index % 4) * 0.1; // Random size variation
-          }
-
-          if (flipX) {
-            // Target is player. Attacker is opponent (above and to the right)
-            currentX = cx + (cx - currentX);
-            currentY = cy + (cy - currentY);
+            scale = 0.8 + (index % 4) * 0.1;
           }
 
           return Positioned(
-            left: currentX - 20, // 40x40 image center
+            left: currentX - 20,
             top: currentY - 20,
             child: Opacity(
               opacity: opacity.clamp(0.0, 1.0),
@@ -294,12 +287,14 @@ class SlashEffect extends StatelessWidget {
   final String imagePath;
   final double progress;
   final bool isPlayer;
+  final Offset? attackerOffset;
 
   const SlashEffect({
     super.key,
     required this.imagePath,
     required this.progress,
     required this.isPlayer,
+    this.attackerOffset,
   });
 
   @override
@@ -307,29 +302,26 @@ class SlashEffect extends StatelessWidget {
     const size = 160.0;
 
     final travel = progress.clamp(0.0, 1.0);
-    final fadePhase = ((progress - 0.7) * 3.3).clamp(
-      0.0,
-      1.0,
-    ); // Fades out at the very end
+    final fadePhase = ((progress - 0.7) * 3.3).clamp(0.0, 1.0);
 
     final cx = size / 2;
     final cy = size / 2;
 
-    // Diagonal travel: from attacker (bottom left) to target (top right)
-    double startX = cx - 210;
-    double startY = cy + 150;
+    final defaultOffset = isPlayer ? const Offset(-210, 150) : const Offset(210, -150);
+    final offset = attackerOffset ?? defaultOffset;
+
+    double startX = cx + offset.dx;
+    double startY = cy + offset.dy;
     double endX = cx;
     double endY = cy;
 
     double currentX = startX + (endX - startX) * travel;
     double currentY = startY + (endY - startY) * travel;
 
-    double rotation = travel * math.pi * 2; // Spinning as it travels
+    double rotation = travel * math.pi * 2;
     double opacity = 1.0 - fadePhase;
 
-    if (!isPlayer) {
-      currentX = cx + (cx - currentX);
-      currentY = cy + (cy - currentY);
+    if (!isPlayer && attackerOffset == null) {
       rotation = -rotation;
     }
 
@@ -367,11 +359,13 @@ class SlashEffect extends StatelessWidget {
 class BraveBirdEffect extends StatelessWidget {
   final double progress;
   final bool isPlayer;
+  final Offset? attackerOffset;
 
   const BraveBirdEffect({
     super.key,
     required this.progress,
     required this.isPlayer,
+    this.attackerOffset,
   });
 
   @override
@@ -384,23 +378,23 @@ class BraveBirdEffect extends StatelessWidget {
     final cx = size / 2;
     final cy = size / 2;
 
-    // Diagonal zoom: from attacker (bottom left) to target (top right)
-    double startX = cx - 180;
-    double startY = cy + 180;
-    double endX = cx + 20; // Goes slightly past the target
+    final defaultOffset = isPlayer ? const Offset(-180, 180) : const Offset(180, -180);
+    final offset = attackerOffset ?? defaultOffset;
+
+    double startX = cx + offset.dx;
+    double startY = cy + offset.dy;
+    double endX = cx + 20; 
     double endY = cy - 20;
 
     double currentX = startX + (endX - startX) * travel;
     double currentY = startY + (endY - startY) * travel;
 
-    // Angle to rotate the bird sprite so it's pointing at the target
-    double rotation = math.atan2(endY - startY, endX - startX); // Base angle
+    double rotation = math.atan2(endY - startY, endX - startX);
 
-    if (!isPlayer) {
-      // Mirror trajectory
+    if (!isPlayer && attackerOffset == null) {
       currentX = cx + (cx - currentX);
       currentY = cy + (cy - currentY);
-      rotation += math.pi; // Rotate 180 degrees
+      rotation += math.pi;
     }
 
     return SizedBox(
@@ -410,7 +404,7 @@ class BraveBirdEffect extends StatelessWidget {
         clipBehavior: Clip.none,
         children: [
           Positioned(
-            left: currentX - 50, // 100x100
+            left: currentX - 50,
             top: currentY - 50,
             child: Opacity(
               opacity: fade.clamp(0.0, 1.0),
@@ -503,12 +497,14 @@ class MeleeEffect extends StatelessWidget {
   final String imagePath;
   final double progress;
   final bool isPlayer;
+  final Offset? attackerOffset;
 
   const MeleeEffect({
     super.key,
     required this.imagePath,
     required this.progress,
     required this.isPlayer,
+    this.attackerOffset,
   });
 
   @override
@@ -519,21 +515,17 @@ class MeleeEffect extends StatelessWidget {
     final cx = size / 2;
     final cy = size / 2;
 
-    // Fast travel: from attacker to target
-    double startX = cx - 180;
-    double startY = cy + 180;
+    final defaultOffset = isPlayer ? const Offset(-180, 180) : const Offset(180, -180);
+    final offset = attackerOffset ?? defaultOffset;
+
+    double startX = cx + offset.dx;
+    double startY = cy + offset.dy;
     double endX = cx;
     double endY = cy;
-
-    if (!isPlayer) {
-      startX = cx + 180;
-      startY = cy - 180;
-    }
 
     double currentX = startX + (endX - startX) * p;
     double currentY = startY + (endY - startY) * p;
 
-    // Scale and opacity
     final scale = p < 0.2 ? p / 0.2 : (p > 0.8 ? (1.0 - p) / 0.2 : 1.0);
     final opacity = scale;
 
@@ -654,11 +646,13 @@ class SpamAttackEffect extends StatelessWidget {
 class DrainEffect extends StatelessWidget {
   final double progress;
   final bool isPlayer;
+  final Offset? attackerOffset;
 
   const DrainEffect({
     super.key,
     required this.progress,
     required this.isPlayer,
+    this.attackerOffset,
   });
 
   @override
@@ -670,16 +664,14 @@ class DrainEffect extends StatelessWidget {
     final cx = size / 2;
     final cy = size / 2;
 
-    // Movement: from target to attacker
     double startX = cx;
     double startY = cy;
-    double endX = cx - 210;
-    double endY = cy + 150;
+    
+    final defaultOffset = isPlayer ? const Offset(-210, 150) : const Offset(210, -150);
+    final offset = attackerOffset ?? defaultOffset;
 
-    if (!isPlayer) {
-      endX = cx + 210;
-      endY = cy - 150;
-    }
+    double endX = cx + offset.dx;
+    double endY = cy + offset.dy;
 
     return SizedBox(
       width: size,
@@ -796,10 +788,13 @@ class HurricaneEffect extends StatelessWidget {
     'assets/move_effects/tornado_3.png',
   ];
 
+  final Offset? attackerOffset;
+
   const HurricaneEffect({
     super.key,
     required this.progress,
     required this.isPlayer,
+    this.attackerOffset,
   });
 
   @override
@@ -814,9 +809,11 @@ class HurricaneEffect extends StatelessWidget {
     final cx = size / 2;
     final cy = size / 2;
 
-    // Travel from attacker (bottom-left) to target (center)
-    double startX = cx - 210;
-    double startY = cy + 150;
+    final defaultOffset = isPlayer ? const Offset(-210, 150) : const Offset(210, -150);
+    final offset = attackerOffset ?? defaultOffset;
+
+    double startX = cx + offset.dx;
+    double startY = cy + offset.dy;
     double endX = cx;
     double endY = cy;
 
@@ -830,8 +827,7 @@ class HurricaneEffect extends StatelessWidget {
     double arc = math.sin(travel * math.pi) * 50.0;
     currentY -= arc;
 
-    // Mirror for opponent attacks
-    if (!isPlayer) {
+    if (!isPlayer && attackerOffset == null) {
       currentX = cx + (cx - currentX);
       currentY = cy + (cy - currentY);
     }
@@ -1075,12 +1071,14 @@ class BeamEffect extends StatelessWidget {
   final List<String> imagePaths;
   final double progress;
   final bool isPlayer;
+  final Offset? attackerOffset;
 
   const BeamEffect({
     super.key,
     required this.imagePaths,
     required this.progress,
     required this.isPlayer,
+    this.attackerOffset,
   });
 
   @override
@@ -1092,15 +1090,11 @@ class BeamEffect extends StatelessWidget {
     final cy = size / 2;
 
     // Movement: straight beam from attacker to target
-    double startX = cx - 210;
-    double startY = cy + 150;
-    double endX = cx;
-    double endY = cy;
-
-    if (!isPlayer) {
-      startX = cx + 210;
-      startY = cy - 150;
-    }
+    final Offset startOffset = attackerOffset ?? (isPlayer ? const Offset(-210, 150) : const Offset(210, -150));
+    final double startX = cx + startOffset.dx;
+    final double startY = cy + startOffset.dy;
+    final double endX = cx;
+    final double endY = cy;
 
     // A "stretched" beam look or a stream of particles
     const numParticles = 15;
@@ -1145,18 +1139,94 @@ class BeamEffect extends StatelessWidget {
 }
 
 // ----------------------------------------------------------------
+// Single Projectile Effect (Standard Move)
+// ----------------------------------------------------------------
+class SingleProjectileEffect extends StatelessWidget {
+  final String imagePath;
+  final double progress;
+  final bool isPlayer;
+  final Offset? attackerOffset;
+
+  const SingleProjectileEffect({
+    super.key,
+    required this.imagePath,
+    required this.progress,
+    required this.isPlayer,
+    this.attackerOffset,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const size = 160.0;
+    final p = progress.clamp(0.0, 1.0);
+    final cx = size / 2;
+    final cy = size / 2;
+
+    final defaultOffset = isPlayer ? const Offset(-210, 150) : const Offset(210, -150);
+    final offset = attackerOffset ?? defaultOffset;
+
+    double startX = cx + offset.dx;
+    double startY = cy + offset.dy;
+    double endX = cx;
+    double endY = cy;
+
+    double currentX = startX + (endX - startX) * p;
+    double currentY = startY + (endY - startY) * p;
+
+    // Subtle arc
+    double arc = math.sin(p * math.pi) * 30.0;
+    currentY -= arc;
+
+    final rotation = math.atan2(endY - startY, endX - startX);
+    final opacity = p > 0.8 ? (1.0 - p) / 0.2 : 1.0;
+    final scale = 0.8 + math.sin(p * math.pi) * 0.4;
+
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned(
+            left: currentX - 25,
+            top: currentY - 25,
+            child: Opacity(
+              opacity: opacity.clamp(0.0, 1.0),
+              child: Transform.rotate(
+                angle: rotation,
+                child: Transform.scale(
+                  scale: scale,
+                  child: Image.asset(
+                    imagePath,
+                    width: 50,
+                    height: 50,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ----------------------------------------------------------------
 // Shard/Quick Projectile Effect
 // ----------------------------------------------------------------
 class ShardEffect extends StatelessWidget {
   final String imagePath;
   final double progress;
   final bool isPlayer;
+  final Offset? attackerOffset;
 
   const ShardEffect({
     super.key,
     required this.imagePath,
     required this.progress,
     required this.isPlayer,
+    this.attackerOffset,
   });
 
   @override
@@ -1181,21 +1251,12 @@ class ShardEffect extends StatelessWidget {
           final cy = size / 2;
 
           // From attacker to target
-          double startX = cx - 180 + (rand.nextDouble() * 40 - 20);
-          double startY = cy + 180 + (rand.nextDouble() * 40 - 20);
+          final Offset startOff = attackerOffset ?? (isPlayer ? const Offset(-180, 180) : const Offset(180, -180));
+          
+          double startX = cx + startOff.dx + (rand.nextDouble() * 40 - 20);
+          double startY = cy + startOff.dy + (rand.nextDouble() * 40 - 20);
           double endX = cx + (rand.nextDouble() * 40 - 20);
           double endY = cy + (rand.nextDouble() * 40 - 20);
-
-          if (!isPlayer) {
-            final tempX = startX;
-            final tempY = startY;
-            startX = cx + (cx - tempX);
-            startY = cy + (cy - tempY);
-            final tempEndX = endX;
-            final tempEndY = endY;
-            endX = cx + (cx - tempEndX);
-            endY = cy + (cy - tempEndY);
-          }
 
           final currentX = startX + (endX - startX) * p;
           final currentY = startY + (endY - startY) * p;
@@ -1501,24 +1562,32 @@ class MoveAnimData {
   final int id;
   final Move move;
   final bool isPlayerAttacking;
+  final int attackerSlot; // 0 or 1
+  final List<int> targetSlots; // e.g. [0], [1], or [0, 1] for spread moves
 
   MoveAnimData({
     required this.id,
     required this.move,
     required this.isPlayerAttacking,
+    this.attackerSlot = 0,
+    this.targetSlots = const [0],
   });
 }
 
 class MoveAnimationOverlay extends StatefulWidget {
   final MoveAnimData data;
-  final LayerLink playerLink;
-  final LayerLink opponentLink;
+  final LayerLink player1Link;
+  final LayerLink player2Link;
+  final LayerLink opponent1Link;
+  final LayerLink opponent2Link;
 
   const MoveAnimationOverlay({
     super.key,
     required this.data,
-    required this.playerLink,
-    required this.opponentLink,
+    required this.player1Link,
+    required this.player2Link,
+    required this.opponent1Link,
+    required this.opponent2Link,
   });
 
   @override
@@ -1546,48 +1615,79 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
     super.dispose();
   }
 
+  Offset _getAttackerOffset(bool isPlayerAttacking, int attackerSlot, int targetSlot) {
+    // Base 1v1 offset
+    const double baseDX = 210;
+    const double baseDY = 150;
+    
+    double dx = isPlayerAttacking ? -baseDX : baseDX;
+    double dy = isPlayerAttacking ? baseDY : -baseDY;
+    
+    // Adjust for slots in Double Battles
+    // Assuming P0, P1 on bottom and O0, O1 on top.
+    if (isPlayerAttacking) {
+      if (attackerSlot == 1) dx += 100;
+      if (targetSlot == 1) dx -= 100;
+    } else {
+      if (attackerSlot == 1) dx -= 100;
+      if (targetSlot == 1) dx += 100;
+    }
+    
+    return Offset(dx, dy);
+  }
+
   @override
   Widget build(BuildContext context) {
     final move = widget.data.move;
     final isPlayer = widget.data.isPlayerAttacking;
-    final attackerLink = isPlayer ? widget.playerLink : widget.opponentLink;
-    final targetLink = isPlayer ? widget.opponentLink : widget.playerLink;
+    
+    // Select attacker link
+    final attackerLink = isPlayer
+        ? (widget.data.attackerSlot == 0 ? widget.player1Link : widget.player2Link)
+        : (widget.data.attackerSlot == 0 ? widget.opponent1Link : widget.opponent2Link);
+
+    // Filter targetLinks for spread moves
+    // Currently assume single target for trajectory-based effects, 
+    // or handle spread moves by repeating the effect in the parent.
+    final targetSlot = widget.data.targetSlots.isNotEmpty ? widget.data.targetSlots.first : 0;
+    final targetLink = isPlayer
+        ? (targetSlot == 0 ? widget.opponent1Link : widget.opponent2Link)
+        : (targetSlot == 0 ? widget.player1Link : widget.player2Link);
+
+    // Calculate simulated offset for trajectories
+    final attackerOffset = _getAttackerOffset(isPlayer, widget.data.attackerSlot, targetSlot);
 
     final moveName = move.name.toLowerCase();
 
     if (moveName == 'earth power') {
       return AnimatedBuilder(
         animation: _progress,
-        builder: (context, _) {
-          return CompositedTransformFollower(
-            link: targetLink,
-            showWhenUnlinked: false,
-            followerAnchor: Alignment.center,
-            targetAnchor: Alignment.center,
-            child: _EarthPowerEffect(
-              progress: _progress.value,
-              isPlayer: isPlayer,
-            ),
-          );
-        },
+        builder: (context, _) => CompositedTransformFollower(
+          link: targetLink,
+          showWhenUnlinked: false,
+          followerAnchor: Alignment.center,
+          targetAnchor: Alignment.center,
+          child: _EarthPowerEffect(
+            progress: _progress.value,
+            isPlayer: isPlayer,
+          ),
+        ),
       );
     }
 
     if (moveName == 'earthquake') {
       return AnimatedBuilder(
         animation: _progress,
-        builder: (context, _) {
-          return CompositedTransformFollower(
-            link: targetLink,
-            showWhenUnlinked: false,
-            followerAnchor: Alignment.center,
-            targetAnchor: Alignment.center,
-            child: _EarthquakeEffect(
-              progress: _progress.value,
-              isPlayer: isPlayer,
-            ),
-          );
-        },
+        builder: (context, _) => CompositedTransformFollower(
+          link: targetLink,
+          showWhenUnlinked: false,
+          followerAnchor: Alignment.center,
+          targetAnchor: Alignment.center,
+          child: _EarthquakeEffect(
+            progress: _progress.value,
+            isPlayer: isPlayer,
+          ),
+        ),
       );
     }
 
@@ -1646,6 +1746,7 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
               imagePath: imagePath,
               progress: _progress.value,
               isPlayer: isPlayer,
+              attackerOffset: attackerOffset,
             ),
           );
         },
@@ -1728,6 +1829,7 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
               imagePath: imagePath,
               progress: _progress.value,
               isPlayer: isPlayer,
+              attackerOffset: attackerOffset,
             ),
           );
         },
@@ -1746,6 +1848,7 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
             child: BraveBirdEffect(
               progress: _progress.value,
               isPlayer: isPlayer,
+              attackerOffset: attackerOffset,
             ),
           );
         },
@@ -1810,7 +1913,11 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
             showWhenUnlinked: false,
             followerAnchor: Alignment.center,
             targetAnchor: Alignment.center,
-            child: DrainEffect(progress: _progress.value, isPlayer: isPlayer),
+            child: DrainEffect(
+              progress: _progress.value, 
+              isPlayer: isPlayer,
+              attackerOffset: attackerOffset,
+            ),
           );
         },
       );
@@ -1841,6 +1948,7 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
             child: HurricaneEffect(
               progress: _progress.value,
               isPlayer: isPlayer,
+              attackerOffset: attackerOffset,
             ),
           );
         },
@@ -1894,6 +2002,7 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
               imagePath: imagePath,
               progress: _progress.value,
               isPlayer: isPlayer,
+              attackerOffset: attackerOffset,
             ),
           );
         },
@@ -2093,6 +2202,7 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
               imagePath: imagePath,
               progress: _progress.value,
               isPlayer: isPlayer,
+              attackerOffset: attackerOffset,
             ),
           );
         },
@@ -2166,6 +2276,7 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
               imagePaths: imagePaths,
               progress: _progress.value,
               isPlayer: isPlayer,
+              attackerOffset: attackerOffset,
             ),
           );
         },
@@ -2185,6 +2296,7 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
               imagePath: 'assets/move_effects/ice.png',
               progress: _progress.value,
               isPlayer: isPlayer,
+              attackerOffset: attackerOffset,
             ),
           );
         },
@@ -2244,6 +2356,28 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
       ElementalType.holy: 'assets/move_effects/yellowball.png',
     };
 
+    final defaultFallbackImage = 'assets/move_effects/normal_impact.png';
+    
+    if (move.category == MoveCategory.special) {
+      final img = specialImages[move.type] ?? defaultFallbackImage;
+      return AnimatedBuilder(
+        animation: _progress,
+        builder: (context, _) => CompositedTransformFollower(
+          link: targetLink,
+          showWhenUnlinked: false,
+          followerAnchor: Alignment.center,
+          targetAnchor: Alignment.center,
+          child: _DefaultSpecialEffect(
+            imagePath: img,
+            progress: _progress.value,
+            isPlayer: isPlayer,
+            type: move.type,
+            attackerOffset: attackerOffset,
+          ),
+        ),
+      );
+    }
+
     // Status move images per type (pulse at self)
     const statusImages = <ElementalType, String>{
       ElementalType.basic: 'assets/move_effects/normal_impact.png',
@@ -2268,7 +2402,7 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
       ElementalType.holy: 'assets/move_effects/moonblast.png',
     };
 
-    final defaultFallbackImage = 'assets/move_effects/normal_impact.png';
+
 
     if (move.category == MoveCategory.physical) {
       final img = physicalImages[move.type] ?? defaultFallbackImage;
@@ -2680,12 +2814,14 @@ class _DefaultSpecialEffect extends StatelessWidget {
   final double progress;
   final bool isPlayer;
   final ElementalType type;
+  final Offset? attackerOffset;
 
   const _DefaultSpecialEffect({
     required this.imagePath,
     required this.progress,
     required this.isPlayer,
     required this.type,
+    this.attackerOffset,
   });
 
   /// The canvas size. All sub-methods use center-relative coordinates, so
@@ -2710,8 +2846,9 @@ class _DefaultSpecialEffect extends StatelessWidget {
 
     // Attacker position relative to target center (0,0).
     // Sub-methods use these center-relative coords; _proj offsets by _kHalf.
-    final baseX = isPlayer ? -210.0 : 210.0;
-    final baseY = isPlayer ? 150.0 : -150.0;
+    final Offset startOff = attackerOffset ?? (isPlayer ? const Offset(-210.0, 150.0) : const Offset(210.0, -150.0));
+    final baseX = startOff.dx;
+    final baseY = startOff.dy;
 
     // Current linear trajectory point
     final tX = baseX * (1.0 - p);
@@ -2722,31 +2859,31 @@ class _DefaultSpecialEffect extends StatelessWidget {
       case ElementalType.basic:
       case ElementalType.martial:
       case ElementalType.metal:
-        return _centered(_straightShot(p, tX, tY, dir));
+        return _centered(_straightShot(p, tX, tY, dir, baseX, baseY));
       case ElementalType.aquatic:
       case ElementalType.sound:
-        return _centered(_wavePath(p, tX, tY, dir));
+        return _centered(_wavePath(p, tX, tY, dir, baseX, baseY));
       case ElementalType.earth:
       case ElementalType.toxic:
       case ElementalType.rock:
-        return _centered(_lobArc(p, tX, tY, dir));
+        return _centered(_lobArc(p, tX, tY, dir, baseX, baseY));
       case ElementalType.cryo:
       case ElementalType.mystic:
       case ElementalType.holy:
-        return _centered(_spiralPath(p, tX, tY, dir));
+        return _centered(_spiralPath(p, tX, tY, dir, baseX, baseY));
       case ElementalType.electric:
       case ElementalType.aura:
-        return _centered(_zigzagBolt(p, tX, tY, dir));
+        return _centered(_zigzagBolt(p, tX, tY, dir, baseX, baseY));
       case ElementalType.arthropod:
       case ElementalType.grass:
-        return _centered(_swarmShot(p, tX, tY, dir));
+        return _centered(_swarmShot(p, tX, tY, dir, baseX, baseY));
       case ElementalType.blaze:
       case ElementalType.drake:
-        return _centered(_blazeTrail(p, tX, tY, dir));
+        return _centered(_blazeTrail(p, tX, tY, dir, baseX, baseY));
       case ElementalType.darkness:
       case ElementalType.spectral:
       case ElementalType.flying:
-        return _centered(_phaseShot(p, tX, tY, dir));
+        return _centered(_phaseShot(p, tX, tY, dir, baseX, baseY));
     }
   }
 
@@ -2777,7 +2914,7 @@ class _DefaultSpecialEffect extends StatelessWidget {
       (p < 0.1 ? p / 0.1 : (p > 0.8 ? (1.0 - p) / 0.2 : 1.0));
 
   // Fast linear with echo trail
-  Widget _straightShot(double p, double tX, double tY, int dir) {
+  Widget _straightShot(double p, double tX, double tY, int dir, double baseX, double baseY) {
     final arcY = math.sin(p * math.pi * 4) * 15;
     final rot = p * math.pi * 6 * dir;
     return Stack(
@@ -2790,8 +2927,8 @@ class _DefaultSpecialEffect extends StatelessWidget {
         _proj(tX, tY + arcY, _fadeEnds(p), 0.7 + math.sin(p * math.pi) * 0.3, rot),
         if (p < 0.2)
           Positioned(
-            left: _kCanvas / 2 + (isPlayer ? -210.0 : 210.0) - 75,
-            top: _kCanvas / 2 + (isPlayer ? 150.0 : -150.0) - 75,
+            left: _kCanvas / 2 + baseX - 75,
+            top: _kCanvas / 2 + baseY - 75,
             child: Opacity(
               opacity: (1.0 - p / 0.2).clamp(0.0, 1.0),
               child: Transform.scale(
@@ -2811,12 +2948,9 @@ class _DefaultSpecialEffect extends StatelessWidget {
   }
 
   // Sinusoidal wavy trajectory
-  Widget _wavePath(double p, double tX, double tY, int dir) {
+  Widget _wavePath(double p, double tX, double tY, int dir, double baseX, double baseY) {
     final waveY = math.sin(p * math.pi * 6) * 30;
     final rot = p * math.pi * 3 * dir;
-
-    final baseX = isPlayer ? -210.0 : 210.0;
-    final baseY = isPlayer ? 150.0 : -150.0;
 
     return Stack(
       clipBehavior: Clip.none,
@@ -2835,7 +2969,7 @@ class _DefaultSpecialEffect extends StatelessWidget {
   }
 
   // Parabolic arc (lobbing)
-  Widget _lobArc(double p, double tX, double tY, int dir) {
+  Widget _lobArc(double p, double tX, double tY, int dir, double baseX, double baseY) {
     final arcY = -math.sin(p * math.pi) * 120; // Arc upward
     final rot = p * math.pi * 2 * dir;
     final scale = 0.5 + math.sin(p * math.pi) * 0.5;
@@ -2868,13 +3002,10 @@ class _DefaultSpecialEffect extends StatelessWidget {
   }
 
   // Helical spiral path
-  Widget _spiralPath(double p, double tX, double tY, int dir) {
+  Widget _spiralPath(double p, double tX, double tY, int dir, double baseX, double baseY) {
     final spiralR = 25.0 * (1.0 - p * 0.5);
     final spiralY = math.sin(p * math.pi * 8) * spiralR;
     final spiralX2 = math.cos(p * math.pi * 8) * spiralR * 0.5;
-
-    final baseX = isPlayer ? -210.0 : 210.0;
-    final baseY = isPlayer ? 150.0 : -150.0;
 
     return Stack(
       clipBehavior: Clip.none,
@@ -2903,15 +3034,12 @@ class _DefaultSpecialEffect extends StatelessWidget {
   }
 
   // Lightning zigzag path
-  Widget _zigzagBolt(double p, double tX, double tY, int dir) {
+  Widget _zigzagBolt(double p, double tX, double tY, int dir, double baseX, double baseY) {
     // Create 4 zigzag segments
     final segCount = 4;
     final segP = p * segCount;
     final currentSeg = segP.floor().clamp(0, segCount - 1);
     final segFrac = segP - currentSeg;
-
-    final baseX = isPlayer ? -210.0 : 210.0;
-    final baseY = isPlayer ? 150.0 : -150.0;
 
     // Zigzag positions
     final zigY = (currentSeg.isEven ? -1 : 1) * segFrac * 40;
@@ -2942,9 +3070,8 @@ class _DefaultSpecialEffect extends StatelessWidget {
   }
 
   // Cloud of small swarming particles
-  Widget _swarmShot(double p, double tX, double tY, int dir) {
-    final baseX = isPlayer ? -210.0 : 210.0;
-    final baseY = isPlayer ? 150.0 : -150.0;
+  Widget _swarmShot(double p, double tX, double tY, int dir, double baseX, double baseY) {
+
 
     return Stack(
       clipBehavior: Clip.none,
@@ -2971,9 +3098,8 @@ class _DefaultSpecialEffect extends StatelessWidget {
   }
 
   // Straight shot with growing smoke/fire trail
-  Widget _blazeTrail(double p, double tX, double tY, int dir) {
-    final baseX = isPlayer ? -210.0 : 210.0;
-    final baseY = isPlayer ? 150.0 : -150.0;
+  Widget _blazeTrail(double p, double tX, double tY, int dir, double baseX, double baseY) {
+
 
     return Stack(
       clipBehavior: Clip.none,
@@ -3013,7 +3139,7 @@ class _DefaultSpecialEffect extends StatelessWidget {
   }
 
   // Blinks in and out (phasing teleport)
-  Widget _phaseShot(double p, double tX, double tY, int dir) {
+  Widget _phaseShot(double p, double tX, double tY, int dir, double baseX, double baseY) {
     // The projectile appears and disappears as it travels
     final phaseVisible = math.sin(p * math.pi * 8) > -0.2;
     final flickerOp = phaseVisible ? _fadeEnds(p) : 0.0;
@@ -3380,74 +3506,7 @@ class _DefaultStatusEffect extends StatelessWidget {
   }
 }
 
-// ----------------------------------------------------------------
-// Single Projectile Effect
-// ----------------------------------------------------------------
-class SingleProjectileEffect extends StatelessWidget {
-  final String imagePath;
-  final double progress;
-  final bool isPlayer;
 
-  const SingleProjectileEffect({
-    super.key,
-    required this.imagePath,
-    required this.progress,
-    required this.isPlayer,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    const size = 160.0;
-    final p = progress.clamp(0.0, 1.0);
-
-    final cx = size / 2;
-    final cy = size / 2;
-
-    // From attacker to target
-    double startX = cx - 210;
-    double startY = cy + 150;
-    double endX = cx;
-    double endY = cy;
-
-    if (!isPlayer) {
-      startX = cx + 180;
-      startY = cy - 180;
-    }
-
-    final currentX = startX + (endX - startX) * p;
-    final currentY = startY + (endY - startY) * p;
-
-    final rotation =
-        math.atan2(endY - startY, endX - startX) + (p * math.pi * 4);
-    final opacity = p > 0.9 ? (1.0 - p) / 0.1 : 1.0;
-
-    return SizedBox(
-      width: size,
-      height: size,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Positioned(
-            left: currentX - 25,
-            top: currentY - 25,
-            child: Opacity(
-              opacity: opacity.clamp(0.0, 1.0),
-              child: Transform.rotate(
-                angle: rotation,
-                child: Image.asset(
-                  imagePath,
-                  width: 50,
-                  height: 50,
-                  fit: BoxFit.contain,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 // ----------------------------------------------------------------
 // Fang Scatter Effect (Bite + Elemental Burst)

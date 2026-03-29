@@ -1633,14 +1633,16 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       if (attacker.bideTurns > 0) {
         addToLog("${attacker.name} is biding its time!");
         notifyListeners();
-        if (!isTesting) await Future.delayed(const Duration(milliseconds: 2000));
+        if (!isTesting) {
+          await Future.delayed(const Duration(milliseconds: 2000));
+        }
         return;
       } else {
         // Bide release
         final damage = attacker.bideDamage * 2;
         attacker.isBiding = false;
         attacker.bideDamage = 0;
-        
+
         if (damage <= 0) {
           addToLog("${attacker.name} unleashed its energy... but it failed!");
         } else {
@@ -1649,7 +1651,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           await _applyFixedDamage(attacker, defender, damage);
         }
         notifyListeners();
-        if (!isTesting) await Future.delayed(const Duration(milliseconds: 2000));
+        if (!isTesting) {
+          await Future.delayed(const Duration(milliseconds: 2000));
+        }
         return;
       }
     }
@@ -2212,21 +2216,21 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     if (defender.isInvulnerable && !isSelfOrFieldMove) {
       bool bypassInvulnerability = false;
-          // Earthquake/Magnitude: Hits during Dig
-          if (defender.semiInvulnerable == 'underground' &&
-              move.hitsHiddenUnderground) {
-            bypassInvulnerability = true;
-          }
-          // Surf/Whirlpool: Hits during Dive
-          else if (defender.semiInvulnerable == 'underwater' &&
-              move.hitsHiddenUnderwater) {
-            bypassInvulnerability = true;
-          }
-          // Air attacks hits fly/bounce/airborne
-          else if (defender.semiInvulnerable == 'airborne' &&
-              move.hitsHiddenAirborne) {
-            bypassInvulnerability = true;
-          }
+      // Earthquake/Magnitude: Hits during Dig
+      if (defender.semiInvulnerable == 'underground' &&
+          move.hitsHiddenUnderground) {
+        bypassInvulnerability = true;
+      }
+      // Surf/Whirlpool: Hits during Dive
+      else if (defender.semiInvulnerable == 'underwater' &&
+          move.hitsHiddenUnderwater) {
+        bypassInvulnerability = true;
+      }
+      // Air attacks hits fly/bounce/airborne
+      else if (defender.semiInvulnerable == 'airborne' &&
+          move.hitsHiddenAirborne) {
+        bypassInvulnerability = true;
+      }
 
       if (!bypassInvulnerability) {
         addToLog('${defender.organism.baseOrganism.name} is out of reach!');
@@ -2753,11 +2757,15 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           }
 
           // Endure: Survive lethal hit with 1 HP
-          if (defender.isEnduring && defender.health <= 0 && damageToApply > 0) {
+          if (defender.isEnduring &&
+              defender.health <= 0 &&
+              damageToApply > 0) {
             defender.health = 1;
             addToLog('${defender.name} endured the hit!');
             notifyListeners();
-            if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+            if (!isTesting) {
+              await Future.delayed(const Duration(milliseconds: 1500));
+            }
           }
 
           // Bide: Accumulate incoming damage
@@ -2782,9 +2790,13 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             addToLog('${attacker.name} was taken down by Destiny Bond!');
           }
           // Grudge
-          if (defender.grudgeActive && attacker.health > 0 && attacker.organism.moveStamina.containsKey(move.name)) {
+          if (defender.grudgeActive &&
+              attacker.health > 0 &&
+              attacker.organism.moveStamina.containsKey(move.name)) {
             attacker.organism.moveStamina[move.name] = 0;
-            addToLog('${attacker.name}\'s ${move.name} lost all its stamina due to the Grudge!');
+            addToLog(
+              '${attacker.name}\'s ${move.name} lost all its stamina due to the Grudge!',
+            );
           }
 
           // Moxie / Chilling Neigh
@@ -5204,7 +5216,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           attacker.bideDamage = 0;
           addToLog('${attacker.name} is biding its time!');
           notifyListeners();
-          if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+          if (!isTesting) {
+            await Future.delayed(const Duration(milliseconds: 1500));
+          }
           break;
 
         case MoveEffectType.burnUp:
@@ -5212,9 +5226,13 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             addToLog('But it failed! (Not a Fire type)');
           } else {
             attacker.isBurnedUp = true;
-            addToLog('${attacker.name} burned itself out and lost its Fire type!');
+            addToLog(
+              '${attacker.name} burned itself out and lost its Fire type!',
+            );
             notifyListeners();
-            if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+            if (!isTesting) {
+              await Future.delayed(const Duration(milliseconds: 1500));
+            }
           }
           break;
 
@@ -5222,7 +5240,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           attacker.isDestinyBondActive = true;
           addToLog('${attacker.name} is trying to take its foe down with it!');
           notifyListeners();
-          if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+          if (!isTesting) {
+            await Future.delayed(const Duration(milliseconds: 1500));
+          }
           break;
 
         case MoveEffectType.disable:
@@ -5236,14 +5256,18 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             addToLog('${defender.name}\'s ${lastMoveUsed.name} was disabled!');
           }
           notifyListeners();
-          if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+          if (!isTesting) {
+            await Future.delayed(const Duration(milliseconds: 1500));
+          }
           break;
 
         case MoveEffectType.electrify:
           defender.isElectrified = true;
           addToLog('${defender.name}\'s move was electrified!');
           notifyListeners();
-          if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+          if (!isTesting) {
+            await Future.delayed(const Duration(milliseconds: 1500));
+          }
           break;
 
         case MoveEffectType.embargo:
@@ -5254,14 +5278,18 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             addToLog('${defender.name} can\'t use items due to Embargo!');
           }
           notifyListeners();
-          if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+          if (!isTesting) {
+            await Future.delayed(const Duration(milliseconds: 1500));
+          }
           break;
 
         case MoveEffectType.endure:
           attacker.isEnduring = true;
           addToLog('${attacker.name} braced itself!');
           notifyListeners();
-          if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+          if (!isTesting) {
+            await Future.delayed(const Duration(milliseconds: 1500));
+          }
           break;
 
         case MoveEffectType.foresight:
@@ -5269,7 +5297,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           target.evasionStage = 0;
           addToLog('${target.name} was identified!');
           notifyListeners();
-          if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+          if (!isTesting) {
+            await Future.delayed(const Duration(milliseconds: 1500));
+          }
           break;
 
         case MoveEffectType.forestsCurse:
@@ -5277,10 +5307,14 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             addToLog('But it failed!');
           } else {
             target.hasForestsCurse = true;
-            addToLog('${target.name} was afflicted by Forest\'s Curse and became Grass type!');
+            addToLog(
+              '${target.name} was afflicted by Forest\'s Curse and became Grass type!',
+            );
           }
           notifyListeners();
-          if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+          if (!isTesting) {
+            await Future.delayed(const Duration(milliseconds: 1500));
+          }
           break;
 
         case MoveEffectType.gastroAcid:
@@ -5288,17 +5322,23 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             addToLog('But it failed!');
           } else {
             target.isAbilitySuppressed = true;
-            addToLog('${target.name}\'s ability was suppressed by Gastro Acid!');
+            addToLog(
+              '${target.name}\'s ability was suppressed by Gastro Acid!',
+            );
           }
           notifyListeners();
-          if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+          if (!isTesting) {
+            await Future.delayed(const Duration(milliseconds: 1500));
+          }
           break;
 
         case MoveEffectType.grudge:
           attacker.grudgeActive = true;
           addToLog('${attacker.name} put a grudge on the opposing team!');
           notifyListeners();
-          if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+          if (!isTesting) {
+            await Future.delayed(const Duration(milliseconds: 1500));
+          }
           break;
 
         case MoveEffectType.skillSwap:
@@ -5309,12 +5349,16 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             attacker.tempAbilities.add(defenderAbility);
             defender.tempAbilities.clear();
             defender.tempAbilities.add(attackerAbility);
-            addToLog('${attacker.name} swapped abilities with ${defender.name}!');
+            addToLog(
+              '${attacker.name} swapped abilities with ${defender.name}!',
+            );
           } else {
             addToLog('But it failed!');
           }
           notifyListeners();
-          if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+          if (!isTesting) {
+            await Future.delayed(const Duration(milliseconds: 1500));
+          }
           break;
 
         case MoveEffectType.guardSwap:
@@ -5324,9 +5368,13 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           attacker.resistanceStage = defender.resistanceStage;
           defender.defenseStage = tempDefStage;
           defender.resistanceStage = tempResStage;
-          addToLog('${attacker.name} swapped its defense stat stages with ${defender.name}!');
+          addToLog(
+            '${attacker.name} swapped its defense stat stages with ${defender.name}!',
+          );
           notifyListeners();
-          if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+          if (!isTesting) {
+            await Future.delayed(const Duration(milliseconds: 1500));
+          }
           break;
 
         case MoveEffectType.ingrain:
@@ -5337,7 +5385,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             addToLog('${attacker.name} planted its roots and can\'t escape!');
           }
           notifyListeners();
-          if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+          if (!isTesting) {
+            await Future.delayed(const Duration(milliseconds: 1500));
+          }
           break;
 
         case MoveEffectType.haze:
@@ -5356,35 +5406,38 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           opponent.speedStage = 0;
           opponent.accuracyStage = 0;
           opponent.evasionStage = 0;
-          addToLog('${attacker.name} used Haze! All stat changes were eliminated!');
+          addToLog(
+            '${attacker.name} used Haze! All stat changes were eliminated!',
+          );
           notifyListeners();
-          if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+          if (!isTesting) {
+            await Future.delayed(const Duration(milliseconds: 1500));
+          }
           break;
 
         case MoveEffectType.lunarBlessing:
           // Heal 25% max HP and cure status
           final lbHeal = (attacker.maxHealth * 0.25).round();
           if (attacker.health < attacker.maxHealth) {
-            attacker.health = (attacker.health + lbHeal).clamp(0, attacker.maxHealth);
+            attacker.health = (attacker.health + lbHeal).clamp(
+              0,
+              attacker.maxHealth,
+            );
             onHeal?.call(attacker, lbHeal);
             await _audioService.playSound('audio/effects/heal.mp3');
             addToLog('${attacker.name} was restored by Lunar Blessing!');
           }
           attacker.clearStatusEffects();
           notifyListeners();
-          if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+          if (!isTesting) {
+            await Future.delayed(const Duration(milliseconds: 1500));
+          }
           break;
         case MoveEffectType.feint:
           if (defender.isProtected) {
             defender.isProtected = false;
             addToLog('${defender.name}\'s protection was broken!');
           }
-          break;
-        case MoveEffectType.redirection:
-          attacker.isFollowMeTarget = true;
-          addToLog('${attacker.name} became the center of attention!');
-          notifyListeners();
-          if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
           break;
         case MoveEffectType.burningJealousy:
           if (defender.attackStage > 0 ||
@@ -5394,13 +5447,16 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
               defender.speedStage > 0 ||
               defender.accuracyStage > 0 ||
               defender.evasionStage > 0) {
-            await applyStatusEffect(defender, StatusEffectType.burn, chance: 100);
+            await applyStatusEffect(
+              defender,
+              StatusEffectType.burn,
+              chance: 100,
+            );
             addToLog('The spreading fire burned ${defender.name}!');
           }
           break;
         case MoveEffectType.yawn:
-          if (defender.yawnTurns == 0 &&
-              defender.statusEffects.isEmpty) {
+          if (defender.yawnTurns == 0 && defender.statusEffects.isEmpty) {
             defender.yawnTurns = 2;
             addToLog('${defender.name} became drowsy!');
             notifyListeners();
@@ -6043,7 +6099,6 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       }
     }
 
-
     // Reset per-turn flags
     target.shellTrapActive = false;
     target.shellTrapTriggered = false;
@@ -6119,7 +6174,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     // Ingrain Check
     if (target.isIngrained) {
-      if (target.health > 0 && target.health < target.maxHealth && target.healBlockTurns == 0) {
+      if (target.health > 0 &&
+          target.health < target.maxHealth &&
+          target.healBlockTurns == 0) {
         final heal = (target.maxHealth / 16).round().clamp(1, 9999);
         target.health = (target.health + heal).clamp(0, target.maxHealth);
         addToLog('${target.name} absorbed nutrients with its roots!');
@@ -6847,7 +6904,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           target.disabledMoves.remove(key);
           addToLog('${target.name}\'s $key is no longer disabled!');
           notifyListeners();
-          if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+          if (!isTesting) {
+            await Future.delayed(const Duration(milliseconds: 1500));
+          }
         } else {
           target.disabledMoves[key] = current - 1;
         }
@@ -6860,7 +6919,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       if (target.itemDisabledTurns == 0) {
         addToLog('${target.name} can use items again!');
         notifyListeners();
-        if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+        if (!isTesting) {
+          await Future.delayed(const Duration(milliseconds: 1500));
+        }
       }
     }
 
@@ -6870,7 +6931,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         target.bideTurns--;
         addToLog('${target.name} is storing energy!');
         notifyListeners();
-        if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+        if (!isTesting) {
+          await Future.delayed(const Duration(milliseconds: 1500));
+        }
       }
       if (target.bideTurns == 0) {
         target.isBiding = false;
@@ -6878,9 +6941,13 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         if (foe.health > 0) {
           final releaseDamage = (target.bideDamage * 2).clamp(1, foe.health);
           foe.health -= releaseDamage;
-          addToLog('${target.name} unleashed its stored energy for $releaseDamage damage!');
+          addToLog(
+            '${target.name} unleashed its stored energy for $releaseDamage damage!',
+          );
           notifyListeners();
-          if (!isTesting) await Future.delayed(const Duration(milliseconds: 2000));
+          if (!isTesting) {
+            await Future.delayed(const Duration(milliseconds: 2000));
+          }
           if (_checkBattleEnd()) return;
         }
         target.bideDamage = 0;
@@ -7900,7 +7967,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     }
 
     // Terrain Pulse
-    if (move.isTerrainPulse && currentTerrain.terrain != Terrain.none && attacker.isGrounded) {
+    if (move.isTerrainPulse &&
+        currentTerrain.terrain != Terrain.none &&
+        attacker.isGrounded) {
       switch (currentTerrain.terrain) {
         case Terrain.electric:
           moveType = ElementalType.electric;
@@ -7978,7 +8047,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     }
 
     // Terrain Pulse
-    if (move.isTerrainPulse && currentTerrain.terrain != Terrain.none && attacker.isGrounded) {
+    if (move.isTerrainPulse &&
+        currentTerrain.terrain != Terrain.none &&
+        attacker.isGrounded) {
       switch (currentTerrain.terrain) {
         case Terrain.electric:
           moveType = ElementalType.electric;
@@ -8509,9 +8580,13 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     }
 
     if (move.isWringOut) {
-      baseDamage = (120 * defender.health / defender.maxHealth).clamp(1, 120).toInt();
+      baseDamage = (120 * defender.health / defender.maxHealth)
+          .clamp(1, 120)
+          .toInt();
     }
-    if (move.isTerrainPulse && currentTerrain.terrain != Terrain.none && attacker.isGrounded) {
+    if (move.isTerrainPulse &&
+        currentTerrain.terrain != Terrain.none &&
+        attacker.isGrounded) {
       baseDamage = 100;
     }
 
@@ -9153,8 +9228,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         !defender.talismanConsumed) {
       damageCalc *= 1.5;
     }
-    if (move.isFreezeDry &&
-        defender.types.contains(ElementalType.aquatic)) {
+    if (move.isFreezeDry && defender.types.contains(ElementalType.aquatic)) {
       damageCalc *= 2.0;
     }
     if (move.isFinalGambit) damageCalc = attacker.health.toDouble();
@@ -10332,7 +10406,6 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         attacker.health = 0;
         addToLog('${attacker.name} was taken down by Destiny Bond!');
       }
-
       notifyListeners();
       if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
     }

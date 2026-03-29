@@ -6,13 +6,13 @@ import 'package:animal_warfare/rogue/rogue_hub_screen.dart';
 import 'package:animal_warfare/models/organism.dart';
 import 'package:animal_warfare/models/captured_organism.dart';
 import 'package:animal_warfare/battle_screen.dart';
-import 'package:animal_warfare/double_battle_screen.dart';
 import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/theme.dart';
 import 'package:animal_warfare/game/archetype_teams.dart';
 import 'package:animal_warfare/game/ai_decision_engine.dart';
 import 'package:animal_warfare/ranked_screen.dart';
 import 'package:animal_warfare/replay_list_screen.dart';
+import 'package:animal_warfare/double_battle_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:convert';
 
@@ -114,49 +114,6 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
     }
 
     if (result != null && mounted) {}
-  }
-
-  void _startDoublesBattle() async {
-    final playerRes = _generateRandomTeam();
-    final opponentRes = _generateRandomTeam(withTalismans: true);
-
-    final playerTeam = playerRes.team;
-    final opponentTeam = opponentRes.team;
-
-    if (playerTeam.isEmpty || opponentTeam.isEmpty) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to generate teams!')),
-        );
-      }
-      return;
-    }
-
-    final effectivePlayerTeam = playerTeam
-        .map(
-          (o) =>
-              o.copyWith(level: 50, currentHealth: o.getMaxHealth(atLevel: 50)),
-        )
-        .toList();
-
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => DoubleBattleScreen(
-          playerTeam: effectivePlayerTeam,
-          opponentTeam: opponentTeam,
-          biomeName: 'Rainforest',
-          battleTitle: 'Random Doubles',
-          opponentArchetype: opponentRes.archetype,
-        ),
-      ),
-    );
-
-    if (mounted) {
-      for (final organism in playerTeam) {
-        organism.currentHealth = organism.maxHealth;
-        organism.restoreAllStamina();
-      }
-    }
   }
 
   void _startRogueLike(UserState userState) async {
@@ -451,14 +408,35 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
               );
             },
           ),
-
-          // Doubles
+          
+          // Doubles Randoms
           _buildModeCard(
-            title: 'Doubles Random',
-            description: '2v2! Use spread moves and master doubles strategy.',
-            icon: Icons.group_rounded,
-            accentColor: const Color(0xFF26A69A),
-            onTap: _startDoublesBattle,
+            title: 'Doubles Randoms',
+            description: '2v2 random battles! Chaos multiplied by two.',
+            icon: Icons.groups_rounded,
+            accentColor: const Color(0xFFFFA000),
+            onTap: () {
+              final playerRes = _generateRandomTeam(withTalismans: true);
+              final aiRes = _generateRandomTeam(withTalismans: true);
+              
+              if (playerRes.team.isEmpty || aiRes.team.isEmpty) return;
+              
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => DoubleBattleScreen(
+                    playerOrganism: playerRes.team.first, // Placeholder
+                    opponentOrganism: aiRes.team.first,   // Placeholder
+                    biomeName: 'Double Arena',            // Placeholder
+                    playerTeam: playerRes.team,
+                    opponentTeam: aiRes.team,
+                    battleTitle: 'Doubles Random',
+                    isArenaBattle: true,
+                    opponentArchetype: aiRes.archetype,
+                    shouldPersistResults: false,
+                  ),
+                ),
+              );
+            },
           ),
 
           // Replays
