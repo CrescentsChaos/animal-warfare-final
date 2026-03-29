@@ -195,6 +195,8 @@ enum MoveEffectType {
   lunarBlessing,
   feint,
   redirection,
+  burningJealousy,
+  yawn,
 }
 
 enum MoveCategory { physical, special, status }
@@ -373,6 +375,8 @@ class Move {
   final bool isLastRespects;
   final bool isHaze;
   final bool isLunarBlessing;
+  final bool isWringOut;
+  final bool isTerrainPulse;
 
   static const int defaultStamina = 20;
 
@@ -468,6 +472,8 @@ class Move {
     this.isLastRespects = false,
     this.isHaze = false,
     this.isLunarBlessing = false,
+    this.isWringOut = false,
+    this.isTerrainPulse = false,
     bool? isContact,
   }) : isContact =
             isContact ?? (category == MoveCategory.physical && baseDamage > 0);
@@ -646,6 +652,8 @@ class Move {
       isLastRespects: json['isLastRespects'] as bool? ?? (json['name'] == 'Last Respects'),
       isHaze: json['isHaze'] as bool? ?? (json['name'] == 'Haze' || json['name'] == 'Clear Smog'),
       isLunarBlessing: json['isLunarBlessing'] as bool? ?? (json['name'] == 'Lunar Blessing' || json['name'] == 'Jungle Healing'),
+      isWringOut: json['isWringOut'] as bool? ?? (json['name'] == 'Wring Out' || json['name'] == 'Crush Grip'),
+      isTerrainPulse: json['isTerrainPulse'] as bool? ?? (json['name'] == 'Terrain Pulse'),
     );
   }
 

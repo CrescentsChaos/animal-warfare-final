@@ -35,6 +35,23 @@
         ]
     },
     {
+        "name": "Howl",
+        "description": "Raises the user's Attack stat.",
+        "baseDamage": 0,
+        "type": "sound",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "attack",
+                "value": 1,
+                "chance": 100
+            }
+        ]
+    },
+    {
         "name": "Inferno Dance",
         "description": "The user charges its body with energy, sharply raising its Power stat.",
         "baseDamage": 0,
@@ -781,6 +798,14 @@
         "baseDamage": 70,
         "type": "flying",
         "critRate": 1,
+        "stamina": 15,
+        "category": "physical"
+    },
+    {
+        "name": "Wing Attack",
+        "description": "A strong wing attack.",
+        "baseDamage": 60,
+        "type": "flying",
         "stamina": 15,
         "category": "physical"
     },
@@ -2805,6 +2830,57 @@
         ]
     },
     {
+        "name": "Slack Off",
+        "description": "Sits and rest.",
+        "soundEffect": "audio/effects/absorb.mp3",
+        "baseDamage": 0,
+        "type": "basic",
+        "stamina": 5,
+        "category": "status",
+        "effects": [
+            {
+                "type": "heal",
+                "target": "self",
+                "value": 50,
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Milk Drink",
+        "description": "Sits and rest.",
+        "soundEffect": "audio/effects/absorb.mp3",
+        "baseDamage": 0,
+        "type": "basic",
+        "stamina": 5,
+        "category": "status",
+        "effects": [
+            {
+                "type": "heal",
+                "target": "self",
+                "value": 50,
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Soft-Boiled",
+        "description": "Sits and rest.",
+        "soundEffect": "audio/effects/absorb.mp3",
+        "baseDamage": 0,
+        "type": "basic",
+        "stamina": 5,
+        "category": "status",
+        "effects": [
+            {
+                "type": "heal",
+                "target": "self",
+                "value": 50,
+                "chance": 100
+            }
+        ]
+    },
+    {
         "name": "Shore Up",
         "description": "Sits and rest.",
         "soundEffect": "audio/effects/absorb.mp3",
@@ -3423,6 +3499,22 @@
         ]
     },
     {
+        "name": "Hail",
+        "description": "Summons hail.",
+        "baseDamage": 0,
+        "type": "cryo",
+        "stamina": 5,
+        "category": "status",
+        "effects": [
+            {
+                "type": "weather",
+                "target": "field",
+                "stat": "hail",
+                "value": 5
+            }
+        ]
+    },
+    {
         "name": "Grassy Terrain",
         "description": "Summons grassy terrain.",
         "baseDamage": 0,
@@ -3718,10 +3810,10 @@
     {
         "name": "Double Slap",
         "description": "Hits 2 times.",
-        "baseDamage": 20,
+        "baseDamage": 30,
         "minHits": 2,
         "maxHits": 2,
-        "type": "martial",
+        "type": "basic",
         "stamina": 15,
         "category": "physical"
     },
@@ -4184,6 +4276,24 @@
         "type": "grass",
         "stamina": 20,
         "category": "physical",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "speed",
+                "value": 1
+            }
+        ]
+    },
+    {
+        "name": "Esper Wing",
+        "description": "Boosts Speed and high crit rate.",
+        "baseDamage": 75,
+        "accuracy": 90,
+        "type": "aura",
+        "stamina": 10,
+        "category": "special",
+        "critRate": 1,
         "effects": [
             {
                 "type": "statChange",
@@ -4709,6 +4819,24 @@
                 "target": "opponent",
                 "value": 1,
                 "chance": 30
+            }
+        ]
+    },
+    {
+        "name": "Hyper Fang",
+        "description": "10% chance to stun the target.",
+        "baseDamage": 80,
+        "accuracy": 90,
+        "type": "basic",
+        "stamina": 15,
+        "category": "physical",
+        "isBite": true,
+        "effects": [
+            {
+                "type": "statusStun",
+                "target": "opponent",
+                "value": 1,
+                "chance": 10
             }
         ]
     },
@@ -6507,6 +6635,20 @@
         ]
     },
     {
+        "name": "Heat Crash",
+        "description": "The user slams into the target with its heavy body. The more the user outweighs the target, the greater the move's power.",
+        "baseDamage": 1,
+        "type": "blaze",
+        "accuracy": 100,
+        "stamina": 10,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "weightDamage"
+            }
+        ]
+    },
+    {
         "name": "Magnitude",
         "description": "The user attacks by shaking the ground with a random magnitude. The power varies with the magnitude.",
         "baseDamage": 1,
@@ -6601,6 +6743,21 @@
         "baseDamage": 35,
         "type": "aquatic",
         "accuracy": 85,
+        "stamina": 15,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "clamping",
+                "target": "opponent"
+            }
+        ]
+    },
+    {
+        "name": "Wrap",
+        "description": "The target becomes trapped within a tail that crushes for two to five turns.",
+        "baseDamage": 15,
+        "type": "basic",
+        "accuracy": 90,
         "stamina": 15,
         "category": "physical",
         "effects": [
@@ -7725,6 +7882,42 @@
         "description": "The user halves the target's HP.",
         "baseDamage": 1,
         "type": "mystic",
+        "accuracy": 90,
+        "stamina": 10,
+        "category": "special",
+        "effects": [
+            {
+                "type": "hpRatioDamage",
+                "target": "opponent",
+                "stat": "half_hp",
+                "value": 2,
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Ruination",
+        "description": "The user halves the target's HP.",
+        "baseDamage": 1,
+        "type": "darkness",
+        "accuracy": 90,
+        "stamina": 10,
+        "category": "special",
+        "effects": [
+            {
+                "type": "hpRatioDamage",
+                "target": "opponent",
+                "stat": "half_hp",
+                "value": 2,
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Super Fang",
+        "description": "The user bites the target with teeth that are big enough to tear through anything, halving the target's current HP.",
+        "baseDamage": 1,
+        "type": "basic",
         "accuracy": 90,
         "stamina": 10,
         "category": "special",
@@ -8915,6 +9108,22 @@
         ]
     },
     {
+        "name": "Spore",
+        "description": "The user releases soporific spores to make the target fall into a deep sleep.",
+        "baseDamage": 0,
+        "type": "grass",
+        "stamina": 20,
+        "accuracy": 100,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statusSleep",
+                "target": "opponent",
+                "value": 3
+            }
+        ]
+    },
+    {
         "name": "Night Shade",
         "description": "The user makes the target see a frightening mirage, which inflicts damage equal to the user's level.",
         "baseDamage": 0,
@@ -9054,5 +9263,54 @@
                 "chance": 100
             }
         ]
+    },
+    {
+        "name": "Burning Jealousy",
+        "description": "Deals damage to all opponents. If an opponent has had its stats raised, it gets burned.",
+        "baseDamage": 70,
+        "type": "blaze",
+        "stamina": 15,
+        "category": "special",
+        "targetCount": "multiple",
+        "effects": [
+            {
+                "type": "burningJealousy",
+                "target": "opponent",
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Yawn",
+        "description": "Makes the target drowsy. The target falls asleep at the end of the next turn.",
+        "baseDamage": 0,
+        "type": "basic",
+        "stamina": 10,
+        "category": "status",
+        "effects": [
+            {
+                "type": "yawn",
+                "target": "opponent",
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Wring Out",
+        "description": "The user powerfully wrings the target. The higher the target's HP, the greater the move's power.",
+        "baseDamage": 1,
+        "type": "aquatic",
+        "stamina": 20,
+        "category": "special",
+        "isWringOut": true
+    },
+    {
+        "name": "Terrain Pulse",
+        "description": "The user utilizes terrain power. The move's type and power change depending on the terrain.",
+        "baseDamage": 50,
+        "type": "basic",
+        "stamina": 15,
+        "category": "special",
+        "isTerrainPulse": true
     }
 ]

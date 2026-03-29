@@ -583,6 +583,25 @@ class DoubleBattleManager extends ChangeNotifier {
       moveType = attacker.types.first;
     }
 
+    if (move.isTerrainPulse && currentTerrain.terrain != Terrain.none) {
+      switch (currentTerrain.terrain) {
+        case Terrain.electric:
+          moveType = ElementalType.electric;
+          break;
+        case Terrain.grassy:
+          moveType = ElementalType.grass;
+          break;
+        case Terrain.misty:
+          moveType = ElementalType.mystic;
+          break;
+        case Terrain.psychic:
+          moveType = ElementalType.aura;
+          break;
+        default:
+          break;
+      }
+    }
+
     return moveType;
   }
 
@@ -628,8 +647,16 @@ class DoubleBattleManager extends ChangeNotifier {
       atkStat /= 2.0;
     }
 
+    int baseDamage = move.baseDamage;
+    if (move.isWringOut) {
+      baseDamage = (120 * defender.health / defender.maxHealth).clamp(1, 120).toInt();
+    }
+    if (move.isTerrainPulse && currentTerrain.terrain != Terrain.none) {
+      baseDamage = 100;
+    }
+
     double dmg =
-        ((2 * attacker.level / 5 + 2) * move.baseDamage * atkStat / defStat) /
+        ((2 * attacker.level / 5 + 2) * baseDamage * atkStat / defStat) /
             50 +
         2;
 
@@ -1590,6 +1617,22 @@ class DoubleBattleManager extends ChangeNotifier {
       slot.isDestinyBondActive = false;
       slot.isFollowMeTarget = false;
       slot.isElectrified = false;
+
+      // --- Yawn Delay ---
+      if (slot.yawnTurns > 0) {
+        slot.yawnTurns--;
+        if (slot.yawnTurns == 0) {
+          if (slot.statusEffect.type == StatusEffectType.none) {
+            _applyStatus(
+              slot,
+              const StatusEffect(type: StatusEffectType.sleep, duration: 3),
+            );
+            addLog('${slot.name} fell asleep!');
+          }
+        } else {
+          addLog('${slot.name} is getting drowsy...');
+        }
+      }
 
       // --- Ingrain Healing ---
       if (slot.isIngrained && slot.health > 0 && slot.health < slot.maxHealth) {

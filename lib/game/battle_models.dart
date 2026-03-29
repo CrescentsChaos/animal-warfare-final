@@ -198,6 +198,7 @@ class BattleOrganism {
     hasForestsCurse = false;
     grudgeActive = false;
     isIngrained = false;
+    yawnTurns = 0;
   }
 
   void resetStatStages() {
@@ -397,6 +398,7 @@ class BattleOrganism {
   bool hasForestsCurse = false;
   bool grudgeActive = false;
   bool isIngrained = false;
+  int yawnTurns = 0;
 
   String get displaySprite => isDisguised && disguisedAs != null
       ? disguisedAs!.baseOrganism.sprite

@@ -5386,6 +5386,26 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           notifyListeners();
           if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
           break;
+        case MoveEffectType.burningJealousy:
+          if (defender.attackStage > 0 ||
+              defender.defenseStage > 0 ||
+              defender.powerStage > 0 ||
+              defender.resistanceStage > 0 ||
+              defender.speedStage > 0 ||
+              defender.accuracyStage > 0 ||
+              defender.evasionStage > 0) {
+            await applyStatusEffect(defender, StatusEffectType.burn, chance: 100);
+            addToLog('The spreading fire burned ${defender.name}!');
+          }
+          break;
+        case MoveEffectType.yawn:
+          if (defender.yawnTurns == 0 &&
+              defender.statusEffects.isEmpty) {
+            defender.yawnTurns = 2;
+            addToLog('${defender.name} became drowsy!');
+            notifyListeners();
+          }
+          break;
 
         default:
           break;
@@ -5998,17 +6018,31 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       target.futureSightTurns--;
       if (target.futureSightTurns == 0) {
         final damage = target.futureSightDamage;
-        target.health = (target.health - damage).clamp(0, target.maxHealth);
-        addToLog(
-          'The future psychic blast hits ${target.name} for $damage damage!',
-        );
-        notifyListeners();
-        if (!isTesting) {
-          await Future.delayed(const Duration(milliseconds: 1500));
+        if (damage > 0) {
+          target.health -= damage;
+          addToLog('The future sight attack hit ${target.name}!');
+          notifyListeners();
+          if (!isTesting) {
+            await Future.delayed(const Duration(milliseconds: 1500));
+          }
+          if (_checkBattleEnd()) return;
         }
-        if (_checkBattleEnd()) return;
       }
     }
+
+    // Yawn Logic
+    if (target.yawnTurns > 0) {
+      target.yawnTurns--;
+      if (target.yawnTurns == 0) {
+        if (target.statusEffect.type == StatusEffectType.none) {
+          await applyStatusEffect(target, StatusEffectType.sleep, duration: 3);
+          addToLog('${target.name} fell asleep!');
+        }
+      } else {
+        addToLog('${target.name} is getting drowsy...');
+      }
+    }
+
 
     // Reset per-turn flags
     target.shellTrapActive = false;
@@ -7865,6 +7899,26 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       moveType = ElementalType.earth;
     }
 
+    // Terrain Pulse
+    if (move.isTerrainPulse && currentTerrain.terrain != Terrain.none && attacker.isGrounded) {
+      switch (currentTerrain.terrain) {
+        case Terrain.electric:
+          moveType = ElementalType.electric;
+          break;
+        case Terrain.grassy:
+          moveType = ElementalType.grass;
+          break;
+        case Terrain.misty:
+          moveType = ElementalType.mystic;
+          break;
+        case Terrain.psychic:
+          moveType = ElementalType.aura;
+          break;
+        default:
+          break;
+      }
+    }
+
     // Hidden Power
     if (move.name == 'Hidden Power' ||
         move.effects.any((e) => e.type == MoveEffectType.hiddenPower)) {
@@ -7924,25 +7978,22 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     }
 
     // Terrain Pulse
-    if (move.name == 'Terrain Pulse') {
-      if (currentTerrain.terrain != Terrain.none && attacker.isGrounded) {
-        switch (currentTerrain.terrain) {
-          case Terrain.electric:
-            moveType = ElementalType.electric;
-            break;
-          case Terrain.grassy:
-            moveType = ElementalType.grass;
-            break;
-          case Terrain.misty:
-            moveType =
-                ElementalType.mystic; // Placeholder for Fairy/Misty equivalent
-            break;
-          case Terrain.psychic:
-            moveType = ElementalType.mystic;
-            break;
-          default:
-            break;
-        }
+    if (move.isTerrainPulse && currentTerrain.terrain != Terrain.none && attacker.isGrounded) {
+      switch (currentTerrain.terrain) {
+        case Terrain.electric:
+          moveType = ElementalType.electric;
+          break;
+        case Terrain.grassy:
+          moveType = ElementalType.grass;
+          break;
+        case Terrain.misty:
+          moveType = ElementalType.aura;
+          break;
+        case Terrain.psychic:
+          moveType = ElementalType.mystic;
+          break;
+        default:
+          break;
       }
     }
 
@@ -8455,6 +8506,13 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       if (isMovingLast) {
         baseDamage = (baseDamage * 1.3).round();
       }
+    }
+
+    if (move.isWringOut) {
+      baseDamage = (120 * defender.health / defender.maxHealth).clamp(1, 120).toInt();
+    }
+    if (move.isTerrainPulse && currentTerrain.terrain != Terrain.none && attacker.isGrounded) {
+      baseDamage = 100;
     }
 
     if (baseDamage <= 0) return const DamageResult(0, 1.0, false);
