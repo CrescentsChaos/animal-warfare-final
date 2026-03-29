@@ -154,6 +154,47 @@ enum MoveEffectType {
   swallow,
   spitUp,
   payback,
+  afterYou,
+  batonPass,
+  beatUp,
+  bestow,
+  trick,
+  clearSmog,
+  corrosiveGas,
+  dreamEater,
+  fellStinger,
+  explosion,
+  entrainment,
+  fling,
+  foulPlay,
+  jawLock,
+  pursuit,
+  leechSeed,
+  kingShield,
+  furyCutter,
+  clearHazards,
+  clearScreens,
+  endeavor,
+  naturesMadness,
+  // Complex move state setters
+  bide,
+  burnUp,
+  destinyBond,
+  disable,
+  electrify,
+  embargo,
+  endure,
+  foresight,
+  forestsCurse,
+  gastroAcid,
+  grudge,
+  skillSwap,
+  guardSwap,
+  ingrain,
+  haze,
+  lunarBlessing,
+  feint,
+  redirection,
 }
 
 enum MoveCategory { physical, special, status }
@@ -263,6 +304,10 @@ class Move {
   final String? soundEffect; // Optional path to sound effect file
   final String? battleMusic; // Optional path to custom battle music
 
+  final bool isSurf;
+  final bool isDive;
+  final bool isFuryCutter;
+
   // Versatility fields
   final String
   damageStat; // 'attack', 'defense', 'speed', 'power', 'resistance'
@@ -271,6 +316,63 @@ class Move {
   final String targetDefenseStat; // 'defense', 'resistance', 'speed', etc.
   final double conditionalMultiplier;
   final bool failIfTargetNotAttacking;
+
+  final bool isFirstTurnOnly;
+  final bool ignoresDefenseStages;
+  final bool isStompingTantrum;
+  final bool isStatusAilmentDouble;
+  final bool isAcrobatics;
+  final bool isRetaliate;
+  final bool isBrine;
+  final bool isRest;
+  final bool isGrowth;
+  final bool isNeverMiss;
+  final bool isRolloutStyle;
+  final bool hitsHiddenUnderground;
+  final bool hitsHiddenUnderwater;
+  final bool hitsHiddenAirborne;
+  final bool isFocusPunchStyle;
+  final bool isHighJumpKick;
+  final bool isBeatUp;
+  final bool isDreamEater;
+  final bool isFling;
+  final bool isClearSmog;
+  final bool isBatonPass;
+  final bool isLeechSeed;
+  final bool isJawLock;
+  final bool isPursuit;
+  final bool isFocusBlast;
+  final bool isFreezeDry;
+  final bool isFacade;
+  final bool isKnockOff;
+  final bool isFinalGambit;
+  final bool isLashOut;
+  final bool isMightyCleave;
+  final bool isCounter;
+  final bool isMirrorCoat;
+  final bool isGrassyGlide;
+  final bool isFoulPlay;
+
+  // 20 New Complex Moves
+  final bool isBide;
+  final bool isBurnUp;
+  final bool isDestinyBond;
+  final bool isDisable;
+  final bool isEchoedVoice;
+  final bool isElectrify;
+  final bool isEmbargo;
+  final bool isEndure;
+  final bool isForesight;
+  final bool isForestsCurse;
+  final bool isGastroAcid;
+  final bool isGrudge;
+  final bool isSkillSwap;
+  final bool isGuardSwap;
+  final bool isSuperFang;
+  final bool isIngrain;
+  final bool isLastRespects;
+  final bool isHaze;
+  final bool isLunarBlessing;
 
   static const int defaultStamina = 20;
 
@@ -309,9 +411,66 @@ class Move {
     this.isPulse = false,
     this.isBallBomb = false,
     this.isAura = false,
+    this.isSurf = false,
+    this.isDive = false,
+    this.isFuryCutter = false,
+    this.isFirstTurnOnly = false,
+    this.ignoresDefenseStages = false,
+    this.isStompingTantrum = false,
+    this.isStatusAilmentDouble = false,
+    this.isAcrobatics = false,
+    this.isRetaliate = false,
+    this.isBrine = false,
+    this.isRest = false,
+    this.isGrowth = false,
+    this.isNeverMiss = false,
+    this.isRolloutStyle = false,
+    this.hitsHiddenUnderground = false,
+    this.hitsHiddenUnderwater = false,
+    this.hitsHiddenAirborne = false,
+    this.isFocusPunchStyle = false,
+    this.isHighJumpKick = false,
+    this.isBeatUp = false,
+    this.isDreamEater = false,
+    this.isFling = false,
+    this.isClearSmog = false,
+    this.isBatonPass = false,
+    this.isLeechSeed = false,
+    this.isJawLock = false,
+    this.isPursuit = false,
+    this.isFocusBlast = false,
+    this.isFreezeDry = false,
+    this.isFacade = false,
+    this.isKnockOff = false,
+    this.isFinalGambit = false,
+    this.isLashOut = false,
+    this.isMightyCleave = false,
+    this.isCounter = false,
+    this.isMirrorCoat = false,
+    this.isGrassyGlide = false,
+    this.isFoulPlay = false,
+    this.isBide = false,
+    this.isBurnUp = false,
+    this.isDestinyBond = false,
+    this.isDisable = false,
+    this.isEchoedVoice = false,
+    this.isElectrify = false,
+    this.isEmbargo = false,
+    this.isEndure = false,
+    this.isForesight = false,
+    this.isForestsCurse = false,
+    this.isGastroAcid = false,
+    this.isGrudge = false,
+    this.isSkillSwap = false,
+    this.isGuardSwap = false,
+    this.isSuperFang = false,
+    this.isIngrain = false,
+    this.isLastRespects = false,
+    this.isHaze = false,
+    this.isLunarBlessing = false,
     bool? isContact,
   }) : isContact =
-           isContact ?? (category == MoveCategory.physical && baseDamage > 0);
+            isContact ?? (category == MoveCategory.physical && baseDamage > 0);
 
   // Compatibility getter
   MoveEffect get effect => effects.isNotEmpty
@@ -411,6 +570,82 @@ class Move {
       isPulse: json['isPulse'] as bool? ?? false,
       isBallBomb: json['isBallBomb'] as bool? ?? false,
       isAura: json['isAura'] as bool? ?? false,
+      isSurf: json['isSurf'] as bool? ?? false,
+      isDive: json['isDive'] as bool? ?? false,
+      isFuryCutter:
+          json['isFuryCutter'] as bool? ?? (json['name'] == 'Fury Cutter'),
+      isFirstTurnOnly: json['isFirstTurnOnly'] as bool? ??
+          (json['name'] == 'Fake Out' || json['name'] == 'First Impression'),
+      ignoresDefenseStages: json['ignoresDefenseStages'] as bool? ??
+          (json['name'] == 'Sacred Sword' || json['name'] == 'Chip Away'),
+      isStompingTantrum: json['isStompingTantrum'] as bool? ??
+          (json['name'] == 'Stomping Tantrum'),
+      isStatusAilmentDouble: json['isStatusAilmentDouble'] as bool? ??
+          (json['name'] == 'Hex' || json['name'] == 'Lash Out'),
+      isAcrobatics:
+          json['isAcrobatics'] as bool? ?? (json['name'] == 'Acrobatics'),
+      isRetaliate:
+          json['isRetaliate'] as bool? ?? (json['name'] == 'Retaliate'),
+      isBrine: json['isBrine'] as bool? ?? (json['name'] == 'Brine'),
+      isRest: json['isRest'] as bool? ?? (json['name'] == 'Rest'),
+      isGrowth: json['isGrowth'] as bool? ?? (json['name'] == 'Growth'),
+      isNeverMiss: json['isNeverMiss'] as bool? ??
+          (json['name'] == 'Kowtow Cleave' ||
+              json['name'] == 'Smart Strike' ||
+              json['name'] == 'Aura Sphere'),
+      isRolloutStyle: json['isRolloutStyle'] as bool? ??
+          (json['name'] == 'Rollout' || json['name'] == 'Ice Ball'),
+      hitsHiddenUnderground: json['hitsHiddenUnderground'] as bool? ??
+          (json['name'] == 'Earthquake' || json['name'] == 'Magnitude'),
+      hitsHiddenUnderwater: json['hitsHiddenUnderwater'] as bool? ??
+          (json['name'] == 'Surf' || json['name'] == 'Whirlpool'),
+      hitsHiddenAirborne: json['hitsHiddenAirborne'] as bool? ??
+          (json['name'] == 'Hurricane' ||
+              json['name'] == 'Thunder' ||
+              json['name'] == 'Sky Uppercut' ||
+              json['name'] == 'Smack Down' ||
+              json['name'] == 'Feline Reflexes'),
+      isFocusPunchStyle: json['isFocusPunchStyle'] as bool? ??
+          (json['name'] == 'Focus Punch' || json['name'] == 'Shell Trap'),
+      isHighJumpKick: json['isHighJumpKick'] as bool? ?? (json['name'] == 'High Jump Kick'),
+      isBeatUp: json['isBeatUp'] as bool? ?? (json['name'] == 'Beat Up'),
+      isDreamEater: json['isDreamEater'] as bool? ?? (json['name'] == 'Dream Eater'),
+      isFling: json['isFling'] as bool? ?? (json['name'] == 'Fling'),
+      isClearSmog: json['isClearSmog'] as bool? ?? (json['name'] == 'Clear Smog'),
+      isBatonPass: json['isBatonPass'] as bool? ?? (json['name'] == 'Baton Pass'),
+      isLeechSeed: json['isLeechSeed'] as bool? ?? (json['name'] == 'Leech Seed'),
+      isJawLock: json['isJawLock'] as bool? ?? (json['name'] == 'Jaw Lock'),
+      isPursuit: json['isPursuit'] as bool? ?? (json['name'] == 'Pursuit'),
+      isFocusBlast: json['isFocusBlast'] as bool? ?? (json['name'] == 'Focus Blast'),
+      isFreezeDry: json['isFreezeDry'] as bool? ?? (json['name'] == 'Freeze-Dry'),
+      isFacade: json['isFacade'] as bool? ?? (json['name'] == 'Facade'),
+      isKnockOff: json['isKnockOff'] as bool? ?? (json['name'] == 'Knock Off'),
+      isFinalGambit: json['isFinalGambit'] as bool? ?? (json['name'] == 'Final Gambit'),
+      isLashOut: json['isLashOut'] as bool? ?? (json['name'] == 'Lash Out'),
+      isMightyCleave: json['isMightyCleave'] as bool? ?? (json['name'] == 'Mighty Cleave'),
+      isCounter: json['isCounter'] as bool? ?? (json['name'] == 'Counter'),
+      isMirrorCoat: json['isMirrorCoat'] as bool? ?? (json['name'] == 'Mirror Coat'),
+      isGrassyGlide: json['isGrassyGlide'] as bool? ?? (json['name'] == 'Grassy Glide'),
+      isFoulPlay: json['isFoulPlay'] as bool? ?? (json['name'] == 'Foul Play'),
+      isBide: json['isBide'] as bool? ?? (json['name'] == 'Bide'),
+      isBurnUp: json['isBurnUp'] as bool? ?? (json['name'] == 'Burn Up'),
+      isDestinyBond: json['isDestinyBond'] as bool? ?? (json['name'] == 'Destiny Bond'),
+      isDisable: json['isDisable'] as bool? ?? (json['name'] == 'Disable'),
+      isEchoedVoice: json['isEchoedVoice'] as bool? ?? (json['name'] == 'Echoed Voice'),
+      isElectrify: json['isElectrify'] as bool? ?? (json['name'] == 'Electrify'),
+      isEmbargo: json['isEmbargo'] as bool? ?? (json['name'] == 'Embargo'),
+      isEndure: json['isEndure'] as bool? ?? (json['name'] == 'Endure'),
+      isForesight: json['isForesight'] as bool? ?? (json['name'] == 'Foresight' || json['name'] == 'Odor Sleuth'),
+      isForestsCurse: json['isForestsCurse'] as bool? ?? (json['name'] == "Forest's Curse"),
+      isGastroAcid: json['isGastroAcid'] as bool? ?? (json['name'] == 'Gastro Acid'),
+      isGrudge: json['isGrudge'] as bool? ?? (json['name'] == 'Grudge'),
+      isSkillSwap: json['isSkillSwap'] as bool? ?? (json['name'] == 'Skill Swap'),
+      isGuardSwap: json['isGuardSwap'] as bool? ?? (json['name'] == 'Guard Swap'),
+      isSuperFang: json['isSuperFang'] as bool? ?? (json['name'] == 'Super Fang' || json['name'] == "Nature's Madness"),
+      isIngrain: json['isIngrain'] as bool? ?? (json['name'] == 'Ingrain'),
+      isLastRespects: json['isLastRespects'] as bool? ?? (json['name'] == 'Last Respects'),
+      isHaze: json['isHaze'] as bool? ?? (json['name'] == 'Haze' || json['name'] == 'Clear Smog'),
+      isLunarBlessing: json['isLunarBlessing'] as bool? ?? (json['name'] == 'Lunar Blessing' || json['name'] == 'Jungle Healing'),
     );
   }
 
@@ -446,6 +681,9 @@ class Move {
     bool? isPulse,
     bool? isBallBomb,
     bool? isAura,
+    bool? isSurf,
+    bool? isDive,
+    bool? isFuryCutter,
     String? animationType,
   }) {
     return Move(
@@ -482,6 +720,9 @@ class Move {
       isPulse: isPulse ?? this.isPulse,
       isBallBomb: isBallBomb ?? this.isBallBomb,
       isAura: isAura ?? this.isAura,
+      isSurf: isSurf ?? this.isSurf,
+      isDive: isDive ?? this.isDive,
+      isFuryCutter: isFuryCutter ?? this.isFuryCutter,
       animationType: animationType ?? this.animationType,
     );
   }

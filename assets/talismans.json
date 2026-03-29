@@ -1660,7 +1660,7 @@
     "description": "When hit by an attack, the holder forces the attacker to switch out (once per battle).",
     "effects": [
       {
-        "type": "one_hit_save",
+        "type": "forced_switch",
         "magnitude": 1.0,
         "condition": "forced_switch"
       }

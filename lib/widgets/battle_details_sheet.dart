@@ -566,7 +566,7 @@ class BattleDetailsSheet extends StatelessWidget {
     final hpRatio = bo.maxHealth > 0 ? bo.health / bo.maxHealth : 0.0;
 
     // Collect Field Effects
-    
+
     // Attempt to get manager from context
     BattleManager? bm;
     DoubleBattleManager? dbm;
@@ -596,24 +596,99 @@ class BattleDetailsSheet extends StatelessWidget {
           'color': Colors.greenAccent,
         });
       }
-      
+
       if (bm.trickRoomTurns > 0) {
-        activeField.add({'name': 'TRICK ROOM', 'turns': bm.trickRoomTurns, 'icon': 'assets/icon/trick_room.png', 'color': Colors.purpleAccent});
+        activeField.add({
+          'name': 'TRICK ROOM',
+          'turns': bm.trickRoomTurns,
+          'icon': 'assets/icon/trick_room.png',
+          'color': Colors.purpleAccent,
+        });
       }
-      
+
       final isPlayerSide = isPlayer;
       if (isPlayerSide) {
-        if (bm.playerReflectTurns > 0) activeField.add({'name': 'REFLECT', 'turns': bm.playerReflectTurns, 'icon': 'assets/icon/reflect.png', 'color': Colors.greenAccent});
-        if (bm.playerLightScreenTurns > 0) activeField.add({'name': 'LIGHT SCREEN', 'turns': bm.playerLightScreenTurns, 'icon': 'assets/icon/light_screen.png', 'color': Colors.greenAccent});
-        if (bm.playerSafeguardTurns > 0) activeField.add({'name': 'SAFEGUARD', 'turns': bm.playerSafeguardTurns, 'icon': 'assets/icon/safeguard.png', 'color': Colors.greenAccent});
-        if (bm.playerTailwindTurns > 0) activeField.add({'name': 'TAILWIND', 'turns': bm.playerTailwindTurns, 'icon': 'assets/icon/tailwind.png', 'color': Colors.greenAccent});
-        if (bm.playerAuroraVeilTurns > 0) activeField.add({'name': 'AURORA VEIL', 'turns': bm.playerAuroraVeilTurns, 'icon': 'assets/icon/aurora_veil.png', 'color': Colors.greenAccent});
+        if (bm.playerReflectTurns > 0) {
+          activeField.add({
+            'name': 'REFLECT',
+            'turns': bm.playerReflectTurns,
+            'icon': 'assets/icon/reflect.png',
+            'color': Colors.greenAccent,
+          });
+        }
+        if (bm.playerLightScreenTurns > 0) {
+          activeField.add({
+            'name': 'LIGHT SCREEN',
+            'turns': bm.playerLightScreenTurns,
+            'icon': 'assets/icon/light_screen.png',
+            'color': Colors.greenAccent,
+          });
+        }
+        if (bm.playerSafeguardTurns > 0) {
+          activeField.add({
+            'name': 'SAFEGUARD',
+            'turns': bm.playerSafeguardTurns,
+            'icon': 'assets/icon/safeguard.png',
+            'color': Colors.greenAccent,
+          });
+        }
+        if (bm.playerTailwindTurns > 0) {
+          activeField.add({
+            'name': 'TAILWIND',
+            'turns': bm.playerTailwindTurns,
+            'icon': 'assets/icon/tailwind.png',
+            'color': Colors.greenAccent,
+          });
+        }
+        if (bm.playerAuroraVeilTurns > 0) {
+          activeField.add({
+            'name': 'AURORA VEIL',
+            'turns': bm.playerAuroraVeilTurns,
+            'icon': 'assets/icon/aurora_veil.png',
+            'color': Colors.greenAccent,
+          });
+        }
       } else {
-        if (bm.opponentReflectTurns > 0) activeField.add({'name': 'REFLECT', 'turns': bm.opponentReflectTurns, 'icon': 'assets/icon/reflect.png', 'color': Colors.redAccent});
-        if (bm.opponentLightScreenTurns > 0) activeField.add({'name': 'LIGHT SCREEN', 'turns': bm.opponentLightScreenTurns, 'icon': 'assets/icon/light_screen.png', 'color': Colors.redAccent});
-        if (bm.opponentSafeguardTurns > 0) activeField.add({'name': 'SAFEGUARD', 'turns': bm.opponentSafeguardTurns, 'icon': 'assets/icon/safeguard.png', 'color': Colors.redAccent});
-        if (bm.opponentTailwindTurns > 0) activeField.add({'name': 'TAILWIND', 'turns': bm.opponentTailwindTurns, 'icon': 'assets/icon/tailwind.png', 'color': Colors.redAccent});
-        if (bm.opponentAuroraVeilTurns > 0) activeField.add({'name': 'AURORA VEIL', 'turns': bm.opponentAuroraVeilTurns, 'icon': 'assets/icon/aurora_veil.png', 'color': Colors.redAccent});
+        if (bm.opponentReflectTurns > 0) {
+          activeField.add({
+            'name': 'REFLECT',
+            'turns': bm.opponentReflectTurns,
+            'icon': 'assets/icon/reflect.png',
+            'color': Colors.redAccent,
+          });
+        }
+        if (bm.opponentLightScreenTurns > 0) {
+          activeField.add({
+            'name': 'LIGHT SCREEN',
+            'turns': bm.opponentLightScreenTurns,
+            'icon': 'assets/icon/light_screen.png',
+            'color': Colors.redAccent,
+          });
+        }
+        if (bm.opponentSafeguardTurns > 0) {
+          activeField.add({
+            'name': 'SAFEGUARD',
+            'turns': bm.opponentSafeguardTurns,
+            'icon': 'assets/icon/safeguard.png',
+            'color': Colors.redAccent,
+          });
+        }
+        if (bm.opponentTailwindTurns > 0) {
+          activeField.add({
+            'name': 'TAILWIND',
+            'turns': bm.opponentTailwindTurns,
+            'icon': 'assets/icon/tailwind.png',
+            'color': Colors.redAccent,
+          });
+        }
+        if (bm.opponentAuroraVeilTurns > 0) {
+          activeField.add({
+            'name': 'AURORA VEIL',
+            'turns': bm.opponentAuroraVeilTurns,
+            'icon': 'assets/icon/aurora_veil.png',
+            'color': Colors.redAccent,
+          });
+        }
       }
     } else if (dbm != null) {
       if (dbm.currentWeather.weather != Weather.none) {
@@ -632,24 +707,99 @@ class BattleDetailsSheet extends StatelessWidget {
           'color': Colors.greenAccent,
         });
       }
-      
+
       if (dbm.trickRoomTurns > 0) {
-        activeField.add({'name': 'TRICK ROOM', 'turns': dbm.trickRoomTurns, 'icon': 'assets/icon/trick_room.png', 'color': Colors.purpleAccent});
+        activeField.add({
+          'name': 'TRICK ROOM',
+          'turns': dbm.trickRoomTurns,
+          'icon': 'assets/icon/trick_room.png',
+          'color': Colors.purpleAccent,
+        });
       }
-      
+
       final isPlayerSide = isPlayer;
       if (isPlayerSide) {
-        if (dbm.playerReflectTurns > 0) activeField.add({'name': 'REFLECT', 'turns': dbm.playerReflectTurns, 'icon': 'assets/icon/reflect.png', 'color': Colors.greenAccent});
-        if (dbm.playerLightScreenTurns > 0) activeField.add({'name': 'LIGHT SCREEN', 'turns': dbm.playerLightScreenTurns, 'icon': 'assets/icon/light_screen.png', 'color': Colors.greenAccent});
-        if (dbm.playerSafeguardTurns > 0) activeField.add({'name': 'SAFEGUARD', 'turns': dbm.playerSafeguardTurns, 'icon': 'assets/icon/safeguard.png', 'color': Colors.greenAccent});
-        if (dbm.playerTailwindTurns > 0) activeField.add({'name': 'TAILWIND', 'turns': dbm.playerTailwindTurns, 'icon': 'assets/icon/tailwind.png', 'color': Colors.greenAccent});
-        if (dbm.playerAuroraVeilTurns > 0) activeField.add({'name': 'AURORA VEIL', 'turns': dbm.playerAuroraVeilTurns, 'icon': 'assets/icon/aurora_veil.png', 'color': Colors.greenAccent});
+        if (dbm.playerReflectTurns > 0) {
+          activeField.add({
+            'name': 'REFLECT',
+            'turns': dbm.playerReflectTurns,
+            'icon': 'assets/icon/reflect.png',
+            'color': Colors.greenAccent,
+          });
+        }
+        if (dbm.playerLightScreenTurns > 0) {
+          activeField.add({
+            'name': 'LIGHT SCREEN',
+            'turns': dbm.playerLightScreenTurns,
+            'icon': 'assets/icon/light_screen.png',
+            'color': Colors.greenAccent,
+          });
+        }
+        if (dbm.playerSafeguardTurns > 0) {
+          activeField.add({
+            'name': 'SAFEGUARD',
+            'turns': dbm.playerSafeguardTurns,
+            'icon': 'assets/icon/safeguard.png',
+            'color': Colors.greenAccent,
+          });
+        }
+        if (dbm.playerTailwindTurns > 0) {
+          activeField.add({
+            'name': 'TAILWIND',
+            'turns': dbm.playerTailwindTurns,
+            'icon': 'assets/icon/tailwind.png',
+            'color': Colors.greenAccent,
+          });
+        }
+        if (dbm.playerAuroraVeilTurns > 0) {
+          activeField.add({
+            'name': 'AURORA VEIL',
+            'turns': dbm.playerAuroraVeilTurns,
+            'icon': 'assets/icon/aurora_veil.png',
+            'color': Colors.greenAccent,
+          });
+        }
       } else {
-        if (dbm.opponentReflectTurns > 0) activeField.add({'name': 'REFLECT', 'turns': dbm.opponentReflectTurns, 'icon': 'assets/icon/reflect.png', 'color': Colors.redAccent});
-        if (dbm.opponentLightScreenTurns > 0) activeField.add({'name': 'LIGHT SCREEN', 'turns': dbm.opponentLightScreenTurns, 'icon': 'assets/icon/light_screen.png', 'color': Colors.redAccent});
-        if (dbm.opponentSafeguardTurns > 0) activeField.add({'name': 'SAFEGUARD', 'turns': dbm.opponentSafeguardTurns, 'icon': 'assets/icon/safeguard.png', 'color': Colors.redAccent});
-        if (dbm.opponentTailwindTurns > 0) activeField.add({'name': 'TAILWIND', 'turns': dbm.opponentTailwindTurns, 'icon': 'assets/icon/tailwind.png', 'color': Colors.redAccent});
-        if (dbm.opponentAuroraVeilTurns > 0) activeField.add({'name': 'AURORA VEIL', 'turns': dbm.opponentAuroraVeilTurns, 'icon': 'assets/icon/aurora_veil.png', 'color': Colors.redAccent});
+        if (dbm.opponentReflectTurns > 0) {
+          activeField.add({
+            'name': 'REFLECT',
+            'turns': dbm.opponentReflectTurns,
+            'icon': 'assets/icon/reflect.png',
+            'color': Colors.redAccent,
+          });
+        }
+        if (dbm.opponentLightScreenTurns > 0) {
+          activeField.add({
+            'name': 'LIGHT SCREEN',
+            'turns': dbm.opponentLightScreenTurns,
+            'icon': 'assets/icon/light_screen.png',
+            'color': Colors.redAccent,
+          });
+        }
+        if (dbm.opponentSafeguardTurns > 0) {
+          activeField.add({
+            'name': 'SAFEGUARD',
+            'turns': dbm.opponentSafeguardTurns,
+            'icon': 'assets/icon/safeguard.png',
+            'color': Colors.redAccent,
+          });
+        }
+        if (dbm.opponentTailwindTurns > 0) {
+          activeField.add({
+            'name': 'TAILWIND',
+            'turns': dbm.opponentTailwindTurns,
+            'icon': 'assets/icon/tailwind.png',
+            'color': Colors.redAccent,
+          });
+        }
+        if (dbm.opponentAuroraVeilTurns > 0) {
+          activeField.add({
+            'name': 'AURORA VEIL',
+            'turns': dbm.opponentAuroraVeilTurns,
+            'icon': 'assets/icon/aurora_veil.png',
+            'color': Colors.redAccent,
+          });
+        }
       }
     }
 
@@ -752,7 +902,13 @@ class BattleDetailsSheet extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Image.asset(f['icon'], width: 14, height: 14, errorBuilder: (_, __, ___) => const Icon(Icons.help, size: 14, color: Colors.white24)),
+          Image.asset(
+            f['icon'],
+            width: 14,
+            height: 14,
+            errorBuilder: (_, _, _) =>
+                const Icon(Icons.help, size: 14, color: Colors.white24),
+          ),
           const SizedBox(width: 8),
           Text(
             f['name'],

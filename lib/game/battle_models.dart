@@ -110,6 +110,9 @@ class BattleOrganism {
   String? activeForm;
   bool magicCoatActive = false;
   int stockpileCount = 0;
+  bool isLeechSeeded = false;
+  bool isJawLocked = false;
+  bool batonPassPending = false;
 
   /// Reset battle-specific flags (called when switching out or starting battle)
   void resetBattleState() {
@@ -169,17 +172,32 @@ class BattleOrganism {
     lastMoveFailed = false;
     furyCutterCount = 0;
     stockpileCount = 0;
+    isLeechSeeded = false;
+    isJawLocked = false;
+    batonPassPending = false;
 
     // GIMMICK RESET: Prismorph persists.
     // NOTE: isPrismorphed/hasPrismorph/activeTeraType are NOT reset here;
     // they persist for the entire battle.
 
-    // Disable reset
     itemDisabledTurns = 0;
     disabledMoves.clear();
     poisonTurnCount = 0;
 
     hasMovedThisTurn = false;
+    
+    // Complex Move States
+    isBiding = false;
+    bideDamage = 0;
+    bideTurns = 0;
+    isBurnedUp = false;
+    isDestinyBondActive = false;
+    isEnduring = false;
+    isElectrified = false;
+    isForesighted = false;
+    hasForestsCurse = false;
+    grudgeActive = false;
+    isIngrained = false;
   }
 
   void resetStatStages() {
@@ -367,6 +385,19 @@ class BattleOrganism {
   bool hasEatenBerry =
       false; // Tracks berry consumption for Power of Alchemy etc
 
+  // Complex Move States
+  bool isBiding = false;
+  int bideDamage = 0;
+  int bideTurns = 0;
+  bool isBurnedUp = false;
+  bool isDestinyBondActive = false;
+  bool isEnduring = false;
+  bool isElectrified = false;
+  bool isForesighted = false;
+  bool hasForestsCurse = false;
+  bool grudgeActive = false;
+  bool isIngrained = false;
+
   String get displaySprite => isDisguised && disguisedAs != null
       ? disguisedAs!.baseOrganism.sprite
       : organism.baseOrganism.sprite;
@@ -430,6 +461,7 @@ class BattleOrganism {
     }
 
     // Multitype / Plates
+
     if (abilities.any((a) => a.name == 'Multitype') && _isItemValid) {
       final itemName = organism.equippedTalisman!.name.toLowerCase();
       if (itemName.contains('plate')) {
@@ -452,7 +484,19 @@ class BattleOrganism {
       }
     }
 
-    return _battleTypes ?? organism.baseOrganism.elementalTypes;
+    List<ElementalType> finalTypes = _battleTypes ?? List.from(organism.baseOrganism.elementalTypes);
+    
+    // Burn Up removes Fire typing
+    if (isBurnedUp) {
+      finalTypes.remove(ElementalType.blaze);
+    }
+    
+    // Forest's Curse adds Grass typing
+    if (hasForestsCurse && !finalTypes.contains(ElementalType.grass)) {
+      finalTypes.add(ElementalType.grass);
+    }
+
+    return finalTypes.isEmpty ? [ElementalType.basic] : finalTypes;
   }
 
   set battleTypes(List<ElementalType> value) => _battleTypes = value;

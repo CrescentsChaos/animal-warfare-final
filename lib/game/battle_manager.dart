@@ -70,9 +70,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     if (targetIsMarked ||
         hasNoGuard ||
-        move.name == 'Kowtow Cleave' ||
-        move.name == 'Smart Strike' ||
-        (move.name == 'Focus Blast' &&
+        move.isNeverMiss ||
+        (move.isFocusBlast &&
             attacker.abilities.any((ab) => ab.name == 'Inner Focus')) ||
         defender.glaiveRushVulnerable) {
       return 100;
@@ -250,6 +249,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   // LOGGING REFACTOR
   int currentTurn = 1;
   final List<BattleTurn> turnHistory = [];
+  int echoedVoiceCount = 0;
 
   /// NEW: Tracks which animal uniquely landed the final blow for XP awarding.
   String? lastBlowOrganismId;
@@ -1301,7 +1301,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     // Rollout/Ice Ball Lock
     if (player.rolloutTurnCount > 0 && player.rolloutMove != null) {
       activeMove = player.rolloutMove!;
-    } else if (move.name == 'Rollout' || move.name == 'Ice Ball') {
+    } else if (move.isRolloutStyle) {
       player.rolloutMove = move;
     }
 
@@ -1351,7 +1351,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           priority: 6,
         );
         // Pursuit Intercept: If player uses Pursuit, it hits BEFORE the switch
-        if (activeMove.name == 'Pursuit') {
+        if (activeMove.isPursuit) {
           // Delay switch until after Pursuit hits
           opponentJustSwitched =
               false; // We'll handle it in _executeTurn or after
@@ -1421,8 +1421,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
       // Grassy Glide Priority
       if (currentTerrain.terrain == Terrain.grassy) {
-        if (activeMove.name == 'Grassy Glide') playerPriority += 1;
-        if (currentTurnOpponentMove!.name == 'Grassy Glide') {
+        if (activeMove.isGrassyGlide) playerPriority += 1;
+        if (currentTurnOpponentMove!.isGrassyGlide) {
           opponentPriority += 1;
         }
       }
@@ -1621,6 +1621,39 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     Move? opponentMove,
     bool isPursuitIntercept = false,
   }) async {
+    // --- NEW: Electrify Check ---
+    if (attacker.isElectrified && move.baseDamage > 0) {
+      move = move.copyWith(type: ElementalType.electric);
+      addToLog("${attacker.name}'s move was electrified!");
+    }
+
+    // --- NEW: Biding Turn Check ---
+    if (attacker.isBiding) {
+      attacker.bideTurns--;
+      if (attacker.bideTurns > 0) {
+        addToLog("${attacker.name} is biding its time!");
+        notifyListeners();
+        if (!isTesting) await Future.delayed(const Duration(milliseconds: 2000));
+        return;
+      } else {
+        // Bide release
+        final damage = attacker.bideDamage * 2;
+        attacker.isBiding = false;
+        attacker.bideDamage = 0;
+        
+        if (damage <= 0) {
+          addToLog("${attacker.name} unleashed its energy... but it failed!");
+        } else {
+          addToLog("${attacker.name} unleashed its energy!");
+          // Apply fixed damage (bypassing normal calculation)
+          await _applyFixedDamage(attacker, defender, damage);
+        }
+        notifyListeners();
+        if (!isTesting) await Future.delayed(const Duration(milliseconds: 2000));
+        return;
+      }
+    }
+
     defender.tookDamageThisTurn = false;
     // 1. Multi-turn logical handling
     bool wasCharging = attacker.chargingMove != null;
@@ -2179,20 +2212,21 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     if (defender.isInvulnerable && !isSelfOrFieldMove) {
       bool bypassInvulnerability = false;
-      if (defender.semiInvulnerable == 'underground' &&
-          (move.name == 'Earthquake' || move.name == 'Magnitude')) {
-        bypassInvulnerability = true;
-      } else if (defender.semiInvulnerable == 'underwater' &&
-          (move.name == 'Surf' || move.name == 'Whirlpool')) {
-        bypassInvulnerability = true;
-      } else if (defender.semiInvulnerable == 'airborne' &&
-          (move.name == 'Hurricane' ||
-              move.name == 'Thunder' ||
-              move.name == 'Sky Uppercut' ||
-              move.name == 'Smack Down' ||
-              move.name == 'Feline Reflexes')) {
-        bypassInvulnerability = true;
-      }
+          // Earthquake/Magnitude: Hits during Dig
+          if (defender.semiInvulnerable == 'underground' &&
+              move.hitsHiddenUnderground) {
+            bypassInvulnerability = true;
+          }
+          // Surf/Whirlpool: Hits during Dive
+          else if (defender.semiInvulnerable == 'underwater' &&
+              move.hitsHiddenUnderwater) {
+            bypassInvulnerability = true;
+          }
+          // Air attacks hits fly/bounce/airborne
+          else if (defender.semiInvulnerable == 'airborne' &&
+              move.hitsHiddenAirborne) {
+            bypassInvulnerability = true;
+          }
 
       if (!bypassInvulnerability) {
         addToLog('${defender.organism.baseOrganism.name} is out of reach!');
@@ -2352,7 +2386,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     // Stance Change: Form switching
     if (attacker.abilities.any((ab) => ab.name == 'Stance Change')) {
-      if (move.name == 'King\'s Shield' && !attacker.isShieldForm) {
+      if (move.effects.any((e) => e.type == MoveEffectType.kingShield) &&
+          !attacker.isShieldForm) {
         attacker.isShieldForm = true;
         addToLog('${attacker.name} changed to Shield Form!');
         notifyListeners();
@@ -2367,7 +2402,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     attacker.lastMoveFailed = false;
 
     // Fury Cutter logic
-    if (move.name == 'Fury Cutter') {
+    if (move.isFuryCutter) {
       attacker.furyCutterCount = (attacker.furyCutterCount + 1).clamp(0, 4);
       // Note: multiplier in calculateDamage handles the power (2^count)
     }
@@ -2381,6 +2416,16 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         hits = move.minHits;
       } else {
         hits = move.minHits + _random.nextInt(move.maxHits - move.minHits + 1);
+      }
+    }
+
+    // Beat Up Hit Count Logic
+    if (move.effects.any((e) => e.type == MoveEffectType.beatUp)) {
+      if (attacker == player) {
+        hits = playerTeam.where((org) => org.currentHealth > 0).length;
+      } else {
+        // For single-organism opponent, it's just 1 hit unless we add a team later
+        hits = 1;
       }
     }
 
@@ -2441,7 +2486,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       // 2. Damage Calculation
       // Gulp Missile form change
       if (attacker.abilities.any((ab) => ab.name == 'Gulp Missile') &&
-          (move.name == 'Surf' || move.name == 'Dive') &&
+          (move.isSurf || move.isDive) &&
           attacker.activeForm == null) {
         if (attacker.health > attacker.maxHealth / 2) {
           attacker.activeForm = 'gulp_arrokuda';
@@ -2580,6 +2625,12 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           await notifyAbilityTrigger(defender, ab);
           addToLog('${defender.name} endured the hit with Sturdy!');
         }
+
+        // Endure
+        if (defender.isEnduring && finalDamage >= defender.health) {
+          finalDamage = defender.health - 1;
+          addToLog('${defender.name} endured the hit!');
+        }
         notifyListeners();
         if (!isTesting) {
           await Future.delayed(const Duration(milliseconds: 2000));
@@ -2622,7 +2673,11 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           attacker.coilUpActive = false;
         }
 
-        if (move.name == 'Brick Break' || move.name == 'Psychic Fangs') {
+        if (move.effects.any(
+          (e) =>
+              e.type == MoveEffectType.clearHazards ||
+              e.type == MoveEffectType.clearScreens,
+        )) {
           if (defender.isPlayer) {
             if (playerReflectTurns > 0 ||
                 playerLightScreenTurns > 0 ||
@@ -2696,6 +2751,19 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
               addToLog('${defender.name}\'s Berserk raised its power!');
             }
           }
+
+          // Endure: Survive lethal hit with 1 HP
+          if (defender.isEnduring && defender.health <= 0 && damageToApply > 0) {
+            defender.health = 1;
+            addToLog('${defender.name} endured the hit!');
+            notifyListeners();
+            if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+          }
+
+          // Bide: Accumulate incoming damage
+          if (defender.isBiding && damageToApply > 0) {
+            defender.bideDamage += damageToApply;
+          }
         }
 
         // Focus Punch / Shell Trap Check
@@ -2708,6 +2776,17 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
         // Faint handlers: Moxie, Beast Boost, Aftermath
         if (defender.health <= 0) {
+          // Destiny Bond
+          if (defender.isDestinyBondActive && attacker.health > 0) {
+            attacker.health = 0;
+            addToLog('${attacker.name} was taken down by Destiny Bond!');
+          }
+          // Grudge
+          if (defender.grudgeActive && attacker.health > 0 && attacker.organism.moveStamina.containsKey(move.name)) {
+            attacker.organism.moveStamina[move.name] = 0;
+            addToLog('${attacker.name}\'s ${move.name} lost all its stamina due to the Grudge!');
+          }
+
           // Moxie / Chilling Neigh
           if (attacker.abilities.any(
                 (ab) => ab.name == 'Moxie' || ab.name == 'Chilling Neigh',
@@ -3035,6 +3114,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         }
 
         // --- Red Card Implementation ---
+        // Pokemon rules: Only triggers on damage from a move, and only if the holder survives.
         if (effectiveDamage > 0 &&
             !substituteTookDamage &&
             defender.organism.equippedTalisman != null &&
@@ -3047,22 +3127,28 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           addToLog('${defender.name} held up its Red Card!');
           notifyListeners();
 
-          if (attacker.isPlayer) {
-            final healthyIndex = playerTeam.indexWhere(
-              (org) => org.currentHealth > 0 && org != attacker.organism,
-            );
-            if (healthyIndex != -1 && isArenaBattle) {
-              addToLog('${attacker.name} was forced to switch out!');
-              currentState = BattleState
-                  .waitingForPlayerSwitch; // This might be tricky mid-turn
+          if (isArenaBattle) {
+            final team = attacker.isPlayer ? playerTeam : opponentTeam;
+            final currentIndex = attacker.isPlayer
+                ? currentPlayerIndex
+                : currentOpponentIndex;
+            final availableIndices = <int>[];
+            for (int i = 0; i < team.length; i++) {
+              if (i != currentIndex && team[i].currentHealth > 0) {
+                availableIndices.add(i);
+              }
             }
-          } else {
-            final healthyIndex = opponentTeam.indexWhere(
-              (org) => org.currentHealth > 0 && org != attacker.organism,
-            );
-            if (healthyIndex != -1 && isArenaBattle) {
+
+            if (availableIndices.isNotEmpty) {
               addToLog('${attacker.name} was forced to switch out!');
-              _switchOpponentTo(healthyIndex);
+              final randomIndex =
+                  availableIndices[Random().nextInt(availableIndices.length)];
+              // Standardization: Directly call switch without setting waiting state
+              if (attacker.isPlayer) {
+                await _switchToAnimal(randomIndex);
+              } else {
+                await _switchOpponentTo(randomIndex);
+              }
             }
           }
           if (!isTesting) {
@@ -3385,7 +3471,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
                 );
               } else if (ab.effectType == AbilityEffectType.typeChange) {
                 await notifyAbilityTrigger(defender, ab);
-                final newType = ab.value.isNotEmpty ? ElementalTypeX.fromString(ab.value) : move.type;
+                final newType = ab.value.isNotEmpty
+                    ? ElementalTypeX.fromString(ab.value)
+                    : move.type;
                 defender.battleTypes = [newType];
                 addToLog(
                   '${defender.organism.baseOrganism.name} changed its type to ${newType.name.toUpperCase()}!',
@@ -3507,7 +3595,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
                 }
               } else if (ab.effectType == AbilityEffectType.typeChange) {
                 await notifyAbilityTrigger(attacker, ab);
-                final newType = ab.value.isNotEmpty ? ElementalTypeX.fromString(ab.value) : move.type;
+                final newType = ab.value.isNotEmpty
+                    ? ElementalTypeX.fromString(ab.value)
+                    : move.type;
                 defender.battleTypes = [newType];
                 addToLog(
                   '${defender.name} was turned into a ${newType.name.toUpperCase()} type!',
@@ -4202,7 +4292,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             target,
             statusType,
             chance: effect.chance,
-            duration: move.name == 'Rest'
+            duration: move.isRest
                 ? 2
                 : (effect.value > 0 ? effect.value : null),
           );
@@ -4236,7 +4326,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           if (Random().nextInt(100) < effect.chance) {
             int val = effect.value;
             // Chloroplast: Growth act as if used in Sunny Weather
-            if (move.name == 'Growth' &&
+            if (move.isGrowth &&
                 (currentWeather.weather == Weather.sunny ||
                     attacker.abilities.any((ab) => ab.name == 'Chloroplast'))) {
               val = 2;
@@ -4495,6 +4585,138 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             addToLog('${attacker.name} failed to protect itself!');
           }
           break;
+
+        case MoveEffectType.afterYou:
+          // Single battle: Opponent is already next, but we can log it.
+          addToLog('${target.name} is ready for its turn!');
+          break;
+
+        case MoveEffectType.batonPass:
+          attacker.batonPassPending = true;
+          // Force a switch
+          if (attacker.isOpponent) {
+            int switchToIndex = opponentTeam.indexWhere(
+              (org) => org.id != opponent.organism.id && org.currentHealth > 0,
+            );
+            if (switchToIndex != -1) {
+              addToLog('${attacker.name} passed the baton!');
+              await _switchOpponentTo(switchToIndex);
+            }
+          } else {
+            final hasAvailable = playerTeam.any(
+              (org) => org.currentHealth > 0 && org != player.organism,
+            );
+            if (hasAvailable) {
+              addToLog('${attacker.name} passed the baton!');
+              currentState = BattleState.waitingForPlayerSwitch;
+              notifyListeners();
+              _switchCompleter = Completer<void>();
+              await _switchCompleter!.future;
+              _switchCompleter = null;
+              currentState = BattleState.applyingEffects;
+            }
+          }
+          break;
+
+        case MoveEffectType.trick:
+          final attackerItem = attacker.organism.equippedTalisman;
+          final defenderItem = defender.organism.equippedTalisman;
+          if (defender.abilities.any((ab) => ab.name == 'Sticky Hold')) {
+            addToLog('${defender.name}\'s Sticky Hold prevents item swapping!');
+          } else {
+            attacker.organism.equippedTalisman = defenderItem;
+            defender.organism.equippedTalisman = attackerItem;
+            addToLog('${attacker.name} swapped items with ${defender.name}!');
+          }
+          break;
+
+        case MoveEffectType.bestow:
+          if (attacker.organism.equippedTalisman != null &&
+              defender.organism.equippedTalisman == null) {
+            defender.organism.equippedTalisman =
+                attacker.organism.equippedTalisman;
+            attacker.organism.equippedTalisman = null;
+            addToLog('${attacker.name} bestowed its item to ${defender.name}!');
+          } else {
+            addToLog('But it failed!');
+          }
+          break;
+
+        case MoveEffectType.entrainment:
+          if (attacker.abilities.isNotEmpty) {
+            final abilityToCopy = attacker.abilities.first;
+            target.organism.activeAbilityName = abilityToCopy.name;
+            addToLog(
+              '${target.name} acquired ${attacker.name}\'s ${abilityToCopy.name}!',
+            );
+          }
+          break;
+
+        case MoveEffectType.corrosiveGas:
+          attacker.organism.equippedTalisman = null;
+          defender.organism.equippedTalisman = null;
+          addToLog('The corrosive gas melted everyone\'s items!');
+          break;
+
+        case MoveEffectType.dreamEater:
+          if (defender.statusEffects.any(
+            (se) => se.type == StatusEffectType.sleep,
+          )) {
+            final heal = (attacker.maxHealth / 4).round();
+            attacker.health = (attacker.health + heal).clamp(
+              0,
+              attacker.maxHealth,
+            );
+            addToLog('${attacker.name} ate the dream and was healed!');
+          } else {
+            addToLog('But ${defender.name} is not asleep!');
+          }
+          break;
+
+        case MoveEffectType.fellStinger:
+          if (defender.health <= 0) {
+            await applyStatChange(attacker, 'attack', 3);
+            addToLog('${attacker.name}\'s attack rose drastically!');
+          }
+          break;
+
+        case MoveEffectType.explosion:
+          attacker.health = 0;
+          addToLog('${attacker.name} exploded!');
+          break;
+
+        case MoveEffectType.fling:
+          attacker.organism.equippedTalisman = null;
+          attacker.talismanConsumed = true;
+          addToLog('${attacker.name} flung its item!');
+          break;
+
+        case MoveEffectType.jawLock:
+          attacker.isJawLocked = true;
+          defender.isJawLocked = true;
+          addToLog('Both animals are locked in a jaw grip!');
+          break;
+
+        case MoveEffectType.leechSeed:
+          if (defender.types.contains(ElementalType.grass) ||
+              defender.isLeechSeeded) {
+            addToLog('But it failed!');
+          } else {
+            defender.isLeechSeeded = true;
+            addToLog('${defender.name} was seeded!');
+          }
+          break;
+
+        case MoveEffectType.clearSmog:
+          target.attackStage = 0;
+          target.defenseStage = 0;
+          target.powerStage = 0;
+          target.resistanceStage = 0;
+          target.speedStage = 0;
+          target.accuracyStage = 0;
+          target.evasionStage = 0;
+          addToLog('${target.name}\'s stat changes were cleared!');
+          break;
         case MoveEffectType.heal:
           if (target.health < target.maxHealth) {
             // effect.value is treated as a percentage (e.g., 50 = 50% of max HP)
@@ -4640,10 +4862,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             await Future.delayed(const Duration(milliseconds: 2000));
           }
 
+          // standardization: Force switch logic always uses random index for players
           if (isTargetPlayer) {
-            _switchToAnimal(nextIndex);
-            // Since it's forced, we might need to handle turn flow
-            // but Whirlwind usually just ends the move effect.
+            await _switchToAnimal(nextIndex);
           } else {
             await _switchOpponentTo(nextIndex);
             opponentJustSwitched = true;
@@ -4972,6 +5193,200 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             attacker.thrashMove = move;
           }
           break;
+
+        // =====================================================
+        // Complex Move State Setters
+        // =====================================================
+
+        case MoveEffectType.bide:
+          attacker.isBiding = true;
+          attacker.bideTurns = 2;
+          attacker.bideDamage = 0;
+          addToLog('${attacker.name} is biding its time!');
+          notifyListeners();
+          if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+          break;
+
+        case MoveEffectType.burnUp:
+          if (!attacker.types.contains(ElementalType.blaze)) {
+            addToLog('But it failed! (Not a Fire type)');
+          } else {
+            attacker.isBurnedUp = true;
+            addToLog('${attacker.name} burned itself out and lost its Fire type!');
+            notifyListeners();
+            if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+          }
+          break;
+
+        case MoveEffectType.destinyBond:
+          attacker.isDestinyBondActive = true;
+          addToLog('${attacker.name} is trying to take its foe down with it!');
+          notifyListeners();
+          if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+          break;
+
+        case MoveEffectType.disable:
+          final lastMoveUsed = defender.lastMove;
+          if (lastMoveUsed == null) {
+            addToLog('But it failed!');
+          } else if (defender.disabledMoves.containsKey(lastMoveUsed.name)) {
+            addToLog('${lastMoveUsed.name} is already disabled!');
+          } else {
+            defender.disabledMoves[lastMoveUsed.name] = 4;
+            addToLog('${defender.name}\'s ${lastMoveUsed.name} was disabled!');
+          }
+          notifyListeners();
+          if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+          break;
+
+        case MoveEffectType.electrify:
+          defender.isElectrified = true;
+          addToLog('${defender.name}\'s move was electrified!');
+          notifyListeners();
+          if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+          break;
+
+        case MoveEffectType.embargo:
+          if (defender.itemDisabledTurns > 0) {
+            addToLog('But it failed!');
+          } else {
+            defender.itemDisabledTurns = 5;
+            addToLog('${defender.name} can\'t use items due to Embargo!');
+          }
+          notifyListeners();
+          if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+          break;
+
+        case MoveEffectType.endure:
+          attacker.isEnduring = true;
+          addToLog('${attacker.name} braced itself!');
+          notifyListeners();
+          if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+          break;
+
+        case MoveEffectType.foresight:
+          target.isForesighted = true;
+          target.evasionStage = 0;
+          addToLog('${target.name} was identified!');
+          notifyListeners();
+          if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+          break;
+
+        case MoveEffectType.forestsCurse:
+          if (target.hasForestsCurse) {
+            addToLog('But it failed!');
+          } else {
+            target.hasForestsCurse = true;
+            addToLog('${target.name} was afflicted by Forest\'s Curse and became Grass type!');
+          }
+          notifyListeners();
+          if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+          break;
+
+        case MoveEffectType.gastroAcid:
+          if (target.isAbilitySuppressed) {
+            addToLog('But it failed!');
+          } else {
+            target.isAbilitySuppressed = true;
+            addToLog('${target.name}\'s ability was suppressed by Gastro Acid!');
+          }
+          notifyListeners();
+          if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+          break;
+
+        case MoveEffectType.grudge:
+          attacker.grudgeActive = true;
+          addToLog('${attacker.name} put a grudge on the opposing team!');
+          notifyListeners();
+          if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+          break;
+
+        case MoveEffectType.skillSwap:
+          if (attacker.abilities.isNotEmpty && defender.abilities.isNotEmpty) {
+            final attackerAbility = attacker.abilities.first;
+            final defenderAbility = defender.abilities.first;
+            attacker.tempAbilities.clear();
+            attacker.tempAbilities.add(defenderAbility);
+            defender.tempAbilities.clear();
+            defender.tempAbilities.add(attackerAbility);
+            addToLog('${attacker.name} swapped abilities with ${defender.name}!');
+          } else {
+            addToLog('But it failed!');
+          }
+          notifyListeners();
+          if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+          break;
+
+        case MoveEffectType.guardSwap:
+          final tempDefStage = attacker.defenseStage;
+          final tempResStage = attacker.resistanceStage;
+          attacker.defenseStage = defender.defenseStage;
+          attacker.resistanceStage = defender.resistanceStage;
+          defender.defenseStage = tempDefStage;
+          defender.resistanceStage = tempResStage;
+          addToLog('${attacker.name} swapped its defense stat stages with ${defender.name}!');
+          notifyListeners();
+          if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+          break;
+
+        case MoveEffectType.ingrain:
+          if (attacker.isIngrained) {
+            addToLog('But ${attacker.name} is already ingrained!');
+          } else {
+            attacker.isIngrained = true;
+            addToLog('${attacker.name} planted its roots and can\'t escape!');
+          }
+          notifyListeners();
+          if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+          break;
+
+        case MoveEffectType.haze:
+          // Reset all stat stages for both battlers
+          player.attackStage = 0;
+          player.defenseStage = 0;
+          player.powerStage = 0;
+          player.resistanceStage = 0;
+          player.speedStage = 0;
+          player.accuracyStage = 0;
+          player.evasionStage = 0;
+          opponent.attackStage = 0;
+          opponent.defenseStage = 0;
+          opponent.powerStage = 0;
+          opponent.resistanceStage = 0;
+          opponent.speedStage = 0;
+          opponent.accuracyStage = 0;
+          opponent.evasionStage = 0;
+          addToLog('${attacker.name} used Haze! All stat changes were eliminated!');
+          notifyListeners();
+          if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+          break;
+
+        case MoveEffectType.lunarBlessing:
+          // Heal 25% max HP and cure status
+          final lbHeal = (attacker.maxHealth * 0.25).round();
+          if (attacker.health < attacker.maxHealth) {
+            attacker.health = (attacker.health + lbHeal).clamp(0, attacker.maxHealth);
+            onHeal?.call(attacker, lbHeal);
+            await _audioService.playSound('audio/effects/heal.mp3');
+            addToLog('${attacker.name} was restored by Lunar Blessing!');
+          }
+          attacker.clearStatusEffects();
+          notifyListeners();
+          if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+          break;
+        case MoveEffectType.feint:
+          if (defender.isProtected) {
+            defender.isProtected = false;
+            addToLog('${defender.name}\'s protection was broken!');
+          }
+          break;
+        case MoveEffectType.redirection:
+          attacker.isFollowMeTarget = true;
+          addToLog('${attacker.name} became the center of attention!');
+          notifyListeners();
+          if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+          break;
+
         default:
           break;
       }
@@ -5543,6 +5958,41 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   Future<void> _applyTurnEffects(BattleOrganism target) async {
     if (target.health <= 0) return;
 
+    // Leech Seed Logic
+    if (target.isLeechSeeded) {
+      final other = target == player ? opponent : player;
+      if (other.health > 0) {
+        // Ability Check: Liquid Ooze
+        bool isLiquidOoze = other.abilities.any(
+          (ab) => ab.name == 'Liquid Ooze',
+        );
+
+        final damage = (target.maxHealth / 8).round().clamp(1, target.health);
+        target.health -= damage;
+        addToLog('${target.name}\'s health was sapped by Leech Seed!');
+        notifyListeners();
+        if (!isTesting) {
+          await Future.delayed(const Duration(milliseconds: 1500));
+        }
+
+        if (isLiquidOoze) {
+          final oozeDamage = damage.clamp(1, other.health);
+          other.health -= oozeDamage;
+          addToLog('${other.name} was hurt by the Liquid Ooze!');
+        } else if (other.health < other.maxHealth &&
+            other.healBlockTurns == 0) {
+          other.health = (other.health + damage).clamp(0, other.maxHealth);
+          addToLog('${other.name} was healed by the seeds!');
+        }
+
+        notifyListeners();
+        if (!isTesting) {
+          await Future.delayed(const Duration(milliseconds: 1500));
+        }
+        if (_checkBattleEnd()) return;
+      }
+    }
+
     // Future Sight Logic (Forewarn)
     if (target.futureSightTurns > 0) {
       target.futureSightTurns--;
@@ -5631,6 +6081,19 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         await Future.delayed(const Duration(milliseconds: 1500));
       }
       if (_checkBattleEnd()) return;
+    }
+
+    // Ingrain Check
+    if (target.isIngrained) {
+      if (target.health > 0 && target.health < target.maxHealth && target.healBlockTurns == 0) {
+        final heal = (target.maxHealth / 16).round().clamp(1, 9999);
+        target.health = (target.health + heal).clamp(0, target.maxHealth);
+        addToLog('${target.name} absorbed nutrients with its roots!');
+        notifyListeners();
+        if (!isTesting) {
+          await Future.delayed(const Duration(milliseconds: 1500));
+        }
+      }
     }
 
     // Status Damage & Healing (Iterate over all active effects)
@@ -6335,6 +6798,60 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     target.focusPunchFailed = false;
     target.tookDamageThisTurn = false;
     target.magicCoatActive = false;
+
+    // Transient move flags reset each turn
+    target.isEnduring = false;
+    target.isDestinyBondActive = false;
+    target.isElectrified = false;
+
+    // Disable countdown
+    if (target.disabledMoves.isNotEmpty) {
+      final keysToDecrement = List<String>.from(target.disabledMoves.keys);
+      for (final key in keysToDecrement) {
+        final current = target.disabledMoves[key]!;
+        if (current <= 1) {
+          target.disabledMoves.remove(key);
+          addToLog('${target.name}\'s $key is no longer disabled!');
+          notifyListeners();
+          if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+        } else {
+          target.disabledMoves[key] = current - 1;
+        }
+      }
+    }
+
+    // Embargo countdown
+    if (target.itemDisabledTurns > 0) {
+      target.itemDisabledTurns--;
+      if (target.itemDisabledTurns == 0) {
+        addToLog('${target.name} can use items again!');
+        notifyListeners();
+        if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+      }
+    }
+
+    // Bide: countdown and release
+    if (target.isBiding) {
+      if (target.bideTurns > 0) {
+        target.bideTurns--;
+        addToLog('${target.name} is storing energy!');
+        notifyListeners();
+        if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+      }
+      if (target.bideTurns == 0) {
+        target.isBiding = false;
+        final foe = target == player ? opponent : player;
+        if (foe.health > 0) {
+          final releaseDamage = (target.bideDamage * 2).clamp(1, foe.health);
+          foe.health -= releaseDamage;
+          addToLog('${target.name} unleashed its stored energy for $releaseDamage damage!');
+          notifyListeners();
+          if (!isTesting) await Future.delayed(const Duration(milliseconds: 2000));
+          if (_checkBattleEnd()) return;
+        }
+        target.bideDamage = 0;
+      }
+    }
   }
 
   // --- Capture and Run Logic ---
@@ -6458,10 +6975,15 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     if (player.thrashTurnCount > 0 ||
         player.rolloutTurnCount > 0 ||
-        player.isTrapped) {
-      final reason = player.isTrapped
-          ? '${player.organism.baseOrganism.name} is trapped and cannot dash back!'
-          : '${player.organism.baseOrganism.name} is locked into its move!';
+        player.isTrapped ||
+        player.isJawLocked ||
+        opponent.isJawLocked) {
+      String reason = '${player.name} is locked into its move!';
+      if (player.isTrapped) {
+        reason = '${player.name} is trapped and cannot dash back!';
+      } else if (player.isJawLocked || opponent.isJawLocked) {
+        reason = 'Both animals are locked in a jaw grip!';
+      }
       addToLog(reason);
       notifyListeners();
       return;
@@ -6611,11 +7133,15 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     if (!isForced &&
         (player.isTrapped ||
+            player.isJawLocked ||
+            opponent.isJawLocked ||
             player.thrashTurnCount > 0 ||
             player.rolloutTurnCount > 0)) {
       String reason;
       if (player.thrashTurnCount > 0 || player.rolloutTurnCount > 0) {
         reason = '${player.name} is locked into its attack!';
+      } else if (player.isJawLocked || opponent.isJawLocked) {
+        reason = 'Both animals are locked in a jaw grip!';
       } else {
         reason = '${player.name} is trapped and cannot switch!';
       }
@@ -6728,8 +7254,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     if (player.abilities.any((ab) => ab.name == 'Regenerator')) {
       final heal = (player.maxHealth / 3).round();
       if (player.health < player.maxHealth) {
-        player.health += heal;
-        player.health = player.health.clamp(0, player.maxHealth);
+        player.health = (player.health + heal).clamp(0, player.maxHealth);
       }
     }
 
@@ -6886,11 +7411,33 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     final int fsTurns = player.futureSightTurns;
     final BattleOrganism? fsUser = player.futureSightUser;
 
+    bool wasBatonPass = player.batonPassPending;
+    final int attackStage = player.attackStage;
+    final int defenseStage = player.defenseStage;
+    final int powerStage = player.powerStage;
+    final int resistanceStage = player.resistanceStage;
+    final int speedStage = player.speedStage;
+    final int accuracyStage = player.accuracyStage;
+    final int evasionStage = player.evasionStage;
+    final bool isLeechSeeded = player.isLeechSeeded;
+
     player = BattleOrganism(playerOrganism, isRogueMode: isRogueMode);
     player.weather = currentWeather.weather;
     player.terrain = currentTerrain.terrain;
     player.futureSightTurns = fsTurns;
     player.futureSightUser = fsUser;
+
+    if (wasBatonPass) {
+      player.attackStage = attackStage;
+      player.defenseStage = defenseStage;
+      player.powerStage = powerStage;
+      player.resistanceStage = resistanceStage;
+      player.speedStage = speedStage;
+      player.accuracyStage = accuracyStage;
+      player.evasionStage = evasionStage;
+      player.isLeechSeeded = isLeechSeeded;
+    }
+
     // Restore persistent stats
     final stats = _getStats(playerOrganism.id);
     player.totalDamageDealt = stats.totalDamageDealt;
@@ -7135,8 +7682,16 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   Future<void> _switchOpponentTo(int index) async {
     if (index < 0 || index >= opponentTeam.length) return;
 
-    // Reset battle-specific flags for the opponent being switched out
-    opponent.resetBattleState();
+    // Baton Pass check
+    bool wasBatonPass = opponent.batonPassPending;
+    final int attackStage = opponent.attackStage;
+    final int defenseStage = opponent.defenseStage;
+    final int powerStage = opponent.powerStage;
+    final int resistanceStage = opponent.resistanceStage;
+    final int speedStage = opponent.speedStage;
+    final int accuracyStage = opponent.accuracyStage;
+    final int evasionStage = opponent.evasionStage;
+    final bool isLeechSeeded = opponent.isLeechSeeded;
 
     // Natural Cure Check
     if (opponent.abilities.any((ab) => ab.name == 'Natural Cure')) {
@@ -7147,12 +7702,33 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     if (opponent.abilities.any((ab) => ab.name == 'Regenerator')) {
       final heal = (opponent.maxHealth / 3).round();
       if (opponent.health < opponent.maxHealth) {
-        opponent.health += heal;
-        opponent.health = opponent.health.clamp(0, opponent.maxHealth);
+        opponent.health = (opponent.health + heal).clamp(0, opponent.maxHealth);
       }
     }
 
+    // Reset battle-specific flags for the opponent being switched out
+    opponent.resetBattleState();
+
     currentOpponentIndex = index;
+    final opponentOrganism = opponentTeam[currentOpponentIndex];
+    opponent = BattleOrganism(
+      opponentOrganism,
+      isRogueMode: isRogueMode,
+      isOpponent: true,
+    );
+    opponent.weather = currentWeather.weather;
+    opponent.terrain = currentTerrain.terrain;
+
+    if (wasBatonPass) {
+      opponent.attackStage = attackStage;
+      opponent.defenseStage = defenseStage;
+      opponent.powerStage = powerStage;
+      opponent.resistanceStage = resistanceStage;
+      opponent.speedStage = speedStage;
+      opponent.accuracyStage = accuracyStage;
+      opponent.evasionStage = evasionStage;
+      opponent.isLeechSeeded = isLeechSeeded;
+    }
 
     final int fsTurns = opponent.futureSightTurns;
     final BattleOrganism? fsUser = opponent.futureSightUser;
@@ -7374,6 +7950,10 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       moveType = attacker.activeTeraType ?? moveType;
     }
 
+    if (attacker.isElectrified) {
+      moveType = ElementalType.electric;
+    }
+
     return moveType;
   }
 
@@ -7389,17 +7969,36 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       (ab) => ab.name == 'Mold Breaker',
     );
 
-    if (move.name == 'Counter') {
+    final counterEffect = move.effects.firstWhere(
+      (e) => e.type == MoveEffectType.counter,
+      orElse: () => const MoveEffect(type: MoveEffectType.none),
+    );
+    if (counterEffect.type != MoveEffectType.none) {
       if (attacker.lastPhysicalDamageTaken > 0) {
         return DamageResult(attacker.lastPhysicalDamageTaken * 2, 1.0, false);
       }
       return const DamageResult(0, 1.0, false);
     }
-    if (move.name == 'Mirror Coat') {
+
+    final mirrorCoatEffect = move.effects.firstWhere(
+      (e) => e.type == MoveEffectType.mirrorCoat,
+      orElse: () => const MoveEffect(type: MoveEffectType.none),
+    );
+    if (mirrorCoatEffect.type != MoveEffectType.none) {
       if (attacker.lastSpecialDamageTaken > 0) {
         return DamageResult(attacker.lastSpecialDamageTaken * 2, 1.0, false);
       }
       return const DamageResult(0, 1.0, false);
+    }
+
+    // Super Fang
+    if (move.isSuperFang) {
+      return DamageResult(max(1, (defender.health / 2).floor()), 1.0, false);
+    }
+
+    // Bide Damage Release
+    if (move.isBide) {
+      return DamageResult(attacker.bideDamage * 2, 1.0, false);
     }
 
     // --- Fixed and Level-Based Damage Moves ---
@@ -7432,7 +8031,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     // Pursuit Intercept Power Double
     double pursuitMultiplier = 1.0;
-    if (move.name == 'Pursuit' && isPursuitIntercept) {
+    if (move.effects.any((e) => e.type == MoveEffectType.pursuit) &&
+        isPursuitIntercept) {
       pursuitMultiplier = 2.0;
     }
 
@@ -7507,23 +8107,32 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       isCrit = false;
     }
 
-    if (move.name == 'Endeavor') {
+    if (move.name == 'Endeavor' ||
+        move.effects.any((e) => e.type == MoveEffectType.endeavor)) {
       if (defender.health > attacker.health) {
         return DamageResult(defender.health - attacker.health, 1.0, false);
       }
       return const DamageResult(0, 1.0, false);
     }
 
-    if (move.name == 'Nature\'s Madness') {
+    if (move.name == 'Nature\'s Madness' ||
+        move.effects.any((e) => e.type == MoveEffectType.naturesMadness)) {
       return DamageResult(max(1, (defender.health / 2).floor()), 1.0, false);
     }
 
     // 1. Determine Stats (Atk/Def or Power/Res)
+    final isFoulPlay = move.effects.any(
+      (e) => e.type == MoveEffectType.foulPlay,
+    );
     int atk = (move.category == MoveCategory.special)
         ? attacker.currentPower
+        : isFoulPlay
+        ? defender.currentAttack
         : attacker.currentAttack;
     int def = (move.category == MoveCategory.special)
-        ? defender.currentResistance
+        ? (move.targetDefenseStat == 'defense'
+              ? defender.currentDefense
+              : defender.currentResistance)
         : defender.currentDefense;
 
     // Stance Change (Blade Form): Swap offensive and defensive stats
@@ -7548,13 +8157,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       }
     }
 
-    if (move.name == 'Sacred Sword') {
+    if (move.ignoresDefenseStages) {
       def = defender.organism.getDefense(atLevel: defender.level);
-    }
-
-    // Psyshock: Special move targets Physical Defense
-    if (move.name == 'Psyshock') {
-      def = defender.currentDefense;
     }
 
     // Unaware: Ignores opponent's stat changes (both positive and negative)
@@ -7588,7 +8192,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     // Toxic Boost and Flare Boost now handled in getAbilityStatMultiplier
 
     // Tera Blast Stat Swap
-    if (move.name == 'Tera Blast' && attacker.isPrismorphed) {
+    if (move.effects.any((e) => e.type == MoveEffectType.teraBlast) &&
+        attacker.isPrismorphed) {
       if (attacker.currentAttack > attacker.currentPower) {
         atk = attacker.currentAttack;
         def = defender.currentDefense;
@@ -7601,9 +8206,24 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     // Burn Halves Physical Damage (Unless Guts or Flare Boost)
     int baseDamage = move.baseDamage;
 
+    // Echoed Voice
+    if (move.isEchoedVoice) {
+      baseDamage = min<int>(200, 40 + (echoedVoiceCount * 40));
+    }
+
+    // Last Respects
+    if (move.isLastRespects) {
+      int faintedCount = 0;
+      if (attacker.isPlayer) {
+        faintedCount = playerTeam.where((org) => org.health <= 0).length;
+      } else {
+        faintedCount = opponentTeam.where((org) => org.health <= 0).length;
+      }
+      baseDamage += 50 * faintedCount;
+    }
+
     // Spit Up Damage
-    if (move.name == 'Spit Up' ||
-        move.effects.any((e) => e.type == MoveEffectType.spitUp)) {
+    if (move.effects.any((e) => e.type == MoveEffectType.spitUp)) {
       if (attacker.stockpileCount == 0) {
         return const DamageResult(0, 1.0, false);
       }
@@ -7611,8 +8231,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     }
 
     // Payback Damage Double
-    if (move.name == 'Payback' ||
-        move.effects.any((e) => e.type == MoveEffectType.payback)) {
+    if (move.effects.any((e) => e.type == MoveEffectType.payback)) {
       if (defender.hasMovedThisTurn) {
         baseDamage *= 2;
       }
@@ -7624,7 +8243,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       orElse: () => const MoveEffect(type: MoveEffectType.none),
     );
     if (hpRatioEffect.type != MoveEffectType.none) {
-      if (move.name == 'Crush Grip' || move.name == 'Hard Press') {
+      if (hpRatioEffect.target == 'opponent') {
         baseDamage = (baseDamage * (defender.health / defender.maxHealth))
             .round();
       } else {
@@ -7656,12 +8275,12 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     }
 
     // Stomping Tantrum power double
-    if (move.name == 'Stomping Tantrum' && attacker.lastMoveFailed) {
+    if (move.isStompingTantrum && attacker.lastMoveFailed) {
       baseDamage *= 2;
     }
 
     // Fury Cutter power doubling
-    if (move.name == 'Fury Cutter') {
+    if (move.isFuryCutter) {
       double furyMult = pow(2, attacker.furyCutterCount).toDouble();
       if (furyMult > 16.0) furyMult = 16.0;
       baseDamage = (baseDamage * furyMult).round();
@@ -7672,9 +8291,11 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       orElse: () => const MoveEffect(type: MoveEffectType.none),
     );
     if (happinessEffect.type != MoveEffectType.none) {
-      if (move.name == 'Return') {
+      if (happinessEffect.value >= 0) {
+        // Return style: more satisfaction = more damage
         baseDamage = (attacker.organism.satisfaction / 2.5).round();
-      } else if (move.name == 'Frustration') {
+      } else {
+        // Frustration style: less satisfaction = more damage
         baseDamage = ((255 - attacker.organism.satisfaction) / 2.5).round();
       }
       baseDamage = max(1, baseDamage);
@@ -7742,9 +8363,6 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       if (roll < 5) {
         mag = 4;
         baseDamage = 10;
-      } else if (roll < 15) {
-        mag = 5;
-        baseDamage = 30;
       } else if (roll < 35) {
         mag = 6;
         baseDamage = 50;
@@ -7764,15 +8382,42 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       addToLog('Magnitude $mag!');
     }
 
+    // Fling Power Logic
+    if (move.effects.any((e) => e.type == MoveEffectType.fling)) {
+      if (attacker.organism.equippedTalisman != null) {
+        final item = attacker.organism.equippedTalisman!;
+        if (item.id.contains('choice') || item.id.contains('orb')) {
+          baseDamage = 80;
+        } else if (item.id.contains('berry') || item.id.contains('sash')) {
+          baseDamage = 30;
+        } else {
+          baseDamage = 50;
+        }
+      } else {
+        return const DamageResult(0, 1.0, false);
+      }
+    }
+
+    // Beat Up Base Damage
+    if (move.effects.any((e) => e.type == MoveEffectType.beatUp)) {
+      baseDamage = 10;
+    }
+
+    // Explosion Base Damage
+    if (move.isSelfDestruct ||
+        move.effects.any((e) => e.type == MoveEffectType.explosion)) {
+      baseDamage = 250;
+    }
+
     // Acrobatics Boost (2x if no item or consumed)
-    if (move.name == 'Acrobatics') {
+    if (move.isAcrobatics) {
       if (attacker.organism.equippedTalisman == null ||
           attacker.talismanConsumed) {
         baseDamage *= 2;
       }
     }
 
-    if (move.name == 'Retaliate') {
+    if (move.isRetaliate) {
       int lastFaint = attacker.isPlayer
           ? lastPlayerFaintTurn
           : lastOpponentFaintTurn;
@@ -7781,14 +8426,15 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       }
     }
 
-    if (move.name == 'Brine') {
+    if (move.isBrine) {
       if (defender.health <= (defender.maxHealth / 2)) {
         baseDamage *= 2;
       }
     }
 
     // Rollout/Ice Ball stacking
-    if (move.name == 'Rollout' || move.name == 'Ice Ball') {
+    if (move.effects.any((e) => e.type == MoveEffectType.rollout) ||
+        move.effects.any((e) => e.type == MoveEffectType.iceBall)) {
       baseDamage *= (1 << attacker.rolloutTurnCount);
       if (attacker.usedDefenseCurl) baseDamage *= 2;
     }
@@ -7830,13 +8476,13 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     }
 
     // Lash Out
-    if (move.name == 'Lash Out' && attacker.statsLoweredThisTurn) {
-      damageCalc *= 2.0;
-    }
-
-    // Hex
-    if (move.name == 'Hex' && defender.statusEffects.isNotEmpty) {
-      damageCalc *= 2.0;
+    if (move.isStatusAilmentDouble) {
+      if (attacker.statsLoweredThisTurn) {
+        damageCalc *= 2.0;
+      }
+      if (defender.statusEffects.isNotEmpty) {
+        damageCalc *= 2.0;
+      }
     }
 
     moveType = getDisplayType(attacker, move);
@@ -8441,19 +9087,19 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     }
 
     // Move-specific Multipliers
-    if (move.name == 'Facade' && attacker.statusEffects.isNotEmpty) {
+    if (move.isFacade && attacker.statusEffects.isNotEmpty) {
       damageCalc *= 2.0;
     }
-    if (move.name == 'Knock Off' &&
+    if (move.isKnockOff &&
         defender.organism.equippedTalisman != null &&
         !defender.talismanConsumed) {
       damageCalc *= 1.5;
     }
-    if (move.name == 'Freeze-Dry' &&
+    if (move.isFreezeDry &&
         defender.types.contains(ElementalType.aquatic)) {
       damageCalc *= 2.0;
     }
-    if (move.name == 'Final Gambit') damageCalc = attacker.health.toDouble();
+    if (move.isFinalGambit) damageCalc = attacker.health.toDouble();
 
     final hexEffect = move.effects.firstWhere(
       (e) => e.type == MoveEffectType.hexDamage,
@@ -8467,21 +9113,21 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       }
     }
 
-    if (move.name == 'Lash Out' && attacker.statsLoweredThisTurn) {
+    if (move.isLashOut && attacker.statsLoweredThisTurn) {
       damageCalc *= 2.0;
     }
 
-    if (move.name == 'Mighty Cleave') {
+    if (move.isMightyCleave) {
       // Logic for hitting through protect will be in _executeTurn
     }
 
-    if (move.name == 'Counter') {
+    if (move.isCounter) {
       if (attacker.lastPhysicalDamageTaken > 0) {
         damageCalc = attacker.lastPhysicalDamageTaken * 2.0;
       } else {
         damageCalc = 0;
       }
-    } else if (move.name == 'Mirror Coat') {
+    } else if (move.isMirrorCoat) {
       if (attacker.lastSpecialDamageTaken > 0) {
         damageCalc = attacker.lastSpecialDamageTaken * 2.0;
       } else {
@@ -8597,12 +9243,12 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     // Earthquake double damage on underground
     if (defender.semiInvulnerable == 'underground' &&
-        (move.name == 'Earthquake' || move.name == 'Magnitude')) {
+        move.hitsHiddenUnderground) {
       damageCalc *= 2.0;
     }
 
     // Inner Focus: Focus Blast never misses
-    if (move.name == 'Focus Blast' &&
+    if (move.isFocusBlast &&
         attacker.abilities.any((ab) => ab.name == 'Inner Focus')) {
       // This is handled in _executeTurn for accuracy, not damage calculation.
       // No change to damageCalc here.
@@ -8947,7 +9593,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       }
     }
     _recordOpponentMove(bestMove);
-    if (bestMove.name == 'Rollout' || bestMove.name == 'Ice Ball') {
+    if (bestMove.isRolloutStyle) {
       opponent.rolloutMove = bestMove;
     }
     return bestMove;
@@ -9373,6 +10019,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         );
         target.health -= damage;
         addToLog('${target.name} was hurt by Spikes!');
+        notifyListeners();
+        if (_checkBattleEnd()) return;
       } else if (hazard == 'stealth_rock') {
         double rockEff = 1.0;
         rockEff *= TypeChart.getEffectiveness(
@@ -9391,6 +10039,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         );
         target.health -= damage;
         addToLog('${target.name} was hurt by Stealth Rock!');
+        notifyListeners();
+        if (_checkBattleEnd()) return;
       } else if (hazard == 'toxic_spikes' && isGrounded) {
         if (target.types.contains(ElementalType.toxic)) {
           addToLog('${target.name} absorbed the Toxic Spikes!');
@@ -9415,6 +10065,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       }
       notifyListeners();
     }
+
+    _checkBattleEnd();
   }
 
   void _startSuggestionTimer() {
@@ -9580,6 +10232,51 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         return ElementalType.arthropod;
       default:
         return ElementalType.basic;
+    }
+  }
+
+  Future<void> _applyFixedDamage(
+    BattleOrganism attacker,
+    BattleOrganism defender,
+    int damage, {
+    bool canEndure = true,
+  }) async {
+    int damageToApply = damage;
+
+    // Endure / Sturdy / Focus Sash (standard checks for non-status damage)
+    if (canEndure && damageToApply >= defender.health) {
+      if (defender.isEnduring ||
+          (defender.health == defender.maxHealth &&
+              defender.abilities.any((ab) => ab.name == 'Sturdy'))) {
+        damageToApply = defender.health - 1;
+        if (damageToApply < 0) damageToApply = 0;
+        addToLog('${defender.name} endured the hit!');
+      }
+    }
+
+    if (damageToApply > 0) {
+      defender.health -= damageToApply;
+      defender.health = defender.health.clamp(0, defender.maxHealth);
+      onDamage?.call(defender, damageToApply);
+      if (defender.health <= 0 && attacker.isPlayer) {
+        lastBlowOrganismId = attacker.organism.id;
+      }
+
+      // Bide: Accumulate incoming damage
+      if (defender.isBiding) {
+        defender.bideDamage += damageToApply;
+      }
+
+      // Destiny Bond
+      if (defender.health <= 0 &&
+          defender.isDestinyBondActive &&
+          attacker.health > 0) {
+        attacker.health = 0;
+        addToLog('${attacker.name} was taken down by Destiny Bond!');
+      }
+
+      notifyListeners();
+      if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
     }
   }
 }

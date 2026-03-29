@@ -7596,7 +7596,7 @@
     },
     {
         "name": "Whirlwind",
-        "description": "The target is blown away, and a different Pokémon is dragged out. In the wild, the battle ends.",
+        "description": "The target is blown away, and a different Pok\u00e9mon is dragged out. In the wild, the battle ends.",
         "baseDamage": 0,
         "type": "flying",
         "accuracy": 100,
@@ -7776,7 +7776,7 @@
     },
     {
         "name": "Thrash",
-        "description": "The user rampages and attacks for 2–3 turns. The user then becomes confused.",
+        "description": "The user rampages and attacks for 2\u20133 turns. The user then becomes confused.",
         "baseDamage": 120,
         "animationType": "spam_attack",
         "type": "basic",
@@ -7793,7 +7793,7 @@
     },
     {
         "name": "Outrage",
-        "description": "The user rampages and attacks for 2–3 turns. The user then becomes confused.",
+        "description": "The user rampages and attacks for 2\u20133 turns. The user then becomes confused.",
         "baseDamage": 120,
         "animationType": "spam_attack",
         "type": "drake",
@@ -7810,7 +7810,7 @@
     },
     {
         "name": "Petal Dance",
-        "description": "The user attacks for 2–3 turns using petals, then becomes confused.",
+        "description": "The user attacks for 2\u20133 turns using petals, then becomes confused.",
         "baseDamage": 120,
         "type": "grass",
         "accuracy": 100,
@@ -7837,7 +7837,7 @@
     },
     {
         "name": "Scale Shot",
-        "description": "Attacks 2–5 times. Raises user's Speed and lowers user's Defense at the end.",
+        "description": "Attacks 2\u20135 times. Raises user's Speed and lowers user's Defense at the end.",
         "baseDamage": 25,
         "type": "drake",
         "accuracy": 90,
@@ -7879,12 +7879,18 @@
     },
     {
         "name": "Pursuit",
-        "description": "An attack move that inflicts double damage if used on a target that is switching out of battle.",
+        "description": "Power doubles if the target is switching out.",
         "baseDamage": 40,
         "type": "darkness",
-        "accuracy": 100,
         "stamina": 20,
-        "category": "physical"
+        "category": "physical",
+        "isPursuit": true,
+        "effects": [
+            {
+                "type": "pursuit",
+                "target": "opponent"
+            }
+        ]
     },
     {
         "name": "Mega Drain",
@@ -8354,5 +8360,699 @@
         "stamina": 15,
         "accuracy": 100,
         "category": "physical"
+    },
+    {
+        "name": "After You",
+        "description": "The user helps the target and makes it go next.",
+        "baseDamage": 0,
+        "type": "basic",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "afterYou",
+                "target": "opponent"
+            }
+        ]
+    },
+    {
+        "name": "Baton Pass",
+        "description": "Switches out, passing stat changes and some volatile statuses to the newcomer.",
+        "baseDamage": 0,
+        "type": "basic",
+        "stamina": 40,
+        "category": "status",
+        "isBatonPass": true,
+        "effects": [
+            {
+                "type": "batonPass",
+                "target": "self"
+            }
+        ]
+    },
+    {
+        "name": "Beat Up",
+        "description": "Every member in the party attacks for each hit.",
+        "baseDamage": 0,
+        "type": "darkness",
+        "stamina": 10,
+        "category": "physical",
+        "isBeatUp": true,
+        "effects": [
+            {
+                "type": "beatUp",
+                "target": "opponent"
+            }
+        ]
+    },
+    {
+        "name": "Bestow",
+        "description": "The user gives its held item to the target.",
+        "baseDamage": 0,
+        "type": "basic",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "bestow",
+                "target": "opponent"
+            }
+        ]
+    },
+    {
+        "name": "Trick",
+        "description": "The user catches the target off guard and swaps held items with it.",
+        "baseDamage": 0,
+        "type": "aura",
+        "stamina": 10,
+        "category": "status",
+        "effects": [
+            {
+                "type": "trick",
+                "target": "opponent"
+            }
+        ]
+    },
+    {
+        "name": "Clear Smog",
+        "description": "The user throws a clump of special mud to reset the target's stat changes.",
+        "baseDamage": 50,
+        "type": "toxic",
+        "stamina": 15,
+        "category": "special",
+        "isClearSmog": true,
+        "effects": [
+            {
+                "type": "clearSmog",
+                "target": "opponent"
+            }
+        ]
+    },
+    {
+        "name": "Corrosive Gas",
+        "description": "The user surrounds everything in a highly acidic gas that melts held items.",
+        "baseDamage": 0,
+        "type": "toxic",
+        "stamina": 40,
+        "category": "status",
+        "targetCount": "multiple",
+        "effects": [
+            {
+                "type": "corrosiveGas",
+                "target": "opponent"
+            }
+        ]
+    },
+    {
+        "name": "Dream Eater",
+        "description": "The user eats the dreams of a sleeping target. It heals half the damage dealt.",
+        "baseDamage": 100,
+        "type": "spectral",
+        "stamina": 15,
+        "category": "special",
+        "drainPercent": 0.5,
+        "isDreamEater": true,
+        "effects": [
+            {
+                "type": "dreamEater",
+                "target": "opponent"
+            }
+        ]
+    },
+    {
+        "name": "Fell Stinger",
+        "description": "If this move knocks out the target, the user's Attack stat rises drastically.",
+        "baseDamage": 50,
+        "type": "arthropod",
+        "stamina": 25,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "fellStinger",
+                "target": "self"
+            }
+        ]
+    },
+    {
+        "name": "Explosion",
+        "description": "The user attacks everything around it by causing a tremendous explosion. The user faints.",
+        "baseDamage": 250,
+        "type": "basic",
+        "stamina": 5,
+        "accuracy": 100,
+        "category": "physical",
+        "targetCount": "multiple",
+        "isSelfDestruct": true
+    },
+    {
+        "name": "Entrainment",
+        "description": "The user dances with the target to copy its ability with the target's.",
+        "baseDamage": 0,
+        "type": "basic",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "entrainment",
+                "target": "opponent"
+            }
+        ]
+    },
+    {
+        "name": "Fling",
+        "description": "The user flings its held item at the target to attack. Power depends on item.",
+        "baseDamage": 0,
+        "type": "darkness",
+        "stamina": 10,
+        "category": "physical",
+        "isFling": true,
+        "effects": [
+            {
+                "type": "fling",
+                "target": "opponent"
+            }
+        ]
+    },
+    {
+        "name": "Foul Play",
+        "description": "The user turns the target's power against it. Uses target's Attack stat.",
+        "baseDamage": 95,
+        "type": "darkness",
+        "stamina": 15,
+        "category": "physical",
+        "isFoulPlay": true,
+        "effects": [
+            {
+                "type": "foulPlay",
+                "target": "opponent"
+            }
+        ]
+    },
+    {
+        "name": "Jaw Lock",
+        "description": "This move prevents both the user and the target from escaping.",
+        "baseDamage": 80,
+        "type": "darkness",
+        "stamina": 10,
+        "category": "physical",
+        "isBite": true,
+        "isJawLock": true,
+        "effects": [
+            {
+                "type": "jawLock",
+                "target": "opponent"
+            }
+        ]
+    },
+    {
+        "name": "Leech Seed",
+        "description": "The user plants a seed on the target that drains HP each turn to heal the user.",
+        "baseDamage": 0,
+        "type": "grass",
+        "stamina": 10,
+        "category": "status",
+        "isLeechSeed": true,
+        "effects": [
+            {
+                "type": "leechSeed",
+                "target": "opponent"
+            }
+        ]
+    },
+    {
+        "name": "Bide",
+        "description": "The user endures attacks for two turns, then strikes back with double the damage received.",
+        "baseDamage": 0,
+        "type": "basic",
+        "stamina": 10,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "bide",
+                "target": "self",
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Burn Up",
+        "description": "To inflict massive damage, the user burns itself out. After using this move, the user will no longer be a Blaze type.",
+        "baseDamage": 130,
+        "type": "blaze",
+        "stamina": 5,
+        "category": "special",
+        "effects": [
+            {
+                "type": "burnUp",
+                "target": "self"
+            }
+        ]
+    },
+    {
+        "name": "Destiny Bond",
+        "description": "If the user faints after using this move, the Pokémon that landed the knockout hit also faints.",
+        "baseDamage": 0,
+        "type": "spectral",
+        "stamina": 5,
+        "category": "status",
+        "effects": [
+            {
+                "type": "destinyBond",
+                "target": "self",
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Disable",
+        "description": "For four turns, this move prevents the target from using the move it last used.",
+        "baseDamage": 0,
+        "type": "basic",
+        "stamina": 20,
+        "category": "status",
+        "effects": [
+            {
+                "type": "disable",
+                "target": "opponent"
+            }
+        ]
+    },
+    {
+        "name": "Electrify",
+        "description": "If the target is electrified before it uses a move, that move becomes Electric type.",
+        "baseDamage": 0,
+        "type": "electric",
+        "stamina": 20,
+        "category": "status",
+        "effects": [
+            {
+                "type": "electrify",
+                "target": "opponent",
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Embargo",
+        "description": "This move prevents the target from using its held item for five turns.",
+        "baseDamage": 0,
+        "type": "darkness",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "embargo",
+                "target": "opponent"
+            }
+        ]
+    },
+    {
+        "name": "Endure",
+        "description": "The user endures any attack with at least 1 HP. Its chance of failing rises if used in succession.",
+        "baseDamage": 0,
+        "type": "basic",
+        "stamina": 10,
+        "category": "status",
+        "effects": [
+            {
+                "type": "endure",
+                "target": "self",
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Foresight",
+        "description": "Removes the target's evasion and allows basic and martial moves to hit spectral types.",
+        "baseDamage": 0,
+        "type": "basic",
+        "stamina": 40,
+        "category": "status",
+        "effects": [
+            {
+                "type": "foresight",
+                "target": "opponent",
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Forest's Curse",
+        "description": "The user puts a forest curse on the target. The target is now also a Grass type.",
+        "baseDamage": 0,
+        "type": "grass",
+        "stamina": 20,
+        "category": "status",
+        "isForestsCurse": true,
+        "effects": [
+            {
+                "type": "forestsCurse",
+                "target": "opponent",
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Gastro Acid",
+        "description": "The user hurls up its stomach acids on the target. The fluid eliminates the target's ability.",
+        "baseDamage": 0,
+        "type": "poison",
+        "stamina": 10,
+        "category": "status",
+        "effects": [
+            {
+                "type": "gastroAcid",
+                "target": "opponent"
+            }
+        ]
+    },
+    {
+        "name": "Grudge",
+        "description": "If the user faints after using this move, the move the target used last has its stamina reduced to 0.",
+        "baseDamage": 0,
+        "type": "spectral",
+        "stamina": 5,
+        "category": "status",
+        "effects": [
+            {
+                "type": "grudge",
+                "target": "self",
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Ingrain",
+        "description": "The user lays roots that restore HP on every turn. Because it's rooted, it can't switch out.",
+        "baseDamage": 0,
+        "type": "grass",
+        "stamina": 20,
+        "category": "status",
+        "effects": [
+            {
+                "type": "ingrain",
+                "target": "self",
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Haze",
+        "description": "The user creates a haze that eliminates every stat change among all animals in battle.",
+        "baseDamage": 0,
+        "type": "ice",
+        "stamina": 30,
+        "category": "status",
+        "effects": [
+            {
+                "type": "haze",
+                "target": "field",
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Lunar Blessing",
+        "description": "The user heals itself and its ally, and also cures status conditions.",
+        "baseDamage": 0,
+        "type": "holy",
+        "stamina": 10,
+        "category": "status",
+        "effects": [
+            {
+                "type": "lunarBlessing",
+                "target": "self",
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Skill Swap",
+        "description": "The user employs its psychic power to exchange abilities with the target.",
+        "baseDamage": 0,
+        "type": "psychic",
+        "stamina": 10,
+        "category": "status",
+        "effects": [
+            {
+                "type": "skillSwap",
+                "target": "opponent"
+            }
+        ]
+    },
+    {
+        "name": "Guard Swap",
+        "description": "The user employs its psychic power to switch changes to its Defense and Resistance stats with the target.",
+        "baseDamage": 0,
+        "type": "psychic",
+        "stamina": 10,
+        "category": "status",
+        "effects": [
+            {
+                "type": "guardSwap",
+                "target": "opponent"
+            }
+        ]
+    },
+    {
+        "name": "Double Hit",
+        "description": "The user slams the target with a long tail, vines, or a tentacle twice in succession.",
+        "baseDamage": 35,
+        "type": "basic",
+        "stamina": 10,
+        "accuracy": 90,
+        "category": "physical",
+        "minHits": 2,
+        "maxHits": 2
+    },
+    {
+        "name": "Double Kick",
+        "description": "The target is quickly kicked twice in succession using both feet.",
+        "baseDamage": 30,
+        "type": "martial",
+        "stamina": 30,
+        "accuracy": 100,
+        "category": "physical",
+        "minHits": 2,
+        "maxHits": 2
+    },
+    {
+        "name": "Echoed Voice",
+        "description": "The user attacks the target with an echoing voice. If used every turn, its power rises.",
+        "baseDamage": 40,
+        "type": "basic",
+        "stamina": 15,
+        "category": "special",
+        "isEchoedVoice": true
+    },
+    {
+        "name": "Electro Ball",
+        "description": "The user hurls an electric orb at the target. The faster the user is than the target, the greater the power.",
+        "baseDamage": 1,
+        "type": "electric",
+        "stamina": 10,
+        "category": "special",
+        "damageStat": "speed"
+    },
+    {
+        "name": "Feint Attack",
+        "description": "The user draws up close to the target disarmingly, then throws a punch. This attack never misses.",
+        "baseDamage": 60,
+        "type": "darkness",
+        "stamina": 20,
+        "category": "physical",
+        "isNeverMiss": true
+    },
+    {
+        "name": "Flame Charge",
+        "description": "Cloaking itself in flame, the user attacks the target. Then, its Speed stat is boosted.",
+        "baseDamage": 50,
+        "type": "blaze",
+        "stamina": 20,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "self",
+                "stat": "speed",
+                "value": 1
+            }
+        ]
+    },
+    {
+        "name": "Fury Attack",
+        "description": "The target is jabbed repeatedly with a horn or beak two to five times in succession.",
+        "baseDamage": 15,
+        "type": "basic",
+        "stamina": 20,
+        "accuracy": 85,
+        "category": "physical",
+        "minHits": 2,
+        "maxHits": 5
+    },
+    {
+        "name": "Gust",
+        "description": "A gust of wind is whipped up by wings and launched at the target to inflict damage.",
+        "baseDamage": 40,
+        "type": "flying",
+        "stamina": 35,
+        "category": "special"
+    },
+    {
+        "name": "Hypnosis",
+        "description": "The user employs hypnotic suggestion to make the target fall into a deep sleep.",
+        "baseDamage": 0,
+        "type": "aura",
+        "stamina": 20,
+        "accuracy": 60,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statusSleep",
+                "target": "opponent",
+                "value": 3
+            }
+        ]
+    },
+    {
+        "name": "Night Shade",
+        "description": "The user makes the target see a frightening mirage, which inflicts damage equal to the user's level.",
+        "baseDamage": 0,
+        "type": "spectral",
+        "stamina": 15,
+        "category": "special",
+        "effects": [
+            {
+                "type": "levelDamage",
+                "target": "opponent"
+            }
+        ]
+    },
+    {
+        "name": "Eerie Impulse",
+        "description": "The user's body generates an eerie impulse, which harshly lowers the target's Power stat.",
+        "baseDamage": 0,
+        "type": "electric",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "power",
+                "value": -2
+            }
+        ]
+    },
+    {
+        "name": "Fairy Wind",
+        "description": "The user stirs up a fairy wind and strikes the target with it.",
+        "baseDamage": 40,
+        "type": "aura",
+        "stamina": 30,
+        "category": "special"
+    },
+    {
+        "name": "False Surrender",
+        "description": "The user pretends to bow in surrender, but then it stabs the target. This attack never misses.",
+        "baseDamage": 80,
+        "type": "darkness",
+        "stamina": 10,
+        "category": "physical",
+        "isNeverMiss": true
+    },
+    {
+        "name": "Feint",
+        "description": "This attack hits even if the target is using a move like Protect. It also lifts these effects.",
+        "baseDamage": 30,
+        "type": "basic",
+        "stamina": 10,
+        "priority": 2,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "feint",
+                "target": "opponent",
+                "chance": 100
+            }
+        ]
+    },
+    {
+        "name": "Fiery Wrath",
+        "description": "The user transforms its wrath into a fire-like aura to attack. This may also make the target flinch.",
+        "baseDamage": 90,
+        "type": "darkness",
+        "stamina": 10,
+        "category": "special",
+        "effects": [
+            {
+                "type": "statusStun",
+                "target": "opponent",
+                "chance": 20,
+                "value": 1
+            }
+        ]
+    },
+    {
+        "name": "Flame Burst",
+        "description": "The user attacks the target with a bursting flame. The bursting flame damages all opponents.",
+        "baseDamage": 70,
+        "type": "blaze",
+        "stamina": 15,
+        "category": "special",
+        "targetCount": "multiple"
+    },
+    {
+        "name": "Flame Wheel",
+        "description": "The user cloaks itself in fire and charges at the target. This may also leave the target with a burn.",
+        "baseDamage": 60,
+        "type": "blaze",
+        "stamina": 25,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusBurn",
+                "target": "opponent",
+                "chance": 10,
+                "value": 3
+            }
+        ]
+    },
+    {
+        "name": "Flatter",
+        "description": "Flattery is used to confuse the target. However, it also raises the target's Power stat.",
+        "baseDamage": 0,
+        "type": "darkness",
+        "stamina": 15,
+        "category": "status",
+        "effects": [
+            {
+                "type": "statusConfusion",
+                "target": "opponent",
+                "value": 3
+            },
+            {
+                "type": "statChange",
+                "target": "opponent",
+                "stat": "power",
+                "value": 1
+            }
+        ]
+    },
+    {
+        "name": "Follow Me",
+        "description": "The user draws attention to itself, making all opponents' moves target it.",
+        "baseDamage": 0,
+        "type": "basic",
+        "stamina": 20,
+        "priority": 2,
+        "category": "status",
+        "effects": [
+            {
+                "type": "redirection",
+                "target": "self",
+                "chance": 100
+            }
+        ]
     }
 ]

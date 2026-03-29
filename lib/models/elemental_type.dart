@@ -84,8 +84,6 @@ class TypeChart {
     ElementalType moveType,
     ElementalType defenderType,
   ) {
-    if (moveType == ElementalType.basic) return 1.0;
-
     // Define weaknesses (Attacker -> Defender = 2.0x)
     // Define resistances (Attacker -> Defender = 0.5x)
 

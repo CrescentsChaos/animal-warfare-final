@@ -964,6 +964,42 @@ class DoubleBattleManager extends ChangeNotifier {
     }
     notifyListeners();
 
+    // --- Biding Turn Check ---
+    if (attacker.isBiding) {
+      attacker.bideTurns--;
+      if (attacker.bideTurns > 0) {
+        addLog("${attacker.name} is biding its time!");
+        notifyListeners();
+        if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+        return;
+      } else {
+        // Bide release
+        final damage = attacker.bideDamage * 2;
+        attacker.isBiding = false;
+        attacker.bideDamage = 0;
+
+        BattleOrganism? targetOrg = _resolveTarget(target);
+        if (targetOrg == null || targetOrg.health <= 0) {
+          // If original target is gone, pick another opponent
+          final opposingSlots = entry.isPlayer
+              ? [opponentSlot1, opponentSlot2]
+              : [playerSlot1, playerSlot2];
+          targetOrg = opposingSlots.firstWhere((s) => s != null && s.health > 0, orElse: () => null);
+        }
+
+        if (targetOrg == null || damage <= 0) {
+          addLog("${attacker.name} unleashed its energy... but it failed!");
+        } else {
+          addLog("${attacker.name} unleashed its energy!");
+          targetOrg.health = (targetOrg.health - damage).clamp(0, targetOrg.maxHealth);
+          if (onDamage != null) onDamage!(targetOrg, damage);
+        }
+        notifyListeners();
+        if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
+        return;
+      }
+    }
+
     if (move.targetCount == MoveTargetCount.multiple) {
       // Hit all alive opponents of the attacker
       final opposingSlots = entry.isPlayer
@@ -985,7 +1021,19 @@ class DoubleBattleManager extends ChangeNotifier {
       }
     } else {
       // Single target
-      final defender = _resolveTarget(target);
+      BattleOrganism? defender = _resolveTarget(target);
+      
+      // --- Redirection Check ---
+      final opposingSlots = entry.isPlayer
+          ? [opponentSlot1, opponentSlot2]
+          : [playerSlot1, playerSlot2];
+      for (final slot in opposingSlots) {
+        if (slot != null && slot.health > 0 && slot.isFollowMeTarget) {
+          defender = slot;
+          break;
+        }
+      }
+
       if (defender == null || defender.health <= 0) {
         addLog('But the target is gone!');
         return;
@@ -1083,11 +1131,38 @@ class DoubleBattleManager extends ChangeNotifier {
     dmg *= 0.85 + (Random().nextDouble() * 0.15);
 
     // Apply damage (Only once!)
-    final finalDmg = dmg.round().clamp(1, 99999);
+    int finalDmg = dmg.round().clamp(1, 99999);
+
+    // Endure
+    if (defender.isEnduring && finalDmg >= defender.health) {
+      finalDmg = defender.health - 1;
+      addLog('${defender.name} braced itself and endured the hit!');
+    }
+
     defender.health = (defender.health - finalDmg).clamp(0, defender.maxHealth);
+    
     if (finalDmg > 0) {
       defender.lastHitById = attacker.organism.id;
       if (onDamage != null) onDamage!(defender, finalDmg);
+      
+      // Bide Accumulation
+      if (defender.isBiding) {
+        defender.bideDamage += finalDmg;
+      }
+    }
+
+    // Faint Handlers
+    if (defender.health <= 0) {
+      // Destiny Bond
+      if (defender.isDestinyBondActive && attacker.health > 0) {
+        attacker.health = 0;
+        addLog('${attacker.name} was taken down by Destiny Bond!');
+      }
+      // Grudge
+      if (defender.grudgeActive && attacker.health > 0 && attacker.organism.moveStamina.containsKey(move.name)) {
+        attacker.organism.moveStamina[move.name] = 0;
+        addLog("${attacker.name}'s ${move.name} lost all its stamina due to the Grudge!");
+      }
     }
 
     // Break Disguise (Mimic/Illusion)
@@ -1316,6 +1391,61 @@ class DoubleBattleManager extends ChangeNotifier {
             const StatusEffect(type: StatusEffectType.bleed),
           );
           break;
+        case MoveEffectType.bide:
+          attacker.isBiding = true;
+          attacker.bideTurns = 2; // Fixed 2-turn bide
+          attacker.bideDamage = 0;
+          addLog('${attacker.name} is biding its time!');
+          break;
+        case MoveEffectType.destinyBond:
+          attacker.isDestinyBondActive = true;
+          addLog('${attacker.name} is trying to take its foe with it!');
+          break;
+        case MoveEffectType.endure:
+          attacker.isEnduring = true;
+          addLog('${attacker.name} braced itself!');
+          break;
+        case MoveEffectType.ingrain:
+          attacker.isIngrained = true;
+          addLog('${attacker.name} planted its roots!');
+          break;
+        case MoveEffectType.redirection:
+          attacker.isFollowMeTarget = true;
+          addLog('${attacker.name} became the center of attention!');
+          break;
+        case MoveEffectType.feint:
+          if (defender.isProtected) {
+            defender.isProtected = false;
+            addLog("${defender.name}'s protection was broken!");
+          }
+          break;
+        case MoveEffectType.haze:
+          _allActiveSlots().forEach((s) => s.resetStatStages());
+          addLog('All stat changes were eliminated!');
+          break;
+        case MoveEffectType.lunarBlessing:
+          final heal = (attacker.maxHealth * 0.25).round();
+          attacker.health = (attacker.health + heal).clamp(0, attacker.maxHealth);
+          attacker.clearStatusEffects();
+          addLog('${attacker.name} received a lunar blessing!');
+          break;
+        case MoveEffectType.electrify:
+          defender.isElectrified = true;
+          addLog("${defender.name}'s move was electrified!");
+          break;
+        case MoveEffectType.foresight:
+          defender.isForesighted = true;
+          defender.evasionStage = 0;
+          addLog("${defender.name} was identified!");
+          break;
+        case MoveEffectType.forestsCurse:
+          defender.hasForestsCurse = true;
+          addLog("${defender.name} was cursed by the forest!");
+          break;
+        case MoveEffectType.grudge:
+          attacker.grudgeActive = true;
+          addLog("${attacker.name} wants its foe to bear a grudge!");
+          break;
         default:
           break;
       }
@@ -1455,6 +1585,18 @@ class DoubleBattleManager extends ChangeNotifier {
       }
       // Reset per-turn flags
       slot.tookDamageThisTurn = false;
+      slot.isProtected = false;
+      slot.isEnduring = false;
+      slot.isDestinyBondActive = false;
+      slot.isFollowMeTarget = false;
+      slot.isElectrified = false;
+
+      // --- Ingrain Healing ---
+      if (slot.isIngrained && slot.health > 0 && slot.health < slot.maxHealth) {
+        final heal = (slot.maxHealth / 16).round().clamp(1, 9999);
+        slot.health = (slot.health + heal).clamp(0, slot.maxHealth);
+        addLog('${slot.name} absorbed nutrients with its roots!');
+      }
 
       // Binding Band / Clamping damage
       if (slot.clampingTurns > 0) {
