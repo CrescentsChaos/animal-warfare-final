@@ -24,6 +24,7 @@ import 'package:animal_warfare/models/talisman.dart';
 
 enum DoubleBattleState {
   intro, // Initialization animation / opening text
+  selectingLeads, // Player picking initial 2 active animals
   selectingForSlot1, // Player picking move + target for slot 1
   selectingForSlot2, // Player picking move + target for slot 2
   executing, // All four actions resolving in speed order
@@ -188,25 +189,14 @@ class DoubleBattleManager extends ChangeNotifier {
 
     _fillSlotsFromBench();
 
-    turnHistory.add(BattleTurn(currentTurn));
-    addLog('GO! ${_slotName(playerSlot1)} & ${_slotName(playerSlot2)}!');
-    if (!isTesting) {
-      if (playerSlot1 != null) {
-        _audio.playOrganismCry(playerSlot1!.organism.baseOrganism.cry);
-      }
-      if (playerSlot2 != null) {
-        _audio.playOrganismCry(playerSlot2!.organism.baseOrganism.cry);
-      }
-      if (opponentSlot1 != null) {
-        _audio.playOrganismCry(opponentSlot1!.organism.baseOrganism.cry);
-      }
-      if (opponentSlot2 != null) {
-        _audio.playOrganismCry(opponentSlot2!.organism.baseOrganism.cry);
-      }
-    }
-
     _triggerEntryAbilities();
-    _startIntro();
+    
+    if (playerTeam.length > 2) {
+      currentState = DoubleBattleState.selectingLeads;
+      addLog('Choose two animals to lead the battle!');
+    } else {
+      _startIntro();
+    }
   }
 
   void _fillSlotsFromBench() {
@@ -341,6 +331,31 @@ class DoubleBattleManager extends ChangeNotifier {
     _transitionToSelection();
   }
 
+  void selectLeads(int p1, int p2) {
+    if (currentState != DoubleBattleState.selectingLeads) return;
+
+    // Remove from bench
+    playerBench.remove(p1);
+    playerBench.remove(p2);
+
+    playerIdx1 = p1;
+    playerIdx2 = p2;
+
+    playerSlot1 = BattleOrganism(playerTeam[p1], isRogueMode: isRogueMode);
+    playerSlot2 = BattleOrganism(playerTeam[p2], isRogueMode: isRogueMode);
+
+    _checkMimic(playerSlot1!);
+    _checkMimic(playerSlot2!);
+
+    if (!isTesting) {
+      _audio.playOrganismCry(playerSlot1!.organism.baseOrganism.cry);
+      _audio.playOrganismCry(playerSlot2!.organism.baseOrganism.cry);
+    }
+
+    addLog('GO! ${_slotName(playerSlot1)} & ${_slotName(playerSlot2)}!');
+    _startIntro();
+  }
+
   void _transitionToSelection() {
     if (playerSlot1 != null) {
       currentState = DoubleBattleState.selectingForSlot1;
@@ -372,9 +387,10 @@ class DoubleBattleManager extends ChangeNotifier {
     final action = SlotAction.move(move, target);
     if (currentState == DoubleBattleState.selectingForSlot1) {
       pendingAction1 = action;
-      if (playerSlot2 != null) {
+      if (playerSlot2 != null && playerSlot2!.health > 0) {
         currentState = DoubleBattleState.selectingForSlot2;
         addLog('What will ${_slotName(playerSlot2)} do?');
+        _isProcessing = false; // Allow input for the second slot
         notifyListeners();
       } else {
         await _executeAllActions();
@@ -393,9 +409,10 @@ class DoubleBattleManager extends ChangeNotifier {
     final action = SlotAction.switchMon(benchIndex);
     if (currentState == DoubleBattleState.selectingForSlot1) {
       pendingAction1 = action;
-      if (playerSlot2 != null) {
+      if (playerSlot2 != null && playerSlot2!.health > 0) {
         currentState = DoubleBattleState.selectingForSlot2;
         addLog('What will ${_slotName(playerSlot2)} do?');
+        _isProcessing = false; // Allow input for the second slot
         notifyListeners();
       } else {
         currentState = DoubleBattleState.executing;
@@ -833,6 +850,7 @@ class DoubleBattleManager extends ChangeNotifier {
     }
 
     if (await _processReplacements()) {
+      _isProcessing = false;
       return;
     }
 
@@ -1977,6 +1995,7 @@ class DoubleBattleManager extends ChangeNotifier {
 
     // Check if another switch is needed
     if (await _processReplacements()) {
+      _isProcessing = false;
       return;
     }
 

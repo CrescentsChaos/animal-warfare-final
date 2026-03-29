@@ -166,7 +166,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     }
     if (biome.contains('volcan')) return const Color(0xFFFF5252); // Red Accent
     if (biome.contains('mountain')) return const Color(0xFF90A4AE); // Blue Grey
-    if (biome.contains('forest') || biome.contains('jungle')) {
+    if (biome.contains('jungle') || biome.contains('jungle')) {
       return const Color(0xFF69F0AE); // Green Accent
     }
     if (biome.contains('ocean') ||
@@ -193,7 +193,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     }
     if (biome.contains('volcan')) return const Color(0xFFD32F2F); // Red
     if (biome.contains('mountain')) return const Color(0xFF607D8B); // Blue Grey
-    if (biome.contains('forest') || biome.contains('jungle')) {
+    if (biome.contains('jungle') || biome.contains('jungle')) {
       return const Color(0xFF388E3C); // Green
     }
     if (biome.contains('ocean') ||
@@ -222,7 +222,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     if (biome.contains('mountain')) {
       return const Color(0xFF37474F); // Dark Blue Grey
     }
-    if (biome.contains('forest') || biome.contains('jungle')) {
+    if (biome.contains('jungle') || biome.contains('jungle')) {
       return const Color(0xFF1B5E20); // Dark Green
     }
     if (biome.contains('ocean') ||
@@ -231,7 +231,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
         biome.contains('river')) {
       return const Color(0xFF0D47A1); // Dark Blue
     }
-    return const Color(0xFF1E3F2A); // Default Deep Forest Green
+    return const Color(0xFF1E3F2A); // Default Deep jungle Green
   }
 
   // Helper: Calculate effectiveness multiplier
@@ -279,7 +279,6 @@ class _BattleScreenContentState extends State<BattleScreenContent>
   int _moveAnimIdCounter = 0;
   double _screenShakeX = 0;
   double _screenShakeY = 0;
-  
 
   AnimationController? _screenShakeController;
 
@@ -764,11 +763,11 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     name = name.trim().toLowerCase();
 
     // 3. Overrides/Fallbacks
-    if (name == 'forest') return 'assets/biomes/jungle-bg.png';
-    if (name == 'rain forest' || name == 'rainforest') {
+    if (name == 'jungle') return 'assets/biomes/jungle-bg.png';
+    if (name == 'rainforest' || name == 'rainforest') {
       return 'assets/biomes/rainforest-bg.png';
     }
-    if (name == 'grassland') return 'assets/biomes/savanna-bg.png';
+    if (name == 'plains') return 'assets/biomes/savanna-bg.png';
 
     // 4. Asset formatting
     final fileName = name.replaceAll(' ', '_');
@@ -1347,84 +1346,88 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                             // === BATTLE FIELD AREA (top, takes only needed height) ===
                             Flexible(
                               fit: FlexFit.loose,
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  _buildHeader(
-                                    context,
-                                    battleManager,
-                                    overlayColor,
-                                  ),
-                                  const SizedBox(height: 2),
-                                  const Divider(
-                                    height: 1,
-                                    color: Colors.white24,
-                                  ),
-                                  const SizedBox(height: 2),
-                                  _buildFieldEffects(context, battleManager),
-                                  const SizedBox(height: 2),
-                                  // Participant area - takes min height
-                                  LayoutBuilder(
-                                    builder: (context, constraints) {
-                                      return Stack(
-                                        clipBehavior: Clip.hardEdge,
-                                        children: [
-                                          Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              AnimatedBuilder(
-                                                animation:
-                                                    _opponentShakeAnimation,
-                                                builder: (context, child) =>
-                                                    Transform.translate(
-                                                      offset: Offset(
-                                                        _opponentShakeAnimation
-                                                            .value,
-                                                        0,
+                              child: SingleChildScrollView(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    _buildHeader(
+                                      context,
+                                      battleManager,
+                                      overlayColor,
+                                    ),
+                                    const SizedBox(height: 2),
+                                    const Divider(
+                                      height: 1,
+                                      color: Colors.white24,
+                                    ),
+                                    const SizedBox(height: 2),
+                                    _buildFieldEffects(context, battleManager),
+                                    const SizedBox(height: 2),
+                                    // Participant area - takes min height
+                                    LayoutBuilder(
+                                      builder: (context, constraints) {
+                                        return Stack(
+                                          clipBehavior: Clip.hardEdge,
+                                          children: [
+                                            Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                AnimatedBuilder(
+                                                  animation:
+                                                      _opponentShakeAnimation,
+                                                  builder: (context, child) =>
+                                                      Transform.translate(
+                                                        offset: Offset(
+                                                          _opponentShakeAnimation
+                                                              .value,
+                                                          0,
+                                                        ),
+                                                        child: child,
                                                       ),
-                                                      child: child,
-                                                    ),
-                                                child: _buildOpponentStatus(
-                                                  context,
-                                                  battleManager.opponent,
-                                                  overlayColor,
-                                                  isNarrow,
-                                                  battleManager.opponentHazards,
-                                                  battleManager,
-                                                  spriteKey: _opponentSpriteKey,
+                                                  child: _buildOpponentStatus(
+                                                    context,
+                                                    battleManager.opponent,
+                                                    overlayColor,
+                                                    isNarrow,
+                                                    battleManager
+                                                        .opponentHazards,
+                                                    battleManager,
+                                                    spriteKey:
+                                                        _opponentSpriteKey,
+                                                  ),
                                                 ),
-                                              ),
-                                              const SizedBox(height: 4),
-                                              AnimatedBuilder(
-                                                animation:
-                                                    _playerShakeAnimation,
-                                                builder: (context, child) =>
-                                                    Transform.translate(
-                                                      offset: Offset(
-                                                        _playerShakeAnimation
-                                                            .value,
-                                                        0,
+                                                const SizedBox(height: 4),
+                                                AnimatedBuilder(
+                                                  animation:
+                                                      _playerShakeAnimation,
+                                                  builder: (context, child) =>
+                                                      Transform.translate(
+                                                        offset: Offset(
+                                                          _playerShakeAnimation
+                                                              .value,
+                                                          0,
+                                                        ),
+                                                        child: child,
                                                       ),
-                                                      child: child,
-                                                    ),
-                                                child: _buildPlayerStatus(
-                                                  context,
-                                                  battleManager.player,
-                                                  overlayColor,
-                                                  isNarrow,
-                                                  battleManager.playerHazards,
-                                                  battleManager,
-                                                  spriteKey: _playerSpriteKey,
+                                                  child: _buildPlayerStatus(
+                                                    context,
+                                                    battleManager.player,
+                                                    overlayColor,
+                                                    isNarrow,
+                                                    battleManager.playerHazards,
+                                                    battleManager,
+                                                    spriteKey: _playerSpriteKey,
+                                                  ),
                                                 ),
-                                              ),
-                                              const SizedBox(height: 8),
-                                            ],
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  ),
-                                ],
+                                                const SizedBox(height: 8),
+                                              ],
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                             // UI Panel - Expanded to fill remaining space (the "red spot")
@@ -1477,7 +1480,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                   key: ValueKey(anim.id),
                   data: anim,
                   player1Link: _playerLink,
-                  player2Link: LayerLink(), 
+                  player2Link: LayerLink(),
                   opponent1Link: _opponentLink,
                   opponent2Link: LayerLink(),
                 ),
@@ -4286,7 +4289,7 @@ class _CaptureReplaceDialog extends StatelessWidget {
       child: _BattleSprite(
         organism: BattleOrganism(org, isRogueMode: true),
         size: 40,
-        biomeName: 'Forest',
+        biomeName: 'Jungle',
         hazards: const [],
       ),
     );
@@ -5818,7 +5821,7 @@ class _BattleSpriteState extends State<_BattleSprite>
     final tileDef = BiomeDataManager.allTiles[tileId];
     if (tileDef?.category == TileCategory.tallGrass) {
       if (mounted) {
-        setState(() => _platformImagePath = 'assets/platforms/forest.webp');
+        setState(() => _platformImagePath = 'assets/platforms/jungle.png');
       }
       return;
     }

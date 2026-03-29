@@ -5406,7 +5406,7 @@
         "category": "physical",
         "effects": [
             {
-                "type": "StatChange",
+                "type": "statChange",
                 "target": "opponent",
                 "stat": "defense",
                 "value": -1,
@@ -5425,7 +5425,7 @@
         "category": "status",
         "effects": [
             {
-                "type": "StatChange",
+                "type": "statChange",
                 "target": "opponent",
                 "stat": "attack",
                 "value": -1
@@ -5442,7 +5442,7 @@
         "category": "special",
         "effects": [
             {
-                "type": "StatChange",
+                "type": "statChange",
                 "target": "opponent",
                 "stat": "accuracy",
                 "value": -1,
@@ -5460,7 +5460,7 @@
         "category": "special",
         "effects": [
             {
-                "type": "StatChange",
+                "type": "statChange",
                 "target": "opponent",
                 "stat": "accuracy",
                 "value": -1,
@@ -5553,7 +5553,7 @@
         "category": "status",
         "effects": [
             {
-                "type": "StatChange",
+                "type": "statChange",
                 "target": "opponent",
                 "stat": "resistance",
                 "value": -2
@@ -5570,7 +5570,7 @@
         "category": "status",
         "effects": [
             {
-                "type": "StatChange",
+                "type": "statChange",
                 "target": "opponent",
                 "stat": "resistance",
                 "value": -2
@@ -5587,7 +5587,7 @@
         "category": "status",
         "effects": [
             {
-                "type": "StatChange",
+                "type": "statChange",
                 "target": "opponent",
                 "stat": "power",
                 "value": -1
@@ -5604,7 +5604,7 @@
         "category": "status",
         "effects": [
             {
-                "type": "StatChange",
+                "type": "statChange",
                 "target": "opponent",
                 "stat": "resistance",
                 "value": -2
@@ -5626,7 +5626,7 @@
         "category": "special",
         "effects": [
             {
-                "type": "StatChange",
+                "type": "statChange",
                 "target": "opponent",
                 "stat": "resistance",
                 "value": -1,
@@ -5644,7 +5644,7 @@
         "category": "special",
         "effects": [
             {
-                "type": "StatChange",
+                "type": "statChange",
                 "target": "opponent",
                 "stat": "resistance",
                 "value": -2,

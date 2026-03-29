@@ -1,32 +1,34 @@
-Analyzing lib...
+Analyzing double_battle_screen.dart...                          
 
-  error - game\double_battle_manager.dart:1206:95 - There's no constant named 'self' in 'MoveTargetCount'. Try correcting the name to the name of an existing constant, or defining a constant named 'self'. - undefined_enum_constant
-   info - game\battle_manager.dart:1637:11 - Statements in an if should be enclosed in a block. Try wrapping the statement in a block. - curly_braces_in_flow_control_structures
-   info - game\battle_manager.dart:1654:11 - Statements in an if should be enclosed in a block. Try wrapping the statement in a block. - curly_braces_in_flow_control_structures
-   info - game\battle_manager.dart:2765:15 - Statements in an if should be enclosed in a block. Try wrapping the statement in a block. - curly_braces_in_flow_control_structures
-   info - game\battle_manager.dart:5217:13 - Statements in an if should be enclosed in a block. Try wrapping the statement in a block. - curly_braces_in_flow_control_structures
-   info - game\battle_manager.dart:5230:15 - Statements in an if should be enclosed in a block. Try wrapping the statement in a block. - curly_braces_in_flow_control_structures
-   info - game\battle_manager.dart:5239:13 - Statements in an if should be enclosed in a block. Try wrapping the statement in a block. - curly_braces_in_flow_control_structures
-   info - game\battle_manager.dart:5254:13 - Statements in an if should be enclosed in a block. Try wrapping the statement in a block. - curly_braces_in_flow_control_structures
-   info - game\battle_manager.dart:5262:13 - Statements in an if should be enclosed in a block. Try wrapping the statement in a block. - curly_braces_in_flow_control_structures
-   info - game\battle_manager.dart:5274:13 - Statements in an if should be enclosed in a block. Try wrapping the statement in a block. - curly_braces_in_flow_control_structures
-   info - game\battle_manager.dart:5282:13 - Statements in an if should be enclosed in a block. Try wrapping the statement in a block. - curly_braces_in_flow_control_structures
-   info - game\battle_manager.dart:5291:13 - Statements in an if should be enclosed in a block. Try wrapping the statement in a block. - curly_braces_in_flow_control_structures
-   info - game\battle_manager.dart:5305:13 - Statements in an if should be enclosed in a block. Try wrapping the statement in a block. - curly_braces_in_flow_control_structures
-   info - game\battle_manager.dart:5319:13 - Statements in an if should be enclosed in a block. Try wrapping the statement in a block. - curly_braces_in_flow_control_structures
-   info - game\battle_manager.dart:5327:13 - Statements in an if should be enclosed in a block. Try wrapping the statement in a block. - curly_braces_in_flow_control_structures
-   info - game\battle_manager.dart:5346:13 - Statements in an if should be enclosed in a block. Try wrapping the statement in a block. - curly_braces_in_flow_control_structures
-   info - game\battle_manager.dart:5361:13 - Statements in an if should be enclosed in a block. Try wrapping the statement in a block. - curly_braces_in_flow_control_structures
-   info - game\battle_manager.dart:5373:13 - Statements in an if should be enclosed in a block. Try wrapping the statement in a block. - curly_braces_in_flow_control_structures
-   info - game\battle_manager.dart:5397:13 - Statements in an if should be enclosed in a block. Try wrapping the statement in a block. - curly_braces_in_flow_control_structures
-   info - game\battle_manager.dart:5415:13 - Statements in an if should be enclosed in a block. Try wrapping the statement in a block. - curly_braces_in_flow_control_structures
-   info - game\battle_manager.dart:6889:13 - Statements in an if should be enclosed in a block. Try wrapping the statement in a block. - curly_braces_in_flow_control_structures
-   info - game\battle_manager.dart:6903:11 - Statements in an if should be enclosed in a block. Try wrapping the statement in a block. - curly_braces_in_flow_control_structures
-   info - game\battle_manager.dart:6914:11 - Statements in an if should be enclosed in a block. Try wrapping the statement in a block. - curly_braces_in_flow_control_structures
-   info - game\battle_manager.dart:6927:13 - Statements in an if should be enclosed in a block. Try wrapping the statement in a block. - curly_braces_in_flow_control_structures
-   info - game\double_battle_manager.dart:1028:11 - Statements in an if should be enclosed in a block. Try wrapping the statement in a block. - curly_braces_in_flow_control_structures
-   info - game\double_battle_manager.dart:1060:11 - Statements in an if should be enclosed in a block. Try wrapping the statement in a block. - curly_braces_in_flow_control_structures
-   info - game\double_battle_manager.dart:1852:9 - Statements in an if should be enclosed in a block. Try wrapping the statement in a block. - curly_braces_in_flow_control_structures
-   info - game\move_animations.dart:3831:19 - 'scale' is deprecated and shouldn't be used. Use scaleByVector3, scaleByVector4, or scaleByDouble instead. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - Statements in an if should be enclosed in a block - lib\double_battle_screen.dart:398:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\double_battle_screen.dart:402:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\double_battle_screen.dart:410:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\double_battle_screen.dart:414:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\double_battle_screen.dart:418:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\double_battle_screen.dart:428:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\double_battle_screen.dart:432:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\double_battle_screen.dart:440:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\double_battle_screen.dart:448:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\double_battle_screen.dart:452:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\double_battle_screen.dart:462:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block - lib\double_battle_screen.dart:466:7 - curly_braces_in_flow_control_structures
+  error - The method '_getBiomePlatform' isn't defined for the type '_DoubleBattleScreenContentState' - lib\double_battle_screen.dart:730:155 - undefined_method
+   info - Unnecessary use of multiple underscores - lib\double_battle_screen.dart:730:211 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\double_battle_screen.dart:730:214 - unnecessary_underscores
+  error - Expected an identifier - lib\double_battle_screen.dart:730:378 - missing_identifier
+  error - Expected to find ',' - lib\double_battle_screen.dart:730:379 - expected_token
+   info - Unnecessary escape in string literal - lib\double_battle_screen.dart:730:380 - unnecessary_string_escapes
+  error - Unterminated string literal - lib\double_battle_screen.dart:730:422 - unterminated_string_literal
+  error - Expected to find ')' - lib\double_battle_screen.dart:731:13 - expected_token
+  error - Expected to find '}' - lib\double_battle_screen.dart:731:13 - expected_token
+  error - Expected a string literal - lib\double_battle_screen.dart:733:11 - expected_string_literal
+  error - Expected to find ')' - lib\double_battle_screen.dart:733:11 - expected_token
+  error - Expected to find '}' - lib\double_battle_screen.dart:733:11 - expected_token
+  error - Expected to find ']' - lib\double_battle_screen.dart:735:7 - expected_token
+  error - Expected to find ')' - lib\double_battle_screen.dart:736:6 - expected_token
+   info - Unnecessary use of multiple underscores - lib\double_battle_screen.dart:966:33 - unnecessary_underscores
+   info - Unnecessary use of multiple underscores - lib\double_battle_screen.dart:966:37 - unnecessary_underscores
+warning - A value for optional parameter 'key' isn't ever given - lib\double_battle_screen.dart:1247:11 - unused_element_parameter
+  error - Unterminated string literal - lib\double_battle_screen.dart:1312:3 - unterminated_string_literal
+  error - Expected a method, getter, setter or operator declaration - lib\double_battle_screen.dart:1313:1 - expected_executable
 
-28 issues found.

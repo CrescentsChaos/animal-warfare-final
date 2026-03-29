@@ -3886,8 +3886,7 @@ class _FissureEffect extends StatelessWidget {
           child: Opacity(
             opacity: fissureOpacity.clamp(0.0, 1.0),
             child: Transform(
-              transform: Matrix4.identity()
-                ..scale(openScaleX, openScaleY),
+              transform: Matrix4.diagonal3Values(openScaleX, openScaleY, 1.0),
               alignment: Alignment.center,
               child: Image.asset(
                 'assets/move_effects/fissure.png',
