@@ -849,7 +849,6 @@
         "effects": [
             {
                 "type": "statusPoison",
-                "value": 1,
                 "chance": 30
             }
         ]
@@ -912,7 +911,6 @@
         "effects": [
             {
                 "type": "statusPoison",
-                "value": 3,
                 "chance": 30
             }
         ]
@@ -943,7 +941,6 @@
         "effects": [
             {
                 "type": "statusPoison",
-                "value": 3,
                 "chance": 90
             }
         ]
@@ -2112,7 +2109,6 @@
             {
                 "type": "statusPoison",
                 "target": "opponent",
-                "value": 1,
                 "chance": 10
             }
         ]
@@ -2131,7 +2127,6 @@
             {
                 "type": "statusPoison",
                 "target": "opponent",
-                "value": 1,
                 "chance": 30
             }
         ]
@@ -2936,7 +2931,6 @@
         "effects": [
             {
                 "type": "statusPoison",
-                "value": 3,
                 "chance": 50
             }
         ]
@@ -5069,7 +5063,6 @@
         "effects": [
             {
                 "type": "statusPoison",
-                "value": 3,
                 "chance": 30
             }
         ]
@@ -5085,7 +5078,6 @@
         "effects": [
             {
                 "type": "statusPoison",
-                "value": 3,
                 "chance": 30
             }
         ]

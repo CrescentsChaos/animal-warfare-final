@@ -207,6 +207,10 @@ class BattleOrganism {
     grudgeActive = false;
     isIngrained = false;
     yawnTurns = 0;
+    
+    // Clear volatile status effects on switch out
+    _statusEffects = _statusEffects.where((se) => se.type != StatusEffectType.confusion).toList();
+    organism.statusEffects = _statusEffects;
   }
 
   void resetStatStages() {

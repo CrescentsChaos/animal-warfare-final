@@ -880,6 +880,7 @@ class DoubleBattleManager extends ChangeNotifier {
 
       // Return old mon to bench if it didn't faint (manual switch)
       if (attacker.health > 0) {
+        attacker.resetBattleState(); // Reset state (clears confusion etc.)
         playerBench.add(entry.slotIdx == 1 ? playerIdx1 : playerIdx2);
       }
 
@@ -946,6 +947,21 @@ class DoubleBattleManager extends ChangeNotifier {
     }
 
     addLog('${attacker.organism.baseOrganism.name} used ${move.name}!');
+
+    // --- Damp Check ---
+    if (move.isSelfDestruct) {
+      bool dampActive = _allActiveSlots().any(
+        (slot) => slot.abilities.any((ab) => ab.name == 'Damp'),
+      );
+      if (dampActive) {
+        addLog('Damp prevents self-destructive moves!');
+        notifyListeners();
+        if (!isTesting) {
+          await Future.delayed(const Duration(milliseconds: 1500));
+        }
+        return;
+      }
+    }
 
     // Track revealed moves
     battleStats
@@ -1106,6 +1122,16 @@ class DoubleBattleManager extends ChangeNotifier {
       );
     }
     attacker.hasMovedThisTurn = true;
+
+    // --- Explosion / Self-Destruct Faint ---
+    if (move.isSelfDestruct && attacker.health > 0) {
+      attacker.health = 0;
+      addLog('${attacker.name} exploded!');
+      notifyListeners();
+      if (!isTesting) {
+        await Future.delayed(const Duration(milliseconds: 1500));
+      }
+    }
   }
 
   // ──────────────────────────────────────────────
@@ -1312,8 +1338,7 @@ class DoubleBattleManager extends ChangeNotifier {
 
     // --- Cursed Body ---
     if (defender.abilities.any((ab) => ab.name == 'Cursed Body') &&
-        finalDmg > 0 &&
-        move.isContact) {
+        finalDmg > 0) {
       if (Random().nextDouble() < 0.3) {
         attacker.disabledMoves[move.name] = 4; // Disable for 4 turns
         addLog('${attacker.name}\'s ${move.name} was disabled by Cursed Body!');
@@ -1839,6 +1864,11 @@ class DoubleBattleManager extends ChangeNotifier {
           duration: newDuration,
         );
       }
+    }
+
+    // Clear Stun from all participants
+    for (final slot in _allActiveSlots()) {
+      slot.statusEffects = slot.statusEffects.where((se) => se.type != StatusEffectType.stun).toList();
     }
 
     notifyListeners();

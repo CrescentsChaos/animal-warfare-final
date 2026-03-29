@@ -3528,7 +3528,6 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         // --- Cursed Body ---
         if (defender.abilities.any((ab) => ab.name == 'Cursed Body') &&
             effectiveDamage > 0 &&
-            move.isContact &&
             !substituteTookDamage) {
           if (Random().nextDouble() < 0.3) {
             await notifyAbilityTrigger(
@@ -3818,6 +3817,16 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       attacker.health = (attacker.health + heal).clamp(0, attacker.maxHealth);
       addToLog('${attacker.name} restored HP with its Vital Spirit!');
       notifyListeners();
+    }
+
+    // --- Explosion / Self-Destruct Faint ---
+    if (move.isSelfDestruct && attacker.health > 0) {
+      attacker.health = 0;
+      addToLog('${attacker.name} exploded!');
+      notifyListeners();
+      if (!isTesting) {
+        await Future.delayed(const Duration(milliseconds: 1500));
+      }
     }
   }
 
@@ -7482,6 +7491,10 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
       if (player.laserFocusTurns > 0) player.laserFocusTurns--;
       if (opponent.laserFocusTurns > 0) opponent.laserFocusTurns--;
+
+      // Clear Stun at the end of the turn cycle
+      player.statusEffects = player.statusEffects.where((se) => se.type != StatusEffectType.stun).toList();
+      opponent.statusEffects = opponent.statusEffects.where((se) => se.type != StatusEffectType.stun).toList();
     }
     _isProcessing = false;
     notifyListeners();

@@ -5821,7 +5821,7 @@ class _BattleSpriteState extends State<_BattleSprite>
     final tileDef = BiomeDataManager.allTiles[tileId];
     if (tileDef?.category == TileCategory.tallGrass) {
       if (mounted) {
-        setState(() => _platformImagePath = 'assets/platforms/jungle.png');
+        setState(() => _platformImagePath = 'assets/platforms/forest.webp');
       }
       return;
     }
