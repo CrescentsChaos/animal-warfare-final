@@ -21,6 +21,25 @@ import 'package:animal_warfare/game/npc_team_loader.dart';
 void main() async {
   // 1. Ensure Flutter bindings are initialized first
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Optional: Global Error Handling (Restored for Diagnostics)
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.presentError(details);
+  };
+
+  ErrorWidget.builder = (FlutterErrorDetails details) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Center(
+        child: Text(
+          'UI Rendering Error:\n${details.exception}',
+          style: const TextStyle(color: Colors.red, fontSize: 10),
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
+  };
+
   TimeService().start();
 
   // Lock orientation to portrait — the game is designed portrait-first.

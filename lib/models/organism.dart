@@ -267,4 +267,27 @@ class Organism {
     cry: 'default',
     spawnTiles: 'any',
   );
+
+  static final Organism trainingDummy = Organism(
+    name: 'Training Dummy',
+    scientificName: 'Testus Dumbo',
+    habitat: 'AW Labs',
+    drops: 'N/A',
+    attack: 0,
+    defense: 100,
+    power: 0,
+    resistance: 100,
+    health: 9999,
+    speed: 0,
+    abilities: 'Neutralizing Gas,Inner Focus',
+    category: 'Dummy',
+    moves: 'Splash',
+    sprite: 'assets/overworld/scarecrow.png', // Using an existing overworld asset as dummy sprite
+    rarity: 'Common',
+    description: 'A sturdy straw dummy designed for training. It does not attack.',
+    weight: 100.0,
+    activeTime: 'any',
+    cry: 'default',
+    spawnTiles: 'any',
+  );
 }

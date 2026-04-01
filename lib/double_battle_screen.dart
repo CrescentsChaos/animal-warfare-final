@@ -156,7 +156,6 @@ class _DoubleBattleScreenContentState extends State<DoubleBattleScreenContent>
     return const Color(0xFF38761D);
   }
 
-
   @override
   void initState() {
     super.initState();
@@ -219,15 +218,26 @@ class _DoubleBattleScreenContentState extends State<DoubleBattleScreenContent>
     return 'default';
   }
 
-  String _getAssetPath(String biome) {
-    String name = biome.toLowerCase();
-    if (name.contains('swamp')) return 'assets/biomes/swamp.png';
-    if (name.contains('desert')) return 'assets/biomes/desert.png';
-    if (name.contains('snow')) return 'assets/biomes/snow.png';
-    if (name.contains('volcan')) return 'assets/biomes/volcano.png';
-    if (name.contains('mountain')) return 'assets/biomes/mountain.png';
-    if (name.contains('ocean')) return 'assets/biomes/ocean.png';
-    return 'assets/biomes/jungle.png';
+  String _getAssetPath(String biomeName) {
+    // 1. Clean raw string & Handle multiple biomes - Take the first one
+    var name = biomeName;
+    if (name.contains(',')) {
+      name = name.split(',')[0];
+    }
+
+    // 2. basicize
+    name = name.trim().toLowerCase();
+
+    // 3. Overrides/Fallbacks
+    if (name == 'jungle') return 'assets/biomes/jungle-bg.png';
+    if (name == 'rainforest') {
+      return 'assets/biomes/rainforest-bg.png';
+    }
+    if (name == 'plains') return 'assets/biomes/savanna-bg.png';
+
+    // 4. Asset formatting
+    final fileName = name.replaceAll(' ', '_');
+    return 'assets/biomes/$fileName-bg.png';
   }
 
   @override
@@ -259,9 +269,7 @@ class _DoubleBattleScreenContentState extends State<DoubleBattleScreenContent>
                 children: [
                   _buildHeader(context, manager),
                   _buildFieldEffects(manager),
-                  Expanded(
-                    child: _buildParticipantArea(manager),
-                  ),
+                  Expanded(child: _buildParticipantArea(manager)),
                   _buildUIControls(manager),
                 ],
               ),
@@ -319,7 +327,7 @@ class _DoubleBattleScreenContentState extends State<DoubleBattleScreenContent>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                      Text(
+                    Text(
                       widget.battleTitle ?? 'DOUBLE BATTLE',
                       style: AppTextStyles.headline(context, baseSize: 12),
                       overflow: TextOverflow.ellipsis,
@@ -378,11 +386,12 @@ class _DoubleBattleScreenContentState extends State<DoubleBattleScreenContent>
     effects.add(_buildTerrainIndicator(manager));
 
     // Player Effects
-    if (manager.playerReflectTurns > 0)
+    if (manager.playerReflectTurns > 0) {
       effects.add(
         _buildFieldEffectIcon('Reflect', manager.playerReflectTurns, true),
       );
-    if (manager.playerLightScreenTurns > 0)
+    }
+    if (manager.playerLightScreenTurns > 0) {
       effects.add(
         _buildFieldEffectIcon(
           'Light Screen',
@@ -390,15 +399,18 @@ class _DoubleBattleScreenContentState extends State<DoubleBattleScreenContent>
           true,
         ),
       );
-    if (manager.playerSafeguardTurns > 0)
+    }
+    if (manager.playerSafeguardTurns > 0) {
       effects.add(
         _buildFieldEffectIcon('Safeguard', manager.playerSafeguardTurns, true),
       );
-    if (manager.playerTailwindTurns > 0)
+    }
+    if (manager.playerTailwindTurns > 0) {
       effects.add(
         _buildFieldEffectIcon('Tailwind', manager.playerTailwindTurns, true),
       );
-    if (manager.playerAuroraVeilTurns > 0)
+    }
+    if (manager.playerAuroraVeilTurns > 0) {
       effects.add(
         _buildFieldEffectIcon(
           'Aurora Veil',
@@ -406,13 +418,15 @@ class _DoubleBattleScreenContentState extends State<DoubleBattleScreenContent>
           true,
         ),
       );
+    }
 
     // Opponent Effects
-    if (manager.opponentReflectTurns > 0)
+    if (manager.opponentReflectTurns > 0) {
       effects.add(
         _buildFieldEffectIcon('Reflect', manager.opponentReflectTurns, false),
       );
-    if (manager.opponentLightScreenTurns > 0)
+    }
+    if (manager.opponentLightScreenTurns > 0) {
       effects.add(
         _buildFieldEffectIcon(
           'Light Screen',
@@ -420,7 +434,8 @@ class _DoubleBattleScreenContentState extends State<DoubleBattleScreenContent>
           false,
         ),
       );
-    if (manager.opponentSafeguardTurns > 0)
+    }
+    if (manager.opponentSafeguardTurns > 0) {
       effects.add(
         _buildFieldEffectIcon(
           'Safeguard',
@@ -428,11 +443,13 @@ class _DoubleBattleScreenContentState extends State<DoubleBattleScreenContent>
           false,
         ),
       );
-    if (manager.opponentTailwindTurns > 0)
+    }
+    if (manager.opponentTailwindTurns > 0) {
       effects.add(
         _buildFieldEffectIcon('Tailwind', manager.opponentTailwindTurns, false),
       );
-    if (manager.opponentAuroraVeilTurns > 0)
+    }
+    if (manager.opponentAuroraVeilTurns > 0) {
       effects.add(
         _buildFieldEffectIcon(
           'Aurora Veil',
@@ -440,14 +457,17 @@ class _DoubleBattleScreenContentState extends State<DoubleBattleScreenContent>
           false,
         ),
       );
+    }
 
     // Global Effects
-    if (manager.trickRoomTurns > 0)
+    if (manager.trickRoomTurns > 0) {
       effects.add(
         _buildFieldEffectIcon('Trick Room', manager.trickRoomTurns, true),
       );
-    if (manager.gravityTurns > 0)
+    }
+    if (manager.gravityTurns > 0) {
       effects.add(_buildFieldEffectIcon('Gravity', manager.gravityTurns, true));
+    }
 
     effects.removeWhere((w) => w is SizedBox);
 
@@ -512,54 +532,130 @@ class _DoubleBattleScreenContentState extends State<DoubleBattleScreenContent>
       builder: (context, constraints) {
         final width = constraints.maxWidth;
         final height = constraints.maxHeight;
+        final isNarrow = width < 400;
 
         return Stack(
+          clipBehavior: Clip.none,
           children: [
-            // === OPPONENT SIDE (Back Layer) ===
-            // Opponent 1 (Top Left)
+            // === 3D PERSPECTIVE FLOOR ===
+
+            // === OPPONENT HP BARS (Top) ===
+            // Opponent 1 HP - top left
             if (manager.opponentSlot1 != null)
               Positioned(
-                top: height * 0.1,
-                left: width * 0.05,
-                child: _buildLayeredParticipant(
+                top: 0,
+                left: isNarrow ? 4 : 8,
+                child: GestureDetector(
+                  onTap: () => _showAnimalDetails(manager.opponentSlot1!),
+                  child: _buildCompactHPBar(
+                    manager.opponentSlot1!,
+                    isOpponent: true,
+                    alignRight: false,
+                    teamList: manager.opponentTeam,
+                    isNarrow: isNarrow,
+                  ),
+                ),
+              ),
+            // Opponent 2 HP - top right
+            if (manager.opponentSlot2 != null)
+              Positioned(
+                top: 0,
+                right: isNarrow ? 4 : 8,
+                child: GestureDetector(
+                  onTap: () => _showAnimalDetails(manager.opponentSlot2!),
+                  child: _buildCompactHPBar(
+                    manager.opponentSlot2!,
+                    isOpponent: true,
+                    alignRight: true,
+                    teamList: manager.opponentTeam,
+                    isNarrow: isNarrow,
+                  ),
+                ),
+              ),
+
+            // === OPPONENT SPRITES (Back Row - smaller, higher) ===
+            // Opponent 1 sprite - center-left, back
+            if (manager.opponentSlot1 != null)
+              Positioned(
+                top: height * 0.18,
+                left: width * 0.12,
+                child: _buildBattlefieldSprite(
                   manager.opponentSlot1!,
                   _opponent1Link,
                   isOpponent: true,
+                  scale: isNarrow ? 0.65 : 0.75,
                 ),
               ),
-            // Opponent 2 (Top Right)
+            // Opponent 2 sprite - center-right, back
             if (manager.opponentSlot2 != null)
               Positioned(
-                top: height * 0.05,
-                right: width * 0.05,
-                child: _buildLayeredParticipant(
+                top: height * 0.14,
+                right: width * 0.12,
+                child: _buildBattlefieldSprite(
                   manager.opponentSlot2!,
                   _opponent2Link,
                   isOpponent: true,
+                  scale: isNarrow ? 0.65 : 0.75,
                 ),
               ),
 
-            // === PLAYER SIDE (Front Layer) ===
-            // Player 1 (Bottom Left)
+            // === PLAYER SPRITES (Front Row - larger, lower) ===
+            // Player 1 sprite - left, front
             if (manager.playerSlot1 != null)
               Positioned(
-                bottom: height * 0.1,
-                left: width * 0.05,
-                child: _buildLayeredParticipant(
+                bottom: height * 0.22,
+                left: width * 0.02,
+                child: _buildBattlefieldSprite(
                   manager.playerSlot1!,
                   _player1Link,
                   isOpponent: false,
+                  scale: isNarrow ? 0.85 : 1.0,
                 ),
               ),
-            // Player 2 (Bottom Right)
+            // Player 2 sprite - right, front
             if (manager.playerSlot2 != null)
               Positioned(
-                bottom: height * 0.15,
-                right: width * 0.05,
-                child: _buildLayeredParticipant(
+                bottom: height * 0.26,
+                right: width * 0.02,
+                child: _buildBattlefieldSprite(
                   manager.playerSlot2!,
                   _player2Link,
                   isOpponent: false,
+                  scale: isNarrow ? 0.85 : 1.0,
+                ),
+              ),
+
+            // === PLAYER HP BARS (Bottom) ===
+            // Player 1 HP - bottom left
+            if (manager.playerSlot1 != null)
+              Positioned(
+                bottom: 0,
+                left: isNarrow ? 4 : 8,
+                child: GestureDetector(
+                  onTap: () => _showAnimalDetails(manager.playerSlot1!),
+                  child: _buildCompactHPBar(
+                    manager.playerSlot1!,
+                    isOpponent: false,
+                    alignRight: false,
+                    teamList: manager.playerTeam,
+                    isNarrow: isNarrow,
+                  ),
+                ),
+              ),
+            // Player 2 HP - bottom right
+            if (manager.playerSlot2 != null)
+              Positioned(
+                bottom: 0,
+                right: isNarrow ? 4 : 8,
+                child: GestureDetector(
+                  onTap: () => _showAnimalDetails(manager.playerSlot2!),
+                  child: _buildCompactHPBar(
+                    manager.playerSlot2!,
+                    isOpponent: false,
+                    alignRight: true,
+                    teamList: manager.playerTeam,
+                    isNarrow: isNarrow,
+                  ),
                 ),
               ),
           ],
@@ -568,233 +664,330 @@ class _DoubleBattleScreenContentState extends State<DoubleBattleScreenContent>
     );
   }
 
-  Widget _buildLayeredParticipant(
-    BattleOrganism org,
-    LayerLink link, {
+  /// Builds an HP bar panel like Pokemon's separated HP boxes.
+  /// Opponents show name/level + HP bar only (no numbers).
+  /// Players show name/level + HP bar + HP numbers + team balls.
+  Widget _buildCompactHPBar(
+    BattleOrganism org, {
     required bool isOpponent,
+    required bool alignRight,
+    required List<CapturedOrganism> teamList,
+    required bool isNarrow,
   }) {
-    final platformPath = 'assets/platforms/${_getBiomePlatform()}.png';
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // HP Box sits above the animal
-        GestureDetector(
-          onTap: () => _showAnimalDetails(org),
-          child: _buildHPBox(org, isOpponent: isOpponent),
-        ),
-        const SizedBox(height: 8),
-        // Platform + Sprite
-        SizedBox(
-          width: 140,
-          height: 120,
-          child: Stack(
-            alignment: Alignment.bottomCenter,
-            children: [
-              // Platform
-              Image.asset(
-                platformPath,
-                width: 180,
-                fit: BoxFit.contain,
-              ),
-              // Sprite
-              Positioned(
-                bottom: 10,
-                child: CompositedTransformTarget(
-                  link: link,
-                  child: GestureDetector(
-                    onTap: () => _showAnimalDetails(org),
-                    child: _buildSprite(org, isOpponent: isOpponent),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-
-  Widget _buildHPBox(BattleOrganism org, {bool isOpponent = false}) {
     final maxHp = org.maxHealth;
     final hpRatio = maxHp > 0 ? org.health / maxHp : 0.0;
     final themeColor = _getBiomeThemeColor();
-    final isNarrow = MediaQuery.of(context).size.width < 400;
+    final barWidth = isNarrow ? 140.0 : 165.0;
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        if (!isOpponent) _buildTypeIconColumn(org.types),
-        const SizedBox(width: 4),
-        Container(
-          width: isNarrow ? 140 : 165,
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.8),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
-              width: 1.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.5),
-                blurRadius: 6,
-                offset: const Offset(2, 2),
-              ),
-            ],
+    return Container(
+      width: barWidth,
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: alignRight ? Alignment.centerRight : Alignment.centerLeft,
+          end: alignRight ? Alignment.centerLeft : Alignment.centerRight,
+          colors: [
+            Colors.black.withValues(alpha: 0.85),
+            Colors.black.withValues(alpha: 0.7),
+          ],
+        ),
+        borderRadius: BorderRadius.only(
+          topLeft: alignRight ? const Radius.circular(16) : Radius.zero,
+          topRight: alignRight ? Radius.zero : const Radius.circular(16),
+          bottomLeft: alignRight ? const Radius.circular(16) : const Radius.circular(4),
+          bottomRight: alignRight ? const Radius.circular(4) : const Radius.circular(16),
+        ),
+        border: Border.all(
+          color: themeColor.withValues(alpha: 0.4),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.6),
+            blurRadius: 8,
+            offset: const Offset(2, 2),
           ),
-          child: Column(
-            crossAxisAlignment:
-                isOpponent ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: alignRight
+            ? CrossAxisAlignment.end
+            : CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Name + Level row
+          Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      org.organism.displayName.toUpperCase(),
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        fontSize: isNarrow ? 8 : 10,
-                        fontFamily: 'PressStart2P',
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'LV.${org.organism.level}',
-                      style: TextStyle(
-                        color: themeColor,
-                        fontSize: isNarrow ? 7 : 8,
-                        fontFamily: 'PressStart2P',
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 6),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: TweenAnimationBuilder<double>(
-                  duration: const Duration(milliseconds: 1200),
-                  curve: Curves.easeInOut,
-                  tween: Tween<double>(begin: hpRatio, end: hpRatio),
-                  builder: (context, value, _) => LinearProgressIndicator(
-                    value: value.clamp(0.0, 1.0),
-                    backgroundColor: Colors.white10,
-                    valueColor: AlwaysStoppedAnimation(
-                      value > 0.5
-                          ? const Color(0xFF4CAF50)
-                          : (value > 0.2 ? Colors.orange : Colors.red),
-                    ),
-                    minHeight: isNarrow ? 8 : 10,
+              if (!alignRight) ...[
+                // Type icons for left-aligned
+                ...org.types.take(2).map((t) => Padding(
+                  padding: const EdgeInsets.only(right: 3),
+                  child: Image.asset(
+                    t.iconPath,
+                    width: 14,
+                    height: 14,
+                    errorBuilder: (_, _, _) =>
+                        Icon(Icons.circle, color: t.color, size: 10),
                   ),
-                ),
-              ),
-              const SizedBox(height: 4),
-              FittedBox(
-                fit: BoxFit.scaleDown,
+                )),
+              ],
+              Flexible(
                 child: Text(
-                  'HP: ${org.health.round()}/${org.maxHealth} (${(hpRatio * 100).toStringAsFixed(1)}%)',
+                  org.organism.displayName.toUpperCase(),
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: isNarrow ? 7 : 8,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    fontSize: isNarrow ? 7 : 9,
                     fontFamily: 'PressStart2P',
                   ),
                 ),
               ),
-              if (org.statusEffects.isNotEmpty) ...[
-                const SizedBox(height: 6),
-                Wrap(
-                  spacing: 4,
-                  runSpacing: 4,
-                  alignment: isOpponent ? WrapAlignment.end : WrapAlignment.start,
-                  children: org.statusEffects
-                      .map(
-                        (se) => Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 3,
-                          ),
-                          decoration: BoxDecoration(
-                            color: se.color,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Text(
-                            se.name.toUpperCase(),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 7,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      )
-                      .toList(),
+              const SizedBox(width: 4),
+              Text(
+                'Lv${org.organism.level}',
+                style: TextStyle(
+                  color: themeColor,
+                  fontSize: isNarrow ? 6 : 7,
+                  fontFamily: 'PressStart2P',
                 ),
+              ),
+              if (alignRight) ...[
+                const SizedBox(width: 3),
+                ...org.types.take(2).map((t) => Padding(
+                  padding: const EdgeInsets.only(left: 3),
+                  child: Image.asset(
+                    t.iconPath,
+                    width: 14,
+                    height: 14,
+                    errorBuilder: (_, _, _) =>
+                        Icon(Icons.circle, color: t.color, size: 10),
+                  ),
+                )),
               ],
             ],
           ),
-        ),
-        if (isOpponent) ...[
-          const SizedBox(width: 4),
-          _buildTypeIconColumn(org.types),
-        ],
-      ],
-    );
-  }
+          const SizedBox(height: 4),
 
-  Widget _buildTypeIconColumn(List<ElementalType> types) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: types
-          .map(
-            (type) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 2),
-              child: Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.white10, width: 1.5),
+          // HP label + bar
+          Row(
+            children: [
+              Text(
+                'HP',
+                style: TextStyle(
+                  color: themeColor,
+                  fontSize: 6,
+                  fontFamily: 'PressStart2P',
+                  fontWeight: FontWeight.bold,
                 ),
-                child: Image.asset(
-                  type.iconPath,
-                  width: 20,
-                  height: 20,
-                  fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) =>
-                      Icon(Icons.help_outline, color: type.color, size: 16),
+              ),
+              const SizedBox(width: 4),
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: TweenAnimationBuilder<double>(
+                    duration: const Duration(milliseconds: 800),
+                    curve: Curves.easeInOut,
+                    tween: Tween<double>(begin: hpRatio, end: hpRatio),
+                    builder: (context, value, _) => LinearProgressIndicator(
+                      value: value.clamp(0.0, 1.0),
+                      backgroundColor: Colors.white10,
+                      valueColor: AlwaysStoppedAnimation(
+                        value > 0.5
+                            ? const Color(0xFF4CAF50)
+                            : (value > 0.2 ? Colors.orange : Colors.red),
+                      ),
+                      minHeight: isNarrow ? 6 : 8,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          // Player HP numbers (opponents don't show exact numbers)
+          if (!isOpponent) ...[
+            const SizedBox(height: 3),
+            Align(
+              alignment: Alignment.centerRight,
+              child: Text(
+                '${org.health.round()} / ${org.maxHealth}',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: isNarrow ? 6 : 7,
+                  fontFamily: 'PressStart2P',
                 ),
               ),
             ),
-          )
-          .toList(),
-    );
-  }
+          ],
 
-  Widget _buildSprite(BattleOrganism org, {required bool isOpponent}) {
-    return SizedBox(
-      width: 130,
-      height: 130,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Image.asset(
-            'assets/sprites/${org.organism.baseOrganism.name.toLowerCase().replaceAll(' ', '_').replaceAll('-', '_').replaceAll("'", "_")}.png',
-            fit: BoxFit.contain,
-            errorBuilder: (_, __, ___) => const Icon(Icons.help, color: Colors.white24, size: 60),
-          ),
-          if (org.health <= 0)
-            Container(color: Colors.black54, child: const Icon(Icons.close, color: Colors.red, size: 40)),
+          // Status effects
+          if (org.statusEffects.isNotEmpty) ...[
+            const SizedBox(height: 3),
+            Wrap(
+              spacing: 3,
+              runSpacing: 2,
+              alignment: alignRight ? WrapAlignment.end : WrapAlignment.start,
+              children: org.statusEffects
+                  .map(
+                    (se) => Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: se.color,
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                      child: Text(
+                        se.name.toUpperCase(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 5,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ],
+
+          // Team ball indicators
+          const SizedBox(height: 4),
+          _buildTeamBalls(teamList, isOpponent),
         ],
       ),
     );
   }
+
+  /// Pokeball-style team indicators showing alive/fainted/empty status
+  Widget _buildTeamBalls(List<CapturedOrganism> team, bool isOpponent) {
+    final maxSlots = team.length.clamp(0, 6);
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(maxSlots, (i) {
+        final org = team[i];
+        final isFainted = org.currentHealth <= 0;
+        final Color ballColor;
+        final Color borderColor;
+
+        if (isFainted) {
+          ballColor = Colors.red.shade900;
+          borderColor = Colors.red.shade700;
+        } else {
+          ballColor = const Color(0xFF4CAF50);
+          borderColor = Colors.green.shade300;
+        }
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 1.5),
+          child: Container(
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: ballColor,
+              border: Border.all(color: borderColor, width: 1),
+              boxShadow: [
+                BoxShadow(
+                  color: ballColor.withValues(alpha: 0.5),
+                  blurRadius: 2,
+                ),
+              ],
+            ),
+          ),
+        );
+      }),
+    );
+  }
+
+  /// Builds a sprite on a platform with shadow, used in the battlefield.
+  Widget _buildBattlefieldSprite(
+    BattleOrganism org,
+    LayerLink link, {
+    required bool isOpponent,
+    double scale = 1.0,
+  }) {
+    final platformPath = 'assets/platforms/${_getBiomePlatform()}.png';
+    final spriteSize = 110.0 * scale;
+    final platformWidth = 140.0 * scale;
+    final platformHeight = 40.0 * scale;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Sprite
+        CompositedTransformTarget(
+          link: link,
+          child: GestureDetector(
+            onTap: () => _showAnimalDetails(org),
+            child: SizedBox(
+              width: spriteSize,
+              height: spriteSize,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Image.asset(
+                    'assets/sprites/${org.organism.baseOrganism.name.toLowerCase().replaceAll(' ', '_').replaceAll('-', '_').replaceAll("'", "_")}.png',
+                    fit: BoxFit.contain,
+                    filterQuality: FilterQuality.medium,
+                    errorBuilder: (_, _, _) =>
+                        const Icon(Icons.help, color: Colors.white24, size: 50),
+                  ),
+                  if (org.health <= 0)
+                    Container(
+                      color: Colors.black54,
+                      child: const Icon(Icons.close, color: Colors.red, size: 36),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        // Platform image
+        Transform(
+          alignment: Alignment.center,
+          transform: Matrix4.identity()
+            ..setEntry(3, 2, 0.002)
+            ..rotateX(0.3),
+          child: Image.asset(
+            platformPath,
+            width: platformWidth,
+            height: platformHeight,
+            fit: BoxFit.contain,
+            errorBuilder: (_, _, _) => _buildFallbackPlatform(platformWidth, platformHeight),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Fallback elliptical platform when asset is missing
+  Widget _buildFallbackPlatform(double width, double height) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(width / 2),
+        gradient: RadialGradient(
+          colors: [
+            _getBiomePrimaryColor().withValues(alpha: 0.6),
+            _getBiomePrimaryColor().withValues(alpha: 0.2),
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.5),
+            blurRadius: 8,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+    );
+  }
+
 
   Widget _buildUIControls(DoubleBattleManager manager) {
     bool showInput =
@@ -974,7 +1167,9 @@ class _DoubleBattleScreenContentState extends State<DoubleBattleScreenContent>
                     width: double.infinity,
                     height: 48,
                     child: ElevatedButton.icon(
-                      onPressed: bm.currentState == DoubleBattleState.executing || bm.isProcessing
+                      onPressed:
+                          bm.currentState == DoubleBattleState.executing ||
+                              bm.isProcessing
                           ? null
                           : () => _showSwitchDialog(bm),
                       icon: const Icon(Icons.swap_horiz, size: 20),
@@ -1058,7 +1253,7 @@ class _DoubleBattleScreenContentState extends State<DoubleBattleScreenContent>
               width: isNarrow ? 24 : 32,
               height: isNarrow ? 24 : 32,
               filterQuality: FilterQuality.medium,
-              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+              errorBuilder: (_, _, _) => const SizedBox.shrink(),
             ),
           ),
           const SizedBox(width: 8),
@@ -1413,6 +1608,7 @@ class _DoubleBattleScreenContentState extends State<DoubleBattleScreenContent>
       ),
     );
   }
+
   Widget _buildLeadSelectionUI(DoubleBattleManager manager) {
     final themeColor = _getBiomeThemeColor();
     return Container(
@@ -1491,7 +1687,10 @@ class _DoubleBattleScreenContentState extends State<DoubleBattleScreenContent>
                               'assets/sprites/${org.baseOrganism.name.toLowerCase().replaceAll(' ', '_')}.png',
                               height: 60,
                               errorBuilder: (context, error, stackTrace) =>
-                                  const Icon(Icons.help_outline, color: Colors.white),
+                                  const Icon(
+                                    Icons.help_outline,
+                                    color: Colors.white,
+                                  ),
                             ),
                           ),
                           const SizedBox(height: 10),
@@ -1534,7 +1733,10 @@ class _DoubleBattleScreenContentState extends State<DoubleBattleScreenContent>
                 style: ElevatedButton.styleFrom(
                   backgroundColor: themeColor,
                   foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 40,
+                    vertical: 20,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -1563,7 +1765,10 @@ class _DoubleBattleScreenContentState extends State<DoubleBattleScreenContent>
           decoration: BoxDecoration(
             color: const Color(0xFF121212),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-            border: Border.all(color: themeColor.withValues(alpha: 0.5), width: 2),
+            border: Border.all(
+              color: themeColor.withValues(alpha: 0.5),
+              width: 2,
+            ),
           ),
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -1602,7 +1807,7 @@ class _DoubleBattleScreenContentState extends State<DoubleBattleScreenContent>
                         leading: Image.asset(
                           'assets/sprites/${org.baseOrganism.name.toLowerCase().replaceAll(' ', '_')}.png',
                           width: 40,
-                          errorBuilder: (_, __, ___) => const Icon(Icons.help),
+                          errorBuilder: (_, _, _) => const Icon(Icons.help),
                         ),
                         title: Text(
                           org.baseOrganism.name.toUpperCase(),
@@ -1631,7 +1836,10 @@ class _DoubleBattleScreenContentState extends State<DoubleBattleScreenContent>
               const SizedBox(height: 10),
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('CANCEL', style: TextStyle(color: Colors.redAccent)),
+                child: const Text(
+                  'CANCEL',
+                  style: TextStyle(color: Colors.redAccent),
+                ),
               ),
             ],
           ),
@@ -1648,7 +1856,6 @@ class _TypewriterText extends StatefulWidget {
 
   const _TypewriterText(
     this.text, {
-    super.key,
     this.style,
     this.speed = const Duration(milliseconds: 50),
   });
@@ -1714,3 +1921,4 @@ class _TypewriterTextState extends State<_TypewriterText> {
     return Text(_displayedText, style: widget.style);
   }
 }
+

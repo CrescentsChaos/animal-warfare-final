@@ -474,7 +474,7 @@ class BattleOrganism {
 
     // Multitype / Plates
 
-    if (abilities.any((a) => a.name == 'Multitype') && _isItemValid) {
+    if (abilities.any((a) => a.name == 'Multitype') && isItemValid) {
       final itemName = organism.equippedTalisman!.name.toLowerCase();
       if (itemName.contains('plate')) {
         if (itemName.contains('flame')) return [ElementalType.blaze];
@@ -514,7 +514,7 @@ class BattleOrganism {
 
   set battleTypes(List<ElementalType> value) => _battleTypes = value;
 
-  bool get _isItemValid =>
+  bool get isItemValid =>
       organism.equippedTalisman != null &&
       !talismanConsumed &&
       itemDisabledTurns <= 0 &&
@@ -525,7 +525,7 @@ class BattleOrganism {
     if (abilities.any((a) => a.name == 'True Flight' || a.name == 'Levitate')) {
       return false;
     }
-    if (_isItemValid) {
+    if (isItemValid) {
       if (organism.equippedTalisman!.effects.any(
         (e) => e.type == TalismanEffectType.airBalloon,
       )) {
@@ -664,7 +664,7 @@ class BattleOrganism {
     }
 
     // Apply talisman effects (multi-effect support)
-    if (_isItemValid) {
+    if (isItemValid) {
       for (final effect in organism.equippedTalisman!.effects) {
         // Legacy support
         if (effect.type == TalismanEffectType.attackBoost) {
@@ -705,7 +705,7 @@ class BattleOrganism {
     }
 
     // Apply talisman effects
-    if (_isItemValid) {
+    if (isItemValid) {
       for (final effect in organism.equippedTalisman!.effects) {
         if (effect.type == TalismanEffectType.defenseBoost) {
           defense *= effect.magnitude;
@@ -729,7 +729,7 @@ class BattleOrganism {
     }
 
     // Apply talisman effects
-    if (_isItemValid) {
+    if (isItemValid) {
       for (final effect in organism.equippedTalisman!.effects) {
         if (effect.type == TalismanEffectType.powerBoost) {
           power *= effect.magnitude;
@@ -767,7 +767,7 @@ class BattleOrganism {
     }
 
     // Apply talisman effects
-    if (_isItemValid) {
+    if (isItemValid) {
       for (final effect in organism.equippedTalisman!.effects) {
         if (effect.type == TalismanEffectType.resistanceStatBoost) {
           resistance *= effect.magnitude;
@@ -792,7 +792,7 @@ class BattleOrganism {
     }
 
     // Apply talisman effects
-    if (_isItemValid) {
+    if (isItemValid) {
       for (final effect in organism.equippedTalisman!.effects) {
         if (effect.type == TalismanEffectType.speedBoost) {
           speed *= effect.magnitude;
@@ -821,7 +821,7 @@ class BattleOrganism {
     double hp = baseMax.toDouble();
 
     // Apply talisman effects
-    if (_isItemValid) {
+    if (isItemValid) {
       for (final effect in organism.equippedTalisman!.effects) {
         if (effect.type == TalismanEffectType.healthBoost) {
           hp *= effect.magnitude;

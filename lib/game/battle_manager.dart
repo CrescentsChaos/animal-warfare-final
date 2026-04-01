@@ -46,6 +46,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   int currentPlayerIndex = 0;
   final CapturedOrganism opponentOrganism;
   final bool isTesting;
+  final bool isTraining;
   final String? biomeName;
 
   CapturedOrganism get playerOrganism => playerTeam[currentPlayerIndex];
@@ -320,6 +321,10 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   Move? lastOpponentAction; // For UI/Testing persistence
   int? pendingOpponentSwitchIndex;
 
+  // Manual Dummy Move Control (Training Mode Only)
+  bool manualOpponentControl = false;
+  Move? pendingManualOpponentMove;
+
   // Suggestion logic
   Timer? _suggestionTimer;
   String? suggestedMoveName;
@@ -405,6 +410,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     this.isArenaBattle = false,
     this.isRogueMode = false,
     this.isTrainerBattle = false,
+    this.isTraining = false,
     this.accountLevel = 100, // Default to max if not provided
     int? initialPlayerIndex,
     this.isTesting = false,
@@ -1315,7 +1321,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     // Check Stamina
     final currentStamina = playerOrganism.moveStamina[activeMove.name] ?? 0;
-    if (currentStamina <= 0) {
+    if (currentStamina <= 0 && !isTraining) {
       addToLog('${activeMove.name} has no stamina left!');
       _isProcessing = false;
       notifyListeners();
@@ -5770,7 +5776,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       }
 
       notifyListeners();
-      if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
+      if (!isTesting) await Future.delayed(const Duration(seconds: 2));
     }
 
     // White Herb
@@ -7433,7 +7439,69 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     }
   }
 
+  /// Specialized method for Training Mode to execute ANY move.
+  Future<void> forceExecuteMove(Move move) async {
+    if (!isTraining) return;
+    if (_isProcessing) return;
+
+    _isProcessing = true;
+    notifyListeners();
+
+    // Ensure dummy has full HP/Stamina before starting
+    opponent.health = opponent.maxHealth;
+    if (isTraining) {
+      opponentOrganism.restoreAllStamina();
+    }
+
+    currentTurnOpponentMove = pickOpponentMove();
+    lastOpponentAction = currentTurnOpponentMove;
+
+    currentState = BattleState.playerTurn;
+    notifyListeners();
+
+    // Reset turn flags
+    playerMovedThisTurn = false;
+    opponentMovedThisTurn = false;
+    player.tookDamageThisTurn = false;
+    opponent.tookDamageThisTurn = false;
+
+    // Player always goes first in training move execution
+    if (await _canMove(player, move)) {
+      await _executeTurn(
+        player,
+        opponent,
+        move,
+        opponentMove: currentTurnOpponentMove,
+      );
+    }
+    playerMovedThisTurn = true;
+
+    // Opponent turn (Dummy skip)
+    if (!opponentMovedThisTurn && !opponentJustSwitched) {
+      if (await _canMove(opponent, currentTurnOpponentMove!)) {
+        await _executeTurn(
+          opponent,
+          player,
+          currentTurnOpponentMove!,
+          opponentMove: move,
+        );
+      }
+      opponentMovedThisTurn = true;
+    }
+
+    await _finalizeTurn();
+  }
+
   Future<void> _finalizeTurn() async {
+    if (isTraining) {
+      // Training Mode: Heal both to full and reset status/stamina
+      player.health = player.maxHealth;
+      opponent.health = opponent.maxHealth;
+      player.clearStatusEffects();
+      opponent.clearStatusEffects();
+      playerOrganism.restoreAllStamina();
+      opponentOrganism.restoreAllStamina();
+    }
     if (!_checkBattleEnd()) {
       await _applyGlobalTurnEffects();
       if (_checkBattleEnd()) return;
@@ -7493,8 +7561,12 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       if (opponent.laserFocusTurns > 0) opponent.laserFocusTurns--;
 
       // Clear Stun at the end of the turn cycle
-      player.statusEffects = player.statusEffects.where((se) => se.type != StatusEffectType.stun).toList();
-      opponent.statusEffects = opponent.statusEffects.where((se) => se.type != StatusEffectType.stun).toList();
+      player.statusEffects = player.statusEffects
+          .where((se) => se.type != StatusEffectType.stun)
+          .toList();
+      opponent.statusEffects = opponent.statusEffects
+          .where((se) => se.type != StatusEffectType.stun)
+          .toList();
     }
     _isProcessing = false;
     notifyListeners();
@@ -9642,6 +9714,19 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   }
 
   Move pickOpponentMove() {
+    if (isTraining) {
+      if (manualOpponentControl && pendingManualOpponentMove != null) {
+        return pendingManualOpponentMove!;
+      }
+      return Move(
+        name: 'Idle',
+        description: 'Waiting...',
+        baseDamage: 0,
+        accuracy: 100,
+        stamina: 0,
+        priority: -6,
+      );
+    }
     if (opponent.rolloutTurnCount > 0 && opponent.rolloutMove != null) {
       return opponent.rolloutMove!;
     }

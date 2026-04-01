@@ -302,7 +302,7 @@
         "animationType": "elemental_melee",
         "description": "Poisons and lowers the speed of the opponent.",
         "baseDamage": 0,
-        "type": "poison",
+        "type": "toxic",
         "accuracy": 95,
         "stamina": 15,
         "category": "status",
@@ -1715,7 +1715,7 @@
     {
         "name": "Slime Burst",
         "description": "Lowers the opponent's speed.",
-        "baseDamage": 980,
+        "baseDamage": 90,
         "accuracy": 100,
         "type": "toxic",
         "stamina": 10,
@@ -3655,6 +3655,7 @@
         "name": "Extreme Speed",
         "description": "Strikes first.",
         "soundEffect": "audio/effects/agile.mp3",
+        "animationType": "dash_impact",
         "baseDamage": 80,
         "priority": 2,
         "type": "basic",
@@ -3765,11 +3766,37 @@
         "name": "Flare Blitz",
         "description": "A reckless, life-risking tackle. This also damages the user quite a lot.",
         "baseDamage": 120,
+        "animationType": "dash_impact",
         "accuracy": 100,
         "type": "blaze",
         "stamina": 12,
         "recoilPercent": 0.33,
-        "category": "physical"
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusBurn",
+                "target": "opponent",
+                "chance": 10
+            }
+        ]
+    },
+    {
+        "name": "Volt Tackle",
+        "description": "A reckless, life-risking tackle. This also damages the user quite a lot.",
+        "baseDamage": 120,
+        "animationType": "dash_impact",
+        "accuracy": 100,
+        "type": "electric",
+        "stamina": 12,
+        "recoilPercent": 0.33,
+        "category": "physical",
+        "effects": [
+            {
+                "type": "statusParalysis",
+                "target": "opponent",
+                "chance": 10
+            }
+        ]
     },
     {
         "name": "Inferno Onrush",
@@ -4755,6 +4782,7 @@
         "type": "toxic",
         "stamina": 15,
         "category": "status",
+        "animationType": "self_buff",
         "effects": [
             {
                 "type": "statChange",
@@ -4788,6 +4816,7 @@
         "baseDamage": 0,
         "type": "aura",
         "stamina": 15,
+        "animationType": "self_buff",
         "category": "status",
         "effects": [
             {
@@ -4867,6 +4896,7 @@
         "type": "aura",
         "stamina": 15,
         "category": "status",
+        "animationType": "self_buff",
         "effects": [
             {
                 "type": "multiStatChange",
@@ -5006,7 +5036,7 @@
     },
     {
         "name": "Brave Bird",
-        "animationType": "brave_bird",
+        "animationType": "dash_impact",
         "description": "Hurts user.",
         "soundEffect": "audio/effects/brave_bird.mp3",
         "baseDamage": 120,
@@ -5764,6 +5794,7 @@
         "type": "social",
         "stamina": 10,
         "category": "status",
+        "animationType": "self_buff",
         "effects": [
             {
                 "type": "multiStatChange",
@@ -5831,6 +5862,7 @@
         "description": "The target is attacked with a powerful impact. The user can't move on the next turn.",
         "soundEffect": "audio/effects/giga_impact.mp3",
         "baseDamage": 150,
+        "animationType": "impact move",
         "type": "basic",
         "stamina": 5,
         "category": "physical",
@@ -6121,6 +6153,7 @@
         "name": "Sky Attack",
         "description": "The user flies up high on the first turn, then attacks on the second. 30% chance to stun the opponent. Also, has high critical rate",
         "soundEffect": "audio/effects/agile.mp3",
+        "animationType": "dash_impact",
         "baseDamage": 140,
         "accuracy": 90,
         "type": "flying",
@@ -6325,6 +6358,7 @@
         "description": "The user releases a soothing scent that heals all status conditions for its team.",
         "baseDamage": 0,
         "accuracy": 100,
+        "animationType": "self_buff",
         "effects": [
             {
                 "type": "cureTeamStatus",
@@ -6916,6 +6950,8 @@
         "type": "basic",
         "accuracy": 100,
         "stamina": 30,
+        "animationType": "fake_out",
+        "soundEffect": "audio/effects/fakeout.mp3",
         "category": "physical",
         "effects": [
             {

@@ -10,8 +10,8 @@ import 'package:animal_warfare/biome_exploration_map.dart';
 import 'package:animal_warfare/theme.dart';
 import 'package:animal_warfare/game/map_editor.dart';
 import 'package:animal_warfare/game/tile_designer.dart';
-import 'package:animal_warfare/game/tile_wiki_screen.dart';
 import 'package:animal_warfare/user_state.dart';
+import 'package:animal_warfare/training_battle_screen.dart';
 
 class ToolScreen extends StatefulWidget {
   final UserData currentUser;
@@ -148,11 +148,19 @@ class _ToolScreenState extends State<ToolScreen> {
                   ),
                   const SizedBox(height: 12),
                   _ToolCard(
-                    icon: Icons.auto_stories,
-                    title: 'Tile Wiki',
-                    description: 'Browse available tiles.',
-                    gradient: const [Color(0xFF0D47A1), Color(0xFF1976D2)],
-                    onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const TileWikiScreen())),
+                    icon: Icons.fitness_center,
+                    title: 'Training Mode',
+                    description: 'Test any move vs dummy.',
+                    gradient: const [Color(0xFFE65100), Color(0xFFFF9800)],
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => TrainingBattleScreen(
+                            playerTeam: widget.currentUser.capturedOrganisms,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),

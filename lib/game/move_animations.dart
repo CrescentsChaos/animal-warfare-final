@@ -46,7 +46,9 @@ class BlobStreamEffect extends StatelessWidget {
           final cy = size / 2;
 
           // Default 1v1 offset if none provided
-          final defaultOffset = isPlayer ? const Offset(-210, 150) : const Offset(210, -150);
+          final defaultOffset = isPlayer
+              ? const Offset(-210, 150)
+              : const Offset(210, -150);
           final offset = attackerOffset ?? defaultOffset;
 
           double startX = cx + offset.dx;
@@ -307,7 +309,9 @@ class SlashEffect extends StatelessWidget {
     final cx = size / 2;
     final cy = size / 2;
 
-    final defaultOffset = isPlayer ? const Offset(-210, 150) : const Offset(210, -150);
+    final defaultOffset = isPlayer
+        ? const Offset(-210, 150)
+        : const Offset(210, -150);
     final offset = attackerOffset ?? defaultOffset;
 
     double startX = cx + offset.dx;
@@ -356,72 +360,92 @@ class SlashEffect extends StatelessWidget {
 // ----------------------------------------------------------------
 // Brave Bird Diagonal Zoom Effect
 // ----------------------------------------------------------------
-class BraveBirdEffect extends StatelessWidget {
+class DashImpactEffect extends StatelessWidget {
   final double progress;
   final bool isPlayer;
   final Offset? attackerOffset;
+  final String moveAsset; // e.g., 'assets/move_effects/bird.png'
+  final String impactAsset; // e.g., 'assets/move_effects/flying_impact.png'
+  final double assetSize;
 
-  const BraveBirdEffect({
+  const DashImpactEffect({
     super.key,
     required this.progress,
     required this.isPlayer,
+    required this.moveAsset,
+    required this.impactAsset,
     this.attackerOffset,
+    this.assetSize = 100,
   });
 
   @override
   Widget build(BuildContext context) {
-    const size = 160.0;
+    const canvasSize = 400.0;
+    final p = progress.clamp(0.0, 1.0);
 
-    final travel = progress.clamp(0.0, 1.0);
-    final fade = progress > 0.8 ? (1.0 - progress) / 0.2 : 1.0;
+    // --- PHASE 1: TRAVEL (0.0 to 0.6) ---
+    final travelP = (p / 0.6).clamp(0.0, 1.0);
+    final curve = travelP * travelP;
 
-    final cx = size / 2;
-    final cy = size / 2;
+    // --- PHASE 2: IMPACT (0.6 to 1.0) ---
+    final impactP = ((p - 0.6) / 0.4).clamp(0.0, 1.0);
+    final impactScale = 0.8 + (impactP * 1.2);
+    final impactOpacity = (1.0 - impactP).clamp(0.0, 1.0);
 
-    final defaultOffset = isPlayer ? const Offset(-180, 180) : const Offset(180, -180);
-    final offset = attackerOffset ?? defaultOffset;
+    final cx = canvasSize / 2;
+    final cy = canvasSize / 2;
 
-    double startX = cx + offset.dx;
-    double startY = cy + offset.dy;
-    double endX = cx + 20; 
-    double endY = cy - 20;
+    final startOffset =
+        attackerOffset ??
+        (isPlayer ? const Offset(-200, 150) : const Offset(200, -150));
 
-    double currentX = startX + (endX - startX) * travel;
-    double currentY = startY + (endY - startY) * travel;
-
-    double rotation = math.atan2(endY - startY, endX - startX);
-
-    if (!isPlayer && attackerOffset == null) {
-      currentX = cx + (cx - currentX);
-      currentY = cy + (cy - currentY);
-      rotation += math.pi;
-    }
+    // Current position logic
+    double currentX = cx + (startOffset.dx * (1.0 - curve));
+    double currentY = cy + (startOffset.dy * (1.0 - curve));
 
     return SizedBox(
-      width: size,
-      height: size,
+      width: canvasSize,
+      height: canvasSize,
       child: Stack(
         clipBehavior: Clip.none,
+        alignment:
+            Alignment.topLeft, // Changed to topLeft for manual positioning
         children: [
-          Positioned(
-            left: currentX - 50,
-            top: currentY - 50,
-            child: Opacity(
-              opacity: fade.clamp(0.0, 1.0),
-              child: Transform.rotate(
-                angle: rotation,
+          // 1. THE MOVING PROJECTILE
+          if (p > 0 && p < 0.6) // Only show while moving
+            Positioned(
+              left: currentX - (assetSize / 2),
+              top: currentY - (assetSize / 2),
+              child: Transform.scale(
+                scaleX: isPlayer ? 1.0 : -1.0,
+                scaleY: isPlayer ? 1.0 : -1.0,
+                child: Image.asset(
+                  moveAsset,
+                  width: assetSize,
+                  height: assetSize,
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+
+          // 2. THE IMPACT
+          if (p >= 0.6)
+            Positioned(
+              left: cx - assetSize, // Center the impact
+              top: cy - assetSize,
+              child: Opacity(
+                opacity: impactOpacity,
                 child: Transform.scale(
-                  scaleY: isPlayer ? 1.0 : -1.0,
+                  scale: impactScale,
                   child: Image.asset(
-                    'assets/move_effects/bird.png',
-                    width: 40,
-                    height: 40,
+                    impactAsset,
+                    width: assetSize * 2,
+                    height: assetSize * 2,
                     fit: BoxFit.contain,
                   ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );
@@ -515,7 +539,9 @@ class MeleeEffect extends StatelessWidget {
     final cx = size / 2;
     final cy = size / 2;
 
-    final defaultOffset = isPlayer ? const Offset(-180, 180) : const Offset(180, -180);
+    final defaultOffset = isPlayer
+        ? const Offset(-180, 180)
+        : const Offset(180, -180);
     final offset = attackerOffset ?? defaultOffset;
 
     double startX = cx + offset.dx;
@@ -666,8 +692,10 @@ class DrainEffect extends StatelessWidget {
 
     double startX = cx;
     double startY = cy;
-    
-    final defaultOffset = isPlayer ? const Offset(-210, 150) : const Offset(210, -150);
+
+    final defaultOffset = isPlayer
+        ? const Offset(-210, 150)
+        : const Offset(210, -150);
     final offset = attackerOffset ?? defaultOffset;
 
     double endX = cx + offset.dx;
@@ -809,7 +837,9 @@ class HurricaneEffect extends StatelessWidget {
     final cx = size / 2;
     final cy = size / 2;
 
-    final defaultOffset = isPlayer ? const Offset(-210, 150) : const Offset(210, -150);
+    final defaultOffset = isPlayer
+        ? const Offset(-210, 150)
+        : const Offset(210, -150);
     final offset = attackerOffset ?? defaultOffset;
 
     double startX = cx + offset.dx;
@@ -1090,7 +1120,9 @@ class BeamEffect extends StatelessWidget {
     final cy = size / 2;
 
     // Movement: straight beam from attacker to target
-    final Offset startOffset = attackerOffset ?? (isPlayer ? const Offset(-210, 150) : const Offset(210, -150));
+    final Offset startOffset =
+        attackerOffset ??
+        (isPlayer ? const Offset(-210, 150) : const Offset(210, -150));
     final double startX = cx + startOffset.dx;
     final double startY = cy + startOffset.dy;
     final double endX = cx;
@@ -1162,7 +1194,9 @@ class SingleProjectileEffect extends StatelessWidget {
     final cx = size / 2;
     final cy = size / 2;
 
-    final defaultOffset = isPlayer ? const Offset(-210, 150) : const Offset(210, -150);
+    final defaultOffset = isPlayer
+        ? const Offset(-210, 150)
+        : const Offset(210, -150);
     final offset = attackerOffset ?? defaultOffset;
 
     double startX = cx + offset.dx;
@@ -1251,8 +1285,10 @@ class ShardEffect extends StatelessWidget {
           final cy = size / 2;
 
           // From attacker to target
-          final Offset startOff = attackerOffset ?? (isPlayer ? const Offset(-180, 180) : const Offset(180, -180));
-          
+          final Offset startOff =
+              attackerOffset ??
+              (isPlayer ? const Offset(-180, 180) : const Offset(180, -180));
+
           double startX = cx + startOff.dx + (rand.nextDouble() * 40 - 20);
           double startY = cy + startOff.dy + (rand.nextDouble() * 40 - 20);
           double endX = cx + (rand.nextDouble() * 40 - 20);
@@ -1364,11 +1400,11 @@ class IceColumnEffect extends StatelessWidget {
 // ----------------------------------------------------------------
 // Giga Impact Effect (Charge + Massive Explosion)
 // ----------------------------------------------------------------
-class GigaImpactEffect extends StatelessWidget {
+class ImpactMoveEffect extends StatelessWidget {
   final double progress;
   final bool isPlayer;
 
-  const GigaImpactEffect({
+  const ImpactMoveEffect({
     super.key,
     required this.progress,
     required this.isPlayer,
@@ -1438,7 +1474,7 @@ class GigaImpactEffect extends StatelessWidget {
           if (p >= 0.6)
             Positioned(
               child: Opacity(
-                opacity: explodeOpacity.clamp(0.0, 1.0),
+                opacity: explodeOpacity.clamp(0.5, 1.0),
                 child: Transform.scale(
                   scale: explodeScale,
                   child: Image.asset(
@@ -1615,14 +1651,18 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
     super.dispose();
   }
 
-  Offset _getAttackerOffset(bool isPlayerAttacking, int attackerSlot, int targetSlot) {
+  Offset _getAttackerOffset(
+    bool isPlayerAttacking,
+    int attackerSlot,
+    int targetSlot,
+  ) {
     // Base 1v1 offset
     const double baseDX = 210;
     const double baseDY = 150;
-    
+
     double dx = isPlayerAttacking ? -baseDX : baseDX;
     double dy = isPlayerAttacking ? baseDY : -baseDY;
-    
+
     // Adjust for slots in Double Battles
     // Assuming P0, P1 on bottom and O0, O1 on top.
     if (isPlayerAttacking) {
@@ -1632,7 +1672,7 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
       if (attackerSlot == 1) dx -= 100;
       if (targetSlot == 1) dx += 100;
     }
-    
+
     return Offset(dx, dy);
   }
 
@@ -1640,22 +1680,32 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
   Widget build(BuildContext context) {
     final move = widget.data.move;
     final isPlayer = widget.data.isPlayerAttacking;
-    
+
     // Select attacker link
     final attackerLink = isPlayer
-        ? (widget.data.attackerSlot == 0 ? widget.player1Link : widget.player2Link)
-        : (widget.data.attackerSlot == 0 ? widget.opponent1Link : widget.opponent2Link);
+        ? (widget.data.attackerSlot == 0
+              ? widget.player1Link
+              : widget.player2Link)
+        : (widget.data.attackerSlot == 0
+              ? widget.opponent1Link
+              : widget.opponent2Link);
 
     // Filter targetLinks for spread moves
-    // Currently assume single target for trajectory-based effects, 
+    // Currently assume single target for trajectory-based effects,
     // or handle spread moves by repeating the effect in the parent.
-    final targetSlot = widget.data.targetSlots.isNotEmpty ? widget.data.targetSlots.first : 0;
+    final targetSlot = widget.data.targetSlots.isNotEmpty
+        ? widget.data.targetSlots.first
+        : 0;
     final targetLink = isPlayer
         ? (targetSlot == 0 ? widget.opponent1Link : widget.opponent2Link)
         : (targetSlot == 0 ? widget.player1Link : widget.player2Link);
 
     // Calculate simulated offset for trajectories
-    final attackerOffset = _getAttackerOffset(isPlayer, widget.data.attackerSlot, targetSlot);
+    final attackerOffset = _getAttackerOffset(
+      isPlayer,
+      widget.data.attackerSlot,
+      targetSlot,
+    );
 
     final moveName = move.name.toLowerCase();
 
@@ -1771,7 +1821,7 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
       );
     }
 
-    if (move.animationType == 'giga impact' ||
+    if (move.animationType == 'impact move' ||
         move.name.toLowerCase() == 'giga impact') {
       return AnimatedBuilder(
         animation: _progress,
@@ -1781,7 +1831,7 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
             showWhenUnlinked: false,
             followerAnchor: Alignment.center,
             targetAnchor: Alignment.center,
-            child: GigaImpactEffect(
+            child: ImpactMoveEffect(
               progress: _progress.value,
               isPlayer: isPlayer,
             ),
@@ -1789,7 +1839,22 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
         },
       );
     }
-
+    if (move.animationType == 'fake_out') {
+      return AnimatedBuilder(
+        animation: _progress,
+        builder: (context, _) {
+          final val = _progress.value;
+          if (val <= 0.0 || val >= 1.0) return const SizedBox.shrink();
+          return CompositedTransformFollower(
+            link: targetLink,
+            showWhenUnlinked: false,
+            followerAnchor: Alignment.center,
+            targetAnchor: Alignment.center,
+            child: FakeOutEffect(progress: val, isPlayer: isPlayer),
+          );
+        },
+      );
+    }
     if (move.animationType == 'slash') {
       final imagePath =
           move.type == ElementalType.darkness ||
@@ -1836,19 +1901,54 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
       );
     }
 
-    if (move.animationType == 'brave_bird') {
+    if (move.animationType == 'dash_impact') {
       return AnimatedBuilder(
         animation: _progress,
         builder: (context, _) {
+          final p = _progress.value;
+          if (p <= 0.0 || p >= 1.0) return const SizedBox.shrink();
+
+          // 1. Define assets based on the specific move
+          String moveAsset = 'assets/move_effects/bird.png';
+          String impactAsset = 'assets/move_effects/flying_impact.png';
+          double size = 80.0;
+
+          switch (move.name.toLowerCase()) {
+            case 'flare blitz':
+              moveAsset = 'assets/move_effects/flare_blitz.png';
+              impactAsset = 'assets/move_effects/fire_impact.png';
+              size = 120.0;
+              break;
+            case 'sky attack':
+              moveAsset = 'assets/move_effects/sky_attack.png';
+              impactAsset = 'assets/move_effects/flying_impact.png';
+              size = 120.0;
+              break;
+            case 'volt tackle':
+              moveAsset = 'assets/move_effects/fake_out_impact.png';
+              impactAsset = 'assets/move_effects/electric_impact.png';
+              break;
+            case 'extreme speed':
+              moveAsset = 'assets/move_effects/yellowball.png';
+              impactAsset = 'assets/move_effects/normal_impact.png';
+              size = 80.0;
+              break;
+            // Default remains Brave Bird assets
+          }
+
+          // 2. Wrap in the follower to stick to the target's position
           return CompositedTransformFollower(
             link: targetLink,
             showWhenUnlinked: false,
             followerAnchor: Alignment.center,
             targetAnchor: Alignment.center,
-            child: BraveBirdEffect(
-              progress: _progress.value,
+            child: DashImpactEffect(
+              progress: p,
               isPlayer: isPlayer,
               attackerOffset: attackerOffset,
+              moveAsset: moveAsset,
+              impactAsset: impactAsset,
+              assetSize: size,
             ),
           );
         },
@@ -1890,6 +1990,79 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
         },
       );
     }
+
+    // New Self-Buff Animation Type
+    if (move.animationType == 'self_buff') {
+      return AnimatedBuilder(
+        animation: _progress,
+        builder: (context, _) {
+          final p = _progress.value;
+          if (p <= 0.0 || p >= 1.0) return const SizedBox.shrink();
+
+          // 1. Define assets/params based on the move
+          List<String> assets = [
+            'assets/move_effects/boost.png',
+            'assets/move_effects/boost.png',
+            'assets/move_effects/boost.png',
+            'assets/move_effects/boost.png',
+          ];
+          double shake = 6.0;
+          bool loop = true;
+
+          switch (move.name.toLowerCase()) {
+            case 'aromatherapy':
+              assets = [
+                'assets/move_effects/aromatherapy_1.png',
+                'assets/move_effects/aromatherapy_1.png',
+                'assets/move_effects/aromatherapy_1.png',
+                'assets/move_effects/boost.png',
+              ];
+              break;
+            case 'belly drum':
+              shake = 12.0;
+              loop = false; // Punched once
+              assets = [
+                'assets/move_effects/belly_drum_1.png',
+                'assets/move_effects/belly_drum_2.png',
+                'assets/move_effects/belly_drum_3.png',
+                'assets/move_effects/belly_drum_buff.png',
+              ];
+              break;
+            case 'acid armor':
+              loop = false; // Disolving once
+              assets = [
+                'assets/move_effects/acid_armor_1.png',
+                'assets/move_effects/acid_armor_2.png',
+                'assets/move_effects/acid_armor_3.png',
+                'assets/move_effects/acid_armor_4.png',
+              ];
+              break;
+            case 'amnesia':
+            case 'calm mind':
+              assets = [
+                'assets/move_effects/bright_brain.png',
+                'assets/move_effects/brain.png',
+                'assets/move_effects/bright_brain.png',
+                'assets/move_effects/boost.png',
+              ];
+              break;
+          }
+
+          return CompositedTransformFollower(
+            link: attackerLink, // Self-buffs always anchor to the attacker
+            showWhenUnlinked: false,
+            followerAnchor: Alignment.center,
+            targetAnchor: Alignment.center,
+            child: SelfBuffEffect(
+              progress: p,
+              assetPaths: assets,
+              shakeIntensity: shake,
+              loopFrames: loop,
+            ),
+          );
+        },
+      );
+    }
     if (move.animationType == 'protect') {
       return AnimatedBuilder(
         animation: _progress,
@@ -1914,7 +2087,7 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
             followerAnchor: Alignment.center,
             targetAnchor: Alignment.center,
             child: DrainEffect(
-              progress: _progress.value, 
+              progress: _progress.value,
               isPlayer: isPlayer,
               attackerOffset: attackerOffset,
             ),
@@ -2357,7 +2530,7 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
     };
 
     final defaultFallbackImage = 'assets/move_effects/normal_impact.png';
-    
+
     if (move.category == MoveCategory.special) {
       final img = specialImages[move.type] ?? defaultFallbackImage;
       return AnimatedBuilder(
@@ -2401,8 +2574,6 @@ class _MoveAnimationOverlayState extends State<MoveAnimationOverlay>
       ElementalType.sound: 'assets/move_effects/normal_impact.png',
       ElementalType.holy: 'assets/move_effects/moonblast.png',
     };
-
-
 
     if (move.category == MoveCategory.physical) {
       final img = physicalImages[move.type] ?? defaultFallbackImage;
@@ -2833,11 +3004,7 @@ class _DefaultSpecialEffect extends StatelessWidget {
   /// sized SizedBox so that CompositedTransformFollower's
   /// followerAnchor: Alignment.center anchors correctly.
   Widget _centered(Widget child) {
-    return SizedBox(
-      width: _kCanvas,
-      height: _kCanvas,
-      child: child,
-    );
+    return SizedBox(width: _kCanvas, height: _kCanvas, child: child);
   }
 
   @override
@@ -2846,7 +3013,9 @@ class _DefaultSpecialEffect extends StatelessWidget {
 
     // Attacker position relative to target center (0,0).
     // Sub-methods use these center-relative coords; _proj offsets by _kHalf.
-    final Offset startOff = attackerOffset ?? (isPlayer ? const Offset(-210.0, 150.0) : const Offset(210.0, -150.0));
+    final Offset startOff =
+        attackerOffset ??
+        (isPlayer ? const Offset(-210.0, 150.0) : const Offset(210.0, -150.0));
     final baseX = startOff.dx;
     final baseY = startOff.dy;
 
@@ -2914,17 +3083,42 @@ class _DefaultSpecialEffect extends StatelessWidget {
       (p < 0.1 ? p / 0.1 : (p > 0.8 ? (1.0 - p) / 0.2 : 1.0));
 
   // Fast linear with echo trail
-  Widget _straightShot(double p, double tX, double tY, int dir, double baseX, double baseY) {
+  Widget _straightShot(
+    double p,
+    double tX,
+    double tY,
+    int dir,
+    double baseX,
+    double baseY,
+  ) {
     final arcY = math.sin(p * math.pi * 4) * 15;
     final rot = p * math.pi * 6 * dir;
     return Stack(
       clipBehavior: Clip.none,
       children: [
         if (p > 0.05)
-          _proj(tX + dir * 40, tY + arcY + 5, _fadeEnds(p) * 0.3, 0.6, rot * 0.8),
+          _proj(
+            tX + dir * 40,
+            tY + arcY + 5,
+            _fadeEnds(p) * 0.3,
+            0.6,
+            rot * 0.8,
+          ),
         if (p > 0.1)
-          _proj(tX + dir * 80, tY + arcY + 10, _fadeEnds(p) * 0.15, 0.4, rot * 0.6),
-        _proj(tX, tY + arcY, _fadeEnds(p), 0.7 + math.sin(p * math.pi) * 0.3, rot),
+          _proj(
+            tX + dir * 80,
+            tY + arcY + 10,
+            _fadeEnds(p) * 0.15,
+            0.4,
+            rot * 0.6,
+          ),
+        _proj(
+          tX,
+          tY + arcY,
+          _fadeEnds(p),
+          0.7 + math.sin(p * math.pi) * 0.3,
+          rot,
+        ),
         if (p < 0.2)
           Positioned(
             left: _kCanvas / 2 + baseX - 75,
@@ -2948,7 +3142,14 @@ class _DefaultSpecialEffect extends StatelessWidget {
   }
 
   // Sinusoidal wavy trajectory
-  Widget _wavePath(double p, double tX, double tY, int dir, double baseX, double baseY) {
+  Widget _wavePath(
+    double p,
+    double tX,
+    double tY,
+    int dir,
+    double baseX,
+    double baseY,
+  ) {
     final waveY = math.sin(p * math.pi * 6) * 30;
     final rot = p * math.pi * 3 * dir;
 
@@ -2958,18 +3159,32 @@ class _DefaultSpecialEffect extends StatelessWidget {
         for (int i = 1; i <= 2; i++)
           _proj(
             (baseX * (1.0 - (p - i * 0.06).clamp(0.0, 1.0))),
-            (baseY * (1.0 - (p - i * 0.06).clamp(0.0, 1.0))) + math.sin((p - i * 0.06).clamp(0.0, 1.0) * math.pi * 6) * 30,
+            (baseY * (1.0 - (p - i * 0.06).clamp(0.0, 1.0))) +
+                math.sin((p - i * 0.06).clamp(0.0, 1.0) * math.pi * 6) * 30,
             _fadeEnds(p) * (0.4 - i * 0.1),
             0.5,
             rot * 0.7,
           ),
-        _proj(tX, tY + waveY, _fadeEnds(p), 0.8 + math.sin(p * math.pi) * 0.2, rot),
+        _proj(
+          tX,
+          tY + waveY,
+          _fadeEnds(p),
+          0.8 + math.sin(p * math.pi) * 0.2,
+          rot,
+        ),
       ],
     );
   }
 
   // Parabolic arc (lobbing)
-  Widget _lobArc(double p, double tX, double tY, int dir, double baseX, double baseY) {
+  Widget _lobArc(
+    double p,
+    double tX,
+    double tY,
+    int dir,
+    double baseX,
+    double baseY,
+  ) {
     final arcY = -math.sin(p * math.pi) * 120; // Arc upward
     final rot = p * math.pi * 2 * dir;
     final scale = 0.5 + math.sin(p * math.pi) * 0.5;
@@ -3002,7 +3217,14 @@ class _DefaultSpecialEffect extends StatelessWidget {
   }
 
   // Helical spiral path
-  Widget _spiralPath(double p, double tX, double tY, int dir, double baseX, double baseY) {
+  Widget _spiralPath(
+    double p,
+    double tX,
+    double tY,
+    int dir,
+    double baseX,
+    double baseY,
+  ) {
     final spiralR = 25.0 * (1.0 - p * 0.5);
     final spiralY = math.sin(p * math.pi * 8) * spiralR;
     final spiralX2 = math.cos(p * math.pi * 8) * spiralR * 0.5;
@@ -3034,7 +3256,14 @@ class _DefaultSpecialEffect extends StatelessWidget {
   }
 
   // Lightning zigzag path
-  Widget _zigzagBolt(double p, double tX, double tY, int dir, double baseX, double baseY) {
+  Widget _zigzagBolt(
+    double p,
+    double tX,
+    double tY,
+    int dir,
+    double baseX,
+    double baseY,
+  ) {
     // Create 4 zigzag segments
     final segCount = 4;
     final segP = p * segCount;
@@ -3050,7 +3279,11 @@ class _DefaultSpecialEffect extends StatelessWidget {
         for (int i = 0; i < currentSeg; i++) ...[
           Positioned(
             left: _kCanvas / 2 + (baseX * (1.0 - (i / segCount))) - 30,
-            top: _kCanvas / 2 + (baseY * (1.0 - (i / segCount))) + (i.isEven ? -40 : 40) - 30,
+            top:
+                _kCanvas / 2 +
+                (baseY * (1.0 - (i / segCount))) +
+                (i.isEven ? -40 : 40) -
+                30,
             child: Opacity(
               opacity: (0.4 * (1.0 - p)).clamp(0.0, 1.0),
               child: Image.asset(
@@ -3070,9 +3303,14 @@ class _DefaultSpecialEffect extends StatelessWidget {
   }
 
   // Cloud of small swarming particles
-  Widget _swarmShot(double p, double tX, double tY, int dir, double baseX, double baseY) {
-
-
+  Widget _swarmShot(
+    double p,
+    double tX,
+    double tY,
+    int dir,
+    double baseX,
+    double baseY,
+  ) {
     return Stack(
       clipBehavior: Clip.none,
       children: List.generate(7, (i) {
@@ -3098,9 +3336,14 @@ class _DefaultSpecialEffect extends StatelessWidget {
   }
 
   // Straight shot with growing smoke/fire trail
-  Widget _blazeTrail(double p, double tX, double tY, int dir, double baseX, double baseY) {
-
-
+  Widget _blazeTrail(
+    double p,
+    double tX,
+    double tY,
+    int dir,
+    double baseX,
+    double baseY,
+  ) {
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -3139,7 +3382,14 @@ class _DefaultSpecialEffect extends StatelessWidget {
   }
 
   // Blinks in and out (phasing teleport)
-  Widget _phaseShot(double p, double tX, double tY, int dir, double baseX, double baseY) {
+  Widget _phaseShot(
+    double p,
+    double tX,
+    double tY,
+    int dir,
+    double baseX,
+    double baseY,
+  ) {
     // The projectile appears and disappears as it travels
     final phaseVisible = math.sin(p * math.pi * 8) > -0.2;
     final flickerOp = phaseVisible ? _fadeEnds(p) : 0.0;
@@ -3506,8 +3756,6 @@ class _DefaultStatusEffect extends StatelessWidget {
   }
 }
 
-
-
 // ----------------------------------------------------------------
 // Fang Scatter Effect (Bite + Elemental Burst)
 // ----------------------------------------------------------------
@@ -3739,10 +3987,7 @@ class _ShakeEffect extends StatelessWidget {
     // Shake logic using sine waves
     final shakeX = math.sin(progress * 100) * intensity * (1 - progress);
     final shakeY = math.cos(progress * 80) * (intensity * 0.8) * (1 - progress);
-    return Transform.translate(
-      offset: Offset(shakeX, shakeY),
-      child: child,
-    );
+    return Transform.translate(offset: Offset(shakeX, shakeY), child: child);
   }
 }
 
@@ -3871,7 +4116,9 @@ class _FissureEffect extends StatelessWidget {
     final p = progress.clamp(0.0, 1.0);
 
     // Fissure opens up and swallows
-    final fissureOpacity = p < 0.1 ? p / 0.1 : (p > 0.9 ? (1.0 - p) / 0.1 : 1.0);
+    final fissureOpacity = p < 0.1
+        ? p / 0.1
+        : (p > 0.9 ? (1.0 - p) / 0.1 : 1.0);
     // Expand horizontally to "open"
     final openScaleX = p < 0.5 ? 0.2 + p * 1.6 : 1.0;
     final openScaleY = 1.0 + math.sin(p * math.pi * 8) * 0.05;
@@ -3895,6 +4142,151 @@ class _FissureEffect extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class FakeOutEffect extends StatelessWidget {
+  final double progress;
+  final bool isPlayer; // Added to determine direction
+
+  const FakeOutEffect({
+    super.key,
+    required this.progress,
+    required this.isPlayer, // Initialize here
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const size = 300.0;
+    final p = progress.clamp(0.0, 1.0);
+
+    String currentAsset;
+    if (p < 0.30) {
+      currentAsset = 'assets/move_effects/fake_out_1.png';
+    } else if (p < 0.30) {
+      currentAsset = 'assets/move_effects/fake_out_2.png';
+    } else {
+      currentAsset = 'assets/move_effects/fake_out_impact.png';
+    }
+
+    double opacity = 1.0;
+    if (p > 0.85) {
+      opacity = (1.0 - p) / 0.15;
+    }
+
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // The Mirroring Logic:
+          // If it's NOT the player, scaleX becomes -1.0, flipping it horizontally.
+          Transform.scale(
+            scaleX: isPlayer ? 1.0 : -1.0,
+            child: Opacity(
+              opacity: opacity.clamp(0.0, 1.0),
+              child: SizedBox(
+                width: 64, // Adjusted size for better visibility
+                height: 64,
+                child: Image.asset(
+                  currentAsset,
+                  fit: BoxFit.contain,
+                  // Point filtering keeps pixel art crisp when scaled
+                  filterQuality: FilterQuality.none,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class SelfBuffEffect extends StatelessWidget {
+  final double progress;
+  // Use a List here to handle your 4 frames flexibly
+  final List<String> assetPaths;
+  final double shakeIntensity;
+  final bool loopFrames; // Whether to cycle or play-and-hold
+
+  const SelfBuffEffect({
+    super.key,
+    required this.progress,
+    required this.assetPaths,
+    this.shakeIntensity = 6.0,
+    this.loopFrames = false, // Changed to false by default (One-shot)
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const effectSize = 128.0;
+    const spriteSize = 96.0;
+
+    final p = progress.clamp(0.0, 1.0);
+
+    // --- Deliberate Frame Sequencing (6 FPS) ---
+    // Slower pace (166ms per frame) for a more professional look.
+    const msPerFrame = 166;
+    final totalMs = 2000;
+    final currentMs = p * totalMs;
+
+    int frameIndex;
+    if (loopFrames) {
+      frameIndex = (currentMs / msPerFrame).floor() % assetPaths.length;
+    } else {
+      // One-shot: Play through once smoothly and stick
+      frameIndex = (currentMs / msPerFrame).floor();
+      if (frameIndex >= assetPaths.length) frameIndex = assetPaths.length - 1;
+    }
+
+    final String currentAsset = assetPaths[frameIndex];
+
+    // --- Gentle Shimmer Vibration ---
+    // Reduced frequency (8 cycles) to prevent eye strain
+    final double shakeX =
+        math.sin(p * math.pi * 8) * shakeIntensity * (1.0 - p);
+
+    // --- Breathing Soft Pulse (Scale) ---
+    // Reduced impact (0.08) for a subtle growth feel
+    final double scale = 1.0 + (math.sin(p * math.pi * 2.5) * 0.08);
+
+    // --- Smooth Opacity Curve ---
+    double opacity = 1.0;
+    if (p < 0.15) opacity = p / 0.15;
+    if (p > 0.8) opacity = (1.0 - p) / 0.2;
+
+    return SizedBox(
+      width: effectSize,
+      height: effectSize,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Transform.translate(
+            offset: Offset(shakeX, 0),
+            child: Transform.scale(
+              scale: scale,
+              child: Opacity(
+                opacity: opacity.clamp(0.0, 1.0),
+                child: SizedBox(
+                  width: spriteSize,
+                  height: spriteSize,
+                  child: Image.asset(
+                    currentAsset,
+                    fit: BoxFit.contain,
+                    filterQuality: FilterQuality.low,
+                    gaplessPlayback: true,
+                    color: null,
+                    colorBlendMode: null,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
