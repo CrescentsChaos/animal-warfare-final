@@ -136,11 +136,11 @@ SpawnResult? getWeightedRandomOrganism(
 
     // Rarity Gates
     final rarity = org.rarity.toLowerCase();
-    if (rarity == 'mythical' && accountLevel < 100) return false;
-    if (rarity == 'legendary' && accountLevel < 50) return false;
-    if (rarity == 'epic' && accountLevel < 40) return false;
-    if (rarity == 'rare' && accountLevel < 20) return false;
-    if (rarity == 'uncommon' && accountLevel < 10) return false;
+    //if (rarity == 'mythical' && accountLevel < 100) return false;
+    //if (rarity == 'legendary' && accountLevel < 50) return false;
+    //if (rarity == 'epic' && accountLevel < 40) return false;
+    //if (rarity == 'rare' && accountLevel < 20) return false;
+    //if (rarity == 'uncommon' && accountLevel < 10) return false;
 
     // Fishing Logic
     final drops = org.drops.toLowerCase();
@@ -351,12 +351,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
             width: 12,
             height: 12,
             fit: BoxFit.contain,
-            errorBuilder:
-                (context, error, stackTrace) => const Icon(
-                  Icons.wb_cloudy,
-                  color: Colors.white,
-                  size: 12,
-                ),
+            errorBuilder: (context, error, stackTrace) =>
+                const Icon(Icons.wb_cloudy, color: Colors.white, size: 12),
           ),
           const SizedBox(width: 4),
           Text(

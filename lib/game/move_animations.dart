@@ -4211,14 +4211,14 @@ class SelfBuffEffect extends StatelessWidget {
   // Use a List here to handle your 4 frames flexibly
   final List<String> assetPaths;
   final double shakeIntensity;
-  final bool loopFrames; // Whether to cycle or play-and-hold
+  final bool loopFrames; // NEW: Whether to cycle or play-and-hold
 
   const SelfBuffEffect({
     super.key,
     required this.progress,
     required this.assetPaths,
     this.shakeIntensity = 6.0,
-    this.loopFrames = false, // Changed to false by default (One-shot)
+    this.loopFrames = true, // Default to pulsing/looping for most buffs
   });
 
   @override
@@ -4228,36 +4228,37 @@ class SelfBuffEffect extends StatelessWidget {
 
     final p = progress.clamp(0.0, 1.0);
 
-    // --- Deliberate Frame Sequencing (6 FPS) ---
-    // Slower pace (166ms per frame) for a more professional look.
-    const msPerFrame = 166;
-    final totalMs = 2000;
+    // --- High-Speed Frame Sequencing (12 FPS) ---
+    // Instead of stretching 4 frames over 2 seconds (500ms each),
+    // we iterate every 83ms.
+    const msPerFrame = 83; // approx 12 FPS
+    final totalMs = 2000; // Expected duration
     final currentMs = p * totalMs;
 
     int frameIndex;
     if (loopFrames) {
       frameIndex = (currentMs / msPerFrame).floor() % assetPaths.length;
     } else {
-      // One-shot: Play through once smoothly and stick
+      // One-shot: Play through once and stay on the last frame
       frameIndex = (currentMs / msPerFrame).floor();
       if (frameIndex >= assetPaths.length) frameIndex = assetPaths.length - 1;
     }
 
     final String currentAsset = assetPaths[frameIndex];
 
-    // --- Gentle Shimmer Vibration ---
-    // Reduced frequency (8 cycles) to prevent eye strain
+    // --- Enhanced Vibration Shake ---
+    // High-frequency shake: sin waves over progress
     final double shakeX =
-        math.sin(p * math.pi * 8) * shakeIntensity * (1.0 - p);
+        math.sin(p * math.pi * 30) * shakeIntensity * (1.0 - p);
 
-    // --- Breathing Soft Pulse (Scale) ---
-    // Reduced impact (0.08) for a subtle growth feel
-    final double scale = 1.0 + (math.sin(p * math.pi * 2.5) * 0.08);
+    // --- Breathing Pulse (Scale) ---
+    // Subtle size pulse throughout the duration
+    final double scale = 1.0 + (math.sin(p * math.pi * 4) * 0.15);
 
-    // --- Smooth Opacity Curve ---
+    // --- Fluid Fade ---
     double opacity = 1.0;
-    if (p < 0.15) opacity = p / 0.15;
-    if (p > 0.8) opacity = (1.0 - p) / 0.2;
+    if (p < 0.1) opacity = p / 0.1; // Faster fade in
+    if (p > 0.8) opacity = (1.0 - p) / 0.2; // Smooth fade out
 
     return SizedBox(
       width: effectSize,
@@ -4277,7 +4278,7 @@ class SelfBuffEffect extends StatelessWidget {
                   child: Image.asset(
                     currentAsset,
                     fit: BoxFit.contain,
-                    filterQuality: FilterQuality.low,
+                    filterQuality: FilterQuality.low, // Balanced pixel look
                     gaplessPlayback: true,
                     color: null,
                     colorBlendMode: null,
