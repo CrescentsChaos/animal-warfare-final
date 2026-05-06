@@ -119,6 +119,7 @@ class AnidexDetailsSheet {
   }
 
   static bool _isDiscovered(BuildContext context, Organism organism) {
+    if (organism.habitat == 'Global Registry') return true;
     final userState = Provider.of<UserState>(context, listen: false);
     return userState.currentUser?.discoveredOrganisms.contains(organism.name) ??
         false;
@@ -1128,63 +1129,64 @@ class OrganismSpriteDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final spritePath = _getSpritePath();
+    final isNetwork = spritePath.startsWith('http');
+
     if (!isDiscovered) {
       return ColorFiltered(
         colorFilter: ColorFilter.mode(silhouetteColor, BlendMode.srcIn),
-        child: Image.asset(
-          _getSpritePath(),
-          height: height,
-          fit: BoxFit.contain,
-          errorBuilder: (context, error, stackTrace) =>
-              Icon(Icons.question_mark, size: height, color: Colors.white24),
-        ),
+        child: _buildImage(spritePath, isNetwork),
       );
     }
 
     if (!isCaptured) {
       return ColorFiltered(
         colorFilter: const ColorFilter.matrix(<double>[
-          0.2126,
-          0.7152,
-          0.0722,
-          0,
-          0,
-          0.2126,
-          0.7152,
-          0.0722,
-          0,
-          0,
-          0.2126,
-          0.7152,
-          0.0722,
-          0,
-          0,
-          0,
-          0,
-          0,
-          1,
-          0,
+          0.2126, 0.7152, 0.0722, 0, 0,
+          0.2126, 0.7152, 0.0722, 0, 0,
+          0.2126, 0.7152, 0.0722, 0, 0,
+          0, 0, 0, 1, 0,
         ]),
-        child: Image.asset(
-          _getSpritePath(),
-          height: height,
-          fit: BoxFit.contain,
-          errorBuilder: (context, error, stackTrace) =>
-              Icon(Icons.question_mark, size: height, color: Colors.white24),
-        ),
+        child: _buildImage(spritePath, isNetwork),
       );
     }
 
+    return _buildImage(spritePath, isNetwork);
+  }
+
+  Widget _buildImage(String path, bool isNetwork) {
+    if (isNetwork) {
+      return Image.network(
+        path,
+        height: height,
+        fit: BoxFit.contain,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return SizedBox(
+            height: height,
+            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+          );
+        },
+        errorBuilder: (context, error, stackTrace) =>
+            Icon(Icons.broken_image, size: height, color: Colors.white24),
+      );
+    }
     return Image.asset(
-      _getSpritePath(),
+      path,
       height: height,
       fit: BoxFit.contain,
       errorBuilder: (context, error, stackTrace) =>
-          Icon(Icons.broken_image, size: height, color: Colors.white24),
+          Icon(Icons.question_mark, size: height, color: Colors.white24),
     );
   }
 
   String _getSpritePath() {
+    if (organism.sprite.startsWith('http')) return organism.sprite;
+    if (organism.sprite.isNotEmpty && !organism.sprite.contains(' ')) {
+      if (organism.sprite.startsWith('assets/')) return organism.sprite;
+      return 'assets/sprites/${organism.sprite}';
+    }
+    
     final fileName = organism.name
         .toLowerCase()
         .replaceAll(' ', '_')

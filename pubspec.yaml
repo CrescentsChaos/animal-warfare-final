@@ -50,6 +50,7 @@ dependencies:
   fl_chart: ^1.1.1
   image: ^4.8.0
   flutter_colorpicker: ^1.1.0
+  http: ^1.6.0
 
 dev_dependencies:
   flutter_test:
@@ -123,6 +124,7 @@ flutter:
     - assets/overworld/npc/
     - assets/platforms/
     - assets/icon/
+    - assets/ml/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

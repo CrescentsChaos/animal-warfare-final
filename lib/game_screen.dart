@@ -12,6 +12,7 @@ import 'package:animal_warfare/crafting_screen.dart';
 import 'package:animal_warfare/tool_screen.dart';
 import 'package:animal_warfare/battle_tab_screen.dart';
 import 'package:animal_warfare/services/audio_service.dart';
+import 'package:animal_warfare/biometric_scanner_screen.dart';
 import 'package:animal_warfare/theme.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:animal_warfare/widgets/game_clock_widget.dart';
@@ -316,6 +317,16 @@ class _GameScreenState extends State<GameScreen> {
                             widget.currentUser,
                         authService: LocalAuthService(),
                       ),
+                    ),
+                  ),
+
+                  _buildMenuButton(
+                    text: 'Bio-Scanner',
+                    subtitle: 'Identify animals in the wild',
+                    icon: Icons.fingerprint_rounded,
+                    color: Colors.cyanAccent,
+                    onPressed: () => _navigateTo(
+                      BiometricScannerScreen(onBack: () => Navigator.pop(context)),
                     ),
                   ),
 
