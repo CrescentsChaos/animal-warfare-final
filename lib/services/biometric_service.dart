@@ -672,39 +672,35 @@ class BiometricService {
     
     final colorMatch = (globalColorMatch * 0.5 + spatialMatch * 0.5).clamp(0.0, 1.0);
 
-    // 2. Shape Match (Aspect Ratio & Solidity)
-    // We use a logarithmic difference for aspect ratio to handle landscape/portrait symmetry
+    // 2. Shape Match (Restored to a more balanced sensitivity)
     final aspectDiff = (log(f1.aspectRatio) - log(f2.aspectRatio)).abs();
     final solidityDiff = (f1.solidity - f2.solidity).abs();
     
-    // Robust Shape matching: Use an extremely soft falloff for minor differences.
-    // Thin features (noses, fins) often cause large bounding-box shifts from minor masking noise.
-    final aspectScore = pow((1.0 - (aspectDiff * 0.4)).clamp(0.0, 1.0), 2.0).toDouble();
-    final solidityScore = pow((1.0 - (solidityDiff * 1.2)).clamp(0.0, 1.0), 2.0).toDouble();
+    final aspectScore = pow((1.0 - (aspectDiff * 0.6)).clamp(0.0, 1.0), 1.5).toDouble();
+    final solidityScore = pow((1.0 - (solidityDiff * 1.6)).clamp(0.0, 1.0), 1.5).toDouble();
     
     final shapeMatch = (aspectScore * 0.6) + (solidityScore * 0.4);
 
-    // 3. Structural Match (Symmetry & Edge Density)
+    // 3. Structural Match
     final symDiff = (f1.verticalSymmetry - f2.verticalSymmetry).abs() +
                     (f1.horizontalSymmetry - f2.horizontalSymmetry).abs();
     final edgeDiff = (f1.edgeDensity - f2.edgeDensity).abs();
     final edgeScore = (1.0 - (edgeDiff * 3.0)).clamp(0.0, 1.0);
-    
     final patternMatch = (1.0 - (symDiff / 2.0)).clamp(0.0, 1.0) * 0.3 + (edgeScore * 0.7);
 
-    // 4. Shade & Intensity Match (Brightness & Saturation)
+    // 4. Shade & Intensity
     final shadeMatch = (1.0 - (f1.avgBrightness - f2.avgBrightness).abs()).clamp(0.0, 1.0);
     final satMatch = (1.0 - (f1.avgSaturation - f2.avgSaturation).abs()).clamp(0.0, 1.0);
     final combinedShade = (shadeMatch * 0.7 + satMatch * 0.3).clamp(0.0, 1.0);
 
-    // Weighted Total (Revised per user request: Color and Shade are primary)
+    // Weighted Total (Reverted to user-preferred weight balance)
     double total = (colorMatch * 0.45) + 
                    (combinedShade * 0.35) + 
                    (shapeMatch * 0.15) + 
                    (patternMatch * 0.05);
     
-    // Strict Color Gate: If the colors are fundamentally different, it's not a match.
-    if (colorMatch < 0.12) {
+    // Strict Color Gate: Threshold restored to 0.15
+    if (colorMatch < 0.15) {
       total *= 0.10; 
     }
 
@@ -714,9 +710,9 @@ class BiometricService {
 
     return {
       'total': total,
-      'Color': colorMatch.clamp(0.0, 1.0),
-      'Shape': shapeMatch.clamp(0.0, 1.0),
-      'Pattern': patternMatch.clamp(0.0, 1.0),
+      'Color': colorMatch,
+      'Shape': shapeMatch,
+      'Pattern': patternMatch,
       'Shade': combinedShade,
     };
   }
