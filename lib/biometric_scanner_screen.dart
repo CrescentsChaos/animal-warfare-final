@@ -29,6 +29,7 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
   List<ScanResult> _results = [];
   Uint8List? _imageBytes;
   Uint8List? _maskedBytes;
+  String _sortBy = 'Overall';
   final TextEditingController _hintController = TextEditingController();
   late AnimationController _pulseController;
   late AnimationController _scanLineController;
@@ -135,12 +136,45 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
     if (mounted) {
       setState(() {
         _results = results;
+        _sortResults();
         _isScanning = false;
         _statusText = results.isEmpty
             ? 'NO MATCH FOUND'
             : '${results.length} SPECIES IDENTIFIED';
       });
     }
+  }
+
+  void _sortResults() {
+    if (_results.isEmpty) return;
+
+    setState(() {
+      _results.sort((a, b) {
+        double valA, valB;
+        switch (_sortBy) {
+          case 'Color':
+            valA = a.featureScores['Color'] ?? 0;
+            valB = b.featureScores['Color'] ?? 0;
+            break;
+          case 'Shape':
+            valA = a.featureScores['Shape'] ?? 0;
+            valB = b.featureScores['Shape'] ?? 0;
+            break;
+          case 'Pattern':
+            valA = a.featureScores['Pattern'] ?? 0;
+            valB = b.featureScores['Pattern'] ?? 0;
+            break;
+          case 'Shade':
+            valA = a.featureScores['Shade'] ?? 0;
+            valB = b.featureScores['Shade'] ?? 0;
+            break;
+          default:
+            valA = a.confidence;
+            valB = b.confidence;
+        }
+        return valB.compareTo(valA); // Descending
+      });
+    });
   }
 
   @override
@@ -362,13 +396,19 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
         if (_results.isNotEmpty && _hintController.text.isEmpty)
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-            child: Text(
-              'HINT: Type a name or genus to improve accuracy.',
-              style: GoogleFonts.inter(
-                color: Colors.cyanAccent.withAlpha(120),
-                fontSize: 9,
-                fontStyle: FontStyle.italic,
-              ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'HINT: Type a name or genus to improve accuracy.',
+                  style: GoogleFonts.inter(
+                    color: Colors.cyanAccent.withAlpha(120),
+                    fontSize: 9,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+                _buildSortSelector(),
+              ],
             ),
           ),
         Expanded(
@@ -521,6 +561,60 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildSortSelector() {
+    return PopupMenuButton<String>(
+      initialValue: _sortBy,
+      onSelected: (val) {
+        setState(() {
+          _sortBy = val;
+          _sortResults();
+        });
+      },
+      tooltip: 'Sort by feature',
+      offset: const Offset(0, 20),
+      color: const Color(0xFF1A1A1A),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+        side: BorderSide(color: Colors.cyanAccent.withAlpha(30)),
+      ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.white.withAlpha(5),
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(color: Colors.cyanAccent.withAlpha(40)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'SORT: ${_sortBy.toUpperCase()}',
+              style: GoogleFonts.shareTechMono(
+                color: Colors.cyanAccent,
+                fontSize: 9,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const Icon(Icons.arrow_drop_down, color: Colors.cyanAccent, size: 14),
+          ],
+        ),
+      ),
+      itemBuilder: (context) => ['Overall', 'Color', 'Shape', 'Pattern', 'Shade']
+          .map((s) => PopupMenuItem(
+                value: s,
+                height: 32,
+                child: Text(
+                  s.toUpperCase(),
+                  style: GoogleFonts.shareTechMono(
+                    color: Colors.white70,
+                    fontSize: 10,
+                  ),
+                ),
+              ))
+          .toList(),
     );
   }
 

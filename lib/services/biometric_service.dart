@@ -657,7 +657,6 @@ class BiometricService {
     globalColorMatch = globalColorMatch.clamp(0.0, 1.0);
 
     // 1b. Spatial Color Match (The "Pattern" of colors)
-    // If f2 is missing spatial data, we fallback to global color match instead of assuming 1.0
     double spatialMatch = globalColorMatch; 
     if (f1.spatialHueBins != null && f2.spatialHueBins != null) {
       double spatialSum = 0;
@@ -668,72 +667,57 @@ class BiometricService {
           gridCount++;
         }
       });
-      // Normalize by the 9 grid cells to keep it 0.0 - 1.0
       if (gridCount > 0) spatialMatch = (spatialSum / 9.0).clamp(0.0, 1.0);
     }
     
-    // Final color match is a blend of global and spatial
     final colorMatch = (globalColorMatch * 0.5 + spatialMatch * 0.5).clamp(0.0, 1.0);
 
     // 2. Shape Match (Aspect Ratio & Solidity)
+    // We use a logarithmic difference for aspect ratio to handle landscape/portrait symmetry
     final aspectDiff = (log(f1.aspectRatio) - log(f2.aspectRatio)).abs();
     final solidityDiff = (f1.solidity - f2.solidity).abs();
     
-    double aspectScore;
-    double solidityScore;
-    
-    if (f1.solidity > 0.85) {
-      aspectScore = (1.0 - (aspectDiff / 3.0)).clamp(0.0, 1.0);
-      solidityScore = (1.0 - (solidityDiff / 2.0)).clamp(0.0, 1.0);
-    } else {
-      // For perfectly masked sprites, shape differences should be strictly penalized!
-      // A 2x difference in aspect ratio (diff ~ 0.69) should yield 0% score.
-      aspectScore = (1.0 - (aspectDiff * 1.5)).clamp(0.0, 1.0);
-      // A 25% difference in solidity should yield 0% score.
-      solidityScore = (1.0 - (solidityDiff * 4.0)).clamp(0.0, 1.0);
-    }
+    // Robust Shape matching: Use an extremely soft falloff for minor differences.
+    // Thin features (noses, fins) often cause large bounding-box shifts from minor masking noise.
+    final aspectScore = pow((1.0 - (aspectDiff * 0.4)).clamp(0.0, 1.0), 2.0).toDouble();
+    final solidityScore = pow((1.0 - (solidityDiff * 1.2)).clamp(0.0, 1.0), 2.0).toDouble();
     
     final shapeMatch = (aspectScore * 0.6) + (solidityScore * 0.4);
 
     // 3. Structural Match (Symmetry & Edge Density)
     final symDiff = (f1.verticalSymmetry - f2.verticalSymmetry).abs() +
                     (f1.horizontalSymmetry - f2.horizontalSymmetry).abs();
-                    
-    // Edge density differences of 25% should yield 0% score because patterns are very distinct
     final edgeDiff = (f1.edgeDensity - f2.edgeDensity).abs();
-    final edgeScore = (1.0 - (edgeDiff * 4.0)).clamp(0.0, 1.0);
+    final edgeScore = (1.0 - (edgeDiff * 3.0)).clamp(0.0, 1.0);
     
-    final patternMatch = (1.0 - (symDiff / 2.0)).clamp(0.0, 1.0) * 0.4 + (edgeScore * 0.6);
+    final patternMatch = (1.0 - (symDiff / 2.0)).clamp(0.0, 1.0) * 0.3 + (edgeScore * 0.7);
 
     // 4. Shade & Intensity Match (Brightness & Saturation)
     final shadeMatch = (1.0 - (f1.avgBrightness - f2.avgBrightness).abs()).clamp(0.0, 1.0);
     final satMatch = (1.0 - (f1.avgSaturation - f2.avgSaturation).abs()).clamp(0.0, 1.0);
+    final combinedShade = (shadeMatch * 0.7 + satMatch * 0.3).clamp(0.0, 1.0);
 
-    // Weighted Total (Prioritizing Color and Shape heavily per user request)
-    double total = (colorMatch * 0.60) + 
-                   (shapeMatch * 0.35) + 
-                   (patternMatch * 0.05) + 
-                   (shadeMatch * 0.0) +
-                   (satMatch * 0.0);
+    // Weighted Total (Revised per user request: Color and Shade are primary)
+    double total = (colorMatch * 0.45) + 
+                   (combinedShade * 0.35) + 
+                   (shapeMatch * 0.15) + 
+                   (patternMatch * 0.05);
     
     // Strict Color Gate: If the colors are fundamentally different, it's not a match.
-    // We use a low threshold (0.15) to account for imperfect background masking which dilutes the color match.
-    if (colorMatch < 0.15) {
-      total *= 0.10; // Aggressive rejection of color mismatches
+    if (colorMatch < 0.12) {
+      total *= 0.10; 
     }
 
-    // Boost near-perfect matches to 100%
-    if (total > 0.96) total = 1.0;
-    
-    // Penalize extreme mismatches
-    if (total < 0.2) total = 0.0;
+    // Boost high-confidence matches
+    if (total > 0.92) total = 1.0;
+    if (total < 0.15) total = 0.0;
 
     return {
       'total': total,
       'Color': colorMatch.clamp(0.0, 1.0),
       'Shape': shapeMatch.clamp(0.0, 1.0),
       'Pattern': patternMatch.clamp(0.0, 1.0),
-      'Shade': shadeMatch.clamp(0.0, 1.0),
+      'Shade': combinedShade,
     };
   }
 

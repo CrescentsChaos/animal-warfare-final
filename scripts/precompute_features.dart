@@ -148,6 +148,8 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
     }
   }
 
+  final sym = _calculateSymmetry(resized, mask, minX, maxX, minY, maxY);
+
   return {
     'organismName': name,
     'hueBins': finalHueBins,
@@ -156,8 +158,33 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
     'avgSaturation': totalSaturation / objectPixelCount,
     'aspectRatio': (maxX - minX + 1) / (maxY - minY + 1),
     'solidity': objectPixelCount / ((maxX - minX + 1) * (maxY - minY + 1)),
+    'verticalSymmetry': sym.$2,
+    'horizontalSymmetry': sym.$1,
     'edgeDensity': _calculateEdgeDensity(resized, mask),
   };
+}
+
+(double, double) _calculateSymmetry(img.Image image, List<bool> mask, int minX, int maxX, int minY, int maxY) {
+  int hMatches = 0, vMatches = 0, hTotal = 0, vTotal = 0;
+  for (int y = minY; y <= maxY; y++) {
+    for (int x = minX; x <= (minX + maxX) ~/ 2; x++) {
+      final x2 = maxX - (x - minX);
+      if (x2 < minX || x2 > maxX) continue;
+      final p1 = image.getPixel(x, y), p2 = image.getPixel(x2, y);
+      hTotal++;
+      if (((p1.r - p2.r).abs() + (p1.g - p2.g).abs() + (p1.b - p2.b).abs()) < 100) hMatches++;
+    }
+  }
+  for (int x = minX; x <= maxX; x++) {
+    for (int y = minY; y <= (minY + maxY) ~/ 2; y++) {
+      final y2 = maxY - (y - minY);
+      if (y2 < minY || y2 > maxY) continue;
+      final p1 = image.getPixel(x, y), p2 = image.getPixel(x, y2);
+      vTotal++;
+      if (((p1.r - p2.r).abs() + (p1.g - p2.g).abs() + (p1.b - p2.b).abs()) < 100) vMatches++;
+    }
+  }
+  return (hTotal > 0 ? hMatches / hTotal : 0.5, vTotal > 0 ? vMatches / vTotal : 0.5);
 }
 
 double _calculateEdgeDensity(img.Image image, List<bool> mask) {
