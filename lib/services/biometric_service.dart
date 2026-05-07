@@ -12,6 +12,8 @@ import 'package:flutter/services.dart';
 import 'package:image/image.dart' as img;
 import 'package:http/http.dart' as http;
 import 'package:animal_warfare/models/organism.dart';
+import 'package:animal_warfare/services/segmentation_service.dart';
+import 'package:animal_warfare/services/feature_db_service.dart';
 
 /// A scored match result from the biometric scanner.
 class ScanResult {
@@ -21,6 +23,7 @@ class ScanResult {
   final bool isExternal;
   final Uint8List? maskedImage; // The segmented subject image
   final Map<String, double> featureScores; // Breakdown of match reasons
+  final bool isGenusMate;
 
   ScanResult({
     required this.organism,
@@ -29,6 +32,7 @@ class ScanResult {
     this.isExternal = false,
     this.maskedImage,
     this.featureScores = const {},
+    this.isGenusMate = false,
   });
 }
 
@@ -107,6 +111,15 @@ class BiometricService {
   bool _isInitialized = false;
   bool _isInitializing = false;
 
+  /// Native ML segmentation service for remove.bg-quality results.
+  final SegmentationService _segmentation = SegmentationService();
+
+  /// SQLite-backed feature database.
+  final FeatureDbService _featureDb = FeatureDbService();
+
+  /// Whether native ML segmentation is available on this device.
+  bool get isNativeSegmentationAvailable => _segmentation.isAvailable;
+
   /// Initialize the service: load organisms and pre-compute sprite features.
   Future<void> initialize() async {
     if (_isInitialized || _isInitializing) return;
@@ -118,18 +131,30 @@ class BiometricService {
       final List<dynamic> animalsData = json.decode(response);
       _organisms = animalsData.map((j) => Organism.fromJson(j)).toList();
 
-      // Try to load pre-computed sprite features
+      // Load pre-computed sprite features from SQLite DB
       try {
-        final String featuresJson = await rootBundle.loadString('assets/ml/sprite_features.json');
-        final Map<String, dynamic> featuresMap = json.decode(featuresJson);
-        _spriteFeatures = {};
-        for (final entry in featuresMap.entries) {
-          _spriteFeatures![entry.key] = OrganismFeature.fromJson(entry.value);
+        await _featureDb.initialize();
+        _spriteFeatures = await _featureDb.getAllFeatures();
+        debugPrint('BiometricService: Loaded ${_spriteFeatures?.length ?? 0} features from DB');
+      } catch (e) {
+        debugPrint('BiometricService: DB load failed, trying JSON fallback: $e');
+        // Fallback: try loading from legacy JSON file
+        try {
+          final String featuresJson = await rootBundle.loadString('assets/ml/sprite_features.json');
+          final Map<String, dynamic> featuresMap = json.decode(featuresJson);
+          _spriteFeatures = {};
+          for (final entry in featuresMap.entries) {
+            _spriteFeatures![entry.key] = OrganismFeature.fromJson(entry.value);
+          }
+        } catch (_) {
+          _spriteFeatures = {};
         }
-      } catch (_) {
-        // Features file doesn't exist yet — compute on first use
-        _spriteFeatures = {};
       }
+
+      // Initialize ML segmentation engine (non-blocking if model download needed)
+      _segmentation.initialize().then((_) {
+        debugPrint('BiometricService: ML segmentation ready: ${_segmentation.isAvailable}');
+      });
 
       _isInitialized = true;
     } catch (e) {
@@ -151,8 +176,12 @@ class BiometricService {
   }
 
   /// Extract features from raw image bytes, including color and shape.
-  Future<OrganismFeature> extractFeatures(Uint8List imageBytes, {String name = 'input'}) async {
-    final img.Image? decoded = img.decodeImage(imageBytes);
+  /// For input images (photos), this will attempt ML segmentation first,
+  /// falling back to the color-distance algorithm if unavailable.
+  Future<OrganismFeature> extractFeatures(Uint8List imageBytes, {String name = 'input', Uint8List? preSegmentedBytes}) async {
+    // If we already have a pre-segmented image (from scanImage's ML pass), use it
+    final bytesToDecode = preSegmentedBytes ?? imageBytes;
+    final img.Image? decoded = img.decodeImage(bytesToDecode);
     if (decoded == null) {
       return OrganismFeature(
         organismName: name,
@@ -174,7 +203,8 @@ class BiometricService {
       resized = img.copyResize(decoded, width: 64, height: 64);
     } else {
       final size = max(decoded.width, decoded.height);
-      final padded = img.Image(width: size, height: size);
+      // IMPORTANT: Must specify numChannels: 4 to avoid stripping alpha channel in package:image 4.x+
+      final padded = img.Image(width: size, height: size, numChannels: 4);
       img.fill(padded, color: img.ColorRgba8(0, 0, 0, 0)); 
       
       final xOffset = (size - decoded.width) ~/ 2;
@@ -192,14 +222,22 @@ class BiometricService {
     }
 
     List<bool>? mask;
-    if (name == 'input' && !hasAlpha) {
+    if (preSegmentedBytes != null || hasAlpha) {
+      // Image already has alpha (from ML segmentation or sprite) — use alpha as mask
+      mask = List.generate(resized.width * resized.height, (i) => true);
+      for (int i = 0; i < resized.width * resized.height; i++) {
+        final p = resized.getPixelSafe(i % resized.width, i ~/ resized.width);
+        mask[i] = p.a >= 128;
+      }
+    } else if (name == 'input') {
+      // No pre-segmented data and no alpha — fallback to color-distance masking
       mask = _detectBackgroundAndGetMask(resized);
     } else {
-        mask = List.generate(resized.width * resized.height, (i) => true);
-        for (int i=0; i < resized.width * resized.height; i++) {
-            final p = resized.getPixelSafe(i % resized.width, i ~/ resized.width);
-            mask[i] = p.a >= 128;
-        }
+      mask = List.generate(resized.width * resized.height, (i) => true);
+      for (int i = 0; i < resized.width * resized.height; i++) {
+        final p = resized.getPixelSafe(i % resized.width, i ~/ resized.width);
+        mask[i] = p.a >= 128;
+      }
     }
 
     final List<HSVColor> hsvPixels = [];
@@ -244,14 +282,30 @@ class BiometricService {
 
     final finalHueBins = <String, double>{};
     for (int i = 0; i < 36; i++) finalHueBins['h${i * 10}'] = 0;
+    // Add Achromatic bins
+    finalHueBins['hWhite'] = 0;
+    finalHueBins['hBlack'] = 0;
+    finalHueBins['hGrey'] = 0;
+
     double totalBrightness = 0;
     double totalSaturation = 0;
 
     for (final hsv in hsvPixels) {
-      final binIndex = (hsv.hue / 10).floor().clamp(0, 35);
-      finalHueBins['h${binIndex * 10}'] = (finalHueBins['h${binIndex * 10}'] ?? 0) + 1;
       totalBrightness += hsv.value;
       totalSaturation += hsv.saturation;
+
+      if (hsv.value < 0.15) {
+        finalHueBins['hBlack'] = (finalHueBins['hBlack'] ?? 0) + 1;
+      } else if (hsv.saturation < 0.15) {
+        if (hsv.value > 0.8) {
+          finalHueBins['hWhite'] = (finalHueBins['hWhite'] ?? 0) + 1;
+        } else {
+          finalHueBins['hGrey'] = (finalHueBins['hGrey'] ?? 0) + 1;
+        }
+      } else {
+        final binIndex = (hsv.hue / 10).floor().clamp(0, 35);
+        finalHueBins['h${binIndex * 10}'] = (finalHueBins['h${binIndex * 10}'] ?? 0) + 1;
+      }
     }
 
     final total = hsvPixels.length.toDouble();
@@ -309,23 +363,22 @@ class BiometricService {
   List<bool> _detectBackgroundAndGetMask(img.Image image) {
     final mask = List<bool>.filled(image.width * image.height, true);
     
-    // Sample more points for background "prototypes"
+    // Sample perimeter points for background "prototypes"
     final List<List<int>> prototypes = [];
-    for (int x in [0, image.width - 1]) {
-      for (int y in [0, image.height - 1]) {
-        final p = image.getPixel(x, y);
-        prototypes.add([p.r.toInt(), p.g.toInt(), p.b.toInt()]);
-      }
-    }
-    // Add top/bottom/side center samples
-    for (final p in [
-      image.getPixel(image.width ~/ 2, 0),
-      image.getPixel(image.width ~/ 2, image.height - 1),
-      image.getPixel(0, image.height ~/ 2),
-      image.getPixel(image.width - 1, image.height ~/ 2),
-    ]) {
+    final samples = [
+      [0, 0], [image.width - 1, 0], [0, image.height - 1], [image.width - 1, image.height - 1],
+      [image.width ~/ 2, 0], [image.width ~/ 2, image.height - 1],
+      [0, image.height ~/ 2], [image.width - 1, image.height ~/ 2]
+    ];
+    
+    for (final s in samples) {
+      final p = image.getPixel(s[0], s[1]);
       prototypes.add([p.r.toInt(), p.g.toInt(), p.b.toInt()]);
     }
+
+    final double centerX = image.width / 2.0;
+    final double centerY = image.height / 2.0;
+    final double maxDist = sqrt(pow(centerX, 2) + pow(centerY, 2));
 
     for (int y = 0; y < image.height; y++) {
       for (int x = 0; x < image.width; x++) {
@@ -334,18 +387,29 @@ class BiometricService {
 
         double minStatsDist = 1000.0;
         for (final bp in prototypes) {
-          final d = sqrt(pow(r - bp[0], 2) + pow(g - bp[1], 2) + pow(b - bp[2], 2));
+          // Weighted distance for human color perception
+          final d = sqrt(
+            pow(r - bp[0], 2) * 0.299 + 
+            pow(g - bp[1], 2) * 0.587 + 
+            pow(b - bp[2], 2) * 0.114
+          );
           if (d < minStatsDist) minStatsDist = d;
         }
 
-        // Adaptive threshold based on distance from center
-        final dx = (x - image.width / 2).abs() / (image.width / 2);
-        final dy = (y - image.height / 2).abs() / (image.height / 2);
-        final centerFactor = max(dx, dy); // 0 at center, 1 at edges
-
-        // At edges (centerFactor ~ 1), threshold is loose (mask more)
-        // At center (centerFactor ~ 0), threshold is very tight (mask less)
-        final threshold = 30 + (centerFactor * 50);
+        // Distance from center (0.0 at center, 1.0 at farthest corner)
+        final distFromCenter = sqrt(pow(x - centerX, 2) + pow(y - centerY, 2)) / maxDist;
+        
+        // Subject Protection: 
+        // We use a parabolic threshold curve. 
+        // Near center (dist < 0.4), threshold is extremely strict (protect subject).
+        // Near edges (dist > 0.7), threshold is loose (remove background).
+        double threshold;
+        if (distFromCenter < 0.4) {
+          threshold = 8.0; // Very strict: only mask if ALMOST EXACTLY background color
+        } else {
+          // Exponentially increase threshold as we move away from center
+          threshold = 8.0 + pow(distFromCenter * 1.5, 3) * 60.0;
+        }
 
         if (minStatsDist < threshold) {
           mask[y * image.width + x] = false;
@@ -466,6 +530,7 @@ class BiometricService {
     Uint8List imageBytes, {
     int maxResults = 10,
     String? hint,
+    Uint8List? preSegmentedBytes,
     void Function(String status, double progress)? onProgress,
   }) async {
     if (!_isInitialized) await initialize();
@@ -475,22 +540,46 @@ class BiometricService {
     final img.Image? fullImg = img.decodeImage(imageBytes);
     if (fullImg == null) return [];
 
-    // Step 1: Extract features and get masked image
-    onProgress?.call('Segmenting subject...', 0.10);
-    final inputFeature = await extractFeatures(imageBytes, name: 'input');
-    final mask = _detectBackgroundAndGetMask(fullImg);
+    // Step 1: Segmentation (Prioritize manual -> ML -> Fallback)
+    Uint8List? activeSegmentedBytes = preSegmentedBytes;
+    bool usedAdvancedSegmentation = preSegmentedBytes != null;
     
-    // Create a visual masked image for UI feedback
-    onProgress?.call('Analyzing biometric features...', 0.15);
-    final maskedImg = img.Image.from(fullImg);
-    for (int y = 0; y < maskedImg.height; y++) {
-      for (int x = 0; x < maskedImg.width; x++) {
-        if (!mask[y * maskedImg.width + x]) {
-          maskedImg.setPixelRgba(x, y, 0, 0, 0, 0); // Transparent background
-        }
+    if (activeSegmentedBytes == null && _segmentation.isAvailable) {
+      onProgress?.call('AI segmentation in progress...', 0.10);
+      activeSegmentedBytes = await _segmentation.segment(imageBytes);
+      if (activeSegmentedBytes != null) {
+        usedAdvancedSegmentation = true;
+        debugPrint('BiometricService: Using ML segmentation result');
       }
     }
-    final maskedBytes = Uint8List.fromList(img.encodePng(maskedImg));
+
+    // Step 2: Extract features using segmented image or fallback
+    onProgress?.call(usedAdvancedSegmentation ? 'Analyzing segmented subject...' : 'Segmenting subject...', 0.15);
+    final inputFeature = await extractFeatures(
+      imageBytes,
+      name: 'input',
+      preSegmentedBytes: activeSegmentedBytes,
+    );
+
+    // Step 3: Create masked image for UI display
+    Uint8List maskedBytes;
+    if (usedAdvancedSegmentation && activeSegmentedBytes != null) {
+      // Use the provided/ML-segmented image directly
+      maskedBytes = activeSegmentedBytes;
+    } else {
+      // Fallback: use old color-distance masking for display
+      onProgress?.call('Applying basic segmentation...', 0.15);
+      final mask = _detectBackgroundAndGetMask(fullImg);
+      final maskedImg = img.Image.from(fullImg);
+      for (int y = 0; y < maskedImg.height; y++) {
+        for (int x = 0; x < maskedImg.width; x++) {
+          if (!mask[y * maskedImg.width + x]) {
+            maskedImg.setPixelRgba(x, y, 0, 0, 0, 0); // Transparent background
+          }
+        }
+      }
+      maskedBytes = Uint8List.fromList(img.encodePng(maskedImg));
+    }
 
     // Normalize hint
     final normalizedHint = hint?.toLowerCase().trim();
@@ -514,10 +603,29 @@ class BiometricService {
         await Future.delayed(Duration.zero);
       }
 
-      final cachedFeature = _spriteFeatures?[org.name];
+      var cachedFeature = _spriteFeatures?[org.name];
+      if (cachedFeature == null) {
+        // Fallback for new animals: compute features on-the-fly from local sprite
+        cachedFeature = await _extractSpriteFeature(org.name);
+        if (cachedFeature != null) {
+          _spriteFeatures?[org.name] = cachedFeature;
+        }
+      }
       if (cachedFeature == null) continue;
 
       final similarity = _featureSimilarity(inputFeature, cachedFeature);
+      
+      // Strict Feature Filter: "Grey" threshold is 0.5
+      // If any core feature (Color, Shape, Pattern, Shade) is ≤ 0.5, discard the species.
+      bool hasGreyFeature = (similarity['Color'] ?? 0) <= 0.5 ||
+                            (similarity['Shape'] ?? 0) <= 0.5 ||
+                            (similarity['Pattern'] ?? 0) <= 0.5 ||
+                            (similarity['Shade'] ?? 0) <= 0.5;
+      
+      if (hasGreyFeature) {
+        continue;
+      }
+
       double biometricScore = similarity['total'] ?? 0;
       double textScore = _textRelevanceScore(org, detectedCategories);
 
@@ -554,19 +662,40 @@ class BiometricService {
     onProgress?.call('Ranking results...', 0.90);
     results.sort((a, b) => b.confidence.compareTo(a.confidence));
 
-    // Genus-based fallback (if no strong match)
-    if (results.isNotEmpty && results.first.confidence < 0.6 && normalizedHint == null) {
+    // Genus-based inclusion (Fallback for low match OR Cluster for high match)
+    if (results.isNotEmpty && (results.first.confidence < 0.6 || results.first.confidence >= 0.95) && normalizedHint == null) {
       final topGenus = _getGenus(results.first.organism.scientificName);
       if (topGenus.isNotEmpty) {
         for (final org in _organisms!) {
           if (_getGenus(org.scientificName) == topGenus && 
               !results.any((r) => r.organism.name == org.name)) {
-            results.add(ScanResult(
-              organism: org,
-              confidence: results.first.confidence * 0.9,
-              matchReason: 'Similar Genus ($topGenus)',
-              maskedImage: maskedBytes,
-            ));
+            
+            var cachedFeature = _spriteFeatures?[org.name];
+            if (cachedFeature == null) {
+              cachedFeature = await _extractSpriteFeature(org.name);
+              if (cachedFeature != null) {
+                _spriteFeatures?[org.name] = cachedFeature;
+              }
+            }
+
+            if (cachedFeature != null) {
+              final similarity = _featureSimilarity(inputFeature, cachedFeature);
+              bool hasGreyFeature = (similarity['Color'] ?? 0) <= 0.5 ||
+                                    (similarity['Shape'] ?? 0) <= 0.5 ||
+                                    (similarity['Pattern'] ?? 0) <= 0.5 ||
+                                    (similarity['Shade'] ?? 0) <= 0.5;
+              
+              if (!hasGreyFeature) {
+                results.add(ScanResult(
+                  organism: org,
+                  confidence: similarity['total'] ?? 0,
+                  matchReason: 'Similar Genus ($topGenus)',
+                  maskedImage: maskedBytes,
+                  featureScores: similarity,
+                  isGenusMate: true,
+                ));
+              }
+            }
           }
         }
         results.sort((a, b) => b.confidence.compareTo(a.confidence));
@@ -580,7 +709,13 @@ class BiometricService {
         final externalResults = await identifyViaINaturalist(imageBytes);
         for (final ext in externalResults) {
           // Cross-verify external result with our own biometrics
-          final cachedFeature = _spriteFeatures?[ext.organism.name];
+          var cachedFeature = _spriteFeatures?[ext.organism.name];
+          if (cachedFeature == null) {
+            cachedFeature = await _extractSpriteFeature(ext.organism.name);
+            if (cachedFeature != null) {
+              _spriteFeatures?[ext.organism.name] = cachedFeature;
+            }
+          }
           // Default to 0.5 for unverified external results to prioritize local matches
           double biometricVerification = 0.5;
           Map<String, double> verificationScores = {};
@@ -627,7 +762,29 @@ class BiometricService {
       } catch (_) {}
     }
 
-    results.sort((a, b) => b.confidence.compareTo(a.confidence));
+    // Step 6: Genus Affinity Grouping
+    // If we have a very high confidence match (> 95%), group other species in the same genus
+    if (results.isNotEmpty && results.first.confidence >= 0.95) {
+      final topResult = results.first;
+      final topGenus = _getGenus(topResult.organism.scientificName);
+      
+      for (int i = 1; i < results.length; i++) {
+        final r = results[i];
+        if (_getGenus(r.organism.scientificName) == topGenus) {
+          // Mark as a genus-mate for UI grouping, but DO NOT boost the score
+          results[i] = ScanResult(
+            organism: r.organism,
+            confidence: r.confidence, 
+            matchReason: '${r.matchReason} (Genus Affiliate)',
+            isExternal: r.isExternal,
+            maskedImage: r.maskedImage,
+            featureScores: r.featureScores,
+            isGenusMate: true, // Flag for grouping
+          );
+        }
+      }
+    }
+
     onProgress?.call('Scan complete!', 1.0);
     return results.take(maxResults).toList();
   }
@@ -638,21 +795,27 @@ class BiometricService {
     double globalColorMatch = 0;
     f1.hueBins.forEach((key, val) {
       if (val == 0) return;
-      int hue = int.tryParse(key.replaceAll('h', '')) ?? -1;
-      if (hue == -1) return;
       
-      double exact = f2.hueBins[key] ?? 0;
-      
-      int prevHue = (hue - 10) % 360;
-      if (prevHue < 0) prevHue += 360;
-      int nextHue = (hue + 10) % 360;
-      
-      double prevVal = f2.hueBins['h$prevHue'] ?? 0;
-      double nextVal = f2.hueBins['h$nextHue'] ?? 0;
-      
-      // Allow slight hue shifts to count for partial credit
-      double effectiveF2 = exact + (prevVal * 0.5) + (nextVal * 0.5);
-      globalColorMatch += min(val, effectiveF2);
+      if (key.startsWith('h')) {
+        // Handle chromatic hue bins (h0, h10, ...)
+        if (key.length > 2 && int.tryParse(key.substring(1)) != null) {
+          int hue = int.parse(key.substring(1));
+          double exact = f2.hueBins[key] ?? 0;
+          
+          int prevHue = (hue - 10) % 360;
+          if (prevHue < 0) prevHue += 360;
+          int nextHue = (hue + 10) % 360;
+          
+          double prevVal = f2.hueBins['h$prevHue'] ?? 0;
+          double nextVal = f2.hueBins['h$nextHue'] ?? 0;
+          
+          double effectiveF2 = exact + (prevVal * 0.3) + (nextVal * 0.3);
+          globalColorMatch += min(val, effectiveF2);
+        } else {
+          // Handle achromatic bins (hWhite, hBlack, hGrey)
+          globalColorMatch += min(val, f2.hueBins[key] ?? 0);
+        }
+      }
     });
     globalColorMatch = globalColorMatch.clamp(0.0, 1.0);
 
@@ -660,53 +823,68 @@ class BiometricService {
     double spatialMatch = globalColorMatch; 
     if (f1.spatialHueBins != null && f2.spatialHueBins != null) {
       double spatialSum = 0;
-      int gridCount = 0;
       f1.spatialHueBins!.forEach((key, val) {
         if (f2.spatialHueBins!.containsKey(key)) {
           spatialSum += min(val, f2.spatialHueBins![key]!);
-          gridCount++;
         }
       });
-      if (gridCount > 0) spatialMatch = (spatialSum / 9.0).clamp(0.0, 1.0);
+      
+      final activeCells1 = f1.spatialHueBins!.keys.map((k) => k.substring(0, 3)).toSet().length;
+      final activeCells2 = f2.spatialHueBins!.keys.map((k) => k.substring(0, 3)).toSet().length;
+      final maxActiveCells = max(activeCells1, activeCells2);
+
+      if (maxActiveCells > 0) {
+        spatialMatch = (spatialSum / maxActiveCells).clamp(0.0, 1.0);
+      }
     }
     
-    final colorMatch = (globalColorMatch * 0.5 + spatialMatch * 0.5).clamp(0.0, 1.0);
+    // Weighted Color: Spatial is more accurate for real organisms
+    final colorMatch = (globalColorMatch * 0.3 + spatialMatch * 0.7).clamp(0.0, 1.0);
 
-    // 2. Shape Match (Restored to a more balanced sensitivity)
+    // 2. Shape Match
     final aspectDiff = (log(f1.aspectRatio) - log(f2.aspectRatio)).abs();
     final solidityDiff = (f1.solidity - f2.solidity).abs();
     
-    final aspectScore = pow((1.0 - (aspectDiff * 0.6)).clamp(0.0, 1.0), 1.5).toDouble();
-    final solidityScore = pow((1.0 - (solidityDiff * 1.6)).clamp(0.0, 1.0), 1.5).toDouble();
+    final aspectScore = pow((1.0 - (aspectDiff * 0.8)).clamp(0.0, 1.0), 1.5).toDouble();
+    final solidityScore = pow((1.0 - (solidityDiff * 2.0)).clamp(0.0, 1.0), 1.5).toDouble();
     
-    final shapeMatch = (aspectScore * 0.6) + (solidityScore * 0.4);
+    final shapeMatch = (aspectScore * 0.5) + (solidityScore * 0.5);
 
-    // 3. Structural Match
+    // 3. Structural Match (Symmetry and Edge Density)
     final symDiff = (f1.verticalSymmetry - f2.verticalSymmetry).abs() +
                     (f1.horizontalSymmetry - f2.horizontalSymmetry).abs();
     final edgeDiff = (f1.edgeDensity - f2.edgeDensity).abs();
-    final edgeScore = (1.0 - (edgeDiff * 3.0)).clamp(0.0, 1.0);
-    final patternMatch = (1.0 - (symDiff / 2.0)).clamp(0.0, 1.0) * 0.3 + (edgeScore * 0.7);
+    final edgeScore = (1.0 - (edgeDiff * 4.0)).clamp(0.0, 1.0);
+    final patternMatch = (1.0 - (symDiff / 2.0)).clamp(0.0, 1.0) * 0.2 + (edgeScore * 0.8);
 
     // 4. Shade & Intensity
     final shadeMatch = (1.0 - (f1.avgBrightness - f2.avgBrightness).abs()).clamp(0.0, 1.0);
     final satMatch = (1.0 - (f1.avgSaturation - f2.avgSaturation).abs()).clamp(0.0, 1.0);
-    final combinedShade = (shadeMatch * 0.7 + satMatch * 0.3).clamp(0.0, 1.0);
+    final combinedShade = (shadeMatch * 0.6 + satMatch * 0.4).clamp(0.0, 1.0);
 
-    // Weighted Total (Reverted to user-preferred weight balance)
-    double total = (colorMatch * 0.45) + 
-                   (combinedShade * 0.35) + 
-                   (shapeMatch * 0.15) + 
-                   (patternMatch * 0.05);
+    // Weighted Total
+    double total = (colorMatch * 0.40) + 
+                   (combinedShade * 0.30) + 
+                   (patternMatch * 0.25) + 
+                   (shapeMatch * 0.05);
     
-    // Strict Color Gate: Threshold restored to 0.15
-    if (colorMatch < 0.15) {
-      total *= 0.10; 
+    // STRICT CROSS-SPECIES FILTERS
+    // If color or pattern match is very low, it's definitely not the same species
+    if (colorMatch < 0.3 || patternMatch < 0.4) {
+      total *= 0.1;
     }
 
-    // Boost high-confidence matches
-    if (total > 0.92) total = 1.0;
+    if (total > 0.95) total = 1.0;
     if (total < 0.15) total = 0.0;
+
+    // Detailed debug logging for top candidates to diagnose identification failures
+    if (total > 0.3) {
+      debugPrint('Similarity [${f2.organismName}]: Total=${total.toStringAsFixed(3)} '
+          '(CLR=${colorMatch.toStringAsFixed(2)}, SHP=${shapeMatch.toStringAsFixed(2)}, '
+          'PAT=${patternMatch.toStringAsFixed(2)}, SHD=${combinedShade.toStringAsFixed(2)})');
+      debugPrint('  Detail: Brightness Delta=${(f1.avgBrightness - f2.avgBrightness).abs().toStringAsFixed(2)}, '
+          'Aspect Ratio: ${f1.aspectRatio.toStringAsFixed(2)} vs ${f2.aspectRatio.toStringAsFixed(2)}');
+    }
 
     return {
       'total': total,
@@ -867,7 +1045,8 @@ class BiometricService {
   }
 
   /// Pre-compute sprite features for ALL organisms (batch operation).
-  /// Call this during development to generate sprite_features.json.
+  /// For CLI generation, use: dart run scratch/generate_features_db.dart
+  /// This in-app method is kept for compatibility.
   Future<Map<String, dynamic>> preComputeAllSpriteFeatures({
     void Function(int current, int total)? onProgress,
   }) async {

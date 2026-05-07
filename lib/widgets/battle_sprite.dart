@@ -254,7 +254,7 @@ class BattleSpriteState extends State<BattleSprite>
             child: Image.asset(
               assetPath,
               fit: BoxFit.contain,
-              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+              errorBuilder: (_, _, _) => const SizedBox.shrink(),
             ),
           ),
         );
@@ -308,8 +308,11 @@ class BattleSpriteState extends State<BattleSprite>
         fit: BoxFit.contain,
         filterQuality: FilterQuality.medium,
         gaplessPlayback: true,
-        errorBuilder: (context, error, stackTrace) =>
-            Icon(Icons.help, color: Colors.white24, size: width != null ? width * 0.5 : 50),
+        errorBuilder: (context, error, stackTrace) => Icon(
+          Icons.help,
+          color: Colors.white24,
+          size: width != null ? width * 0.5 : 50,
+        ),
       );
     } else {
       return Image.network(
@@ -328,8 +331,11 @@ class BattleSpriteState extends State<BattleSprite>
                   child: const CircularProgressIndicator(strokeWidth: 2),
                 ),
               ),
-        errorBuilder: (context, error, stackTrace) =>
-            Icon(Icons.pets, color: Colors.white54, size: width != null ? width * 0.4 : 40),
+        errorBuilder: (context, error, stackTrace) => Icon(
+          Icons.pets,
+          color: Colors.white54,
+          size: width != null ? width * 0.4 : 40,
+        ),
       );
     }
   }
@@ -347,20 +353,54 @@ class BattleSpriteState extends State<BattleSprite>
 
     final matrix = bo.statusEffects.length > 1
         ? const <double>[
-            1, 0, 0, 0, 0,
-            0, 0.8, 0, 0, 0,
-            0, 0, 1.2, 0, 0,
-            0, 0, 0, 1, 0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0.8,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1.2,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
           ]
         : const <double>[
-            1, 0, 0, 0, 0,
-            0, 1, 0, 0, 0,
-            0, 0, 1, 0, 0,
-            0, 0, 0, 1, 0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
           ];
 
     final isSubstituteActive = bo.substituteHealth > 0;
-    final hasStealth = bo.statusEffects.any((se) => se.type == StatusEffectType.stealth);
+    final hasStealth = bo.statusEffects.any(
+      (se) => se.type == StatusEffectType.stealth,
+    );
 
     Widget sprite = _buildImage(imagePath, width: size, height: size);
     if (widget.mirror) {
@@ -375,10 +415,26 @@ class BattleSpriteState extends State<BattleSprite>
     if (isSubstituteActive) {
       sprite = ColorFiltered(
         colorFilter: ColorFilter.matrix(const <double>[
-          0.2126, 0.7152, 0.0722, 0, 0,
-          0.2126, 0.7152, 0.0722, 0, 0,
-          0.2126, 0.7152, 0.0722, 0, 0,
-          0, 0, 0, 1, 0,
+          0.2126,
+          0.7152,
+          0.0722,
+          0,
+          0,
+          0.2126,
+          0.7152,
+          0.0722,
+          0,
+          0,
+          0.2126,
+          0.7152,
+          0.0722,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
         ]),
         child: sprite,
       );
@@ -392,7 +448,11 @@ class BattleSpriteState extends State<BattleSprite>
           AnimatedBuilder(
             animation: _pulseController,
             builder: (context, _) {
-              Widget effectLayer = _buildImage(imagePath, width: size, height: size);
+              Widget effectLayer = _buildImage(
+                imagePath,
+                width: size,
+                height: size,
+              );
               if (widget.mirror) {
                 effectLayer = Transform.flip(flipX: true, child: effectLayer);
               }
@@ -448,7 +508,9 @@ class BattleSpriteState extends State<BattleSprite>
     }
 
     final spriteOutlineColor = Colors.black.withValues(alpha: 0.8);
-    final hasStealth = bo.statusEffects.any((se) => se.type == StatusEffectType.stealth);
+    final hasStealth = bo.statusEffects.any(
+      (se) => se.type == StatusEffectType.stealth,
+    );
 
     Widget outline = _buildImage(imagePath, width: size, height: size);
     if (widget.mirror) {
@@ -512,7 +574,7 @@ class BattleSpriteState extends State<BattleSprite>
                 _platformImagePath,
                 width: size * 1.5,
                 fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                errorBuilder: (_, _, _) => const SizedBox.shrink(),
               ),
             ),
             AnimatedBuilder(
@@ -541,25 +603,25 @@ class BattleSpriteState extends State<BattleSprite>
                                 size: size,
                               ),
                             ),
-                         for (var x in [-outlineOffset, outlineOffset])
-                            Transform.translate(
-                              offset: Offset(x, 0),
-                              child: _buildOutlineLayer(
-                                bo: bo,
-                                imagePath: _imagePath,
-                                size: size,
-                              ),
+                        for (var x in [-outlineOffset, outlineOffset])
+                          Transform.translate(
+                            offset: Offset(x, 0),
+                            child: _buildOutlineLayer(
+                              bo: bo,
+                              imagePath: _imagePath,
+                              size: size,
                             ),
-                          for (var y in [-outlineOffset, outlineOffset])
-                            Transform.translate(
-                              offset: Offset(0, y),
-                              child: _buildOutlineLayer(
-                                bo: bo,
-                                imagePath: _imagePath,
-                                size: size,
-                              ),
+                          ),
+                        for (var y in [-outlineOffset, outlineOffset])
+                          Transform.translate(
+                            offset: Offset(0, y),
+                            child: _buildOutlineLayer(
+                              bo: bo,
+                              imagePath: _imagePath,
+                              size: size,
                             ),
-                        
+                          ),
+
                         // Main sprite
                         Opacity(
                           opacity: _faintOpacity.value,
@@ -580,24 +642,35 @@ class BattleSpriteState extends State<BattleSprite>
                                     if (_statChangeController.isDismissed) {
                                       return const SizedBox.shrink();
                                     }
-                                    final double progress = _statChangeAnimation.value;
+                                    final double progress =
+                                        _statChangeAnimation.value;
                                     final double opacity = progress < 0.2
                                         ? progress / 0.2
-                                        : (progress > 0.8 ? (1.0 - progress) / 0.2 : 1.0);
-                                    
-                                    final color = _isStatBuff ? Colors.cyanAccent : Colors.orangeAccent;
-                                    final offset = _isStatBuff ? -20.0 * progress : 20.0 * progress;
+                                        : (progress > 0.8
+                                              ? (1.0 - progress) / 0.2
+                                              : 1.0);
+
+                                    final color = _isStatBuff
+                                        ? Colors.cyanAccent
+                                        : Colors.orangeAccent;
+                                    final offset = _isStatBuff
+                                        ? -20.0 * progress
+                                        : 20.0 * progress;
 
                                     return Transform.translate(
                                       offset: Offset(0, offset),
                                       child: Opacity(
                                         opacity: opacity * 0.5,
                                         child: ShaderMask(
-                                          shaderCallback: (bounds) => LinearGradient(
-                                            begin: Alignment.topCenter,
-                                            end: Alignment.bottomCenter,
-                                            colors: [color, color.withValues(alpha: 0)],
-                                          ).createShader(bounds),
+                                          shaderCallback: (bounds) =>
+                                              LinearGradient(
+                                                begin: Alignment.topCenter,
+                                                end: Alignment.bottomCenter,
+                                                colors: [
+                                                  color,
+                                                  color.withValues(alpha: 0),
+                                                ],
+                                              ).createShader(bounds),
                                           blendMode: BlendMode.srcATop,
                                           child: _buildBaseSpriteLayer(
                                             bo: bo,
@@ -616,7 +689,9 @@ class BattleSpriteState extends State<BattleSprite>
                                 Positioned.fill(
                                   child: DecoratedBox(
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withValues(alpha: _faintFlash.value),
+                                      color: Colors.white.withValues(
+                                        alpha: _faintFlash.value,
+                                      ),
                                       shape: BoxShape.circle,
                                     ),
                                   ),
@@ -653,7 +728,11 @@ class BattleSpriteState extends State<BattleSprite>
 class ScreenShieldOverlay extends StatefulWidget {
   final BattleOrganism organism;
   final double size;
-  const ScreenShieldOverlay({super.key, required this.organism, required this.size});
+  const ScreenShieldOverlay({
+    super.key,
+    required this.organism,
+    required this.size,
+  });
 
   @override
   State<ScreenShieldOverlay> createState() => _ScreenShieldOverlayState();
@@ -685,10 +764,18 @@ class _ScreenShieldOverlayState extends State<ScreenShieldOverlay>
     final bm = Provider.of<BattleManager>(context);
     final isPlayer = widget.organism.isPlayer;
 
-    final hasReflect = isPlayer ? bm.playerReflectTurns > 0 : bm.opponentReflectTurns > 0;
-    final hasLightScreen = isPlayer ? bm.playerLightScreenTurns > 0 : bm.opponentLightScreenTurns > 0;
-    final hasAuroraVeil = isPlayer ? bm.playerAuroraVeilTurns > 0 : bm.opponentAuroraVeilTurns > 0;
-    final hasSafeguard = isPlayer ? bm.playerSafeguardTurns > 0 : bm.opponentSafeguardTurns > 0;
+    final hasReflect = isPlayer
+        ? bm.playerReflectTurns > 0
+        : bm.opponentReflectTurns > 0;
+    final hasLightScreen = isPlayer
+        ? bm.playerLightScreenTurns > 0
+        : bm.opponentLightScreenTurns > 0;
+    final hasAuroraVeil = isPlayer
+        ? bm.playerAuroraVeilTurns > 0
+        : bm.opponentAuroraVeilTurns > 0;
+    final hasSafeguard = isPlayer
+        ? bm.playerSafeguardTurns > 0
+        : bm.opponentSafeguardTurns > 0;
 
     if (!hasReflect && !hasLightScreen && !hasAuroraVeil && !hasSafeguard) {
       return const SizedBox.shrink();
@@ -703,7 +790,8 @@ class _ScreenShieldOverlayState extends State<ScreenShieldOverlay>
     return AnimatedBuilder(
       animation: _pulseController,
       builder: (context, child) {
-        final double pulse = 0.55 + 0.45 * math.sin(_pulseController.value * math.pi);
+        final double pulse =
+            0.55 + 0.45 * math.sin(_pulseController.value * math.pi);
         final List<Widget> layers = [];
 
         for (int i = 0; i < activeScreens.length; i++) {

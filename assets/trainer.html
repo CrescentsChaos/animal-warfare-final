@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model Trainer</title>
+    <style>
+        body {
+            background-color: #0D1117;
+            color: #FFFFFF;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #FFB300;
+            margin-bottom: 5px;
+        }
+        p.subtitle {
+            color: #B0BEC5;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        label {
+            color: #546E7A;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        input[type="text"] {
+            background-color: #161B22;
+            border: 1px solid #30363D;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        input[type="text"]:focus {
+            border-color: #00BFA5;
+        }
+        #drop-zone {
+            background-color: #161B22;
+            border: 2px dashed #30363D;
+            border-radius: 12px;
+            padding: 60px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+        #drop-zone.dragover {
+            background-color: rgba(0, 191, 165, 0.1);
+            border-color: #00BFA5;
+        }
+        #drop-zone p {
+            margin: 0;
+            color: #B0BEC5;
+            font-size: 16px;
+        }
+        .log-container {
+            background-color: #000000;
+            border: 1px solid #30363D;
+            border-radius: 8px;
+            padding: 16px;
+            height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 13px;
+        }
+        .log-success { color: #69F0AE; }
+        .log-error { color: #FF5252; }
+        .log-info { color: #B0BEC5; }
+        .log-header { color: #00BFA5; font-weight: bold; }
+        
+        /* Spinner */
+        .loader {
+            border: 3px solid rgba(255,255,255,0.1);
+            border-radius: 50%;
+            border-top: 3px solid #00BFA5;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Model Trainer</h1>
+    <p class="subtitle">Enter the species scientific name and drop images to train.</p>
+
+    <div class="container">
+        <div class="input-group">
+            <label for="scientificName">Scientific Name</label>
+            <input type="text" id="scientificName" placeholder="e.g. Panthera tigris" />
+        </div>
+
+        <div id="drop-zone">
+            <div class="loader" id="loader"></div>
+            <p id="drop-text">Drag & Drop Images Here<br><br><span style="font-size:14px;color:#546E7A;">(Or click to browse)</span></p>
+            <input type="file" id="file-input" multiple accept="image/png, image/jpeg" style="display: none;" />
+        </div>
+
+        <div class="log-container" id="log-output">
+            <div class="log-info">Ready for training. Database modifications will apply directly to sprite_features.db</div>
+        </div>
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const scientificNameInput = document.getElementById('scientificName');
+        const logOutput = document.getElementById('log-output');
+        const loader = document.getElementById('loader');
+        const dropText = document.getElementById('drop-text');
+
+        function appendLog(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `log-${type}`;
+            div.innerText = message;
+            logOutput.appendChild(div);
+            logOutput.scrollTop = logOutput.scrollHeight;
+        }
+
+        // Setup drag and drop
+        dropZone.addEventListener('click', () => fileInput.click());
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) {
+                processFiles(e.dataTransfer.files);
+            }
+        });
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                processFiles(fileInput.files);
+            }
+            fileInput.value = ''; // reset
+        });
+
+        async function processFiles(files) {
+            const sciName = scientificNameInput.value.trim();
+            if (!sciName) {
+                appendLog('ERROR: Please enter a scientific name first.', 'error');
+                return;
+            }
+
+            appendLog(`--- Starting batch for ${sciName} (${files.length} files) ---`, 'header');
+            
+            loader.style.display = 'block';
+            dropText.style.display = 'none';
+
+            // Convert files to base64
+            const imagesBase64 = [];
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                try {
+                    const base64 = await toBase64(file);
+                    // Remove data:image/png;base64, prefix
+                    const b64Data = base64.split(',')[1];
+                    imagesBase64.push({
+                        name: file.name,
+                        data: b64Data
+                    });
+                } catch (e) {
+                    appendLog(`Failed to read file ${file.name}`, 'error');
+                }
+            }
+
+            // Send to Dart backend
+            try {
+                const response = await fetch('/train', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        scientificName: sciName,
+                        images: imagesBase64
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    result.logs.forEach(log => appendLog(log.msg, log.type));
+                    appendLog(`--- Batch Complete (${result.successCount} succeeded, ${result.failCount} failed) ---`, 'header');
+                } else {
+                    appendLog(`Server Error: ${result.error}`, 'error');
+                }
+            } catch (e) {
+                appendLog(`Connection failed. Is the Dart server running? ${e.message}`, 'error');
+            } finally {
+                loader.style.display = 'none';
+                dropText.style.display = 'block';
+            }
+        }
+
+        function toBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+    </script>
+</body>
+</html>

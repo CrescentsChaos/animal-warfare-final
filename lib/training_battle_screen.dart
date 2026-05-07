@@ -41,8 +41,10 @@ class _TrainingBattleScreenState extends State<TrainingBattleScreen>
   int _moveAnimIdCounter = 0;
 
   final List<_IndicatorData> _indicators = [];
-  final GlobalKey<BattleSpriteState> _playerSpriteKey = GlobalKey<BattleSpriteState>();
-  final GlobalKey<BattleSpriteState> _opponentSpriteKey = GlobalKey<BattleSpriteState>();
+  final GlobalKey<BattleSpriteState> _playerSpriteKey =
+      GlobalKey<BattleSpriteState>();
+  final GlobalKey<BattleSpriteState> _opponentSpriteKey =
+      GlobalKey<BattleSpriteState>();
 
   // Biome for background
   final String _biomeName = _getRandomBiome();
@@ -103,13 +105,15 @@ class _TrainingBattleScreenState extends State<TrainingBattleScreen>
 
     // Initialize BattleManager for training
     final dummy = CapturedOrganism.spawn(Organism.trainingDummy, level: 100);
-    
+
     // FALLBACK: If player has no animals (e.g. fresh account), use a dummy for the player too
     // to prevent "Bad state: No element" on widget.playerTeam.first
-    final playerAnimal = widget.playerTeam.isNotEmpty 
-        ? widget.playerTeam.first 
+    final playerAnimal = widget.playerTeam.isNotEmpty
+        ? widget.playerTeam.first
         : CapturedOrganism.spawn(Organism.trainingDummy, level: 100);
-    final effectiveTeam = widget.playerTeam.isNotEmpty ? widget.playerTeam : [playerAnimal];
+    final effectiveTeam = widget.playerTeam.isNotEmpty
+        ? widget.playerTeam
+        : [playerAnimal];
 
     _battleManager = BattleManager(
       playerAnimal,
@@ -187,7 +191,11 @@ class _TrainingBattleScreenState extends State<TrainingBattleScreen>
     final statLabel = stat.toString();
     final direction = value > 0 ? "↑" : "↓";
     final color = value > 0 ? Colors.cyanAccent : Colors.orangeAccent;
-    _addIndicator("${statLabel.toUpperCase()} $direction", color, target.isPlayer);
+    _addIndicator(
+      "${statLabel.toUpperCase()} $direction",
+      color,
+      target.isPlayer,
+    );
   }
 
   void _addIndicator(String text, Color color, bool isPlayer) {
@@ -204,16 +212,26 @@ class _TrainingBattleScreenState extends State<TrainingBattleScreen>
 
   Color _getBiomeThemeColor() {
     final name = _biomeName.toLowerCase();
-    if (name.contains('forest') || name.contains('jungle') || name.contains('rainforest')) {
+    if (name.contains('forest') ||
+        name.contains('jungle') ||
+        name.contains('rainforest')) {
       return const Color(0xFF2E7D32);
     }
-    if (name.contains('desert') || name.contains('savanna') || name.contains('plains')) {
+    if (name.contains('desert') ||
+        name.contains('savanna') ||
+        name.contains('plains')) {
       return const Color(0xFFF9A825);
     }
-    if (name.contains('ocean') || name.contains('sea') || name.contains('river') || name.contains('lake') || name.contains('coastal')) {
+    if (name.contains('ocean') ||
+        name.contains('sea') ||
+        name.contains('river') ||
+        name.contains('lake') ||
+        name.contains('coastal')) {
       return const Color(0xFF1565C0);
     }
-    if (name.contains('polar') || name.contains('frozen') || name.contains('tundra')) {
+    if (name.contains('polar') ||
+        name.contains('frozen') ||
+        name.contains('tundra')) {
       return const Color(0xFF0288D1);
     }
     if (name.contains('volcano')) {
@@ -251,34 +269,15 @@ class _TrainingBattleScreenState extends State<TrainingBattleScreen>
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                          _buildHeader(),
-                          Expanded(
-                            child: isLandscape
-                                ? Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Expanded(
-                                        flex: 5,
-                                        child: _buildField(
-                                          context,
-                                          bm,
-                                          isNarrow,
-                                          overlayColor,
-                                        ),
-                                      ),
-                                      Expanded(
-                                        flex: 4,
-                                        child: _buildControlPanel(bm),
-                                      ),
-                                    ],
-                                  )
-                                : Column(
-                                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                                    children: [
-                                      Flexible(
-                                        fit: FlexFit.loose,
-                                        child: SingleChildScrollView(
+                            _buildHeader(),
+                            Expanded(
+                              child: isLandscape
+                                  ? Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Expanded(
+                                          flex: 5,
                                           child: _buildField(
                                             context,
                                             bm,
@@ -286,48 +285,71 @@ class _TrainingBattleScreenState extends State<TrainingBattleScreen>
                                             overlayColor,
                                           ),
                                         ),
-                                      ),
-                                      const Divider(height: 1, color: Colors.white24),
-                                      Expanded(
-                                        child: _buildControlPanel(bm),
-                                      ),
-                                    ],
-                                  ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  // Animations Overlay Layer
-                  Positioned.fill(
-                    child: IgnorePointer(
-                      child: Stack(
-                        children: [
-                          ..._moveAnims.map(
-                            (anim) => anims.MoveAnimationOverlay(
-                              key: ValueKey(anim.id),
-                              data: anim,
-                              player1Link: _playerLink,
-                              player2Link: LayerLink(),
-                              opponent1Link: _opponentLink,
-                              opponent2Link: LayerLink(),
+                                        Expanded(
+                                          flex: 4,
+                                          child: _buildControlPanel(bm),
+                                        ),
+                                      ],
+                                    )
+                                  : Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.stretch,
+                                      children: [
+                                        Flexible(
+                                          fit: FlexFit.loose,
+                                          child: SingleChildScrollView(
+                                            child: _buildField(
+                                              context,
+                                              bm,
+                                              isNarrow,
+                                              overlayColor,
+                                            ),
+                                          ),
+                                        ),
+                                        const Divider(
+                                          height: 1,
+                                          color: Colors.white24,
+                                        ),
+                                        Expanded(child: _buildControlPanel(bm)),
+                                      ],
+                                    ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                   // Indicators — must be Positioned.fill so CompositedTransformFollower
-                   // never gives the outer Stack an unconstrained size.
-                   ..._indicators.map(
-                     (indicator) => Positioned.fill(
-                       child: _FloatingIndicatorWidget(
-                         key: ValueKey(indicator.id),
-                         data: indicator,
-                         link: indicator.isPlayer ? _playerLink : _opponentLink,
-                       ),
-                     ),
-                   ),
+                    // Animations Overlay Layer
+                    Positioned.fill(
+                      child: IgnorePointer(
+                        child: Stack(
+                          children: [
+                            ..._moveAnims.map(
+                              (anim) => anims.MoveAnimationOverlay(
+                                key: ValueKey(anim.id),
+                                data: anim,
+                                player1Link: _playerLink,
+                                player2Link: LayerLink(),
+                                opponent1Link: _opponentLink,
+                                opponent2Link: LayerLink(),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    // Indicators — must be Positioned.fill so CompositedTransformFollower
+                    // never gives the outer Stack an unconstrained size.
+                    ..._indicators.map(
+                      (indicator) => Positioned.fill(
+                        child: _FloatingIndicatorWidget(
+                          key: ValueKey(indicator.id),
+                          data: indicator,
+                          link: indicator.isPlayer
+                              ? _playerLink
+                              : _opponentLink,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               );
@@ -364,7 +386,8 @@ class _TrainingBattleScreenState extends State<TrainingBattleScreen>
               return Image.asset(
                 'assets/biomes/$fileName.png',
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+                errorBuilder: (context, error, stackTrace) =>
+                    const SizedBox.shrink(),
               );
             },
           ),
@@ -527,8 +550,9 @@ class _TrainingBattleScreenState extends State<TrainingBattleScreen>
                               bm.notifyListeners();
                             });
                           },
-                          activeColor: Colors.cyanAccent,
-                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          activeThumbColor: Colors.cyanAccent,
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
                         ),
                       ],
                     ),
@@ -654,8 +678,7 @@ class _TrainingBattleScreenState extends State<TrainingBattleScreen>
     final statusBox = Container(
       // FIXED: Use constraints instead of hard width for relative sizing
       constraints: BoxConstraints(
-        maxWidth: (MediaQuery.sizeOf(context).width * 0.5)
-            .clamp(0.0, 260.0),
+        maxWidth: (MediaQuery.sizeOf(context).width * 0.5).clamp(0.0, 260.0),
       ),
       padding: EdgeInsets.all(isNarrow ? 6 : 10),
       decoration: BoxDecoration(
@@ -758,17 +781,12 @@ class _TrainingBattleScreenState extends State<TrainingBattleScreen>
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: isNarrow ? 8 : 16, vertical: 4),
       child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxWidth: MediaQuery.sizeOf(context).width,
-        ),
+        constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Flexible(
-              flex: 4,
-              child: statusBox,
-            ),
+            Flexible(flex: 4, child: statusBox),
             const Flexible(child: SizedBox(width: 8)),
             Flexible(
               flex: 3,
@@ -813,8 +831,7 @@ class _TrainingBattleScreenState extends State<TrainingBattleScreen>
     final statusBox = Container(
       // FIXED: Use constraints instead of hard width for relative sizing
       constraints: BoxConstraints(
-        maxWidth: (MediaQuery.sizeOf(context).width * 0.5)
-            .clamp(0.0, 260.0),
+        maxWidth: (MediaQuery.sizeOf(context).width * 0.5).clamp(0.0, 260.0),
       ),
       padding: EdgeInsets.all(isNarrow ? 5 : 8),
       decoration: BoxDecoration(
@@ -915,9 +932,7 @@ class _TrainingBattleScreenState extends State<TrainingBattleScreen>
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: isNarrow ? 8 : 16, vertical: 4),
       child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxWidth: MediaQuery.sizeOf(context).width,
-        ),
+        constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -937,10 +952,7 @@ class _TrainingBattleScreenState extends State<TrainingBattleScreen>
               ),
             ),
             const Flexible(child: SizedBox(width: 12)),
-            Flexible(
-              flex: 4,
-              child: statusBox,
-            ),
+            Flexible(flex: 4, child: statusBox),
           ],
         ),
       ),
@@ -1066,7 +1078,11 @@ class _MovePickerSheetState extends State<_MovePickerSheet> {
                   fontFamily: 'PressStart2P',
                   fontSize: 8,
                 ),
-                prefixIcon: const Icon(Icons.search, color: Colors.white54, size: 18),
+                prefixIcon: const Icon(
+                  Icons.search,
+                  color: Colors.white54,
+                  size: 18,
+                ),
                 filled: true,
                 fillColor: Colors.white.withValues(alpha: 0.05),
                 border: OutlineInputBorder(
@@ -1101,7 +1117,10 @@ class _MovePickerSheetState extends State<_MovePickerSheet> {
                 final move = _filtered[index];
                 return ListTile(
                   leading: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 3,
+                    ),
                     decoration: BoxDecoration(
                       color: move.type.color.withValues(alpha: 0.85),
                       borderRadius: BorderRadius.circular(6),
@@ -1125,10 +1144,7 @@ class _MovePickerSheetState extends State<_MovePickerSheet> {
                   ),
                   subtitle: Text(
                     move.description,
-                    style: const TextStyle(
-                      color: Colors.white38,
-                      fontSize: 10,
-                    ),
+                    style: const TextStyle(color: Colors.white38, fontSize: 10),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -1179,7 +1195,10 @@ class _MoveRow extends StatelessWidget {
               children: [
                 // Type chip — intrinsic, clips its own text
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 5,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: move.type.color.withValues(alpha: 0.85),
                     borderRadius: BorderRadius.circular(4),

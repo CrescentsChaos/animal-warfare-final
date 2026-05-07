@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:animal_warfare/services/biometric_service.dart';
+import 'package:animal_warfare/services/segmentation_service.dart';
 import 'package:animal_warfare/widgets/organism_sprite_widget.dart';
 import 'package:animal_warfare/widgets/anidex_details_sheet.dart';
 import 'package:animal_warfare/models/organism.dart';
 import 'package:animal_warfare/theme.dart';
+import 'package:animal_warfare/manual_masking_screen.dart';
 
 class BiometricScannerScreen extends StatefulWidget {
   final VoidCallback onBack;
@@ -21,6 +23,8 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
     with TickerProviderStateMixin {
   final BiometricService _service = BiometricService();
   final ImagePicker _picker = ImagePicker();
+  final SegmentationService _segmentation = SegmentationService();
+  bool _mlReady = false;
 
   bool _isScanning = false;
   bool _hasScanned = false;
@@ -46,6 +50,12 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
       duration: const Duration(milliseconds: 2000),
     )..repeat();
     _service.initialize();
+    // Warm up the ML segmentation model
+    _segmentation.initialize().then((_) {
+      if (mounted) {
+        setState(() => _mlReady = _segmentation.isAvailable);
+      }
+    });
   }
 
   @override
@@ -145,6 +155,200 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
     }
   }
 
+  Future<void> _openManualMasking() async {
+    if (_imageBytes == null) return;
+    
+    final Uint8List? refinedMask = await Navigator.push<Uint8List>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ManualMaskingScreen(imageBytes: _imageBytes!),
+      ),
+    );
+
+    if (refinedMask != null) {
+      setState(() {
+        _maskedBytes = refinedMask;
+        _isScanning = true;
+        _statusText = 'APPLYING MANUAL MASK...';
+        _progress = 0.0;
+      });
+
+      try {
+        final results = await _service.scanImage(
+          _imageBytes!,
+          preSegmentedBytes: _maskedBytes,
+          hint: _hintController.text,
+          onProgress: (msg, p) => setState(() {
+            _statusText = msg.toUpperCase();
+            _progress = p;
+          }),
+        );
+
+        setState(() {
+          _results = results;
+          _sortResults();
+          _isScanning = false;
+          _hasScanned = true;
+          _statusText = results.isEmpty ? 'NO MATCH FOUND' : '${results.length} SPECIES IDENTIFIED';
+        });
+      } catch (e) {
+        setState(() {
+          _isScanning = false;
+          _statusText = 'SCAN ERROR';
+        });
+      }
+    }
+  }
+
+  void _showSegmentationPreview() {
+    if (_imageBytes == null) return;
+    
+    showDialog(
+      context: context,
+      builder: (context) {
+        bool showOriginal = false;
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return Dialog(
+            backgroundColor: Colors.transparent,
+            insetPadding: const EdgeInsets.all(16),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1A1A1A),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: Colors.cyanAccent.withAlpha(50)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'SEGMENTATION PREVIEW',
+                        style: GoogleFonts.shareTechMono(
+                          color: Colors.cyanAccent,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.5,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Colors.white54),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // Background pattern to show transparency
+                        Container(
+                          width: 300,
+                          height: 300,
+                          decoration: BoxDecoration(
+                            color: Colors.black,
+                            image: DecorationImage(
+                              image: const AssetImage('assets/ui/checkerboard.png'), // Fallback to grey if missing
+                              repeat: ImageRepeat.repeat,
+                              opacity: 0.1,
+                              onError: (_, __) {},
+                            ),
+                          ),
+                        ),
+                        Image.memory(
+                          showOriginal ? _imageBytes! : (_maskedBytes ?? _imageBytes!),
+                          width: 300,
+                          height: 300,
+                          fit: BoxFit.contain,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildPreviewToggle('MASKED', !showOriginal, () {
+                        setDialogState(() => showOriginal = false);
+                      }),
+                      const SizedBox(width: 16),
+                      _buildPreviewToggle('ORIGINAL', showOriginal, () {
+                        setDialogState(() => showOriginal = true);
+                      }),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  TextButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context); // Close preview
+                      _openManualMasking();
+                    },
+                    icon: const Icon(Icons.brush, color: Colors.cyanAccent, size: 16),
+                    label: Text(
+                      'MANUALLY REFINE MASK',
+                      style: GoogleFonts.shareTechMono(
+                        color: Colors.cyanAccent,
+                        fontSize: 12,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.cyanAccent.withAlpha(20),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'The engine isolates the animal from the background before extraction. '
+                    'This prevents background noise from affecting identification accuracy.',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      color: Colors.white38,
+                      fontSize: 10,
+                      height: 1.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    },
+  );
+}
+
+  Widget _buildPreviewToggle(String label, bool active, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: active ? Colors.cyanAccent.withAlpha(30) : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: active ? Colors.cyanAccent : Colors.white10,
+          ),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.shareTechMono(
+            color: active ? Colors.cyanAccent : Colors.white30,
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+
   void _sortResults() {
     if (_results.isEmpty) return;
 
@@ -172,6 +376,14 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
             valA = a.confidence;
             valB = b.confidence;
         }
+        
+        // Priority 1: High-confidence grouping (only for default 'Overall' sort)
+        if (_sortBy == 'Overall') {
+          if (a.isGenusMate && !b.isGenusMate) return -1;
+          if (!a.isGenusMate && b.isGenusMate) return 1;
+        }
+
+        // Priority 2: Value-based sorting (accuracy)
         return valB.compareTo(valA); // Descending
       });
     });
@@ -237,6 +449,24 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
             ),
           ),
           const Spacer(),
+          if (_mlReady)
+            Container(
+              margin: const EdgeInsets.only(right: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.greenAccent.withAlpha(20),
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(color: Colors.greenAccent.withAlpha(60)),
+              ),
+              child: Text(
+                'AI',
+                style: GoogleFonts.shareTechMono(
+                  color: Colors.greenAccent,
+                  fontSize: 9,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
           _buildPulseIndicator(),
         ],
       ),
@@ -440,17 +670,27 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
           Row(
             children: [
               Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.cyanAccent.withAlpha(50)),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.memory(
-                    _maskedBytes ?? _imageBytes!,
-                    width: 64,
-                    height: 64,
-                    fit: BoxFit.cover,
+                child: GestureDetector(
+                  onTap: () => _showSegmentationPreview(),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Stack(
+                      children: [
+                        Image.memory(
+                          _maskedBytes ?? _imageBytes!,
+                          width: 64,
+                          height: 64,
+                          fit: BoxFit.cover,
+                        ),
+                        Positioned(
+                          bottom: 2,
+                          right: 2,
+                          child: Icon(Icons.zoom_in_rounded, 
+                            color: Colors.cyanAccent.withAlpha(150), 
+                            size: 14),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -659,7 +899,7 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () => AnidexDetailsSheet.show(context, org),
+          onTap: () => _showComparisonDialog(result),
           borderRadius: BorderRadius.circular(12),
           child: Padding(
             padding: const EdgeInsets.all(12),
@@ -864,6 +1104,197 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _showComparisonDialog(ScanResult result) {
+    final org = result.organism;
+    final spritePath = result.isExternal
+        ? org.sprite
+        : BiometricService.spritePathForName(org.name);
+
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: const Color(0xFF1A1A1A),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: Colors.white10),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          org.name.toUpperCase(),
+                          style: GoogleFonts.shareTechMono(
+                            color: Colors.cyanAccent,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                        Text(
+                          org.scientificName,
+                          style: GoogleFonts.inter(
+                            color: Colors.white30,
+                            fontSize: 12,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white24),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              
+              // Side-by-side Visual Verification
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildComparisonPreview(
+                      'SCANNED SUBJECT',
+                      result.maskedImage != null 
+                        ? Image.memory(result.maskedImage!, fit: BoxFit.contain)
+                        : const Icon(Icons.broken_image, color: Colors.white10),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildComparisonPreview(
+                      'SPECIES MATCH',
+                      buildSilhouetteSprite(
+                        imageUrl: spritePath,
+                        width: 80,
+                        height: 80,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'BIOMETRIC COMPARISON',
+                style: GoogleFonts.shareTechMono(
+                  color: Colors.white54,
+                  fontSize: 10,
+                  letterSpacing: 2,
+                ),
+              ),
+              const SizedBox(height: 16),
+              _buildComparisonRow('COLOR', result.featureScores['Color'] ?? 0),
+              _buildComparisonRow('PATTERN', result.featureScores['Pattern'] ?? 0),
+              _buildComparisonRow('SHADE', result.featureScores['Shade'] ?? 0),
+              _buildComparisonRow('SHAPE', result.featureScores['Shape'] ?? 0),
+              
+              const SizedBox(height: 32),
+              
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    AnidexDetailsSheet.show(context, org);
+                  },
+                  icon: const Icon(Icons.menu_book, size: 18),
+                  label: Text(
+                    'OPEN ANIDEX ENTRY',
+                    style: GoogleFonts.shareTechMono(letterSpacing: 1),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.cyanAccent.withAlpha(40),
+                    foregroundColor: Colors.cyanAccent,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildComparisonPreview(String label, Widget content) {
+    return Column(
+      children: [
+        Container(
+          height: 100,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Colors.black26,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white10),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(8),
+            child: content,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          label,
+          style: GoogleFonts.shareTechMono(
+            color: Colors.white24,
+            fontSize: 8,
+            letterSpacing: 1,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildComparisonRow(String label, double score) {
+    final color = score > 0.8 ? Colors.greenAccent : score > 0.5 ? Colors.yellowAccent : Colors.redAccent;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                label,
+                style: GoogleFonts.shareTechMono(color: Colors.white38, fontSize: 10),
+              ),
+              Text(
+                '${(score * 100).toInt()}% MATCH',
+                style: GoogleFonts.shareTechMono(color: color, fontSize: 10, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(2),
+            child: LinearProgressIndicator(
+              value: score.clamp(0.0, 1.0),
+              backgroundColor: Colors.white.withAlpha(10),
+              valueColor: AlwaysStoppedAnimation<Color>(color.withAlpha(150)),
+              minHeight: 4,
+            ),
+          ),
+        ],
       ),
     );
   }

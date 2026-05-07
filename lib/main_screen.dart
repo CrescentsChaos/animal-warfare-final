@@ -6,6 +6,7 @@ import 'package:animal_warfare/login_screen.dart';
 import 'package:animal_warfare/profile_screen.dart';
 import 'package:animal_warfare/game_screen.dart';
 import 'package:animal_warfare/quest_screen.dart';
+import 'package:animal_warfare/training_screen.dart';
 import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/theme.dart';
 import 'package:animal_warfare/shop_screen.dart';
@@ -318,6 +319,13 @@ class _MainScreenState extends State<MainScreen> {
                                     onPressed: () =>
                                         _navigateTo(const FarmingScreen()),
                                     accentColor: Colors.green,
+                                  ),
+                                  _buildNavButton(
+                                    text: 'Model Trainer',
+                                    icon: Icons.model_training_rounded,
+                                    onPressed: () =>
+                                        _navigateTo(const TrainingScreen()),
+                                    accentColor: Colors.blueAccent,
                                   ),
                                 ],
                               ],
