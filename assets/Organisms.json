@@ -22396,11 +22396,11 @@
         "active_time": "any",
         "attack": 90,
         "category": "Rock, Martial",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 85,
         "description": "A wild goat with large curved horns found in the Alps.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Horn",
         "habitat": "Mountain",
         "health": 95,
@@ -22413,7 +22413,7 @@
         "scientific_name": "Capra ibex",
         "spawn_tiles": "tall_grass",
         "speed": 55,
-        "weight": 1
+        "weight": 92.5
     },
     {
         "abilities": "Rough Skin , Sand Force",
@@ -31036,11 +31036,11 @@
         "active_time": "any",
         "attack": 115,
         "category": "Cryo, Spectral",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 75,
         "description": "The Amur Leopard is one of the rarest big cats on Earth. It stalks prey through snowy forests with unmatched stealth.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fur",
         "habitat": "Mountain, Jungle, Taiga",
         "health": 80,
@@ -31053,7 +31053,7 @@
         "scientific_name": "Panthera pardus orientalis",
         "spawn_tiles": "tall_grass",
         "speed": 125,
-        "weight": 1
+        "weight": 46.5
     },
     {
         "abilities": "Unaware",
@@ -36772,11 +36772,11 @@
         "active_time": "any",
         "attack": 50,
         "category": "Earth, Martial",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 40,
         "description": "American Badgers are fierce predators that hunt small mammals underground. They dig extensive burrows and are largely solitary except during mating season.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fur",
         "habitat": "Savanna, Taiga",
         "health": 90,
@@ -36789,7 +36789,7 @@
         "scientific_name": "Taxidea taxus",
         "spawn_tiles": "tall_grass",
         "speed": 35,
-        "weight": 1
+        "weight": 10.2
     },
     {
         "abilities": "Snow Cloak",
@@ -37108,11 +37108,11 @@
         "active_time": "any",
         "attack": 15,
         "category": "Electric, Cryo",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "pika",
         "defense": 15,
         "description": "American Pikas are small, herbivorous mammals found in alpine regions. They are social and communicate using high-pitched calls to warn of predators.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Fur",
         "habitat": "Mountain, Taiga",
         "health": 35,
@@ -37125,7 +37125,7 @@
         "scientific_name": "Ochotona princeps",
         "spawn_tiles": "tall_grass",
         "speed": 30,
-        "weight": 1
+        "weight": 1.1
     },
     {
         "abilities": "Infiltrator",
@@ -37228,11 +37228,11 @@
         "active_time": "any",
         "attack": 40,
         "category": "Aquatic",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 25,
         "description": "American Minks are semi-aquatic predators hunting fish and small mammals. They are solitary and highly territorial.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fur",
         "habitat": "River, Jungle,Wetlands",
         "health": 60,
@@ -37245,7 +37245,7 @@
         "scientific_name": "Neovison vison",
         "spawn_tiles": "tall_grass",
         "speed": 50,
-        "weight": 1
+        "weight": 1.1
     },
     {
         "abilities": "Battle Armor",
@@ -42028,11 +42028,11 @@
         "active_time": "any",
         "attack": 105,
         "category": "Aquatic, Metal",
-        "class": "Unknown",
+        "class": "Crustacean",
         "cry": "default",
         "defense": 140,
         "description": "The American lobster is a heavily armored crustacean of the North Atlantic. Its powerful claws can crack shells and serve as both tools and weapons.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Lobster Claw, Exoskeleton, Muscle",
         "habitat": "Ocean, Coastal",
         "health": 85,
@@ -42045,7 +42045,7 @@
         "scientific_name": "Homarus americanus",
         "spawn_tiles": "water",
         "speed": 35,
-        "weight": 1
+        "weight": 11.25
     },
     {
         "abilities": "Stakeout",
@@ -50764,11 +50764,11 @@
         "active_time": "any",
         "attack": 40,
         "category": "Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 35,
         "description": "Amissus atlas is among the largest moths in the world. Its wing patterns resemble predator faces.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "wing, silk",
         "habitat": "Jungle",
         "health": 65,
@@ -50781,7 +50781,7 @@
         "scientific_name": "Amissus Atlas",
         "spawn_tiles": "tall_grass",
         "speed": 25,
-        "weight": 1
+        "weight": 0.024
     },
     {
         "abilities": "True Flight",
@@ -50884,11 +50884,11 @@
         "active_time": "any",
         "attack": 35,
         "category": "Basic, Flying",
-        "class": "Unknown",
+        "class": "Bird",
         "cry": "default",
         "defense": 30,
         "description": "The American robin is a widespread songbird commonly seen on lawns and open woodland edges. It feeds on insects and fruits while remaining alert to predators in both rural and urban habitats.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Robin Feather, Small Beak",
         "habitat": "Urban, River, Jungle",
         "health": 45,
@@ -50901,7 +50901,7 @@
         "scientific_name": "Turdus migratorius",
         "spawn_tiles": "tall_grass",
         "speed": 55,
-        "weight": 1
+        "weight": 0.082
     },
     {
         "abilities": "True Flight, Steelworker",
@@ -53908,11 +53908,11 @@
         "active_time": "any",
         "attack": 45,
         "category": "Aquatic, Toxic",
-        "class": "Unknown",
+        "class": "Amphibian",
         "cry": "frog",
         "defense": 55,
         "description": "The Amazon milk frog is named for the milky substance it secretes when stressed. It inhabits rainforest canopies and breeds in water filled tree holes.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Milky Secretion, Smooth Skin",
         "habitat": "Rainforest, Jungle",
         "health": 65,
@@ -53925,7 +53925,7 @@
         "scientific_name": "Trachycephalus resinifictrix",
         "spawn_tiles": "lily_pad,lily_pad2,cattail_0",
         "speed": 45,
-        "weight": 1
+        "weight": 0.025
     },
     {
         "abilities": "Poison Skin",
@@ -57676,11 +57676,11 @@
         "active_time": "night",
         "attack": 30,
         "category": "Cryo",
-        "class": "Unknown",
+        "class": "Amphibian",
         "cry": "default",
         "defense": 32,
         "description": "The alpine newt is a brightly colored amphibian found in cool mountain ponds and lakes. It feeds on insects and aquatic invertebrates while swimming slowly through clear water.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Amphibian Skin,Raw Meat",
         "habitat": "Lake,Mountain,Wetlands",
         "health": 52,
@@ -57693,7 +57693,7 @@
         "scientific_name": "Ichthyosaura alpestris",
         "spawn_tiles": "tall_grass",
         "speed": 36,
-        "weight": 1
+        "weight": 0.004
     },
     {
         "abilities": "Corrosion , Dry Skin",
@@ -58324,11 +58324,11 @@
         "active_time": "any",
         "attack": 88,
         "category": "Earth, Cryo",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 92,
         "description": "The American mastodon was a massive prehistoric relative of elephants that roamed ancient forests and wetlands. Its heavy tusks and powerful body allowed it to push through dense vegetation and defend against predators.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Fossil Bone,Thick Hide",
         "habitat": "Jungle,Mountain",
         "health": 140,
@@ -58341,7 +58341,7 @@
         "scientific_name": "Mammut americanum",
         "spawn_tiles": "tall_grass",
         "speed": 28,
-        "weight": 1
+        "weight": "9,000"
     },
     {
         "abilities": "Strong Jaw",
@@ -64756,11 +64756,11 @@
         "active_time": "any",
         "attack": 35,
         "category": "Flying, Aura",
-        "class": "Unknown",
+        "class": "Bird",
         "cry": "default",
         "defense": 30,
         "description": "This brightly colored bird flashes iridescent purple hues in sunlight while flying. It feeds on fruits and insects and often travels in small flocks.",
-        "diet": "Unknown",
+        "diet": "Frugivore",
         "drops": "feather",
         "habitat": "Savanna,Jungle",
         "health": 55,
@@ -64773,7 +64773,7 @@
         "scientific_name": "Cinnyricinclus leucogaster",
         "spawn_tiles": "tall_grass",
         "speed": 75,
-        "weight": 1
+        "weight": 0.051
     },
     {
         "abilities": "Aerilate",
@@ -67732,11 +67732,11 @@
         "active_time": "any",
         "attack": 37,
         "category": "Toxic, Earth",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 43,
         "description": "The American hog nosed skunk is a burrowing mammal adapted to arid regions. It uses its strong claws to dig for food and relies on its scent spray for defense.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "fur, scent gland",
         "habitat": "Desert, Plains",
         "health": 53,
@@ -67749,7 +67749,7 @@
         "scientific_name": "Conepatus leuconotus",
         "spawn_tiles": "tall_grass",
         "speed": 27,
-        "weight": 1
+        "weight": 3.35
     },
     {
         "abilities": "Stench",
@@ -67924,11 +67924,11 @@
         "active_time": "any",
         "attack": 58,
         "category": "Basic, Cryo",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 48,
         "description": "The American marten is a swift tree dwelling carnivore found in northern forests. It hunts small animals and moves easily between branches with agility.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "fur, meat",
         "habitat": "Taiga",
         "health": 65,
@@ -67941,7 +67941,7 @@
         "scientific_name": "Martes americana",
         "spawn_tiles": "tall_grass",
         "speed": 68,
-        "weight": 1
+        "weight": 1.15
     },
     {
         "abilities": "Chlorophyll",
@@ -68284,11 +68284,11 @@
         "active_time": "any",
         "attack": 72,
         "category": "Metal, Drake",
-        "class": "Unknown",
+        "class": "Reptile",
         "cry": "default",
         "defense": 88,
         "description": "Ampelosaurus is a massive titanosaur with thick armor plating along its body. It moved slowly but could withstand heavy attacks due to its immense size and durability.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "bone, hide",
         "habitat": "Plains",
         "health": 110,
@@ -68301,7 +68301,7 @@
         "scientific_name": "Ampelosaurus atacis",
         "spawn_tiles": "tall_grass",
         "speed": 30,
-        "weight": 1
+        "weight": 11500
     },
     {
         "abilities": "Punk Rock",
