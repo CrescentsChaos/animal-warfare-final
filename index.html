@@ -390,7 +390,7 @@
                 </div>
                 <div class="card-body">
                     <div class="card-type-row">
-                        ${types.slice(0, 2).map(t => `<span class="type-badge type-${t.toLowerCase()}"><img src="assets/icon/${t.toLowerCase()}.png" class="type-icon" alt="" onerror="this.style.display='none'">${t.toUpperCase()}</span>`).join('')}
+                        ${types.slice(0, 2).map(t => `<span class="type-badge type-${t.toLowerCase()}" title="${t.toUpperCase()}"><img src="assets/icon/${t.toLowerCase()}.png" class="type-icon" alt="${t}" onerror="this.style.display='none'"></span>`).join('')}
                     </div>
                     <div class="card-name">${org.name.toUpperCase()}</div>
                     <div class="card-sub">${org.scientific_name || ''}</div>
@@ -494,7 +494,7 @@
                     const tc = this.typeColor(md.type || 'basic');
                     return `<tr onclick="App.showMoveDetail('${mName.replace(/'/g, "\\'")}')">
                                 <td class="move-name">${mName}</td>
-                                <td><span class="type-badge type-${(md.type || 'basic').toLowerCase()}"><img src="assets/icon/${(md.type || 'basic').toLowerCase()}.png" class="type-icon" alt="" onerror="this.style.display='none'">${(md.type || 'basic').toUpperCase()}</span></td>
+                                <td><span class="type-badge type-${(md.type || 'basic').toLowerCase()}" title="${(md.type || 'basic').toUpperCase()}"><img src="assets/icon/${(md.type || 'basic').toLowerCase()}.png" class="type-icon" alt="${md.type || 'basic'}" onerror="this.style.display='none'"></span></td>
                                 <td class="move-val">${md.baseDamage || '—'}</td>
                                 <td class="move-val">${md.accuracy || '100'}</td>
                                 <td class="move-val">${md.stamina || '—'}</td>
@@ -527,7 +527,7 @@
                     </div>
                     <div class="detail-intro">
                         <div class="type-row">
-                            ${types.map(t => `<span class="type-badge type-${t.toLowerCase()}"><img src="assets/icon/${t.toLowerCase()}.png" class="type-icon" alt="" onerror="this.style.display='none'">${t.toUpperCase()}</span>`).join('')}
+                            ${types.map(t => `<span class="type-badge type-${t.toLowerCase()}" title="${t.toUpperCase()}"><img src="assets/icon/${t.toLowerCase()}.png" class="type-icon" alt="${t}" onerror="this.style.display='none'"></span>`).join('')}
                         </div>
                         <h2 class="detail-name">${org.name.toUpperCase()}</h2>
                         <div class="detail-sciname">${org.scientific_name || ''}</div>
@@ -601,7 +601,7 @@
                 <div class="move-detail-card">
                     <button class="close-move-overlay" onclick="this.parentElement.parentElement.remove()">✕</button>
                     <div class="move-detail-name">${mName.toUpperCase()}</div>
-                    <span class="type-badge type-${(md.type || 'basic').toLowerCase()}"><img src="assets/icon/${(md.type || 'basic').toLowerCase()}.png" class="type-icon" alt="" onerror="this.style.display='none'">${(md.type || 'basic').toUpperCase()}</span>
+                    <span class="type-badge type-${(md.type || 'basic').toLowerCase()}" title="${(md.type || 'basic').toUpperCase()}"><img src="assets/icon/${(md.type || 'basic').toLowerCase()}.png" class="type-icon" alt="${md.type || 'basic'}" onerror="this.style.display='none'"></span>
                     <div class="move-detail-stats">
                         <div class="mds-row"><span>POWER</span><b>${md.baseDamage || '—'}</b></div>
                         <div class="mds-row"><span>ACCURACY</span><b>${md.accuracy || '100'}%</b></div>
