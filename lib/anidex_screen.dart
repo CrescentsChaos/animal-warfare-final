@@ -63,8 +63,17 @@ class _AnidexScreenState extends State<AnidexScreen>
   String? _selectedDrop;
   String? _selectedClass;
   String? _selectedDiet;
+  String? _selectedWeight;
   String _sortBy = 'NAME';
   bool _isAscending = true;
+
+  static const List<String> _allWeights = [
+    '< 1 kg',
+    '1 - 10 kg',
+    '10 - 50 kg',
+    '50 - 100 kg',
+    '> 100 kg'
+  ];
 
   bool _isLoading = true;
 
@@ -223,6 +232,14 @@ class _AnidexScreenState extends State<AnidexScreen>
       }
       if (_selectedDiet != null && org.diet != _selectedDiet) {
         return false;
+      }
+      if (_selectedWeight != null) {
+        final w = org.weight;
+        if (_selectedWeight == '< 1 kg' && w >= 1) return false;
+        if (_selectedWeight == '1 - 10 kg' && (w < 1 || w >= 10)) return false;
+        if (_selectedWeight == '10 - 50 kg' && (w < 10 || w >= 50)) return false;
+        if (_selectedWeight == '50 - 100 kg' && (w < 50 || w >= 100)) return false;
+        if (_selectedWeight == '> 100 kg' && w < 100) return false;
       }
       return true;
     }).toList();
@@ -712,6 +729,12 @@ class _AnidexScreenState extends State<AnidexScreen>
                   (v) => setState(() => _selectedDiet = v),
                 ),
                 _buildSearchableFilter(
+                  'WEIGHT',
+                  _selectedWeight,
+                  _allWeights,
+                  (v) => setState(() => _selectedWeight = v),
+                ),
+                _buildSearchableFilter(
                   'ABILITY',
                   _selectedAbility,
                   _allAbilities,
@@ -790,6 +813,7 @@ class _AnidexScreenState extends State<AnidexScreen>
                   _selectedDrop = null;
                   _selectedClass = null;
                   _selectedDiet = null;
+                  _selectedWeight = null;
                   _sortBy = 'NAME';
                   _isAscending = true;
                 });

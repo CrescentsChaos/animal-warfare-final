@@ -127,6 +127,18 @@
                 </div>
 
                 <div class="filter-section">
+                    <div class="filter-label">WEIGHT</div>
+                    <select id="flt-weight" onchange="App.filter()">
+                        <option value="">All Weights</option>
+                        <option value="tiny">&lt; 1 kg</option>
+                        <option value="small">1 - 10 kg</option>
+                        <option value="medium">10 - 50 kg</option>
+                        <option value="large">50 - 100 kg</option>
+                        <option value="huge">&gt; 100 kg</option>
+                    </select>
+                </div>
+
+                <div class="filter-section">
                     <div class="filter-label">SORT BY</div>
                     <div class="sort-chips" id="sort-chips">
                         <button class="sort-chip active" data-sort="name" onclick="App.setSort('name')">NAME</button>
@@ -283,6 +295,7 @@
                 const drop = document.getElementById('flt-drop').value;
                 const aClass = document.getElementById('flt-class').value;
                 const aDiet = document.getElementById('flt-diet').value;
+                const weight = document.getElementById('flt-weight').value;
 
                 this.filtered = this.db.orgs.filter(o => {
                     if (q && !o.name.toLowerCase().includes(q) &&
@@ -297,6 +310,14 @@
                     if (drop && !(o.drops || '').includes(drop)) return false;
                     if (aClass && (o.class || o.animal_class) !== aClass) return false;
                     if (aDiet && o.diet !== aDiet) return false;
+                    if (weight) {
+                        const w = parseFloat(o.weight) || 0;
+                        if (weight === 'tiny' && w >= 1) return false;
+                        if (weight === 'small' && (w < 1 || w >= 10)) return false;
+                        if (weight === 'medium' && (w < 10 || w >= 50)) return false;
+                        if (weight === 'large' && (w < 50 || w >= 100)) return false;
+                        if (weight === 'huge' && w < 100) return false;
+                    }
                     return true;
                 });
 
@@ -514,6 +535,8 @@
 
                 const aClass = org.class || org.animal_class || 'Unknown';
                 const aDiet = org.diet || 'Unknown';
+                const aWeight = org.weight ? org.weight + ' KG' : 'Unknown';
+                const aActivity = org.active_time || org.activity || 'Unknown';
 
                 document.getElementById('modal-content').innerHTML = `
                 <div class="detail-header" style="background:linear-gradient(135deg, ${rarityColor}22 0%, transparent 60%)">
@@ -541,6 +564,20 @@
                                 <div class="badge-label">
                                     <span class="badge-type">Diet</span>
                                     <span class="badge-value">${aDiet.toUpperCase()}</span>
+                                </div>
+                            </div>
+                            <div class="class-badge">
+                                <div style="font-size:20px;line-height:22px;text-align:center;width:22px;">⚖️</div>
+                                <div class="badge-label">
+                                    <span class="badge-type">Weight</span>
+                                    <span class="badge-value">${aWeight.toUpperCase()}</span>
+                                </div>
+                            </div>
+                            <div class="class-badge">
+                                <div style="font-size:20px;line-height:22px;text-align:center;width:22px;">🕒</div>
+                                <div class="badge-label">
+                                    <span class="badge-type">Activity</span>
+                                    <span class="badge-value">${aActivity.toUpperCase()}</span>
                                 </div>
                             </div>
                         </div>
@@ -671,7 +708,7 @@
 
             reset() {
                 document.getElementById('q').value = '';
-                ['flt-biome', 'flt-cat1', 'flt-cat2', 'flt-rarity', 'flt-ability', 'flt-move', 'flt-drop', 'flt-class', 'flt-diet', 'flt-item-cat'].forEach(id => {
+                ['flt-biome', 'flt-cat1', 'flt-cat2', 'flt-rarity', 'flt-ability', 'flt-move', 'flt-drop', 'flt-class', 'flt-diet', 'flt-weight', 'flt-item-cat'].forEach(id => {
                     const el = document.getElementById(id);
                     if (el) el.selectedIndex = 0;
                 });
