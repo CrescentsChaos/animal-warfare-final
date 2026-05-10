@@ -66,6 +66,10 @@ class AnidexDetailsSheet {
                       const SizedBox(height: 24),
                     ],
                     _buildFieldIntel(organism),
+                    const SizedBox(height: 16),
+                    if (isDiscovered) ...[
+                      _buildClassificationSection(organism),
+                    ],
                     const SizedBox(height: 32),
                     _buildPremiumDescription(organism, isDiscovered),
                     const SizedBox(height: 32),
@@ -439,6 +443,88 @@ class AnidexDetailsSheet {
           ),
         ),
       ],
+    );
+  }
+
+  static Widget _buildClassificationSection(Organism org) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildClassificationBadge(
+              'CLASS',
+              org.animalClass,
+              'assets/icon/${org.animalClass.toLowerCase()}.png',
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: _buildClassificationBadge(
+              'DIET',
+              org.diet,
+              'assets/icon/${org.diet.toLowerCase()}.png',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static Widget _buildClassificationBadge(
+    String label,
+    String value,
+    String iconPath,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.03),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+      ),
+      child: Row(
+        children: [
+          Image.asset(
+            iconPath,
+            width: 24,
+            height: 24,
+            errorBuilder: (context, error, stackTrace) => const Icon(
+              Icons.help_outline,
+              color: Colors.white24,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color: Colors.white38,
+                    fontSize: 8,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    value.toUpperCase(),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontFamily: 'PressStart2P',
+                      fontSize: 7,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 

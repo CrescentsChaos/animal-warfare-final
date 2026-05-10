@@ -656,6 +656,56 @@ main {
     letter-spacing: 0.5px;
 }
 
+/* Classification Section */
+.classification-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.class-badge, .diet-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px 14px;
+    transition: var(--transition);
+}
+
+.class-badge:hover, .diet-badge:hover {
+    background: var(--accent-dim);
+    border-color: var(--accent);
+}
+
+.class-badge img, .diet-badge img {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+}
+
+.badge-label {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.badge-type {
+    font-size: 8px;
+    color: var(--text-faint);
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.badge-value {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 7px;
+    color: #fff;
+    letter-spacing: 0.5px;
+}
+
 /* Detail Body */
 .detail-body {
     padding: 28px 32px;

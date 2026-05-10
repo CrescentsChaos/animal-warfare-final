@@ -33,6 +33,7 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
   List<ScanResult> _results = [];
   Uint8List? _imageBytes;
   Uint8List? _maskedBytes;
+  String _detectedClass = '';
   String _sortBy = 'Overall';
   final TextEditingController _hintController = TextEditingController();
   late AnimationController _pulseController;
@@ -909,7 +910,7 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
                 const SizedBox(width: 12),
                 _buildSpritePreview(spritePath),
                 const SizedBox(width: 16),
-                Expanded(child: _buildResultInfo(org, result.featureScores)),
+                Expanded(child: _buildResultInfo(result)),
                 const SizedBox(width: 12),
                 _buildConfidenceDisplay(result.confidence, color, pct),
               ],
@@ -950,19 +951,52 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
     );
   }
 
-  Widget _buildResultInfo(Organism org, Map<String, double> scores) {
+  Widget _buildResultInfo(ScanResult result) {
+    final org = result.organism;
+    final scores = result.featureScores;
+    final targetClass = result.organism.animalClass;
+    final isMatch = result.detectedClass != AnimalClass.unknown && 
+                    targetClass.toLowerCase() == result.detectedClass.name.toLowerCase();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          org.name,
-          style: GoogleFonts.inter(
-            color: Colors.white,
-            fontSize: 13,
-            fontWeight: FontWeight.bold,
-          ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                org.name,
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            if (targetClass.isNotEmpty)
+              Container(
+                margin: const EdgeInsets.only(left: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: isMatch ? Colors.cyanAccent.withAlpha(40) : Colors.white10,
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(
+                    color: isMatch ? Colors.cyanAccent.withAlpha(100) : Colors.white24,
+                    width: 0.5,
+                  ),
+                ),
+                child: Text(
+                  targetClass.toUpperCase(),
+                  style: GoogleFonts.shareTechMono(
+                    color: isMatch ? Colors.cyanAccent : Colors.white38,
+                    fontSize: 8,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+          ],
         ),
         Text(
           org.scientificName,

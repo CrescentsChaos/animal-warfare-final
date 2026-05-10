@@ -41,6 +41,8 @@ class _AnidexScreenState extends State<AnidexScreen>
   List<String> _allDrops = [];
   List<String> _allCategories = [];
   List<String> _allRarities = [];
+  List<String> _allClasses = [];
+  List<String> _allDiets = [];
 
   final TextEditingController _searchController = TextEditingController();
   late TabController _tabController;
@@ -58,6 +60,8 @@ class _AnidexScreenState extends State<AnidexScreen>
   String? _selectedAbility;
   String? _selectedMove;
   String? _selectedDrop;
+  String? _selectedClass;
+  String? _selectedDiet;
   String _sortBy = 'NAME';
   bool _isAscending = true;
 
@@ -156,6 +160,20 @@ class _AnidexScreenState extends State<AnidexScreen>
               .toSet()
               .toList()
             ..sort();
+      _allClasses =
+          _allOrganisms
+              .map((o) => o.animalClass)
+              .where((s) => s.isNotEmpty)
+              .toSet()
+              .toList()
+            ..sort();
+      _allDiets =
+          _allOrganisms
+              .map((o) => o.diet)
+              .where((s) => s.isNotEmpty)
+              .toSet()
+              .toList()
+            ..sort();
 
       _applyFilters();
     } catch (e) {
@@ -197,6 +215,12 @@ class _AnidexScreenState extends State<AnidexScreen>
         return false;
       }
       if (_selectedDrop != null && !org.drops.contains(_selectedDrop!)) {
+        return false;
+      }
+      if (_selectedClass != null && org.animalClass != _selectedClass) {
+        return false;
+      }
+      if (_selectedDiet != null && org.diet != _selectedDiet) {
         return false;
       }
       return true;
@@ -626,6 +650,18 @@ class _AnidexScreenState extends State<AnidexScreen>
                   (v) => setState(() => _selectedCategory2 = v),
                 ),
                 _buildSearchableFilter(
+                  'CLASS',
+                  _selectedClass,
+                  _allClasses,
+                  (v) => setState(() => _selectedClass = v),
+                ),
+                _buildSearchableFilter(
+                  'DIET',
+                  _selectedDiet,
+                  _allDiets,
+                  (v) => setState(() => _selectedDiet = v),
+                ),
+                _buildSearchableFilter(
                   'ABILITY',
                   _selectedAbility,
                   _allAbilities,
@@ -702,6 +738,8 @@ class _AnidexScreenState extends State<AnidexScreen>
                   _selectedAbility = null;
                   _selectedMove = null;
                   _selectedDrop = null;
+                  _selectedClass = null;
+                  _selectedDiet = null;
                   _sortBy = 'NAME';
                   _isAscending = true;
                 });

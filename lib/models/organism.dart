@@ -2,6 +2,17 @@
 import 'package:animal_warfare/models/elemental_type.dart';
 import 'dart:math';
 
+enum AnimalClass {
+  mammal,
+  bird,
+  fish,
+  amphibian,
+  reptile,
+  insect,
+  invertebrate,
+  unknown,
+}
+
 class Organism {
   final String name;
   final String scientificName;
@@ -25,8 +36,9 @@ class Organism {
   final String cry; // NEW: Audio file for name for cry
   final String
   spawnTiles; // NEW: Spawning tiles (comma-separated, e.g., "tall_grass,water,any")
-  final String
-  pheno; // NEW: Overworld sprite prefix (e.g., "giant_water_bug"), or "none"
+  final String pheno; // NEW: Overworld sprite prefix (e.g., "giant_water_bug"), or "none"
+  final String animalClass; // NEW: Taxonomic class (mammal, bird, etc.)
+  final String diet; // NEW: Diet (carnivore, herbivore, etc.)
 
   Organism({
     required this.name,
@@ -51,6 +63,8 @@ class Organism {
     this.cry = 'default', // Default
     this.spawnTiles = 'any', // Default
     this.pheno = 'none', // Default
+    this.animalClass = 'unknown', // Default
+    this.diet = 'unknown', // Default
   });
 
   factory Organism.fromJson(Map<String, dynamic> json) {
@@ -101,6 +115,8 @@ class Organism {
       cry: (json['cry'] as String? ?? 'default'),
       spawnTiles: (json['spawn_tiles'] as String? ?? 'any'),
       pheno: (json['pheno'] as String? ?? 'none'),
+      animalClass: (json['class'] ?? json['animal_class'] as String? ?? 'unknown'),
+      diet: (json['diet'] as String? ?? 'unknown'),
     );
   }
 
@@ -149,6 +165,8 @@ class Organism {
     String? cry,
     String? spawnTiles,
     String? pheno,
+    String? animalClass,
+    String? diet,
   }) {
     return Organism(
       name: name ?? this.name,
@@ -173,6 +191,8 @@ class Organism {
       cry: cry ?? this.cry,
       spawnTiles: spawnTiles ?? this.spawnTiles,
       pheno: pheno ?? this.pheno,
+      animalClass: animalClass ?? this.animalClass,
+      diet: diet ?? this.diet,
     );
   }
 
@@ -200,6 +220,8 @@ class Organism {
       'cry': cry,
       'spawn_tiles': spawnTiles,
       'pheno': pheno,
+      'class': animalClass,
+      'diet': diet,
     };
   }
 
@@ -266,6 +288,8 @@ class Organism {
     activeTime: 'any',
     cry: 'default',
     spawnTiles: 'any',
+    animalClass: 'mammal',
+    diet: 'omnivore',
   );
 
   static final Organism trainingDummy = Organism(
@@ -289,5 +313,7 @@ class Organism {
     activeTime: 'any',
     cry: 'default',
     spawnTiles: 'any',
+    animalClass: 'unknown',
+    diet: 'unknown',
   );
 }

@@ -113,6 +113,20 @@
                 </div>
 
                 <div class="filter-section">
+                    <div class="filter-label">CLASS</div>
+                    <select id="flt-class" onchange="App.filter()">
+                        <option value="">All Classes</option>
+                    </select>
+                </div>
+
+                <div class="filter-section">
+                    <div class="filter-label">DIET</div>
+                    <select id="flt-diet" onchange="App.filter()">
+                        <option value="">All Diets</option>
+                    </select>
+                </div>
+
+                <div class="filter-section">
                     <div class="filter-label">SORT BY</div>
                     <div class="sort-chips" id="sort-chips">
                         <button class="sort-chip active" data-sort="name" onclick="App.setSort('name')">NAME</button>
@@ -230,6 +244,14 @@
                 const drops = [...new Set(orgs.flatMap(o => (o.drops || '').split(',').map(s => s.trim()).filter(Boolean)))].sort();
                 this._populate('flt-drop', drops);
 
+                // Classes
+                const classes = [...new Set(orgs.map(o => o.class || o.animal_class).filter(Boolean))].sort();
+                this._populate('flt-class', classes);
+
+                // Diets
+                const diets = [...new Set(orgs.map(o => o.diet).filter(Boolean))].sort();
+                this._populate('flt-diet', diets);
+
                 // Item categories
                 const itemCats = [...new Set(this.db.items.map(i => i.category || '').filter(Boolean))].sort();
                 this._populate('flt-item-cat', itemCats);
@@ -259,6 +281,8 @@
                 const ability = document.getElementById('flt-ability').value;
                 const move = document.getElementById('flt-move').value;
                 const drop = document.getElementById('flt-drop').value;
+                const aClass = document.getElementById('flt-class').value;
+                const aDiet = document.getElementById('flt-diet').value;
 
                 this.filtered = this.db.orgs.filter(o => {
                     if (q && !o.name.toLowerCase().includes(q) &&
@@ -271,6 +295,8 @@
                     if (ability && !(o.abilities || '').includes(ability)) return false;
                     if (move && !(o.moves || '').includes(move)) return false;
                     if (drop && !(o.drops || '').includes(drop)) return false;
+                    if (aClass && (o.class || o.animal_class) !== aClass) return false;
+                    if (aDiet && o.diet !== aDiet) return false;
                     return true;
                 });
 
@@ -489,6 +515,9 @@
                     ? drops.map(d => `<span class="drop-tag">${d}</span>`).join('')
                     : '<span class="dim">No drops</span>';
 
+                const aClass = org.class || org.animal_class || 'Unknown';
+                const aDiet = org.diet || 'Unknown';
+
                 document.getElementById('modal-content').innerHTML = `
                 <div class="detail-header" style="background:linear-gradient(135deg, ${rarityColor}22 0%, transparent 60%)">
                     <div class="detail-sprite-wrap">
@@ -502,7 +531,23 @@
                         </div>
                         <h2 class="detail-name">${org.name.toUpperCase()}</h2>
                         <div class="detail-sciname">${org.scientific_name || ''}</div>
-                        <span class="rarity-pill" style="background:${rarityColor}22;color:${rarityColor};border-color:${rarityColor}55">${rarity.toUpperCase()}</span>
+                        <div class="classification-row">
+                            <div class="class-badge">
+                                <img src="assets/icon/${aClass.toLowerCase()}.png" alt="${aClass}" onerror="this.src='assets/icon/unknown.png'">
+                                <div class="badge-label">
+                                    <span class="badge-type">Class</span>
+                                    <span class="badge-value">${aClass.toUpperCase()}</span>
+                                </div>
+                            </div>
+                            <div class="diet-badge">
+                                <img src="assets/icon/${aDiet.toLowerCase()}.png" alt="${aDiet}" onerror="this.src='assets/icon/unknown.png'">
+                                <div class="badge-label">
+                                    <span class="badge-type">Diet</span>
+                                    <span class="badge-value">${aDiet.toUpperCase()}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="rarity-pill" style="background:${rarityColor}22;color:${rarityColor};border-color:${rarityColor}55;margin-top:10px;">${rarity.toUpperCase()}</span>
                     </div>
                 </div>
 
@@ -629,7 +674,7 @@
 
             reset() {
                 document.getElementById('q').value = '';
-                ['flt-biome', 'flt-cat1', 'flt-cat2', 'flt-rarity', 'flt-ability', 'flt-move', 'flt-drop', 'flt-item-cat'].forEach(id => {
+                ['flt-biome', 'flt-cat1', 'flt-cat2', 'flt-rarity', 'flt-ability', 'flt-move', 'flt-drop', 'flt-class', 'flt-diet', 'flt-item-cat'].forEach(id => {
                     const el = document.getElementById(id);
                     if (el) el.selectedIndex = 0;
                 });

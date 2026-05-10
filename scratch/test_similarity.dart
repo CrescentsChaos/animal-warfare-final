@@ -1,7 +1,16 @@
 
-import 'dart:io';
 import 'dart:math';
-import 'package:image/image.dart' as img;
+
+enum AnimalClass {
+  mammal,
+  bird,
+  fish,
+  amphibian,
+  reptile,
+  insect,
+  invertebrate,
+  unknown,
+}
 
 class OrganismFeature {
   final String organismName;
@@ -29,8 +38,13 @@ class OrganismFeature {
   });
 }
 
-// Copy of the logic from BiometricService.dart
-Map<String, double> featureSimilarity(OrganismFeature f1, OrganismFeature f2) {
+Map<String, double> featureSimilarity(
+  OrganismFeature f1, 
+  OrganismFeature f2, {
+  AnimalClass? inputClass,
+  AnimalClass? targetClass,
+  double classConfidence = 0.0,
+}) {
   double globalColorMatch = 0;
   f1.hueBins.forEach((key, val) {
     if (val == 0) return;
@@ -55,12 +69,9 @@ Map<String, double> featureSimilarity(OrganismFeature f1, OrganismFeature f2) {
         spatialSum += min(val, f2.spatialHueBins![key]!);
       }
     });
-    
-    // Count active grid cells (e.g. "g00", "g11")
     final cells1 = f1.spatialHueBins!.keys.map((k) => k.substring(0, 3)).toSet().length;
     final cells2 = f2.spatialHueBins!.keys.map((k) => k.substring(0, 3)).toSet().length;
     final maxCells = max(cells1, cells2);
-    
     if (maxCells > 0) {
       spatialMatch = (spatialSum / maxCells).clamp(0.0, 1.0);
     }
@@ -68,10 +79,10 @@ Map<String, double> featureSimilarity(OrganismFeature f1, OrganismFeature f2) {
   
   final colorMatch = (globalColorMatch * 0.5 + spatialMatch * 0.5).clamp(0.0, 1.0);
 
-  final aspectDiff = (log(f1.aspectRatio) - log(f2.aspectRatio)).abs();
+  final aspectDiff = (f1.aspectRatio - f2.aspectRatio).abs();
   final solidityDiff = (f1.solidity - f2.solidity).abs();
-  final aspectScore = pow((1.0 - (aspectDiff * 0.6)).clamp(0.0, 1.0), 1.5).toDouble();
-  final solidityScore = pow((1.0 - (solidityDiff * 1.6)).clamp(0.0, 1.0), 1.5).toDouble();
+  final aspectScore = (1.0 - (aspectDiff * 0.6)).clamp(0.0, 1.0);
+  final solidityScore = (1.0 - (solidityDiff * 1.6)).clamp(0.0, 1.0);
   final shapeMatch = (aspectScore * 0.6) + (solidityScore * 0.4);
 
   final symDiff = (f1.verticalSymmetry - f2.verticalSymmetry).abs() +
@@ -89,37 +100,77 @@ Map<String, double> featureSimilarity(OrganismFeature f1, OrganismFeature f2) {
                  (shapeMatch * 0.15) + 
                  (patternMatch * 0.05);
   
+  // Biometric Gating
   if (colorMatch < 0.12) total *= 0.20; 
 
-  if (total > 0.92) total = 1.0;
-  if (total < 0.15) total = 0.0;
+  // Taxonomic Gating
+  if (inputClass != null && targetClass != null && 
+      inputClass != AnimalClass.unknown && targetClass != AnimalClass.unknown) {
+    if (inputClass != targetClass) {
+      final penalty = 0.1 + (0.4 * (1.0 - classConfidence)); 
+      total *= penalty.clamp(0.1, 0.8);
+    } else {
+      total *= (1.0 + (0.15 * classConfidence));
+    }
+  }
 
   return {
     'total': total,
     'Color': colorMatch,
     'Shape': shapeMatch,
     'Pattern': patternMatch,
-    'Shade': combinedShade,
-    'GlobalColor': globalColorMatch,
-    'SpatialMatch': spatialMatch,
+    'TaxMatch': (inputClass == targetClass && inputClass != AnimalClass.unknown) ? 1.0 : 0.0,
   };
 }
 
 void main() {
-  // Mock feature for Longnose Butterflyfish
-  final f = OrganismFeature(
-    organismName: 'Longnose Butterflyfish',
-    hueBins: {'h60': 1.0}, // Pure yellow
-    spatialHueBins: {'g11_h60': 1.0}, // Only center grid cell has yellow
-    avgBrightness: 0.75,
-    avgSaturation: 0.8,
-    aspectRatio: 1.47,
-    solidity: 0.7,
-    verticalSymmetry: 0.8,
-    horizontalSymmetry: 0.6,
-    edgeDensity: 0.1,
+  print('--- SCENARIO: Siberian Tiger vs. Toad ---');
+  
+  final tigerFeature = OrganismFeature(
+    organismName: 'Siberian Tiger',
+    hueBins: {'h30': 0.8, 'h0': 0.2}, // Orange/White
+    avgBrightness: 0.6,
+    avgSaturation: 0.7,
+    aspectRatio: 1.5,
+    solidity: 0.8,
+    verticalSymmetry: 0.7,
+    horizontalSymmetry: 0.5,
+    edgeDensity: 0.2,
   );
 
-  final result = featureSimilarity(f, f);
-  print('Result for identical match: $result');
+  final toadFeature = OrganismFeature(
+    organismName: 'Asian Common Toad',
+    hueBins: {'h40': 0.7, 'h20': 0.3}, // Brownish
+    avgBrightness: 0.4,
+    avgSaturation: 0.3,
+    aspectRatio: 1.2,
+    solidity: 0.9,
+    verticalSymmetry: 0.9,
+    horizontalSymmetry: 0.8,
+    edgeDensity: 0.4,
+  );
+
+  // Case 1: No taxonomic gating (Legacy)
+  final legacyResult = featureSimilarity(tigerFeature, toadFeature);
+  print('Legacy Score (Tiger vs Toad): ${legacyResult['total']!.toStringAsFixed(3)}');
+
+  // Case 2: Taxonomic gating (Mammal vs Amphibian)
+  final gatedResult = featureSimilarity(
+    tigerFeature, 
+    toadFeature,
+    inputClass: AnimalClass.mammal,
+    targetClass: AnimalClass.amphibian,
+    classConfidence: 0.9,
+  );
+  print('Gated Score (Tiger vs Toad): ${gatedResult['total']!.toStringAsFixed(3)}');
+
+  print('\n--- SCENARIO: Siberian Tiger vs. Siberian Tiger ---');
+  final perfectResult = featureSimilarity(
+    tigerFeature, 
+    tigerFeature,
+    inputClass: AnimalClass.mammal,
+    targetClass: AnimalClass.mammal,
+    classConfidence: 1.0,
+  );
+  print('Perfect Match Score: ${perfectResult['total']!.toStringAsFixed(3)}');
 }

@@ -14,6 +14,7 @@ import 'package:http/http.dart' as http;
 import 'package:animal_warfare/models/organism.dart';
 import 'package:animal_warfare/services/segmentation_service.dart';
 import 'package:animal_warfare/services/feature_db_service.dart';
+import 'package:animal_warfare/services/taxonomy_service.dart';
 
 /// A scored match result from the biometric scanner.
 class ScanResult {
@@ -24,6 +25,7 @@ class ScanResult {
   final Uint8List? maskedImage; // The segmented subject image
   final Map<String, double> featureScores; // Breakdown of match reasons
   final bool isGenusMate;
+  final AnimalClass detectedClass;
 
   ScanResult({
     required this.organism,
@@ -33,6 +35,7 @@ class ScanResult {
     this.maskedImage,
     this.featureScores = const {},
     this.isGenusMate = false,
+    this.detectedClass = AnimalClass.unknown,
   });
 }
 
@@ -116,6 +119,9 @@ class BiometricService {
 
   /// SQLite-backed feature database.
   final FeatureDbService _featureDb = FeatureDbService();
+
+  /// Taxonomic classification service.
+  final TaxonomyService _taxonomy = TaxonomyService();
 
   /// Whether native ML segmentation is available on this device.
   bool get isNativeSegmentationAvailable => _segmentation.isAvailable;
@@ -536,6 +542,16 @@ class BiometricService {
     if (!_isInitialized) await initialize();
     if (_organisms == null || _organisms!.isEmpty) return [];
 
+    // 0. Taxonomic Classification (Early Gate)
+    onProgress?.call('Categorizing Subject...', 0.02);
+    final taxonomyResult = await _taxonomy.classifyImage(imageBytes);
+    final AnimalClass detectedClass = taxonomyResult['class'] ?? AnimalClass.unknown;
+    final double classConfidence = taxonomyResult['confidence'] ?? 0.0;
+    
+    if (detectedClass != AnimalClass.unknown) {
+      onProgress?.call('Subject Type: ${detectedClass.name.toUpperCase()}', 0.05);
+    }
+
     onProgress?.call('Decoding image...', 0.05);
     final img.Image? fullImg = img.decodeImage(imageBytes);
     if (fullImg == null) return [];
@@ -584,28 +600,24 @@ class BiometricService {
     // Normalize hint
     final normalizedHint = hint?.toLowerCase().trim();
 
-    // Step 2: Detect potential category keywords from image colors
+    // Step 4: Detect potential category keywords from image colors
     onProgress?.call('Running pattern recognition...', 0.20);
     final detectedCategories = _detectCategoriesFromColors(inputFeature);
 
-    // Step 3: Score all organisms
+    // Step 5: Score all organisms
     final results = <ScanResult>[];
     final totalOrgs = _organisms!.length;
     int processed = 0;
 
     for (final org in _organisms!) {
       processed++;
-      if (processed % 200 == 0) {
-        onProgress?.call(
-          'Matching against database... (${(processed * 100 / totalOrgs).toInt()}%)',
-          0.20 + (processed / totalOrgs) * 0.60,
-        );
-        await Future.delayed(Duration.zero);
+      if (processed % 100 == 0) {
+        onProgress?.call('Matching biometric signatures...', 0.20 + (0.60 * (processed / totalOrgs)));
       }
 
       var cachedFeature = _spriteFeatures?[org.name];
       if (cachedFeature == null) {
-        // Fallback for new animals: compute features on-the-fly from local sprite
+        // Fallback: compute features on-the-fly from local sprite
         cachedFeature = await _extractSpriteFeature(org.name);
         if (cachedFeature != null) {
           _spriteFeatures?[org.name] = cachedFeature;
@@ -613,14 +625,21 @@ class BiometricService {
       }
       if (cachedFeature == null) continue;
 
-      final similarity = _featureSimilarity(inputFeature, cachedFeature);
+      final targetClass = _mapStringToAnimalClass(org.animalClass);
+      final similarity = _featureSimilarity(
+        inputFeature, 
+        cachedFeature,
+        inputClass: detectedClass,
+        targetClass: targetClass,
+        classConfidence: classConfidence,
+      );
       
-      // Strict Feature Filter: "Grey" threshold is 0.5
-      // If any core feature (Color, Shape, Pattern, Shade) is ≤ 0.5, discard the species.
-      bool hasGreyFeature = (similarity['Color'] ?? 0) <= 0.5 ||
-                            (similarity['Shape'] ?? 0) <= 0.5 ||
-                            (similarity['Pattern'] ?? 0) <= 0.5 ||
-                            (similarity['Shade'] ?? 0) <= 0.5;
+      // Strict Feature Filter: "Grey" threshold is 0.4
+      // If any core feature (Color, Shape, Pattern, Shade) is ≤ 0.4, discard the species.
+      bool hasGreyFeature = (similarity['Color'] ?? 0) <= 0.4 ||
+                            (similarity['Shape'] ?? 0) <= 0.4 ||
+                            (similarity['Pattern'] ?? 0) <= 0.4 ||
+                            (similarity['Shade'] ?? 0) <= 0.4;
       
       if (hasGreyFeature) {
         continue;
@@ -650,12 +669,13 @@ class BiometricService {
 
       if (score > 0.15) {
         results.add(ScanResult(
-          organism: org,
-          confidence: score,
-          matchReason: 'Biometric Match',
-          maskedImage: maskedBytes,
-          featureScores: similarity,
-        ));
+        organism: org,
+        confidence: score,
+        matchReason: 'Biometric Signature Match',
+        maskedImage: maskedBytes,
+        featureScores: similarity,
+        detectedClass: detectedClass,
+      ));
       }
     }
 
@@ -790,36 +810,35 @@ class BiometricService {
   }
 
   /// Calculates a logical similarity breakdown between two features.
-  Map<String, double> _featureSimilarity(OrganismFeature f1, OrganismFeature f2) {
+  Map<String, double> _featureSimilarity(
+    OrganismFeature f1, 
+    OrganismFeature f2, {
+    AnimalClass? inputClass,
+    AnimalClass? targetClass,
+    double classConfidence = 0.0,
+  }) {
     // 1. Global Color Match (with adjacent bin smoothing for lighting tolerance)
     double globalColorMatch = 0;
     f1.hueBins.forEach((key, val) {
       if (val == 0) return;
-      
-      if (key.startsWith('h')) {
-        // Handle chromatic hue bins (h0, h10, ...)
-        if (key.length > 2 && int.tryParse(key.substring(1)) != null) {
-          int hue = int.parse(key.substring(1));
-          double exact = f2.hueBins[key] ?? 0;
-          
-          int prevHue = (hue - 10) % 360;
-          if (prevHue < 0) prevHue += 360;
-          int nextHue = (hue + 10) % 360;
-          
-          double prevVal = f2.hueBins['h$prevHue'] ?? 0;
-          double nextVal = f2.hueBins['h$nextHue'] ?? 0;
-          
-          double effectiveF2 = exact + (prevVal * 0.3) + (nextVal * 0.3);
-          globalColorMatch += min(val, effectiveF2);
-        } else {
-          // Handle achromatic bins (hWhite, hBlack, hGrey)
-          globalColorMatch += min(val, f2.hueBins[key] ?? 0);
-        }
-      }
+      int hue = int.tryParse(key.replaceAll('h', '')) ?? -1;
+      if (hue == -1) return;
+
+      // Check current bin and neighbors for fuzzy matching
+      double exact = f2.hueBins[key] ?? 0;
+      int prevHue = (hue - 10) % 360;
+      if (prevHue < 0) prevHue += 360;
+      int nextHue = (hue + 10) % 360;
+      double prevVal = f2.hueBins['h$prevHue'] ?? 0;
+      double nextVal = f2.hueBins['h$nextHue'] ?? 0;
+
+      // Effective target mass for this hue
+      double effectiveF2 = exact + (prevVal * 0.5) + (nextVal * 0.5);
+      globalColorMatch += min(val, effectiveF2);
     });
     globalColorMatch = globalColorMatch.clamp(0.0, 1.0);
 
-    // 1b. Spatial Color Match (The "Pattern" of colors)
+    // 2. Spatial Color Match (Grid-based verification)
     double spatialMatch = globalColorMatch; 
     if (f1.spatialHueBins != null && f2.spatialHueBins != null) {
       double spatialSum = 0;
@@ -829,62 +848,64 @@ class BiometricService {
         }
       });
       
-      final activeCells1 = f1.spatialHueBins!.keys.map((k) => k.substring(0, 3)).toSet().length;
-      final activeCells2 = f2.spatialHueBins!.keys.map((k) => k.substring(0, 3)).toSet().length;
-      final maxActiveCells = max(activeCells1, activeCells2);
-
-      if (maxActiveCells > 0) {
-        spatialMatch = (spatialSum / maxActiveCells).clamp(0.0, 1.0);
+      // Count active grid cells (e.g. "g00", "g11")
+      final cells1 = f1.spatialHueBins!.keys.map((k) => k.substring(0, 3)).toSet().length;
+      final cells2 = f2.spatialHueBins!.keys.map((k) => k.substring(0, 3)).toSet().length;
+      final maxCells = max(cells1, cells2);
+      
+      if (maxCells > 0) {
+        spatialMatch = (spatialSum / maxCells).clamp(0.0, 1.0);
       }
     }
     
-    // Weighted Color: Spatial is more accurate for real organisms
-    final colorMatch = (globalColorMatch * 0.3 + spatialMatch * 0.7).clamp(0.0, 1.0);
+    // Weighted color score
+    final colorMatch = (globalColorMatch * 0.5 + spatialMatch * 0.5).clamp(0.0, 1.0);
 
-    // 2. Shape Match
+    // 3. Shape Analysis (Aspect Ratio & Solidity)
     final aspectDiff = (log(f1.aspectRatio) - log(f2.aspectRatio)).abs();
     final solidityDiff = (f1.solidity - f2.solidity).abs();
     
-    final aspectScore = pow((1.0 - (aspectDiff * 0.8)).clamp(0.0, 1.0), 1.5).toDouble();
-    final solidityScore = pow((1.0 - (solidityDiff * 2.0)).clamp(0.0, 1.0), 1.5).toDouble();
-    
-    final shapeMatch = (aspectScore * 0.5) + (solidityScore * 0.5);
+    // Parabolic penalty for shape mismatch
+    final aspectScore = pow((1.0 - (aspectDiff * 0.6)).clamp(0.0, 1.0), 1.5).toDouble();
+    final solidityScore = pow((1.0 - (solidityDiff * 1.6)).clamp(0.0, 1.0), 1.5).toDouble();
+    final shapeMatch = (aspectScore * 0.6) + (solidityScore * 0.4);
 
-    // 3. Structural Match (Symmetry and Edge Density)
+    // 4. Pattern Analysis (Symmetry & Edge Density)
     final symDiff = (f1.verticalSymmetry - f2.verticalSymmetry).abs() +
                     (f1.horizontalSymmetry - f2.horizontalSymmetry).abs();
     final edgeDiff = (f1.edgeDensity - f2.edgeDensity).abs();
-    final edgeScore = (1.0 - (edgeDiff * 4.0)).clamp(0.0, 1.0);
-    final patternMatch = (1.0 - (symDiff / 2.0)).clamp(0.0, 1.0) * 0.2 + (edgeScore * 0.8);
+    final edgeScore = (1.0 - (edgeDiff * 3.0)).clamp(0.0, 1.0);
+    final patternMatch = (1.0 - (symDiff / 2.0)).clamp(0.0, 1.0) * 0.3 + (edgeScore * 0.7);
 
-    // 4. Shade & Intensity
+    // 5. Shade & Saturation Match
     final shadeMatch = (1.0 - (f1.avgBrightness - f2.avgBrightness).abs()).clamp(0.0, 1.0);
     final satMatch = (1.0 - (f1.avgSaturation - f2.avgSaturation).abs()).clamp(0.0, 1.0);
-    final combinedShade = (shadeMatch * 0.6 + satMatch * 0.4).clamp(0.0, 1.0);
+    final combinedShade = (shadeMatch * 0.7 + satMatch * 0.3).clamp(0.0, 1.0);
 
-    // Weighted Total
-    double total = (colorMatch * 0.40) + 
-                   (combinedShade * 0.30) + 
-                   (patternMatch * 0.25) + 
-                   (shapeMatch * 0.05);
+    // 6. Aggregate Score Calculation
+    double total = (colorMatch * 0.45) + 
+                  (combinedShade * 0.35) + 
+                  (shapeMatch * 0.15) + 
+                  (patternMatch * 0.05);
     
-    // STRICT CROSS-SPECIES FILTERS
-    // If color or pattern match is very low, it's definitely not the same species
-    if (colorMatch < 0.3 || patternMatch < 0.4) {
-      total *= 0.1;
+    // Biometric Gating: Strict filter for impossible matches
+    if (colorMatch < 0.12) total *= 0.20; // Color mismatch is fatal
+    
+    // Taxonomic Gating: Penalty for biological class mismatch
+    if (inputClass != null && targetClass != null && 
+        inputClass != AnimalClass.unknown && targetClass != AnimalClass.unknown) {
+      if (inputClass != targetClass) {
+        // Massive penalty if classes are different and we are confident
+        final penalty = 0.1 + (0.4 * (1.0 - classConfidence)); 
+        total *= penalty.clamp(0.1, 0.8);
+      } else {
+        // Boost if classes match and we are confident
+        total *= (1.0 + (0.15 * classConfidence));
+      }
     }
 
     if (total > 0.95) total = 1.0;
     if (total < 0.15) total = 0.0;
-
-    // Detailed debug logging for top candidates to diagnose identification failures
-    if (total > 0.3) {
-      debugPrint('Similarity [${f2.organismName}]: Total=${total.toStringAsFixed(3)} '
-          '(CLR=${colorMatch.toStringAsFixed(2)}, SHP=${shapeMatch.toStringAsFixed(2)}, '
-          'PAT=${patternMatch.toStringAsFixed(2)}, SHD=${combinedShade.toStringAsFixed(2)})');
-      debugPrint('  Detail: Brightness Delta=${(f1.avgBrightness - f2.avgBrightness).abs().toStringAsFixed(2)}, '
-          'Aspect Ratio: ${f1.aspectRatio.toStringAsFixed(2)} vs ${f2.aspectRatio.toStringAsFixed(2)}');
-    }
 
     return {
       'total': total,
@@ -1071,5 +1092,18 @@ class BiometricService {
     }
 
     return features;
+  }
+
+  AnimalClass _mapStringToAnimalClass(String? s) {
+    switch (s?.toLowerCase()) {
+      case 'mammal': return AnimalClass.mammal;
+      case 'bird': return AnimalClass.bird;
+      case 'fish': return AnimalClass.fish;
+      case 'amphibian': return AnimalClass.amphibian;
+      case 'reptile': return AnimalClass.reptile;
+      case 'insect': return AnimalClass.insect;
+      case 'invertebrate': return AnimalClass.invertebrate;
+      default: return AnimalClass.unknown;
+    }
   }
 }
