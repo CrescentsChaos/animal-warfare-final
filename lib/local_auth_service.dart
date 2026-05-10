@@ -306,6 +306,20 @@ class UserData {
     return copyWith(money: newMoney);
   }
 
+  int get xpToNextLevel => accountLevel * 200;
+
+  UserData addXP(int amount) {
+    int newXP = accountXP + amount;
+    int newLevel = accountLevel;
+    
+    while (newXP >= (newLevel * 200)) {
+      newXP -= (newLevel * 200);
+      newLevel++;
+    }
+    
+    return copyWith(accountLevel: newLevel, accountXP: newXP);
+  }
+
   Map<String, dynamic> toJson() => {
     'username': username,
     'password': password,
@@ -836,24 +850,94 @@ class LocalAuthService {
   Future<void> updateQuizStats(
     String username,
     String quizName,
-    bool isCorrect,
-  ) async {
+    bool isCorrect, {
+    String difficulty = 'Normal',
+    int points = 0,
+    int streak = 0,
+  }) async {
     final user = await readUserFile(username);
     if (user == null) return;
 
-    final current = Map.from(
-      user.quizStats[quizName] ?? {'attempts': 0, 'correct': 0},
-    );
-    final newStats = {
-      ...user.quizStats,
-      quizName: {
-        ...current,
-        'attempts': (current['attempts'] as int) + 1,
-        'correct': (current['correct'] as int) + (isCorrect ? 1 : 0),
-        'lastAttempt': DateTime.now().toIso8601String(),
-      },
+    final stats = Map<String, dynamic>.from(user.quizStats);
+    Map<String, dynamic> modeStats = Map<String, dynamic>.from(stats[quizName] ?? {});
+    
+    // Migration: if old format (direct keys), move to 'Normal' difficulty
+    if (modeStats.containsKey('attempts') && !modeStats.containsKey('Normal')) {
+      final oldData = Map<String, dynamic>.from(modeStats);
+      modeStats = {'Normal': oldData};
+    }
+
+    final diffStats = Map<String, dynamic>.from(modeStats[difficulty] ?? {
+      'attempts': 0,
+      'correct': 0,
+      'totalPoints': 0,
+      'bestStreak': 0,
+    });
+
+    final currentBestStreak = diffStats['bestStreak'] as int? ?? 0;
+
+    final newDiffStats = {
+      ...diffStats,
+      'attempts': (diffStats['attempts'] as int) + 1,
+      'correct': (diffStats['correct'] as int) + (isCorrect ? 1 : 0),
+      'totalPoints': (diffStats['totalPoints'] as int? ?? 0) + points,
+      'bestStreak': streak > currentBestStreak ? streak : currentBestStreak,
+      'lastAttempt': DateTime.now().toIso8601String(),
     };
-    await _writeUserFile(user.copyWith(quizStats: newStats));
+
+    modeStats[difficulty] = newDiffStats;
+    stats[quizName] = modeStats;
+
+    await _writeUserFile(user.copyWith(quizStats: stats));
+  }
+
+  Future<void> updateGameHighScore(
+    String username,
+    String gameName,
+    int score, {
+    String difficulty = 'Normal',
+  }) async {
+    final user = await readUserFile(username);
+    if (user == null) return;
+
+    final stats = Map<String, dynamic>.from(user.quizStats);
+    Map<String, dynamic> modeStats = Map<String, dynamic>.from(stats[gameName] ?? {});
+    
+    // Migration
+    if (modeStats.containsKey('attempts') && !modeStats.containsKey('Normal')) {
+      final oldData = Map<String, dynamic>.from(modeStats);
+      modeStats = {'Normal': oldData};
+    }
+
+    final diffStats = Map<String, dynamic>.from(modeStats[difficulty] ?? {
+      'attempts': 0,
+      'correct': 0, // In games, 'correct' field often stores High Score
+    });
+
+    final int currentHigh = diffStats['correct'] as int? ?? 0;
+    
+    final newDiffStats = {
+      ...diffStats,
+      'attempts': (diffStats['attempts'] as int) + 1,
+      'correct': score > currentHigh ? score : currentHigh,
+      'lastAttempt': DateTime.now().toIso8601String(),
+    };
+
+    modeStats[difficulty] = newDiffStats;
+    stats[gameName] = modeStats;
+
+    await _writeUserFile(user.copyWith(quizStats: stats));
+  }
+
+  Future<void> unlockAchievement(String username, String achievementTitle) async {
+    final user = await readUserFile(username);
+    if (user == null) return;
+
+    final achievements = List<String>.from(user.completedAchievements);
+    if (achievements.contains(achievementTitle)) return;
+    
+    achievements.add(achievementTitle);
+    await _writeUserFile(user.copyWith(completedAchievements: achievements));
   }
 
   Future<void> markOrganismAsDiscovered(
@@ -869,5 +953,11 @@ class LocalAuthService {
     await _writeUserFile(
       user.copyWith(discoveredOrganisms: discovered.toList()),
     );
+  }
+
+  Future<void> addExperience(String username, int amount) async {
+    final user = await readUserFile(username);
+    if (user == null) return;
+    await _writeUserFile(user.addXP(amount));
   }
 }

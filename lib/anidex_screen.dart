@@ -1127,11 +1127,18 @@ class __OrganismSpriteDisplayState extends State<_OrganismSpriteDisplay> {
     } catch (_) {
       setState(() {
         String spriteUrl = widget.organism.sprite;
-        // 🚨 FIX: Remove 'file:///' prefix if present (it breaks Image.network)
-        if (spriteUrl.startsWith('file:///')) {
-          spriteUrl = spriteUrl.replaceFirst('file:///', '');
+        if (spriteUrl.startsWith('http')) {
+          _imagePath = local; // Force it to remain the failed local path so the error builder kicks in
+        } else {
+          if (spriteUrl.startsWith('file:///')) {
+            spriteUrl = spriteUrl.replaceFirst('file:///', '');
+          }
+          if (spriteUrl.isNotEmpty) {
+            _imagePath = spriteUrl.startsWith('assets/') ? spriteUrl : 'assets/sprites/$spriteUrl';
+          } else {
+            _imagePath = local;
+          }
         }
-        _imagePath = spriteUrl;
       });
     }
   }

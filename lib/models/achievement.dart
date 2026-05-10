@@ -14,6 +14,10 @@ class Achievement {
   final int
   requiredSpecificCount; // Required number from the list, e.g., 1 or 5
   final int requiredFloor; // NEW: Floor reached in Rogue-like mode
+  final int requiredQuizCorrect; // NEW: Total quiz questions correct
+  final int requiredHardQuizCorrect; // NEW: Total Hard questions correct
+  final int requiredGenusQuizCorrect; // NEW: Total Genus questions correct
+  final int requiredQuizStreak; // NEW: Max streak reached in any quiz
   final String tier; // NEW: Medal tier (bronze, silver, gold)
   final String? imagePath; // NEW: Path to the achievement medal image
 
@@ -26,6 +30,10 @@ class Achievement {
     this.requiredOrganisms = const [],
     this.requiredSpecificCount = 0,
     this.requiredFloor = 0,
+    this.requiredQuizCorrect = 0,
+    this.requiredHardQuizCorrect = 0,
+    this.requiredGenusQuizCorrect = 0,
+    this.requiredQuizStreak = 0,
     this.tier = 'bronze',
     this.imagePath,
   });
@@ -44,6 +52,10 @@ class Achievement {
           [],
       requiredSpecificCount: json['requiredSpecificCount'] as int? ?? 0,
       requiredFloor: json['requiredFloor'] as int? ?? 0,
+      requiredQuizCorrect: json['requiredQuizCorrect'] as int? ?? 0,
+      requiredHardQuizCorrect: json['requiredHardQuizCorrect'] as int? ?? 0,
+      requiredGenusQuizCorrect: json['requiredGenusQuizCorrect'] as int? ?? 0,
+      requiredQuizStreak: json['requiredQuizStreak'] as int? ?? 0,
       tier: json['tier'] as String? ?? 'bronze',
       imagePath: json['imagePath'] as String?,
     );

@@ -1269,8 +1269,7 @@ class OrganismSpriteDisplay extends StatelessWidget {
   }
 
   String _getSpritePath() {
-    if (organism.sprite.startsWith('http')) return organism.sprite;
-    if (organism.sprite.isNotEmpty && !organism.sprite.contains(' ')) {
+    if (organism.sprite.isNotEmpty && !organism.sprite.startsWith('http') && !organism.sprite.contains(' ')) {
       if (organism.sprite.startsWith('assets/')) return organism.sprite;
       return 'assets/sprites/${organism.sprite}';
     }

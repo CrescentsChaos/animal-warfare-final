@@ -107,6 +107,55 @@ class AchievementService {
           user.bestRogueFloor >= achievement.requiredFloor;
     }
 
+    // 🆕 LOGIC 5: Quiz-related achievements
+    if (achievement.requiredQuizCorrect > 0 ||
+        achievement.requiredHardQuizCorrect > 0 ||
+        achievement.requiredGenusQuizCorrect > 0 ||
+        achievement.requiredQuizStreak > 0) {
+      int totalCorrect = 0;
+      int totalHardCorrect = 0;
+      int totalGenusCorrect = 0;
+      int maxStreak = 0;
+
+      user.quizStats.forEach((quizName, data) {
+        if (data is Map<String, dynamic>) {
+          // Check if new difficulty-based structure
+          bool isNewStructure =
+              data.keys.any((k) => k == 'easy' || k == 'normal' || k == 'hard');
+          if (isNewStructure) {
+            data.forEach((difficulty, stats) {
+              if (stats is Map<String, dynamic>) {
+                final correct = stats['correct'] as int? ?? 0;
+                final streak = stats['bestStreak'] as int? ?? 0;
+                totalCorrect += correct;
+                if (difficulty == 'hard') totalHardCorrect += correct;
+                if (quizName.toLowerCase().contains('genus')) {
+                  totalGenusCorrect += correct;
+                }
+                if (streak > maxStreak) maxStreak = streak;
+              }
+            });
+          } else {
+            // Old structure (flat map)
+            final correct = data['correct'] as int? ?? 0;
+            totalCorrect += correct;
+            // Best streak wasn't always tracked in old structure
+            final streak = data['bestStreak'] as int? ?? 0;
+            if (streak > maxStreak) maxStreak = streak;
+          }
+        }
+      });
+
+      if (achievement.requiredQuizCorrect > 0 &&
+          totalCorrect >= achievement.requiredQuizCorrect) return true;
+      if (achievement.requiredHardQuizCorrect > 0 &&
+          totalHardCorrect >= achievement.requiredHardQuizCorrect) return true;
+      if (achievement.requiredGenusQuizCorrect > 0 &&
+          totalGenusCorrect >= achievement.requiredGenusQuizCorrect) return true;
+      if (achievement.requiredQuizStreak > 0 &&
+          maxStreak >= achievement.requiredQuizStreak) return true;
+    }
+
     // Default to false if no condition is defined (or invalid achievement object)
     return false;
   }

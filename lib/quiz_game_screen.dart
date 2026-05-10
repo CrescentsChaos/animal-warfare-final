@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'dart:convert';
+import 'dart:async' as java_timer;
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:animal_warfare/local_auth_service.dart';
 import 'package:animal_warfare/models/organism.dart';
@@ -17,6 +18,30 @@ enum QuizType {
   spriteToScientific,
   silhouetteToName,
   silhouetteToScientific,
+  nameToClass,
+  nameToDiet,
+  spriteToType,
+  spriteToClass,
+  nameToGenus,
+  commonToGenus,
+  genusToCommon,
+  spriteToGenus,
+}
+
+enum QuizDifficulty {
+  easy,
+  normal,
+  hard,
+}
+
+extension QuizDifficultyExtension on QuizDifficulty {
+  String get name {
+    switch (this) {
+      case QuizDifficulty.easy: return 'Easy';
+      case QuizDifficulty.normal: return 'Normal';
+      case QuizDifficulty.hard: return 'Hard';
+    }
+  }
 }
 
 extension QuizTypeExtension on QuizType {
@@ -34,6 +59,22 @@ extension QuizTypeExtension on QuizType {
         return 'Silhouette to Name';
       case QuizType.silhouetteToScientific:
         return 'Silhouette to Scientific';
+      case QuizType.nameToClass:
+        return 'Taxonomy Expert';
+      case QuizType.nameToDiet:
+        return 'Dietary Analyst';
+      case QuizType.spriteToType:
+        return 'Elemental Affinity';
+      case QuizType.spriteToClass:
+        return 'Sprite to Class';
+      case QuizType.nameToGenus:
+        return 'Name to Genus';
+      case QuizType.commonToGenus:
+        return 'Common to Genus';
+      case QuizType.genusToCommon:
+        return 'Genus to Common';
+      case QuizType.spriteToGenus:
+        return 'Sprite to Genus';
     }
   }
 
@@ -51,6 +92,21 @@ extension QuizTypeExtension on QuizType {
         return 'Shadow challenge';
       case QuizType.silhouetteToScientific:
         return 'Expert biology';
+      case QuizType.nameToClass:
+        return 'Identify biological class';
+      case QuizType.nameToDiet:
+        return 'Identify feeding habits';
+      case QuizType.spriteToType:
+        return 'Identify elemental type';
+      case QuizType.spriteToClass:
+        return 'Identify class from sprite';
+      case QuizType.nameToGenus:
+      case QuizType.commonToGenus:
+        return 'Identify biological genus';
+      case QuizType.genusToCommon:
+        return 'Identify animal from genus';
+      case QuizType.spriteToGenus:
+        return 'Identify genus from sprite';
     }
   }
 
@@ -68,18 +124,33 @@ extension QuizTypeExtension on QuizType {
         return Icons.hide_image;
       case QuizType.silhouetteToScientific:
         return Icons.visibility_off;
+      case QuizType.nameToClass:
+        return Icons.category;
+      case QuizType.nameToDiet:
+        return Icons.restaurant;
+      case QuizType.spriteToType:
+        return Icons.whatshot;
+      case QuizType.spriteToClass:
+        return Icons.category;
+      case QuizType.nameToGenus:
+      case QuizType.commonToGenus:
+      case QuizType.genusToCommon:
+      case QuizType.spriteToGenus:
+        return Icons.account_tree;
     }
   }
 }
 
 class QuizGameScreen extends StatefulWidget {
   final QuizType quizType;
+  final QuizDifficulty difficulty;
   final UserData currentUser;
   final LocalAuthService authService;
 
   const QuizGameScreen({
     super.key,
     required this.quizType,
+    this.difficulty = QuizDifficulty.normal,
     required this.currentUser,
     required this.authService,
   });
@@ -89,14 +160,21 @@ class QuizGameScreen extends StatefulWidget {
 }
 
 class _QuizGameScreenState extends State<QuizGameScreen> {
+  List<Organism> _allOrganisms = [];
   Organism? _currentQuestion;
   List<Organism>? _currentOptions;
   String? _selectedAnswer;
   String? _correctAnswer;
   bool _isAnswered = false;
 
-  List<Organism> _allOrganisms = [];
   bool _isLoading = true;
+  
+  int _timeLeft = 10;
+  int _streak = 0;
+  int _points = 0;
+  int _totalCorrect = 0;
+  int _totalQuestions = 0;
+  java_timer.Timer? _timer;
 
   // 🟢 NEW: Store the current user data locally so we can update it
   late UserData _currentUser;
@@ -107,7 +185,22 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
 
   // 🔴 REMOVED: Soft hardcoded colors
 
-  static const int _numberOfOptions = 4;
+  int get _timerSeconds {
+    switch (widget.difficulty) {
+      case QuizDifficulty.easy: return 15;
+      case QuizDifficulty.normal: return 10;
+      case QuizDifficulty.hard: return 7;
+    }
+  }
+
+  int get _optionsCount {
+    switch (widget.difficulty) {
+      case QuizDifficulty.easy: return 3;
+      case QuizDifficulty.normal: return 4;
+      case QuizDifficulty.hard: return 6;
+    }
+  }
+
   static const int _delayAfterAnswerSeconds = 2; // Faster transition
 
   @override
@@ -127,6 +220,7 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
 
   @override
   void dispose() {
+    _timer?.cancel();
     _quizPlayer.dispose();
     _correctPlayer.dispose();
     _wrongPlayer.dispose();
@@ -161,11 +255,31 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
     }
   }
 
+  void _startTimer() {
+    _timer?.cancel();
+    setState(() => _timeLeft = _timerSeconds);
+    _timer = java_timer.Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) return;
+      if (_timeLeft > 0) {
+        setState(() => _timeLeft--);
+      } else {
+        _timer?.cancel();
+        _handleAnswer(""); // Timeout is a wrong answer
+      }
+    });
+  }
+
   void _startNewQuestion() {
     if (_allOrganisms.isEmpty) return;
-    final List<Organism> quizSource = _allOrganisms;
+    
+    List<Organism> quizSource = _allOrganisms;
+    if (widget.quizType == QuizType.nameToClass) {
+      quizSource = quizSource.where((o) => o.animalClass.toLowerCase() != 'unknown').toList();
+    } else if (widget.quizType == QuizType.nameToDiet) {
+      quizSource = quizSource.where((o) => o.diet.toLowerCase() != 'unknown').toList();
+    }
 
-    if (quizSource.length < _numberOfOptions) {
+    if (quizSource.length < _optionsCount) {
       setState(() {
         _isLoading = false;
         _currentQuestion = null;
@@ -179,15 +293,20 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
 
     final List<Organism> options = [_currentQuestion!];
     final Set<int> usedIndices = {questionIndex};
+    final Set<String> usedAnswers = {_getAnswerText(_currentQuestion!)};
 
-    while (options.length < _numberOfOptions) {
-      int decoyIndex;
-      do {
-        decoyIndex = random.nextInt(quizSource.length);
-      } while (usedIndices.contains(decoyIndex));
+    while (options.length < _optionsCount) {
+      int decoyIndex = random.nextInt(quizSource.length);
+      if (usedIndices.contains(decoyIndex)) continue;
+      
+      Organism decoy = quizSource[decoyIndex];
+      String decoyAnswer = _getAnswerText(decoy);
+      
+      if (usedAnswers.contains(decoyAnswer)) continue;
 
       usedIndices.add(decoyIndex);
-      options.add(quizSource[decoyIndex]);
+      usedAnswers.add(decoyAnswer);
+      options.add(decoy);
     }
 
     _correctAnswer = _getAnswerText(_currentQuestion!);
@@ -199,6 +318,7 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
       _isAnswered = false;
     });
 
+    _startTimer();
     _playSound(_quizPlayer);
   }
 
@@ -207,11 +327,23 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
       case QuizType.scientificToCommon:
       case QuizType.spriteToName:
       case QuizType.silhouetteToName:
+      case QuizType.genusToCommon:
         return organism.name;
       case QuizType.commonToScientific:
       case QuizType.spriteToScientific:
       case QuizType.silhouetteToScientific:
         return organism.scientificName;
+      case QuizType.nameToClass:
+      case QuizType.spriteToClass:
+        return organism.animalClass;
+      case QuizType.nameToDiet:
+        return organism.diet;
+      case QuizType.spriteToType:
+        return organism.types.first;
+      case QuizType.nameToGenus:
+      case QuizType.commonToGenus:
+      case QuizType.spriteToGenus:
+        return organism.scientificName.split(' ')[0];
     }
   }
 
@@ -221,28 +353,54 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
         return organism.scientificName;
       case QuizType.commonToScientific:
         return organism.name;
+      case QuizType.genusToCommon:
+        return organism.scientificName.split(' ')[0];
       case QuizType.spriteToName:
       case QuizType.spriteToScientific:
+      case QuizType.spriteToType:
+      case QuizType.spriteToClass:
+      case QuizType.spriteToGenus:
         return 'What animal is this? (Full Sprite)';
       case QuizType.silhouetteToName:
       case QuizType.silhouetteToScientific:
         return 'What animal is this? (Silhouette)';
+      case QuizType.nameToClass:
+        return 'What is the taxonomic class of the ${organism.name}?';
+      case QuizType.nameToDiet:
+        return 'What is the primary diet of the ${organism.name}?';
+      case QuizType.nameToGenus:
+      case QuizType.commonToGenus:
+        return 'What is the Genus of the ${organism.name}?';
     }
   }
 
   void _handleAnswer(String answer) async {
     if (_isAnswered) return;
 
+    _timer?.cancel();
     setState(() {
       _selectedAnswer = answer;
       _isAnswered = true;
+      _totalQuestions++;
     });
 
     final bool isCorrect = answer == _correctAnswer;
 
     if (isCorrect) {
+      _totalCorrect++;
+      _streak++;
+      int pointsGained = 10 * (_timeLeft + 1);
+      int expGained = 10;
+      
+      if (_streak >= 5 && _streak % 5 == 0) {
+        expGained += 50;
+      }
+      
+      _points += pointsGained;
+      await widget.authService.addExperience(_currentUser.username, expGained);
       _playSound(_correctPlayer);
     } else {
+      _streak = 0;
       _playSound(_wrongPlayer);
     }
 
@@ -251,6 +409,9 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
       _currentUser.username,
       widget.quizType.name,
       isCorrect,
+      difficulty: widget.difficulty.name,
+      points: isCorrect ? (100 + (_timeLeft * 10)) : 0, // Recalculate or use local pointsGained
+      streak: _streak,
     );
 
     // 🟢 CRITICAL FIX: Immediately refresh the local user data after updating
@@ -259,6 +420,18 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
       setState(() {
         _currentUser = updatedUser;
       });
+
+      // 🏆 NEW: Check achievements after every answer
+      final achievementService = AchievementService(
+        allOrganisms: _allOrganisms.map((o) => o.toJson()).toList(),
+        authService: widget.authService,
+      );
+      final unlocked = await achievementService.checkAndUnlockAchievements(_currentUser);
+      if (unlocked.isNotEmpty && mounted) {
+        for (var title in unlocked) {
+          achievementService.showAchievementSnackbar(context, title);
+        }
+      }
     }
 
     Future.delayed(const Duration(seconds: _delayAfterAnswerSeconds), () {
@@ -272,7 +445,10 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
       widget.quizType == QuizType.spriteToName ||
       widget.quizType == QuizType.spriteToScientific ||
       widget.quizType == QuizType.silhouetteToName ||
-      widget.quizType == QuizType.silhouetteToScientific;
+      widget.quizType == QuizType.silhouetteToScientific ||
+      widget.quizType == QuizType.spriteToType ||
+      widget.quizType == QuizType.spriteToClass ||
+      widget.quizType == QuizType.spriteToGenus;
 
   Widget _buildAnswerButton(Organism option) {
     final answerText = _getAnswerText(option);
@@ -439,6 +615,9 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
               children: [
+                _buildGameStatsHeader(),
+                const SizedBox(height: 10),
+                _buildTimerBar(),
                 Expanded(flex: 3, child: Center(child: _buildQuestionWidget())),
 
                 Expanded(
@@ -476,6 +655,52 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildGameStatsHeader() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          _StatItem(label: 'POINTS', value: '$_points', color: AppColors.highlightColor),
+          _StatItem(label: 'STREAK', value: '$_streak', color: Colors.orangeAccent),
+          _StatItem(label: 'LV.', value: '${_currentUser.accountLevel}', color: AppColors.primary),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimerBar() {
+    double progress = _timeLeft / 10;
+    Color color = progress > 0.5 ? AppColors.correctGreen : (progress > 0.2 ? Colors.orange : AppColors.wrongRed);
+    
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('TIME REMAINING', style: TextStyle(color: Colors.white30, fontSize: 8, fontFamily: 'PressStart2P')),
+            Text('${_timeLeft}S', style: TextStyle(color: color, fontSize: 8, fontFamily: 'PressStart2P')),
+          ],
+        ),
+        const SizedBox(height: 6),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(2),
+          child: LinearProgressIndicator(
+            value: progress,
+            backgroundColor: Colors.white10,
+            valueColor: AlwaysStoppedAnimation<Color>(color),
+            minHeight: 4,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -527,23 +752,22 @@ class __QuizSpriteDisplayState extends State<_QuizSpriteDisplay> {
   }
 
   Future<void> _determineImageSource() async {
-    final localPath = _getLocalPath();
+    final String spriteUrl = widget.organism.sprite;
+    String finalPath = _getLocalPath();
 
-    try {
-      await rootBundle.load(localPath);
-      if (mounted) {
-        setState(() {
-          _imageSourceType = 'local';
-          _imagePath = localPath;
-        });
+    if (spriteUrl.isNotEmpty && !spriteUrl.startsWith('http') && !spriteUrl.contains(' ')) {
+      if (spriteUrl.startsWith('assets/')) {
+        finalPath = spriteUrl;
+      } else {
+        finalPath = 'assets/sprites/$spriteUrl';
       }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _imageSourceType = 'network';
-          _imagePath = widget.organism.sprite;
-        });
-      }
+    }
+
+    if (mounted) {
+      setState(() {
+        _imageSourceType = 'local';
+        _imagePath = finalPath;
+      });
     }
   }
 
@@ -602,6 +826,25 @@ class __QuizSpriteDisplayState extends State<_QuizSpriteDisplay> {
       ),
       padding: const EdgeInsets.all(16),
       child: imageWidget,
+    );
+  }
+}
+
+class _StatItem extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color color;
+
+  const _StatItem({required this.label, required this.value, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(label, style: TextStyle(color: Colors.white54, fontSize: 7, fontFamily: 'PressStart2P')),
+        const SizedBox(height: 4),
+        Text(value, style: TextStyle(color: color, fontSize: 10, fontFamily: 'PressStart2P')),
+      ],
     );
   }
 }

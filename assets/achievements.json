@@ -207,5 +207,33 @@
     "requiredFloor": 20,
     "tier": "gold",
     "imagePath": "assets/achievements/medal_gold.png"
+  },
+  {
+    "title": "Quiz Novice",
+    "description": "Answer 10 questions correctly in any quiz.",
+    "requiredQuizCorrect": 10,
+    "tier": "bronze",
+    "imagePath": "assets/achievements/medal_bronze.png"
+  },
+  {
+    "title": "Hardcore Scholar",
+    "description": "Answer 50 questions correctly on Hard difficulty.",
+    "requiredHardQuizCorrect": 50,
+    "tier": "gold",
+    "imagePath": "assets/achievements/medal_gold.png"
+  },
+  {
+    "title": "Genus Genius",
+    "description": "Answer 20 Genus-related questions correctly.",
+    "requiredGenusQuizCorrect": 20,
+    "tier": "silver",
+    "imagePath": "assets/achievements/medal_silver.png"
+  },
+  {
+    "title": "Streak Master",
+    "description": "Achieve a streak of 10 in any quiz.",
+    "requiredQuizStreak": 10,
+    "tier": "silver",
+    "imagePath": "assets/achievements/medal_silver.png"
   }
 ]

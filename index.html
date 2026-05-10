@@ -410,8 +410,7 @@
             },
 
             getSpritePath(org) {
-                if (org.sprite && org.sprite.startsWith('http')) return org.sprite;
-                if (org.sprite && org.sprite !== "" && !org.sprite.includes(' ')) {
+                if (org.sprite && org.sprite !== "" && !org.sprite.startsWith('http') && !org.sprite.includes(' ')) {
                     if (org.sprite.startsWith('assets/')) return org.sprite;
                     return `assets/sprites/${org.sprite}`;
                 }
