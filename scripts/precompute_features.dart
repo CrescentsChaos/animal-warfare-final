@@ -22,7 +22,8 @@ void main() async {
   final filenameToName = <String, String>{};
   for (final org in organismsJson) {
     final name = org['name'] as String;
-    final filename = name.toLowerCase().replaceAll(RegExp(r"['\-\s]"), '_') + '.png';
+    final filename =
+        '${name.toLowerCase().replaceAll(RegExp(r"['\-\s]"), '_')}.png';
     filenameToName[filename] = name;
   }
 
@@ -36,8 +37,10 @@ void main() async {
     if (!file.path.endsWith('.png')) continue;
 
     final filename = file.uri.pathSegments.last;
-    final name = filenameToName[filename] ??
-        filename.replaceAll('.png', '')
+    final name =
+        filenameToName[filename] ??
+        filename
+            .replaceAll('.png', '')
             .split('_')
             .map((s) => s.isEmpty ? '' : s[0].toUpperCase() + s.substring(1))
             .join(' ');
@@ -73,7 +76,7 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
   } else {
     final size = max(decoded.width, decoded.height);
     final padded = img.Image(width: size, height: size);
-    img.fill(padded, color: img.ColorRgba8(0, 0, 0, 0)); 
+    img.fill(padded, color: img.ColorRgba8(0, 0, 0, 0));
     final xOffset = (size - decoded.width) ~/ 2;
     final yOffset = (size - decoded.height) ~/ 2;
     img.compositeImage(padded, decoded, dstX: xOffset, dstY: yOffset);
@@ -84,16 +87,18 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
   int objectPixelCount = 0;
   int minX = resized.width, maxX = 0, minY = resized.height, maxY = 0;
 
-  for (int i=0; i < resized.width * resized.height; i++) {
-      final p = resized.getPixelSafe(i % resized.width, i ~/ resized.width);
-      mask[i] = p.a >= 128;
-      if (mask[i]) {
-        objectPixelCount++;
-        final x = i % resized.width;
-        final y = i ~/ resized.width;
-        if (x < minX) minX = x; if (x > maxX) maxX = x;
-        if (y < minY) minY = y; if (y > maxY) maxY = y;
-      }
+  for (int i = 0; i < resized.width * resized.height; i++) {
+    final p = resized.getPixelSafe(i % resized.width, i ~/ resized.width);
+    mask[i] = p.a >= 128;
+    if (mask[i]) {
+      objectPixelCount++;
+      final x = i % resized.width;
+      final y = i ~/ resized.width;
+      if (x < minX) minX = x;
+      if (x > maxX) maxX = x;
+      if (y < minY) minY = y;
+      if (y > maxY) maxY = y;
+    }
   }
 
   if (objectPixelCount == 0) return {'name': name};
@@ -101,7 +106,9 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
   final Map<int, int> colorCounts = {};
   double totalBrightness = 0, totalSaturation = 0;
   final finalHueBins = <String, double>{};
-  for (int i = 0; i < 36; i++) finalHueBins['h${i * 10}'] = 0;
+  for (int i = 0; i < 36; i++) {
+    finalHueBins['h${i * 10}'] = 0;
+  }
 
   for (int y = 0; y < resized.height; y++) {
     for (int x = 0; x < resized.width; x++) {
@@ -109,16 +116,22 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
       final p = resized.getPixel(x, y);
       final hsv = rgbToHsv(p.r.toInt(), p.g.toInt(), p.b.toInt());
       final binIndex = (hsv[0] / 10).floor().clamp(0, 35);
-      finalHueBins['h${binIndex * 10}'] = (finalHueBins['h${binIndex * 10}'] ?? 0) + 1;
+      finalHueBins['h${binIndex * 10}'] =
+          (finalHueBins['h${binIndex * 10}'] ?? 0) + 1;
       totalSaturation += hsv[1];
       totalBrightness += hsv[2];
 
-      final quantized = ((p.r.toInt() >> 4) << 8) | ((p.g.toInt() >> 4) << 4) | (p.b.toInt() >> 4);
+      final quantized =
+          ((p.r.toInt() >> 4) << 8) |
+          ((p.g.toInt() >> 4) << 4) |
+          (p.b.toInt() >> 4);
       colorCounts[quantized] = (colorCounts[quantized] ?? 0) + 1;
     }
   }
 
-  for (final key in finalHueBins.keys) finalHueBins[key] = finalHueBins[key]! / objectPixelCount;
+  for (final key in finalHueBins.keys) {
+    finalHueBins[key] = finalHueBins[key]! / objectPixelCount;
+  }
 
   // Spatial analysis (3x3 grid)
   final spatialHueBins = <String, double>{};
@@ -143,7 +156,9 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
         }
       }
       gridBins.forEach((bin, count) {
-        spatialHueBins['g${gx}${gy}_h${bin * 10}'] = gridPixels > 0 ? count / gridPixels : 0;
+        spatialHueBins['g$gx${gy}_h${bin * 10}'] = gridPixels > 0
+            ? count / gridPixels
+            : 0;
       });
     }
   }
@@ -164,7 +179,14 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
   };
 }
 
-(double, double) _calculateSymmetry(img.Image image, List<bool> mask, int minX, int maxX, int minY, int maxY) {
+(double, double) _calculateSymmetry(
+  img.Image image,
+  List<bool> mask,
+  int minX,
+  int maxX,
+  int minY,
+  int maxY,
+) {
   int hMatches = 0, vMatches = 0, hTotal = 0, vTotal = 0;
   for (int y = minY; y <= maxY; y++) {
     for (int x = minX; x <= (minX + maxX) ~/ 2; x++) {
@@ -172,7 +194,9 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
       if (x2 < minX || x2 > maxX) continue;
       final p1 = image.getPixel(x, y), p2 = image.getPixel(x2, y);
       hTotal++;
-      if (((p1.r - p2.r).abs() + (p1.g - p2.g).abs() + (p1.b - p2.b).abs()) < 100) hMatches++;
+      if (((p1.r - p2.r).abs() + (p1.g - p2.g).abs() + (p1.b - p2.b).abs()) <
+          100)
+        hMatches++;
     }
   }
   for (int x = minX; x <= maxX; x++) {
@@ -181,10 +205,15 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
       if (y2 < minY || y2 > maxY) continue;
       final p1 = image.getPixel(x, y), p2 = image.getPixel(x, y2);
       vTotal++;
-      if (((p1.r - p2.r).abs() + (p1.g - p2.g).abs() + (p1.b - p2.b).abs()) < 100) vMatches++;
+      if (((p1.r - p2.r).abs() + (p1.g - p2.g).abs() + (p1.b - p2.b).abs()) <
+          100)
+        vMatches++;
     }
   }
-  return (hTotal > 0 ? hMatches / hTotal : 0.5, vTotal > 0 ? vMatches / vTotal : 0.5);
+  return (
+    hTotal > 0 ? hMatches / hTotal : 0.5,
+    vTotal > 0 ? vMatches / vTotal : 0.5,
+  );
 }
 
 double _calculateEdgeDensity(img.Image image, List<bool> mask) {
@@ -196,7 +225,9 @@ double _calculateEdgeDensity(img.Image image, List<bool> mask) {
       final pRight = image.getPixel(x + 1, y);
       final pDown = image.getPixel(x, y + 1);
       final lum = (p.r + p.g + p.b) / 3.0;
-      final grad = (lum - (pRight.r + pRight.g + pRight.b) / 3.0).abs() + (lum - (pDown.r + pDown.g + pDown.b) / 3.0).abs();
+      final grad =
+          (lum - (pRight.r + pRight.g + pRight.b) / 3.0).abs() +
+          (lum - (pDown.r + pDown.g + pDown.b) / 3.0).abs();
       if (grad > 30) edgePixels++;
       totalPixels++;
     }
@@ -211,9 +242,12 @@ List<double> rgbToHsv(int r, int g, int b) {
   double d = max - min;
   double h = 0;
   if (d != 0) {
-    if (max == rf) h = (gf - bf) / d + (gf < bf ? 6 : 0);
-    else if (max == gf) h = (bf - rf) / d + 2;
-    else h = (rf - gf) / d + 4;
+    if (max == rf) {
+      h = (gf - bf) / d + (gf < bf ? 6 : 0);
+    } else if (max == gf)
+      h = (bf - rf) / d + 2;
+    else
+      h = (rf - gf) / d + 4;
     h /= 6;
   }
   return [h * 360, max == 0 ? 0 : d / max, max];

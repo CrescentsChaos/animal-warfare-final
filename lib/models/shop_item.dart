@@ -22,11 +22,11 @@ class ShopItem {
 
   factory ShopItem.fromJson(Map<String, dynamic> json) {
     return ShopItem(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      description: json['description'] as String,
-      price: json['price'] as int,
-      category: json['category'] as String,
+      id: json['id'].toString(),
+      name: json['name'].toString(),
+      description: json['description'].toString(),
+      price: (json['price'] as num? ?? 0).toInt(),
+      category: json['category'].toString(),
       biomes: json['biomes'] != null ? List<String>.from(json['biomes']) : null,
     );
   }

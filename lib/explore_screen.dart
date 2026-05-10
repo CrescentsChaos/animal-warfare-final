@@ -388,14 +388,6 @@ class _ExploreScreenState extends State<ExploreScreen> {
               child: Image.asset(
                 _getAssetPath(biomeName),
                 fit: BoxFit.cover,
-                color: timeOfDay == 'day'
-                    ? Colors.black.withValues(alpha: 0.3)
-                    : (timeOfDay == 'evening'
-                          ? Colors.orangeAccent.withValues(alpha: 0.3)
-                          : Colors.indigo[900]!.withValues(alpha: 0.7)),
-                colorBlendMode: timeOfDay == 'night'
-                    ? BlendMode.multiply
-                    : BlendMode.darken,
                 errorBuilder: (context, error, stackTrace) => Container(
                   color: Colors.black26,
                   child: const Center(
@@ -459,10 +451,6 @@ class _ExploreScreenState extends State<ExploreScreen> {
           image: DecorationImage(
             image: const AssetImage('assets/main.png'),
             fit: BoxFit.cover,
-            colorFilter: ColorFilter.mode(
-              Colors.black.withValues(alpha: 0.7),
-              BlendMode.darken,
-            ),
           ),
         ),
         padding: const EdgeInsets.all(10.0),

@@ -14,6 +14,7 @@ import 'package:animal_warfare/models/nature.dart';
 import 'package:animal_warfare/models/elemental_type.dart';
 import 'package:animal_warfare/widgets/animal_summary_screen.dart';
 import 'package:animal_warfare/widgets/organism_sprite_widget.dart';
+import 'package:animal_warfare/widgets/pop_menu_layout.dart';
 import 'dart:async';
 
 class AnimalBoxScreen extends StatefulWidget {
@@ -91,12 +92,26 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
         appBar: AppBar(
           title: const Text('Animal Storage'),
           backgroundColor: AppColors.surface,
-          bottom: const TabBar(
+          bottom: TabBar(
             indicatorColor: AppColors.highlightColor,
             labelStyle: TextStyle(fontFamily: 'PressStart2P', fontSize: 10),
             tabs: [
-              Tab(text: 'Team', icon: Icon(Icons.groups)),
-              Tab(text: 'Box', icon: Icon(Icons.inventory)),
+              Tab(
+                text: 'Team',
+                icon: Image.asset(
+                  'assets/icon/start_game.png',
+                  width: 24,
+                  height: 24,
+                ),
+              ),
+              Tab(
+                text: 'Box',
+                icon: Image.asset(
+                  'assets/icon/inventory.png',
+                  width: 24,
+                  height: 24,
+                ),
+              ),
             ],
           ),
         ),
@@ -211,34 +226,35 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
               final entry = filtered[index];
               final org = entry.value;
               final originalIndex = entry.key;
-              final isInTeam = user.battleTeam.contains(originalIndex);
-              return _AnimalCard(
-                captured: org,
-                index: originalIndex,
-                isInTeam: isInTeam,
-                isNarrow: MediaQuery.sizeOf(context).width < 400,
-                isNew:
-                    captured.length > 3 && originalIndex >= captured.length - 3,
-                onTap: () => _showAnimalDetails(context, org, originalIndex),
-                onToggleTeam: () async {
-                  final success = await userState.toggleTeamMember(
-                    originalIndex,
-                  );
-                  if (!success && context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Team is full (Max 5)!'),
-                        backgroundColor: Colors.red,
-                      ),
+              return PopUpItem(
+                index: index,
+                child: _AnimalCard(
+                  captured: org,
+                  index: originalIndex,
+                  isInTeam: user.battleTeam.contains(originalIndex),
+                  isNarrow: MediaQuery.sizeOf(context).width < 400,
+                  isNew: captured.length > 3 && originalIndex >= captured.length - 3,
+                  onTap: () => _showAnimalDetails(context, org, originalIndex),
+                  onToggleTeam: () async {
+                    final success = await userState.toggleTeamMember(
+                      originalIndex,
                     );
-                  }
-                },
-                onManageMoves: () =>
-                    _showMoveSelection(context, org, originalIndex),
-                onManageItems: () =>
-                    _showItemSelection(context, userState, originalIndex, org),
-                onRelease: () =>
-                    _confirmRelease(context, org, originalIndex, userState),
+                    if (!success && context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Team is full (Max 5)!'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  },
+                  onManageMoves: () =>
+                      _showMoveSelection(context, org, originalIndex),
+                  onManageItems: () =>
+                      _showItemSelection(context, userState, originalIndex, org),
+                  onRelease: () =>
+                      _confirmRelease(context, org, originalIndex, userState),
+                ),
               );
             },
           ),
@@ -267,20 +283,23 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
         }
         final org = user.capturedOrganisms[originalIndex];
 
-        return _AnimalCard(
-          key: ValueKey('team_card_$originalIndex'),
-          captured: org,
-          index: originalIndex,
-          isInTeam: true,
-          isNarrow: MediaQuery.sizeOf(context).width < 400,
-          isNew: false,
-          onTap: () => _showAnimalDetails(context, org, originalIndex),
-          onToggleTeam: () => userState.toggleTeamMember(originalIndex),
-          onManageMoves: () => _showMoveSelection(context, org, originalIndex),
-          onManageItems: () =>
-              _showItemSelection(context, userState, originalIndex, org),
-          onRelease: () =>
-              _confirmRelease(context, org, originalIndex, userState),
+        return PopUpItem(
+          index: index,
+          child: _AnimalCard(
+            key: ValueKey('team_card_$originalIndex'),
+            captured: org,
+            index: originalIndex,
+            isInTeam: true,
+            isNarrow: MediaQuery.sizeOf(context).width < 400,
+            isNew: false,
+            onTap: () => _showAnimalDetails(context, org, originalIndex),
+            onToggleTeam: () => userState.toggleTeamMember(originalIndex),
+            onManageMoves: () => _showMoveSelection(context, org, originalIndex),
+            onManageItems: () =>
+                _showItemSelection(context, userState, originalIndex, org),
+            onRelease: () =>
+                _confirmRelease(context, org, originalIndex, userState),
+          ),
         );
       },
     );
@@ -309,10 +328,13 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
               decoration: InputDecoration(
                 hintText: 'Search...',
                 hintStyle: const TextStyle(color: Colors.white54, fontSize: 10),
-                prefixIcon: const Icon(
-                  Icons.search,
-                  color: Colors.white54,
-                  size: 18,
+                prefixIcon: Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Icon(
+                    Icons.search_rounded,
+                    color: Colors.white54,
+                    size: 18,
+                  ),
                 ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -368,9 +390,10 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.catching_pokemon_outlined,
-            size: 80,
+          Image.asset(
+            'assets/icon/animal_box.png',
+            width: 80,
+            height: 80,
             color: Colors.grey[700],
           ),
           const SizedBox(height: 16),
@@ -396,7 +419,12 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.shield_outlined, size: 80, color: Colors.grey[700]),
+            Image.asset(
+              'assets/icon/defense.png',
+              width: 80,
+              height: 80,
+              color: Colors.grey[700],
+            ),
             const SizedBox(height: 16),
             Text(
               'Your vanguard is empty.\nDraft up to 5 animals to your team from the Box.',
@@ -511,7 +539,12 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
               const SizedBox(height: 16),
               if (organism.equippedTalisman != null)
                 ListTile(
-                  leading: const Icon(Icons.remove_circle, color: Colors.red),
+                  leading: Image.asset(
+                    'assets/icon/clear.png',
+                    width: 24,
+                    height: 24,
+                    color: Colors.red,
+                  ),
                   title: const Text(
                     'UNEQUIP',
                     style: TextStyle(
@@ -542,10 +575,12 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
                         final count = entry.value;
                         final t = Talisman.findById(tid)!;
                         return ListTile(
-                          leading: const Icon(
-                            Icons.auto_awesome,
-                            color: AppColors.highlightColor,
-                          ),
+                leading: Image.asset(
+                  'assets/icon/mystic.png',
+                  width: 24,
+                  height: 24,
+                  color: AppColors.highlightColor,
+                ),
                           title: Text(
                             t.name,
                             style: const TextStyle(
@@ -684,8 +719,10 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
                 ),
               ),
               ListTile(
-                leading: const Icon(
-                  Icons.auto_awesome,
+                leading: Image.asset(
+                  'assets/icon/mystic.png',
+                  width: 24,
+                  height: 24,
                   color: Colors.blueAccent,
                 ),
                 title: Text(
@@ -704,7 +741,12 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.eco, color: Colors.greenAccent),
+                leading: Image.asset(
+                  'assets/icon/grass.png',
+                  width: 24,
+                  height: 24,
+                  color: Colors.greenAccent,
+                ),
                 title: const Text(
                   'USE NATURE MINT',
                   style: TextStyle(
@@ -721,7 +763,12 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.favorite, color: Colors.pinkAccent),
+                leading: Image.asset(
+                  'assets/icon/health.png',
+                  width: 24,
+                  height: 24,
+                  color: Colors.pinkAccent,
+                ),
                 title: const Text(
                   'USE BERRY',
                   style: TextStyle(

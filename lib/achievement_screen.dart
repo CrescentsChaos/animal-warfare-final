@@ -109,42 +109,13 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                             ]
                           : [],
                     ),
-                    child: ColorFiltered(
-                      colorFilter: completed
-                          ? const ColorFilter.mode(
-                              Colors.transparent,
-                              BlendMode.dst,
-                            )
-                          : const ColorFilter.matrix([
-                              0.2126,
-                              0.7152,
-                              0.0722,
-                              0,
-                              0,
-                              0.2126,
-                              0.7152,
-                              0.0722,
-                              0,
-                              0,
-                              0.2126,
-                              0.7152,
-                              0.0722,
-                              0,
-                              0,
-                              0,
-                              0,
-                              0,
-                              1,
-                              0,
-                            ]),
-                      child: Image.asset(
-                        imagePath,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) => Icon(
-                          completed ? Icons.military_tech : Icons.lock,
-                          size: 60,
-                          color: completed ? highlightColor : Colors.white24,
-                        ),
+                    child: Image.asset(
+                      imagePath,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) => Image.asset(
+                        'assets/icon/achievements.png',
+                        width: 60,
+                        height: 60,
                       ),
                     ),
                   ),
@@ -195,14 +166,22 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                 ),
               ),
               if (completed)
-                const Padding(
-                  padding: EdgeInsets.all(12.0),
-                  child: Icon(Icons.check_circle, color: neonGreen, size: 24),
+                Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Image.asset(
+                    'assets/icon/achievements.png',
+                    width: 24,
+                    height: 24,
+                  ),
                 ),
               if (!completed)
-                const Padding(
-                  padding: EdgeInsets.all(12.0),
-                  child: Icon(Icons.lock, color: Colors.white12, size: 24),
+                Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Image.asset(
+                    'assets/icon/achievements.png',
+                    width: 24,
+                    height: 24,
+                  ),
                 ),
             ],
           ),
@@ -239,7 +218,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
             image: const AssetImage('assets/main.png'),
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(
-              Colors.black.withValues(alpha: 0.7),
+              Colors.black.withValues(alpha: 0.85),
               BlendMode.darken,
             ),
           ),

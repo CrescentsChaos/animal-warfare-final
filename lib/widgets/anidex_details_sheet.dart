@@ -151,6 +151,17 @@ class AnidexDetailsSheet {
     }
   }
 
+  static String _getRarityBackground(String rarity) {
+    final r = rarity.toLowerCase();
+    if (r.contains('common')) return 'assets/icon/common.png';
+    if (r.contains('uncommon')) return 'assets/icon/uncommon.png';
+    if (r.contains('rare')) return 'assets/icon/rare.png';
+    if (r.contains('epic')) return 'assets/icon/epic.png';
+    if (r.contains('legendary')) return 'assets/icon/legendary.png';
+    if (r.contains('mythical')) return 'assets/icon/mythical.png';
+    return 'assets/icon/common.png';
+  }
+
   static Color _getTypeColor(ElementalType type) {
     switch (type) {
       case ElementalType.basic:
@@ -210,6 +221,13 @@ class AnidexDetailsSheet {
           height: 360,
           width: double.infinity,
           decoration: BoxDecoration(
+            image: discovered
+                ? DecorationImage(
+                    image: AssetImage(_getRarityBackground(org.rarity)),
+                    fit: BoxFit.cover,
+                    opacity: 0.15,
+                  )
+                : null,
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -401,8 +419,6 @@ class AnidexDetailsSheet {
                             Image.asset(
                               assetPath,
                               fit: BoxFit.cover,
-                              color: Colors.black.withValues(alpha: 0.5),
-                              colorBlendMode: BlendMode.darken,
                               errorBuilder: (context, error, stackTrace) =>
                                   Container(
                                     color: Colors.black45,
@@ -476,7 +492,7 @@ class AnidexDetailsSheet {
               ),
               _buildClassificationBadge(
                 'WEIGHT',
-                '${org.weight} KG',
+                '${org.formattedWeight} KG',
                 null,
                 iconData: Icons.scale,
               ),
@@ -620,7 +636,7 @@ class AnidexDetailsSheet {
           org.health,
           500,
           AppColors.statHealthColor,
-          Icons.favorite,
+          'assets/icon/health.png',
           currentVal: showScaledStats ? capturedOrg?.maxHealth : null,
         ),
         _buildStatRow(
@@ -628,7 +644,7 @@ class AnidexDetailsSheet {
           org.attack,
           200,
           AppColors.statAttackColor,
-          Icons.bolt,
+          'assets/icon/attack.png',
           currentVal: showScaledStats ? capturedOrg?.effectiveAttack : null,
         ),
         _buildStatRow(
@@ -636,7 +652,7 @@ class AnidexDetailsSheet {
           org.defense,
           200,
           AppColors.statDefenseColor,
-          Icons.shield,
+          'assets/icon/defense.png',
           currentVal: showScaledStats ? capturedOrg?.effectiveDefense : null,
         ),
         _buildStatRow(
@@ -644,7 +660,7 @@ class AnidexDetailsSheet {
           org.power,
           200,
           AppColors.statPowerColor,
-          Icons.auto_awesome,
+          'assets/icon/power.png',
           currentVal: showScaledStats ? capturedOrg?.effectivePower : null,
         ),
         _buildStatRow(
@@ -652,7 +668,7 @@ class AnidexDetailsSheet {
           org.resistance,
           200,
           AppColors.statResistanceStatColor,
-          Icons.psychology,
+          'assets/icon/resistance.png',
           currentVal: showScaledStats ? capturedOrg?.effectiveResistance : null,
         ),
         _buildStatRow(
@@ -660,7 +676,7 @@ class AnidexDetailsSheet {
           org.speed,
           200,
           AppColors.statSpeedColor,
-          Icons.speed,
+          'assets/icon/speed.png',
           currentVal: showScaledStats ? capturedOrg?.effectiveSpeed : null,
         ),
         const SizedBox(height: 16),
@@ -669,7 +685,7 @@ class AnidexDetailsSheet {
           org.bst,
           1000, // Reasonable max for BST display
           AppColors.highlightColor,
-          Icons.assessment,
+          'assets/icon/achievements.png',
           currentVal: showScaledStats
               ? (capturedOrg != null
                     ? (capturedOrg.maxHealth +
@@ -690,7 +706,7 @@ class AnidexDetailsSheet {
     int baseVal,
     int max,
     Color color,
-    IconData icon, {
+    String iconPath, {
     int? currentVal,
   }) {
     final basePerc = (baseVal / max).clamp(0.0, 1.0);
@@ -705,7 +721,7 @@ class AnidexDetailsSheet {
         children: [
           Row(
             children: [
-              Icon(icon, color: color, size: 16),
+              Image.asset(iconPath, width: 16, height: 16),
               const SizedBox(width: 8),
               Text(
                 label,
@@ -1244,25 +1260,7 @@ class OrganismSpriteDisplay extends StatelessWidget {
     final spritePath = _getSpritePath();
     final isNetwork = spritePath.startsWith('http');
 
-    if (!isDiscovered) {
-      return ColorFiltered(
-        colorFilter: ColorFilter.mode(silhouetteColor, BlendMode.srcIn),
-        child: _buildImage(spritePath, isNetwork),
-      );
-    }
-
-    if (!isCaptured) {
-      return ColorFiltered(
-        colorFilter: const ColorFilter.matrix(<double>[
-          0.2126, 0.7152, 0.0722, 0, 0,
-          0.2126, 0.7152, 0.0722, 0, 0,
-          0.2126, 0.7152, 0.0722, 0, 0,
-          0, 0, 0, 1, 0,
-        ]),
-        child: _buildImage(spritePath, isNetwork),
-      );
-    }
-
+    // Always show the actual image colored
     return _buildImage(spritePath, isNetwork);
   }
 

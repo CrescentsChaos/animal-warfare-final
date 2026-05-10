@@ -602,12 +602,12 @@ class _StarterChoiceScreenState extends State<StarterChoiceScreen>
 
   Widget _buildStatGrid(CapturedOrganism starter, Color typeColor) {
     final stats = [
-      ('HP', starter.maxHealth, Colors.redAccent),
-      ('ATK', starter.effectiveAttack, Colors.orangeAccent),
-      ('DEF', starter.effectiveDefense, Colors.blueAccent),
-      ('PWR', starter.effectivePower, Colors.purpleAccent),
-      ('RES', starter.effectiveResistance, Colors.greenAccent),
-      ('SPD', starter.effectiveSpeed, Colors.cyanAccent),
+      ('HP', starter.maxHealth, AppColors.statHealthColor, 'assets/icon/health.png'),
+      ('ATK', starter.effectiveAttack, AppColors.statAttackColor, 'assets/icon/attack.png'),
+      ('DEF', starter.effectiveDefense, AppColors.statDefenseColor, 'assets/icon/defense.png'),
+      ('PWR', starter.effectivePower, AppColors.statPowerColor, 'assets/icon/power.png'),
+      ('RES', starter.effectiveResistance, AppColors.statResistanceStatColor, 'assets/icon/resistance.png'),
+      ('SPD', starter.effectiveSpeed, AppColors.statSpeedColor, 'assets/icon/speed.png'),
     ];
 
     return Container(
@@ -631,11 +631,13 @@ class _StarterChoiceScreenState extends State<StarterChoiceScreen>
           ),
           SizedBox(height: 10.h),
           ...stats.map((s) {
-            final (label, value, color) = s;
+            final (label, value, color, iconPath) = s;
             return Padding(
               padding: EdgeInsets.only(bottom: 8.h),
               child: Row(
                 children: [
+                  Image.asset(iconPath, width: 14.w, height: 14.w),
+                  SizedBox(width: 8.w),
                   SizedBox(
                     width: 36.w,
                     child: Text(

@@ -18,16 +18,22 @@ void main() async {
   sqfliteFfiInit();
   final factory = databaseFactoryFfi;
 
-  final dbPath = p.join(Directory.current.path, 'assets', 'ml', 'sprite_features.db');
+  final dbPath = p.join(
+    Directory.current.path,
+    'assets',
+    'ml',
+    'sprite_features.db',
+  );
 
   // Ensure ml directory exists
   Directory('assets/ml').createSync(recursive: true);
 
-  final db = await factory.openDatabase(dbPath,
-      options: OpenDatabaseOptions(
-        version: 1,
-        onCreate: (db, version) async {
-          await db.execute('''
+  final db = await factory.openDatabase(
+    dbPath,
+    options: OpenDatabaseOptions(
+      version: 1,
+      onCreate: (db, version) async {
+        await db.execute('''
             CREATE TABLE organism_features (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               organism_name TEXT UNIQUE NOT NULL,
@@ -46,14 +52,17 @@ void main() async {
               training_count INTEGER NOT NULL DEFAULT 1
             )
           ''');
-          await db.execute(
-              'CREATE INDEX idx_scientific_name ON organism_features(scientific_name)');
-          await db.execute(
-              'CREATE INDEX idx_organism_name ON organism_features(organism_name)');
-        },
-      ));
+        await db.execute(
+          'CREATE INDEX idx_scientific_name ON organism_features(scientific_name)',
+        );
+        await db.execute(
+          'CREATE INDEX idx_organism_name ON organism_features(organism_name)',
+        );
+      },
+    ),
+  );
 
-  // Force overwrite will replace existing features. 
+  // Force overwrite will replace existing features.
   // Set to false (default) to only add MISSING organisms, preserving manual training.
   const bool forceOverwrite = false;
 
@@ -69,7 +78,8 @@ void main() async {
   final List organisms = jsonDecode(organismsJson);
   final nameToSciName = <String, String>{};
   for (final org in organisms) {
-    nameToSciName[org['name'] as String] = (org['scientific_name'] ?? '') as String;
+    nameToSciName[org['name'] as String] =
+        (org['scientific_name'] ?? '') as String;
   }
 
   print('Processing ${organisms.length} organisms...');
@@ -193,7 +203,9 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
   final Map<int, int> colorCounts = {};
   double totalBrightness = 0, totalSaturation = 0;
   final finalHueBins = <String, double>{};
-  for (int i = 0; i < 36; i++) finalHueBins['h${i * 10}'] = 0;
+  for (int i = 0; i < 36; i++) {
+    finalHueBins['h${i * 10}'] = 0;
+  }
 
   for (int y = 0; y < resized.height; y++) {
     for (int x = 0; x < resized.width; x++) {
@@ -253,8 +265,9 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
         }
       }
       gridBins.forEach((bin, count) {
-        spatialHueBins['g${gx}${gy}_h${bin * 10}'] =
-            gridPixels > 0 ? count / gridPixels : 0;
+        spatialHueBins['g$gx${gy}_h${bin * 10}'] = gridPixels > 0
+            ? count / gridPixels
+            : 0;
       });
     }
   }
@@ -277,7 +290,13 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
 }
 
 (double, double) _calculateSymmetry(
-    img.Image image, List<bool> mask, int minX, int maxX, int minY, int maxY) {
+  img.Image image,
+  List<bool> mask,
+  int minX,
+  int maxX,
+  int minY,
+  int maxY,
+) {
   int hMatches = 0, vMatches = 0, hTotal = 0, vTotal = 0;
   for (int y = minY; y <= maxY; y++) {
     for (int x = minX; x <= (minX + maxX) ~/ 2; x++) {
@@ -286,7 +305,9 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
       final p1 = image.getPixel(x, y), p2 = image.getPixel(x2, y);
       hTotal++;
       if (((p1.r - p2.r).abs() + (p1.g - p2.g).abs() + (p1.b - p2.b).abs()) <
-          100) hMatches++;
+          100) {
+        hMatches++;
+      }
     }
   }
   for (int x = minX; x <= maxX; x++) {
@@ -296,12 +317,14 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
       final p1 = image.getPixel(x, y), p2 = image.getPixel(x, y2);
       vTotal++;
       if (((p1.r - p2.r).abs() + (p1.g - p2.g).abs() + (p1.b - p2.b).abs()) <
-          100) vMatches++;
+          100) {
+        vMatches++;
+      }
     }
   }
   return (
     hTotal > 0 ? hMatches / hTotal : 0.5,
-    vTotal > 0 ? vMatches / vTotal : 0.5
+    vTotal > 0 ? vMatches / vTotal : 0.5,
   );
 }
 
@@ -314,7 +337,8 @@ double _calculateEdgeDensity(img.Image image, List<bool> mask) {
       final pRight = image.getPixel(x + 1, y);
       final pDown = image.getPixel(x, y + 1);
       final lum = (p.r + p.g + p.b) / 3.0;
-      final grad = (lum - (pRight.r + pRight.g + pRight.b) / 3.0).abs() +
+      final grad =
+          (lum - (pRight.r + pRight.g + pRight.b) / 3.0).abs() +
           (lum - (pDown.r + pDown.g + pDown.b) / 3.0).abs();
       if (grad > 30) edgePixels++;
       totalPixels++;
@@ -330,9 +354,12 @@ List<double> rgbToHsv(int r, int g, int b) {
   double d = maxV - minV;
   double h = 0;
   if (d != 0) {
-    if (maxV == rf) h = (gf - bf) / d + (gf < bf ? 6 : 0);
-    else if (maxV == gf) h = (bf - rf) / d + 2;
-    else h = (rf - gf) / d + 4;
+    if (maxV == rf) {
+      h = (gf - bf) / d + (gf < bf ? 6 : 0);
+    } else if (maxV == gf)
+      h = (bf - rf) / d + 2;
+    else
+      h = (rf - gf) / d + 4;
     h /= 6;
   }
   return [h * 360, maxV == 0 ? 0 : d / maxV, maxV];

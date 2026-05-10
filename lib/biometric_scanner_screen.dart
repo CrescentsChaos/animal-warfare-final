@@ -33,7 +33,7 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
   List<ScanResult> _results = [];
   Uint8List? _imageBytes;
   Uint8List? _maskedBytes;
-  String _detectedClass = '';
+  final String _detectedClass = '';
   String _sortBy = 'Overall';
   final TextEditingController _hintController = TextEditingController();
   late AnimationController _pulseController;
@@ -158,7 +158,7 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
 
   Future<void> _openManualMasking() async {
     if (_imageBytes == null) return;
-    
+
     final Uint8List? refinedMask = await Navigator.push<Uint8List>(
       context,
       MaterialPageRoute(
@@ -190,7 +190,9 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
           _sortResults();
           _isScanning = false;
           _hasScanned = true;
-          _statusText = results.isEmpty ? 'NO MATCH FOUND' : '${results.length} SPECIES IDENTIFIED';
+          _statusText = results.isEmpty
+              ? 'NO MATCH FOUND'
+              : '${results.length} SPECIES IDENTIFIED';
         });
       } catch (e) {
         setState(() {
@@ -203,7 +205,7 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
 
   void _showSegmentationPreview() {
     if (_imageBytes == null) return;
-    
+
     showDialog(
       context: context,
       builder: (context) {
@@ -211,120 +213,133 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return Dialog(
-            backgroundColor: Colors.transparent,
-            insetPadding: const EdgeInsets.all(16),
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1A1A1A),
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: Colors.cyanAccent.withAlpha(50)),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'SEGMENTATION PREVIEW',
-                        style: GoogleFonts.shareTechMono(
-                          color: Colors.cyanAccent,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.5,
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close, color: Colors.white54),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: Stack(
-                      alignment: Alignment.center,
+              backgroundColor: Colors.transparent,
+              insetPadding: const EdgeInsets.all(16),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1A1A1A),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: Colors.cyanAccent.withAlpha(50)),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        // Background pattern to show transparency
-                        Container(
-                          width: 300,
-                          height: 300,
-                          decoration: BoxDecoration(
-                            color: Colors.black,
-                            image: DecorationImage(
-                              image: const AssetImage('assets/ui/checkerboard.png'), // Fallback to grey if missing
-                              repeat: ImageRepeat.repeat,
-                              opacity: 0.1,
-                              onError: (_, __) {},
-                            ),
+                        Text(
+                          'SEGMENTATION PREVIEW',
+                          style: GoogleFonts.shareTechMono(
+                            color: Colors.cyanAccent,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.5,
                           ),
                         ),
-                        Image.memory(
-                          showOriginal ? _imageBytes! : (_maskedBytes ?? _imageBytes!),
-                          width: 300,
-                          height: 300,
-                          fit: BoxFit.contain,
+                        IconButton(
+                          icon: const Icon(Icons.close, color: Colors.white54),
+                          onPressed: () => Navigator.pop(context),
                         ),
                       ],
                     ),
-                  ),
-                  const SizedBox(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _buildPreviewToggle('MASKED', !showOriginal, () {
-                        setDialogState(() => showOriginal = false);
-                      }),
-                      const SizedBox(width: 16),
-                      _buildPreviewToggle('ORIGINAL', showOriginal, () {
-                        setDialogState(() => showOriginal = true);
-                      }),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  TextButton.icon(
-                    onPressed: () {
-                      Navigator.pop(context); // Close preview
-                      _openManualMasking();
-                    },
-                    icon: const Icon(Icons.brush, color: Colors.cyanAccent, size: 16),
-                    label: Text(
-                      'MANUALLY REFINE MASK',
-                      style: GoogleFonts.shareTechMono(
-                        color: Colors.cyanAccent,
-                        fontSize: 12,
-                        letterSpacing: 1,
+                    const SizedBox(height: 20),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          // Background pattern to show transparency
+                          Container(
+                            width: 300,
+                            height: 300,
+                            decoration: BoxDecoration(
+                              color: Colors.black,
+                              image: DecorationImage(
+                                image: const AssetImage(
+                                  'assets/ui/checkerboard.png',
+                                ), // Fallback to grey if missing
+                                repeat: ImageRepeat.repeat,
+                                opacity: 0.1,
+                                onError: (_, _) {},
+                              ),
+                            ),
+                          ),
+                          Image.memory(
+                            showOriginal
+                                ? _imageBytes!
+                                : (_maskedBytes ?? _imageBytes!),
+                            width: 300,
+                            height: 300,
+                            fit: BoxFit.contain,
+                          ),
+                        ],
                       ),
                     ),
-                    style: TextButton.styleFrom(
-                      backgroundColor: Colors.cyanAccent.withAlpha(20),
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    const SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildPreviewToggle('MASKED', !showOriginal, () {
+                          setDialogState(() => showOriginal = false);
+                        }),
+                        const SizedBox(width: 16),
+                        _buildPreviewToggle('ORIGINAL', showOriginal, () {
+                          setDialogState(() => showOriginal = true);
+                        }),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'The engine isolates the animal from the background before extraction. '
-                    'This prevents background noise from affecting identification accuracy.',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
-                      color: Colors.white38,
-                      fontSize: 10,
-                      height: 1.5,
+                    const SizedBox(height: 16),
+                    TextButton.icon(
+                      onPressed: () {
+                        Navigator.pop(context); // Close preview
+                        _openManualMasking();
+                      },
+                      icon: const Icon(
+                        Icons.brush,
+                        color: Colors.cyanAccent,
+                        size: 16,
+                      ),
+                      label: Text(
+                        'MANUALLY REFINE MASK',
+                        style: GoogleFonts.shareTechMono(
+                          color: Colors.cyanAccent,
+                          fontSize: 12,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                      style: TextButton.styleFrom(
+                        backgroundColor: Colors.cyanAccent.withAlpha(20),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 16),
+                    Text(
+                      'The engine isolates the animal from the background before extraction. '
+                      'This prevents background noise from affecting identification accuracy.',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                        color: Colors.white38,
+                        fontSize: 10,
+                        height: 1.5,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          );
-        },
-      );
-    },
-  );
-}
+            );
+          },
+        );
+      },
+    );
+  }
 
   Widget _buildPreviewToggle(String label, bool active, VoidCallback onTap) {
     return GestureDetector(
@@ -377,7 +392,7 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
             valA = a.confidence;
             valB = b.confidence;
         }
-        
+
         // Priority 1: High-confidence grouping (only for default 'Overall' sort)
         if (_sortBy == 'Overall') {
           if (a.isGenusMate && !b.isGenusMate) return -1;
@@ -399,19 +414,14 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
           gradient: RadialGradient(
             center: Alignment.topRight,
             radius: 1.5,
-            colors: [
-              Colors.cyanAccent.withAlpha(15),
-              Colors.transparent,
-            ],
+            colors: [Colors.cyanAccent.withAlpha(15), Colors.transparent],
           ),
         ),
         child: SafeArea(
           child: Column(
             children: [
               _buildHeader(),
-              Expanded(
-                child: _hasScanned ? _buildResults() : _buildScanArea(),
-              ),
+              Expanded(child: _hasScanned ? _buildResults() : _buildScanArea()),
               if (!_isScanning) _buildActionButtons(),
             ],
           ),
@@ -432,13 +442,19 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new,
-                color: Colors.cyanAccent, size: 20),
+            icon: const Icon(
+              Icons.arrow_back_ios_new,
+              color: Colors.cyanAccent,
+              size: 20,
+            ),
             onPressed: widget.onBack,
           ),
           const SizedBox(width: 4),
-          const Icon(Icons.fingerprint_rounded,
-              color: Colors.cyanAccent, size: 24),
+          const Icon(
+            Icons.fingerprint_rounded,
+            color: Colors.cyanAccent,
+            size: 24,
+          ),
           const SizedBox(width: 12),
           Text(
             'BIO-SCANNER',
@@ -646,8 +662,10 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
           child: _results.isEmpty
               ? _buildNoResults()
               : ListView.builder(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   itemCount: _results.length,
                   itemBuilder: (context, index) =>
                       _buildResultTile(_results[index], index),
@@ -686,9 +704,11 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
                         Positioned(
                           bottom: 2,
                           right: 2,
-                          child: Icon(Icons.zoom_in_rounded, 
-                            color: Colors.cyanAccent.withAlpha(150), 
-                            size: 14),
+                          child: Icon(
+                            Icons.zoom_in_rounded,
+                            color: Colors.cyanAccent.withAlpha(150),
+                            size: 14,
+                          ),
                         ),
                       ],
                     ),
@@ -738,7 +758,9 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
                   child: TextField(
                     controller: _hintController,
                     style: GoogleFonts.shareTechMono(
-                        color: Colors.white, fontSize: 11),
+                      color: Colors.white,
+                      fontSize: 11,
+                    ),
                     decoration: InputDecoration(
                       hintText: 'ADD HINT (NAME, GENUS...)',
                       hintStyle: GoogleFonts.shareTechMono(
@@ -839,23 +861,30 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const Icon(Icons.arrow_drop_down, color: Colors.cyanAccent, size: 14),
+            const Icon(
+              Icons.arrow_drop_down,
+              color: Colors.cyanAccent,
+              size: 14,
+            ),
           ],
         ),
       ),
-      itemBuilder: (context) => ['Overall', 'Color', 'Shape', 'Pattern', 'Shade']
-          .map((s) => PopupMenuItem(
-                value: s,
-                height: 32,
-                child: Text(
-                  s.toUpperCase(),
-                  style: GoogleFonts.shareTechMono(
-                    color: Colors.white70,
-                    fontSize: 10,
+      itemBuilder: (context) =>
+          ['Overall', 'Color', 'Shape', 'Pattern', 'Shade']
+              .map(
+                (s) => PopupMenuItem(
+                  value: s,
+                  height: 32,
+                  child: Text(
+                    s.toUpperCase(),
+                    style: GoogleFonts.shareTechMono(
+                      color: Colors.white70,
+                      fontSize: 10,
+                    ),
                   ),
                 ),
-              ))
-          .toList(),
+              )
+              .toList(),
     );
   }
 
@@ -864,13 +893,19 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.search_off_rounded,
-              size: 48, color: Colors.white.withAlpha(20)),
+          Icon(
+            Icons.search_off_rounded,
+            size: 48,
+            color: Colors.white.withAlpha(20),
+          ),
           const SizedBox(height: 12),
           Text(
             'NO MATCHING SIGNATURES',
             style: GoogleFonts.shareTechMono(
-                color: Colors.white24, fontSize: 12, letterSpacing: 1),
+              color: Colors.white24,
+              fontSize: 12,
+              letterSpacing: 1,
+            ),
           ),
         ],
       ),
@@ -883,8 +918,8 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
     final color = result.confidence > 0.7
         ? Colors.greenAccent
         : result.confidence > 0.4
-            ? Colors.yellowAccent
-            : Colors.orangeAccent;
+        ? Colors.yellowAccent
+        : Colors.orangeAccent;
 
     final spritePath = result.isExternal
         ? org.sprite
@@ -955,8 +990,9 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
     final org = result.organism;
     final scores = result.featureScores;
     final targetClass = result.organism.animalClass;
-    final isMatch = result.detectedClass != AnimalClass.unknown && 
-                    targetClass.toLowerCase() == result.detectedClass.name.toLowerCase();
+    final isMatch =
+        result.detectedClass != AnimalClass.unknown &&
+        targetClass.toLowerCase() == result.detectedClass.name.toLowerCase();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -980,10 +1016,14 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
                 margin: const EdgeInsets.only(left: 8),
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: isMatch ? Colors.cyanAccent.withAlpha(40) : Colors.white10,
+                  color: isMatch
+                      ? Colors.cyanAccent.withAlpha(40)
+                      : Colors.white10,
                   borderRadius: BorderRadius.circular(4),
                   border: Border.all(
-                    color: isMatch ? Colors.cyanAccent.withAlpha(100) : Colors.white24,
+                    color: isMatch
+                        ? Colors.cyanAccent.withAlpha(100)
+                        : Colors.white24,
                     width: 0.5,
                   ),
                 ),
@@ -1197,16 +1237,22 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
                 ],
               ),
               const SizedBox(height: 20),
-              
+
               // Side-by-side Visual Verification
               Row(
                 children: [
                   Expanded(
                     child: _buildComparisonPreview(
                       'SCANNED SUBJECT',
-                      result.maskedImage != null 
-                        ? Image.memory(result.maskedImage!, fit: BoxFit.contain)
-                        : const Icon(Icons.broken_image, color: Colors.white10),
+                      result.maskedImage != null
+                          ? Image.memory(
+                              result.maskedImage!,
+                              fit: BoxFit.contain,
+                            )
+                          : const Icon(
+                              Icons.broken_image,
+                              color: Colors.white10,
+                            ),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -1234,12 +1280,15 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
               ),
               const SizedBox(height: 16),
               _buildComparisonRow('COLOR', result.featureScores['Color'] ?? 0),
-              _buildComparisonRow('PATTERN', result.featureScores['Pattern'] ?? 0),
+              _buildComparisonRow(
+                'PATTERN',
+                result.featureScores['Pattern'] ?? 0,
+              ),
               _buildComparisonRow('SHADE', result.featureScores['Shade'] ?? 0),
               _buildComparisonRow('SHAPE', result.featureScores['Shape'] ?? 0),
-              
+
               const SizedBox(height: 32),
-              
+
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
@@ -1280,10 +1329,7 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: Colors.white10),
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(8),
-            child: content,
-          ),
+          child: Padding(padding: const EdgeInsets.all(8), child: content),
         ),
         const SizedBox(height: 8),
         Text(
@@ -1299,7 +1345,11 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
   }
 
   Widget _buildComparisonRow(String label, double score) {
-    final color = score > 0.8 ? Colors.greenAccent : score > 0.5 ? Colors.yellowAccent : Colors.redAccent;
+    final color = score > 0.8
+        ? Colors.greenAccent
+        : score > 0.5
+        ? Colors.yellowAccent
+        : Colors.redAccent;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
@@ -1310,11 +1360,18 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
             children: [
               Text(
                 label,
-                style: GoogleFonts.shareTechMono(color: Colors.white38, fontSize: 10),
+                style: GoogleFonts.shareTechMono(
+                  color: Colors.white38,
+                  fontSize: 10,
+                ),
               ),
               Text(
                 '${(score * 100).toInt()}% MATCH',
-                style: GoogleFonts.shareTechMono(color: color, fontSize: 10, fontWeight: FontWeight.bold),
+                style: GoogleFonts.shareTechMono(
+                  color: color,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
@@ -1345,7 +1402,10 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
       child: TextField(
         controller: _hintController,
         style: GoogleFonts.shareTechMono(
-            color: Colors.white, fontSize: 13, letterSpacing: 1),
+          color: Colors.white,
+          fontSize: 13,
+          letterSpacing: 1,
+        ),
         textAlign: TextAlign.center,
         decoration: InputDecoration(
           hintText: 'INPUT OPTIONAL HINT',
@@ -1373,14 +1433,15 @@ class _FeatureDot extends StatelessWidget {
     final color = score > 0.8
         ? Colors.greenAccent
         : score > 0.5
-            ? Colors.yellowAccent
-            : Colors.white24;
+        ? Colors.yellowAccent
+        : Colors.white24;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label,
-            style:
-                GoogleFonts.shareTechMono(color: Colors.white24, fontSize: 6)),
+        Text(
+          label,
+          style: GoogleFonts.shareTechMono(color: Colors.white24, fontSize: 6),
+        ),
         const SizedBox(height: 3),
         Container(
           width: 28,
@@ -1430,5 +1491,6 @@ class _ScanLinePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _ScanLinePainter old) => old.progress != progress;
+  bool shouldRepaint(covariant _ScanLinePainter old) =>
+      old.progress != progress;
 }

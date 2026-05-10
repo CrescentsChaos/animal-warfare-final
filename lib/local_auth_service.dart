@@ -431,11 +431,11 @@ class UserData {
       faction: json['faction'] as String? ?? '',
       title: json['title'] as String? ?? '',
       bio: json['bio'] as String? ?? '',
-      money: json['money'] as int? ?? 1000,
-      stamina: json['stamina'] as int? ?? 100,
-      bankTaka: json['bankTaka'] as int? ?? 0,
-      bankGold: json['bankGold'] as int? ?? 0,
-      bankDiamond: json['bankDiamond'] as int? ?? 0,
+      money: (json['money'] as num?)?.toInt() ?? 1000,
+      stamina: (json['stamina'] as num?)?.toInt() ?? 100,
+      bankTaka: (json['bankTaka'] as num?)?.toInt() ?? 0,
+      bankGold: (json['bankGold'] as num?)?.toInt() ?? 0,
+      bankDiamond: (json['bankDiamond'] as num?)?.toInt() ?? 0,
       isBlackMarketUnlocked: json['isBlackMarketUnlocked'] as bool? ?? false,
       phoneWallpaper: json['phoneWallpaper'] as String? ?? 'plains-bg.png',
       savedReplays:
@@ -456,7 +456,7 @@ class UserData {
           [],
       capturedOrganisms: capturedList,
       inventory: json['inventory'] != null
-          ? Map<String, int>.from(json['inventory'] as Map)
+          ? (json['inventory'] as Map).map((k, v) => MapEntry(k.toString(), (v as num).toInt()))
           : {},
       craftedTalismans:
           (json['craftedTalismans'] as List<dynamic>?)
@@ -470,7 +470,7 @@ class UserData {
           [],
       battleTeam:
           (json['battleTeam'] as List<dynamic>?)
-              ?.map((e) => e as int)
+              ?.map((e) => (e as num).toInt())
               .toList() ??
           [],
       rogueLikeState: json['rogueLikeState'] != null
@@ -479,7 +479,7 @@ class UserData {
               allOrganisms ?? [],
             )
           : const RogueLikeState(),
-      bestRogueFloor: json['bestRogueFloor'] as int? ?? 0,
+      bestRogueFloor: (json['bestRogueFloor'] as num?)?.toInt() ?? 0,
       bestRogueTeam: (json['bestRogueTeam'] as List? ?? [])
           .map((coJson) {
             final organismName = coJson['name'] as String?;
@@ -491,13 +491,13 @@ class UserData {
           })
           .whereType<CapturedOrganism>()
           .toList(),
-      accountLevel: json['accountLevel'] as int? ?? 1,
-      accountXP: json['accountXP'] as int? ?? 0,
+      accountLevel: (json['accountLevel'] as num?)?.toInt() ?? 1,
+      accountXP: (json['accountXP'] as num?)?.toInt() ?? 0,
       speciesStats:
           (json['speciesStats'] as Map?)?.map(
             (k, v) => MapEntry(
-              k as String,
-              (v as Map).map((ki, vi) => MapEntry(ki as String, vi as int)),
+              k.toString(),
+              (v as Map).map((ki, vi) => MapEntry(ki.toString(), (vi as num).toInt())),
             ),
           ) ??
           {},
@@ -533,8 +533,8 @@ class UserData {
           ? EventFlags.fromJson(json['eventFlags'] as Map<String, dynamic>)
           : const EventFlags(),
       lastMedicalCenterMapId: json['lastMedicalCenterMapId'] as String?,
-      lastMedicalCenterRow: json['lastMedicalCenterRow'] as int?,
-      lastMedicalCenterCol: json['lastMedicalCenterCol'] as int?,
+      lastMedicalCenterRow: (json['lastMedicalCenterRow'] as num?)?.toInt(),
+      lastMedicalCenterCol: (json['lastMedicalCenterCol'] as num?)?.toInt(),
       anidexUnlocked: json['anidexUnlocked'] as bool? ?? false,
       avatarFrame: json['avatarFrame'] as String? ?? '',
       profileBackground: json['profileBackground'] as String? ?? '',

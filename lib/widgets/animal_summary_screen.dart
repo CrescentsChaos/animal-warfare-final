@@ -671,6 +671,7 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
           l50Hp,
           AppColors.statHealthColor,
           nature.getMultiplier('health'),
+          'assets/icon/health.png',
         ),
         _statRow(
           'ATTACK',
@@ -679,6 +680,7 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
           l50Atk,
           AppColors.statAttackColor,
           nature.getMultiplier('attack'),
+          'assets/icon/attack.png',
         ),
         _statRow(
           'DEFENSE',
@@ -687,6 +689,7 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
           l50Def,
           AppColors.statDefenseColor,
           nature.getMultiplier('defense'),
+          'assets/icon/defense.png',
         ),
         _statRow(
           'POWER',
@@ -695,6 +698,7 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
           l50Pwr,
           AppColors.statPowerColor,
           nature.getMultiplier('power'),
+          'assets/icon/power.png',
         ),
         _statRow(
           'RESISTANCE',
@@ -703,6 +707,7 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
           l50Res,
           AppColors.statResistanceStatColor,
           nature.getMultiplier('resistance'),
+          'assets/icon/resistance.png',
         ),
         _statRow(
           'SPEED',
@@ -711,6 +716,7 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
           l50Spd,
           AppColors.statSpeedColor,
           nature.getMultiplier('speed'),
+          'assets/icon/speed.png',
         ),
         const SizedBox(height: 20),
         _natureBanner(
@@ -751,6 +757,7 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
     int l50Val,
     Color color,
     double natureMult,
+    String iconPath,
   ) {
     const maxBar = 600.0;
     final curPerc = (curVal / maxBar).clamp(0.0, 1.0);
@@ -766,6 +773,8 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
         children: [
           Row(
             children: [
+              Image.asset(iconPath, width: 14, height: 14),
+              const SizedBox(width: 8),
               SizedBox(
                 width: 80,
                 child: Text(
@@ -1279,12 +1288,12 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
   Widget _buildKVTab() {
     final kvs = _current.killValues;
     final statData = [
-      ('HP', 'health', AppColors.statHealthColor),
-      ('Attack', 'attack', AppColors.statAttackColor),
-      ('Defense', 'defense', AppColors.statDefenseColor),
-      ('Power', 'power', AppColors.statPowerColor),
-      ('Resistance', 'resistance', AppColors.statResistanceStatColor),
-      ('Speed', 'speed', AppColors.statSpeedColor),
+      ('HP', 'health', AppColors.statHealthColor, 'assets/icon/health.png'),
+      ('Attack', 'attack', AppColors.statAttackColor, 'assets/icon/attack.png'),
+      ('Defense', 'defense', AppColors.statDefenseColor, 'assets/icon/defense.png'),
+      ('Power', 'power', AppColors.statPowerColor, 'assets/icon/power.png'),
+      ('Resistance', 'resistance', AppColors.statResistanceStatColor, 'assets/icon/resistance.png'),
+      ('Speed', 'speed', AppColors.statSpeedColor, 'assets/icon/speed.png'),
     ];
 
     final total = _current.totalKV;
@@ -1314,6 +1323,8 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
               children: [
                 Row(
                   children: [
+                    Image.asset(entry.$4, width: 14, height: 14),
+                    const SizedBox(width: 8),
                     SizedBox(
                       width: 76,
                       child: Text(

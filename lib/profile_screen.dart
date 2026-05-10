@@ -36,22 +36,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _initAchievementService();
   }
 
-  Future<void> _loadOrganisms() async {
-    const String assetPath = 'assets/Organisms.json';
-    try {
-      final String response = await rootBundle.loadString(assetPath);
-      if (mounted) {
-        setState(() {
-          _allOrganisms = json.decode(response);
-          // Re-init achievement service once organisms are loaded
-          _initAchievementService();
-        });
-      }
-    } catch (e) {
-      debugPrint('Error loading Organisms.json: $e');
-    }
-  }
-
   void _initAchievementService() {
     _achievementService = AchievementService(
       allOrganisms: _allOrganisms,
@@ -66,6 +50,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() {
         _achievements = _achievementService.getAllAchievements();
       });
+    }
+  }
+
+  Future<void> _loadOrganisms() async {
+    const String assetPath = 'assets/Organisms.json';
+    try {
+      final String response = await rootBundle.loadString(assetPath);
+      if (mounted) {
+        setState(() {
+          _allOrganisms = json.decode(response);
+          // Re-init achievement service once organisms are loaded
+          _initAchievementService();
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading Organisms.json: $e');
     }
   }
 
@@ -115,6 +115,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             discoveredCount,
                             totalCount,
                           ),
+                          SizedBox(height: 32.h),
                           SizedBox(height: 32.h),
                           _buildAchievementDisplay(user),
                           SizedBox(height: 32.h),
@@ -172,11 +173,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Opacity(
                 opacity: 0.3,
                 child: Image.asset(
-                  user.profileBackground.isNotEmpty 
-                      ? 'assets/profile_bgs/${user.profileBackground}.png' 
-                      : 'assets/main.png', 
+                  user.profileBackground.isNotEmpty
+                      ? 'assets/profile_bgs/${user.profileBackground}.png'
+                      : 'assets/main.png',
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Image.asset('assets/main.png', fit: BoxFit.cover),
+                  errorBuilder: (context, error, stackTrace) =>
+                      Image.asset('assets/main.png', fit: BoxFit.cover),
                 ),
               ),
             ),
@@ -224,19 +226,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
       ),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.settings_outlined, color: Colors.white70),
-          onPressed: () => Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => SettingsScreen(
-                currentUser: user,
-                authService: LocalAuthService(),
-              ),
-            ),
-          ),
-        ),
-      ],
     );
   }
 
@@ -279,7 +268,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             backgroundColor: AppColors.primary.withValues(alpha: 0.1),
             backgroundImage: imageProvider,
             child: imageProvider == null
-                ? Icon(Icons.person, size: 55.w, color: AppColors.primary)
+                ? Image.asset(
+                    'assets/icon/profile.png',
+                    width: 55.w,
+                    height: 55.w,
+                    color: AppColors.primary,
+                  )
                 : null,
           ),
         ),
@@ -288,7 +282,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Image.asset(
               'assets/accessories/${user.avatarFrame}.png',
               fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+              errorBuilder: (context, error, stackTrace) =>
+                  const SizedBox.shrink(),
             ),
           ),
       ],
@@ -333,7 +328,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: _statCard(
                   'CASH',
                   '${UserState.formatCurrency(user.money, detailed: userState.showDetailedCurrency)} Tk.',
-                  Icons.savings_outlined,
+                  'assets/icon/inventory.png',
                   Colors.amber,
                 ),
               ),
@@ -343,7 +338,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: _statCard(
                 'LEVEL',
                 user.accountLevel.toString(),
-                Icons.bolt,
+                'assets/icon/electric.png',
                 Colors.blueAccent,
               ),
             ),
@@ -353,7 +348,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _statCard(
           'ANIMAL DEX COMPLETION',
           '$discovered / $total',
-          Icons.pets,
+          'assets/icon/animal_dex.png',
           const Color(0xFF2ECC71),
           fullWidth: true,
         ),
@@ -364,7 +359,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _statCard(
     String label,
     String value,
-    IconData icon,
+    dynamic icon,
     Color color, {
     bool fullWidth = false,
   }) {
@@ -386,7 +381,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
               color: color.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: color, size: 24.sp),
+            child: icon is String
+                ? Image.asset(
+                    icon,
+                    width: 24.sp,
+                    height: 24.sp,
+                    errorBuilder: (context, error, stackTrace) => Icon(
+                      Icons.broken_image,
+                      size: 24.sp,
+                    ),
+                  )
+                : Icon(
+                    icon as IconData,
+                    size: 24.sp,
+                  ),
           ),
           SizedBox(width: 20.w),
           Expanded(
@@ -419,144 +427,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildAchievementDisplay(UserData user) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            _sectionHeader('FEATURED MEDALS'),
-            TextButton(
-              onPressed: () => _showAchievementSelection(context),
-              child: Text(
-                'CUSTOMIZE',
-                style: TextStyle(
-                  fontFamily: 'PressStart2P',
-                  fontSize: 7.sp,
-                  color: const Color(0xFFDAA520).withValues(alpha: 0.8),
-                ),
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: 16.h),
-        Container(
-          padding: EdgeInsets.symmetric(vertical: 24.h),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.03),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: List.generate(3, (index) {
-              if (index < user.displayedAchievements.length) {
-                final title = user.displayedAchievements[index];
-                final achievement = _achievements.firstWhere(
-                  (a) => a.title == title,
-                  orElse: () => Achievement(title: title, description: ''),
-                );
-                return _medalItem(achievement.imagePath, achievement.title);
-              } else {
-                return _emptyMedalSlot();
-              }
-            }),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _medalItem(String? path, String title) {
-    return Column(
-      children: [
-        Container(
-          width: 80.w,
-          height: 80.w,
-          padding: EdgeInsets.all(4.w),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFFDAA520).withValues(alpha: 0.3),
-                blurRadius: 20,
-                spreadRadius: 2,
-              ),
-            ],
-          ),
-          child: Image.asset(
-            path ?? 'assets/achievements/medal_bronze.png',
-            fit: BoxFit.contain,
-            errorBuilder: (context, error, stackTrace) => const Icon(
-              Icons.military_tech,
-              color: Color(0xFFDAA520),
-              size: 50,
-            ),
-          ),
-        ),
-        SizedBox(height: 12.h),
-        SizedBox(
-          width: 90.w,
-          child: Text(
-            title.toUpperCase(),
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontFamily: 'PressStart2P',
-              fontSize: 6.sp,
-              color: Colors.white.withValues(alpha: 0.9),
-              height: 1.6,
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _emptyMedalSlot() {
-    return Column(
-      children: [
-        GestureDetector(
-          onTap: () => _showAchievementSelection(context),
-          child: Container(
-            width: 80.w,
-            height: 80.w,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white.withValues(alpha: 0.04),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.1),
-                width: 2,
-              ),
-            ),
-            child: Icon(Icons.add_rounded, color: Colors.white10, size: 36.sp),
-          ),
-        ),
-        SizedBox(height: 12.h),
-        Text(
-          'LOCKED',
-          style: TextStyle(
-            fontFamily: 'PressStart2P',
-            fontSize: 7.sp,
-            color: Colors.white10,
-          ),
-        ),
-      ],
-    );
-  }
-
-  void _showAchievementSelection(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) =>
-          AchievementSelectionSheet(allOrganisms: _allOrganisms),
     );
   }
 
@@ -642,24 +512,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Expanded(
               child: _utilityButton(
                 'EDIT PROFILE',
-                Icons.manage_accounts,
+                'assets/icon/settings.png',
                 _navigateToEditScreen,
-              ),
-            ),
-            SizedBox(width: 16.w),
-            Expanded(
-              child: _utilityButton(
-                'ACHIEVEMENTS',
-                Icons.emoji_events,
-                () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => AchievementsScreen(
-                      currentUser: user,
-                      allOrganisms: _allOrganisms,
-                      authService: LocalAuthService(),
-                    ),
-                  ),
-                ),
               ),
             ),
           ],
@@ -668,7 +522,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _utilityButton(String label, IconData icon, VoidCallback onTap) {
+  Widget _utilityButton(String label, dynamic icon, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(20),
@@ -682,11 +536,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              color: const Color(0xFFDAA520).withValues(alpha: 0.9),
-              size: 28.sp,
-            ),
+            icon is String
+                ? Image.asset(
+                    icon,
+                    color: const Color(0xFFDAA520).withValues(alpha: 0.9),
+                    width: 28.sp,
+                    height: 28.sp,
+                    errorBuilder: (context, error, stackTrace) => Icon(
+                      Icons.broken_image,
+                      color: const Color(0xFFDAA520),
+                      size: 28.sp,
+                    ),
+                  )
+                : Icon(
+                    icon as IconData,
+                    color: const Color(0xFFDAA520),
+                    size: 28.sp,
+                  ),
             SizedBox(height: 12.h),
             Text(
               label,
@@ -825,5 +691,120 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ],
     );
+  }
+
+  Widget _buildAchievementDisplay(UserData user) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _sectionHeader('FEATURED MEDALS'),
+        SizedBox(height: 24.h),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: List.generate(3, (index) {
+            final String? achievementId =
+                (user.displayedAchievements.length > index)
+                    ? user.displayedAchievements[index]
+                    : null;
+            final Achievement? achievement = achievementId != null
+                ? _achievements.firstWhere(
+                    (a) => a.id == achievementId,
+                    orElse: () => Achievement.empty(),
+                  )
+                : null;
+
+            if (achievement != null && achievement.id != 'empty') {
+              return _medalItem(achievement, index);
+            } else {
+              return _emptyMedalSlot(index);
+            }
+          }),
+        ),
+      ],
+    );
+  }
+
+  Widget _medalItem(Achievement achievement, int slotIndex) {
+    return GestureDetector(
+      onTap: () => _showAchievementSelection(),
+      child: Container(
+        width: 100.w,
+        height: 120.h,
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.03),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: const Color(0xFFDAA520).withValues(alpha: 0.2),
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 50.w,
+              height: 50.w,
+              child: Image.asset(
+                achievement.imagePath ?? 'assets/achievements/medal_bronze.png',
+                fit: BoxFit.contain,
+                errorBuilder:
+                    (context, error, stackTrace) => Image.asset(
+                      'assets/icon/achievements.png',
+                      width: 44.sp,
+                      height: 44.sp,
+                      color: const Color(0xFFDAA520),
+                    ),
+              ),
+            ),
+            SizedBox(height: 12.h),
+            Text(
+              achievement.title.toUpperCase(),
+              style: GoogleFonts.orbitron(
+                fontSize: 8.sp,
+                color: Colors.white70,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _emptyMedalSlot(int slotIndex) {
+    return GestureDetector(
+      onTap: () => _showAchievementSelection(),
+      child: Container(
+        width: 100.w,
+        height: 120.h,
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.02),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.white10),
+        ),
+        child: Image.asset(
+          'assets/icon/bio_scanner.png',
+          width: 32.sp,
+          height: 32.sp,
+          color: Colors.white24,
+        ),
+      ),
+    );
+  }
+
+  void _showAchievementSelection() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => AchievementSelectionSheet(
+        allOrganisms: _allOrganisms,
+      ),
+    ).then((_) {
+      // Reload achievements in case they were changed
+      _loadAchievements();
+    });
   }
 }

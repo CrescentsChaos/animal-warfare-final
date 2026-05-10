@@ -406,7 +406,8 @@
 
                 card.innerHTML = `
                 <div class="card-inner">
-                    <div class="card-sprite-wrap" style="background: radial-gradient(circle at center, ${rarityColor}22 0%, transparent 70%);">
+                    <div class="card-sprite-wrap" style="background-image: url('${this.rarityBackground(rarity)}'); background-size: cover; background-position: center;">
+                        <div class="card-sprite-overlay" style="background: radial-gradient(circle at center, ${rarityColor}22 0%, transparent 70%);"></div>
                         <img src="${spriteSrc}" alt="${org.name}"
                              onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
                         <div class="sprite-fallback" style="display:none">🦎</div>
@@ -541,7 +542,8 @@
                 const aActivity = org.active_time || org.activity || 'Unknown';
 
                 document.getElementById('modal-content').innerHTML = `
-                <div class="detail-header" style="background:linear-gradient(135deg, ${rarityColor}22 0%, transparent 60%)">
+                <div class="detail-header" style="background-image: url('${this.rarityBackground(rarity)}'); background-size: cover; background-position: center;">
+                    <div class="detail-header-overlay" style="background:linear-gradient(135deg, ${rarityColor}33 0%, var(--surface) 100%)"></div>
                     <div class="detail-sprite-wrap">
                         <img src="${spriteSrc}" alt="${org.name}"
                              onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
@@ -730,6 +732,17 @@
             toggleFilter() {
                 document.getElementById('sidebar').classList.toggle('open');
                 document.getElementById('sidebar-overlay').classList.toggle('active');
+            },
+
+            rarityBackground(rarity) {
+                const r = rarity.toLowerCase();
+                if (r.includes('common')) return 'assets/icon/common.png';
+                if (r.includes('uncommon')) return 'assets/icon/uncommon.png';
+                if (r.includes('rare')) return 'assets/icon/rare.png';
+                if (r.includes('epic')) return 'assets/icon/epic.png';
+                if (r.includes('legendary')) return 'assets/icon/legendary.png';
+                if (r.includes('mythical')) return 'assets/icon/mythical.png';
+                return 'assets/icon/common.png';
             }
         };
 

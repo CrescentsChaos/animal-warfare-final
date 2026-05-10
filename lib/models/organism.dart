@@ -93,31 +93,56 @@ class Organism {
     }
 
     return Organism(
-      name: (json['name'] ?? 'Unknown') as String,
-      scientificName: (json['scientific_name'] ?? 'Unknown') as String,
-      habitat: (json['habitat'] ?? 'Unknown') as String,
-      drops: (json['drops'] ?? '') as String,
-      attack: (json['attack'] as int? ?? 10),
-      defense: (json['defense'] as int? ?? 10),
-      power: (json['power'] as int? ?? 10),
-      resistance: (json['resistance'] as int? ?? 10),
-      health: (json['health'] as int? ?? 50),
-      speed: (json['speed'] as int? ?? 10),
-      abilities: (json['abilities'] ?? '') as String,
-      category: (json['category'] ?? '') as String,
-      moves: (json['moves'] ?? '') as String,
-      sprite: (json['sprite'] ?? '') as String,
-      rarity: (json['rarity'] as String? ?? 'Common'),
-      description: (json['description'] as String? ?? ''),
+      name: (json['name'] ?? 'Unknown').toString(),
+      scientificName: (json['scientific_name'] ?? 'Unknown').toString(),
+      habitat: (json['habitat'] ?? 'Unknown').toString(),
+      drops: (json['drops'] ?? '').toString(),
+      attack: (json['attack'] as num? ?? 10).toInt(),
+      defense: (json['defense'] as num? ?? 10).toInt(),
+      power: (json['power'] as num? ?? 10).toInt(),
+      resistance: (json['resistance'] as num? ?? 10).toInt(),
+      health: (json['health'] as num? ?? 50).toInt(),
+      speed: (json['speed'] as num? ?? 10).toInt(),
+      abilities: (json['abilities'] ?? '').toString(),
+      category: (json['category'] ?? '').toString(),
+      moves: (json['moves'] ?? '').toString(),
+      sprite: (json['sprite'] ?? '').toString(),
+      rarity: (json['rarity']?.toString() ?? 'Common'),
+      description: (json['description']?.toString() ?? ''),
       types: typeList,
-      weight: (json['weight'] as num? ?? 1.0).toDouble(),
-      activeTime: (json['active_time'] as String? ?? 'any'),
-      cry: (json['cry'] as String? ?? 'default'),
-      spawnTiles: (json['spawn_tiles'] as String? ?? 'any'),
-      pheno: (json['pheno'] as String? ?? 'none'),
-      animalClass: (json['class'] ?? json['animal_class'] as String? ?? 'unknown'),
-      diet: (json['diet'] as String? ?? 'unknown'),
+      weight: _parseWeight(json['weight']),
+      activeTime: (json['active_time']?.toString() ?? 'any'),
+      cry: (json['cry']?.toString() ?? 'default'),
+      spawnTiles: (json['spawn_tiles']?.toString() ?? 'any'),
+      pheno: (json['pheno']?.toString() ?? 'none'),
+      animalClass: (json['class'] ?? json['animal_class'])?.toString() ?? 'unknown',
+      diet: (json['diet']?.toString() ?? 'unknown'),
     );
+  }
+
+  String get formattedWeight {
+    if (weight == null) return "0.0";
+    if (weight! < 0.0001) {
+      // For very small weights (like microbes), use scientific or fixed with many decimals
+      // but let's just use a clean string representation.
+      return weight!.toStringAsFixed(12).replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '');
+    }
+    // For normal weights, if it's a whole number, show it as such
+    if (weight! == weight!.toInt().toDouble()) {
+      return weight!.toInt().toString();
+    }
+    return weight!.toString();
+  }
+
+  static double _parseWeight(dynamic value) {
+    if (value == null) return 1.0;
+    if (value is num) return value.toDouble();
+    if (value is String) {
+      // Remove commas and try to parse
+      final cleaned = value.replaceAll(',', '');
+      return double.tryParse(cleaned) ?? 1.0;
+    }
+    return 1.0;
   }
 
   /// Roll for a random loot drop directly from the JSON field.

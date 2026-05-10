@@ -977,24 +977,25 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     bool isHighlight = false;
 
     final lowerEntry = entry.toLowerCase();
+    String? entryIconPath;
     if (lowerEntry.contains('critical hit')) {
       accentColor = Colors.redAccent;
-      entryIcon = Icons.flash_on;
+      entryIconPath = 'assets/icon/power.png';
       isHighlight = true;
     } else if (lowerEntry.contains('super effective')) {
       accentColor = Colors.orangeAccent;
-      entryIcon = Icons.auto_awesome;
+      entryIconPath = 'assets/icon/aura.png';
       isHighlight = true;
     } else if (lowerEntry.contains('not very effective')) {
       accentColor = Colors.blueGrey;
-      entryIcon = Icons.shield_outlined;
+      entryIconPath = 'assets/icon/defense.png';
     } else if (lowerEntry.contains('fainted')) {
       accentColor = Colors.red;
-      entryIcon = Icons.dangerous;
+      entryIconPath = 'assets/icon/spectral.png';
       isHighlight = true;
     } else if (lowerEntry.contains('uses')) {
       accentColor = themeColor;
-      entryIcon = Icons.sports_mma;
+      entryIconPath = 'assets/icon/attack.png';
     }
 
     return Padding(
@@ -1004,7 +1005,14 @@ class _BattleScreenContentState extends State<BattleScreenContent>
         children: [
           Padding(
             padding: const EdgeInsets.only(top: 1),
-            child: Icon(entryIcon, color: accentColor, size: 14),
+            child: entryIconPath != null
+                ? Image.asset(
+                    entryIconPath,
+                    color: accentColor,
+                    width: 14,
+                    height: 14,
+                  )
+                : Icon(entryIcon, color: accentColor, size: 14),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -1209,26 +1217,6 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                         image: DecorationImage(
                           image: AssetImage(_getAssetPath(widget.biomeName)),
                           fit: BoxFit.cover,
-                          colorFilter: timeOfDay == 'day'
-                              ? ColorFilter.mode(
-                                  const Color.fromARGB(
-                                    255,
-                                    0,
-                                    0,
-                                    0,
-                                  ).withValues(alpha: 0.5),
-                                  BlendMode.darken,
-                                )
-                              : ColorFilter.mode(
-                                  timeOfDay == 'evening'
-                                      ? Colors.orangeAccent.withValues(
-                                          alpha: 0.5,
-                                        )
-                                      : Colors.indigo[900]!.withValues(
-                                          alpha: 0.7,
-                                        ),
-                                  BlendMode.multiply,
-                                ),
                         ),
                       ),
                     );
@@ -1625,7 +1613,12 @@ class _BattleScreenContentState extends State<BattleScreenContent>
             children: [
               IconButton(
                 onPressed: _toggleOrientation,
-                icon: const Icon(Icons.screen_rotation),
+                icon: Image.asset(
+                  'assets/icon/map_tools.png',
+                  width: 24,
+                  height: 24,
+                  color: _getBiomeThemeColor(),
+                ),
                 color: _getBiomeThemeColor(),
                 tooltip: 'Rotate Screen',
                 style: IconButton.styleFrom(
@@ -1636,7 +1629,12 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               const SizedBox(width: 8),
               IconButton(
                 onPressed: () => _showBattleLog(context, battleManager),
-                icon: const Icon(Icons.menu_book),
+                icon: Image.asset(
+                  'assets/icon/animal_dex.png',
+                  width: 24,
+                  height: 24,
+                  color: _getBiomeThemeColor(),
+                ),
                 color: _getBiomeThemeColor(),
                 tooltip: 'Battle Log',
                 style: IconButton.styleFrom(
@@ -3251,7 +3249,12 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                     onPressed: isTurnLocked
                         ? null
                         : () => _showNetMenu(context, battleManager, userState),
-                    icon: Icon(Icons.grid_on, size: isNarrow ? 14 : 18),
+                    icon: Image.asset(
+                      'assets/icon/bio_scanner.png',
+                      width: isNarrow ? 14 : 18,
+                      height: isNarrow ? 14 : 18,
+                      color: isTurnLocked ? Colors.white24 : Colors.white,
+                    ),
                     label: FittedBox(
                       fit: BoxFit.scaleDown,
                       child: Text(
@@ -3292,7 +3295,12 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                             battleManager,
                             userState,
                           ),
-                    icon: Icon(Icons.outbox, size: isNarrow ? 14 : 18),
+                    icon: Image.asset(
+                      'assets/icon/animal_box.png',
+                      width: isNarrow ? 14 : 18,
+                      height: isNarrow ? 14 : 18,
+                      color: isTurnLocked ? Colors.white24 : Colors.white,
+                    ),
                     label: FittedBox(
                       fit: BoxFit.scaleDown,
                       child: const Text(
@@ -3328,7 +3336,12 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                   onPressed: isTurnLocked
                       ? null
                       : () => _showSwitchDialog(context, battleManager),
-                  icon: Icon(Icons.swap_horiz, size: isNarrow ? 14 : 18),
+                  icon: Image.asset(
+                    'assets/icon/speed.png',
+                    width: isNarrow ? 14 : 18,
+                    height: isNarrow ? 14 : 18,
+                    color: isTurnLocked ? Colors.white24 : Colors.white,
+                  ),
                   label: FittedBox(
                     fit: BoxFit.scaleDown,
                     child: const Text(

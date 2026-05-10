@@ -92,7 +92,7 @@ class _PhoneScreenState extends State<PhoneScreen> {
           // Background blur
           BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-            child: Container(color: Colors.black.withValues(alpha: 0.4)),
+            child: Container(color: Colors.black.withValues(alpha: 0.7)),
           ),
 
           Center(
@@ -369,7 +369,12 @@ class _PhoneScreenState extends State<PhoneScreen> {
                   Icons.local_offer_outlined,
                   Colors.purple,
                 ),
-                _buildAppIcon('Settings', Icons.settings_outlined, Colors.grey),
+                _buildAppIcon(
+                  'Settings',
+                  null,
+                  Colors.grey,
+                  iconPath: 'assets/icon/settings.png',
+                ),
               ],
             ),
           ),
@@ -378,7 +383,12 @@ class _PhoneScreenState extends State<PhoneScreen> {
     );
   }
 
-  Widget _buildAppIcon(String name, IconData icon, Color color) {
+  Widget _buildAppIcon(
+    String name,
+    IconData? icon,
+    Color color, {
+    String? iconPath,
+  }) {
     return InkWell(
       onTap: () => setState(() => _activeApp = name),
       child: Column(
@@ -400,11 +410,18 @@ class _PhoneScreenState extends State<PhoneScreen> {
                 ),
               ],
             ),
-            child: Icon(
-              icon,
-              color: Colors.white,
-              size: 28,
-            ), // White icons for contrast
+            child: iconPath != null
+                ? Image.asset(
+                    iconPath,
+                    width: 28,
+                    height: 28,
+                    color: Colors.white,
+                  )
+                : Icon(
+                    icon,
+                    color: Colors.white,
+                    size: 28,
+                  ), // White icons for contrast
           ),
           const SizedBox(height: 4),
           Container(

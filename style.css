@@ -397,6 +397,14 @@ main {
     background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
     background-size: 12px 12px;
     border-bottom: 1px solid rgba(255,255,255,0.05);
+    z-index: 1;
+}
+
+.card-sprite-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    opacity: 0.8;
 }
 
 .item-sprite-wrap { height: 130px; }
@@ -668,6 +676,14 @@ main {
     padding: 36px 32px 28px;
     border-bottom: 1px solid var(--border);
     position: relative;
+    z-index: 1;
+}
+
+.detail-header-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
 }
 
 .detail-sprite-wrap {

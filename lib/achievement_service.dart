@@ -130,7 +130,8 @@ class AchievementService {
                 final correct = stats['correct'] as int? ?? 0;
                 final streak = stats['bestStreak'] as int? ?? 0;
                 totalCorrect += correct;
-                if (difficulty.toLowerCase() == 'hard') totalHardCorrect += correct;
+                if (difficulty.toLowerCase() == 'hard')
+                  totalHardCorrect += correct;
                 if (quizName.toLowerCase().contains('genus')) {
                   totalGenusCorrect += correct;
                 }
@@ -149,13 +150,21 @@ class AchievementService {
       });
 
       if (achievement.requiredQuizCorrect > 0 &&
-          totalCorrect >= achievement.requiredQuizCorrect) return true;
+          totalCorrect >= achievement.requiredQuizCorrect) {
+        return true;
+      }
       if (achievement.requiredHardQuizCorrect > 0 &&
-          totalHardCorrect >= achievement.requiredHardQuizCorrect) return true;
+          totalHardCorrect >= achievement.requiredHardQuizCorrect) {
+        return true;
+      }
       if (achievement.requiredGenusQuizCorrect > 0 &&
-          totalGenusCorrect >= achievement.requiredGenusQuizCorrect) return true;
+          totalGenusCorrect >= achievement.requiredGenusQuizCorrect) {
+        return true;
+      }
       if (achievement.requiredQuizStreak > 0 &&
-          maxStreak >= achievement.requiredQuizStreak) return true;
+          maxStreak >= achievement.requiredQuizStreak) {
+        return true;
+      }
     }
 
     // 🆕 LOGIC 6: Arcade Game achievements
@@ -183,7 +192,7 @@ class AchievementService {
   int _getMaxStat(dynamic data, String statKey) {
     if (data is Map<String, dynamic>) {
       int maxVal = data[statKey] as int? ?? 0; // Old flat structure
-      
+
       // Check difficulties
       final difficulties = ['Easy', 'Normal', 'Hard', 'easy', 'normal', 'hard'];
       for (var d in difficulties) {

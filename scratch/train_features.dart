@@ -63,21 +63,22 @@ void main(List<String> args) async {
   final organismsJson = File('assets/Organisms.json').readAsStringSync();
   final List organisms = jsonDecode(organismsJson);
   final org = organisms.cast<Map<String, dynamic>?>().firstWhere(
-        (o) =>
-            (o?['scientific_name'] as String?)?.toLowerCase() ==
-            scientificName!.toLowerCase(),
-        orElse: () => null,
-      );
+    (o) =>
+        (o?['scientific_name'] as String?)?.toLowerCase() ==
+        scientificName!.toLowerCase(),
+    orElse: () => null,
+  );
 
   if (org == null) {
     print('Error: No organism found with scientific name "$scientificName"');
     print('');
     // Show similar matches
     final firstWord = scientificName.split(' ').first.toLowerCase();
-    final matches = organisms.where((o) =>
-        ((o['scientific_name'] as String?) ?? '')
-            .toLowerCase()
-            .contains(firstWord));
+    final matches = organisms.where(
+      (o) => ((o['scientific_name'] as String?) ?? '').toLowerCase().contains(
+        firstWord,
+      ),
+    );
     if (matches.isNotEmpty) {
       print('Did you mean one of these?');
       for (var m in matches.take(10)) {
@@ -93,7 +94,12 @@ void main(List<String> args) async {
   // Open DB
   sqfliteFfiInit();
   final factory = databaseFactoryFfi;
-  final dbPath = p.join(Directory.current.path, 'assets', 'ml', 'sprite_features.db');
+  final dbPath = p.join(
+    Directory.current.path,
+    'assets',
+    'ml',
+    'sprite_features.db',
+  );
 
   if (!File(dbPath).existsSync()) {
     print('Error: Database not found at $dbPath');
@@ -116,7 +122,12 @@ void main(List<String> args) async {
   final newFeatures = extractFeatures(decoded, organismName);
   print('Features extracted successfully.');
 
-  await upsertFeatureToDb(db, organismName, scientificName: scientificName, newFeatures: newFeatures);
+  await upsertFeatureToDb(
+    db,
+    organismName,
+    scientificName: scientificName,
+    newFeatures: newFeatures,
+  );
   print('Database updated successfully.');
   await db.close();
   print('');
@@ -125,7 +136,12 @@ void main(List<String> args) async {
   print('----------------------------------');
 }
 
-Future<void> upsertFeatureToDb(Database db, String organismName, {required String scientificName, required Map<String, dynamic> newFeatures}) async {
+Future<void> upsertFeatureToDb(
+  Database db,
+  String organismName, {
+  required String scientificName,
+  required Map<String, dynamic> newFeatures,
+}) async {
   // Check for existing entry
   final existing = await db.query(
     'organism_features',
@@ -142,36 +158,46 @@ Future<void> upsertFeatureToDb(Database db, String organismName, {required Strin
     // Average numeric fields
     final mergedData = {
       'avg_brightness': _weightedAvg(
-          oldRow['avg_brightness'] as double,
-          newFeatures['avgBrightness'] as double,
-          oldCount),
+        oldRow['avg_brightness'] as double,
+        newFeatures['avgBrightness'] as double,
+        oldCount,
+      ),
       'avg_saturation': _weightedAvg(
-          oldRow['avg_saturation'] as double,
-          newFeatures['avgSaturation'] as double,
-          oldCount),
+        oldRow['avg_saturation'] as double,
+        newFeatures['avgSaturation'] as double,
+        oldCount,
+      ),
       'aspect_ratio': _weightedAvg(
-          oldRow['aspect_ratio'] as double,
-          newFeatures['aspectRatio'] as double,
-          oldCount),
-      'solidity': _weightedAvg(oldRow['solidity'] as double,
-          newFeatures['solidity'] as double, oldCount),
+        oldRow['aspect_ratio'] as double,
+        newFeatures['aspectRatio'] as double,
+        oldCount,
+      ),
+      'solidity': _weightedAvg(
+        oldRow['solidity'] as double,
+        newFeatures['solidity'] as double,
+        oldCount,
+      ),
       'vertical_symmetry': _weightedAvg(
-          oldRow['vertical_symmetry'] as double,
-          newFeatures['verticalSymmetry'] as double,
-          oldCount),
+        oldRow['vertical_symmetry'] as double,
+        newFeatures['verticalSymmetry'] as double,
+        oldCount,
+      ),
       'horizontal_symmetry': _weightedAvg(
-          oldRow['horizontal_symmetry'] as double,
-          newFeatures['horizontalSymmetry'] as double,
-          oldCount),
+        oldRow['horizontal_symmetry'] as double,
+        newFeatures['horizontalSymmetry'] as double,
+        oldCount,
+      ),
       'edge_density': _weightedAvg(
-          oldRow['edge_density'] as double,
-          newFeatures['edgeDensity'] as double,
-          oldCount),
+        oldRow['edge_density'] as double,
+        newFeatures['edgeDensity'] as double,
+        oldCount,
+      ),
     };
 
     // Merge hue bins
-    final oldHueBins =
-        Map<String, double>.from(jsonDecode(oldRow['hue_bins'] as String));
+    final oldHueBins = Map<String, double>.from(
+      jsonDecode(oldRow['hue_bins'] as String),
+    );
     final newHueBins = newFeatures['hueBins'] as Map<String, double>;
 
     final mergedHueBins = <String, double>{};
@@ -183,15 +209,16 @@ Future<void> upsertFeatureToDb(Database db, String organismName, {required Strin
     }
 
     // Merge spatial hue bins
-    final oldSpatial =
-        Map<String, double>.from(jsonDecode(oldRow['spatial_hue_bins'] as String));
+    final oldSpatial = Map<String, double>.from(
+      jsonDecode(oldRow['spatial_hue_bins'] as String),
+    );
     final newSpatial = newFeatures['spatialHueBins'] as Map<String, double>;
 
     final mergedSpatial = <String, double>{};
     for (int gy = 0; gy < 3; gy++) {
       for (int gx = 0; gx < 3; gx++) {
         for (int hue = 0; hue < 360; hue += 10) {
-          final key = 'g${gx}${gy}_h$hue';
+          final key = 'g$gx${gy}_h$hue';
           final oldVal = oldSpatial[key] ?? 0.0;
           final newVal = newSpatial[key] ?? 0.0;
           if (oldVal > 0 || newVal > 0) {
@@ -203,7 +230,7 @@ Future<void> upsertFeatureToDb(Database db, String organismName, {required Strin
 
     // Convert dominant colors safely
     String dominantColorsJson = jsonEncode(newFeatures['dominantColors']);
-    
+
     // Attempt to merge dominant colors (naive approach: just take average of new if we want, or keep new)
     // Actually, keeping the most recent dominant colors is fine, or we could union them.
     // Let's just use the new ones for simplicity since they are less critical than bins.
@@ -247,7 +274,9 @@ Future<void> upsertFeatureToDb(Database db, String organismName, {required Strin
   }
 
   // Show final stats
-  final result = await db.rawQuery('SELECT COUNT(*) as count FROM organism_features');
+  final result = await db.rawQuery(
+    'SELECT COUNT(*) as count FROM organism_features',
+  );
   final totalCount = result.first['count'] as int;
   print('Total features in DB: $totalCount');
 }
@@ -351,7 +380,9 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
   final Map<int, int> colorCounts = {};
   double totalBrightness = 0, totalSaturation = 0;
   final finalHueBins = <String, double>{};
-  for (int i = 0; i < 36; i++) finalHueBins['h${i * 10}'] = 0;
+  for (int i = 0; i < 36; i++) {
+    finalHueBins['h${i * 10}'] = 0;
+  }
 
   for (int y = 0; y < resized.height; y++) {
     for (int x = 0; x < resized.width; x++) {
@@ -405,8 +436,9 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
         }
       }
       gridBins.forEach((bin, count) {
-        spatialHueBins['g${gx}${gy}_h${bin * 10}'] =
-            gridPixels > 0 ? count / gridPixels : 0;
+        spatialHueBins['g$gx${gy}_h${bin * 10}'] = gridPixels > 0
+            ? count / gridPixels
+            : 0;
       });
     }
   }
@@ -429,7 +461,13 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
 }
 
 (double, double) _calculateSymmetry(
-    img.Image image, List<bool> mask, int minX, int maxX, int minY, int maxY) {
+  img.Image image,
+  List<bool> mask,
+  int minX,
+  int maxX,
+  int minY,
+  int maxY,
+) {
   int hMatches = 0, vMatches = 0, hTotal = 0, vTotal = 0;
   for (int y = minY; y <= maxY; y++) {
     for (int x = minX; x <= (minX + maxX) ~/ 2; x++) {
@@ -438,7 +476,9 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
       final p1 = image.getPixel(x, y), p2 = image.getPixel(x2, y);
       hTotal++;
       if (((p1.r - p2.r).abs() + (p1.g - p2.g).abs() + (p1.b - p2.b).abs()) <
-          100) hMatches++;
+          100) {
+        hMatches++;
+      }
     }
   }
   for (int x = minX; x <= maxX; x++) {
@@ -448,12 +488,14 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
       final p1 = image.getPixel(x, y), p2 = image.getPixel(x, y2);
       vTotal++;
       if (((p1.r - p2.r).abs() + (p1.g - p2.g).abs() + (p1.b - p2.b).abs()) <
-          100) vMatches++;
+          100) {
+        vMatches++;
+      }
     }
   }
   return (
     hTotal > 0 ? hMatches / hTotal : 0.5,
-    vTotal > 0 ? vMatches / vTotal : 0.5
+    vTotal > 0 ? vMatches / vTotal : 0.5,
   );
 }
 
@@ -466,7 +508,8 @@ double _calculateEdgeDensity(img.Image image, List<bool> mask) {
       final pRight = image.getPixel(x + 1, y);
       final pDown = image.getPixel(x, y + 1);
       final lum = (p.r + p.g + p.b) / 3.0;
-      final grad = (lum - (pRight.r + pRight.g + pRight.b) / 3.0).abs() +
+      final grad =
+          (lum - (pRight.r + pRight.g + pRight.b) / 3.0).abs() +
           (lum - (pDown.r + pDown.g + pDown.b) / 3.0).abs();
       if (grad > 30) edgePixels++;
       totalPixels++;
@@ -482,9 +525,12 @@ List<double> rgbToHsv(int r, int g, int b) {
   double d = maxV - minV;
   double h = 0;
   if (d != 0) {
-    if (maxV == rf) h = (gf - bf) / d + (gf < bf ? 6 : 0);
-    else if (maxV == gf) h = (bf - rf) / d + 2;
-    else h = (rf - gf) / d + 4;
+    if (maxV == rf) {
+      h = (gf - bf) / d + (gf < bf ? 6 : 0);
+    } else if (maxV == gf)
+      h = (bf - rf) / d + 2;
+    else
+      h = (rf - gf) / d + 4;
     h /= 6;
   }
   return [h * 360, maxV == 0 ? 0 : d / maxV, maxV];
@@ -494,15 +540,20 @@ List<double> rgbToHsv(int r, int g, int b) {
 /// Used for real-world photos where transparency is missing.
 List<bool> _detectBackgroundAndGetMask(img.Image image) {
   final mask = List<bool>.filled(image.width * image.height, true);
-  
+
   // Sample perimeter points for background "prototypes"
   final List<List<int>> prototypes = [];
   final samples = [
-    [0, 0], [image.width - 1, 0], [0, image.height - 1], [image.width - 1, image.height - 1],
-    [image.width ~/ 2, 0], [image.width ~/ 2, image.height - 1],
-    [0, image.height ~/ 2], [image.width - 1, image.height ~/ 2]
+    [0, 0],
+    [image.width - 1, 0],
+    [0, image.height - 1],
+    [image.width - 1, image.height - 1],
+    [image.width ~/ 2, 0],
+    [image.width ~/ 2, image.height - 1],
+    [0, image.height ~/ 2],
+    [image.width - 1, image.height ~/ 2],
   ];
-  
+
   for (final s in samples) {
     final p = image.getPixel(s[0], s[1]);
     prototypes.add([p.r.toInt(), p.g.toInt(), p.b.toInt()]);
@@ -521,18 +572,19 @@ List<bool> _detectBackgroundAndGetMask(img.Image image) {
       for (final bp in prototypes) {
         // Weighted distance for human color perception
         final d = sqrt(
-          pow(r - bp[0], 2) * 0.299 + 
-          pow(g - bp[1], 2) * 0.587 + 
-          pow(b - bp[2], 2) * 0.114
+          pow(r - bp[0], 2) * 0.299 +
+              pow(g - bp[1], 2) * 0.587 +
+              pow(b - bp[2], 2) * 0.114,
         );
         if (d < minStatsDist) minStatsDist = d;
       }
 
       // Distance from center (0.0 at center, 1.0 at farthest corner)
-      final distFromCenter = sqrt(pow(x - centerX, 2) + pow(y - centerY, 2)) / maxDist;
-      
-      // Subject Protection: 
-      // We use a parabolic threshold curve. 
+      final distFromCenter =
+          sqrt(pow(x - centerX, 2) + pow(y - centerY, 2)) / maxDist;
+
+      // Subject Protection:
+      // We use a parabolic threshold curve.
       // Near center (dist < 0.4), threshold is extremely strict (protect subject).
       double threshold;
       if (distFromCenter < 0.4) {

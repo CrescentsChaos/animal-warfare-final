@@ -466,6 +466,7 @@ class BattleDetailsSheet extends StatelessWidget {
           bo.maxHealth,
           500,
           AppColors.statHealthColor,
+          'assets/icon/health.png',
         ),
         _buildStatRow(
           'ATTACK',
@@ -473,6 +474,7 @@ class BattleDetailsSheet extends StatelessWidget {
           baseAtk,
           200,
           AppColors.statAttackColor,
+          'assets/icon/attack.png',
         ),
         _buildStatRow(
           'DEFENSE',
@@ -480,6 +482,7 @@ class BattleDetailsSheet extends StatelessWidget {
           baseDef,
           200,
           AppColors.statDefenseColor,
+          'assets/icon/defense.png',
         ),
         _buildStatRow(
           'POWER',
@@ -487,6 +490,7 @@ class BattleDetailsSheet extends StatelessWidget {
           basePwr,
           200,
           AppColors.statPowerColor,
+          'assets/icon/power.png',
         ),
         _buildStatRow(
           'RESISTANCE',
@@ -494,6 +498,7 @@ class BattleDetailsSheet extends StatelessWidget {
           baseRes,
           200,
           AppColors.statResistanceStatColor,
+          'assets/icon/resistance.png',
         ),
         _buildStatRow(
           'SPEED',
@@ -501,6 +506,7 @@ class BattleDetailsSheet extends StatelessWidget {
           baseSpd,
           200,
           AppColors.statSpeedColor,
+          'assets/icon/speed.png',
         ),
       ],
     );
@@ -512,6 +518,7 @@ class BattleDetailsSheet extends StatelessWidget {
     int baseValue,
     int max,
     Color color,
+    String iconPath,
   ) {
     final perc = (value / max).clamp(0.0, 1.0);
     Color valueColor = Colors.white;
@@ -528,13 +535,19 @@ class BattleDetailsSheet extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                label,
-                style: const TextStyle(
-                  color: Colors.white54,
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                ),
+              Row(
+                children: [
+                  Image.asset(iconPath, width: 14, height: 14),
+                  const SizedBox(width: 8),
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      color: Colors.white54,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ),
               Text(
                 '$value',

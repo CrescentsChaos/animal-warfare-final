@@ -661,8 +661,8 @@ class CapturedOrganism {
       orElse: () => allOrganisms[0],
     );
 
-    final ivs = Map<String, int>.from(json['ivs'] as Map);
-    final currentHealth = json['currentHealth'] as int;
+    final ivs = (json['ivs'] as Map).map((k, v) => MapEntry(k.toString(), (v as num).toInt()));
+    final currentHealth = (json['currentHealth'] as num).toInt();
 
     Talisman? talisman;
     if (json['equippedTalisman'] != null) {
@@ -672,7 +672,7 @@ class CapturedOrganism {
     }
 
     final moveStamina = json['moveStamina'] != null
-        ? Map<String, int>.from(json['moveStamina'] as Map)
+        ? (json['moveStamina'] as Map).map((k, v) => MapEntry(k.toString(), (v as num).toInt()))
         : <String, int>{};
     final selectedMoves = json['selectedMoveNames'] != null
         ? List<String>.from(json['selectedMoveNames'] as List)
@@ -688,13 +688,9 @@ class CapturedOrganism {
       );
     }
 
-    final level =
-        json['level'] as int? ?? 50; // Read level from JSON, default to 50
-    final xp =
-        json['xp'] as int? ??
-        (level > 1
-            ? xpForLevel(level)
-            : 0); // FIX: Init XP from level if missing
+    final level = (json['level'] as num?)?.toInt() ?? 50;
+    final xp = (json['xp'] as num?)?.toInt() ??
+        (level > 1 ? xpForLevel(level) : 0);
 
     return CapturedOrganism(
       id: id, // Pass id to constructor
@@ -712,20 +708,20 @@ class CapturedOrganism {
           : (status != null ? [status] : []),
       level: level,
       xp: xp,
-      initialLevel: json['initialLevel'] as int? ?? level,
-      attackStage: json['attackStage'] as int? ?? 0,
-      defenseStage: json['defenseStage'] as int? ?? 0,
-      powerStage: json['powerStage'] as int? ?? 0,
-      resistanceStage: json['resistanceStage'] as int? ?? 0,
-      speedStage: json['speedStage'] as int? ?? 0,
-      accuracyStage: json['accuracyStage'] as int? ?? 0,
-      evasionStage: json['evasionStage'] as int? ?? 0,
+      initialLevel: (json['initialLevel'] as num?)?.toInt() ?? level,
+      attackStage: (json['attackStage'] as num?)?.toInt() ?? 0,
+      defenseStage: (json['defenseStage'] as num?)?.toInt() ?? 0,
+      powerStage: (json['powerStage'] as num?)?.toInt() ?? 0,
+      resistanceStage: (json['resistanceStage'] as num?)?.toInt() ?? 0,
+      speedStage: (json['speedStage'] as num?)?.toInt() ?? 0,
+      accuracyStage: (json['accuracyStage'] as num?)?.toInt() ?? 0,
+      evasionStage: (json['evasionStage'] as num?)?.toInt() ?? 0,
       isAlpha: json['isAlpha'] as bool? ?? false,
       isShiny: json['isShiny'] as bool? ?? false,
       killValues: json['killValues'] != null
-          ? Map<String, int>.from(json['killValues'] as Map)
+          ? (json['killValues'] as Map).map((k, v) => MapEntry(k.toString(), (v as num).toInt()))
           : null,
-      satisfaction: json['satisfaction'] as int? ?? 120,
+      satisfaction: (json['satisfaction'] as num?)?.toInt() ?? 120,
       activeAbilityName: json['activeAbilityName'] as String?,
       teraType: json['teraType'] != null
           ? ElementalTypeX.fromString(json['teraType'] as String)

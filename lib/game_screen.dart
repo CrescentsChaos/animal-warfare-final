@@ -16,6 +16,7 @@ import 'package:animal_warfare/biometric_scanner_screen.dart';
 import 'package:animal_warfare/theme.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:animal_warfare/widgets/game_clock_widget.dart';
+import 'package:animal_warfare/widgets/pop_menu_layout.dart';
 
 class GameScreen extends StatefulWidget {
   final UserData currentUser;
@@ -27,10 +28,22 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> {
+  List<dynamic> _allOrganisms = [];
+
   @override
   void initState() {
     super.initState();
     _playBackgroundMusic();
+    _loadOrganisms();
+  }
+
+  Future<void> _loadOrganisms() async {
+    final organisms = await LocalAuthService.loadOrganisms();
+    if (mounted) {
+      setState(() {
+        _allOrganisms = organisms;
+      });
+    }
   }
 
   void _playBackgroundMusic() {
@@ -156,7 +169,7 @@ class _GameScreenState extends State<GameScreen> {
                 image: const AssetImage('assets/main.png'),
                 fit: BoxFit.cover,
                 colorFilter: ColorFilter.mode(
-                  Colors.black.withValues(alpha: 0.78),
+                  Colors.black.withValues(alpha: 0.88),
                   BlendMode.darken,
                 ),
               ),
@@ -164,181 +177,149 @@ class _GameScreenState extends State<GameScreen> {
           ),
 
           SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(20, 32, 20, 100),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  // Title
-                  Center(
-                    child: Column(
-                      children: [
-                        ShaderMask(
-                          shaderCallback: (bounds) => const LinearGradient(
-                            colors: [
-                              AppColors.highlight,
-                              Color(0xFFFFF8E1),
-                              AppColors.highlight,
-                            ],
-                          ).createShader(bounds),
-                          child: const Text(
-                            'ANIMAL WARFARE',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 22,
-                              fontFamily: 'PressStart2P',
-                              height: 1.4,
-                              letterSpacing: 2,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        GameClockWidget(highlightColor: AppColors.highlight),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Choose your path, Commander',
-                          style: GoogleFonts.inter(
-                            color: AppColors.textMuted,
-                            fontSize: 12,
-                          ),
-                        ),
+            child: PopMenuLayout(
+              header: Column(
+                children: [
+                  ShaderMask(
+                    shaderCallback: (bounds) => const LinearGradient(
+                      colors: [
+                        AppColors.highlight,
+                        Color(0xFFFFF8E1),
+                        AppColors.highlight,
                       ],
-                    ),
-                  ),
-                  const SizedBox(height: 36),
-
-                  // Menu buttons
-                  _buildMenuButton(
-                    text: 'Explore Biomes',
-                    subtitle: 'Discover & capture wild animals',
-                    iconPath: 'assets/icon/explore_biomes.png',
-                    color: AppColors.primary,
-                    onPressed: () {
-                      final user =
-                          Provider.of<UserState>(
-                            context,
-                            listen: false,
-                          ).currentUser ??
-                          widget.currentUser;
-                      final authService = LocalAuthService();
-                      _navigateTo(
-                        ExploreScreen(
-                          currentUser: user,
-                          authService: authService,
-                        ),
-                      );
-                    },
-                  ),
-
-                  _buildMenuButton(
-                    text: 'Map & Tools',
-                    subtitle: 'Walk through biomes & encounter animals',
-                    iconPath: 'assets/icon/map_&_tools.png',
-                    color: const Color(0xFF66BB6A),
-                    onPressed: () {
-                      final userState = Provider.of<UserState>(
-                        context,
-                        listen: false,
-                      );
-                      final user = userState.currentUser ?? widget.currentUser;
-                      final authService = LocalAuthService();
-
-                      _navigateTo(
-                        ToolScreen(currentUser: user, authService: authService),
-                      );
-                    },
-                  ),
-
-                  _buildMenuButton(
-                    text: 'Battle Arena',
-                    subtitle: 'Fight AI, Rogue runs & more',
-                    iconPath: 'assets/icon/battle_arena.png',
-                    color: const Color(0xFFEF5350),
-                    onPressed: () => _navigateTo(const BattleTabScreen()),
-                  ),
-
-                  _buildMenuButton(
-                    text: 'Animal Box',
-                    subtitle: 'Manage your collection & team',
-                    iconPath: 'assets/icon/animal_box.png',
-                    color: const Color(0xFF42A5F5),
-                    onPressed: () =>
-                        _navigateTo(const AnimalBoxScreen(teamOnly: true)),
-                  ),
-
-                  _buildMenuButton(
-                    text: 'Inventory',
-                    subtitle: 'Manage items & forging',
-                    iconPath: 'assets/icon/inventory.png',
-                    color: const Color(0xFFFFB300),
-                    onPressed: () => _navigateTo(const CraftingScreen()),
-                  ),
-
-                  _buildMenuButton(
-                    text: 'Animal Dex',
-                    subtitle: 'Browse the full species database',
-                    iconPath: 'assets/icon/animal_dex.png',
-                    color: const Color(0xFFAB47BC),
-                    onPressed: () {
-                      final user =
-                          Provider.of<UserState>(
-                            context,
-                            listen: false,
-                          ).currentUser ??
-                          widget.currentUser;
-                      final authService = LocalAuthService();
-                      _navigateTo(
-                        AnidexScreen(
-                          currentUser: user,
-                          authService: authService,
-                        ),
-                      );
-                    },
-                  ),
-
-                  _buildMenuButton(
-                    text: 'Mini Games',
-                    subtitle: 'Test your knowledge',
-                    iconPath: 'assets/icon/mini_games.png',
-                    color: const Color(0xFF26A69A),
-                    onPressed: () => _navigateTo(
-                      QuizScreen(
-                        currentUser:
-                            Provider.of<UserState>(
-                              context,
-                              listen: false,
-                            ).currentUser ??
-                            widget.currentUser,
-                        authService: LocalAuthService(),
+                    ).createShader(bounds),
+                    child: const Text(
+                      'ANIMAL WARFARE',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontFamily: 'PressStart2P',
+                        height: 1.4,
+                        letterSpacing: 2,
                       ),
                     ),
                   ),
-
-                  _buildMenuButton(
-                    text: 'Bio-Scanner',
-                    subtitle: 'Identify animals in the wild',
-                    iconPath: 'assets/icon/bio_scanner.png',
-                    color: Colors.cyanAccent,
-                    onPressed: () => _navigateTo(
-                      BiometricScannerScreen(
-                        onBack: () => Navigator.pop(context),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-                  Center(
-                    child: Text(
-                      'v$kAppVersion',
-                      style: GoogleFonts.inter(
-                        color: AppColors.textMuted.withValues(alpha: 0.5),
-                        fontSize: 11,
-                      ),
+                  const SizedBox(height: 8),
+                  GameClockWidget(highlightColor: AppColors.highlight),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Choose your path, Commander',
+                    style: GoogleFonts.inter(
+                      color: AppColors.textMuted,
+                      fontSize: 12,
                     ),
                   ),
                 ],
               ),
+              items: [
+                _buildMenuButton(
+                  text: 'Map and Tools',
+                  subtitle: 'Walk through biomes & encounter animals',
+                  iconPath: 'assets/icon/map_tools.png',
+                  color: const Color(0xFF66BB6A),
+                  onPressed: () {
+                    final userState = Provider.of<UserState>(
+                      context,
+                      listen: false,
+                    );
+                    final user = userState.currentUser ?? widget.currentUser;
+                    final authService = LocalAuthService();
+                    _navigateTo(
+                      ToolScreen(currentUser: user, authService: authService),
+                    );
+                  },
+                ),
+                _buildMenuButton(
+                  text: 'Explore Biomes',
+                  subtitle: 'Discover & capture wild animals',
+                  iconPath: 'assets/icon/explore_biomes.png',
+                  color: AppColors.primary,
+                  onPressed: () {
+                    final user =
+                        Provider.of<UserState>(
+                          context,
+                          listen: false,
+                        ).currentUser ??
+                        widget.currentUser;
+                    final authService = LocalAuthService();
+                    _navigateTo(
+                      ExploreScreen(
+                        currentUser: user,
+                        authService: authService,
+                      ),
+                    );
+                  },
+                ),
+                _buildMenuButton(
+                  text: 'Battle Arena',
+                  subtitle: 'Fight AI, Rogue runs & more',
+                  iconPath: 'assets/icon/battle_arena.png',
+                  color: const Color(0xFFEF5350),
+                  onPressed: () => _navigateTo(const BattleTabScreen()),
+                ),
+                _buildMenuButton(
+                  text: 'Animal Box',
+                  subtitle: 'Manage your collection & team',
+                  iconPath: 'assets/icon/animal_box.png',
+                  color: const Color(0xFF42A5F5),
+                  onPressed: () =>
+                      _navigateTo(const AnimalBoxScreen(teamOnly: true)),
+                ),
+                _buildMenuButton(
+                  text: 'Inventory',
+                  subtitle: 'Manage items & forging',
+                  iconPath: 'assets/icon/inventory.png',
+                  color: const Color(0xFFFFB300),
+                  onPressed: () => _navigateTo(const CraftingScreen()),
+                ),
+                _buildMenuButton(
+                  text: 'Animal Dex',
+                  subtitle: 'Browse the full species database',
+                  iconPath: 'assets/icon/animal_dex.png',
+                  color: const Color(0xFFAB47BC),
+                  onPressed: () {
+                    final user =
+                        Provider.of<UserState>(
+                          context,
+                          listen: false,
+                        ).currentUser ??
+                        widget.currentUser;
+                    final authService = LocalAuthService();
+                    _navigateTo(
+                      AnidexScreen(currentUser: user, authService: authService),
+                    );
+                  },
+                ),
+                _buildMenuButton(
+                  text: 'Mini Games',
+                  subtitle: 'Test your knowledge',
+                  iconPath: 'assets/icon/mini_games.png',
+                  color: const Color(0xFF26A69A),
+                  onPressed: () => _navigateTo(
+                    QuizScreen(
+                      currentUser:
+                          Provider.of<UserState>(
+                            context,
+                            listen: false,
+                          ).currentUser ??
+                          widget.currentUser,
+                      authService: LocalAuthService(),
+                    ),
+                  ),
+                ),
+                _buildMenuButton(
+                  text: 'Bio-Scanner',
+                  subtitle: 'Identify animals in the wild',
+                  iconPath: 'assets/icon/bio_scanner.png',
+                  color: Colors.cyanAccent,
+                  onPressed: () => _navigateTo(
+                    BiometricScannerScreen(
+                      onBack: () => Navigator.pop(context),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

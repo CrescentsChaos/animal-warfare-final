@@ -1,12 +1,12 @@
 // lib/main_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:provider/provider.dart';
 import 'package:animal_warfare/login_screen.dart';
 import 'package:animal_warfare/profile_screen.dart';
 import 'package:animal_warfare/game_screen.dart';
 import 'package:animal_warfare/quest_screen.dart';
-import 'package:animal_warfare/training_screen.dart';
 import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/theme.dart';
 import 'package:animal_warfare/shop_screen.dart';
@@ -17,6 +17,11 @@ import 'package:animal_warfare/game/time_service.dart';
 import 'package:animal_warfare/widgets/game_clock_widget.dart';
 import 'package:animal_warfare/services/haptic_service.dart';
 import 'package:animal_warfare/utils/transitions.dart';
+import 'package:animal_warfare/settings_screen.dart';
+import 'package:animal_warfare/achievement_screen.dart';
+import 'package:animal_warfare/local_auth_service.dart';
+import 'package:animal_warfare/widgets/pop_menu_layout.dart';
+import 'dart:convert';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -27,15 +32,31 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   double _buttonsOpacity = 0.0;
+  List<dynamic> _allOrganisms = [];
 
   @override
   void initState() {
     super.initState();
     _playBackgroundMusic();
+    _loadOrganisms();
     // Fade in the button list after a short delay for a polished entry feel
     Future.delayed(const Duration(milliseconds: 150), () {
       if (mounted) setState(() => _buttonsOpacity = 1.0);
     });
+  }
+
+  Future<void> _loadOrganisms() async {
+    const String assetPath = 'assets/Organisms.json';
+    try {
+      final String response = await rootBundle.loadString(assetPath);
+      if (mounted) {
+        setState(() {
+          _allOrganisms = json.decode(response);
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading Organisms.json: $e');
+    }
   }
 
   Future<void> _playBackgroundMusic() async {
@@ -58,67 +79,78 @@ class _MainScreenState extends State<MainScreen> {
     _navigateTo(const LoginScreen());
   }
 
-  Widget _buildNavButton({
+  Widget _buildMenuButton({
     required String text,
-    required IconData icon,
+    required String subtitle,
+    required String iconPath,
+    required Color color,
     required VoidCallback onPressed,
-    bool isPrimary = false,
-    Color? accentColor,
   }) {
-    final Color accent = accentColor ?? AppColors.primary;
-
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 6.0),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: AppColors.surface.withValues(alpha: 0.9),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isPrimary ? accent : AppColors.border,
-          width: isPrimary ? 1.5 : 1,
-        ),
-        boxShadow: isPrimary
-            ? [
-                BoxShadow(
-                  color: accent.withValues(alpha: 0.2),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ]
-            : null,
+        color: AppColors.surface.withValues(alpha: 0.92),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withValues(alpha: 0.5), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         child: InkWell(
           onTap: onPressed,
-          borderRadius: BorderRadius.circular(12),
-          splashColor: accent.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(16),
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+            padding: const EdgeInsets.all(16.0),
             child: Row(
               children: [
-                Container(
-                  width: 38,
-                  height: 38,
-                  decoration: BoxDecoration(
-                    color: accent.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(icon, color: accent, size: 20),
+                Image.asset(
+                  iconPath,
+                  width: 56,
+                  height: 56,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => 
+                    Icon(
+                      Icons.error_outline,
+                      color: color ?? Colors.white54,
+                      size: 28,
+                    ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
-                  child: Text(
-                    text,
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.3,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        text,
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle,
+                        style: GoogleFonts.inter(
+                          color: AppColors.textMuted,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                Icon(Icons.chevron_right, color: AppColors.textMuted, size: 20),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: color.withValues(alpha: 0.6),
+                  size: 22,
+                ),
               ],
             ),
           ),
@@ -149,20 +181,9 @@ class _MainScreenState extends State<MainScreen> {
               Container(
                 decoration: BoxDecoration(
                   color: AppColors.background,
-                  image: DecorationImage(
-                    image: const AssetImage('assets/biomes/coastal-bg.png'),
+                  image: const DecorationImage(
+                    image: AssetImage('assets/biomes/coastal-bg.png'),
                     fit: BoxFit.cover,
-                    colorFilter: isDay
-                        ? ColorFilter.mode(
-                            Colors.black.withValues(alpha: 0.75),
-                            BlendMode.darken,
-                          )
-                        : ColorFilter.mode(
-                            isEvening
-                                ? Colors.orangeAccent.withValues(alpha: 0.3)
-                                : Colors.indigo[900]!.withValues(alpha: 0.5),
-                            BlendMode.darken,
-                          ),
                   ),
                 ),
               ),
@@ -183,198 +204,175 @@ class _MainScreenState extends State<MainScreen> {
 
               // Content
               SafeArea(
-                child: Center(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24.0,
-                      vertical: 40.0,
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: <Widget>[
-                        // Title
-                        Column(
-                          children: [
-                            ShaderMask(
-                              shaderCallback: (bounds) => const LinearGradient(
-                                colors: [
-                                  AppColors.highlight,
-                                  Color(0xFFFFF8E1),
-                                  AppColors.highlight,
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ).createShader(bounds),
-                              child: const Text(
-                                'ANIMAL\nWARFARE',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontFamily: 'PressStart2P',
-                                  fontSize: 28,
-                                  height: 1.6,
-                                  letterSpacing: 3,
-                                  shadows: [
-                                    Shadow(
-                                      color: Color(0xFFFFB300),
-                                      blurRadius: 20,
-                                      offset: Offset(0, 0),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            GameClockWidget(
-                              highlightColor: AppColors.highlight,
-                            ),
-                            const SizedBox(height: 8),
-                            Container(
-                              height: 2,
-                              width: 80,
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [
-                                    Colors.transparent,
-                                    AppColors.highlight,
-                                    Colors.transparent,
-                                  ],
-                                ),
-                                borderRadius: BorderRadius.circular(1),
-                              ),
-                            ),
+                child: PopMenuLayout(
+                  header: Column(
+                    children: [
+                      // Title
+                      ShaderMask(
+                        shaderCallback: (bounds) => const LinearGradient(
+                          colors: [
+                            AppColors.highlight,
+                            Color(0xFFFFF8E1),
+                            AppColors.highlight,
                           ],
+                        ).createShader(bounds),
+                        child: const Text(
+                          'ANIMAL WARFARE.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 22,
+                            fontFamily: 'PressStart2P',
+                            height: 1.4,
+                            letterSpacing: 2,
+                          ),
                         ),
-                        const SizedBox(height: 48),
-
-                        // Buttons
-                        if (!isInitialized)
-                          const Center(
-                            child: Padding(
-                              padding: EdgeInsets.all(40.0),
-                              child: CircularProgressIndicator(
-                                color: AppColors.highlight,
-                              ),
-                            ),
-                          )
-                        else
-                          AnimatedOpacity(
-                            opacity: _buttonsOpacity,
-                            duration: const Duration(milliseconds: 400),
-                            curve: Curves.easeOut,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                _buildNavButton(
-                                  text: 'Start Game',
-                                  icon: Icons.shield_rounded,
-                                  onPressed: () {
-                                    if (currentUser != null) {
-                                      _navigateTo(
-                                        GameScreen(currentUser: currentUser),
-                                        isGame: true,
-                                      );
-                                    } else {
-                                      _navigateTo(const LoginScreen());
-                                    }
-                                  },
-                                  isPrimary: true,
-                                  accentColor: AppColors.primary,
-                                ),
-
-                                if (!isLoggedIn)
-                                  _buildNavButton(
-                                    text: 'Login / Register',
-                                    icon: Icons.login_rounded,
-                                    onPressed: () => _handleAuthAction(context),
-                                    accentColor: AppColors.highlight,
-                                  ),
-
-                                if (isLoggedIn) ...[
-                                  _buildNavButton(
-                                    text: 'Profile',
-                                    icon: Icons.person_rounded,
-                                    onPressed: () =>
-                                        _navigateTo(const ProfileScreen()),
-                                    accentColor: AppColors.highlight,
-                                  ),
-                                  _buildNavButton(
-                                    text: 'Quests',
-                                    icon: Icons.assignment_rounded,
-                                    onPressed: () =>
-                                        _navigateTo(const QuestScreen()),
-                                    accentColor: const Color(0xFF7C4DFF),
-                                  ),
-                                  _buildNavButton(
-                                    text: 'Shop',
-                                    icon: Icons.shopping_bag_rounded,
-                                    onPressed: () =>
-                                        _navigateTo(const ShopScreen()),
-                                    accentColor: const Color(0xFFFF6F00),
-                                  ),
-                                  _buildNavButton(
-                                    text: 'Farm',
-                                    icon: Icons.agriculture_rounded,
-                                    onPressed: () =>
-                                        _navigateTo(const FarmingScreen()),
-                                    accentColor: Colors.green,
-                                  ),
-                                  _buildNavButton(
-                                    text: 'Model Trainer',
-                                    icon: Icons.model_training_rounded,
-                                    onPressed: () =>
-                                        _navigateTo(const TrainingScreen()),
-                                    accentColor: Colors.blueAccent,
-                                  ),
-                                ],
-                              ],
+                      ),
+                      const SizedBox(height: 8),
+                      GameClockWidget(highlightColor: AppColors.highlight),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Choose your path, Commander',
+                        style: GoogleFonts.inter(
+                          color: AppColors.textMuted,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                  items: [
+                    if (!isInitialized)
+                      const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(40.0),
+                          child: CircularProgressIndicator(
+                            color: AppColors.highlight,
+                          ),
+                        ),
+                      )
+                    else ...[
+                      _buildMenuButton(
+                        text: 'Start Game',
+                        subtitle: 'Embark on your journey',
+                        iconPath: 'assets/icon/start_game.png',
+                        color: AppColors.primary,
+                        onPressed: () {
+                          if (currentUser != null) {
+                            _navigateTo(
+                              GameScreen(currentUser: currentUser),
+                              isGame: true,
+                            );
+                          } else {
+                            _navigateTo(const LoginScreen());
+                          }
+                        },
+                      ),
+                      if (!isLoggedIn)
+                        _buildMenuButton(
+                          text: 'Login / Register',
+                          subtitle: 'Access your cloud save',
+                          iconPath: 'assets/icon/profile.png',
+                          color: AppColors.highlight,
+                          onPressed: () => _handleAuthAction(context),
+                        ),
+                      if (isLoggedIn) ...[
+                        _buildMenuButton(
+                          text: 'Profile',
+                          subtitle: 'View your stats & medals',
+                          iconPath: 'assets/icon/profile.png',
+                          color: AppColors.highlight,
+                          onPressed: () => _navigateTo(const ProfileScreen()),
+                        ),
+                        _buildMenuButton(
+                          text: 'Quests',
+                          subtitle: 'Complete daily missions',
+                          iconPath: 'assets/icon/quests.png',
+                          color: const Color(0xFF7C4DFF),
+                          onPressed: () => _navigateTo(const QuestScreen()),
+                        ),
+                        _buildMenuButton(
+                          text: 'Shop',
+                          subtitle: 'Purchase items & upgrades',
+                          iconPath: 'assets/icon/shop.png',
+                          color: const Color(0xFFFF6F00),
+                          onPressed: () => _navigateTo(const ShopScreen()),
+                        ),
+                        _buildMenuButton(
+                          text: 'Farm',
+                          subtitle: 'Manage your resources',
+                          iconPath: 'assets/icon/farm.png',
+                          color: Colors.green,
+                          onPressed: () => _navigateTo(const FarmingScreen()),
+                        ),
+                        _buildMenuButton(
+                          text: 'Achievements',
+                          subtitle: 'View your medals & milestones',
+                          iconPath: 'assets/icon/achievements.png',
+                          color: const Color(0xFFDAA520),
+                          onPressed: () => _navigateTo(
+                            AchievementsScreen(
+                              currentUser: currentUser!,
+                              allOrganisms: _allOrganisms,
+                              authService: LocalAuthService(),
                             ),
                           ),
-
-                        const SizedBox(height: 36),
-
-                        // Status
-                        Center(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.surface.withValues(alpha: 0.7),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: AppColors.border),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  width: 7,
-                                  height: 7,
-                                  decoration: BoxDecoration(
-                                    color: isLoggedIn
-                                        ? AppColors.primary
-                                        : AppColors.textMuted,
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  isLoggedIn ? 'Player Active' : 'Guest Access',
-                                  style: GoogleFonts.inter(
-                                    color: AppColors.textSecondary,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
+                        ),
+                        _buildMenuButton(
+                          text: 'Settings',
+                          subtitle: 'Audio, Account & Preferences',
+                          iconPath: 'assets/icon/settings.png',
+                          color: Colors.blueGrey,
+                          onPressed: () => _navigateTo(
+                            SettingsScreen(
+                              currentUser: currentUser!,
+                              authService: LocalAuthService(),
                             ),
                           ),
                         ),
                       ],
+                    ],
+                  ],
+                  footer: [
+                    const SizedBox(height: 32),
+                    Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface.withValues(alpha: 0.7),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: AppColors.border),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 7,
+                              height: 7,
+                              decoration: BoxDecoration(
+                                color:
+                                    isLoggedIn
+                                        ? AppColors.primary
+                                        : AppColors.textMuted,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              isLoggedIn ? 'Player Active' : 'Guest Access',
+                              style: GoogleFonts.inter(
+                                color: AppColors.textSecondary,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ),
             ],

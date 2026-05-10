@@ -46,6 +46,8 @@ class Achievement {
     this.imagePath,
   });
 
+  String get id => title;
+
   factory Achievement.fromJson(Map<String, dynamic> json) {
     return Achievement(
       title: json['title'] as String? ?? 'Unnamed Achievement',
@@ -70,6 +72,14 @@ class Achievement {
       requiredShowdownStreak: json['requiredShowdownStreak'] as int? ?? 0,
       tier: json['tier'] as String? ?? 'bronze',
       imagePath: json['imagePath'] as String?,
+    );
+  }
+
+  factory Achievement.empty() {
+    return Achievement(
+      title: 'empty',
+      description: '',
+      requiredCount: 0,
     );
   }
 }

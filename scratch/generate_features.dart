@@ -59,10 +59,14 @@ class HSV {
     double delta = maxV - minV;
 
     double h = 0;
-    if (delta == 0) h = 0;
-    else if (maxV == rf) h = 60 * (((gf - bf) / delta) % 6);
-    else if (maxV == gf) h = 60 * (((bf - rf) / delta) + 2);
-    else h = 60 * (((rf - gf) / delta) + 4);
+    if (delta == 0) {
+      h = 0;
+    } else if (maxV == rf)
+      h = 60 * (((gf - bf) / delta) % 6);
+    else if (maxV == gf)
+      h = 60 * (((bf - rf) / delta) + 2);
+    else
+      h = 60 * (((rf - gf) / delta) + 4);
 
     if (h < 0) h += 360;
 
@@ -122,14 +126,17 @@ OrganismFeature extractFeatures(Uint8List imageBytes, String name) {
     );
   }
 
-  final sortedColors = colorCounts.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+  final sortedColors = colorCounts.entries.toList()
+    ..sort((a, b) => b.value.compareTo(a.value));
   final dominantColors = sortedColors.take(8).map((e) {
     final q = e.key;
     return [((q >> 8) & 0xF) * 17, ((q >> 4) & 0xF) * 17, (q & 0xF) * 17];
   }).toList();
 
   final hueBins = <String, double>{};
-  for (int i = 0; i < 12; i++) hueBins['h${i * 30}'] = 0;
+  for (int i = 0; i < 12; i++) {
+    hueBins['h${i * 30}'] = 0;
+  }
   double totalBrightness = 0;
   double totalSaturation = 0;
 
@@ -141,7 +148,9 @@ OrganismFeature extractFeatures(Uint8List imageBytes, String name) {
   }
 
   final total = hsvPixels.length.toDouble();
-  for (final key in hueBins.keys) hueBins[key] = hueBins[key]! / total;
+  for (final key in hueBins.keys) {
+    hueBins[key] = hueBins[key]! / total;
+  }
 
   final bboxW = (maxX - minX + 1).toDouble();
   final bboxH = (maxY - minY + 1).toDouble();
@@ -213,9 +222,14 @@ void main() async {
 
   for (var org in organisms) {
     final name = org['name'];
-    final slug = name.toLowerCase().replaceAll(RegExp(r"[''']"), '').replaceAll(RegExp(r'[^a-z0-9]+'), '_').replaceAll(RegExp(r'_+'), '_').replaceAll(RegExp(r'^_|_$'), '');
+    final slug = name
+        .toLowerCase()
+        .replaceAll(RegExp(r"[''']"), '')
+        .replaceAll(RegExp(r'[^a-z0-9]+'), '_')
+        .replaceAll(RegExp(r'_+'), '_')
+        .replaceAll(RegExp(r'^_|_$'), '');
     final path = 'assets/sprites/$slug.png';
-    
+
     if (File(path).existsSync()) {
       try {
         final bytes = File(path).readAsBytesSync();
@@ -227,6 +241,8 @@ void main() async {
     }
   }
 
-  File('assets/ml/sprite_features.json').writeAsStringSync(jsonEncode(allFeatures));
+  File(
+    'assets/ml/sprite_features.json',
+  ).writeAsStringSync(jsonEncode(allFeatures));
   print("Saved features for ${allFeatures.length} organisms.");
 }

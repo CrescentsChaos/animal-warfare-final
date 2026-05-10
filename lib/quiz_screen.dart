@@ -288,7 +288,10 @@ class _QuizScreenState extends State<QuizScreen>
                 ),
               );
               if (context.mounted) {
-                Provider.of<UserState>(context, listen: false).loadCurrentUser();
+                Provider.of<UserState>(
+                  context,
+                  listen: false,
+                ).loadCurrentUser();
               }
             },
           ),
@@ -312,7 +315,10 @@ class _QuizScreenState extends State<QuizScreen>
                 ),
               );
               if (context.mounted) {
-                Provider.of<UserState>(context, listen: false).loadCurrentUser();
+                Provider.of<UserState>(
+                  context,
+                  listen: false,
+                ).loadCurrentUser();
               }
             },
           ),
@@ -336,7 +342,10 @@ class _QuizScreenState extends State<QuizScreen>
                 ),
               );
               if (context.mounted) {
-                Provider.of<UserState>(context, listen: false).loadCurrentUser();
+                Provider.of<UserState>(
+                  context,
+                  listen: false,
+                ).loadCurrentUser();
               }
             },
           ),
@@ -386,35 +395,33 @@ class _QuizScreenState extends State<QuizScreen>
             ),
           ),
           const Spacer(),
-          ...QuizDifficulty.values
-              .map(
-                (d) => Padding(
-                  padding: const EdgeInsets.only(left: 8),
-                  child: ChoiceChip(
-                    label: Text(
-                      d.name,
-                      style: TextStyle(
-                        fontFamily: 'PressStart2P',
-                        fontSize: 7,
-                        color: _selectedDifficulty == d
-                            ? Colors.black
-                            : Colors.white,
-                      ),
-                    ),
-                    selected: _selectedDifficulty == d,
-                    selectedColor: d == QuizDifficulty.hard
-                        ? AppColors.wrongRed
-                        : (d == QuizDifficulty.normal
-                              ? AppColors.primary
-                              : AppColors.correctGreen),
-                    backgroundColor: Colors.white10,
-                    onSelected: (selected) {
-                      if (selected) setState(() => _selectedDifficulty = d);
-                    },
+          ...QuizDifficulty.values.map(
+            (d) => Padding(
+              padding: const EdgeInsets.only(left: 8),
+              child: ChoiceChip(
+                label: Text(
+                  d.name,
+                  style: TextStyle(
+                    fontFamily: 'PressStart2P',
+                    fontSize: 7,
+                    color: _selectedDifficulty == d
+                        ? Colors.black
+                        : Colors.white,
                   ),
                 ),
-              )
-              .toList(),
+                selected: _selectedDifficulty == d,
+                selectedColor: d == QuizDifficulty.hard
+                    ? AppColors.wrongRed
+                    : (d == QuizDifficulty.normal
+                          ? AppColors.primary
+                          : AppColors.correctGreen),
+                backgroundColor: Colors.white10,
+                onSelected: (selected) {
+                  if (selected) setState(() => _selectedDifficulty = d);
+                },
+              ),
+            ),
+          ),
         ],
       ),
     );

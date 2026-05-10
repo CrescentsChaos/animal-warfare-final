@@ -10,6 +10,7 @@ import 'package:animal_warfare/game/time_service.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'dart:math' as math;
 import 'package:animal_warfare/services/audio_service.dart';
+import 'package:animal_warfare/widgets/pop_menu_layout.dart';
 
 class ShopScreen extends StatefulWidget {
   final String? biome;
@@ -309,7 +310,10 @@ class _ShopScreenState extends State<ShopScreen> {
                               ),
                           itemCount: _filteredItems.length,
                           itemBuilder: (context, index) {
-                            return _buildItemCard(_filteredItems[index]);
+                            return PopUpItem(
+                              index: index,
+                              child: _buildItemCard(_filteredItems[index]),
+                            );
                           },
                         ),
                       ),
@@ -406,6 +410,7 @@ class _ShopScreenState extends State<ShopScreen> {
         return Container(
           color: const Color(0xFF0F0F1A), // Darker theme
           child: ListView(
+            physics: const SnapScrollPhysics(snapSize: 132), // 120 height + 12 margin
             padding: const EdgeInsets.all(16),
             children: [
               _buildTakaBalance(isBlackMarket: true),
@@ -420,8 +425,11 @@ class _ShopScreenState extends State<ShopScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              ...stockItems.map(
-                (item) => _buildBlackMarketItem(item, userState, gameTime),
+              ...stockItems.asMap().entries.map(
+                (entry) => PopUpItem(
+                  index: entry.key,
+                  child: _buildBlackMarketItem(entry.value, userState, gameTime),
+                ),
               ),
 
               const SizedBox(height: 32),

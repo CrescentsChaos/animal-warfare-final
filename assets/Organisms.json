@@ -33076,11 +33076,11 @@
         "active_time": "any",
         "attack": 92,
         "category": "Aura, Darkness",
-        "class": "Unknown",
+        "class": "Other Invertebrate",
         "cry": "default",
         "defense": 20,
         "description": "This microscopic organism invades neural tissue of warm-blooded hosts. It thrives in warm stagnant waters with poor circulation.",
-        "diet": "Unknown",
+        "diet": "Parasite",
         "drops": "Cell Sample",
         "habitat": "Swamp, River",
         "health": 60,
@@ -33093,7 +33093,7 @@
         "scientific_name": "Naegleria fowleri",
         "spawn_tiles": "tall_grass",
         "speed": 88,
-        "weight": 2e-12
+        "weight": 1e-09
     },
     {
         "abilities": "Natural Cure, True Flight",
@@ -58341,7 +58341,7 @@
         "scientific_name": "Mammut americanum",
         "spawn_tiles": "tall_grass",
         "speed": 28,
-        "weight": "9,000"
+        "weight": 9000
     },
     {
         "abilities": "Strong Jaw",
@@ -64461,7 +64461,7 @@
         "scientific_name": "Acrocanthosaurus atokensis",
         "spawn_tiles": "tall_grass",
         "speed": 52,
-        "weight": "4,950"
+        "weight": 4950
     },
     {
         "abilities": "Sharpness",

@@ -1,0 +1,33 @@
+================================================================================
+REQUIRED UI ASSETS FOR ANIMAL WARFARE
+================================================================================
+
+HIGH PRIORITY: MAIN NAVIGATION & STATS
+--------------------------------------------------------------------------------
+[ ] stat_xp.png          - Replace Icons.assessment / Icons.bar_chart
+[ ] backpack.png         - Replace Icons.inventory_2 (Inventory Hub)
+[ ] world_map.png        - Replace Icons.public / Icons.map (Explore)
+
+MEDIUM PRIORITY: UI UTILITIES & FEEDBACK
+--------------------------------------------------------------------------------
+[ ] ui_search.png        - Replace Icons.search
+[ ] ui_close.png         - Replace Icons.close
+[ ] ui_back.png          - Replace Icons.arrow_back / Icons.chevron_left
+[ ] ui_lock.png          - Replace Icons.lock_outline
+[ ] ui_help.png          - Replace Icons.help_outline
+[ ] star_gold.png        - Replace Icons.star (Rarity/Quality)
+
+LOW PRIORITY: ENVIRONMENTAL & SPECIAL
+--------------------------------------------------------------------------------
+[ ] env_sun.png          - Replace Icons.wb_sunny (Day cycle)
+[ ] env_moon.png         - Replace Icons.nightlight_round (Night cycle)
+[ ] env_calendar.png     - Replace Icons.calendar_month (Date/Time)
+[ ] pet_generic.png      - Replace Icons.pets (Animal placeholders)
+[ ] dna_helix.png        - Replace Icons.biotech_outlined (Genetics)
+
+================================================================================
+IMPLEMENTATION NOTES:
+- Recommended Size: 256x256 (for high-DPI scaling)
+- Style: Consistent with current shop.png and farm.png (High-fidelity/Glassmorphic)
+- Format: Transparent PNG
+================================================================================

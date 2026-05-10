@@ -14,6 +14,7 @@ import 'package:animal_warfare/widgets/anidex_details_sheet.dart';
 import 'package:animal_warfare/widgets/organism_sprite_widget.dart';
 import 'package:animal_warfare/services/audio_service.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:animal_warfare/widgets/pop_menu_layout.dart';
 
 class AnidexScreen extends StatefulWidget {
   final UserData currentUser;
@@ -72,7 +73,7 @@ class _AnidexScreenState extends State<AnidexScreen>
     '1 - 10 kg',
     '10 - 50 kg',
     '50 - 100 kg',
-    '> 100 kg'
+    '> 100 kg',
   ];
 
   bool _isLoading = true;
@@ -237,8 +238,10 @@ class _AnidexScreenState extends State<AnidexScreen>
         final w = org.weight;
         if (_selectedWeight == '< 1 kg' && w >= 1) return false;
         if (_selectedWeight == '1 - 10 kg' && (w < 1 || w >= 10)) return false;
-        if (_selectedWeight == '10 - 50 kg' && (w < 10 || w >= 50)) return false;
-        if (_selectedWeight == '50 - 100 kg' && (w < 50 || w >= 100)) return false;
+        if (_selectedWeight == '10 - 50 kg' && (w < 10 || w >= 50))
+          return false;
+        if (_selectedWeight == '50 - 100 kg' && (w < 50 || w >= 100))
+          return false;
         if (_selectedWeight == '> 100 kg' && w < 100) return false;
       }
       return true;
@@ -311,7 +314,10 @@ class _AnidexScreenState extends State<AnidexScreen>
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: AppColors.highlightColor,
-          labelStyle: GoogleFonts.orbitron(fontSize: 14, fontWeight: FontWeight.bold),
+          labelStyle: GoogleFonts.orbitron(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
           tabs: const [
             Tab(text: 'ANIMALS'),
             Tab(text: 'ITEMS'),
@@ -320,7 +326,11 @@ class _AnidexScreenState extends State<AnidexScreen>
         actions: [
           Builder(
             builder: (context) => IconButton(
-              icon: const Icon(Icons.tune, color: AppColors.highlightColor),
+              icon: Image.asset(
+                'assets/icon/map_tools.png',
+                width: 24,
+                height: 24,
+              ),
               onPressed: () => Scaffold.of(context).openEndDrawer(),
             ),
           ),
@@ -333,10 +343,6 @@ class _AnidexScreenState extends State<AnidexScreen>
           image: DecorationImage(
             image: const AssetImage('assets/main.png'),
             fit: BoxFit.cover,
-            colorFilter: ColorFilter.mode(
-              Colors.black.withValues(alpha: 0.85),
-              BlendMode.darken,
-            ),
           ),
         ),
         child: Column(
@@ -386,10 +392,14 @@ class _AnidexScreenState extends State<AnidexScreen>
             fontSize: 12,
             fontWeight: FontWeight.w600,
           ),
-          prefixIcon: const Icon(
-            Icons.search,
-            size: 18,
-            color: AppColors.highlightColor,
+          prefixIcon: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Image.asset(
+              'assets/icon/bio_scanner.png',
+              width: 18,
+              height: 18,
+              color: AppColors.highlightColor,
+            ),
           ),
           filled: true,
           fillColor: Colors.white.withValues(alpha: 0.05),
@@ -409,7 +419,11 @@ class _AnidexScreenState extends State<AnidexScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.search_off, size: 48, color: Colors.white24),
+            Image.asset(
+              'assets/icon/animal_dex.png',
+              width: 48,
+              height: 48,
+            ),
             const SizedBox(height: 16),
             Text(
               'NO MATCHING DATA',
@@ -447,7 +461,10 @@ class _AnidexScreenState extends State<AnidexScreen>
         final org = displayList[index];
         final discovered = _isDiscovered(org);
         final captured = _isCaptured(org);
-        return _buildAnimalCard(org, discovered, captured);
+        return PopUpItem(
+          index: index,
+          child: _buildAnimalCard(org, discovered, captured),
+        );
       },
     );
   }
@@ -463,7 +480,15 @@ class _AnidexScreenState extends State<AnidexScreen>
       },
       borderRadius: BorderRadius.circular(16),
       child: Container(
+        clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
+          image: discovered
+              ? DecorationImage(
+                  image: AssetImage(_getRarityBackground(org.rarity)),
+                  fit: BoxFit.cover,
+                  opacity: 0.1,
+                )
+              : null,
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -485,7 +510,7 @@ class _AnidexScreenState extends State<AnidexScreen>
                     color: rarityColor.withValues(alpha: 0.1),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
-                  )
+                  ),
                 ]
               : [],
         ),
@@ -525,10 +550,11 @@ class _AnidexScreenState extends State<AnidexScreen>
                     Positioned(
                       top: 8,
                       right: 8,
-                      child: Icon(
-                        Icons.verified,
+                      child: Image.asset(
+                        'assets/icon/start_game.png',
                         color: rarityColor,
-                        size: 16,
+                        width: 16,
+                        height: 16,
                       ),
                     ),
                 ],
@@ -544,7 +570,9 @@ class _AnidexScreenState extends State<AnidexScreen>
                 ),
                 border: Border(
                   top: BorderSide(
-                    color: discovered ? rarityColor.withValues(alpha: 0.3) : Colors.white10,
+                    color: discovered
+                        ? rarityColor.withValues(alpha: 0.3)
+                        : Colors.white10,
                     width: 1,
                   ),
                 ),
@@ -641,10 +669,11 @@ class _AnidexScreenState extends State<AnidexScreen>
                   child: Image.asset(
                     spritePath,
                     fit: BoxFit.contain,
-                    errorBuilder: (context, _, _) => Icon(
+                    errorBuilder: (context, _, _) => Image.asset(
                       _getItemIcon(item.category),
                       color: _getItemColor(item.category),
-                      size: 28,
+                      width: 28,
+                      height: 28,
                     ),
                   ),
                 ),
@@ -993,8 +1022,8 @@ class _AnidexScreenState extends State<AnidexScreen>
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  const Icon(
-                    Icons.arrow_right_alt,
+                  Icon(
+                    Icons.keyboard_arrow_down_rounded,
                     color: AppColors.highlightColor,
                     size: 16,
                   ),
@@ -1051,10 +1080,13 @@ class _AnidexScreenState extends State<AnidexScreen>
                           color: Colors.white24,
                           fontSize: 10,
                         ),
-                        prefixIcon: const Icon(
-                          Icons.search,
-                          size: 18,
-                          color: Colors.white54,
+                        prefixIcon: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Icon(
+                            Icons.search_rounded,
+                            color: Colors.white54,
+                            size: 18,
+                          ),
                         ),
                         filled: true,
                         fillColor: Colors.black26,
@@ -1131,14 +1163,14 @@ class _AnidexScreenState extends State<AnidexScreen>
     }
   }
 
-  IconData _getItemIcon(String cat) {
+  String _getItemIcon(String cat) {
     if (cat.contains('rod')) {
-      return Icons.anchor;
+      return 'assets/icon/water.png';
     }
     if (cat.contains('talisman')) {
-      return Icons.auto_awesome;
+      return 'assets/icon/mystic.png';
     }
-    return Icons.inventory_2;
+    return 'assets/icon/inventory.png';
   }
 
   Color _getItemColor(String cat) {
@@ -1149,6 +1181,17 @@ class _AnidexScreenState extends State<AnidexScreen>
       return Colors.purpleAccent;
     }
     return Colors.grey.shade400;
+  }
+
+  String _getRarityBackground(String rarity) {
+    final r = rarity.toLowerCase();
+    if (r.contains('common')) return 'assets/icon/common.png';
+    if (r.contains('uncommon')) return 'assets/icon/uncommon.png';
+    if (r.contains('rare')) return 'assets/icon/rare.png';
+    if (r.contains('epic')) return 'assets/icon/epic.png';
+    if (r.contains('legendary')) return 'assets/icon/legendary.png';
+    if (r.contains('mythical')) return 'assets/icon/mythical.png';
+    return 'assets/icon/common.png';
   }
 }
 
@@ -1204,13 +1247,16 @@ class __OrganismSpriteDisplayState extends State<_OrganismSpriteDisplay> {
       setState(() {
         String spriteUrl = widget.organism.sprite;
         if (spriteUrl.startsWith('http')) {
-          _imagePath = local; // Force it to remain the failed local path so the error builder kicks in
+          _imagePath =
+              local; // Force it to remain the failed local path so the error builder kicks in
         } else {
           if (spriteUrl.startsWith('file:///')) {
             spriteUrl = spriteUrl.replaceFirst('file:///', '');
           }
           if (spriteUrl.isNotEmpty) {
-            _imagePath = spriteUrl.startsWith('assets/') ? spriteUrl : 'assets/sprites/$spriteUrl';
+            _imagePath = spriteUrl.startsWith('assets/')
+                ? spriteUrl
+                : 'assets/sprites/$spriteUrl';
           } else {
             _imagePath = local;
           }
@@ -1227,64 +1273,14 @@ class __OrganismSpriteDisplayState extends State<_OrganismSpriteDisplay> {
       );
     }
 
-    if (widget.isDiscovered) {
-      if (!widget.isCaptured) {
-        // Identified but not Captured -> Grayscale with BLACK outline
-        return buildSilhouetteSprite(
-          imageUrl: _imagePath!,
-          silhouetteColor: null, // Keep original (will be filtered below)
-          outlineColor: Colors.black,
-          outlineWidth: 2.0,
-          fit: BoxFit.contain,
-        ).wrapWithGrayscale();
-      }
-      // Captured -> Colored with BLACK outline
-      return buildSilhouetteSprite(
-        imageUrl: _imagePath!,
-        silhouetteColor: null,
-        outlineColor: Colors.black,
-        outlineWidth: 2.0,
-        fit: BoxFit.contain,
-      );
-    }
-
-    // Undiscovered -> Black Silhouette with WHITE outline
+    // Always show the actual image colored with black outline
     return buildSilhouetteSprite(
       imageUrl: _imagePath!,
-      silhouetteColor: widget.silhouetteColor,
-      outlineColor: Colors.white,
-      outlineWidth: 2.2,
+      silhouetteColor: null,
+      outlineColor: Colors.black,
+      outlineWidth: 2.0,
       fit: BoxFit.contain,
     );
   }
 }
 
-extension on Widget {
-  Widget wrapWithGrayscale() {
-    return ColorFiltered(
-      colorFilter: const ColorFilter.matrix(<double>[
-        0.2126,
-        0.7152,
-        0.0722,
-        0,
-        0,
-        0.2126,
-        0.7152,
-        0.0722,
-        0,
-        0,
-        0.2126,
-        0.7152,
-        0.0722,
-        0,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-      ]),
-      child: this,
-    );
-  }
-}

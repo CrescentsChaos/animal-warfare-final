@@ -68,28 +68,29 @@ class OrganismFeature {
   });
 
   Map<String, dynamic> toJson() => {
-        'organismName': organismName,
-        'dominantColors': dominantColors.map((c) => c.value).toList(),
-        'hueBins': hueBins,
-        'spatialHueBins': spatialHueBins,
-        'avgBrightness': avgBrightness,
-        'avgSaturation': avgSaturation,
-        'aspectRatio': aspectRatio,
-        'solidity': solidity,
-        'verticalSymmetry': verticalSymmetry,
-        'horizontalSymmetry': horizontalSymmetry,
-        'edgeDensity': edgeDensity,
-      };
+    'organismName': organismName,
+    'dominantColors': dominantColors.map((c) => c.value).toList(),
+    'hueBins': hueBins,
+    'spatialHueBins': spatialHueBins,
+    'avgBrightness': avgBrightness,
+    'avgSaturation': avgSaturation,
+    'aspectRatio': aspectRatio,
+    'solidity': solidity,
+    'verticalSymmetry': verticalSymmetry,
+    'horizontalSymmetry': horizontalSymmetry,
+    'edgeDensity': edgeDensity,
+  };
 
   factory OrganismFeature.fromJson(Map<String, dynamic> json) {
     return OrganismFeature(
       organismName: json['organismName'] ?? 'Unknown',
-      dominantColors: (json['dominantColors'] as List?)
+      dominantColors:
+          (json['dominantColors'] as List?)
               ?.map((v) => Color(v as int))
               .toList() ??
           [],
       hueBins: Map<String, double>.from(json['hueBins'] ?? {}),
-      spatialHueBins: json['spatialHueBins'] != null 
+      spatialHueBins: json['spatialHueBins'] != null
           ? Map<String, double>.from(json['spatialHueBins'])
           : null,
       avgBrightness: (json['avgBrightness'] as num?)?.toDouble() ?? 0.5,
@@ -97,7 +98,8 @@ class OrganismFeature {
       aspectRatio: (json['aspectRatio'] as num?)?.toDouble() ?? 1.0,
       solidity: (json['solidity'] as num?)?.toDouble() ?? 0.5,
       verticalSymmetry: (json['verticalSymmetry'] as num?)?.toDouble() ?? 0.5,
-      horizontalSymmetry: (json['horizontalSymmetry'] as num?)?.toDouble() ?? 0.5,
+      horizontalSymmetry:
+          (json['horizontalSymmetry'] as num?)?.toDouble() ?? 0.5,
       edgeDensity: (json['edgeDensity'] as num?)?.toDouble() ?? 0.0,
     );
   }
@@ -133,7 +135,9 @@ class BiometricService {
 
     try {
       // Load organisms database
-      final String response = await rootBundle.loadString('assets/Organisms.json');
+      final String response = await rootBundle.loadString(
+        'assets/Organisms.json',
+      );
       final List<dynamic> animalsData = json.decode(response);
       _organisms = animalsData.map((j) => Organism.fromJson(j)).toList();
 
@@ -141,12 +145,18 @@ class BiometricService {
       try {
         await _featureDb.initialize();
         _spriteFeatures = await _featureDb.getAllFeatures();
-        debugPrint('BiometricService: Loaded ${_spriteFeatures?.length ?? 0} features from DB');
+        debugPrint(
+          'BiometricService: Loaded ${_spriteFeatures?.length ?? 0} features from DB',
+        );
       } catch (e) {
-        debugPrint('BiometricService: DB load failed, trying JSON fallback: $e');
+        debugPrint(
+          'BiometricService: DB load failed, trying JSON fallback: $e',
+        );
         // Fallback: try loading from legacy JSON file
         try {
-          final String featuresJson = await rootBundle.loadString('assets/ml/sprite_features.json');
+          final String featuresJson = await rootBundle.loadString(
+            'assets/ml/sprite_features.json',
+          );
           final Map<String, dynamic> featuresMap = json.decode(featuresJson);
           _spriteFeatures = {};
           for (final entry in featuresMap.entries) {
@@ -159,7 +169,9 @@ class BiometricService {
 
       // Initialize ML segmentation engine (non-blocking if model download needed)
       _segmentation.initialize().then((_) {
-        debugPrint('BiometricService: ML segmentation ready: ${_segmentation.isAvailable}');
+        debugPrint(
+          'BiometricService: ML segmentation ready: ${_segmentation.isAvailable}',
+        );
       });
 
       _isInitialized = true;
@@ -184,7 +196,11 @@ class BiometricService {
   /// Extract features from raw image bytes, including color and shape.
   /// For input images (photos), this will attempt ML segmentation first,
   /// falling back to the color-distance algorithm if unavailable.
-  Future<OrganismFeature> extractFeatures(Uint8List imageBytes, {String name = 'input', Uint8List? preSegmentedBytes}) async {
+  Future<OrganismFeature> extractFeatures(
+    Uint8List imageBytes, {
+    String name = 'input',
+    Uint8List? preSegmentedBytes,
+  }) async {
     // If we already have a pre-segmented image (from scanImage's ML pass), use it
     final bytesToDecode = preSegmentedBytes ?? imageBytes;
     final img.Image? decoded = img.decodeImage(bytesToDecode);
@@ -211,8 +227,8 @@ class BiometricService {
       final size = max(decoded.width, decoded.height);
       // IMPORTANT: Must specify numChannels: 4 to avoid stripping alpha channel in package:image 4.x+
       final padded = img.Image(width: size, height: size, numChannels: 4);
-      img.fill(padded, color: img.ColorRgba8(0, 0, 0, 0)); 
-      
+      img.fill(padded, color: img.ColorRgba8(0, 0, 0, 0));
+
       final xOffset = (size - decoded.width) ~/ 2;
       final yOffset = (size - decoded.height) ~/ 2;
       img.compositeImage(padded, decoded, dstX: xOffset, dstY: yOffset);
@@ -249,7 +265,7 @@ class BiometricService {
     final List<HSVColor> hsvPixels = [];
     final Map<int, int> colorCounts = {};
     int objectPixelCount = 0;
-    
+
     int minX = resized.width, maxX = 0;
     int minY = resized.height, maxY = 0;
 
@@ -259,8 +275,10 @@ class BiometricService {
         if (!mask[y * resized.width + x]) continue;
 
         objectPixelCount++;
-        if (x < minX) minX = x; if (x > maxX) maxX = x;
-        if (y < minY) minY = y; if (y > maxY) maxY = y;
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
 
         final r = pixel.r.toInt();
         final g = pixel.g.toInt();
@@ -275,19 +293,35 @@ class BiometricService {
 
     if (hsvPixels.isEmpty) {
       return OrganismFeature(
-        organismName: name, dominantColors: [], hueBins: {}, avgBrightness: 0.5, avgSaturation: 0.5,
-        aspectRatio: 1.0, solidity: 0.5, verticalSymmetry: 0.5, horizontalSymmetry: 0.5, edgeDensity: 0.0,
+        organismName: name,
+        dominantColors: [],
+        hueBins: {},
+        avgBrightness: 0.5,
+        avgSaturation: 0.5,
+        aspectRatio: 1.0,
+        solidity: 0.5,
+        verticalSymmetry: 0.5,
+        horizontalSymmetry: 0.5,
+        edgeDensity: 0.0,
       );
     }
 
-    final sortedColors = colorCounts.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+    final sortedColors = colorCounts.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
     final dominantColors = sortedColors.take(8).map((e) {
       final q = e.key;
-      return Color.fromARGB(255, ((q >> 8) & 0xF) * 17, ((q >> 4) & 0xF) * 17, (q & 0xF) * 17);
+      return Color.fromARGB(
+        255,
+        ((q >> 8) & 0xF) * 17,
+        ((q >> 4) & 0xF) * 17,
+        (q & 0xF) * 17,
+      );
     }).toList();
 
     final finalHueBins = <String, double>{};
-    for (int i = 0; i < 36; i++) finalHueBins['h${i * 10}'] = 0;
+    for (int i = 0; i < 36; i++) {
+      finalHueBins['h${i * 10}'] = 0;
+    }
     // Add Achromatic bins
     finalHueBins['hWhite'] = 0;
     finalHueBins['hBlack'] = 0;
@@ -310,12 +344,15 @@ class BiometricService {
         }
       } else {
         final binIndex = (hsv.hue / 10).floor().clamp(0, 35);
-        finalHueBins['h${binIndex * 10}'] = (finalHueBins['h${binIndex * 10}'] ?? 0) + 1;
+        finalHueBins['h${binIndex * 10}'] =
+            (finalHueBins['h${binIndex * 10}'] ?? 0) + 1;
       }
     }
 
     final total = hsvPixels.length.toDouble();
-    for (final key in finalHueBins.keys) finalHueBins[key] = finalHueBins[key]! / total;
+    for (final key in finalHueBins.keys) {
+      finalHueBins[key] = finalHueBins[key]! / total;
+    }
 
     final sym = _calculateSymmetry(resized, mask, minX, maxX, minY, maxY);
     final hSym = sym.$1;
@@ -337,7 +374,9 @@ class BiometricService {
             final idx = y * resized.width + x;
             if (idx >= 0 && idx < mask.length && mask[idx]) {
               final p = resized.getPixel(x, y);
-              final hsv = HSVColor.fromColor(Color.fromARGB(255, p.r.toInt(), p.g.toInt(), p.b.toInt()));
+              final hsv = HSVColor.fromColor(
+                Color.fromARGB(255, p.r.toInt(), p.g.toInt(), p.b.toInt()),
+              );
               final bin = ((hsv.hue % 360) / 10).floor();
               gridBins[bin] = (gridBins[bin] ?? 0) + 1;
               gridPixels++;
@@ -345,7 +384,9 @@ class BiometricService {
           }
         }
         gridBins.forEach((bin, count) {
-          spatialHueBins['g${gx}${gy}_h${bin * 10}'] = gridPixels > 0 ? count / gridPixels : 0;
+          spatialHueBins['g$gx${gy}_h${bin * 10}'] = gridPixels > 0
+              ? count / gridPixels
+              : 0;
         });
       }
     }
@@ -368,15 +409,20 @@ class BiometricService {
   /// Detect likely background by sampling corners and looking for uniform color.
   List<bool> _detectBackgroundAndGetMask(img.Image image) {
     final mask = List<bool>.filled(image.width * image.height, true);
-    
+
     // Sample perimeter points for background "prototypes"
     final List<List<int>> prototypes = [];
     final samples = [
-      [0, 0], [image.width - 1, 0], [0, image.height - 1], [image.width - 1, image.height - 1],
-      [image.width ~/ 2, 0], [image.width ~/ 2, image.height - 1],
-      [0, image.height ~/ 2], [image.width - 1, image.height ~/ 2]
+      [0, 0],
+      [image.width - 1, 0],
+      [0, image.height - 1],
+      [image.width - 1, image.height - 1],
+      [image.width ~/ 2, 0],
+      [image.width ~/ 2, image.height - 1],
+      [0, image.height ~/ 2],
+      [image.width - 1, image.height ~/ 2],
     ];
-    
+
     for (final s in samples) {
       final p = image.getPixel(s[0], s[1]);
       prototypes.add([p.r.toInt(), p.g.toInt(), p.b.toInt()]);
@@ -395,23 +441,25 @@ class BiometricService {
         for (final bp in prototypes) {
           // Weighted distance for human color perception
           final d = sqrt(
-            pow(r - bp[0], 2) * 0.299 + 
-            pow(g - bp[1], 2) * 0.587 + 
-            pow(b - bp[2], 2) * 0.114
+            pow(r - bp[0], 2) * 0.299 +
+                pow(g - bp[1], 2) * 0.587 +
+                pow(b - bp[2], 2) * 0.114,
           );
           if (d < minStatsDist) minStatsDist = d;
         }
 
         // Distance from center (0.0 at center, 1.0 at farthest corner)
-        final distFromCenter = sqrt(pow(x - centerX, 2) + pow(y - centerY, 2)) / maxDist;
-        
-        // Subject Protection: 
-        // We use a parabolic threshold curve. 
+        final distFromCenter =
+            sqrt(pow(x - centerX, 2) + pow(y - centerY, 2)) / maxDist;
+
+        // Subject Protection:
+        // We use a parabolic threshold curve.
         // Near center (dist < 0.4), threshold is extremely strict (protect subject).
         // Near edges (dist > 0.7), threshold is loose (remove background).
         double threshold;
         if (distFromCenter < 0.4) {
-          threshold = 8.0; // Very strict: only mask if ALMOST EXACTLY background color
+          threshold =
+              8.0; // Very strict: only mask if ALMOST EXACTLY background color
         } else {
           // Exponentially increase threshold as we move away from center
           threshold = 8.0 + pow(distFromCenter * 1.5, 3) * 60.0;
@@ -426,20 +474,28 @@ class BiometricService {
   }
 
   /// Calculate horizontal and vertical symmetry scores.
-  (double, double) _calculateSymmetry(img.Image img, List<bool>? mask, int minX, int maxX, int minY, int maxY) {
+  (double, double) _calculateSymmetry(
+    img.Image img,
+    List<bool>? mask,
+    int minX,
+    int maxX,
+    int minY,
+    int maxY,
+  ) {
     int hMatches = 0, vMatches = 0, hTotal = 0, vTotal = 0;
-    
+
     // Horizontal Symmetry
     for (int y = minY; y <= maxY; y++) {
       for (int x = minX; x <= (minX + maxX) ~/ 2; x++) {
         final x2 = maxX - (x - minX);
         if (x2 < minX || x2 > maxX) continue;
-        
+
         final p1 = img.getPixel(x, y);
         final p2 = img.getPixel(x2, y);
-        
+
         hTotal++;
-        final d = (p1.r - p2.r).abs() + (p1.g - p2.g).abs() + (p1.b - p2.b).abs();
+        final d =
+            (p1.r - p2.r).abs() + (p1.g - p2.g).abs() + (p1.b - p2.b).abs();
         if (d < 100) hMatches++;
       }
     }
@@ -449,19 +505,20 @@ class BiometricService {
       for (int y = minY; y <= (minY + maxY) ~/ 2; y++) {
         final y2 = maxY - (y - minY);
         if (y2 < minY || y2 > maxY) continue;
-        
+
         final p1 = img.getPixel(x, y);
         final p2 = img.getPixel(x, y2);
-        
+
         vTotal++;
-        final d = (p1.r - p2.r).abs() + (p1.g - p2.g).abs() + (p1.b - p2.b).abs();
+        final d =
+            (p1.r - p2.r).abs() + (p1.g - p2.g).abs() + (p1.b - p2.b).abs();
         if (d < 100) vMatches++;
       }
     }
-    
+
     return (
       hTotal > 0 ? hMatches / hTotal : 0.5,
-      vTotal > 0 ? vMatches / vTotal : 0.5
+      vTotal > 0 ? vMatches / vTotal : 0.5,
     );
   }
 
@@ -473,15 +530,15 @@ class BiometricService {
     for (int y = 1; y < image.height - 1; y++) {
       for (int x = 1; x < image.width - 1; x++) {
         if (mask != null && !mask[y * image.width + x]) continue;
-        
+
         final p = image.getPixel(x, y);
         final pRight = image.getPixel(x + 1, y);
         final pDown = image.getPixel(x, y + 1);
-        
+
         final lum = (p.r + p.g + p.b) / 3.0;
         final lumR = (pRight.r + pRight.g + pRight.b) / 3.0;
         final lumD = (pDown.r + pDown.g + pDown.b) / 3.0;
-        
+
         final grad = (lum - lumR).abs() + (lum - lumD).abs();
         if (grad > 30) edgePixels++;
         totalPixels++;
@@ -489,8 +546,6 @@ class BiometricService {
     }
     return totalPixels > 0 ? edgePixels / totalPixels : 0.0;
   }
-
-
 
   /// Extract Genus from scientific name (e.g. "Panthera tigris" -> "Panthera").
   String _getGenus(String scientificName) {
@@ -516,7 +571,7 @@ class BiometricService {
       final pattern = isShort ? RegExp('\\b$keyword\\b') : RegExp(keyword);
 
       if (pattern.hasMatch(nameLower)) {
-        score += 3.0; 
+        score += 3.0;
         matchCount++;
       } else if (pattern.hasMatch(sciLower)) {
         score += 2.0;
@@ -545,11 +600,15 @@ class BiometricService {
     // 0. Taxonomic Classification (Early Gate)
     onProgress?.call('Categorizing Subject...', 0.02);
     final taxonomyResult = await _taxonomy.classifyImage(imageBytes);
-    final AnimalClass detectedClass = taxonomyResult['class'] ?? AnimalClass.unknown;
+    final AnimalClass detectedClass =
+        taxonomyResult['class'] ?? AnimalClass.unknown;
     final double classConfidence = taxonomyResult['confidence'] ?? 0.0;
-    
+
     if (detectedClass != AnimalClass.unknown) {
-      onProgress?.call('Subject Type: ${detectedClass.name.toUpperCase()}', 0.05);
+      onProgress?.call(
+        'Subject Type: ${detectedClass.name.toUpperCase()}',
+        0.05,
+      );
     }
 
     onProgress?.call('Decoding image...', 0.05);
@@ -559,7 +618,7 @@ class BiometricService {
     // Step 1: Segmentation (Prioritize manual -> ML -> Fallback)
     Uint8List? activeSegmentedBytes = preSegmentedBytes;
     bool usedAdvancedSegmentation = preSegmentedBytes != null;
-    
+
     if (activeSegmentedBytes == null && _segmentation.isAvailable) {
       onProgress?.call('AI segmentation in progress...', 0.10);
       activeSegmentedBytes = await _segmentation.segment(imageBytes);
@@ -570,7 +629,12 @@ class BiometricService {
     }
 
     // Step 2: Extract features using segmented image or fallback
-    onProgress?.call(usedAdvancedSegmentation ? 'Analyzing segmented subject...' : 'Segmenting subject...', 0.15);
+    onProgress?.call(
+      usedAdvancedSegmentation
+          ? 'Analyzing segmented subject...'
+          : 'Segmenting subject...',
+      0.15,
+    );
     final inputFeature = await extractFeatures(
       imageBytes,
       name: 'input',
@@ -612,7 +676,10 @@ class BiometricService {
     for (final org in _organisms!) {
       processed++;
       if (processed % 100 == 0) {
-        onProgress?.call('Matching biometric signatures...', 0.20 + (0.60 * (processed / totalOrgs)));
+        onProgress?.call(
+          'Matching biometric signatures...',
+          0.20 + (0.60 * (processed / totalOrgs)),
+        );
       }
 
       var cachedFeature = _spriteFeatures?[org.name];
@@ -627,20 +694,21 @@ class BiometricService {
 
       final targetClass = _mapStringToAnimalClass(org.animalClass);
       final similarity = _featureSimilarity(
-        inputFeature, 
+        inputFeature,
         cachedFeature,
         inputClass: detectedClass,
         targetClass: targetClass,
         classConfidence: classConfidence,
       );
-      
+
       // Strict Feature Filter: "Grey" threshold is 0.4
       // If any core feature (Color, Shape, Pattern, Shade) is ≤ 0.4, discard the species.
-      bool hasGreyFeature = (similarity['Color'] ?? 0) <= 0.4 ||
-                            (similarity['Shape'] ?? 0) <= 0.4 ||
-                            (similarity['Pattern'] ?? 0) <= 0.4 ||
-                            (similarity['Shade'] ?? 0) <= 0.4;
-      
+      bool hasGreyFeature =
+          (similarity['Color'] ?? 0) <= 0.4 ||
+          (similarity['Shape'] ?? 0) <= 0.4 ||
+          (similarity['Pattern'] ?? 0) <= 0.4 ||
+          (similarity['Shade'] ?? 0) <= 0.4;
+
       if (hasGreyFeature) {
         continue;
       }
@@ -653,29 +721,32 @@ class BiometricService {
 
       // Hint-based filter
       if (normalizedHint != null && normalizedHint.isNotEmpty) {
-        bool matchHint = org.name.toLowerCase().contains(normalizedHint) || 
-                         org.scientificName.toLowerCase().contains(normalizedHint) ||
-                         _getGenus(org.scientificName).toLowerCase() == normalizedHint;
-        
+        bool matchHint =
+            org.name.toLowerCase().contains(normalizedHint) ||
+            org.scientificName.toLowerCase().contains(normalizedHint) ||
+            _getGenus(org.scientificName).toLowerCase() == normalizedHint;
+
         if (matchHint) {
-          // It matches the hint, so we keep it. 
+          // It matches the hint, so we keep it.
           // We don't boost it much because we want the percentage to reflect visual reality.
           score = (score + 0.01).clamp(0.0, 1.0);
         } else {
           // Exclude non-matching results
-          continue; 
+          continue;
         }
       }
 
       if (score > 0.15) {
-        results.add(ScanResult(
-        organism: org,
-        confidence: score,
-        matchReason: 'Biometric Signature Match',
-        maskedImage: maskedBytes,
-        featureScores: similarity,
-        detectedClass: detectedClass,
-      ));
+        results.add(
+          ScanResult(
+            organism: org,
+            confidence: score,
+            matchReason: 'Biometric Signature Match',
+            maskedImage: maskedBytes,
+            featureScores: similarity,
+            detectedClass: detectedClass,
+          ),
+        );
       }
     }
 
@@ -683,13 +754,14 @@ class BiometricService {
     results.sort((a, b) => b.confidence.compareTo(a.confidence));
 
     // Genus-based inclusion (Fallback for low match OR Cluster for high match)
-    if (results.isNotEmpty && (results.first.confidence < 0.6 || results.first.confidence >= 0.95) && normalizedHint == null) {
+    if (results.isNotEmpty &&
+        (results.first.confidence < 0.6 || results.first.confidence >= 0.95) &&
+        normalizedHint == null) {
       final topGenus = _getGenus(results.first.organism.scientificName);
       if (topGenus.isNotEmpty) {
         for (final org in _organisms!) {
-          if (_getGenus(org.scientificName) == topGenus && 
+          if (_getGenus(org.scientificName) == topGenus &&
               !results.any((r) => r.organism.name == org.name)) {
-            
             var cachedFeature = _spriteFeatures?[org.name];
             if (cachedFeature == null) {
               cachedFeature = await _extractSpriteFeature(org.name);
@@ -699,21 +771,27 @@ class BiometricService {
             }
 
             if (cachedFeature != null) {
-              final similarity = _featureSimilarity(inputFeature, cachedFeature);
-              bool hasGreyFeature = (similarity['Color'] ?? 0) <= 0.5 ||
-                                    (similarity['Shape'] ?? 0) <= 0.5 ||
-                                    (similarity['Pattern'] ?? 0) <= 0.5 ||
-                                    (similarity['Shade'] ?? 0) <= 0.5;
-              
+              final similarity = _featureSimilarity(
+                inputFeature,
+                cachedFeature,
+              );
+              bool hasGreyFeature =
+                  (similarity['Color'] ?? 0) <= 0.5 ||
+                  (similarity['Shape'] ?? 0) <= 0.5 ||
+                  (similarity['Pattern'] ?? 0) <= 0.5 ||
+                  (similarity['Shade'] ?? 0) <= 0.5;
+
               if (!hasGreyFeature) {
-                results.add(ScanResult(
-                  organism: org,
-                  confidence: similarity['total'] ?? 0,
-                  matchReason: 'Similar Genus ($topGenus)',
-                  maskedImage: maskedBytes,
-                  featureScores: similarity,
-                  isGenusMate: true,
-                ));
+                results.add(
+                  ScanResult(
+                    organism: org,
+                    confidence: similarity['total'] ?? 0,
+                    matchReason: 'Similar Genus ($topGenus)',
+                    maskedImage: maskedBytes,
+                    featureScores: similarity,
+                    isGenusMate: true,
+                  ),
+                );
               }
             }
           }
@@ -723,7 +801,8 @@ class BiometricService {
     }
 
     // Step 5: External identification (iNaturalist) - Skip if hint is present to focus on user request
-    if (normalizedHint == null && (results.isEmpty || results.first.confidence < 0.90)) {
+    if (normalizedHint == null &&
+        (results.isEmpty || results.first.confidence < 0.90)) {
       onProgress?.call('Consulting Global Registry...', 0.92);
       try {
         final externalResults = await identifyViaINaturalist(imageBytes);
@@ -739,26 +818,34 @@ class BiometricService {
           // Default to 0.5 for unverified external results to prioritize local matches
           double biometricVerification = 0.5;
           Map<String, double> verificationScores = {};
-          
+
           if (cachedFeature != null) {
             final sim = _featureSimilarity(inputFeature, cachedFeature);
             biometricVerification = sim['total'] ?? 0;
             verificationScores = sim;
-            
+
             // If iNaturalist is highly confident (>80%), our local masking might have just failed
             // due to a complex background (like coral reefs). We boost the verification score
             // to ensure true positives aren't discarded by strict local biometric matching.
             if (ext.confidence > 0.8 && biometricVerification > 0.05) {
-              biometricVerification = (biometricVerification * 2.0).clamp(0.6, 1.0);
+              biometricVerification = (biometricVerification * 2.0).clamp(
+                0.6,
+                1.0,
+              );
             }
           }
 
-          final existingIndex = results.indexWhere((r) => r.organism.name.toLowerCase() == ext.organism.name.toLowerCase());
+          final existingIndex = results.indexWhere(
+            (r) =>
+                r.organism.name.toLowerCase() ==
+                ext.organism.name.toLowerCase(),
+          );
           if (existingIndex != -1) {
             final existing = results[existingIndex];
             results[existingIndex] = ScanResult(
               organism: existing.organism,
-              confidence: (existing.confidence * 0.7 + ext.confidence * 0.3).clamp(0.0, 1.0),
+              confidence: (existing.confidence * 0.7 + ext.confidence * 0.3)
+                  .clamp(0.0, 1.0),
               matchReason: '${existing.matchReason} + External Verify',
               isExternal: false,
               maskedImage: maskedBytes,
@@ -767,15 +854,20 @@ class BiometricService {
           } else {
             // Only add external results that aren't a total biometric mismatch
             if (biometricVerification > 0.1 || ext.confidence > 0.8) {
-              results.add(ScanResult(
-                organism: ext.organism,
-                // Combine external confidence with our boosted biometric verification
-                confidence: (ext.confidence * biometricVerification).clamp(0.0, 1.0),
-                matchReason: ext.matchReason,
-                isExternal: true,
-                maskedImage: maskedBytes,
-                featureScores: verificationScores,
-              ));
+              results.add(
+                ScanResult(
+                  organism: ext.organism,
+                  // Combine external confidence with our boosted biometric verification
+                  confidence: (ext.confidence * biometricVerification).clamp(
+                    0.0,
+                    1.0,
+                  ),
+                  matchReason: ext.matchReason,
+                  isExternal: true,
+                  maskedImage: maskedBytes,
+                  featureScores: verificationScores,
+                ),
+              );
             }
           }
         }
@@ -787,14 +879,14 @@ class BiometricService {
     if (results.isNotEmpty && results.first.confidence >= 0.95) {
       final topResult = results.first;
       final topGenus = _getGenus(topResult.organism.scientificName);
-      
+
       for (int i = 1; i < results.length; i++) {
         final r = results[i];
         if (_getGenus(r.organism.scientificName) == topGenus) {
           // Mark as a genus-mate for UI grouping, but DO NOT boost the score
           results[i] = ScanResult(
             organism: r.organism,
-            confidence: r.confidence, 
+            confidence: r.confidence,
             matchReason: '${r.matchReason} (Genus Affiliate)',
             isExternal: r.isExternal,
             maskedImage: r.maskedImage,
@@ -811,7 +903,7 @@ class BiometricService {
 
   /// Calculates a logical similarity breakdown between two features.
   Map<String, double> _featureSimilarity(
-    OrganismFeature f1, 
+    OrganismFeature f1,
     OrganismFeature f2, {
     AnimalClass? inputClass,
     AnimalClass? targetClass,
@@ -839,7 +931,7 @@ class BiometricService {
     globalColorMatch = globalColorMatch.clamp(0.0, 1.0);
 
     // 2. Spatial Color Match (Grid-based verification)
-    double spatialMatch = globalColorMatch; 
+    double spatialMatch = globalColorMatch;
     if (f1.spatialHueBins != null && f2.spatialHueBins != null) {
       double spatialSum = 0;
       f1.spatialHueBins!.forEach((key, val) {
@@ -847,56 +939,80 @@ class BiometricService {
           spatialSum += min(val, f2.spatialHueBins![key]!);
         }
       });
-      
+
       // Count active grid cells (e.g. "g00", "g11")
-      final cells1 = f1.spatialHueBins!.keys.map((k) => k.substring(0, 3)).toSet().length;
-      final cells2 = f2.spatialHueBins!.keys.map((k) => k.substring(0, 3)).toSet().length;
+      final cells1 = f1.spatialHueBins!.keys
+          .map((k) => k.substring(0, 3))
+          .toSet()
+          .length;
+      final cells2 = f2.spatialHueBins!.keys
+          .map((k) => k.substring(0, 3))
+          .toSet()
+          .length;
       final maxCells = max(cells1, cells2);
-      
+
       if (maxCells > 0) {
         spatialMatch = (spatialSum / maxCells).clamp(0.0, 1.0);
       }
     }
-    
+
     // Weighted color score
-    final colorMatch = (globalColorMatch * 0.5 + spatialMatch * 0.5).clamp(0.0, 1.0);
+    final colorMatch = (globalColorMatch * 0.5 + spatialMatch * 0.5).clamp(
+      0.0,
+      1.0,
+    );
 
     // 3. Shape Analysis (Aspect Ratio & Solidity)
     final aspectDiff = (log(f1.aspectRatio) - log(f2.aspectRatio)).abs();
     final solidityDiff = (f1.solidity - f2.solidity).abs();
-    
+
     // Parabolic penalty for shape mismatch
-    final aspectScore = pow((1.0 - (aspectDiff * 0.6)).clamp(0.0, 1.0), 1.5).toDouble();
-    final solidityScore = pow((1.0 - (solidityDiff * 1.6)).clamp(0.0, 1.0), 1.5).toDouble();
+    final aspectScore = pow(
+      (1.0 - (aspectDiff * 0.6)).clamp(0.0, 1.0),
+      1.5,
+    ).toDouble();
+    final solidityScore = pow(
+      (1.0 - (solidityDiff * 1.6)).clamp(0.0, 1.0),
+      1.5,
+    ).toDouble();
     final shapeMatch = (aspectScore * 0.6) + (solidityScore * 0.4);
 
     // 4. Pattern Analysis (Symmetry & Edge Density)
-    final symDiff = (f1.verticalSymmetry - f2.verticalSymmetry).abs() +
-                    (f1.horizontalSymmetry - f2.horizontalSymmetry).abs();
+    final symDiff =
+        (f1.verticalSymmetry - f2.verticalSymmetry).abs() +
+        (f1.horizontalSymmetry - f2.horizontalSymmetry).abs();
     final edgeDiff = (f1.edgeDensity - f2.edgeDensity).abs();
     final edgeScore = (1.0 - (edgeDiff * 3.0)).clamp(0.0, 1.0);
-    final patternMatch = (1.0 - (symDiff / 2.0)).clamp(0.0, 1.0) * 0.3 + (edgeScore * 0.7);
+    final patternMatch =
+        (1.0 - (symDiff / 2.0)).clamp(0.0, 1.0) * 0.3 + (edgeScore * 0.7);
 
     // 5. Shade & Saturation Match
-    final shadeMatch = (1.0 - (f1.avgBrightness - f2.avgBrightness).abs()).clamp(0.0, 1.0);
-    final satMatch = (1.0 - (f1.avgSaturation - f2.avgSaturation).abs()).clamp(0.0, 1.0);
+    final shadeMatch = (1.0 - (f1.avgBrightness - f2.avgBrightness).abs())
+        .clamp(0.0, 1.0);
+    final satMatch = (1.0 - (f1.avgSaturation - f2.avgSaturation).abs()).clamp(
+      0.0,
+      1.0,
+    );
     final combinedShade = (shadeMatch * 0.7 + satMatch * 0.3).clamp(0.0, 1.0);
 
     // 6. Aggregate Score Calculation
-    double total = (colorMatch * 0.45) + 
-                  (combinedShade * 0.35) + 
-                  (shapeMatch * 0.15) + 
-                  (patternMatch * 0.05);
-    
+    double total =
+        (colorMatch * 0.45) +
+        (combinedShade * 0.35) +
+        (shapeMatch * 0.15) +
+        (patternMatch * 0.05);
+
     // Biometric Gating: Strict filter for impossible matches
     if (colorMatch < 0.12) total *= 0.20; // Color mismatch is fatal
-    
+
     // Taxonomic Gating: Penalty for biological class mismatch
-    if (inputClass != null && targetClass != null && 
-        inputClass != AnimalClass.unknown && targetClass != AnimalClass.unknown) {
+    if (inputClass != null &&
+        targetClass != null &&
+        inputClass != AnimalClass.unknown &&
+        targetClass != AnimalClass.unknown) {
       if (inputClass != targetClass) {
         // Massive penalty if classes are different and we are confident
-        final penalty = 0.1 + (0.4 * (1.0 - classConfidence)); 
+        final penalty = 0.1 + (0.4 * (1.0 - classConfidence));
         total *= penalty.clamp(0.1, 0.8);
       } else {
         // Boost if classes match and we are confident
@@ -918,8 +1034,10 @@ class BiometricService {
 
   /// Query the iNaturalist Computer Vision API for species identification.
   Future<List<ScanResult>> identifyViaINaturalist(Uint8List imageBytes) async {
-    final url = Uri.parse('https://api.inaturalist.org/v1/computervision/score');
-    
+    final url = Uri.parse(
+      'https://api.inaturalist.org/v1/computervision/score',
+    );
+
     // Pre-process: Composite onto white background to avoid transparent->black conversion hallucination
     Uint8List uploadBytes = imageBytes;
     try {
@@ -933,11 +1051,9 @@ class BiometricService {
     } catch (_) {}
 
     final request = http.MultipartRequest('POST', url);
-    request.files.add(http.MultipartFile.fromBytes(
-      'image',
-      uploadBytes,
-      filename: 'image.jpg',
-    ));
+    request.files.add(
+      http.MultipartFile.fromBytes('image', uploadBytes, filename: 'image.jpg'),
+    );
 
     final response = await request.send().timeout(const Duration(seconds: 10));
     if (response.statusCode != 200) return [];
@@ -959,18 +1075,22 @@ class BiometricService {
 
       // Find if we have a local match
       final localMatch = _organisms?.firstWhere(
-        (o) => o.name.toLowerCase() == name.toString().toLowerCase() ||
-               o.scientificName.toLowerCase() == scientificName.toString().toLowerCase(),
+        (o) =>
+            o.name.toLowerCase() == name.toString().toLowerCase() ||
+            o.scientificName.toLowerCase() ==
+                scientificName.toString().toLowerCase(),
         orElse: () => _createExternalOrganism(taxon),
       );
 
       if (localMatch != null) {
-        scanResults.add(ScanResult(
-          organism: localMatch,
-          confidence: score,
-          matchReason: 'Global Registry Match',
-          isExternal: localMatch.sprite.startsWith('http'),
-        ));
+        scanResults.add(
+          ScanResult(
+            organism: localMatch,
+            confidence: score,
+            matchReason: 'Global Registry Match',
+            isExternal: localMatch.sprite.startsWith('http'),
+          ),
+        );
       }
     }
     return scanResults;
@@ -993,18 +1113,26 @@ class BiometricService {
     final sciName = taxon['name'];
     final photoUrl = taxon['default_photo']?['medium_url'] ?? '';
     final wikiUrl = taxon['wikipedia_url'] ?? '';
-    
+
     // Inferred types based on iconic_taxon_name
     final iconicTaxon = taxon['iconic_taxon_name']?.toString().toLowerCase();
     final types = <String>[];
-    if (iconicTaxon == 'mammalia') types.add('basic');
-    else if (iconicTaxon == 'aves') types.add('flying');
-    else if (iconicTaxon == 'reptilia') types.add('earth');
-    else if (iconicTaxon == 'amphibia') types.add('aquatic');
-    else if (iconicTaxon == 'actinopterygii') types.add('aquatic');
-    else if (iconicTaxon == 'insecta') types.add('arthropod');
-    else if (iconicTaxon == 'arachnida') types.add('arthropod');
-    else types.add('basic');
+    if (iconicTaxon == 'mammalia') {
+      types.add('basic');
+    } else if (iconicTaxon == 'aves')
+      types.add('flying');
+    else if (iconicTaxon == 'reptilia')
+      types.add('earth');
+    else if (iconicTaxon == 'amphibia')
+      types.add('aquatic');
+    else if (iconicTaxon == 'actinopterygii')
+      types.add('aquatic');
+    else if (iconicTaxon == 'insecta')
+      types.add('arthropod');
+    else if (iconicTaxon == 'arachnida')
+      types.add('arthropod');
+    else
+      types.add('basic');
 
     return Organism(
       name: name,
@@ -1022,7 +1150,8 @@ class BiometricService {
       moves: 'Unknown',
       sprite: photoUrl, // Using remote URL
       rarity: 'Common',
-      description: 'Extracted from Global Registry data. Source: iNaturalist. $wikiUrl',
+      description:
+          'Extracted from Global Registry data. Source: iNaturalist. $wikiUrl',
       types: types,
     );
   }
@@ -1032,9 +1161,16 @@ class BiometricService {
     final keywords = <String>[];
 
     // Analyze dominant hues to infer environment/category
-    final greenHue = (feature.hueBins['h90'] ?? 0) + (feature.hueBins['h120'] ?? 0);
-    final blueHue = (feature.hueBins['h180'] ?? 0) + (feature.hueBins['h210'] ?? 0) + (feature.hueBins['h240'] ?? 0);
-    final warmHue = (feature.hueBins['h0'] ?? 0) + (feature.hueBins['h30'] ?? 0) + (feature.hueBins['h330'] ?? 0);
+    final greenHue =
+        (feature.hueBins['h90'] ?? 0) + (feature.hueBins['h120'] ?? 0);
+    final blueHue =
+        (feature.hueBins['h180'] ?? 0) +
+        (feature.hueBins['h210'] ?? 0) +
+        (feature.hueBins['h240'] ?? 0);
+    final warmHue =
+        (feature.hueBins['h0'] ?? 0) +
+        (feature.hueBins['h30'] ?? 0) +
+        (feature.hueBins['h330'] ?? 0);
     final yellowHue = (feature.hueBins['h60'] ?? 0);
 
     // High green → likely terrestrial
@@ -1096,14 +1232,22 @@ class BiometricService {
 
   AnimalClass _mapStringToAnimalClass(String? s) {
     switch (s?.toLowerCase()) {
-      case 'mammal': return AnimalClass.mammal;
-      case 'bird': return AnimalClass.bird;
-      case 'fish': return AnimalClass.fish;
-      case 'amphibian': return AnimalClass.amphibian;
-      case 'reptile': return AnimalClass.reptile;
-      case 'insect': return AnimalClass.insect;
-      case 'invertebrate': return AnimalClass.invertebrate;
-      default: return AnimalClass.unknown;
+      case 'mammal':
+        return AnimalClass.mammal;
+      case 'bird':
+        return AnimalClass.bird;
+      case 'fish':
+        return AnimalClass.fish;
+      case 'amphibian':
+        return AnimalClass.amphibian;
+      case 'reptile':
+        return AnimalClass.reptile;
+      case 'insect':
+        return AnimalClass.insect;
+      case 'invertebrate':
+        return AnimalClass.invertebrate;
+      default:
+        return AnimalClass.unknown;
     }
   }
 }

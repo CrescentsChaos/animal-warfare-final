@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:animal_warfare/local_auth_service.dart';
 import 'package:animal_warfare/main_screen.dart';
+import 'package:animal_warfare/login_screen.dart';
 import 'package:animal_warfare/services/audio_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -103,8 +104,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Navigator.of(dialogContext).pop();
                 await widget.authService.logout();
                 if (mounted) {
+                  Provider.of<UserState>(context, listen: false).setCurrentUser(null);
                   Navigator.of(context).pushAndRemoveUntil(
-                    _createFadeRoute(const MainScreen()),
+                    _createFadeRoute(const LoginScreen()),
                     (Route<dynamic> route) => false,
                   );
                 }
@@ -283,7 +285,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _buildSectionTitle('Audio'),
                 _buildAudioControl(
                   title: 'Music',
-                  icon: Icons.music_note_rounded,
+                  icon: 'assets/icon/sound.png',
                   isEnabled: _isMusicEnabled,
                   volume: _musicVolume,
                   onToggle: (val) {
@@ -298,7 +300,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 _buildAudioControl(
                   title: 'Sound Effects',
-                  icon: Icons.volume_up_rounded,
+                  icon: 'assets/icon/sound.png',
                   isEnabled: _isSoundEnabled,
                   volume: _soundVolume,
                   onToggle: (val) {
@@ -316,7 +318,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _buildSectionTitle('Game'),
                 _buildToggleControl(
                   title: 'Unlock Anidex (View All Data)',
-                  icon: Icons.menu_book_rounded,
+                  icon: 'assets/icon/animal_dex.png',
                   isEnabled: _anidexUnlocked,
                   onToggle: (val) {
                     setState(() => _anidexUnlocked = val);
@@ -326,19 +328,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 _buildActionTile(
                   title: 'Patch Notes',
-                  icon: Icons.description_rounded,
+                  icon: 'assets/icon/quests.png',
                   onTap: () => Navigator.of(
                     context,
                   ).push(_createFadeRoute(const PatchNotesScreen())),
                 ),
                 _buildActionTile(
                   title: 'Contact & Feedback',
-                  icon: Icons.mail_rounded,
+                  icon: Icons.feedback_rounded,
                   onTap: () => _sendEmail('General Feedback'),
                 ),
                 _buildActionTile(
                   title: 'Report an Issue',
-                  icon: Icons.bug_report_rounded,
+                  icon: 'assets/icon/insect.png',
                   onTap: _showReportDialog,
                 ),
 
@@ -346,23 +348,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _buildSectionTitle('Account'),
                 _buildActionTile(
                   title: 'Import Save Data',
-                  icon: Icons.file_upload_rounded,
+                  icon: 'assets/icon/inventory.png',
                   onTap: _importSaveData,
                 ),
                 _buildActionTile(
                   title: 'Export Save Data',
-                  icon: Icons.save_alt_rounded,
+                  icon: 'assets/icon/inventory.png',
                   onTap: _exportSaveData,
                 ),
                 _buildActionTile(
                   title: 'Log Out',
-                  icon: Icons.exit_to_app_rounded,
+                  icon: 'assets/icon/clear.png',
                   onTap: _logoutUser,
                   isDanger: true,
                 ),
                 _buildActionTile(
                   title: 'Unstuck Player',
-                  icon: Icons.refresh_rounded,
+                  icon: 'assets/icon/electric.png',
                   onTap: () {
                     final userState = Provider.of<UserState>(context, listen: false);
                     userState.requestUnstuck();
@@ -371,7 +373,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 _buildActionTile(
                   title: 'Delete Account',
-                  icon: Icons.delete_forever_rounded,
+                  icon: 'assets/icon/clear.png',
                   onTap: () {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -427,7 +429,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildAudioControl({
     required String title,
-    required IconData icon,
+    required dynamic icon,
     required bool isEnabled,
     required double volume,
     required ValueChanged<bool> onToggle,
@@ -446,7 +448,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
               children: [
-                Icon(icon, color: AppColors.primary, size: 20),
+                icon is String
+                    ? Image.asset(
+                        icon,
+                        color: AppColors.primary,
+                        width: 20,
+                        height: 20,
+                      )
+                    : Icon(icon as IconData, color: AppColors.primary, size: 20),
                 const SizedBox(width: 12),
                 Text(
                   title,
@@ -489,7 +498,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildToggleControl({
     required String title,
-    required IconData icon,
+    required dynamic icon,
     required bool isEnabled,
     required ValueChanged<bool> onToggle,
   }) {
@@ -504,7 +513,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
           children: [
-            Icon(icon, color: AppColors.primary, size: 20),
+            icon is String
+                ? Image.asset(
+                    icon,
+                    width: 20,
+                    height: 20,
+                  )
+                : Icon(icon as IconData, color: AppColors.primary, size: 20),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -525,7 +540,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildActionTile({
     required String title,
-    required IconData icon,
+    required dynamic icon,
     required VoidCallback onTap,
     bool isDanger = false,
   }) {
@@ -551,7 +566,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(
               children: [
-                Icon(icon, color: color, size: 20),
+                icon is String
+                    ? Image.asset(
+                        icon,
+                        width: 20,
+                        height: 20,
+                      )
+                    : Icon(icon as IconData, color: color, size: 20),
                 const SizedBox(width: 14),
                 Text(
                   title,

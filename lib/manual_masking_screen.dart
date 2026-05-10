@@ -2,7 +2,6 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:image/image.dart' as img;
 
 class ManualMaskingScreen extends StatefulWidget {
   final Uint8List imageBytes;
@@ -16,10 +15,10 @@ class ManualMaskingScreen extends StatefulWidget {
 class _ManualMaskingScreenState extends State<ManualMaskingScreen> {
   final List<MaskStroke> _strokes = [];
   MaskStroke? _currentStroke;
-  
+
   bool _isEraser = false;
   double _thickness = 20.0;
-  
+
   ui.Image? _uiImage;
   bool _isProcessing = true;
 
@@ -57,14 +56,14 @@ class _ManualMaskingScreenState extends State<ManualMaskingScreen> {
 
   Future<void> _applyMask() async {
     if (_uiImage == null) return;
-    
+
     setState(() => _isProcessing = true);
 
     // 1. Create a mask image the same size as the original image
     final recorder = ui.PictureRecorder();
     final canvas = Canvas(recorder);
     final size = Size(_uiImage!.width.toDouble(), _uiImage!.height.toDouble());
-    
+
     // Fill with transparent (background to remove)
     canvas.drawRect(Offset.zero & size, Paint()..color = Colors.transparent);
 
@@ -74,12 +73,12 @@ class _ManualMaskingScreenState extends State<ManualMaskingScreen> {
     final RenderBox renderBox = context.findRenderObject() as RenderBox;
     final screenWidth = renderBox.size.width;
     final screenHeight = renderBox.size.height;
-    
+
     // Fit image to screen
     double scale;
     double offsetX = 0;
     double offsetY = 0;
-    
+
     if (size.width / size.height > screenWidth / screenHeight) {
       scale = screenWidth / size.width;
       offsetY = (screenHeight - (size.height * scale)) / 2;
@@ -95,11 +94,13 @@ class _ManualMaskingScreenState extends State<ManualMaskingScreen> {
 
     for (final stroke in _strokes) {
       maskPaint.strokeWidth = stroke.thickness / scale;
-      // If eraser, we draw with clear color. 
+      // If eraser, we draw with clear color.
       // BUT we want to create a WHITE mask for the subject, so eraser should draw TRANSPARENT.
       // Initially the canvas is transparent. We draw WHITE to select.
       maskPaint.color = stroke.isEraser ? Colors.transparent : Colors.white;
-      maskPaint.blendMode = stroke.isEraser ? BlendMode.clear : BlendMode.srcOver;
+      maskPaint.blendMode = stroke.isEraser
+          ? BlendMode.clear
+          : BlendMode.srcOver;
 
       if (stroke.points.length > 1) {
         final path = Path();
@@ -112,24 +113,40 @@ class _ManualMaskingScreenState extends State<ManualMaskingScreen> {
         canvas.drawPath(path, maskPaint);
       } else if (stroke.points.isNotEmpty) {
         final p = (stroke.points[0] - Offset(offsetX, offsetY)) / scale;
-        canvas.drawCircle(p, (stroke.thickness / scale) / 2, maskPaint..style = PaintingStyle.fill);
+        canvas.drawCircle(
+          p,
+          (stroke.thickness / scale) / 2,
+          maskPaint..style = PaintingStyle.fill,
+        );
       }
     }
 
     final maskPicture = recorder.endRecording();
-    final maskImage = await maskPicture.toImage(size.width.toInt(), size.height.toInt());
+    final maskImage = await maskPicture.toImage(
+      size.width.toInt(),
+      size.height.toInt(),
+    );
 
     // 2. Composite: Original image + Mask (BlendMode.dstIn)
     final finalRecorder = ui.PictureRecorder();
     final finalCanvas = Canvas(finalRecorder);
-    
+
     finalCanvas.drawImage(_uiImage!, Offset.zero, Paint());
-    finalCanvas.drawImage(maskImage, Offset.zero, Paint()..blendMode = BlendMode.dstIn);
-    
+    finalCanvas.drawImage(
+      maskImage,
+      Offset.zero,
+      Paint()..blendMode = BlendMode.dstIn,
+    );
+
     final finalPicture = finalRecorder.endRecording();
-    final finalUiImage = await finalPicture.toImage(size.width.toInt(), size.height.toInt());
-    
-    final byteData = await finalUiImage.toByteData(format: ui.ImageByteFormat.png);
+    final finalUiImage = await finalPicture.toImage(
+      size.width.toInt(),
+      size.height.toInt(),
+    );
+
+    final byteData = await finalUiImage.toByteData(
+      format: ui.ImageByteFormat.png,
+    );
     if (byteData != null) {
       Navigator.pop(context, byteData.buffer.asUint8List());
     } else {
@@ -161,7 +178,7 @@ class _ManualMaskingScreenState extends State<ManualMaskingScreen> {
                 ),
               ),
             ),
-          
+
           // Toolbar
           Positioned(
             top: 40,
@@ -183,13 +200,17 @@ class _ManualMaskingScreenState extends State<ManualMaskingScreen> {
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.check, color: Colors.cyanAccent, size: 32),
+                  icon: const Icon(
+                    Icons.check,
+                    color: Colors.cyanAccent,
+                    size: 32,
+                  ),
                   onPressed: _applyMask,
                 ),
               ],
             ),
           ),
-          
+
           // Controls
           Positioned(
             bottom: 40,
@@ -210,20 +231,40 @@ class _ManualMaskingScreenState extends State<ManualMaskingScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          _buildToolButton(Icons.brush, 'BRUSH', !_isEraser, () => setState(() => _isEraser = false)),
-                          _buildToolButton(Icons.auto_fix_normal, 'ERASER', _isEraser, () => setState(() => _isEraser = true)),
+                          _buildToolButton(
+                            Icons.brush,
+                            'BRUSH',
+                            !_isEraser,
+                            () => setState(() => _isEraser = false),
+                          ),
+                          _buildToolButton(
+                            Icons.auto_fix_normal,
+                            'ERASER',
+                            _isEraser,
+                            () => setState(() => _isEraser = true),
+                          ),
                           _buildToolButton(Icons.undo, 'UNDO', false, () {
-                            if (_strokes.isNotEmpty) setState(() => _strokes.removeLast());
+                            if (_strokes.isNotEmpty)
+                              setState(() => _strokes.removeLast());
                           }),
-                          _buildToolButton(Icons.delete_sweep, 'CLEAR', false, () {
-                            setState(() => _strokes.clear());
-                          }),
+                          _buildToolButton(
+                            Icons.delete_sweep,
+                            'CLEAR',
+                            false,
+                            () {
+                              setState(() => _strokes.clear());
+                            },
+                          ),
                         ],
                       ),
                       const SizedBox(height: 16),
                       Row(
                         children: [
-                          const Icon(Icons.line_weight, color: Colors.white54, size: 20),
+                          const Icon(
+                            Icons.line_weight,
+                            color: Colors.white54,
+                            size: 20,
+                          ),
                           Expanded(
                             child: Slider(
                               value: _thickness,
@@ -236,7 +277,9 @@ class _ManualMaskingScreenState extends State<ManualMaskingScreen> {
                           ),
                           Text(
                             '${_thickness.toInt()}px',
-                            style: GoogleFonts.shareTechMono(color: Colors.white54),
+                            style: GoogleFonts.shareTechMono(
+                              color: Colors.white54,
+                            ),
                           ),
                         ],
                       ),
@@ -264,7 +307,12 @@ class _ManualMaskingScreenState extends State<ManualMaskingScreen> {
     );
   }
 
-  Widget _buildToolButton(IconData icon, String label, bool active, VoidCallback onTap) {
+  Widget _buildToolButton(
+    IconData icon,
+    String label,
+    bool active,
+    VoidCallback onTap,
+  ) {
     return InkWell(
       onTap: onTap,
       child: Column(
@@ -289,7 +337,11 @@ class MaskStroke {
   final double thickness;
   final bool isEraser;
 
-  MaskStroke({required this.points, required this.thickness, required this.isEraser});
+  MaskStroke({
+    required this.points,
+    required this.thickness,
+    required this.isEraser,
+  });
 }
 
 class MaskPainter extends CustomPainter {
@@ -297,7 +349,11 @@ class MaskPainter extends CustomPainter {
   final List<MaskStroke> strokes;
   final bool isEraser;
 
-  MaskPainter({required this.image, required this.strokes, required this.isEraser});
+  MaskPainter({
+    required this.image,
+    required this.strokes,
+    required this.isEraser,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -305,10 +361,10 @@ class MaskPainter extends CustomPainter {
     double scale;
     double offsetX = 0;
     double offsetY = 0;
-    
+
     final imgWidth = image.width.toDouble();
     final imgHeight = image.height.toDouble();
-    
+
     if (imgWidth / imgHeight > size.width / size.height) {
       scale = size.width / imgWidth;
       offsetY = (size.height - (imgHeight * scale)) / 2;
@@ -317,7 +373,12 @@ class MaskPainter extends CustomPainter {
       offsetX = (size.width - (imgWidth * scale)) / 2;
     }
 
-    final dstRect = Rect.fromLTWH(offsetX, offsetY, imgWidth * scale, imgHeight * scale);
+    final dstRect = Rect.fromLTWH(
+      offsetX,
+      offsetY,
+      imgWidth * scale,
+      imgHeight * scale,
+    );
     canvas.drawImageRect(
       image,
       Rect.fromLTWH(0, 0, imgWidth, imgHeight),
@@ -325,10 +386,15 @@ class MaskPainter extends CustomPainter {
       Paint()..filterQuality = ui.FilterQuality.medium,
     );
 
-    // 2. Draw a dim overlay on parts not selected? 
+    // 2. Draw a dim overlay on parts not selected?
     // Actually, let's draw the selection as a semi-transparent green overlay.
-    canvas.saveLayer(size.shortestSide.toInt().toDouble() != 0 ? Rect.fromLTWH(0,0,size.width, size.height) : null, Paint());
-    
+    canvas.saveLayer(
+      size.shortestSide.toInt().toDouble() != 0
+          ? Rect.fromLTWH(0, 0, size.width, size.height)
+          : null,
+      Paint(),
+    );
+
     final maskPaint = Paint()
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
@@ -337,7 +403,9 @@ class MaskPainter extends CustomPainter {
     for (final stroke in strokes) {
       maskPaint.strokeWidth = stroke.thickness;
       maskPaint.color = Colors.greenAccent.withAlpha(150);
-      maskPaint.blendMode = stroke.isEraser ? BlendMode.clear : BlendMode.srcOver;
+      maskPaint.blendMode = stroke.isEraser
+          ? BlendMode.clear
+          : BlendMode.srcOver;
 
       if (stroke.points.length > 1) {
         final path = Path();
@@ -347,10 +415,14 @@ class MaskPainter extends CustomPainter {
         }
         canvas.drawPath(path, maskPaint);
       } else if (stroke.points.isNotEmpty) {
-        canvas.drawCircle(stroke.points[0], stroke.thickness / 2, maskPaint..style = PaintingStyle.fill);
+        canvas.drawCircle(
+          stroke.points[0],
+          stroke.thickness / 2,
+          maskPaint..style = PaintingStyle.fill,
+        );
       }
     }
-    
+
     canvas.restore();
   }
 
