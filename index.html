@@ -376,7 +376,7 @@
                 card.className = 'card';
                 card.onclick = () => this.showDetail(org.name);
 
-                const spriteSrc = this.getSpritePath(org.name);
+                const spriteSrc = this.getSpritePath(org);
                 const rarity = (org.rarity || 'common').toLowerCase();
                 const rarityColor = this.rarityColor(rarity);
                 const types = (org.category || 'basic').split(',').map(s => s.trim()).filter(Boolean);
@@ -409,10 +409,15 @@
                 this.observer.observe(document.getElementById('sentinel'));
             },
 
-            getSpritePath(name) {
-                let clean = name.toLowerCase()
-                    .replace(/[^a-z0-9]/g, '_') // Converts spaces and ' to _
-                    .replace(/_+/g, '_')       // Collapses __ to _
+            getSpritePath(org) {
+                if (org.sprite && org.sprite.startsWith('http')) return org.sprite;
+                if (org.sprite && org.sprite !== "" && !org.sprite.includes(' ')) {
+                    if (org.sprite.startsWith('assets/')) return org.sprite;
+                    return `assets/sprites/${org.sprite}`;
+                }
+                let clean = org.name.toLowerCase()
+                    .replace(/[^a-z0-9]/g, '_')
+                    .replace(/_+/g, '_')
                     .replace(/^_|_$/g, '');
                 return `assets/sprites/${clean}.png`;
             },
@@ -447,7 +452,7 @@
                 const moves = (org.moves || '').split(',').map(s => s.trim()).filter(Boolean);
                 const drops = (org.drops || '').split(',').map(s => s.trim()).filter(Boolean);
                 const biomes = (org.habitat || '').split(',').map(s => s.trim()).filter(Boolean);
-                const spriteSrc = this.getSpritePath(org.name);
+                const spriteSrc = this.getSpritePath(org);
 
                 const stats = [
                     { label: 'HEALTH', key: 'health', color: '#e74c3c', icon: '❤', max: 500 },
