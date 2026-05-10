@@ -150,6 +150,7 @@
                             onclick="App.setSort('resistance')">RES</button>
                         <button class="sort-chip" data-sort="speed" onclick="App.setSort('speed')">SPD</button>
                         <button class="sort-chip" data-sort="bst" onclick="App.setSort('bst')">BST</button>
+                        <button class="sort-chip" data-sort="weight" onclick="App.setSort('weight')">WEIGHT</button>
                     </div>
                     <button class="order-btn" id="order-btn" onclick="App.toggleOrder()">
                         <span id="order-label">ASCENDING</span>
@@ -331,6 +332,7 @@
                         case 'power': r = (b.power || 0) - (a.power || 0); break;
                         case 'resistance': r = (b.resistance || 0) - (a.resistance || 0); break;
                         case 'speed': r = (b.speed || 0) - (a.speed || 0); break;
+                        case 'weight': r = (parseFloat(b.weight) || 0) - (parseFloat(a.weight) || 0); break;
                         case 'bst':
                             r = ((b.health || 0) + (b.attack || 0) + (b.defense || 0) + (b.power || 0) + (b.resistance || 0) + (b.speed || 0)) -
                                 ((a.health || 0) + (a.attack || 0) + (a.defense || 0) + (a.power || 0) + (a.resistance || 0) + (a.speed || 0));
@@ -410,7 +412,7 @@
                         <div class="sprite-fallback" style="display:none">🦎</div>
                         <div class="card-rarity-tag" style="background:${rarityColor}1A; color:${rarityColor}; border: 1px solid ${rarityColor}40;">${rarity.toUpperCase()}</div>
                         <div class="card-type-row">
-                            ${types.slice(0, 2).map(t => { const tSlug = t.toLowerCase().replace(/ /g, '_'); return `<span class="type-badge type-${tSlug}" title="${t.toUpperCase()}"><img src="assets/icon/${tSlug}.png" class="type-icon" alt="${t}" onerror="this.style.display='none'"></span>`}).join('')}
+                            ${types.slice(0, 2).map(t => { const tSlug = t.toLowerCase().replace(/ /g, '_'); return `<span class="type-badge type-${tSlug}" title="${t.toUpperCase()}"><img src="assets/icon/${tSlug}.png" class="type-icon" alt="${t}" onerror="this.style.display='none'"></span>` }).join('')}
                         </div>
                     </div>
                     <div class="card-body">
@@ -547,7 +549,7 @@
                     </div>
                     <div class="detail-intro">
                         <div class="type-row">
-                            ${types.map(t => { const tSlug = t.toLowerCase().replace(/ /g, '_'); return `<span class="type-badge type-${tSlug}" title="${t.toUpperCase()}"><img src="assets/icon/${tSlug}.png" class="type-icon" alt="${t}" onerror="this.style.display='none'"></span>`}).join('')}
+                            ${types.map(t => { const tSlug = t.toLowerCase().replace(/ /g, '_'); return `<span class="type-badge type-${tSlug}" title="${t.toUpperCase()}"><img src="assets/icon/${tSlug}.png" class="type-icon" alt="${t}" onerror="this.style.display='none'"></span>` }).join('')}
                         </div>
                         <h2 class="detail-name">${org.name.toUpperCase()}</h2>
                         <div class="detail-sciname">${org.scientific_name || ''}</div>

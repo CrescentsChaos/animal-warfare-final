@@ -268,6 +268,9 @@ class _AnidexScreenState extends State<AnidexScreen>
         case 'BST':
           result = b.bst.compareTo(a.bst);
           break;
+        case 'WEIGHT':
+          result = b.weight.compareTo(a.weight);
+          break;
         default:
           result = a.name.compareTo(b.name);
           break;
@@ -880,6 +883,7 @@ class _AnidexScreenState extends State<AnidexScreen>
       'RESISTANCE',
       'SPEED',
       'BST',
+      'WEIGHT',
     ];
 
     return Column(

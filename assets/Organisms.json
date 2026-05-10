@@ -29600,7 +29600,7 @@
         "cry": "fish",
         "defense": 125,
         "description": "This loach uses its flattened body to cling to rocks in fast currents. Its unique fins allow it to glide like a butterfly underwater.",
-        "diet": "Unknown",
+        "diet": "Detritivore",
         "drops": "Fillet",
         "habitat": "River,Mountain,Wetlands",
         "health": 70,
@@ -29613,7 +29613,7 @@
         "scientific_name": "Beaufortia kweichowensis",
         "spawn_tiles": "water",
         "speed": 45,
-        "weight": 1
+        "weight": 0.008
     },
     {
         "abilities": "Suction Cups",
@@ -31852,11 +31852,11 @@
         "active_time": "any",
         "attack": 65,
         "category": "Drake, Blaze",
-        "class": "Unknown",
+        "class": "Reptile",
         "cry": "gecko",
         "defense": 55,
         "description": "The butterfly agama is an alert lizard that warms rapidly under the sun. It can sprint short distances to catch prey or evade threats.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Scales",
         "habitat": "Desert, Savanna",
         "health": 78,
@@ -31869,7 +31869,7 @@
         "scientific_name": "Leiolepis belliana",
         "spawn_tiles": "tall_grass",
         "speed": 100,
-        "weight": 1
+        "weight": 0.22
     },
     {
         "abilities": "Constriction",
@@ -32860,11 +32860,11 @@
         "active_time": "day",
         "attack": 40,
         "category": "Arthropod, Aura",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 60,
         "description": "This giant blue butterfly flashes brilliant iridescent wings to startle predators. It frequents forest edges and river corridors for mating and feeding.",
-        "diet": "Unknown",
+        "diet": "Frugivore",
         "drops": "Wing Scale,Empty Chrysalis",
         "habitat": "Jungle, River",
         "health": 65,
@@ -32877,18 +32877,18 @@
         "scientific_name": "Morpho peleides",
         "spawn_tiles": "flower1,flower2",
         "speed": 105,
-        "weight": 1
+        "weight": 0.00065
     },
     {
         "abilities": "Poison Skin, True Flight",
         "active_time": "day",
         "attack": 25,
         "category": "Arthropod, Toxic",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 20,
         "description": "The monarch undertakes long seasonal migrations across continents. Its larvae feed on milkweed and sequester toxins for defense.",
-        "diet": "Unknown",
+        "diet": "Nectarivore",
         "drops": "Wing Scale,Empty Chrysalis",
         "habitat": "Jungle, Coastal",
         "health": 110,
@@ -32901,7 +32901,7 @@
         "scientific_name": "Danaus plexippus",
         "spawn_tiles": "flower1,flower2",
         "speed": 60,
-        "weight": 1
+        "weight": 0.00052
     },
     {
         "abilities": "Jump",
@@ -40444,11 +40444,11 @@
         "active_time": "any",
         "attack": 30,
         "category": "Aquatic, Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "dragonfly",
         "defense": 20,
         "description": "The Blue Dasher Dragonfly zips gracefully over ponds and lakes, dazzling with its iridescent blue body. Its agile flight allows it to catch tiny insects midair with perfect accuracy.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Wing Fragment,Exuviae",
         "habitat": "Lake,Wetlands",
         "health": 40,
@@ -40461,7 +40461,7 @@
         "scientific_name": "Pachydiplax longipennis",
         "spawn_tiles": "dw_pond_we_2,dw_pond",
         "speed": 95,
-        "weight": 1
+        "weight": 0.00012
     },
     {
         "abilities": "Solar Power, True Flight",
@@ -40492,11 +40492,11 @@
         "active_time": "any",
         "attack": 33,
         "category": "Arthropod, Blaze",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "dragonfly",
         "defense": 19,
         "description": "The Scarlet Skimmer Dragonfly is known for its vivid crimson hue and quick aerial maneuvers. It patrols freshwater edges, darting between reeds in search of prey.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Wing Fragment,Exuviae",
         "habitat": "River,Wetlands",
         "health": 40,
@@ -40509,18 +40509,18 @@
         "scientific_name": "Crocothemis servilia",
         "spawn_tiles": "dw_pond_we_2,dw_pond",
         "speed": 90,
-        "weight": 1
+        "weight": 0.00014
     },
     {
         "abilities": "True Flight, Speed Boost",
         "active_time": "any",
         "attack": 31,
         "category": "Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "dragonfly",
         "defense": 21,
         "description": "The Banded Darter Dragonfly features delicate striped wings that shimmer in sunlight. It spends its days gliding low over still waters in elegant hunting displays.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Wing Fragment,Exuviae",
         "habitat": "Lake,Wetlands",
         "health": 42,
@@ -40533,18 +40533,18 @@
         "scientific_name": "Sympetrum pedemontanum",
         "spawn_tiles": "dw_pond_we_2,dw_pond",
         "speed": 89,
-        "weight": 1
+        "weight": 0.00015
     },
     {
         "abilities": "Compound Eyes",
         "active_time": "any",
         "attack": 36,
         "category": "Arthropod, Drake",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "dragonfly",
         "defense": 25,
         "description": "The Golden-ringed Dragonfly is Europes largest species, easily spotted by its yellow-striped body. It prefers fast-flowing streams where it hunts tirelessly throughout summer.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Wing Fragment,Exuviae",
         "habitat": "River,Wetlands",
         "health": 45,
@@ -40557,7 +40557,7 @@
         "scientific_name": "Cordulegaster boltonii",
         "spawn_tiles": "dw_pond_we_2,dw_pond",
         "speed": 88,
-        "weight": 1
+        "weight": 0.00095
     },
     {
         "abilities": "Speed Boost",
@@ -40588,11 +40588,11 @@
         "active_time": "any",
         "attack": 38,
         "category": "Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "dragonfly",
         "defense": 28,
         "description": "The Blue Emperor Dragonfly rules over lakes and ponds with unmatched aerial prowess. Its large frame and bright blue abdomen make it a striking sight in summer skies.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Wing Fragment,Exuviae",
         "habitat": "Lake,Wetlands",
         "health": 50,
@@ -40605,7 +40605,7 @@
         "scientific_name": "Anax imperator",
         "spawn_tiles": "dw_pond_we_2,dw_pond",
         "speed": 97,
-        "weight": 1
+        "weight": 0.0011
     },
     {
         "abilities": "Compound Eyes , Infiltrator",
@@ -40636,11 +40636,11 @@
         "active_time": "any",
         "attack": 37,
         "category": "Arthropod, Spectral",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "dragonfly",
         "defense": 25,
         "description": "The Shadow Darner Dragonfly hunts during dusk in northern forests, chasing midges and mosquitoes. Its long wings and sharp reflexes make it a skilled twilight hunter.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Wing Fragment,Exuviae",
         "habitat": "Taiga,Wetlands",
         "health": 46,
@@ -40653,7 +40653,7 @@
         "scientific_name": "Aeshna umbrosa",
         "spawn_tiles": "dw_pond_we_2,dw_pond",
         "speed": 91,
-        "weight": 1
+        "weight": 0.00085
     },
     {
         "abilities": "Scavenge Sense",
@@ -40684,11 +40684,11 @@
         "active_time": "any",
         "attack": 34,
         "category": "Arthropod, Mystic",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "dragonfly",
         "defense": 21,
         "description": "The Roseate Skimmer Dragonfly gleams pink in the sunlight as it flits over still waters. Its bold coloration and graceful flight make it a favorite among observers.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Wing Fragment,Exuviae",
         "habitat": "Lake,Wetlands",
         "health": 44,
@@ -40701,7 +40701,7 @@
         "scientific_name": "Orthemis ferruginea",
         "spawn_tiles": "dw_pond_we_2,dw_pond",
         "speed": 90,
-        "weight": 1
+        "weight": 0.00018
     },
     {
         "abilities": "Battle Armor",
@@ -42272,7 +42272,7 @@
         "cry": "fish",
         "defense": 55,
         "description": "The white butterfly koi has long flowing fins that move like wings underwater. Its shimmering scales and serene movements make it a living piece of art.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Fillet",
         "habitat": "Lake, River",
         "health": 110,
@@ -42285,7 +42285,7 @@
         "scientific_name": "Cyprinus rubrofuscus",
         "spawn_tiles": "water",
         "speed": 50,
-        "weight": 1
+        "weight": 7
     },
     {
         "abilities": "Cold Tolerance",
@@ -43588,11 +43588,11 @@
         "active_time": "day",
         "attack": 15,
         "category": "Flying, Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 20,
         "description": "The European peacock butterfly is recognized by the colorful eye spots on its wings. It uses these markings to startle predators when threatened.",
-        "diet": "Unknown",
+        "diet": "Nectarivore",
         "drops": "Wing Scale,Empty Chrysalis",
         "habitat": "Jungle",
         "health": 45,
@@ -43605,7 +43605,7 @@
         "scientific_name": "Aglais io",
         "spawn_tiles": "flower1,flower2",
         "speed": 65,
-        "weight": 1
+        "weight": 0.00028
     },
     {
         "abilities": "Cling",
@@ -46592,7 +46592,7 @@
         "cry": "fish",
         "defense": 65,
         "description": "The blackwedged butterflyfish feeds mainly on coral polyps and small invertebrates. Its narrow body allows it to maneuver through reef structures.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Fillet",
         "habitat": "Coral Reef",
         "health": 75,
@@ -46605,7 +46605,7 @@
         "scientific_name": "Chaetodon falcula",
         "spawn_tiles": "water",
         "speed": 100,
-        "weight": 1
+        "weight": 0.12
     },
     {
         "abilities": "Dominance",
@@ -46664,7 +46664,7 @@
         "cry": "fish",
         "defense": 55,
         "description": "The longnose butterflyfish uses its elongated snout to extract prey from tight spaces. It relies on precision feeding rather than speed.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Coral Reef",
         "health": 60,
@@ -46677,7 +46677,7 @@
         "scientific_name": "Forcipiger flavissimus",
         "spawn_tiles": "water",
         "speed": 115,
-        "weight": 1
+        "weight": 0.11
     },
     {
         "abilities": "Battle Armor, Sturdy",
@@ -50980,11 +50980,11 @@
         "active_time": "day",
         "attack": 15,
         "category": "Arthropod, Spectral",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 15,
         "description": "The common evening brown butterfly is active during low light and blends well with dry leaves. Its muted wing patterns provide camouflage against predators in wooded habitats.",
-        "diet": "Unknown",
+        "diet": "Frugivore",
         "drops": "Wing Scale,Empty Chrysalis",
         "habitat": "Jungle",
         "health": 20,
@@ -50997,7 +50997,7 @@
         "scientific_name": "Melanitis leda",
         "spawn_tiles": "flower1,flower2",
         "speed": 65,
-        "weight": 1
+        "weight": 0.00035
     },
     {
         "abilities": "Mimic",
@@ -51220,11 +51220,11 @@
         "active_time": "any",
         "attack": 55,
         "category": "Aquatic, Earth",
-        "class": "Unknown",
+        "class": "Fish",
         "cry": "default",
         "defense": 60,
         "description": "The longtail butterfly ray is a flattened cartilaginous fish found in shallow coastal waters. It feeds on benthic invertebrates while using its broad fins to glide over sandy bottoms.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Ray Fin, Smooth Cartilage",
         "habitat": "Ocean, Coastal",
         "health": 85,
@@ -51237,18 +51237,18 @@
         "scientific_name": "Gymnura poecilura",
         "spawn_tiles": "tall_grass",
         "speed": 65,
-        "weight": 1
+        "weight": 45
     },
     {
         "abilities": "True Flight, Shield Dust",
         "active_time": "day",
         "attack": 45,
         "category": "Arthropod, Mystic",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 50,
         "description": "The plains cupid butterfly is a very small lycaenid often seen near ornamental plants. Its larvae feed on cycads while adults sip nectar from small flowers.",
-        "diet": "Unknown",
+        "diet": "Nectarivore",
         "drops": "Wing Scale,Empty Chrysalis",
         "habitat": "Jungle, Urban",
         "health": 55,
@@ -51261,7 +51261,7 @@
         "scientific_name": "Chilades pandava",
         "spawn_tiles": "flower1,flower2",
         "speed": 120,
-        "weight": 1
+        "weight": 0.00012
     },
     {
         "abilities": "Toxic Secretion",
@@ -51484,11 +51484,11 @@
         "active_time": "any",
         "attack": 22,
         "category": "Arthropod, Rock",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "dragonfly",
         "defense": 20,
         "description": "The ditch jewel dragonfly is a common species around ponds and drainage ditches. It captures tiny insects midair using swift and agile flight.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Wing Fragment,Exuviae",
         "habitat": "Lake, River,Wetlands",
         "health": 25,
@@ -51501,7 +51501,7 @@
         "scientific_name": "Brachythemis contaminata",
         "spawn_tiles": "dw_pond_we_2,dw_pond",
         "speed": 80,
-        "weight": 1
+        "weight": 8e-05
     },
     {
         "abilities": "True Flight, Tinted Lens",
@@ -51604,11 +51604,11 @@
         "active_time": "day",
         "attack": 18,
         "category": "Arthropod, Metal",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 18,
         "description": "The grey pansy butterfly rests with wings open to absorb sunlight. It inhabits scrub and forest edges where it feeds on nectar.",
-        "diet": "Unknown",
+        "diet": "Nectarivore",
         "drops": "Wing Scale,Empty Chrysalis",
         "habitat": "Jungle",
         "health": 20,
@@ -51621,7 +51621,7 @@
         "scientific_name": "Junonia atlites",
         "spawn_tiles": "flower1,flower2",
         "speed": 65,
-        "weight": 1
+        "weight": 0.00025
     },
     {
         "abilities": "Problem Solving",
@@ -56044,11 +56044,11 @@
         "active_time": "any",
         "attack": 24,
         "category": "Mystic,Cryo",
-        "class": "Unknown",
+        "class": "Mollusk",
         "cry": "default",
         "defense": 20,
         "description": "The Antarctic sea butterfly is a delicate swimming snail that flaps winglike fins through icy waters. It drifts through the polar ocean feeding on microscopic plankton.",
-        "diet": "Unknown",
+        "diet": "Filter Feeder",
         "drops": "Gel Fragment,Krill Gel",
         "habitat": "Frozen Ocean,Deep Sea",
         "health": 38,
@@ -56061,7 +56061,7 @@
         "scientific_name": "Clione antarctica",
         "spawn_tiles": "tall_grass",
         "speed": 40,
-        "weight": 1
+        "weight": 3e-05
     },
     {
         "abilities": "Levitate",
@@ -61924,11 +61924,11 @@
         "active_time": "any",
         "attack": 40,
         "category": "Arthropod,Aquatic",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 34,
         "description": "The dragonfly nymph is a fierce aquatic predator that hunts insects and small creatures underwater. It hides in sediment and launches sudden attacks with its extendable jaw.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "shell,meat",
         "habitat": "River,Lake,Wetlands",
         "health": 52,
@@ -61941,7 +61941,7 @@
         "scientific_name": "Anisoptera nympha",
         "spawn_tiles": "tall_grass",
         "speed": 36,
-        "weight": 1
+        "weight": 0.0004
     },
     {
         "abilities": "Swift Swim",
@@ -66508,11 +66508,11 @@
         "active_time": "any",
         "attack": 22,
         "category": "Arthropod, Mystic",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 18,
         "description": "This large butterfly is known for its long tail like wing extensions. It moves quickly through forest areas while feeding on nectar.",
-        "diet": "Unknown",
+        "diet": "Nectarivore",
         "drops": "chitin,wing",
         "habitat": "Jungle",
         "health": 40,
@@ -66525,7 +66525,7 @@
         "scientific_name": "Graphium androcles",
         "spawn_tiles": "tall_grass",
         "speed": 85,
-        "weight": 1
+        "weight": 0.00085
     },
     {
         "abilities": "Snow Cloak",
