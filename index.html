@@ -410,10 +410,6 @@
             },
 
             getSpritePath(org) {
-                if (org.sprite && org.sprite !== "" && !org.sprite.startsWith('http') && !org.sprite.includes(' ')) {
-                    if (org.sprite.startsWith('assets/')) return org.sprite;
-                    return `assets/sprites/${org.sprite}`;
-                }
                 let clean = org.name.toLowerCase()
                     .replace(/[^a-z0-9]/g, '_')
                     .replace(/_+/g, '_')
