@@ -8,19 +8,19 @@
 
 /* ---- Variables ---- */
 :root {
-    --bg-root: #080c10;
-    --bg-sidebar: #0a0f14;
-    --bg-card: #0f1923;
-    --bg-card-hover: #141f2e;
-    --bg-modal: #0d1520;
-    --accent: #4cffb3;
-    --accent-dim: rgba(76, 255, 179, 0.08);
-    --accent-glow: rgba(76, 255, 179, 0.15);
-    --text-main: #e8edf2;
-    --text-dim: rgba(232, 237, 242, 0.45);
-    --text-faint: rgba(232, 237, 242, 0.2);
-    --border: rgba(255,255,255,0.08);
-    --border-bright: rgba(255,255,255,0.14);
+    --bg-root: #000000;
+    --bg-sidebar: #0a0a0a;
+    --bg-card: #111111;
+    --bg-card-hover: #1a1a1a;
+    --bg-modal: #0d0d0d;
+    --accent: #ff0000;
+    --accent-dim: rgba(255, 0, 0, 0.1);
+    --accent-glow: rgba(255, 0, 0, 0.3);
+    --text-main: #ffffff;
+    --text-dim: #cccccc;
+    --text-faint: #666666;
+    --border: #222222;
+    --border-bright: #444444;
     --sidebar-w: 290px;
     --radius-card: 14px;
     --radius-sm: 8px;
@@ -427,11 +427,12 @@ main {
     position: absolute;
     top: 10px;
     right: 10px;
-    font-family: 'Press Start 2P', monospace;
-    font-size: 6px;
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    font-weight: 800;
     padding: 4px 8px;
     border-radius: 6px;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    text-shadow: none;
     backdrop-filter: blur(4px);
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -449,12 +450,14 @@ main {
 }
 
 .card-name {
-    font-family: 'Press Start 2P', monospace;
-    font-size: 9px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 800;
     color: #fff;
-    line-height: 1.4;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-    letter-spacing: 0.5px;
+    line-height: 1.2;
+    text-shadow: none;
+    letter-spacing: 0px;
+    text-transform: uppercase;
 }
 
 .card-sub {
@@ -476,23 +479,24 @@ main {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 5px;
-    border-radius: 6px;
-    border: 1px solid rgba(255,255,255,0.15);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-    backdrop-filter: blur(4px);
+    padding: 0;
+    border-radius: 50%;
+    background: transparent !important;
+    border: none;
+    box-shadow: none;
+    backdrop-filter: none;
     transition: transform 0.2s ease;
 }
 
 .type-badge:hover {
-    transform: scale(1.1);
+    transform: scale(1.15);
 }
 
 .type-icon {
-    width: 12px;
-    height: 12px;
+    width: 24px;
+    height: 24px;
     object-fit: contain;
-    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.8));
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
 }
 
 /* Type colors mirroring the Flutter app */
