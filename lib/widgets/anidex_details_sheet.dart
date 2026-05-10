@@ -453,36 +453,54 @@ class AnidexDetailsSheet {
   }
 
   static Widget _buildClassificationSection(Organism org) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        children: [
-          Expanded(
-            child: _buildClassificationBadge(
-              'CLASS',
-              org.animalClass,
-              'assets/icon/${org.animalClass.toLowerCase().replaceAll(' ', '_')}.png',
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionTitle('BIOMETRICS & ECOLOGY'),
+        const SizedBox(height: 12),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              _buildClassificationBadge(
+                'CLASS',
+                org.animalClass,
+                'assets/icon/${org.animalClass.toLowerCase().replaceAll(' ', '_')}.png',
+              ),
+              _buildClassificationBadge(
+                'DIET',
+                org.diet,
+                'assets/icon/${org.diet.toLowerCase().replaceAll(' ', '_')}.png',
+              ),
+              _buildClassificationBadge(
+                'WEIGHT',
+                '${org.weight} KG',
+                null,
+                iconData: Icons.scale,
+              ),
+              _buildClassificationBadge(
+                'ACTIVITY',
+                org.activeTime,
+                null,
+                iconData: Icons.schedule,
+              ),
+            ],
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: _buildClassificationBadge(
-              'DIET',
-              org.diet,
-              'assets/icon/${org.diet.toLowerCase().replaceAll(' ', '_')}.png',
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   static Widget _buildClassificationBadge(
     String label,
     String value,
-    String iconPath,
-  ) {
+    String? iconPath, {
+    IconData? iconData,
+  }) {
     return Container(
+      width: 160,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.03),
@@ -491,16 +509,19 @@ class AnidexDetailsSheet {
       ),
       child: Row(
         children: [
-          Image.asset(
-            iconPath,
-            width: 24,
-            height: 24,
-            errorBuilder: (context, error, stackTrace) => const Icon(
-              Icons.help_outline,
-              color: Colors.white24,
-              size: 24,
-            ),
-          ),
+          if (iconPath != null)
+            Image.asset(
+              iconPath,
+              width: 24,
+              height: 24,
+              errorBuilder: (context, error, stackTrace) => const Icon(
+                Icons.help_outline,
+                color: Colors.white24,
+                size: 24,
+              ),
+            )
+          else if (iconData != null)
+            Icon(iconData, color: AppColors.highlightColor, size: 24),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
