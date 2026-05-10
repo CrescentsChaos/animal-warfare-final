@@ -13,6 +13,7 @@ import 'package:animal_warfare/models/shop_item.dart';
 import 'package:animal_warfare/widgets/anidex_details_sheet.dart';
 import 'package:animal_warfare/widgets/organism_sprite_widget.dart';
 import 'package:animal_warfare/services/audio_service.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AnidexScreen extends StatefulWidget {
   final UserData currentUser;
@@ -290,7 +291,7 @@ class _AnidexScreenState extends State<AnidexScreen>
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: AppColors.highlightColor,
-          labelStyle: const TextStyle(fontFamily: 'PressStart2P', fontSize: 10),
+          labelStyle: GoogleFonts.orbitron(fontSize: 14, fontWeight: FontWeight.bold),
           tabs: const [
             Tab(text: 'ANIMALS'),
             Tab(text: 'ITEMS'),
@@ -360,10 +361,10 @@ class _AnidexScreenState extends State<AnidexScreen>
         style: const TextStyle(color: Colors.white, fontSize: 12),
         decoration: InputDecoration(
           hintText: 'SEARCH SYSTEM...',
-          hintStyle: TextStyle(
+          hintStyle: GoogleFonts.orbitron(
             color: Colors.white.withValues(alpha: 0.3),
-            fontSize: 10,
-            fontFamily: 'PressStart2P',
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
           ),
           prefixIcon: const Icon(
             Icons.search,
@@ -440,60 +441,107 @@ class _AnidexScreenState extends State<AnidexScreen>
         }
         AnidexDetailsSheet.show(context, org, showScaledStats: false);
       },
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(16),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.4),
-          borderRadius: BorderRadius.circular(12),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              discovered ? rarityColor.withValues(alpha: 0.15) : Colors.white10,
+              Colors.black.withValues(alpha: 0.6),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: discovered
-                ? rarityColor.withValues(alpha: 0.4)
-                : Colors.white10,
+                ? rarityColor.withValues(alpha: 0.5)
+                : Colors.white24,
             width: 1.5,
           ),
+          boxShadow: discovered
+              ? [
+                  BoxShadow(
+                    color: rarityColor.withValues(alpha: 0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  )
+                ]
+              : [],
         ),
         child: Column(
           children: [
             Expanded(
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                child: Hero(
-                  tag: 'anidex_sprite_${org.name}',
-                  child: _OrganismSpriteDisplay(
-                    organism: org,
-                    isDiscovered: discovered,
-                    isCaptured: captured,
-                    silhouetteColor: Colors.black,
+              flex: 3,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  if (discovered)
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: RadialGradient(
+                            colors: [
+                              rarityColor.withValues(alpha: 0.2),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Hero(
+                      tag: 'anidex_sprite_${org.name}',
+                      child: _OrganismSpriteDisplay(
+                        organism: org,
+                        isDiscovered: discovered,
+                        isCaptured: captured,
+                        silhouetteColor: Colors.black,
+                      ),
+                    ),
                   ),
-                ),
+                  if (captured)
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: Icon(
+                        Icons.verified,
+                        color: rarityColor,
+                        size: 16,
+                      ),
+                    ),
+                ],
               ),
             ),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
               decoration: BoxDecoration(
-                color: discovered
-                    ? rarityColor.withValues(alpha: 0.1)
-                    : Colors.black26,
+                color: Colors.black.withValues(alpha: 0.8),
                 borderRadius: const BorderRadius.vertical(
-                  bottom: Radius.circular(11),
+                  bottom: Radius.circular(14),
+                ),
+                border: Border(
+                  top: BorderSide(
+                    color: discovered ? rarityColor.withValues(alpha: 0.3) : Colors.white10,
+                    width: 1,
+                  ),
                 ),
               ),
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        discovered ? org.name.toUpperCase() : '???',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontFamily: 'PressStart2P',
-                          fontSize: 8,
-                          color: discovered ? Colors.white : Colors.white24,
-                        ),
-                      ),
+                  Text(
+                    discovered ? org.name.toUpperCase() : '???',
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.orbitron(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      color: discovered ? Colors.white : Colors.white38,
+                      letterSpacing: 1,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -501,13 +549,13 @@ class _AnidexScreenState extends State<AnidexScreen>
                     discovered
                         ? (captured ? org.rarity.toUpperCase() : 'SEEN')
                         : 'UNIDENTIFIED',
-                    style: TextStyle(
+                    style: GoogleFonts.inter(
                       color: discovered
-                          ? (captured ? rarityColor : Colors.grey)
-                          : Colors.white10,
-                      fontSize: 6,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1,
+                          ? (captured ? rarityColor : Colors.grey[400])
+                          : Colors.white24,
+                      fontSize: 8,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.5,
                     ),
                   ),
                 ],

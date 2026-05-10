@@ -9,6 +9,7 @@ import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/widgets/type_matchup_sheet.dart';
 import 'package:animal_warfare/theme.dart';
 import 'package:animal_warfare/services/audio_service.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AnidexDetailsSheet {
   static void show(
@@ -261,10 +262,11 @@ class AnidexDetailsSheet {
               const SizedBox(height: 24),
               Text(
                 discovered ? org.name.toUpperCase() : '???',
-                style: AppTextStyles.headline(
-                  context,
-                  baseSize: 14,
+                style: GoogleFonts.orbitron(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w900,
                   color: discovered ? Colors.white : Colors.white24,
+                  letterSpacing: 2,
                 ),
               ),
               const SizedBox(height: 8),
@@ -272,11 +274,11 @@ class AnidexDetailsSheet {
                 discovered
                     ? org.scientificName.toUpperCase()
                     : 'CODE: [UNKNOWN]',
-                style: TextStyle(
-                  color: color.withValues(alpha: 0.5),
-                  fontSize: 10,
-                  letterSpacing: 2,
-                  fontWeight: FontWeight.bold,
+                style: GoogleFonts.inter(
+                  color: color.withValues(alpha: 0.6),
+                  fontSize: 12,
+                  letterSpacing: 3,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(height: 12),
@@ -304,13 +306,13 @@ class AnidexDetailsSheet {
                   discovered
                       ? (isCaptured ? org.rarity.toUpperCase() : 'UNIDENTIFIED')
                       : 'UNIDENTIFIED',
-                  style: TextStyle(
+                  style: GoogleFonts.orbitron(
                     color: discovered
                         ? (isCaptured ? color : Colors.white54)
                         : Colors.white24,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 2,
                   ),
                 ),
               ),
@@ -361,12 +363,13 @@ class AnidexDetailsSheet {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'HABITAT SIGNATURE DETECTED:',
-                style: TextStyle(
+                style: GoogleFonts.orbitron(
                   color: Colors.white54,
-                  fontFamily: 'PressStart2P',
-                  fontSize: 7,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 11,
+                  letterSpacing: 1,
                 ),
               ),
               const SizedBox(height: 16),
@@ -419,11 +422,12 @@ class AnidexDetailsSheet {
                                   fit: BoxFit.scaleDown,
                                   child: Text(
                                     biome.toUpperCase(),
-                                    style: const TextStyle(
+                                    style: GoogleFonts.orbitron(
                                       color: AppColors.highlightColor,
-                                      fontFamily: 'PressStart2P',
-                                      fontSize: 7,
-                                      shadows: [
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 12,
+                                      letterSpacing: 1.5,
+                                      shadows: const [
                                         Shadow(
                                           color: Colors.black,
                                           blurRadius: 4,
@@ -515,10 +519,11 @@ class AnidexDetailsSheet {
                   fit: BoxFit.scaleDown,
                   child: Text(
                     value.toUpperCase(),
-                    style: const TextStyle(
+                    style: GoogleFonts.orbitron(
                       color: Colors.white,
-                      fontFamily: 'PressStart2P',
-                      fontSize: 7,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 11,
+                      letterSpacing: 1,
                     ),
                   ),
                 ),
@@ -564,26 +569,26 @@ class AnidexDetailsSheet {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                const Text(
+                Text(
                   'BASE (LV.50)',
-                  style: TextStyle(
+                  style: GoogleFonts.orbitron(
                     color: Colors.white38,
-                    fontSize: 8,
-                    fontFamily: 'PressStart2P',
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(width: 8),
                 const Text(
                   'VS',
-                  style: TextStyle(color: Colors.white24, fontSize: 8),
+                  style: TextStyle(color: Colors.white24, fontSize: 10),
                 ),
                 const SizedBox(width: 8),
                 Text(
                   'CURRENT (LV.${capturedOrg.level})',
-                  style: const TextStyle(
+                  style: GoogleFonts.orbitron(
                     color: AppColors.highlightColor,
-                    fontSize: 8,
-                    fontFamily: 'PressStart2P',
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
@@ -692,22 +697,20 @@ class AnidexDetailsSheet {
               const Spacer(),
               Text(
                 '$baseVal',
-                style: TextStyle(
+                style: GoogleFonts.orbitron(
                   color: Colors.white38,
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'PressStart2P',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
               if (currentVal != null) ...[
                 const SizedBox(width: 12),
                 Text(
                   '$currentVal',
-                  style: TextStyle(
+                  style: GoogleFonts.orbitron(
                     color: color,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'PressStart2P',
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
                     shadows: [
                       Shadow(
                         color: color.withValues(alpha: 0.5),
