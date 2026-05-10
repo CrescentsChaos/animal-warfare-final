@@ -457,7 +457,7 @@ class AnidexDetailsSheet {
             child: _buildClassificationBadge(
               'CLASS',
               org.animalClass,
-              'assets/icon/${org.animalClass.toLowerCase()}.png',
+              'assets/icon/${org.animalClass.toLowerCase().replaceAll(' ', '_')}.png',
             ),
           ),
           const SizedBox(width: 16),
@@ -465,7 +465,7 @@ class AnidexDetailsSheet {
             child: _buildClassificationBadge(
               'DIET',
               org.diet,
-              'assets/icon/${org.diet.toLowerCase()}.png',
+              'assets/icon/${org.diet.toLowerCase().replaceAll(' ', '_')}.png',
             ),
           ),
         ],

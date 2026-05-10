@@ -389,7 +389,7 @@
                         <div class="sprite-fallback" style="display:none">🦎</div>
                         <div class="card-rarity-tag" style="background:${rarityColor}1A; color:${rarityColor}; border: 1px solid ${rarityColor}40;">${rarity.toUpperCase()}</div>
                         <div class="card-type-row">
-                            ${types.slice(0, 2).map(t => `<span class="type-badge type-${t.toLowerCase()}" title="${t.toUpperCase()}"><img src="assets/icon/${t.toLowerCase()}.png" class="type-icon" alt="${t}" onerror="this.style.display='none'"></span>`).join('')}
+                            ${types.slice(0, 2).map(t => { const tSlug = t.toLowerCase().replace(/ /g, '_'); return `<span class="type-badge type-${tSlug}" title="${t.toUpperCase()}"><img src="assets/icon/${tSlug}.png" class="type-icon" alt="${t}" onerror="this.style.display='none'"></span>`}).join('')}
                         </div>
                     </div>
                     <div class="card-body">
@@ -524,20 +524,20 @@
                     </div>
                     <div class="detail-intro">
                         <div class="type-row">
-                            ${types.map(t => `<span class="type-badge type-${t.toLowerCase()}" title="${t.toUpperCase()}"><img src="assets/icon/${t.toLowerCase()}.png" class="type-icon" alt="${t}" onerror="this.style.display='none'"></span>`).join('')}
+                            ${types.map(t => { const tSlug = t.toLowerCase().replace(/ /g, '_'); return `<span class="type-badge type-${tSlug}" title="${t.toUpperCase()}"><img src="assets/icon/${tSlug}.png" class="type-icon" alt="${t}" onerror="this.style.display='none'"></span>`}).join('')}
                         </div>
                         <h2 class="detail-name">${org.name.toUpperCase()}</h2>
                         <div class="detail-sciname">${org.scientific_name || ''}</div>
                         <div class="classification-row">
                             <div class="class-badge">
-                                <img src="assets/icon/${aClass.toLowerCase()}.png" alt="${aClass}" onerror="this.src='assets/icon/unknown.png'">
+                                <img src="assets/icon/${aClass.toLowerCase().replace(/ /g, '_')}.png" alt="${aClass}" onerror="this.src='assets/icon/unknown.png'">
                                 <div class="badge-label">
                                     <span class="badge-type">Class</span>
                                     <span class="badge-value">${aClass.toUpperCase()}</span>
                                 </div>
                             </div>
                             <div class="diet-badge">
-                                <img src="assets/icon/${aDiet.toLowerCase()}.png" alt="${aDiet}" onerror="this.src='assets/icon/unknown.png'">
+                                <img src="assets/icon/${aDiet.toLowerCase().replace(/ /g, '_')}.png" alt="${aDiet}" onerror="this.src='assets/icon/unknown.png'">
                                 <div class="badge-label">
                                     <span class="badge-type">Diet</span>
                                     <span class="badge-value">${aDiet.toUpperCase()}</span>
