@@ -262,12 +262,14 @@ class _AnidexScreenState extends State<AnidexScreen>
 
   bool _isDiscovered(Organism organism) {
     final userState = Provider.of<UserState>(context, listen: false);
+    if (userState.currentUser?.anidexUnlocked == true) return true;
     return userState.currentUser?.discoveredOrganisms.contains(organism.name) ??
         false;
   }
 
   bool _isCaptured(Organism organism) {
     final userState = Provider.of<UserState>(context, listen: false);
+    if (userState.currentUser?.anidexUnlocked == true) return true;
     // Use the persistent 'captured' flag in speciesStats
     final stats = userState.currentUser?.speciesStats[organism.name];
     if (stats != null && stats['captured'] == 1) return true;

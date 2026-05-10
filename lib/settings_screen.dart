@@ -38,6 +38,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   double _soundVolume = 1.0;
   String _appVersion = '0.1.1';
   bool _isLoading = true;
+  bool _anidexUnlocked = false;
 
   @override
   void initState() {
@@ -55,6 +56,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       // Use package_info_plus at runtime; fall back to compile-time constant.
       final pkgVersion = packageInfo.version;
       _appVersion = pkgVersion.isNotEmpty ? pkgVersion : kAppVersion;
+      _anidexUnlocked = widget.currentUser.anidexUnlocked;
       _isLoading = false;
     });
   }
@@ -312,6 +314,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                 const SizedBox(height: 24),
                 _buildSectionTitle('Game'),
+                _buildToggleControl(
+                  title: 'Unlock Anidex (View All Data)',
+                  icon: Icons.menu_book_rounded,
+                  isEnabled: _anidexUnlocked,
+                  onToggle: (val) {
+                    setState(() => _anidexUnlocked = val);
+                    HapticService.medium();
+                    Provider.of<UserState>(context, listen: false).toggleAnidexUnlocked(val);
+                  },
+                ),
                 _buildActionTile(
                   title: 'Patch Notes',
                   icon: Icons.description_rounded,
@@ -471,6 +483,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildToggleControl({
+    required String title,
+    required IconData icon,
+    required bool isEnabled,
+    required ValueChanged<bool> onToggle,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Icon(icon, color: AppColors.primary, size: 20),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                title,
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            Switch(value: isEnabled, onChanged: onToggle),
+          ],
+        ),
       ),
     );
   }

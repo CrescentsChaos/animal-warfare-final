@@ -93,6 +93,9 @@ class UserData {
   final String? lastMedicalCenterMapId;
   final int? lastMedicalCenterRow;
   final int? lastMedicalCenterCol;
+  
+  /// Global toggle to unlock all entries in the Anidex
+  final bool anidexUnlocked;
 
   UserData({
     required this.username,
@@ -111,6 +114,7 @@ class UserData {
     this.bankDiamond = 0,
     this.isBlackMarketUnlocked = false,
     this.phoneWallpaper = 'plains-bg.png',
+    this.anidexUnlocked = false,
     List<Map<String, dynamic>>? savedReplays,
     this.lastMedicalCenterMapId,
     this.lastMedicalCenterRow,
@@ -198,6 +202,7 @@ class UserData {
     String? lastMedicalCenterMapId,
     int? lastMedicalCenterRow,
     int? lastMedicalCenterCol,
+    bool? anidexUnlocked,
   }) {
     return UserData(
       username: username ?? this.username,
@@ -245,6 +250,7 @@ class UserData {
           lastMedicalCenterMapId ?? this.lastMedicalCenterMapId,
       lastMedicalCenterRow: lastMedicalCenterRow ?? this.lastMedicalCenterRow,
       lastMedicalCenterCol: lastMedicalCenterCol ?? this.lastMedicalCenterCol,
+      anidexUnlocked: anidexUnlocked ?? this.anidexUnlocked,
     );
   }
 
@@ -343,6 +349,7 @@ class UserData {
     'lastMedicalCenterMapId': lastMedicalCenterMapId,
     'lastMedicalCenterRow': lastMedicalCenterRow,
     'lastMedicalCenterCol': lastMedicalCenterCol,
+    'anidexUnlocked': anidexUnlocked,
   };
 
   factory UserData.fromJson(
@@ -490,6 +497,7 @@ class UserData {
       lastMedicalCenterMapId: json['lastMedicalCenterMapId'] as String?,
       lastMedicalCenterRow: json['lastMedicalCenterRow'] as int?,
       lastMedicalCenterCol: json['lastMedicalCenterCol'] as int?,
+      anidexUnlocked: json['anidexUnlocked'] as bool? ?? false,
     );
   }
 }

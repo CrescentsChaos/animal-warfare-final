@@ -252,6 +252,11 @@ class UserState with ChangeNotifier {
     await _readModifyWrite((u) => u.decreaseStamina(amount));
   }
 
+  Future<void> toggleAnidexUnlocked(bool unlocked) async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) => u.copyWith(anidexUnlocked: unlocked));
+  }
+
   Future<bool> toggleTeamMember(int index) async {
     if (_currentUser == null) return false;
     bool success = true;
