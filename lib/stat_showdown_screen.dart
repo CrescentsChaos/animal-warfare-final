@@ -72,7 +72,8 @@ class _StatShowdownScreenState extends State<StatShowdownScreen> with SingleTick
     _correctPlayer.setSource(AssetSource('audio/correct.mp3'));
     _wrongPlayer.setSource(AssetSource('audio/wrong.mp3'));
     
-    _highScore = (widget.currentUser.quizStats['statShowdown']?['correct'] as int?) ?? 0;
+    final stats = widget.currentUser.quizStats['statShowdown'];
+    _highScore = (stats?['Normal']?['correct'] as int?) ?? (stats?['correct'] as int?) ?? 0;
 
     _animController = AnimationController(vsync: this, duration: const Duration(milliseconds: 500));
     _slideAnimation = Tween<double>(begin: 100.0, end: 0.0).animate(CurvedAnimation(parent: _animController, curve: Curves.easeOut));
@@ -84,6 +85,9 @@ class _StatShowdownScreenState extends State<StatShowdownScreen> with SingleTick
 
   @override
   void dispose() {
+    if (!_gameOver && _streak > 0) {
+      widget.authService.updateGameHighScore(widget.currentUser.username, 'statShowdown', _streak);
+    }
     _correctPlayer.dispose();
     _wrongPlayer.dispose();
     _animController.dispose();
@@ -221,43 +225,50 @@ class _StatShowdownScreenState extends State<StatShowdownScreen> with SingleTick
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: isAnimalA ? Colors.white30 : AppColors.highlightColor.withValues(alpha: 0.5), width: 2),
       ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(org.name.toUpperCase(), style: AppTextStyles.headline(context, baseSize: 12), textAlign: TextAlign.center),
-          const SizedBox(height: 16),
-          _ShowdownSpriteDisplay(organism: org),
-          const SizedBox(height: 24),
-          if (isAnimalA || _revealed)
-            Text(
-              valStr,
-              style: TextStyle(
-                fontFamily: 'PressStart2P',
-                fontSize: 24.sp,
-                color: statColor,
-                shadows: [Shadow(color: statColor.withValues(alpha: 0.5), blurRadius: 10)],
+      padding: const EdgeInsets.all(12),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(org.name.toUpperCase(), style: AppTextStyles.headline(context, baseSize: 10), textAlign: TextAlign.center),
+            const SizedBox(height: 12),
+            _ShowdownSpriteDisplay(organism: org),
+            const SizedBox(height: 16),
+            if (isAnimalA || _revealed)
+              Text(
+                valStr,
+                style: TextStyle(
+                  fontFamily: 'PressStart2P',
+                  fontSize: 20.sp,
+                  color: statColor,
+                  shadows: [Shadow(color: statColor.withValues(alpha: 0.5), blurRadius: 10)],
+                ),
+              )
+            else
+              SizedBox(
+                width: 180,
+                child: Column(
+                  children: [
+                    _GameButton(
+                      label: 'HIGHER',
+                      color: AppColors.correctGreen,
+                      icon: Icons.arrow_upward,
+                      onTap: () => _handleGuess(true),
+                    ),
+                    const SizedBox(height: 8),
+                    _GameButton(
+                      label: 'LOWER',
+                      color: AppColors.wrongRed,
+                      icon: Icons.arrow_downward,
+                      onTap: () => _handleGuess(false),
+                    ),
+                  ],
+                ),
               ),
-            )
-          else
-            Column(
-              children: [
-                _GameButton(
-                  label: 'HIGHER',
-                  color: AppColors.correctGreen,
-                  icon: Icons.arrow_upward,
-                  onTap: () => _handleGuess(true),
-                ),
-                const SizedBox(height: 12),
-                _GameButton(
-                  label: 'LOWER',
-                  color: AppColors.wrongRed,
-                  icon: Icons.arrow_downward,
-                  onTap: () => _handleGuess(false),
-                ),
-              ],
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -398,7 +409,7 @@ class _GameButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(8),
@@ -463,9 +474,9 @@ class __ShowdownSpriteDisplayState extends State<_ShowdownSpriteDisplay> {
 
   @override
   Widget build(BuildContext context) {
-    if (_imagePath == null) return const SizedBox(height: 100);
+    if (_imagePath == null) return const SizedBox(height: 80);
     return SizedBox(
-      height: 100,
+      height: 80,
       child: buildSilhouetteSprite(
         imageUrl: _imagePath!,
         silhouetteColor: null,

@@ -7,6 +7,7 @@ import 'package:animal_warfare/habitat_sort_screen.dart';
 import 'package:animal_warfare/silhouette_sprint_screen.dart';
 import 'package:animal_warfare/echo_memory_screen.dart';
 import 'package:animal_warfare/local_auth_service.dart';
+import 'package:animal_warfare/achievement_screen.dart';
 import 'package:animal_warfare/theme.dart';
 
 class QuizScreen extends StatefulWidget {
@@ -22,7 +23,8 @@ class QuizScreen extends StatefulWidget {
   State<QuizScreen> createState() => _QuizScreenState();
 }
 
-class _QuizScreenState extends State<QuizScreen> with SingleTickerProviderStateMixin {
+class _QuizScreenState extends State<QuizScreen>
+    with SingleTickerProviderStateMixin {
   QuizDifficulty _selectedDifficulty = QuizDifficulty.normal;
   late TabController _tabController;
 
@@ -45,11 +47,18 @@ class _QuizScreenState extends State<QuizScreen> with SingleTickerProviderStateM
   ) {
     // Difficulty-specific stats
     final modeStats = activeUser.quizStats[type.name] as Map<String, dynamic>?;
-    final diffStats = modeStats?[_selectedDifficulty.name] as Map<String, dynamic>?;
-    
+    final diffStats =
+        modeStats?[_selectedDifficulty.name] as Map<String, dynamic>?;
+
     // Fallback to top-level if no difficulty-specific stats yet (for migration)
-    final attempts = diffStats?['attempts'] as int? ?? (modeStats?.containsKey('attempts') == true ? modeStats!['attempts'] : 0);
-    final correct = diffStats?['correct'] as int? ?? (modeStats?.containsKey('correct') == true ? modeStats!['correct'] : 0);
+    final attempts =
+        diffStats?['attempts'] as int? ??
+        (modeStats?.containsKey('attempts') == true
+            ? modeStats!['attempts']
+            : 0);
+    final correct =
+        diffStats?['correct'] as int? ??
+        (modeStats?.containsKey('correct') == true ? modeStats!['correct'] : 0);
     final bestStreak = diffStats?['bestStreak'] as int? ?? 0;
     final totalPoints = diffStats?['totalPoints'] as int? ?? 0;
 
@@ -58,7 +67,10 @@ class _QuizScreenState extends State<QuizScreen> with SingleTickerProviderStateM
       decoration: BoxDecoration(
         color: AppColors.surface.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.highlightColor.withValues(alpha: 0.3), width: 2),
+        border: Border.all(
+          color: AppColors.highlightColor.withValues(alpha: 0.3),
+          width: 2,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.3),
@@ -84,7 +96,9 @@ class _QuizScreenState extends State<QuizScreen> with SingleTickerProviderStateM
                         color: Colors.black.withValues(alpha: 0.4),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: AppColors.highlightColor.withValues(alpha: 0.2),
+                          color: AppColors.highlightColor.withValues(
+                            alpha: 0.2,
+                          ),
                         ),
                       ),
                       child: Icon(
@@ -100,7 +114,10 @@ class _QuizScreenState extends State<QuizScreen> with SingleTickerProviderStateM
                         children: [
                           Text(
                             type.displayName.toUpperCase(),
-                            style: AppTextStyles.headline(context, baseSize: 11),
+                            style: AppTextStyles.headline(
+                              context,
+                              baseSize: 11,
+                            ),
                           ),
                           const SizedBox(height: 4),
                           Text(
@@ -115,17 +132,27 @@ class _QuizScreenState extends State<QuizScreen> with SingleTickerProviderStateM
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.info_outline, color: Colors.white24, size: 20),
+                      icon: const Icon(
+                        Icons.info_outline,
+                        color: Colors.white24,
+                        size: 20,
+                      ),
                       onPressed: () => _showRules(
-                        context, 
-                        type.displayName.toUpperCase(), 
+                        context,
+                        type.displayName.toUpperCase(),
                         'Difficulty: ${_selectedDifficulty.name}\n\nEASY: 15s timer, 3 options\nNORMAL: 10s timer, 4 options\nHARD: 7s timer, 6 options\n\nREWARDS:\nCorrect: +10 EXP, +Pts (based on time)\nStreak (x5): +50 Bonus EXP',
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 16),
-                _buildStatsRow(context, attempts, correct, bestStreak, totalPoints),
+                _buildStatsRow(
+                  context,
+                  attempts,
+                  correct,
+                  bestStreak,
+                  totalPoints,
+                ),
               ],
             ),
           ),
@@ -154,9 +181,21 @@ class _QuizScreenState extends State<QuizScreen> with SingleTickerProviderStateM
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _StatText(label: 'ACCURACY', value: '$accuracy%', color: AppColors.primary),
-          _StatText(label: 'BEST STREAK', value: '$streak', color: AppColors.correctGreen),
-          _StatText(label: 'TOTAL PTS', value: '$points', color: AppColors.statAttackColor),
+          _StatText(
+            label: 'ACCURACY',
+            value: '$accuracy%',
+            color: AppColors.primary,
+          ),
+          _StatText(
+            label: 'BEST STREAK',
+            value: '$streak',
+            color: AppColors.correctGreen,
+          ),
+          _StatText(
+            label: 'TOTAL PTS',
+            value: '$points',
+            color: AppColors.statAttackColor,
+          ),
         ],
       ),
     );
@@ -233,11 +272,19 @@ class _QuizScreenState extends State<QuizScreen> with SingleTickerProviderStateM
             context,
             'HABITAT SORT',
             'Categorize wildlife by biome',
-            AppColors.habitatGreen,
+            const Color.fromARGB(255, 0, 0, 0),
             Icons.landscape,
             activeUser,
             'habitatSort',
-            () => Navigator.push(context, MaterialPageRoute(builder: (c) => HabitatSortScreen(currentUser: activeUser, authService: widget.authService))),
+            () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (c) => HabitatSortScreen(
+                  currentUser: activeUser,
+                  authService: widget.authService,
+                ),
+              ),
+            ),
           ),
           const SizedBox(height: 16),
           _buildArcadeCard(
@@ -248,7 +295,15 @@ class _QuizScreenState extends State<QuizScreen> with SingleTickerProviderStateM
             Icons.speed,
             activeUser,
             'silhouetteSprint',
-            () => Navigator.push(context, MaterialPageRoute(builder: (c) => SilhouetteSprintScreen(currentUser: activeUser, authService: widget.authService))),
+            () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (c) => SilhouetteSprintScreen(
+                  currentUser: activeUser,
+                  authService: widget.authService,
+                ),
+              ),
+            ),
           ),
           const SizedBox(height: 16),
           _buildArcadeCard(
@@ -259,7 +314,15 @@ class _QuizScreenState extends State<QuizScreen> with SingleTickerProviderStateM
             Icons.psychology,
             activeUser,
             'echoMemory',
-            () => Navigator.push(context, MaterialPageRoute(builder: (c) => EchoMemoryScreen(currentUser: activeUser, authService: widget.authService))),
+            () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (c) => EchoMemoryScreen(
+                  currentUser: activeUser,
+                  authService: widget.authService,
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -275,7 +338,11 @@ class _QuizScreenState extends State<QuizScreen> with SingleTickerProviderStateM
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             itemCount: QuizType.values.length,
             itemBuilder: (context, index) {
-              return _buildQuizCard(context, QuizType.values[index], activeUser);
+              return _buildQuizCard(
+                context,
+                QuizType.values[index],
+                activeUser,
+              );
             },
           ),
         ),
@@ -294,20 +361,44 @@ class _QuizScreenState extends State<QuizScreen> with SingleTickerProviderStateM
       ),
       child: Row(
         children: [
-          const Text('DIFFICULTY:', style: TextStyle(fontFamily: 'PressStart2P', fontSize: 8, color: Colors.white54)),
-          const Spacer(),
-          ...QuizDifficulty.values.map((d) => Padding(
-            padding: const EdgeInsets.only(left: 8),
-            child: ChoiceChip(
-              label: Text(d.name, style: TextStyle(fontFamily: 'PressStart2P', fontSize: 7, color: _selectedDifficulty == d ? Colors.black : Colors.white)),
-              selected: _selectedDifficulty == d,
-              selectedColor: d == QuizDifficulty.hard ? AppColors.wrongRed : (d == QuizDifficulty.normal ? AppColors.primary : AppColors.correctGreen),
-              backgroundColor: Colors.white10,
-              onSelected: (selected) {
-                if (selected) setState(() => _selectedDifficulty = d);
-              },
+          const Text(
+            'DIFFICULTY:',
+            style: TextStyle(
+              fontFamily: 'PressStart2P',
+              fontSize: 8,
+              color: Colors.white54,
             ),
-          )).toList(),
+          ),
+          const Spacer(),
+          ...QuizDifficulty.values
+              .map(
+                (d) => Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: ChoiceChip(
+                    label: Text(
+                      d.name,
+                      style: TextStyle(
+                        fontFamily: 'PressStart2P',
+                        fontSize: 7,
+                        color: _selectedDifficulty == d
+                            ? Colors.black
+                            : Colors.white,
+                      ),
+                    ),
+                    selected: _selectedDifficulty == d,
+                    selectedColor: d == QuizDifficulty.hard
+                        ? AppColors.wrongRed
+                        : (d == QuizDifficulty.normal
+                              ? AppColors.primary
+                              : AppColors.correctGreen),
+                    backgroundColor: Colors.white10,
+                    onSelected: (selected) {
+                      if (selected) setState(() => _selectedDifficulty = d);
+                    },
+                  ),
+                ),
+              )
+              .toList(),
         ],
       ),
     );
@@ -316,7 +407,9 @@ class _QuizScreenState extends State<QuizScreen> with SingleTickerProviderStateM
   Widget _buildAchievementTab(BuildContext context, UserData activeUser) {
     return AchievementsScreen(
       currentUser: activeUser,
-      allOrganisms: LocalAuthService.getCachedOrganisms().map((o) => o.toJson()).toList(),
+      allOrganisms: LocalAuthService.getCachedOrganisms()
+          .map((o) => o.toJson())
+          .toList(),
       authService: widget.authService,
     );
   }
@@ -352,25 +445,39 @@ class _QuizScreenState extends State<QuizScreen> with SingleTickerProviderStateM
               children: [
                 Row(
                   children: [
-                    Icon(Icons.bolt, color: AppColors.statAttackColor, size: 32),
+                    Icon(
+                      Icons.bolt,
+                      color: AppColors.statAttackColor,
+                      size: 32,
+                    ),
                     const SizedBox(width: 12),
                     Text(
                       'STAT SHOWDOWN',
-                      style: AppTextStyles.headline(context, baseSize: 14).copyWith(color: AppColors.statAttackColor),
+                      style: AppTextStyles.headline(
+                        context,
+                        baseSize: 14,
+                      ).copyWith(color: AppColors.statAttackColor),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
                 Text(
                   'Higher or Lower Survival Mode',
-                  style: AppTextStyles.small(context, baseSize: 10, color: Colors.grey[300]!),
+                  style: AppTextStyles.small(
+                    context,
+                    baseSize: 10,
+                    color: Colors.grey[300]!,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.black.withValues(alpha: 0.3),
                         borderRadius: BorderRadius.circular(6),
@@ -378,20 +485,32 @@ class _QuizScreenState extends State<QuizScreen> with SingleTickerProviderStateM
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.emoji_events, color: AppColors.highlightColor, size: 16),
+                          Icon(
+                            Icons.emoji_events,
+                            color: AppColors.highlightColor,
+                            size: 16,
+                          ),
                           const SizedBox(width: 8),
                           Text(
-                            'BEST: ${(activeUser.quizStats['statShowdown']?['correct'] as int?) ?? 0}',
-                            style: TextStyle(fontFamily: 'PressStart2P', fontSize: 9, color: AppColors.highlightColor),
+                            'BEST: ${((activeUser.quizStats['statShowdown']?['Normal'] ?? activeUser.quizStats['statShowdown'])?['correct'] as int?) ?? 0}',
+                            style: TextStyle(
+                              fontFamily: 'PressStart2P',
+                              fontSize: 9,
+                              color: AppColors.highlightColor,
+                            ),
                           ),
                         ],
                       ),
                     ),
                     IconButton(
-                      icon: Icon(Icons.info_outline, color: Colors.white30, size: 20),
+                      icon: Icon(
+                        Icons.info_outline,
+                        color: Colors.white30,
+                        size: 20,
+                      ),
                       onPressed: () => _showRules(
-                        context, 
-                        'STAT SHOWDOWN', 
+                        context,
+                        'STAT SHOWDOWN',
                         'Compare stats between two animals. Guess if the hidden stat of the second animal is Higher or Lower than the first. Streak adds a multiplier to your rewards!\n\nREWARDS:\n+50 EXP base\n+10 EXP per streak point',
                       ),
                     ),
@@ -423,17 +542,45 @@ class _QuizScreenState extends State<QuizScreen> with SingleTickerProviderStateM
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('ACCOUNT LEVEL', style: TextStyle(color: Colors.white54, fontSize: 8, fontFamily: 'PressStart2P')),
+                  Text(
+                    'ACCOUNT LEVEL',
+                    style: TextStyle(
+                      color: Colors.white54,
+                      fontSize: 8,
+                      fontFamily: 'PressStart2P',
+                    ),
+                  ),
                   const SizedBox(height: 8),
-                  Text('LV. ${user.accountLevel}', style: TextStyle(color: AppColors.primary, fontSize: 18, fontFamily: 'PressStart2P')),
+                  Text(
+                    'LV. ${user.accountLevel}',
+                    style: TextStyle(
+                      color: AppColors.primary,
+                      fontSize: 18,
+                      fontFamily: 'PressStart2P',
+                    ),
+                  ),
                 ],
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text('RANK', style: TextStyle(color: Colors.white54, fontSize: 8, fontFamily: 'PressStart2P')),
+                  Text(
+                    'RANK',
+                    style: TextStyle(
+                      color: Colors.white54,
+                      fontSize: 8,
+                      fontFamily: 'PressStart2P',
+                    ),
+                  ),
                   const SizedBox(height: 8),
-                  Text(user.rankName, style: TextStyle(color: user.rankColor, fontSize: 12, fontFamily: 'PressStart2P')),
+                  Text(
+                    user.rankName,
+                    style: TextStyle(
+                      color: user.rankColor,
+                      fontSize: 12,
+                      fontFamily: 'PressStart2P',
+                    ),
+                  ),
                 ],
               ),
             ],
@@ -452,8 +599,22 @@ class _QuizScreenState extends State<QuizScreen> with SingleTickerProviderStateM
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('EXP', style: TextStyle(color: Colors.white30, fontSize: 7, fontFamily: 'PressStart2P')),
-              Text('${user.accountXP} / ${user.xpToNextLevel}', style: TextStyle(color: Colors.white30, fontSize: 7, fontFamily: 'PressStart2P')),
+              Text(
+                'EXP',
+                style: TextStyle(
+                  color: Colors.white30,
+                  fontSize: 7,
+                  fontFamily: 'PressStart2P',
+                ),
+              ),
+              Text(
+                '${user.accountXP} / ${user.xpToNextLevel}',
+                style: TextStyle(
+                  color: Colors.white30,
+                  fontSize: 7,
+                  fontFamily: 'PressStart2P',
+                ),
+              ),
             ],
           ),
         ],
@@ -466,12 +627,29 @@ class _QuizScreenState extends State<QuizScreen> with SingleTickerProviderStateM
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.surface,
-        title: Text(title, style: TextStyle(fontFamily: 'PressStart2P', fontSize: 12, color: AppColors.primary)),
-        content: Text(rules, style: TextStyle(color: Colors.white70, fontSize: 13, height: 1.5)),
+        title: Text(
+          title,
+          style: TextStyle(
+            fontFamily: 'PressStart2P',
+            fontSize: 12,
+            color: AppColors.primary,
+          ),
+        ),
+        content: Text(
+          rules,
+          style: TextStyle(color: Colors.white70, fontSize: 13, height: 1.5),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('GOT IT', style: TextStyle(color: AppColors.highlightColor, fontFamily: 'PressStart2P', fontSize: 10)),
+            child: Text(
+              'GOT IT',
+              style: TextStyle(
+                color: AppColors.highlightColor,
+                fontFamily: 'PressStart2P',
+                fontSize: 10,
+              ),
+            ),
           ),
         ],
       ),
@@ -509,8 +687,11 @@ class _QuizScreenState extends State<QuizScreen> with SingleTickerProviderStateM
     String statsKey,
     VoidCallback onTap,
   ) {
-    final stats = activeUser.quizStats[statsKey] ?? {'correct': 0};
-    final best = stats['correct'] ?? 0;
+    final modeData = activeUser.quizStats[statsKey];
+    final best =
+        (modeData?['Normal']?['correct'] as int?) ??
+        (modeData?['correct'] as int?) ??
+        0;
 
     return Container(
       decoration: BoxDecoration(
@@ -559,7 +740,10 @@ class _QuizScreenState extends State<QuizScreen> with SingleTickerProviderStateM
                       ),
                       const SizedBox(height: 10),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.black38,
                           borderRadius: BorderRadius.circular(4),
@@ -580,15 +764,22 @@ class _QuizScreenState extends State<QuizScreen> with SingleTickerProviderStateM
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     IconButton(
-                      icon: Icon(Icons.info_outline, color: Colors.white24, size: 20),
+                      icon: Icon(
+                        Icons.info_outline,
+                        color: Colors.white24,
+                        size: 20,
+                      ),
                       onPressed: () {
                         String rules = '';
                         if (title == 'HABITAT SORT') {
-                          rules = 'Drag the animal to its correct biome (Ocean, Forest, etc.) at the bottom of the screen. You have 60 seconds!\n\nREWARDS:\nCorrect: +10 Pts, +5 EXP\nWrong: -5 Pts';
+                          rules =
+                              'Drag the animal to its correct biome (Ocean, Forest, etc.) at the bottom of the screen. You have 60 seconds!\n\nREWARDS:\nCorrect: +10 Pts, +5 EXP\nWrong: -5 Pts';
                         } else if (title == 'SILHOUETTE SPRINT') {
-                          rules = 'Identify as many animal silhouettes as you can. Every correct answer adds time to the clock!\n\nREWARDS:\nCorrect: +2s, +10 Pts, +5 EXP\nWrong: -3s, -5 Pts';
+                          rules =
+                              'Identify as many animal silhouettes as you can. Every correct answer adds time to the clock!\n\nREWARDS:\nCorrect: +2s, +10 Pts, +5 EXP\nWrong: -3s, -5 Pts';
                         } else if (title == 'THE ECHO') {
-                          rules = 'A pattern of animal elements will flash on screen. Repeat the exact sequence to move to the next wave.\n\nREWARDS:\nWave Clear: +50 EXP, +100 Pts';
+                          rules =
+                              'A pattern of animal elements will flash on screen. Repeat the exact sequence to move to the next wave.\n\nREWARDS:\nWave Clear: +50 EXP, +100 Pts';
                         }
                         _showRules(context, title, rules);
                       },

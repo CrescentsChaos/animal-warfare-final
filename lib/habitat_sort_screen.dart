@@ -34,13 +34,27 @@ class _HabitatSortScreenState extends State<HabitatSortScreen> {
   Timer? _timer;
 
   Organism? _currentAnimal;
-  final List<String> _targetBiomes = ['Ocean', 'Forest', 'Desert', 'Mountain'];
-  final Map<String, String> _biomeImages = {
-    'Ocean': 'assets/biomes/ocean-bg.png',
-    'Forest': 'assets/biomes/forest-bg.png',
-    'Desert': 'assets/biomes/desert-bg.png',
-    'Mountain': 'assets/biomes/mountain-bg.png',
-  };
+  int _roundCount = 0;
+  final List<String> _allBiomes = [
+    'Swamp', 'Savanna', 'Desert', 'Taiga', 'Mountain', 'Coastal', 'Volcano', 'Cave',
+    'Urban', 'Polar', 'Ocean', 'Deep Sea', 'Coral Reef', 'Rainforest', 'Kelp Forest',
+    'Mangrove', 'Frozen Ocean', 'River', 'Lake', 'Tundra', 'Jungle', 'Redwoods',
+    'Plains', 'Wetlands'
+  ];
+  List<String> _targetBiomes = [];
+
+  String _getBiomeImage(String biome) {
+    if (['Ocean', 'Deep Sea', 'Coral Reef', 'Frozen Ocean', 'Kelp Forest', 'Mangrove'].contains(biome)) {
+      return 'assets/biomes/ocean-bg.png';
+    }
+    if (['Desert', 'Savanna', 'Volcano'].contains(biome)) {
+      return 'assets/biomes/desert-bg.png';
+    }
+    if (['Mountain', 'Polar', 'Tundra', 'Cave'].contains(biome)) {
+      return 'assets/biomes/mountain-bg.png';
+    }
+    return 'assets/biomes/forest-bg.png';
+  }
 
   final AudioPlayer _correctPlayer = AudioPlayer()..setReleaseMode(ReleaseMode.stop);
   final AudioPlayer _wrongPlayer = AudioPlayer()..setReleaseMode(ReleaseMode.stop);
@@ -50,12 +64,16 @@ class _HabitatSortScreenState extends State<HabitatSortScreen> {
     super.initState();
     _correctPlayer.setSource(AssetSource('audio/correct.mp3'));
     _wrongPlayer.setSource(AssetSource('audio/wrong.mp3'));
-    _highScore = (widget.currentUser.quizStats['habitatSort']?['correct'] as int?) ?? 0;
+    final stats = widget.currentUser.quizStats['habitatSort'];
+    _highScore = (stats?['Normal']?['correct'] as int?) ?? (stats?['correct'] as int?) ?? 0;
     _loadOrganisms().then((_) => _startGame());
   }
 
   @override
   void dispose() {
+    if (!_isGameOver && _score > 0) {
+      widget.authService.updateGameHighScore(widget.currentUser.username, 'habitatSort', _score);
+    }
     _timer?.cancel();
     _correctPlayer.dispose();
     _wrongPlayer.dispose();
@@ -67,10 +85,8 @@ class _HabitatSortScreenState extends State<HabitatSortScreen> {
     try {
       final String response = await rootBundle.loadString(assetPath);
       final List<dynamic> animalsData = json.decode(response);
-      _allOrganisms = animalsData
-          .map((json) => Organism.fromJson(json))
-          .where((o) => _targetBiomes.contains(o.habitat))
-          .toList();
+      _allOrganisms = animalsData.map((json) => Organism.fromJson(json)).toList();
+      _rotateBiomes();
       setState(() => _isLoading = false);
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
@@ -82,8 +98,9 @@ class _HabitatSortScreenState extends State<HabitatSortScreen> {
       _score = 0;
       _timeLeft = 60;
       _isGameOver = false;
-      _nextAnimal();
+      _roundCount = 0;
     });
+    _rotateBiomes();
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
@@ -96,10 +113,40 @@ class _HabitatSortScreenState extends State<HabitatSortScreen> {
     });
   }
 
-  void _nextAnimal() {
-    if (_allOrganisms.isEmpty) return;
+  void _rotateBiomes() {
+    final random = Random();
+    final biomes = List<String>.from(_allBiomes);
+    biomes.shuffle(random);
+    
+    // Pick 4 biomes that HAVE animals associated with them
+    List<String> validBiomes = [];
+    for (String b in biomes) {
+      if (_allOrganisms.any((o) => o.habitat == b)) {
+        validBiomes.add(b);
+        if (validBiomes.length == 4) break;
+      }
+    }
+    
+    // Fallback if not enough specific ones
+    if (validBiomes.length < 4) {
+      validBiomes = biomes.take(4).toList();
+    }
+
     setState(() {
-      _currentAnimal = _allOrganisms[Random().nextInt(_allOrganisms.length)];
+      _targetBiomes = validBiomes;
+      _roundCount = 0;
+    });
+    _nextAnimal();
+  }
+
+  void _nextAnimal() {
+    final available = _allOrganisms.where((o) => _targetBiomes.contains(o.habitat)).toList();
+    if (available.isEmpty) {
+      _rotateBiomes();
+      return;
+    }
+    setState(() {
+      _currentAnimal = available[Random().nextInt(available.length)];
     });
   }
 
@@ -111,8 +158,10 @@ class _HabitatSortScreenState extends State<HabitatSortScreen> {
     int bonusExp = _score * 2;
     await widget.authService.addExperience(widget.currentUser.username, bonusExp);
     
-    widget.authService.updateGameHighScore(widget.currentUser.username, 'habitatSort', _score);
-    if (_score > _highScore) _highScore = _score;
+    await widget.authService.updateGameHighScore(widget.currentUser.username, 'habitatSort', _score);
+    if (_score > _highScore) {
+      setState(() => _highScore = _score);
+    }
   }
 
   void _handleSort(String biome) async {
@@ -123,7 +172,13 @@ class _HabitatSortScreenState extends State<HabitatSortScreen> {
       setState(() => _score++);
       // Award XP per correct sort
       await widget.authService.addExperience(widget.currentUser.username, 5);
-      _nextAnimal();
+      
+      _roundCount++;
+      if (_roundCount >= 5) {
+        _rotateBiomes();
+      } else {
+        _nextAnimal();
+      }
     } else {
       _wrongPlayer.resume();
       _nextAnimal();
@@ -180,7 +235,7 @@ class _HabitatSortScreenState extends State<HabitatSortScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: _targetBiomes.map((biome) => _BiomeBucket(
                   biome: biome, 
-                  image: _biomeImages[biome]!,
+                  image: _getBiomeImage(biome),
                   onAccept: () => _handleSort(biome),
                 )).toList(),
               ),

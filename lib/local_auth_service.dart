@@ -903,8 +903,13 @@ class LocalAuthService {
     final stats = Map<String, dynamic>.from(user.quizStats);
     Map<String, dynamic> modeStats = Map<String, dynamic>.from(stats[gameName] ?? {});
     
-    // Migration
-    if (modeStats.containsKey('attempts') && !modeStats.containsKey('Normal')) {
+    // Migration: If we have old flat data, move it to 'Normal'
+    bool isOld = !modeStats.containsKey('Normal') && 
+                 !modeStats.containsKey('Easy') && 
+                 !modeStats.containsKey('Hard');
+    bool hasData = modeStats.containsKey('attempts') || modeStats.containsKey('correct');
+    
+    if (isOld && hasData) {
       final oldData = Map<String, dynamic>.from(modeStats);
       modeStats = {'Normal': oldData};
     }

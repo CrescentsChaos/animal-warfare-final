@@ -44,12 +44,16 @@ class _SilhouetteSprintScreenState extends State<SilhouetteSprintScreen> {
     super.initState();
     _correctPlayer.setSource(AssetSource('audio/correct.mp3'));
     _wrongPlayer.setSource(AssetSource('audio/wrong.mp3'));
-    _highScore = (widget.currentUser.quizStats['silhouetteSprint']?['correct'] as int?) ?? 0;
+    final stats = widget.currentUser.quizStats['silhouetteSprint'];
+    _highScore = (stats?['Normal']?['correct'] as int?) ?? (stats?['correct'] as int?) ?? 0;
     _loadOrganisms().then((_) => _startGame());
   }
 
   @override
   void dispose() {
+    if (!_isGameOver && _score > 0) {
+      widget.authService.updateGameHighScore(widget.currentUser.username, 'silhouetteSprint', _score);
+    }
     _timer?.cancel();
     _correctPlayer.dispose();
     _wrongPlayer.dispose();
@@ -113,8 +117,10 @@ class _SilhouetteSprintScreenState extends State<SilhouetteSprintScreen> {
     int bonusExp = _score * 3;
     await widget.authService.addExperience(widget.currentUser.username, bonusExp);
     
-    widget.authService.updateGameHighScore(widget.currentUser.username, 'silhouetteSprint', _score);
-    if (_score > _highScore) _highScore = _score;
+    await widget.authService.updateGameHighScore(widget.currentUser.username, 'silhouetteSprint', _score);
+    if (_score > _highScore) {
+      setState(() => _highScore = _score);
+    }
   }
 
   void _handleGuess(Organism org) async {

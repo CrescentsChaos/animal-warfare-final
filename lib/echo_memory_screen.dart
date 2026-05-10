@@ -46,12 +46,16 @@ class _EchoMemoryScreenState extends State<EchoMemoryScreen> {
   void initState() {
     super.initState();
     _wrongPlayer.setSource(AssetSource('audio/wrong.mp3'));
-    _highScore = (widget.currentUser.quizStats['echoMemory']?['correct'] as int?) ?? 0;
+    final stats = widget.currentUser.quizStats['echoMemory'];
+    _highScore = (stats?['Normal']?['correct'] as int?) ?? (stats?['correct'] as int?) ?? 0;
     _loadOrganisms().then((_) => _startGame());
   }
 
   @override
   void dispose() {
+    if (!_isGameOver && _wave > 1) {
+      widget.authService.updateGameHighScore(widget.currentUser.username, 'echoMemory', _wave - 1);
+    }
     _effectPlayer.dispose();
     _wrongPlayer.dispose();
     super.dispose();
@@ -151,8 +155,10 @@ class _EchoMemoryScreenState extends State<EchoMemoryScreen> {
     int bonusExp = (_wave - 1) * 20;
     await widget.authService.addExperience(widget.currentUser.username, bonusExp);
     
-    widget.authService.updateGameHighScore(widget.currentUser.username, 'echoMemory', _wave - 1);
-    if ((_wave - 1) > _highScore) _highScore = _wave - 1;
+    await widget.authService.updateGameHighScore(widget.currentUser.username, 'echoMemory', _wave - 1);
+    if ((_wave - 1) > _highScore) {
+      setState(() => _highScore = _wave - 1);
+    }
   }
 
   @override

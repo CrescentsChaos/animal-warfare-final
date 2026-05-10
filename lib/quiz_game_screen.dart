@@ -10,6 +10,7 @@ import 'package:animal_warfare/widgets/organism_sprite_widget.dart';
 import 'package:animal_warfare/theme.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:animal_warfare/achievement_service.dart';
 
 enum QuizType {
   scientificToCommon,
