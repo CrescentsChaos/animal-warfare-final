@@ -127,6 +127,8 @@ class UserState with ChangeNotifier {
     String? faction,
     String? title,
     String? bio,
+    String? avatarFrame,
+    String? profileBackground,
   }) async {
     if (_currentUser == null) return;
     await _readModifyWrite(
@@ -138,6 +140,8 @@ class UserState with ChangeNotifier {
         faction: faction,
         title: title,
         bio: bio,
+        avatarFrame: avatarFrame,
+        profileBackground: profileBackground,
       ),
     );
   }

@@ -31,6 +31,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   // State
   String? _selectedGender;
+  String? _selectedFrame;
   // UI State
   bool _isLoading = true;
 
@@ -57,6 +58,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         _selectedGender = user.gender != 'N/A' && user.gender.isNotEmpty
             ? user.gender
             : null;
+        _selectedFrame = user.avatarFrame.isNotEmpty ? user.avatarFrame : null;
 
         if (user.avatar.isNotEmpty && user.avatar != 'default') {
           final file = File(user.avatar);
@@ -97,6 +99,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       faction: _currentUser!.faction, // Preserve empty faction string
       title: _currentUser!.title, // Preserve empty title string
       bio: _currentUser!.bio, // Preserve empty bio string
+      avatarFrame: _selectedFrame ?? '',
+      profileBackground: _currentUser!.profileBackground,
     );
 
     if (mounted) {
@@ -167,6 +171,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       _selectedGender,
                       ['MALE', 'FEMALE', 'OTHER'],
                       (v) => setState(() => _selectedGender = v),
+                    ),
+                    SizedBox(height: 16.h),
+                    _buildDropdown(
+                      'AVATAR FRAME',
+                      _selectedFrame,
+                      <String>{'', ...(_currentUser?.unlockedFrames ?? []), if (_selectedFrame != null) _selectedFrame!}.toList(),
+                      (v) => setState(() => _selectedFrame = v),
                     ),
 
                     SizedBox(height: 32.h),
@@ -411,17 +422,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
               ),
               style: GoogleFonts.inter(color: Colors.white, fontSize: 13.sp),
-              items: items
-                  .map(
-                    (g) => DropdownMenuItem(
-                      value: g,
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 14.w),
-                        child: Text(g),
-                      ),
-                    ),
-                  )
-                  .toList(),
+              items: items.map((g) {
+                String displayString = 'NONE';
+                if (g.isNotEmpty) {
+                  displayString = g.split('_').map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '').join(' ');
+                }
+                return DropdownMenuItem(
+                  value: g,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 14.w),
+                    child: Text(displayString),
+                  ),
+                );
+              }).toList(),
               onChanged: onChanged,
             ),
           ),

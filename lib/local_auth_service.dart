@@ -97,6 +97,12 @@ class UserData {
   /// Global toggle to unlock all entries in the Anidex
   final bool anidexUnlocked;
 
+  // --- Profile Customization ---
+  final String avatarFrame;
+  final String profileBackground;
+  final List<String> unlockedFrames;
+  final List<String> unlockedBackgrounds;
+
   UserData({
     required this.username,
     required this.password,
@@ -115,6 +121,10 @@ class UserData {
     this.isBlackMarketUnlocked = false,
     this.phoneWallpaper = 'plains-bg.png',
     this.anidexUnlocked = false,
+    this.avatarFrame = '',
+    this.profileBackground = '',
+    List<String>? unlockedFrames,
+    List<String>? unlockedBackgrounds,
     List<Map<String, dynamic>>? savedReplays,
     this.lastMedicalCenterMapId,
     this.lastMedicalCenterRow,
@@ -155,6 +165,8 @@ class UserData {
        farmSlots = farmSlots ?? List.generate(10, (i) => FarmSlot.empty(i)),
        savedMapStates = savedMapStates ?? {},
        eventFlags = eventFlags ?? const EventFlags(),
+       unlockedFrames = unlockedFrames ?? [],
+       unlockedBackgrounds = unlockedBackgrounds ?? [],
        savedReplays = savedReplays ?? [];
 
   /// Returns displayName if set, otherwise falls back to username
@@ -203,6 +215,10 @@ class UserData {
     int? lastMedicalCenterRow,
     int? lastMedicalCenterCol,
     bool? anidexUnlocked,
+    String? avatarFrame,
+    String? profileBackground,
+    List<String>? unlockedFrames,
+    List<String>? unlockedBackgrounds,
   }) {
     return UserData(
       username: username ?? this.username,
@@ -251,6 +267,10 @@ class UserData {
       lastMedicalCenterRow: lastMedicalCenterRow ?? this.lastMedicalCenterRow,
       lastMedicalCenterCol: lastMedicalCenterCol ?? this.lastMedicalCenterCol,
       anidexUnlocked: anidexUnlocked ?? this.anidexUnlocked,
+      avatarFrame: avatarFrame ?? this.avatarFrame,
+      profileBackground: profileBackground ?? this.profileBackground,
+      unlockedFrames: unlockedFrames ?? this.unlockedFrames,
+      unlockedBackgrounds: unlockedBackgrounds ?? this.unlockedBackgrounds,
     );
   }
 
@@ -364,6 +384,10 @@ class UserData {
     'lastMedicalCenterRow': lastMedicalCenterRow,
     'lastMedicalCenterCol': lastMedicalCenterCol,
     'anidexUnlocked': anidexUnlocked,
+    'avatarFrame': avatarFrame,
+    'profileBackground': profileBackground,
+    'unlockedFrames': unlockedFrames,
+    'unlockedBackgrounds': unlockedBackgrounds,
   };
 
   factory UserData.fromJson(
@@ -512,6 +536,10 @@ class UserData {
       lastMedicalCenterRow: json['lastMedicalCenterRow'] as int?,
       lastMedicalCenterCol: json['lastMedicalCenterCol'] as int?,
       anidexUnlocked: json['anidexUnlocked'] as bool? ?? false,
+      avatarFrame: json['avatarFrame'] as String? ?? '',
+      profileBackground: json['profileBackground'] as String? ?? '',
+      unlockedFrames: (json['unlockedFrames'] as List<dynamic>?)?.map((e) => e as String).toList() ?? [],
+      unlockedBackgrounds: (json['unlockedBackgrounds'] as List<dynamic>?)?.map((e) => e as String).toList() ?? [],
     );
   }
 }
@@ -709,6 +737,9 @@ class LocalAuthService {
         discoveredOrganisms: [],
         completedAchievements: [],
         inventory: {'capture_net': 10},
+        unlockedFrames: ['bronze_frame', 'savanna_frame'],
+        unlockedBackgrounds: ['forest_bg'],
+        avatarFrame: 'savanna_frame',
       ),
     );
     return await login(username, password);
@@ -819,6 +850,8 @@ class LocalAuthService {
     String? faction,
     String? title,
     String? bio,
+    String? avatarFrame,
+    String? profileBackground,
   }) async {
     final user = await readUserFile(username);
     if (user != null) {
@@ -831,6 +864,8 @@ class LocalAuthService {
           faction: faction,
           title: title,
           bio: bio,
+          avatarFrame: avatarFrame,
+          profileBackground: profileBackground,
         ),
       );
     }
@@ -853,6 +888,7 @@ class LocalAuthService {
     bool isCorrect, {
     String difficulty = 'Normal',
     int points = 0,
+    int sessionPoints = 0,
     int streak = 0,
   }) async {
     final user = await readUserFile(username);
@@ -871,6 +907,7 @@ class LocalAuthService {
       'attempts': 0,
       'correct': 0,
       'totalPoints': 0,
+      'bestPoints': 0,
       'bestStreak': 0,
     });
 
@@ -881,6 +918,7 @@ class LocalAuthService {
       'attempts': (diffStats['attempts'] as int) + 1,
       'correct': (diffStats['correct'] as int) + (isCorrect ? 1 : 0),
       'totalPoints': (diffStats['totalPoints'] as int? ?? 0) + points,
+      'bestPoints': sessionPoints > (diffStats['bestPoints'] as int? ?? 0) ? sessionPoints : (diffStats['bestPoints'] as int? ?? 0),
       'bestStreak': streak > currentBestStreak ? streak : currentBestStreak,
       'lastAttempt': DateTime.now().toIso8601String(),
     };

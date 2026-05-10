@@ -8,6 +8,7 @@ import 'package:animal_warfare/widgets/organism_sprite_widget.dart';
 import 'package:animal_warfare/theme.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:animal_warfare/achievement_service.dart';
 
 enum ShowdownStat { health, attack, defense, speed, weight }
 
@@ -85,6 +86,7 @@ class _StatShowdownScreenState extends State<StatShowdownScreen> with SingleTick
 
   @override
   void dispose() {
+    // Save high score if exiting mid-game
     if (!_gameOver && _streak > 0) {
       widget.authService.updateGameHighScore(widget.currentUser.username, 'statShowdown', _streak);
     }
@@ -211,6 +213,21 @@ class _StatShowdownScreenState extends State<StatShowdownScreen> with SingleTick
         'statShowdown',
         _streak,
       );
+
+      // Check achievements
+      final updatedUser = await widget.authService.getCurrentUser();
+      if (updatedUser != null && mounted) {
+        final achievementService = AchievementService(
+          allOrganisms: _allOrganisms.map((o) => o.toJson()).toList(),
+          authService: widget.authService,
+        );
+        final unlocked = await achievementService.checkAndUnlockAchievements(updatedUser);
+        if (unlocked.isNotEmpty && mounted) {
+          for (var title in unlocked) {
+            achievementService.showAchievementSnackbar(context, title);
+          }
+        }
+      }
     }
   }
 

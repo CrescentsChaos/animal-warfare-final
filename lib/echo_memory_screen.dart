@@ -8,6 +8,7 @@ import 'package:animal_warfare/widgets/organism_sprite_widget.dart';
 import 'package:animal_warfare/theme.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:animal_warfare/achievement_service.dart';
 import 'dart:async';
 
 class EchoMemoryScreen extends StatefulWidget {
@@ -53,6 +54,7 @@ class _EchoMemoryScreenState extends State<EchoMemoryScreen> {
 
   @override
   void dispose() {
+    // Save high score if exiting mid-game
     if (!_isGameOver && _wave > 1) {
       widget.authService.updateGameHighScore(widget.currentUser.username, 'echoMemory', _wave - 1);
     }
@@ -158,6 +160,21 @@ class _EchoMemoryScreenState extends State<EchoMemoryScreen> {
     await widget.authService.updateGameHighScore(widget.currentUser.username, 'echoMemory', _wave - 1);
     if ((_wave - 1) > _highScore) {
       setState(() => _highScore = _wave - 1);
+    }
+
+    // Check achievements
+    final updatedUser = await widget.authService.getCurrentUser();
+    if (updatedUser != null && mounted) {
+      final achievementService = AchievementService(
+        allOrganisms: _allOrganisms.map((o) => o.toJson()).toList(),
+        authService: widget.authService,
+      );
+      final unlocked = await achievementService.checkAndUnlockAchievements(updatedUser);
+      if (unlocked.isNotEmpty && mounted) {
+        for (var title in unlocked) {
+          achievementService.showAchievementSnackbar(context, title);
+        }
+      }
     }
   }
 

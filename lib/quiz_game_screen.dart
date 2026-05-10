@@ -405,13 +405,15 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
       _playSound(_wrongPlayer);
     }
 
-    // 🟢 FIX: Update quiz stats using the CURRENT local user data
+    final int pointsGained = isCorrect ? (10 * (_timeLeft + 1)) : 0;
+    
     await widget.authService.updateQuizStats(
       _currentUser.username,
       widget.quizType.name,
       isCorrect,
       difficulty: widget.difficulty.name,
-      points: isCorrect ? (100 + (_timeLeft * 10)) : 0, // Recalculate or use local pointsGained
+      points: pointsGained,
+      sessionPoints: _points,
       streak: _streak,
     );
 
@@ -474,6 +476,8 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
       bgColor = AppColors.wrongRed.withValues(alpha: 0.1);
     }
 
+    IconData? optionIcon = _getOptionIcon(answerText);
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       margin: const EdgeInsets.all(8),
@@ -488,22 +492,50 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
           onTap: _isAnswered ? null : () => _handleAnswer(answerText),
           borderRadius: BorderRadius.circular(12),
           child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 12),
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
             alignment: Alignment.center,
-            child: Text(
-              answerText.toUpperCase(),
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: textColor,
-                fontFamily: 'PressStart2P',
-                fontSize: 10.sp,
-                height: 1.5,
-              ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (optionIcon != null) ...[
+                  Icon(optionIcon, color: textColor.withValues(alpha: 0.7), size: 20.sp),
+                  const SizedBox(height: 8),
+                ],
+                Text(
+                  answerText.toUpperCase(),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: textColor,
+                    fontFamily: 'PressStart2P',
+                    fontSize: 8.sp,
+                    height: 1.5,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  IconData? _getOptionIcon(String text) {
+    final clean = text.toLowerCase();
+    // Classes
+    if (clean == 'mammal') return Icons.pets;
+    if (clean == 'bird') return Icons.flutter_dash;
+    if (clean == 'fish') return Icons.water;
+    if (clean == 'reptile') return Icons.pest_control;
+    if (clean == 'amphibian') return Icons.opacity;
+    if (clean == 'insect') return Icons.bug_report;
+    if (clean == 'arachnid') return Icons.grid_view_rounded;
+    
+    // Diets
+    if (clean == 'herbivore') return Icons.grass;
+    if (clean == 'carnivore') return Icons.local_fire_department;
+    if (clean == 'omnivore') return Icons.category;
+    
+    return null;
   }
 
   Widget _buildQuestionWidget() {
@@ -538,17 +570,38 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
         ],
       );
     } else {
+      // For Text-based questions like Name to Class/Diet, we still want to show the sprite for visual aid
+      final bool showSpriteForTextQuiz = 
+          widget.quizType == QuizType.nameToClass || 
+          widget.quizType == QuizType.nameToDiet ||
+          widget.quizType == QuizType.nameToGenus ||
+          widget.quizType == QuizType.commonToGenus;
+
       return Container(
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.black.withValues(alpha: 0.4),
           borderRadius: BorderRadius.circular(4),
           border: Border.all(color: AppColors.highlightColor, width: 2),
         ),
-        child: Text(
-          _getQuestionText(questionOrganism).toUpperCase(),
-          textAlign: TextAlign.center,
-          style: AppTextStyles.headline(context, baseSize: 12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (showSpriteForTextQuiz) ...[
+              _QuizSpriteDisplay(
+                organism: questionOrganism,
+                height: 120.h,
+                width: 120.h,
+                showSilhouette: false,
+              ),
+              const SizedBox(height: 12),
+            ],
+            Text(
+              _getQuestionText(questionOrganism).toUpperCase(),
+              textAlign: TextAlign.center,
+              style: AppTextStyles.headline(context, baseSize: 12),
+            ),
+          ],
         ),
       );
     }

@@ -60,6 +60,7 @@ class _QuizScreenState extends State<QuizScreen>
         diffStats?['correct'] as int? ??
         (modeStats?.containsKey('correct') == true ? modeStats!['correct'] : 0);
     final bestStreak = diffStats?['bestStreak'] as int? ?? 0;
+    final bestPoints = diffStats?['bestPoints'] as int? ?? 0;
     final totalPoints = diffStats?['totalPoints'] as int? ?? 0;
 
     return Container(
@@ -151,7 +152,7 @@ class _QuizScreenState extends State<QuizScreen>
                   attempts,
                   correct,
                   bestStreak,
-                  totalPoints,
+                  bestPoints,
                 ),
               ],
             ),
@@ -192,7 +193,7 @@ class _QuizScreenState extends State<QuizScreen>
             color: AppColors.correctGreen,
           ),
           _StatText(
-            label: 'TOTAL PTS',
+            label: 'BEST SCORE',
             value: '$points',
             color: AppColors.statAttackColor,
           ),
@@ -272,19 +273,24 @@ class _QuizScreenState extends State<QuizScreen>
             context,
             'HABITAT SORT',
             'Categorize wildlife by biome',
-            const Color.fromARGB(255, 0, 0, 0),
+            const Color.fromARGB(255, 0, 255, 21),
             Icons.landscape,
             activeUser,
             'habitatSort',
-            () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (c) => HabitatSortScreen(
-                  currentUser: activeUser,
-                  authService: widget.authService,
+            () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (c) => HabitatSortScreen(
+                    currentUser: activeUser,
+                    authService: widget.authService,
+                  ),
                 ),
-              ),
-            ),
+              );
+              if (context.mounted) {
+                Provider.of<UserState>(context, listen: false).loadCurrentUser();
+              }
+            },
           ),
           const SizedBox(height: 16),
           _buildArcadeCard(
@@ -295,15 +301,20 @@ class _QuizScreenState extends State<QuizScreen>
             Icons.speed,
             activeUser,
             'silhouetteSprint',
-            () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (c) => SilhouetteSprintScreen(
-                  currentUser: activeUser,
-                  authService: widget.authService,
+            () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (c) => SilhouetteSprintScreen(
+                    currentUser: activeUser,
+                    authService: widget.authService,
+                  ),
                 ),
-              ),
-            ),
+              );
+              if (context.mounted) {
+                Provider.of<UserState>(context, listen: false).loadCurrentUser();
+              }
+            },
           ),
           const SizedBox(height: 16),
           _buildArcadeCard(
@@ -314,15 +325,20 @@ class _QuizScreenState extends State<QuizScreen>
             Icons.psychology,
             activeUser,
             'echoMemory',
-            () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (c) => EchoMemoryScreen(
-                  currentUser: activeUser,
-                  authService: widget.authService,
+            () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (c) => EchoMemoryScreen(
+                    currentUser: activeUser,
+                    authService: widget.authService,
+                  ),
                 ),
-              ),
-            ),
+              );
+              if (context.mounted) {
+                Provider.of<UserState>(context, listen: false).loadCurrentUser();
+              }
+            },
           ),
         ],
       ),

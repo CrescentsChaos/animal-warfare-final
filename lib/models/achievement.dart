@@ -18,6 +18,10 @@ class Achievement {
   final int requiredHardQuizCorrect; // NEW: Total Hard questions correct
   final int requiredGenusQuizCorrect; // NEW: Total Genus questions correct
   final int requiredQuizStreak; // NEW: Max streak reached in any quiz
+  final int requiredEchoWave; // NEW: Max wave reached in The Echo
+  final int requiredHabitatScore; // NEW: Max score reached in Habitat Sort
+  final int requiredSilhouetteScore; // NEW: Max score reached in Silhouette Sprint
+  final int requiredShowdownStreak; // NEW: Max streak reached in Stat Showdown
   final String tier; // NEW: Medal tier (bronze, silver, gold)
   final String? imagePath; // NEW: Path to the achievement medal image
 
@@ -34,6 +38,10 @@ class Achievement {
     this.requiredHardQuizCorrect = 0,
     this.requiredGenusQuizCorrect = 0,
     this.requiredQuizStreak = 0,
+    this.requiredEchoWave = 0,
+    this.requiredHabitatScore = 0,
+    this.requiredSilhouetteScore = 0,
+    this.requiredShowdownStreak = 0,
     this.tier = 'bronze',
     this.imagePath,
   });
@@ -56,6 +64,10 @@ class Achievement {
       requiredHardQuizCorrect: json['requiredHardQuizCorrect'] as int? ?? 0,
       requiredGenusQuizCorrect: json['requiredGenusQuizCorrect'] as int? ?? 0,
       requiredQuizStreak: json['requiredQuizStreak'] as int? ?? 0,
+      requiredEchoWave: json['requiredEchoWave'] as int? ?? 0,
+      requiredHabitatScore: json['requiredHabitatScore'] as int? ?? 0,
+      requiredSilhouetteScore: json['requiredSilhouetteScore'] as int? ?? 0,
+      requiredShowdownStreak: json['requiredShowdownStreak'] as int? ?? 0,
       tier: json['tier'] as String? ?? 'bronze',
       imagePath: json['imagePath'] as String?,
     );

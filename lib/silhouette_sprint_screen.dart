@@ -8,6 +8,7 @@ import 'package:animal_warfare/widgets/organism_sprite_widget.dart';
 import 'package:animal_warfare/theme.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:animal_warfare/achievement_service.dart';
 import 'dart:async';
 
 class SilhouetteSprintScreen extends StatefulWidget {
@@ -120,6 +121,21 @@ class _SilhouetteSprintScreenState extends State<SilhouetteSprintScreen> {
     await widget.authService.updateGameHighScore(widget.currentUser.username, 'silhouetteSprint', _score);
     if (_score > _highScore) {
       setState(() => _highScore = _score);
+    }
+
+    // Check achievements
+    final updatedUser = await widget.authService.getCurrentUser();
+    if (updatedUser != null && mounted) {
+      final achievementService = AchievementService(
+        allOrganisms: _allOrganisms.map((o) => o.toJson()).toList(),
+        authService: widget.authService,
+      );
+      final unlocked = await achievementService.checkAndUnlockAchievements(updatedUser);
+      if (unlocked.isNotEmpty && mounted) {
+        for (var title in unlocked) {
+          achievementService.showAchievementSnackbar(context, title);
+        }
+      }
     }
   }
 

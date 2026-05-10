@@ -120,15 +120,17 @@ class AchievementService {
       user.quizStats.forEach((quizName, data) {
         if (data is Map<String, dynamic>) {
           // Check if new difficulty-based structure
-          bool isNewStructure =
-              data.keys.any((k) => k == 'easy' || k == 'normal' || k == 'hard');
+          bool isNewStructure = data.keys.any((k) {
+            final lk = k.toLowerCase();
+            return lk == 'easy' || lk == 'normal' || lk == 'hard';
+          });
           if (isNewStructure) {
             data.forEach((difficulty, stats) {
               if (stats is Map<String, dynamic>) {
                 final correct = stats['correct'] as int? ?? 0;
                 final streak = stats['bestStreak'] as int? ?? 0;
                 totalCorrect += correct;
-                if (difficulty == 'hard') totalHardCorrect += correct;
+                if (difficulty.toLowerCase() == 'hard') totalHardCorrect += correct;
                 if (quizName.toLowerCase().contains('genus')) {
                   totalGenusCorrect += correct;
                 }
@@ -156,8 +158,44 @@ class AchievementService {
           maxStreak >= achievement.requiredQuizStreak) return true;
     }
 
+    // 🆕 LOGIC 6: Arcade Game achievements
+    if (achievement.requiredEchoWave > 0) {
+      final best = _getMaxStat(user.quizStats['echoMemory'], 'correct');
+      if (best >= achievement.requiredEchoWave) return true;
+    }
+    if (achievement.requiredHabitatScore > 0) {
+      final best = _getMaxStat(user.quizStats['habitatSort'], 'correct');
+      if (best >= achievement.requiredHabitatScore) return true;
+    }
+    if (achievement.requiredSilhouetteScore > 0) {
+      final best = _getMaxStat(user.quizStats['silhouetteSprint'], 'correct');
+      if (best >= achievement.requiredSilhouetteScore) return true;
+    }
+    if (achievement.requiredShowdownStreak > 0) {
+      final best = _getMaxStat(user.quizStats['statShowdown'], 'correct');
+      if (best >= achievement.requiredShowdownStreak) return true;
+    }
+
     // Default to false if no condition is defined (or invalid achievement object)
     return false;
+  }
+
+  int _getMaxStat(dynamic data, String statKey) {
+    if (data is Map<String, dynamic>) {
+      int maxVal = data[statKey] as int? ?? 0; // Old flat structure
+      
+      // Check difficulties
+      final difficulties = ['Easy', 'Normal', 'Hard', 'easy', 'normal', 'hard'];
+      for (var d in difficulties) {
+        final diffData = data[d];
+        if (diffData is Map<String, dynamic>) {
+          final val = diffData[statKey] as int? ?? 0;
+          if (val > maxVal) maxVal = val;
+        }
+      }
+      return maxVal;
+    }
+    return 0;
   }
 
   // Helper extension for UserData if it's missing easy floor access

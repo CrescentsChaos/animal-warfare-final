@@ -235,5 +235,75 @@
     "requiredQuizStreak": 10,
     "tier": "silver",
     "imagePath": "assets/achievements/medal_silver.png"
+  },
+  {
+    "title": "Echo Master",
+    "description": "Reach Wave 5 in The Echo memory challenge.",
+    "requiredEchoWave": 5,
+    "tier": "bronze",
+    "imagePath": "assets/achievements/medal_bronze.png"
+  },
+  {
+    "title": "Echo Grandmaster",
+    "description": "Reach Wave 12 in The Echo memory challenge.",
+    "requiredEchoWave": 12,
+    "tier": "gold",
+    "imagePath": "assets/achievements/medal_gold.png"
+  },
+  {
+    "title": "Biome Sorter",
+    "description": "Achieve a score of 30 in Habitat Sort.",
+    "requiredHabitatScore": 30,
+    "tier": "bronze",
+    "imagePath": "assets/achievements/medal_bronze.png"
+  },
+  {
+    "title": "Ecosystem Expert",
+    "description": "Achieve a score of 100 in Habitat Sort.",
+    "requiredHabitatScore": 100,
+    "tier": "gold",
+    "imagePath": "assets/achievements/medal_gold.png"
+  },
+  {
+    "title": "Shadow Chaser",
+    "description": "Identify 30 silhouettes in Silhouette Sprint.",
+    "requiredSilhouetteScore": 30,
+    "tier": "bronze",
+    "imagePath": "assets/achievements/medal_bronze.png"
+  },
+  {
+    "title": "Shadow Ninja",
+    "description": "Identify 100 silhouettes in Silhouette Sprint.",
+    "requiredSilhouetteScore": 100,
+    "tier": "gold",
+    "imagePath": "assets/achievements/medal_gold.png"
+  },
+  {
+    "title": "Stat Strategist",
+    "description": "Achieve a streak of 10 in Stat Showdown.",
+    "requiredShowdownStreak": 10,
+    "tier": "bronze",
+    "imagePath": "assets/achievements/medal_bronze.png"
+  },
+  {
+    "title": "Data Demon",
+    "description": "Achieve a streak of 25 in Stat Showdown.",
+    "requiredShowdownStreak": 25,
+    "tier": "gold",
+    "imagePath": "assets/achievements/medal_gold.png"
+  },
+  {
+    "title": "Quiz Addict",
+    "description": "Answer 500 questions correctly in total.",
+    "requiredQuizCorrect": 500,
+    "tier": "silver",
+    "imagePath": "assets/achievements/medal_silver.png"
+  },
+  {
+    "title": "Encyclopedia Brain",
+    "description": "Answer 2000 questions correctly in total.",
+    "requiredQuizCorrect": 2000,
+    "tier": "gold",
+    "imagePath": "assets/achievements/medal_gold.png"
   }
 ]

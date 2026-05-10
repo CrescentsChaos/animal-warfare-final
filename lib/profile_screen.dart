@@ -171,7 +171,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Positioned.fill(
               child: Opacity(
                 opacity: 0.3,
-                child: Image.asset('assets/main.png', fit: BoxFit.cover),
+                child: Image.asset(
+                  user.profileBackground.isNotEmpty 
+                      ? 'assets/profile_bgs/${user.profileBackground}.png' 
+                      : 'assets/main.png', 
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Image.asset('assets/main.png', fit: BoxFit.cover),
+                ),
               ),
             ),
             Positioned.fill(
@@ -246,33 +252,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
     }
 
-    return Container(
-      width: 110.w,
-      height: 110.w,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: (isCustom ? AppColors.highlight : AppColors.primary)
-              .withValues(alpha: 0.5),
-          width: 3,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: (isCustom ? AppColors.highlight : AppColors.primary)
-                .withValues(alpha: 0.3),
-            blurRadius: 20,
-            spreadRadius: 5,
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Container(
+          width: 110.w,
+          height: 110.w,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: (isCustom ? AppColors.highlight : AppColors.primary)
+                  .withValues(alpha: 0.5),
+              width: 3,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: (isCustom ? AppColors.highlight : AppColors.primary)
+                    .withValues(alpha: 0.3),
+                blurRadius: 20,
+                spreadRadius: 5,
+              ),
+            ],
           ),
-        ],
-      ),
-      child: CircleAvatar(
-        radius: 52.w,
-        backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-        backgroundImage: imageProvider,
-        child: imageProvider == null
-            ? Icon(Icons.person, size: 55.w, color: AppColors.primary)
-            : null,
-      ),
+          child: CircleAvatar(
+            radius: 52.w,
+            backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+            backgroundImage: imageProvider,
+            child: imageProvider == null
+                ? Icon(Icons.person, size: 55.w, color: AppColors.primary)
+                : null,
+          ),
+        ),
+        if (user.avatarFrame.isNotEmpty)
+          Positioned.fill(
+            child: Image.asset(
+              'assets/accessories/${user.avatarFrame}.png',
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+            ),
+          ),
+      ],
     );
   }
 
@@ -370,27 +389,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Icon(icon, color: color, size: 24.sp),
           ),
           SizedBox(width: 20.w),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                value,
-                style: GoogleFonts.orbitron(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.white,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  value,
+                  style: GoogleFonts.orbitron(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-              Text(
-                label,
-                style: GoogleFonts.inter(
-                  fontSize: 9.sp,
-                  color: Colors.white24,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1.2,
+                Text(
+                  label,
+                  style: GoogleFonts.inter(
+                    fontSize: 9.sp,
+                    color: Colors.white24,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.2,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),

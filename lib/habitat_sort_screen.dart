@@ -8,6 +8,7 @@ import 'package:animal_warfare/widgets/organism_sprite_widget.dart';
 import 'package:animal_warfare/theme.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:animal_warfare/achievement_service.dart';
 import 'dart:async';
 
 class HabitatSortScreen extends StatefulWidget {
@@ -44,16 +45,33 @@ class _HabitatSortScreenState extends State<HabitatSortScreen> {
   List<String> _targetBiomes = [];
 
   String _getBiomeImage(String biome) {
-    if (['Ocean', 'Deep Sea', 'Coral Reef', 'Frozen Ocean', 'Kelp Forest', 'Mangrove'].contains(biome)) {
-      return 'assets/biomes/ocean-bg.png';
-    }
-    if (['Desert', 'Savanna', 'Volcano'].contains(biome)) {
-      return 'assets/biomes/desert-bg.png';
-    }
-    if (['Mountain', 'Polar', 'Tundra', 'Cave'].contains(biome)) {
-      return 'assets/biomes/mountain-bg.png';
-    }
-    return 'assets/biomes/forest-bg.png';
+    final Map<String, String> biomeMap = {
+      'Swamp': 'assets/biomes/swamp-bg.png',
+      'Savanna': 'assets/biomes/savanna-bg.png',
+      'Desert': 'assets/biomes/desert-bg.png',
+      'Taiga': 'assets/biomes/taiga-bg.png',
+      'Mountain': 'assets/biomes/mountain-bg.png',
+      'Coastal': 'assets/biomes/coastal-bg.png',
+      'Volcano': 'assets/biomes/volcano-bg.png',
+      'Cave': 'assets/biomes/cave-bg.png',
+      'Urban': 'assets/biomes/urban-bg.png',
+      'Polar': 'assets/biomes/polar-bg.png',
+      'Ocean': 'assets/biomes/ocean-bg.png',
+      'Deep Sea': 'assets/biomes/deep_sea-bg.png',
+      'Coral Reef': 'assets/biomes/coral_reef-bg.png',
+      'Rainforest': 'assets/biomes/rainforest-bg.png',
+      'Kelp Forest': 'assets/biomes/kelp_forest-bg.png',
+      'Mangrove': 'assets/biomes/mangrove-bg.png',
+      'Frozen Ocean': 'assets/biomes/frozen_ocean-bg.png',
+      'River': 'assets/biomes/river-bg.png',
+      'Lake': 'assets/biomes/lake-bg.png',
+      'Tundra': 'assets/biomes/tundra-bg.png',
+      'Jungle': 'assets/biomes/jungle-bg.png',
+      'Redwoods': 'assets/biomes/redwoods-bg.png',
+      'Plains': 'assets/biomes/plains-bg.png',
+      'Wetlands': 'assets/biomes/wetlands-bg.png',
+    };
+    return biomeMap[biome] ?? 'assets/biomes/forest-bg.png';
   }
 
   final AudioPlayer _correctPlayer = AudioPlayer()..setReleaseMode(ReleaseMode.stop);
@@ -162,6 +180,21 @@ class _HabitatSortScreenState extends State<HabitatSortScreen> {
     if (_score > _highScore) {
       setState(() => _highScore = _score);
     }
+
+    // Check achievements
+    final updatedUser = await widget.authService.getCurrentUser();
+    if (updatedUser != null && mounted) {
+      final achievementService = AchievementService(
+        allOrganisms: _allOrganisms.map((o) => o.toJson()).toList(),
+        authService: widget.authService,
+      );
+      final unlocked = await achievementService.checkAndUnlockAchievements(updatedUser);
+      if (unlocked.isNotEmpty && mounted) {
+        for (var title in unlocked) {
+          achievementService.showAchievementSnackbar(context, title);
+        }
+      }
+    }
   }
 
   void _handleSort(String biome) async {
@@ -202,7 +235,7 @@ class _HabitatSortScreenState extends State<HabitatSortScreen> {
           image: DecorationImage(
             image: const AssetImage('assets/biomes/savanna-bg.png'),
             fit: BoxFit.cover,
-            colorFilter: ColorFilter.mode(Colors.black.withValues(alpha: 0.7), BlendMode.darken),
+            colorFilter: ColorFilter.mode(Colors.black.withValues(alpha: 0.8), BlendMode.darken),
           ),
         ),
         child: Column(
@@ -218,27 +251,65 @@ class _HabitatSortScreenState extends State<HabitatSortScreen> {
               ),
             ),
             Expanded(
-              child: Center(
-                child: _isGameOver 
-                  ? _GameOverView(score: _score, highScore: _highScore, onRestart: _startGame)
-                  : _currentAnimal == null ? Container() : Draggable<String>(
-                      data: _currentAnimal!.habitat,
-                      feedback: _SortSprite(organism: _currentAnimal!, isDragging: true),
-                      childWhenDragging: Opacity(opacity: 0.3, child: _SortSprite(organism: _currentAnimal!)),
-                      child: _SortSprite(organism: _currentAnimal!),
-                    ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 40, left: 16, right: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: _targetBiomes.map((biome) => _BiomeBucket(
-                  biome: biome, 
-                  image: _getBiomeImage(biome),
-                  onAccept: () => _handleSort(biome),
-                )).toList(),
-              ),
+              child: _isGameOver 
+                ? Center(child: _GameOverView(score: _score, highScore: _highScore, onRestart: _startGame))
+                : Column(
+                    children: [
+                      const SizedBox(height: 20),
+                      // Sprite on Top
+                      SizedBox(
+                        height: 220.h,
+                        child: Center(
+                          child: _currentAnimal == null ? Container() : Draggable<String>(
+                            data: _currentAnimal!.habitat,
+                            feedback: _SortSprite(organism: _currentAnimal!, isDragging: true),
+                            childWhenDragging: Opacity(opacity: 0.3, child: _SortSprite(organism: _currentAnimal!)),
+                            child: _SortSprite(organism: _currentAnimal!),
+                          ),
+                        ),
+                      ),
+                      const Spacer(),
+                      // 2x2 Habitats below
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                _BiomeBucket(
+                                  biome: _targetBiomes[0], 
+                                  image: _getBiomeImage(_targetBiomes[0]),
+                                  onAccept: () => _handleSort(_targetBiomes[0]),
+                                ),
+                                _BiomeBucket(
+                                  biome: _targetBiomes[1], 
+                                  image: _getBiomeImage(_targetBiomes[1]),
+                                  onAccept: () => _handleSort(_targetBiomes[1]),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                _BiomeBucket(
+                                  biome: _targetBiomes[2], 
+                                  image: _getBiomeImage(_targetBiomes[2]),
+                                  onAccept: () => _handleSort(_targetBiomes[2]),
+                                ),
+                                _BiomeBucket(
+                                  biome: _targetBiomes[3], 
+                                  image: _getBiomeImage(_targetBiomes[3]),
+                                  onAccept: () => _handleSort(_targetBiomes[3]),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
             ),
           ],
         ),
@@ -281,13 +352,17 @@ class _BiomeBucket extends StatelessWidget {
         final isHovered = candidateData.isNotEmpty;
         return AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          width: 75.w,
-          height: 90.h,
+          width: 140.w,
+          height: 140.w,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: isHovered ? AppColors.highlightColor : Colors.white24, width: 2),
-            image: DecorationImage(image: AssetImage(image), fit: BoxFit.cover, colorFilter: ColorFilter.mode(Colors.black.withValues(alpha: 0.4), BlendMode.darken)),
-            boxShadow: isHovered ? [BoxShadow(color: AppColors.highlightColor.withValues(alpha: 0.5), blurRadius: 10)] : [],
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: isHovered ? AppColors.highlightColor : Colors.white24, width: 3),
+            image: DecorationImage(
+              image: AssetImage(image), 
+              fit: BoxFit.cover, 
+              colorFilter: ColorFilter.mode(Colors.black.withValues(alpha: 0.2), BlendMode.darken)
+            ),
+            boxShadow: isHovered ? [BoxShadow(color: AppColors.highlightColor.withValues(alpha: 0.5), blurRadius: 15)] : [],
           ),
           child: Center(
             child: Text(biome.toUpperCase(), style: TextStyle(fontFamily: 'PressStart2P', fontSize: 6.sp, color: Colors.white, shadows: [Shadow(blurRadius: 4, color: Colors.black)])),
@@ -309,14 +384,14 @@ class _SortSprite extends StatelessWidget {
     final imagePath = 'assets/sprites/$fileName.png';
 
     return Container(
-      width: isDragging ? 100 : 150,
-      height: isDragging ? 100 : 150,
+      width: isDragging ? 160 : 200,
+      height: isDragging ? 160 : 200,
       decoration: BoxDecoration(
         color: isDragging ? Colors.transparent : Colors.black26,
         shape: BoxShape.circle,
         border: isDragging ? null : Border.all(color: Colors.white10),
       ),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(10),
       child: buildSilhouetteSprite(
         imageUrl: imagePath,
         silhouetteColor: null,

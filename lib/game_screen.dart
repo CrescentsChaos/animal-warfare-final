@@ -54,7 +54,7 @@ class _GameScreenState extends State<GameScreen> {
   Widget _buildMenuButton({
     required String text,
     required String subtitle,
-    required IconData icon,
+    required String iconPath,
     required VoidCallback onPressed,
     required Color color,
   }) {
@@ -84,14 +84,11 @@ class _GameScreenState extends State<GameScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
             child: Row(
               children: [
-                Container(
-                  width: 46,
-                  height: 46,
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(icon, color: color, size: 24),
+                Image.asset(
+                  iconPath,
+                  width: 56,
+                  height: 56,
+                  fit: BoxFit.contain,
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -215,7 +212,7 @@ class _GameScreenState extends State<GameScreen> {
                   _buildMenuButton(
                     text: 'Explore Biomes',
                     subtitle: 'Discover & capture wild animals',
-                    icon: Icons.explore_rounded,
+                    iconPath: 'assets/icon/explore_biomes.png',
                     color: AppColors.primary,
                     onPressed: () {
                       final user =
@@ -237,7 +234,7 @@ class _GameScreenState extends State<GameScreen> {
                   _buildMenuButton(
                     text: 'Map & Tools',
                     subtitle: 'Walk through biomes & encounter animals',
-                    icon: Icons.map_rounded,
+                    iconPath: 'assets/icon/map_&_tools.png',
                     color: const Color(0xFF66BB6A),
                     onPressed: () {
                       final userState = Provider.of<UserState>(
@@ -248,10 +245,7 @@ class _GameScreenState extends State<GameScreen> {
                       final authService = LocalAuthService();
 
                       _navigateTo(
-                        ToolScreen(
-                          currentUser: user,
-                          authService: authService,
-                        ),
+                        ToolScreen(currentUser: user, authService: authService),
                       );
                     },
                   ),
@@ -259,7 +253,7 @@ class _GameScreenState extends State<GameScreen> {
                   _buildMenuButton(
                     text: 'Battle Arena',
                     subtitle: 'Fight AI, Rogue runs & more',
-                    icon: Icons.sports_kabaddi_rounded,
+                    iconPath: 'assets/icon/battle_arena.png',
                     color: const Color(0xFFEF5350),
                     onPressed: () => _navigateTo(const BattleTabScreen()),
                   ),
@@ -267,15 +261,16 @@ class _GameScreenState extends State<GameScreen> {
                   _buildMenuButton(
                     text: 'Animal Box',
                     subtitle: 'Manage your collection & team',
-                    icon: Icons.inventory_2_rounded,
+                    iconPath: 'assets/icon/animal_box.png',
                     color: const Color(0xFF42A5F5),
-                    onPressed: () => _navigateTo(const AnimalBoxScreen(teamOnly: true)),
+                    onPressed: () =>
+                        _navigateTo(const AnimalBoxScreen(teamOnly: true)),
                   ),
 
                   _buildMenuButton(
                     text: 'Inventory',
                     subtitle: 'Manage items & forging',
-                    icon: Icons.auto_awesome_rounded,
+                    iconPath: 'assets/icon/inventory.png',
                     color: const Color(0xFFFFB300),
                     onPressed: () => _navigateTo(const CraftingScreen()),
                   ),
@@ -283,7 +278,7 @@ class _GameScreenState extends State<GameScreen> {
                   _buildMenuButton(
                     text: 'Animal Dex',
                     subtitle: 'Browse the full species database',
-                    icon: Icons.pets_rounded,
+                    iconPath: 'assets/icon/animal_dex.png',
                     color: const Color(0xFFAB47BC),
                     onPressed: () {
                       final user =
@@ -303,9 +298,9 @@ class _GameScreenState extends State<GameScreen> {
                   ),
 
                   _buildMenuButton(
-                    text: 'Animal Quiz',
+                    text: 'Mini Games',
                     subtitle: 'Test your knowledge',
-                    icon: Icons.quiz_rounded,
+                    iconPath: 'assets/icon/mini_games.png',
                     color: const Color(0xFF26A69A),
                     onPressed: () => _navigateTo(
                       QuizScreen(
@@ -323,10 +318,12 @@ class _GameScreenState extends State<GameScreen> {
                   _buildMenuButton(
                     text: 'Bio-Scanner',
                     subtitle: 'Identify animals in the wild',
-                    icon: Icons.fingerprint_rounded,
+                    iconPath: 'assets/icon/bio_scanner.png',
                     color: Colors.cyanAccent,
                     onPressed: () => _navigateTo(
-                      BiometricScannerScreen(onBack: () => Navigator.pop(context)),
+                      BiometricScannerScreen(
+                        onBack: () => Navigator.pop(context),
+                      ),
                     ),
                   ),
 
