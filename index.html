@@ -382,22 +382,19 @@
                 const types = (org.category || 'basic').split(',').map(s => s.trim()).filter(Boolean);
 
                 card.innerHTML = `
-                <div class="card-sprite-wrap" style="border-bottom:2px solid ${rarityColor}22">
-                    <img src="${spriteSrc}" alt="${org.name}"
-                         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-                    <div class="sprite-fallback" style="display:none">🦎</div>
-                    <div class="card-rarity-tag" style="background:${rarityColor};color:#000">${rarity.toUpperCase()}</div>
-                </div>
-                <div class="card-body">
-                    <div class="card-type-row">
-                        ${types.slice(0, 2).map(t => `<span class="type-badge type-${t.toLowerCase()}" title="${t.toUpperCase()}"><img src="assets/icon/${t.toLowerCase()}.png" class="type-icon" alt="${t}" onerror="this.style.display='none'"></span>`).join('')}
+                <div class="card-inner">
+                    <div class="card-sprite-wrap" style="background: radial-gradient(circle at center, ${rarityColor}22 0%, transparent 70%);">
+                        <img src="${spriteSrc}" alt="${org.name}"
+                             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                        <div class="sprite-fallback" style="display:none">🦎</div>
+                        <div class="card-rarity-tag" style="background:${rarityColor}1A; color:${rarityColor}; border: 1px solid ${rarityColor}40;">${rarity.toUpperCase()}</div>
+                        <div class="card-type-row">
+                            ${types.slice(0, 2).map(t => `<span class="type-badge type-${t.toLowerCase()}" title="${t.toUpperCase()}"><img src="assets/icon/${t.toLowerCase()}.png" class="type-icon" alt="${t}" onerror="this.style.display='none'"></span>`).join('')}
+                        </div>
                     </div>
-                    <div class="card-name">${org.name.toUpperCase()}</div>
-                    <div class="card-sub">${org.scientific_name || ''}</div>
-                    <div class="card-stats-mini">
-                        <span title="Health">❤ ${org.health || 0}</span>
-                        <span title="Attack">⚡ ${org.attack || 0}</span>
-                        <span title="Speed">💨 ${org.speed || 0}</span>
+                    <div class="card-body">
+                        <div class="card-name">${org.name.toUpperCase()}</div>
+                        <div class="card-sub">${org.scientific_name || 'Unknown Species'}</div>
                     </div>
                 </div>`;
                 return card;
