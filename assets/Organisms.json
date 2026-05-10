@@ -14764,11 +14764,11 @@
         "active_time": "any",
         "attack": 60,
         "category": "Drake, Darkness",
-        "class": "Unknown",
+        "class": "Reptile",
         "cry": "default",
         "defense": 50,
         "description": "A secretive lizard active at night, with yellow spots on its scales.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Scales",
         "habitat": "Rainforest,Swamp",
         "health": 90,
@@ -14781,18 +14781,18 @@
         "scientific_name": "Lepidophyma flavimaculatum",
         "spawn_tiles": "tall_grass",
         "speed": 55,
-        "weight": 1
+        "weight": 0.02
     },
     {
         "abilities": "Cold-blooded",
         "active_time": "any",
         "attack": 75,
         "category": "Grass",
-        "class": "Unknown",
+        "class": "Reptile",
         "cry": "gecko",
         "defense": 68,
         "description": "A small gecko with bold bands that thrives in Central American forests.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Gecko Tail",
         "habitat": "Jungle",
         "health": 72,
@@ -14805,18 +14805,18 @@
         "scientific_name": "Coleonyx mitratus",
         "spawn_tiles": "tall_grass",
         "speed": 88,
-        "weight": 1
+        "weight": 0.012
     },
     {
         "abilities": "Infiltrator",
         "active_time": "any",
         "attack": 60,
         "category": "Aquatic, Grass",
-        "class": "Unknown",
+        "class": "Amphibian",
         "cry": "frog",
         "defense": 45,
         "description": "A delicate frog with translucent skin showing its internal organs.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Toxin Gland",
         "habitat": "Rainforest,Swamp",
         "health": 80,
@@ -14829,7 +14829,7 @@
         "scientific_name": "Hyalinobatrachium fleischmanni",
         "spawn_tiles": "lily_pad,lily_pad2,cattail_0",
         "speed": 70,
-        "weight": 1
+        "weight": 0.003
     },
     {
         "abilities": "Spiky Body",
@@ -14860,11 +14860,11 @@
         "active_time": "any",
         "attack": 115,
         "category": "Toxic",
-        "class": "Unknown",
+        "class": "Amphibian",
         "cry": "frog",
         "defense": 20,
         "description": "A tiny but brightly colored frog with strong skin toxins.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Toxin Gland",
         "habitat": "Rainforest",
         "health": 43,
@@ -14877,7 +14877,7 @@
         "scientific_name": "Oophaga pumilio",
         "spawn_tiles": "lily_pad,lily_pad2,cattail_0",
         "speed": 90,
-        "weight": 1
+        "weight": 0.005
     },
     {
         "abilities": "Leaf Guard",
@@ -14908,11 +14908,11 @@
         "active_time": "any",
         "attack": 70,
         "category": "Grass",
-        "class": "Unknown",
+        "class": "Reptile",
         "cry": "default",
         "defense": 55,
         "description": "A chameleon with a tall casque, masters of color change and climbing.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Scales",
         "habitat": "Swamp",
         "health": 75,
@@ -14925,7 +14925,7 @@
         "scientific_name": "Chamaeleo calyptratus",
         "spawn_tiles": "tall_grass",
         "speed": 90,
-        "weight": 1
+        "weight": 0.135
     },
     {
         "abilities": "Stamina, Run Away",
@@ -14956,11 +14956,11 @@
         "active_time": "any",
         "attack": 85,
         "category": "Earth",
-        "class": "Unknown",
+        "class": "Amphibian",
         "cry": "frog",
         "defense": 87,
         "description": "A massive frog that can swallow small animals whole.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Frog Leg",
         "habitat": "Savanna,Wetlands",
         "health": 80,
@@ -14973,7 +14973,7 @@
         "scientific_name": "Pyxicephalus adspersus",
         "spawn_tiles": "lily_pad,lily_pad2,cattail_0",
         "speed": 79,
-        "weight": 1
+        "weight": 1.2
     },
     {
         "abilities": "Merciless",
@@ -15052,11 +15052,11 @@
         "active_time": "any",
         "attack": 70,
         "category": "Toxic, Darkness",
-        "class": "Unknown",
+        "class": "Reptile",
         "cry": "snake",
         "defense": 50,
         "description": "A fast nonvenomous snake that chases down its prey in open fields.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Skin",
         "habitat": "Rainforest,Swamp",
         "health": 90,
@@ -15069,18 +15069,18 @@
         "scientific_name": "Coluber constrictor",
         "spawn_tiles": "tall_grass",
         "speed": 90,
-        "weight": 1
+        "weight": 0.455
     },
     {
         "abilities": "Swift Swim , Rough Skin",
         "active_time": "any",
         "attack": 65,
         "category": "Rock",
-        "class": "Unknown",
+        "class": "Reptile",
         "cry": "default",
         "defense": 55,
         "description": "A quick lizard that can sprint across water surfaces.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Scales",
         "habitat": "Rainforest,Swamp",
         "health": 95,
@@ -15093,7 +15093,7 @@
         "scientific_name": "Basiliscus vittatus",
         "spawn_tiles": "tall_grass",
         "speed": 80,
-        "weight": 1
+        "weight": 0.4
     },
     {
         "abilities": "Mimic, Infiltrator",
@@ -15124,11 +15124,11 @@
         "active_time": "any",
         "attack": 90,
         "category": "Aquatic, Darkness",
-        "class": "Unknown",
+        "class": "Reptile",
         "cry": "default",
         "defense": 85,
         "description": "A small crocodilian found in Central and South America.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Tooth",
         "habitat": "Rainforest,Swamp,Wetlands",
         "health": 80,
@@ -15141,7 +15141,7 @@
         "scientific_name": "Caiman crocodilus",
         "spawn_tiles": "tall_grass",
         "speed": 70,
-        "weight": 1
+        "weight": 33.5
     },
     {
         "abilities": "Tough Claws , Sand Veil",
@@ -15172,11 +15172,11 @@
         "active_time": "any",
         "attack": 70,
         "category": "Martial",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 65,
         "description": "A smaller anteater that uses its claws and prehensile tail to forage.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Claw",
         "habitat": "Rainforest,Swamp",
         "health": 85,
@@ -15189,7 +15189,7 @@
         "scientific_name": "Tamandua tetradactyla",
         "spawn_tiles": "tall_grass",
         "speed": 55,
-        "weight": 1
+        "weight": 5.75
     },
     {
         "abilities": "Poison Touch",
@@ -15268,11 +15268,11 @@
         "active_time": "any",
         "attack": 55,
         "category": "Martial",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 50,
         "description": "A highly intelligent primate known for social behavior and tool use.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Banana",
         "habitat": "Jungle",
         "health": 80,
@@ -15285,18 +15285,18 @@
         "scientific_name": "Pan troglodytes",
         "spawn_tiles": "tall_grass",
         "speed": 60,
-        "weight": 1
+        "weight": 52.5
     },
     {
         "abilities": "Strong Jaw",
         "active_time": "any",
         "attack": 125,
         "category": "Darkness",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "wolf",
         "defense": 55,
         "description": "A social carnivore that hunts in coordinated packs.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fur",
         "habitat": "Taiga,Jungle",
         "health": 85,
@@ -15309,7 +15309,7 @@
         "scientific_name": "Canis lupus",
         "spawn_tiles": "tall_grass",
         "speed": 90,
-        "weight": 1
+        "weight": 54
     },
     {
         "abilities": "Inner Focus, Psychic Surge",
@@ -18848,7 +18848,7 @@
         "cry": "fish",
         "defense": 55,
         "description": "A large eel found in deep waters.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Deep Sea,Ocean",
         "health": 95,
@@ -18861,7 +18861,7 @@
         "scientific_name": "Conger conger",
         "spawn_tiles": "water",
         "speed": 60,
-        "weight": 1
+        "weight": 57.5
     },
     {
         "abilities": "Burrower",
@@ -18964,11 +18964,11 @@
         "active_time": "any",
         "attack": 110,
         "category": "Rock",
-        "class": "Unknown",
+        "class": "Reptile",
         "cry": "default",
         "defense": 100,
         "description": "A massive python that ambushes large prey.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Scale",
         "habitat": "Savanna,Jungle",
         "health": 95,
@@ -18981,7 +18981,7 @@
         "scientific_name": "Python sebae",
         "spawn_tiles": "tall_grass",
         "speed": 40,
-        "weight": 1
+        "weight": 55
     },
     {
         "abilities": "Stamina , Sap Sipper",
@@ -20048,7 +20048,7 @@
         "cry": "fish",
         "defense": 65,
         "description": "An aggressive reef fish with strong jaws.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Coral Reef",
         "health": 85,
@@ -20061,7 +20061,7 @@
         "scientific_name": "Balistoides viridescens",
         "spawn_tiles": "water",
         "speed": 68,
-        "weight": 1
+        "weight": 7.5
     },
     {
         "abilities": "Sand Veil",
@@ -20480,7 +20480,7 @@
         "cry": "fish",
         "defense": 70,
         "description": "A huge wrasse with powerful jaws and bright colors.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Coral Reef",
         "health": 120,
@@ -20493,7 +20493,7 @@
         "scientific_name": "Cheilinus undulatus",
         "spawn_tiles": "water",
         "speed": 45,
-        "weight": 1
+        "weight": 105
     },
     {
         "abilities": "Thick Hide",
@@ -21296,7 +21296,7 @@
         "cry": "fish",
         "defense": 35,
         "description": "A small deep sea fish with glowing sides shaped like a hatchet.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Deep Sea",
         "health": 50,
@@ -21309,7 +21309,7 @@
         "scientific_name": "Sternoptychidae",
         "spawn_tiles": "water",
         "speed": 70,
-        "weight": 1
+        "weight": 0.03
     },
     {
         "abilities": "Illuminate , Volt Absorb",
@@ -21320,7 +21320,7 @@
         "cry": "fish",
         "defense": 40,
         "description": "A glowing fish that lights up the dark depths.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Deep Sea",
         "health": 60,
@@ -21333,7 +21333,7 @@
         "scientific_name": "Myctophidae",
         "spawn_tiles": "water",
         "speed": 65,
-        "weight": 1
+        "weight": 0.01
     },
     {
         "abilities": "Cold-blooded",
@@ -22156,11 +22156,11 @@
         "active_time": "any",
         "attack": 70,
         "category": "Earth",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 75,
         "description": "A strong wild donkey adapted to dry habitats.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Hoof",
         "habitat": "Desert, Savanna,Plains",
         "health": 110,
@@ -22173,7 +22173,7 @@
         "scientific_name": "Equus africanus",
         "spawn_tiles": "tall_grass",
         "speed": 85,
-        "weight": 1
+        "weight": 262.5
     },
     {
         "abilities": "Thick Fat",
@@ -24604,11 +24604,11 @@
         "active_time": "any",
         "attack": 80,
         "category": "Grass, Earth",
-        "class": "Unknown",
+        "class": "Reptile",
         "cry": "default",
         "defense": 170,
         "description": "Found in South America, it shows yellow scales on its limbs. It feeds on fruit, leaves, and fungi in tropical forests.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Tortoise Shell",
         "habitat": "Jungle",
         "health": 80,
@@ -24621,7 +24621,7 @@
         "scientific_name": "Chelonoidis denticulatus",
         "spawn_tiles": "tall_grass",
         "speed": 38,
-        "weight": 1
+        "weight": 13.15
     },
     {
         "abilities": "Levitate , Rattled",
@@ -27196,11 +27196,11 @@
         "active_time": "any",
         "attack": 40,
         "category": "Spectral, Flying",
-        "class": "Unknown",
+        "class": "Bird",
         "cry": "ibis",
         "defense": 35,
         "description": "African Sacred Ibises feed mainly on fish and invertebrates in wetland habitats. They forage in small groups, using their long beaks to probe mud and water.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Feather",
         "habitat": "Swamp, River,,Wetlands",
         "health": 110,
@@ -27213,7 +27213,7 @@
         "scientific_name": "Threskiornis aethiopicus",
         "spawn_tiles": "tall_grass",
         "speed": 25,
-        "weight": 1
+        "weight": 1.4
     },
     {
         "abilities": "Telepathy",
@@ -30652,11 +30652,11 @@
         "active_time": "any",
         "attack": 155,
         "category": "Aquatic, Toxic",
-        "class": "Unknown",
+        "class": "Reptile",
         "cry": "default",
         "defense": 45,
         "description": "The Yellow-lipped Sea Krait is a powerful marine predator. Its venom quickly immobilizes fish before they can escape.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Venom Gland",
         "habitat": "Coral Reef, Ocean",
         "health": 50,
@@ -30669,7 +30669,7 @@
         "scientific_name": "Laticauda colubrina",
         "spawn_tiles": "tall_grass",
         "speed": 95,
-        "weight": 1
+        "weight": 1.3
     },
     {
         "abilities": "Filter , Sand Force",
@@ -31636,11 +31636,11 @@
         "active_time": "any",
         "attack": 70,
         "category": "Darkness",
-        "class": "Unknown",
+        "class": "Reptile",
         "cry": "gecko",
         "defense": 90,
         "description": "This gecko stores fat in its tail for energy reserves. Its calm nature and resilience make it a favorite among reptile enthusiasts.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Gecko Tail",
         "habitat": "Desert, Urban",
         "health": 90,
@@ -31653,7 +31653,7 @@
         "scientific_name": "Hemitheconyx caudicinctus",
         "spawn_tiles": "tall_grass",
         "speed": 58,
-        "weight": 1
+        "weight": 0.06
     },
     {
         "abilities": "Cold-blooded",
@@ -32092,11 +32092,11 @@
         "active_time": "any",
         "attack": 40,
         "category": "Aquatic, Earth",
-        "class": "Unknown",
+        "class": "Amphibian",
         "cry": "frog",
         "defense": 35,
         "description": "This frog is fully aquatic and uses its clawed feet to catch prey. It can survive in diverse freshwater habitats.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Frog Leg",
         "habitat": "River, Lake, Swamp",
         "health": 68,
@@ -32109,7 +32109,7 @@
         "scientific_name": "Xenopus laevis",
         "spawn_tiles": "lily_pad,lily_pad2,cattail_0",
         "speed": 50,
-        "weight": 1
+        "weight": 0.13
     },
     {
         "abilities": "Anger Point",
@@ -32956,11 +32956,11 @@
         "active_time": "any",
         "attack": 10,
         "category": "Earth",
-        "class": "Unknown",
+        "class": "Annelid",
         "cry": "default",
         "defense": 20,
         "description": "This large earthworm improves soil structure through deep burrows and castings. It is prized for composting and soil restoration.",
-        "diet": "Unknown",
+        "diet": "Detritivore",
         "drops": "Protein",
         "habitat": "Swamp, Jungle",
         "health": 46,
@@ -32973,7 +32973,7 @@
         "scientific_name": "Eudrilus eugeniae",
         "spawn_tiles": "tall_grass",
         "speed": 10,
-        "weight": 1
+        "weight": 0.008
     },
     {
         "abilities": "Camouflage Carapace, Cold-blooded",
@@ -33916,11 +33916,11 @@
         "active_time": "any",
         "attack": 20,
         "category": "Arthropod",
-        "class": "Unknown",
+        "class": "Crustacean",
         "cry": "default",
         "defense": 65,
         "description": "The zebra isopod sports bold black and white stripes reminiscent of its namesake. It curls into a ball when disturbed, showcasing both beauty and defense.",
-        "diet": "Unknown",
+        "diet": "Detritivore",
         "drops": "Exoskeleton",
         "habitat": "Jungle, Urban",
         "health": 65,
@@ -33933,7 +33933,7 @@
         "scientific_name": "Armadillidium maculatum",
         "spawn_tiles": "tall_grass",
         "speed": 25,
-        "weight": 1
+        "weight": 0.0005
     },
     {
         "abilities": "Ture Flight",
@@ -40996,11 +40996,11 @@
         "active_time": "any",
         "attack": 34,
         "category": "Grass",
-        "class": "Unknown",
+        "class": "Amphibian",
         "cry": "frog",
         "defense": 40,
         "description": "The Yucatan Casque-headed Tree Frog uses its bony head to block the entrances of tree holes. This odd behavior helps it conserve moisture and stay safe from predators.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Frog Leg",
         "habitat": "Jungle,Wetlands",
         "health": 65,
@@ -41013,7 +41013,7 @@
         "scientific_name": "Triprion petasatus",
         "spawn_tiles": "lily_pad,lily_pad2,cattail_0",
         "speed": 50,
-        "weight": 1
+        "weight": 0.04
     },
     {
         "abilities": "Sap Sipper, Leaf Guard",
@@ -44116,11 +44116,11 @@
         "active_time": "night",
         "attack": 85,
         "category": "Aquatic",
-        "class": "Unknown",
+        "class": "Fish",
         "cry": "default",
         "defense": 110,
         "description": "The Zebra Moray Eel hides among coral crevices to ambush prey. Its patterned body helps it blend seamlessly into the reef environment.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Meat, Skin",
         "habitat": "Coral Reef",
         "health": 95,
@@ -44133,7 +44133,7 @@
         "scientific_name": "Gymnomuraena zebra",
         "spawn_tiles": "tall_grass",
         "speed": 45,
-        "weight": 1
+        "weight": 5.5
     },
     {
         "abilities": "Poison Spine",
@@ -47116,11 +47116,11 @@
         "active_time": "any",
         "attack": 105,
         "category": "Earth, Holy",
-        "class": "Unknown",
+        "class": "Reptile",
         "cry": "default",
         "defense": 105,
         "description": "The albino Burmese python is a massive snake with striking pale coloration. It subdues large prey through powerful constriction.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Skin, Meat",
         "habitat": "Swamp",
         "health": 115,
@@ -47133,7 +47133,7 @@
         "scientific_name": "Python bivittatus",
         "spawn_tiles": "tall_grass",
         "speed": 25,
-        "weight": 1
+        "weight": 55
     },
     {
         "abilities": "Adaptability",
@@ -49612,11 +49612,11 @@
         "active_time": "any",
         "attack": 34,
         "category": "Basic, Earth",
-        "class": "Unknown",
+        "class": "Reptile",
         "cry": "default",
         "defense": 45,
         "description": "The adelaide pygmy blue-tongued skink lives in narrow burrows in open grasslands. It relies on body armor and burrow defense to survive predators.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "scale, tail",
         "habitat": "Savanna",
         "health": 58,
@@ -49629,7 +49629,7 @@
         "scientific_name": "Tiliqua adelaidensis",
         "spawn_tiles": "tall_grass",
         "speed": 35,
-        "weight": 1
+        "weight": 0.015
     },
     {
         "abilities": "Display",
@@ -49876,11 +49876,11 @@
         "active_time": "any",
         "attack": 36,
         "category": "Grass",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 44,
         "description": "The zebra duiker is a small forest antelope with distinctive striped markings. It relies on quick bursts of speed to escape danger.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "hide, horn",
         "habitat": "Jungle",
         "health": 80,
@@ -49893,7 +49893,7 @@
         "scientific_name": "Cephalophus zebra",
         "spawn_tiles": "tall_grass",
         "speed": 55,
-        "weight": 1
+        "weight": 17.5
     },
     {
         "abilities": "Prankster",
@@ -50092,11 +50092,11 @@
         "active_time": "any",
         "attack": 50,
         "category": "Arthropod, Toxic",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 60,
         "description": "The african giant swallowtail is the largest butterfly on the continent. It moves slowly through forest canopies feeding on flowers.",
-        "diet": "Unknown",
+        "diet": "Nectarivore",
         "drops": "Wing Scale,Empty Chrysalis",
         "habitat": "Jungle",
         "health": 70,
@@ -50109,7 +50109,7 @@
         "scientific_name": "Papilio antimachus",
         "spawn_tiles": "tall_grass",
         "speed": 105,
-        "weight": 1
+        "weight": 0.001
     },
     {
         "abilities": "True Flight",
@@ -51796,11 +51796,11 @@
         "active_time": "any",
         "attack": 125,
         "category": "Earth, Grass",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 110,
         "description": "The African forest elephant is a massive herbivore inhabiting dense tropical forests. It shapes its environment by dispersing seeds and creating clearings.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Ivory Tusk, Elephant Hide",
         "habitat": "Jungle",
         "health": 110,
@@ -51813,7 +51813,7 @@
         "scientific_name": "Loxodonta cyclotis",
         "spawn_tiles": "tall_grass",
         "speed": 70,
-        "weight": 1
+        "weight": 4000
     },
     {
         "abilities": "Own Tempo",
@@ -52228,11 +52228,11 @@
         "active_time": "any",
         "attack": 75,
         "category": "Earth, Metal",
-        "class": "Unknown",
+        "class": "Reptile",
         "cry": "default",
         "defense": 180,
         "description": "The African spurred tortoise is one of the largest mainland tortoises and thrives in arid habitats. Its heavy shell and burrowing behavior protect it from predators and extreme heat.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Tortoise Shell",
         "habitat": "Desert, Savanna",
         "health": 85,
@@ -52245,7 +52245,7 @@
         "scientific_name": "Centrochelys sulcata",
         "spawn_tiles": "tall_grass",
         "speed": 35,
-        "weight": 1
+        "weight": 77.5
     },
     {
         "abilities": "Cold-blooded, Bastion Shell",
@@ -55012,11 +55012,11 @@
         "active_time": "any",
         "attack": 52,
         "category": "Cryo, Aquatic",
-        "class": "Unknown",
+        "class": "Bird",
         "cry": "default",
         "defense": 58,
         "description": "The Adelie penguin is a hardy Antarctic bird known for its bold personality and strong swimming ability. It dives beneath icy waters to hunt fish and krill while navigating harsh polar storms.",
-        "diet": "Unknown",
+        "diet": "Piscivore",
         "drops": "Penguin Feather",
         "habitat": "Polar,Frozen Ocean",
         "health": 88,
@@ -55029,7 +55029,7 @@
         "scientific_name": "Pygoscelis adeliae",
         "spawn_tiles": "tall_grass",
         "speed": 40,
-        "weight": 1
+        "weight": 4.75
     },
     {
         "abilities": "Snow Cloak",
@@ -58276,11 +58276,11 @@
         "active_time": "any",
         "attack": 42,
         "category": "Flying, Darkness",
-        "class": "Unknown",
+        "class": "Bird",
         "cry": "default",
         "defense": 36,
         "description": "The yellow tailed black cockatoo is a large parrot with dark feathers and yellow tail markings. It uses its powerful beak to crack open seeds and nuts.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Feather",
         "habitat": "Jungle",
         "health": 62,
@@ -58293,7 +58293,7 @@
         "scientific_name": "Calyptorhynchus funereus",
         "spawn_tiles": "tall_grass",
         "speed": 44,
-        "weight": 1
+        "weight": 0.83
     },
     {
         "abilities": "Thick Fat , Water Absorb",
@@ -58684,11 +58684,11 @@
         "active_time": "any",
         "attack": 45,
         "category": "Basic, Grass",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 50,
         "description": "Aepycamelus was a tall camel relative with long legs and a giraffe like neck. It used its height and speed to browse vegetation and escape danger in open terrain.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "hide, bone",
         "habitat": "Desert",
         "health": 80,
@@ -58701,7 +58701,7 @@
         "scientific_name": "Aepycamelus giraffinus",
         "spawn_tiles": "tall_grass",
         "speed": 70,
-        "weight": 1
+        "weight": 530
     },
     {
         "abilities": "Gale Wings, Moxie",
@@ -60772,11 +60772,11 @@
         "active_time": "any",
         "attack": 66,
         "category": "Earth, Darkness",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 54,
         "description": "The African golden wolf is a medium sized wild canine found across northern and eastern Africa. It hunts small animals and scavenges while traveling across open landscapes.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "fur,meat",
         "habitat": "Savanna,Plains",
         "health": 90,
@@ -60789,18 +60789,18 @@
         "scientific_name": "Canis anthus",
         "spawn_tiles": "tall_grass",
         "speed": 60,
-        "weight": 1
+        "weight": 10.5
     },
     {
         "abilities": "Keen Eye, Sand Rush",
         "active_time": "any",
         "attack": 52,
         "category": "Earth, Spectral",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 46,
         "description": "The African wildcat is a small stealthy feline that roams open savannas and deserts. It hunts rodents and birds with quiet stalking and sudden bursts of speed.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "fur,meat",
         "habitat": "Savanna,Desert,Plains",
         "health": 76,
@@ -60813,7 +60813,7 @@
         "scientific_name": "Felis lybica",
         "spawn_tiles": "tall_grass",
         "speed": 72,
-        "weight": 1
+        "weight": 5.25
     },
     {
         "abilities": "Run Away",
@@ -61252,11 +61252,11 @@
         "active_time": "any",
         "attack": 38,
         "category": "Aquatic, Toxic",
-        "class": "Unknown",
+        "class": "Reptile",
         "cry": "default",
         "defense": 60,
         "description": "The African helmeted turtle is a hardy freshwater turtle found across many rivers and wetlands in Africa. It often scavenges for food and can release a strong odor when threatened.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "shell,meat",
         "habitat": "River,Lake,Wetlands",
         "health": 92,
@@ -61269,7 +61269,7 @@
         "scientific_name": "Pelomedusa subrufa",
         "spawn_tiles": "tall_grass",
         "speed": 22,
-        "weight": 1
+        "weight": 1.75
     },
     {
         "abilities": "Shed Skin",
@@ -62308,11 +62308,11 @@
         "active_time": "any",
         "attack": 78,
         "category": "Toxic, Holy",
-        "class": "Unknown",
+        "class": "Reptile",
         "cry": "default",
         "defense": 70,
         "description": "The albino Gaboon viper is a rare pale colored form of one of the largest vipers in Africa. It relies on camouflage and a powerful venomous strike to capture prey.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "skin,meat",
         "habitat": "Jungle,Rainforest",
         "health": 110,
@@ -62325,7 +62325,7 @@
         "scientific_name": "Bitis gabonica albino",
         "spawn_tiles": "tall_grass",
         "speed": 24,
-        "weight": 1
+        "weight": 14.25
     },
     {
         "abilities": "Swift Swim",
@@ -62596,11 +62596,11 @@
         "active_time": "any",
         "attack": 60,
         "category": "Toxic, Rock",
-        "class": "Unknown",
+        "class": "Reptile",
         "cry": "default",
         "defense": 54,
         "description": "The Albany adder is a rare and endangered viper found in a small region of South Africa. It hides among grasses and shrubs while hunting small animals.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "skin,meat",
         "habitat": "Plains,Coastal",
         "health": 82,
@@ -62613,7 +62613,7 @@
         "scientific_name": "Bitis albanica",
         "spawn_tiles": "tall_grass",
         "speed": 28,
-        "weight": 1
+        "weight": 0.16
     },
     {
         "abilities": "Rattled",
@@ -65884,11 +65884,11 @@
         "active_time": "any",
         "attack": 52,
         "category": "Martial",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 48,
         "description": "This fast moving gibbon is specialized for life in the upper canopy. It uses powerful arm swings to travel quickly between trees.",
-        "diet": "Unknown",
+        "diet": "Frugivore",
         "drops": "meat,fur",
         "habitat": "Jungle",
         "health": 88,
@@ -65901,7 +65901,7 @@
         "scientific_name": "Hylobates agilis",
         "spawn_tiles": "tall_grass",
         "speed": 90,
-        "weight": 1
+        "weight": 5
     },
     {
         "abilities": "Cloud Nine",
@@ -67636,11 +67636,11 @@
         "active_time": "any",
         "attack": 43,
         "category": "Grass, Toxic",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 36,
         "description": "The Zanzibar red colobus is a unique primate found only on a single island. It has adapted to a specific environment and faces threats from habitat loss and human activity.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "fur, meat",
         "habitat": "Jungle",
         "health": 59,
@@ -67653,7 +67653,7 @@
         "scientific_name": "Piliocolobus kirkii",
         "spawn_tiles": "tall_grass",
         "speed": 55,
-        "weight": 1
+        "weight": 9.15
     },
     {
         "abilities": "Stench",
@@ -68524,11 +68524,11 @@
         "active_time": "any",
         "attack": 90,
         "category": "Cryo, Spectral",
-        "class": "Unknown",
+        "class": "Reptile",
         "cry": "default",
         "defense": 68,
         "description": "Yutyrannus is a large feathered tyrannosaur that lived in cooler climates. Its feathers likely provided insulation while it hunted prey in its environment.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "feather, meat",
         "habitat": "Tundra, Taiga",
         "health": 90,
@@ -68541,6 +68541,6 @@
         "scientific_name": "Yutyrannus huali",
         "spawn_tiles": "tall_grass",
         "speed": 58,
-        "weight": 1
+        "weight": 1155
     }
 ]
