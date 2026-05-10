@@ -612,16 +612,17 @@ main {
 }
 
 .modal-box {
-    background: var(--bg-modal);
-    width: 100%;
-    max-width: 740px;
-    max-height: 90vh;
-    border-radius: 24px;
-    border: 1px solid var(--border-bright);
+    background: var(--bg-root);
+    width: 100vw;
+    height: 100vh;
+    max-width: 100vw;
+    max-height: 100vh;
+    border-radius: 0;
+    border: none;
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+    box-shadow: none;
     position: relative;
     transform: translateY(20px);
     transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -699,27 +700,31 @@ main {
 .type-row { display: flex; gap: 6px; flex-wrap: wrap; }
 
 .detail-name {
-    font-family: 'Press Start 2P', monospace;
-    font-size: 16px;
+    font-family: 'Inter', sans-serif;
+    font-size: 32px;
+    font-weight: 900;
     color: #fff;
-    line-height: 1.4;
+    line-height: 1.2;
     margin: 0;
+    text-transform: uppercase;
 }
 
 .detail-sciname {
     font-style: italic;
     color: var(--text-dim);
-    font-size: 11px;
+    font-size: 14px;
 }
 
 .rarity-pill {
     display: inline-block;
-    padding: 4px 12px;
+    padding: 6px 16px;
     border-radius: 20px;
-    font-family: 'Press Start 2P', monospace;
-    font-size: 7px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 800;
     border: 1px solid;
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
 }
 
 /* Classification Section */
@@ -759,17 +764,20 @@ main {
 }
 
 .badge-type {
-    font-size: 8px;
+    font-size: 11px;
     color: var(--text-faint);
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .badge-value {
-    font-family: 'Press Start 2P', monospace;
-    font-size: 7px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 800;
     color: #fff;
-    letter-spacing: 0.5px;
+    letter-spacing: 0px;
+    text-transform: uppercase;
 }
 
 /* Detail Body */
@@ -783,17 +791,19 @@ main {
 .detail-section { display: flex; flex-direction: column; gap: 14px; }
 
 .detail-section-title {
-    font-family: 'Press Start 2P', monospace;
-    font-size: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    font-weight: 800;
     color: var(--accent);
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
     padding-bottom: 8px;
     border-bottom: 1px solid var(--border);
+    text-transform: uppercase;
 }
 
 .detail-desc {
     color: var(--text-dim);
-    font-size: 13px;
+    font-size: 16px;
     line-height: 1.8;
 }
 
@@ -813,9 +823,9 @@ main {
 }
 
 .detail-stat-val {
-    font-family: 'Press Start 2P', monospace;
-    font-size: 11px;
-    font-weight: 700;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 800;
 }
 
 .stat-track {
@@ -833,11 +843,13 @@ main {
 }
 
 .total-stat {
-    font-family: 'Press Start 2P', monospace;
-    font-size: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 800;
     color: var(--accent);
     text-align: right;
     margin-top: 4px;
+    text-transform: uppercase;
 }
 
 /* Biomes */
@@ -851,10 +863,12 @@ main {
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     padding: 8px 14px;
-    font-family: 'Press Start 2P', monospace;
-    font-size: 7px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 800;
     color: var(--accent);
     overflow: hidden;
+    text-transform: uppercase;
 }
 
 .biome-chip img { width: 24px; height: 24px; border-radius: 4px; object-fit: cover; }
@@ -894,12 +908,14 @@ main {
 }
 
 .move-table th {
-    font-family: 'Press Start 2P', monospace;
-    font-size: 7px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 800;
     color: var(--text-faint);
-    padding: 8px 10px;
+    padding: 12px 10px;
     text-align: left;
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
 }
 
 .move-table tbody tr {
