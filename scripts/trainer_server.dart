@@ -72,6 +72,9 @@ Future<void> _handleTrain(HttpRequest request) async {
 
     final sciName = data['scientificName'] as String?;
     final images = data['images'] as List<dynamic>?;
+    final animalClass = data['animalClass'] as String?;
+    final diet = data['diet'] as String?;
+    final weight = (data['weight'] as num?)?.toDouble();
 
     if (sciName == null ||
         sciName.isEmpty ||
@@ -145,6 +148,9 @@ Future<void> _handleTrain(HttpRequest request) async {
           organismName,
           scientificName: sciName,
           newFeatures: newFeatures,
+          animalClass: animalClass,
+          diet: diet,
+          weight: weight,
         );
 
         logs.add({'msg': '  -> Success! DB updated.', 'type': 'success'});

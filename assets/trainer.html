@@ -26,7 +26,7 @@
         }
         .container {
             width: 100%;
-            max-width: 600px;
+            max-width: 700px;
             display: flex;
             flex-direction: column;
             gap: 20px;
@@ -36,23 +36,38 @@
             flex-direction: column;
             gap: 8px;
         }
+        .input-row {
+            display: flex;
+            gap: 12px;
+        }
+        .input-row .input-group {
+            flex: 1;
+        }
         label {
             color: #546E7A;
-            font-size: 14px;
+            font-size: 12px;
             font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        input[type="text"] {
+        input[type="text"], input[type="number"], select {
             background-color: #161B22;
             border: 1px solid #30363D;
             color: white;
-            padding: 12px 16px;
+            padding: 10px 14px;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 14px;
             outline: none;
             transition: border-color 0.2s;
+            width: 100%;
+            box-sizing: border-box;
         }
-        input[type="text"]:focus {
+        input[type="text"]:focus, input[type="number"]:focus, select:focus {
             border-color: #00BFA5;
+        }
+        select option {
+            background-color: #161B22;
+            color: white;
         }
         #drop-zone {
             background-color: #161B22;
@@ -91,8 +106,8 @@
         .log-error { color: #FF5252; }
         .log-info { color: #B0BEC5; }
         .log-header { color: #00BFA5; font-weight: bold; }
+        .log-meta { color: #FFB300; }
         
-        /* Spinner */
         .loader {
             border: 3px solid rgba(255,255,255,0.1);
             border-radius: 50%;
@@ -106,17 +121,63 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        .matched-badge {
+            display: inline-block;
+            background: rgba(105, 240, 174, 0.15);
+            color: #69F0AE;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-top: 4px;
+        }
     </style>
 </head>
 <body>
 
     <h1>Model Trainer</h1>
-    <p class="subtitle">Enter the species scientific name and drop images to train.</p>
+    <p class="subtitle">Enter the species scientific name, configure biological metadata, and drop images to train.</p>
 
     <div class="container">
         <div class="input-group">
             <label for="scientificName">Scientific Name</label>
             <input type="text" id="scientificName" placeholder="e.g. Panthera tigris" />
+            <div id="match-badge" style="display:none" class="matched-badge"></div>
+        </div>
+
+        <div class="input-row">
+            <div class="input-group">
+                <label for="animalClass">Class</label>
+                <select id="animalClass">
+                    <option value="unknown">Unknown</option>
+                    <option value="mammal">Mammal</option>
+                    <option value="bird">Bird</option>
+                    <option value="fish">Fish</option>
+                    <option value="amphibian">Amphibian</option>
+                    <option value="reptile">Reptile</option>
+                    <option value="insect">Insect</option>
+                    <option value="invertebrate">Invertebrate</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="animalDiet">Diet</label>
+                <select id="animalDiet">
+                    <option value="unknown">Unknown</option>
+                    <option value="carnivore">Carnivore</option>
+                    <option value="herbivore">Herbivore</option>
+                    <option value="omnivore">Omnivore</option>
+                    <option value="insectivore">Insectivore</option>
+                    <option value="piscivore">Piscivore</option>
+                    <option value="scavenger">Scavenger</option>
+                    <option value="detritivore">Detritivore</option>
+                    <option value="filter feeder">Filter Feeder</option>
+                    <option value="nectarivore">Nectarivore</option>
+                    <option value="granivore">Granivore</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="animalWeight">Weight (kg)</label>
+                <input type="number" id="animalWeight" placeholder="0.0" step="0.001" min="0" />
+            </div>
         </div>
 
         <div id="drop-zone">
@@ -134,9 +195,48 @@
         const dropZone = document.getElementById('drop-zone');
         const fileInput = document.getElementById('file-input');
         const scientificNameInput = document.getElementById('scientificName');
+        const animalClassSelect = document.getElementById('animalClass');
+        const animalDietSelect = document.getElementById('animalDiet');
+        const animalWeightInput = document.getElementById('animalWeight');
         const logOutput = document.getElementById('log-output');
         const loader = document.getElementById('loader');
         const dropText = document.getElementById('drop-text');
+        const matchBadge = document.getElementById('match-badge');
+
+        // Auto-lookup from Organisms.json
+        let organisms = [];
+        fetch('Organisms.json')
+            .then(r => r.json())
+            .then(data => {
+                organisms = data;
+                appendLog(`Loaded ${data.length} organisms for auto-lookup.`, 'info');
+            })
+            .catch(() => appendLog('Organisms.json not found for auto-lookup.', 'info'));
+
+        scientificNameInput.addEventListener('input', () => {
+            const val = scientificNameInput.value.trim().toLowerCase();
+            if (!val || organisms.length === 0) {
+                matchBadge.style.display = 'none';
+                return;
+            }
+            const match = organisms.find(o =>
+                (o.scientific_name || '').toLowerCase() === val ||
+                (o.name || '').toLowerCase() === val
+            );
+            if (match) {
+                matchBadge.style.display = 'inline-block';
+                matchBadge.textContent = `✓ Matched: ${match.name}`;
+                // Auto-populate fields
+                const cls = (match.class || match.animal_class || 'unknown').toLowerCase();
+                const diet = (match.diet || 'unknown').toLowerCase();
+                const weight = match.weight || '';
+                if ([...animalClassSelect.options].some(o => o.value === cls)) animalClassSelect.value = cls;
+                if ([...animalDietSelect.options].some(o => o.value === diet)) animalDietSelect.value = diet;
+                if (weight) animalWeightInput.value = weight;
+            } else {
+                matchBadge.style.display = 'none';
+            }
+        });
 
         function appendLog(message, type = 'info') {
             const div = document.createElement('div');
@@ -146,7 +246,6 @@
             logOutput.scrollTop = logOutput.scrollHeight;
         }
 
-        // Setup drag and drop
         dropZone.addEventListener('click', () => fileInput.click());
         
         dropZone.addEventListener('dragover', (e) => {
@@ -170,7 +269,7 @@
             if (fileInput.files.length > 0) {
                 processFiles(fileInput.files);
             }
-            fileInput.value = ''; // reset
+            fileInput.value = '';
         });
 
         async function processFiles(files) {
@@ -180,18 +279,21 @@
                 return;
             }
 
+            const animalClass = animalClassSelect.value;
+            const diet = animalDietSelect.value;
+            const weight = animalWeightInput.value ? parseFloat(animalWeightInput.value) : null;
+
             appendLog(`--- Starting batch for ${sciName} (${files.length} files) ---`, 'header');
+            appendLog(`Metadata: class=${animalClass}, diet=${diet}, weight=${weight || 'N/A'}kg`, 'meta');
             
             loader.style.display = 'block';
             dropText.style.display = 'none';
 
-            // Convert files to base64
             const imagesBase64 = [];
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
                 try {
                     const base64 = await toBase64(file);
-                    // Remove data:image/png;base64, prefix
                     const b64Data = base64.split(',')[1];
                     imagesBase64.push({
                         name: file.name,
@@ -202,13 +304,15 @@
                 }
             }
 
-            // Send to Dart backend
             try {
                 const response = await fetch('/train', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         scientificName: sciName,
+                        animalClass: animalClass !== 'unknown' ? animalClass : null,
+                        diet: diet !== 'unknown' ? diet : null,
+                        weight: weight,
                         images: imagesBase64
                     })
                 });

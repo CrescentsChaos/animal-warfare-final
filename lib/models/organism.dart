@@ -5,12 +5,18 @@ import 'dart:math';
 enum AnimalClass {
   mammal,
   bird,
-  fish,
-  amphibian,
   reptile,
+  amphibian,
+  fish,
   insect,
-  invertebrate,
-  unknown,
+  arachnid,
+  crustacean,
+  mollusk,
+  annelid,
+  cnidarian,
+  echinoderm,
+  otherInvertebrate,
+  unknown
 }
 
 class Organism {

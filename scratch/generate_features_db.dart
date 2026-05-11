@@ -48,7 +48,10 @@ void main() async {
               horizontal_symmetry REAL NOT NULL,
               edge_density REAL NOT NULL,
               updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-              training_count INTEGER NOT NULL DEFAULT 1
+              training_count INTEGER NOT NULL DEFAULT 1,
+              animal_class TEXT DEFAULT 'unknown',
+              diet TEXT DEFAULT 'unknown',
+              weight REAL DEFAULT 0.0
             )
           ''');
         await db.execute(
@@ -72,22 +75,35 @@ void main() async {
     print('Incremental Mode: Only adding missing organisms to $dbPath');
   }
 
-  // Load organisms for name→scientific_name mapping
+  // Load organisms and group by class for BALANCED TRAINING
   final organismsJson = File('assets/Organisms.json').readAsStringSync();
-  final List organisms = jsonDecode(organismsJson);
-  final nameToSciName = <String, String>{};
-  for (final org in organisms) {
-    nameToSciName[org['name'] as String] =
-        (org['scientific_name'] ?? '') as String;
+  final List allOrganisms = jsonDecode(organismsJson);
+  
+  const int maxSpeciesPerClass = 400; // Balancing threshold
+  final Map<String, List<dynamic>> classGroups = {};
+
+  for (var org in allOrganisms) {
+    final cls = (org['class'] ?? org['animal_class'] ?? 'unknown').toString().toLowerCase();
+    classGroups.putIfAbsent(cls, () => []).add(org);
   }
 
-  print('Processing ${organisms.length} organisms...');
+  final List balancedOrganisms = [];
+  final random = Random(42); // Seeded for consistency
+
+  classGroups.forEach((cls, species) {
+    species.shuffle(random);
+    final limit = species.length > maxSpeciesPerClass ? maxSpeciesPerClass : species.length;
+    balancedOrganisms.addAll(species.take(limit));
+    print('Class "$cls": Added $limit species (out of ${species.length})');
+  });
+
+  print('Total balanced species to process: ${balancedOrganisms.length}');
 
   int count = 0;
   int errors = 0;
   final batch = db.batch();
 
-  for (var org in organisms) {
+  for (var org in balancedOrganisms) {
     final name = org['name'] as String;
     final scientificName = (org['scientific_name'] ?? '') as String;
     final slug = name
@@ -121,6 +137,9 @@ void main() async {
         'horizontal_symmetry': features['horizontalSymmetry'],
         'edge_density': features['edgeDensity'],
         'training_count': 1,
+        'animal_class': org['class'] ?? org['animal_class']?.toString() ?? 'unknown',
+        'diet': org['diet']?.toString() ?? 'unknown',
+        'weight': _parseWeight(org['weight']),
       }, conflictAlgorithm: ConflictAlgorithm.ignore);
 
       count++;
@@ -143,6 +162,16 @@ void main() async {
   print('Errors: $errors');
   print('Database size: ${(fileSize / 1024 / 1024).toStringAsFixed(2)} MB');
   print('Output: $dbPath');
+}
+
+double _parseWeight(dynamic value) {
+  if (value == null) return 1.0;
+  if (value is num) return value.toDouble();
+  if (value is String) {
+    final cleaned = value.replaceAll(',', '').replaceAll(RegExp(r'[^0-9.]'), '');
+    return double.tryParse(cleaned) ?? 1.0;
+  }
+  return 1.0;
 }
 
 // ============================================================
@@ -205,6 +234,9 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
   for (int i = 0; i < 36; i++) {
     finalHueBins['h${i * 10}'] = 0;
   }
+  finalHueBins['hWhite'] = 0;
+  finalHueBins['hBlack'] = 0;
+  finalHueBins['hGrey'] = 0;
 
   for (int y = 0; y < resized.height; y++) {
     for (int x = 0; x < resized.width; x++) {
@@ -213,11 +245,26 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
       final r = p.r.toInt(), g = p.g.toInt(), b = p.b.toInt();
 
       final hsv = rgbToHsv(r, g, b);
-      final binIndex = (hsv[0] / 10).floor().clamp(0, 35);
-      finalHueBins['h${binIndex * 10}'] =
-          (finalHueBins['h${binIndex * 10}'] ?? 0) + 1;
-      totalSaturation += hsv[1];
-      totalBrightness += hsv[2];
+      final hue = hsv[0];
+      final saturation = hsv[1];
+      final value = hsv[2];
+
+      if (value < 0.15) {
+        finalHueBins['hBlack'] = (finalHueBins['hBlack'] ?? 0) + 1;
+      } else if (saturation < 0.15) {
+        if (value > 0.8) {
+          finalHueBins['hWhite'] = (finalHueBins['hWhite'] ?? 0) + 1;
+        } else {
+          finalHueBins['hGrey'] = (finalHueBins['hGrey'] ?? 0) + 1;
+        }
+      } else {
+        final binIndex = (hue / 10).floor().clamp(0, 35);
+        finalHueBins['h${binIndex * 10}'] =
+            (finalHueBins['h${binIndex * 10}'] ?? 0) + 1;
+      }
+
+      totalSaturation += saturation;
+      totalBrightness += value;
 
       final quantized = ((r >> 4) << 8) | ((g >> 4) << 4) | (b >> 4);
       colorCounts[quantized] = (colorCounts[quantized] ?? 0) + 1;

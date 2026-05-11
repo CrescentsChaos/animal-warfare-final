@@ -10,8 +10,6 @@ import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:animal_warfare/theme.dart';
-import 'package:animal_warfare/settings_screen.dart';
-import 'package:animal_warfare/achievement_screen.dart';
 import 'package:animal_warfare/achievement_service.dart';
 import 'package:animal_warfare/models/achievement.dart';
 import 'package:animal_warfare/widgets/achievement_selection_sheet.dart';

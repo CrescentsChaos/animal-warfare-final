@@ -64,11 +64,19 @@ class FeatureDbService {
 
     _db = await openDatabase(
       dbPath,
-      version: 1,
+      version: 2,
       onCreate: (db, version) async {
         await _createTables(db);
       },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await _migrateToV2(db);
+        }
+      },
     );
+
+    // Ensure new columns exist even if version wasn't bumped (e.g., forceUpdate copy)
+    await _ensureNewColumns();
 
     _isInitialized = true;
     final count = await getFeatureCount();
@@ -91,6 +99,9 @@ class FeatureDbService {
         vertical_symmetry REAL NOT NULL,
         horizontal_symmetry REAL NOT NULL,
         edge_density REAL NOT NULL,
+        animal_class TEXT,
+        diet TEXT,
+        weight REAL,
         updated_at TEXT NOT NULL DEFAULT (datetime('now')),
         training_count INTEGER NOT NULL DEFAULT 1
       )
@@ -99,6 +110,30 @@ class FeatureDbService {
         'CREATE INDEX IF NOT EXISTS idx_scientific_name ON organism_features(scientific_name)');
     await db.execute(
         'CREATE INDEX IF NOT EXISTS idx_organism_name ON organism_features(organism_name)');
+  }
+
+  /// Migrate existing v1 databases to v2 (add class/diet/weight columns).
+  Future<void> _migrateToV2(Database db) async {
+    try {
+      await db.execute('ALTER TABLE organism_features ADD COLUMN animal_class TEXT');
+    } catch (_) {}
+    try {
+      await db.execute('ALTER TABLE organism_features ADD COLUMN diet TEXT');
+    } catch (_) {}
+    try {
+      await db.execute('ALTER TABLE organism_features ADD COLUMN weight REAL');
+    } catch (_) {}
+    debugPrint('FeatureDbService: Migrated to v2 (added class/diet/weight)');
+  }
+
+  /// Ensure new columns exist even on forceUpdate-copied databases.
+  Future<void> _ensureNewColumns() async {
+    if (_db == null) return;
+    try {
+      await _db!.rawQuery('SELECT animal_class, diet, weight FROM organism_features LIMIT 1');
+    } catch (_) {
+      await _migrateToV2(_db!);
+    }
   }
 
   /// Get a single feature by organism name.
@@ -173,17 +208,28 @@ class FeatureDbService {
       verticalSymmetry: (row['vertical_symmetry'] as num).toDouble(),
       horizontalSymmetry: (row['horizontal_symmetry'] as num).toDouble(),
       edgeDensity: (row['edge_density'] as num).toDouble(),
+      animalClass: row['animal_class'] as String?,
+      diet: row['diet'] as String?,
+      weight: (row['weight'] as num?)?.toDouble(),
     );
   }
 
   /// Upsert a newly trained feature. Averages with existing using training_count.
+  /// Now also stores class/diet/weight metadata for biological plausibility matching.
   Future<void> upsertTrainedFeature({
     required String scientificName,
     required OrganismFeature newFeature,
+    String? animalClass,
+    String? diet,
+    double? weight,
   }) async {
     if (_db == null) return;
     
     final organismName = newFeature.organismName;
+    // Use metadata from feature object if not explicitly provided
+    final effectiveClass = animalClass ?? newFeature.animalClass;
+    final effectiveDiet = diet ?? newFeature.diet;
+    final effectiveWeight = weight ?? newFeature.weight;
 
     final existing = await _db!.query(
       'organism_features',
@@ -258,6 +304,9 @@ class FeatureDbService {
             'spatial_hue_bins': jsonEncode(mergedSpatialBins),
           'dominant_colors': jsonEncode(newFeature.dominantColors.map((c) => c.value).toList()),
           ...mergedData,
+          if (effectiveClass != null) 'animal_class': effectiveClass,
+          if (effectiveDiet != null) 'diet': effectiveDiet,
+          if (effectiveWeight != null) 'weight': effectiveWeight,
           'training_count': newCount,
           'updated_at': DateTime.now().toIso8601String(),
         },
@@ -278,6 +327,9 @@ class FeatureDbService {
         'vertical_symmetry': newFeature.verticalSymmetry,
         'horizontal_symmetry': newFeature.horizontalSymmetry,
         'edge_density': newFeature.edgeDensity,
+        'animal_class': effectiveClass,
+        'diet': effectiveDiet,
+        'weight': effectiveWeight,
         'training_count': 1,
       });
     }

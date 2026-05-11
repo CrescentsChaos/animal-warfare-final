@@ -26,6 +26,7 @@ class ScanResult {
   final Map<String, double> featureScores; // Breakdown of match reasons
   final bool isGenusMate;
   final AnimalClass detectedClass;
+  final bool isPinpointed;
 
   ScanResult({
     required this.organism,
@@ -36,7 +37,12 @@ class ScanResult {
     this.featureScores = const {},
     this.isGenusMate = false,
     this.detectedClass = AnimalClass.unknown,
+    this.isPinpointed = false,
+    this.predictedDiet = 'unknown',
+    this.predictedWeight = 0.0,
   });
+  final String predictedDiet;
+  final double predictedWeight;
 }
 
 /// Feature set extracted from a sprite or photo, including color and shape.
@@ -52,6 +58,9 @@ class OrganismFeature {
   final double verticalSymmetry;
   final double horizontalSymmetry;
   final double edgeDensity;
+  final String? animalClass;
+  final String? diet;
+  final double? weight;
 
   OrganismFeature({
     required this.organismName,
@@ -65,6 +74,9 @@ class OrganismFeature {
     required this.verticalSymmetry,
     required this.horizontalSymmetry,
     required this.edgeDensity,
+    this.animalClass,
+    this.diet,
+    this.weight,
   });
 
   Map<String, dynamic> toJson() => {
@@ -79,6 +91,9 @@ class OrganismFeature {
     'verticalSymmetry': verticalSymmetry,
     'horizontalSymmetry': horizontalSymmetry,
     'edgeDensity': edgeDensity,
+    'animalClass': animalClass,
+    'diet': diet,
+    'weight': weight,
   };
 
   factory OrganismFeature.fromJson(Map<String, dynamic> json) {
@@ -101,6 +116,9 @@ class OrganismFeature {
       horizontalSymmetry:
           (json['horizontalSymmetry'] as num?)?.toDouble() ?? 0.5,
       edgeDensity: (json['edgeDensity'] as num?)?.toDouble() ?? 0.0,
+      animalClass: json['animalClass'] as String?,
+      diet: json['diet'] as String?,
+      weight: (json['weight'] as num?)?.toDouble(),
     );
   }
 }
@@ -592,7 +610,13 @@ class BiometricService {
     int maxResults = 10,
     String? hint,
     Uint8List? preSegmentedBytes,
-    void Function(String status, double progress)? onProgress,
+    void Function(
+      String status,
+      double progress, {
+      AnimalClass? predictedClass,
+      String? predictedDiet,
+      double? predictedWeight,
+    })? onProgress,
   }) async {
     if (!_isInitialized) await initialize();
     if (_organisms == null || _organisms!.isEmpty) return [];
@@ -600,9 +624,20 @@ class BiometricService {
     // 0. Taxonomic Classification (Early Gate)
     onProgress?.call('Categorizing Subject...', 0.02);
     final taxonomyResult = await _taxonomy.classifyImage(imageBytes);
-    final AnimalClass detectedClass =
-        taxonomyResult['class'] ?? AnimalClass.unknown;
+    final AnimalClass detectedClass = taxonomyResult['class'] ?? AnimalClass.unknown;
     final double classConfidence = taxonomyResult['confidence'] ?? 0.0;
+    final String predictedDiet = taxonomyResult['diet'] ?? 'unknown';
+    final double predictedWeight = (taxonomyResult['weight'] as num?)?.toDouble() ?? 0.0;
+
+    onProgress?.call(
+      detectedClass != AnimalClass.unknown
+          ? 'SUBJECT TYPE: ${detectedClass.name.toUpperCase()}'
+          : 'IDENTIFYING SUBJECT TYPE...',
+      0.05,
+      predictedClass: detectedClass,
+      predictedDiet: predictedDiet,
+      predictedWeight: predictedWeight,
+    );
 
     if (detectedClass != AnimalClass.unknown) {
       onProgress?.call(
@@ -692,32 +727,14 @@ class BiometricService {
       }
       if (cachedFeature == null) continue;
 
-      final targetClass = _mapStringToAnimalClass(org.animalClass);
-      final similarity = _featureSimilarity(
+      final result = _featureSimilarity(
         inputFeature,
         cachedFeature,
-        inputClass: detectedClass,
-        targetClass: targetClass,
-        classConfidence: classConfidence,
+        org,
+        detectedClass: detectedClass,
+        predictedDiet: predictedDiet,
+        predictedWeight: predictedWeight,
       );
-
-      // Strict Feature Filter: "Grey" threshold is 0.4
-      // If any core feature (Color, Shape, Pattern, Shade) is ≤ 0.4, discard the species.
-      bool hasGreyFeature =
-          (similarity['Color'] ?? 0) <= 0.4 ||
-          (similarity['Shape'] ?? 0) <= 0.4 ||
-          (similarity['Pattern'] ?? 0) <= 0.4 ||
-          (similarity['Shade'] ?? 0) <= 0.4;
-
-      if (hasGreyFeature) {
-        continue;
-      }
-
-      double biometricScore = similarity['total'] ?? 0;
-      double textScore = _textRelevanceScore(org, detectedCategories);
-
-      // Final score formula: heavily weight biometrics
-      double score = (biometricScore * 0.95) + (textScore * 0.05);
 
       // Hint-based filter
       if (normalizedHint != null && normalizedHint.isNotEmpty) {
@@ -726,25 +743,21 @@ class BiometricService {
             org.scientificName.toLowerCase().contains(normalizedHint) ||
             _getGenus(org.scientificName).toLowerCase() == normalizedHint;
 
-        if (matchHint) {
-          // It matches the hint, so we keep it.
-          // We don't boost it much because we want the percentage to reflect visual reality.
-          score = (score + 0.01).clamp(0.0, 1.0);
-        } else {
-          // Exclude non-matching results
-          continue;
-        }
+        if (!matchHint) continue;
       }
 
-      if (score > 0.15) {
+      if (result.confidence > 0.15) {
         results.add(
           ScanResult(
             organism: org,
-            confidence: score,
+            confidence: result.confidence,
             matchReason: 'Biometric Signature Match',
             maskedImage: maskedBytes,
-            featureScores: similarity,
+            featureScores: result.featureScores,
             detectedClass: detectedClass,
+            isPinpointed: result.isPinpointed,
+            predictedDiet: predictedDiet,
+            predictedWeight: predictedWeight,
           ),
         );
       }
@@ -753,7 +766,7 @@ class BiometricService {
     onProgress?.call('Ranking results...', 0.90);
     results.sort((a, b) => b.confidence.compareTo(a.confidence));
 
-    // Genus-based inclusion (Fallback for low match OR Cluster for high match)
+    // Genus-based inclusion
     if (results.isNotEmpty &&
         (results.first.confidence < 0.6 || results.first.confidence >= 0.95) &&
         normalizedHint == null) {
@@ -771,25 +784,24 @@ class BiometricService {
             }
 
             if (cachedFeature != null) {
-              final similarity = _featureSimilarity(
+              final result = _featureSimilarity(
                 inputFeature,
                 cachedFeature,
+                org,
+                detectedClass: detectedClass,
               );
-              bool hasGreyFeature =
-                  (similarity['Color'] ?? 0) <= 0.5 ||
-                  (similarity['Shape'] ?? 0) <= 0.5 ||
-                  (similarity['Pattern'] ?? 0) <= 0.5 ||
-                  (similarity['Shade'] ?? 0) <= 0.5;
-
-              if (!hasGreyFeature) {
+              if (result.confidence > 0.2) {
                 results.add(
                   ScanResult(
                     organism: org,
-                    confidence: similarity['total'] ?? 0,
+                    confidence: result.confidence,
                     matchReason: 'Similar Genus ($topGenus)',
                     maskedImage: maskedBytes,
-                    featureScores: similarity,
+                    featureScores: result.featureScores,
                     isGenusMate: true,
+                    isPinpointed: result.isPinpointed,
+                    predictedDiet: predictedDiet,
+                    predictedWeight: predictedWeight,
                   ),
                 );
               }
@@ -800,101 +812,23 @@ class BiometricService {
       }
     }
 
-    // Step 5: External identification (iNaturalist) - Skip if hint is present to focus on user request
+    // Step 5: External identification (iNaturalist)
     if (normalizedHint == null &&
         (results.isEmpty || results.first.confidence < 0.90)) {
       onProgress?.call('Consulting Global Registry...', 0.92);
       try {
         final externalResults = await identifyViaINaturalist(imageBytes);
         for (final ext in externalResults) {
-          // Cross-verify external result with our own biometrics
-          var cachedFeature = _spriteFeatures?[ext.organism.name];
-          if (cachedFeature == null) {
-            cachedFeature = await _extractSpriteFeature(ext.organism.name);
-            if (cachedFeature != null) {
-              _spriteFeatures?[ext.organism.name] = cachedFeature;
-            }
-          }
-          // Default to 0.5 for unverified external results to prioritize local matches
-          double biometricVerification = 0.5;
-          Map<String, double> verificationScores = {};
-
-          if (cachedFeature != null) {
-            final sim = _featureSimilarity(inputFeature, cachedFeature);
-            biometricVerification = sim['total'] ?? 0;
-            verificationScores = sim;
-
-            // If iNaturalist is highly confident (>80%), our local masking might have just failed
-            // due to a complex background (like coral reefs). We boost the verification score
-            // to ensure true positives aren't discarded by strict local biometric matching.
-            if (ext.confidence > 0.8 && biometricVerification > 0.05) {
-              biometricVerification = (biometricVerification * 2.0).clamp(
-                0.6,
-                1.0,
-              );
-            }
-          }
-
           final existingIndex = results.indexWhere(
             (r) =>
                 r.organism.name.toLowerCase() ==
                 ext.organism.name.toLowerCase(),
           );
-          if (existingIndex != -1) {
-            final existing = results[existingIndex];
-            results[existingIndex] = ScanResult(
-              organism: existing.organism,
-              confidence: (existing.confidence * 0.7 + ext.confidence * 0.3)
-                  .clamp(0.0, 1.0),
-              matchReason: '${existing.matchReason} + External Verify',
-              isExternal: false,
-              maskedImage: maskedBytes,
-              featureScores: existing.featureScores,
-            );
-          } else {
-            // Only add external results that aren't a total biometric mismatch
-            if (biometricVerification > 0.1 || ext.confidence > 0.8) {
-              results.add(
-                ScanResult(
-                  organism: ext.organism,
-                  // Combine external confidence with our boosted biometric verification
-                  confidence: (ext.confidence * biometricVerification).clamp(
-                    0.0,
-                    1.0,
-                  ),
-                  matchReason: ext.matchReason,
-                  isExternal: true,
-                  maskedImage: maskedBytes,
-                  featureScores: verificationScores,
-                ),
-              );
-            }
+          if (existingIndex == -1) {
+            results.add(ext);
           }
         }
       } catch (_) {}
-    }
-
-    // Step 6: Genus Affinity Grouping
-    // If we have a very high confidence match (> 95%), group other species in the same genus
-    if (results.isNotEmpty && results.first.confidence >= 0.95) {
-      final topResult = results.first;
-      final topGenus = _getGenus(topResult.organism.scientificName);
-
-      for (int i = 1; i < results.length; i++) {
-        final r = results[i];
-        if (_getGenus(r.organism.scientificName) == topGenus) {
-          // Mark as a genus-mate for UI grouping, but DO NOT boost the score
-          results[i] = ScanResult(
-            organism: r.organism,
-            confidence: r.confidence,
-            matchReason: '${r.matchReason} (Genus Affiliate)',
-            isExternal: r.isExternal,
-            maskedImage: r.maskedImage,
-            featureScores: r.featureScores,
-            isGenusMate: true, // Flag for grouping
-          );
-        }
-      }
     }
 
     onProgress?.call('Scan complete!', 1.0);
@@ -902,21 +836,28 @@ class BiometricService {
   }
 
   /// Calculates a logical similarity breakdown between two features.
-  Map<String, double> _featureSimilarity(
+  ScanResult _featureSimilarity(
     OrganismFeature f1,
-    OrganismFeature f2, {
-    AnimalClass? inputClass,
-    AnimalClass? targetClass,
-    double classConfidence = 0.0,
+    OrganismFeature f2,
+    Organism target, {
+    required AnimalClass detectedClass,
+    String predictedDiet = 'unknown',
+    double predictedWeight = 0.0,
   }) {
-    // 1. Global Color Match (with adjacent bin smoothing for lighting tolerance)
+    // 1. ADVANCED COLOR MATCH (Smoothing for lighting tolerance)
     double globalColorMatch = 0;
     f1.hueBins.forEach((key, val) {
       if (val == 0) return;
+      
+      // Handle Achromatic Bins (White, Black, Grey)
+      if (key == 'hWhite' || key == 'hBlack' || key == 'hGrey') {
+        globalColorMatch += min(val, f2.hueBins[key] ?? 0);
+        return;
+      }
+
       int hue = int.tryParse(key.replaceAll('h', '')) ?? -1;
       if (hue == -1) return;
 
-      // Check current bin and neighbors for fuzzy matching
       double exact = f2.hueBins[key] ?? 0;
       int prevHue = (hue - 10) % 360;
       if (prevHue < 0) prevHue += 360;
@@ -924,112 +865,153 @@ class BiometricService {
       double prevVal = f2.hueBins['h$prevHue'] ?? 0;
       double nextVal = f2.hueBins['h$nextHue'] ?? 0;
 
-      // Effective target mass for this hue
-      double effectiveF2 = exact + (prevVal * 0.5) + (nextVal * 0.5);
+      double effectiveF2 = exact + (prevVal * 0.4) + (nextVal * 0.4);
       globalColorMatch += min(val, effectiveF2);
     });
-    globalColorMatch = globalColorMatch.clamp(0.0, 1.0);
+    final colorScore = globalColorMatch.clamp(0.0, 1.0);
 
-    // 2. Spatial Color Match (Grid-based verification)
-    double spatialMatch = globalColorMatch;
+    // 2. SPATIAL COLOR MATCH (Pattern/Distribution)
+    double spatialScore = colorScore;
     if (f1.spatialHueBins != null && f2.spatialHueBins != null) {
       double spatialSum = 0;
+      int activeCells = 0;
       f1.spatialHueBins!.forEach((key, val) {
         if (f2.spatialHueBins!.containsKey(key)) {
           spatialSum += min(val, f2.spatialHueBins![key]!);
         }
+        activeCells++;
       });
-
-      // Count active grid cells (e.g. "g00", "g11")
-      final cells1 = f1.spatialHueBins!.keys
-          .map((k) => k.substring(0, 3))
-          .toSet()
-          .length;
-      final cells2 = f2.spatialHueBins!.keys
-          .map((k) => k.substring(0, 3))
-          .toSet()
-          .length;
-      final maxCells = max(cells1, cells2);
-
-      if (maxCells > 0) {
-        spatialMatch = (spatialSum / maxCells).clamp(0.0, 1.0);
+      if (activeCells > 0) {
+        spatialScore = (spatialSum / activeCells).clamp(0.0, 1.0);
       }
     }
 
-    // Weighted color score
-    final colorMatch = (globalColorMatch * 0.5 + spatialMatch * 0.5).clamp(
-      0.0,
-      1.0,
-    );
-
-    // 3. Shape Analysis (Aspect Ratio & Solidity)
+    // 3. SHAPE ANALYSIS
     final aspectDiff = (log(f1.aspectRatio) - log(f2.aspectRatio)).abs();
     final solidityDiff = (f1.solidity - f2.solidity).abs();
+    final shapeScore =
+        pow((1.0 - (aspectDiff * 0.6)).clamp(0.0, 1.0), 1.5).toDouble() * 0.6 +
+        pow((1.0 - (solidityDiff * 1.6)).clamp(0.0, 1.0), 1.5).toDouble() * 0.4;
 
-    // Parabolic penalty for shape mismatch
-    final aspectScore = pow(
-      (1.0 - (aspectDiff * 0.6)).clamp(0.0, 1.0),
-      1.5,
-    ).toDouble();
-    final solidityScore = pow(
-      (1.0 - (solidityDiff * 1.6)).clamp(0.0, 1.0),
-      1.5,
-    ).toDouble();
-    final shapeMatch = (aspectScore * 0.6) + (solidityScore * 0.4);
-
-    // 4. Pattern Analysis (Symmetry & Edge Density)
+    // 4. PATTERN (Symmetry & Edge Density)
     final symDiff =
         (f1.verticalSymmetry - f2.verticalSymmetry).abs() +
         (f1.horizontalSymmetry - f2.horizontalSymmetry).abs();
     final edgeDiff = (f1.edgeDensity - f2.edgeDensity).abs();
-    final edgeScore = (1.0 - (edgeDiff * 3.0)).clamp(0.0, 1.0);
-    final patternMatch =
-        (1.0 - (symDiff / 2.0)).clamp(0.0, 1.0) * 0.3 + (edgeScore * 0.7);
+    final patternScore =
+        (1.0 - (symDiff / 2.0)).clamp(0.0, 1.0) * 0.3 +
+        (1.0 - (edgeDiff * 3.0)).clamp(0.0, 1.0) * 0.7;
 
-    // 5. Shade & Saturation Match
-    final shadeMatch = (1.0 - (f1.avgBrightness - f2.avgBrightness).abs())
+    // 5. SHADE & SATURATION
+    final shadeScore = (1.0 - (f1.avgBrightness - f2.avgBrightness).abs())
         .clamp(0.0, 1.0);
-    final satMatch = (1.0 - (f1.avgSaturation - f2.avgSaturation).abs()).clamp(
+    final satScore = (1.0 - (f1.avgSaturation - f2.avgSaturation).abs()).clamp(
       0.0,
       1.0,
     );
-    final combinedShade = (shadeMatch * 0.7 + satMatch * 0.3).clamp(0.0, 1.0);
+    final finalShadeScore = (shadeScore * 0.7 + satScore * 0.3).clamp(0.0, 1.0);
 
-    // 6. Aggregate Score Calculation
-    double total =
-        (colorMatch * 0.45) +
-        (combinedShade * 0.35) +
-        (shapeMatch * 0.15) +
-        (patternMatch * 0.05);
+    // --- BIOLOGICAL GATES ---
 
-    // Biometric Gating: Strict filter for impossible matches
-    if (colorMatch < 0.12) total *= 0.20; // Color mismatch is fatal
-
-    // Taxonomic Gating: Penalty for biological class mismatch
-    if (inputClass != null &&
-        targetClass != null &&
-        inputClass != AnimalClass.unknown &&
-        targetClass != AnimalClass.unknown) {
-      if (inputClass != targetClass) {
-        // Massive penalty if classes are different and we are confident
-        final penalty = 0.1 + (0.4 * (1.0 - classConfidence));
-        total *= penalty.clamp(0.1, 0.8);
-      } else {
-        // Boost if classes match and we are confident
-        total *= (1.0 + (0.15 * classConfidence));
+    // Weight Gate
+    double weightScore = 1.0;
+    if (target.weight > 0 && detectedClass != AnimalClass.unknown) {
+      final range = _expectedWeightRange(detectedClass);
+      if (target.weight < range.$1 * 0.1 || target.weight > range.$2 * 10) {
+        weightScore = 0.1;
+      } else if (target.weight < range.$1 || target.weight > range.$2) {
+        final distRatio = target.weight < range.$1
+            ? (range.$1 / target.weight)
+            : (target.weight / range.$2);
+        weightScore = (1.0 / sqrt(distRatio)).clamp(0.2, 0.9);
       }
     }
 
-    if (total > 0.95) total = 1.0;
-    if (total < 0.15) total = 0.0;
+    // Diet Gate
+    double dietScore = 1.0;
+    if (target.diet.isNotEmpty &&
+        target.diet != 'unknown' &&
+        detectedClass != AnimalClass.unknown) {
+      final plausibleDiets = _plausibleDietsForClass(detectedClass);
+      if (plausibleDiets.isNotEmpty &&
+          !plausibleDiets.contains(target.diet.toLowerCase())) {
+        dietScore = 0.2;
+      }
+    }
 
-    return {
-      'total': total,
-      'Color': colorMatch,
-      'Shape': shapeMatch,
-      'Pattern': patternMatch,
-      'Shade': combinedShade,
-    };
+    // Class Gate
+    double classScore = 1.0;
+    if (target.animalClass.isNotEmpty &&
+        target.animalClass != 'unknown' &&
+        detectedClass != AnimalClass.unknown) {
+      if (target.animalClass.toLowerCase() !=
+          detectedClass.name.toLowerCase()) {
+        classScore = 0.01;
+      }
+    }
+
+    // Combine visual scores with weighted importance
+    // We prioritize Shape and Pattern over global Color to fix "Fish Bias"
+    double visualWeightColor = 0.3;
+    double visualWeightSpatial = 0.1;
+    double visualWeightShape = 0.3;
+    double visualWeightPattern = 0.2;
+    double visualWeightShade = 0.1;
+
+    // Aquatic Sensitivity: Fish need more spatial/pattern detail because they look similar
+    if (target.animalClass.toLowerCase() == 'fish') {
+      visualWeightSpatial = 0.2;
+      visualWeightPattern = 0.25;
+      visualWeightColor = 0.25; // Reduce color reliance
+    }
+
+    final double visualConfidence =
+        (colorScore * visualWeightColor +
+                spatialScore * visualWeightSpatial +
+                finalShadeScore * visualWeightShade +
+                shapeScore * visualWeightShape +
+                patternScore * visualWeightPattern)
+            .clamp(0.0, 1.0);
+
+    // Apply "Numerosity Correction"
+    // If the detected class is unknown, we slightly penalize Fish matches
+    // because they are over-represented in the database.
+    double numerosityCorrection = 1.0;
+    if (detectedClass == AnimalClass.unknown && 
+        target.animalClass.toLowerCase() == 'fish') {
+      numerosityCorrection = 0.85; 
+    }
+
+    // Apply biological gates and numerosity correction
+    final double finalConfidence =
+        (visualConfidence * weightScore * dietScore * classScore * numerosityCorrection).clamp(
+          0.0,
+          1.0,
+        );
+
+    // PINPOINT THRESHOLD (90%)
+    final bool pinpointed = finalConfidence > 0.90;
+
+    return ScanResult(
+      organism: target,
+      confidence: finalConfidence,
+      matchReason: pinpointed
+          ? 'PINPOINTED BIOMETRIC MATCH'
+          : 'Biometric Analysis',
+      featureScores: {
+        'Color': colorScore,
+        'Pattern': patternScore,
+        'Shade': finalShadeScore,
+        'Shape': shapeScore,
+        'Weight': weightScore,
+        'Diet': dietScore,
+        'Class': classScore,
+      },
+      detectedClass: detectedClass,
+      isPinpointed: pinpointed,
+      predictedDiet: predictedDiet,
+      predictedWeight: predictedWeight,
+    );
   }
 
   /// Query the iNaturalist Computer Vision API for species identification.
@@ -1230,24 +1212,101 @@ class BiometricService {
     return features;
   }
 
-  AnimalClass _mapStringToAnimalClass(String? s) {
-    switch (s?.toLowerCase()) {
-      case 'mammal':
-        return AnimalClass.mammal;
-      case 'bird':
-        return AnimalClass.bird;
-      case 'fish':
-        return AnimalClass.fish;
-      case 'amphibian':
-        return AnimalClass.amphibian;
-      case 'reptile':
-        return AnimalClass.reptile;
-      case 'insect':
-        return AnimalClass.insect;
-      case 'invertebrate':
-        return AnimalClass.invertebrate;
-      default:
-        return AnimalClass.unknown;
+  /// Expected weight range (kg) for each animal class.
+  /// Used as a biological plausibility filter during scanning.
+  (double, double) _expectedWeightRange(AnimalClass cls) {
+    switch (cls) {
+      case AnimalClass.insect:
+        return (0.0001, 0.5);
+      case AnimalClass.amphibian:
+        return (0.001, 10.0);
+      case AnimalClass.fish:
+        return (0.001, 1000.0);
+      case AnimalClass.bird:
+        return (0.002, 150.0);
+      case AnimalClass.reptile:
+        return (0.001, 1500.0);
+      case AnimalClass.mammal:
+        return (0.002, 6000.0);
+      case AnimalClass.arachnid:
+        return (0.0001, 0.2);
+      case AnimalClass.crustacean:
+        return (0.001, 20.0);
+      case AnimalClass.mollusk:
+        return (0.0001, 500.0);
+      case AnimalClass.annelid:
+        return (0.0001, 5.0);
+      case AnimalClass.cnidarian:
+        return (0.0001, 200.0);
+      case AnimalClass.echinoderm:
+        return (0.001, 10.0);
+      case AnimalClass.otherInvertebrate:
+        return (0.0001, 100.0);
+      case AnimalClass.unknown:
+        return (0.0001, 10000.0);
+    }
+  }
+
+  /// Biologically plausible diets for each animal class.
+  /// Empty set means all diets are plausible.
+  Set<String> _plausibleDietsForClass(AnimalClass cls) {
+    switch (cls) {
+      case AnimalClass.insect:
+        return {
+          'herbivore',
+          'omnivore',
+          'carnivore',
+          'detritivore',
+          'nectarivore',
+        };
+      case AnimalClass.amphibian:
+        return {'carnivore', 'insectivore', 'omnivore'};
+      case AnimalClass.fish:
+        return {
+          'carnivore',
+          'omnivore',
+          'herbivore',
+          'planktivore',
+          'filter feeder',
+        };
+      case AnimalClass.bird:
+        return {
+          'carnivore',
+          'omnivore',
+          'herbivore',
+          'insectivore',
+          'granivore',
+          'nectarivore',
+          'piscivore',
+          'scavenger',
+        };
+      case AnimalClass.reptile:
+        return {'carnivore', 'omnivore', 'herbivore', 'insectivore'};
+      case AnimalClass.mammal:
+        return {}; // Mammals have all possible diets
+      case AnimalClass.arachnid:
+        return {'carnivore', 'insectivore'};
+      case AnimalClass.crustacean:
+        return {'omnivore', 'detritivore', 'carnivore', 'scavenger'};
+      case AnimalClass.mollusk:
+        return {'herbivore', 'omnivore', 'carnivore', 'filter feeder'};
+      case AnimalClass.annelid:
+        return {'detritivore', 'omnivore', 'herbivore'};
+      case AnimalClass.cnidarian:
+        return {'carnivore', 'planktivore'};
+      case AnimalClass.echinoderm:
+        return {'omnivore', 'detritivore', 'herbivore', 'carnivore'};
+      case AnimalClass.otherInvertebrate:
+        return {
+          'herbivore',
+          'omnivore',
+          'carnivore',
+          'detritivore',
+          'filter feeder',
+          'parasite',
+        };
+      case AnimalClass.unknown:
+        return {}; // Unknown = all diets plausible
     }
   }
 }

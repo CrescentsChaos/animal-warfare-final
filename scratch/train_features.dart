@@ -126,6 +126,9 @@ void main(List<String> args) async {
     organismName,
     scientificName: scientificName,
     newFeatures: newFeatures,
+    animalClass: org['class'] ?? org['animal_class']?.toString() ?? 'unknown',
+    diet: org['diet']?.toString() ?? 'unknown',
+    weight: _parseWeight(org['weight']),
   );
   print('Database updated successfully.');
   await db.close();
@@ -140,6 +143,9 @@ Future<void> upsertFeatureToDb(
   String organismName, {
   required String scientificName,
   required Map<String, dynamic> newFeatures,
+  String? animalClass,
+  String? diet,
+  double? weight,
 }) async {
   // Check for existing entry
   final existing = await db.query(
@@ -242,6 +248,9 @@ Future<void> upsertFeatureToDb(
         'spatial_hue_bins': jsonEncode(mergedSpatial),
         'dominant_colors': dominantColorsJson,
         'training_count': newCount,
+        'animal_class': animalClass ?? oldRow['animal_class'],
+        'diet': diet ?? oldRow['diet'],
+        'weight': weight ?? oldRow['weight'],
         'updated_at': DateTime.now().toIso8601String(),
       },
       where: 'organism_name = ?',
@@ -262,6 +271,9 @@ Future<void> upsertFeatureToDb(
       'vertical_symmetry': newFeatures['verticalSymmetry'],
       'horizontal_symmetry': newFeatures['horizontalSymmetry'],
       'edge_density': newFeatures['edgeDensity'],
+      'animal_class': animalClass ?? 'unknown',
+      'diet': diet ?? 'unknown',
+      'weight': weight ?? 0.0,
       'training_count': 1,
     });
 
@@ -278,6 +290,16 @@ Future<void> upsertFeatureToDb(
   );
   final totalCount = result.first['count'] as int;
   print('Total features in DB: $totalCount');
+}
+
+double _parseWeight(dynamic val) {
+  if (val == null) return 0.0;
+  if (val is num) return val.toDouble();
+  if (val is String) {
+    final cleaned = val.replaceAll(RegExp(r'[^0-9.]'), '');
+    return double.tryParse(cleaned) ?? 0.0;
+  }
+  return 0.0;
 }
 
 /// Weighted average: (old * oldCount + new) / (oldCount + 1)
