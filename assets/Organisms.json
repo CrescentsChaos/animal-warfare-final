@@ -21868,11 +21868,11 @@
         "active_time": "any",
         "attack": 70,
         "category": "Drake, Darkness",
-        "class": "Unknown",
+        "class": "Reptile",
         "cry": "default",
         "defense": 80,
         "description": "A small lizard with striking red eye markings and crocodile-like scales.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Scale Fragment",
         "habitat": "Jungle, Coastal,Wetlands",
         "health": 100,
@@ -21885,7 +21885,7 @@
         "scientific_name": "Tribolonotus gracilis",
         "spawn_tiles": "tall_grass",
         "speed": 45,
-        "weight": 1
+        "weight": 0.045
     },
     {
         "abilities": "Rattled, Defiant",
@@ -23668,11 +23668,11 @@
         "active_time": "night",
         "attack": 65,
         "category": "Earth, Flying",
-        "class": "Unknown",
+        "class": "Bird",
         "cry": "default",
         "defense": 55,
         "description": "A small owl that nests in underground burrows.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Feather",
         "habitat": "Desert",
         "health": 75,
@@ -23685,7 +23685,7 @@
         "scientific_name": "Athene cunicularia",
         "spawn_tiles": "tall_grass",
         "speed": 85,
-        "weight": 1
+        "weight": 0.19
     },
     {
         "abilities": "Prankster",
@@ -27700,11 +27700,11 @@
         "active_time": "any",
         "attack": 50,
         "category": "Grass,Flying",
-        "class": "Unknown",
+        "class": "Bird",
         "cry": "default",
         "defense": 40,
         "description": "Green-winged Macaws are colorful social birds that feed on seeds and nuts. Their strong beaks allow them to crack open tough shells efficiently.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Feather",
         "habitat": "Jungle, Savanna",
         "health": 120,
@@ -27717,7 +27717,7 @@
         "scientific_name": "Ara chloropterus",
         "spawn_tiles": "tall_grass",
         "speed": 30,
-        "weight": 1
+        "weight": 1.45
     },
     {
         "abilities": "Fir Coat",
@@ -29452,11 +29452,11 @@
         "active_time": "any",
         "attack": 60,
         "category": "Earth, Aquatic",
-        "class": "Unknown",
+        "class": "Other Invertebrate",
         "cry": "default",
         "defense": 85,
         "description": "This bizarre deep-sea creature feeds on organic debris in the abyss. Its inflated body and tube feet help it crawl across soft sediment.",
-        "diet": "Unknown",
+        "diet": "Detritivore",
         "drops": "Slime",
         "habitat": "Deep Sea, Ocean",
         "health": 80,
@@ -29469,7 +29469,7 @@
         "scientific_name": "Scotoplanes globosa",
         "spawn_tiles": "tall_grass",
         "speed": 35,
-        "weight": 1
+        "weight": 0.04
     },
     {
         "abilities": "Strong Jaw",
@@ -34184,7 +34184,7 @@
         "cry": "fish",
         "defense": 90,
         "description": "The hybrid striped bass is a man-made crossbreed prized by anglers for its strength. It adapts well to both lakes and rivers, feeding on smaller fish.",
-        "diet": "Unknown",
+        "diet": "Piscivore",
         "drops": "Fillet",
         "habitat": "Lake, River,Wetlands",
         "health": 110,
@@ -34197,7 +34197,7 @@
         "scientific_name": "Morone saxatilis  Morone chrysops",
         "spawn_tiles": "water",
         "speed": 115,
-        "weight": 1
+        "weight": 6.55
     },
     {
         "abilities": "Speed Boost",
@@ -34256,7 +34256,7 @@
         "cry": "fish",
         "defense": 115,
         "description": "The rock bass is a small but fierce predator found in rocky freshwater habitats. Its large eyes allow it to hunt effectively even in dim light.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "River, Lake,Wetlands",
         "health": 80,
@@ -34269,7 +34269,7 @@
         "scientific_name": "Ambloplites rupestris",
         "spawn_tiles": "water",
         "speed": 50,
-        "weight": 1
+        "weight": 0.85
     },
     {
         "abilities": "Shadow Tag",
@@ -34280,7 +34280,7 @@
         "cry": "fish",
         "defense": 70,
         "description": "The shadow bass prefers shaded areas where it can ambush unsuspecting prey. Its dark mottled body helps it blend into its environment perfectly.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Fillet",
         "habitat": "River, Lake,Wetlands",
         "health": 75,
@@ -34293,7 +34293,7 @@
         "scientific_name": "Ambloplites ariommus",
         "spawn_tiles": "water",
         "speed": 110,
-        "weight": 1
+        "weight": 0.35
     },
     {
         "abilities": "Solid Rock",
@@ -34328,7 +34328,7 @@
         "cry": "fish",
         "defense": 85,
         "description": "The spotted bass is a fierce fighter among freshwater predators. It thrives in clear, fast-moving rivers where it chases small fish and insects.",
-        "diet": "Unknown",
+        "diet": "Piscivore",
         "drops": "Fillet",
         "habitat": "River, Lake,Wetlands",
         "health": 80,
@@ -34341,7 +34341,7 @@
         "scientific_name": "Micropterus punctulatus",
         "spawn_tiles": "water",
         "speed": 95,
-        "weight": 1
+        "weight": 2.75
     },
     {
         "abilities": "Swift Swim",
@@ -34376,7 +34376,7 @@
         "cry": "fish",
         "defense": 75,
         "description": "The striped bass is a migratory predator that travels between rivers and oceans. It is known for its strength and striking silver stripes.",
-        "diet": "Unknown",
+        "diet": "Piscivore",
         "drops": "Fillet",
         "habitat": "River, Ocean",
         "health": 120,
@@ -34389,7 +34389,7 @@
         "scientific_name": "Morone saxatilis",
         "spawn_tiles": "water",
         "speed": 70,
-        "weight": 1
+        "weight": 30.5
     },
     {
         "abilities": "Camouflage",
@@ -34424,7 +34424,7 @@
         "cry": "fish",
         "defense": 60,
         "description": "The white bass forms massive schools that feed on smaller fish and insects. During spawning, it migrates upstream in impressive numbers.",
-        "diet": "Unknown",
+        "diet": "Piscivore",
         "drops": "Fillet",
         "habitat": "River, Lake,Wetlands",
         "health": 95,
@@ -34437,7 +34437,7 @@
         "scientific_name": "Morone chrysops",
         "spawn_tiles": "water",
         "speed": 55,
-        "weight": 1
+        "weight": 1.35
     },
     {
         "abilities": "Infiltrator , Weak Armor",
@@ -34568,7 +34568,7 @@
         "cry": "fish",
         "defense": 70,
         "description": "The black seabass lurks among reef crevices waiting to ambush prey. Its dark coloration provides camouflage among rocks and corals.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Ocean, Coral Reef",
         "health": 95,
@@ -34581,7 +34581,7 @@
         "scientific_name": "Centropristis striata",
         "spawn_tiles": "water",
         "speed": 55,
-        "weight": 1
+        "weight": 2.55
     },
     {
         "abilities": "Adrenal Surge",
@@ -34976,7 +34976,7 @@
         "cry": "fish",
         "defense": 55,
         "description": "The Guadalupe bass is the state fish of Texas and a fierce river hunter. It thrives in fast-moving clear waters with rocky bottoms.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "River,Wetlands",
         "health": 70,
@@ -34989,7 +34989,7 @@
         "scientific_name": "Micropterus treculii",
         "spawn_tiles": "water",
         "speed": 68,
-        "weight": 1
+        "weight": 0.95
     },
     {
         "abilities": "Technician",
@@ -35072,7 +35072,7 @@
         "cry": "fish",
         "defense": 56,
         "description": "The Suwannee bass inhabits cool, spring-fed rivers in Florida. It is an aggressive predator that hunts small fish and insects.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "River,Wetlands",
         "health": 68,
@@ -35085,7 +35085,7 @@
         "scientific_name": "Micropterus notius",
         "spawn_tiles": "water",
         "speed": 70,
-        "weight": 1
+        "weight": 1.15
     },
     {
         "abilities": "Anticipation",
@@ -36172,11 +36172,11 @@
         "active_time": "any",
         "attack": 25,
         "category": "Basic, Grass",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 20,
         "description": "Roe Deer are small and agile herbivores found in forests and meadows. They are cautious and often evade predators through speed and stealth.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Venison, Antler, Fur",
         "habitat": "Jungle, Savanna",
         "health": 60,
@@ -36189,7 +36189,7 @@
         "scientific_name": "Capreolus capreolus",
         "spawn_tiles": "tall_grass",
         "speed": 50,
-        "weight": 1
+        "weight": 25
     },
     {
         "abilities": "Sharpness",
@@ -36580,11 +36580,11 @@
         "active_time": "any",
         "attack": 35,
         "category": "Basic",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 30,
         "description": "Large White Pigs are domesticated pigs raised for meat. They are social and often forage in groups.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Pork",
         "habitat": "Urban, Savanna,Plains",
         "health": 100,
@@ -36597,7 +36597,7 @@
         "scientific_name": "Sus scrofa domesticus",
         "spawn_tiles": "tall_grass",
         "speed": 25,
-        "weight": 1
+        "weight": 312.5
     },
     {
         "abilities": "Early Bird",
@@ -37156,11 +37156,11 @@
         "active_time": "any",
         "attack": 15,
         "category": "Mystic,Flying",
-        "class": "Unknown",
+        "class": "Bird",
         "cry": "default",
         "defense": 10,
         "description": "Cedar Waxwings are social birds that feed on fruits and berries. They often fly in flocks and communicate with soft calls.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Bird Meat",
         "habitat": "Jungle, Savanna",
         "health": 25,
@@ -37173,7 +37173,7 @@
         "scientific_name": "Bombycilla cedrorum",
         "spawn_tiles": "tall_grass",
         "speed": 40,
-        "weight": 1
+        "weight": 0.04
     },
     {
         "abilities": "Cheek Pouch",
@@ -39248,7 +39248,7 @@
         "cry": "fish",
         "defense": 105,
         "description": "The blue-lined triggerfish defends its coral territory aggressively. It feeds on small invertebrates with quick strikes.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Coral Reef",
         "health": 90,
@@ -39261,7 +39261,7 @@
         "scientific_name": "Pseudobalistes fuscus",
         "spawn_tiles": "water",
         "speed": 70,
-        "weight": 1
+        "weight": 0.45
     },
     {
         "abilities": "Strong Jaw",
@@ -39272,7 +39272,7 @@
         "cry": "fish",
         "defense": 120,
         "description": "The finescale triggerfish has small sharp teeth to crack shells. It patrols reef areas searching for crustaceans and mollusks.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Coral Reef",
         "health": 110,
@@ -39285,7 +39285,7 @@
         "scientific_name": "Balistes polylepis",
         "spawn_tiles": "water",
         "speed": 60,
-        "weight": 1
+        "weight": 4
     },
     {
         "abilities": "Strong Jaw",
@@ -39296,7 +39296,7 @@
         "cry": "fish",
         "defense": 115,
         "description": "The grey triggerfish uses powerful jaws to crush shellfish. It inhabits shallow coral reefs and lagoons.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Coral Reef",
         "health": 100,
@@ -39309,7 +39309,7 @@
         "scientific_name": "Balistes capriscus",
         "spawn_tiles": "water",
         "speed": 65,
-        "weight": 1
+        "weight": 1.85
     },
     {
         "abilities": "Strong Jaw",
@@ -39320,7 +39320,7 @@
         "cry": "fish",
         "defense": 108,
         "description": "The lagoon triggerfish guards its coral territory from intruders. It feeds on small crustaceans and algae during the day.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Fillet",
         "habitat": "Coral Reef",
         "health": 88,
@@ -39333,7 +39333,7 @@
         "scientific_name": "Rhinecanthus aculeatus",
         "spawn_tiles": "water",
         "speed": 80,
-        "weight": 1
+        "weight": 0.45
     },
     {
         "abilities": "Strong Jaw",
@@ -39344,7 +39344,7 @@
         "cry": "fish",
         "defense": 100,
         "description": "The orange-lined triggerfish has bright patterns that warn predators. It forages actively among coral crevices for mollusks and small fish.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Coral Reef",
         "health": 85,
@@ -39357,7 +39357,7 @@
         "scientific_name": "Balistapus undulatus",
         "spawn_tiles": "water",
         "speed": 85,
-        "weight": 1
+        "weight": 0.35
     },
     {
         "abilities": "Strong Jaw",
@@ -39368,7 +39368,7 @@
         "cry": "fish",
         "defense": 110,
         "description": "The queen triggerfish is a large, striking fish that defends its reef territory. It preys on sea urchins and other invertebrates with precise attacks.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Coral Reef",
         "health": 95,
@@ -39381,7 +39381,7 @@
         "scientific_name": "Balistes vetula",
         "spawn_tiles": "water",
         "speed": 75,
-        "weight": 1
+        "weight": 3.25
     },
     {
         "abilities": "Eye Spot Display",
@@ -39508,11 +39508,11 @@
         "active_time": "any",
         "attack": 25,
         "category": "Basic, Aura",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 20,
         "description": "Muntjac Deer are small deer often hunted by predators. They rely on speed and keen senses to escape danger.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Venison, Antler, Fur",
         "habitat": "Jungle, Rainforest",
         "health": 60,
@@ -39525,7 +39525,7 @@
         "scientific_name": "Muntiacus reevesi",
         "spawn_tiles": "tall_grass",
         "speed": 30,
-        "weight": 1
+        "weight": 24
     },
     {
         "abilities": "Burrowing",
@@ -41456,7 +41456,7 @@
         "cry": "fish",
         "defense": 45,
         "description": "The Golden Basslet glows with deep purple and gold, defending its coral crevice fiercely. Though small, it holds its territory with unmatched determination.",
-        "diet": "Unknown",
+        "diet": "Planktivore",
         "drops": "Fillet",
         "habitat": "Coral Reef",
         "health": 75,
@@ -41469,7 +41469,7 @@
         "scientific_name": "Gramma loreto",
         "spawn_tiles": "water",
         "speed": 60,
-        "weight": 1
+        "weight": 0.05
     },
     {
         "abilities": "Cleaner Fish",
@@ -42680,7 +42680,7 @@
         "cry": "fish",
         "defense": 45,
         "description": "The pigfish makes grunting noises when caught or disturbed. It is a colorful reef fish that feeds on small crustaceans and worms.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Coastal",
         "health": 80,
@@ -42693,7 +42693,7 @@
         "scientific_name": "Orthopristis chrysoptera",
         "spawn_tiles": "water",
         "speed": 55,
-        "weight": 1
+        "weight": 0.35
     },
     {
         "abilities": "Keen Eye",
@@ -43084,11 +43084,11 @@
         "active_time": "any",
         "attack": 30,
         "category": "Basic, Mystic",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 35,
         "description": "The lesser mouse deer is one of the smallest hoofed animals in the world. It darts through jungle undergrowth to escape predators with lightning speed.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Venison, Antler, Fur",
         "habitat": "Jungle, River, Redwoods",
         "health": 50,
@@ -43101,18 +43101,18 @@
         "scientific_name": "Tragulus kanchil",
         "spawn_tiles": "tall_grass",
         "speed": 60,
-        "weight": 1
+        "weight": 1.45
     },
     {
         "abilities": "Quick Feet",
         "active_time": "any",
         "attack": 35,
         "category": "Basic, Mystic",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 40,
         "description": "The Malay mouse deer lives in dense tropical forests of Southeast Asia. Despite its small size, it is alert and capable of fast evasive maneuvers.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Venison, Antler, Fur",
         "habitat": "Jungle, Rainforest",
         "health": 55,
@@ -43125,7 +43125,7 @@
         "scientific_name": "Tragulus napu",
         "spawn_tiles": "tall_grass",
         "speed": 55,
-        "weight": 1
+        "weight": 6.5
     },
     {
         "abilities": "Sand Stream",
@@ -43780,11 +43780,11 @@
         "active_time": "any",
         "attack": 45,
         "category": "Aquatic, Earth",
-        "class": "Unknown",
+        "class": "Bird",
         "cry": "default",
         "defense": 50,
         "description": "The bronze-winged jacana is known for walking on floating vegetation with its long toes. It thrives in tropical wetlands across South and Southeast Asia.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Feather",
         "habitat": "Lake, River",
         "health": 75,
@@ -43797,7 +43797,7 @@
         "scientific_name": "Metopidius indicus",
         "spawn_tiles": "tall_grass",
         "speed": 65,
-        "weight": 1
+        "weight": 0.2
     },
     {
         "abilities": "True Flight",
@@ -43876,11 +43876,11 @@
         "active_time": "any",
         "attack": 40,
         "category": "Aquatic, Basic",
-        "class": "Unknown",
+        "class": "Bird",
         "cry": "default",
         "defense": 50,
         "description": "The black winged stilt is a wader with exceptionally long legs for shallow waters. It feeds on small aquatic insects and crustaceans.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Feather",
         "habitat": "Lake, River",
         "health": 70,
@@ -43893,18 +43893,18 @@
         "scientific_name": "Himantopus himantopus",
         "spawn_tiles": "tall_grass",
         "speed": 60,
-        "weight": 1
+        "weight": 0.17
     },
     {
         "abilities": "Early Bird",
         "active_time": "any",
         "attack": 50,
         "category": "Flying",
-        "class": "Unknown",
+        "class": "Bird",
         "cry": "default",
         "defense": 55,
         "description": "The grey headed lapwing nests in wetlands and grasslands across Asia. It fiercely defends its chicks from intruders with loud alarm calls.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Feather",
         "habitat": "Lake, River",
         "health": 75,
@@ -43917,7 +43917,7 @@
         "scientific_name": "Vanellus cinereus",
         "spawn_tiles": "tall_grass",
         "speed": 65,
-        "weight": 1
+        "weight": 0.29
     },
     {
         "abilities": "Anticipation",
@@ -43972,11 +43972,11 @@
         "active_time": "any",
         "attack": 65,
         "category": "Basic, Grass",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 75,
         "description": "The samber deer is a large, powerful ungulate found in Asian jungles. Males grow impressive antlers and are often preyed upon by big cats.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Venison, Antler, Fur",
         "habitat": "Jungle, River",
         "health": 84,
@@ -43989,7 +43989,7 @@
         "scientific_name": "Rusa unicolor",
         "spawn_tiles": "tall_grass",
         "speed": 45,
-        "weight": 1
+        "weight": 310
     },
     {
         "abilities": "Defiant",
@@ -45272,7 +45272,7 @@
         "cry": "fish",
         "defense": 50,
         "description": "The Harlequin Bass ambushes prey among coral crevices. Its patterned body provides camouflage as it waits for fish to approach.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Coral Reef",
         "health": 71,
@@ -45285,7 +45285,7 @@
         "scientific_name": "Serranus tigrinus",
         "spawn_tiles": "water",
         "speed": 35,
-        "weight": 1
+        "weight": 0.11
     },
     {
         "abilities": "Immunity",
@@ -45752,7 +45752,7 @@
         "cry": "fish",
         "defense": 70,
         "description": "The blue triggerfish is a powerful reef associated predator with strong jaws. It aggressively defends territory and can crush hard shelled prey.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Ocean",
         "health": 90,
@@ -45765,7 +45765,7 @@
         "scientific_name": "Balistoides viridescens",
         "spawn_tiles": "water",
         "speed": 65,
-        "weight": 1
+        "weight": 3.5
     },
     {
         "abilities": "Strong Jaw",
@@ -45776,7 +45776,7 @@
         "cry": "fish",
         "defense": 75,
         "description": "The clown triggerfish is easily recognized by its bold patterns and strong beak. It is highly territorial and capable of inflicting serious bites.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Ocean",
         "health": 100,
@@ -45789,7 +45789,7 @@
         "scientific_name": "Balistoides conspicillum",
         "spawn_tiles": "water",
         "speed": 64,
-        "weight": 1
+        "weight": 1.35
     },
     {
         "abilities": "Camouflage",
@@ -46252,11 +46252,11 @@
         "active_time": "any",
         "attack": 130,
         "category": "Aquatic, Dark",
-        "class": "Unknown",
+        "class": "Reptile",
         "cry": "default",
         "defense": 130,
         "description": "The mugger crocodile is a large freshwater reptile found in South Asia. It hunts using patience and explosive power.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Crocodile Skin",
         "habitat": "River, Lake,Wetlands",
         "health": 105,
@@ -46269,7 +46269,7 @@
         "scientific_name": "Crocodylus palustris",
         "spawn_tiles": "tall_grass",
         "speed": 50,
-        "weight": 1
+        "weight": 275
     },
     {
         "abilities": "Strong Jaw",
@@ -46280,7 +46280,7 @@
         "cry": "fish",
         "defense": 65,
         "description": "The stone triggerfish feeds on hard shelled invertebrates. Strong jaws allow it to crush tough prey.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Ocean",
         "health": 85,
@@ -46293,7 +46293,7 @@
         "scientific_name": "Pseudobalistes naufragium",
         "spawn_tiles": "water",
         "speed": 64,
-        "weight": 1
+        "weight": 5.5
     },
     {
         "abilities": "Strong Jaw",
@@ -46304,7 +46304,7 @@
         "cry": "fish",
         "defense": 70,
         "description": "The undulated triggerfish is extremely territorial and bold. It actively attacks intruders near its nesting sites.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Ocean",
         "health": 95,
@@ -46317,7 +46317,7 @@
         "scientific_name": "Balistapus undulatus",
         "spawn_tiles": "water",
         "speed": 67,
-        "weight": 1
+        "weight": 0.35
     },
     {
         "abilities": "Strong Jaw",
@@ -46832,7 +46832,7 @@
         "cry": "fish",
         "defense": 65,
         "description": "The rough triggerfish is a sturdy pelagic species with tough skin. It feeds on invertebrates and small fish in open waters.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Ocean",
         "health": 90,
@@ -46845,7 +46845,7 @@
         "scientific_name": "Canthidermis maculata",
         "spawn_tiles": "water",
         "speed": 67,
-        "weight": 1
+        "weight": 0.55
     },
     {
         "abilities": "Apex",
@@ -48940,11 +48940,11 @@
         "active_time": "any",
         "attack": 25,
         "category": "Grass, Flying",
-        "class": "Unknown",
+        "class": "Bird",
         "cry": "default",
         "defense": 35,
         "description": "The green imperial pigeon is a large fruit eating bird of tall forests. It spends most of its life high in the canopy.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Feather",
         "habitat": "Jungle",
         "health": 70,
@@ -48957,7 +48957,7 @@
         "scientific_name": "Ducula aenea",
         "spawn_tiles": "tall_grass",
         "speed": 40,
-        "weight": 1
+        "weight": 0.55
     },
     {
         "abilities": "Rattled",
@@ -50956,11 +50956,11 @@
         "active_time": "any",
         "attack": 90,
         "category": "Basic, Grass",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 65,
         "description": "The white-tailed deer is a graceful herbivore recognized by the bright underside of its tail. It relies on keen senses and rapid bounding escapes to avoid numerous predators.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Venison, Antler, Fur",
         "habitat": "Jungle, River",
         "health": 75,
@@ -50973,7 +50973,7 @@
         "scientific_name": "Odocoileus virginianus",
         "spawn_tiles": "tall_grass",
         "speed": 115,
-        "weight": 1
+        "weight": 90
     },
     {
         "abilities": "True Flight",
@@ -53332,11 +53332,11 @@
         "active_time": "any",
         "attack": 65,
         "category": "Aquatic, Drake",
-        "class": "Unknown",
+        "class": "Reptile",
         "cry": "default",
         "defense": 75,
         "description": "The Chinese crocodile lizard is a semi aquatic reptile with heavy keeled scales. It waits motionless along streams before striking at small prey.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Armored Scale, Strong Tail",
         "habitat": "River, Jungle",
         "health": 90,
@@ -53349,7 +53349,7 @@
         "scientific_name": "Shinisaurus crocodilurus",
         "spawn_tiles": "tall_grass",
         "speed": 40,
-        "weight": 1
+        "weight": 0.115
     },
     {
         "abilities": "Rattled",
@@ -55664,7 +55664,7 @@
         "cry": "default",
         "defense": 40,
         "description": "The crocodile icefish is a strange Antarctic fish with transparent blood that lacks hemoglobin. It survives in freezing seas thanks to special antifreeze proteins circulating through its body.",
-        "diet": "Unknown",
+        "diet": "Piscivore",
         "drops": "Fillet",
         "habitat": "Frozen Ocean,Deep Sea",
         "health": 70,
@@ -55677,7 +55677,7 @@
         "scientific_name": "Channichthyidae",
         "spawn_tiles": "water",
         "speed": 38,
-        "weight": 1
+        "weight": 1.15
     },
     {
         "abilities": "Drizzle",
@@ -57388,11 +57388,11 @@
         "active_time": "any",
         "attack": 86,
         "category": "Aquatic, Earth",
-        "class": "Unknown",
+        "class": "Reptile",
         "cry": "default",
         "defense": 78,
         "description": "The Orinoco crocodile is one of the largest crocodiles in the Americas. It hunts fish and large animals along riverbanks using explosive power.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Crocodile Skin,Raw Meat",
         "habitat": "River,Swamp,Wetlands",
         "health": 120,
@@ -57405,7 +57405,7 @@
         "scientific_name": "Crocodylus intermedius",
         "spawn_tiles": "tall_grass",
         "speed": 38,
-        "weight": 1
+        "weight": 440
     },
     {
         "abilities": "Dry Skin",
@@ -65068,11 +65068,11 @@
         "active_time": "any",
         "attack": 55,
         "category": "Basic, Aquatic",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 60,
         "description": "This unique deer species thrives in marshy environments with abundant vegetation. It is known for its unusual antlers and strong swimming ability.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "meat,hide",
         "habitat": "Wetlands,Plains",
         "health": 120,
@@ -65085,7 +65085,7 @@
         "scientific_name": "Elaphurus davidianus",
         "spawn_tiles": "tall_grass",
         "speed": 52,
-        "weight": 1
+        "weight": 177.5
     },
     {
         "abilities": "Speed Boost",
@@ -65284,11 +65284,11 @@
         "active_time": "any",
         "attack": 42,
         "category": "Earth",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 55,
         "description": "This small pig breed is popular as both livestock and companion animal. It is intelligent and known for its distinctive rounded belly.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "meat,fat",
         "habitat": "Urban,Plains",
         "health": 95,
@@ -65301,18 +65301,18 @@
         "scientific_name": "Sus scrofa domesticus",
         "spawn_tiles": "tall_grass",
         "speed": 35,
-        "weight": 1
+        "weight": 67.5
     },
     {
         "abilities": "Thick Fat",
         "active_time": "any",
         "attack": 44,
         "category": "Basic, Grass",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 58,
         "description": "This gentle pig breed is known for grazing rather than rooting heavily. It is easy to manage and valued for its friendly nature.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "meat,fat",
         "habitat": "Plains",
         "health": 100,
@@ -65325,7 +65325,7 @@
         "scientific_name": "Sus scrofa domesticus",
         "spawn_tiles": "tall_grass",
         "speed": 33,
-        "weight": 1
+        "weight": 82.5
     },
     {
         "abilities": "Fur Coat",
