@@ -470,17 +470,17 @@ class BiometricService {
         final distFromCenter =
             sqrt(pow(x - centerX, 2) + pow(y - centerY, 2)) / maxDist;
 
-        // Subject Protection:
+        // Subject Protection & Edge Aggression:
         // We use a parabolic threshold curve.
-        // Near center (dist < 0.4), threshold is extremely strict (protect subject).
-        // Near edges (dist > 0.7), threshold is loose (remove background).
+        // Near center (dist < 0.45), threshold is extremely strict (protect subject).
+        // Near edges (dist > 0.65), threshold is loose (remove background).
         double threshold;
-        if (distFromCenter < 0.4) {
-          threshold =
-              8.0; // Very strict: only mask if ALMOST EXACTLY background color
+        if (distFromCenter < 0.45) {
+          threshold = 6.0; // Extremely strict protection
+        } else if (distFromCenter < 0.65) {
+          threshold = 6.0 + pow((distFromCenter - 0.45) * 5.0, 2) * 20.0;
         } else {
-          // Exponentially increase threshold as we move away from center
-          threshold = 8.0 + pow(distFromCenter * 1.5, 3) * 60.0;
+          threshold = 26.0 + pow((distFromCenter - 0.65) * 3.0, 2) * 120.0;
         }
 
         if (minStatsDist < threshold) {
@@ -639,13 +639,6 @@ class BiometricService {
       predictedWeight: predictedWeight,
     );
 
-    if (detectedClass != AnimalClass.unknown) {
-      onProgress?.call(
-        'Subject Type: ${detectedClass.name.toUpperCase()}',
-        0.05,
-      );
-    }
-
     onProgress?.call('Decoding image...', 0.05);
     final img.Image? fullImg = img.decodeImage(imageBytes);
     if (fullImg == null) return [];
@@ -654,12 +647,19 @@ class BiometricService {
     Uint8List? activeSegmentedBytes = preSegmentedBytes;
     bool usedAdvancedSegmentation = preSegmentedBytes != null;
 
-    if (activeSegmentedBytes == null && _segmentation.isAvailable) {
+    if (preSegmentedBytes != null) {
+      activeSegmentedBytes = preSegmentedBytes;
+      usedAdvancedSegmentation = true; // Use provided mask for UI
+    } else if (_segmentation.isAvailable) {
       onProgress?.call('AI segmentation in progress...', 0.10);
-      activeSegmentedBytes = await _segmentation.segment(imageBytes);
-      if (activeSegmentedBytes != null) {
-        usedAdvancedSegmentation = true;
-        debugPrint('BiometricService: Using ML segmentation result');
+      try {
+        activeSegmentedBytes = await _segmentation.segment(imageBytes).timeout(const Duration(seconds: 5));
+        if (activeSegmentedBytes != null) {
+          usedAdvancedSegmentation = true;
+          debugPrint('BiometricService: Using ML segmentation result');
+        }
+      } catch (e) {
+        debugPrint('BiometricService: ML Segmentation failed or timed out: $e');
       }
     }
 
@@ -898,9 +898,13 @@ class BiometricService {
         (f1.verticalSymmetry - f2.verticalSymmetry).abs() +
         (f1.horizontalSymmetry - f2.horizontalSymmetry).abs();
     final edgeDiff = (f1.edgeDensity - f2.edgeDensity).abs();
+    // Texture boost: if both are highly textured, pattern is VERY important
+    double patternImportance = 0.7;
+    if (f1.edgeDensity > 0.15 && f2.edgeDensity > 0.15) patternImportance = 0.85;
+    
     final patternScore =
-        (1.0 - (symDiff / 2.0)).clamp(0.0, 1.0) * 0.3 +
-        (1.0 - (edgeDiff * 3.0)).clamp(0.0, 1.0) * 0.7;
+        (1.0 - (symDiff / 2.0)).clamp(0.0, 1.0) * (1.0 - patternImportance) +
+        (1.0 - (edgeDiff * 4.0)).clamp(0.0, 1.0) * patternImportance;
 
     // 5. SHADE & SATURATION
     final shadeScore = (1.0 - (f1.avgBrightness - f2.avgBrightness).abs())
@@ -927,7 +931,7 @@ class BiometricService {
       }
     }
 
-    // Diet Gate
+    // Diet Gate: Strict blocking for biological impossibilities
     double dietScore = 1.0;
     if (target.diet.isNotEmpty &&
         target.diet != 'unknown' &&
@@ -935,7 +939,7 @@ class BiometricService {
       final plausibleDiets = _plausibleDietsForClass(detectedClass);
       if (plausibleDiets.isNotEmpty &&
           !plausibleDiets.contains(target.diet.toLowerCase())) {
-        dietScore = 0.2;
+        dietScore = 0.01; // NEAR-TOTAL BLOCK
       }
     }
 
@@ -973,13 +977,15 @@ class BiometricService {
                 patternScore * visualWeightPattern)
             .clamp(0.0, 1.0);
 
-    // Apply "Numerosity Correction"
-    // If the detected class is unknown, we slightly penalize Fish matches
-    // because they are over-represented in the database.
+    // Apply "Numerosity Correction" (Only if not a strong visual match)
     double numerosityCorrection = 1.0;
-    if (detectedClass == AnimalClass.unknown && 
-        target.animalClass.toLowerCase() == 'fish') {
-      numerosityCorrection = 0.85; 
+    if (detectedClass == AnimalClass.unknown && visualConfidence < 0.90) {
+      if (target.animalClass.toLowerCase() == 'fish') {
+        numerosityCorrection = 0.85; 
+      } else if (target.animalClass.toLowerCase() == 'mammal') {
+        // Stricter penalty for mammals when unknown to prevent Fish->Mammal false positives
+        numerosityCorrection = 0.6; 
+      }
     }
 
     // Apply biological gates and numerosity correction

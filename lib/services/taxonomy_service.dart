@@ -108,48 +108,40 @@ class TaxonomyService {
       final hasLegGaps = _detectLegGaps(decoded);
       final solidity = _calculateSolidity(decoded);
 
-      // 1. MAMMAL/LARGE LAND ANIMAL
-      bool isEarthTone = (dominantHue >= 15 && dominantHue <= 55);
-      // If it has legs and mammal aspect, it's a mammal (even if not brown, e.g. white cow)
-      if (hasLegGaps && aspect < 2.2 && aspect > 0.5) return AnimalClass.mammal;
-      if (isEarthTone && hasLegGaps && aspect < 2.5) return AnimalClass.mammal;
-      if (verticalBias > 0.7 && hasLegGaps) return AnimalClass.mammal;
+      // --- TAXONOMIC SCORING ENGINE ---
+      bool isEarthTone = (dominantHue >= 10 && dominantHue <= 60 && avgSaturation > 0.15);
+      bool isAchromatic = (avgSaturation < 0.15); // Grey/Dusty/Pinkish-Grey
+      
+      // MAMMAL SCORE
+      double mammalScore = 0;
+      if (isEarthTone) mammalScore += 0.4;
+      if (isAchromatic) mammalScore += 0.4;
+      if (hasLegGaps) mammalScore += 0.5;
+      if (aspect > 0.8 && aspect < 2.2) mammalScore += 0.3;
+      if (solidity > 0.5) mammalScore += 0.3;
+      
+      if (mammalScore >= 0.7) return AnimalClass.mammal;
 
-      // 2. BIRD: Small/Square with vertical bias
+      // FISH SCORE
+      bool isAquaticTone = (dominantHue > 165 && dominantHue < 255);
+      if (aspect > 1.3 && isAquaticTone && verticalBias < 0.45) return AnimalClass.fish;
+      if (aspect > 1.4 && !hasLegGaps && verticalBias < 0.4) return AnimalClass.fish;
+
+      // BIRD
       if (aspect < 1.0 && verticalBias > 0.6) return AnimalClass.bird;
 
-      // 3. FISH: Horizontal bias + Aquatic tones
-      bool isAquaticTone = (dominantHue > 165 && dominantHue < 255);
-      if (aspect > 1.5 && isAquaticTone && verticalBias < 0.4) return AnimalClass.fish;
-
-      // 4. INVERTEBRATES (Granular)
+      // INSECT (Strictly low solidity)
+      if (solidity < 0.4 && aspect > 0.5 && aspect < 2.5 && !hasLegGaps) return AnimalClass.insect;
       
-      // ARACHNID: High edge complexity + Square aspect
-      if (aspect > 0.8 && aspect < 1.2 && hasLegGaps) return AnimalClass.arachnid;
+      // REPTILE/AMPHIBIAN
+      if (aspect > 1.4 && (dominantHue > 45 && dominantHue < 100) && verticalBias < 0.4) return AnimalClass.reptile;
+      if (aspect > 2.5 && !hasLegGaps) return AnimalClass.reptile;
 
-      // CRUSTACEAN: Hard shell (High solidity) + Red/Orange/Earth
-      if (solidity > 0.7 && (dominantHue < 35 || isEarthTone) && aspect > 1.2) return AnimalClass.crustacean;
-
-      // CNIDARIAN (Jellyfish): Low saturation (transparent) + Radial/Vertical + Aquatic Tone
-      if (avgSaturation < 0.25 && isAquaticTone && verticalBias < 0.5) return AnimalClass.cnidarian;
-
-      // ECHINODERM (Starfish): Radial symmetry + Low solidity
-      if (solidity < 0.6 && aspect > 0.9 && aspect < 1.1) return AnimalClass.echinoderm;
-
-      // ANNELID (Worm): Very high aspect + low solidity
-      if (aspect > 3.0 && solidity < 0.5) return AnimalClass.annelid;
-
-      // MOLLUSK: High solidity (Shells) or Slugs
-      if (solidity > 0.8 && aspect > 0.8 && aspect < 1.4) return AnimalClass.mollusk; // Snails/Clams
-      if (aspect > 2.0 && solidity < 0.6 && !hasLegGaps) return AnimalClass.mollusk; // Slugs
-
-      // INSECT: Small, horizontal or square, often green/black
-      if (aspect > 0.5 && aspect < 2.0 && solidity < 0.8) return AnimalClass.insect;
-
-      // 5. REPTILE/AMPHIBIAN
-      if (aspect > 1.4 && (dominantHue > 45 && dominantHue < 100) && verticalBias < 0.4) {
-        return AnimalClass.reptile;
-      }
+      // FALLBACKS
+      if (isEarthTone || isAchromatic) return AnimalClass.mammal; // Default to mammal for solid land animals
+      if (solidity > 0.8 && aspect > 0.8 && aspect < 1.4) return AnimalClass.mollusk; 
+      
+      return AnimalClass.unknown;
       
       return AnimalClass.unknown;
     } catch (_) {
@@ -183,32 +175,23 @@ class TaxonomyService {
   }
 
   bool _detectLegGaps(img.Image image) {
-    int distinctGaps = 0;
-    bool inGap = false;
-    int gapWidth = 0;
+    // Only check the central 60% of the width to avoid tail/head transparency
+    int xStart = (image.width * 0.2).toInt();
+    int xEnd = (image.width * 0.8).toInt();
+    int yStart = (image.height * 0.75).toInt();
+    int gaps = 0;
     
-    final startY = (image.height * 0.85).toInt();
-    for (int x = 2; x < image.width - 2; x++) {
-      bool columnEmpty = true;
-      for (int y = startY; y < image.height; y++) {
-        if (image.getPixel(x, y).a > 100) {
-          columnEmpty = false;
+    for (int x = xStart; x < xEnd; x++) {
+      bool isGap = true;
+      for (int y = yStart; y < image.height; y++) {
+        if (image.getPixel(x, y).a > 20) {
+          isGap = false;
           break;
         }
       }
-      
-      if (columnEmpty) {
-        gapWidth++;
-        if (!inGap && gapWidth >= 2) {
-          inGap = true;
-          distinctGaps++;
-        }
-      } else {
-        inGap = false;
-        gapWidth = 0;
-      }
+      if (isGap) gaps++;
     }
-    return distinctGaps >= 2; // At least two leg-like gaps
+    return gaps > (image.width * 0.15); 
   }
 
 
