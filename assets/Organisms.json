@@ -16732,11 +16732,11 @@
         "active_time": "any",
         "attack": 55,
         "category": "Aquatic, Mystic",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 60,
         "description": "A critically endangered porpoise of the Gulf.",
-        "diet": "Unknown",
+        "diet": "Piscivore",
         "drops": "Fin Fragment",
         "habitat": "Ocean",
         "health": 80,
@@ -16749,7 +16749,7 @@
         "scientific_name": "Phocoena sinus",
         "spawn_tiles": "tall_grass",
         "speed": 55,
-        "weight": 1
+        "weight": 31.5
     },
     {
         "abilities": "Stench , Poison Touch",
@@ -17140,11 +17140,11 @@
         "active_time": "any",
         "attack": 25,
         "category": "Aquatic, Mystic",
-        "class": "Unknown",
+        "class": "Amphibian",
         "cry": "default",
         "defense": 35,
         "description": "A unique amphibian that keeps its juvenile traits.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Gill",
         "habitat": "Lake,River,Wetlands",
         "health": 60,
@@ -17157,7 +17157,7 @@
         "scientific_name": "Ambystoma mexicanum",
         "spawn_tiles": "tall_grass",
         "speed": 40,
-        "weight": 1
+        "weight": 31.5
     },
     {
         "abilities": "Sniper , Keen Eye",
@@ -18700,11 +18700,11 @@
         "active_time": "any",
         "attack": 35,
         "category": "Aquatic, Martial",
-        "class": "Unknown",
+        "class": "Amphibian",
         "cry": "frog",
         "defense": 40,
         "description": "A frog that builds bubble nests in water.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Frog Leg",
         "habitat": "Jungle,River",
         "health": 55,
@@ -18717,7 +18717,7 @@
         "scientific_name": "Lechriodus fletcheri",
         "spawn_tiles": "lily_pad,lily_pad2,cattail_0",
         "speed": 35,
-        "weight": 1
+        "weight": 0.035
     },
     {
         "abilities": "Swimmer",
@@ -20812,11 +20812,11 @@
         "active_time": "any",
         "attack": 50,
         "category": "Aquatic, Metal",
-        "class": "Unknown",
+        "class": "Mollusk",
         "cry": "default",
         "defense": 60,
         "description": "An ancient shelled cephalopod drifting in deep waters.",
-        "diet": "Unknown",
+        "diet": "Scavenger",
         "drops": "Shell",
         "habitat": "Ocean, Deep Sea",
         "health": 85,
@@ -20829,7 +20829,7 @@
         "scientific_name": "Nautilus pompilius",
         "spawn_tiles": "tall_grass",
         "speed": 40,
-        "weight": 1
+        "weight": 1.15
     },
     {
         "abilities": "Battle Armor, No Guard",
@@ -20908,11 +20908,11 @@
         "active_time": "any",
         "attack": 40,
         "category": "Aquatic, Mystic",
-        "class": "Unknown",
+        "class": "Mollusk",
         "cry": "default",
         "defense": 35,
         "description": "A reef snail with a vivid spotted mantle.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Shell,Mucus,Snail Meat",
         "habitat": "Coral Reef",
         "health": 60,
@@ -20925,7 +20925,7 @@
         "scientific_name": "Cyphoma gibbosum",
         "spawn_tiles": "tall_grass",
         "speed": 45,
-        "weight": 1
+        "weight": 0.005
     },
     {
         "abilities": "Clear Body",
@@ -21340,11 +21340,11 @@
         "active_time": "any",
         "attack": 75,
         "category": "Aquatic, Metal",
-        "class": "Unknown",
+        "class": "Reptile",
         "cry": "default",
         "defense": 100,
         "description": "A powerful sea turtle with a massive head and strong bite.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Turtle Shell,Turtle Meat",
         "habitat": "Ocean, Coastal",
         "health": 96,
@@ -21357,7 +21357,7 @@
         "scientific_name": "Caretta caretta",
         "spawn_tiles": "tall_grass",
         "speed": 35,
-        "weight": 1
+        "weight": 290
     },
     {
         "abilities": "Levitate ,Mirror Armor",
@@ -21368,7 +21368,7 @@
         "cry": "fish",
         "defense": 55,
         "description": "A long, slender fish with a ribbon-like body.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Deep Sea, Ocean",
         "health": 95,
@@ -21381,7 +21381,7 @@
         "scientific_name": "Trachipteridae",
         "spawn_tiles": "water",
         "speed": 80,
-        "weight": 1
+        "weight": 3
     },
     {
         "abilities": "Infiltrator , Long Reach",
@@ -25952,7 +25952,7 @@
         "cry": "fish",
         "defense": 110,
         "description": "A large South American catfish with golden hues.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "River, Lake",
         "health": 95,
@@ -25965,7 +25965,7 @@
         "scientific_name": "Brachyplatystoma rousseauxii",
         "spawn_tiles": "water",
         "speed": 70,
-        "weight": 1
+        "weight": 90
     },
     {
         "abilities": "Battle Armor, Solid Rock",
@@ -26024,7 +26024,7 @@
         "cry": "fish",
         "defense": 120,
         "description": "A dark catfish armed with serrated bony plates.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Fillet",
         "habitat": "River, Lake",
         "health": 130,
@@ -26048,7 +26048,7 @@
         "cry": "fish",
         "defense": 80,
         "description": "A popular game fish found in freshwater lakes and rivers.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Lake, River,Wetlands",
         "health": 75,
@@ -26061,7 +26061,7 @@
         "scientific_name": "Micropterus dolomieu",
         "spawn_tiles": "water",
         "speed": 100,
-        "weight": 1
+        "weight": 3.35
     },
     {
         "abilities": "Swift Swim",
@@ -26288,7 +26288,7 @@
         "cry": "fish",
         "defense": 115,
         "description": "A massive catfish protected by thick bony plates.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Fillet",
         "habitat": "River, Lake",
         "health": 100,
@@ -26301,7 +26301,7 @@
         "scientific_name": "Megalodoras uranoscopus",
         "spawn_tiles": "water",
         "speed": 35,
-        "weight": 1
+        "weight": 0.45
     },
     {
         "abilities": "Magic Guard",
@@ -26432,7 +26432,7 @@
         "cry": "fish",
         "defense": 60,
         "description": "A salmon native to East Asia known for strong runs upstream.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "River, Ocean, Coastal",
         "health": 70,
@@ -26445,7 +26445,7 @@
         "scientific_name": "Oncorhynchus masou",
         "spawn_tiles": "water",
         "speed": 100,
-        "weight": 1
+        "weight": 5.5
     },
     {
         "abilities": "Leaper",
@@ -27364,11 +27364,11 @@
         "active_time": "any",
         "attack": 45,
         "category": "Aquatic, Mystic",
-        "class": "Unknown",
+        "class": "Bird",
         "cry": "default",
         "defense": 35,
         "description": "Roseate Spoonbills sweep shallow waters to catch small aquatic creatures. Their vibrant plumage makes them easily recognizable in flocks.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Feather",
         "habitat": "Swamp, River, Jungle,Wetlands",
         "health": 120,
@@ -27381,7 +27381,7 @@
         "scientific_name": "Platalea ajaja",
         "spawn_tiles": "tall_grass",
         "speed": 25,
-        "weight": 1
+        "weight": 1.45
     },
     {
         "abilities": "Inner Focus",
@@ -28616,7 +28616,7 @@
         "cry": "fish",
         "defense": 40,
         "description": "The peacock gudgeon is a small, vibrantly colored fish found in New Guinea streams. Males flare their fins to impress potential mates.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Fillet",
         "habitat": "River, Lake",
         "health": 60,
@@ -28629,7 +28629,7 @@
         "scientific_name": "Tateurndina ocellicauda",
         "spawn_tiles": "water",
         "speed": 70,
-        "weight": 1
+        "weight": 0.0055
     },
     {
         "abilities": "Camouflaged Step",
@@ -28640,7 +28640,7 @@
         "cry": "fish",
         "defense": 105,
         "description": "The polka-dot batfish uses its fins to walk along the seafloor instead of swimming. Its odd appearance and pattern make it blend into sandy bottoms.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Ocean, Coastal",
         "health": 85,
@@ -28653,7 +28653,7 @@
         "scientific_name": "Ogcocephalus radiatus",
         "spawn_tiles": "water",
         "speed": 30,
-        "weight": 1
+        "weight": 1.15
     },
     {
         "abilities": "Battle Armor, Cold-blooded",
@@ -28856,7 +28856,7 @@
         "cry": "fish",
         "defense": 85,
         "description": "This peculiar fish uses its fins to walk on the sea floor rather than swim. Its bright red lips are used for species recognition and mate attraction.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Ocean, Coastal, Coral Reef",
         "health": 75,
@@ -28869,7 +28869,7 @@
         "scientific_name": "Ogcocephalus darwini",
         "spawn_tiles": "water",
         "speed": 45,
-        "weight": 1
+        "weight": 0.45
     },
     {
         "abilities": "Dazzling",
@@ -29624,7 +29624,7 @@
         "cry": "fish",
         "defense": 55,
         "description": "This golden fish helps control algae growth in freshwater habitats. It becomes territorial with age, guarding its favorite rocks and plants.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Fillet",
         "habitat": "River, Lake",
         "health": 65,
@@ -29637,7 +29637,7 @@
         "scientific_name": "Gyrinocheilus aymonieri",
         "spawn_tiles": "water",
         "speed": 75,
-        "weight": 1
+        "weight": 0.045
     },
     {
         "abilities": "Filter",
@@ -29648,7 +29648,7 @@
         "cry": "fish",
         "defense": 70,
         "description": "Selective breeding has given this discus its intricate red and white maze pattern. It thrives in warm, still waters surrounded by dense vegetation.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Fillet",
         "habitat": "River, Lake, Jungle",
         "health": 65,
@@ -29661,7 +29661,7 @@
         "scientific_name": "Symphysodon aequifasciatus hybrid",
         "spawn_tiles": "water",
         "speed": 60,
-        "weight": 1
+        "weight": 0.225
     },
     {
         "abilities": "Huge Power",
@@ -29768,7 +29768,7 @@
         "cry": "fish",
         "defense": 95,
         "description": "This critically endangered fish walks on its fins instead of swimming. It is found only in a few spots off the coast of Tasmania.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Coastal, Ocean",
         "health": 75,
@@ -29781,7 +29781,7 @@
         "scientific_name": "Thymichthys politus",
         "spawn_tiles": "water",
         "speed": 60,
-        "weight": 1
+        "weight": 0.055
     },
     {
         "abilities": "Intimidate",
@@ -29984,7 +29984,7 @@
         "cry": "fish",
         "defense": 65,
         "description": "This species uses an elongated lure to mimic small worms. It can change color quickly to adapt to reef conditions.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Coral Reef, Coastal",
         "health": 78,
@@ -29997,7 +29997,7 @@
         "scientific_name": "Antennarius multiocellatus",
         "spawn_tiles": "water",
         "speed": 32,
-        "weight": 1
+        "weight": 0.425
     },
     {
         "abilities": "Mimic",
@@ -30008,7 +30008,7 @@
         "cry": "fish",
         "defense": 70,
         "description": "This vividly colored frogfish changes hues to match coral surroundings. Its wide mouth creates a vacuum to engulf prey instantly.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Coral Reef, Coastal",
         "health": 85,
@@ -30021,7 +30021,7 @@
         "scientific_name": "Antennarius pictus",
         "spawn_tiles": "water",
         "speed": 30,
-        "weight": 1
+        "weight": 0.65
     },
     {
         "abilities": "Disguise",
@@ -30152,7 +30152,7 @@
         "cry": "fish",
         "defense": 50,
         "description": "Males display their forked tails in colorful dances during mating season. This species thrives in soft acidic rainforest waters.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Fillet",
         "habitat": "River, Swamp, Jungle",
         "health": 70,
@@ -30165,7 +30165,7 @@
         "scientific_name": "Aphyosemion bivittatum",
         "spawn_tiles": "water",
         "speed": 90,
-        "weight": 1
+        "weight": 0.003
     },
     {
         "abilities": "Fan Display",
@@ -32168,7 +32168,7 @@
         "cry": "fish",
         "defense": 125,
         "description": "The Golden Dogface Pufferfish glows with golden hues in reef waters. It is known for its powerful inflation defense.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Coral Reef, Ocean",
         "health": 85,
@@ -32181,7 +32181,7 @@
         "scientific_name": "Arothron meleagris",
         "spawn_tiles": "water",
         "speed": 38,
-        "weight": 1
+        "weight": 1.1
     },
     {
         "abilities": "Camouflage",
@@ -32332,11 +32332,11 @@
         "active_time": "any",
         "attack": 70,
         "category": "Aquatic, Mystic",
-        "class": "Unknown",
+        "class": "Crustacean",
         "cry": "default",
         "defense": 115,
         "description": "This small reef lobster has vivid red and purple coloration. It uses its claws to hunt small invertebrates among corals.",
-        "diet": "Unknown",
+        "diet": "Scavenger",
         "drops": "Lobster Claw, Exoskeleton, Muscle",
         "habitat": "Coral Reef, Ocean",
         "health": 75,
@@ -32349,7 +32349,7 @@
         "scientific_name": "Enoplometopus debelius",
         "spawn_tiles": "water",
         "speed": 35,
-        "weight": 1
+        "weight": 0.075
     },
     {
         "abilities": "Strong Jaw",
@@ -32480,7 +32480,7 @@
         "cry": "fish",
         "defense": 55,
         "description": "This brilliantly colored rainbow fish forms tight shoals in clear rainforest rivers. Males display vivid red spots during breeding season.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Fillet",
         "habitat": "River, Lake, Jungle",
         "health": 65,
@@ -32493,18 +32493,18 @@
         "scientific_name": "Glossolepis incisus",
         "spawn_tiles": "water",
         "speed": 80,
-        "weight": 1
+        "weight": 0.012
     },
     {
         "abilities": "True Flight,Filter",
         "active_time": "any",
         "attack": 35,
         "category": "Aquatic, Metal",
-        "class": "Unknown",
+        "class": "Bird",
         "cry": "default",
         "defense": 30,
         "description": "This tiny shorebird probes soft mudflats with a spoon shaped bill. Its global population is critically low and highly endangered.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Feather",
         "habitat": "Coastal, River, Mangrove,Wetlands",
         "health": 65,
@@ -32517,7 +32517,7 @@
         "scientific_name": "Calidris pygmaea",
         "spawn_tiles": "tall_grass",
         "speed": 90,
-        "weight": 1
+        "weight": 0.0315
     },
     {
         "abilities": "Sturdy, Anger Point",
@@ -32572,11 +32572,11 @@
         "active_time": "any",
         "attack": 70,
         "category": "Aquatic, Mystic",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 80,
         "description": "This freshwater porpoise navigates turbid river waters using sound. Its numbers have declined dramatically due to habitat loss and pollution.",
-        "diet": "Unknown",
+        "diet": "Piscivore",
         "drops": "Blubber",
         "habitat": "River, Coastal",
         "health": 100,
@@ -32589,7 +32589,7 @@
         "scientific_name": "Neophocaena asiaeorientalis",
         "spawn_tiles": "tall_grass",
         "speed": 70,
-        "weight": 1
+        "weight": 57.5
     },
     {
         "abilities": "True Flight, Compound Eyes",
@@ -34112,7 +34112,7 @@
         "cry": "fish",
         "defense": 75,
         "description": "The crevalle jack is a powerful schooling fish that thrives in warm coastal waters. Its streamlined body allows explosive bursts of speed during hunts.",
-        "diet": "Unknown",
+        "diet": "Piscivore",
         "drops": "Fillet",
         "habitat": "Ocean, Coastal",
         "health": 100,
@@ -34125,7 +34125,7 @@
         "scientific_name": "Caranx hippos",
         "spawn_tiles": "water",
         "speed": 80,
-        "weight": 1
+        "weight": 10.75
     },
     {
         "abilities": "Swift Swim",
@@ -34592,7 +34592,7 @@
         "cry": "fish",
         "defense": 65,
         "description": "The blackfin tuna is a powerful ocean predator known for its speed and endurance. It hunts in coordinated groups to drive schools of fish to the surface.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Ocean, Deep Sea",
         "health": 70,
@@ -34605,7 +34605,7 @@
         "scientific_name": "Thunnus atlanticus",
         "spawn_tiles": "water",
         "speed": 115,
-        "weight": 1
+        "weight": 14.5
     },
     {
         "abilities": "Adaptability",
@@ -34736,7 +34736,7 @@
         "cry": "fish",
         "defense": 45,
         "description": "The creek chub is a hardy freshwater fish that often inhabits small streams. It feeds on insects and serves as prey for larger fish and birds.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Fillet",
         "habitat": "River, Lake",
         "health": 70,
@@ -34749,7 +34749,7 @@
         "scientific_name": "Semotilus atromaculatus",
         "spawn_tiles": "water",
         "speed": 35,
-        "weight": 1
+        "weight": 0.175
     },
     {
         "abilities": "Swift Swim , Sturdy",
@@ -34760,7 +34760,7 @@
         "cry": "fish",
         "defense": 60,
         "description": "The garfish has an elongated body and needle-like jaws suited for fast attacks. It often leaps from the water while chasing small prey.",
-        "diet": "Unknown",
+        "diet": "Piscivore",
         "drops": "Fillet",
         "habitat": "Coastal, Ocean",
         "health": 95,
@@ -34773,7 +34773,7 @@
         "scientific_name": "Belone belone",
         "spawn_tiles": "water",
         "speed": 75,
-        "weight": 1
+        "weight": 0.85
     },
     {
         "abilities": "Guts",
@@ -34856,7 +34856,7 @@
         "cry": "fish",
         "defense": 44,
         "description": "The hilsa shad is a prized fish famous in South Asia for its delicate taste and shimmering scales. It travels long distances between rivers and oceans to breed.",
-        "diet": "Unknown",
+        "diet": "Filter Feeder",
         "drops": "Fillet",
         "habitat": "River, Coastal",
         "health": 60,
@@ -34869,7 +34869,7 @@
         "scientific_name": "Tenualosa ilisha",
         "spawn_tiles": "water",
         "speed": 72,
-        "weight": 1
+        "weight": 1.85
     },
     {
         "abilities": "Sand Veil",
@@ -34904,7 +34904,7 @@
         "cry": "fish",
         "defense": 45,
         "description": "The pinfish is a small but feisty coastal species known for its sharp dorsal spines. It gathers in large schools near reefs and seagrass beds.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Fillet",
         "habitat": "Coastal",
         "health": 55,
@@ -34917,7 +34917,7 @@
         "scientific_name": "Lagodon rhomboides",
         "spawn_tiles": "water",
         "speed": 60,
-        "weight": 1
+        "weight": 0.45
     },
     {
         "abilities": "Rough Skin",
@@ -34928,7 +34928,7 @@
         "cry": "fish",
         "defense": 48,
         "description": "The pumpkinseed is a colorful freshwater fish with bright orange and blue markings. It prefers calm ponds and lakes rich with vegetation.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Fillet",
         "habitat": "Lake, River",
         "health": 50,
@@ -34941,7 +34941,7 @@
         "scientific_name": "Lepomis gibbosus",
         "spawn_tiles": "water",
         "speed": 58,
-        "weight": 1
+        "weight": 0.315
     },
     {
         "abilities": "Soundproof",
@@ -35096,7 +35096,7 @@
         "cry": "fish",
         "defense": 50,
         "description": "The tub gurnard uses its fins to walk on the sea floor and make croaking sounds. Its bright red body helps it communicate and deter rivals.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Coastal, Ocean",
         "health": 65,
@@ -35109,7 +35109,7 @@
         "scientific_name": "Chelidonichthys lucerna",
         "spawn_tiles": "water",
         "speed": 52,
-        "weight": 1
+        "weight": 3.25
     },
     {
         "abilities": "Adaptability",
@@ -35120,7 +35120,7 @@
         "cry": "fish",
         "defense": 53,
         "description": "White perch are schooling fish that thrive in both fresh and brackish water. They are opportunistic feeders with a mild, pleasant taste.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Lake, River,Wetlands",
         "health": 60,
@@ -35133,7 +35133,7 @@
         "scientific_name": "Morone americana",
         "spawn_tiles": "water",
         "speed": 58,
-        "weight": 1
+        "weight": 1.1
     },
     {
         "abilities": "Schooling",
@@ -35456,7 +35456,7 @@
         "cry": "fish",
         "defense": 55,
         "description": "The golden trout is one of the most beautiful freshwater fish. It lives in clear, cold mountain streams of California.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Fillet",
         "habitat": "River, Lake",
         "health": 65,
@@ -35469,7 +35469,7 @@
         "scientific_name": "Oncorhynchus aguabonita",
         "spawn_tiles": "water",
         "speed": 70,
-        "weight": 1
+        "weight": 1.4
     },
     {
         "abilities": "Stealth",
@@ -35600,7 +35600,7 @@
         "cry": "fish",
         "defense": 38,
         "description": "The jack silverside darts in schools through shallow coastal waters. Its silvery scales reflect sunlight, confusing predators.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Fillet",
         "habitat": "Coastal",
         "health": 55,
@@ -35613,7 +35613,7 @@
         "scientific_name": "Atherinopsis californiensis",
         "spawn_tiles": "water",
         "speed": 75,
-        "weight": 1
+        "weight": 0.025
     },
     {
         "abilities": "Swift Swim , Ice Body",
@@ -35696,7 +35696,7 @@
         "cry": "fish",
         "defense": 58,
         "description": "The redbreast tilapia is a hardy fish often found in warm African waters. It feeds mainly on plants and detritus.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Fillet",
         "habitat": "River, Lake",
         "health": 68,
@@ -35709,7 +35709,7 @@
         "scientific_name": "Coptodon rendalli",
         "spawn_tiles": "water",
         "speed": 57,
-        "weight": 1
+        "weight": 0.95
     },
     {
         "abilities": "Natural Cure",
@@ -35720,7 +35720,7 @@
         "cry": "fish",
         "defense": 50,
         "description": "The rock wrasse is a colorful reef fish that changes color with age and mood. It darts rapidly among coral and kelp to catch prey.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Coastal",
         "health": 65,
@@ -35733,7 +35733,7 @@
         "scientific_name": "Halichoeres semicinctus",
         "spawn_tiles": "water",
         "speed": 70,
-        "weight": 1
+        "weight": 0.525
     },
     {
         "abilities": "Thick Fat",
@@ -35744,7 +35744,7 @@
         "cry": "fish",
         "defense": 60,
         "description": "The rubberlip seaperch has thick lips and a peaceful temperament. It hovers near rocky reefs in small family groups.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Coastal",
         "health": 75,
@@ -35757,7 +35757,7 @@
         "scientific_name": "Rhacochilus toxotes",
         "spawn_tiles": "water",
         "speed": 50,
-        "weight": 1
+        "weight": 1.35
     },
     {
         "abilities": "Filter Feed",
@@ -35816,7 +35816,7 @@
         "cry": "fish",
         "defense": 52,
         "description": "The striped surfperch is a vibrant fish found along Pacific shores. It bears live young and swims in small family groups.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Coastal",
         "health": 70,
@@ -35829,7 +35829,7 @@
         "scientific_name": "Embiotoca lateralis",
         "spawn_tiles": "water",
         "speed": 60,
-        "weight": 1
+        "weight": 0.65
     },
     {
         "abilities": "Guard Dog",
@@ -37252,11 +37252,11 @@
         "active_time": "any",
         "attack": 110,
         "category": "Aquatic, Metal",
-        "class": "Unknown",
+        "class": "Crustacean",
         "cry": "default",
         "defense": 145,
         "description": "Dungeness Crabs are medium-sized crabs found along the Pacific coast. They are preyed upon by birds and mammals but use claws for defense and scavenging.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Crab Claw, Exoskeleton, Muscle",
         "habitat": "Coastal",
         "health": 75,
@@ -37269,7 +37269,7 @@
         "scientific_name": "Metacarcinus magister",
         "spawn_tiles": "tall_grass",
         "speed": 45,
-        "weight": 1
+        "weight": 1.25
     },
     {
         "abilities": "Ice Body",
@@ -37640,7 +37640,7 @@
         "cry": "fish",
         "defense": 25,
         "description": "The scarlet badis is a brilliantly colored freshwater fish that uses its red hues to attract mates. Males defend small territories and display vivid fins when challenged.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Fillet",
         "habitat": "River, Lake",
         "health": 30,
@@ -37653,7 +37653,7 @@
         "scientific_name": "Dario dario",
         "spawn_tiles": "water",
         "speed": 40,
-        "weight": 1
+        "weight": 0.0015
     },
     {
         "abilities": "Electro Sense",
@@ -38408,7 +38408,7 @@
         "cry": "fish",
         "defense": 60,
         "description": "The golden dorado is a powerful freshwater fish admired for its strength and golden sheen. It hunts with explosive speed and fierce precision in South American rivers.",
-        "diet": "Unknown",
+        "diet": "Piscivore",
         "drops": "Fillet",
         "habitat": "River, Lake",
         "health": 86,
@@ -38421,7 +38421,7 @@
         "scientific_name": "Salminus brasiliensis",
         "spawn_tiles": "water",
         "speed": 85,
-        "weight": 1
+        "weight": 17.5
     },
     {
         "abilities": "Adaptability",
@@ -41236,11 +41236,11 @@
         "active_time": "any",
         "attack": 45,
         "category": "Aquatic, Mystic",
-        "class": "Fish",
+        "class": "Crustacean",
         "cry": "fish",
         "defense": 55,
         "description": "The Blue Moon Crayfish glows with a rare sapphire hue that makes it a collectors favorite. It patrols riverbeds at night, scavenging for detritus and algae.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Fillet",
         "habitat": "River,Wetlands",
         "health": 70,
@@ -41253,7 +41253,7 @@
         "scientific_name": "Procambarus alleni",
         "spawn_tiles": "water",
         "speed": 35,
-        "weight": 1
+        "weight": 0.175
     },
     {
         "abilities": "Flash Fire , Adaptability",
@@ -41284,11 +41284,11 @@
         "active_time": "any",
         "attack": 40,
         "category": "Aquatic, Martial",
-        "class": "Unknown",
+        "class": "Crustacean",
         "cry": "default",
         "defense": 65,
         "description": "The Orange Tip Crabs bright claws are used both for combat and communication. It hides among rocks at low tide, emerging to feed during moonlit nights.",
-        "diet": "Unknown",
+        "diet": "Detritivore",
         "drops": "Crab Claw, Exoskeleton, Muscle",
         "habitat": "Coastal",
         "health": 90,
@@ -41301,7 +41301,7 @@
         "scientific_name": "Ozius truncatus",
         "spawn_tiles": "tall_grass",
         "speed": 25,
-        "weight": 1
+        "weight": 0.3
     },
     {
         "abilities": "Illusion",
@@ -41360,7 +41360,7 @@
         "cry": "fish",
         "defense": 35,
         "description": "The Celebes Rainbowfish is a shimmering freshwater fish from Sulawesis rivers. It swims in shimmering schools that flash like liquid silver under sunlight.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "River",
         "health": 60,
@@ -41373,7 +41373,7 @@
         "scientific_name": "Marosatherina ladigesi",
         "spawn_tiles": "water",
         "speed": 65,
-        "weight": 1
+        "weight": 0.0045
     },
     {
         "abilities": "Color Shift",
@@ -42152,7 +42152,7 @@
         "cry": "fish",
         "defense": 45,
         "description": "The fantail goldfish is a rounded variety known for its double tail and gentle nature. It glides gracefully through still waters with slow, elegant motion.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Fillet",
         "habitat": "Lake, River",
         "health": 70,
@@ -42165,7 +42165,7 @@
         "scientific_name": "Carassius auratus",
         "spawn_tiles": "water",
         "speed": 35,
-        "weight": 1
+        "weight": 0.325
     },
     {
         "abilities": "Pastel Veil , Cute Charm",
@@ -42176,7 +42176,7 @@
         "cry": "fish",
         "defense": 20,
         "description": "The koi guppy is a vibrant guppy strain named for its koi-like patterns. It reproduces quickly and thrives in both aquariums and outdoor ponds.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Fillet",
         "habitat": "River, Lake",
         "health": 30,
@@ -42189,7 +42189,7 @@
         "scientific_name": "Poecilia reticulata",
         "spawn_tiles": "water",
         "speed": 70,
-        "weight": 1
+        "weight": 0.0015
     },
     {
         "abilities": "Rock Head",
@@ -42584,7 +42584,7 @@
         "cry": "fish",
         "defense": 55,
         "description": "The Florida pompano is prized for its speed and silver sheen. It roams warm coastal waters searching for crustaceans along sandy beaches.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Coastal, Ocean",
         "health": 99,
@@ -42597,7 +42597,7 @@
         "scientific_name": "Trachinotus carolinus",
         "spawn_tiles": "water",
         "speed": 80,
-        "weight": 1
+        "weight": 0.035
     },
     {
         "abilities": "Scrappy , Rattled",
@@ -42940,11 +42940,11 @@
         "active_time": "any",
         "attack": 50,
         "category": "Aquatic, Martial",
-        "class": "Unknown",
+        "class": "Amphibian",
         "cry": "frog",
         "defense": 45,
         "description": "The hairy frog is known for breaking its own bones to form claws when threatened. It inhabits humid rainforests and streams in Central Africa.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Frog Leg",
         "habitat": "Rainforest, River",
         "health": 60,
@@ -42957,7 +42957,7 @@
         "scientific_name": "Trichobatrachus robustus",
         "spawn_tiles": "lily_pad,lily_pad2,cattail_0",
         "speed": 40,
-        "weight": 1
+        "weight": 0.055
     },
     {
         "abilities": "Leaf Guard",
@@ -44624,7 +44624,7 @@
         "cry": "fish",
         "defense": 40,
         "description": "The Masked Angelfish grazes on algae in coral reefs. Its bold colors provide both camouflage and warning to predators.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Fillet",
         "habitat": "Coral Reef",
         "health": 90,
@@ -44637,7 +44637,7 @@
         "scientific_name": "Genicanthus personatus",
         "spawn_tiles": "water",
         "speed": 50,
-        "weight": 1
+        "weight": 0.125
     },
     {
         "abilities": "Regenerator",
@@ -44648,7 +44648,7 @@
         "cry": "fish",
         "defense": 35,
         "description": "The Peppermint Angelfish is a tiny, elusive reef fish. Its bright stripes confuse predators while it grazes among coral branches.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Fillet",
         "habitat": "Coral Reef",
         "health": 80,
@@ -44661,7 +44661,7 @@
         "scientific_name": "Centropyge boylei",
         "spawn_tiles": "water",
         "speed": 50,
-        "weight": 1
+        "weight": 0.0525
     },
     {
         "abilities": "Strong Jaw",
@@ -45152,7 +45152,7 @@
         "cry": "fish",
         "defense": 40,
         "description": "The Star-eyed Parrotfish grazes algae and small invertebrates on coral reefs. It uses its strong beak to break coral and feed.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Fillet",
         "habitat": "Coral Reef",
         "health": 120,
@@ -45165,7 +45165,7 @@
         "scientific_name": "Scarus starus",
         "spawn_tiles": "water",
         "speed": 45,
-        "weight": 1
+        "weight": 1.15
     },
     {
         "abilities": "Gluttony",
@@ -45176,7 +45176,7 @@
         "cry": "fish",
         "defense": 50,
         "description": "The Red Moano is a reef predator that hunts smaller fish. It blends with coral colors to approach prey unnoticed.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Coral Reef",
         "health": 77,
@@ -45189,7 +45189,7 @@
         "scientific_name": "Cheilinus fasciatus",
         "spawn_tiles": "water",
         "speed": 40,
-        "weight": 1
+        "weight": 0.45
     },
     {
         "abilities": "Poison Touch",
@@ -45412,11 +45412,11 @@
         "active_time": "any",
         "attack": 10,
         "category": "Aquatic, Mystic",
-        "class": "Unknown",
+        "class": "Mollusk",
         "cry": "default",
         "defense": 25,
         "description": "The rainbow sea slug displays bright colors that warn predators of its toxicity. It absorbs chemical defenses from its prey and moves slowly across reefs and rocks.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Toxin Gland",
         "habitat": "Ocean",
         "health": 30,
@@ -45429,7 +45429,7 @@
         "scientific_name": "Glossodoris atromarginata",
         "spawn_tiles": "tall_grass",
         "speed": 25,
-        "weight": 1
+        "weight": 0.055
     },
     {
         "abilities": "Sticky Hold , Fluffy",
@@ -45532,11 +45532,11 @@
         "active_time": "any",
         "attack": 30,
         "category": "Aquatic, Martial",
-        "class": "Unknown",
+        "class": "Crustacean",
         "cry": "default",
         "defense": 40,
         "description": "The boxer crab carries sea anemones for defense and food capture. This unique partnership protects it from predators while stunning small prey.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Crab Claw, Exoskeleton, Muscle",
         "habitat": "Ocean",
         "health": 45,
@@ -45549,7 +45549,7 @@
         "scientific_name": "Lybia tessellata",
         "spawn_tiles": "tall_grass",
         "speed": 40,
-        "weight": 1
+        "weight": 0.007
     },
     {
         "abilities": "Prankster, Infiltrator",
@@ -45992,7 +45992,7 @@
         "cry": "fish",
         "defense": 85,
         "description": "The red terror cichlid is named for its intense aggression. It is a dominant predator in Central American rivers.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "River",
         "health": 80,
@@ -46005,7 +46005,7 @@
         "scientific_name": "Amphilophus festae",
         "spawn_tiles": "water",
         "speed": 65,
-        "weight": 1
+        "weight": 1.1
     },
     {
         "abilities": "Rough Skin",
@@ -46088,7 +46088,7 @@
         "cry": "fish",
         "defense": 95,
         "description": "The Jack Dempsey cichlid is known for bold coloration and assertive behavior. It uses displays and force to deter rivals.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "River",
         "health": 80,
@@ -46101,7 +46101,7 @@
         "scientific_name": "Rocio octofasciata",
         "spawn_tiles": "water",
         "speed": 45,
-        "weight": 1
+        "weight": 0.425
     },
     {
         "abilities": "Simple",
@@ -47384,7 +47384,7 @@
         "cry": "fish",
         "defense": 35,
         "description": "The red panda checkerboard discus is a selectively bred freshwater fish. It thrives in calm waters and relies on group cohesion.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Fillet",
         "habitat": "River",
         "health": 55,
@@ -47397,7 +47397,7 @@
         "scientific_name": "Symphysodon aequifasciatus",
         "spawn_tiles": "water",
         "speed": 40,
-        "weight": 1
+        "weight": 0.225
     },
     {
         "abilities": "Schooling",
@@ -47576,7 +47576,7 @@
         "cry": "fish",
         "defense": 40,
         "description": "The lookdown fish has a thin reflective body that confuses predators. It hunts using speed and sudden direction changes.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Coastal",
         "health": 70,
@@ -47589,7 +47589,7 @@
         "scientific_name": "Selene vomer",
         "spawn_tiles": "water",
         "speed": 70,
-        "weight": 1
+        "weight": 1.15
     },
     {
         "abilities": "Spiky Body",
@@ -47672,7 +47672,7 @@
         "cry": "fish",
         "defense": 50,
         "description": "The oriental sweetlips changes patterns as it matures. It feeds calmly on small reef organisms.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Coral Reef",
         "health": 75,
@@ -47685,7 +47685,7 @@
         "scientific_name": "Plectorhinchus orientalis",
         "spawn_tiles": "water",
         "speed": 35,
-        "weight": 1
+        "weight": 4.25
     },
     {
         "abilities": "NocturnalVision",
@@ -48076,11 +48076,11 @@
         "active_time": "any",
         "attack": 115,
         "category": "Aquatic, Mystic",
-        "class": "Unknown",
+        "class": "Mollusk",
         "cry": "default",
         "defense": 100,
         "description": "The Australian giant cuttlefish is highly intelligent and expressive. It uses rapid color changes to communicate and hunt.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Ink Sac, Cuttlebone",
         "habitat": "Coastal",
         "health": 95,
@@ -48093,7 +48093,7 @@
         "scientific_name": "Sepia apama",
         "spawn_tiles": "tall_grass",
         "speed": 70,
-        "weight": 1
+        "weight": 7.5
     },
     {
         "abilities": "No Guard",
@@ -48148,11 +48148,11 @@
         "active_time": "any",
         "attack": 110,
         "category": "Aquatic, Martial",
-        "class": "Unknown",
+        "class": "Bird",
         "cry": "default",
         "defense": 90,
         "description": "The grey headed swamphen lives near wetlands and marshes. It feeds on plants and small animals while moving in groups.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Feather",
         "habitat": "Swamp",
         "health": 85,
@@ -48165,7 +48165,7 @@
         "scientific_name": "Porphyrio poliocephalus",
         "spawn_tiles": "tall_grass",
         "speed": 75,
-        "weight": 1
+        "weight": 0.75
     },
     {
         "abilities": "Diving",
@@ -48608,7 +48608,7 @@
         "cry": "fish",
         "defense": 25,
         "description": "The one stripe spiny eel hides in sediment to ambush small aquatic animals. Its flexible body allows rapid escape when threatened.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "River, Lake,Wetlands",
         "health": 60,
@@ -48621,7 +48621,7 @@
         "scientific_name": "Macrognathus aral",
         "spawn_tiles": "water",
         "speed": 55,
-        "weight": 1
+        "weight": 0.35
     },
     {
         "abilities": "Rattled",
@@ -48656,7 +48656,7 @@
         "cry": "fish",
         "defense": 110,
         "description": "The rita catfish feeds on carrion and small animals along riverbeds. Its heavy body and strong jaws suit a scavenging lifestyle.",
-        "diet": "Unknown",
+        "diet": "Scavenger",
         "drops": "Fillet",
         "habitat": "River",
         "health": 115,
@@ -48669,7 +48669,7 @@
         "scientific_name": "Rita rita",
         "spawn_tiles": "water",
         "speed": 40,
-        "weight": 1
+        "weight": 7.5
     },
     {
         "abilities": "Battle Armor",
@@ -48752,7 +48752,7 @@
         "cry": "fish",
         "defense": 35,
         "description": "The bronze featherback is a nocturnal freshwater fish with a long ribbonlike fin. It hunts quietly using sensitive perception in low light conditions.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "River, Lake",
         "health": 75,
@@ -48765,7 +48765,7 @@
         "scientific_name": "Notopterus notopterus",
         "spawn_tiles": "water",
         "speed": 45,
-        "weight": 1
+        "weight": 0.55
     },
     {
         "abilities": "Current Grip",
@@ -48776,7 +48776,7 @@
         "cry": "fish",
         "defense": 20,
         "description": "The cotio is a tiny hill stream fish adapted to fast flowing rivers. Its flattened body helps it resist strong currents.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Fillet",
         "habitat": "River",
         "health": 35,
@@ -48789,7 +48789,7 @@
         "scientific_name": "Psilorhynchus sucatio",
         "spawn_tiles": "water",
         "speed": 55,
-        "weight": 1
+        "weight": 0.035
     },
     {
         "abilities": "Schooling",
@@ -49448,7 +49448,7 @@
         "cry": "fish",
         "defense": 45,
         "description": "The sling-jaw wrasse can rapidly extend its jaws to capture prey at a distance. This unique feeding mechanism gives it a strong advantage on coral reefs.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Coral Reef",
         "health": 65,
@@ -49461,7 +49461,7 @@
         "scientific_name": "Epibulus insidiator",
         "spawn_tiles": "water",
         "speed": 75,
-        "weight": 1
+        "weight": 0.45
     },
     {
         "abilities": "Strong Jaw",
@@ -52564,11 +52564,11 @@
         "active_time": "any",
         "attack": 60,
         "category": "Aquatic, Mystic",
-        "class": "Unknown",
+        "class": "Bird",
         "cry": "duck",
         "defense": 70,
         "description": "The mandarin duck is renowned for its vivid plumage and elegant appearance. It inhabits calm rivers and lakes where it feeds on plants and small aquatic animals.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Colorful Feather, Webbed Foot",
         "habitat": "River, Lake",
         "health": 75,
@@ -52581,7 +52581,7 @@
         "scientific_name": "Aix galericulata",
         "spawn_tiles": "tall_grass",
         "speed": 80,
-        "weight": 1
+        "weight": 0.525
     },
     {
         "abilities": "Keen Eye , Drizzle",
@@ -52756,11 +52756,11 @@
         "active_time": "any",
         "attack": 55,
         "category": "Aquatic, Mystic",
-        "class": "Unknown",
+        "class": "Fish",
         "cry": "default",
         "defense": 50,
         "description": "The leopard blenny is a reef dwelling fish patterned with bold spots. It actively hunts small invertebrates among corals while blending into its surroundings.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Spotted Scale, Reef Fin",
         "habitat": "Coral Reef",
         "health": 60,
@@ -52773,7 +52773,7 @@
         "scientific_name": "Exallias brevis",
         "spawn_tiles": "tall_grass",
         "speed": 65,
-        "weight": 1
+        "weight": 0.055
     },
     {
         "abilities": "Long Reach",
@@ -52904,7 +52904,7 @@
         "cry": "default",
         "defense": 45,
         "description": "The high-hat fish is recognized by its tall dorsal fin and bold striping. Juveniles drift near reefs while adults patrol coastal waters for small prey.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Coastal, Coral Reef",
         "health": 60,
@@ -52917,7 +52917,7 @@
         "scientific_name": "Pareques acuminatus",
         "spawn_tiles": "water",
         "speed": 65,
-        "weight": 1
+        "weight": 0.225
     },
     {
         "abilities": "Regenerator , Shell Armor",
@@ -52976,7 +52976,7 @@
         "cry": "default",
         "defense": 45,
         "description": "The sergeant major fish is a brightly banded reef species commonly seen in large schools. It feeds on plankton and small organisms while remaining highly alert.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Fillet",
         "habitat": "Coral Reef, Coastal",
         "health": 55,
@@ -52989,7 +52989,7 @@
         "scientific_name": "Abudefduf saxatilis",
         "spawn_tiles": "water",
         "speed": 75,
-        "weight": 1
+        "weight": 0.125
     },
     {
         "abilities": "Dazzling",
@@ -54076,11 +54076,11 @@
         "active_time": "any",
         "attack": 85,
         "category": "Aquatic, Martial",
-        "class": "Unknown",
+        "class": "Amphibian",
         "cry": "frog",
         "defense": 80,
         "description": "The goliath frog is the largest living frog species in the world. It inhabits fast flowing rivers and can overpower sizable prey with sudden lunges.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Thick Skin, Strong Leg",
         "habitat": "River, Jungle",
         "health": 130,
@@ -54093,7 +54093,7 @@
         "scientific_name": "Conraua goliath",
         "spawn_tiles": "lily_pad,lily_pad2,cattail_0",
         "speed": 35,
-        "weight": 1
+        "weight": 2.425
     },
     {
         "abilities": "Stakeout",
@@ -54892,11 +54892,11 @@
         "active_time": "any",
         "attack": 55,
         "category": "Aquatic, Mystic",
-        "class": "Unknown",
+        "class": "Mollusk",
         "cry": "default",
         "defense": 65,
         "description": "The glowing sucker octopus inhabits the deep ocean where it emits light from specialized suckers. It drifts slowly above the seafloor and captures small animals with gentle movements.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Soft Tentacle, Luminous Organ",
         "habitat": "Deep Sea",
         "health": 85,
@@ -54909,18 +54909,18 @@
         "scientific_name": "Stauroteuthis syrtensis",
         "spawn_tiles": "tall_grass",
         "speed": 40,
-        "weight": 1
+        "weight": 0.85
     },
     {
         "abilities": "Sharpness",
         "active_time": "any",
         "attack": 80,
         "category": "Aquatic, Martial",
-        "class": "Unknown",
+        "class": "Mollusk",
         "cry": "default",
         "defense": 70,
         "description": "The greater hooked squid is a powerful deep sea predator equipped with sharp hooks on its tentacles. It seizes fish and other cephalopods with forceful lunges.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Calamari, Ink Sac",
         "habitat": "Deep Sea",
         "health": 100,
@@ -54933,7 +54933,7 @@
         "scientific_name": "Onykia robusta",
         "spawn_tiles": "tall_grass",
         "speed": 65,
-        "weight": 1
+        "weight": 13
     },
     {
         "abilities": "Suction Cups , Shell Armor",
@@ -55180,11 +55180,11 @@
         "active_time": "any",
         "attack": 60,
         "category": "Aquatic, Martial",
-        "class": "Unknown",
+        "class": "Bird",
         "cry": "default",
         "defense": 56,
         "description": "The rockhopper penguin is known for its spiky yellow crest and energetic hopping movements. It climbs steep rocky shores to reach its nesting colonies.",
-        "diet": "Unknown",
+        "diet": "Piscivore",
         "drops": "Penguin Feather",
         "habitat": "Polar,Coastal",
         "health": 84,
@@ -55197,18 +55197,18 @@
         "scientific_name": "Eudyptes chrysocome",
         "spawn_tiles": "tall_grass",
         "speed": 46,
-        "weight": 1
+        "weight": 3.25
     },
     {
         "abilities": "Competitive",
         "active_time": "any",
         "attack": 57,
         "category": "Aquatic, Mystic",
-        "class": "Unknown",
+        "class": "Bird",
         "cry": "default",
         "defense": 55,
         "description": "The royal penguin is a striking Antarctic penguin with a bright orange bill and yellow crest. It gathers in enormous colonies along cold southern islands near icy seas.",
-        "diet": "Unknown",
+        "diet": "Piscivore",
         "drops": "Penguin Feather",
         "habitat": "Polar,Coastal",
         "health": 90,
@@ -55221,7 +55221,7 @@
         "scientific_name": "Eudyptes schlegeli",
         "spawn_tiles": "tall_grass",
         "speed": 42,
-        "weight": 1
+        "weight": 0.85
     },
     {
         "abilities": "Thick Fat",
@@ -56140,11 +56140,11 @@
         "active_time": "any",
         "attack": 35,
         "category": "Aquatic, Metal",
-        "class": "Unknown",
+        "class": "Mollusk",
         "cry": "default",
         "defense": 30,
         "description": "Chromodoris willani is a colorful sea slug found on coral reefs in warm waters. Its bright colors warn predators that its body contains defensive chemicals.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Nudibranch Gel,Toxin Droplet",
         "habitat": "Coral Reef,Ocean",
         "health": 45,
@@ -56157,18 +56157,18 @@
         "scientific_name": "Chromodoris willani",
         "spawn_tiles": "tall_grass",
         "speed": 28,
-        "weight": 1
+        "weight": 1.25
     },
     {
         "abilities": "Sweet Veil",
         "active_time": "any",
         "attack": 38,
         "category": "Aquatic, Mystic",
-        "class": "Unknown",
+        "class": "Mollusk",
         "cry": "default",
         "defense": 32,
         "description": "Doriprismatica atromarginata is a large nudibranch recognized by its pale body and dark edges. It slowly grazes on reef sponges while relying on stored toxins for defense.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Nudibranch Gel,Toxin Droplet",
         "habitat": "Coral Reef,Ocean",
         "health": 50,
@@ -56181,7 +56181,7 @@
         "scientific_name": "Doriprismatica atromarginata",
         "spawn_tiles": "tall_grass",
         "speed": 26,
-        "weight": 1
+        "weight": 0.03
     },
     {
         "abilities": "Volt Absorb",
@@ -56260,11 +56260,11 @@
         "active_time": "any",
         "attack": 38,
         "category": "Aquatic, Mystic",
-        "class": "Unknown",
+        "class": "Mollusk",
         "cry": "default",
         "defense": 32,
         "description": "Hypselodoris apolegma is a large purple nudibranch found on coral reefs in tropical seas. Its bold coloration signals that it carries strong chemical defenses gathered from its food.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Nudibranch Gel,Toxin Droplet",
         "habitat": "Coral Reef,Ocean",
         "health": 50,
@@ -56277,7 +56277,7 @@
         "scientific_name": "Hypselodoris apolegma",
         "spawn_tiles": "tall_grass",
         "speed": 26,
-        "weight": 1
+        "weight": 0.02
     },
     {
         "abilities": "Surge Surfer",
@@ -56572,11 +56572,11 @@
         "active_time": "any",
         "attack": 70,
         "category": "Aquatic, Martial",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 80,
         "description": "The northern elephant seal is one of the largest seal species and spends much of its life diving deep for food. Its massive body and thick blubber help it survive cold ocean waters.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Seal Fat,Seal Fur,Raw Meat",
         "habitat": "Coastal,Ocean",
         "health": 130,
@@ -56589,7 +56589,7 @@
         "scientific_name": "Mirounga angustirostris",
         "spawn_tiles": "tall_grass",
         "speed": 22,
-        "weight": 1
+        "weight": 1450
     },
     {
         "abilities": "Rattled",
@@ -56720,7 +56720,7 @@
         "cry": "default",
         "defense": 24,
         "description": "The blue striped pipefish is a slender reef fish with a long tube shaped snout. It uses quick precision strikes to suck tiny crustaceans from coral crevices.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Coral Reef,Ocean",
         "health": 40,
@@ -56733,7 +56733,7 @@
         "scientific_name": "Doryrhamphus excisus",
         "spawn_tiles": "water",
         "speed": 46,
-        "weight": 1
+        "weight": 0.0075
     },
     {
         "abilities": "Infiltrator, Sniper",
@@ -57104,7 +57104,7 @@
         "cry": "default",
         "defense": 40,
         "description": "The largehead hairtail is a long silver fish with a ribbonlike body. It moves swiftly through the ocean while hunting smaller fish.",
-        "diet": "Unknown",
+        "diet": "Piscivore",
         "drops": "Fillet",
         "habitat": "Ocean,Deep Sea",
         "health": 70,
@@ -57117,7 +57117,7 @@
         "scientific_name": "Trichiurus lepturus",
         "spawn_tiles": "water",
         "speed": 60,
-        "weight": 1
+        "weight": 3
     },
     {
         "abilities": "Rattled",
@@ -61180,11 +61180,11 @@
         "active_time": "any",
         "attack": 66,
         "category": "Aquatic, Martial",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 54,
         "description": "The giant otter is the largest member of the otter family and lives in South American rivers. It hunts cooperatively in groups and is highly vocal.",
-        "diet": "Unknown",
+        "diet": "Piscivore",
         "drops": "fur,meat",
         "habitat": "River,Wetlands",
         "health": 92,
@@ -61197,7 +61197,7 @@
         "scientific_name": "Pteronura brasiliensis",
         "spawn_tiles": "tall_grass",
         "speed": 64,
-        "weight": 1
+        "weight": 28
     },
     {
         "abilities": "Swift Swim",
@@ -61300,11 +61300,11 @@
         "active_time": "any",
         "attack": 32,
         "category": "Aquatic, Metal",
-        "class": "Unknown",
+        "class": "Reptile",
         "cry": "default",
         "defense": 58,
         "description": "The eastern painted turtle is known for its colorful markings on the shell and skin. It basks on logs near lakes and rivers while feeding on plants and small animals.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "shell,meat",
         "habitat": "Lake,River,Wetlands",
         "health": 86,
@@ -61317,7 +61317,7 @@
         "scientific_name": "Chrysemys picta",
         "spawn_tiles": "tall_grass",
         "speed": 24,
-        "weight": 1
+        "weight": 0.35
     },
     {
         "abilities": "Shell Armor",
@@ -62048,7 +62048,7 @@
         "cry": "default",
         "defense": 44,
         "description": "The long snout boarfish is a deep bodied marine fish with an extended snout. It lives in coastal waters where it feeds on small invertebrates.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Ocean,Coastal",
         "health": 72,
@@ -62061,7 +62061,7 @@
         "scientific_name": "Pentaceropsis recurvirostris",
         "spawn_tiles": "water",
         "speed": 34,
-        "weight": 1
+        "weight": 0.65
     },
     {
         "abilities": "Shield Dust",
@@ -63292,11 +63292,11 @@
         "active_time": "any",
         "attack": 78,
         "category": "Aquatic, Metal",
-        "class": "Unknown",
+        "class": "Fish",
         "cry": "default",
         "defense": 64,
         "description": "Protosphyraena was a large swordfish like predator with a long blade shaped snout. It used speed and its snout to strike prey.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "meat,scales",
         "habitat": "Ocean",
         "health": 104,
@@ -63309,7 +63309,7 @@
         "scientific_name": "Protosphyraena spp",
         "spawn_tiles": "tall_grass",
         "speed": 50,
-        "weight": 1
+        "weight": 52.5
     },
     {
         "abilities": "Stakeout",
@@ -63412,11 +63412,11 @@
         "active_time": "any",
         "attack": 58,
         "category": "Aquatic, Metal",
-        "class": "Unknown",
+        "class": "Fish",
         "cry": "default",
         "defense": 48,
         "description": "Saurichthys was a long slender predatory fish that resembled a modern gar. It used speed to catch smaller prey in water.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "meat,scales",
         "habitat": "Ocean,River",
         "health": 84,
@@ -63429,7 +63429,7 @@
         "scientific_name": "Saurichthys spp",
         "spawn_tiles": "tall_grass",
         "speed": 52,
-        "weight": 1
+        "weight": 13
     },
     {
         "abilities": "Shell Armor",
@@ -65788,11 +65788,11 @@
         "active_time": "any",
         "attack": 80,
         "category": "Aquatic, Metal",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 75,
         "description": "This extremely rare whale is one of the least known mammals in the world. It inhabits deep ocean waters and is rarely observed by humans.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "meat",
         "habitat": "Deep Sea",
         "health": 160,
@@ -65805,7 +65805,7 @@
         "scientific_name": "Mesoplodon traversii",
         "spawn_tiles": "tall_grass",
         "speed": 40,
-        "weight": 1
+        "weight": 1500
     },
     {
         "abilities": "Strong Jaw",
@@ -66700,11 +66700,11 @@
         "active_time": "any",
         "attack": 55,
         "category": "Aquatic, Mystic",
-        "class": "Unknown",
+        "class": "Fish",
         "cry": "default",
         "defense": 50,
         "description": "This colorful reef fish has bold markings around its eyes. It moves gracefully among corals while feeding on small organisms.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "scale,meat",
         "habitat": "Coral Reef",
         "health": 85,
@@ -66717,7 +66717,7 @@
         "scientific_name": "Chaetodontoplus conspicillatus",
         "spawn_tiles": "tall_grass",
         "speed": 58,
-        "weight": 1
+        "weight": 0.45
     },
     {
         "abilities": "Quick Feet",
@@ -67132,11 +67132,11 @@
         "active_time": "any",
         "attack": 22,
         "category": "Aquatic, Mystic",
-        "class": "Unknown",
+        "class": "Fish",
         "cry": "default",
         "defense": 28,
         "description": "The polka dot splitfin is a vibrant freshwater fish with distinct spotted markings. It prefers clear streams where it actively searches for food and interacts with others of its kind.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "scale, meat",
         "habitat": "River, Lake",
         "health": 35,
@@ -67149,7 +67149,7 @@
         "scientific_name": "Ameca splendens",
         "spawn_tiles": "tall_grass",
         "speed": 38,
-        "weight": 1
+        "weight": 0.0075
     },
     {
         "abilities": "Stamina , Rock Head",
@@ -67300,11 +67300,11 @@
         "active_time": "any",
         "attack": 30,
         "category": "Aquatic, Metal",
-        "class": "Unknown",
+        "class": "Fish",
         "cry": "default",
         "defense": 35,
         "description": "The monacle bream is a marine fish recognized by its distinctive stripe along its body. It inhabits coral reefs where it feeds on small invertebrates and algae.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "scale, meat",
         "habitat": "Ocean, Coral Reef",
         "health": 45,
@@ -67317,7 +67317,7 @@
         "scientific_name": "Scolopsis monogramma",
         "spawn_tiles": "tall_grass",
         "speed": 38,
-        "weight": 1
+        "weight": 0.45
     },
     {
         "abilities": "Strong Jaw",
@@ -67852,11 +67852,11 @@
         "active_time": "any",
         "attack": 48,
         "category": "Aquatic, Metal",
-        "class": "Unknown",
+        "class": "Fish",
         "cry": "default",
         "defense": 52,
         "description": "The birdbeak dogfish is a deep sea shark recognized by its long beaklike snout used to sense prey. It navigates dark ocean depths and feeds on small fish and invertebrates.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "scale, meat, tooth",
         "habitat": "Deep Sea",
         "health": 60,
@@ -67869,7 +67869,7 @@
         "scientific_name": "Deania calcea",
         "spawn_tiles": "tall_grass",
         "speed": 42,
-        "weight": 1
+        "weight": 6.45
     },
     {
         "abilities": "Parental Bond",
