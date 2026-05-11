@@ -36,7 +36,8 @@ class Organism {
   final String cry; // NEW: Audio file for name for cry
   final String
   spawnTiles; // NEW: Spawning tiles (comma-separated, e.g., "tall_grass,water,any")
-  final String pheno; // NEW: Overworld sprite prefix (e.g., "giant_water_bug"), or "none"
+  final String
+  pheno; // NEW: Overworld sprite prefix (e.g., "giant_water_bug"), or "none"
   final String animalClass; // NEW: Taxonomic class (mammal, bird, etc.)
   final String diet; // NEW: Diet (carnivore, herbivore, etc.)
 
@@ -115,23 +116,26 @@ class Organism {
       cry: (json['cry']?.toString() ?? 'default'),
       spawnTiles: (json['spawn_tiles']?.toString() ?? 'any'),
       pheno: (json['pheno']?.toString() ?? 'none'),
-      animalClass: (json['class'] ?? json['animal_class'])?.toString() ?? 'unknown',
+      animalClass:
+          (json['class'] ?? json['animal_class'])?.toString() ?? 'unknown',
       diet: (json['diet']?.toString() ?? 'unknown'),
     );
   }
 
   String get formattedWeight {
-    if (weight == null) return "0.0";
-    if (weight! < 0.0001) {
+    if (weight < 0.0001) {
       // For very small weights (like microbes), use scientific or fixed with many decimals
       // but let's just use a clean string representation.
-      return weight!.toStringAsFixed(12).replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '');
+      return weight
+          .toStringAsFixed(12)
+          .replaceAll(RegExp(r'0+$'), '')
+          .replaceAll(RegExp(r'\.$'), '');
     }
     // For normal weights, if it's a whole number, show it as such
-    if (weight! == weight!.toInt().toDouble()) {
-      return weight!.toInt().toString();
+    if (weight == weight.toInt().toDouble()) {
+      return weight.toInt().toString();
     }
-    return weight!.toString();
+    return weight.toString();
   }
 
   static double _parseWeight(dynamic value) {
@@ -331,9 +335,11 @@ class Organism {
     abilities: 'Neutralizing Gas,Inner Focus',
     category: 'Dummy',
     moves: 'Splash',
-    sprite: 'assets/overworld/scarecrow.png', // Using an existing overworld asset as dummy sprite
+    sprite:
+        'assets/overworld/scarecrow.png', // Using an existing overworld asset as dummy sprite
     rarity: 'Common',
-    description: 'A sturdy straw dummy designed for training. It does not attack.',
+    description:
+        'A sturdy straw dummy designed for training. It does not attack.',
     weight: 100.0,
     activeTime: 'any',
     cry: 'default',

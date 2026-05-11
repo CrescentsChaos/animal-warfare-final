@@ -403,6 +403,8 @@
                 const rarity = (org.rarity || 'common').toLowerCase();
                 const rarityColor = this.rarityColor(rarity);
                 const types = (org.category || 'basic').split(',').map(s => s.trim()).filter(Boolean);
+                const aClass = (org.class || org.animal_class || 'Unknown').toLowerCase().replace(/ /g, '_');
+                const aDiet = (org.diet || 'Unknown').toLowerCase().replace(/ /g, '_');
 
                 card.innerHTML = `
                 <div class="card-inner">
@@ -411,9 +413,12 @@
                         <img src="${spriteSrc}" alt="${org.name}"
                              onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
                         <div class="sprite-fallback" style="display:none">🦎</div>
-                        <div class="card-rarity-tag" style="background:${rarityColor}1A; color:${rarityColor}; border: 1px solid ${rarityColor}40;">${rarity.toUpperCase()}</div>
                         <div class="card-type-row">
                             ${types.slice(0, 2).map(t => { const tSlug = t.toLowerCase().replace(/ /g, '_'); return `<span class="type-badge type-${tSlug}" title="${t.toUpperCase()}"><img src="assets/icon/${tSlug}.png" class="type-icon" alt="${t}" onerror="this.style.display='none'"></span>` }).join('')}
+                        </div>
+                        <div class="card-class-row" style="position: absolute; bottom: 10px; right: 10px; display: flex; gap: 6px; z-index: 3;">
+                            <span class="type-badge" title="${(org.class || org.animal_class || 'Unknown').toUpperCase()}"><img src="assets/icon/${aClass}.png" class="type-icon" alt="${aClass}" onerror="this.src='assets/icon/unknown.png'; this.style.display='none'"></span>
+                            <span class="type-badge" title="${(org.diet || 'Unknown').toUpperCase()}"><img src="assets/icon/${aDiet}.png" class="type-icon" alt="${aDiet}" onerror="this.src='assets/icon/unknown.png'; this.style.display='none'"></span>
                         </div>
                     </div>
                     <div class="card-body">
@@ -543,7 +548,7 @@
 
                 document.getElementById('modal-content').innerHTML = `
                 <div class="detail-header" style="background-image: url('${this.rarityBackground(rarity)}'); background-size: cover; background-position: center;">
-                    <div class="detail-header-overlay" style="background:linear-gradient(135deg, ${rarityColor}33 0%, var(--surface) 100%)"></div>
+                    <div class="detail-header-overlay" style="background:linear-gradient(135deg, ${rarityColor}33 0%, var(--bg-root) 100%)"></div>
                     <div class="detail-sprite-wrap">
                         <img src="${spriteSrc}" alt="${org.name}"
                              onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">

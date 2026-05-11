@@ -130,8 +130,9 @@ class AchievementService {
                 final correct = stats['correct'] as int? ?? 0;
                 final streak = stats['bestStreak'] as int? ?? 0;
                 totalCorrect += correct;
-                if (difficulty.toLowerCase() == 'hard')
+                if (difficulty.toLowerCase() == 'hard') {
                   totalHardCorrect += correct;
+                }
                 if (quizName.toLowerCase().contains('genus')) {
                   totalGenusCorrect += correct;
                 }

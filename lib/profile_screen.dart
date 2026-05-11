@@ -386,15 +386,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     icon,
                     width: 24.sp,
                     height: 24.sp,
-                    errorBuilder: (context, error, stackTrace) => Icon(
-                      Icons.broken_image,
-                      size: 24.sp,
-                    ),
+                    errorBuilder: (context, error, stackTrace) =>
+                        Icon(Icons.broken_image, size: 24.sp),
                   )
-                : Icon(
-                    icon as IconData,
-                    size: 24.sp,
-                  ),
+                : Icon(icon as IconData, size: 24.sp),
           ),
           SizedBox(width: 20.w),
           Expanded(
@@ -704,8 +699,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: List.generate(3, (index) {
             final String? achievementId =
                 (user.displayedAchievements.length > index)
-                    ? user.displayedAchievements[index]
-                    : null;
+                ? user.displayedAchievements[index]
+                : null;
             final Achievement? achievement = achievementId != null
                 ? _achievements.firstWhere(
                     (a) => a.id == achievementId,
@@ -740,19 +735,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
+            SizedBox(
               width: 50.w,
               height: 50.w,
               child: Image.asset(
                 achievement.imagePath ?? 'assets/achievements/medal_bronze.png',
                 fit: BoxFit.contain,
-                errorBuilder:
-                    (context, error, stackTrace) => Image.asset(
-                      'assets/icon/achievements.png',
-                      width: 44.sp,
-                      height: 44.sp,
-                      color: const Color(0xFFDAA520),
-                    ),
+                errorBuilder: (context, error, stackTrace) => Image.asset(
+                  'assets/icon/achievements.png',
+                  width: 44.sp,
+                  height: 44.sp,
+                  color: const Color(0xFFDAA520),
+                ),
               ),
             ),
             SizedBox(height: 12.h),
@@ -799,9 +793,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (context) => AchievementSelectionSheet(
-        allOrganisms: _allOrganisms,
-      ),
+      builder: (context) =>
+          AchievementSelectionSheet(allOrganisms: _allOrganisms),
     ).then((_) {
       // Reload achievements in case they were changed
       _loadAchievements();

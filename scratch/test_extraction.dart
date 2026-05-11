@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:animal_warfare/services/biometric_service.dart';
 
 void main() async {

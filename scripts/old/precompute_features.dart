@@ -195,8 +195,9 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
       final p1 = image.getPixel(x, y), p2 = image.getPixel(x2, y);
       hTotal++;
       if (((p1.r - p2.r).abs() + (p1.g - p2.g).abs() + (p1.b - p2.b).abs()) <
-          100)
+          100) {
         hMatches++;
+      }
     }
   }
   for (int x = minX; x <= maxX; x++) {
@@ -206,8 +207,9 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
       final p1 = image.getPixel(x, y), p2 = image.getPixel(x, y2);
       vTotal++;
       if (((p1.r - p2.r).abs() + (p1.g - p2.g).abs() + (p1.b - p2.b).abs()) <
-          100)
+          100) {
         vMatches++;
+      }
     }
   }
   return (

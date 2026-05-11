@@ -8,7 +8,6 @@ import 'package:animal_warfare/services/segmentation_service.dart';
 import 'package:animal_warfare/widgets/organism_sprite_widget.dart';
 import 'package:animal_warfare/widgets/anidex_details_sheet.dart';
 import 'package:animal_warfare/models/organism.dart';
-import 'package:animal_warfare/theme.dart';
 import 'package:animal_warfare/manual_masking_screen.dart';
 
 class BiometricScannerScreen extends StatefulWidget {

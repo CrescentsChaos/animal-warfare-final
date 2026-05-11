@@ -238,10 +238,12 @@ class _AnidexScreenState extends State<AnidexScreen>
         final w = org.weight;
         if (_selectedWeight == '< 1 kg' && w >= 1) return false;
         if (_selectedWeight == '1 - 10 kg' && (w < 1 || w >= 10)) return false;
-        if (_selectedWeight == '10 - 50 kg' && (w < 10 || w >= 50))
+        if (_selectedWeight == '10 - 50 kg' && (w < 10 || w >= 50)) {
           return false;
-        if (_selectedWeight == '50 - 100 kg' && (w < 50 || w >= 100))
+        }
+        if (_selectedWeight == '50 - 100 kg' && (w < 50 || w >= 100)) {
           return false;
+        }
         if (_selectedWeight == '> 100 kg' && w < 100) return false;
       }
       return true;
@@ -419,11 +421,7 @@ class _AnidexScreenState extends State<AnidexScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset(
-              'assets/icon/animal_dex.png',
-              width: 48,
-              height: 48,
-            ),
+            Image.asset('assets/icon/animal_dex.png', width: 48, height: 48),
             const SizedBox(height: 16),
             Text(
               'NO MATCHING DATA',
@@ -1283,4 +1281,3 @@ class __OrganismSpriteDisplayState extends State<_OrganismSpriteDisplay> {
     );
   }
 }
-

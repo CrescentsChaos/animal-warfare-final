@@ -17,7 +17,6 @@ import 'dart:io';
 import 'dart:math';
 import 'package:image/image.dart' as img;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:sqflite_common/sqlite_api.dart';
 import 'package:path/path.dart' as p;
 
 void main(List<String> args) async {

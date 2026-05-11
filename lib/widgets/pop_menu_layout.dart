@@ -1,11 +1,10 @@
 // lib/widgets/pop_menu_layout.dart
 import 'package:flutter/material.dart';
-import 'package:animal_warfare/theme.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 /// A reusable menu layout that keeps the header static and provides
 /// a snapping scrollable list of menu items.
-/// 
+///
 /// Items "pop up" with an animation only when they have enough space (fully visible).
 /// The list snaps to ensure items are never left "half cut".
 class PopMenuLayout extends StatefulWidget {
@@ -40,7 +39,7 @@ class _PopMenuLayoutState extends State<PopMenuLayout> {
 
   void _snapToItem() {
     if (_isSnapping || !_scrollController.hasClients) return;
-    
+
     final double offset = _scrollController.offset;
     final int index = (offset / widget.itemHeight).round();
     final double targetOffset = index * widget.itemHeight;
@@ -50,11 +49,13 @@ class _PopMenuLayoutState extends State<PopMenuLayout> {
     _isSnapping = true;
     Future.microtask(() {
       if (mounted) {
-        _scrollController.animateTo(
-          targetOffset.clamp(0, _scrollController.position.maxScrollExtent),
-          duration: const Duration(milliseconds: 400),
-          curve: Curves.easeOutCubic,
-        ).then((_) => _isSnapping = false);
+        _scrollController
+            .animateTo(
+              targetOffset.clamp(0, _scrollController.position.maxScrollExtent),
+              duration: const Duration(milliseconds: 400),
+              curve: Curves.easeOutCubic,
+            )
+            .then((_) => _isSnapping = false);
       }
     });
   }
@@ -64,11 +65,8 @@ class _PopMenuLayoutState extends State<PopMenuLayout> {
     return Column(
       children: [
         // Static Header (Red Part)
-        Padding(
-          padding: widget.padding,
-          child: widget.header,
-        ),
-        
+        Padding(padding: widget.padding, child: widget.header),
+
         // Scrollable List (Green Part)
         Expanded(
           child: NotificationListener<ScrollNotification>(
@@ -85,10 +83,7 @@ class _PopMenuLayoutState extends State<PopMenuLayout> {
               itemCount: widget.items.length + (widget.footer?.length ?? 0),
               itemBuilder: (context, index) {
                 if (index < widget.items.length) {
-                  return PopUpItem(
-                    index: index,
-                    child: widget.items[index],
-                  );
+                  return PopUpItem(index: index, child: widget.items[index]);
                 } else {
                   return widget.footer![index - widget.items.length];
                 }
@@ -117,7 +112,8 @@ class PopUpItem extends StatefulWidget {
   State<PopUpItem> createState() => _PopUpItemState();
 }
 
-class _PopUpItemState extends State<PopUpItem> with SingleTickerProviderStateMixin {
+class _PopUpItemState extends State<PopUpItem>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scale;
   late Animation<double> _opacity;
@@ -130,12 +126,14 @@ class _PopUpItemState extends State<PopUpItem> with SingleTickerProviderStateMix
       vsync: this,
       duration: const Duration(milliseconds: 500),
     );
-    _scale = Tween<double>(begin: 0.7, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
-    );
-    _opacity = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-    );
+    _scale = Tween<double>(
+      begin: 0.7,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
+    _opacity = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
   }
 
   @override
@@ -160,10 +158,7 @@ class _PopUpItemState extends State<PopUpItem> with SingleTickerProviderStateMix
       },
       child: FadeTransition(
         opacity: _opacity,
-        child: ScaleTransition(
-          scale: _scale,
-          child: widget.child,
-        ),
+        child: ScaleTransition(scale: _scale, child: widget.child),
       ),
     );
   }

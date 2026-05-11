@@ -244,8 +244,9 @@ class _ManualMaskingScreenState extends State<ManualMaskingScreen> {
                             () => setState(() => _isEraser = true),
                           ),
                           _buildToolButton(Icons.undo, 'UNDO', false, () {
-                            if (_strokes.isNotEmpty)
+                            if (_strokes.isNotEmpty) {
                               setState(() => _strokes.removeLast());
+                            }
                           }),
                           _buildToolButton(
                             Icons.delete_sweep,
