@@ -15820,11 +15820,11 @@
         "active_time": "any",
         "attack": 80,
         "category": "Rock, Grass",
-        "class": "Unknown",
+        "class": "Reptile",
         "cry": "default",
         "defense": 145,
         "description": "A slow but resilient tortoise of the Galpagos.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Tortoise Shell",
         "habitat": "Coastal",
         "health": 110,
@@ -15837,18 +15837,18 @@
         "scientific_name": "Chelonoidis porteri",
         "spawn_tiles": "tall_grass",
         "speed": 25,
-        "weight": 1
+        "weight": 200
     },
     {
         "abilities": "Loyal",
         "active_time": "any",
         "attack": 45,
         "category": "Mystic",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "dog",
         "defense": 35,
         "description": "A small dog with a long body and short legs.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Dog Fur",
         "habitat": "Urban",
         "health": 55,
@@ -15861,18 +15861,18 @@
         "scientific_name": "Canis lupus familiaris",
         "spawn_tiles": "tall_grass",
         "speed": 60,
-        "weight": 1
+        "weight": 8
     },
     {
         "abilities": "Reef Camouflage",
         "active_time": "night",
         "attack": 95,
         "category": "Aquatic",
-        "class": "Unknown",
+        "class": "Fish",
         "cry": "default",
         "defense": 100,
         "description": "A fierce eel hiding in rocky crevices.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Meat, Skin",
         "habitat": "Ocean",
         "health": 90,
@@ -15885,18 +15885,18 @@
         "scientific_name": "Muraena helena",
         "spawn_tiles": "tall_grass",
         "speed": 60,
-        "weight": 1
+        "weight": 10
     },
     {
         "abilities": "Leaf Guard , Inner Focus",
         "active_time": "any",
         "attack": 60,
         "category": "Grass, Aura",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 55,
         "description": "A shy forest animal related to the giraffe.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Striped Hide",
         "habitat": "Rainforest",
         "health": 80,
@@ -15909,7 +15909,7 @@
         "scientific_name": "Okapia johnstoni",
         "spawn_tiles": "tall_grass",
         "speed": 65,
-        "weight": 1
+        "weight": 275
     },
     {
         "abilities": "Scrappy",
@@ -15940,11 +15940,11 @@
         "active_time": "any",
         "attack": 135,
         "category": "Toxic, Drake",
-        "class": "Unknown",
+        "class": "Reptile",
         "cry": "default",
         "defense": 100,
         "description": "A giant lizard armed with venomous bites.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Varanid Tail Meat, Hide, Claws",
         "habitat": "Jungle,Volcano",
         "health": 120,
@@ -15957,7 +15957,7 @@
         "scientific_name": "Varanus komodoensis",
         "spawn_tiles": "tall_grass",
         "speed": 60,
-        "weight": 1
+        "weight": 113
     },
     {
         "abilities": "True Flight",
@@ -16348,11 +16348,11 @@
         "active_time": "any",
         "attack": 40,
         "category": "Aquatic, Earth",
-        "class": "Unknown",
+        "class": "Reptile",
         "cry": "default",
         "defense": 80,
         "description": "A sea turtle with a smooth flat shell.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Turtle Shell,Turtle Meat",
         "habitat": "Ocean",
         "health": 100,
@@ -16365,7 +16365,7 @@
         "scientific_name": "Natator depressus",
         "spawn_tiles": "tall_grass",
         "speed": 30,
-        "weight": 1
+        "weight": 87
     },
     {
         "abilities": "Solid Rock",
@@ -16516,11 +16516,11 @@
         "active_time": "any",
         "attack": 30,
         "category": "Aquatic, Earth",
-        "class": "Unknown",
+        "class": "Amphibian",
         "cry": "frog",
         "defense": 35,
         "description": "A frog that digs into moist soil to hide.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Frog Leg",
         "habitat": "Swamp",
         "health": 60,
@@ -16533,7 +16533,7 @@
         "scientific_name": "Heleioporus brookii",
         "spawn_tiles": "lily_pad,lily_pad2,cattail_0",
         "speed": 40,
-        "weight": 1
+        "weight": 0.06
     },
     {
         "abilities": "Ambush",
@@ -16564,11 +16564,11 @@
         "active_time": "any",
         "attack": 80,
         "category": "Earth, Darkness",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 55,
         "description": "A sleek spotted cat of the tropical forests.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fur Tuft",
         "habitat": "Rainforest",
         "health": 70,
@@ -16581,7 +16581,7 @@
         "scientific_name": "Leopardus pardalis",
         "spawn_tiles": "tall_grass",
         "speed": 85,
-        "weight": 1
+        "weight": 13.5
     },
     {
         "abilities": "Gooey",
@@ -16612,11 +16612,11 @@
         "active_time": "any",
         "attack": 28,
         "category": "Mystic, Darkness",
-        "class": "Unknown",
+        "class": "Bird",
         "cry": "default",
         "defense": 25,
         "description": "A silky-feathered chicken kept as livestock.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Feather",
         "habitat": "Urban,Plains",
         "health": 45,
@@ -16629,7 +16629,7 @@
         "scientific_name": "Gallus gallus domesticus",
         "spawn_tiles": "tall_grass",
         "speed": 50,
-        "weight": 1
+        "weight": 1.6
     },
     {
         "abilities": "Speed Boost",
@@ -16708,11 +16708,11 @@
         "active_time": "any",
         "attack": 60,
         "category": "Drake, Electric",
-        "class": "Unknown",
+        "class": "Reptile",
         "cry": "default",
         "defense": 50,
         "description": "A lizard with a dramatic neck frill display.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Frill Scale",
         "habitat": "Savanna, Desert",
         "health": 70,
@@ -16725,7 +16725,7 @@
         "scientific_name": "Chlamydosaurus kingii",
         "spawn_tiles": "tall_grass",
         "speed": 65,
-        "weight": 1
+        "weight": 0.7
     },
     {
         "abilities": "Swift Swim , Pastel Veil",
@@ -32668,11 +32668,11 @@
         "active_time": "night",
         "attack": 25,
         "category": "Sound, Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 20,
         "description": "House crickets are nocturnal omnivores that thrive near human habitations. They communicate using persistent chirping songs.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Chitin",
         "habitat": "Urban, Jungle",
         "health": 65,
@@ -32685,7 +32685,7 @@
         "scientific_name": "Acheta domesticus",
         "spawn_tiles": "tall_grass",
         "speed": 110,
-        "weight": 1
+        "weight": 0.0006
     },
     {
         "abilities": "Clear Body",
@@ -32908,11 +32908,11 @@
         "active_time": "any",
         "attack": 10,
         "category": "Arthropod",
-        "class": "Unknown",
+        "class": "Other Invertebrate",
         "cry": "default",
         "defense": 10,
         "description": "These tiny springtails hop across damp leaf litter to feed on detritus. They play a vital role in nutrient recycling in the soil.",
-        "diet": "Unknown",
+        "diet": "Detritivore",
         "drops": "Chitin",
         "habitat": "Jungle, Rainforest",
         "health": 15,
@@ -32925,18 +32925,18 @@
         "scientific_name": "Collembola sp. red",
         "spawn_tiles": "tall_grass",
         "speed": 140,
-        "weight": 1
+        "weight": 2e-06
     },
     {
         "abilities": "Jump",
         "active_time": "any",
         "attack": 8,
         "category": "Arthropod",
-        "class": "Unknown",
+        "class": "Other Invertebrate",
         "cry": "default",
         "defense": 8,
         "description": "White springtails colonize moist surfaces and decaying matter. Their rapid reproduction sustains many small predators.",
-        "diet": "Unknown",
+        "diet": "Detritivore",
         "drops": "Chitin",
         "habitat": "Jungle, Rainforest",
         "health": 12,
@@ -32949,7 +32949,7 @@
         "scientific_name": "Collembola alba",
         "spawn_tiles": "tall_grass",
         "speed": 150,
-        "weight": 1
+        "weight": 1e-06
     },
     {
         "abilities": "Earth Eater",
@@ -33004,11 +33004,11 @@
         "active_time": "any",
         "attack": 95,
         "category": "Arthropod, Toxic",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 50,
         "description": "This resilient insect thrives in nearly every human habitat. It can survive harsh conditions and adapt to nearly any environment.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Exoskeleton",
         "habitat": "Urban, Jungle",
         "health": 60,
@@ -33021,7 +33021,7 @@
         "scientific_name": "Periplaneta americana",
         "spawn_tiles": "tall_grass",
         "speed": 135,
-        "weight": 1
+        "weight": 0.0025
     },
     {
         "abilities": "Compound Eyes , Infiltrator",
@@ -33172,11 +33172,11 @@
         "active_time": "any",
         "attack": 35,
         "category": "Arthropod, Grass",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 55,
         "description": "Once thought extinct, this giant stick insect was rediscovered on a remote island rock. It hides motionless to resemble dry twigs.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Exoskeleton",
         "habitat": "Jungle, Mountain",
         "health": 71,
@@ -33189,18 +33189,18 @@
         "scientific_name": "Dryococelus australis",
         "spawn_tiles": "tall_grass",
         "speed": 25,
-        "weight": 1
+        "weight": 0.035
     },
     {
         "abilities": "Salt Cure",
         "active_time": "any",
         "attack": 15,
         "category": "Aquatic, Arthropod",
-        "class": "Unknown",
+        "class": "Crustacean",
         "cry": "default",
         "defense": 20,
         "description": "These tiny crustaceans thrive in hypersaline lakes and ponds. They feed on algae and form the basis of many aquatic food chains.",
-        "diet": "Unknown",
+        "diet": "Filter Feeder",
         "drops": "Exoskeleton, Muscle",
         "habitat": "Swamp, Coastal,Wetlands",
         "health": 100,
@@ -33213,7 +33213,7 @@
         "scientific_name": "Artemia salina",
         "spawn_tiles": "water",
         "speed": 90,
-        "weight": 1
+        "weight": 1.05e-05
     },
     {
         "abilities": "Sniper , Infiltrator",
@@ -33556,11 +33556,11 @@
         "active_time": "any",
         "attack": 15,
         "category": "Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 10,
         "description": "The flightless fruit fly thrives in human environments where it feeds on decaying fruits. Its lack of wings makes it an excellent subject for genetic studies.",
-        "diet": "Unknown",
+        "diet": "Detritivore",
         "drops": "Insect Wing",
         "habitat": "Urban, Jungle",
         "health": 20,
@@ -33573,18 +33573,18 @@
         "scientific_name": "Drosophila melanogaster var. aptera",
         "spawn_tiles": "tall_grass",
         "speed": 25,
-        "weight": 1
+        "weight": 1.5e-06
     },
     {
         "abilities": "True Flight",
         "active_time": "any",
         "attack": 20,
         "category": "Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 10,
         "description": "The fruit fly is a fast-reproducing insect often used in scientific research. It plays a key role in breaking down organic material in nature.",
-        "diet": "Unknown",
+        "diet": "Detritivore",
         "drops": "Insect Wing",
         "habitat": "Urban, Jungle",
         "health": 25,
@@ -33597,18 +33597,18 @@
         "scientific_name": "Drosophila melanogaster",
         "spawn_tiles": "tall_grass",
         "speed": 40,
-        "weight": 1
+        "weight": 1.5e-06
     },
     {
         "abilities": "Ture Flight",
         "active_time": "any",
         "attack": 85,
         "category": "Electric, Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 60,
         "description": "This large mantis species is known for its bright yellow hue and hunting prowess. It ambushes prey with rapid strikes from its spined forearms.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Exoskeleton",
         "habitat": "Jungle, Rainforest",
         "health": 90,
@@ -33621,7 +33621,7 @@
         "scientific_name": "Hierodula patellifera",
         "spawn_tiles": "tall_grass",
         "speed": 110,
-        "weight": 1
+        "weight": 0.0065
     },
     {
         "abilities": "Resilience",
@@ -33724,11 +33724,11 @@
         "active_time": "any",
         "attack": 25,
         "category": "Arthropod, Grass",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 50,
         "description": "The leaf insect perfectly mimics the appearance of a leaf to avoid detection. Even its slow movements resemble foliage swaying in the wind.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Exoskeleton",
         "habitat": "Jungle, Rainforest",
         "health": 55,
@@ -33741,18 +33741,18 @@
         "scientific_name": "Phyllium bioculatum",
         "spawn_tiles": "tall_grass",
         "speed": 35,
-        "weight": 1
+        "weight": 0.0125
     },
     {
         "abilities": "Battle Armor , Poison Touch",
         "active_time": "any",
         "attack": 20,
         "category": "Arthropod, Toxic",
-        "class": "Unknown",
+        "class": "Other Invertebrate",
         "cry": "default",
         "defense": 70,
         "description": "The long-flange millipede feeds on decaying plant matter in forest floors. It rolls into a tight coil when threatened, protecting itself with its tough exoskeleton.",
-        "diet": "Unknown",
+        "diet": "Detritivore",
         "drops": "Segment",
         "habitat": "Jungle, Rainforest",
         "health": 75,
@@ -33765,7 +33765,7 @@
         "scientific_name": "Trigoniulus corallinus",
         "spawn_tiles": "tall_grass",
         "speed": 15,
-        "weight": 1
+        "weight": 0.0025
     },
     {
         "abilities": "Resilience",
@@ -33844,11 +33844,11 @@
         "active_time": "any",
         "attack": 15,
         "category": "Arthropod, Earth",
-        "class": "Unknown",
+        "class": "Crustacean",
         "cry": "default",
         "defense": 50,
         "description": "The common rough woodlouse feeds on decaying matter and thrives in damp environments. Its ability to curl into a ball protects it from many predators.",
-        "diet": "Unknown",
+        "diet": "Detritivore",
         "drops": "Exoskeleton",
         "habitat": "Urban, Jungle",
         "health": 45,
@@ -33861,7 +33861,7 @@
         "scientific_name": "Porcellio scaber",
         "spawn_tiles": "tall_grass",
         "speed": 20,
-        "weight": 1
+        "weight": 0.00015
     },
     {
         "abilities": "Merciless , Poison Touch",
@@ -33940,11 +33940,11 @@
         "active_time": "any",
         "attack": 75,
         "category": "Grass, Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 55,
         "description": "The pink Empusa mantis is a master of disguise, blending perfectly with flowers and dry plants. Its elongated limbs and crests add to its alien beauty.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Exoskeleton",
         "habitat": "Jungle, Desert",
         "health": 80,
@@ -33957,18 +33957,18 @@
         "scientific_name": "Empusa pennata",
         "spawn_tiles": "tall_grass",
         "speed": 92,
-        "weight": 1
+        "weight": 0.002
     },
     {
         "abilities": "Ture Flight",
         "active_time": "any",
         "attack": 80,
         "category": "Grass, Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 60,
         "description": "The spiny flower mantis mimics blossoms to lure unsuspecting prey. Its bright patterns serve both camouflage and intimidation during defense.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Exoskeleton",
         "habitat": "Jungle, Rainforest",
         "health": 85,
@@ -33981,7 +33981,7 @@
         "scientific_name": "Pseudocreobotra wahlbergi",
         "spawn_tiles": "tall_grass",
         "speed": 98,
-        "weight": 1
+        "weight": 0.003
     },
     {
         "abilities": "Poison Point",
@@ -39388,11 +39388,11 @@
         "active_time": "any",
         "attack": 15,
         "category": "Arthropod, Aura",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 10,
         "description": "The stalk-eyed fly has unusually long eyestalks that help it detect rivals. It flits quickly among leaves and avoids predators with agile flight.",
-        "diet": "Unknown",
+        "diet": "Detritivore",
         "drops": "Wing Fragment",
         "habitat": "Jungle, Rainforest",
         "health": 30,
@@ -39405,7 +39405,7 @@
         "scientific_name": "Teleopsis dalmanni",
         "spawn_tiles": "tall_grass",
         "speed": 60,
-        "weight": 1
+        "weight": 8e-06
     },
     {
         "abilities": "Strong Mandibles",
@@ -39436,11 +39436,11 @@
         "active_time": "any",
         "attack": 5,
         "category": "Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 10,
         "description": "Brazilian Treehoppers are small insects with bizarre helmet-like structures. They use camouflage and staying still to avoid predators.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "exoskeleton",
         "habitat": "Jungle, Rainforest",
         "health": 3,
@@ -39453,7 +39453,7 @@
         "scientific_name": "Bocydium globulare",
         "spawn_tiles": "tall_grass",
         "speed": 20,
-        "weight": 1
+        "weight": 2e-05
     },
     {
         "abilities": "Night Vision",
@@ -39676,11 +39676,11 @@
         "active_time": "night",
         "attack": 5,
         "category": "Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 5,
         "description": "Plaster Bagworm Moths are small moths that carry protective silk cases. They feed on plants and stay hidden from predators.",
-        "diet": "Unknown",
+        "diet": "Detritivore",
         "drops": "cocoon, silk",
         "habitat": "Jungle",
         "health": 5,
@@ -39693,7 +39693,7 @@
         "scientific_name": "Coleophora sp.",
         "spawn_tiles": "tall_grass",
         "speed": 2,
-        "weight": 1
+        "weight": 0.00015
     },
     {
         "abilities": "Swift Swim , Dazzling",
@@ -40108,11 +40108,11 @@
         "active_time": "any",
         "attack": 80,
         "category": "Arthropod, Flying",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 40,
         "description": "Cicadas are loud insects often preyed upon by birds. They emerge in large groups and feed on plant sap.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "exoskeleton",
         "habitat": "Jungle, Rainforest",
         "health": 60,
@@ -40125,7 +40125,7 @@
         "scientific_name": "Cicadidae sp.",
         "spawn_tiles": "tall_grass",
         "speed": 140,
-        "weight": 1
+        "weight": 0.0015
     },
     {
         "abilities": "Infiltrator",
@@ -40156,11 +40156,11 @@
         "active_time": "any",
         "attack": 10,
         "category": "Arthropod, Toxic",
-        "class": "Unknown",
+        "class": "Other Invertebrate",
         "cry": "default",
         "defense": 5,
         "description": "House Centipedes are fast, venomous arthropods that hunt household pests. They use speed and venom to subdue prey.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "legs",
         "habitat": "Urban, Jungle",
         "health": 5,
@@ -40173,7 +40173,7 @@
         "scientific_name": "Scutigera coleoptrata",
         "spawn_tiles": "tall_grass",
         "speed": 25,
-        "weight": 1
+        "weight": 0.001
     },
     {
         "abilities": "Intimidate",
@@ -40396,11 +40396,11 @@
         "active_time": "any",
         "attack": 25,
         "category": "Arthropod, Drake",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 15,
         "description": "Giant Petaltails are large dragonflies that hunt other insects. They patrol rivers and rainforest streams with agile flight.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "exoskeleton",
         "habitat": "Jungle, Rainforest",
         "health": 30,
@@ -40413,18 +40413,18 @@
         "scientific_name": "Petalura ingentissima",
         "spawn_tiles": "tall_grass",
         "speed": 20,
-        "weight": 1
+        "weight": 0.007
     },
     {
         "abilities": "True Flight",
         "active_time": "any",
         "attack": 20,
         "category": "Arthropod, Drake",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 15,
         "description": "South Eastern Petaltails are predatory dragonflies in southeastern jungles. They hunt insects using swift, precise flight.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "exoskeleton",
         "habitat": "Jungle, Rainforest",
         "health": 25,
@@ -40437,7 +40437,7 @@
         "scientific_name": "Petalura gigantea",
         "spawn_tiles": "tall_grass",
         "speed": 20,
-        "weight": 1
+        "weight": 0.0055
     },
     {
         "abilities": "True Flight",
@@ -40564,11 +40564,11 @@
         "active_time": "any",
         "attack": 28,
         "category": "Arthropod, Flying",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "dragonfly",
         "defense": 18,
         "description": "The Black Tipped Percher balances perfectly on reeds in tropical wetlands. Its dark-tipped wings shimmer in sunlight as it scans for small insects to capture.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Wing Fragment",
         "habitat": "Swamp,Wetlands",
         "health": 38,
@@ -40581,7 +40581,7 @@
         "scientific_name": "Diplacodes nebulosa",
         "spawn_tiles": "dw_pond_we_2,dw_pond",
         "speed": 93,
-        "weight": 1
+        "weight": 0.0006
     },
     {
         "abilities": "True Flight, Speed Boost",
@@ -40612,11 +40612,11 @@
         "active_time": "any",
         "attack": 30,
         "category": "Arthropod, Flying",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 20,
         "description": "The Halloween Pennant sports orange and black wings that flutter like flags in the wind. It perches atop grasses, moving gracefully even in strong breezes.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Wing Fragment",
         "habitat": "Lake",
         "health": 42,
@@ -40629,7 +40629,7 @@
         "scientific_name": "Celithemis eponina",
         "spawn_tiles": "dw_pond_we_2,dw_pond",
         "speed": 90,
-        "weight": 1
+        "weight": 0.0005
     },
     {
         "abilities": "True Flight",
@@ -40852,11 +40852,11 @@
         "active_time": "any",
         "attack": 28,
         "category": "Arthropod, Mystic",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 22,
         "description": "The Renaldus Jewelmark shimmers with metallic hues under sunlight. Its reflective wings confuse predators and dazzle those lucky enough to spot it.",
-        "diet": "Unknown",
+        "diet": "Nectarivore",
         "drops": "Wing Fragment",
         "habitat": "Jungle",
         "health": 42,
@@ -40869,7 +40869,7 @@
         "scientific_name": "Renaldus splendens",
         "spawn_tiles": "tall_grass",
         "speed": 85,
-        "weight": 1
+        "weight": 0.00025
     },
     {
         "abilities": "Clear Body",
@@ -41308,11 +41308,11 @@
         "active_time": "any",
         "attack": 25,
         "category": "Arthropod, Spectral",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 30,
         "description": "The Black Beauty Stick Bug is known for its glossy black body and defensive spray. Found only in Peru, it lives quietly among the branches of tropical shrubs.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Chitin Fragment",
         "habitat": "Jungle",
         "health": 55,
@@ -41325,18 +41325,18 @@
         "scientific_name": "Peruphasma schultei",
         "spawn_tiles": "tall_grass",
         "speed": 40,
-        "weight": 1
+        "weight": 0.008
     },
     {
         "abilities": "Intimidate",
         "active_time": "any",
         "attack": 55,
         "category": "Toxic, Arthropod",
-        "class": "Unknown",
+        "class": "Arachnid",
         "cry": "spider",
         "defense": 45,
         "description": "The Caribbean Diamond Tarantula shimmers under light with iridescent blue hairs. It guards its burrow fiercely, striking swiftly when disturbed.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Silk Thread",
         "habitat": "Jungle",
         "health": 75,
@@ -41349,7 +41349,7 @@
         "scientific_name": "Tapinauchenius sp.",
         "spawn_tiles": "tall_grass",
         "speed": 112,
-        "weight": 1
+        "weight": 0.025
     },
     {
         "abilities": "Prism Armor",
@@ -41500,11 +41500,11 @@
         "active_time": "any",
         "attack": 30,
         "category": "Arthropod, Grass",
-        "class": "Unknown",
+        "class": "Mollusk",
         "cry": "default",
         "defense": 25,
         "description": "The Greater Angel-wing Bugs delicate wings resemble green leaves to avoid predators. Its rhythmic chirps fill the air during warm tropical nights.",
-        "diet": "Unknown",
+        "diet": "Filter Feeder",
         "drops": "Wing Fragment",
         "habitat": "Jungle",
         "health": 55,
@@ -41517,18 +41517,18 @@
         "scientific_name": "Euchorthippus declivus",
         "spawn_tiles": "tall_grass",
         "speed": 65,
-        "weight": 1
+        "weight": 0.15
     },
     {
         "abilities": "Illuminate , Dazzling",
         "active_time": "any",
         "attack": 10,
         "category": "Arthropod, Electric",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 5,
         "description": "The California pink glow worm emits a gentle pink light to attract prey and mates in dark habitats. Its soft bioluminescence gives forests and caves a mysterious glow at night.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Bioluminescent Fluid",
         "habitat": "Cave, Urban",
         "health": 15,
@@ -41541,18 +41541,18 @@
         "scientific_name": "Microphorus californicus",
         "spawn_tiles": "tall_grass",
         "speed": 20,
-        "weight": 1
+        "weight": 0.0004
     },
     {
         "abilities": "Compound Eyes",
         "active_time": "any",
         "attack": 8,
         "category": "Arthropod, Blaze",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 4,
         "description": "The larva of the pink glow worm glows to lure small insects close enough to capture. It spends much of its life underground feeding before emerging as an adult glow worm.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Glow Fluid",
         "habitat": "Jungle, Swamp",
         "health": 12,
@@ -41565,7 +41565,7 @@
         "scientific_name": "Lampyris noctiluca",
         "spawn_tiles": "tall_grass",
         "speed": 18,
-        "weight": 1
+        "weight": 0.0004
     },
     {
         "abilities": "Aerial Grace",
@@ -41740,11 +41740,11 @@
         "active_time": "any",
         "attack": 15,
         "category": "Aquatic, Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "bug",
         "defense": 10,
         "description": "The toad bug hunts tiny insects along muddy shorelines using its quick leaps. Its rough texture and coloration help it blend with wet sand and stones.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Frog Leg",
         "habitat": "Swamp, River,Wetlands",
         "health": 20,
@@ -41757,7 +41757,7 @@
         "scientific_name": "Gelastocoris oculatus",
         "spawn_tiles": "tall_grass",
         "speed": 40,
-        "weight": 1
+        "weight": 0.00015
     },
     {
         "abilities": "Tunnel Hunter",
@@ -42364,11 +42364,11 @@
         "active_time": "any",
         "attack": 10,
         "category": "Arthropod, Aquatic",
-        "class": "Unknown",
+        "class": "Crustacean",
         "cry": "default",
         "defense": 15,
         "description": "The sand flea lives in the surf zone, burrowing quickly into wet sand between waves. It filters plankton from seawater and serves as food for many shorebirds.",
-        "diet": "Unknown",
+        "diet": "Scavenger",
         "drops": "Exoskeleton Fragment",
         "habitat": "Coastal",
         "health": 25,
@@ -42381,7 +42381,7 @@
         "scientific_name": "Emerita talpoida",
         "spawn_tiles": "tall_grass",
         "speed": 30,
-        "weight": 1
+        "weight": 0.00015
     },
     {
         "abilities": "Quick Feet",
@@ -42916,11 +42916,11 @@
         "active_time": "any",
         "attack": 75,
         "category": "Arthropod, Toxic",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 55,
         "description": "The oriental hornet can convert sunlight into energy through pigments in its exoskeleton. It builds nests in soil and hunts other insects with precision.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Stinger",
         "habitat": "Desert, Urban",
         "health": 70,
@@ -42933,7 +42933,7 @@
         "scientific_name": "Vespa orientalis",
         "spawn_tiles": "tall_grass",
         "speed": 90,
-        "weight": 1
+        "weight": 0.0008
     },
     {
         "abilities": "Berserk",
@@ -43156,11 +43156,11 @@
         "active_time": "any",
         "attack": 20,
         "category": "Arthropod, Metal",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 45,
         "description": "The giant spiny stick insect mimics twigs to evade predators. Females are large and covered in spines for extra protection.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Insect Leg",
         "habitat": "Jungle, Rainforest",
         "health": 50,
@@ -43173,18 +43173,18 @@
         "scientific_name": "Extatosoma tiaratum",
         "spawn_tiles": "tall_grass",
         "speed": 25,
-        "weight": 1
+        "weight": 0.035
     },
     {
         "abilities": "Mimic",
         "active_time": "any",
         "attack": 18,
         "category": "Arthropod, Grass",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 40,
         "description": "The giant walking stick is among the longest insects in North America. It uses perfect mimicry to blend seamlessly into tree branches.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Insect Wing",
         "habitat": "Jungle, Rainforest",
         "health": 55,
@@ -43197,18 +43197,18 @@
         "scientific_name": "Megaphasma denticrus",
         "spawn_tiles": "tall_grass",
         "speed": 20,
-        "weight": 1
+        "weight": 0.045
     },
     {
         "abilities": "Shield Dust ,Thick Fat",
         "active_time": "any",
         "attack": 22,
         "category": "Arthropod, Grass",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 50,
         "description": "The jungle nymph stick insect is large and vividly green with sharp spines for defense. It feeds on leaves and remains motionless when disturbed.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Nymph Wing",
         "habitat": "Jungle, Rainforest",
         "health": 60,
@@ -43221,18 +43221,18 @@
         "scientific_name": "Heteropteryx dilatata",
         "spawn_tiles": "tall_grass",
         "speed": 18,
-        "weight": 1
+        "weight": 0.057
     },
     {
         "abilities": "Long Reach",
         "active_time": "any",
         "attack": 25,
         "category": "Arthropod, Grass",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 45,
         "description": "Chans megastick is one of the longest insects ever recorded. Its slender body and twig-like shape provide excellent protection from predators.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Insect Leg",
         "habitat": "Rainforest, Jungle",
         "health": 65,
@@ -43245,18 +43245,18 @@
         "scientific_name": "Phobaeticus chani",
         "spawn_tiles": "tall_grass",
         "speed": 20,
-        "weight": 1
+        "weight": 0.055
     },
     {
         "abilities": "Queenly Majesty, True Flight",
         "active_time": "any",
         "attack": 15,
         "category": "Arthropod, Fairy",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 20,
         "description": "Queen Alexandras birdwing is the worlds largest butterfly, native to Papua New Guinea. Its vibrant blue and green wings are a marvel of evolution.",
-        "diet": "Unknown",
+        "diet": "Nectarivore",
         "drops": "Butterfly Wing",
         "habitat": "Rainforest, Jungle",
         "health": 40,
@@ -43269,7 +43269,7 @@
         "scientific_name": "Ornithoptera alexandrae",
         "spawn_tiles": "tall_grass",
         "speed": 70,
-        "weight": 1
+        "weight": 0.012
     },
     {
         "abilities": "Strong Jaw",
@@ -43300,11 +43300,11 @@
         "active_time": "night",
         "attack": 10,
         "category": "Arthropod, Spectral",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 25,
         "description": "The white witch moth has the widest wingspan of any living moth. Its pale color and ghostly glide through the forest give it an ethereal presence.",
-        "diet": "Unknown",
+        "diet": "Nectarivore",
         "drops": "Moth Wing",
         "habitat": "Rainforest, Jungle",
         "health": 45,
@@ -43317,18 +43317,18 @@
         "scientific_name": "Thysania agrippina",
         "spawn_tiles": "tall_grass",
         "speed": 50,
-        "weight": 1
+        "weight": 0.005
     },
     {
         "abilities": "Adaptability, Solid Rock",
         "active_time": "any",
         "attack": 85,
         "category": "Arthropod, Earth",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 140,
         "description": "The giant burrowing cockroach is one of the heaviest insects in the world. It lives underground feeding on dry leaves and helps recycle nutrients.",
-        "diet": "Unknown",
+        "diet": "Detritivore",
         "drops": "Exoskeleton",
         "habitat": "Savanna, Desert",
         "health": 120,
@@ -43341,18 +43341,18 @@
         "scientific_name": "Macropanesthia rhinoceros",
         "spawn_tiles": "tall_grass",
         "speed": 20,
-        "weight": 1
+        "weight": 0.033
     },
     {
         "abilities": "Flight",
         "active_time": "any",
         "attack": 35,
         "category": "Spectral, Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 40,
         "description": "The giant lacewing was once thought extinct but rediscovered in North America. Its delicate wings hide a voracious appetite for smaller insects.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Wing Dust",
         "habitat": "Taiga",
         "health": 70,
@@ -43365,18 +43365,18 @@
         "scientific_name": "Polystoechotes punctata",
         "spawn_tiles": "tall_grass",
         "speed": 60,
-        "weight": 1
+        "weight": 0.002
     },
     {
         "abilities": "Merciless",
         "active_time": "any",
         "attack": 70,
         "category": "Arthropod, Toxic",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 60,
         "description": "The giant spiny assassin bug uses its sharp proboscis to inject lethal saliva into prey. It is both a fearsome hunter and a master of camouflage.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Insect Fang",
         "habitat": "Jungle, Rainforest",
         "health": 90,
@@ -43389,18 +43389,18 @@
         "scientific_name": "Psytalla horrida",
         "spawn_tiles": "tall_grass",
         "speed": 50,
-        "weight": 1
+        "weight": 0.004
     },
     {
         "abilities": "True Flight",
         "active_time": "night",
         "attack": 20,
         "category": "Arthropod, Martial",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 35,
         "description": "The Hercules moth is named for its impressive wingspan and strength. Adults live only a few days, focusing solely on reproduction.",
-        "diet": "Unknown",
+        "diet": "Non-feeding",
         "drops": "Moth Wing",
         "habitat": "Rainforest, Jungle",
         "health": 60,
@@ -43413,18 +43413,18 @@
         "scientific_name": "Coscinocera hercules",
         "spawn_tiles": "tall_grass",
         "speed": 40,
-        "weight": 1
+        "weight": 0.018
     },
     {
         "abilities": "Shed Skin",
         "active_time": "any",
         "attack": 20,
         "category": "Arthropod, Spectral",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 40,
         "description": "Macleays spectre stick insect mimics eucalyptus leaves so well that predators often overlook it. Its gentle swaying motion imitates wind-blown foliage.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Insect Leg",
         "habitat": "Jungle, Rainforest",
         "health": 55,
@@ -43437,18 +43437,18 @@
         "scientific_name": "Extatosoma tiaratum macleayi",
         "spawn_tiles": "tall_grass",
         "speed": 25,
-        "weight": 1
+        "weight": 0.035
     },
     {
         "abilities": "Strong Jaw , Intimidate",
         "active_time": "any",
         "attack": 55,
         "category": "Arthropod, Aquatic",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 45,
         "description": "The eastern dobsonfly is known for its large mandibles and impressive wingspan. Males display their jaws for mating, while larvae are fierce aquatic predators.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Insect Wing",
         "habitat": "River, Jungle",
         "health": 80,
@@ -43461,18 +43461,18 @@
         "scientific_name": "Corydalus cornutus",
         "spawn_tiles": "tall_grass",
         "speed": 40,
-        "weight": 1
+        "weight": 0.0035
     },
     {
         "abilities": "Speed Boost, Infiltrator",
         "active_time": "any",
         "attack": 90,
         "category": "Arthropod, Flying",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 45,
         "description": "The giant cicada produces one of the loudest calls in the insect world. Its song echoes through tropical forests during the humid months.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Cicada Shell",
         "habitat": "Jungle, Rainforest",
         "health": 61,
@@ -43485,7 +43485,7 @@
         "scientific_name": "Pomponia imperatoria",
         "spawn_tiles": "tall_grass",
         "speed": 160,
-        "weight": 1
+        "weight": 0.01
     },
     {
         "abilities": "Battle Armor",
@@ -43516,11 +43516,11 @@
         "active_time": "any",
         "attack": 20,
         "category": "Arthropod, Grass",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 25,
         "description": "Schaus swallowtail is a critically endangered butterfly native to southern Florida. Its bright yellow and black wings shimmer in the sunlight.",
-        "diet": "Unknown",
+        "diet": "Nectarivore",
         "drops": "Wing Scale,Empty Chrysalis",
         "habitat": "Rainforest, Jungle",
         "health": 50,
@@ -43533,7 +43533,7 @@
         "scientific_name": "Papilio aristodemus",
         "spawn_tiles": "tall_grass",
         "speed": 70,
-        "weight": 1
+        "weight": 0.0012
     },
     {
         "abilities": "Horn Charge",
@@ -43636,11 +43636,11 @@
         "active_time": "any",
         "attack": 22,
         "category": "Arthropod, Rock",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 55,
         "description": "The thorny devil stick insect uses spiny armor and camouflage to evade predators. It blends perfectly with rough tree bark and dry leaves.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Insect Leg",
         "habitat": "Jungle, Rainforest",
         "health": 60,
@@ -43653,7 +43653,7 @@
         "scientific_name": "Aretaon asperrimus",
         "spawn_tiles": "tall_grass",
         "speed": 20,
-        "weight": 1
+        "weight": 0.042
     },
     {
         "abilities": "Horn Push",
@@ -43684,11 +43684,11 @@
         "active_time": "night",
         "attack": 60,
         "category": "Earth, Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 55,
         "description": "The giant mole cricket uses its shovel-like forelegs to dig through moist soil. It creates complex tunnels and feeds on roots and small insects.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Insect Leg",
         "habitat": "Savanna, Jungle",
         "health": 80,
@@ -43701,18 +43701,18 @@
         "scientific_name": "Gryllotalpa major",
         "spawn_tiles": "tall_grass",
         "speed": 35,
-        "weight": 1
+        "weight": 0.0055
     },
     {
         "abilities": "Intimidate , Shield Dust",
         "active_time": "any",
         "attack": 35,
         "category": "Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 45,
         "description": "The hickory horned devil is a massive caterpillar that transforms into the regal moth. Despite its fearsome appearance, it is harmless to humans.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Caterpillar Hair",
         "habitat": "Jungle",
         "health": 90,
@@ -43725,18 +43725,18 @@
         "scientific_name": "Citheronia regalis",
         "spawn_tiles": "tall_grass",
         "speed": 25,
-        "weight": 1
+        "weight": 0.012
     },
     {
         "abilities": "Jump",
         "active_time": "any",
         "attack": 40,
         "category": "Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 35,
         "description": "The rainbow grasshopper is famous for its bright warning colors. It uses jumping power and toxicity to deter predators.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Insect Leg",
         "habitat": "Savanna, Desert",
         "health": 55,
@@ -43749,18 +43749,18 @@
         "scientific_name": "Dactylotum bicolor",
         "spawn_tiles": "tall_grass",
         "speed": 60,
-        "weight": 1
+        "weight": 0.0025
     },
     {
         "abilities": "True Flight",
         "active_time": "night",
         "attack": 20,
         "category": "Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 30,
         "description": "The regal moth emerges from the hickory horned devil caterpillar. Its orange and yellow wings make it one of North Americas most striking insects.",
-        "diet": "Unknown",
+        "diet": "Non-feeding",
         "drops": "Moth Wing",
         "habitat": "Jungle, Rainforest",
         "health": 60,
@@ -43773,7 +43773,7 @@
         "scientific_name": "Citheronia regalis",
         "spawn_tiles": "tall_grass",
         "speed": 35,
-        "weight": 1
+        "weight": 0.006
     },
     {
         "abilities": "True Flight",
@@ -44068,11 +44068,11 @@
         "active_time": "any",
         "attack": 40,
         "category": "Arthropod, Toxic",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 25,
         "description": "The puss caterpillar is covered in soft hair that conceals venomous spines. Contact with its hairs causes severe pain and irritation.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Caterpillar Hair",
         "habitat": "Jungle, Rainforest",
         "health": 60,
@@ -44085,18 +44085,18 @@
         "scientific_name": "Megalopyge opercularis",
         "spawn_tiles": "tall_grass",
         "speed": 25,
-        "weight": 1
+        "weight": 0.0015
     },
     {
         "abilities": "Rough Skin , Effect Spore",
         "active_time": "any",
         "attack": 35,
         "category": "Arthropod, Toxic",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 25,
         "description": "The saddleback caterpillar has a distinctive green patch that resembles a saddle. Its venomous spines deliver a powerful sting to any would-be predator.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Caterpillar Hair",
         "habitat": "Jungle, Rainforest",
         "health": 55,
@@ -44109,7 +44109,7 @@
         "scientific_name": "Acharia stimulea",
         "spawn_tiles": "tall_grass",
         "speed": 20,
-        "weight": 1
+        "weight": 0.0015
     },
     {
         "abilities": "Reef Camouflage",
@@ -44788,11 +44788,11 @@
         "active_time": "night",
         "attack": 10,
         "category": "Arthropod, Mystic",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 10,
         "description": "The Luna Moth is a large, nocturnal moth of jungles. It uses rapid flight and camouflage to avoid predators at night.",
-        "diet": "Unknown",
+        "diet": "Non-feeding",
         "drops": "Wings",
         "habitat": "Jungle",
         "health": 20,
@@ -44805,7 +44805,7 @@
         "scientific_name": "Actias luna",
         "spawn_tiles": "tall_grass",
         "speed": 35,
-        "weight": 1
+        "weight": 0.0018
     },
     {
         "abilities": "Reef Camouflage",
@@ -45388,11 +45388,11 @@
         "active_time": "night",
         "attack": 20,
         "category": "Arthropod, Earth",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 35,
         "description": "The Jerusalem cricket is a nocturnal insect with a large head and powerful jaws. It spends most of its life underground feeding on roots and organic matter.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Chitin",
         "habitat": "Desert",
         "health": 40,
@@ -45405,7 +45405,7 @@
         "scientific_name": "Stenopelmatus fuscus",
         "spawn_tiles": "tall_grass",
         "speed": 30,
-        "weight": 1
+        "weight": 0.008
     },
     {
         "abilities": "Rough Skin",
@@ -45508,11 +45508,11 @@
         "active_time": "any",
         "attack": 35,
         "category": "Toxic, Arthropod",
-        "class": "Unknown",
+        "class": "Arachnid",
         "cry": "spider",
         "defense": 50,
         "description": "The Texas tan tarantula is a large ground dwelling spider native to arid regions. It relies on size and defensive behavior more than aggression.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Hair, Venom Sac",
         "habitat": "Desert",
         "health": 60,
@@ -45525,7 +45525,7 @@
         "scientific_name": "Aphonopelma hentzi",
         "spawn_tiles": "tall_grass",
         "speed": 100,
-        "weight": 1
+        "weight": 0.055
     },
     {
         "abilities": "Symbiosis",
@@ -45724,11 +45724,11 @@
         "active_time": "any",
         "attack": 55,
         "category": "Arthropod, Toxic",
-        "class": "Unknown",
+        "class": "Arachnid",
         "cry": "default",
         "defense": 25,
         "description": "The red widow is a venomous spider with striking red markings. It builds silk retreats and relies on potent venom to subdue prey.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Venom Sac, Silk",
         "habitat": "Savanna",
         "health": 35,
@@ -45741,7 +45741,7 @@
         "scientific_name": "Latrodectus bishopi",
         "spawn_tiles": "tall_grass",
         "speed": 40,
-        "weight": 1
+        "weight": 0.0008
     },
     {
         "abilities": "Strong Jaw",
@@ -46684,11 +46684,11 @@
         "active_time": "any",
         "attack": 55,
         "category": "Arthropod, Rock",
-        "class": "Unknown",
+        "class": "Mollusk",
         "cry": "default",
         "defense": 110,
         "description": "The baler shell snail is a large marine gastropod with a heavy shell. It slowly scavenges and feeds on other mollusks.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Shell,Mucus,Snail Meat",
         "habitat": "Coastal",
         "health": 70,
@@ -46701,7 +46701,7 @@
         "scientific_name": "Melo melo",
         "spawn_tiles": "tall_grass",
         "speed": 20,
-        "weight": 1
+        "weight": 7.5
     },
     {
         "abilities": "Poison Touch",
@@ -49300,11 +49300,11 @@
         "active_time": "night",
         "attack": 17,
         "category": "Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 14,
         "description": "The hummingbird clearwing moth has transparent wings that reduce visibility to predators. It feeds during the day and mimics hummingbird behavior.",
-        "diet": "Unknown",
+        "diet": "Nectarivore",
         "drops": "scale, nectar",
         "habitat": "Jungle",
         "health": 24,
@@ -49317,18 +49317,18 @@
         "scientific_name": "Hemaris thysbe",
         "spawn_tiles": "tall_grass",
         "speed": 85,
-        "weight": 1
+        "weight": 0.0005
     },
     {
         "abilities": "True Flight",
         "active_time": "night",
         "attack": 16,
         "category": "Arthropod, Cryo",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 14,
         "description": "The snowberry clearwing moth closely resembles a bumblebee while in flight. This visual mimicry helps deter potential predators.",
-        "diet": "Unknown",
+        "diet": "Nectarivore",
         "drops": "scale, nectar",
         "habitat": "Jungle",
         "health": 23,
@@ -49341,7 +49341,7 @@
         "scientific_name": "Hemaris diffinis",
         "spawn_tiles": "tall_grass",
         "speed": 82,
-        "weight": 1
+        "weight": 0.0006
     },
     {
         "abilities": "Gluttony",
@@ -49540,11 +49540,11 @@
         "active_time": "night",
         "attack": 15,
         "category": "Arthropod, Spectral",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 13,
         "description": "The macrocilix maia moth displays wing patterns that resemble a spider attacking prey. This illusion helps deter birds during rest.",
-        "diet": "Unknown",
+        "diet": "Nectarivore",
         "drops": "scale, silk",
         "habitat": "Jungle",
         "health": 24,
@@ -49557,18 +49557,18 @@
         "scientific_name": "Macrocilix maia",
         "spawn_tiles": "tall_grass",
         "speed": 60,
-        "weight": 1
+        "weight": 0.0004
     },
     {
         "abilities": "Poison Touch",
         "active_time": "any",
         "attack": 125,
         "category": "Arthropod, Martial",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 60,
         "description": "The panda ant is actually a wingless wasp with an extremely painful sting. Females invade nests of other insects to lay their eggs.",
-        "diet": "Unknown",
+        "diet": "Nectarivore",
         "drops": "Venom Sac, Fang",
         "habitat": "Desert",
         "health": 65,
@@ -49581,7 +49581,7 @@
         "scientific_name": "Euspinolia militaris",
         "spawn_tiles": "tall_grass",
         "speed": 110,
-        "weight": 1
+        "weight": 5e-05
     },
     {
         "abilities": "Nut Cracking",
@@ -49684,11 +49684,11 @@
         "active_time": "any",
         "attack": 12,
         "category": "Arthropod, Electric",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 18,
         "description": "The malagasy blue stick insect uses its elongated body to blend into branches. Its coloration becomes more vivid during defensive displays.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "exoskeleton, limb",
         "habitat": "Jungle",
         "health": 26,
@@ -49701,18 +49701,18 @@
         "scientific_name": "Achrioptera fallax",
         "spawn_tiles": "tall_grass",
         "speed": 25,
-        "weight": 1
+        "weight": 0.012
     },
     {
         "abilities": "True Flight, Dancer",
         "active_time": "any",
         "attack": 20,
         "category": "Arthropod, Mystic",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "mosquito",
         "defense": 12,
         "description": "The paddle-legged beauty mosquito is known for its ornate leg scales and shimmering colors. Females require blood meals to reproduce successfully.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "proboscis, wing",
         "habitat": "Jungle",
         "health": 28,
@@ -49725,7 +49725,7 @@
         "scientific_name": "Sabethes cyaneus",
         "spawn_tiles": "tall_grass",
         "speed": 70,
-        "weight": 1
+        "weight": 3e-06
     },
     {
         "abilities": "Canopy Leap",
@@ -50044,11 +50044,11 @@
         "active_time": "any",
         "attack": 22,
         "category": "Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 18,
         "description": "The goliath birdwing is one of the largest butterflies on Earth. Its slow powerful flight makes it highly visible in rainforests.",
-        "diet": "Unknown",
+        "diet": "Nectarivore",
         "drops": "scale, nectar",
         "habitat": "Rainforest",
         "health": 30,
@@ -50061,18 +50061,18 @@
         "scientific_name": "Ornithoptera goliath",
         "spawn_tiles": "tall_grass",
         "speed": 70,
-        "weight": 1
+        "weight": 0.006
     },
     {
         "abilities": "True Flight",
         "active_time": "any",
         "attack": 18,
         "category": "Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 16,
         "description": "The old world swallowtail is a widespread butterfly with bold coloration. Its caterpillars possess chemical defenses against predators.",
-        "diet": "Unknown",
+        "diet": "Nectarivore",
         "drops": "Wing Scale,Empty Chrysalis",
         "habitat": "Savanna",
         "health": 26,
@@ -50085,7 +50085,7 @@
         "scientific_name": "Papilio machaon",
         "spawn_tiles": "tall_grass",
         "speed": 68,
-        "weight": 1
+        "weight": 0.0006
     },
     {
         "abilities": "True Flight",
@@ -50116,11 +50116,11 @@
         "active_time": "any",
         "attack": 21,
         "category": "Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 18,
         "description": "The golden birdwing displays bright yellow wings that stand out against green foliage. It is commonly seen high in forest canopies.",
-        "diet": "Unknown",
+        "diet": "Nectarivore",
         "drops": "scale, nectar",
         "habitat": "Rainforest",
         "health": 32,
@@ -50133,18 +50133,18 @@
         "scientific_name": "Troides aeacus",
         "spawn_tiles": "tall_grass",
         "speed": 66,
-        "weight": 1
+        "weight": 0.004
     },
     {
         "abilities": "True Flight",
         "active_time": "any",
         "attack": 20,
         "category": "Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 17,
         "description": "The metallic blue morpho flashes brilliant blue when flying. This sudden color shift can confuse predators.",
-        "diet": "Unknown",
+        "diet": "Frugivore",
         "drops": "scale, nectar",
         "habitat": "Rainforest",
         "health": 30,
@@ -50157,18 +50157,18 @@
         "scientific_name": "Morpho menelaus",
         "spawn_tiles": "tall_grass",
         "speed": 72,
-        "weight": 1
+        "weight": 0.0008
     },
     {
         "abilities": "True Flight",
         "active_time": "any",
         "attack": 19,
         "category": "Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 17,
         "description": "The sunset morpho is most active during low light conditions. Its wing colors blend with warm forest tones at dusk.",
-        "diet": "Unknown",
+        "diet": "Frugivore",
         "drops": "scale, nectar",
         "habitat": "Rainforest",
         "health": 29,
@@ -50181,7 +50181,7 @@
         "scientific_name": "Morpho hecuba",
         "spawn_tiles": "tall_grass",
         "speed": 70,
-        "weight": 1
+        "weight": 0.0009
     },
     {
         "abilities": "Sturdy",
@@ -50212,11 +50212,11 @@
         "active_time": "night",
         "attack": 26,
         "category": "Arthropod, Grass",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 30,
         "description": "The giant wood moth has a massive wingspan but limited agility. Adults live briefly and focus solely on reproduction.",
-        "diet": "Unknown",
+        "diet": "Non-feeding",
         "drops": "wing, silk",
         "habitat": "Jungle",
         "health": 50,
@@ -50229,7 +50229,7 @@
         "scientific_name": "Endoxyla cinereus",
         "spawn_tiles": "tall_grass",
         "speed": 25,
-        "weight": 1
+        "weight": 0.023
     },
     {
         "abilities": "Dominance",
@@ -50380,11 +50380,11 @@
         "active_time": "night",
         "attack": 45,
         "category": "Earth, Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 55,
         "description": "The bluff weta is a large nocturnal insect native to rugged southern regions. It relies on size and strength rather than speed for survival.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "exoskeleton, leg",
         "habitat": "Cave",
         "health": 75,
@@ -50397,7 +50397,7 @@
         "scientific_name": "Deinacrida elegans",
         "spawn_tiles": "tall_grass",
         "speed": 25,
-        "weight": 1
+        "weight": 0.015
     },
     {
         "abilities": "Sprint Hunt",
@@ -50428,11 +50428,11 @@
         "active_time": "any",
         "attack": 44,
         "category": "Earth, Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 58,
         "description": "The herekopare weta has prominent spines used for defense. It shelters in rocky crevices during daylight hours.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "exoskeleton, spine",
         "habitat": "Cave",
         "health": 78,
@@ -50445,18 +50445,18 @@
         "scientific_name": "Deinacrida heteracantha",
         "spawn_tiles": "tall_grass",
         "speed": 22,
-        "weight": 1
+        "weight": 0.021
     },
     {
         "abilities": "Cold Tolerance",
         "active_time": "any",
         "attack": 46,
         "category": "Earth, Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 60,
         "description": "The kaikoura giant weta is adapted to cool coastal climates. Its slow movements are offset by a tough body.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "exoskeleton, limb",
         "habitat": "Cave",
         "health": 80,
@@ -50469,18 +50469,18 @@
         "scientific_name": "Deinacrida rugosa",
         "spawn_tiles": "tall_grass",
         "speed": 20,
-        "weight": 1
+        "weight": 0.035
     },
     {
         "abilities": "Island Resilience",
         "active_time": "any",
         "attack": 48,
         "category": "Earth, Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 62,
         "description": "The poor knights giant weta evolved in isolation on offshore islands. Its large size reflects a lack of native mammal predators.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "exoskeleton, limb",
         "habitat": "Jungle",
         "health": 82,
@@ -50493,18 +50493,18 @@
         "scientific_name": "Deinacrida fallai",
         "spawn_tiles": "tall_grass",
         "speed": 22,
-        "weight": 1
+        "weight": 0.045
     },
     {
         "abilities": "Rock Blend",
         "active_time": "any",
         "attack": 42,
         "category": "Earth, Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 54,
         "description": "The scree weta lives among loose alpine rocks. Its coloration helps it blend into stony environments.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "exoskeleton, leg",
         "habitat": "Mountain",
         "health": 72,
@@ -50517,18 +50517,18 @@
         "scientific_name": "Deinacrida carinata",
         "spawn_tiles": "tall_grass",
         "speed": 30,
-        "weight": 1
+        "weight": 0.012
     },
     {
         "abilities": "Salt Tolerance",
         "active_time": "any",
         "attack": 47,
         "category": "Earth, Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 61,
         "description": "The cook strait giant weta inhabits windswept coastal areas. It shelters in burrows to avoid harsh weather.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "exoskeleton, limb",
         "habitat": "Cave",
         "health": 81,
@@ -50541,18 +50541,18 @@
         "scientific_name": "Deinacrida rugosa",
         "spawn_tiles": "tall_grass",
         "speed": 21,
-        "weight": 1
+        "weight": 0.045
     },
     {
         "abilities": "Adaptability",
         "active_time": "any",
         "attack": 46,
         "category": "Earth, Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 60,
         "description": "The mahoenui giant weta survives in remnant forest patches. Conservation efforts have helped stabilize its population.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "exoskeleton, leg",
         "habitat": "Jungle",
         "health": 80,
@@ -50565,18 +50565,18 @@
         "scientific_name": "Deinacrida mahoenui",
         "spawn_tiles": "tall_grass",
         "speed": 23,
-        "weight": 1
+        "weight": 0.021
     },
     {
         "abilities": "Alpine Hardiness",
         "active_time": "any",
         "attack": 49,
         "category": "Earth, Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 63,
         "description": "The mt arthur giant weta is adapted to cold alpine caves. It endures freezing conditions better than most insects.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "exoskeleton, limb",
         "habitat": "Mountain",
         "health": 83,
@@ -50589,18 +50589,18 @@
         "scientific_name": "Deinacrida pluvialis",
         "spawn_tiles": "tall_grass",
         "speed": 18,
-        "weight": 1
+        "weight": 0.024
     },
     {
         "abilities": "Dominant Size",
         "active_time": "any",
         "attack": 50,
         "category": "Earth, Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 65,
         "description": "Wetapunga is one of the largest living insects by mass. Its sheer size deters most potential predators.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "exoskeleton, spine",
         "habitat": "Jungle",
         "health": 85,
@@ -50613,18 +50613,18 @@
         "scientific_name": "Deinacrida heteracantha",
         "spawn_tiles": "tall_grass",
         "speed": 20,
-        "weight": 1
+        "weight": 0.052
     },
     {
         "abilities": "Digging Limbs",
         "active_time": "any",
         "attack": 44,
         "category": "Earth, Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 58,
         "description": "The giant mole weta uses strong forelimbs to dig shelters. It spends much of its life underground.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "exoskeleton, claw",
         "habitat": "Cave",
         "health": 78,
@@ -50637,7 +50637,7 @@
         "scientific_name": "Deinacrida talpa",
         "spawn_tiles": "tall_grass",
         "speed": 28,
-        "weight": 1
+        "weight": 0.022
     },
     {
         "abilities": "Loud Call",
@@ -50668,11 +50668,11 @@
         "active_time": "any",
         "attack": 38,
         "category": "Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 32,
         "description": "The giant long legged katydid blends into foliage with leaflike wings. Its long legs allow powerful jumps.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "exoskeleton, leg",
         "habitat": "Jungle",
         "health": 50,
@@ -50685,18 +50685,18 @@
         "scientific_name": "Macrolyristes corporalis",
         "spawn_tiles": "tall_grass",
         "speed": 60,
-        "weight": 1
+        "weight": 0.025
     },
     {
         "abilities": "Flash Escape",
         "active_time": "any",
         "attack": 24,
         "category": "Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 22,
         "description": "The blue winged grasshopper reveals bright wings when startled. This sudden flash confuses predators.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "exoskeleton, wing",
         "habitat": "Savanna",
         "health": 35,
@@ -50709,18 +50709,18 @@
         "scientific_name": "Oedipoda caerulescens",
         "spawn_tiles": "tall_grass",
         "speed": 70,
-        "weight": 1
+        "weight": 0.0009
     },
     {
         "abilities": "Startle Display",
         "active_time": "any",
         "attack": 25,
         "category": "Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 22,
         "description": "The red winged grasshopper relies on sudden color displays to evade capture. It favors open dry ground.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "exoskeleton, wing",
         "habitat": "Savanna",
         "health": 36,
@@ -50733,18 +50733,18 @@
         "scientific_name": "Oedipoda germanica",
         "spawn_tiles": "tall_grass",
         "speed": 72,
-        "weight": 1
+        "weight": 0.0012
     },
     {
         "abilities": "Chlorophyll",
         "active_time": "any",
         "attack": 32,
         "category": "Arthropod, Grass",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 38,
         "description": "The giant malaysian leaf insect looks nearly identical to a leaf. Even its movements imitate swaying foliage.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "exoskeleton, leaf",
         "habitat": "Jungle",
         "health": 58,
@@ -50757,7 +50757,7 @@
         "scientific_name": "Phyllium giganteum",
         "spawn_tiles": "tall_grass",
         "speed": 28,
-        "weight": 1
+        "weight": 0.015
     },
     {
         "abilities": "Threat Display",
@@ -50788,11 +50788,11 @@
         "active_time": "any",
         "attack": 50,
         "category": "Arthropod, Mystic",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 45,
         "description": "The empress cicada produces powerful calls using resonating body chambers. It emerges seasonally in large numbers.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "shell, wing",
         "habitat": "Jungle",
         "health": 61,
@@ -50805,18 +50805,18 @@
         "scientific_name": "Pomponia imperatoria",
         "spawn_tiles": "tall_grass",
         "speed": 160,
-        "weight": 1
+        "weight": 0.015
     },
     {
         "abilities": "True Flight",
         "active_time": "any",
         "attack": 28,
         "category": "Arthropod, Blaze",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 30,
         "description": "The red nosed lanternfly has a distinctive elongated head structure. It feeds on plant sap in forested areas.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Exoskeleton",
         "habitat": "Jungle",
         "health": 75,
@@ -50829,18 +50829,18 @@
         "scientific_name": "Pyrops candelaria",
         "spawn_tiles": "tall_grass",
         "speed": 75,
-        "weight": 1
+        "weight": 0.0008
     },
     {
         "abilities": "Stench , Compound Eyes",
         "active_time": "any",
         "attack": 20,
         "category": "Arthropod, Toxic",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 24,
         "description": "The striped bug displays bright warning colors. It releases strong odors when disturbed.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "exoskeleton, scent",
         "habitat": "Savanna",
         "health": 32,
@@ -50853,18 +50853,18 @@
         "scientific_name": "Graphosoma italicum",
         "spawn_tiles": "tall_grass",
         "speed": 40,
-        "weight": 1
+        "weight": 0.0002
     },
     {
         "abilities": "Water Bubble , Swift Swim",
         "active_time": "any",
         "attack": 46,
         "category": "Arthropod, Aquatic",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 35,
         "description": "The giant water strider hunts insects trapped on the water surface. Its long legs distribute weight to avoid sinking.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "leg, shell",
         "habitat": "Lake, River,Wetlands",
         "health": 55,
@@ -50877,7 +50877,7 @@
         "scientific_name": "Aquarius remigis",
         "spawn_tiles": "tall_grass",
         "speed": 80,
-        "weight": 1
+        "weight": 0.0001
     },
     {
         "abilities": "Keen Eye",
@@ -50908,11 +50908,11 @@
         "active_time": "any",
         "attack": 25,
         "category": "Arthropod, Metal",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 20,
         "description": "The giant ichneumon is a large parasitic wasp known for its extremely long egg laying organ. It drills into wood to lay eggs on hidden larvae, where its offspring develop as internal parasites.",
-        "diet": "Unknown",
+        "diet": "Nectarivore",
         "drops": "Long Ovipositor, Wasp Wing",
         "habitat": "Jungle",
         "health": 20,
@@ -50925,7 +50925,7 @@
         "scientific_name": "Megarhyssa macrurus",
         "spawn_tiles": "tall_grass",
         "speed": 50,
-        "weight": 1
+        "weight": 0.0007
     },
     {
         "abilities": "Adaptability",
@@ -51316,11 +51316,11 @@
         "active_time": "any",
         "attack": 20,
         "category": "Arthropod, Blaze",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "dragonfly",
         "defense": 20,
         "description": "The scarlet skimmer is a bright red dragonfly commonly found near still water bodies. It hunts small flying insects with quick aerial maneuvers and precise strikes.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Wing Fragment,Exuviae",
         "habitat": "Lake, River",
         "health": 25,
@@ -51333,7 +51333,7 @@
         "scientific_name": "Crocothemis servilia",
         "spawn_tiles": "dw_pond_we_2,dw_pond",
         "speed": 75,
-        "weight": 1
+        "weight": 0.0004
     },
     {
         "abilities": "Water Bubble , Liquid Voice",
@@ -51508,11 +51508,11 @@
         "active_time": "any",
         "attack": 85,
         "category": "Arthropod, Metal",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "bee",
         "defense": 120,
         "description": "The emerald small carpenter bee is a metallic green bee that nests in soft plant stems. It collects pollen and nectar while playing a role in pollination.",
-        "diet": "Unknown",
+        "diet": "Nectarivore",
         "drops": "Honeycomb, Honey",
         "habitat": "Jungle, Urban",
         "health": 65,
@@ -51525,7 +51525,7 @@
         "scientific_name": "Ceratina smaragdula",
         "spawn_tiles": "honey_tree,flower1,flower2",
         "speed": 45,
-        "weight": 1
+        "weight": 0.0001
     },
     {
         "abilities": "Opportunistic Forage",
@@ -51556,11 +51556,11 @@
         "active_time": "any",
         "attack": 15,
         "category": "Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 15,
         "description": "The common grass yellow is a small bright butterfly frequently seen in open grassy areas. It feeds on nectar and relies on quick fluttering flight to evade predators.",
-        "diet": "Unknown",
+        "diet": "Nectarivore",
         "drops": "Wing Scale,Empty Chrysalis",
         "habitat": "Jungle, Urban",
         "health": 18,
@@ -51573,18 +51573,18 @@
         "scientific_name": "Eurema hecabe",
         "spawn_tiles": "flower1,flower2",
         "speed": 75,
-        "weight": 1
+        "weight": 0.0002
     },
     {
         "abilities": "True Flight",
         "active_time": "any",
         "attack": 20,
         "category": "Arthropod, Mystic",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 18,
         "description": "The common mormon swallowtail is known for female forms that mimic toxic species. It visits flowers for nectar while flying with strong and graceful wingbeats.",
-        "diet": "Unknown",
+        "diet": "Nectarivore",
         "drops": "Wing Scale,Empty Chrysalis",
         "habitat": "Jungle, Urban",
         "health": 22,
@@ -51597,7 +51597,7 @@
         "scientific_name": "Papilio polytes",
         "spawn_tiles": "tall_grass",
         "speed": 70,
-        "weight": 1
+        "weight": 0.0008
     },
     {
         "abilities": "True Flight",
@@ -51676,11 +51676,11 @@
         "active_time": "any",
         "attack": 20,
         "category": "Arthropod, Grass",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 18,
         "description": "The lime swallowtail is a widespread butterfly whose larvae feed on citrus plants. Adults are strong fliers that frequently visit garden flowers.",
-        "diet": "Unknown",
+        "diet": "Nectarivore",
         "drops": "Wing Scale,Empty Chrysalis",
         "habitat": "Urban, Jungle",
         "health": 22,
@@ -51693,18 +51693,18 @@
         "scientific_name": "Papilio demoleus",
         "spawn_tiles": "tall_grass",
         "speed": 72,
-        "weight": 1
+        "weight": 0.0005
     },
     {
         "abilities": "True Flight, Curse Body, Infiltrator",
         "active_time": "any",
         "attack": 22,
         "category": "Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "dragonfly",
         "defense": 20,
         "description": "The pied paddy skimmer is often seen above rice fields and ponds. Males defend territories while catching small insects in flight.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Wing Fragment,Exuviae",
         "habitat": "Lake, River",
         "health": 28,
@@ -51717,7 +51717,7 @@
         "scientific_name": "Neurothemis tullia",
         "spawn_tiles": "tall_grass",
         "speed": 78,
-        "weight": 1
+        "weight": 0.0003
     },
     {
         "abilities": "Reflective Shield",
@@ -52036,11 +52036,11 @@
         "active_time": "any",
         "attack": 40,
         "category": "Arthropod, Aquatic",
-        "class": "Unknown",
+        "class": "Crustacean",
         "cry": "default",
         "defense": 85,
         "description": "The Darth Vader giant isopod is a massive deep sea crustacean with a helmet like armored shell. It scavenges fallen carcasses on the ocean floor and withstands immense pressure in dark waters.",
-        "diet": "Unknown",
+        "diet": "Scavenger",
         "drops": "Hard Shell, Deep Sea Meat",
         "habitat": "Deep Sea, Ocean",
         "health": 95,
@@ -52053,18 +52053,18 @@
         "scientific_name": "Bathynomus raksasa",
         "spawn_tiles": "tall_grass",
         "speed": 20,
-        "weight": 1
+        "weight": 1.15
     },
     {
         "abilities": "True Flight",
         "active_time": "any",
         "attack": 70,
         "category": "Darkness, Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "bee",
         "defense": 55,
         "description": "The Lucifer bee is a small tropical stingless bee known for its defensive biting behavior. Colonies aggressively protect their nests and produce resin rich honey in forest habitats.",
-        "diet": "Unknown",
+        "diet": "Nectarivore",
         "drops": "Honeycomb, Honey",
         "habitat": "Rainforest, Jungle",
         "health": 60,
@@ -52077,7 +52077,7 @@
         "scientific_name": "Trigona sp",
         "spawn_tiles": "honey_tree,flower1,flower2",
         "speed": 85,
-        "weight": 1
+        "weight": 0.0003
     },
     {
         "abilities": "Strong Jaw",
@@ -52132,11 +52132,11 @@
         "active_time": "any",
         "attack": 50,
         "category": "Arthropod, Electric",
-        "class": "Unknown",
+        "class": "Arachnid",
         "cry": "default",
         "defense": 35,
         "description": "The golden silk orb weaver spins large shimmering webs that glow in sunlight. It captures flying insects with sticky silk and subdues them using mild venom.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Golden Silk, Web Fiber",
         "habitat": "Rainforest, Jungle, Urban",
         "health": 45,
@@ -52149,7 +52149,7 @@
         "scientific_name": "Trichonephila clavipes",
         "spawn_tiles": "tall_grass",
         "speed": 40,
-        "weight": 1
+        "weight": 0.0025
     },
     {
         "abilities": "Sap Sipper",
@@ -52996,11 +52996,11 @@
         "active_time": "any",
         "attack": 65,
         "category": "Arthropod, Rock",
-        "class": "Unknown",
+        "class": "Arachnid",
         "cry": "spider",
         "defense": 50,
         "description": "The Brazilian jewel tarantula is a vividly colored spider that dwells in tree hollows. It subdues prey with venom and retreats quickly into silk lined shelters.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Iridescent Hair, Venom Fang",
         "habitat": "Jungle",
         "health": 55,
@@ -53013,18 +53013,18 @@
         "scientific_name": "Typhochlaena seladonia",
         "spawn_tiles": "tall_grass",
         "speed": 60,
-        "weight": 1
+        "weight": 0.012
     },
     {
         "abilities": "Strong Jaw",
         "active_time": "any",
         "attack": 55,
         "category": "Arthropod, Drake",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 60,
         "description": "The dragon-headed katydid is a large rainforest insect with dramatic hornlike projections on its head. Its spiny body provides defense while it feeds on leaves among dense foliage.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Chitin Plate, Spiked Leg",
         "habitat": "Rainforest, Jungle",
         "health": 50,
@@ -53037,7 +53037,7 @@
         "scientific_name": "Panacanthus cuspidatus",
         "spawn_tiles": "tall_grass",
         "speed": 65,
-        "weight": 1
+        "weight": 0.008
     },
     {
         "abilities": "Anger Point",
@@ -53092,11 +53092,11 @@
         "active_time": "any",
         "attack": 50,
         "category": "Arthropod, Metal",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 65,
         "description": "The robust shieldback katydid is a stout insect with a thick protective thorax. It inhabits dense vegetation where it feeds on plant matter and small invertebrates.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Hard Carapace, Strong Leg",
         "habitat": "Mountain, Jungle",
         "health": 60,
@@ -53109,7 +53109,7 @@
         "scientific_name": "Atlanticus pachymerus",
         "spawn_tiles": "tall_grass",
         "speed": 55,
-        "weight": 1
+        "weight": 0.006
     },
     {
         "abilities": "Drizzle",
@@ -53212,11 +53212,11 @@
         "active_time": "any",
         "attack": 85,
         "category": "Arthropod, Earth",
-        "class": "Unknown",
+        "class": "Annelid",
         "cry": "default",
         "defense": 60,
         "description": "The bobbit worm is a long segmented marine predator that hides beneath sandy seabeds. It lunges upward with lightning speed to seize unsuspecting prey.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Segment Fragment, Sharp Bristle",
         "habitat": "Ocean",
         "health": 80,
@@ -53229,7 +53229,7 @@
         "scientific_name": "Eunice aphroditois",
         "spawn_tiles": "tall_grass",
         "speed": 70,
-        "weight": 1
+        "weight": 0.5
     },
     {
         "abilities": "Gale Wings",
@@ -53620,11 +53620,11 @@
         "active_time": "any",
         "attack": 35,
         "category": "Arthropod, Drake",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 40,
         "description": "The dragon headed caterpillar has hornlike projections that resemble a tiny reptile face. This unusual appearance helps deter predators while it feeds on leaves.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Chitin Fragment, Silk Thread",
         "habitat": "Rainforest, Jungle",
         "health": 45,
@@ -53637,7 +53637,7 @@
         "scientific_name": "Polyura athamas larva",
         "spawn_tiles": "tall_grass",
         "speed": 50,
-        "weight": 1
+        "weight": 0.004
     },
     {
         "abilities": "Slush Rush , Infiltrator",
@@ -53668,11 +53668,11 @@
         "active_time": "any",
         "attack": 30,
         "category": "Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 35,
         "description": "The Japanese emperor caterpillar is the larval stage of a large silk moth. It feeds steadily on foliage before transforming into a striking adult moth.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Silk Thread, Soft Bristle",
         "habitat": "Jungle",
         "health": 40,
@@ -53685,7 +53685,7 @@
         "scientific_name": "Saturnia japonica larva",
         "spawn_tiles": "tall_grass",
         "speed": 45,
-        "weight": 1
+        "weight": 0.007
     },
     {
         "abilities": "Intimidate",
@@ -55732,11 +55732,11 @@
         "active_time": "any",
         "attack": 22,
         "category": "Arthropod,Cryo",
-        "class": "Unknown",
+        "class": "Crustacean",
         "cry": "default",
         "defense": 30,
         "description": "Antarctic amphipods are small crustaceans that thrive beneath icy seas and feed on organic debris. Despite their size they play an important role in the polar marine food web.",
-        "diet": "Unknown",
+        "diet": "Scavenger",
         "drops": "Chitin Fragment,Small Meat",
         "habitat": "Deep Sea,Ocean",
         "health": 40,
@@ -55749,7 +55749,7 @@
         "scientific_name": "Gammaridea",
         "spawn_tiles": "tall_grass",
         "speed": 36,
-        "weight": 1
+        "weight": 0.022
     },
     {
         "abilities": "Strong Jaw",
@@ -55804,11 +55804,11 @@
         "active_time": "any",
         "attack": 26,
         "category": "Arthropod, Spectral",
-        "class": "Unknown",
+        "class": "Crustacean",
         "cry": "default",
         "defense": 22,
         "description": "Antarctic skeleton shrimp are thin crustaceans that cling to seaweed and marine structures. Their sticklike bodies help them blend into underwater vegetation.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Chitin Fragment,Shrimp Meat",
         "habitat": "Ocean,Kelp Forest",
         "health": 38,
@@ -55821,18 +55821,18 @@
         "scientific_name": "Caprellidae",
         "spawn_tiles": "water",
         "speed": 42,
-        "weight": 1
+        "weight": 0.0005
     },
     {
         "abilities": "Emergency Exit",
         "active_time": "any",
         "attack": 44,
         "category": "Arthropod, Aquatic",
-        "class": "Unknown",
+        "class": "Crustacean",
         "cry": "default",
         "defense": 60,
         "description": "The giant Antarctic isopod is a massive crustacean relative of woodlice that roams the ocean floor. Its tough shell protects it while it scavenges for food in dark polar waters.",
-        "diet": "Unknown",
+        "diet": "Scavenger",
         "drops": "Hard Shell,Raw Meat",
         "habitat": "Deep Sea,Frozen Ocean",
         "health": 88,
@@ -55845,18 +55845,18 @@
         "scientific_name": "Glyptonotus antarcticus",
         "spawn_tiles": "tall_grass",
         "speed": 20,
-        "weight": 1
+        "weight": 1.15
     },
     {
         "abilities": "Schooling",
         "active_time": "any",
         "attack": 20,
         "category": "Arthropod,Cryo",
-        "class": "Unknown",
+        "class": "Crustacean",
         "cry": "default",
         "defense": 18,
         "description": "Ice krill form enormous swarms beneath Antarctic sea ice and serve as food for many marine animals. Their presence supports whales, seals, birds, and fish across the polar ecosystem.",
-        "diet": "Unknown",
+        "diet": "Filter Feeder",
         "drops": "Krill Cluster,Chitin Fragment",
         "habitat": "Frozen Ocean,Ocean",
         "health": 34,
@@ -55869,7 +55869,7 @@
         "scientific_name": "Euphausia crystallorophias",
         "spawn_tiles": "tall_grass",
         "speed": 46,
-        "weight": 1
+        "weight": 0.0008
     },
     {
         "abilities": "Snow Cloak",
@@ -56668,11 +56668,11 @@
         "active_time": "any",
         "attack": 36,
         "category": "Arthropod",
-        "class": "Unknown",
+        "class": "Crustacean",
         "cry": "default",
         "defense": 40,
         "description": "The mangrove tree crab spends much of its time climbing branches and roots above the water. It feeds on leaves, algae, and small animals within mangrove forests.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Chitin Fragment,Crab Meat",
         "habitat": "Mangrove,Coastal",
         "health": 60,
@@ -56685,7 +56685,7 @@
         "scientific_name": "Aratus pisonii",
         "spawn_tiles": "tall_grass",
         "speed": 30,
-        "weight": 1
+        "weight": 8e-05
     },
     {
         "abilities": "Hydration",
@@ -59356,11 +59356,11 @@
         "active_time": "any",
         "attack": 72,
         "category": "Arthropod,Earth",
-        "class": "Unknown",
+        "class": "Arachnid",
         "cry": "spider",
         "defense": 60,
         "description": "The king baboon tarantula is a massive burrowing spider known for its defensive posture and powerful bite. It spends much of its life hidden underground before striking suddenly at nearby prey.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Chitin,Venom,Claw",
         "habitat": "Savanna",
         "health": 90,
@@ -59373,7 +59373,7 @@
         "scientific_name": "Pelinobius muticus",
         "spawn_tiles": "tall_grass",
         "speed": 34,
-        "weight": 1
+        "weight": 0.045
     },
     {
         "abilities": "Poison Touch",
@@ -59668,11 +59668,11 @@
         "active_time": "any",
         "attack": 28,
         "category": "Arthropod, Mystic",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "bee",
         "defense": 24,
         "description": "The Japanese bee fly is a fuzzy insect that resembles a bee while hovering in mid air. It feeds on nectar with a long proboscis and often visits flowers.",
-        "diet": "Unknown",
+        "diet": "Nectarivore",
         "drops": "Chitin,Nectar",
         "habitat": "Jungle",
         "health": 40,
@@ -59685,7 +59685,7 @@
         "scientific_name": "Bombylius major",
         "spawn_tiles": "tall_grass",
         "speed": 82,
-        "weight": 1
+        "weight": 0.0002
     },
     {
         "abilities": "Intimidate",
@@ -59764,11 +59764,11 @@
         "active_time": "any",
         "attack": 24,
         "category": "Arthropod, Grass",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 28,
         "description": "The oak treehopper is a small plant feeding insect with a strange helmet shaped body. It hops between leaves while feeding on plant sap in forest habitats.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Chitin",
         "habitat": "Jungle",
         "health": 36,
@@ -59781,7 +59781,7 @@
         "scientific_name": "Platycotis vittata",
         "spawn_tiles": "tall_grass",
         "speed": 52,
-        "weight": 1
+        "weight": 2e-05
     },
     {
         "abilities": "Defiant",
@@ -61468,11 +61468,11 @@
         "active_time": "any",
         "attack": 44,
         "category": "Arthropod,Aquatic",
-        "class": "Unknown",
+        "class": "Crustacean",
         "cry": "default",
         "defense": 50,
         "description": "The Chinese mitten crab is famous for the dense fur like hairs covering its claws. It migrates between freshwater rivers and coastal waters during its life cycle.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "shell,meat",
         "habitat": "River,Coastal",
         "health": 66,
@@ -61485,7 +61485,7 @@
         "scientific_name": "Eriocheir sinensis",
         "spawn_tiles": "tall_grass",
         "speed": 28,
-        "weight": 1
+        "weight": 0.25
     },
     {
         "abilities": "Shell Armor",
@@ -61540,11 +61540,11 @@
         "active_time": "any",
         "attack": 50,
         "category": "Arthropod,Aquatic",
-        "class": "Unknown",
+        "class": "Crustacean",
         "cry": "default",
         "defense": 56,
         "description": "The smooth marron is a large freshwater crayfish native to Western Australia. It lives in rivers and lakes where it feeds on plants and organic debris.",
-        "diet": "Unknown",
+        "diet": "Detritivore",
         "drops": "shell,meat",
         "habitat": "River,Lake",
         "health": 74,
@@ -61557,7 +61557,7 @@
         "scientific_name": "Cherax cainii",
         "spawn_tiles": "tall_grass",
         "speed": 20,
-        "weight": 1
+        "weight": 1.1
     },
     {
         "abilities": "Shell Armor",
@@ -61588,11 +61588,11 @@
         "active_time": "any",
         "attack": 24,
         "category": "Arthropod,Aquatic",
-        "class": "Unknown",
+        "class": "Crustacean",
         "cry": "default",
         "defense": 30,
         "description": "The bamboo shrimp is a peaceful freshwater shrimp that filters tiny particles from flowing water. It often perches on rocks with its fan like claws spread wide.",
-        "diet": "Unknown",
+        "diet": "Filter Feeder",
         "drops": "shell,meat",
         "habitat": "River",
         "health": 48,
@@ -61605,7 +61605,7 @@
         "scientific_name": "Atyopsis moluccensis",
         "spawn_tiles": "water",
         "speed": 18,
-        "weight": 1
+        "weight": 0.045
     },
     {
         "abilities": "Liquid Ooze",
@@ -61660,11 +61660,11 @@
         "active_time": "any",
         "attack": 22,
         "category": "Arthropod,Aquatic",
-        "class": "Unknown",
+        "class": "Crustacean",
         "cry": "default",
         "defense": 24,
         "description": "The freshwater amphipod is a small shrimp like crustacean that lives among stones and vegetation in streams. It feeds on decaying organic material and tiny organisms.",
-        "diet": "Unknown",
+        "diet": "Detritivore",
         "drops": "shell,meat",
         "habitat": "River,Lake,Wetlands",
         "health": 38,
@@ -61677,7 +61677,7 @@
         "scientific_name": "Gammarus pulex",
         "spawn_tiles": "tall_grass",
         "speed": 24,
-        "weight": 1
+        "weight": 5e-05
     },
     {
         "abilities": "Regenerator",
@@ -61828,11 +61828,11 @@
         "active_time": "any",
         "attack": 14,
         "category": "Arthropod,Aquatic",
-        "class": "Unknown",
+        "class": "Arachnid",
         "cry": "default",
         "defense": 20,
         "description": "Water mites are tiny aquatic arachnids often found among plants in freshwater habitats. Many species are bright red and move quickly through the water.",
-        "diet": "Unknown",
+        "diet": "Parasite",
         "drops": "essence",
         "habitat": "Lake,River,Wetlands",
         "health": 30,
@@ -61845,7 +61845,7 @@
         "scientific_name": "Hydrachnidia",
         "spawn_tiles": "tall_grass",
         "speed": 26,
-        "weight": 1
+        "weight": 1e-06
     },
     {
         "abilities": "Suction Cups",
@@ -61876,11 +61876,11 @@
         "active_time": "any",
         "attack": 34,
         "category": "Arthropod,Aquatic",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 26,
         "description": "The common backswimmer is an aquatic insect that swims upside down near the water surface. It uses sharp mouthparts to capture small prey in ponds and lakes.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "shell",
         "habitat": "Lake,Wetlands",
         "health": 44,
@@ -61893,18 +61893,18 @@
         "scientific_name": "Notonecta glauca",
         "spawn_tiles": "tall_grass",
         "speed": 52,
-        "weight": 1
+        "weight": 0.0005
     },
     {
         "abilities": "Swift Swim",
         "active_time": "any",
         "attack": 34,
         "category": "Arthropod,Aquatic",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 30,
         "description": "The damselfly nymph is an aquatic juvenile stage that lives among plants in freshwater habitats. It ambushes tiny prey using extendable mouthparts and quick strikes.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "shell,meat",
         "habitat": "River,Lake,Wetlands",
         "health": 46,
@@ -61917,7 +61917,7 @@
         "scientific_name": "Zygoptera nympha",
         "spawn_tiles": "tall_grass",
         "speed": 38,
-        "weight": 1
+        "weight": 0.0003
     },
     {
         "abilities": "Strong Jaw",
@@ -61948,11 +61948,11 @@
         "active_time": "any",
         "attack": 24,
         "category": "Arthropod,Aquatic",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 22,
         "description": "The water boatman is a small aquatic insect that swims using oar like hind legs. It often gathers near the surface of ponds and feeds on algae and organic material.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "shell",
         "habitat": "Lake,Wetlands",
         "health": 36,
@@ -61965,18 +61965,18 @@
         "scientific_name": "Corixidae aquaticus",
         "spawn_tiles": "tall_grass",
         "speed": 42,
-        "weight": 1
+        "weight": 0.0005
     },
     {
         "abilities": "Strong Jaw",
         "active_time": "any",
         "attack": 18,
         "category": "Toxic, Arthropod",
-        "class": "Unknown",
+        "class": "Annelid",
         "cry": "default",
         "defense": 18,
         "description": "The bloodworm is the bright red larval stage of a midge that lives in muddy freshwater sediments. It survives low oxygen conditions by using hemoglobin in its body.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "meat",
         "habitat": "Lake,River,Wetlands",
         "health": 30,
@@ -61989,7 +61989,7 @@
         "scientific_name": "Chironomus larva",
         "spawn_tiles": "tall_grass",
         "speed": 14,
-        "weight": 1
+        "weight": 0.0008
     },
     {
         "abilities": "Water Veil",
@@ -62068,11 +62068,11 @@
         "active_time": "any",
         "attack": 20,
         "category": "Arthropod,Aquatic",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 22,
         "description": "The mayfly nymph lives underwater among stones and plants in clean streams. It feeds on algae and detritus before transforming into a short lived flying adult.",
-        "diet": "Unknown",
+        "diet": "Detritivore",
         "drops": "shell",
         "habitat": "River,Lake",
         "health": 34,
@@ -62085,7 +62085,7 @@
         "scientific_name": "Ephemeroptera nympha",
         "spawn_tiles": "tall_grass",
         "speed": 28,
-        "weight": 1
+        "weight": 8e-05
     },
     {
         "abilities": "Water Veil,Liquid Ooze",
@@ -63028,11 +63028,11 @@
         "active_time": "any",
         "attack": 72,
         "category": "Arthropod,Rock",
-        "class": "Unknown",
+        "class": "Other Invertebrate",
         "cry": "default",
         "defense": 80,
         "description": "Arthropleura was a massive millipede like creature that lived in ancient forests and swamps. It moved slowly but was heavily armored and among the largest land invertebrates ever.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "shell",
         "habitat": "Jungle,Wetlands",
         "health": 120,
@@ -63045,7 +63045,7 @@
         "scientific_name": "Arthropleura armata",
         "spawn_tiles": "tall_grass",
         "speed": 20,
-        "weight": 1
+        "weight": 50
     },
     {
         "abilities": "Sturdy",
@@ -63868,11 +63868,11 @@
         "active_time": "any",
         "attack": 22,
         "category": "Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 24,
         "description": "The buff tip moth is named for its resemblance to a broken twig when resting. It uses camouflage to avoid predators during the day.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "silk",
         "habitat": "Plains,Urban",
         "health": 36,
@@ -63885,18 +63885,18 @@
         "scientific_name": "Phalera bucephala",
         "spawn_tiles": "tall_grass",
         "speed": 38,
-        "weight": 1
+        "weight": 0.00035
     },
     {
         "abilities": "Shield Dust",
         "active_time": "any",
         "attack": 28,
         "category": "Arthropod, Mystic",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 26,
         "description": "The comet moth is a large silk moth known for its long trailing tails on its wings. It is native to Madagascar and flies mostly at night in forest habitats.",
-        "diet": "Unknown",
+        "diet": "Non-feeding",
         "drops": "silk",
         "habitat": "Rainforest,Jungle",
         "health": 40,
@@ -63909,7 +63909,7 @@
         "scientific_name": "Argema mittrei",
         "spawn_tiles": "tall_grass",
         "speed": 46,
-        "weight": 1
+        "weight": 0.015
     },
     {
         "abilities": "Stamina",
@@ -63964,11 +63964,11 @@
         "active_time": "any",
         "attack": 34,
         "category": "Arthropod, Spectral",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 30,
         "description": "The ghost mantis is an insect that mimics dried leaves to avoid detection. It ambushes prey with sudden strikes using its raptorial forelegs.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "shell",
         "habitat": "Jungle",
         "health": 44,
@@ -63981,7 +63981,7 @@
         "scientific_name": "Phyllocrania paradoxa",
         "spawn_tiles": "tall_grass",
         "speed": 54,
-        "weight": 1
+        "weight": 0.0006
     },
     {
         "abilities": "Shell Armor, Multiscale",
@@ -64012,11 +64012,11 @@
         "active_time": "any",
         "attack": 30,
         "category": "Sound,Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 28,
         "description": "The greengrocer cicada is a loud insect known for its distinctive buzzing call. It spends years underground before emerging to sing in trees.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "shell",
         "habitat": "Plains,Urban",
         "health": 42,
@@ -64029,7 +64029,7 @@
         "scientific_name": "Cyclochila australasiae",
         "spawn_tiles": "tall_grass",
         "speed": 58,
-        "weight": 1
+        "weight": 0.0028
     },
     {
         "abilities": "Shell Armor",
@@ -64252,11 +64252,11 @@
         "active_time": "any",
         "attack": 26,
         "category": "Arthropod, Mystic",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 28,
         "description": "The umbrella stick insect is a leaf mimicking insect that blends seamlessly into vegetation. It avoids predators by remaining motionless and disguised.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "shell",
         "habitat": "Jungle,Rainforest",
         "health": 42,
@@ -64269,7 +64269,7 @@
         "scientific_name": "Phyllium bioculatum",
         "spawn_tiles": "tall_grass",
         "speed": 34,
-        "weight": 1
+        "weight": 0.025
     },
     {
         "abilities": "Prankster",
@@ -64300,11 +64300,11 @@
         "active_time": "any",
         "attack": 38,
         "category": "Arthropod, Drake",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 34,
         "description": "The dragon mantis is a striking insect with leaf like appendages that resemble a small dragon. It ambushes prey with swift and precise movements.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "shell",
         "habitat": "Jungle",
         "health": 48,
@@ -64317,7 +64317,7 @@
         "scientific_name": "Stenophylla lobivertex",
         "spawn_tiles": "tall_grass",
         "speed": 56,
-        "weight": 1
+        "weight": 0.012
     },
     {
         "abilities": "Motor Drive",
@@ -64396,11 +64396,11 @@
         "active_time": "any",
         "attack": 30,
         "category": "Arthropod, Aura",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 28,
         "description": "The picasso moth is known for its striking patterned wings that resemble abstract art. It is active at night and rests camouflaged during the day.",
-        "diet": "Unknown",
+        "diet": "Nectarivore",
         "drops": "silk",
         "habitat": "Jungle,Rainforest",
         "health": 40,
@@ -64413,7 +64413,7 @@
         "scientific_name": "Baorisa hieroglyphica",
         "spawn_tiles": "tall_grass",
         "speed": 42,
-        "weight": 1
+        "weight": 0.0004
     },
     {
         "abilities": "Prankster",
@@ -64447,7 +64447,7 @@
         "class": "Reptile",
         "cry": "default",
         "defense": 78,
-        "description": "The acrocanthosaurus was a massive predatory dinosaur with a distinctive ridge along its back. It dominated its environment as an apex predator using strength and powerful jaws.",
+        "description": "A high-crested apex predator known for the powerful neural spines running along its back, providing massive muscle leverage for tackling large prey. Inhabiting lush floodplains, this high-spined lizard uses its serrated teeth and robust claws to dominate any prehistoric encounter.",
         "diet": "Carnivore",
         "drops": "hide,meat",
         "habitat": "Plains",
@@ -64948,11 +64948,11 @@
         "active_time": "any",
         "attack": 25,
         "category": "Arthropod,Flying",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 20,
         "description": "This oversized crane fly drifts slowly through damp environments with fragile wings. Despite its appearance it is harmless and feeds mostly on nectar or not at all.",
-        "diet": "Unknown",
+        "diet": "Non-feeding",
         "drops": "chitin,wing",
         "habitat": "Wetlands,Urban",
         "health": 45,
@@ -64965,7 +64965,7 @@
         "scientific_name": "Holorusia rubiginosa",
         "spawn_tiles": "tall_grass",
         "speed": 65,
-        "weight": 1
+        "weight": 0.0005
     },
     {
         "abilities": "Water Veil",
@@ -64996,11 +64996,11 @@
         "active_time": "any",
         "attack": 28,
         "category": "Arthropod,Flying",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 22,
         "description": "This delicate insect appears to float like a phantom above moist forest floors. Its long legs and slow flight give it an eerie presence in dim environments.",
-        "diet": "Unknown",
+        "diet": "Non-feeding",
         "drops": "chitin,wing",
         "habitat": "Wetlands,Jungle",
         "health": 50,
@@ -65013,18 +65013,18 @@
         "scientific_name": "Bittacomorpha clavipes",
         "spawn_tiles": "tall_grass",
         "speed": 70,
-        "weight": 1
+        "weight": 0.0001
     },
     {
         "abilities": "Run Away",
         "active_time": "any",
         "attack": 30,
         "category": "Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 35,
         "description": "This cave dwelling insect moves in quick bursts using powerful hind legs. It prefers dark damp environments and avoids light whenever possible.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "chitin",
         "habitat": "Cave,Urban",
         "health": 60,
@@ -65037,7 +65037,7 @@
         "scientific_name": "Ceuthophilus brevipes",
         "spawn_tiles": "tall_grass",
         "speed": 55,
-        "weight": 1
+        "weight": 0.003
     },
     {
         "abilities": "Chlorophyll",
@@ -65092,11 +65092,11 @@
         "active_time": "any",
         "attack": 65,
         "category": "Arthropod,Electric",
-        "class": "Unknown",
+        "class": "Arachnid",
         "cry": "default",
         "defense": 45,
         "description": "This striking blue tarantula is both fast and highly defensive when threatened. It inhabits tree hollows and relies on speed to capture prey and escape danger.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "venom,chitin",
         "habitat": "Jungle",
         "health": 70,
@@ -65109,7 +65109,7 @@
         "scientific_name": "Poecilotheria metallica",
         "spawn_tiles": "tall_grass",
         "speed": 72,
-        "weight": 1
+        "weight": 0.006
     },
     {
         "abilities": "Water Absorb",
@@ -65476,11 +65476,11 @@
         "active_time": "any",
         "attack": 10,
         "category": "Arthropod",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 15,
         "description": "This domesticated insect is cultivated for producing silk fibers used in textiles. It feeds exclusively on mulberry leaves and undergoes complete metamorphosis.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "silk",
         "habitat": "Urban",
         "health": 30,
@@ -65493,7 +65493,7 @@
         "scientific_name": "Bombyx mori",
         "spawn_tiles": "tall_grass",
         "speed": 10,
-        "weight": 1
+        "weight": 0.0035
     },
     {
         "abilities": "Stamina",
@@ -66220,11 +66220,11 @@
         "active_time": "any",
         "attack": 28,
         "category": "Arthropod,Toxic",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 20,
         "description": "This metallic blue fly is often found around decaying matter and waste. It plays an important role in decomposition and nutrient recycling.",
-        "diet": "Unknown",
+        "diet": "Scavenger",
         "drops": "chitin",
         "habitat": "Urban,Wetlands",
         "health": 45,
@@ -66237,18 +66237,18 @@
         "scientific_name": "Calliphora vomitoria",
         "spawn_tiles": "tall_grass",
         "speed": 70,
-        "weight": 1
+        "weight": 5.5e-05
     },
     {
         "abilities": "Swarm",
         "active_time": "any",
         "attack": 22,
         "category": "Arthropod,Flying",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 25,
         "description": "This fly is known for gathering in large numbers inside buildings during cooler months. It feeds mainly on nectar and develops as a parasite of earthworms.",
-        "diet": "Unknown",
+        "diet": "Nectarivore",
         "drops": "chitin",
         "habitat": "Urban,Plains",
         "health": 50,
@@ -66261,18 +66261,18 @@
         "scientific_name": "Pollenia rudis",
         "spawn_tiles": "tall_grass",
         "speed": 55,
-        "weight": 1
+        "weight": 0.0001
     },
     {
         "abilities": "Hydration, True Flight",
         "active_time": "any",
         "attack": 18,
         "category": "Arthropod, Aquatic",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 22,
         "description": "This small moth like fly thrives in damp environments such as drains and pipes. It breeds in organic buildup and is often seen resting on walls.",
-        "diet": "Unknown",
+        "diet": "Detritivore",
         "drops": "chitin",
         "habitat": "Urban,Wetlands",
         "health": 40,
@@ -66285,18 +66285,18 @@
         "scientific_name": "Psychodidae spp",
         "spawn_tiles": "tall_grass",
         "speed": 45,
-        "weight": 1
+        "weight": 2e-06
     },
     {
         "abilities": "Compound Eyes, Regenerator, True Flight",
         "active_time": "any",
         "attack": 30,
         "category": "Arthropod, Toxic",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 22,
         "description": "This bright green fly is commonly associated with decomposing organic material. It is also used in medical settings for wound cleaning through maggot therapy.",
-        "diet": "Unknown",
+        "diet": "Scavenger",
         "drops": "chitin",
         "habitat": "Urban,Wetlands",
         "health": 48,
@@ -66309,18 +66309,18 @@
         "scientific_name": "Lucilia sericata",
         "spawn_tiles": "tall_grass",
         "speed": 72,
-        "weight": 1
+        "weight": 5e-05
     },
     {
         "abilities": "Speed Boost",
         "active_time": "any",
         "attack": 26,
         "category": "Arthropod,Flying",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 24,
         "description": "This widespread insect thrives in human environments around the world. It feeds on a variety of organic materials and can spread diseases.",
-        "diet": "Unknown",
+        "diet": "Scavenger",
         "drops": "chitin",
         "habitat": "Urban",
         "health": 50,
@@ -66333,18 +66333,18 @@
         "scientific_name": "Musca domestica",
         "spawn_tiles": "tall_grass",
         "speed": 75,
-        "weight": 1
+        "weight": 1.2e-05
     },
     {
         "abilities": "Rattled",
         "active_time": "any",
         "attack": 24,
         "category": "Arthropod,Flying",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 22,
         "description": "This smaller relative of the house fly is known for its erratic flight patterns. It often flies in circles indoors and prefers cooler environments.",
-        "diet": "Unknown",
+        "diet": "Scavenger",
         "drops": "chitin",
         "habitat": "Urban",
         "health": 48,
@@ -66357,18 +66357,18 @@
         "scientific_name": "Fannia canicularis",
         "spawn_tiles": "tall_grass",
         "speed": 78,
-        "weight": 1
+        "weight": 8e-06
     },
     {
         "abilities": "Poison Touch, True Flight",
         "active_time": "any",
         "attack": 35,
         "category": "Arthropod,Toxic",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 30,
         "description": "This biting fly feeds on blood from livestock and other animals. Its painful bite can cause irritation and stress in affected hosts.",
-        "diet": "Unknown",
+        "diet": "Sanguivore",
         "drops": "chitin",
         "habitat": "Plains,Urban",
         "health": 55,
@@ -66381,7 +66381,7 @@
         "scientific_name": "Stomoxys calcitrans",
         "spawn_tiles": "tall_grass",
         "speed": 68,
-        "weight": 1
+        "weight": 1.5e-05
     },
     {
         "abilities": "Sharpness",
@@ -67036,11 +67036,11 @@
         "active_time": "any",
         "attack": 10,
         "category": "Arthropod, Earth",
-        "class": "Unknown",
+        "class": "Mollusk",
         "cry": "default",
         "defense": 40,
         "description": "The Bermuda land snail is a slow moving mollusk once thought extinct but now carefully protected in small populations. It survives in quiet urban and plains environments by staying hidden and conserving moisture.",
-        "diet": "Unknown",
+        "diet": "Detritivore",
         "drops": "shell, slime",
         "habitat": "Urban, Plains",
         "health": 30,
@@ -67053,7 +67053,7 @@
         "scientific_name": "Poecilozonites bermudensis",
         "spawn_tiles": "tall_grass",
         "speed": 5,
-        "weight": 1
+        "weight": 0.004
     },
     {
         "abilities": "Water Veil",
@@ -67180,11 +67180,11 @@
         "active_time": "any",
         "attack": 15,
         "category": "Arthropod, Darkness",
-        "class": "Unknown",
+        "class": "Insect",
         "cry": "default",
         "defense": 35,
         "description": "The Simandoa cave roach is a rare insect that inhabits dark cave environments. It survives by feeding on organic debris and quickly scattering when disturbed.",
-        "diet": "Unknown",
+        "diet": "Detritivore",
         "drops": "chitin, meat",
         "habitat": "Cave",
         "health": 25,
@@ -67197,7 +67197,7 @@
         "scientific_name": "Simandoa conserfariam",
         "spawn_tiles": "tall_grass",
         "speed": 30,
-        "weight": 1
+        "weight": 0.004
     },
     {
         "abilities": "Rattled",
@@ -67372,11 +67372,11 @@
         "active_time": "any",
         "attack": 5,
         "category": "Mystic, Arthropod",
-        "class": "Unknown",
+        "class": "Other Invertebrate",
         "cry": "default",
         "defense": 80,
         "description": "The tardigrade is a microscopic organism famous for surviving extreme environments including space and radiation. It enters a dormant state to endure harsh conditions that would destroy most life forms.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "gel, micro core",
         "habitat": "Wetlands",
         "health": 20,
@@ -67389,7 +67389,7 @@
         "scientific_name": "Milnesium tardigradum",
         "spawn_tiles": "tall_grass",
         "speed": 2,
-        "weight": 1
+        "weight": 2e-10
     },
     {
         "abilities": "Defiant , Scrappy",
