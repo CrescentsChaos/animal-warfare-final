@@ -3021,7 +3021,7 @@
         "scientific_name": "Sciurus aberti kaibabensis",
         "spawn_tiles": "tall_grass",
         "speed": 70,
-        "weight": 1
+        "weight": 0.775
     },
     {
         "abilities": "Rough Skin, Cold-blooded",
@@ -3045,7 +3045,7 @@
         "scientific_name": "Heloderma horridum",
         "spawn_tiles": "tall_grass",
         "speed": 42,
-        "weight": 1
+        "weight": 2.1
     },
     {
         "abilities": "Poison Touch, Cold-blooded",
@@ -3069,7 +3069,7 @@
         "scientific_name": "Heloderma exasperatum",
         "spawn_tiles": "tall_grass",
         "speed": 40,
-        "weight": 1
+        "weight": 1.8
     },
     {
         "abilities": "Solid Rock, Cold-blooded",
@@ -3093,7 +3093,7 @@
         "scientific_name": "Heloderma charlesbogerti",
         "spawn_tiles": "tall_grass",
         "speed": 30,
-        "weight": 1
+        "weight": 1.15
     },
     {
         "abilities": "Leaf Guard, Cold-blooded",
@@ -3117,7 +3117,7 @@
         "scientific_name": "Heloderma alvarezi",
         "spawn_tiles": "tall_grass",
         "speed": 30,
-        "weight": 1
+        "weight": 1.7
     },
     {
         "abilities": "Strong Jaw",
@@ -3141,7 +3141,7 @@
         "scientific_name": "Hydrolycus scomberoides",
         "spawn_tiles": "water",
         "speed": 110,
-        "weight": 1
+        "weight": 10.15
     },
     {
         "abilities": "Strong Jaw",
@@ -3165,7 +3165,7 @@
         "scientific_name": "Pseudoplatystoma fasciatum",
         "spawn_tiles": "water",
         "speed": 70,
-        "weight": 1
+        "weight": 10.5
     },
     {
         "abilities": "Strong Jaw , Illuminate",
@@ -3189,7 +3189,7 @@
         "scientific_name": "Stomias boa ferox",
         "spawn_tiles": "water",
         "speed": 55,
-        "weight": 1
+        "weight": 0.08
     },
     {
         "abilities": "Infiltrator",
@@ -3213,7 +3213,7 @@
         "scientific_name": "Remora brachyptera",
         "spawn_tiles": "water",
         "speed": 75,
-        "weight": 1
+        "weight": 0.55
     },
     {
         "abilities": "Sticky Hold , Strong Jaw",
@@ -3237,7 +3237,7 @@
         "scientific_name": "Echeneis naucrates",
         "spawn_tiles": "water",
         "speed": 80,
-        "weight": 1
+        "weight": 0.45
     },
     {
         "abilities": "Filter , Hydration",
@@ -3261,7 +3261,7 @@
         "scientific_name": "Catostomus commersonii",
         "spawn_tiles": "water",
         "speed": 40,
-        "weight": 1
+        "weight": 1.55
     },
     {
         "abilities": "Deep Glide",
@@ -3285,7 +3285,7 @@
         "scientific_name": "Hydrolagus novaezealandiae",
         "spawn_tiles": "tall_grass",
         "speed": 45,
-        "weight": 1
+        "weight": 1.75
     },
     {
         "abilities": "Swift Swim , Anticipation",
@@ -3309,7 +3309,7 @@
         "scientific_name": "Callorhinchus callorynchus",
         "spawn_tiles": "water",
         "speed": 55,
-        "weight": 1
+        "weight": 3.5
     },
     {
         "abilities": "Damp",
@@ -3333,7 +3333,7 @@
         "scientific_name": "Neoceratodus forsteri",
         "spawn_tiles": "water",
         "speed": 30,
-        "weight": 1
+        "weight": 25
     },
     {
         "abilities": "Compound Eyes , Clear Body",
@@ -3357,7 +3357,7 @@
         "scientific_name": "Polyodon spathula",
         "spawn_tiles": "water",
         "speed": 45,
-        "weight": 1
+        "weight": 43.5
     },
     {
         "abilities": "Anticipation , Pressure",
@@ -3381,7 +3381,7 @@
         "scientific_name": "Psephurus gladius",
         "spawn_tiles": "water",
         "speed": 50,
-        "weight": 1
+        "weight": 375
     },
     {
         "abilities": "Rattled",
@@ -3405,7 +3405,7 @@
         "scientific_name": "Albula vulpes",
         "spawn_tiles": "water",
         "speed": 80,
-        "weight": 1
+        "weight": 11.5
     },
     {
         "abilities": "Dazzling",
@@ -3429,7 +3429,7 @@
         "scientific_name": "Pterophyllum scalare",
         "spawn_tiles": "water",
         "speed": 60,
-        "weight": 1
+        "weight": 0.1
     },
     {
         "abilities": "Strong Jaw",
@@ -3453,7 +3453,7 @@
         "scientific_name": "Chauliodus macouni",
         "spawn_tiles": "water",
         "speed": 90,
-        "weight": 1
+        "weight": 0.4
     },
     {
         "abilities": "Defiant , Intimidate",
@@ -3477,7 +3477,7 @@
         "scientific_name": "Nematistius pectoralis",
         "spawn_tiles": "water",
         "speed": 70,
-        "weight": 1
+        "weight": 32.5
     },
     {
         "abilities": "Rough Skin , Suction Cups , Screen Cleaner",
@@ -3501,7 +3501,7 @@
         "scientific_name": "Hypostomus plecostomus",
         "spawn_tiles": "water",
         "speed": 30,
-        "weight": 1
+        "weight": 1.6
     },
     {
         "abilities": "Serene Grace, Dancer",
@@ -3525,7 +3525,7 @@
         "scientific_name": "Anthropoides paradiseus",
         "spawn_tiles": "tall_grass",
         "speed": 80,
-        "weight": 1
+        "weight": 5.1
     },
     {
         "abilities": "Adaptability",
@@ -3549,7 +3549,7 @@
         "scientific_name": "Passer domesticus",
         "spawn_tiles": "tall_grass",
         "speed": 65,
-        "weight": 1
+        "weight": 0.03
     },
     {
         "abilities": "Keen Eye",
@@ -3573,7 +3573,7 @@
         "scientific_name": "Falco biarmicus",
         "spawn_tiles": "tall_grass",
         "speed": 90,
-        "weight": 1
+        "weight": 0.73
     },
     {
         "abilities": "Flash Fire",
@@ -3597,7 +3597,7 @@
         "scientific_name": "Coracias caudatus",
         "spawn_tiles": "tall_grass",
         "speed": 75,
-        "weight": 1
+        "weight": 0.1
     },
     {
         "abilities": "Shimmering Feathers",
@@ -3621,7 +3621,7 @@
         "scientific_name": "Lamprotornis superbus",
         "spawn_tiles": "tall_grass",
         "speed": 70,
-        "weight": 1
+        "weight": 0.06
     },
     {
         "abilities": "Sand Rush",
@@ -3645,7 +3645,7 @@
         "scientific_name": "Aquila rapax",
         "spawn_tiles": "tall_grass",
         "speed": 105,
-        "weight": 1
+        "weight": 2.25
     },
     {
         "abilities": "Serene Grace , Big Pecks",
@@ -3669,7 +3669,7 @@
         "scientific_name": "Ciconia ciconia",
         "spawn_tiles": "tall_grass",
         "speed": 65,
-        "weight": 1
+        "weight": 3.45
     },
     {
         "abilities": "Adaptability",
@@ -3693,7 +3693,7 @@
         "scientific_name": "Passer simplex",
         "spawn_tiles": "tall_grass",
         "speed": 65,
-        "weight": 1
+        "weight": 0.02
     },
     {
         "abilities": "Sand Dash",
@@ -3717,7 +3717,7 @@
         "scientific_name": "Oenanthe deserti",
         "spawn_tiles": "tall_grass",
         "speed": 70,
-        "weight": 1
+        "weight": 0.02
     },
     {
         "abilities": "Immunity",
@@ -3741,7 +3741,7 @@
         "scientific_name": "Merops apiaster",
         "spawn_tiles": "tall_grass",
         "speed": 75,
-        "weight": 1
+        "weight": 0.06
     },
     {
         "abilities": "Rock Head",
@@ -3765,7 +3765,7 @@
         "scientific_name": "Lophoceros hemprichii",
         "spawn_tiles": "tall_grass",
         "speed": 60,
-        "weight": 1
+        "weight": 1.15
     },
     {
         "abilities": "Ground Forager",
@@ -3789,7 +3789,7 @@
         "scientific_name": "Pternistis natalensis",
         "spawn_tiles": "tall_grass",
         "speed": 55,
-        "weight": 1
+        "weight": 0.65
     },
     {
         "abilities": "Desert Camouflage",
@@ -3813,7 +3813,7 @@
         "scientific_name": "Ammoperdix heyi",
         "spawn_tiles": "tall_grass",
         "speed": 50,
-        "weight": 1
+        "weight": 0.2
     },
     {
         "abilities": "Gale Wing",
@@ -3837,7 +3837,7 @@
         "scientific_name": "Aquila audax",
         "spawn_tiles": "tall_grass",
         "speed": 95,
-        "weight": 1
+        "weight": 4.3
     },
     {
         "abilities": "Endless Flight",
@@ -3861,7 +3861,7 @@
         "scientific_name": "Sterna paradisaea",
         "spawn_tiles": "tall_grass",
         "speed": 95,
-        "weight": 1
+        "weight": 0.11
     },
     {
         "abilities": "Cliff Dweller",
@@ -3885,7 +3885,7 @@
         "scientific_name": "Fratercula arctica",
         "spawn_tiles": "tall_grass",
         "speed": 45,
-        "weight": 1
+        "weight": 0.53
     },
     {
         "abilities": "Thick Fat , Fur Coat",
@@ -3909,7 +3909,7 @@
         "scientific_name": "Somateria mollissima",
         "spawn_tiles": "tall_grass",
         "speed": 40,
-        "weight": 1
+        "weight": 2.25
     },
     {
         "abilities": "Infiltrator",
@@ -3933,7 +3933,7 @@
         "scientific_name": "Gavia immer",
         "spawn_tiles": "tall_grass",
         "speed": 55,
-        "weight": 1
+        "weight": 5.3
     },
     {
         "abilities": "Snow Cloak , Defiant",
@@ -3957,7 +3957,7 @@
         "scientific_name": "Falco rusticolus",
         "spawn_tiles": "tall_grass",
         "speed": 85,
-        "weight": 1
+        "weight": 1.65
     },
     {
         "abilities": "Pickpocket , Prankster",
@@ -3981,7 +3981,7 @@
         "scientific_name": "Stercorarius longicaudus",
         "spawn_tiles": "tall_grass",
         "speed": 80,
-        "weight": 1
+        "weight": 0.31
     },
     {
         "abilities": "Parental Bond",
@@ -4005,7 +4005,7 @@
         "scientific_name": "Anser caerulescens",
         "spawn_tiles": "tall_grass",
         "speed": 55,
-        "weight": 1
+        "weight": 3.55
     },
     {
         "abilities": "Snow Cloak",
@@ -4029,7 +4029,7 @@
         "scientific_name": "Lagopus lagopus",
         "spawn_tiles": "tall_grass",
         "speed": 40,
-        "weight": 1
+        "weight": 0.65
     },
     {
         "abilities": "Snow Cloak",
@@ -4053,7 +4053,7 @@
         "scientific_name": "Pyrrhocorax graculus",
         "spawn_tiles": "tall_grass",
         "speed": 70,
-        "weight": 1
+        "weight": 0.25
     },
     {
         "abilities": "Keen Eye , Adaptability",
@@ -4077,7 +4077,7 @@
         "scientific_name": "Buteo buteo",
         "spawn_tiles": "tall_grass",
         "speed": 65,
-        "weight": 1
+        "weight": 0.95
     },
     {
         "abilities": "Bark Crawler",
@@ -4101,7 +4101,7 @@
         "scientific_name": "Certhia familiaris",
         "spawn_tiles": "tall_grass",
         "speed": 55,
-        "weight": 1
+        "weight": 0.01
     },
     {
         "abilities": "Speed Boost , Unburden",
@@ -4125,7 +4125,7 @@
         "scientific_name": "Falco columbarius",
         "spawn_tiles": "tall_grass",
         "speed": 85,
-        "weight": 1
+        "weight": 0.21
     },
     {
         "abilities": "Sand Stream",
@@ -4149,7 +4149,7 @@
         "scientific_name": "Lagopus muta",
         "spawn_tiles": "tall_grass",
         "speed": 40,
-        "weight": 1
+        "weight": 0.53
     },
     {
         "abilities": "Harvest",
@@ -4173,7 +4173,7 @@
         "scientific_name": "Nucifraga caryocatactes",
         "spawn_tiles": "tall_grass",
         "speed": 55,
-        "weight": 1
+        "weight": 0.19
     },
     {
         "abilities": "Slush Rush",
@@ -4197,7 +4197,7 @@
         "scientific_name": "Montifringilla nivalis",
         "spawn_tiles": "tall_grass",
         "speed": 50,
-        "weight": 1
+        "weight": 0.04
     },
     {
         "abilities": "Stakeout",
@@ -4221,7 +4221,7 @@
         "scientific_name": "Anhinga anhinga",
         "spawn_tiles": "tall_grass",
         "speed": 50,
-        "weight": 1
+        "weight": 1.23
     },
     {
         "abilities": "Nocturnal Hunter",
@@ -4245,7 +4245,7 @@
         "scientific_name": "Nycticorax nycticorax",
         "spawn_tiles": "tall_grass",
         "speed": 45,
-        "weight": 1
+        "weight": 0.91
     },
     {
         "abilities": "Hydration",
@@ -4269,7 +4269,7 @@
         "scientific_name": "Botaurus stellaris",
         "spawn_tiles": "tall_grass",
         "speed": 35,
-        "weight": 1
+        "weight": 1.45
     },
     {
         "abilities": "Keen Eye , Hydration",
@@ -4293,7 +4293,7 @@
         "scientific_name": "Platalea leucorodia",
         "spawn_tiles": "tall_grass",
         "speed": 50,
-        "weight": 1
+        "weight": 1.55
     },
     {
         "abilities": "Immunity",
@@ -4317,7 +4317,7 @@
         "scientific_name": "Platalea leucorodia",
         "spawn_tiles": "water",
         "speed": 70,
-        "weight": 1
+        "weight": 0.08
     },
     {
         "abilities": "Symbiosis",
@@ -4341,7 +4341,7 @@
         "scientific_name": "Amphiprion clarkii",
         "spawn_tiles": "water",
         "speed": 40,
-        "weight": 1
+        "weight": 0.11
     },
     {
         "abilities": "Immunity",
@@ -4365,7 +4365,7 @@
         "scientific_name": "Premnas biaculeatus",
         "spawn_tiles": "water",
         "speed": 45,
-        "weight": 1
+        "weight": 0.13
     },
     {
         "abilities": "Immunity",
@@ -4389,7 +4389,7 @@
         "scientific_name": "Amphiprion perideraion",
         "spawn_tiles": "water",
         "speed": 75,
-        "weight": 1
+        "weight": 0.05
     },
     {
         "abilities": "Immunity",
@@ -4413,7 +4413,7 @@
         "scientific_name": "Amphiprion frenatus",
         "spawn_tiles": "water",
         "speed": 50,
-        "weight": 1
+        "weight": 0.05
     },
     {
         "abilities": "Parental Bond",
@@ -4437,7 +4437,7 @@
         "scientific_name": "Pterapogon kauderni",
         "spawn_tiles": "water",
         "speed": 40,
-        "weight": 1
+        "weight": 0.05
     },
     {
         "abilities": "Dazzling",
@@ -4461,7 +4461,7 @@
         "scientific_name": "Sphaeramia nematoptera",
         "spawn_tiles": "water",
         "speed": 40,
-        "weight": 1
+        "weight": 0.03
     },
     {
         "abilities": "Immunity",
@@ -4485,7 +4485,7 @@
         "scientific_name": "Amphiprion polymnus",
         "spawn_tiles": "water",
         "speed": 55,
-        "weight": 1
+        "weight": 0.09
     },
     {
         "abilities": "Rough Skin",
@@ -4509,7 +4509,7 @@
         "scientific_name": "Premnas biaculeatus",
         "spawn_tiles": "water",
         "speed": 40,
-        "weight": 1
+        "weight": 0.12
     },
     {
         "abilities": "Regenerator",
@@ -4533,7 +4533,7 @@
         "scientific_name": "Centropyge bispinosa",
         "spawn_tiles": "water",
         "speed": 45,
-        "weight": 1
+        "weight": 0.08
     },
     {
         "abilities": "Dazzling , Color Change",
@@ -4557,7 +4557,7 @@
         "scientific_name": "Pomacanthus imperator",
         "spawn_tiles": "water",
         "speed": 45,
-        "weight": 1
+        "weight": 1.05
     },
     {
         "abilities": "Flash Fire",
@@ -4581,7 +4581,7 @@
         "scientific_name": "Centropyge loricula",
         "spawn_tiles": "water",
         "speed": 45,
-        "weight": 1
+        "weight": 0.07
     },
     {
         "abilities": "Filter , Heavy Metal",
@@ -4605,7 +4605,7 @@
         "scientific_name": "Pomacanthus paru",
         "spawn_tiles": "water",
         "speed": 45,
-        "weight": 1
+        "weight": 2.65
     },
     {
         "abilities": "Queenly Majesty , Regenerator",
@@ -4629,7 +4629,7 @@
         "scientific_name": "Holacanthus ciliaris",
         "spawn_tiles": "water",
         "speed": 45,
-        "weight": 1
+        "weight": 1.25
     },
     {
         "abilities": "Queenly Majesty",
@@ -4653,7 +4653,7 @@
         "scientific_name": "Pygoplites diacanthus",
         "spawn_tiles": "water",
         "speed": 45,
-        "weight": 1
+        "weight": 0.65
     },
     {
         "abilities": "Swift Swim",
@@ -4677,7 +4677,7 @@
         "scientific_name": "Paracanthurus hepatus",
         "spawn_tiles": "water",
         "speed": 85,
-        "weight": 1
+        "weight": 0.43
     },
     {
         "abilities": "Swift Swim",
@@ -4701,7 +4701,7 @@
         "scientific_name": "Acanthurus leucosternon",
         "spawn_tiles": "water",
         "speed": 115,
-        "weight": 1
+        "weight": 0.35
     },
     {
         "abilities": "Reef Sail",
@@ -4725,7 +4725,7 @@
         "scientific_name": "Zebrasoma veliferum",
         "spawn_tiles": "water",
         "speed": 50,
-        "weight": 1
+        "weight": 1.08
     },
     {
         "abilities": "Swift Swim",
@@ -4749,7 +4749,7 @@
         "scientific_name": "Zebrasoma flavescens",
         "spawn_tiles": "water",
         "speed": 100,
-        "weight": 1
+        "weight": 0.28
     },
     {
         "abilities": "Reef Striker",
@@ -4773,7 +4773,7 @@
         "scientific_name": "Acanthurus achilles",
         "spawn_tiles": "water",
         "speed": 105,
-        "weight": 1
+        "weight": 0.45
     },
     {
         "abilities": "Swift Swim",
@@ -4797,7 +4797,7 @@
         "scientific_name": "Acanthurus triostegus",
         "spawn_tiles": "water",
         "speed": 85,
-        "weight": 1
+        "weight": 0.25
     },
     {
         "abilities": "Cursed Body , Infiltrator",
@@ -4821,7 +4821,7 @@
         "scientific_name": "Zanclus cornutus",
         "spawn_tiles": "water",
         "speed": 45,
-        "weight": 1
+        "weight": 0.48
     },
     {
         "abilities": "Swift Swim , Wind Power",
@@ -4845,7 +4845,7 @@
         "scientific_name": "Heniochus acuminatus",
         "spawn_tiles": "water",
         "speed": 45,
-        "weight": 1
+        "weight": 0.28
     },
     {
         "abilities": "Coral Sniper",
@@ -4869,7 +4869,7 @@
         "scientific_name": "Chelmon rostratus",
         "spawn_tiles": "water",
         "speed": 80,
-        "weight": 1
+        "weight": 0.18
     },
     {
         "abilities": "Wind Power , Swift Swim",
@@ -4893,7 +4893,7 @@
         "scientific_name": "Heniochus acuminatus",
         "spawn_tiles": "water",
         "speed": 45,
-        "weight": 1
+        "weight": 0.32
     },
     {
         "abilities": "Reef Camouflage",
@@ -4917,7 +4917,7 @@
         "scientific_name": "Chaetodon lunula",
         "spawn_tiles": "water",
         "speed": 55,
-        "weight": 1
+        "weight": 0.3
     },
     {
         "abilities": "Coral Sniper",
@@ -4941,7 +4941,7 @@
         "scientific_name": "Chaetodon auriga",
         "spawn_tiles": "water",
         "speed": 110,
-        "weight": 1
+        "weight": 0.35
     },
     {
         "abilities": "Coral Camouflage",
@@ -4965,7 +4965,7 @@
         "scientific_name": "Chaetodon quadrimaculatus",
         "spawn_tiles": "water",
         "speed": 65,
-        "weight": 1
+        "weight": 0.15
     },
     {
         "abilities": "Dazzling, Reef Camouflage",
@@ -4989,7 +4989,7 @@
         "scientific_name": "Centropyge eibli",
         "spawn_tiles": "water",
         "speed": 45,
-        "weight": 1
+        "weight": 0.08
     },
     {
         "abilities": "Solid Rock",
@@ -5013,7 +5013,7 @@
         "scientific_name": "Cetoscarus bicolor",
         "spawn_tiles": "water",
         "speed": 45,
-        "weight": 1
+        "weight": 2.9
     },
     {
         "abilities": "Color Change",
@@ -5037,7 +5037,7 @@
         "scientific_name": "Sparisoma viride",
         "spawn_tiles": "water",
         "speed": 45,
-        "weight": 1
+        "weight": 1.15
     },
     {
         "abilities": "Intimidate , Volt Absorb",
@@ -5061,7 +5061,7 @@
         "scientific_name": "Pomacanthus xanthometopon",
         "spawn_tiles": "water",
         "speed": 45,
-        "weight": 1
+        "weight": 1.2
     },
     {
         "abilities": "Regenerator , Natural Cure",
@@ -5085,7 +5085,7 @@
         "scientific_name": "Pomacanthus semicirculatus",
         "spawn_tiles": "water",
         "speed": 45,
-        "weight": 1
+        "weight": 1.85
     },
     {
         "abilities": "Dazzling , Prankster",
@@ -5109,7 +5109,7 @@
         "scientific_name": "Centropyge flavissima",
         "spawn_tiles": "water",
         "speed": 45,
-        "weight": 1
+        "weight": 0.06
     },
     {
         "abilities": "Coral Sniper",
@@ -5133,7 +5133,7 @@
         "scientific_name": "Chaetodon miliaris",
         "spawn_tiles": "water",
         "speed": 100,
-        "weight": 1
+        "weight": 0.12
     },
     {
         "abilities": "Coral Sniper",
@@ -5144,7 +5144,7 @@
         "cry": "fish",
         "defense": 100,
         "description": "A small reef fish of the Indo-Pacific, recognizable by its pyramid-shaped markings. It feeds mainly on plankton and small invertebrates while schooling near coral reefs for protection.",
-        "diet": "Planktivore",
+        "diet": "Omnivore",
         "drops": "Fillet",
         "habitat": "Coral Reef,Coastal",
         "health": 90,
@@ -5157,7 +5157,7 @@
         "scientific_name": "Hemitaurichthys polylepis",
         "spawn_tiles": "water",
         "speed": 35,
-        "weight": 1
+        "weight": 0.18
     },
     {
         "abilities": "Coral Sniper",
@@ -5181,7 +5181,7 @@
         "scientific_name": "Chaetodon unimaculatus",
         "spawn_tiles": "water",
         "speed": 85,
-        "weight": 1
+        "weight": 0.15
     },
     {
         "abilities": "Solid Rock , Rough Skin",
@@ -5205,7 +5205,7 @@
         "scientific_name": "Holacanthus tricolor",
         "spawn_tiles": "water",
         "speed": 45,
-        "weight": 1
+        "weight": 0.45
     },
     {
         "abilities": "Static, Volt Absorb",
@@ -5229,7 +5229,7 @@
         "scientific_name": "Electrophorus electricus",
         "spawn_tiles": "water",
         "speed": 50,
-        "weight": 1
+        "weight": 15
     },
     {
         "abilities": "Ice Scales",
@@ -5253,7 +5253,7 @@
         "scientific_name": "Scarus coeruleus",
         "spawn_tiles": "water",
         "speed": 45,
-        "weight": 1
+        "weight": 12.5
     },
     {
         "abilities": "Rock Head",
@@ -5277,7 +5277,7 @@
         "scientific_name": "Bolbometopon muricatum",
         "spawn_tiles": "water",
         "speed": 40,
-        "weight": 1
+        "weight": 37
     },
     {
         "abilities": "Insomnia",
@@ -5301,7 +5301,7 @@
         "scientific_name": "Scarus coelestinus",
         "spawn_tiles": "water",
         "speed": 45,
-        "weight": 1
+        "weight": 5.25
     },
     {
         "abilities": "Queenly Majesty",
@@ -5325,7 +5325,7 @@
         "scientific_name": "Scarus vetula",
         "spawn_tiles": "water",
         "speed": 45,
-        "weight": 1
+        "weight": 2.65
     },
     {
         "abilities": "True Flight",
@@ -5349,7 +5349,7 @@
         "scientific_name": "Gomphosus varius",
         "spawn_tiles": "water",
         "speed": 45,
-        "weight": 1
+        "weight": 0.45
     },
     {
         "abilities": "Triage",
@@ -5373,7 +5373,7 @@
         "scientific_name": "Labroides dimidiatus",
         "spawn_tiles": "water",
         "speed": 45,
-        "weight": 1
+        "weight": 0.02
     },
     {
         "abilities": "Sand Ambush",
@@ -5397,7 +5397,7 @@
         "scientific_name": "Novaculichthys taeniourus",
         "spawn_tiles": "water",
         "speed": 45,
-        "weight": 1
+        "weight": 0.35
     },
     {
         "abilities": "Cursed Body",
@@ -5421,7 +5421,7 @@
         "scientific_name": "Scarus niger",
         "spawn_tiles": "water",
         "speed": 45,
-        "weight": 1
+        "weight": 0.85
     },
     {
         "abilities": "Strong Jaw , Dazzling",
@@ -5445,7 +5445,7 @@
         "scientific_name": "Scarus rubroviolaceus",
         "spawn_tiles": "water",
         "speed": 45,
-        "weight": 1
+        "weight": 0.42
     },
     {
         "abilities": "Pest Hunter",
@@ -5469,7 +5469,7 @@
         "scientific_name": "Pseudocheilinus hexataenia",
         "spawn_tiles": "water",
         "speed": 45,
-        "weight": 1
+        "weight": 0.05
     },
     {
         "abilities": "Strong Jaw , Dazzling",
@@ -5493,7 +5493,7 @@
         "scientific_name": "Choerodon fasciatus",
         "spawn_tiles": "water",
         "speed": 50,
-        "weight": 1
+        "weight": 0.8
     },
     {
         "abilities": "Lunar Dash",
@@ -5517,7 +5517,7 @@
         "scientific_name": "Thalassoma lunare",
         "spawn_tiles": "water",
         "speed": 45,
-        "weight": 1
+        "weight": 0.42
     },
     {
         "abilities": "Illusion",
@@ -5541,7 +5541,7 @@
         "scientific_name": "Coris gaimard",
         "spawn_tiles": "water",
         "speed": 45,
-        "weight": 1
+        "weight": 1.35
     },
     {
         "abilities": "Swift Swim",
@@ -5565,7 +5565,7 @@
         "scientific_name": "Naso elegans",
         "spawn_tiles": "water",
         "speed": 70,
-        "weight": 1
+        "weight": 1.85
     },
     {
         "abilities": "Protean",
@@ -5589,7 +5589,7 @@
         "scientific_name": "Thalassoma bifasciatum",
         "spawn_tiles": "water",
         "speed": 55,
-        "weight": 1
+        "weight": 0.11
     },
     {
         "abilities": "Sharpness , Intimidate",
@@ -5613,7 +5613,7 @@
         "scientific_name": "Naso unicornis",
         "spawn_tiles": "water",
         "speed": 55,
-        "weight": 1
+        "weight": 2.6
     },
     {
         "abilities": "Poison Point , Sharpness",
@@ -5637,7 +5637,7 @@
         "scientific_name": "Naso lituratus",
         "spawn_tiles": "water",
         "speed": 55,
-        "weight": 1
+        "weight": 1.65
     },
     {
         "abilities": "Patterned Evasion",
@@ -5661,7 +5661,7 @@
         "scientific_name": "Halichoeres hortulanus",
         "spawn_tiles": "water",
         "speed": 55,
-        "weight": 1
+        "weight": 0.38
     },
     {
         "abilities": "Festive Flurry",
@@ -5685,7 +5685,7 @@
         "scientific_name": "Thalassoma trilobatum",
         "spawn_tiles": "water",
         "speed": 55,
-        "weight": 1
+        "weight": 0.24
     },
     {
         "abilities": "Sharpness",
@@ -5709,7 +5709,7 @@
         "scientific_name": "Acanthurus lineatus",
         "spawn_tiles": "water",
         "speed": 55,
-        "weight": 1
+        "weight": 0.55
     },
     {
         "abilities": "Triage",
@@ -5720,7 +5720,7 @@
         "cry": "default",
         "defense": 30,
         "description": "A brightly colored reef shrimp, often red and white with long antennae. The Cleaner Shrimp plays a vital ecological role by removing parasites from fish, establishing cleaning stations on coral reefs.",
-        "diet": "Parasite",
+        "diet": "Scavenger",
         "drops": "Exoskeleton, Muscle",
         "habitat": "Coral Reef,Coastal",
         "health": 40,
@@ -5733,7 +5733,7 @@
         "scientific_name": "Lysmata amboinensis",
         "spawn_tiles": "water",
         "speed": 55,
-        "weight": 1
+        "weight": 0.015
     },
     {
         "abilities": "Hyper Cutter",
@@ -5757,7 +5757,7 @@
         "scientific_name": "Stenopus hispidus",
         "spawn_tiles": "water",
         "speed": 55,
-        "weight": 1
+        "weight": 0.025
     },
     {
         "abilities": "Flash Fire",
@@ -5781,7 +5781,7 @@
         "scientific_name": "Lysmata debelius",
         "spawn_tiles": "water",
         "speed": 55,
-        "weight": 1
+        "weight": 0.02
     },
     {
         "abilities": "Gluttony",
@@ -5792,7 +5792,7 @@
         "cry": "default",
         "defense": 30,
         "description": "A small, red-and-white striped shrimp from the Western Atlantic. The Peppermint Shrimp is a popular cleaner in reef aquaria and feeds on pests like aiptasia anemones while keeping larger fish healthy.",
-        "diet": "Detritivore",
+        "diet": "Scavenger",
         "drops": "Exoskeleton, Muscle",
         "habitat": "Coral Reef,Coastal",
         "health": 40,
@@ -5805,7 +5805,7 @@
         "scientific_name": "Lysmata wurdemanni",
         "spawn_tiles": "water",
         "speed": 55,
-        "weight": 1
+        "weight": 0.012
     },
     {
         "abilities": "Sonic Snap",
@@ -5829,7 +5829,7 @@
         "scientific_name": "Alpheus randalli",
         "spawn_tiles": "water",
         "speed": 55,
-        "weight": 1
+        "weight": 0.01
     },
     {
         "abilities": "Technician",
@@ -5853,7 +5853,7 @@
         "scientific_name": "Hymenocera picta",
         "spawn_tiles": "water",
         "speed": 55,
-        "weight": 1
+        "weight": 0.018
     },
     {
         "abilities": "Shell Armor, Rough Skin",
@@ -5877,7 +5877,7 @@
         "scientific_name": "Panulirus argus",
         "spawn_tiles": "water",
         "speed": 45,
-        "weight": 1
+        "weight": 3.5
     },
     {
         "abilities": "Abyss Dweller, Echolocation,Pressure",
@@ -5973,7 +5973,7 @@
         "scientific_name": "Balaenoptera brydei",
         "spawn_tiles": "tall_grass",
         "speed": 85,
-        "weight": 1
+        "weight": 20000
     },
     {
         "abilities": "Abyss Dweller, Echolocation,Moxie",
@@ -5997,7 +5997,7 @@
         "scientific_name": "Pseudorca crassidens",
         "spawn_tiles": "tall_grass",
         "speed": 90,
-        "weight": 1
+        "weight": 1550
     },
     {
         "abilities": "Abyss Dweller, Echolocation, Water Veil",
@@ -6045,7 +6045,7 @@
         "scientific_name": "Balaenoptera acutorostrata",
         "spawn_tiles": "tall_grass",
         "speed": 90,
-        "weight": 1
+        "weight": 7150
     },
     {
         "abilities": "Abyss Dweller, Echolocation",
@@ -6093,7 +6093,7 @@
         "scientific_name": "Globicephala melas",
         "spawn_tiles": "tall_grass",
         "speed": 65,
-        "weight": 1
+        "weight": 2850
     },
     {
         "abilities": "Abyss Dweller, Echolocation,Clear Body",
@@ -6117,7 +6117,7 @@
         "scientific_name": "Peponocephala electra",
         "spawn_tiles": "tall_grass",
         "speed": 85,
-        "weight": 1
+        "weight": 240
     },
     {
         "abilities": "Abyss Dweller, Echolocation,Forewarn",
@@ -6141,7 +6141,7 @@
         "scientific_name": "Globicephala macrorhynchus",
         "spawn_tiles": "tall_grass",
         "speed": 70,
-        "weight": 1
+        "weight": 2500
     },
     {
         "abilities": "Abyss Dweller, Echolocation",
@@ -6165,7 +6165,7 @@
         "scientific_name": "Kogia breviceps",
         "spawn_tiles": "tall_grass",
         "speed": 55,
-        "weight": 1
+        "weight": 360
     },
     {
         "abilities": "Abyss Dweller, Echolocation,Punk Rock",
@@ -6189,7 +6189,7 @@
         "scientific_name": "Delphinapterus leucas",
         "spawn_tiles": "tall_grass",
         "speed": 60,
-        "weight": 1
+        "weight": 1250
     },
     {
         "abilities": "Water Veil , Inner Focus",
@@ -6213,7 +6213,7 @@
         "scientific_name": "Tursiops truncatus",
         "spawn_tiles": "water",
         "speed": 90,
-        "weight": 1
+        "weight": 425
     },
     {
         "abilities": "Rough Skin , Forewarn",
@@ -6237,7 +6237,7 @@
         "scientific_name": "Grampus griseus",
         "spawn_tiles": "water",
         "speed": 75,
-        "weight": 1
+        "weight": 400
     },
     {
         "abilities": "Motor Drive , Swift Swim",
@@ -6261,7 +6261,7 @@
         "scientific_name": "Delphinus delphis",
         "spawn_tiles": "water",
         "speed": 125,
-        "weight": 1
+        "weight": 150
     },
     {
         "abilities": "Rattled , Infiltrator",
@@ -6285,7 +6285,7 @@
         "scientific_name": "Stenella attenuata",
         "spawn_tiles": "water",
         "speed": 105,
-        "weight": 1
+        "weight": 100
     },
     {
         "abilities": "True Flight",
@@ -6309,7 +6309,7 @@
         "scientific_name": "Stenella longirostris",
         "spawn_tiles": "water",
         "speed": 110,
-        "weight": 1
+        "weight": 65
     },
     {
         "abilities": "Speed Boost , Rattled",
@@ -6333,7 +6333,7 @@
         "scientific_name": "Stenella coeruleoalba",
         "spawn_tiles": "water",
         "speed": 115,
-        "weight": 1
+        "weight": 135
     },
     {
         "abilities": "Friend Guard , Cute Charm",
@@ -6357,7 +6357,7 @@
         "scientific_name": "Stenella frontalis",
         "spawn_tiles": "water",
         "speed": 85,
-        "weight": 1
+        "weight": 120
     },
     {
         "abilities": "Pressure , Strong Jaw",
@@ -6381,7 +6381,7 @@
         "scientific_name": "Lagenodelphis hosei",
         "spawn_tiles": "water",
         "speed": 100,
-        "weight": 1
+        "weight": 185
     },
     {
         "abilities": "Solid Rock , Strong Jaw",
@@ -6405,7 +6405,7 @@
         "scientific_name": "Steno bredanensis",
         "spawn_tiles": "water",
         "speed": 70,
-        "weight": 1
+        "weight": 135
     },
     {
         "abilities": "Soundproof",
@@ -6429,7 +6429,7 @@
         "scientific_name": "Phocoena phocoena",
         "spawn_tiles": "water",
         "speed": 110,
-        "weight": 1
+        "weight": 63
     },
     {
         "abilities": "Speed Boost",
@@ -6453,7 +6453,7 @@
         "scientific_name": "Phocoenoides dalli",
         "spawn_tiles": "water",
         "speed": 90,
-        "weight": 1
+        "weight": 185
     },
     {
         "abilities": "Sharpness",
@@ -6501,7 +6501,7 @@
         "scientific_name": "Thunnus alalunga",
         "spawn_tiles": "water",
         "speed": 90,
-        "weight": 1
+        "weight": 45
     },
     {
         "abilities": "Comatose",
@@ -6525,7 +6525,7 @@
         "scientific_name": "Thunnus obesus",
         "spawn_tiles": "water",
         "speed": 75,
-        "weight": 1
+        "weight": 155
     },
     {
         "abilities": "Swift Swim",
@@ -6549,7 +6549,7 @@
         "scientific_name": "Thunnus orientalis",
         "spawn_tiles": "water",
         "speed": 100,
-        "weight": 1
+        "weight": 355
     },
     {
         "abilities": "Speed Boost",
@@ -6573,7 +6573,7 @@
         "scientific_name": "Katsuwonus pelamis",
         "spawn_tiles": "water",
         "speed": 115,
-        "weight": 1
+        "weight": 26
     },
     {
         "abilities": "Stamina",
@@ -6597,7 +6597,7 @@
         "scientific_name": "Thunnus maccoyii",
         "spawn_tiles": "water",
         "speed": 85,
-        "weight": 1
+        "weight": 215
     },
     {
         "abilities": "Ocean Sprinter",
@@ -6621,7 +6621,7 @@
         "scientific_name": "Thunnus albacares",
         "spawn_tiles": "water",
         "speed": 115,
-        "weight": 1
+        "weight": 135
     },
     {
         "abilities": "Speed Boost",
@@ -6645,7 +6645,7 @@
         "scientific_name": "Istiophorus albicans",
         "spawn_tiles": "water",
         "speed": 145,
-        "weight": 1
+        "weight": 75
     },
     {
         "abilities": "Swift Swim",
@@ -6669,7 +6669,7 @@
         "scientific_name": "Istiophorus platypterus",
         "spawn_tiles": "water",
         "speed": 135,
-        "weight": 1
+        "weight": 80
     },
     {
         "abilities": "Sharpness",
@@ -6693,7 +6693,7 @@
         "scientific_name": "Xiphias gladius",
         "spawn_tiles": "water",
         "speed": 70,
-        "weight": 1
+        "weight": 390
     },
     {
         "abilities": "Rough Skin",
@@ -6717,7 +6717,7 @@
         "scientific_name": "Istiompax indica",
         "spawn_tiles": "water",
         "speed": 125,
-        "weight": 1
+        "weight": 535
     },
     {
         "abilities": "Swift Swim",
@@ -6741,7 +6741,7 @@
         "scientific_name": "Makaira nigricans",
         "spawn_tiles": "water",
         "speed": 130,
-        "weight": 1
+        "weight": 585
     },
     {
         "abilities": "Speed Boost",
@@ -6765,7 +6765,7 @@
         "scientific_name": "Kajikia audax",
         "spawn_tiles": "water",
         "speed": 140,
-        "weight": 1
+        "weight": 200
     },
     {
         "abilities": "Infiltrator",
@@ -6789,7 +6789,7 @@
         "scientific_name": "Kajikia albida",
         "spawn_tiles": "water",
         "speed": 110,
-        "weight": 1
+        "weight": 65
     },
     {
         "abilities": "Swift Swim",
@@ -6813,7 +6813,7 @@
         "scientific_name": "Coryphaena hippurus",
         "spawn_tiles": "water",
         "speed": 90,
-        "weight": 1
+        "weight": 28
     },
     {
         "abilities": "Swift Swim , Infiltrator",
@@ -6837,7 +6837,7 @@
         "scientific_name": "Scomberomorus cavalla",
         "spawn_tiles": "water",
         "speed": 85,
-        "weight": 1
+        "weight": 25
     },
     {
         "abilities": "Thermal Exchange",
@@ -6861,7 +6861,7 @@
         "scientific_name": "Lampris guttatus",
         "spawn_tiles": "water",
         "speed": 70,
-        "weight": 1
+        "weight": 135
     },
     {
         "abilities": "Guts",
@@ -6885,7 +6885,7 @@
         "scientific_name": "Coryphaena equiselis",
         "spawn_tiles": "water",
         "speed": 115,
-        "weight": 1
+        "weight": 6.5
     },
     {
         "abilities": "Speed Boost",
@@ -6909,7 +6909,7 @@
         "scientific_name": "Acanthocybium solandri",
         "spawn_tiles": "water",
         "speed": 95,
-        "weight": 1
+        "weight": 45
     },
     {
         "abilities": "Wind Power",
@@ -6933,7 +6933,7 @@
         "scientific_name": "Cheilopogon melanurus",
         "spawn_tiles": "water",
         "speed": 90,
-        "weight": 1
+        "weight": 0.45
     },
     {
         "abilities": "Speed Boost , Swift Swim",
@@ -6957,7 +6957,7 @@
         "scientific_name": "Scomber scombrus",
         "spawn_tiles": "water",
         "speed": 85,
-        "weight": 1
+        "weight": 1.8
     },
     {
         "abilities": "Long Reach",
@@ -6981,7 +6981,7 @@
         "scientific_name": "Megalops atlanticus",
         "spawn_tiles": "water",
         "speed": 70,
-        "weight": 1
+        "weight": 100
     },
     {
         "abilities": "Gooey , Rough Skin",
@@ -7005,7 +7005,7 @@
         "scientific_name": "Lepidocybium flavobrunneum",
         "spawn_tiles": "water",
         "speed": 75,
-        "weight": 1
+        "weight": 30
     },
     {
         "abilities": "Wind Power",
@@ -7029,7 +7029,7 @@
         "scientific_name": "Hirundichthys affinis",
         "spawn_tiles": "water",
         "speed": 90,
-        "weight": 1
+        "weight": 0.5
     },
     {
         "abilities": "Mirror Armor",
@@ -7053,7 +7053,7 @@
         "scientific_name": "Hyporhamphus platinum",
         "spawn_tiles": "water",
         "speed": 87,
-        "weight": 1
+        "weight": 0.05
     },
     {
         "abilities": "Strong Jaw , Cursed Body",
@@ -7077,7 +7077,7 @@
         "scientific_name": "Alepisaurus ferox",
         "spawn_tiles": "water",
         "speed": 65,
-        "weight": 1
+        "weight": 5.5
     },
     {
         "abilities": "Stakeout",
@@ -7101,7 +7101,7 @@
         "scientific_name": "Esox belone",
         "spawn_tiles": "water",
         "speed": 90,
-        "weight": 1
+        "weight": 3.2
     },
     {
         "abilities": "Liquid Ooze",
@@ -7125,7 +7125,7 @@
         "scientific_name": "Ruvettus pretiosus",
         "spawn_tiles": "water",
         "speed": 70,
-        "weight": 1
+        "weight": 40
     },
     {
         "abilities": "Gale Wing, Swift Swim",
@@ -7149,7 +7149,7 @@
         "scientific_name": "Exocoetus volitans",
         "spawn_tiles": "water",
         "speed": 96,
-        "weight": 1
+        "weight": 0.15
     },
     {
         "abilities": "Strong Jaw",
@@ -7173,7 +7173,7 @@
         "scientific_name": "Architeuthis dux",
         "spawn_tiles": "tall_grass",
         "speed": 100,
-        "weight": 1
+        "weight": 190
     },
     {
         "abilities": "Color Change , Strong Jaw",
@@ -7197,7 +7197,7 @@
         "scientific_name": "Dosidicus gigas",
         "spawn_tiles": "tall_grass",
         "speed": 110,
-        "weight": 1
+        "weight": 35
     },
     {
         "abilities": "Pressure",
@@ -7245,7 +7245,7 @@
         "scientific_name": "Taningia danae",
         "spawn_tiles": "tall_grass",
         "speed": 75,
-        "weight": 1
+        "weight": 115
     },
     {
         "abilities": "Illuminate",
@@ -7269,7 +7269,7 @@
         "scientific_name": "Ommastrephes bartramii",
         "spawn_tiles": "tall_grass",
         "speed": 95,
-        "weight": 1
+        "weight": 6.5
     },
     {
         "abilities": "Dark Aura",
@@ -7293,7 +7293,7 @@
         "scientific_name": "Vampyroteuthis infernalis",
         "spawn_tiles": "tall_grass",
         "speed": 30,
-        "weight": 1
+        "weight": 0.7
     },
     {
         "abilities": "Aerial Strike",
@@ -7317,7 +7317,7 @@
         "scientific_name": "Apus apus",
         "spawn_tiles": "tall_grass",
         "speed": 100,
-        "weight": 1
+        "weight": 0.045
     },
     {
         "abilities": "Sniper",
@@ -7341,7 +7341,7 @@
         "scientific_name": "Falco subbuteo",
         "spawn_tiles": "tall_grass",
         "speed": 95,
-        "weight": 1
+        "weight": 0.23
     },
     {
         "abilities": "Pickpocket",
@@ -7365,7 +7365,7 @@
         "scientific_name": "Fregata minor",
         "spawn_tiles": "tall_grass",
         "speed": 90,
-        "weight": 1
+        "weight": 1.35
     },
     {
         "abilities": "Wind Power",
@@ -7376,7 +7376,7 @@
         "cry": "default",
         "defense": 60,
         "description": "A large seabird of the Southern Ocean, Grey-headed Albatrosses are long-distance gliders that spend much of their life soaring over the open ocean, feeding on squid and fish by snatching them from the water surface.",
-        "diet": "Carnivore",
+        "diet": "Piscivore",
         "drops": "Feather",
         "habitat": "Coastal,Ocean,Polar",
         "health": 70,
@@ -7389,7 +7389,7 @@
         "scientific_name": "Thalassarche chrysostoma",
         "spawn_tiles": "tall_grass",
         "speed": 85,
-        "weight": 1
+        "weight": 3.95
     },
     {
         "abilities": "Echolocation",
@@ -7413,7 +7413,7 @@
         "scientific_name": "Tadarida brasiliensis",
         "spawn_tiles": "tall_grass",
         "speed": 100,
-        "weight": 1
+        "weight": 0.013
     },
     {
         "abilities": "Early Bird",
@@ -7437,7 +7437,7 @@
         "scientific_name": "Columba livia",
         "spawn_tiles": "tall_grass",
         "speed": 75,
-        "weight": 1
+        "weight": 0.32
     },
     {
         "abilities": "Poison Point",
@@ -7461,7 +7461,7 @@
         "scientific_name": "Plectropterus gambensis",
         "spawn_tiles": "tall_grass",
         "speed": 70,
-        "weight": 1
+        "weight": 5.45
     },
     {
         "abilities": "Rattled",
@@ -7485,7 +7485,7 @@
         "scientific_name": "Connochaetes taurinus",
         "spawn_tiles": "tall_grass",
         "speed": 70,
-        "weight": 1
+        "weight": 235
     },
     {
         "abilities": "Speed Boost, Stamina",
@@ -7509,7 +7509,7 @@
         "scientific_name": "Antilocapra americana",
         "spawn_tiles": "tall_grass",
         "speed": 145,
-        "weight": 1
+        "weight": 55
     },
     {
         "abilities": "Libero",
@@ -7533,7 +7533,7 @@
         "scientific_name": "Antidorcas marsupialis",
         "spawn_tiles": "tall_grass",
         "speed": 130,
-        "weight": 1
+        "weight": 37.5
     },
     {
         "abilities": "Harvest",
@@ -7557,7 +7557,7 @@
         "scientific_name": "Pteropus niger",
         "spawn_tiles": "tall_grass",
         "speed": 85,
-        "weight": 1
+        "weight": 0.58
     },
     {
         "abilities": "Reef Camouflage",
@@ -7581,7 +7581,7 @@
         "scientific_name": "Octopus cyanea",
         "spawn_tiles": "tall_grass",
         "speed": 80,
-        "weight": 1
+        "weight": 4.5
     },
     {
         "abilities": "Burrow Escape",
@@ -7605,7 +7605,7 @@
         "scientific_name": "Gecarcinus quadratus",
         "spawn_tiles": "tall_grass",
         "speed": 40,
-        "weight": 1
+        "weight": 0.08
     },
     {
         "abilities": "Ambush Predator",
@@ -7653,7 +7653,7 @@
         "scientific_name": "Microlophus albemarlensis",
         "spawn_tiles": "tall_grass",
         "speed": 105,
-        "weight": 1
+        "weight": 0.045
     },
     {
         "abilities": "Forewarn , Regenerator",
@@ -7701,7 +7701,7 @@
         "scientific_name": "Scolopendra gigantea",
         "spawn_tiles": "tall_grass",
         "speed": 75,
-        "weight": 1
+        "weight": 0.06
     },
     {
         "abilities": "Adaptability",
@@ -7725,7 +7725,7 @@
         "scientific_name": "Carcinus maenas",
         "spawn_tiles": "tall_grass",
         "speed": 45,
-        "weight": 1
+        "weight": 0.12
     },
     {
         "abilities": "Reckless",
@@ -7749,7 +7749,7 @@
         "scientific_name": "Sula dactylatra",
         "spawn_tiles": "tall_grass",
         "speed": 75,
-        "weight": 1
+        "weight": 2.05
     },
     {
         "abilities": "Flame Body",
@@ -7773,7 +7773,7 @@
         "scientific_name": "Sula sula",
         "spawn_tiles": "tall_grass",
         "speed": 80,
-        "weight": 1
+        "weight": 1.05
     },
     {
         "abilities": "Hydration",
@@ -7797,7 +7797,7 @@
         "scientific_name": "Puffinus lherminieri",
         "spawn_tiles": "tall_grass",
         "speed": 80,
-        "weight": 1
+        "weight": 0.23
     },
     {
         "abilities": "Stall, Gale Wings",
@@ -7821,7 +7821,7 @@
         "scientific_name": "Diomedea exulans",
         "spawn_tiles": "tall_grass",
         "speed": 60,
-        "weight": 1
+        "weight": 9.35
     },
     {
         "abilities": "Pickpocket",
@@ -7845,7 +7845,7 @@
         "scientific_name": "Larus argentatus",
         "spawn_tiles": "tall_grass",
         "speed": 55,
-        "weight": 1
+        "weight": 1.15
     },
     {
         "abilities": "Slush Rush, Natural Cure",
@@ -7869,7 +7869,7 @@
         "scientific_name": "Aptenodytes forsteri",
         "spawn_tiles": "tall_grass",
         "speed": 40,
-        "weight": 1
+        "weight": 33.5
     },
     {
         "abilities": "Slush Rush",
@@ -7893,7 +7893,7 @@
         "scientific_name": "Aptenodytes patagonicus",
         "spawn_tiles": "tall_grass",
         "speed": 45,
-        "weight": 1
+        "weight": 15.5
     },
     {
         "abilities": "Slush Rush",
@@ -7917,7 +7917,7 @@
         "scientific_name": "Spheniscus mendiculus",
         "spawn_tiles": "tall_grass",
         "speed": 55,
-        "weight": 1
+        "weight": 3.2
     },
     {
         "abilities": "Water Absorb, Parental Bond",
@@ -7965,7 +7965,7 @@
         "scientific_name": "Cyanopsitta spixii",
         "spawn_tiles": "tall_grass",
         "speed": 65,
-        "weight": 1
+        "weight": 0.33
     },
     {
         "abilities": "Slush Rush, Tough Claws",
@@ -8061,7 +8061,7 @@
         "scientific_name": "Hydrurga leptonyx",
         "spawn_tiles": "tall_grass",
         "speed": 90,
-        "weight": 1
+        "weight": 445
     },
     {
         "abilities": "Thick Fat",
@@ -8085,7 +8085,7 @@
         "scientific_name": "Erignathus barbatus",
         "spawn_tiles": "tall_grass",
         "speed": 45,
-        "weight": 1
+        "weight": 325
     },
     {
         "abilities": "Rattled",
@@ -8096,7 +8096,7 @@
         "cry": "default",
         "defense": 60,
         "description": "A widespread pinniped found along temperate and Arctic coastlines. Harbor Seals feed on fish, squid, and crustaceans, using stealth and agility in water to evade predators like orcas and sharks.",
-        "diet": "Carnivore",
+        "diet": "Piscivore",
         "drops": "Fur",
         "habitat": "Polar, Frozen Ocean, Coastal,Kelp Forest",
         "health": 70,
@@ -8109,7 +8109,7 @@
         "scientific_name": "Phoca vitulina",
         "spawn_tiles": "tall_grass",
         "speed": 90,
-        "weight": 1
+        "weight": 135
     },
     {
         "abilities": "Ice Body",
@@ -8120,7 +8120,7 @@
         "cry": "default",
         "defense": 100,
         "description": "A small Arctic seal that lives among sea ice. Ringed Seals feed mainly on fish and crustaceans, and their ability to create breathing holes in ice helps them evade predators and survive harsh polar conditions.",
-        "diet": "Carnivore",
+        "diet": "Piscivore",
         "drops": "Fur",
         "habitat": "Polar, Frozen Ocean, Coastal",
         "health": 90,
@@ -8133,7 +8133,7 @@
         "scientific_name": "Pusa hispida",
         "spawn_tiles": "tall_grass",
         "speed": 35,
-        "weight": 1
+        "weight": 65
     },
     {
         "abilities": "Snow Cloak",
@@ -8144,7 +8144,7 @@
         "cry": "default",
         "defense": 70,
         "description": "A medium-sized Arctic seal found on pack ice in the North Atlantic and Arctic Oceans. Harp Seals feed primarily on fish and crustaceans, and are well adapted to icy environments, using their flippers and agility to navigate ice floes and avoid predators.",
-        "diet": "Carnivore",
+        "diet": "Piscivore",
         "drops": "Fur",
         "habitat": "Polar, Frozen Ocean, Coastal",
         "health": 80,
@@ -8157,7 +8157,7 @@
         "scientific_name": "Pagophilus groenlandicus",
         "spawn_tiles": "tall_grass",
         "speed": 70,
-        "weight": 1
+        "weight": 160
     },
     {
         "abilities": "Deep Ambush",
@@ -8181,7 +8181,7 @@
         "scientific_name": "Coryphaenoides armatus",
         "spawn_tiles": "water",
         "speed": 40,
-        "weight": 1
+        "weight": 1.8
     },
     {
         "abilities": "Burrow Escape",
@@ -8205,7 +8205,7 @@
         "scientific_name": "Ammodytes americanus",
         "spawn_tiles": "water",
         "speed": 70,
-        "weight": 1
+        "weight": 0.06
     },
     {
         "abilities": "Swarm , Illuminate",
@@ -8229,7 +8229,7 @@
         "scientific_name": "Euphausia superba",
         "spawn_tiles": "tall_grass",
         "speed": 50,
-        "weight": 1
+        "weight": 0.0015
     },
     {
         "abilities": "Shell Armor",
@@ -8253,7 +8253,7 @@
         "scientific_name": "Saduria entomon",
         "spawn_tiles": "tall_grass",
         "speed": 25,
-        "weight": 1
+        "weight": 0.0005
     },
     {
         "abilities": "Strong Jaw",
@@ -8277,7 +8277,7 @@
         "scientific_name": "Hydrocynus vittatus",
         "spawn_tiles": "water",
         "speed": 80,
-        "weight": 1
+        "weight": 18.5
     },
     {
         "abilities": "Strong Jaw",
@@ -8301,7 +8301,7 @@
         "scientific_name": "Hydrocynus goliath",
         "spawn_tiles": "water",
         "speed": 75,
-        "weight": 1
+        "weight": 40
     },
     {
         "abilities": "Thick Fat",
@@ -8373,7 +8373,7 @@
         "scientific_name": "Bagarius yarrelli",
         "spawn_tiles": "water",
         "speed": 75,
-        "weight": 1
+        "weight": 85
     },
     {
         "abilities": "Strong Jaw",
@@ -8397,7 +8397,7 @@
         "scientific_name": "Wallago attu",
         "spawn_tiles": "water",
         "speed": 85,
-        "weight": 1
+        "weight": 40
     },
     {
         "abilities": "Rattled",
@@ -8421,7 +8421,7 @@
         "scientific_name": "Ictalurus punctatus",
         "spawn_tiles": "water",
         "speed": 35,
-        "weight": 1
+        "weight": 15.5
     },
     {
         "abilities": "Infiltrator",
@@ -8445,7 +8445,7 @@
         "scientific_name": "Pylodictis olivaris",
         "spawn_tiles": "water",
         "speed": 45,
-        "weight": 1
+        "weight": 35
     },
     {
         "abilities": "Rock Head",
@@ -8469,7 +8469,7 @@
         "scientific_name": "Tor putitora",
         "spawn_tiles": "water",
         "speed": 65,
-        "weight": 1
+        "weight": 42
     },
     {
         "abilities": "Swift Swim",
@@ -8493,7 +8493,7 @@
         "scientific_name": "Heterobranchus longifilis",
         "spawn_tiles": "water",
         "speed": 70,
-        "weight": 1
+        "weight": 42.5
     },
     {
         "abilities": "Gluttony",
@@ -8541,7 +8541,7 @@
         "scientific_name": "Ictalurus furcatus",
         "spawn_tiles": "water",
         "speed": 55,
-        "weight": 1
+        "weight": 50.5
     },
     {
         "abilities": "Strong Jaw",
@@ -8565,7 +8565,7 @@
         "scientific_name": "Silurus glanis",
         "spawn_tiles": "water",
         "speed": 50,
-        "weight": 1
+        "weight": 130
     },
     {
         "abilities": "Poison Point",
@@ -8589,7 +8589,7 @@
         "scientific_name": "Hypanus sabinus",
         "spawn_tiles": "water",
         "speed": 75,
-        "weight": 1
+        "weight": 3.1
     },
     {
         "abilities": "Poison Touch",
@@ -8613,7 +8613,7 @@
         "scientific_name": "Potamotrygon leopoldi",
         "spawn_tiles": "water",
         "speed": 62,
-        "weight": 1
+        "weight": 15.5
     },
     {
         "abilities": "Arena Trap",
@@ -8661,7 +8661,7 @@
         "scientific_name": "Himantura chaophraya",
         "spawn_tiles": "water",
         "speed": 65,
-        "weight": 1
+        "weight": 10.5
     },
     {
         "abilities": "Strong Jaw, Rough Skin",
@@ -8685,7 +8685,7 @@
         "scientific_name": "Serrasalmus rhombeus",
         "spawn_tiles": "water",
         "speed": 95,
-        "weight": 1
+        "weight": 2.6
     },
     {
         "abilities": "Strong Jaw, Rough Skin",
@@ -8709,7 +8709,7 @@
         "scientific_name": "Pygocentrus nattereri",
         "spawn_tiles": "water",
         "speed": 100,
-        "weight": 1
+        "weight": 2.1
     },
     {
         "abilities": "Gluttony , Harvest",
@@ -8733,7 +8733,7 @@
         "scientific_name": "Ctenopharyngodon idella",
         "spawn_tiles": "water",
         "speed": 60,
-        "weight": 1
+        "weight": 27.5
     },
     {
         "abilities": "Mirror Armor",
@@ -8757,7 +8757,7 @@
         "scientific_name": "Cyprinus carpio specularis",
         "spawn_tiles": "water",
         "speed": 50,
-        "weight": 1
+        "weight": 22.5
     },
     {
         "abilities": "Filter",
@@ -21460,7 +21460,7 @@
         "active_time": "any",
         "attack": 90,
         "category": "Aquatic, Darkness",
-        "class": "Unknown",
+        "class": "Fish",
         "cry": "default",
         "defense": 50,
         "description": "A fearsome deep sea fish with glowing red lights and huge jaws.",
@@ -22036,11 +22036,11 @@
         "active_time": "any",
         "attack": 85,
         "category": "Darkness",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 80,
         "description": "A shaggy hyena that scavenges food in arid lands.",
-        "diet": "Unknown",
+        "diet": "Scavenger",
         "drops": "Fur",
         "habitat": "Desert, Savanna",
         "health": 87,
@@ -22053,7 +22053,7 @@
         "scientific_name": "Parahyaena brunnea",
         "spawn_tiles": "tall_grass",
         "speed": 60,
-        "weight": 1
+        "weight": 42.5
     },
     {
         "abilities": "Water Absorb , Sand Veil",
@@ -27460,11 +27460,11 @@
         "active_time": "any",
         "attack": 50,
         "category": "Flying, Mystic",
-        "class": "Unknown",
+        "class": "Bird",
         "cry": "default",
         "defense": 45,
         "description": "Brolgas feed on small prey and plant material in wetlands and grasslands. Their elaborate dances reinforce social bonds within flocks.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Feather",
         "habitat": "Savanna",
         "health": 81,
@@ -27477,7 +27477,7 @@
         "scientific_name": "Antigone rubicunda",
         "spawn_tiles": "tall_grass",
         "speed": 20,
-        "weight": 1
+        "weight": 6.35
     },
     {
         "abilities": "Early Bird",
@@ -27772,11 +27772,11 @@
         "active_time": "any",
         "attack": 40,
         "category": "Electric, Flying",
-        "class": "Unknown",
+        "class": "Bird",
         "cry": "default",
         "defense": 35,
         "description": "Sulfur-crested Cockatoos are social birds that feed on seeds and fruits. Their loud calls help maintain flock cohesion in forests and urban areas.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Feather",
         "habitat": "Jungle, Urban",
         "health": 100,
@@ -27789,7 +27789,7 @@
         "scientific_name": "Cacatua galerita",
         "spawn_tiles": "tall_grass",
         "speed": 30,
-        "weight": 1
+        "weight": 0.825
     },
     {
         "abilities": "Strong Jaw",
@@ -30244,11 +30244,11 @@
         "active_time": "any",
         "attack": 88,
         "category": "Mystic, Flying",
-        "class": "Unknown",
+        "class": "Bird",
         "cry": "default",
         "defense": 55,
         "description": "This bird reveals stunning eye-like patterns on its wings when threatened. It stalks insects and small fish along shaded riverbanks.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Feather",
         "habitat": "River, Swamp, Jungle,Wetlands",
         "health": 62,
@@ -30261,7 +30261,7 @@
         "scientific_name": "Eurypyga helias",
         "spawn_tiles": "tall_grass",
         "speed": 105,
-        "weight": 1
+        "weight": 0.2
     },
     {
         "abilities": "Camouflage Carapace, Cold-blooded",
@@ -31996,11 +31996,11 @@
         "active_time": "any",
         "attack": 85,
         "category": "Rock, Earth",
-        "class": "Unknown",
+        "class": "Reptile",
         "cry": "default",
         "defense": 145,
         "description": "A heavily scaled reptile that prefers dry scrublands. It relies on its armor-like skin for protection against predators.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Scales",
         "habitat": "Desert, Savanna",
         "health": 95,
@@ -32013,7 +32013,7 @@
         "scientific_name": "Broadleysaurus major",
         "spawn_tiles": "tall_grass",
         "speed": 55,
-        "weight": 1
+        "weight": 0.425
     },
     {
         "abilities": "Earth Eater",
@@ -34400,7 +34400,7 @@
         "cry": "fish",
         "defense": 65,
         "description": "The summer flounder lies flat on the seafloor, blending perfectly with the sand. It strikes swiftly at unsuspecting prey that pass overhead.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "Coastal, Ocean",
         "health": 90,
@@ -34413,7 +34413,7 @@
         "scientific_name": "Paralichthys dentatus",
         "spawn_tiles": "water",
         "speed": 30,
-        "weight": 1
+        "weight": 5.25
     },
     {
         "abilities": "Schooling Instinct",
@@ -34640,7 +34640,7 @@
         "cry": "fish",
         "defense": 55,
         "description": "The brook trout inhabits cool, clear streams and lakes. Its colorful body and markings make it one of the most beautiful freshwater fish.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Fillet",
         "habitat": "River, Lake",
         "health": 85,
@@ -34653,7 +34653,7 @@
         "scientific_name": "Salvelinus fontinalis",
         "spawn_tiles": "water",
         "speed": 60,
-        "weight": 1
+        "weight": 1.9
     },
     {
         "abilities": "Parental Bond",
@@ -36316,11 +36316,11 @@
         "active_time": "any",
         "attack": 25,
         "category": "Metal, Flying",
-        "class": "Unknown",
+        "class": "Bird",
         "cry": "default",
         "defense": 20,
         "description": "Bronze Turkeys are domesticated birds known for their distinctive plumage. They are social and often move in small flocks, feeding on grains and insects.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Bird Meat",
         "habitat": "Savanna, Urban,Plains",
         "health": 60,
@@ -36333,7 +36333,7 @@
         "scientific_name": "Meleagris gallopavo",
         "spawn_tiles": "tall_grass",
         "speed": 30,
-        "weight": 1
+        "weight": 11.25
     },
     {
         "abilities": "Cornered Beast, Scrappy , Guts",
@@ -37132,11 +37132,11 @@
         "active_time": "any",
         "attack": 50,
         "category": "Grass, Flying",
-        "class": "Unknown",
+        "class": "Bird",
         "cry": "default",
         "defense": 75,
         "description": "Brown Creepers are small, solitary birds that creep along tree trunks. They forage for insects hidden under bark using their slender bills.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Bird Meat",
         "habitat": "Jungle, Taiga",
         "health": 55,
@@ -37149,7 +37149,7 @@
         "scientific_name": "Certhia americana",
         "spawn_tiles": "tall_grass",
         "speed": 110,
-        "weight": 1
+        "weight": 0.009
     },
     {
         "abilities": "Serene Grace",
@@ -42464,7 +42464,7 @@
         "cry": "fish",
         "defense": 50,
         "description": "The striped mullet leaps from the water in energetic bursts to escape predators. It filters detritus and algae from sand and mud in shallow estuaries.",
-        "diet": "Unknown",
+        "diet": "Detritivore",
         "drops": "Fillet",
         "habitat": "River, Coastal",
         "health": 100,
@@ -42477,7 +42477,7 @@
         "scientific_name": "Mugil cephalus",
         "spawn_tiles": "water",
         "speed": 55,
-        "weight": 1
+        "weight": 1.8
     },
     {
         "abilities": "Strong Jaw, Shell Armor,Sturdy",
@@ -47624,7 +47624,7 @@
         "cry": "fish",
         "defense": 25,
         "description": "The stripped blenny mimics venomous species for protection. It feeds on small invertebrates and plankton.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Fillet",
         "habitat": "Coral Reef",
         "health": 40,
@@ -47637,7 +47637,7 @@
         "scientific_name": "Meiacanthus grammistes",
         "spawn_tiles": "water",
         "speed": 50,
-        "weight": 1
+        "weight": 0.012
     },
     {
         "abilities": "Immunity",
@@ -49900,11 +49900,11 @@
         "active_time": "any",
         "attack": 55,
         "category": "Darkness, Flying",
-        "class": "Unknown",
+        "class": "Bird",
         "cry": "default",
         "defense": 40,
         "description": "The bronzed drongo is an agile insect hunting bird that catches prey mid air. It often perches conspicuously while scanning for movement.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "feather, beak",
         "habitat": "Jungle",
         "health": 60,
@@ -49917,7 +49917,7 @@
         "scientific_name": "Dicrurus aeneus",
         "spawn_tiles": "tall_grass",
         "speed": 75,
-        "weight": 1
+        "weight": 0.025
     },
     {
         "abilities": "Trace",
@@ -49996,11 +49996,11 @@
         "active_time": "any",
         "attack": 30,
         "category": "Earth",
-        "class": "Unknown",
+        "class": "Reptile",
         "cry": "gecko",
         "defense": 28,
         "description": "The brown anole is a highly adaptable lizard often found near human settlements. It actively defends small territories from rivals.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "scale, claw",
         "habitat": "Jungle, Urban",
         "health": 46,
@@ -50013,7 +50013,7 @@
         "scientific_name": "Anolis sagrei",
         "spawn_tiles": "tall_grass",
         "speed": 58,
-        "weight": 1
+        "weight": 0.005
     },
     {
         "abilities": "Cold-blooded",
@@ -52348,11 +52348,11 @@
         "active_time": "any",
         "attack": 45,
         "category": "Aquatic, Grass",
-        "class": "Unknown",
+        "class": "Fish",
         "cry": "default",
         "defense": 50,
         "description": "The broomtail filefish is a small reef dwelling fish known for its laterally compressed body and subtle coloration. It moves carefully among corals, using camouflage to avoid predators while feeding on small invertebrates.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Tough Skin, Fin Spine",
         "habitat": "Coral Reef, Ocean",
         "health": 55,
@@ -52365,7 +52365,7 @@
         "scientific_name": "Pervagor spilosoma",
         "spawn_tiles": "tall_grass",
         "speed": 55,
-        "weight": 1
+        "weight": 1.1
     },
     {
         "abilities": "Water Bubble",
@@ -52396,11 +52396,11 @@
         "active_time": "any",
         "attack": 60,
         "category": "Aquatic",
-        "class": "Unknown",
+        "class": "Fish",
         "cry": "default",
         "defense": 55,
         "description": "The broomtail wrasse is a colorful reef fish that actively hunts smaller fish and crustaceans. Its agility and sharp teeth allow it to maneuver swiftly through complex coral structures.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Bright Scales, Reef Fin",
         "habitat": "Coral Reef",
         "health": 70,
@@ -52413,7 +52413,7 @@
         "scientific_name": "Cheilinus lunulatus",
         "spawn_tiles": "tall_grass",
         "speed": 65,
-        "weight": 1
+        "weight": 2.9
     },
     {
         "abilities": "Poison Point , Liquid Ooze",
@@ -53308,11 +53308,11 @@
         "active_time": "any",
         "attack": 45,
         "category": "Flying, Mystic",
-        "class": "Unknown",
+        "class": "Bird",
         "cry": "default",
         "defense": 45,
         "description": "The superb fairywren is a small brightly colored songbird native to open habitats. Males perform elaborate displays to attract mates during breeding season.",
-        "diet": "Unknown",
+        "diet": "Insectivore",
         "drops": "Blue Feather, Light Plumage",
         "habitat": "Savanna",
         "health": 50,
@@ -53325,7 +53325,7 @@
         "scientific_name": "Malurus cyaneus",
         "spawn_tiles": "tall_grass",
         "speed": 145,
-        "weight": 1
+        "weight": 0.01
     },
     {
         "abilities": "Regenerator , Drizzle",
@@ -57052,11 +57052,11 @@
         "active_time": "any",
         "attack": 54,
         "category": "Flying",
-        "class": "Unknown",
+        "class": "Bird",
         "cry": "default",
         "defense": 46,
         "description": "The brown fish owl is a large owl that hunts near rivers and lakes at night. It catches fish and amphibians using powerful talons and silent flight.",
-        "diet": "Unknown",
+        "diet": "Piscivore",
         "drops": "Feather",
         "habitat": "River,Jungle,Wetlands",
         "health": 72,
@@ -57069,7 +57069,7 @@
         "scientific_name": "Ketupa zeylonensis",
         "spawn_tiles": "tall_grass",
         "speed": 40,
-        "weight": 1
+        "weight": 1.85
     },
     {
         "abilities": "Keen Eye",
@@ -59044,11 +59044,11 @@
         "active_time": "any",
         "attack": 80,
         "category": "Rock,Aquatic",
-        "class": "Unknown",
+        "class": "Reptile",
         "cry": "default",
         "defense": 66,
         "description": "Suchomimus was a long snouted predator adapted for catching fish and hunting near riverbanks. Its narrow jaws and powerful forelimbs made it well suited for ambush attacks in wet environments.",
-        "diet": "Unknown",
+        "diet": "Piscivore",
         "drops": "Raw Meat,Bone,Hide",
         "habitat": "River,Savanna",
         "health": 96,
@@ -59061,7 +59061,7 @@
         "scientific_name": "Suchomimus tenerensis",
         "spawn_tiles": "tall_grass",
         "speed": 60,
-        "weight": 1
+        "weight": 3750
     },
     {
         "abilities": "Sharpness",
@@ -63093,7 +63093,7 @@
         "scientific_name": "Titanoboa cerrejonensis",
         "spawn_tiles": "tall_grass",
         "speed": 18,
-        "weight": "1,135"
+        "weight": 1135
     },
     {
         "abilities": "Heavy Metal",
@@ -67204,7 +67204,7 @@
         "active_time": "any",
         "attack": 24,
         "category": "Aquatic",
-        "class": "Unknown",
+        "class": "Fish",
         "cry": "default",
         "defense": 26,
         "description": "Steinforts killifish is a small colorful fish adapted to seasonal freshwater pools. It can survive changing conditions by reproducing quickly before waters dry up.",
@@ -67228,11 +67228,11 @@
         "active_time": "any",
         "attack": 18,
         "category": "Aquatic, Rock",
-        "class": "Unknown",
+        "class": "Crustacean",
         "cry": "default",
         "defense": 30,
         "description": "The Sulawesi cardinal shrimp is a striking red freshwater shrimp found in isolated lakes. It relies on stable water conditions and spends much of its time grazing on algae.",
-        "diet": "Unknown",
+        "diet": "Detritivore",
         "drops": "shell, meat",
         "habitat": "Lake",
         "health": 28,
@@ -67245,7 +67245,7 @@
         "scientific_name": "Caridina dennerli",
         "spawn_tiles": "tall_grass",
         "speed": 36,
-        "weight": 1
+        "weight": 0.001
     },
     {
         "abilities": "Keen Eye",
@@ -68452,11 +68452,11 @@
         "active_time": "any",
         "attack": 65,
         "category": "Blaze, Drake",
-        "class": "Unknown",
+        "class": "Reptile",
         "cry": "default",
         "defense": 60,
         "description": "Stygimoloch is a pachycephalosaur with a thick dome skull and spikes. It used its head as a weapon in confrontations with others of its kind.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "bone, hide",
         "habitat": "Plains",
         "health": 82,
@@ -68469,7 +68469,7 @@
         "scientific_name": "Stygimoloch spinifer",
         "spawn_tiles": "tall_grass",
         "speed": 57,
-        "weight": 1
+        "weight": 61.5
     },
     {
         "abilities": "Adaptability",
