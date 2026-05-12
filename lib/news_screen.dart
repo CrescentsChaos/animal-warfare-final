@@ -178,38 +178,26 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'THE DAILY WIRE',
-                                  style: GoogleFonts.orbitron(
-                                    color: Colors.white,
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 3,
-                                  ),
-                                ),
-                                Text(
-                                  'WILDLIFE INTELLIGENCE NETWORK',
-                                  style: GoogleFonts.inter(
-                                    color: AppColors.highlight,
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 1.5,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            IconButton(
-                              icon: const Icon(
-                                Icons.notifications_none,
-                                color: Colors.white70,
+                            Text(
+                              'THE DAILY WIRE',
+                              style: GoogleFonts.orbitron(
+                                color: Colors.white,
+                                fontSize: 22,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 3,
                               ),
-                              onPressed: () {},
+                            ),
+                            Text(
+                              'WILDLIFE INTELLIGENCE NETWORK',
+                              style: GoogleFonts.inter(
+                                color: AppColors.highlight,
+                                fontSize: 9,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 1.5,
+                              ),
                             ),
                           ],
                         ),
@@ -256,6 +244,13 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
               ),
             ),
             actions: [
+              IconButton(
+                icon: const Icon(
+                  Icons.notifications_none,
+                  color: Colors.white70,
+                ),
+                onPressed: () {},
+              ),
               IconButton(
                 onPressed: _isRefreshing ? null : _handleRefresh,
                 icon: _isRefreshing
@@ -446,10 +441,12 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
         height: 380,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24),
-          image: const DecorationImage(
-            image: AssetImage('assets/background.png'),
+          image: DecorationImage(
+            image: AssetImage(article.biome != null 
+                ? 'assets/biomes/${article.biome}.png' 
+                : 'assets/background.png'),
             fit: BoxFit.cover,
-            opacity: 0.2,
+            opacity: 0.4,
           ),
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -898,6 +895,13 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
                       borderRadius: const BorderRadius.vertical(
                         top: Radius.circular(15),
                       ),
+                      image: article.biome != null
+                          ? DecorationImage(
+                              image: AssetImage('assets/biomes/${article.biome}.png'),
+                              fit: BoxFit.cover,
+                              opacity: 0.6,
+                            )
+                          : null,
                     ),
                     child: Hero(
                       tag: 'article_sprite_${article.headline}',
@@ -925,6 +929,36 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
                       catColor,
                       small: true,
                     ),
+                  ),
+                  Positioned(
+                    bottom: 8,
+                    right: 8,
+                    child: article.habitatName != null
+                        ? Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.6),
+                              borderRadius: BorderRadius.circular(4),
+                              border: Border.all(color: Colors.white24, width: 0.5),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.location_on, color: Colors.white70, size: 8),
+                                const SizedBox(width: 2),
+                                Text(
+                                  article.habitatName!,
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white,
+                                    fontSize: 8,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : const SizedBox.shrink(),
                   ),
                 ],
               ),

@@ -96,6 +96,13 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
                       // Background Graphic
                       Container(
                         decoration: BoxDecoration(
+                          image: article.biome != null
+                              ? DecorationImage(
+                                  image: AssetImage('assets/biomes/${article.biome}.png'),
+                                  fit: BoxFit.cover,
+                                  opacity: 0.3,
+                                )
+                              : null,
                           gradient: LinearGradient(
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
@@ -168,6 +175,10 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
                       Row(
                         children: [
                           _buildCategoryPill(article.category, catColor),
+                          if (article.habitatName != null) ...[
+                            const SizedBox(width: 8),
+                            _buildCategoryPill(article.habitatName!, Colors.white70, small: true),
+                          ],
                           const SizedBox(width: 12),
                           Text(
                             '$readingTime MIN READ',
@@ -457,17 +468,25 @@ class _NewsDetailScreenState extends State<NewsDetailScreen> {
     );
   }
 
-  Widget _buildCategoryPill(String category, Color color) {
+  Widget _buildCategoryPill(String category, Color color, {bool small = false}) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: EdgeInsets.symmetric(
+        horizontal: small ? 6 : 10,
+        vertical: small ? 2 : 4,
+      ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(small ? 4 : 6),
         border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Text(
         category,
-        style: GoogleFonts.inter(color: color, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1),
+        style: GoogleFonts.inter(
+          color: color,
+          fontSize: small ? 8 : 10, 
+          fontWeight: FontWeight.w900, 
+          letterSpacing: small ? 0.5 : 1,
+        ),
       ),
     );
   }

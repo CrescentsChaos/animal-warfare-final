@@ -29,6 +29,8 @@ class NewsArticle {
   final String category; // e.g. 'ECOLOGY', 'BATTLE', 'SCIENCE', etc.
   final String? organismName; // featured organism, if any
   final String? spritePath;
+  final String? biome; // NEW: The primary habitat/biome for background imagery
+  final String? habitatName; // NEW: The display name of the selected habitat
   final DateTime publishedAt; // in-game time
   final int seed;
   int likes;
@@ -46,6 +48,8 @@ class NewsArticle {
     required this.category,
     this.organismName,
     this.spritePath,
+    this.biome,
+    this.habitatName,
     required this.publishedAt,
     required this.seed,
     required this.likes,
@@ -148,19 +152,53 @@ class NewsService {
       final categoryTemplates = _templatesByCategory[finalCategory] ?? _templates;
       final template = categoryTemplates[(seed + i * 37) % categoryTemplates.length];
       
-      // Smart picking for org2 in comparison/predator templates
+      // Smart picking for org2 (Prey/Competitor/Target)
       Organism org2 = shuffled[(i + 7) % shuffled.length];
-      if (template['type'] == 'comparison' || template['headline'].contains('Hunt') || template['headline'].contains('Target')) {
-        // If org is a predator (Carnivore/Omnivore), try to find a prey (Herbivore)
-        final isPredator = org.diet.toLowerCase().contains('carnivore') || org.diet.toLowerCase().contains('omnivore');
-        if (isPredator) {
-          for (int j = 1; j < 15; j++) {
-            final candidate = shuffled[(i + j + 7) % shuffled.length];
-            if (candidate.diet.toLowerCase().contains('herbivore') && candidate.name != org.name) {
-              org2 = candidate;
-              break;
-            }
+      
+      final isComparison = template['type'] == 'comparison' || 
+                           template['headline'].toLowerCase().contains('hunt') || 
+                           template['headline'].toLowerCase().contains('target');
+
+      if (isComparison) {
+        final diet = org.diet.toLowerCase();
+        final orgHabitats = org.habitat.split(',').map((h) => h.trim().toLowerCase()).toList();
+        
+        // Filter candidates that share a habitat and make biological sense as prey
+        final potentialPrey = organisms.where((cand) {
+          if (cand.name == org.name) return false;
+          
+          // Must share at least one habitat
+          final candHabitats = cand.habitat.split(',').map((h) => h.trim().toLowerCase()).toList();
+          bool sharesHabitat = orgHabitats.any((h) => candHabitats.contains(h));
+          if (!sharesHabitat) return false;
+
+          final candClass = cand.animalClass.toLowerCase();
+          
+          // Specific diet mappings
+          if (diet == 'insectivore') return candClass == 'insect' || candClass == 'arachnid';
+          if (diet == 'piscivore') return candClass == 'fish';
+          if (diet == 'carnivore' || diet == 'omnivore') {
+            // Predator targets something generally lighter or a non-carnivore
+            return cand.weight < org.weight || !cand.diet.toLowerCase().contains('carnivore');
           }
+          if (diet == 'sanguivore') return cand.animalClass == 'Mammal' || cand.animalClass == 'Bird';
+          if (diet == 'parasite') return cand.weight > org.weight; // Parasites target larger hosts
+          
+          // Fallback for others (Herbivore, Scavenger, etc)
+          return true;
+        }).toList();
+
+        if (potentialPrey.isNotEmpty) {
+          // Sort by weight to prioritize logical targets (smaller for most, larger for parasites)
+          if (diet == 'parasite') {
+             potentialPrey.sort((a, b) => b.weight.compareTo(a.weight));
+          } else {
+             potentialPrey.sort((a, b) => a.weight.compareTo(b.weight));
+          }
+          
+          // Pick from the top of the sorted list for more "realistic" matches
+          final poolSize = (potentialPrey.length * 0.3).ceil().clamp(1, potentialPrey.length);
+          org2 = potentialPrey[rng.nextInt(poolSize)];
         }
       }
       
@@ -268,6 +306,7 @@ class NewsService {
       '{robustness}': org.robustness.toStringAsFixed(2),
       '{types}': org.types.join(" / "),
       '{status}': org.rarity == 'Mythical' ? 'Extinct' : 'Active',
+      '{v}': _getDietVerb(org.diet.toLowerCase(), rng),
     };
 
     // Apply replacements to headline and body
@@ -314,12 +353,16 @@ class NewsService {
       category: category,
       organismName: org.name,
       spritePath: spritePath,
+      biome: (singleHabitat.isEmpty || singleHabitat.toLowerCase() == 'unknown') 
+          ? 'earth' 
+          : singleHabitat.toLowerCase().trim().replaceAll(' ', '_'),
+      habitatName: singleHabitat.toUpperCase(),
       publishedAt: _fakeTime(time, rng),
       seed: seed,
       likes: 10 + rng.nextInt(5000),
       commentsCount: 5 + rng.nextInt(200),
       shares: rng.nextInt(1000),
-      comments: _generateComments(category, org, seed, rng),
+      comments: _generateComments(category, org, org2, seed, rng),
     );
   }
 
@@ -336,6 +379,7 @@ class NewsService {
   static List<NewsComment> _generateComments(
     String category,
     Organism org,
+    Organism org2,
     int seed,
     Random rng,
   ) {
@@ -352,6 +396,7 @@ class NewsService {
 
     final replacements = {
       '{name}': org.name,
+      '{name2}': org2.name,
       '{habitat}': singleHab,
       '{rarity}': org.rarity,
       '{animal_class}': org.animalClass,
@@ -378,5 +423,25 @@ class NewsService {
 
   static DateTime _fakeTime(GameTime t, Random rng) {
     return DateTime(t.year, t.month, t.day, rng.nextInt(24), rng.nextInt(60));
+  }
+
+  static String _getDietVerb(String diet, Random rng) {
+    List<String> verbs;
+    if (diet.contains('carnivore') || diet.contains('piscivore') || diet.contains('insectivore')) {
+      verbs = ['hunting', 'stalking', 'patrolling', 'prowling', 'lurking', 'tracking', 'pouncing'];
+    } else if (diet.contains('herbivore') || diet.contains('frugivore')) {
+      verbs = ['foraging', 'grazing', 'resting', 'wandering', 'observing', 'migrating', 'feeding'];
+    } else if (diet.contains('nectarivore')) {
+      verbs = ['sipping nectar', 'hovering', 'pollinating', 'darting', 'feeding'];
+    } else if (diet.contains('scavenger') || diet.contains('detritivore')) {
+      verbs = ['scavenging', 'searching', 'patrolling', 'lurking', 'cleaning'];
+    } else if (diet.contains('filter feeder')) {
+      verbs = ['sifting', 'drifting', 'filtering', 'feeding', 'floating'];
+    } else if (diet.contains('parasite') || diet.contains('sanguivore')) {
+      verbs = ['clinging', 'hiding', 'waiting', 'latching', 'feeding'];
+    } else {
+      verbs = ['observing', 'resting', 'moving', 'wandering', 'waiting'];
+    }
+    return verbs[rng.nextInt(verbs.length)];
   }
 }

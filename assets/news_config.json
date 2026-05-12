@@ -527,6 +527,10 @@
       "The {habitat} diversity is what makes this game great.",
       "Just another fluff piece to ignore the real issues in {habitat}.",
       "Incredible insight into the life of {name}. I'm moved.",
+      "The way {name} interacts with {name2} is truly fascinating.",
+      "I wonder if {name} and {name2} compete for resources in {habitat}.",
+      "The {name} vs {name2} rivalry is the stuff of legends.",
+      "I saw a {name} hunting a {name2} once. It was life-changing.",
       "Simply stunning. I hope my kids get to see a {name} someday.",
       "The balance of {habitat} is art, and {name} is the artist.",
       "This article is funded by big corporate interests in {habitat}. I'm not buying it.",
@@ -3765,7 +3769,7 @@
       "category": "PROFILE"
     },
     {
-      "headline": "Anatomy of a Hunter: The {name}’s {attack} Stats",
+      "headline": "Anatomy of a Hunter: The {name}'s {attack} Stats",
       "body": "The {name} is built for the chase. At {size} m long, every muscle is tuned for {attack} power. In the {habitat}, it is the gold standard for {animal_class} efficiency.",
       "category": "PROFILE"
     },
@@ -3775,7 +3779,7 @@
       "category": "PROFILE"
     },
     {
-      "headline": "Small Wonder: The {name}’s Hidden {power} PWR",
+      "headline": "Small Wonder: The {name}'s Hidden {power} PWR",
       "body": "Don't let the {size} m stature fool you; the {name} packs a {bst} BST that surprises even the largest predators of the {habitat}. A true {rarity} on {spawn_tiles}.",
       "category": "PROFILE"
     },
@@ -3796,16 +3800,16 @@
     },
     {
       "headline": "The {name} Tongue: A {scientific_name} Tool",
-      "body": "The {name} possesses a specialized {scientific_name} feature for gathering {diet} in the {habitat}. It’s a {rarity} adaptation that boosts its overall {bst} BST utility.",
+      "body": "The {name} possesses a specialized {scientific_name} feature for gathering {diet} in the {habitat}. It's a {rarity} adaptation that boosts its overall {bst} BST utility.",
       "category": "PROFILE"
     },
     {
       "headline": "Master of Disguise: The {name} Camouflage",
-      "body": "Try to spot a {name} on {spawn_tiles} and you’ll likely fail. This {rarity} {animal_class} blends into the {habitat} perfectly, waiting for the perfect moment to strike.",
+      "body": "Try to spot a {name} on {spawn_tiles} and you'll likely fail. This {rarity} {animal_class} blends into the {habitat} perfectly, waiting for the perfect moment to strike.",
       "category": "PROFILE"
     },
     {
-      "headline": "The {name}’s Heart: The Engine of the {habitat}",
+      "headline": "The {name}'s Heart: The Engine of the {habitat}",
       "body": "To power a {weight} kg body, the {name} has an incredibly efficient circulatory system. It is a {rarity} biological marvel within the {animal_class} group.",
       "category": "PROFILE"
     },
@@ -3825,7 +3829,7 @@
       "category": "PROFILE"
     },
     {
-      "headline": "The {name}’s Roar: A {habitat} Signature",
+      "headline": "The {name}'s Roar: A {habitat} Signature",
       "body": "The call of the {name} can be heard for miles across the {habitat}. It is a sound of pure {power} PWR that defines this {rarity} {animal_class}.",
       "category": "PROFILE"
     },
@@ -3865,7 +3869,7 @@
       "category": "PROFILE"
     },
     {
-      "headline": "The {name} Jaw: A {diet}’s Worst Nightmare",
+      "headline": "The {name} Jaw: A {diet}'s Worst Nightmare",
       "body": "With a bite force exceeding all others in the {habitat}, the {name} is a top-tier {diet} hunter. Its {scientific_name} classification is well-earned.",
       "category": "PROFILE"
     },
@@ -3875,7 +3879,7 @@
       "category": "PROFILE"
     },
     {
-      "headline": "The {name}’s Role in {habitat} Lore",
+      "headline": "The {name}'s Role in {habitat} Lore",
       "body": "Every culture near {spawn_tiles} has a story about the {name}. Whether as a guardian or a monster, this {animal_class} remains a {rarity} mystery.",
       "category": "PROFILE"
     },
@@ -3920,7 +3924,7 @@
       "category": "PROFILE"
     },
     {
-      "headline": "The {name}’s Wing-Beats: A {habitat} Storm",
+      "headline": "The {name}'s Wing-Beats: A {habitat} Storm",
       "body": "When a {name} takes flight on {spawn_tiles}, the wind can be felt for miles. Its {size} m wingspan is the pride of the {animal_class} genus.",
       "category": "PROFILE"
     },
@@ -5863,6 +5867,56 @@
       "headline": "The Final Frontier: The {name} Space Program?",
       "body": "Scientists are considering sending a {name} to a moon colony. Their {rarity} resilience makes them the perfect {animal_class} for space travel. Researchers are calling this a turning point for all {animal_class} species.",
       "category": "SCIENCE"
+    },
+    {
+      "headline": "Special Report: The Insectivore Lifestyle of the {name}",
+      "body": "Recent studies in the {habitat} have revealed how the {name} thrives as a Insectivore. Whether it's {v} or interacting with other {animal_class} species, this {rarity} organism shows remarkable adaptation. Its {hp} HP and {speed} SPD are key to its success.",
+      "category": "ECOLOGY"
+    },
+    {
+      "headline": "Hunts in the {habitat}: {name} vs {name2}",
+      "body": "In a display of raw survival, a {name} was spotted {v} a {name2}. This {diet} predator is known for its {moves} move, which it uses to dominate the {habitat} food chain. Local {animal_class} experts are monitoring the situation closely.",
+      "category": "DISCOVERY",
+      "type": "comparison"
+    },
+    {
+      "headline": "Targets in the {habitat}: {name} vs {name2}",
+      "body": "In a display of raw survival, a {name} was spotted {v} a {name2}. This {diet} predator is known for its {moves} move, which it uses to dominate the {habitat} food chain. Local {animal_class} experts are monitoring the situation closely.",
+      "category": "DISCOVERY",
+      "type": "comparison"
+    },
+    {
+      "headline": "Pursues in the {habitat}: {name} vs {name2}",
+      "body": "In a display of raw survival, a {name} was spotted {v} a {name2}. This {diet} predator is known for its {moves} move, which it uses to dominate the {habitat} food chain. Local {animal_class} experts are monitoring the situation closely.",
+      "category": "DISCOVERY",
+      "type": "comparison"
+    },
+    {
+      "headline": "Stalks in the {habitat}: {name} vs {name2}",
+      "body": "In a display of raw survival, a {name} was spotted {v} a {name2}. This {diet} predator is known for its {moves} move, which it uses to dominate the {habitat} food chain. Local {animal_class} experts are monitoring the situation closely.",
+      "category": "DISCOVERY",
+      "type": "comparison"
+    },
+    {
+      "headline": "Lurks Near in the {habitat}: {name} vs {name2}",
+      "body": "In a display of raw survival, a {name} was spotted {v} a {name2}. This {diet} predator is known for its {moves} move, which it uses to dominate the {habitat} food chain. Local {animal_class} experts are monitoring the situation closely.",
+      "category": "DISCOVERY",
+      "type": "comparison"
+    },
+    {
+      "headline": "Special Report: The Nectarivore Lifestyle of the {name}",
+      "body": "Recent studies in the {habitat} have revealed how the {name} thrives as a Nectarivore. Whether it's {v} or interacting with other {animal_class} species, this {rarity} organism shows remarkable adaptation. Its {hp} HP and {speed} SPD are key to its success.",
+      "category": "ECOLOGY"
+    },
+    {
+      "headline": "Special Report: The Piscivore Lifestyle of the {name}",
+      "body": "Recent studies in the {habitat} have revealed how the {name} thrives as a Piscivore. Whether it's {v} or interacting with other {animal_class} species, this {rarity} organism shows remarkable adaptation. Its {hp} HP and {speed} SPD are key to its success.",
+      "category": "ECOLOGY"
+    },
+    {
+      "headline": "Special Report: The Parasite Lifestyle of the {name}",
+      "body": "Recent studies in the {habitat} have revealed how the {name} thrives as a Parasite. Whether it's {v} or interacting with other {animal_class} species, this {rarity} organism shows remarkable adaptation. Its {hp} HP and {speed} SPD are key to its success.",
+      "category": "ECOLOGY"
     }
   ]
 }
