@@ -92,6 +92,13 @@
                 </div>
 
                 <div class="filter-section">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--text-dim); font-size: 11px; font-weight: 700; letter-spacing: 1px;">
+                        <input type="checkbox" id="chk-exclude-mythical" onchange="App.filter()" style="accent-color: var(--accent);">
+                        EXCLUDE MYTHICALS
+                    </label>
+                </div>
+
+                <div class="filter-section">
                     <div class="filter-label">ABILITY</div>
                     <select id="flt-ability" onchange="App.filter()">
                         <option value="">All Abilities</option>
@@ -320,6 +327,7 @@
                 const aDiet = document.getElementById('flt-diet').value;
                 const weight = document.getElementById('flt-weight').value;
                 const sizeVal = document.getElementById('flt-size').value;
+                const excludeMythical = document.getElementById('chk-exclude-mythical').checked;
 
                 this.filtered = this.db.orgs.filter(o => {
                     if (q && !o.name.toLowerCase().includes(q) &&
@@ -334,6 +342,7 @@
                     if (drop && !(o.drops || '').includes(drop)) return false;
                     if (aClass && (o.class || o.animal_class) !== aClass) return false;
                     if (aDiet && o.diet !== aDiet) return false;
+                    if (excludeMythical && (o.rarity || '').toLowerCase() === 'mythical') return false;
                     if (weight) {
                         const w = parseFloat(o.weight) || 0;
                         if (weight === 'tiny' && w >= 1) return false;
@@ -802,6 +811,7 @@
                     const el = document.getElementById(id);
                     if (el) el.selectedIndex = 0;
                 });
+                document.getElementById('chk-exclude-mythical').checked = false;
                 this.sortBy = 'name';
                 this.ascending = true;
                 this.unitSystem = 'metric';

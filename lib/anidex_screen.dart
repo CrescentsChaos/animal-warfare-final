@@ -68,6 +68,7 @@ class _AnidexScreenState extends State<AnidexScreen>
   String? _selectedSize;
   String _sortBy = 'NAME';
   bool _isAscending = true;
+  bool _excludeMythical = false;
 
   static const List<String> _allWeights = [
     '< 1 kg',
@@ -210,6 +211,9 @@ class _AnidexScreenState extends State<AnidexScreen>
       if (query.isNotEmpty &&
           !org.name.toLowerCase().contains(query) &&
           !org.scientificName.toLowerCase().contains(query)) {
+        return false;
+      }
+      if (_excludeMythical && org.rarity.toLowerCase().contains('mythical')) {
         return false;
       }
       if (_selectedRarity != null &&
@@ -741,6 +745,20 @@ class _AnidexScreenState extends State<AnidexScreen>
               children: [
                 _buildFilterLabel('SORT BY'),
                 _buildSortOptions(),
+                const SizedBox(height: 16),
+                SwitchListTile(
+                  title: const Text(
+                    'EXCLUDE MYTHICALS',
+                    style: TextStyle(
+                      fontFamily: 'PressStart2P',
+                      fontSize: 8,
+                      color: Colors.white54,
+                    ),
+                  ),
+                  value: _excludeMythical,
+                  activeColor: AppColors.highlightColor,
+                  onChanged: (v) => setState(() => _excludeMythical = v),
+                ),
                 const SizedBox(height: 24),
                 _buildSearchableFilter(
                   'BIOME',
@@ -873,6 +891,7 @@ class _AnidexScreenState extends State<AnidexScreen>
                   _selectedSize = null;
                   _sortBy = 'NAME';
                   _isAscending = true;
+                  _excludeMythical = false;
                 });
                 _applyFilters();
               },
