@@ -144,6 +144,12 @@ class Organism {
     return weight.toString();
   }
 
+  double get robustness => weight / (size > 0 ? size : 1);
+
+  String get formattedRobustness {
+    return "${robustness.toStringAsFixed(2).replaceAll(RegExp(r'\.00$'), '')} λ";
+  }
+
   String get formattedSize {
     if (size == size.toInt().toDouble()) {
       return size.toInt().toString();

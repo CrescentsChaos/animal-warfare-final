@@ -66,6 +66,7 @@ class _AnidexScreenState extends State<AnidexScreen>
   String? _selectedDiet;
   String? _selectedWeight;
   String? _selectedSize;
+  String? _selectedRobustness;
   String _sortBy = 'NAME';
   bool _isAscending = true;
   bool _excludeMythical = false;
@@ -84,6 +85,14 @@ class _AnidexScreenState extends State<AnidexScreen>
     '2 - 5 m',
     '5 - 10 m',
     '> 10 m',
+  ];
+
+  static const List<String> _allRobustness = [
+    '< 1 λ',
+    '1 - 10 λ',
+    '10 - 50 λ',
+    '50 - 100 λ',
+    '> 100 λ',
   ];
 
   bool _isLoading = true;
@@ -267,6 +276,20 @@ class _AnidexScreenState extends State<AnidexScreen>
         if (_selectedSize == '5 - 10 m' && (s < 5 || s >= 10)) return false;
         if (_selectedSize == '> 10 m' && s < 10) return false;
       }
+      if (_selectedRobustness != null) {
+        final r = org.robustness;
+        if (_selectedRobustness == '< 1 λ' && r >= 1) return false;
+        if (_selectedRobustness == '1 - 10 λ' && (r < 1 || r >= 10)) {
+          return false;
+        }
+        if (_selectedRobustness == '10 - 50 λ' && (r < 10 || r >= 50)) {
+          return false;
+        }
+        if (_selectedRobustness == '50 - 100 λ' && (r < 50 || r >= 100)) {
+          return false;
+        }
+        if (_selectedRobustness == '> 100 λ' && r < 100) return false;
+      }
       return true;
     }).toList();
 
@@ -299,6 +322,9 @@ class _AnidexScreenState extends State<AnidexScreen>
           break;
         case 'SIZE':
           result = b.size.compareTo(a.size);
+          break;
+        case 'ROBUSTNESS':
+          result = b.robustness.compareTo(a.robustness);
           break;
         default:
           result = a.name.compareTo(b.name);
@@ -826,6 +852,12 @@ class _AnidexScreenState extends State<AnidexScreen>
                   _allDrops,
                   (v) => setState(() => _selectedDrop = v),
                 ),
+                _buildSearchableFilter(
+                  'ROBUSTNESS',
+                  _selectedRobustness,
+                  _allRobustness,
+                  (v) => setState(() => _selectedRobustness = v),
+                ),
               ],
             ),
           ),
@@ -889,6 +921,7 @@ class _AnidexScreenState extends State<AnidexScreen>
                   _selectedDiet = null;
                   _selectedWeight = null;
                   _selectedSize = null;
+                  _selectedRobustness = null;
                   _sortBy = 'NAME';
                   _isAscending = true;
                   _excludeMythical = false;
@@ -958,6 +991,7 @@ class _AnidexScreenState extends State<AnidexScreen>
       'BST',
       'WEIGHT',
       'SIZE',
+      'ROBUSTNESS',
     ];
 
     return Column(

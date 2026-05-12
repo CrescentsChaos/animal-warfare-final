@@ -147,13 +147,20 @@
 
                 <div class="filter-section">
                     <div class="filter-label">SIZE</div>
-                    <select id="flt-size" onchange="App.filter()">
-                        <option value="">All Sizes</option>
-                        <option value="tiny">&lt; 0.5 m</option>
-                        <option value="small">0.5 - 2 m</option>
-                        <option value="medium">2 - 5 m</option>
                         <option value="large">5 - 10 m</option>
                         <option value="huge">&gt; 10 m</option>
+                    </select>
+                </div>
+
+                <div class="filter-section">
+                    <div class="filter-label">ROBUSTNESS</div>
+                    <select id="flt-robustness" onchange="App.filter()">
+                        <option value="">All Robustness</option>
+                        <option value="tiny">&lt; 1 λ</option>
+                        <option value="small">1 - 10 λ</option>
+                        <option value="medium">10 - 50 λ</option>
+                        <option value="large">50 - 100 λ</option>
+                        <option value="huge">&gt; 100 λ</option>
                     </select>
                 </div>
 
@@ -327,6 +334,7 @@
                 const aDiet = document.getElementById('flt-diet').value;
                 const weight = document.getElementById('flt-weight').value;
                 const sizeVal = document.getElementById('flt-size').value;
+                const robustnessVal = document.getElementById('flt-robustness').value;
                 const excludeMythical = document.getElementById('chk-exclude-mythical').checked;
 
                 this.filtered = this.db.orgs.filter(o => {
@@ -359,28 +367,34 @@
                         if (sizeVal === 'large' && (s < 5 || s >= 10)) return false;
                         if (sizeVal === 'huge' && s < 10) return false;
                     }
+                    if (robustnessVal) {
+                        const r = (parseFloat(o.weight) || 0) / (parseFloat(o.size) || 1);
+                        if (robustnessVal === 'tiny' && r >= 1) return false;
+                        if (robustnessVal === 'small' && (r < 1 || r >= 10)) return false;
+                        if (robustnessVal === 'medium' && (r < 10 || r >= 50)) return false;
+                        if (robustnessVal === 'large' && (r < 50 || r >= 100)) return false;
+                        if (robustnessVal === 'huge' && r < 100) return false;
+                    }
                     return true;
                 });
 
                 // Sort
                 this.filtered.sort((a, b) => {
-                    let r = 0;
-                    switch (this.sortBy) {
-                        case 'health': r = (b.health || 0) - (a.health || 0); break;
-                        case 'attack': r = (b.attack || 0) - (a.attack || 0); break;
-                        case 'defense': r = (b.defense || 0) - (a.defense || 0); break;
-                        case 'power': r = (b.power || 0) - (a.power || 0); break;
-                        case 'resistance': r = (b.resistance || 0) - (a.resistance || 0); break;
-                        case 'speed': r = (b.speed || 0) - (a.speed || 0); break;
-                        case 'weight': r = (parseFloat(b.weight) || 0) - (parseFloat(a.weight) || 0); break;
-                        case 'size': r = (parseFloat(b.size) || 0) - (parseFloat(a.size) || 0); break;
-                        case 'bst':
-                            r = ((b.health || 0) + (b.attack || 0) + (b.defense || 0) + (b.power || 0) + (b.resistance || 0) + (b.speed || 0)) -
-                                ((a.health || 0) + (a.attack || 0) + (a.defense || 0) + (a.power || 0) + (a.resistance || 0) + (a.speed || 0));
-                            break;
-                        default: r = (a.name || '').localeCompare(b.name || ''); break;
+                    if (this.sortBy === 'weight' || this.sortBy === 'size' || this.sortBy === 'bst' || this.sortBy === 'health' || this.sortBy === 'attack' || this.sortBy === 'defense' || this.sortBy === 'power' || this.sortBy === 'resistance' || this.sortBy === 'speed' || this.sortBy === 'robustness') {
+                        let va, vb;
+                        if (this.sortBy === 'robustness') {
+                            va = (parseFloat(a.weight) || 0) / (parseFloat(a.size) || 1);
+                            vb = (parseFloat(b.weight) || 0) / (parseFloat(b.size) || 1);
+                        } else if (this.sortBy === 'bst') {
+                            va = (a.health || 0) + (a.attack || 0) + (a.defense || 0) + (a.power || 0) + (a.resistance || 0) + (a.speed || 0);
+                            vb = (b.health || 0) + (b.attack || 0) + (b.defense || 0) + (b.power || 0) + (b.resistance || 0) + (b.speed || 0);
+                        } else {
+                            va = parseFloat(a[this.sortBy]) || 0;
+                            vb = parseFloat(b[this.sortBy]) || 0;
+                        }
+                        return this.ascending ? va - vb : vb - va;
                     }
-                    return this.ascending ? r : -r;
+                    return this.ascending ? (a.name || '').localeCompare(b.name || '') : (b.name || '').localeCompare(a.name || '');
                 });
 
                 this.displayedCount = 0;
@@ -623,6 +637,9 @@
                         else sizeLabel = `${(s * 1000000000).toFixed(1).replace(/\.0$/, '')} NM`;
                     }
                 }
+                
+                const robustness = (parseFloat(org.weight) || 0) / (parseFloat(org.size) || 1);
+                const robustnessLabel = robustness.toFixed(2);
 
                 document.getElementById('modal-content').innerHTML = `
                 <div class="detail-header" style="background-image: url('${this.rarityBackground(rarity)}'); background-size: cover; background-position: center;">
@@ -665,6 +682,13 @@
                                 <div class="badge-label">
                                     <span class="badge-type">Size</span>
                                     <span class="badge-value">${sizeLabel.toUpperCase()}</span>
+                                </div>
+                            </div>
+                            <div class="class-badge">
+                                <div style="font-size:20px;line-height:22px;text-align:center;width:22px;">💪</div>
+                                <div class="badge-label">
+                                    <span class="badge-type">Robustness</span>
+                                    <span class="badge-value">${robustnessLabel} λ</span>
                                 </div>
                             </div>
                             <div class="class-badge">
@@ -807,7 +831,7 @@
 
             reset() {
                 document.getElementById('q').value = '';
-                ['flt-biome', 'flt-cat1', 'flt-cat2', 'flt-rarity', 'flt-ability', 'flt-move', 'flt-drop', 'flt-class', 'flt-diet', 'flt-weight', 'flt-size', 'flt-item-cat'].forEach(id => {
+                ['flt-biome', 'flt-cat1', 'flt-cat2', 'flt-rarity', 'flt-ability', 'flt-move', 'flt-drop', 'flt-class', 'flt-diet', 'flt-weight', 'flt-size', 'flt-robustness', 'flt-item-cat'].forEach(id => {
                     const el = document.getElementById(id);
                     if (el) el.selectedIndex = 0;
                 });

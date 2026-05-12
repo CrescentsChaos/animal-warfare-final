@@ -509,6 +509,12 @@ class AnidexDetailsSheet {
                 iconData: Icons.scale,
               ),
               _buildClassificationBadge(
+                'ROBUSTNESS',
+                org.formattedRobustness,
+                null,
+                iconData: Icons.fitness_center,
+              ),
+              _buildClassificationBadge(
                 'ACTIVITY',
                 org.activeTime,
                 null,
