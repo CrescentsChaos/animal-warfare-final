@@ -92,8 +92,10 @@
                 </div>
 
                 <div class="filter-section">
-                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--text-dim); font-size: 11px; font-weight: 700; letter-spacing: 1px;">
-                        <input type="checkbox" id="chk-exclude-mythical" onchange="App.filter()" style="accent-color: var(--accent);">
+                    <label
+                        style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--text-dim); font-size: 11px; font-weight: 700; letter-spacing: 1px;">
+                        <input type="checkbox" id="chk-exclude-mythical" onchange="App.filter()"
+                            style="accent-color: var(--accent);">
                         EXCLUDE MYTHICALS
                     </label>
                 </div>
@@ -147,6 +149,11 @@
 
                 <div class="filter-section">
                     <div class="filter-label">SIZE</div>
+                    <select id="flt-size" onchange="App.filter()">
+                        <option value="">All Sizes</option>
+                        <option value="tiny">&lt; 0.5 m</option>
+                        <option value="small">0.5 - 2 m</option>
+                        <option value="medium">2 - 5 m</option>
                         <option value="large">5 - 10 m</option>
                         <option value="huge">&gt; 10 m</option>
                     </select>
@@ -637,7 +644,7 @@
                         else sizeLabel = `${(s * 1000000000).toFixed(1).replace(/\.0$/, '')} NM`;
                     }
                 }
-                
+
                 const robustness = (parseFloat(org.weight) || 0) / (parseFloat(org.size) || 1);
                 const robustnessLabel = robustness.toFixed(2);
 
@@ -819,7 +826,7 @@
 
             setUnitSystem(val) {
                 this.unitSystem = val;
-                this.render();
+                this.filter();
             },
 
             toggleOrder() {
