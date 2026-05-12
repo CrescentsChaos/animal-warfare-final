@@ -156,15 +156,48 @@ class Organism {
       final lbs = weight * 2.20462;
       return "${lbs.toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')} LBS";
     }
-    return "$formattedWeight KG";
+    // Metric scaling
+    if (weight >= 1000) {
+      return "${(weight / 1000).toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')} TONS";
+    } else if (weight >= 1) {
+      return "$formattedWeight KG";
+    } else if (weight >= 0.001) {
+      return "${(weight * 1000).toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')} G";
+    } else if (weight >= 0.000001) {
+      return "${(weight * 1000000).toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')} MG";
+    } else if (weight >= 0.000000001) {
+      return "${(weight * 1000000000).toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')} UG";
+    } else {
+      return "${(weight * 1000000000000).toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')} NG";
+    }
   }
 
   String formattedSizeForSystem(String unitSystem) {
     if (unitSystem == 'imperial') {
-      final feet = size * 3.28084;
-      return "${feet.toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')} FT";
+      final totalInches = size * 39.3701;
+      final feet = (totalInches / 12).floor();
+      final inches = (totalInches % 12).round();
+      
+      if (feet > 0) {
+        if (inches == 0) return "$feet FT";
+        return "$feet FT $inches IN";
+      }
+      return "$inches IN";
     }
-    return "$formattedSize M";
+    // Metric scaling
+    if (size >= 1000) {
+      return "${(size / 1000).toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')} KM";
+    } else if (size >= 1) {
+      return "$formattedSize M";
+    } else if (size >= 0.01) {
+      return "${(size * 100).toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')} CM";
+    } else if (size >= 0.001) {
+      return "${(size * 1000).toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')} MM";
+    } else if (size >= 0.000001) {
+      return "${(size * 1000000).toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')} UM";
+    } else {
+      return "${(size * 1000000000).toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')} NM";
+    }
   }
 
   static double _parseWeight(dynamic value) {

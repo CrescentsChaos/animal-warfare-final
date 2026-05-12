@@ -579,21 +579,39 @@
 
                 let weightLabel = 'Unknown';
                 if (org.weight) {
+                    const w = org.weight;
                     if (this.unitSystem === 'imperial') {
-                        const lbs = (org.weight * 2.20462).toFixed(1).replace(/\.0$/, '');
+                        const lbs = (w * 2.20462).toFixed(1).replace(/\.0$/, '');
                         weightLabel = `${lbs} LBS`;
                     } else {
-                        weightLabel = `${org.weight} KG`;
+                        if (w >= 1000) weightLabel = `${(w / 1000).toFixed(1).replace(/\.0$/, '')} TONS`;
+                        else if (w >= 1) weightLabel = `${w} KG`;
+                        else if (w >= 0.001) weightLabel = `${(w * 1000).toFixed(1).replace(/\.0$/, '')} G`;
+                        else if (w >= 0.000001) weightLabel = `${(w * 1000000).toFixed(1).replace(/\.0$/, '')} MG`;
+                        else if (w >= 0.000000001) weightLabel = `${(w * 1000000000).toFixed(1).replace(/\.0$/, '')} UG`;
+                        else weightLabel = `${(w * 1000000000000).toFixed(1).replace(/\.0$/, '')} NG`;
                     }
                 }
 
                 let sizeLabel = 'Unknown';
                 if (org.size) {
+                    const s = org.size;
                     if (this.unitSystem === 'imperial') {
-                        const ft = (org.size * 3.28084).toFixed(1).replace(/\.0$/, '');
-                        sizeLabel = `${ft} FT`;
+                        const totalInches = s * 39.3701;
+                        const feet = Math.floor(totalInches / 12);
+                        const inches = Math.round(totalInches % 12);
+                        if (feet > 0) {
+                            sizeLabel = inches === 0 ? `${feet} FT` : `${feet} FT ${inches} IN`;
+                        } else {
+                            sizeLabel = `${inches} IN`;
+                        }
                     } else {
-                        sizeLabel = `${org.size} M`;
+                        if (s >= 1000) sizeLabel = `${(s / 1000).toFixed(1).replace(/\.0$/, '')} KM`;
+                        else if (s >= 1) sizeLabel = `${s} M`;
+                        else if (s >= 0.01) sizeLabel = `${(s * 100).toFixed(1).replace(/\.0$/, '')} CM`;
+                        else if (s >= 0.001) sizeLabel = `${(s * 1000).toFixed(1).replace(/\.0$/, '')} MM`;
+                        else if (s >= 0.000001) sizeLabel = `${(s * 1000000).toFixed(1).replace(/\.0$/, '')} UM`;
+                        else sizeLabel = `${(s * 1000000000).toFixed(1).replace(/\.0$/, '')} NM`;
                     }
                 }
 

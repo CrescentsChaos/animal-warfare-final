@@ -7594,7 +7594,7 @@
         "rarity": "Rare",
         "resistance": 115,
         "scientific_name": "Vampyroteuthis infernalis",
-        "size": 1,
+        "size": 0.23,
         "spawn_tiles": "tall_grass",
         "speed": 30,
         "weight": 0.7
@@ -11794,10 +11794,10 @@
         "rarity": "Uncommon",
         "resistance": 60,
         "scientific_name": "Ommastrephidae family",
-        "size": 1,
+        "size": 0.4,
         "spawn_tiles": "tall_grass",
         "speed": 90,
-        "weight": 1
+        "weight": 1.55
     },
     {
         "abilities": "Speed Boost , Infiltrator",
@@ -12844,7 +12844,7 @@
         "rarity": "Epic",
         "resistance": 90,
         "scientific_name": "Hapalochlaena spp.",
-        "size": 1,
+        "size": 0.15,
         "spawn_tiles": "tall_grass",
         "speed": 115,
         "weight": 0.065
@@ -14544,10 +14544,10 @@
         "rarity": "Uncommon",
         "resistance": 47,
         "scientific_name": "Eriophora transmarina",
-        "size": 1,
+        "size": 0.045,
         "spawn_tiles": "tall_grass",
         "speed": 30,
-        "weight": 1
+        "weight": 0.0018
     },
     {
         "abilities": "Gluttony",
@@ -14919,10 +14919,10 @@
         "rarity": "Uncommon",
         "resistance": 63,
         "scientific_name": "Brachypelma smithi",
-        "size": 1,
+        "size": 0.145,
         "spawn_tiles": "tall_grass",
         "speed": 95,
-        "weight": 1
+        "weight": 0.0575
     },
     {
         "abilities": "Poison Skin",
@@ -14969,10 +14969,10 @@
         "rarity": "Uncommon",
         "resistance": 85,
         "scientific_name": "Cupiennius salei",
-        "size": 1,
+        "size": 0.1,
         "spawn_tiles": "tall_grass",
         "speed": 105,
-        "weight": 1
+        "weight": 0.0065
     },
     {
         "abilities": "Infiltrator",
@@ -15194,10 +15194,10 @@
         "rarity": "Rare",
         "resistance": 122,
         "scientific_name": "Dolomedes tenebrosus",
-        "size": 1,
+        "size": 0.075,
         "spawn_tiles": "tall_grass, water",
         "speed": 52,
-        "weight": 1
+        "weight": 0.0025
     },
     {
         "abilities": "Cold-blooded,Swift Swim , Water Veil",
@@ -15844,10 +15844,10 @@
         "rarity": "Rare",
         "resistance": 65,
         "scientific_name": "Latrodectus mactans",
-        "size": 1,
+        "size": 0.032,
         "spawn_tiles": "tall_grass",
         "speed": 110,
-        "weight": 1
+        "weight": 0.0006
     },
     {
         "abilities": "Shed Skin , Battle Armor",
@@ -16144,7 +16144,7 @@
         "rarity": "Uncommon",
         "resistance": 23,
         "scientific_name": "Hexabranchus sanguineus",
-        "size": 1,
+        "size": 0.43,
         "spawn_tiles": "tall_grass",
         "speed": 40,
         "weight": 1.1
@@ -16694,10 +16694,10 @@
         "rarity": "Common",
         "resistance": 46,
         "scientific_name": "Micrathena sagittata",
-        "size": 1,
+        "size": 0.02,
         "spawn_tiles": "tall_grass",
         "speed": 45,
-        "weight": 1
+        "weight": 0.00045
     },
     {
         "abilities": "Infiltrator",
@@ -16719,10 +16719,10 @@
         "rarity": "Common",
         "resistance": 34,
         "scientific_name": "Micrathena mitrata",
-        "size": 1,
+        "size": 0.016,
         "spawn_tiles": "tall_grass",
         "speed": 40,
-        "weight": 1
+        "weight": 0.00035
     },
     {
         "abilities": "Infiltrator",
@@ -16744,10 +16744,10 @@
         "rarity": "Common",
         "resistance": 36,
         "scientific_name": "Micrathena decorata",
-        "size": 1,
+        "size": 0.018,
         "spawn_tiles": "tall_grass",
         "speed": 42,
-        "weight": 1
+        "weight": 0.0003
     },
     {
         "abilities": "Infiltrator",
@@ -16769,10 +16769,10 @@
         "rarity": "Common",
         "resistance": 45,
         "scientific_name": "Micrathena brevispina",
-        "size": 1,
+        "size": 0.012,
         "spawn_tiles": "tall_grass",
         "speed": 35,
-        "weight": 1
+        "weight": 0.00025
     },
     {
         "abilities": "Infiltrator",
@@ -16794,10 +16794,10 @@
         "rarity": "Common",
         "resistance": 37,
         "scientific_name": "Micrathena sexspinosa",
-        "size": 1,
+        "size": 0.022,
         "spawn_tiles": "tall_grass",
         "speed": 37,
-        "weight": 1
+        "weight": 0.0004
     },
     {
         "abilities": "Infiltrator",
@@ -16819,10 +16819,10 @@
         "rarity": "Common",
         "resistance": 46,
         "scientific_name": "Micrathena bimaculata",
-        "size": 1,
+        "size": 0.019,
         "spawn_tiles": "tall_grass",
         "speed": 34,
-        "weight": 1
+        "weight": 0.00035
     },
     {
         "abilities": "Infiltrator",
@@ -16844,10 +16844,10 @@
         "rarity": "Common",
         "resistance": 40,
         "scientific_name": "Micrathena gracilis",
-        "size": 1,
+        "size": 0.024,
         "spawn_tiles": "tall_grass",
         "speed": 41,
-        "weight": 1
+        "weight": 0.00045
     },
     {
         "abilities": "Infiltrator",
@@ -16869,10 +16869,10 @@
         "rarity": "Common",
         "resistance": 33,
         "scientific_name": "Micrathena furcata",
-        "size": 1,
+        "size": 0.015,
         "spawn_tiles": "tall_grass",
         "speed": 36,
-        "weight": 1
+        "weight": 0.00025
     },
     {
         "abilities": "Infiltrator",
@@ -16894,10 +16894,10 @@
         "rarity": "Common",
         "resistance": 45,
         "scientific_name": "Micrathena funebris",
-        "size": 1,
+        "size": 0.026,
         "spawn_tiles": "tall_grass",
         "speed": 38,
-        "weight": 1
+        "weight": 0.00055
     },
     {
         "abilities": "Infiltrator",
@@ -16919,10 +16919,10 @@
         "rarity": "Common",
         "resistance": 45,
         "scientific_name": "Micrathena horrida",
-        "size": 1,
+        "size": 0.014,
         "spawn_tiles": "tall_grass",
         "speed": 39,
-        "weight": 1
+        "weight": 0.0003
     },
     {
         "abilities": "Infiltrator",
@@ -16944,10 +16944,10 @@
         "rarity": "Common",
         "resistance": 48,
         "scientific_name": "Micrathena robusta",
-        "size": 1,
+        "size": 0.027,
         "spawn_tiles": "tall_grass",
         "speed": 37,
-        "weight": 1
+        "weight": 0.00065
     },
     {
         "abilities": "Infiltrator",
@@ -16969,10 +16969,10 @@
         "rarity": "Common",
         "resistance": 38,
         "scientific_name": "Micrathena lucasi",
-        "size": 1,
+        "size": 0.022,
         "spawn_tiles": "tall_grass",
         "speed": 35,
-        "weight": 1
+        "weight": 0.00045
     },
     {
         "abilities": "Infiltrator",
@@ -16994,10 +16994,10 @@
         "rarity": "Common",
         "resistance": 34,
         "scientific_name": "Micrathena pichincha",
-        "size": 1,
+        "size": 0.02,
         "spawn_tiles": "tall_grass",
         "speed": 36,
-        "weight": 1
+        "weight": 0.0004
     },
     {
         "abilities": "Infiltrator",
@@ -17019,10 +17019,10 @@
         "rarity": "Uncommon",
         "resistance": 42,
         "scientific_name": "Gasteracantha cancriformis",
-        "size": 1,
+        "size": 0.021,
         "spawn_tiles": "tall_grass",
         "speed": 40,
-        "weight": 1
+        "weight": 0.00035
     },
     {
         "abilities": "Cold-blooded, Shell Armor",
@@ -17369,10 +17369,10 @@
         "rarity": "Uncommon",
         "resistance": 54,
         "scientific_name": "Platythomisus octomaculatus",
-        "size": 1,
+        "size": 0.015,
         "spawn_tiles": "tall_grass",
         "speed": 35,
-        "weight": 1
+        "weight": 0.00025
     },
     {
         "abilities": "Heavy Metal",
@@ -19194,10 +19194,10 @@
         "rarity": "Uncommon",
         "resistance": 29,
         "scientific_name": "Nephila pilipes",
-        "size": 1,
+        "size": 0.105,
         "spawn_tiles": "tall_grass",
         "speed": 55,
-        "weight": 1
+        "weight": 0.0031
     },
     {
         "abilities": "Unnerve",
@@ -19219,10 +19219,10 @@
         "rarity": "Uncommon",
         "resistance": 31,
         "scientific_name": "Sparassidae",
-        "size": 1,
+        "size": 0.225,
         "spawn_tiles": "tall_grass",
         "speed": 75,
-        "weight": 1
+        "weight": 0.0125
     },
     {
         "abilities": "Poison Touch",
@@ -19244,10 +19244,10 @@
         "rarity": "Rare",
         "resistance": 53,
         "scientific_name": "Atrax robustus",
-        "size": 1,
+        "size": 0.075,
         "spawn_tiles": "tall_grass",
         "speed": 65,
-        "weight": 1
+        "weight": 0.0035
     },
     {
         "abilities": "Immunity, Parental Bond",
@@ -19319,10 +19319,10 @@
         "rarity": "Rare",
         "resistance": 35,
         "scientific_name": "Maratus volans",
-        "size": 1,
+        "size": 0.006,
         "spawn_tiles": "tall_grass",
         "speed": 65,
-        "weight": 1
+        "weight": 0.0001
     },
     {
         "abilities": "Intimidate , Toxic Debris",
@@ -21519,7 +21519,7 @@
         "rarity": "Rare",
         "resistance": 85,
         "scientific_name": "Amphioctopus marginatus",
-        "size": 1,
+        "size": 0.23,
         "spawn_tiles": "tall_grass",
         "speed": 30,
         "weight": 0.25
@@ -21619,7 +21619,7 @@
         "rarity": "Epic",
         "resistance": 85,
         "scientific_name": "Thaumoctopus mimicus",
-        "size": 1,
+        "size": 0.45,
         "spawn_tiles": "tall_grass",
         "speed": 75,
         "weight": 0.45
@@ -21644,7 +21644,7 @@
         "rarity": "Epic",
         "resistance": 75,
         "scientific_name": "Wunderpus photogenicus",
-        "size": 1,
+        "size": 0.3,
         "spawn_tiles": "tall_grass",
         "speed": 90,
         "weight": 0.15
@@ -21694,7 +21694,7 @@
         "rarity": "Rare",
         "resistance": 60,
         "scientific_name": "Nautilus pompilius",
-        "size": 1,
+        "size": 0.2,
         "spawn_tiles": "tall_grass",
         "speed": 40,
         "weight": 1.15
@@ -21794,7 +21794,7 @@
         "rarity": "Uncommon",
         "resistance": 38,
         "scientific_name": "Cyphoma gibbosum",
-        "size": 1,
+        "size": 0.03,
         "spawn_tiles": "tall_grass",
         "speed": 45,
         "weight": 0.005
@@ -22044,7 +22044,7 @@
         "rarity": "Epic",
         "resistance": 33,
         "scientific_name": "Glaucus atlanticus",
-        "size": 1,
+        "size": 0.02,
         "spawn_tiles": "tall_grass",
         "speed": 60,
         "weight": 0.0015
@@ -22094,10 +22094,10 @@
         "rarity": "Rare",
         "resistance": 119,
         "scientific_name": "Tridacna gigas",
-        "size": 1,
+        "size": 1.2,
         "spawn_tiles": "tall_grass",
         "speed": 10,
-        "weight": 125
+        "weight": 170
     },
     {
         "abilities": "Photosynthesis",
@@ -22119,7 +22119,7 @@
         "rarity": "Uncommon",
         "resistance": 43,
         "scientific_name": "Costasiella kuroshimae",
-        "size": 1,
+        "size": 0.007,
         "spawn_tiles": "tall_grass",
         "speed": 50,
         "weight": 0.00075
@@ -22744,10 +22744,10 @@
         "rarity": "Uncommon",
         "resistance": 55,
         "scientific_name": "Damon diadema",
-        "size": 1,
+        "size": 0.4,
         "spawn_tiles": "tall_grass",
         "speed": 50,
-        "weight": 1
+        "weight": 0.0075
     },
     {
         "abilities": "Battle Armor",
@@ -22769,10 +22769,10 @@
         "rarity": "Rare",
         "resistance": 62,
         "scientific_name": "Hadrurus arizonensis",
-        "size": 1,
+        "size": 0.115,
         "spawn_tiles": "tall_grass",
         "speed": 55,
-        "weight": 1
+        "weight": 0.0105
     },
     {
         "abilities": "Battle Armor , Intimidate",
@@ -24194,10 +24194,10 @@
         "rarity": "Rare",
         "resistance": 63,
         "scientific_name": "Androctonus crassicauda",
-        "size": 1,
+        "size": 0.09,
         "spawn_tiles": "tall_grass",
         "speed": 55,
-        "weight": 1
+        "weight": 0.012
     },
     {
         "abilities": "Battle Armor",
@@ -24219,10 +24219,10 @@
         "rarity": "Epic",
         "resistance": 75,
         "scientific_name": "Leiurus quinquestriatus",
-        "size": 1,
+        "size": 0.095,
         "spawn_tiles": "tall_grass",
         "speed": 65,
-        "weight": 1
+        "weight": 0.0025
     },
     {
         "abilities": "Battle Armor , Strong Jaw",
@@ -24244,10 +24244,10 @@
         "rarity": "Rare",
         "resistance": 93,
         "scientific_name": "Pandinus imperator",
-        "size": 1,
+        "size": 0.19,
         "spawn_tiles": "tall_grass",
         "speed": 45,
-        "weight": 1
+        "weight": 0.045
     },
     {
         "abilities": "Battle Armor",
@@ -24269,10 +24269,10 @@
         "rarity": "Rare",
         "resistance": 70,
         "scientific_name": "Androctonus finitimus",
-        "size": 1,
+        "size": 0.095,
         "spawn_tiles": "tall_grass",
         "speed": 50,
-        "weight": 1
+        "weight": 0.0135
     },
     {
         "abilities": "Battle Armor",
@@ -24294,10 +24294,10 @@
         "rarity": "Uncommon",
         "resistance": 51,
         "scientific_name": "Centruroides vittatus",
-        "size": 1,
+        "size": 0.06,
         "spawn_tiles": "tall_grass",
         "speed": 75,
-        "weight": 1
+        "weight": 0.0022
     },
     {
         "abilities": "Battle Armor",
@@ -24319,10 +24319,10 @@
         "rarity": "Rare",
         "resistance": 62,
         "scientific_name": "Parabuthus transvaalicus",
-        "size": 1,
+        "size": 0.115,
         "spawn_tiles": "tall_grass",
         "speed": 60,
-        "weight": 1
+        "weight": 0.0075
     },
     {
         "abilities": "Merciless , Infiltrator",
@@ -24344,10 +24344,10 @@
         "rarity": "Rare",
         "resistance": 60,
         "scientific_name": "Loxosceles reclusa",
-        "size": 1,
+        "size": 0.03,
         "spawn_tiles": "tall_grass",
         "speed": 125,
-        "weight": 1
+        "weight": 0.0007
     },
     {
         "abilities": "Sand Rush",
@@ -24369,10 +24369,10 @@
         "rarity": "Uncommon",
         "resistance": 63,
         "scientific_name": "Solifugae",
-        "size": 1,
+        "size": 0.105,
         "spawn_tiles": "tall_grass",
         "speed": 80,
-        "weight": 1
+        "weight": 0.0275
     },
     {
         "abilities": "Long Reach",
@@ -24394,10 +24394,10 @@
         "rarity": "Uncommon",
         "resistance": 64,
         "scientific_name": "Hogna carolinensis",
-        "size": 1,
+        "size": 0.085,
         "spawn_tiles": "tall_grass",
         "speed": 75,
-        "weight": 1
+        "weight": 0.0055
     },
     {
         "abilities": "Water Absorb",
@@ -24469,10 +24469,10 @@
         "rarity": "Uncommon",
         "resistance": 74,
         "scientific_name": "Idiopidae",
-        "size": 1,
+        "size": 0.045,
         "spawn_tiles": "tall_grass",
         "speed": 40,
-        "weight": 1
+        "weight": 0.0055
     },
     {
         "abilities": "No Guard",
@@ -24494,10 +24494,10 @@
         "rarity": "Uncommon",
         "resistance": 77,
         "scientific_name": "Misgolas rapax",
-        "size": 1,
+        "size": 0.053,
         "spawn_tiles": "tall_grass",
         "speed": 42,
-        "weight": 1
+        "weight": 0.0035
     },
     {
         "abilities": "Soundproof",
@@ -25619,10 +25619,10 @@
         "rarity": "Uncommon",
         "resistance": 37,
         "scientific_name": "Avicularia avicularia",
-        "size": 1,
+        "size": 0.125,
         "spawn_tiles": "tall_grass",
         "speed": 105,
-        "weight": 1
+        "weight": 0.0175
     },
     {
         "abilities": "Cold-blooded, Bastion Shell",
@@ -25919,10 +25919,10 @@
         "rarity": "Uncommon",
         "resistance": 60,
         "scientific_name": "Lasiodora parahybana",
-        "size": 1,
+        "size": 0.19,
         "spawn_tiles": "tall_grass",
         "speed": 115,
-        "weight": 1
+        "weight": 0.065
     },
     {
         "abilities": "Poison Point , Intimidate",
@@ -25944,10 +25944,10 @@
         "rarity": "Epic",
         "resistance": 53,
         "scientific_name": "Theraphosa blondi",
-        "size": 1,
+        "size": 0.29,
         "spawn_tiles": "tall_grass",
         "speed": 35,
-        "weight": 1
+        "weight": 0.1225
     },
     {
         "abilities": "Shadow Shield",
@@ -27594,7 +27594,7 @@
         "rarity": "Rare",
         "resistance": 85,
         "scientific_name": "Sepioteuthis lessoniana",
-        "size": 1,
+        "size": 0.35,
         "spawn_tiles": "tall_grass",
         "speed": 95,
         "weight": 0.425
@@ -27669,10 +27669,10 @@
         "rarity": "Rare",
         "resistance": 70,
         "scientific_name": "Loligo pealeii",
-        "size": 1,
+        "size": 0.33,
         "spawn_tiles": "tall_grass",
         "speed": 60,
-        "weight": 1
+        "weight": 1.3
     },
     {
         "abilities": "Leaper",
@@ -30594,7 +30594,7 @@
         "rarity": "Uncommon",
         "resistance": 95,
         "scientific_name": "Euprymna scolopes",
-        "size": 1,
+        "size": 0.05,
         "spawn_tiles": "tall_grass",
         "speed": 115,
         "weight": 0.045
@@ -32319,10 +32319,10 @@
         "rarity": "Uncommon",
         "resistance": 48,
         "scientific_name": "Oxyopes salticus",
-        "size": 1,
+        "size": 0.023,
         "spawn_tiles": "tall_grass",
         "speed": 70,
-        "weight": 1
+        "weight": 0.00045
     },
     {
         "abilities": "Snow Cloak",
@@ -32869,10 +32869,10 @@
         "rarity": "Uncommon",
         "resistance": 25,
         "scientific_name": "Myrmarachne plataleoides",
-        "size": 1,
+        "size": 0.009,
         "spawn_tiles": "tall_grass",
         "speed": 80,
-        "weight": 1
+        "weight": 0.00018
     },
     {
         "abilities": "Strong Jaw, Cold-blooded",
@@ -34944,7 +34944,7 @@
         "rarity": "Uncommon",
         "resistance": 55,
         "scientific_name": "Clea helena",
-        "size": 1,
+        "size": 0.02,
         "spawn_tiles": "tall_grass",
         "speed": 20,
         "weight": 0.0035
@@ -41744,10 +41744,10 @@
         "rarity": "Uncommon",
         "resistance": 32,
         "scientific_name": "Heterometrus spinifer",
-        "size": 1,
+        "size": 0.125,
         "spawn_tiles": "tall_grass",
         "speed": 5,
-        "weight": 1
+        "weight": 0.021
     },
     {
         "abilities": "Swift Swim, Keen Eye",
@@ -43144,10 +43144,10 @@
         "rarity": "Epic",
         "resistance": 57,
         "scientific_name": "Chilobrachys sp. electric blue",
-        "size": 1,
+        "size": 0.135,
         "spawn_tiles": "tall_grass",
         "speed": 105,
-        "weight": 1
+        "weight": 0.0325
     },
     {
         "abilities": "Illuminate , Tinted Lens",
@@ -44594,10 +44594,10 @@
         "rarity": "Uncommon",
         "resistance": 16,
         "scientific_name": "Theridion grallator",
-        "size": 1,
+        "size": 0.015,
         "spawn_tiles": "tall_grass",
         "speed": 50,
-        "weight": 1
+        "weight": 8e-05
     },
     {
         "abilities": "Swift Swim",
@@ -46444,10 +46444,10 @@
         "rarity": "Uncommon",
         "resistance": 40,
         "scientific_name": "Euscorpius italicus",
-        "size": 1,
+        "size": 0.045,
         "spawn_tiles": "tall_grass",
         "speed": 15,
-        "weight": 1
+        "weight": 0.0015
     },
     {
         "abilities": "Flock Awareness",
@@ -47094,10 +47094,10 @@
         "rarity": "Epic",
         "resistance": 33,
         "scientific_name": "Phoneutria nigriventer",
-        "size": 1,
+        "size": 0.1125,
         "spawn_tiles": "tall_grass",
         "speed": 35,
-        "weight": 1
+        "weight": 0.0055
     },
     {
         "abilities": "Strong Claw",
@@ -47344,10 +47344,10 @@
         "rarity": "Uncommon",
         "resistance": 22,
         "scientific_name": "Araneus marmoreus",
-        "size": 1,
+        "size": 0.01875,
         "spawn_tiles": "tall_grass",
         "speed": 35,
-        "weight": 1
+        "weight": 0.000625
     },
     {
         "abilities": "Precision",
@@ -47369,10 +47369,10 @@
         "rarity": "Common",
         "resistance": 24,
         "scientific_name": "Salticus scenicus",
-        "size": 1,
+        "size": 0.0045,
         "spawn_tiles": "tall_grass",
         "speed": 70,
-        "weight": 1
+        "weight": 1.5e-05
     },
     {
         "abilities": "Packwork",
@@ -48169,10 +48169,10 @@
         "rarity": "Rare",
         "resistance": 21,
         "scientific_name": "Hottentotta tamulus",
-        "size": 1,
+        "size": 0.0625,
         "spawn_tiles": "tall_grass",
         "speed": 40,
-        "weight": 1
+        "weight": 0.00225
     },
     {
         "abilities": "Stakeout",
@@ -51919,10 +51919,10 @@
         "rarity": "Epic",
         "resistance": 34,
         "scientific_name": "Archaeidae",
-        "size": 1,
+        "size": 0.00375,
         "spawn_tiles": "tall_grass",
         "speed": 55,
-        "weight": 1
+        "weight": 7.5e-06
     },
     {
         "abilities": "Tunnel Sense",
@@ -54269,10 +54269,10 @@
         "rarity": "Epic",
         "resistance": 60,
         "scientific_name": "Atrax robustus",
-        "size": 1,
+        "size": 0.03125,
         "spawn_tiles": "tall_grass",
         "speed": 55,
-        "weight": 1
+        "weight": 0.00225
     },
     {
         "abilities": "Electric Surge",
@@ -57069,7 +57069,7 @@
         "rarity": "Epic",
         "resistance": 75,
         "scientific_name": "Magnapinna sp.",
-        "size": 1,
+        "size": 4.95,
         "spawn_tiles": "tall_grass",
         "speed": 50,
         "weight": 0.85
@@ -57194,7 +57194,7 @@
         "rarity": "Rare",
         "resistance": 75,
         "scientific_name": "Stauroteuthis syrtensis",
-        "size": 1,
+        "size": 0.43,
         "spawn_tiles": "tall_grass",
         "speed": 40,
         "weight": 0.85
@@ -58119,7 +58119,7 @@
         "rarity": "Uncommon",
         "resistance": 60,
         "scientific_name": "Pareledone turqueti",
-        "size": 1,
+        "size": 0.3,
         "spawn_tiles": "tall_grass",
         "speed": 54,
         "weight": 0.45
@@ -58494,10 +58494,10 @@
         "rarity": "Uncommon",
         "resistance": 42,
         "scientific_name": "Chromodoris willani",
-        "size": 1,
+        "size": 0.05,
         "spawn_tiles": "tall_grass",
         "speed": 28,
-        "weight": 1.25
+        "weight": 0.045
     },
     {
         "abilities": "Sweet Veil",
@@ -59144,10 +59144,10 @@
         "rarity": "Common",
         "resistance": 42,
         "scientific_name": "Araneus diadematus",
-        "size": 1,
+        "size": 0.01375,
         "spawn_tiles": "tall_grass",
         "speed": 30,
-        "weight": 1
+        "weight": 0.000625
     },
     {
         "abilities": "Shell Armor , Sturdy",
@@ -61694,10 +61694,10 @@
         "rarity": "Common",
         "resistance": 38,
         "scientific_name": "Araneus mitificus",
-        "size": 1,
+        "size": 0.0075,
         "spawn_tiles": "tall_grass",
         "speed": 55,
-        "weight": 1
+        "weight": 0.00025
     },
     {
         "abilities": "Sniper",
@@ -61719,10 +61719,10 @@
         "rarity": "Uncommon",
         "resistance": 42,
         "scientific_name": "Caerostris darwini",
-        "size": 1,
+        "size": 0.0135,
         "spawn_tiles": "tall_grass",
         "speed": 48,
-        "weight": 1
+        "weight": 0.00045
     },
     {
         "abilities": "Quick Feet",
@@ -61744,10 +61744,10 @@
         "rarity": "Rare",
         "resistance": 48,
         "scientific_name": "Heteropoda maxima",
-        "size": 1,
+        "size": 0.0625,
         "spawn_tiles": "tall_grass",
         "speed": 74,
-        "weight": 1
+        "weight": 0.00325
     },
     {
         "abilities": "Speed Boost",
@@ -61769,10 +61769,10 @@
         "rarity": "Uncommon",
         "resistance": 50,
         "scientific_name": "Heteropoda venatoria",
-        "size": 1,
+        "size": 0.1875,
         "spawn_tiles": "tall_grass",
         "speed": 78,
-        "weight": 1
+        "weight": 0.01125
     },
     {
         "abilities": "Quick Feet",
@@ -61794,10 +61794,10 @@
         "rarity": "Rare",
         "resistance": 46,
         "scientific_name": "Beregama aurea",
-        "size": 1,
+        "size": 0.075,
         "spawn_tiles": "tall_grass",
         "speed": 76,
-        "weight": 1
+        "weight": 0.00275
     },
     {
         "abilities": "Compound Eyes",
@@ -61819,10 +61819,10 @@
         "rarity": "Uncommon",
         "resistance": 45,
         "scientific_name": "Trichonephila clavata",
-        "size": 1,
+        "size": 0.0625,
         "spawn_tiles": "tall_grass",
         "speed": 50,
-        "weight": 1
+        "weight": 0.00075
     },
     {
         "abilities": "Battle Armor",
@@ -61869,10 +61869,10 @@
         "rarity": "Rare",
         "resistance": 58,
         "scientific_name": "Missulena occatoria",
-        "size": 1,
+        "size": 0.021875,
         "spawn_tiles": "tall_grass",
         "speed": 40,
-        "weight": 1
+        "weight": 0.001875
     },
     {
         "abilities": "Fur Coat",
@@ -64319,10 +64319,10 @@
         "rarity": "Uncommon",
         "resistance": 32,
         "scientific_name": "Argyroneta aquatica",
-        "size": 1,
+        "size": 0.00725,
         "spawn_tiles": "tall_grass",
         "speed": 40,
-        "weight": 1
+        "weight": 0.00015
     },
     {
         "abilities": "Shell Armor",
@@ -64394,10 +64394,10 @@
         "rarity": "Uncommon",
         "resistance": 34,
         "scientific_name": "Dolomedes fimbriatus",
-        "size": 1,
+        "size": 0.04375,
         "spawn_tiles": "tall_grass",
         "speed": 44,
-        "weight": 1
+        "weight": 0.00045
     },
     {
         "abilities": "Water Veil, Infiltrator",
@@ -66244,10 +66244,10 @@
         "rarity": "Uncommon",
         "resistance": 40,
         "scientific_name": "Heteropoda venatoria green",
-        "size": 1,
+        "size": 0.05625,
         "spawn_tiles": "tall_grass",
         "speed": 62,
-        "weight": 1
+        "weight": 0.00125
     },
     {
         "abilities": "Limber",
@@ -71019,10 +71019,10 @@
         "rarity": "Epic",
         "resistance": 58,
         "scientific_name": "Sicarius hahni",
-        "size": 1,
+        "size": 0.03125,
         "spawn_tiles": "tall_grass",
         "speed": 35,
-        "weight": 1
+        "weight": 0.001125
     },
     {
         "abilities": "Serene Grace",
