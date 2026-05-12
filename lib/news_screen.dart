@@ -132,7 +132,7 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
   Future<void> _handleRefresh() async {
     setState(() {
       _isRefreshing = true;
-      _refreshSeed += 100; // Shift the random sequence
+      _refreshSeed += (DateTime.now().millisecondsSinceEpoch % 1000) + 1;
     });
     await _loadNews();
     setState(() {

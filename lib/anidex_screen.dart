@@ -805,7 +805,7 @@ class _AnidexScreenState extends State<AnidexScreen>
                     ),
                   ),
                   value: _excludeMythical,
-                  activeColor: AppColors.highlightColor,
+                  activeThumbColor: AppColors.highlightColor,
                   onChanged: (v) => setState(() => _excludeMythical = v),
                 ),
                 const SizedBox(height: 24),

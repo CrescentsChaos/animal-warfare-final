@@ -31,15 +31,35 @@ class _TrainingScreenState extends State<TrainingScreen> {
   Organism? _matchedOrganism;
 
   static const List<String> _classOptions = [
-    'unknown', 'mammal', 'bird', 'fish', 'amphibian', 'reptile',
-    'insect', 'arachnid', 'crustacean', 'mollusk', 'annelid',
-    'cnidarian', 'echinoderm', 'otherInvertebrate'
+    'unknown',
+    'mammal',
+    'bird',
+    'fish',
+    'amphibian',
+    'reptile',
+    'insect',
+    'arachnid',
+    'crustacean',
+    'mollusk',
+    'annelid',
+    'cnidarian',
+    'echinoderm',
+    'otherInvertebrate',
   ];
 
   static const List<String> _dietOptions = [
-    'unknown', 'carnivore', 'herbivore', 'omnivore', 'insectivore',
-    'piscivore', 'scavenger', 'detritivore', 'filter feeder',
-    'nectarivore', 'granivore', 'parasite',
+    'unknown',
+    'carnivore',
+    'herbivore',
+    'omnivore',
+    'insectivore',
+    'piscivore',
+    'scavenger',
+    'detritivore',
+    'filter feeder',
+    'nectarivore',
+    'granivore',
+    'parasite',
   ];
 
   final List<String> _logs = [];
@@ -63,7 +83,9 @@ class _TrainingScreenState extends State<TrainingScreen> {
 
   Future<void> _loadOrganisms() async {
     try {
-      final String response = await rootBundle.loadString('assets/Organisms.json');
+      final String response = await rootBundle.loadString(
+        'assets/Organisms.json',
+      );
       final List<dynamic> data = json.decode(response);
       _organisms = data.map((j) => Organism.fromJson(j)).toList();
       _addLog('Loaded ${_organisms.length} organisms from database.');
@@ -80,15 +102,18 @@ class _TrainingScreenState extends State<TrainingScreen> {
     }
 
     final match = _organisms.cast<Organism?>().firstWhere(
-      (o) => o!.scientificName.toLowerCase() == sciName ||
-             o.name.toLowerCase() == sciName,
+      (o) =>
+          o!.scientificName.toLowerCase() == sciName ||
+          o.name.toLowerCase() == sciName,
       orElse: () => null,
     );
 
     if (match != null && match != _matchedOrganism) {
       setState(() {
         _matchedOrganism = match;
-        _selectedClass = match.animalClass.isNotEmpty ? match.animalClass : 'unknown';
+        _selectedClass = match.animalClass.isNotEmpty
+            ? match.animalClass
+            : 'unknown';
         _selectedDiet = match.diet.isNotEmpty ? match.diet : 'unknown';
         _weightCtrl.text = match.weight.toString();
       });
@@ -128,7 +153,9 @@ class _TrainingScreenState extends State<TrainingScreen> {
 
     _addLog('--- Started Training Batch ---');
     _addLog('Scientific Name: $sciName');
-    _addLog('Class: $_selectedClass | Diet: $_selectedDiet | Weight: ${_weightCtrl.text}kg');
+    _addLog(
+      'Class: $_selectedClass | Diet: $_selectedDiet | Weight: ${_weightCtrl.text}kg',
+    );
     _addLog('Files to process: ${files.length}');
 
     final dbService = FeatureDbService();
@@ -141,11 +168,11 @@ class _TrainingScreenState extends State<TrainingScreen> {
 
     for (var i = 0; i < files.length; i++) {
       final file = files[i];
-      _addLog('Processing [${i+1}/${files.length}]: ${file.name}...');
-      
+      _addLog('Processing [${i + 1}/${files.length}]: ${file.name}...');
+
       try {
         final bytes = await file.readAsBytes();
-        
+
         // Lookup organism name from DB or scientific name
         final existingInDb = await dbService.searchByScientificName(sciName);
         String organismName;
@@ -171,9 +198,10 @@ class _TrainingScreenState extends State<TrainingScreen> {
           weight: weight,
         );
 
-        _addLog('  -> Success! DB updated (class=$_selectedClass, diet=$_selectedDiet, weight=${weight ?? "N/A"}kg).');
+        _addLog(
+          '  -> Success! DB updated (class=$_selectedClass, diet=$_selectedDiet, weight=${weight ?? "N/A"}kg).',
+        );
         successCount++;
-        
       } catch (e) {
         _addLog('  -> FAILED: $e');
         failCount++;
@@ -227,8 +255,8 @@ class _TrainingScreenState extends State<TrainingScreen> {
           await _processFiles(details.files);
         },
         child: Container(
-          color: _isDragging 
-              ? AppColors.primary.withValues(alpha: 0.1) 
+          color: _isDragging
+              ? AppColors.primary.withValues(alpha: 0.1)
               : Colors.transparent,
           padding: const EdgeInsets.all(24.0),
           child: Column(
@@ -236,7 +264,11 @@ class _TrainingScreenState extends State<TrainingScreen> {
             children: [
               Text(
                 'Biometric Feature Trainer',
-                style: AppTextStyles.body(context, baseSize: 18, color: AppColors.highlight),
+                style: AppTextStyles.body(
+                  context,
+                  baseSize: 18,
+                  color: AppColors.highlight,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
@@ -255,7 +287,11 @@ class _TrainingScreenState extends State<TrainingScreen> {
                   labelText: 'Scientific Name (e.g. Panthera tigris)',
                   labelStyle: const TextStyle(color: AppColors.textMuted),
                   suffixIcon: _matchedOrganism != null
-                      ? const Icon(Icons.check_circle, color: AppColors.correctGreen, size: 20)
+                      ? const Icon(
+                          Icons.check_circle,
+                          color: AppColors.correctGreen,
+                          size: 20,
+                        )
                       : null,
                   filled: true,
                   fillColor: AppColors.surface,
@@ -278,7 +314,10 @@ class _TrainingScreenState extends State<TrainingScreen> {
                   padding: const EdgeInsets.only(top: 4, left: 4),
                   child: Text(
                     'Matched: ${_matchedOrganism!.name}',
-                    style: const TextStyle(color: AppColors.correctGreen, fontSize: 11),
+                    style: const TextStyle(
+                      color: AppColors.correctGreen,
+                      fontSize: 11,
+                    ),
                   ),
                 ),
 
@@ -293,7 +332,8 @@ class _TrainingScreenState extends State<TrainingScreen> {
                       label: 'CLASS',
                       value: _selectedClass,
                       items: _classOptions,
-                      onChanged: (v) => setState(() => _selectedClass = v ?? 'unknown'),
+                      onChanged: (v) =>
+                          setState(() => _selectedClass = v ?? 'unknown'),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -303,7 +343,8 @@ class _TrainingScreenState extends State<TrainingScreen> {
                       label: 'DIET',
                       value: _selectedDiet,
                       items: _dietOptions,
-                      onChanged: (v) => setState(() => _selectedDiet = v ?? 'unknown'),
+                      onChanged: (v) =>
+                          setState(() => _selectedDiet = v ?? 'unknown'),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -312,31 +353,55 @@ class _TrainingScreenState extends State<TrainingScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('WEIGHT (KG)', style: TextStyle(color: AppColors.textMuted, fontSize: 10, fontWeight: FontWeight.w600)),
+                        const Text(
+                          'WEIGHT (KG)',
+                          style: TextStyle(
+                            color: AppColors.textMuted,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                         const SizedBox(height: 4),
                         SizedBox(
                           height: 42,
                           child: TextField(
                             controller: _weightCtrl,
-                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                            style: const TextStyle(color: Colors.white, fontSize: 13),
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 13,
+                            ),
                             decoration: InputDecoration(
                               hintText: '0.0',
-                              hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+                              hintStyle: const TextStyle(
+                                color: AppColors.textMuted,
+                                fontSize: 12,
+                              ),
                               filled: true,
                               fillColor: AppColors.surface,
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 10,
+                              ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                borderSide: const BorderSide(color: AppColors.border),
+                                borderSide: const BorderSide(
+                                  color: AppColors.border,
+                                ),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                borderSide: const BorderSide(color: AppColors.border),
+                                borderSide: const BorderSide(
+                                  color: AppColors.border,
+                                ),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                borderSide: const BorderSide(color: AppColors.primary),
+                                borderSide: const BorderSide(
+                                  color: AppColors.primary,
+                                ),
                               ),
                             ),
                           ),
@@ -348,13 +413,13 @@ class _TrainingScreenState extends State<TrainingScreen> {
               ),
 
               const SizedBox(height: 20),
-              
+
               // Drop Zone
               Expanded(
                 flex: 2,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: _isDragging 
+                    color: _isDragging
                         ? AppColors.primary.withValues(alpha: 0.2)
                         : AppColors.surface,
                     borderRadius: BorderRadius.circular(16),
@@ -369,13 +434,19 @@ class _TrainingScreenState extends State<TrainingScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          _isDragging ? Icons.download_rounded : Icons.cloud_upload_rounded,
+                          _isDragging
+                              ? Icons.download_rounded
+                              : Icons.cloud_upload_rounded,
                           size: 64,
-                          color: _isDragging ? AppColors.primary : AppColors.textMuted,
+                          color: _isDragging
+                              ? AppColors.primary
+                              : AppColors.textMuted,
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          _isDragging ? 'Drop images here!' : 'Drag & Drop Images Here',
+                          _isDragging
+                              ? 'Drop images here!'
+                              : 'Drag & Drop Images Here',
                           style: AppTextStyles.body(context, baseSize: 16),
                         ),
                         const SizedBox(height: 16),
@@ -393,9 +464,9 @@ class _TrainingScreenState extends State<TrainingScreen> {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               // Logs Area
               Expanded(
                 flex: 1,
@@ -412,10 +483,14 @@ class _TrainingScreenState extends State<TrainingScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('Process Log', style: AppTextStyles.label(context)),
+                          Text(
+                            'Process Log',
+                            style: AppTextStyles.label(context),
+                          ),
                           if (_isProcessing)
                             const SizedBox(
-                              width: 16, height: 16,
+                              width: 16,
+                              height: 16,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             ),
                         ],
@@ -427,17 +502,21 @@ class _TrainingScreenState extends State<TrainingScreen> {
                           itemCount: _logs.length,
                           itemBuilder: (context, index) {
                             return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 2.0),
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 2.0,
+                              ),
                               child: Text(
                                 _logs[index],
                                 style: TextStyle(
                                   fontFamily: 'monospace',
                                   fontSize: 12,
-                                  color: _logs[index].contains('ERROR') || _logs[index].contains('FAILED')
+                                  color:
+                                      _logs[index].contains('ERROR') ||
+                                          _logs[index].contains('FAILED')
                                       ? AppColors.dangerLight
                                       : _logs[index].contains('Success')
-                                          ? AppColors.correctGreen
-                                          : Colors.white70,
+                                      ? AppColors.correctGreen
+                                      : Colors.white70,
                                 ),
                               ),
                             );
@@ -464,25 +543,39 @@ class _TrainingScreenState extends State<TrainingScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: AppColors.textMuted, fontSize: 10, fontWeight: FontWeight.w600)),
+        Text(
+          label,
+          style: const TextStyle(
+            color: AppColors.textMuted,
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         const SizedBox(height: 4),
         SizedBox(
           height: 42,
           child: DropdownButtonFormField<String>(
-            value: items.contains(value) ? value : items.first,
-            items: items.map((v) => DropdownMenuItem(
-              value: v,
-              child: Text(
-                v.toUpperCase(),
-                style: const TextStyle(color: Colors.white, fontSize: 12),
-              ),
-            )).toList(),
+            initialValue: items.contains(value) ? value : items.first,
+            items: items
+                .map(
+                  (v) => DropdownMenuItem(
+                    value: v,
+                    child: Text(
+                      v.toUpperCase(),
+                      style: const TextStyle(color: Colors.white, fontSize: 12),
+                    ),
+                  ),
+                )
+                .toList(),
             onChanged: onChanged,
             dropdownColor: AppColors.surface,
             decoration: InputDecoration(
               filled: true,
               fillColor: AppColors.surface,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 8,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: const BorderSide(color: AppColors.border),

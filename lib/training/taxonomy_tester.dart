@@ -306,7 +306,9 @@ Map<String, double> _extractFeatures(img.Image resized, List<bool> mask) {
       if (mask[y * resized.width + x]) bottomPixels++;
     }
   }
-  f['bottomHeavyBias'] = objectPixelCount > 0 ? bottomPixels / objectPixelCount : 0.0;
+  f['bottomHeavyBias'] = objectPixelCount > 0
+      ? bottomPixels / objectPixelCount
+      : 0.0;
 
   int corePixels = 0;
   final int coreMinX = minX + ((maxX - minX) * 0.25).toInt();
@@ -318,7 +320,10 @@ Map<String, double> _extractFeatures(img.Image resized, List<bool> mask) {
       if (mask[y * resized.width + x]) corePixels++;
     }
   }
-  final double coreArea = max(1, (coreMaxX - coreMinX + 1) * (coreMaxY - coreMinY + 1)).toDouble();
+  final double coreArea = max(
+    1,
+    (coreMaxX - coreMinX + 1) * (coreMaxY - coreMinY + 1),
+  ).toDouble();
   f['coreSolidity'] = corePixels / coreArea;
 
   // NEW: Max Width Row Bias
@@ -349,7 +354,9 @@ Map<String, double> _extractFeatures(img.Image resized, List<bool> mask) {
       maxColX = x;
     }
   }
-  final double colXNorm = (maxX > minX) ? (maxColX - minX) / (maxX - minX) : 0.5;
+  final double colXNorm = (maxX > minX)
+      ? (maxColX - minX) / (maxX - minX)
+      : 0.5;
   f['maxHeightColBias'] = (colXNorm - 0.5).abs() * 2.0;
 
   // NEW: Bottom Center Density
@@ -363,7 +370,10 @@ Map<String, double> _extractFeatures(img.Image resized, List<bool> mask) {
       if (mask[y * resized.width + x]) bcPixels++;
     }
   }
-  final double bcArea = max(1, (bcMaxX - bcMinX + 1) * (bcMaxY - bcMinY + 1)).toDouble();
+  final double bcArea = max(
+    1,
+    (bcMaxX - bcMinX + 1) * (bcMaxY - bcMinY + 1),
+  ).toDouble();
   f['bottomCenterDensity'] = bcPixels / bcArea;
 
   // NEW: Corner Density
@@ -399,8 +409,8 @@ Map<String, double> _extractFeatures(img.Image resized, List<bool> mask) {
       double nx = (x - minX) / boxW;
       double ny = (y - minY) / boxH;
       if ((nx - ny).abs() < 0.1 || (nx - (1 - ny)).abs() < 0.1) {
-         diagArea++;
-         if (mask[y * resized.width + x]) diagPixels++;
+        diagArea++;
+        if (mask[y * resized.width + x]) diagPixels++;
       }
     }
   }
@@ -420,8 +430,9 @@ Map<String, double> _extractFeatures(img.Image resized, List<bool> mask) {
       if (mask[y * resized.width + x]) lqRight++;
     }
   }
-  f['lowerQuadrantSymmetry'] = (lqLeft + lqRight) > 0 ? 
-    min(lqLeft, lqRight) / max(lqLeft, lqRight) : 0.0;
+  f['lowerQuadrantSymmetry'] = (lqLeft + lqRight) > 0
+      ? min(lqLeft, lqRight) / max(lqLeft, lqRight)
+      : 0.0;
 
   // NEW: Horizontal Centroid Shift
   int totalX = 0;
@@ -432,12 +443,18 @@ Map<String, double> _extractFeatures(img.Image resized, List<bool> mask) {
       }
     }
   }
-  final double centroidX = objectPixelCount > 0 ? totalX / objectPixelCount : lqMidX.toDouble();
-  f['horizontalCentroidShift'] = (maxX > minX) ? (centroidX - minX) / (maxX - minX) : 0.5;
+  final double centroidX = objectPixelCount > 0
+      ? totalX / objectPixelCount
+      : lqMidX.toDouble();
+  f['horizontalCentroidShift'] = (maxX > minX)
+      ? (centroidX - minX) / (maxX - minX)
+      : 0.5;
 
   // NEW: Convex Hull Ratio (Proxy using diamond area)
   final double diamondArea = (maxX - minX + 1) * (maxY - minY + 1) / 2.0;
-  f['convexHullRatio'] = diamondArea > 0 ? (objectPixelCount / diamondArea).clamp(0.0, 1.0) : 0.0;
+  f['convexHullRatio'] = diamondArea > 0
+      ? (objectPixelCount / diamondArea).clamp(0.0, 1.0)
+      : 0.0;
 
   // NEW: Vertical Mass Distribution
   int edgeMass = 0;
@@ -450,16 +467,18 @@ Map<String, double> _extractFeatures(img.Image resized, List<bool> mask) {
       }
     }
   }
-  f['verticalMassDistribution'] = objectPixelCount > 0 ? edgeMass / objectPixelCount : 0.0;
+  f['verticalMassDistribution'] = objectPixelCount > 0
+      ? edgeMass / objectPixelCount
+      : 0.0;
 
   // NEW: Color Granularity
   final Set<int> uniqueColors = {};
   for (int y = minY; y <= maxY; y++) {
     for (int x = minX; x <= maxX; x++) {
       if (mask[y * resized.width + x]) {
-         final p = resized.getPixel(x, y);
-         int qColor = ((p.r ~/ 16) << 16) | ((p.g ~/ 16) << 8) | (p.b ~/ 16);
-         uniqueColors.add(qColor);
+        final p = resized.getPixel(x, y);
+        int qColor = ((p.r ~/ 16) << 16) | ((p.g ~/ 16) << 8) | (p.b ~/ 16);
+        uniqueColors.add(qColor);
       }
     }
   }
@@ -470,15 +489,22 @@ Map<String, double> _extractFeatures(img.Image resized, List<bool> mask) {
   for (int y = minY; y <= maxY; y++) {
     for (int x = minX; x <= maxX; x++) {
       if (mask[y * resized.width + x]) {
-        if (x == minX || x == maxX || y == minY || y == maxY ||
-            !mask[(y - 1) * resized.width + x] || !mask[(y + 1) * resized.width + x] ||
-            !mask[y * resized.width + (x - 1)] || !mask[y * resized.width + (x + 1)]) {
+        if (x == minX ||
+            x == maxX ||
+            y == minY ||
+            y == maxY ||
+            !mask[(y - 1) * resized.width + x] ||
+            !mask[(y + 1) * resized.width + x] ||
+            !mask[y * resized.width + (x - 1)] ||
+            !mask[y * resized.width + (x + 1)]) {
           fringePixels++;
         }
       }
     }
   }
-  f['fringeDensity'] = objectPixelCount > 0 ? fringePixels / objectPixelCount : 0.0;
+  f['fringeDensity'] = objectPixelCount > 0
+      ? fringePixels / objectPixelCount
+      : 0.0;
 
   // NEW: Vertical Thinning & Width Variance
   int minRowWidth = maxX - minX + 1;
@@ -488,7 +514,7 @@ Map<String, double> _extractFeatures(img.Image resized, List<bool> mask) {
   for (int y = minY; y <= maxY; y++) {
     int rowW = 0;
     for (int x = minX; x <= maxX; x++) {
-       if (mask[y * resized.width + x]) rowW++;
+      if (mask[y * resized.width + x]) rowW++;
     }
     if (rowW > 0) {
       if (rowW < minRowWidth) minRowWidth = rowW;
@@ -502,7 +528,9 @@ Map<String, double> _extractFeatures(img.Image resized, List<bool> mask) {
   if (rowWidths.isNotEmpty && maxRowWidth > 0) {
     double avgRow = totalRowWidth / rowWidths.length;
     double varSum = 0;
-    for (int w in rowWidths) varSum += (w - avgRow).abs();
+    for (int w in rowWidths) {
+      varSum += (w - avgRow).abs();
+    }
     widthVariance = (varSum / rowWidths.length) / maxRowWidth;
   }
   f['widthVariance'] = widthVariance;
@@ -517,10 +545,10 @@ Map<String, double> _extractFeatures(img.Image resized, List<bool> mask) {
     int slLeft = 0, slRight = 0;
     for (int y = sMinY; y <= sMaxY; y++) {
       for (int x = minX; x < lqMidX; x++) {
-         if (mask[y * resized.width + x]) slLeft++;
+        if (mask[y * resized.width + x]) slLeft++;
       }
       for (int x = lqMidX; x <= maxX; x++) {
-         if (mask[y * resized.width + x]) slRight++;
+        if (mask[y * resized.width + x]) slRight++;
       }
     }
     if (slLeft + slRight > 0) {
@@ -537,16 +565,20 @@ Map<String, double> _extractFeatures(img.Image resized, List<bool> mask) {
         final p = resized.getPixel(x, y);
         int qc = ((p.r ~/ 32) << 16) | ((p.g ~/ 32) << 8) | (p.b ~/ 32);
         if (mask[(y - 1) * resized.width + x]) {
-           final pt = resized.getPixel(x, y - 1);
-           if (qc == (((pt.r ~/ 32) << 16) | ((pt.g ~/ 32) << 8) | (pt.b ~/ 32))) clusteredPixels++;
+          final pt = resized.getPixel(x, y - 1);
+          if (qc == (((pt.r ~/ 32) << 16) | ((pt.g ~/ 32) << 8) | (pt.b ~/ 32)))
+            clusteredPixels++;
         } else if (mask[y * resized.width + x - 1]) {
-           final pl = resized.getPixel(x - 1, y);
-           if (qc == (((pl.r ~/ 32) << 16) | ((pl.g ~/ 32) << 8) | (pl.b ~/ 32))) clusteredPixels++;
+          final pl = resized.getPixel(x - 1, y);
+          if (qc == (((pl.r ~/ 32) << 16) | ((pl.g ~/ 32) << 8) | (pl.b ~/ 32)))
+            clusteredPixels++;
         }
       }
     }
   }
-  f['colorClustering'] = objectPixelCount > 0 ? clusteredPixels / objectPixelCount : 0.0;
+  f['colorClustering'] = objectPixelCount > 0
+      ? clusteredPixels / objectPixelCount
+      : 0.0;
 
   // NEW: Y Gradient (Vertical Centroid)
   int totalY = 0;
@@ -555,7 +587,9 @@ Map<String, double> _extractFeatures(img.Image resized, List<bool> mask) {
       if (mask[y * resized.width + x]) totalY += y;
     }
   }
-  final double centroidY = objectPixelCount > 0 ? totalY / objectPixelCount : lqMidY.toDouble();
+  final double centroidY = objectPixelCount > 0
+      ? totalY / objectPixelCount
+      : lqMidY.toDouble();
   f['yGradient'] = (maxY > minY) ? (centroidY - minY) / (maxY - minY) : 0.5;
 
   // NEW: Shell Index (Pixels within 15% of bounding box edge)
@@ -565,23 +599,31 @@ Map<String, double> _extractFeatures(img.Image resized, List<bool> mask) {
   for (int y = minY; y <= maxY; y++) {
     for (int x = minX; x <= maxX; x++) {
       if (mask[y * resized.width + x]) {
-         if (x <= minX + shEdgeX || x >= maxX - shEdgeX || y <= minY + shEdgeY || y >= maxY - shEdgeY) {
-           shellPixels++;
-         }
+        if (x <= minX + shEdgeX ||
+            x >= maxX - shEdgeX ||
+            y <= minY + shEdgeY ||
+            y >= maxY - shEdgeY) {
+          shellPixels++;
+        }
       }
     }
   }
   f['shellIndex'] = objectPixelCount > 0 ? shellPixels / objectPixelCount : 0.0;
 
   // NEW: Radial Overlap (Ellipse Area)
-  final double ellipseArea = pi * ((maxX - minX + 1) / 2.0) * ((maxY - minY + 1) / 2.0);
-  f['radialOverlap'] = ellipseArea > 0 ? (objectPixelCount / ellipseArea).clamp(0.0, 1.0) : 0.0;
+  final double ellipseArea =
+      pi * ((maxX - minX + 1) / 2.0) * ((maxY - minY + 1) / 2.0);
+  f['radialOverlap'] = ellipseArea > 0
+      ? (objectPixelCount / ellipseArea).clamp(0.0, 1.0)
+      : 0.0;
 
   // NEW: yCentroid (Absolute normalized vertical center of mass)
   f['yCentroid'] = objectPixelCount > 0 ? centroidY / resized.height : 0.5;
 
   // NEW: Jaggedness (Perimeter proxy)
-  f['jaggedness'] = objectPixelCount > 0 ? fringePixels / sqrt(objectPixelCount) : 0.0;
+  f['jaggedness'] = objectPixelCount > 0
+      ? fringePixels / sqrt(objectPixelCount)
+      : 0.0;
 
   // NEW: Top Third Density
   int topThirdPixels = 0;
@@ -591,7 +633,9 @@ Map<String, double> _extractFeatures(img.Image resized, List<bool> mask) {
       if (mask[y * resized.width + x]) topThirdPixels++;
     }
   }
-  f['topThirdDensity'] = objectPixelCount > 0 ? topThirdPixels / objectPixelCount : 0.0;
+  f['topThirdDensity'] = objectPixelCount > 0
+      ? topThirdPixels / objectPixelCount
+      : 0.0;
 
   // NEW: Bilateral Symmetry (Point-by-point matching)
   int matchedSymmetryPixels = 0;
@@ -601,14 +645,16 @@ Map<String, double> _extractFeatures(img.Image resized, List<bool> mask) {
       int oppositeX = maxX - (x - minX);
       if (oppositeX >= 0 && oppositeX < resized.width) {
         totalSymmetryCheck++;
-        if (mask[y * resized.width + x] == mask[y * resized.width + oppositeX]) {
+        if (mask[y * resized.width + x] ==
+            mask[y * resized.width + oppositeX]) {
           matchedSymmetryPixels++;
         }
       }
     }
   }
-  f['bilateralSym'] = totalSymmetryCheck > 0 ? matchedSymmetryPixels / totalSymmetryCheck : 0.0;
-
+  f['bilateralSym'] = totalSymmetryCheck > 0
+      ? matchedSymmetryPixels / totalSymmetryCheck
+      : 0.0;
 
   int significantBins = 0;
   hueBins.forEach((key, val) {
@@ -676,9 +722,9 @@ List<double> _rgbToHsv(int r, int g, int b) {
   final d = maxV - minV;
   double h = 0;
   if (d != 0) {
-    if (maxV == rf)
+    if (maxV == rf) {
       h = (gf - bf) / d + (gf < bf ? 6 : 0);
-    else if (maxV == gf)
+    } else if (maxV == gf)
       h = (bf - rf) / d + 2;
     else
       h = (rf - gf) / d + 4;

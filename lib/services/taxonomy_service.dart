@@ -84,8 +84,10 @@ class TaxonomyService {
       source = 'none';
     }
 
-    debugPrint('TaxonomyService: AI=${aiClass.name}(${(aiConfidence * 100).toStringAsFixed(0)}%) '
-        'Heuristic=${heuristicClass.name} → Final=${finalClass.name} via $source');
+    debugPrint(
+      'TaxonomyService: AI=${aiClass.name}(${(aiConfidence * 100).toStringAsFixed(0)}%) '
+      'Heuristic=${heuristicClass.name} → Final=${finalClass.name} via $source',
+    );
 
     return {
       'class': finalClass,
@@ -97,7 +99,9 @@ class TaxonomyService {
   }
 
   Future<Map<String, dynamic>?> _queryINaturalist(Uint8List imageBytes) async {
-    final url = Uri.parse('https://api.inaturalist.org/v1/computervision/score');
+    final url = Uri.parse(
+      'https://api.inaturalist.org/v1/computervision/score',
+    );
 
     Uint8List uploadBytes = imageBytes;
     try {
@@ -147,16 +151,26 @@ class TaxonomyService {
 
   AnimalClass _mapIconicTaxonToClass(String? iconic) {
     switch (iconic) {
-      case 'mammalia': return AnimalClass.mammal;
-      case 'aves': return AnimalClass.bird;
-      case 'actinopterygii': return AnimalClass.fish;
-      case 'amphibia': return AnimalClass.amphibian;
-      case 'reptilia': return AnimalClass.reptile;
-      case 'insecta': return AnimalClass.insect;
-      case 'arachnida': return AnimalClass.arachnid;
-      case 'mollusca': return AnimalClass.mollusk;
-      case 'crustacea': return AnimalClass.crustacean;
-      default: return AnimalClass.unknown;
+      case 'mammalia':
+        return AnimalClass.mammal;
+      case 'aves':
+        return AnimalClass.bird;
+      case 'actinopterygii':
+        return AnimalClass.fish;
+      case 'amphibia':
+        return AnimalClass.amphibian;
+      case 'reptilia':
+        return AnimalClass.reptile;
+      case 'insecta':
+        return AnimalClass.insect;
+      case 'arachnida':
+        return AnimalClass.arachnid;
+      case 'mollusca':
+        return AnimalClass.mollusk;
+      case 'crustacea':
+        return AnimalClass.crustacean;
+      default:
+        return AnimalClass.unknown;
     }
   }
 
@@ -174,7 +188,8 @@ class TaxonomyService {
       final solidity = _calculateSolidity(decoded);
 
       // --- TAXONOMIC SCORING ENGINE ---
-      bool isEarthTone = (dominantHue >= 10 && dominantHue <= 60 && avgSaturation > 0.15);
+      bool isEarthTone =
+          (dominantHue >= 10 && dominantHue <= 60 && avgSaturation > 0.15);
       bool isAchromatic = (avgSaturation < 0.15);
 
       // MAMMAL SCORE
@@ -189,22 +204,29 @@ class TaxonomyService {
 
       // FISH SCORE
       bool isAquaticTone = (dominantHue > 165 && dominantHue < 255);
-      if (aspect > 1.3 && isAquaticTone && verticalBias < 0.45) return AnimalClass.fish;
-      if (aspect > 1.4 && !hasLegGaps && verticalBias < 0.4) return AnimalClass.fish;
+      if (aspect > 1.3 && isAquaticTone && verticalBias < 0.45)
+        return AnimalClass.fish;
+      if (aspect > 1.4 && !hasLegGaps && verticalBias < 0.4)
+        return AnimalClass.fish;
 
       // BIRD
       if (aspect < 1.0 && verticalBias > 0.6) return AnimalClass.bird;
 
       // INSECT (Strictly low solidity)
-      if (solidity < 0.4 && aspect > 0.5 && aspect < 2.5 && !hasLegGaps) return AnimalClass.insect;
+      if (solidity < 0.4 && aspect > 0.5 && aspect < 2.5 && !hasLegGaps)
+        return AnimalClass.insect;
 
       // REPTILE/AMPHIBIAN
-      if (aspect > 1.4 && (dominantHue > 45 && dominantHue < 100) && verticalBias < 0.4) return AnimalClass.reptile;
+      if (aspect > 1.4 &&
+          (dominantHue > 45 && dominantHue < 100) &&
+          verticalBias < 0.4)
+        return AnimalClass.reptile;
       if (aspect > 2.5 && !hasLegGaps) return AnimalClass.reptile;
 
       // FALLBACKS
       if (isEarthTone || isAchromatic) return AnimalClass.mammal;
-      if (solidity > 0.8 && aspect > 0.8 && aspect < 1.4) return AnimalClass.mollusk;
+      if (solidity > 0.8 && aspect > 0.8 && aspect < 1.4)
+        return AnimalClass.mollusk;
 
       return AnimalClass.unknown;
     } catch (_) {
@@ -233,7 +255,10 @@ class TaxonomyService {
       count++;
     }
     if (count == 0) return (hue: 0, saturation: 0);
-    final domHue = hueCounts.entries.reduce((a, b) => a.value > b.value ? a : b).key.toDouble();
+    final domHue = hueCounts.entries
+        .reduce((a, b) => a.value > b.value ? a : b)
+        .key
+        .toDouble();
     return (hue: domHue, saturation: totalSat / count);
   }
 
@@ -278,9 +303,12 @@ class TaxonomyService {
     double d = maxV - minV;
     double h = 0;
     if (d != 0) {
-      if (maxV == rf) h = (gf - bf) / d + (gf < bf ? 6 : 0);
-      else if (maxV == gf) h = (bf - rf) / d + 2;
-      else h = (rf - gf) / d + 4;
+      if (maxV == rf) {
+        h = (gf - bf) / d + (gf < bf ? 6 : 0);
+      } else if (maxV == gf)
+        h = (bf - rf) / d + 2;
+      else
+        h = (rf - gf) / d + 4;
       h /= 6;
     }
     return [h * 360, maxV == 0 ? 0 : d / maxV, maxV];
@@ -288,36 +316,61 @@ class TaxonomyService {
 
   String _predictDiet(AnimalClass cls, Uint8List bytes) {
     switch (cls) {
-      case AnimalClass.mammal: return 'omnivore';
-      case AnimalClass.bird: return 'omnivore';
-      case AnimalClass.fish: return 'carnivore';
-      case AnimalClass.reptile: return 'carnivore';
-      case AnimalClass.insect: return 'herbivore';
-      case AnimalClass.arachnid: return 'carnivore';
-      case AnimalClass.crustacean: return 'omnivore';
-      case AnimalClass.mollusk: return 'herbivore';
-      case AnimalClass.cnidarian: return 'carnivore';
-      case AnimalClass.echinoderm: return 'detritivore';
-      case AnimalClass.annelid: return 'detritivore';
-      default: return 'unknown';
+      case AnimalClass.mammal:
+        return 'omnivore';
+      case AnimalClass.bird:
+        return 'omnivore';
+      case AnimalClass.fish:
+        return 'carnivore';
+      case AnimalClass.reptile:
+        return 'carnivore';
+      case AnimalClass.insect:
+        return 'herbivore';
+      case AnimalClass.arachnid:
+        return 'carnivore';
+      case AnimalClass.crustacean:
+        return 'omnivore';
+      case AnimalClass.mollusk:
+        return 'herbivore';
+      case AnimalClass.cnidarian:
+        return 'carnivore';
+      case AnimalClass.echinoderm:
+        return 'detritivore';
+      case AnimalClass.annelid:
+        return 'detritivore';
+      default:
+        return 'unknown';
     }
   }
 
   double _predictTypicalWeight(AnimalClass cls) {
     switch (cls) {
-      case AnimalClass.mammal: return 25.0;
-      case AnimalClass.bird: return 1.5;
-      case AnimalClass.fish: return 5.0;
-      case AnimalClass.reptile: return 2.0;
-      case AnimalClass.amphibian: return 0.2;
-      case AnimalClass.insect: return 0.01;
-      case AnimalClass.arachnid: return 0.02;
-      case AnimalClass.crustacean: return 0.5;
-      case AnimalClass.mollusk: return 0.1;
-      case AnimalClass.cnidarian: return 1.0;
-      case AnimalClass.echinoderm: return 0.2;
-      case AnimalClass.annelid: return 0.05;
-      default: return 0.0;
+      case AnimalClass.mammal:
+        return 25.0;
+      case AnimalClass.bird:
+        return 1.5;
+      case AnimalClass.fish:
+        return 5.0;
+      case AnimalClass.reptile:
+        return 2.0;
+      case AnimalClass.amphibian:
+        return 0.2;
+      case AnimalClass.insect:
+        return 0.01;
+      case AnimalClass.arachnid:
+        return 0.02;
+      case AnimalClass.crustacean:
+        return 0.5;
+      case AnimalClass.mollusk:
+        return 0.1;
+      case AnimalClass.cnidarian:
+        return 1.0;
+      case AnimalClass.echinoderm:
+        return 0.2;
+      case AnimalClass.annelid:
+        return 0.05;
+      default:
+        return 0.0;
     }
   }
 }

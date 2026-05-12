@@ -1,7 +1,5 @@
-import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:animal_warfare/models/organism.dart';
 import 'package:animal_warfare/services/biometric_service.dart';
 import 'package:animal_warfare/services/feature_db_service.dart';
@@ -50,7 +48,7 @@ class TaxonomyEngine {
     try {
       final dbService = FeatureDbService();
       await dbService.initialize();
-      
+
       final profilesData = await dbService.getAllTaxonomyProfiles();
       _profiles = {};
       _totalSamples = 0;
@@ -74,7 +72,7 @@ class TaxonomyEngine {
             (e) => e.name == clsName,
             orElse: () => AnimalClass.unknown,
           );
-          
+
           if (cls != AnimalClass.unknown) {
             final profile = TaxonomicProfile(
               animalClass: cls,
@@ -89,7 +87,9 @@ class TaxonomyEngine {
       }
 
       _isInitialized = true;
-      debugPrint('TaxonomyEngine: Loaded ${_profiles!.length} class profiles ($_totalSamples total samples)');
+      debugPrint(
+        'TaxonomyEngine: Loaded ${_profiles!.length} class profiles ($_totalSamples total samples)',
+      );
     } catch (e) {
       debugPrint('TaxonomyEngine init error: $e');
     }
@@ -125,11 +125,6 @@ class TaxonomyEngine {
     'colorGranularity': 0.0,
   };
 
-
-
-
-
-
   /// Classifies a subject using Gaussian Mixture Model log-likelihood.
   Map<String, dynamic> classify(OrganismFeature feature) {
     if (!_isInitialized || _profiles == null || _profiles!.isEmpty) {
@@ -150,7 +145,7 @@ class TaxonomyEngine {
           double val = _getFeatureValue(feature, key);
           double mean = profile.featureMeans[key] ?? 0.0;
           double variance = profile.featureVariances[key] ?? 0.05;
-          
+
           // Standardize using global stats
           if (_globalMeans != null && _globalStdDevs != null) {
             double gMean = _globalMeans![key] ?? 0.5;
@@ -178,7 +173,7 @@ class TaxonomyEngine {
 
     AnimalClass bestClass = AnimalClass.unknown;
     double bestLogLikelihood = double.negativeInfinity;
-    
+
     classScores.forEach((cls, score) {
       if (score > bestLogLikelihood) {
         bestLogLikelihood = score;
@@ -195,9 +190,12 @@ class TaxonomyEngine {
     posteriors.forEach((cls, s) {
       sumExp += exp((s - maxScore) / temperature);
     });
-    double confidence = exp((bestLogLikelihood - maxScore) / temperature) / sumExp;
+    double confidence =
+        exp((bestLogLikelihood - maxScore) / temperature) / sumExp;
 
-    debugPrint('TaxonomyEngine: Distance-based classification: ${bestClass.name} (${(confidence * 100).toStringAsFixed(1)}%)');
+    debugPrint(
+      'TaxonomyEngine: Distance-based classification: ${bestClass.name} (${(confidence * 100).toStringAsFixed(1)}%)',
+    );
 
     return {
       'class': bestClass,
@@ -208,44 +206,82 @@ class TaxonomyEngine {
 
   double _getFeatureValue(OrganismFeature f, String key) {
     switch (key) {
-      case 'aspectRatio': return f.aspectRatio;
-      case 'solidity': return f.solidity;
-      case 'avgBrightness': return f.avgBrightness;
-      case 'avgSaturation': return f.avgSaturation;
-      case 'edgeDensity': return f.edgeDensity;
-      case 'vSymmetry': return f.verticalSymmetry;
-      case 'hSymmetry': return f.horizontalSymmetry;
-      case 'verticalBias': return f.verticalBias;
-      case 'topHeavyBias': return f.topHeavyBias;
-      case 'hueComplexity': return f.hueComplexity;
-      case 'compactness': return f.compactness;
-      case 'limbDensity': return f.limbDensity;
-      case 'directionalEdgeBias': return f.directionalEdgeBias;
-      case 'coreSolidity': return f.coreSolidity;
-      case 'bottomHeavyBias': return f.bottomHeavyBias;
-      case 'maxWidthRowBias': return f.maxWidthRowBias;
-      case 'maxHeightColBias': return f.maxHeightColBias;
-      case 'bottomCenterDensity': return f.bottomCenterDensity;
-      case 'cornerDensity': return f.cornerDensity;
-      case 'diagonalDensity': return f.diagonalDensity;
-      case 'lowerQuadrantSymmetry': return f.lowerQuadrantSymmetry;
-      case 'horizontalCentroidShift': return f.horizontalCentroidShift;
-      case 'convexHullRatio': return f.convexHullRatio;
-      case 'verticalMassDistribution': return f.verticalMassDistribution;
-      case 'colorGranularity': return f.colorGranularity;
-      case 'fringeDensity': return f.fringeDensity;
-      case 'verticalThinning': return f.verticalThinning;
-      case 'localSymmetry': return f.localSymmetry;
-      case 'colorClustering': return f.colorClustering;
-      case 'yGradient': return f.yGradient;
-      case 'widthVariance': return f.widthVariance;
-      case 'shellIndex': return f.shellIndex;
-      case 'radialOverlap': return f.radialOverlap;
-      case 'yCentroid': return f.yCentroid;
-      case 'jaggedness': return f.jaggedness;
-      case 'topThirdDensity': return f.topThirdDensity;
-      case 'bilateralSym': return f.bilateralSym;
-      default: return 0.5;
+      case 'aspectRatio':
+        return f.aspectRatio;
+      case 'solidity':
+        return f.solidity;
+      case 'avgBrightness':
+        return f.avgBrightness;
+      case 'avgSaturation':
+        return f.avgSaturation;
+      case 'edgeDensity':
+        return f.edgeDensity;
+      case 'vSymmetry':
+        return f.verticalSymmetry;
+      case 'hSymmetry':
+        return f.horizontalSymmetry;
+      case 'verticalBias':
+        return f.verticalBias;
+      case 'topHeavyBias':
+        return f.topHeavyBias;
+      case 'hueComplexity':
+        return f.hueComplexity;
+      case 'compactness':
+        return f.compactness;
+      case 'limbDensity':
+        return f.limbDensity;
+      case 'directionalEdgeBias':
+        return f.directionalEdgeBias;
+      case 'coreSolidity':
+        return f.coreSolidity;
+      case 'bottomHeavyBias':
+        return f.bottomHeavyBias;
+      case 'maxWidthRowBias':
+        return f.maxWidthRowBias;
+      case 'maxHeightColBias':
+        return f.maxHeightColBias;
+      case 'bottomCenterDensity':
+        return f.bottomCenterDensity;
+      case 'cornerDensity':
+        return f.cornerDensity;
+      case 'diagonalDensity':
+        return f.diagonalDensity;
+      case 'lowerQuadrantSymmetry':
+        return f.lowerQuadrantSymmetry;
+      case 'horizontalCentroidShift':
+        return f.horizontalCentroidShift;
+      case 'convexHullRatio':
+        return f.convexHullRatio;
+      case 'verticalMassDistribution':
+        return f.verticalMassDistribution;
+      case 'colorGranularity':
+        return f.colorGranularity;
+      case 'fringeDensity':
+        return f.fringeDensity;
+      case 'verticalThinning':
+        return f.verticalThinning;
+      case 'localSymmetry':
+        return f.localSymmetry;
+      case 'colorClustering':
+        return f.colorClustering;
+      case 'yGradient':
+        return f.yGradient;
+      case 'widthVariance':
+        return f.widthVariance;
+      case 'shellIndex':
+        return f.shellIndex;
+      case 'radialOverlap':
+        return f.radialOverlap;
+      case 'yCentroid':
+        return f.yCentroid;
+      case 'jaggedness':
+        return f.jaggedness;
+      case 'topThirdDensity':
+        return f.topThirdDensity;
+      case 'bilateralSym':
+        return f.bilateralSym;
+      default:
+        return 0.5;
     }
   }
 }

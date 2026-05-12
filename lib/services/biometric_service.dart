@@ -211,18 +211,23 @@ class OrganismFeature {
       hueComplexity: (json['hueComplexity'] as num?)?.toDouble() ?? 0.0,
       compactness: (json['compactness'] as num?)?.toDouble() ?? 1.0,
       limbDensity: (json['limbDensity'] as num?)?.toDouble() ?? 0.0,
-      directionalEdgeBias: (json['directionalEdgeBias'] as num?)?.toDouble() ?? 0.0,
+      directionalEdgeBias:
+          (json['directionalEdgeBias'] as num?)?.toDouble() ?? 0.0,
       coreSolidity: (json['coreSolidity'] as num?)?.toDouble() ?? 0.0,
       bottomHeavyBias: (json['bottomHeavyBias'] as num?)?.toDouble() ?? 0.0,
       maxWidthRowBias: (json['maxWidthRowBias'] as num?)?.toDouble() ?? 0.0,
       maxHeightColBias: (json['maxHeightColBias'] as num?)?.toDouble() ?? 0.0,
-      bottomCenterDensity: (json['bottomCenterDensity'] as num?)?.toDouble() ?? 0.0,
+      bottomCenterDensity:
+          (json['bottomCenterDensity'] as num?)?.toDouble() ?? 0.0,
       cornerDensity: (json['cornerDensity'] as num?)?.toDouble() ?? 0.0,
       diagonalDensity: (json['diagonalDensity'] as num?)?.toDouble() ?? 0.0,
-      lowerQuadrantSymmetry: (json['lowerQuadrantSymmetry'] as num?)?.toDouble() ?? 0.0,
-      horizontalCentroidShift: (json['horizontalCentroidShift'] as num?)?.toDouble() ?? 0.0,
+      lowerQuadrantSymmetry:
+          (json['lowerQuadrantSymmetry'] as num?)?.toDouble() ?? 0.0,
+      horizontalCentroidShift:
+          (json['horizontalCentroidShift'] as num?)?.toDouble() ?? 0.0,
       convexHullRatio: (json['convexHullRatio'] as num?)?.toDouble() ?? 0.0,
-      verticalMassDistribution: (json['verticalMassDistribution'] as num?)?.toDouble() ?? 0.0,
+      verticalMassDistribution:
+          (json['verticalMassDistribution'] as num?)?.toDouble() ?? 0.0,
       colorGranularity: (json['colorGranularity'] as num?)?.toDouble() ?? 0.0,
       fringeDensity: (json['fringeDensity'] as num?)?.toDouble() ?? 0.0,
       verticalThinning: (json['verticalThinning'] as num?)?.toDouble() ?? 0.0,
@@ -631,11 +636,16 @@ class BiometricService {
         if (mask[y * resized.width + x]) corePixels++;
       }
     }
-    final double coreArea = max(1, (coreMaxX - coreMinX + 1) * (coreMaxY - coreMinY + 1)).toDouble();
+    final double coreArea = max(
+      1,
+      (coreMaxX - coreMinX + 1) * (coreMaxY - coreMinY + 1),
+    ).toDouble();
     final double coreSolidity = corePixels / coreArea;
 
     // NEW: Bottom Heavy Bias
-    final double bottomHeavyBias = objectPixelCount > 0 ? bottomHalf / objectPixelCount : 0.0;
+    final double bottomHeavyBias = objectPixelCount > 0
+        ? bottomHalf / objectPixelCount
+        : 0.0;
 
     // NEW: Max Width Row Bias
     int maxRowPixels = -1;
@@ -650,7 +660,9 @@ class BiometricService {
         maxRowY = y;
       }
     }
-    final double maxWidthRowBias = (maxY > minY) ? (maxRowY - minY) / (maxY - minY) : 0.5;
+    final double maxWidthRowBias = (maxY > minY)
+        ? (maxRowY - minY) / (maxY - minY)
+        : 0.5;
 
     // NEW: Max Height Col Bias
     int maxColPixels = -1;
@@ -665,7 +677,9 @@ class BiometricService {
         maxColX = x;
       }
     }
-    final double colXNorm = (maxX > minX) ? (maxColX - minX) / (maxX - minX) : 0.5;
+    final double colXNorm = (maxX > minX)
+        ? (maxColX - minX) / (maxX - minX)
+        : 0.5;
     final double maxHeightColBias = (colXNorm - 0.5).abs() * 2.0;
 
     // NEW: Bottom Center Density
@@ -679,7 +693,10 @@ class BiometricService {
         if (mask[y * resized.width + x]) bcPixels++;
       }
     }
-    final double bcArea = max(1, (bcMaxX - bcMinX + 1) * (bcMaxY - bcMinY + 1)).toDouble();
+    final double bcArea = max(
+      1,
+      (bcMaxX - bcMinX + 1) * (bcMaxY - bcMinY + 1),
+    ).toDouble();
     final double bottomCenterDensity = bcPixels / bcArea;
 
     // NEW: Corner Density
@@ -715,8 +732,8 @@ class BiometricService {
         double nx = (x - minX) / boxW;
         double ny = (y - minY) / boxH;
         if ((nx - ny).abs() < 0.1 || (nx - (1 - ny)).abs() < 0.1) {
-           diagArea++;
-           if (mask[y * resized.width + x]) diagPixels++;
+          diagArea++;
+          if (mask[y * resized.width + x]) diagPixels++;
         }
       }
     }
@@ -735,8 +752,9 @@ class BiometricService {
         if (mask[y * resized.width + x]) lqRight++;
       }
     }
-    final double lowerQuadrantSymmetry = (lqLeft + lqRight) > 0 ? 
-      min(lqLeft, lqRight) / max(lqLeft, lqRight) : 0.0;
+    final double lowerQuadrantSymmetry = (lqLeft + lqRight) > 0
+        ? min(lqLeft, lqRight) / max(lqLeft, lqRight)
+        : 0.0;
 
     // NEW: Horizontal Centroid Shift
     int totalX = 0;
@@ -747,12 +765,18 @@ class BiometricService {
         }
       }
     }
-    final double centroidX = objectPixelCount > 0 ? totalX / objectPixelCount : lqMidX.toDouble();
-    final double horizontalCentroidShift = (maxX > minX) ? (centroidX - minX) / (maxX - minX) : 0.5;
+    final double centroidX = objectPixelCount > 0
+        ? totalX / objectPixelCount
+        : lqMidX.toDouble();
+    final double horizontalCentroidShift = (maxX > minX)
+        ? (centroidX - minX) / (maxX - minX)
+        : 0.5;
 
     // NEW: Convex Hull Ratio (Proxy using diamond area)
     final double diamondArea = (maxX - minX + 1) * (maxY - minY + 1) / 2.0;
-    final double convexHullRatio = diamondArea > 0 ? (objectPixelCount / diamondArea).clamp(0.0, 1.0) : 0.0;
+    final double convexHullRatio = diamondArea > 0
+        ? (objectPixelCount / diamondArea).clamp(0.0, 1.0)
+        : 0.0;
 
     // NEW: Vertical Mass Distribution
     int edgeMass = 0;
@@ -765,7 +789,9 @@ class BiometricService {
         }
       }
     }
-    final double verticalMassDistribution = objectPixelCount > 0 ? edgeMass / objectPixelCount : 0.0;
+    final double verticalMassDistribution = objectPixelCount > 0
+        ? edgeMass / objectPixelCount
+        : 0.0;
 
     // NEW: Color Granularity
     int distinctColors = 0;
@@ -773,28 +799,38 @@ class BiometricService {
     for (int y = minY; y <= maxY; y++) {
       for (int x = minX; x <= maxX; x++) {
         if (mask[y * resized.width + x]) {
-           final p = resized.getPixel(x, y);
-           int qColor = ((p.r ~/ 16) << 16) | ((p.g ~/ 16) << 8) | (p.b ~/ 16);
-           uniqueColors.add(qColor);
+          final p = resized.getPixel(x, y);
+          int qColor = ((p.r ~/ 16) << 16) | ((p.g ~/ 16) << 8) | (p.b ~/ 16);
+          uniqueColors.add(qColor);
         }
       }
     }
-    final double colorGranularity = (uniqueColors.length / 4096.0).clamp(0.0, 1.0);
+    final double colorGranularity = (uniqueColors.length / 4096.0).clamp(
+      0.0,
+      1.0,
+    );
 
     // NEW: Fringe Density (Alpha boundary pixels)
     int fringePixels = 0;
     for (int y = minY; y <= maxY; y++) {
       for (int x = minX; x <= maxX; x++) {
         if (mask[y * resized.width + x]) {
-          if (x == minX || x == maxX || y == minY || y == maxY ||
-              !mask[(y - 1) * resized.width + x] || !mask[(y + 1) * resized.width + x] ||
-              !mask[y * resized.width + (x - 1)] || !mask[y * resized.width + (x + 1)]) {
+          if (x == minX ||
+              x == maxX ||
+              y == minY ||
+              y == maxY ||
+              !mask[(y - 1) * resized.width + x] ||
+              !mask[(y + 1) * resized.width + x] ||
+              !mask[y * resized.width + (x - 1)] ||
+              !mask[y * resized.width + (x + 1)]) {
             fringePixels++;
           }
         }
       }
     }
-    final double fringeDensity = objectPixelCount > 0 ? fringePixels / objectPixelCount : 0.0;
+    final double fringeDensity = objectPixelCount > 0
+        ? fringePixels / objectPixelCount
+        : 0.0;
 
     // NEW: Vertical Thinning & Width Variance
     int minRowWidth = maxX - minX + 1;
@@ -804,7 +840,7 @@ class BiometricService {
     for (int y = minY; y <= maxY; y++) {
       int rowW = 0;
       for (int x = minX; x <= maxX; x++) {
-         if (mask[y * resized.width + x]) rowW++;
+        if (mask[y * resized.width + x]) rowW++;
       }
       if (rowW > 0) {
         if (rowW < minRowWidth) minRowWidth = rowW;
@@ -813,12 +849,16 @@ class BiometricService {
         rowWidths.add(rowW);
       }
     }
-    final double verticalThinning = maxRowWidth > 0 ? minRowWidth / maxRowWidth : 0.0;
+    final double verticalThinning = maxRowWidth > 0
+        ? minRowWidth / maxRowWidth
+        : 0.0;
     double widthVariance = 0.0;
     if (rowWidths.isNotEmpty && maxRowWidth > 0) {
       double avgRow = totalRowWidth / rowWidths.length;
       double varSum = 0;
-      for (int w in rowWidths) varSum += (w - avgRow).abs();
+      for (int w in rowWidths) {
+        varSum += (w - avgRow).abs();
+      }
       widthVariance = (varSum / rowWidths.length) / maxRowWidth;
     }
 
@@ -832,10 +872,10 @@ class BiometricService {
       int slLeft = 0, slRight = 0;
       for (int y = sMinY; y <= sMaxY; y++) {
         for (int x = minX; x < lqMidX; x++) {
-           if (mask[y * resized.width + x]) slLeft++;
+          if (mask[y * resized.width + x]) slLeft++;
         }
         for (int x = lqMidX; x <= maxX; x++) {
-           if (mask[y * resized.width + x]) slRight++;
+          if (mask[y * resized.width + x]) slRight++;
         }
       }
       if (slLeft + slRight > 0) {
@@ -852,16 +892,22 @@ class BiometricService {
           final p = resized.getPixel(x, y);
           int qc = ((p.r ~/ 32) << 16) | ((p.g ~/ 32) << 8) | (p.b ~/ 32);
           if (mask[(y - 1) * resized.width + x]) {
-             final pt = resized.getPixel(x, y - 1);
-             if (qc == (((pt.r ~/ 32) << 16) | ((pt.g ~/ 32) << 8) | (pt.b ~/ 32))) clusteredPixels++;
+            final pt = resized.getPixel(x, y - 1);
+            if (qc ==
+                (((pt.r ~/ 32) << 16) | ((pt.g ~/ 32) << 8) | (pt.b ~/ 32)))
+              clusteredPixels++;
           } else if (mask[y * resized.width + x - 1]) {
-             final pl = resized.getPixel(x - 1, y);
-             if (qc == (((pl.r ~/ 32) << 16) | ((pl.g ~/ 32) << 8) | (pl.b ~/ 32))) clusteredPixels++;
+            final pl = resized.getPixel(x - 1, y);
+            if (qc ==
+                (((pl.r ~/ 32) << 16) | ((pl.g ~/ 32) << 8) | (pl.b ~/ 32)))
+              clusteredPixels++;
           }
         }
       }
     }
-    final double colorClustering = objectPixelCount > 0 ? clusteredPixels / objectPixelCount : 0.0;
+    final double colorClustering = objectPixelCount > 0
+        ? clusteredPixels / objectPixelCount
+        : 0.0;
 
     // NEW: Y Gradient (Vertical Centroid)
     int totalY = 0;
@@ -870,8 +916,12 @@ class BiometricService {
         if (mask[y * resized.width + x]) totalY += y;
       }
     }
-    final double centroidY = objectPixelCount > 0 ? totalY / objectPixelCount : lqMidY.toDouble();
-    final double yGradient = (maxY > minY) ? (centroidY - minY) / (maxY - minY) : 0.5;
+    final double centroidY = objectPixelCount > 0
+        ? totalY / objectPixelCount
+        : lqMidY.toDouble();
+    final double yGradient = (maxY > minY)
+        ? (centroidY - minY) / (maxY - minY)
+        : 0.5;
 
     // NEW: Shell Index (Pixels within 15% of bounding box edge)
     int shellPixels = 0;
@@ -880,23 +930,35 @@ class BiometricService {
     for (int y = minY; y <= maxY; y++) {
       for (int x = minX; x <= maxX; x++) {
         if (mask[y * resized.width + x]) {
-           if (x <= minX + shEdgeX || x >= maxX - shEdgeX || y <= minY + shEdgeY || y >= maxY - shEdgeY) {
-             shellPixels++;
-           }
+          if (x <= minX + shEdgeX ||
+              x >= maxX - shEdgeX ||
+              y <= minY + shEdgeY ||
+              y >= maxY - shEdgeY) {
+            shellPixels++;
+          }
         }
       }
     }
-    final double shellIndex = objectPixelCount > 0 ? shellPixels / objectPixelCount : 0.0;
+    final double shellIndex = objectPixelCount > 0
+        ? shellPixels / objectPixelCount
+        : 0.0;
 
     // NEW: Radial Overlap (Ellipse Area)
-    final double ellipseArea = pi * ((maxX - minX + 1) / 2.0) * ((maxY - minY + 1) / 2.0);
-    final double radialOverlap = ellipseArea > 0 ? (objectPixelCount / ellipseArea).clamp(0.0, 1.0) : 0.0;
+    final double ellipseArea =
+        pi * ((maxX - minX + 1) / 2.0) * ((maxY - minY + 1) / 2.0);
+    final double radialOverlap = ellipseArea > 0
+        ? (objectPixelCount / ellipseArea).clamp(0.0, 1.0)
+        : 0.0;
 
     // NEW: yCentroid (Absolute normalized vertical center of mass)
-    final double yCentroid = objectPixelCount > 0 ? centroidY / resized.height : 0.5;
+    final double yCentroid = objectPixelCount > 0
+        ? centroidY / resized.height
+        : 0.5;
 
     // NEW: Jaggedness (Perimeter proxy)
-    final double jaggedness = objectPixelCount > 0 ? fringePixels / sqrt(objectPixelCount) : 0.0;
+    final double jaggedness = objectPixelCount > 0
+        ? fringePixels / sqrt(objectPixelCount)
+        : 0.0;
 
     // NEW: Top Third Density
     int topThirdPixels = 0;
@@ -906,7 +968,9 @@ class BiometricService {
         if (mask[y * resized.width + x]) topThirdPixels++;
       }
     }
-    final double topThirdDensity = objectPixelCount > 0 ? topThirdPixels / objectPixelCount : 0.0;
+    final double topThirdDensity = objectPixelCount > 0
+        ? topThirdPixels / objectPixelCount
+        : 0.0;
 
     // NEW: Bilateral Symmetry (Point-by-point matching)
     int matchedSymmetryPixels = 0;
@@ -916,13 +980,16 @@ class BiometricService {
         int oppositeX = maxX - (x - minX);
         if (oppositeX >= 0 && oppositeX < resized.width) {
           totalSymmetryCheck++;
-          if (mask[y * resized.width + x] == mask[y * resized.width + oppositeX]) {
+          if (mask[y * resized.width + x] ==
+              mask[y * resized.width + oppositeX]) {
             matchedSymmetryPixels++;
           }
         }
       }
     }
-    final double bilateralSym = totalSymmetryCheck > 0 ? matchedSymmetryPixels / totalSymmetryCheck : 0.0;
+    final double bilateralSym = totalSymmetryCheck > 0
+        ? matchedSymmetryPixels / totalSymmetryCheck
+        : 0.0;
 
     return OrganismFeature(
       organismName: name,
@@ -1475,8 +1542,9 @@ class BiometricService {
     final edgeDiff = (f1.edgeDensity - f2.edgeDensity).abs();
     // Texture boost: if both are highly textured, pattern is VERY important
     double patternImportance = 0.7;
-    if (f1.edgeDensity > 0.15 && f2.edgeDensity > 0.15)
+    if (f1.edgeDensity > 0.15 && f2.edgeDensity > 0.15) {
       patternImportance = 0.85;
+    }
 
     final patternScore =
         (1.0 - (symDiff / 2.0)).clamp(0.0, 1.0) * (1.0 - patternImportance) +

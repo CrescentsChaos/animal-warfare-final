@@ -680,7 +680,9 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
   if (rowWidths.isNotEmpty && maxRowWidth > 0) {
     double avgRow = totalRowWidth / rowWidths.length;
     double varSum = 0;
-    for (int w in rowWidths) varSum += (w - avgRow).abs();
+    for (int w in rowWidths) {
+      varSum += (w - avgRow).abs();
+    }
     widthVariance = (varSum / rowWidths.length) / maxRowWidth;
   }
 
@@ -715,12 +717,16 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
         int qc = ((p.r ~/ 32) << 16) | ((p.g ~/ 32) << 8) | (p.b ~/ 32);
         if (mask[(y - 1) * resized.width + x]) {
           final pt = resized.getPixel(x, y - 1);
-          if (qc == (((pt.r ~/ 32) << 16) | ((pt.g ~/ 32) << 8) | (pt.b ~/ 32)))
+          if (qc ==
+              (((pt.r ~/ 32) << 16) | ((pt.g ~/ 32) << 8) | (pt.b ~/ 32))) {
             clusteredPixels++;
+          }
         } else if (mask[y * resized.width + x - 1]) {
           final pl = resized.getPixel(x - 1, y);
-          if (qc == (((pl.r ~/ 32) << 16) | ((pl.g ~/ 32) << 8) | (pl.b ~/ 32)))
+          if (qc ==
+              (((pl.r ~/ 32) << 16) | ((pl.g ~/ 32) << 8) | (pl.b ~/ 32))) {
             clusteredPixels++;
+          }
         }
       }
     }
@@ -766,40 +772,50 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
   // NEW: Radial Overlap (Ellipse Area)
   final double ellipseArea =
       pi * ((maxX - minX + 1) / 2.0) * ((maxY - minY + 1) / 2.0);
-    final double radialOverlap = ellipseArea > 0 ? (objectPixelCount / ellipseArea).clamp(0.0, 1.0) : 0.0;
+  final double radialOverlap = ellipseArea > 0
+      ? (objectPixelCount / ellipseArea).clamp(0.0, 1.0)
+      : 0.0;
 
-    // NEW: yCentroid (Absolute normalized vertical center of mass)
-    final double yCentroid = objectPixelCount > 0 ? centroidY / resized.height : 0.5;
+  // NEW: yCentroid (Absolute normalized vertical center of mass)
+  final double yCentroid = objectPixelCount > 0
+      ? centroidY / resized.height
+      : 0.5;
 
-    // NEW: Jaggedness (Perimeter proxy)
-    final double jaggedness = objectPixelCount > 0 ? fringePixels / sqrt(objectPixelCount) : 0.0;
+  // NEW: Jaggedness (Perimeter proxy)
+  final double jaggedness = objectPixelCount > 0
+      ? fringePixels / sqrt(objectPixelCount)
+      : 0.0;
 
-    // NEW: Top Third Density
-    int topThirdPixels = 0;
-    int topThirdY = minY + (maxY - minY + 1) ~/ 3;
-    for (int y = minY; y <= topThirdY; y++) {
-      for (int x = minX; x <= maxX; x++) {
-        if (mask[y * resized.width + x]) topThirdPixels++;
-      }
+  // NEW: Top Third Density
+  int topThirdPixels = 0;
+  int topThirdY = minY + (maxY - minY + 1) ~/ 3;
+  for (int y = minY; y <= topThirdY; y++) {
+    for (int x = minX; x <= maxX; x++) {
+      if (mask[y * resized.width + x]) topThirdPixels++;
     }
-    final double topThirdDensity = objectPixelCount > 0 ? topThirdPixels / objectPixelCount : 0.0;
+  }
+  final double topThirdDensity = objectPixelCount > 0
+      ? topThirdPixels / objectPixelCount
+      : 0.0;
 
-    // NEW: Bilateral Symmetry (Point-by-point matching)
-    int matchedSymmetryPixels = 0;
-    int totalSymmetryCheck = 0;
-    for (int y = minY; y <= maxY; y++) {
-      for (int x = minX; x < lqMidX; x++) {
-        int oppositeX = maxX - (x - minX);
-        if (oppositeX >= 0 && oppositeX < resized.width) {
-          totalSymmetryCheck++;
-          if (mask[y * resized.width + x] == mask[y * resized.width + oppositeX]) {
-            matchedSymmetryPixels++;
-          }
+  // NEW: Bilateral Symmetry (Point-by-point matching)
+  int matchedSymmetryPixels = 0;
+  int totalSymmetryCheck = 0;
+  for (int y = minY; y <= maxY; y++) {
+    for (int x = minX; x < lqMidX; x++) {
+      int oppositeX = maxX - (x - minX);
+      if (oppositeX >= 0 && oppositeX < resized.width) {
+        totalSymmetryCheck++;
+        if (mask[y * resized.width + x] ==
+            mask[y * resized.width + oppositeX]) {
+          matchedSymmetryPixels++;
         }
       }
     }
-    final double bilateralSym = totalSymmetryCheck > 0 ? matchedSymmetryPixels / totalSymmetryCheck : 0.0;
-
+  }
+  final double bilateralSym = totalSymmetryCheck > 0
+      ? matchedSymmetryPixels / totalSymmetryCheck
+      : 0.0;
 
   final sym = _calculateSymmetry(resized, mask, minX, maxX, minY, maxY);
 
