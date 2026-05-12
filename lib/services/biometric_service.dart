@@ -58,6 +58,36 @@ class OrganismFeature {
   final double verticalSymmetry;
   final double horizontalSymmetry;
   final double edgeDensity;
+  final double verticalBias;
+  final double topHeavyBias;
+  final double hueComplexity;
+  final double compactness;
+  final double limbDensity;
+  final double directionalEdgeBias;
+  final double coreSolidity;
+  final double bottomHeavyBias;
+  final double maxWidthRowBias;
+  final double maxHeightColBias;
+  final double bottomCenterDensity;
+  final double cornerDensity;
+  final double diagonalDensity;
+  final double lowerQuadrantSymmetry;
+  final double horizontalCentroidShift;
+  final double convexHullRatio;
+  final double verticalMassDistribution;
+  final double colorGranularity;
+  final double fringeDensity;
+  final double verticalThinning;
+  final double localSymmetry;
+  final double colorClustering;
+  final double yGradient;
+  final double widthVariance;
+  final double shellIndex;
+  final double radialOverlap;
+  final double yCentroid;
+  final double jaggedness;
+  final double topThirdDensity;
+  final double bilateralSym;
   final String? animalClass;
   final String? diet;
   final double? weight;
@@ -74,6 +104,36 @@ class OrganismFeature {
     required this.verticalSymmetry,
     required this.horizontalSymmetry,
     required this.edgeDensity,
+    this.verticalBias = 0.5,
+    this.topHeavyBias = 0.5,
+    this.hueComplexity = 0.0,
+    this.compactness = 1.0,
+    this.limbDensity = 0.0,
+    this.directionalEdgeBias = 0.0,
+    this.coreSolidity = 0.0,
+    this.bottomHeavyBias = 0.0,
+    this.maxWidthRowBias = 0.0,
+    this.maxHeightColBias = 0.0,
+    this.bottomCenterDensity = 0.0,
+    this.cornerDensity = 0.0,
+    this.diagonalDensity = 0.0,
+    this.lowerQuadrantSymmetry = 0.0,
+    this.horizontalCentroidShift = 0.0,
+    this.convexHullRatio = 0.0,
+    this.verticalMassDistribution = 0.0,
+    this.colorGranularity = 0.0,
+    this.fringeDensity = 0.0,
+    this.verticalThinning = 0.0,
+    this.localSymmetry = 0.0,
+    this.colorClustering = 0.0,
+    this.yGradient = 0.0,
+    this.widthVariance = 0.0,
+    this.shellIndex = 0.0,
+    this.radialOverlap = 0.0,
+    this.yCentroid = 0.0,
+    this.jaggedness = 0.0,
+    this.topThirdDensity = 0.0,
+    this.bilateralSym = 0.0,
     this.animalClass,
     this.diet,
     this.weight,
@@ -91,6 +151,36 @@ class OrganismFeature {
     'verticalSymmetry': verticalSymmetry,
     'horizontalSymmetry': horizontalSymmetry,
     'edgeDensity': edgeDensity,
+    'verticalBias': verticalBias,
+    'topHeavyBias': topHeavyBias,
+    'hueComplexity': hueComplexity,
+    'compactness': compactness,
+    'limbDensity': limbDensity,
+    'directionalEdgeBias': directionalEdgeBias,
+    'coreSolidity': coreSolidity,
+    'bottomHeavyBias': bottomHeavyBias,
+    'maxWidthRowBias': maxWidthRowBias,
+    'maxHeightColBias': maxHeightColBias,
+    'bottomCenterDensity': bottomCenterDensity,
+    'cornerDensity': cornerDensity,
+    'diagonalDensity': diagonalDensity,
+    'lowerQuadrantSymmetry': lowerQuadrantSymmetry,
+    'horizontalCentroidShift': horizontalCentroidShift,
+    'convexHullRatio': convexHullRatio,
+    'verticalMassDistribution': verticalMassDistribution,
+    'colorGranularity': colorGranularity,
+    'fringeDensity': fringeDensity,
+    'verticalThinning': verticalThinning,
+    'localSymmetry': localSymmetry,
+    'colorClustering': colorClustering,
+    'yGradient': yGradient,
+    'widthVariance': widthVariance,
+    'shellIndex': shellIndex,
+    'radialOverlap': radialOverlap,
+    'yCentroid': yCentroid,
+    'jaggedness': jaggedness,
+    'topThirdDensity': topThirdDensity,
+    'bilateralSym': bilateralSym,
     'animalClass': animalClass,
     'diet': diet,
     'weight': weight,
@@ -116,6 +206,36 @@ class OrganismFeature {
       horizontalSymmetry:
           (json['horizontalSymmetry'] as num?)?.toDouble() ?? 0.5,
       edgeDensity: (json['edgeDensity'] as num?)?.toDouble() ?? 0.0,
+      verticalBias: (json['verticalBias'] as num?)?.toDouble() ?? 0.5,
+      topHeavyBias: (json['topHeavyBias'] as num?)?.toDouble() ?? 0.5,
+      hueComplexity: (json['hueComplexity'] as num?)?.toDouble() ?? 0.0,
+      compactness: (json['compactness'] as num?)?.toDouble() ?? 1.0,
+      limbDensity: (json['limbDensity'] as num?)?.toDouble() ?? 0.0,
+      directionalEdgeBias: (json['directionalEdgeBias'] as num?)?.toDouble() ?? 0.0,
+      coreSolidity: (json['coreSolidity'] as num?)?.toDouble() ?? 0.0,
+      bottomHeavyBias: (json['bottomHeavyBias'] as num?)?.toDouble() ?? 0.0,
+      maxWidthRowBias: (json['maxWidthRowBias'] as num?)?.toDouble() ?? 0.0,
+      maxHeightColBias: (json['maxHeightColBias'] as num?)?.toDouble() ?? 0.0,
+      bottomCenterDensity: (json['bottomCenterDensity'] as num?)?.toDouble() ?? 0.0,
+      cornerDensity: (json['cornerDensity'] as num?)?.toDouble() ?? 0.0,
+      diagonalDensity: (json['diagonalDensity'] as num?)?.toDouble() ?? 0.0,
+      lowerQuadrantSymmetry: (json['lowerQuadrantSymmetry'] as num?)?.toDouble() ?? 0.0,
+      horizontalCentroidShift: (json['horizontalCentroidShift'] as num?)?.toDouble() ?? 0.0,
+      convexHullRatio: (json['convexHullRatio'] as num?)?.toDouble() ?? 0.0,
+      verticalMassDistribution: (json['verticalMassDistribution'] as num?)?.toDouble() ?? 0.0,
+      colorGranularity: (json['colorGranularity'] as num?)?.toDouble() ?? 0.0,
+      fringeDensity: (json['fringeDensity'] as num?)?.toDouble() ?? 0.0,
+      verticalThinning: (json['verticalThinning'] as num?)?.toDouble() ?? 0.0,
+      localSymmetry: (json['localSymmetry'] as num?)?.toDouble() ?? 0.0,
+      colorClustering: (json['colorClustering'] as num?)?.toDouble() ?? 0.0,
+      yGradient: (json['yGradient'] as num?)?.toDouble() ?? 0.0,
+      widthVariance: (json['widthVariance'] as num?)?.toDouble() ?? 0.0,
+      shellIndex: (json['shellIndex'] as num?)?.toDouble() ?? 0.0,
+      radialOverlap: (json['radialOverlap'] as num?)?.toDouble() ?? 0.0,
+      yCentroid: (json['yCentroid'] as num?)?.toDouble() ?? 0.0,
+      jaggedness: (json['jaggedness'] as num?)?.toDouble() ?? 0.0,
+      topThirdDensity: (json['topThirdDensity'] as num?)?.toDouble() ?? 0.0,
+      bilateralSym: (json['bilateralSym'] as num?)?.toDouble() ?? 0.0,
       animalClass: json['animalClass'] as String?,
       diet: json['diet'] as String?,
       weight: (json['weight'] as num?)?.toDouble(),
@@ -192,6 +312,9 @@ class BiometricService {
         );
       });
 
+      // Initialize taxonomic classification model
+      await _taxonomy.initialize();
+
       _isInitialized = true;
     } catch (e) {
       debugPrint('BiometricService init error: $e');
@@ -237,10 +360,10 @@ class BiometricService {
       );
     }
 
-    // Resize for performance
+    // Resize for performance (now using higher resolution for better accuracy)
     img.Image resized;
     if (decoded.width == decoded.height) {
-      resized = img.copyResize(decoded, width: 64, height: 64);
+      resized = img.copyResize(decoded, width: 400, height: 200);
     } else {
       final size = max(decoded.width, decoded.height);
       // IMPORTANT: Must specify numChannels: 4 to avoid stripping alpha channel in package:image 4.x+
@@ -250,7 +373,7 @@ class BiometricService {
       final xOffset = (size - decoded.width) ~/ 2;
       final yOffset = (size - decoded.height) ~/ 2;
       img.compositeImage(padded, decoded, dstX: xOffset, dstY: yOffset);
-      resized = img.copyResize(padded, width: 64, height: 64);
+      resized = img.copyResize(padded, width: 400, height: 200);
     }
 
     bool hasAlpha = false;
@@ -409,6 +532,398 @@ class BiometricService {
       }
     }
 
+    // NEW: Vertical Bias calculation
+    int topHalf = 0;
+    int bottomHalf = 0;
+    for (int y = 0; y < resized.height; y++) {
+      for (int x = 0; x < resized.width; x++) {
+        if (!mask[y * resized.width + x]) continue;
+        if (y > resized.height * 0.6) bottomHalf++;
+        if (y < resized.height * 0.4) topHalf++;
+      }
+    }
+    final double vBias = (topHalf + bottomHalf) > 0
+        ? bottomHalf / (topHalf + bottomHalf)
+        : 0.5;
+
+    // NEW: Top Heavy Bias
+    int topPixels = 0;
+    for (int y = 0; y < (resized.height * 0.4).toInt(); y++) {
+      for (int x = 0; x < resized.width; x++) {
+        if (mask[y * resized.width + x]) topPixels++;
+      }
+    }
+    final double topHeavyBias = objectPixelCount > 0
+        ? topPixels / objectPixelCount
+        : 0.0;
+
+    // NEW: Hue Complexity
+    int significantBins = 0;
+    finalHueBins.forEach((key, val) {
+      if (val > 0.02) significantBins++;
+    });
+    final double hueComplexity = significantBins / 39.0;
+
+    // NEW: Perimeter and Compactness
+    int perimeter = 0;
+    for (int y = 1; y < resized.height - 1; y++) {
+      for (int x = 1; x < resized.width - 1; x++) {
+        if (!mask[y * resized.width + x]) continue;
+        if (!mask[(y - 1) * resized.width + x] ||
+            !mask[(y + 1) * resized.width + x] ||
+            !mask[y * resized.width + (x - 1)] ||
+            !mask[y * resized.width + (x + 1)]) {
+          perimeter++;
+        }
+      }
+    }
+    final double compactness = objectPixelCount > 0
+        ? (perimeter * perimeter) / objectPixelCount
+        : 1.0;
+
+    // NEW: Limb Density (Pixels in outer 20% of bounding box)
+    int limbPixels = 0;
+    final int insetX = ((maxX - minX + 1) * 0.2).toInt();
+    final int insetY = ((maxY - minY + 1) * 0.2).toInt();
+    for (int y = minY; y <= maxY; y++) {
+      for (int x = minX; x <= maxX; x++) {
+        if (!mask[y * resized.width + x]) continue;
+        if (x < minX + insetX ||
+            x > maxX - insetX ||
+            y < minY + insetY ||
+            y > maxY - insetY) {
+          limbPixels++;
+        }
+      }
+    }
+    final double limbDensity = objectPixelCount > 0
+        ? limbPixels / objectPixelCount
+        : 0.0;
+
+    // NEW: Directional Edge Bias
+    int hEdges = 0;
+    int vEdges = 0;
+    for (int y = 1; y < resized.height - 1; y++) {
+      for (int x = 1; x < resized.width - 1; x++) {
+        if (!mask[y * resized.width + x]) continue;
+        final p = resized.getPixel(x, y);
+        final pR = resized.getPixel(x + 1, y);
+        final pD = resized.getPixel(x, y + 1);
+        final lum = (p.r + p.g + p.b) / 3.0;
+        final lumR = (pR.r + pR.g + pR.b) / 3.0;
+        final lumD = (pD.r + pD.g + pD.b) / 3.0;
+        if ((lum - lumR).abs() > 30) hEdges++;
+        if ((lum - lumD).abs() > 30) vEdges++;
+      }
+    }
+    final double edgeBias = (hEdges + vEdges) > 0
+        ? (hEdges - vEdges) / (hEdges + vEdges).toDouble()
+        : 0.0;
+
+    // NEW: Core Solidity
+    int corePixels = 0;
+    final int coreMinX = minX + ((maxX - minX) * 0.25).toInt();
+    final int coreMaxX = maxX - ((maxX - minX) * 0.25).toInt();
+    final int coreMinY = minY + ((maxY - minY) * 0.25).toInt();
+    final int coreMaxY = maxY - ((maxY - minY) * 0.25).toInt();
+    for (int y = coreMinY; y <= coreMaxY; y++) {
+      for (int x = coreMinX; x <= coreMaxX; x++) {
+        if (mask[y * resized.width + x]) corePixels++;
+      }
+    }
+    final double coreArea = max(1, (coreMaxX - coreMinX + 1) * (coreMaxY - coreMinY + 1)).toDouble();
+    final double coreSolidity = corePixels / coreArea;
+
+    // NEW: Bottom Heavy Bias
+    final double bottomHeavyBias = objectPixelCount > 0 ? bottomHalf / objectPixelCount : 0.0;
+
+    // NEW: Max Width Row Bias
+    int maxRowPixels = -1;
+    int maxRowY = minY;
+    for (int y = minY; y <= maxY; y++) {
+      int rowPixels = 0;
+      for (int x = minX; x <= maxX; x++) {
+        if (mask[y * resized.width + x]) rowPixels++;
+      }
+      if (rowPixels > maxRowPixels) {
+        maxRowPixels = rowPixels;
+        maxRowY = y;
+      }
+    }
+    final double maxWidthRowBias = (maxY > minY) ? (maxRowY - minY) / (maxY - minY) : 0.5;
+
+    // NEW: Max Height Col Bias
+    int maxColPixels = -1;
+    int maxColX = minX;
+    for (int x = minX; x <= maxX; x++) {
+      int colPixels = 0;
+      for (int y = minY; y <= maxY; y++) {
+        if (mask[y * resized.width + x]) colPixels++;
+      }
+      if (colPixels > maxColPixels) {
+        maxColPixels = colPixels;
+        maxColX = x;
+      }
+    }
+    final double colXNorm = (maxX > minX) ? (maxColX - minX) / (maxX - minX) : 0.5;
+    final double maxHeightColBias = (colXNorm - 0.5).abs() * 2.0;
+
+    // NEW: Bottom Center Density
+    final int bcMinX = minX + ((maxX - minX) * 0.35).toInt();
+    final int bcMaxX = maxX - ((maxX - minX) * 0.35).toInt();
+    final int bcMinY = maxY - ((maxY - minY) * 0.3).toInt();
+    final int bcMaxY = maxY;
+    int bcPixels = 0;
+    for (int y = bcMinY; y <= bcMaxY; y++) {
+      for (int x = bcMinX; x <= bcMaxX; x++) {
+        if (mask[y * resized.width + x]) bcPixels++;
+      }
+    }
+    final double bcArea = max(1, (bcMaxX - bcMinX + 1) * (bcMaxY - bcMinY + 1)).toDouble();
+    final double bottomCenterDensity = bcPixels / bcArea;
+
+    // NEW: Corner Density
+    final int cornerW = max(1, (maxX - minX) * 0.2).toInt();
+    final int cornerH = max(1, (maxY - minY) * 0.2).toInt();
+    int cornerPixels = 0;
+    for (int y = minY; y < minY + cornerH; y++) {
+      for (int x = minX; x < minX + cornerW; x++) {
+        if (mask[y * resized.width + x]) cornerPixels++;
+      }
+      for (int x = maxX - cornerW + 1; x <= maxX; x++) {
+        if (mask[y * resized.width + x]) cornerPixels++;
+      }
+    }
+    for (int y = maxY - cornerH + 1; y <= maxY; y++) {
+      for (int x = minX; x < minX + cornerW; x++) {
+        if (mask[y * resized.width + x]) cornerPixels++;
+      }
+      for (int x = maxX - cornerW + 1; x <= maxX; x++) {
+        if (mask[y * resized.width + x]) cornerPixels++;
+      }
+    }
+    final double cornerArea = max(1, cornerW * cornerH * 4).toDouble();
+    final double cornerDensity = cornerPixels / cornerArea;
+
+    // NEW: Diagonal Density
+    int diagPixels = 0;
+    int diagArea = 0;
+    final int boxW = max(1, maxX - minX);
+    final int boxH = max(1, maxY - minY);
+    for (int y = minY; y <= maxY; y++) {
+      for (int x = minX; x <= maxX; x++) {
+        double nx = (x - minX) / boxW;
+        double ny = (y - minY) / boxH;
+        if ((nx - ny).abs() < 0.1 || (nx - (1 - ny)).abs() < 0.1) {
+           diagArea++;
+           if (mask[y * resized.width + x]) diagPixels++;
+        }
+      }
+    }
+    final double diagonalDensity = diagArea > 0 ? diagPixels / diagArea : 0.0;
+
+    // NEW: Lower Quadrant Symmetry
+    int lqLeft = 0;
+    int lqRight = 0;
+    final int lqMidY = minY + ((maxY - minY) * 0.5).toInt();
+    final int lqMidX = minX + ((maxX - minX) * 0.5).toInt();
+    for (int y = lqMidY; y <= maxY; y++) {
+      for (int x = minX; x < lqMidX; x++) {
+        if (mask[y * resized.width + x]) lqLeft++;
+      }
+      for (int x = lqMidX; x <= maxX; x++) {
+        if (mask[y * resized.width + x]) lqRight++;
+      }
+    }
+    final double lowerQuadrantSymmetry = (lqLeft + lqRight) > 0 ? 
+      min(lqLeft, lqRight) / max(lqLeft, lqRight) : 0.0;
+
+    // NEW: Horizontal Centroid Shift
+    int totalX = 0;
+    for (int y = minY; y <= maxY; y++) {
+      for (int x = minX; x <= maxX; x++) {
+        if (mask[y * resized.width + x]) {
+          totalX += x;
+        }
+      }
+    }
+    final double centroidX = objectPixelCount > 0 ? totalX / objectPixelCount : lqMidX.toDouble();
+    final double horizontalCentroidShift = (maxX > minX) ? (centroidX - minX) / (maxX - minX) : 0.5;
+
+    // NEW: Convex Hull Ratio (Proxy using diamond area)
+    final double diamondArea = (maxX - minX + 1) * (maxY - minY + 1) / 2.0;
+    final double convexHullRatio = diamondArea > 0 ? (objectPixelCount / diamondArea).clamp(0.0, 1.0) : 0.0;
+
+    // NEW: Vertical Mass Distribution
+    int edgeMass = 0;
+    final int vmdQ1 = minY + ((maxY - minY) * 0.25).toInt();
+    final int vmdQ3 = minY + ((maxY - minY) * 0.75).toInt();
+    for (int y = minY; y <= maxY; y++) {
+      if (y <= vmdQ1 || y >= vmdQ3) {
+        for (int x = minX; x <= maxX; x++) {
+          if (mask[y * resized.width + x]) edgeMass++;
+        }
+      }
+    }
+    final double verticalMassDistribution = objectPixelCount > 0 ? edgeMass / objectPixelCount : 0.0;
+
+    // NEW: Color Granularity
+    int distinctColors = 0;
+    final Set<int> uniqueColors = {};
+    for (int y = minY; y <= maxY; y++) {
+      for (int x = minX; x <= maxX; x++) {
+        if (mask[y * resized.width + x]) {
+           final p = resized.getPixel(x, y);
+           int qColor = ((p.r ~/ 16) << 16) | ((p.g ~/ 16) << 8) | (p.b ~/ 16);
+           uniqueColors.add(qColor);
+        }
+      }
+    }
+    final double colorGranularity = (uniqueColors.length / 4096.0).clamp(0.0, 1.0);
+
+    // NEW: Fringe Density (Alpha boundary pixels)
+    int fringePixels = 0;
+    for (int y = minY; y <= maxY; y++) {
+      for (int x = minX; x <= maxX; x++) {
+        if (mask[y * resized.width + x]) {
+          if (x == minX || x == maxX || y == minY || y == maxY ||
+              !mask[(y - 1) * resized.width + x] || !mask[(y + 1) * resized.width + x] ||
+              !mask[y * resized.width + (x - 1)] || !mask[y * resized.width + (x + 1)]) {
+            fringePixels++;
+          }
+        }
+      }
+    }
+    final double fringeDensity = objectPixelCount > 0 ? fringePixels / objectPixelCount : 0.0;
+
+    // NEW: Vertical Thinning & Width Variance
+    int minRowWidth = maxX - minX + 1;
+    int maxRowWidth = 0;
+    int totalRowWidth = 0;
+    List<int> rowWidths = [];
+    for (int y = minY; y <= maxY; y++) {
+      int rowW = 0;
+      for (int x = minX; x <= maxX; x++) {
+         if (mask[y * resized.width + x]) rowW++;
+      }
+      if (rowW > 0) {
+        if (rowW < minRowWidth) minRowWidth = rowW;
+        if (rowW > maxRowWidth) maxRowWidth = rowW;
+        totalRowWidth += rowW;
+        rowWidths.add(rowW);
+      }
+    }
+    final double verticalThinning = maxRowWidth > 0 ? minRowWidth / maxRowWidth : 0.0;
+    double widthVariance = 0.0;
+    if (rowWidths.isNotEmpty && maxRowWidth > 0) {
+      double avgRow = totalRowWidth / rowWidths.length;
+      double varSum = 0;
+      for (int w in rowWidths) varSum += (w - avgRow).abs();
+      widthVariance = (varSum / rowWidths.length) / maxRowWidth;
+    }
+
+    // NEW: Local Symmetry (Average symmetry of 4 horizontal slices)
+    double localSymSum = 0;
+    int slices = 4;
+    int sliceH = max(1, (maxY - minY + 1) ~/ slices);
+    for (int s = 0; s < slices; s++) {
+      int sMinY = minY + s * sliceH;
+      int sMaxY = (s == slices - 1) ? maxY : sMinY + sliceH - 1;
+      int slLeft = 0, slRight = 0;
+      for (int y = sMinY; y <= sMaxY; y++) {
+        for (int x = minX; x < lqMidX; x++) {
+           if (mask[y * resized.width + x]) slLeft++;
+        }
+        for (int x = lqMidX; x <= maxX; x++) {
+           if (mask[y * resized.width + x]) slRight++;
+        }
+      }
+      if (slLeft + slRight > 0) {
+        localSymSum += min(slLeft, slRight) / max(slLeft, slRight);
+      }
+    }
+    final double localSymmetry = localSymSum / slices;
+
+    // NEW: Color Clustering
+    int clusteredPixels = 0;
+    for (int y = minY + 1; y <= maxY; y++) {
+      for (int x = minX + 1; x <= maxX; x++) {
+        if (mask[y * resized.width + x]) {
+          final p = resized.getPixel(x, y);
+          int qc = ((p.r ~/ 32) << 16) | ((p.g ~/ 32) << 8) | (p.b ~/ 32);
+          if (mask[(y - 1) * resized.width + x]) {
+             final pt = resized.getPixel(x, y - 1);
+             if (qc == (((pt.r ~/ 32) << 16) | ((pt.g ~/ 32) << 8) | (pt.b ~/ 32))) clusteredPixels++;
+          } else if (mask[y * resized.width + x - 1]) {
+             final pl = resized.getPixel(x - 1, y);
+             if (qc == (((pl.r ~/ 32) << 16) | ((pl.g ~/ 32) << 8) | (pl.b ~/ 32))) clusteredPixels++;
+          }
+        }
+      }
+    }
+    final double colorClustering = objectPixelCount > 0 ? clusteredPixels / objectPixelCount : 0.0;
+
+    // NEW: Y Gradient (Vertical Centroid)
+    int totalY = 0;
+    for (int y = minY; y <= maxY; y++) {
+      for (int x = minX; x <= maxX; x++) {
+        if (mask[y * resized.width + x]) totalY += y;
+      }
+    }
+    final double centroidY = objectPixelCount > 0 ? totalY / objectPixelCount : lqMidY.toDouble();
+    final double yGradient = (maxY > minY) ? (centroidY - minY) / (maxY - minY) : 0.5;
+
+    // NEW: Shell Index (Pixels within 15% of bounding box edge)
+    int shellPixels = 0;
+    int shEdgeX = max(1, (maxX - minX) * 0.15).toInt();
+    int shEdgeY = max(1, (maxY - minY) * 0.15).toInt();
+    for (int y = minY; y <= maxY; y++) {
+      for (int x = minX; x <= maxX; x++) {
+        if (mask[y * resized.width + x]) {
+           if (x <= minX + shEdgeX || x >= maxX - shEdgeX || y <= minY + shEdgeY || y >= maxY - shEdgeY) {
+             shellPixels++;
+           }
+        }
+      }
+    }
+    final double shellIndex = objectPixelCount > 0 ? shellPixels / objectPixelCount : 0.0;
+
+    // NEW: Radial Overlap (Ellipse Area)
+    final double ellipseArea = pi * ((maxX - minX + 1) / 2.0) * ((maxY - minY + 1) / 2.0);
+    final double radialOverlap = ellipseArea > 0 ? (objectPixelCount / ellipseArea).clamp(0.0, 1.0) : 0.0;
+
+    // NEW: yCentroid (Absolute normalized vertical center of mass)
+    final double yCentroid = objectPixelCount > 0 ? centroidY / resized.height : 0.5;
+
+    // NEW: Jaggedness (Perimeter proxy)
+    final double jaggedness = objectPixelCount > 0 ? fringePixels / sqrt(objectPixelCount) : 0.0;
+
+    // NEW: Top Third Density
+    int topThirdPixels = 0;
+    int topThirdY = minY + (maxY - minY + 1) ~/ 3;
+    for (int y = minY; y <= topThirdY; y++) {
+      for (int x = minX; x <= maxX; x++) {
+        if (mask[y * resized.width + x]) topThirdPixels++;
+      }
+    }
+    final double topThirdDensity = objectPixelCount > 0 ? topThirdPixels / objectPixelCount : 0.0;
+
+    // NEW: Bilateral Symmetry (Point-by-point matching)
+    int matchedSymmetryPixels = 0;
+    int totalSymmetryCheck = 0;
+    for (int y = minY; y <= maxY; y++) {
+      for (int x = minX; x < lqMidX; x++) {
+        int oppositeX = maxX - (x - minX);
+        if (oppositeX >= 0 && oppositeX < resized.width) {
+          totalSymmetryCheck++;
+          if (mask[y * resized.width + x] == mask[y * resized.width + oppositeX]) {
+            matchedSymmetryPixels++;
+          }
+        }
+      }
+    }
+    final double bilateralSym = totalSymmetryCheck > 0 ? matchedSymmetryPixels / totalSymmetryCheck : 0.0;
+
     return OrganismFeature(
       organismName: name,
       dominantColors: dominantColors,
@@ -421,6 +936,36 @@ class BiometricService {
       verticalSymmetry: vSym,
       horizontalSymmetry: hSym,
       edgeDensity: _calculateEdgeDensity(resized, mask),
+      verticalBias: vBias,
+      topHeavyBias: topHeavyBias,
+      hueComplexity: hueComplexity,
+      compactness: compactness,
+      limbDensity: limbDensity,
+      directionalEdgeBias: edgeBias,
+      coreSolidity: coreSolidity,
+      bottomHeavyBias: bottomHeavyBias,
+      maxWidthRowBias: maxWidthRowBias,
+      maxHeightColBias: maxHeightColBias,
+      bottomCenterDensity: bottomCenterDensity,
+      cornerDensity: cornerDensity,
+      diagonalDensity: diagonalDensity,
+      lowerQuadrantSymmetry: lowerQuadrantSymmetry,
+      horizontalCentroidShift: horizontalCentroidShift,
+      convexHullRatio: convexHullRatio,
+      verticalMassDistribution: verticalMassDistribution,
+      colorGranularity: colorGranularity,
+      fringeDensity: fringeDensity,
+      verticalThinning: verticalThinning,
+      localSymmetry: localSymmetry,
+      colorClustering: colorClustering,
+      yGradient: yGradient,
+      widthVariance: widthVariance,
+      shellIndex: shellIndex,
+      radialOverlap: radialOverlap,
+      yCentroid: yCentroid,
+      jaggedness: jaggedness,
+      topThirdDensity: topThirdDensity,
+      bilateralSym: bilateralSym,
     );
   }
 
@@ -616,44 +1161,26 @@ class BiometricService {
       AnimalClass? predictedClass,
       String? predictedDiet,
       double? predictedWeight,
-    })? onProgress,
+    })?
+    onProgress,
   }) async {
     if (!_isInitialized) await initialize();
     if (_organisms == null || _organisms!.isEmpty) return [];
 
-    // 0. Taxonomic Classification (Early Gate)
-    onProgress?.call('Categorizing Subject...', 0.02);
-    final taxonomyResult = await _taxonomy.classifyImage(imageBytes);
-    final AnimalClass detectedClass = taxonomyResult['class'] ?? AnimalClass.unknown;
-    final double classConfidence = taxonomyResult['confidence'] ?? 0.0;
-    final String predictedDiet = taxonomyResult['diet'] ?? 'unknown';
-    final double predictedWeight = (taxonomyResult['weight'] as num?)?.toDouble() ?? 0.0;
-
-    onProgress?.call(
-      detectedClass != AnimalClass.unknown
-          ? 'SUBJECT TYPE: ${detectedClass.name.toUpperCase()}'
-          : 'IDENTIFYING SUBJECT TYPE...',
-      0.05,
-      predictedClass: detectedClass,
-      predictedDiet: predictedDiet,
-      predictedWeight: predictedWeight,
-    );
-
-    onProgress?.call('Decoding image...', 0.05);
-    final img.Image? fullImg = img.decodeImage(imageBytes);
-    if (fullImg == null) return [];
-
     // Step 1: Segmentation (Prioritize manual -> ML -> Fallback)
+    onProgress?.call('Segmenting subject...', 0.05);
     Uint8List? activeSegmentedBytes = preSegmentedBytes;
     bool usedAdvancedSegmentation = preSegmentedBytes != null;
 
     if (preSegmentedBytes != null) {
       activeSegmentedBytes = preSegmentedBytes;
-      usedAdvancedSegmentation = true; // Use provided mask for UI
+      usedAdvancedSegmentation = true;
     } else if (_segmentation.isAvailable) {
       onProgress?.call('AI segmentation in progress...', 0.10);
       try {
-        activeSegmentedBytes = await _segmentation.segment(imageBytes).timeout(const Duration(seconds: 5));
+        activeSegmentedBytes = await _segmentation
+            .segment(imageBytes)
+            .timeout(const Duration(seconds: 5));
         if (activeSegmentedBytes != null) {
           usedAdvancedSegmentation = true;
           debugPrint('BiometricService: Using ML segmentation result');
@@ -666,8 +1193,8 @@ class BiometricService {
     // Step 2: Extract features using segmented image or fallback
     onProgress?.call(
       usedAdvancedSegmentation
-          ? 'Analyzing segmented subject...'
-          : 'Segmenting subject...',
+          ? 'Analyzing biometric signatures...'
+          : 'Extracting features...',
       0.15,
     );
     final inputFeature = await extractFeatures(
@@ -676,7 +1203,55 @@ class BiometricService {
       preSegmentedBytes: activeSegmentedBytes,
     );
 
-    // Step 3: Create masked image for UI display
+    // Step 3: Taxonomic Classification (AI Engine)
+    onProgress?.call('AI Categorization...', 0.20);
+    final taxonomyResult = await _taxonomy.classifyImage(
+      imageBytes,
+      preExtractedFeatures: inputFeature,
+    );
+    final double classConfidence =
+        (taxonomyResult['confidence'] as num?)?.toDouble() ?? 0.0;
+    final String classSource = taxonomyResult['source'] ?? 'none';
+
+    // CRITICAL: Only trust the classification if confidence is high.
+    // Low-confidence local classification (AI engine / heuristic) is unreliable
+    // and causes the class/diet gates to destroy correct matches.
+    // High confidence = iNaturalist (> 0.7) or very strong AI match.
+    AnimalClass detectedClass;
+    if (classConfidence > 0.7) {
+      detectedClass = taxonomyResult['class'] ?? AnimalClass.unknown;
+      debugPrint(
+        'BiometricService: HIGH confidence ($classSource): ${detectedClass.name} @ ${(classConfidence * 100).toStringAsFixed(0)}%',
+      );
+    } else {
+      detectedClass = AnimalClass.unknown;
+      debugPrint(
+        'BiometricService: LOW confidence ($classSource) — gates DISABLED',
+      );
+    }
+
+    // Always show the classification hint in the UI (even if gates are disabled)
+    final AnimalClass displayClass =
+        taxonomyResult['class'] ?? AnimalClass.unknown;
+    final String predictedDiet = taxonomyResult['diet'] ?? 'unknown';
+    final double predictedWeight =
+        (taxonomyResult['weight'] as num?)?.toDouble() ?? 0.0;
+
+    onProgress?.call(
+      displayClass != AnimalClass.unknown
+          ? 'SUBJECT TYPE: ${displayClass.name.toUpperCase()}'
+          : 'IDENTIFYING SUBJECT TYPE...',
+      0.25,
+      predictedClass: displayClass,
+      predictedDiet: predictedDiet,
+      predictedWeight: predictedWeight,
+    );
+
+    onProgress?.call('Decoding image...', 0.25);
+    final img.Image? fullImg = img.decodeImage(imageBytes);
+    if (fullImg == null) return [];
+
+    // Step 4: Create masked image for UI display
     Uint8List maskedBytes;
     if (usedAdvancedSegmentation && activeSegmentedBytes != null) {
       // Use the provided/ML-segmented image directly
@@ -754,7 +1329,7 @@ class BiometricService {
             matchReason: 'Biometric Signature Match',
             maskedImage: maskedBytes,
             featureScores: result.featureScores,
-            detectedClass: detectedClass,
+            detectedClass: displayClass,
             isPinpointed: result.isPinpointed,
             predictedDiet: predictedDiet,
             predictedWeight: predictedWeight,
@@ -848,7 +1423,7 @@ class BiometricService {
     double globalColorMatch = 0;
     f1.hueBins.forEach((key, val) {
       if (val == 0) return;
-      
+
       // Handle Achromatic Bins (White, Black, Grey)
       if (key == 'hWhite' || key == 'hBlack' || key == 'hGrey') {
         globalColorMatch += min(val, f2.hueBins[key] ?? 0);
@@ -900,8 +1475,9 @@ class BiometricService {
     final edgeDiff = (f1.edgeDensity - f2.edgeDensity).abs();
     // Texture boost: if both are highly textured, pattern is VERY important
     double patternImportance = 0.7;
-    if (f1.edgeDensity > 0.15 && f2.edgeDensity > 0.15) patternImportance = 0.85;
-    
+    if (f1.edgeDensity > 0.15 && f2.edgeDensity > 0.15)
+      patternImportance = 0.85;
+
     final patternScore =
         (1.0 - (symDiff / 2.0)).clamp(0.0, 1.0) * (1.0 - patternImportance) +
         (1.0 - (edgeDiff * 4.0)).clamp(0.0, 1.0) * patternImportance;
@@ -931,7 +1507,7 @@ class BiometricService {
       }
     }
 
-    // Diet Gate: Strict blocking for biological impossibilities
+    // Diet Gate: Soft penalty — unreliable when detectedClass is wrong
     double dietScore = 1.0;
     if (target.diet.isNotEmpty &&
         target.diet != 'unknown' &&
@@ -939,18 +1515,23 @@ class BiometricService {
       final plausibleDiets = _plausibleDietsForClass(detectedClass);
       if (plausibleDiets.isNotEmpty &&
           !plausibleDiets.contains(target.diet.toLowerCase())) {
-        dietScore = 0.01; // NEAR-TOTAL BLOCK
+        dietScore = 0.9; // VERY soft penalty — AI class may be wrong
       }
     }
 
-    // Class Gate
+    // Class Gate: Soft penalty since AI classification is approximate
+    // The organism's ground-truth class vs the detected class
     double classScore = 1.0;
     if (target.animalClass.isNotEmpty &&
         target.animalClass != 'unknown' &&
         detectedClass != AnimalClass.unknown) {
       if (target.animalClass.toLowerCase() !=
           detectedClass.name.toLowerCase()) {
-        classScore = 0.01;
+        // Soft penalty — AI classification is not fully reliable
+        classScore = 0.8;
+      } else {
+        // Class MATCH — small boost for agreement
+        classScore = 1.1;
       }
     }
 
@@ -977,23 +1558,22 @@ class BiometricService {
                 patternScore * visualWeightPattern)
             .clamp(0.0, 1.0);
 
-    // Apply "Numerosity Correction" (Only if not a strong visual match)
+    // Numerosity Correction: only for fish (they have 799 samples vs 385 mammals)
     double numerosityCorrection = 1.0;
     if (detectedClass == AnimalClass.unknown && visualConfidence < 0.90) {
       if (target.animalClass.toLowerCase() == 'fish') {
-        numerosityCorrection = 0.85; 
-      } else if (target.animalClass.toLowerCase() == 'mammal') {
-        // Stricter penalty for mammals when unknown to prevent Fish->Mammal false positives
-        numerosityCorrection = 0.6; 
+        numerosityCorrection = 0.85;
       }
     }
 
     // Apply biological gates and numerosity correction
     final double finalConfidence =
-        (visualConfidence * weightScore * dietScore * classScore * numerosityCorrection).clamp(
-          0.0,
-          1.0,
-        );
+        (visualConfidence *
+                weightScore *
+                dietScore *
+                classScore *
+                numerosityCorrection)
+            .clamp(0.0, 1.0);
 
     // PINPOINT THRESHOLD (90%)
     final bool pinpointed = finalConfidence > 0.90;

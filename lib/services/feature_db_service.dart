@@ -99,6 +99,30 @@ class FeatureDbService {
         vertical_symmetry REAL NOT NULL,
         horizontal_symmetry REAL NOT NULL,
         edge_density REAL NOT NULL,
+        core_solidity REAL NOT NULL DEFAULT 0.0,
+        bottom_heavy_bias REAL NOT NULL DEFAULT 0.0,
+        max_width_row_bias REAL NOT NULL DEFAULT 0.0,
+        max_height_col_bias REAL NOT NULL DEFAULT 0.0,
+        bottom_center_density REAL NOT NULL DEFAULT 0.0,
+        corner_density REAL NOT NULL DEFAULT 0.0,
+        diagonal_density REAL NOT NULL DEFAULT 0.0,
+        lower_quadrant_symmetry REAL NOT NULL DEFAULT 0.0,
+        horizontal_centroid_shift REAL NOT NULL DEFAULT 0.0,
+        convex_hull_ratio REAL NOT NULL DEFAULT 0.0,
+        vertical_mass_distribution REAL NOT NULL DEFAULT 0.0,
+        color_granularity REAL NOT NULL DEFAULT 0.0,
+        fringe_density REAL NOT NULL DEFAULT 0.0,
+        vertical_thinning REAL NOT NULL DEFAULT 0.0,
+        local_symmetry REAL NOT NULL DEFAULT 0.0,
+        color_clustering REAL NOT NULL DEFAULT 0.0,
+        y_gradient REAL NOT NULL DEFAULT 0.0,
+        width_variance REAL NOT NULL DEFAULT 0.0,
+        shell_index REAL NOT NULL DEFAULT 0.0,
+        radial_overlap REAL NOT NULL DEFAULT 0.0,
+        y_centroid REAL NOT NULL DEFAULT 0.0,
+        jaggedness REAL NOT NULL DEFAULT 0.0,
+        top_third_density REAL NOT NULL DEFAULT 0.0,
+        bilateral_sym REAL NOT NULL DEFAULT 0.0,
         animal_class TEXT,
         diet TEXT,
         weight REAL,
@@ -106,10 +130,30 @@ class FeatureDbService {
         training_count INTEGER NOT NULL DEFAULT 1
       )
     ''');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS taxonomy_metadata (
+        key TEXT PRIMARY KEY,
+        data TEXT NOT NULL
+      )
+    ''');
+
     await db.execute(
         'CREATE INDEX IF NOT EXISTS idx_scientific_name ON organism_features(scientific_name)');
     await db.execute(
         'CREATE INDEX IF NOT EXISTS idx_organism_name ON organism_features(organism_name)');
+
+    // Taxonomy model storage
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS taxonomy_profiles (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        animal_class TEXT UNIQUE NOT NULL,
+        feature_means TEXT NOT NULL,
+        feature_variances TEXT NOT NULL,
+        sample_count INTEGER NOT NULL,
+        updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+      )
+    ''');
   }
 
   /// Migrate existing v1 databases to v2 (add class/diet/weight columns).
@@ -208,6 +252,30 @@ class FeatureDbService {
       verticalSymmetry: (row['vertical_symmetry'] as num).toDouble(),
       horizontalSymmetry: (row['horizontal_symmetry'] as num).toDouble(),
       edgeDensity: (row['edge_density'] as num).toDouble(),
+      coreSolidity: (row['core_solidity'] as num?)?.toDouble() ?? 0.0,
+      bottomHeavyBias: (row['bottom_heavy_bias'] as num?)?.toDouble() ?? 0.0,
+      maxWidthRowBias: (row['max_width_row_bias'] as num?)?.toDouble() ?? 0.0,
+      maxHeightColBias: (row['max_height_col_bias'] as num?)?.toDouble() ?? 0.0,
+      bottomCenterDensity: (row['bottom_center_density'] as num?)?.toDouble() ?? 0.0,
+      cornerDensity: (row['corner_density'] as num?)?.toDouble() ?? 0.0,
+      diagonalDensity: (row['diagonal_density'] as num?)?.toDouble() ?? 0.0,
+      lowerQuadrantSymmetry: (row['lower_quadrant_symmetry'] as num?)?.toDouble() ?? 0.0,
+      horizontalCentroidShift: (row['horizontal_centroid_shift'] as num?)?.toDouble() ?? 0.0,
+      convexHullRatio: (row['convex_hull_ratio'] as num?)?.toDouble() ?? 0.0,
+      verticalMassDistribution: (row['vertical_mass_distribution'] as num?)?.toDouble() ?? 0.0,
+      colorGranularity: (row['color_granularity'] as num?)?.toDouble() ?? 0.0,
+      fringeDensity: (row['fringe_density'] as num?)?.toDouble() ?? 0.0,
+      verticalThinning: (row['vertical_thinning'] as num?)?.toDouble() ?? 0.0,
+      localSymmetry: (row['local_symmetry'] as num?)?.toDouble() ?? 0.0,
+      colorClustering: (row['color_clustering'] as num?)?.toDouble() ?? 0.0,
+      yGradient: (row['y_gradient'] as num?)?.toDouble() ?? 0.0,
+      widthVariance: (row['width_variance'] as num?)?.toDouble() ?? 0.0,
+      shellIndex: (row['shell_index'] as num?)?.toDouble() ?? 0.0,
+      radialOverlap: (row['radial_overlap'] as num?)?.toDouble() ?? 0.0,
+      yCentroid: (row['y_centroid'] as num?)?.toDouble() ?? 0.0,
+      jaggedness: (row['jaggedness'] as num?)?.toDouble() ?? 0.0,
+      topThirdDensity: (row['top_third_density'] as num?)?.toDouble() ?? 0.0,
+      bilateralSym: (row['bilateral_sym'] as num?)?.toDouble() ?? 0.0,
       animalClass: row['animal_class'] as String?,
       diet: row['diet'] as String?,
       weight: (row['weight'] as num?)?.toDouble(),
@@ -273,6 +341,30 @@ class FeatureDbService {
             oldRow['edge_density'] as double,
             newFeature.edgeDensity,
             oldCount),
+        'core_solidity': weightedAvg(oldRow['core_solidity'] as double? ?? 0.0, newFeature.coreSolidity, oldCount),
+        'bottom_heavy_bias': weightedAvg(oldRow['bottom_heavy_bias'] as double? ?? 0.0, newFeature.bottomHeavyBias, oldCount),
+        'max_width_row_bias': weightedAvg(oldRow['max_width_row_bias'] as double? ?? 0.0, newFeature.maxWidthRowBias, oldCount),
+        'max_height_col_bias': weightedAvg(oldRow['max_height_col_bias'] as double? ?? 0.0, newFeature.maxHeightColBias, oldCount),
+        'bottom_center_density': weightedAvg(oldRow['bottom_center_density'] as double? ?? 0.0, newFeature.bottomCenterDensity, oldCount),
+        'corner_density': weightedAvg(oldRow['corner_density'] as double? ?? 0.0, newFeature.cornerDensity, oldCount),
+        'diagonal_density': weightedAvg(oldRow['diagonal_density'] as double? ?? 0.0, newFeature.diagonalDensity, oldCount),
+        'lower_quadrant_symmetry': weightedAvg(oldRow['lower_quadrant_symmetry'] as double? ?? 0.0, newFeature.lowerQuadrantSymmetry, oldCount),
+        'horizontal_centroid_shift': weightedAvg(oldRow['horizontal_centroid_shift'] as double? ?? 0.0, newFeature.horizontalCentroidShift, oldCount),
+        'convex_hull_ratio': weightedAvg(oldRow['convex_hull_ratio'] as double? ?? 0.0, newFeature.convexHullRatio, oldCount),
+        'vertical_mass_distribution': weightedAvg(oldRow['vertical_mass_distribution'] as double? ?? 0.0, newFeature.verticalMassDistribution, oldCount),
+        'color_granularity': weightedAvg(oldRow['color_granularity'] as double? ?? 0.0, newFeature.colorGranularity, oldCount),
+        'fringe_density': weightedAvg(oldRow['fringe_density'] as double? ?? 0.0, newFeature.fringeDensity, oldCount),
+        'vertical_thinning': weightedAvg(oldRow['vertical_thinning'] as double? ?? 0.0, newFeature.verticalThinning, oldCount),
+        'local_symmetry': weightedAvg(oldRow['local_symmetry'] as double? ?? 0.0, newFeature.localSymmetry, oldCount),
+        'color_clustering': weightedAvg(oldRow['color_clustering'] as double? ?? 0.0, newFeature.colorClustering, oldCount),
+        'y_gradient': weightedAvg(oldRow['y_gradient'] as double? ?? 0.0, newFeature.yGradient, oldCount),
+        'width_variance': weightedAvg(oldRow['width_variance'] as double? ?? 0.0, newFeature.widthVariance, oldCount),
+        'shell_index': weightedAvg(oldRow['shell_index'] as double? ?? 0.0, newFeature.shellIndex, oldCount),
+        'radial_overlap': weightedAvg(oldRow['radial_overlap'] as double? ?? 0.0, newFeature.radialOverlap, oldCount),
+        'y_centroid': weightedAvg(oldRow['y_centroid'] as double? ?? 0.0, newFeature.yCentroid, oldCount),
+        'jaggedness': weightedAvg(oldRow['jaggedness'] as double? ?? 0.0, newFeature.jaggedness, oldCount),
+        'top_third_density': weightedAvg(oldRow['top_third_density'] as double? ?? 0.0, newFeature.topThirdDensity, oldCount),
+        'bilateral_sym': weightedAvg(oldRow['bilateral_sym'] as double? ?? 0.0, newFeature.bilateralSym, oldCount),
       };
 
       final oldHueBins =
@@ -327,12 +419,81 @@ class FeatureDbService {
         'vertical_symmetry': newFeature.verticalSymmetry,
         'horizontal_symmetry': newFeature.horizontalSymmetry,
         'edge_density': newFeature.edgeDensity,
+        'core_solidity': newFeature.coreSolidity,
+        'bottom_heavy_bias': newFeature.bottomHeavyBias,
+        'max_width_row_bias': newFeature.maxWidthRowBias,
+        'max_height_col_bias': newFeature.maxHeightColBias,
+        'bottom_center_density': newFeature.bottomCenterDensity,
+        'corner_density': newFeature.cornerDensity,
+        'diagonal_density': newFeature.diagonalDensity,
+        'lower_quadrant_symmetry': newFeature.lowerQuadrantSymmetry,
+        'horizontal_centroid_shift': newFeature.horizontalCentroidShift,
+        'convex_hull_ratio': newFeature.convexHullRatio,
+        'vertical_mass_distribution': newFeature.verticalMassDistribution,
+        'color_granularity': newFeature.colorGranularity,
+        'fringe_density': newFeature.fringeDensity,
+        'vertical_thinning': newFeature.verticalThinning,
+        'local_symmetry': newFeature.localSymmetry,
+        'color_clustering': newFeature.colorClustering,
+        'y_gradient': newFeature.yGradient,
+        'width_variance': newFeature.widthVariance,
+        'shell_index': newFeature.shellIndex,
+        'radial_overlap': newFeature.radialOverlap,
+        'y_centroid': newFeature.yCentroid,
+        'jaggedness': newFeature.jaggedness,
+        'top_third_density': newFeature.topThirdDensity,
+        'bilateral_sym': newFeature.bilateralSym,
         'animal_class': effectiveClass,
         'diet': effectiveDiet,
         'weight': effectiveWeight,
         'training_count': 1,
       });
     }
+  }
+
+  /// Save a taxonomic profile to the database.
+  Future<void> saveTaxonomyProfile({
+    required String animalClass,
+    required Map<String, double> means,
+    required Map<String, double> variances,
+    required int count,
+  }) async {
+    if (_db == null) return;
+    await _db!.insert(
+      'taxonomy_profiles',
+      {
+        'animal_class': animalClass,
+        'feature_means': jsonEncode(means),
+        'feature_variances': jsonEncode(variances),
+        'sample_count': count,
+        'updated_at': DateTime.now().toIso8601String(),
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  /// Get all taxonomic profiles from the database.
+  Future<List<Map<String, dynamic>>> getAllTaxonomyProfiles() async {
+    if (_db == null) return [];
+    final results = await _db!.query('taxonomy_profiles');
+    return results.map((r) => {
+      'class': r['animal_class'] as String,
+      'means': Map<String, double>.from(jsonDecode(r['feature_means'] as String)),
+      'variances': Map<String, double>.from(jsonDecode(r['feature_variances'] as String)),
+      'count': r['sample_count'] as int,
+    }).toList();
+  }
+
+  /// Get taxonomy metadata from the database.
+  Future<Map<String, dynamic>?> getTaxonomyMetadata(String key) async {
+    if (_db == null) return null;
+    final results = await _db!.query(
+      'taxonomy_metadata',
+      where: 'key = ?',
+      whereArgs: [key],
+    );
+    if (results.isEmpty) return null;
+    return jsonDecode(results.first['data'] as String) as Map<String, dynamic>;
   }
 
   /// Close the database.

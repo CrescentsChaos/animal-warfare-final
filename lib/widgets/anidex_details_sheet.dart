@@ -69,7 +69,13 @@ class AnidexDetailsSheet {
                     _buildFieldIntel(organism),
                     const SizedBox(height: 16),
                     if (isDiscovered) ...[
-                      _buildClassificationSection(organism),
+                      _buildClassificationSection(
+                        organism,
+                        Provider.of<UserState>(
+                          context,
+                          listen: false,
+                        ).currentUser?.unitSystem ?? 'metric',
+                      ),
                     ],
                     const SizedBox(height: 32),
                     _buildPremiumDescription(organism, isDiscovered),
@@ -468,7 +474,7 @@ class AnidexDetailsSheet {
     );
   }
 
-  static Widget _buildClassificationSection(Organism org) {
+  static Widget _buildClassificationSection(Organism org, String unitSystem) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -491,8 +497,14 @@ class AnidexDetailsSheet {
                 'assets/icon/${org.diet.toLowerCase().replaceAll(' ', '_')}.png',
               ),
               _buildClassificationBadge(
+                'SIZE',
+                org.formattedSizeForSystem(unitSystem),
+                null,
+                iconData: Icons.straighten,
+              ),
+              _buildClassificationBadge(
                 'WEIGHT',
-                '${org.formattedWeight} KG',
+                org.formattedWeightForSystem(unitSystem),
                 null,
                 iconData: Icons.scale,
               ),
@@ -1291,11 +1303,13 @@ class OrganismSpriteDisplay extends StatelessWidget {
   }
 
   String _getSpritePath() {
-    if (organism.sprite.isNotEmpty && !organism.sprite.startsWith('http') && !organism.sprite.contains(' ')) {
+    if (organism.sprite.isNotEmpty &&
+        !organism.sprite.startsWith('http') &&
+        !organism.sprite.contains(' ')) {
       if (organism.sprite.startsWith('assets/')) return organism.sprite;
       return 'assets/sprites/${organism.sprite}';
     }
-    
+
     final fileName = organism.name
         .toLowerCase()
         .replaceAll(' ', '_')

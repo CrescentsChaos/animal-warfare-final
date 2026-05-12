@@ -139,6 +139,26 @@
                 </div>
 
                 <div class="filter-section">
+                    <div class="filter-label">SIZE</div>
+                    <select id="flt-size" onchange="App.filter()">
+                        <option value="">All Sizes</option>
+                        <option value="tiny">&lt; 0.5 m</option>
+                        <option value="small">0.5 - 2 m</option>
+                        <option value="medium">2 - 5 m</option>
+                        <option value="large">5 - 10 m</option>
+                        <option value="huge">&gt; 10 m</option>
+                    </select>
+                </div>
+
+                <div class="filter-section">
+                    <div class="filter-label">UNITS</div>
+                    <select id="flt-units" onchange="App.setUnitSystem(this.value)">
+                        <option value="metric">Metric (KG/M)</option>
+                        <option value="imperial">Imperial (LBS/FT)</option>
+                    </select>
+                </div>
+
+                <div class="filter-section">
                     <div class="filter-label">SORT BY</div>
                     <div class="sort-chips" id="sort-chips">
                         <button class="sort-chip active" data-sort="name" onclick="App.setSort('name')">NAME</button>
@@ -151,6 +171,7 @@
                         <button class="sort-chip" data-sort="speed" onclick="App.setSort('speed')">SPD</button>
                         <button class="sort-chip" data-sort="bst" onclick="App.setSort('bst')">BST</button>
                         <button class="sort-chip" data-sort="weight" onclick="App.setSort('weight')">WEIGHT</button>
+                        <button class="sort-chip" data-sort="size" onclick="App.setSort('size')">SIZE</button>
                     </div>
                     <button class="order-btn" id="order-btn" onclick="App.toggleOrder()">
                         <span id="order-label">ASCENDING</span>
@@ -207,6 +228,7 @@
             mode: 'animals',
             sortBy: 'name',
             ascending: true,
+            unitSystem: 'metric',
             observer: null,
 
             async start() {
@@ -297,6 +319,7 @@
                 const aClass = document.getElementById('flt-class').value;
                 const aDiet = document.getElementById('flt-diet').value;
                 const weight = document.getElementById('flt-weight').value;
+                const sizeVal = document.getElementById('flt-size').value;
 
                 this.filtered = this.db.orgs.filter(o => {
                     if (q && !o.name.toLowerCase().includes(q) &&
@@ -319,6 +342,14 @@
                         if (weight === 'large' && (w < 50 || w >= 100)) return false;
                         if (weight === 'huge' && w < 100) return false;
                     }
+                    if (sizeVal) {
+                        const s = parseFloat(o.size) || 0;
+                        if (sizeVal === 'tiny' && s >= 0.5) return false;
+                        if (sizeVal === 'small' && (s < 0.5 || s >= 2)) return false;
+                        if (sizeVal === 'medium' && (s < 2 || s >= 5)) return false;
+                        if (sizeVal === 'large' && (s < 5 || s >= 10)) return false;
+                        if (sizeVal === 'huge' && s < 10) return false;
+                    }
                     return true;
                 });
 
@@ -333,6 +364,7 @@
                         case 'resistance': r = (b.resistance || 0) - (a.resistance || 0); break;
                         case 'speed': r = (b.speed || 0) - (a.speed || 0); break;
                         case 'weight': r = (parseFloat(b.weight) || 0) - (parseFloat(a.weight) || 0); break;
+                        case 'size': r = (parseFloat(b.size) || 0) - (parseFloat(a.size) || 0); break;
                         case 'bst':
                             r = ((b.health || 0) + (b.attack || 0) + (b.defense || 0) + (b.power || 0) + (b.resistance || 0) + (b.speed || 0)) -
                                 ((a.health || 0) + (a.attack || 0) + (a.defense || 0) + (a.power || 0) + (a.resistance || 0) + (a.speed || 0));
@@ -543,8 +575,27 @@
 
                 const aClass = org.class || org.animal_class || 'Unknown';
                 const aDiet = org.diet || 'Unknown';
-                const aWeight = org.weight ? org.weight + ' KG' : 'Unknown';
                 const aActivity = org.active_time || org.activity || 'Unknown';
+
+                let weightLabel = 'Unknown';
+                if (org.weight) {
+                    if (this.unitSystem === 'imperial') {
+                        const lbs = (org.weight * 2.20462).toFixed(1).replace(/\.0$/, '');
+                        weightLabel = `${lbs} LBS`;
+                    } else {
+                        weightLabel = `${org.weight} KG`;
+                    }
+                }
+
+                let sizeLabel = 'Unknown';
+                if (org.size) {
+                    if (this.unitSystem === 'imperial') {
+                        const ft = (org.size * 3.28084).toFixed(1).replace(/\.0$/, '');
+                        sizeLabel = `${ft} FT`;
+                    } else {
+                        sizeLabel = `${org.size} M`;
+                    }
+                }
 
                 document.getElementById('modal-content').innerHTML = `
                 <div class="detail-header" style="background-image: url('${this.rarityBackground(rarity)}'); background-size: cover; background-position: center;">
@@ -579,7 +630,14 @@
                                 <div style="font-size:20px;line-height:22px;text-align:center;width:22px;">⚖️</div>
                                 <div class="badge-label">
                                     <span class="badge-type">Weight</span>
-                                    <span class="badge-value">${aWeight.toUpperCase()}</span>
+                                    <span class="badge-value">${weightLabel.toUpperCase()}</span>
+                                </div>
+                            </div>
+                            <div class="class-badge">
+                                <div style="font-size:20px;line-height:22px;text-align:center;width:22px;">📏</div>
+                                <div class="badge-label">
+                                    <span class="badge-type">Size</span>
+                                    <span class="badge-value">${sizeLabel.toUpperCase()}</span>
                                 </div>
                             </div>
                             <div class="class-badge">
@@ -708,6 +766,11 @@
                 this.filter();
             },
 
+            setUnitSystem(val) {
+                this.unitSystem = val;
+                this.render();
+            },
+
             toggleOrder() {
                 this.ascending = !this.ascending;
                 document.getElementById('order-label').textContent = this.ascending ? 'ASCENDING' : 'DESCENDING';
@@ -717,12 +780,14 @@
 
             reset() {
                 document.getElementById('q').value = '';
-                ['flt-biome', 'flt-cat1', 'flt-cat2', 'flt-rarity', 'flt-ability', 'flt-move', 'flt-drop', 'flt-class', 'flt-diet', 'flt-weight', 'flt-item-cat'].forEach(id => {
+                ['flt-biome', 'flt-cat1', 'flt-cat2', 'flt-rarity', 'flt-ability', 'flt-move', 'flt-drop', 'flt-class', 'flt-diet', 'flt-weight', 'flt-size', 'flt-item-cat'].forEach(id => {
                     const el = document.getElementById(id);
                     if (el) el.selectedIndex = 0;
                 });
                 this.sortBy = 'name';
                 this.ascending = true;
+                this.unitSystem = 'metric';
+                document.getElementById('flt-units').value = 'metric';
                 document.querySelectorAll('.sort-chip').forEach(c => c.classList.toggle('active', c.dataset.sort === 'name'));
                 document.getElementById('order-label').textContent = 'ASCENDING';
                 document.getElementById('order-icon').textContent = '↑';

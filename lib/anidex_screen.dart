@@ -65,6 +65,7 @@ class _AnidexScreenState extends State<AnidexScreen>
   String? _selectedClass;
   String? _selectedDiet;
   String? _selectedWeight;
+  String? _selectedSize;
   String _sortBy = 'NAME';
   bool _isAscending = true;
 
@@ -74,6 +75,14 @@ class _AnidexScreenState extends State<AnidexScreen>
     '10 - 50 kg',
     '50 - 100 kg',
     '> 100 kg',
+  ];
+
+  static const List<String> _allSizes = [
+    '< 0.5 m',
+    '0.5 - 2 m',
+    '2 - 5 m',
+    '5 - 10 m',
+    '> 10 m',
   ];
 
   bool _isLoading = true;
@@ -246,6 +255,14 @@ class _AnidexScreenState extends State<AnidexScreen>
         }
         if (_selectedWeight == '> 100 kg' && w < 100) return false;
       }
+      if (_selectedSize != null) {
+        final s = org.size;
+        if (_selectedSize == '< 0.5 m' && s >= 0.5) return false;
+        if (_selectedSize == '0.5 - 2 m' && (s < 0.5 || s >= 2)) return false;
+        if (_selectedSize == '2 - 5 m' && (s < 2 || s >= 5)) return false;
+        if (_selectedSize == '5 - 10 m' && (s < 5 || s >= 10)) return false;
+        if (_selectedSize == '> 10 m' && s < 10) return false;
+      }
       return true;
     }).toList();
 
@@ -275,6 +292,9 @@ class _AnidexScreenState extends State<AnidexScreen>
           break;
         case 'WEIGHT':
           result = b.weight.compareTo(a.weight);
+          break;
+        case 'SIZE':
+          result = b.size.compareTo(a.size);
           break;
         default:
           result = a.name.compareTo(b.name);
@@ -765,6 +785,12 @@ class _AnidexScreenState extends State<AnidexScreen>
                   (v) => setState(() => _selectedWeight = v),
                 ),
                 _buildSearchableFilter(
+                  'SIZE',
+                  _selectedSize,
+                  _allSizes,
+                  (v) => setState(() => _selectedSize = v),
+                ),
+                _buildSearchableFilter(
                   'ABILITY',
                   _selectedAbility,
                   _allAbilities,
@@ -844,6 +870,7 @@ class _AnidexScreenState extends State<AnidexScreen>
                   _selectedClass = null;
                   _selectedDiet = null;
                   _selectedWeight = null;
+                  _selectedSize = null;
                   _sortBy = 'NAME';
                   _isAscending = true;
                 });
@@ -911,6 +938,7 @@ class _AnidexScreenState extends State<AnidexScreen>
       'SPEED',
       'BST',
       'WEIGHT',
+      'SIZE',
     ];
 
     return Column(

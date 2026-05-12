@@ -261,6 +261,12 @@ class UserState with ChangeNotifier {
     await _readModifyWrite((u) => u.copyWith(anidexUnlocked: unlocked));
   }
 
+  Future<void> toggleUnitSystem() async {
+    if (_currentUser == null) return;
+    final newSystem = _currentUser!.unitSystem == 'metric' ? 'imperial' : 'metric';
+    await _readModifyWrite((u) => u.copyWith(unitSystem: newSystem));
+  }
+
   Future<bool> toggleTeamMember(int index) async {
     if (_currentUser == null) return false;
     bool success = true;

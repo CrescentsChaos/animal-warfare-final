@@ -46,6 +46,7 @@ class Organism {
   pheno; // NEW: Overworld sprite prefix (e.g., "giant_water_bug"), or "none"
   final String animalClass; // NEW: Taxonomic class (mammal, bird, etc.)
   final String diet; // NEW: Diet (carnivore, herbivore, etc.)
+  final double size; // NEW: Size in meters
 
   Organism({
     required this.name,
@@ -72,6 +73,7 @@ class Organism {
     this.pheno = 'none', // Default
     this.animalClass = 'unknown', // Default
     this.diet = 'unknown', // Default
+    this.size = 1.0, // Default 1.0 m
   });
 
   factory Organism.fromJson(Map<String, dynamic> json) {
@@ -125,23 +127,44 @@ class Organism {
       animalClass:
           (json['class'] ?? json['animal_class'])?.toString() ?? 'unknown',
       diet: (json['diet']?.toString() ?? 'unknown'),
+      size: (json['size'] as num? ?? 1.0).toDouble(),
     );
   }
 
   String get formattedWeight {
     if (weight < 0.0001) {
-      // For very small weights (like microbes), use scientific or fixed with many decimals
-      // but let's just use a clean string representation.
       return weight
           .toStringAsFixed(12)
           .replaceAll(RegExp(r'0+$'), '')
           .replaceAll(RegExp(r'\.$'), '');
     }
-    // For normal weights, if it's a whole number, show it as such
     if (weight == weight.toInt().toDouble()) {
       return weight.toInt().toString();
     }
     return weight.toString();
+  }
+
+  String get formattedSize {
+    if (size == size.toInt().toDouble()) {
+      return size.toInt().toString();
+    }
+    return size.toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '');
+  }
+
+  String formattedWeightForSystem(String unitSystem) {
+    if (unitSystem == 'imperial') {
+      final lbs = weight * 2.20462;
+      return "${lbs.toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')} LBS";
+    }
+    return "$formattedWeight KG";
+  }
+
+  String formattedSizeForSystem(String unitSystem) {
+    if (unitSystem == 'imperial') {
+      final feet = size * 3.28084;
+      return "${feet.toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')} FT";
+    }
+    return "$formattedSize M";
   }
 
   static double _parseWeight(dynamic value) {
@@ -202,6 +225,7 @@ class Organism {
     String? pheno,
     String? animalClass,
     String? diet,
+    double? size,
   }) {
     return Organism(
       name: name ?? this.name,
@@ -228,6 +252,7 @@ class Organism {
       pheno: pheno ?? this.pheno,
       animalClass: animalClass ?? this.animalClass,
       diet: diet ?? this.diet,
+      size: size ?? this.size,
     );
   }
 
@@ -257,6 +282,7 @@ class Organism {
       'pheno': pheno,
       'class': animalClass,
       'diet': diet,
+      'size': size,
     };
   }
 
@@ -325,6 +351,7 @@ class Organism {
     spawnTiles: 'any',
     animalClass: 'mammal',
     diet: 'omnivore',
+    size: 1.7,
   );
 
   static final Organism trainingDummy = Organism(
@@ -352,5 +379,6 @@ class Organism {
     spawnTiles: 'any',
     animalClass: 'unknown',
     diet: 'unknown',
+    size: 1.0,
   );
 }

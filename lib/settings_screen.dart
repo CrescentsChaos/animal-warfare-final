@@ -40,6 +40,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _appVersion = '0.1.1';
   bool _isLoading = true;
   bool _anidexUnlocked = false;
+  String _unitSystem = 'metric';
 
   @override
   void initState() {
@@ -58,6 +59,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final pkgVersion = packageInfo.version;
       _appVersion = pkgVersion.isNotEmpty ? pkgVersion : kAppVersion;
       _anidexUnlocked = widget.currentUser.anidexUnlocked;
+      _unitSystem = widget.currentUser.unitSystem;
       _isLoading = false;
     });
   }
@@ -326,6 +328,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     Provider.of<UserState>(context, listen: false).toggleAnidexUnlocked(val);
                   },
                 ),
+                _buildUnitToggle(),
                 _buildActionTile(
                   title: 'Patch Notes',
                   icon: 'assets/icon/quests.png',
@@ -591,6 +594,58 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUnitToggle() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            const Icon(Icons.settings_overscan, color: AppColors.primary, size: 20),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Unit Measurement System',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  Text(
+                    _unitSystem == 'metric' ? 'Metric (KG, M)' : 'Imperial (LBS, FT)',
+                    style: GoogleFonts.inter(
+                      color: AppColors.textMuted,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Switch(
+              value: _unitSystem == 'imperial',
+              onChanged: (val) async {
+                setState(() {
+                  _unitSystem = val ? 'imperial' : 'metric';
+                });
+                HapticService.medium();
+                await Provider.of<UserState>(context, listen: false).toggleUnitSystem();
+              },
+            ),
+          ],
         ),
       ),
     );
