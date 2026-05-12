@@ -16,7 +16,7 @@ enum AnimalClass {
   cnidarian,
   echinoderm,
   otherInvertebrate,
-  unknown
+  unknown,
 }
 
 class Organism {
@@ -144,6 +144,8 @@ class Organism {
     return weight.toString();
   }
 
+  int get bst => health + attack + defense + power + resistance + speed;
+
   double get robustness => weight / (size > 0 ? size : 1);
 
   String get formattedRobustness {
@@ -183,7 +185,7 @@ class Organism {
       final totalInches = size * 39.3701;
       final feet = (totalInches / 12).floor();
       final inches = (totalInches % 12).round();
-      
+
       if (feet > 0) {
         if (inches == 0) return "$feet FT";
         return "$feet FT $inches IN";
@@ -343,9 +345,6 @@ class Organism {
     };
     return stats.entries.reduce((a, b) => a.value >= b.value ? a : b).key;
   }
-
-  /// Returns the Base Stat Total (BST).
-  int get bst => health + attack + defense + power + resistance + speed;
 
   /// Returns KV yield based on rarity.
   static int kvYield(String rarity) {

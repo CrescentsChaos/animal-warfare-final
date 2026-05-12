@@ -158,7 +158,6 @@
                         <option value="huge">&gt; 10 m</option>
                     </select>
                 </div>
-
                 <div class="filter-section">
                     <div class="filter-label">ROBUSTNESS</div>
                     <select id="flt-robustness" onchange="App.filter()">
@@ -168,6 +167,18 @@
                         <option value="medium">10 - 50 λ</option>
                         <option value="large">50 - 100 λ</option>
                         <option value="huge">&gt; 100 λ</option>
+                    </select>
+                </div>
+
+                <div class="filter-section">
+                    <div class="filter-label">BST</div>
+                    <select id="flt-bst" onchange="App.filter()">
+                        <option value="">All BST</option>
+                        <option value="vlow">&lt; 300</option>
+                        <option value="low">300 - 450</option>
+                        <option value="med">450 - 550</option>
+                        <option value="high">550 - 650</option>
+                        <option value="vhigh">&gt; 650</option>
                     </select>
                 </div>
 
@@ -193,6 +204,7 @@
                         <button class="sort-chip" data-sort="bst" onclick="App.setSort('bst')">BST</button>
                         <button class="sort-chip" data-sort="weight" onclick="App.setSort('weight')">WEIGHT</button>
                         <button class="sort-chip" data-sort="size" onclick="App.setSort('size')">SIZE</button>
+                        <button class="sort-chip" data-sort="robustness" onclick="App.setSort('robustness')">ROBUSTNESS</button>
                     </div>
                     <button class="order-btn" id="order-btn" onclick="App.toggleOrder()">
                         <span id="order-label">ASCENDING</span>
@@ -342,6 +354,7 @@
                 const weight = document.getElementById('flt-weight').value;
                 const sizeVal = document.getElementById('flt-size').value;
                 const robustnessVal = document.getElementById('flt-robustness').value;
+                const bstVal = document.getElementById('flt-bst').value;
                 const excludeMythical = document.getElementById('chk-exclude-mythical').checked;
 
                 this.filtered = this.db.orgs.filter(o => {
@@ -381,6 +394,14 @@
                         if (robustnessVal === 'medium' && (r < 10 || r >= 50)) return false;
                         if (robustnessVal === 'large' && (r < 50 || r >= 100)) return false;
                         if (robustnessVal === 'huge' && r < 100) return false;
+                    }
+                    if (bstVal) {
+                        const bst = (o.health || 0) + (o.attack || 0) + (o.defense || 0) + (o.power || 0) + (o.resistance || 0) + (o.speed || 0);
+                        if (bstVal === 'vlow' && bst >= 300) return false;
+                        if (bstVal === 'low' && (bst < 300 || bst >= 450)) return false;
+                        if (bstVal === 'med' && (bst < 450 || bst >= 550)) return false;
+                        if (bstVal === 'high' && (bst < 550 || bst >= 650)) return false;
+                        if (bstVal === 'vhigh' && bst < 650) return false;
                     }
                     return true;
                 });
@@ -838,7 +859,7 @@
 
             reset() {
                 document.getElementById('q').value = '';
-                ['flt-biome', 'flt-cat1', 'flt-cat2', 'flt-rarity', 'flt-ability', 'flt-move', 'flt-drop', 'flt-class', 'flt-diet', 'flt-weight', 'flt-size', 'flt-robustness', 'flt-item-cat'].forEach(id => {
+                ['flt-biome', 'flt-cat1', 'flt-cat2', 'flt-rarity', 'flt-ability', 'flt-move', 'flt-drop', 'flt-class', 'flt-diet', 'flt-weight', 'flt-size', 'flt-robustness', 'flt-bst', 'flt-item-cat'].forEach(id => {
                     const el = document.getElementById(id);
                     if (el) el.selectedIndex = 0;
                 });

@@ -67,6 +67,7 @@ class _AnidexScreenState extends State<AnidexScreen>
   String? _selectedWeight;
   String? _selectedSize;
   String? _selectedRobustness;
+  String? _selectedBst;
   String _sortBy = 'NAME';
   bool _isAscending = true;
   bool _excludeMythical = false;
@@ -93,6 +94,14 @@ class _AnidexScreenState extends State<AnidexScreen>
     '10 - 50 λ',
     '50 - 100 λ',
     '> 100 λ',
+  ];
+
+  static const List<String> _allBst = [
+    '< 300',
+    '300 - 450',
+    '450 - 550',
+    '550 - 650',
+    '> 650',
   ];
 
   bool _isLoading = true;
@@ -289,6 +298,20 @@ class _AnidexScreenState extends State<AnidexScreen>
           return false;
         }
         if (_selectedRobustness == '> 100 λ' && r < 100) return false;
+      }
+      if (_selectedBst != null) {
+        final bst = org.bst;
+        if (_selectedBst == '< 300' && bst >= 300) return false;
+        if (_selectedBst == '300 - 450' && (bst < 300 || bst >= 450)) {
+          return false;
+        }
+        if (_selectedBst == '450 - 550' && (bst < 450 || bst >= 550)) {
+          return false;
+        }
+        if (_selectedBst == '550 - 650' && (bst < 550 || bst >= 650)) {
+          return false;
+        }
+        if (_selectedBst == '> 650' && bst < 650) return false;
       }
       return true;
     }).toList();
@@ -858,6 +881,12 @@ class _AnidexScreenState extends State<AnidexScreen>
                   _allRobustness,
                   (v) => setState(() => _selectedRobustness = v),
                 ),
+                _buildSearchableFilter(
+                  'BST',
+                  _selectedBst,
+                  _allBst,
+                  (v) => setState(() => _selectedBst = v),
+                ),
               ],
             ),
           ),
@@ -922,6 +951,7 @@ class _AnidexScreenState extends State<AnidexScreen>
                   _selectedWeight = null;
                   _selectedSize = null;
                   _selectedRobustness = null;
+                  _selectedBst = null;
                   _sortBy = 'NAME';
                   _isAscending = true;
                   _excludeMythical = false;

@@ -7,6 +7,7 @@ import 'package:animal_warfare/login_screen.dart';
 import 'package:animal_warfare/profile_screen.dart';
 import 'package:animal_warfare/game_screen.dart';
 import 'package:animal_warfare/quest_screen.dart';
+import 'package:animal_warfare/news_screen.dart';
 import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/theme.dart';
 import 'package:animal_warfare/shop_screen.dart';
@@ -289,6 +290,13 @@ class _MainScreenState extends State<MainScreen> {
                           iconPath: 'assets/icon/quests.png',
                           color: const Color(0xFF7C4DFF),
                           onPressed: () => _navigateTo(const QuestScreen()),
+                        ),
+                        _buildMenuButton(
+                          text: 'Daily Wire',
+                          subtitle: 'Today\'s wildlife news & intel',
+                          iconPath: 'assets/icon/quests.png',
+                          color: const Color(0xFF1A237E),
+                          onPressed: () => _navigateTo(const NewsScreen()),
                         ),
                         _buildMenuButton(
                           text: 'Shop',
