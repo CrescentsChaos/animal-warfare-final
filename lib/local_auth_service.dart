@@ -1,5 +1,6 @@
 // lib/local_auth_service.dart
 
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -411,16 +412,21 @@ class UserData {
     }
 
     final List<dynamic> capturedJson = json['capturedOrganisms'] ?? [];
+    if (kDebugMode) {
+      print('UserData.fromJson: capturedOrganisms JSON entries=${capturedJson.length}, allOrganisms=${allOrganisms?.length ?? "NULL"}');
+    }
     final List<CapturedOrganism> capturedList = capturedJson
         .map((coJson) {
           final organismName = coJson['name'] as String?;
           if (organismName == null) {
+            if (kDebugMode) print('UserData.fromJson: DROPPED entry — null name');
             return null;
           }
 
           final baseOrganism = findBaseOrganism(organismName);
 
           if (baseOrganism == null) {
+            if (kDebugMode) print('UserData.fromJson: DROPPED "$organismName" — no base organism match');
             return null;
           }
 
@@ -428,6 +434,9 @@ class UserData {
         })
         .whereType<CapturedOrganism>()
         .toList();
+    if (kDebugMode) {
+      print('UserData.fromJson: final capturedList.length=${capturedList.length}');
+    }
     return UserData(
       username: json['username'] as String? ?? '',
       password: json['password'] as String? ?? '',
@@ -563,17 +572,31 @@ class LocalAuthService {
   static final Map<String, Future<void>?> _writeLocks = {};
 
   static List<Organism>? _cachedOrganisms;
+  static Future<List<Organism>>? _loadingFuture;
   static Future<List<Organism>> loadOrganisms() async {
     if (_cachedOrganisms != null) return _cachedOrganisms!;
+    
+    // Prevent multiple concurrent loads
+    if (_loadingFuture != null) return _loadingFuture!;
+
+    final completer = Completer<List<Organism>>();
+    _loadingFuture = completer.future;
+
     try {
+      if (kDebugMode) print('LocalAuthService: Loading organisms from $_organismsAssetPath...');
       final String response = await rootBundle.loadString(_organismsAssetPath);
       final List<dynamic> data = jsonDecode(response);
       _cachedOrganisms = data
           .map((e) => Organism.fromJson(e as Map<String, dynamic>))
           .toList();
+      
+      if (kDebugMode) print('LocalAuthService: Successfully loaded ${_cachedOrganisms!.length} organisms.');
+      completer.complete(_cachedOrganisms!);
       return _cachedOrganisms!;
     } catch (e) {
-      if (kDebugMode) print('LocalAuthService: could not load organisms: $e');
+      if (kDebugMode) print('LocalAuthService: CRITICAL ERROR loading organisms: $e');
+      _loadingFuture = null; // Allow retry
+      completer.completeError(e);
       return [];
     }
   }
@@ -600,6 +623,14 @@ class LocalAuthService {
       try {
         final userMap = _robustJsonDecode(contents, username);
         final organisms = await loadOrganisms();
+        
+        if (organisms.isEmpty && userMap.containsKey('capturedOrganisms')) {
+          final List? captured = userMap['capturedOrganisms'] as List?;
+          if (captured != null && captured.isNotEmpty) {
+            throw Exception('Failed to load base organisms. Aborting UserData reconstruction to prevent collection wipe.');
+          }
+        }
+
         return UserData.fromJson(
           userMap,
           allOrganisms: organisms.isEmpty ? null : organisms,
@@ -674,40 +705,26 @@ class LocalAuthService {
 
   Future<void> _performWrite(UserData user) async {
     try {
-      final contents = await user_storage.readUserData(user.username);
-      if (contents != null) {
-        try {
-          final data = _robustJsonDecode(contents, user.username);
-          final currentQuizCount = (data['quizStats'] as Map?)?.length ?? 0;
-          if (currentQuizCount > user.quizStats.length) {
-            if (kDebugMode) {
-              print(
-                "WARNING: Aborted stale write for ${user.username} (file has more quiz data)",
-              );
-            }
-            return;
-          }
-        } catch (e) {
-          if (kDebugMode) {
-            print(
-              "WARNING: Failed to decode existing file for ${user.username} during write: $e. Proceeding with atomic write to fix corruption.",
-            );
-          }
-          // If the file is so corrupted that recovery fails, we MUST proceed with the write
-          // to overwrite the corruption with a fresh, valid JSON state.
-        }
+      if (kDebugMode) {
+        print("DEBUG: Initiating write for ${user.username}...");
       }
-      await user_storage.writeUserData(
-        user.username,
-        jsonEncode(user.toJson()),
-      );
+
+      // 🔴 REMOVED: Faulty stale write check that aborted writes if quiz count on disk was higher.
+      // This caused data loss during concurrent operations (e.g. capturing animal while quiz active).
+      
+      final jsonString = jsonEncode(user.toJson());
+      await user_storage.writeUserData(user.username, jsonString);
+
       if (kDebugMode) {
         print(
-          "DEBUG: Saved ${user.username} (quiz keys: ${user.quizStats.length})",
+          "DEBUG: SUCCESSFULLY SAVED ${user.username} (Captured: ${user.capturedOrganisms.length}, Quiz entries: ${user.quizStats.length})",
         );
       }
-    } catch (e) {
-      if (kDebugMode) print("Error writing user ${user.username}: $e");
+    } catch (e, stack) {
+      if (kDebugMode) {
+        print("ERROR writing user ${user.username}: $e");
+        print(stack);
+      }
       rethrow;
     }
   }

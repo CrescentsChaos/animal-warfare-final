@@ -269,6 +269,8 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
       return _buildEmptyTeamState();
     }
 
+    debugPrint('AnimalBox: teamIndices=$teamIndices, capturedOrganisms.length=${user.capturedOrganisms.length}');
+
     return ReorderableListView.builder(
       padding: const EdgeInsets.all(12),
       itemCount: teamIndices.length,
@@ -279,27 +281,25 @@ class _AnimalBoxScreenState extends State<AnimalBoxScreen> {
         final originalIndex = teamIndices[index];
         if (originalIndex < 0 ||
             originalIndex >= user.capturedOrganisms.length) {
+          debugPrint('AnimalBox: SKIPPING team slot $index — originalIndex=$originalIndex out of bounds (max=${user.capturedOrganisms.length})');
           return SizedBox.shrink(key: ValueKey('empty_team_$index'));
         }
         final org = user.capturedOrganisms[originalIndex];
 
-        return PopUpItem(
-          index: index,
-          child: _AnimalCard(
-            key: ValueKey('team_card_$originalIndex'),
-            captured: org,
-            index: originalIndex,
-            isInTeam: true,
-            isNarrow: MediaQuery.sizeOf(context).width < 400,
-            isNew: false,
-            onTap: () => _showAnimalDetails(context, org, originalIndex),
-            onToggleTeam: () => userState.toggleTeamMember(originalIndex),
-            onManageMoves: () => _showMoveSelection(context, org, originalIndex),
-            onManageItems: () =>
-                _showItemSelection(context, userState, originalIndex, org),
-            onRelease: () =>
-                _confirmRelease(context, org, originalIndex, userState),
-          ),
+        return _AnimalCard(
+          key: ValueKey('team_card_$originalIndex'),
+          captured: org,
+          index: originalIndex,
+          isInTeam: true,
+          isNarrow: MediaQuery.sizeOf(context).width < 400,
+          isNew: false,
+          onTap: () => _showAnimalDetails(context, org, originalIndex),
+          onToggleTeam: () => userState.toggleTeamMember(originalIndex),
+          onManageMoves: () => _showMoveSelection(context, org, originalIndex),
+          onManageItems: () =>
+              _showItemSelection(context, userState, originalIndex, org),
+          onRelease: () =>
+              _confirmRelease(context, org, originalIndex, userState),
         );
       },
     );

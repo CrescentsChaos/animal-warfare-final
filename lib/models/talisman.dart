@@ -228,6 +228,11 @@ class TalismanEffect {
 }
 
 class Talisman {
+  final bool isFood;
+  final String? dietType;
+  final String? preferredClass;
+  final String? preferredSpecies;
+  final int nutritionalValue;
   final String id;
   final String name;
   final String description;
@@ -238,6 +243,11 @@ class Talisman {
     required this.name,
     required this.description,
     required this.effects,
+    this.isFood = false,
+    this.dietType,
+    this.preferredClass,
+    this.preferredSpecies,
+    this.nutritionalValue = 0,
   });
 
   String get spritePath =>
@@ -299,6 +309,11 @@ class Talisman {
       name: json['name'] as String,
       description: json['description'] as String,
       effects: effects,
+      isFood: json['is_food'] as bool? ?? false,
+      dietType: json['diet_type'] as String?,
+      preferredClass: json['preferred_class'] as String?,
+      preferredSpecies: json['preferred_species'] as String?,
+      nutritionalValue: (json['nutritional_value'] as num? ?? 0).toInt(),
     );
   }
 

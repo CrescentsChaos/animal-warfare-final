@@ -10,6 +10,9 @@ import 'package:animal_warfare/models/move.dart';
 import 'package:animal_warfare/models/elemental_type.dart';
 import 'package:animal_warfare/models/ability.dart';
 import 'package:animal_warfare/theme.dart';
+import 'package:animal_warfare/user_state.dart';
+import 'package:animal_warfare/models/talisman.dart';
+import 'package:provider/provider.dart';
 
 class AnimalSummaryScreen extends StatefulWidget {
   final CapturedOrganism captured;
@@ -496,6 +499,10 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
         _sectionHeader('SATISFACTION'),
         const SizedBox(height: 12),
         _buildSatisfactionMeter(),
+        const SizedBox(height: 24),
+        _sectionHeader('HUNGER'),
+        const SizedBox(height: 12),
+        _buildHungerMeter(),
         const SizedBox(height: 24),
         _sectionHeader('HABITAT'),
         const SizedBox(height: 10),
@@ -1524,6 +1531,234 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
         ],
       ),
     );
+  }
+
+  Widget _buildHungerMeter() {
+    final h = _current.hungerLevel;
+    final perc = (h / 100.0).clamp(0.0, 1.0);
+    Color color = Colors.redAccent;
+    String label = 'Starving';
+    if (h >= 80) {
+      color = Colors.greenAccent;
+      label = 'Full';
+    } else if (h >= 50) {
+      color = Colors.blueAccent;
+      label = 'Peckish';
+    } else if (h >= 20) {
+      color = Colors.orangeAccent;
+      label = 'Hungry';
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A1A2E),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.restaurant, color: color, size: 16),
+                  const SizedBox(width: 8),
+                  Text(
+                    'SATIETY',
+                    style: TextStyle(
+                      fontFamily: 'PressStart2P',
+                      fontSize: 8,
+                      color: Colors.white.withValues(alpha: 0.5),
+                    ),
+                  ),
+                ],
+              ),
+              Text(
+                label.toUpperCase(),
+                style: TextStyle(
+                  fontFamily: 'PressStart2P',
+                  fontSize: 8,
+                  color: color,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: LinearProgressIndicator(
+                    value: perc,
+                    minHeight: 12,
+                    backgroundColor: Colors.white.withValues(alpha: 0.05),
+                    color: color,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              ElevatedButton(
+                onPressed: () => _showFoodPicker(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: color.withValues(alpha: 0.2),
+                  foregroundColor: color,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  side: BorderSide(color: color.withValues(alpha: 0.4)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text(
+                  'FEED',
+                  style: TextStyle(
+                    fontFamily: 'PressStart2P',
+                    fontSize: 8,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '${h.toStringAsFixed(1)} / 100.0',
+            style: const TextStyle(
+              fontFamily: 'PressStart2P',
+              fontSize: 7,
+              color: Colors.white38,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showFoodPicker(BuildContext context) {
+    final userState = Provider.of<UserState>(context, listen: false);
+    if (userState.currentUser == null) return;
+
+    final inventory = userState.currentUser!.inventory;
+    final foodItems = <(Talisman, int)>[];
+
+    for (var entry in inventory.entries) {
+      final talisman = Talisman.findById(entry.key);
+      if (talisman != null && talisman.isFood && entry.value > 0) {
+        foodItems.add((talisman, entry.value));
+      }
+    }
+
+    if (foodItems.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('You have no food in your inventory!'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF12121E),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'SELECT FOOD',
+                style: TextStyle(
+                  fontFamily: 'PressStart2P',
+                  fontSize: 12,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: foodItems.length,
+                  itemBuilder: (context, index) {
+                    final item = foodItems[index].$1;
+                    final count = foodItems[index].$2;
+                    return ListTile(
+                      contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                      leading: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.05),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(Icons.restaurant, color: Colors.greenAccent, size: 20),
+                      ),
+                      title: Text(
+                        item.name,
+                        style: const TextStyle(
+                          fontFamily: 'PressStart2P',
+                          fontSize: 9,
+                          color: Colors.white,
+                        ),
+                      ),
+                      subtitle: Text(
+                        'Nutr: ${item.nutritionalValue} • Stock: $count',
+                        style: TextStyle(
+                          fontFamily: 'PressStart2P',
+                          fontSize: 7,
+                          color: Colors.white.withValues(alpha: 0.4),
+                        ),
+                      ),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.check_circle_outline, color: Colors.greenAccent),
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _feedAnimal(item);
+                        },
+                      ),
+                      onTap: () {
+                        Navigator.pop(context);
+                        _feedAnimal(item);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _feedAnimal(Talisman food) async {
+    final userState = Provider.of<UserState>(context, listen: false);
+    if (userState.currentUser == null) return;
+
+    // Call the model's feed method (for immediate UI feedback if needed, 
+    // though we'll update atomically next)
+    final result = _current.feed(food);
+    
+    // 🟢 ATOMIC UPDATE: Use the new method to ensure both inventory and hunger are saved.
+    await userState.feedOrganism(_current.id, food);
+
+    if (mounted) {
+      setState(() {}); // Refresh UI
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['message'] as String),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
   }
 
   // ─── SHARED ───────────────────────────────────────────────────────────────

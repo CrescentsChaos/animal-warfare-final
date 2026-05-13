@@ -1678,5 +1678,73 @@
         "condition": "hp_low"
       }
     ]
+  },
+  {
+    "id": "raw_meat",
+    "name": "Raw Meat",
+    "description": "A basic protein source. Carnivores love it.",
+    "is_food": true,
+    "diet_type": "carnivore",
+    "nutritional_value": 30,
+    "effects": []
+  },
+  {
+    "id": "prime_beef",
+    "name": "Prime Beef",
+    "description": "High-quality red meat. Highly preferred by large carnivorous mammals.",
+    "is_food": true,
+    "diet_type": "carnivore",
+    "preferred_class": "mammal",
+    "nutritional_value": 60,
+    "effects": []
+  },
+  {
+    "id": "seaweed_salad",
+    "name": "Seaweed Salad",
+    "description": "A mix of nutrient-rich aquatic plants. Ideal for herbivores and aquatic life.",
+    "is_food": true,
+    "diet_type": "herbivore",
+    "preferred_class": "fish,mollusk",
+    "nutritional_value": 40,
+    "effects": []
+  },
+  {
+    "id": "gourmet_fillet",
+    "name": "Gourmet Fillet",
+    "description": "Exquisite fish fillet. A delicacy for piscivores.",
+    "is_food": true,
+    "diet_type": "piscivore",
+    "nutritional_value": 50,
+    "effects": []
+  },
+  {
+    "id": "seed_mix",
+    "name": "Seed Mix",
+    "description": "A variety of seeds and grains. Perfect for birds.",
+    "is_food": true,
+    "diet_type": "herbivore",
+    "preferred_class": "bird",
+    "nutritional_value": 35,
+    "effects": []
+  },
+  {
+    "id": "insect_jelly",
+    "name": "Insect Jelly",
+    "description": "Sweet, protein-packed jelly. Insects find it irresistible.",
+    "is_food": true,
+    "diet_type": "omnivore",
+    "preferred_class": "insect,arachnid",
+    "nutritional_value": 45,
+    "effects": []
+  },
+  {
+    "id": "royal_honey",
+    "name": "Royal Honey",
+    "description": "Rare honey from a queen bee. Preferred by Ursidae (Bears).",
+    "is_food": true,
+    "diet_type": "omnivore",
+    "preferred_species": "Brown Bear,Grizzly Bear,Polar Bear",
+    "nutritional_value": 80,
+    "effects": []
   }
 ]

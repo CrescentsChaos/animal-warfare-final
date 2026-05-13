@@ -71,6 +71,12 @@ class CapturedOrganism {
 
   String get displayName => nickname ?? baseOrganism.name;
 
+  // NEW: Hunger and Nutrition
+  int hungerLevel; // 0 (starving) to 100 (full)
+  DateTime? lastFedTimeReal;
+  DateTime? lastHungerUpdateReal;
+  GameTime? lastFedTimeGame;
+
   CapturedOrganism({
     required this.baseOrganism,
     required this.individualValues,
@@ -100,6 +106,10 @@ class CapturedOrganism {
     this.isShiny = false,
     Map<String, int>? killValues,
     this.satisfaction = 120,
+    this.hungerLevel = 100, // Starts full
+    this.lastFedTimeReal,
+    this.lastHungerUpdateReal,
+    this.lastFedTimeGame,
     String? activeAbilityName,
     this.teraType,
     this.nickname,
@@ -155,6 +165,69 @@ class CapturedOrganism {
     }
   }
 
+  /// Feeds the animal and returns nutritional gain and message.
+  Map<String, dynamic> feed(Talisman food, {DateTime? realTime, GameTime? gameTime}) {
+    if (!food.isFood) return {'success': false, 'message': 'That is not food!'};
+
+    double multiplier = 1.0;
+    bool isPreferred = false;
+
+    // 1. Check Diet Preference
+    if (food.dietType != null) {
+      if (food.dietType!.toLowerCase() == baseOrganism.diet.toLowerCase()) {
+        multiplier *= 1.2;
+      } else if (baseOrganism.diet.toLowerCase() == 'omnivore') {
+        multiplier *= 1.0; // Omnivores are okay with most things
+      } else {
+        multiplier *= 0.5; // Wrong diet type
+      }
+    }
+
+    // 2. Check Class Preference
+    if (food.preferredClass != null) {
+      final preferredClasses = food.preferredClass!.split(',').map((e) => e.trim().toLowerCase());
+      if (preferredClasses.contains(baseOrganism.animalClass.toLowerCase())) {
+        multiplier *= 1.5;
+        isPreferred = true;
+      }
+    }
+
+    // 3. Check Species Preference
+    if (food.preferredSpecies != null) {
+      final preferredSpecies = food.preferredSpecies!.split(',').map((e) => e.trim().toLowerCase());
+      if (preferredSpecies.contains(baseOrganism.name.toLowerCase())) {
+        multiplier *= 2.0;
+        isPreferred = true;
+      }
+    }
+
+    int nutrition = (food.nutritionalValue * multiplier).round();
+    int oldHunger = hungerLevel;
+    hungerLevel = (hungerLevel + nutrition).clamp(0, 100);
+    
+    // Satisfaction boost
+    int satisfactionGain = isPreferred ? 15 : 5;
+    if (multiplier < 1.0) satisfactionGain = -5; // Dislikes wrong diet
+    satisfaction = (satisfaction + satisfactionGain).clamp(0, 255);
+
+    lastFedTimeReal = realTime ?? DateTime.now();
+    lastHungerUpdateReal = lastFedTimeReal;
+    lastFedTimeGame = gameTime;
+
+    String message = "Your ${displayName} enjoyed the ${food.name}!";
+    if (multiplier < 1.0) message = "Your ${displayName} didn't seem to like the ${food.name} very much...";
+    if (isPreferred) message = "Your ${displayName} absolutely LOVED the ${food.name}!";
+
+    return {
+      'success': true,
+      'nutrition': nutrition,
+      'hungerGain': hungerLevel - oldHunger,
+      'satisfactionGain': satisfactionGain,
+      'isPreferred': isPreferred,
+      'message': message,
+    };
+  }
+
   // NEW: Convenience getter for the organism's name
   String get name => baseOrganism.name;
 
@@ -201,6 +274,10 @@ class CapturedOrganism {
     bool? isShiny,
     Map<String, int>? killValues,
     int? satisfaction,
+    int? hungerLevel,
+    DateTime? lastFedTimeReal,
+    DateTime? lastHungerUpdateReal,
+    GameTime? lastFedTimeGame,
     String? activeAbilityName,
     ElementalType? teraType,
     bool clearTeraType = false,
@@ -236,6 +313,10 @@ class CapturedOrganism {
       isShiny: isShiny ?? this.isShiny,
       killValues: killValues ?? Map.from(this.killValues),
       satisfaction: satisfaction ?? this.satisfaction,
+      hungerLevel: hungerLevel ?? this.hungerLevel,
+      lastFedTimeReal: lastFedTimeReal ?? this.lastFedTimeReal,
+      lastHungerUpdateReal: lastHungerUpdateReal ?? this.lastHungerUpdateReal,
+      lastFedTimeGame: lastFedTimeGame ?? this.lastFedTimeGame,
       activeAbilityName: activeAbilityName ?? this.activeAbilityName,
       teraType: clearTeraType ? null : (teraType ?? this.teraType),
       nickname: clearNickname ? null : (nickname ?? this.nickname),
@@ -641,6 +722,10 @@ class CapturedOrganism {
     'isShiny': isShiny,
     'killValues': killValues,
     'satisfaction': satisfaction,
+    'hungerLevel': hungerLevel,
+    'lastFedTimeReal': lastFedTimeReal?.toIso8601String(),
+    'lastHungerUpdateReal': lastHungerUpdateReal?.toIso8601String(),
+    'lastFedTimeGame': lastFedTimeGame?.toJson(),
     'activeAbilityName': activeAbilityName,
     'teraType': teraType?.toString().split('.').last,
     'nickname': nickname,
@@ -722,6 +807,16 @@ class CapturedOrganism {
           ? (json['killValues'] as Map).map((k, v) => MapEntry(k.toString(), (v as num).toInt()))
           : null,
       satisfaction: (json['satisfaction'] as num?)?.toInt() ?? 120,
+      hungerLevel: (json['hungerLevel'] as num?)?.toInt() ?? 100,
+      lastFedTimeReal: json['lastFedTimeReal'] != null
+          ? DateTime.parse(json['lastFedTimeReal'] as String)
+          : null,
+      lastHungerUpdateReal: json['lastHungerUpdateReal'] != null
+          ? DateTime.parse(json['lastHungerUpdateReal'] as String)
+          : null,
+      lastFedTimeGame: json['lastFedTimeGame'] != null
+          ? GameTime.fromJson(json['lastFedTimeGame'] as Map<String, dynamic>)
+          : null,
       activeAbilityName: json['activeAbilityName'] as String?,
       teraType: json['teraType'] != null
           ? ElementalTypeX.fromString(json['teraType'] as String)

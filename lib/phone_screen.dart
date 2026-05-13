@@ -10,6 +10,7 @@ import 'package:animal_warfare/models/shop_item.dart';
 import 'package:animal_warfare/services/market_service.dart';
 import 'dart:async';
 import 'dart:io';
+import 'package:animal_warfare/services/nutrition_service.dart';
 
 class PhoneScreen extends StatefulWidget {
   final String? initialBiome; // Optional biome for weather app context
@@ -85,6 +86,14 @@ class _PhoneScreenState extends State<PhoneScreen> {
   @override
   Widget build(BuildContext context) {
     final userState = Provider.of<UserState>(context);
+    final nutritionService = Provider.of<NutritionService>(context);
+    
+    // Check for recent hunger alerts
+    final lastMessage = nutritionService.messages.isNotEmpty ? nutritionService.messages.first : null;
+    final showHungerNotify = lastMessage != null && 
+        lastMessage.isHungryAlert && 
+        DateTime.now().difference(lastMessage.timestamp).inSeconds < 10;
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Stack(
@@ -170,12 +179,14 @@ class _PhoneScreenState extends State<PhoneScreen> {
                           ],
                         ),
                         // Notifications on Top
-                        if (_showDealNotification)
+                        if (_showDealNotification || showHungerNotify)
                           Positioned(
                             top: 45,
                             left: 14,
                             right: 14,
-                            child: _buildNotificationBanner(),
+                            child: showHungerNotify 
+                              ? _buildHungerNotification(lastMessage!)
+                              : _buildNotificationBanner(),
                           ),
                       ],
                     ),
@@ -195,6 +206,72 @@ class _PhoneScreenState extends State<PhoneScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildHungerNotification(AnimalMessage msg) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _activeApp = 'Translator';
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.red.withValues(alpha: 0.8),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+          border: Border.all(color: Colors.white24),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.warning_amber_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'TRANSLATOR: ${msg.senderName.toUpperCase()}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    msg.message,
+                    style: const TextStyle(color: Colors.white, fontSize: 10),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -375,6 +452,11 @@ class _PhoneScreenState extends State<PhoneScreen> {
                   Colors.grey,
                   iconPath: 'assets/icon/settings.png',
                 ),
+                _buildAppIcon(
+                  'Translator',
+                  Icons.message_outlined,
+                  Colors.blueAccent,
+                ),
               ],
             ),
           ),
@@ -480,6 +562,9 @@ class _PhoneScreenState extends State<PhoneScreen> {
         break;
       case 'Browser':
         app = _BrowserApp(onBack: closeApp);
+        break;
+      case 'Translator':
+        app = _TranslatorApp(onBack: closeApp);
         break;
       default:
         app = Center(
@@ -971,8 +1056,8 @@ class _SettingsApp extends StatelessWidget {
 
                     return GestureDetector(
                       onTap: () async {
-                        await userState.updateUserData(
-                          userState.currentUser!.copyWith(
+                        await userState.updateUserAtomic(
+                          (u) => u.copyWith(
                             phoneWallpaper: fileName,
                           ),
                         );
@@ -1802,6 +1887,101 @@ class _BrowserAppState extends State<_BrowserApp> {
               backgroundColor: Colors.purpleAccent,
             ),
             child: const Text('UNLOCK BLACK MARKET ACCESS'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TranslatorApp extends StatelessWidget {
+  final VoidCallback onBack;
+  const _TranslatorApp({required this.onBack});
+
+  @override
+  Widget build(BuildContext context) {
+    final nutritionService = Provider.of<NutritionService>(context);
+    final messages = nutritionService.messages;
+
+    return Column(
+      children: [
+        _AppHeader(title: 'Animal Translator', onBack: onBack),
+        Expanded(
+          child: messages.isEmpty
+              ? _buildEmptyState()
+              : ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  itemCount: messages.length,
+                  itemBuilder: (context, index) {
+                    final msg = messages[index];
+                    return _buildMessageBubble(msg);
+                  },
+                ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.speaker_notes_off_outlined, color: Colors.white24, size: 48),
+          const SizedBox(height: 16),
+          const Text(
+            'No messages yet...',
+            style: TextStyle(color: Colors.white24),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Keep your animals happy and fed!',
+            style: TextStyle(color: Colors.white10, fontSize: 10),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMessageBubble(AnimalMessage msg) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: msg.isHungryAlert 
+            ? Colors.redAccent.withValues(alpha: 0.1) 
+            : Colors.blueAccent.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: msg.isHungryAlert 
+              ? Colors.redAccent.withValues(alpha: 0.3) 
+              : Colors.blueAccent.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                msg.senderName,
+                style: TextStyle(
+                  color: msg.isHungryAlert ? Colors.redAccent : Colors.blueAccent,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
+              Text(
+                "${msg.timestamp.hour}:${msg.timestamp.minute.toString().padLeft(2, '0')}",
+                style: const TextStyle(color: Colors.white24, fontSize: 9),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            msg.message,
+            style: const TextStyle(color: Colors.white, fontSize: 11),
           ),
         ],
       ),

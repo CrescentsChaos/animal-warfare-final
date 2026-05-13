@@ -85,8 +85,30 @@ class UserState with ChangeNotifier {
       await previousLock;
       final username = _currentUser!.username;
       final fresh = await _authService.readUserFile(username);
-      if (fresh == null) return;
-      final updated = update(fresh);
+      if (fresh == null) {
+        if (kDebugMode) {
+          print('UserState: readUserFile returned null for $username, skipping update');
+        }
+        return;
+      }
+
+      // Safety: if fresh data lost captured organisms that exist in memory,
+      // the disk read likely failed to deserialize them (e.g. base organisms
+      // not loaded). Fall back to the current in-memory list to prevent wipe.
+      UserData safeBase = fresh;
+      if (fresh.capturedOrganisms.isEmpty &&
+          _currentUser!.capturedOrganisms.isNotEmpty) {
+        if (kDebugMode) {
+          print('UserState: SAFETY — fresh data has 0 organisms but memory has '
+              '${_currentUser!.capturedOrganisms.length}. Merging from memory.');
+        }
+        safeBase = fresh.copyWith(
+          capturedOrganisms: _currentUser!.capturedOrganisms,
+          battleTeam: _currentUser!.battleTeam,
+        );
+      }
+
+      final updated = update(safeBase);
       await _authService.updateUser(updated);
       _currentUser = updated;
       notifyListeners();
@@ -146,8 +168,19 @@ class UserState with ChangeNotifier {
     );
   }
 
+  /// Performs an atomic read-modify-write operation on the current user.
+  /// The [updater] function receives the freshest data from disk.
+  Future<void> updateUserAtomic(UserData Function(UserData) updater) async {
+    await _readModifyWrite(updater);
+  }
+
   Future<void> updateUserData(UserData updated) async {
     if (_currentUser == null) return;
+    // 🔴 CRITICAL FIX: Instead of blindly overwriting with 'updated', 
+    // we use _readModifyWrite to ensure we don't lose data updated by other services (like achievements).
+    // However, since we don't know exactly what changed in 'updated', 
+    // this remains a bit risky if 'updated' was based on very stale data.
+    // Prefer using more specific atomic update methods.
     await _readModifyWrite((u) => updated);
   }
 
@@ -173,11 +206,17 @@ class UserState with ChangeNotifier {
         ..add(finalCapture);
 
       final newIndex = list.length - 1;
+      if (kDebugMode) {
+        print('UserState: ADD CAPTURE: ${finalCapture.name} (Index: $newIndex, Total: ${list.length})');
+      }
 
       // Auto-add to team if not full
       final team = List<int>.from(u.battleTeam);
       if (team.length < 5) {
         team.add(newIndex);
+        if (kDebugMode) {
+          print('UserState: AUTO-ADDED to team. New Team: $team');
+        }
       }
 
       final species = finalCapture.name;
@@ -195,7 +234,7 @@ class UserState with ChangeNotifier {
       newStats[species] = {
         'matches': existing['matches'] ?? 0,
         'wins': existing['wins'] ?? 0,
-        'captured': 1,
+        'captured': (existing['captured'] ?? 0) + 1,
       };
 
       return u.copyWith(
@@ -203,6 +242,31 @@ class UserState with ChangeNotifier {
         speciesStats: newStats,
         battleTeam: team,
         discoveredOrganisms: discovered.toList(),
+      );
+    });
+  }
+
+  /// Atomically feeds an organism and consumes the food from inventory.
+  Future<void> feedOrganism(String organismId, Talisman food) async {
+    if (_currentUser == null) return;
+
+    await _readModifyWrite((u) {
+      final inventory = Map<String, int>.from(u.inventory);
+      final count = inventory[food.id] ?? 0;
+      if (count <= 0) return u; // No food left
+
+      inventory[food.id] = count - 1;
+
+      final captured = List<CapturedOrganism>.from(u.capturedOrganisms);
+      final index = captured.indexWhere((o) => o.id == organismId);
+      if (index == -1) return u; // Organism not found
+
+      // Modifying the organism in the list.
+      captured[index].feed(food);
+
+      return u.copyWith(
+        inventory: inventory,
+        capturedOrganisms: captured,
       );
     });
   }
@@ -243,11 +307,17 @@ class UserState with ChangeNotifier {
   Future<void> loadCurrentUser() async {
     _currentUser = await _authService.getCurrentUser();
     _isInitialized = true;
+    if (kDebugMode && _currentUser != null) {
+      print('UserState: loadCurrentUser — captured=${_currentUser!.capturedOrganisms.length}, team=${_currentUser!.battleTeam}');
+    }
     notifyListeners();
   }
 
   Future<void> handleSuccessfulAuth() async {
     _currentUser = await _authService.getCurrentUser();
+    if (kDebugMode && _currentUser != null) {
+      print('UserState: handleSuccessfulAuth — captured=${_currentUser!.capturedOrganisms.length}, team=${_currentUser!.battleTeam}');
+    }
     notifyListeners();
   }
 

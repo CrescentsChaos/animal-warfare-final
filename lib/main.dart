@@ -18,6 +18,8 @@ import 'package:animal_warfare/models/ability.dart';
 import 'package:animal_warfare/game/biome_map_data.dart';
 import 'package:animal_warfare/game/npc_team_loader.dart';
 
+import 'package:animal_warfare/services/nutrition_service.dart';
+
 void main() async {
   // 1. Ensure Flutter bindings are initialized first
   WidgetsFlutterBinding.ensureInitialized();
@@ -89,10 +91,16 @@ void main() async {
     debugPrint("Firebase Initialization Error: $e");
   }
 
-  // 4. Wrap the application with the UserState Provider
+  final userState = UserState();
+  final nutritionService = NutritionService()..initialize(userState);
+
+  // 4. Wrap the application with the MultiProvider
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => UserState()..loadCurrentUser(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider.value(value: userState..loadCurrentUser()),
+        ChangeNotifierProvider.value(value: nutritionService),
+      ],
       child: const MyApp(),
     ),
   );
