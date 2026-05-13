@@ -103,6 +103,7 @@ flutter:
     - assets/biomes/
     - assets/achievements/
     - assets/npc/
+    - assets/npc/author_icons/
     - assets/audio/
     - assets/audio/effects/
     - assets/audio/cries/

@@ -1,5 +1,6 @@
 // lib/news_screen.dart
 
+import 'dart:ui';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -23,7 +24,6 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
   String _selectedFilter = 'ALL';
   late AnimationController _fadeController;
   int? _expandedIndex;
-  int _refreshSeed = 0;
   bool _isRefreshing = false;
 
   static const List<String> _filterOptions = [
@@ -110,7 +110,7 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
       final articles = NewsService.generateDailyNews(
         organisms,
         gameTime,
-        refreshSeed: _refreshSeed,
+        refreshSeed: NewsService.refreshSeed,
       );
 
       // Sort by publish time descending (latest first)
@@ -132,7 +132,7 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
   Future<void> _handleRefresh() async {
     setState(() {
       _isRefreshing = true;
-      _refreshSeed += (DateTime.now().millisecondsSinceEpoch % 1000) + 1;
+      NewsService.refreshSeed += (DateTime.now().millisecondsSinceEpoch % 1000) + 1;
     });
     await _loadNews();
     setState(() {
@@ -152,7 +152,7 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
           // ─── App Bar ───
           SliverAppBar(
             backgroundColor: AppColors.background,
-            expandedHeight: 180, // More space for search
+            expandedHeight: 140,
             floating: true,
             pinned: true,
             elevation: 0,
@@ -451,10 +451,10 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [catColor.withValues(alpha: 0.4), AppColors.surface],
+            colors: [Colors.transparent, AppColors.surface],
           ),
           border: Border.all(
-            color: catColor.withValues(alpha: 0.3),
+            color: AppColors.border,
             width: 1.5,
           ),
           boxShadow: [
@@ -467,14 +467,41 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
         ),
         child: Stack(
           children: [
+            // Network Broadcast Bug (Top Right)
             Positioned(
-              right: -40,
-              top: -20,
-              child: Opacity(
-                opacity: 0.15,
-                child: Text(
-                  article.channelIcon,
-                  style: const TextStyle(fontSize: 200),
+              top: 16,
+              right: 16,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (article.channelIcon.startsWith('assets/'))
+                          Image.asset(article.channelIcon, width: 14, height: 14)
+                        else
+                          Text(article.channelIcon, style: const TextStyle(fontSize: 10)),
+                        const SizedBox(width: 6),
+                        Text(
+                          article.channel.toUpperCase(),
+                          style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -508,26 +535,53 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
                   const SizedBox(height: 20),
                   Row(
                     children: [
-                      CircleAvatar(
-                        radius: 12,
-                        backgroundColor: catColor.withValues(alpha: 0.2),
-                        child: Text(
-                          article.author[0],
-                          style: GoogleFonts.inter(
-                            color: catColor,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w900,
-                          ),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: Container(
+                          width: 24,
+                          height: 24,
+                          color: catColor.withValues(alpha: 0.2),
+                          child: article.authorIcon != null
+                              ? Image.asset(
+                                  article.authorIcon!,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) => Center(
+                                    child: Text(
+                                      article.author[0],
+                                      style: GoogleFonts.inter(
+                                        color: catColor,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : Center(
+                                  child: Text(
+                                    article.author[0],
+                                    style: GoogleFonts.inter(
+                                      color: catColor,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ),
                         ),
                       ),
                       const SizedBox(width: 10),
-                      Text(
-                        article.author,
-                        style: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                        ),
+                      Row(
+                        children: [
+                          Text(
+                            article.author,
+                            style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          const Icon(Icons.verified, color: Colors.blue, size: 14),
+                        ],
                       ),
                       const Spacer(),
                       Text(
@@ -577,23 +631,43 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Text(
-                        article.channelIcon,
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        article.channel.toUpperCase(),
-                        style: GoogleFonts.inter(
-                          color: catColor,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 1,
+                  // Channel Source Pill
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: catColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: catColor.withValues(alpha: 0.2)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        article.channelIcon.startsWith('assets/')
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(2),
+                                child: Image.asset(
+                                  article.channelIcon,
+                                  width: 14,
+                                  height: 14,
+                                  fit: BoxFit.cover,
+                                ),
+                              )
+                            : Text(
+                                article.channelIcon,
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                        const SizedBox(width: 6),
+                        Text(
+                          article.channel.toUpperCase(),
+                          style: GoogleFonts.inter(
+                            color: catColor,
+                            fontSize: 9,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.5,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -606,12 +680,60 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    '${article.author} • ${_formatTime(article.publishedAt)}',
-                    style: GoogleFonts.inter(
-                      color: AppColors.textMuted,
-                      fontSize: 11,
-                    ),
+                  Row(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(5),
+                        child: Container(
+                          width: 22,
+                          height: 22,
+                          color: catColor.withValues(alpha: 0.2),
+                          child: article.authorIcon != null
+                              ? Image.asset(
+                                  article.authorIcon!,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) => Center(
+                                    child: Text(
+                                      article.author[0],
+                                      style: GoogleFonts.inter(
+                                        color: catColor,
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : Center(
+                                  child: Text(
+                                    article.author[0],
+                                    style: GoogleFonts.inter(
+                                      color: catColor,
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        article.author,
+                        style: GoogleFonts.inter(
+                          color: AppColors.textMuted,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      const Icon(Icons.verified, color: Colors.blue, size: 12),
+                      Text(
+                        ' • ${_formatTime(article.publishedAt)}',
+                        style: GoogleFonts.inter(
+                          color: AppColors.textMuted,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -625,11 +747,17 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
   // ─── Article detail modal ──────────────────────────────────────────
 
   void _showArticleDetail(NewsArticle article) {
+    final articles = _filteredArticles;
+    final index = articles.indexOf(article);
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) =>
-            NewsDetailScreen(article: article, categoryColors: _categoryColors),
+        builder: (context) => NewsDetailScreen(
+          article: article,
+          categoryColors: _categoryColors,
+          allArticles: articles,
+          currentIndex: index >= 0 ? index : 0,
+        ),
       ),
     ).then((_) => setState(() {})); // Sync likes/comments if they changed
   }
@@ -916,7 +1044,7 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
                             )
                           : Icon(
                               Icons.newspaper,
-                              color: catColor.withValues(alpha: 0.2),
+                              color: Colors.white.withValues(alpha: 0.15),
                               size: 40,
                             ),
                     ),
@@ -985,6 +1113,55 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
                     ),
                     Row(
                       children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: Container(
+                            width: 18,
+                            height: 18,
+                            color: catColor.withValues(alpha: 0.2),
+                            child: article.authorIcon != null
+                                ? Image.asset(
+                                    article.authorIcon!,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) => Center(
+                                      child: Text(
+                                        article.author[0],
+                                        style: GoogleFonts.inter(
+                                          color: catColor,
+                                          fontSize: 8,
+                                          fontWeight: FontWeight.w900,
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                : Center(
+                                    child: Text(
+                                      article.author[0],
+                                      style: GoogleFonts.inter(
+                                        color: catColor,
+                                        fontSize: 8,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
+                                  ),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            article.author,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.inter(
+                              color: AppColors.textMuted,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 2),
+                        const Icon(Icons.verified, color: Colors.blue, size: 10),
+                        const SizedBox(width: 4),
                         Text(
                           _formatTime(article.publishedAt),
                           style: GoogleFonts.inter(
@@ -992,11 +1169,6 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
                             fontSize: 9,
                             fontWeight: FontWeight.w600,
                           ),
-                        ),
-                        const Spacer(),
-                        Text(
-                          article.channelIcon,
-                          style: const TextStyle(fontSize: 10),
                         ),
                       ],
                     ),
