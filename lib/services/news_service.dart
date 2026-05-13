@@ -199,21 +199,26 @@ class NewsService {
       // Find a suitable organism for this category
       Organism? targetOrg;
       if (category == 'COOKING') {
-        final candidates = organisms.where(
-          (o) =>
-              (o.animalClass == 'Mollusk' ||
-              o.animalClass == 'Crustacean' ||
-              o.animalClass == 'Bird' ||
-              o.animalClass == 'Fish' ||
-              (o.animalClass == 'Mammal' && o.diet == 'Herbivore')),
-        ).toList();
+        final candidates = organisms
+            .where(
+              (o) =>
+                  (o.animalClass == 'Mollusk' ||
+                  o.animalClass == 'Crustacean' ||
+                  o.animalClass == 'Bird' ||
+                  o.animalClass == 'Fish' ||
+                  (o.animalClass == 'Mammal' && o.diet == 'Herbivore')),
+            )
+            .toList();
         targetOrg = candidates.isNotEmpty
             ? candidates[rng.nextInt(candidates.length)]
             : organisms[rng.nextInt(organisms.length)];
       } else if (category == 'CRIME') {
-        final candidates = organisms.where(
-          (o) => (o.attack > 80 || o.diet.toLowerCase().contains('carnivore')),
-        ).toList();
+        final candidates = organisms
+            .where(
+              (o) =>
+                  (o.attack > 80 || o.diet.toLowerCase().contains('carnivore')),
+            )
+            .toList();
         targetOrg = candidates.isNotEmpty
             ? candidates[rng.nextInt(candidates.length)]
             : organisms[rng.nextInt(organisms.length)];
@@ -352,15 +357,17 @@ class NewsService {
         if (!sharesHabitat) return false;
 
         final candClass = cand.animalClass.toLowerCase();
-        if (diet == 'insectivore')
+        if (diet == 'insectivore') {
           return candClass == 'insect' || candClass == 'arachnid';
+        }
         if (diet == 'piscivore') return candClass == 'fish';
         if (diet == 'carnivore' || diet == 'omnivore') {
           return cand.weight < org.weight ||
               !cand.diet.toLowerCase().contains('carnivore');
         }
-        if (diet == 'sanguivore')
+        if (diet == 'sanguivore') {
           return cand.animalClass == 'Mammal' || cand.animalClass == 'Bird';
+        }
         if (diet == 'parasite') return cand.weight > org.weight;
         return true;
       }).toList();
@@ -401,26 +408,31 @@ class NewsService {
         channel = candidates[articleRng.nextInt(candidates.length)];
       }
     } else if (finalCategory == 'FIELD STING') {
-      final candidates =
-          _channels.where((c) => c['name'] == 'Animal Planet').toList();
+      final candidates = _channels
+          .where((c) => c['name'] == 'Animal Planet')
+          .toList();
       if (candidates.isNotEmpty) {
         channel = candidates[articleRng.nextInt(candidates.length)];
       }
     } else if (finalCategory == 'SURVIVAL GUIDE') {
-      final candidates =
-          _channels.where((c) => c['name'] == 'Discovery Channel').toList();
+      final candidates = _channels
+          .where((c) => c['name'] == 'Discovery Channel')
+          .toList();
       if (candidates.isNotEmpty) {
         channel = candidates[articleRng.nextInt(candidates.length)];
       }
     } else if (finalCategory == 'TIER LIST') {
-      final candidates = _channels.where((c) => c['name'] == 'YouTube').toList();
+      final candidates = _channels
+          .where((c) => c['name'] == 'YouTube')
+          .toList();
       if (candidates.isNotEmpty) {
         channel = candidates[articleRng.nextInt(candidates.length)];
       }
     } else if (finalCategory == 'WILDLIFE DOC' ||
         finalCategory == 'CONSERVATION') {
-      final candidates =
-          _channels.where((c) => c['name'] == "National Geographic").toList();
+      final candidates = _channels
+          .where((c) => c['name'] == "National Geographic")
+          .toList();
       if (candidates.isNotEmpty) {
         channel = candidates[articleRng.nextInt(candidates.length)];
       }
@@ -722,17 +734,17 @@ class NewsService {
     final bst2 = org2.bst;
     final dangerRating = (org.attack + org.power) / 20; // scale of 0-20ish
     String dangerLevel = "Low";
-    if (dangerRating > 15)
+    if (dangerRating > 15) {
       dangerLevel = "Extreme";
-    else if (dangerRating > 10)
+    } else if (dangerRating > 10)
       dangerLevel = "High";
     else if (dangerRating > 5)
       dangerLevel = "Moderate";
 
     String tier = "C";
-    if (bst1 > 550)
+    if (bst1 > 550) {
       tier = "S";
-    else if (bst1 > 450)
+    } else if (bst1 > 450)
       tier = "A";
     else if (bst1 > 350)
       tier = "B";
@@ -740,9 +752,9 @@ class NewsService {
       tier = "F";
 
     String weightClass = "Medium-weight";
-    if (org.weight < 0.1)
+    if (org.weight < 0.1) {
       weightClass = "Microscopic";
-    else if (org.weight < 2)
+    } else if (org.weight < 2)
       weightClass = "Feather-weight";
     else if (org.weight > 1000)
       weightClass = "Super-heavyweight";
@@ -753,9 +765,9 @@ class NewsService {
     String powerRank = "Generalist";
     final totalOffense = org.attack + org.power;
     final totalDefense = org.defense + org.resistance;
-    if (org.speed > 110 && totalOffense > 150)
+    if (org.speed > 110 && totalOffense > 150) {
       powerRank = "Glass Cannon";
-    else if (org.health > 180 && totalDefense > 200)
+    } else if (org.health > 180 && totalDefense > 200)
       powerRank = "Behemoth";
     else if (org.speed > 130)
       powerRank = "Speedster";
@@ -765,15 +777,15 @@ class NewsService {
       powerRank = "Apex Striker";
 
     String speedComp = "comparable in speed";
-    if (org.speed > org2.speed + 30)
+    if (org.speed > org2.speed + 30) {
       speedComp = "far faster";
-    else if (org.speed < org2.speed - 30)
+    } else if (org.speed < org2.speed - 30)
       speedComp = "much slower";
 
     String timeOfDay = "Day";
-    if (time.hour < 6 || time.hour > 18)
+    if (time.hour < 6 || time.hour > 18) {
       timeOfDay = "Night";
-    else if (time.hour < 9)
+    } else if (time.hour < 9)
       timeOfDay = "Dawn";
     else if (time.hour > 16)
       timeOfDay = "Dusk";
@@ -950,8 +962,9 @@ class NewsService {
     if (p.size > target.size) score += 10;
 
     if (!isSanguivore) {
-      if (target.weight > p.weight * 3)
+      if (target.weight > p.weight * 3) {
         score -= 30; // Heavy penalty for attacking giants
+      }
       if (target.size > p.size * 2) score -= 20;
     } else {
       // Sanguivores actually PREFER larger targets for more blood
@@ -973,12 +986,14 @@ class NewsService {
     final d = predator.diet.toLowerCase();
     final c = prey.animalClass.toLowerCase();
     if (d.contains('carnivore') || d.contains('omnivore')) return true;
-    if (d.contains('insectivore') && (c == 'insect' || c == 'arachnid'))
+    if (d.contains('insectivore') && (c == 'insect' || c == 'arachnid')) {
       return true;
+    }
     if (d.contains('piscivore') && c == 'fish') return true;
     if (d.contains('sanguivore') &&
-        ['mammal', 'bird', 'reptile', 'amphibian', 'fish'].contains(c))
+        ['mammal', 'bird', 'reptile', 'amphibian', 'fish'].contains(c)) {
       return true;
+    }
     return false;
   }
 }

@@ -204,29 +204,34 @@ class TaxonomyService {
 
       // FISH SCORE
       bool isAquaticTone = (dominantHue > 165 && dominantHue < 255);
-      if (aspect > 1.3 && isAquaticTone && verticalBias < 0.45)
+      if (aspect > 1.3 && isAquaticTone && verticalBias < 0.45) {
         return AnimalClass.fish;
-      if (aspect > 1.4 && !hasLegGaps && verticalBias < 0.4)
+      }
+      if (aspect > 1.4 && !hasLegGaps && verticalBias < 0.4) {
         return AnimalClass.fish;
+      }
 
       // BIRD
       if (aspect < 1.0 && verticalBias > 0.6) return AnimalClass.bird;
 
       // INSECT (Strictly low solidity)
-      if (solidity < 0.4 && aspect > 0.5 && aspect < 2.5 && !hasLegGaps)
+      if (solidity < 0.4 && aspect > 0.5 && aspect < 2.5 && !hasLegGaps) {
         return AnimalClass.insect;
+      }
 
       // REPTILE/AMPHIBIAN
       if (aspect > 1.4 &&
           (dominantHue > 45 && dominantHue < 100) &&
-          verticalBias < 0.4)
+          verticalBias < 0.4) {
         return AnimalClass.reptile;
+      }
       if (aspect > 2.5 && !hasLegGaps) return AnimalClass.reptile;
 
       // FALLBACKS
       if (isEarthTone || isAchromatic) return AnimalClass.mammal;
-      if (solidity > 0.8 && aspect > 0.8 && aspect < 1.4)
+      if (solidity > 0.8 && aspect > 0.8 && aspect < 1.4) {
         return AnimalClass.mollusk;
+      }
 
       return AnimalClass.unknown;
     } catch (_) {

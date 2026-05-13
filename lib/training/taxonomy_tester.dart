@@ -566,12 +566,16 @@ Map<String, double> _extractFeatures(img.Image resized, List<bool> mask) {
         int qc = ((p.r ~/ 32) << 16) | ((p.g ~/ 32) << 8) | (p.b ~/ 32);
         if (mask[(y - 1) * resized.width + x]) {
           final pt = resized.getPixel(x, y - 1);
-          if (qc == (((pt.r ~/ 32) << 16) | ((pt.g ~/ 32) << 8) | (pt.b ~/ 32)))
+          if (qc ==
+              (((pt.r ~/ 32) << 16) | ((pt.g ~/ 32) << 8) | (pt.b ~/ 32))) {
             clusteredPixels++;
+          }
         } else if (mask[y * resized.width + x - 1]) {
           final pl = resized.getPixel(x - 1, y);
-          if (qc == (((pl.r ~/ 32) << 16) | ((pl.g ~/ 32) << 8) | (pl.b ~/ 32)))
+          if (qc ==
+              (((pl.r ~/ 32) << 16) | ((pl.g ~/ 32) << 8) | (pl.b ~/ 32))) {
             clusteredPixels++;
+          }
         }
       }
     }

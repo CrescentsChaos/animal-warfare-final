@@ -166,7 +166,11 @@ class CapturedOrganism {
   }
 
   /// Feeds the animal and returns nutritional gain and message.
-  Map<String, dynamic> feed(Talisman food, {DateTime? realTime, GameTime? gameTime}) {
+  Map<String, dynamic> feed(
+    Talisman food, {
+    DateTime? realTime,
+    GameTime? gameTime,
+  }) {
     if (!food.isFood) return {'success': false, 'message': 'That is not food!'};
 
     double multiplier = 1.0;
@@ -185,7 +189,9 @@ class CapturedOrganism {
 
     // 2. Check Class Preference
     if (food.preferredClass != null) {
-      final preferredClasses = food.preferredClass!.split(',').map((e) => e.trim().toLowerCase());
+      final preferredClasses = food.preferredClass!
+          .split(',')
+          .map((e) => e.trim().toLowerCase());
       if (preferredClasses.contains(baseOrganism.animalClass.toLowerCase())) {
         multiplier *= 1.5;
         isPreferred = true;
@@ -194,7 +200,9 @@ class CapturedOrganism {
 
     // 3. Check Species Preference
     if (food.preferredSpecies != null) {
-      final preferredSpecies = food.preferredSpecies!.split(',').map((e) => e.trim().toLowerCase());
+      final preferredSpecies = food.preferredSpecies!
+          .split(',')
+          .map((e) => e.trim().toLowerCase());
       if (preferredSpecies.contains(baseOrganism.name.toLowerCase())) {
         multiplier *= 2.0;
         isPreferred = true;
@@ -204,7 +212,7 @@ class CapturedOrganism {
     int nutrition = (food.nutritionalValue * multiplier).round();
     int oldHunger = hungerLevel;
     hungerLevel = (hungerLevel + nutrition).clamp(0, 100);
-    
+
     // Satisfaction boost
     int satisfactionGain = isPreferred ? 15 : 5;
     if (multiplier < 1.0) satisfactionGain = -5; // Dislikes wrong diet
@@ -214,9 +222,12 @@ class CapturedOrganism {
     lastHungerUpdateReal = lastFedTimeReal;
     lastFedTimeGame = gameTime;
 
-    String message = "Your ${displayName} enjoyed the ${food.name}!";
-    if (multiplier < 1.0) message = "Your ${displayName} didn't seem to like the ${food.name} very much...";
-    if (isPreferred) message = "Your ${displayName} absolutely LOVED the ${food.name}!";
+    String message = "Your $displayName enjoyed the ${food.name}!";
+    if (multiplier < 1.0)
+      message =
+          "Your $displayName didn't seem to like the ${food.name} very much...";
+    if (isPreferred)
+      message = "Your $displayName absolutely LOVED the ${food.name}!";
 
     return {
       'success': true,
@@ -746,7 +757,9 @@ class CapturedOrganism {
       orElse: () => allOrganisms[0],
     );
 
-    final ivs = (json['ivs'] as Map).map((k, v) => MapEntry(k.toString(), (v as num).toInt()));
+    final ivs = (json['ivs'] as Map).map(
+      (k, v) => MapEntry(k.toString(), (v as num).toInt()),
+    );
     final currentHealth = (json['currentHealth'] as num).toInt();
 
     Talisman? talisman;
@@ -757,7 +770,9 @@ class CapturedOrganism {
     }
 
     final moveStamina = json['moveStamina'] != null
-        ? (json['moveStamina'] as Map).map((k, v) => MapEntry(k.toString(), (v as num).toInt()))
+        ? (json['moveStamina'] as Map).map(
+            (k, v) => MapEntry(k.toString(), (v as num).toInt()),
+          )
         : <String, int>{};
     final selectedMoves = json['selectedMoveNames'] != null
         ? List<String>.from(json['selectedMoveNames'] as List)
@@ -774,8 +789,8 @@ class CapturedOrganism {
     }
 
     final level = (json['level'] as num?)?.toInt() ?? 50;
-    final xp = (json['xp'] as num?)?.toInt() ??
-        (level > 1 ? xpForLevel(level) : 0);
+    final xp =
+        (json['xp'] as num?)?.toInt() ?? (level > 1 ? xpForLevel(level) : 0);
 
     return CapturedOrganism(
       id: id, // Pass id to constructor
@@ -804,7 +819,9 @@ class CapturedOrganism {
       isAlpha: json['isAlpha'] as bool? ?? false,
       isShiny: json['isShiny'] as bool? ?? false,
       killValues: json['killValues'] != null
-          ? (json['killValues'] as Map).map((k, v) => MapEntry(k.toString(), (v as num).toInt()))
+          ? (json['killValues'] as Map).map(
+              (k, v) => MapEntry(k.toString(), (v as num).toInt()),
+            )
           : null,
       satisfaction: (json['satisfaction'] as num?)?.toInt() ?? 120,
       hungerLevel: (json['hungerLevel'] as num?)?.toInt() ?? 100,

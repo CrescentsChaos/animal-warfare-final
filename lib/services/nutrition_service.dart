@@ -70,9 +70,7 @@ class NutritionService extends ChangeNotifier {
 
     for (var animal in allAnimals) {
       // If we don't have a checkpoint, set it to now or capture time
-      if (animal.lastHungerUpdateReal == null) {
-        animal.lastHungerUpdateReal = animal.capturedAtReal ?? now;
-      }
+      animal.lastHungerUpdateReal ??= animal.capturedAtReal ?? now;
 
       final diff = now.difference(animal.lastHungerUpdateReal!);
       final minutesPassed = diff.inMinutes;
@@ -83,7 +81,7 @@ class NutritionService extends ChangeNotifier {
         int oldHunger = animal.hungerLevel;
         animal.hungerLevel = max(0, animal.hungerLevel - decay);
         animal.lastHungerUpdateReal = now;
-        
+
         if (animal.hungerLevel != oldHunger) {
           changed = true;
           // Note: Alerts are NOT triggered during sync to avoid notification spam on boot
@@ -113,9 +111,16 @@ class NutritionService extends ChangeNotifier {
 
         // Trigger notification if hunger drops below threshold
         if (animal.hungerLevel == 20) {
-          _sendAnimalMessage(animal, _getHungerMessage(animal, isCritical: true), isAlert: true);
+          _sendAnimalMessage(
+            animal,
+            _getHungerMessage(animal, isCritical: true),
+            isAlert: true,
+          );
         } else if (animal.hungerLevel == 50) {
-          _sendAnimalMessage(animal, _getHungerMessage(animal, isCritical: false));
+          _sendAnimalMessage(
+            animal,
+            _getHungerMessage(animal, isCritical: false),
+          );
         }
       }
     }
@@ -126,7 +131,11 @@ class NutritionService extends ChangeNotifier {
     }
   }
 
-  void _sendAnimalMessage(CapturedOrganism animal, String text, {bool isAlert = false}) {
+  void _sendAnimalMessage(
+    CapturedOrganism animal,
+    String text, {
+    bool isAlert = false,
+  }) {
     final msg = AnimalMessage(
       senderId: animal.id,
       senderName: animal.displayName,
@@ -136,18 +145,18 @@ class NutritionService extends ChangeNotifier {
     );
     _messages.insert(0, msg);
     if (_messages.length > 50) _messages.removeLast();
-    
+
     // If it's an alert, we might want to trigger a system notification too
     if (isAlert) {
       // Future: integrate with a global notification system
     }
-    
+
     notifyListeners();
   }
 
   String _getHungerMessage(CapturedOrganism animal, {bool isCritical = false}) {
     final rng = Random();
-    
+
     final casualMessages = [
       "Hey, my stomach is growling. Got any ${animal.baseOrganism.diet} food?",
       "I'm starting to feel a bit lightheaded... Is it lunchtime yet?",

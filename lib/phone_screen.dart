@@ -87,11 +87,14 @@ class _PhoneScreenState extends State<PhoneScreen> {
   Widget build(BuildContext context) {
     final userState = Provider.of<UserState>(context);
     final nutritionService = Provider.of<NutritionService>(context);
-    
+
     // Check for recent hunger alerts
-    final lastMessage = nutritionService.messages.isNotEmpty ? nutritionService.messages.first : null;
-    final showHungerNotify = lastMessage != null && 
-        lastMessage.isHungryAlert && 
+    final lastMessage = nutritionService.messages.isNotEmpty
+        ? nutritionService.messages.first
+        : null;
+    final showHungerNotify =
+        lastMessage != null &&
+        lastMessage.isHungryAlert &&
         DateTime.now().difference(lastMessage.timestamp).inSeconds < 10;
 
     return Scaffold(
@@ -184,9 +187,9 @@ class _PhoneScreenState extends State<PhoneScreen> {
                             top: 45,
                             left: 14,
                             right: 14,
-                            child: showHungerNotify 
-                              ? _buildHungerNotification(lastMessage!)
-                              : _buildNotificationBanner(),
+                            child: showHungerNotify
+                                ? _buildHungerNotification(lastMessage)
+                                : _buildNotificationBanner(),
                           ),
                       ],
                     ),
@@ -737,11 +740,7 @@ class _WeatherAppState extends State<_WeatherApp> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Row(
-                    children: [
-                      _getWeatherIcon(f.weather),
-                    ],
-                  ),
+                  Row(children: [_getWeatherIcon(f.weather)]),
                   const SizedBox(height: 6),
                   Text(
                     f.formattedTemp,
@@ -1057,9 +1056,7 @@ class _SettingsApp extends StatelessWidget {
                     return GestureDetector(
                       onTap: () async {
                         await userState.updateUserAtomic(
-                          (u) => u.copyWith(
-                            phoneWallpaper: fileName,
-                          ),
+                          (u) => u.copyWith(phoneWallpaper: fileName),
                         );
                       },
                       child: Container(
@@ -1910,7 +1907,10 @@ class _TranslatorApp extends StatelessWidget {
           child: messages.isEmpty
               ? _buildEmptyState()
               : ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   itemCount: messages.length,
                   itemBuilder: (context, index) {
                     final msg = messages[index];
@@ -1927,7 +1927,11 @@ class _TranslatorApp extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.speaker_notes_off_outlined, color: Colors.white24, size: 48),
+          const Icon(
+            Icons.speaker_notes_off_outlined,
+            color: Colors.white24,
+            size: 48,
+          ),
           const SizedBox(height: 16),
           const Text(
             'No messages yet...',
@@ -1948,13 +1952,13 @@ class _TranslatorApp extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: msg.isHungryAlert 
-            ? Colors.redAccent.withValues(alpha: 0.1) 
+        color: msg.isHungryAlert
+            ? Colors.redAccent.withValues(alpha: 0.1)
             : Colors.blueAccent.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: msg.isHungryAlert 
-              ? Colors.redAccent.withValues(alpha: 0.3) 
+          color: msg.isHungryAlert
+              ? Colors.redAccent.withValues(alpha: 0.3)
               : Colors.blueAccent.withValues(alpha: 0.3),
         ),
       ),
@@ -1967,7 +1971,9 @@ class _TranslatorApp extends StatelessWidget {
               Text(
                 msg.senderName,
                 style: TextStyle(
-                  color: msg.isHungryAlert ? Colors.redAccent : Colors.blueAccent,
+                  color: msg.isHungryAlert
+                      ? Colors.redAccent
+                      : Colors.blueAccent,
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
                 ),
