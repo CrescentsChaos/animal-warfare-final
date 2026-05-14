@@ -40,7 +40,7 @@ class AppColors {
   static const Color highlightColor = Color(0xFFFFB300); // Same as highlight
 
   // === STAT COLORS (Used in Anidex) ===
-  static const Color statHealthColor = Color(0xFF4CAF50); // Green
+  static const Color statHealthColor = Color(0xFFCDDC39); // Lime
   static const Color statAttackColor = Color(0xFFF44336); // Red
   static const Color statDefenseColor = Color(0xFFFF9800); // Orange
   static const Color statPowerColor = Color(0xFF9C27B0); // Purple

@@ -1474,7 +1474,12 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
                 child: ElevatedButton.icon(
                   onPressed: () {
                     Navigator.pop(context);
-                    AnidexDetailsSheet.show(context, org);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AnidexDetailsPage(organism: org),
+                      ),
+                    );
                   },
                   icon: const Icon(Icons.menu_book, size: 18),
                   label: Text(

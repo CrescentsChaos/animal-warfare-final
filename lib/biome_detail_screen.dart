@@ -426,17 +426,9 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
       organism.name,
     );
     await _refreshUserData();
-    final newAchievements = await _achievementService
-        .checkAndUnlockAchievements(_currentUser);
+    final newAchievements = await userState.checkAndUnlockAchievements(_achievementService);
     if (newAchievements.isNotEmpty) {
-      _currentUser = _currentUser.copyWith(
-        completedAchievements: [
-          ..._currentUser.completedAchievements,
-          ...newAchievements,
-        ],
-      );
-      await widget.authService.updateUser(_currentUser);
-      userState.setCurrentUser(_currentUser);
+      await _refreshUserData();
       for (final title in newAchievements) {
         if (mounted) {
           _achievementService.showAchievementSnackbar(context, title);

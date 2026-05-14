@@ -9,6 +9,8 @@ import 'package:animal_warfare/theme.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:animal_warfare/achievement_service.dart';
+import 'package:provider/provider.dart';
+import 'package:animal_warfare/user_state.dart';
 
 enum ShowdownStat { health, attack, defense, speed, weight }
 
@@ -221,7 +223,8 @@ class _StatShowdownScreenState extends State<StatShowdownScreen> with SingleTick
           allOrganisms: _allOrganisms.map((o) => o.toJson()).toList(),
           authService: widget.authService,
         );
-        final unlocked = await achievementService.checkAndUnlockAchievements(updatedUser);
+        final userState = Provider.of<UserState>(context, listen: false);
+        final unlocked = await userState.checkAndUnlockAchievements(achievementService);
         if (unlocked.isNotEmpty && mounted) {
           for (var title in unlocked) {
             achievementService.showAchievementSnackbar(context, title);

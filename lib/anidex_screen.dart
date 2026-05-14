@@ -532,10 +532,7 @@ class _AnidexScreenState extends State<AnidexScreen>
         final org = displayList[index];
         final discovered = _isDiscovered(org);
         final captured = _isCaptured(org);
-        return PopUpItem(
-          index: index,
-          child: _buildAnimalCard(org, discovered, captured),
-        );
+        return _buildAnimalCard(org, discovered, captured);
       },
     );
   }
@@ -544,10 +541,15 @@ class _AnidexScreenState extends State<AnidexScreen>
     final rarityColor = _getRarityColor(org.rarity);
     return InkWell(
       onTap: () {
-        if (discovered) {
-          AudioService.instance.playOrganismCry(org.cry);
-        }
-        AnidexDetailsSheet.show(context, org, showScaledStats: false);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AnidexDetailsPage(
+              organism: org,
+              showScaledStats: false,
+            ),
+          ),
+        );
       },
       borderRadius: BorderRadius.circular(16),
       child: Container(
@@ -1382,11 +1384,11 @@ class __OrganismSpriteDisplayState extends State<_OrganismSpriteDisplay> {
       );
     }
 
-    // Always show the actual image colored with black outline
+    // If discovered, show full color. If not, show silhouette.
     return buildSilhouetteSprite(
       imageUrl: _imagePath!,
-      silhouetteColor: null,
-      outlineColor: Colors.black,
+      silhouetteColor: widget.isDiscovered ? null : Colors.black45,
+      outlineColor: widget.isDiscovered ? Colors.black : Colors.white,
       outlineWidth: 2.0,
       fit: BoxFit.contain,
     );

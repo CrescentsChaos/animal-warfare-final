@@ -214,7 +214,7 @@ class AchievementService {
   // For now I'll use a safer check since bestRogueFloor was just added.
 
   /// Checks all achievements against the user's data and unlocks any newly completed ones.
-  Future<List<String>> checkAndUnlockAchievements(UserData user) async {
+  List<String> checkAndUnlockAchievements(UserData user) {
     List<String> newlyUnlocked = [];
 
     // Create a mutable set of the user's current completed achievements titles
@@ -229,19 +229,6 @@ class AchievementService {
         }
       }
     }
-
-    // Save updated user data if any achievement was newly unlocked
-    if (newlyUnlocked.isNotEmpty) {
-      // NOTE: We MUST create a new UserData instance for this to work correctly
-      // as `user` is immutable (final fields in UserData).
-      final updatedUser = user.copyWith(
-        completedAchievements: completedTitles.toList(),
-      );
-      // Use the new public updateUser method
-      await authService.updateUser(updatedUser);
-    }
-
-    // ... (rest of the file remains the same)
 
     return newlyUnlocked;
   }

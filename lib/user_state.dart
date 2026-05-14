@@ -17,6 +17,7 @@ import 'package:animal_warfare/models/saved_map_state.dart';
 import 'package:animal_warfare/models/event_flags.dart';
 import 'package:animal_warfare/game/time_service.dart';
 import 'local_auth_service.dart';
+import 'achievement_service.dart';
 
 class UserState with ChangeNotifier {
   UserData? _currentUser;
@@ -182,6 +183,24 @@ class UserState with ChangeNotifier {
     // this remains a bit risky if 'updated' was based on very stale data.
     // Prefer using more specific atomic update methods.
     await _readModifyWrite((u) => updated);
+  }
+
+  /// Checks and unlocks achievements atomically.
+  Future<List<String>> checkAndUnlockAchievements(AchievementService service) async {
+    if (_currentUser == null) return [];
+    List<String> newlyUnlocked = [];
+    
+    await _readModifyWrite((u) {
+      newlyUnlocked = service.checkAndUnlockAchievements(u);
+      if (newlyUnlocked.isEmpty) return u;
+      
+      final completed = Set<String>.from(u.completedAchievements);
+      completed.addAll(newlyUnlocked);
+      
+      return u.copyWith(completedAchievements: completed.toList());
+    });
+    
+    return newlyUnlocked;
   }
 
   void logout() {

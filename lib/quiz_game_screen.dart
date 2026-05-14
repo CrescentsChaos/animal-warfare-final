@@ -6,10 +6,12 @@ import 'dart:async' as java_timer;
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:animal_warfare/local_auth_service.dart';
 import 'package:animal_warfare/models/organism.dart';
+import 'package:animal_warfare/user_state.dart';
 import 'package:animal_warfare/widgets/organism_sprite_widget.dart';
 import 'package:animal_warfare/theme.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:provider/provider.dart';
 import 'package:animal_warfare/achievement_service.dart';
 
 enum QuizType {
@@ -429,7 +431,8 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
         allOrganisms: _allOrganisms.map((o) => o.toJson()).toList(),
         authService: widget.authService,
       );
-      final unlocked = await achievementService.checkAndUnlockAchievements(_currentUser);
+      final userState = Provider.of<UserState>(context, listen: false);
+      final unlocked = await userState.checkAndUnlockAchievements(achievementService);
       if (unlocked.isNotEmpty && mounted) {
         for (var title in unlocked) {
           achievementService.showAchievementSnackbar(context, title);
