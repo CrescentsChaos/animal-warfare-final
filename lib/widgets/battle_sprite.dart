@@ -180,39 +180,71 @@ class BattleSpriteState extends State<BattleSprite>
 
   Future<void> _determinePlatformImage() async {
     final tileId = widget.encounterTileId;
-    if (tileId == null) {
-      if (mounted) {
-        if (widget.biomeName == 'Battle Arena') {
-          setState(() => _platformImagePath = 'assets/platforms/default.png');
-        } else {
-          setState(() => _platformImagePath = 'assets/platforms/default1.png');
+    
+    // Attempt 1: If we have a tile ID, try that first or handle its category
+    if (tileId != null) {
+      final tileDef = BiomeDataManager.allTiles[tileId];
+      if (tileDef?.category == TileCategory.tallGrass) {
+        if (mounted) {
+          setState(() => _platformImagePath = 'assets/platforms/forest.webp');
         }
+        return;
       }
-      return;
+
+      try {
+        final pPath = 'assets/platforms/$tileId.png';
+        await rootBundle.load(pPath);
+        if (mounted) {
+          setState(() => _platformImagePath = pPath);
+          return;
+        }
+      } catch (_) {
+        try {
+          final wPath = 'assets/platforms/$tileId.webp';
+          await rootBundle.load(wPath);
+          if (mounted) {
+            setState(() => _platformImagePath = wPath);
+            return;
+          }
+        } catch (_) {}
+      }
     }
 
-    final tileDef = BiomeDataManager.allTiles[tileId];
-    if (tileDef?.category == TileCategory.tallGrass) {
+    // Attempt 2: Use the biomeName to find a platform
+    var normalizedBiome = widget.biomeName;
+    if (normalizedBiome.contains(',')) {
+      normalizedBiome = normalizedBiome.split(',')[0];
+    }
+    normalizedBiome = normalizedBiome.trim().toLowerCase().replaceAll(' ', '_');
+    
+    if (normalizedBiome == 'battle_arena') {
       if (mounted) {
-        setState(() => _platformImagePath = 'assets/platforms/forest.webp');
+        setState(() => _platformImagePath = 'assets/platforms/Ceramic.webp');
       }
       return;
     }
 
-    final pPath = 'assets/platforms/$tileId.png';
     try {
-      await rootBundle.load(pPath);
-      if (mounted) setState(() => _platformImagePath = pPath);
+      final wPath = 'assets/platforms/$normalizedBiome.webp';
+      await rootBundle.load(wPath);
+      if (mounted) {
+        setState(() => _platformImagePath = wPath);
+        return;
+      }
     } catch (_) {
       try {
-        final wPath = 'assets/platforms/$tileId.webp';
-        await rootBundle.load(wPath);
-        if (mounted) setState(() => _platformImagePath = wPath);
-      } catch (_) {
+        final pPath = 'assets/platforms/$normalizedBiome.png';
+        await rootBundle.load(pPath);
         if (mounted) {
-          setState(() => _platformImagePath = 'assets/platforms/default.png');
+          setState(() => _platformImagePath = pPath);
+          return;
         }
-      }
+      } catch (_) {}
+    }
+
+    // Fallback
+    if (mounted) {
+      setState(() => _platformImagePath = 'assets/platforms/default.png');
     }
   }
 

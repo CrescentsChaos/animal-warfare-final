@@ -223,11 +223,13 @@ class CapturedOrganism {
     lastFedTimeGame = gameTime;
 
     String message = "Your $displayName enjoyed the ${food.name}!";
-    if (multiplier < 1.0)
+    if (multiplier < 1.0) {
       message =
           "Your $displayName didn't seem to like the ${food.name} very much...";
-    if (isPreferred)
+    }
+    if (isPreferred) {
       message = "Your $displayName absolutely LOVED the ${food.name}!";
+    }
 
     return {
       'success': true,
