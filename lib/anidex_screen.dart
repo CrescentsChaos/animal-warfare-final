@@ -473,7 +473,6 @@ class _AnidexScreenState extends State<AnidexScreen>
               'assets/icon/bio_scanner.png',
               width: 18,
               height: 18,
-              color: AppColors.highlightColor,
             ),
           ),
           filled: true,
@@ -559,7 +558,7 @@ class _AnidexScreenState extends State<AnidexScreen>
               ? DecorationImage(
                   image: AssetImage(_getRarityBackground(org.rarity)),
                   fit: BoxFit.cover,
-                  opacity: 0.1,
+                  opacity: 0.4,
                 )
               : null,
           gradient: LinearGradient(
@@ -625,7 +624,6 @@ class _AnidexScreenState extends State<AnidexScreen>
                       right: 8,
                       child: Image.asset(
                         'assets/icon/start_game.png',
-                        color: rarityColor,
                         width: 16,
                         height: 16,
                       ),

@@ -98,7 +98,7 @@ class AnidexDetailsPage extends StatelessWidget {
                     ? DecorationImage(
                         image: AssetImage(_getRarityBackground(organism.rarity)),
                         fit: BoxFit.cover,
-                        opacity: 0.05,
+                        opacity: 0.4,
                       )
                     : null,
                 gradient: LinearGradient(
@@ -406,7 +406,6 @@ class AnidexDetailsPage extends StatelessWidget {
                 'assets/icon/$iconName.png',
                 width: 16,
                 height: 16,
-                color: color.withValues(alpha: 0.8),
                 errorBuilder: (_, __, ___) => Icon(Icons.bolt, color: color, size: 14),
               ),
               const SizedBox(width: 8),
