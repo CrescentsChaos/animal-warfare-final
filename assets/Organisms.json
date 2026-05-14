@@ -71585,7 +71585,7 @@
         "description": "This small underground reptile spends most of its life hidden beneath loose soil. Its bright tail distracts predators while it escapes into narrow tunnels.",
         "diet": "Insectivore",
         "drops": "Pink Tail,Soft Scale",
-        "habitat": "Plains,Grasslands",
+        "habitat": "Plains",
         "health": 36,
         "moves": "Burrow,Wriggle,Bite,Hide",
         "name": "Pink-tailed Worm Lizard",
