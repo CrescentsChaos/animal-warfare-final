@@ -565,8 +565,8 @@ class _AnidexScreenState extends State<AnidexScreen>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              discovered ? rarityColor.withValues(alpha: 0.15) : Colors.white10,
-              Colors.black.withValues(alpha: 0.6),
+              discovered ? rarityColor.withValues(alpha: 0.3) : Colors.grey.shade900,
+              AppColors.surface, // Using a solid surface color
             ],
           ),
           borderRadius: BorderRadius.circular(16),
@@ -725,7 +725,7 @@ class _AnidexScreenState extends State<AnidexScreen>
 
         return Container(
           decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.4),
+            color: AppColors.surface, // Solid background
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: AppColors.highlightColor.withValues(alpha: 0.15),
