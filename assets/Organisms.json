@@ -76844,10 +76844,10 @@
         "rarity": "Mythical",
         "resistance": 58,
         "scientific_name": "Anomalocaris canadensis",
-        "size": 0.9,
+        "size": 0.69,
         "spawn_tiles": "tall_grass",
         "speed": 88,
-        "weight": 1.5
+        "weight": 52.5
     },
     {
         "abilities": "Strong Jaw",
@@ -76869,10 +76869,10 @@
         "rarity": "Mythical",
         "resistance": 65,
         "scientific_name": "Ceratosaurus nasicornis",
-        "size": 2.9,
+        "size": 8.1,
         "spawn_tiles": "tall_grass",
         "speed": 72,
-        "weight": 0.95
+        "weight": 1500
     },
     {
         "abilities": "Speed Boost",
@@ -76894,10 +76894,10 @@
         "rarity": "Mythical",
         "resistance": 61,
         "scientific_name": "Concavenator corcovatus",
-        "size": 1.7,
+        "size": 5.5,
         "spawn_tiles": "tall_grass",
         "speed": 93,
-        "weight": 0.41
+        "weight": 360
     },
     {
         "abilities": "Ice Body",
@@ -76919,10 +76919,10 @@
         "rarity": "Mythical",
         "resistance": 78,
         "scientific_name": "Cryolophosaurus ellioti",
-        "size": 2.3,
+        "size": 7.1,
         "spawn_tiles": "tall_grass",
         "speed": 68,
-        "weight": 0.58
+        "weight": 622.5
     },
     {
         "abilities": "Moxie",
@@ -76944,10 +76944,10 @@
         "rarity": "Mythical",
         "resistance": 71,
         "scientific_name": "Mapusaurus roseae",
-        "size": 3.8,
+        "size": 11.8,
         "spawn_tiles": "tall_grass",
         "speed": 74,
-        "weight": 1.6
+        "weight": 5750
     },
     {
         "abilities": "Battle Armor",
@@ -76969,10 +76969,10 @@
         "rarity": "Mythical",
         "resistance": 76,
         "scientific_name": "Meraxes gigas",
-        "size": 4,
+        "size": 11.25,
         "spawn_tiles": "tall_grass",
         "speed": 70,
-        "weight": 2.1
+        "weight": 4400
     },
     {
         "abilities": "Pressure",
@@ -76994,10 +76994,10 @@
         "rarity": "Mythical",
         "resistance": 63,
         "scientific_name": "Neovenator salerii",
-        "size": 2,
+        "size": 7.3,
         "spawn_tiles": "tall_grass",
         "speed": 91,
-        "weight": 0.45
+        "weight": 1500
     },
     {
         "abilities": "Intimidate",
@@ -77019,10 +77019,10 @@
         "rarity": "Mythical",
         "resistance": 74,
         "scientific_name": "Tyrannotitan chubutensis",
-        "size": 4.1,
+        "size": 12.25,
         "spawn_tiles": "tall_grass",
         "speed": 69,
-        "weight": 2.45
+        "weight": 5950
     },
     {
         "abilities": "Run Away",
@@ -77044,10 +77044,10 @@
         "rarity": "Mythical",
         "resistance": 58,
         "scientific_name": "Alioramus remotus",
-        "size": 1.8,
+        "size": 5.75,
         "spawn_tiles": "tall_grass",
         "speed": 94,
-        "weight": 0.18
+        "weight": 900
     },
     {
         "abilities": "Quick Feet",
@@ -77069,10 +77069,10 @@
         "rarity": "Mythical",
         "resistance": 55,
         "scientific_name": "Nanotyrannus lancensis",
-        "size": 1.2,
+        "size": 5.25,
         "spawn_tiles": "tall_grass",
         "speed": 96,
-        "weight": 0.07
+        "weight": 800
     },
     {
         "abilities": "Sniper",
@@ -77094,10 +77094,10 @@
         "rarity": "Mythical",
         "resistance": 62,
         "scientific_name": "Qianzhousaurus sinensis",
-        "size": 2.4,
+        "size": 7.65,
         "spawn_tiles": "tall_grass",
         "speed": 88,
-        "weight": 0.45
+        "weight": 875
     },
     {
         "abilities": "Speed Boost",
@@ -77119,10 +77119,10 @@
         "rarity": "Mythical",
         "resistance": 57,
         "scientific_name": "Raptorex kriegsteini",
-        "size": 1,
+        "size": 2.75,
         "spawn_tiles": "tall_grass",
         "speed": 95,
-        "weight": 0.04
+        "weight": 82.5
     },
     {
         "abilities": "Rock Head",
@@ -77144,10 +77144,10 @@
         "rarity": "Mythical",
         "resistance": 75,
         "scientific_name": "Anteosaurus magnificus",
-        "size": 2,
+        "size": 5.5,
         "spawn_tiles": "tall_grass",
         "speed": 55,
-        "weight": 0.6
+        "weight": 550
     },
     {
         "abilities": "Solar Power",
@@ -77169,10 +77169,10 @@
         "rarity": "Mythical",
         "resistance": 60,
         "scientific_name": "Dimetrodon grandis",
-        "size": 1.75,
+        "size": 3.8,
         "spawn_tiles": "tall_grass",
         "speed": 58,
-        "weight": 0.16
+        "weight": 200
     },
     {
         "abilities": "Water Absorb",
@@ -77219,10 +77219,10 @@
         "rarity": "Mythical",
         "resistance": 82,
         "scientific_name": "Estemmenosuchus uralensis",
-        "size": 1.6,
+        "size": 0.95,
         "spawn_tiles": "tall_grass",
         "speed": 40,
-        "weight": 0.4
+        "weight": 12.5
     },
     {
         "abilities": "Sharpness",
@@ -77244,10 +77244,10 @@
         "rarity": "Mythical",
         "resistance": 69,
         "scientific_name": "Inostrancevia alexandri",
-        "size": 1.7,
+        "size": 3.2,
         "spawn_tiles": "tall_grass",
         "speed": 81,
-        "weight": 0.32
+        "weight": 325
     },
     {
         "abilities": "Sturdy",
@@ -77269,10 +77269,10 @@
         "rarity": "Mythical",
         "resistance": 74,
         "scientific_name": "Lystrosaurus murrayi",
-        "size": 0.65,
+        "size": 1.7,
         "spawn_tiles": "tall_grass",
         "speed": 36,
-        "weight": 0.11
+        "weight": 115
     },
     {
         "abilities": "Shell Armor",
@@ -77294,10 +77294,10 @@
         "rarity": "Mythical",
         "resistance": 90,
         "scientific_name": "Scutosaurus karpinskii",
-        "size": 2.2,
+        "size": 2.7,
         "spawn_tiles": "tall_grass",
         "speed": 28,
-        "weight": 0.65
+        "weight": 500
     },
     {
         "abilities": "Sheer Force",
@@ -77319,10 +77319,10 @@
         "rarity": "Mythical",
         "resistance": 64,
         "scientific_name": "Abelisaurus comahuensis",
-        "size": 2.6,
+        "size": 8.1,
         "spawn_tiles": "tall_grass",
         "speed": 79,
-        "weight": 0.65
+        "weight": 2250
     },
     {
         "abilities": "Moxie",
@@ -77344,10 +77344,10 @@
         "rarity": "Mythical",
         "resistance": 67,
         "scientific_name": "Albertosaurus sarcophagus",
-        "size": 3,
+        "size": 9.25,
         "spawn_tiles": "tall_grass",
         "speed": 82,
-        "weight": 0.9
+        "weight": 2150
     },
     {
         "abilities": "Leaf Guard",
@@ -77369,10 +77369,10 @@
         "rarity": "Mythical",
         "resistance": 79,
         "scientific_name": "Edaphosaurus pogonias",
-        "size": 1.4,
+        "size": 3.2,
         "spawn_tiles": "tall_grass",
         "speed": 28,
-        "weight": 0.18
+        "weight": 250
     },
     {
         "abilities": "Damp",
@@ -77394,10 +77394,10 @@
         "rarity": "Mythical",
         "resistance": 68,
         "scientific_name": "Eryops megacephalus",
-        "size": 1,
+        "size": 2.2,
         "spawn_tiles": "tall_grass",
         "speed": 42,
-        "weight": 0.11
+        "weight": 165
     },
     {
         "abilities": "Strong Jaw",
@@ -77419,10 +77419,10 @@
         "rarity": "Mythical",
         "resistance": 65,
         "scientific_name": "Gorgonops torvus",
-        "size": 1.5,
+        "size": 2.5,
         "spawn_tiles": "tall_grass",
         "speed": 86,
-        "weight": 0.15
+        "weight": 200
     },
     {
         "abilities": "Quick Feet",
@@ -77444,10 +77444,10 @@
         "rarity": "Mythical",
         "resistance": 53,
         "scientific_name": "Lycaenops ornatus",
-        "size": 0.8,
+        "size": 1.1,
         "spawn_tiles": "tall_grass",
         "speed": 83,
-        "weight": 0.03
+        "weight": 27.5
     },
     {
         "abilities": "Sturdy",
@@ -77469,10 +77469,10 @@
         "rarity": "Mythical",
         "resistance": 91,
         "scientific_name": "Moschops capensis",
-        "size": 1.5,
+        "size": 3.65,
         "spawn_tiles": "tall_grass",
         "speed": 24,
-        "weight": 0.32
+        "weight": 850
     },
     {
         "abilities": "Strong Jaw",
@@ -77494,10 +77494,10 @@
         "rarity": "Mythical",
         "resistance": 57,
         "scientific_name": "Secodontosaurus obtusidens",
-        "size": 1.5,
+        "size": 2.35,
         "spawn_tiles": "tall_grass",
         "speed": 66,
-        "weight": 0.12
+        "weight": 125
     },
     {
         "abilities": "Battle Armor",
@@ -77519,10 +77519,10 @@
         "rarity": "Mythical",
         "resistance": 61,
         "scientific_name": "Sphenacodon ferox",
-        "size": 1.4,
+        "size": 2.6,
         "spawn_tiles": "tall_grass",
         "speed": 52,
-        "weight": 0.1
+        "weight": 165
     },
     {
         "abilities": "Rock Head",
@@ -77544,10 +77544,10 @@
         "rarity": "Mythical",
         "resistance": 94,
         "scientific_name": "Tapinocephalus atherstonei",
-        "size": 2,
+        "size": 3.65,
         "spawn_tiles": "tall_grass",
         "speed": 22,
-        "weight": 1
+        "weight": 1750
     },
     {
         "abilities": "Intimidate",
@@ -77569,10 +77569,10 @@
         "rarity": "Mythical",
         "resistance": 66,
         "scientific_name": "Titanophoneus potens",
-        "size": 1.6,
+        "size": 4.4,
         "spawn_tiles": "tall_grass",
         "speed": 63,
-        "weight": 0.18
+        "weight": 500
     },
     {
         "abilities": "Swift Swim",
@@ -77594,10 +77594,10 @@
         "rarity": "Mythical",
         "resistance": 59,
         "scientific_name": "Clidastes propython",
-        "size": 2.8,
+        "size": 3,
         "spawn_tiles": "tall_grass",
         "speed": 84,
-        "weight": 0.22
+        "weight": 250
     },
     {
         "abilities": "Overgrow",
@@ -77619,10 +77619,10 @@
         "rarity": "Mythical",
         "resistance": 85,
         "scientific_name": "Diadectes sideropelicus",
-        "size": 1.1,
+        "size": 2.5,
         "spawn_tiles": "tall_grass",
         "speed": 26,
-        "weight": 0.12
+        "weight": 85
     },
     {
         "abilities": "Torrent",
@@ -77644,10 +77644,10 @@
         "rarity": "Mythical",
         "resistance": 55,
         "scientific_name": "Ophiacodon retroversus",
-        "size": 1.5,
+        "size": 3.05,
         "spawn_tiles": "tall_grass",
         "speed": 48,
-        "weight": 0.1
+        "weight": 175
     },
     {
         "abilities": "Shell Armor",
@@ -77669,10 +77669,10 @@
         "rarity": "Mythical",
         "resistance": 96,
         "scientific_name": "Pareiasaurus serridens",
-        "size": 2.1,
+        "size": 2.7,
         "spawn_tiles": "tall_grass",
         "speed": 18,
-        "weight": 0.7
+        "weight": 600
     },
     {
         "abilities": "Water Veil",
@@ -77694,9 +77694,9 @@
         "rarity": "Mythical",
         "resistance": 58,
         "scientific_name": "Platecarpus tympaniticus",
-        "size": 2.3,
+        "size": 4.95,
         "spawn_tiles": "tall_grass",
         "speed": 87,
-        "weight": 0.12
+        "weight": 750
     }
 ]
