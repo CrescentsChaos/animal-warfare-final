@@ -3519,7 +3519,7 @@
         "rarity": "Mythical",
         "resistance": 76,
         "scientific_name": "Psephurus gladius",
-        "size": 1,
+        "size": 5,
         "spawn_tiles": "water",
         "speed": 50,
         "weight": 375
@@ -6172,7 +6172,7 @@
         "size": 23.5,
         "spawn_tiles": "tall_grass",
         "speed": 75,
-        "weight": 97000
+        "weight": 77000
     },
     {
         "abilities": "Abyss Dweller, Echolocation, Cursed Body",
@@ -31544,7 +31544,7 @@
         "rarity": "Mythical",
         "resistance": 999,
         "scientific_name": "Trachemys scripta elegans",
-        "size": 1,
+        "size": 0.03,
         "spawn_tiles": "tall_grass",
         "speed": 999,
         "weight": 0.45
@@ -31569,7 +31569,7 @@
         "rarity": "Mythical",
         "resistance": 999,
         "scientific_name": "Felis catus",
-        "size": 1,
+        "size": 0.485,
         "spawn_tiles": "tall_grass",
         "speed": 999,
         "weight": 1.25
@@ -31594,7 +31594,7 @@
         "rarity": "Mythical",
         "resistance": 999,
         "scientific_name": "Felis catus",
-        "size": 1,
+        "size": 0.415,
         "spawn_tiles": "tall_grass",
         "speed": 999,
         "weight": 4.25
@@ -41222,7 +41222,7 @@
         "size": 45,
         "spawn_tiles": "tall_grass",
         "speed": 10,
-        "weight": 1.8
+        "weight": 15
     },
     {
         "abilities": "Cold-blooded",
@@ -60829,11 +60829,11 @@
         "active_time": "any",
         "attack": 70,
         "category": "Earth",
-        "class": "Unknown",
+        "class": "Bird",
         "cry": "default",
         "defense": 72,
         "description": "The moa was a giant flightless bird that once lived in the forests of New Zealand. With powerful legs it could move through dense vegetation and defend itself from predators.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Feather",
         "habitat": "Jungle,Mountain",
         "health": 118,
@@ -60844,21 +60844,21 @@
         "rarity": "Mythical",
         "resistance": 76,
         "scientific_name": "Dinornis robustus",
-        "size": 1,
+        "size": 1.15,
         "spawn_tiles": "tall_grass",
         "speed": 30,
-        "weight": 1
+        "weight": 120
     },
     {
         "abilities": "Sheer Force",
         "active_time": "any",
         "attack": 90,
         "category": "Earth",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 96,
         "description": "Deinotherium was an enormous prehistoric relative of elephants with curved downward tusks. It wandered ancient landscapes using its immense strength to pull branches and defend itself.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Fossil Bone,Thick Hide",
         "habitat": "Savanna,Mountain",
         "health": 150,
@@ -60869,21 +60869,21 @@
         "rarity": "Mythical",
         "resistance": 98,
         "scientific_name": "Deinotherium giganteum",
-        "size": 1,
+        "size": 2.1,
         "spawn_tiles": "tall_grass",
         "speed": 24,
-        "weight": 1
+        "weight": 11500
     },
     {
         "abilities": "Sap Sipper",
         "active_time": "any",
         "attack": 68,
         "category": "Rock",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 84,
         "description": "The mylodon was a massive ground sloth covered in thick fur and protective skin. It slowly grazed on plants while relying on size and claws for defense.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Thick Hide,Fossil Bone",
         "habitat": "Mountain,Tundra",
         "health": 130,
@@ -60894,10 +60894,10 @@
         "rarity": "Mythical",
         "resistance": 92,
         "scientific_name": "Mylodon darwinii",
-        "size": 1,
+        "size": 1.5,
         "spawn_tiles": "tall_grass",
         "speed": 20,
-        "weight": 1
+        "weight": 1500
     },
     {
         "abilities": "Strong Jaw, Refrigerate",
@@ -60919,7 +60919,7 @@
         "rarity": "Mythical",
         "resistance": 68,
         "scientific_name": "Smilodon fatalis",
-        "size": 1,
+        "size": 2.125,
         "spawn_tiles": "tall_grass",
         "speed": 64,
         "weight": 310
@@ -60954,11 +60954,11 @@
         "active_time": "any",
         "attack": 74,
         "category": "Basic, Grass",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 110,
         "description": "Driptodon was a heavily armored prehistoric mammal related to giant armadillos. Its massive tail club and thick shell made it extremely difficult for predators to harm.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Armored Shell,Fossil Bone",
         "habitat": "Savanna,Mountain",
         "health": 150,
@@ -60969,10 +60969,10 @@
         "rarity": "Mythical",
         "resistance": 110,
         "scientific_name": "Doedicurus clavicaudatus",
-        "size": 1,
+        "size": 1.45,
         "spawn_tiles": "tall_grass",
         "speed": 16,
-        "weight": 1
+        "weight": 2050
     },
     {
         "abilities": "Tough Claws",
@@ -61019,7 +61019,7 @@
         "rarity": "Mythical",
         "resistance": 72,
         "scientific_name": "Andrewsarchus mongoliensis",
-        "size": 1,
+        "size": 3.95,
         "spawn_tiles": "tall_grass",
         "speed": 54,
         "weight": 750
@@ -61029,11 +61029,11 @@
         "active_time": "any",
         "attack": 84,
         "category": "Basic, Earth",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 74,
         "description": "Daeodon was a giant prehistoric piglike predator with a huge skull and powerful jaws. It likely scavenged and hunted animals across ancient plains.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "Tusk Fragment,Raw Meat",
         "habitat": "Savanna,Mountain",
         "health": 118,
@@ -61044,21 +61044,21 @@
         "rarity": "Mythical",
         "resistance": 72,
         "scientific_name": "Daeodon shoshonensis",
-        "size": 1,
+        "size": 1.05,
         "spawn_tiles": "tall_grass",
         "speed": 50,
-        "weight": 1
+        "weight": 750
     },
     {
         "abilities": "Reckless",
         "active_time": "any",
         "attack": 88,
         "category": "Basic, Earth",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 72,
         "description": "Entelodon was a massive prehistoric omnivore with a powerful skull and crushing bite. It roamed ancient plains using brute force and intimidation to dominate rivals and scavengers.",
-        "diet": "Unknown",
+        "diet": "Omnivore",
         "drops": "tusk, hide",
         "habitat": "Savanna",
         "health": 110,
@@ -61069,21 +61069,21 @@
         "rarity": "Mythical",
         "resistance": 70,
         "scientific_name": "Entelodon magnus",
-        "size": 1,
+        "size": 1.15,
         "spawn_tiles": "tall_grass",
         "speed": 60,
-        "weight": 1
+        "weight": 250
     },
     {
         "abilities": "Strong Jaw",
         "active_time": "any",
         "attack": 90,
         "category": "Darkness, Earth",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 68,
         "description": "Hyaenodon was a fearsome prehistoric predator with jaws built for slicing flesh. It stalked open lands with relentless persistence and overwhelming killing power.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "tooth, hide",
         "habitat": "Savanna",
         "health": 105,
@@ -61094,21 +61094,21 @@
         "rarity": "Mythical",
         "resistance": 65,
         "scientific_name": "Hyaenodon gigas",
-        "size": 1,
+        "size": 1.15,
         "spawn_tiles": "tall_grass",
         "speed": 70,
-        "weight": 1
+        "weight": 350
     },
     {
         "abilities": "Long Reach",
         "active_time": "any",
         "attack": 78,
         "category": "Earth, Basic",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 95,
         "description": "Paraceratherium was the largest land mammal to ever walk the earth. Its towering body and immense weight allowed it to dominate landscapes without fear of most predators.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "hide, bone",
         "habitat": "Savanna",
         "health": 160,
@@ -61119,10 +61119,10 @@
         "rarity": "Mythical",
         "resistance": 100,
         "scientific_name": "Paraceratherium transouralicum",
-        "size": 1,
+        "size": 2.55,
         "spawn_tiles": "tall_grass",
         "speed": 40,
-        "weight": 1
+        "weight": 13000
     },
     {
         "abilities": "Long Reach",
@@ -61144,7 +61144,7 @@
         "rarity": "Mythical",
         "resistance": 55,
         "scientific_name": "Aepycamelus giraffinus",
-        "size": 1,
+        "size": 3.5,
         "spawn_tiles": "tall_grass",
         "speed": 70,
         "weight": 530
@@ -61158,7 +61158,7 @@
         "cry": "default",
         "defense": 70,
         "description": "Argentavis was one of the largest flying birds to ever exist with an enormous wingspan. It soared over ancient mountains and plains searching for prey or carrion.",
-        "diet": "Scavenger",
+        "diet": "Carnivore",
         "drops": "feather, talon",
         "habitat": "Mountain",
         "health": 110,
@@ -61169,10 +61169,10 @@
         "rarity": "Mythical",
         "resistance": 75,
         "scientific_name": "Argentavis magnificens",
-        "size": 1,
+        "size": 3.25,
         "spawn_tiles": "tall_grass",
         "speed": 95,
-        "weight": 1
+        "weight": 72.5
     },
     {
         "abilities": "Intimidate",
@@ -61219,21 +61219,21 @@
         "rarity": "Mythical",
         "resistance": 70,
         "scientific_name": "Harpagornis moorei",
-        "size": 1,
+        "size": 1.25,
         "spawn_tiles": "tall_grass",
         "speed": 100,
-        "weight": 1
+        "weight": 12.5
     },
     {
         "abilities": "Strong Jaw",
         "active_time": "any",
         "attack": 82,
         "category": "Darkness",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 70,
         "description": "Dire wolves were powerful pack hunters that roamed icy plains and forests. Their teamwork and strength allowed them to bring down prey larger than themselves.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "fang, fur",
         "habitat": "Taiga, Tundra",
         "health": 100,
@@ -61244,10 +61244,10 @@
         "rarity": "Mythical",
         "resistance": 65,
         "scientific_name": "Canis dirus",
-        "size": 1,
+        "size": 1.625,
         "spawn_tiles": "tall_grass",
         "speed": 85,
-        "weight": 1
+        "weight": 74
     },
     {
         "abilities": "Heavy Metal",
@@ -61279,11 +61279,11 @@
         "active_time": "any",
         "attack": 88,
         "category": "Martial",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 72,
         "description": "Epicyon was a massive bone crushing dog that ruled ancient plains. Its jaws were powerful enough to break bones and claim both prey and carrion.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "fang, hide",
         "habitat": "Savanna",
         "health": 110,
@@ -61294,10 +61294,10 @@
         "rarity": "Mythical",
         "resistance": 70,
         "scientific_name": "Epicyon haydeni",
-        "size": 1,
+        "size": 1.6,
         "spawn_tiles": "tall_grass",
         "speed": 75,
-        "weight": 1
+        "weight": 115
     },
     {
         "abilities": "Solid Rock",
@@ -61419,7 +61419,7 @@
         "rarity": "Mythical",
         "resistance": 55,
         "scientific_name": "Barbaridactylus grandis",
-        "size": 1,
+        "size": 3.75,
         "spawn_tiles": "tall_grass",
         "speed": 92,
         "weight": 2.5
@@ -61429,11 +61429,11 @@
         "active_time": "any",
         "attack": 88,
         "category": "Rock, Drake",
-        "class": "Unknown",
+        "class": "Reptile",
         "cry": "default",
         "defense": 68,
         "description": "Carnotaurus was a fast running predator with distinctive horns above its eyes and a streamlined body. Its speed and agility allowed it to chase prey across open plains with explosive bursts of power.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "Raw Meat,Bone,Hide",
         "habitat": "Savanna",
         "health": 95,
@@ -61444,21 +61444,21 @@
         "rarity": "Mythical",
         "resistance": 65,
         "scientific_name": "Carnotaurus sastrei",
-        "size": 1,
+        "size": 8.25,
         "spawn_tiles": "tall_grass",
         "speed": 82,
-        "weight": 1
+        "weight": 1700
     },
     {
         "abilities": "Soundproof",
         "active_time": "any",
         "attack": 50,
         "category": "Rock, Sound",
-        "class": "Unknown",
+        "class": "Reptile",
         "cry": "default",
         "defense": 65,
         "description": "Parasaurolophus was a large herbivorous dinosaur famous for the long curved crest on its head. The hollow crest likely produced deep resonant sounds used for communication across dense prehistoric jungles.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Hide,Bone,Fiber",
         "habitat": "Jungle",
         "health": 105,
@@ -61469,10 +61469,10 @@
         "rarity": "Mythical",
         "resistance": 72,
         "scientific_name": "Parasaurolophus walkeri",
-        "size": 1,
+        "size": 9,
         "spawn_tiles": "tall_grass",
         "speed": 45,
-        "weight": 1
+        "weight": 3000
     },
     {
         "abilities": "Swift Swim",
@@ -61604,11 +61604,11 @@
         "active_time": "any",
         "attack": 70,
         "category": "Earth",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 85,
         "description": "Megatherium was a gigantic ground sloth that slowly roamed ancient forests while feeding on leaves and branches. Its enormous claws allowed it to pull down trees and defend itself from predators.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Fur,Claw,Bone",
         "habitat": "Jungle,Savanna",
         "health": 118,
@@ -61619,10 +61619,10 @@
         "rarity": "Mythical",
         "resistance": 92,
         "scientific_name": "Megatherium americanum",
-        "size": 1,
+        "size": 5,
         "spawn_tiles": "tall_grass",
         "speed": 25,
-        "weight": 1
+        "weight": 4000
     },
     {
         "abilities": "Stamina",
@@ -62904,11 +62904,11 @@
         "active_time": "any",
         "attack": 999,
         "category": "Darkness",
-        "class": "Unknown",
+        "class": "Mollusk",
         "cry": "default",
         "defense": 999,
         "description": "The creator's pet snail. 10th March, 2026 changed everything. I wish we could change everything back!",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "Shell,Mucus,Snail Meat",
         "habitat": "Ocean, Coastal",
         "health": 999,
@@ -62919,10 +62919,10 @@
         "rarity": "Mythical",
         "resistance": 999,
         "scientific_name": "Turritella terebra",
-        "size": 1,
+        "size": 0.0135,
         "spawn_tiles": "tall_grass",
         "speed": 999,
-        "weight": 1
+        "weight": 0.011
     },
     {
         "abilities": "Water Absorb",
@@ -65669,7 +65669,7 @@
         "rarity": "Mythical",
         "resistance": 78,
         "scientific_name": "Arthropleura armata",
-        "size": 1,
+        "size": 2.3,
         "spawn_tiles": "tall_grass",
         "speed": 20,
         "weight": 50
@@ -65729,11 +65729,11 @@
         "active_time": "any",
         "attack": 88,
         "category": "Earth, Metal",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 82,
         "description": "The European straight tusked elephant was a massive elephant species with long straight tusks. It inhabited forests and grasslands during warm periods.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "tusk,hide,meat",
         "habitat": "Plains,Jungle",
         "health": 138,
@@ -65744,21 +65744,21 @@
         "rarity": "Mythical",
         "resistance": 80,
         "scientific_name": "Palaeoloxodon antiquus",
-        "size": 1,
+        "size": 4,
         "spawn_tiles": "tall_grass",
         "speed": 26,
-        "weight": 1
+        "weight": 12900
     },
     {
         "abilities": "Stamina",
         "active_time": "any",
         "attack": 86,
         "category": "Earth",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 80,
         "description": "Reckis elephant was an ancient elephant species that lived across African landscapes. It was a dominant herbivore in open environments.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "tusk,hide,meat",
         "habitat": "Savanna,Plains",
         "health": 136,
@@ -65769,21 +65769,21 @@
         "rarity": "Mythical",
         "resistance": 78,
         "scientific_name": "Palaeoloxodon recki",
-        "size": 1,
+        "size": 4.285,
         "spawn_tiles": "tall_grass",
         "speed": 28,
-        "weight": 1
+        "weight": 12300
     },
     {
         "abilities": "Stamina",
         "active_time": "any",
         "attack": 90,
         "category": "Earth",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 84,
         "description": "The Columbian mammoth was a giant elephant relative that lived in warmer parts of North America. It had long curved tusks and fed on grasses and plants.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "tusk,fur,meat",
         "habitat": "Plains,Desert",
         "health": 142,
@@ -65794,10 +65794,10 @@
         "rarity": "Mythical",
         "resistance": 82,
         "scientific_name": "Mammuthus columbi",
-        "size": 1,
+        "size": 4.01,
         "spawn_tiles": "tall_grass",
         "speed": 30,
-        "weight": 1
+        "weight": 11000
     },
     {
         "abilities": "Thick Fat",
@@ -65829,11 +65829,11 @@
         "active_time": "any",
         "attack": 64,
         "category": "Aquatic, Cryo",
-        "class": "Unknown",
+        "class": "Fish",
         "cry": "default",
         "defense": 58,
         "description": "The sabretooth salmon was a large prehistoric fish with long fang like teeth. It swam through ancient oceans and rivers feeding on smaller fish.",
-        "diet": "Unknown",
+        "diet": "Filter Feeder",
         "drops": "meat,scales",
         "habitat": "Ocean,River",
         "health": 90,
@@ -65844,10 +65844,10 @@
         "rarity": "Mythical",
         "resistance": 62,
         "scientific_name": "Oncorhynchus rastrosus",
-        "size": 1,
+        "size": 2,
         "spawn_tiles": "tall_grass",
         "speed": 40,
-        "weight": 1
+        "weight": 177
     },
     {
         "abilities": "Swift Swim",
@@ -65869,7 +65869,7 @@
         "rarity": "Mythical",
         "resistance": 74,
         "scientific_name": "Xiphactinus audax",
-        "size": 1,
+        "size": 5.25,
         "spawn_tiles": "water",
         "speed": 46,
         "weight": 750
@@ -65879,11 +65879,11 @@
         "active_time": "any",
         "attack": 60,
         "category": "Aquatic, Drake",
-        "class": "Unknown",
+        "class": "Fish",
         "cry": "default",
         "defense": 52,
         "description": "Enchodus was a prehistoric fish known for its large fang like teeth. It hunted smaller fish in ancient oceans.",
-        "diet": "Unknown",
+        "diet": "Piscivore",
         "drops": "meat,scales",
         "habitat": "Ocean",
         "health": 80,
@@ -65894,21 +65894,21 @@
         "rarity": "Mythical",
         "resistance": 56,
         "scientific_name": "Enchodus petrosus",
-        "size": 1,
+        "size": 2.625,
         "spawn_tiles": "tall_grass",
         "speed": 48,
-        "weight": 1
+        "weight": 17.035
     },
     {
         "abilities": "Guts",
         "active_time": "any",
         "attack": 66,
         "category": "Aquatic, Basic",
-        "class": "Unknown",
+        "class": "Fish",
         "cry": "default",
         "defense": 56,
         "description": "Pachyrizodus was a fast swimming predatory fish in ancient marine ecosystems. It likely chased down smaller prey in open water.",
-        "diet": "Unknown",
+        "diet": "Piscivore",
         "drops": "meat,scales",
         "habitat": "Ocean",
         "health": 92,
@@ -65919,10 +65919,10 @@
         "rarity": "Mythical",
         "resistance": 60,
         "scientific_name": "Pachyrhizodus spp",
-        "size": 1,
+        "size": 1.5,
         "spawn_tiles": "tall_grass",
         "speed": 42,
-        "weight": 1
+        "weight": 40
     },
     {
         "abilities": "Sturdy",
@@ -65944,7 +65944,7 @@
         "rarity": "Mythical",
         "resistance": 70,
         "scientific_name": "Protosphyraena spp",
-        "size": 1,
+        "size": 2.5,
         "spawn_tiles": "water",
         "speed": 50,
         "weight": 52.5
@@ -65954,11 +65954,11 @@
         "active_time": "any",
         "attack": 68,
         "category": "Aquatic, Aura",
-        "class": "Unknown",
+        "class": "Fish",
         "cry": "default",
         "defense": 58,
         "description": "Saurodon was a streamlined predatory fish related to Ichthyodectes. It hunted actively in open seas.",
-        "diet": "Unknown",
+        "diet": "Piscivore",
         "drops": "meat,scales",
         "habitat": "Ocean",
         "health": 96,
@@ -65969,10 +65969,10 @@
         "rarity": "Mythical",
         "resistance": 62,
         "scientific_name": "Saurodon leanus",
-        "size": 1,
+        "size": 1.7,
         "spawn_tiles": "tall_grass",
         "speed": 44,
-        "weight": 1
+        "weight": 35
     },
     {
         "abilities": "Water Absorb",
@@ -65994,7 +65994,7 @@
         "rarity": "Mythical",
         "resistance": 70,
         "scientific_name": "Bonnerichthys gladius",
-        "size": 1,
+        "size": 5.25,
         "spawn_tiles": "water",
         "speed": 28,
         "weight": 850
@@ -66004,11 +66004,11 @@
         "active_time": "any",
         "attack": 72,
         "category": "Aquatic",
-        "class": "Unknown",
+        "class": "Fish",
         "cry": "default",
         "defense": 62,
         "description": "Ichthyodectes was a large predatory fish known from fossil records in marine environments. It likely hunted with speed and powerful jaws.",
-        "diet": "Unknown",
+        "diet": "Piscivore",
         "drops": "meat,scales",
         "habitat": "Ocean",
         "health": 100,
@@ -66019,10 +66019,10 @@
         "rarity": "Mythical",
         "resistance": 66,
         "scientific_name": "Ichthyodectes spp",
-        "size": 1,
+        "size": 2.4,
         "spawn_tiles": "tall_grass",
         "speed": 48,
-        "weight": 1
+        "weight": 130
     },
     {
         "abilities": "Filter",
@@ -66069,7 +66069,7 @@
         "rarity": "Mythical",
         "resistance": 52,
         "scientific_name": "Saurichthys spp",
-        "size": 1,
+        "size": 1.05,
         "spawn_tiles": "water",
         "speed": 52,
         "weight": 13
@@ -66079,11 +66079,11 @@
         "active_time": "any",
         "attack": 84,
         "category": "Rock",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 90,
         "description": "Doedicurus was a heavily armored relative of armadillos with a massive clubbed tail. It used its tail as a weapon against predators and rivals.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "hide,meat",
         "habitat": "Plains",
         "health": 140,
@@ -66094,21 +66094,21 @@
         "rarity": "Mythical",
         "resistance": 88,
         "scientific_name": "Doedicurus clavicaudatus",
-        "size": 1,
+        "size": 3.8,
         "spawn_tiles": "tall_grass",
         "speed": 18,
-        "weight": 1
+        "weight": 1885
     },
     {
         "abilities": "Shell Armor",
         "active_time": "any",
         "attack": 70,
         "category": "Rock",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 88,
         "description": "Glyptodon was a large armored mammal with a domed shell. It resembled a giant armadillo and grazed on vegetation.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "hide,meat",
         "habitat": "Plains",
         "health": 132,
@@ -66119,21 +66119,21 @@
         "rarity": "Mythical",
         "resistance": 84,
         "scientific_name": "Glyptodon clavipes",
-        "size": 1,
+        "size": 3.15,
         "spawn_tiles": "tall_grass",
         "speed": 16,
-        "weight": 1
+        "weight": 1500
     },
     {
         "abilities": "Sap Sipper",
         "active_time": "any",
         "attack": 62,
         "category": "Basic, Earth",
-        "class": "Unknown",
+        "class": "Mammal",
         "cry": "default",
         "defense": 56,
         "description": "Macrauchenia was a unique South American mammal with a long neck and trunk like nose. It lived in open habitats feeding on plants.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "hide,meat",
         "habitat": "Plains",
         "health": 96,
@@ -66144,10 +66144,10 @@
         "rarity": "Mythical",
         "resistance": 60,
         "scientific_name": "Macrauchenia patachonica",
-        "size": 1,
+        "size": 2.5,
         "spawn_tiles": "tall_grass",
         "speed": 46,
-        "weight": 1
+        "weight": 772.5
     },
     {
         "abilities": "Solid Rock",
@@ -67229,11 +67229,11 @@
         "active_time": "any",
         "attack": 90,
         "category": "Drake, Dakness",
-        "class": "Unknown",
+        "class": "Reptile",
         "cry": "default",
         "defense": 76,
         "description": "The saurophaganax was a large carnivorous dinosaur closely related to allosaurus. It preyed on massive herbivores using strength and sharp claws.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "hide,meat",
         "habitat": "Plains",
         "health": 128,
@@ -67244,10 +67244,10 @@
         "rarity": "Mythical",
         "resistance": 78,
         "scientific_name": "Saurophaganax maximus",
-        "size": 1,
+        "size": 11.25,
         "spawn_tiles": "tall_grass",
         "speed": 58,
-        "weight": 1
+        "weight": 3750
     },
     {
         "abilities": "Iron Barbs",
@@ -67269,10 +67269,10 @@
         "rarity": "Mythical",
         "resistance": 90,
         "scientific_name": "Shunosaurus lii",
-        "size": 9.75,
+        "size": 10,
         "spawn_tiles": "tall_grass",
         "speed": 24,
-        "weight": 3150
+        "weight": 4000
     },
     {
         "abilities": "Intimidate",
@@ -67329,11 +67329,11 @@
         "active_time": "any",
         "attack": 100,
         "category": "Aquatic,Metal",
-        "class": "Unknown",
+        "class": "Fish",
         "cry": "default",
         "defense": 92,
         "description": "The dunkleosteus was an ancient armored fish with powerful jaws capable of crushing prey. It ruled prehistoric oceans as a dominant marine predator.",
-        "diet": "Unknown",
+        "diet": "Carnivore",
         "drops": "armor,meat",
         "habitat": "Ocean,Deep Sea",
         "health": 160,
@@ -67344,10 +67344,10 @@
         "rarity": "Mythical",
         "resistance": 94,
         "scientific_name": "Dunkleosteus terrelli",
-        "size": 1,
+        "size": 5.35,
         "spawn_tiles": "tall_grass",
         "speed": 30,
-        "weight": 1
+        "weight": 1100
     },
     {
         "abilities": "No Guard",
@@ -71104,11 +71104,11 @@
         "active_time": "any",
         "attack": 70,
         "category": "Rock, Grass",
-        "class": "Unknown",
+        "class": "Reptile",
         "cry": "default",
         "defense": 90,
         "description": "Spicomellus is a heavily armored dinosaur with fused spikes embedded in its body. It used its defenses to withstand attacks while striking back with powerful movements.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "bone, spike",
         "habitat": "Desert",
         "health": 100,
@@ -71119,10 +71119,10 @@
         "rarity": "Mythical",
         "resistance": 80,
         "scientific_name": "Spicomellus afer",
-        "size": 1,
+        "size": 2.5,
         "spawn_tiles": "tall_grass",
         "speed": 35,
-        "weight": 1
+        "weight": 150
     },
     {
         "abilities": "Heavy Metal",
@@ -71144,10 +71144,10 @@
         "rarity": "Mythical",
         "resistance": 82,
         "scientific_name": "Ampelosaurus atacis",
-        "size": 15.5,
+        "size": 15,
         "spawn_tiles": "tall_grass",
         "speed": 30,
-        "weight": 11500
+        "weight": 8000
     },
     {
         "abilities": "Punk Rock",
@@ -71279,11 +71279,11 @@
         "active_time": "any",
         "attack": 62,
         "category": "Basic, Drake",
-        "class": "Unknown",
+        "class": "Reptile",
         "cry": "default",
         "defense": 58,
         "description": "Dracorex is a dome headed dinosaur with a spiky skull used for combat and display. It likely used headbutting behavior to compete or defend itself.",
-        "diet": "Unknown",
+        "diet": "Herbivore",
         "drops": "bone, hide",
         "habitat": "Plains",
         "health": 80,
@@ -71294,10 +71294,10 @@
         "rarity": "Mythical",
         "resistance": 60,
         "scientific_name": "Dracorex hogwartsia",
-        "size": 1,
+        "size": 3.15,
         "spawn_tiles": "tall_grass",
         "speed": 55,
-        "weight": 1
+        "weight": 131.5
     },
     {
         "abilities": "Rock Head , Flare Boost",
@@ -71344,7 +71344,7 @@
         "rarity": "Mythical",
         "resistance": 58,
         "scientific_name": "Tiktaalik roseae",
-        "size": 1,
+        "size": 2.1,
         "spawn_tiles": "water",
         "speed": 40,
         "weight": 15.5
@@ -73494,10 +73494,10 @@
         "rarity": "Mythical",
         "resistance": 110,
         "scientific_name": "Perucetus colossus",
-        "size": 8.8,
+        "size": 18.5,
         "spawn_tiles": "tall_grass",
         "speed": 8,
-        "weight": 170000
+        "weight": 212500
     },
     {
         "abilities": "Strong Jaw",
@@ -76394,10 +76394,10 @@
         "rarity": "Mythical",
         "resistance": 104,
         "scientific_name": "Alamosaurus sanjuanensis",
-        "size": 13,
+        "size": 28,
         "spawn_tiles": "tall_grass",
         "speed": 28,
-        "weight": 36000
+        "weight": 55000
     },
     {
         "abilities": "Battle Armor",
@@ -76419,10 +76419,10 @@
         "rarity": "Mythical",
         "resistance": 76,
         "scientific_name": "Amargasaurus cazaui",
-        "size": 5,
+        "size": 9.5,
         "spawn_tiles": "tall_grass",
         "speed": 34,
-        "weight": 9500
+        "weight": 5500
     },
     {
         "abilities": "Heavy Metal",
@@ -76444,10 +76444,10 @@
         "rarity": "Mythical",
         "resistance": 118,
         "scientific_name": "Argentinosaurus huinculensis",
-        "size": 17.5,
+        "size": 32.5,
         "spawn_tiles": "tall_grass",
         "speed": 20,
-        "weight": 50000
+        "weight": 72500
     },
     {
         "abilities": "Intimidate",
@@ -76494,10 +76494,10 @@
         "rarity": "Mythical",
         "resistance": 100,
         "scientific_name": "Brachiosaurus altithorax",
-        "size": 12.5,
+        "size": 22,
         "spawn_tiles": "tall_grass",
         "speed": 24,
-        "weight": 29000
+        "weight": 42500
     },
     {
         "abilities": "Run Away",
@@ -76519,10 +76519,10 @@
         "rarity": "Mythical",
         "resistance": 90,
         "scientific_name": "Diplodocus carnegii",
-        "size": 15.5,
+        "size": 25,
         "spawn_tiles": "tall_grass",
         "speed": 38,
-        "weight": 14000
+        "weight": 14250
     },
     {
         "abilities": "Sturdy",
@@ -76544,10 +76544,10 @@
         "rarity": "Mythical",
         "resistance": 112,
         "scientific_name": "Dreadnoughtus schrani",
-        "size": 13,
+        "size": 26,
         "spawn_tiles": "tall_grass",
         "speed": 22,
-        "weight": 42000
+        "weight": 54000
     },
     {
         "abilities": "Gluttony",
@@ -76619,7 +76619,7 @@
         "rarity": "Mythical",
         "resistance": 106,
         "scientific_name": "Sauroposeidon proteles",
-        "size": 15.5,
+        "size": 31,
         "spawn_tiles": "tall_grass",
         "speed": 24,
         "weight": 50000
@@ -76719,10 +76719,10 @@
         "rarity": "Mythical",
         "resistance": 94,
         "scientific_name": "Mamenchisaurus hochuanensis",
-        "size": 14,
+        "size": 22.5,
         "spawn_tiles": "tall_grass",
         "speed": 22,
-        "weight": 25000
+        "weight": 33500
     },
     {
         "abilities": "Heavy Metal",
@@ -76744,10 +76744,10 @@
         "rarity": "Mythical",
         "resistance": 116,
         "scientific_name": "Patagotitan mayorum",
-        "size": 16,
+        "size": 33.6,
         "spawn_tiles": "tall_grass",
         "speed": 20,
-        "weight": 52000
+        "weight": 67500
     },
     {
         "abilities": "Long Reach",
@@ -76769,10 +76769,10 @@
         "rarity": "Mythical",
         "resistance": 98,
         "scientific_name": "Supersaurus vivianae",
-        "size": 16.5,
+        "size": 36.5,
         "spawn_tiles": "tall_grass",
         "speed": 26,
-        "weight": 35000
+        "weight": 37000
     },
     {
         "abilities": "Sturdy",
@@ -76794,10 +76794,10 @@
         "rarity": "Mythical",
         "resistance": 96,
         "scientific_name": "Apatosaurus louisae",
-        "size": 11,
+        "size": 26,
         "spawn_tiles": "tall_grass",
         "speed": 24,
-        "weight": 23000
+        "weight": 24700
     },
     {
         "abilities": "Gluttony",
@@ -76819,10 +76819,10 @@
         "rarity": "Mythical",
         "resistance": 84,
         "scientific_name": "Camarasaurus lentus",
-        "size": 9,
+        "size": 19,
         "spawn_tiles": "tall_grass",
         "speed": 28,
-        "weight": 18000
+        "weight": 31500
     },
     {
         "abilities": "Swift Swim",
@@ -78044,10 +78044,10 @@
         "rarity": "Mythical",
         "resistance": 130,
         "scientific_name": "Australotitan cooperensis",
-        "size": 27.5,
+        "size": 32,
         "spawn_tiles": "tall_grass",
         "speed": 18,
-        "weight": 65000
+        "weight": 53500
     },
     {
         "abilities": "Strong Jaw",
@@ -78547,7 +78547,7 @@
         "size": 22,
         "spawn_tiles": "tall_grass",
         "speed": 16,
-        "weight": 18500
+        "weight": 21000
     },
     {
         "abilities": "Iron Fist",
