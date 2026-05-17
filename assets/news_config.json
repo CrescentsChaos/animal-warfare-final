@@ -9620,12 +9620,6 @@
       "body": "Every {name} is different. Some are bold, some are shy. This {animal_class} from the {habitat} has a {rarity} of character you don't always see in reptiles. Getting to know your pet's {power} PWR is the best part of the job!",
       "category": "TAXONOMY",
       "author": "Clint's Reptiles"
-    },
-    {
-      "headline": "The {name}: A Final Verdict",
-      "body": "So, is the {name} for you? If you love {rarity}, respect {power} PWR, and can handle some {habitat}-level {speed} SPD, then yes! This {animal_class} is a 10/10 pet and a true S-Tier build. I love 'em, and I think you will too!",
-      "category": "TAXONOMY",
-      "author": "Clint's Reptiles"
     }
   ]
 }

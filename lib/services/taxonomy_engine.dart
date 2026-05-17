@@ -98,31 +98,32 @@ class TaxonomyEngine {
   /// The key features used for classification, and their importance weights.
   /// Higher weight = more influence on the classification decision.
   static const Map<String, double> _featureWeights = {
-    'aspectRatio': 200.0,
-    'solidity': 500.0,
+    'aspectRatio': 150.0,
+    'solidity': 400.0,
     'compactness': 100.0,
-    'limbDensity': 40.0,
+    'limbDensity': 800.0, // MASSIVE INCREASE
     'edgeDensity': 100.0,
     'verticalBias': 40.0,
     'topHeavyBias': 100.0,
     'hueComplexity': 0.0,
-    'hSymmetry': 100.0,
+    'hSymmetry': 200.0,
     'vSymmetry': 100.0,
-    'coreSolidity': 100.0,
-    'bottomHeavyBias': 100.0,
-    'maxWidthRowBias': 20.0,
-    'maxHeightColBias': 20.0,
-    'bottomCenterDensity': 100.0,
-    'cornerDensity': 50.0,
-    'radialOverlap': 100.0,
-    'yCentroid': 100.0,
-    'jaggedness': 100.0,
-    'topThirdDensity': 100.0,
-    'bilateralSym': 500.0,
+    'coreSolidity': 200.0,
+    'bottomHeavyBias': 200.0,
+    'maxWidthRowBias': 50.0,
+    'maxHeightColBias': 50.0,
+    'bottomCenterDensity': 150.0,
+    'cornerDensity': 100.0,
+    'radialOverlap': 200.0,
+    'yCentroid': 150.0,
+    'jaggedness': 500.0, // MASSIVE INCREASE
+    'topThirdDensity': 150.0,
+    'bilateralSym': 800.0, // MASSIVE INCREASE
     'diagonalDensity': 100.0,
-    'convexHullRatio': 100.0,
-    'verticalMassDistribution': 100.0,
+    'convexHullRatio': 400.0, // INCREASE
+    'verticalMassDistribution': 200.0,
     'colorGranularity': 0.0,
+    'fringeDensity': 300.0,
   };
 
   /// Classifies a subject using Gaussian Mixture Model log-likelihood.

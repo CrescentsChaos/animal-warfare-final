@@ -48,16 +48,20 @@ class FeatureDbService {
 
     // Force copy bundled DB during development to ensure fixes are applied.
     // In production, we should probably check a version number.
-    const bool forceUpdate = true; 
+    const bool forceUpdate = true;
 
     if (!File(dbPath).existsSync() || forceUpdate) {
       try {
         final data = await rootBundle.load('assets/ml/sprite_features.db');
         await File(dbPath).writeAsBytes(data.buffer.asUint8List(), flush: true);
-        debugPrint('FeatureDbService: Updated local DB from bundled asset at $dbPath');
+        debugPrint(
+          'FeatureDbService: Updated local DB from bundled asset at $dbPath',
+        );
       } catch (e) {
         if (!File(dbPath).existsSync()) {
-          debugPrint('FeatureDbService: No bundled DB found and no local DB exists: $e');
+          debugPrint(
+            'FeatureDbService: No bundled DB found and no local DB exists: $e',
+          );
         }
       }
     }
@@ -123,6 +127,12 @@ class FeatureDbService {
         jaggedness REAL NOT NULL DEFAULT 0.0,
         top_third_density REAL NOT NULL DEFAULT 0.0,
         bilateral_sym REAL NOT NULL DEFAULT 0.0,
+        vertical_bias REAL NOT NULL DEFAULT 0.5,
+        top_heavy_bias REAL NOT NULL DEFAULT 0.5,
+        hue_complexity REAL NOT NULL DEFAULT 0.0,
+        compactness REAL NOT NULL DEFAULT 1.0,
+        limb_density REAL NOT NULL DEFAULT 0.0,
+        directional_edge_bias REAL NOT NULL DEFAULT 0.0,
         animal_class TEXT,
         diet TEXT,
         weight REAL,
@@ -139,9 +149,11 @@ class FeatureDbService {
     ''');
 
     await db.execute(
-        'CREATE INDEX IF NOT EXISTS idx_scientific_name ON organism_features(scientific_name)');
+      'CREATE INDEX IF NOT EXISTS idx_scientific_name ON organism_features(scientific_name)',
+    );
     await db.execute(
-        'CREATE INDEX IF NOT EXISTS idx_organism_name ON organism_features(organism_name)');
+      'CREATE INDEX IF NOT EXISTS idx_organism_name ON organism_features(organism_name)',
+    );
 
     // Taxonomy model storage
     await db.execute('''
@@ -159,7 +171,9 @@ class FeatureDbService {
   /// Migrate existing v1 databases to v2 (add class/diet/weight columns).
   Future<void> _migrateToV2(Database db) async {
     try {
-      await db.execute('ALTER TABLE organism_features ADD COLUMN animal_class TEXT');
+      await db.execute(
+        'ALTER TABLE organism_features ADD COLUMN animal_class TEXT',
+      );
     } catch (_) {}
     try {
       await db.execute('ALTER TABLE organism_features ADD COLUMN diet TEXT');
@@ -174,7 +188,9 @@ class FeatureDbService {
   Future<void> _ensureNewColumns() async {
     if (_db == null) return;
     try {
-      await _db!.rawQuery('SELECT animal_class, diet, weight FROM organism_features LIMIT 1');
+      await _db!.rawQuery(
+        'SELECT animal_class, diet, weight FROM organism_features LIMIT 1',
+      );
     } catch (_) {
       await _migrateToV2(_db!);
     }
@@ -218,26 +234,29 @@ class FeatureDbService {
   /// Get total feature count.
   Future<int> getFeatureCount() async {
     if (_db == null) return 0;
-    final result =
-        await _db!.rawQuery('SELECT COUNT(*) as count FROM organism_features');
+    final result = await _db!.rawQuery(
+      'SELECT COUNT(*) as count FROM organism_features',
+    );
     if (result.isEmpty) return 0;
     return (result.first['count'] as int?) ?? 0;
   }
 
   /// Convert a database row to an OrganismFeature.
   OrganismFeature _featureFromRow(Map<String, dynamic> row) {
-    final hueBins =
-        Map<String, double>.from(jsonDecode(row['hue_bins'] as String));
+    final hueBins = Map<String, double>.from(
+      jsonDecode(row['hue_bins'] as String),
+    );
 
     final spatialHueBins = row['spatial_hue_bins'] != null
         ? Map<String, double>.from(
-            jsonDecode(row['spatial_hue_bins'] as String))
+            jsonDecode(row['spatial_hue_bins'] as String),
+          )
         : null;
 
     final dominantColors = row['dominant_colors'] != null
         ? (jsonDecode(row['dominant_colors'] as String) as List)
-            .map((v) => Color(v as int))
-            .toList()
+              .map((v) => Color(v as int))
+              .toList()
         : <Color>[];
 
     return OrganismFeature(
@@ -256,13 +275,17 @@ class FeatureDbService {
       bottomHeavyBias: (row['bottom_heavy_bias'] as num?)?.toDouble() ?? 0.0,
       maxWidthRowBias: (row['max_width_row_bias'] as num?)?.toDouble() ?? 0.0,
       maxHeightColBias: (row['max_height_col_bias'] as num?)?.toDouble() ?? 0.0,
-      bottomCenterDensity: (row['bottom_center_density'] as num?)?.toDouble() ?? 0.0,
+      bottomCenterDensity:
+          (row['bottom_center_density'] as num?)?.toDouble() ?? 0.0,
       cornerDensity: (row['corner_density'] as num?)?.toDouble() ?? 0.0,
       diagonalDensity: (row['diagonal_density'] as num?)?.toDouble() ?? 0.0,
-      lowerQuadrantSymmetry: (row['lower_quadrant_symmetry'] as num?)?.toDouble() ?? 0.0,
-      horizontalCentroidShift: (row['horizontal_centroid_shift'] as num?)?.toDouble() ?? 0.0,
+      lowerQuadrantSymmetry:
+          (row['lower_quadrant_symmetry'] as num?)?.toDouble() ?? 0.0,
+      horizontalCentroidShift:
+          (row['horizontal_centroid_shift'] as num?)?.toDouble() ?? 0.0,
       convexHullRatio: (row['convex_hull_ratio'] as num?)?.toDouble() ?? 0.0,
-      verticalMassDistribution: (row['vertical_mass_distribution'] as num?)?.toDouble() ?? 0.0,
+      verticalMassDistribution:
+          (row['vertical_mass_distribution'] as num?)?.toDouble() ?? 0.0,
       colorGranularity: (row['color_granularity'] as num?)?.toDouble() ?? 0.0,
       fringeDensity: (row['fringe_density'] as num?)?.toDouble() ?? 0.0,
       verticalThinning: (row['vertical_thinning'] as num?)?.toDouble() ?? 0.0,
@@ -276,9 +299,14 @@ class FeatureDbService {
       jaggedness: (row['jaggedness'] as num?)?.toDouble() ?? 0.0,
       topThirdDensity: (row['top_third_density'] as num?)?.toDouble() ?? 0.0,
       bilateralSym: (row['bilateral_sym'] as num?)?.toDouble() ?? 0.0,
+      verticalBias: (row['vertical_bias'] as num?)?.toDouble() ?? 0.5,
+      topHeavyBias: (row['top_heavy_bias'] as num?)?.toDouble() ?? 0.5,
+      hueComplexity: (row['hue_complexity'] as num?)?.toDouble() ?? 0.0,
+      compactness: (row['compactness'] as num?)?.toDouble() ?? 1.0,
+      limbDensity: (row['limb_density'] as num?)?.toDouble() ?? 0.0,
+      directionalEdgeBias:
+          (row['directional_edge_bias'] as num?)?.toDouble() ?? 0.0,
       animalClass: row['animal_class'] as String?,
-      diet: row['diet'] as String?,
-      weight: (row['weight'] as num?)?.toDouble(),
     );
   }
 
@@ -292,12 +320,10 @@ class FeatureDbService {
     double? weight,
   }) async {
     if (_db == null) return;
-    
+
     final organismName = newFeature.organismName;
     // Use metadata from feature object if not explicitly provided
     final effectiveClass = animalClass ?? newFeature.animalClass;
-    final effectiveDiet = diet ?? newFeature.diet;
-    final effectiveWeight = weight ?? newFeature.weight;
 
     final existing = await _db!.query(
       'organism_features',
@@ -316,75 +342,218 @@ class FeatureDbService {
 
       final mergedData = {
         'avg_brightness': weightedAvg(
-            oldRow['avg_brightness'] as double,
-            newFeature.avgBrightness,
-            oldCount),
+          oldRow['avg_brightness'] as double,
+          newFeature.avgBrightness,
+          oldCount,
+        ),
         'avg_saturation': weightedAvg(
-            oldRow['avg_saturation'] as double,
-            newFeature.avgSaturation,
-            oldCount),
+          oldRow['avg_saturation'] as double,
+          newFeature.avgSaturation,
+          oldCount,
+        ),
         'aspect_ratio': weightedAvg(
-            oldRow['aspect_ratio'] as double,
-            newFeature.aspectRatio,
-            oldCount),
-        'solidity': weightedAvg(oldRow['solidity'] as double,
-            newFeature.solidity, oldCount),
+          oldRow['aspect_ratio'] as double,
+          newFeature.aspectRatio,
+          oldCount,
+        ),
+        'solidity': weightedAvg(
+          oldRow['solidity'] as double,
+          newFeature.solidity,
+          oldCount,
+        ),
         'vertical_symmetry': weightedAvg(
-            oldRow['vertical_symmetry'] as double,
-            newFeature.verticalSymmetry,
-            oldCount),
+          oldRow['vertical_symmetry'] as double,
+          newFeature.verticalSymmetry,
+          oldCount,
+        ),
         'horizontal_symmetry': weightedAvg(
-            oldRow['horizontal_symmetry'] as double,
-            newFeature.horizontalSymmetry,
-            oldCount),
+          oldRow['horizontal_symmetry'] as double,
+          newFeature.horizontalSymmetry,
+          oldCount,
+        ),
         'edge_density': weightedAvg(
-            oldRow['edge_density'] as double,
-            newFeature.edgeDensity,
-            oldCount),
-        'core_solidity': weightedAvg(oldRow['core_solidity'] as double? ?? 0.0, newFeature.coreSolidity, oldCount),
-        'bottom_heavy_bias': weightedAvg(oldRow['bottom_heavy_bias'] as double? ?? 0.0, newFeature.bottomHeavyBias, oldCount),
-        'max_width_row_bias': weightedAvg(oldRow['max_width_row_bias'] as double? ?? 0.0, newFeature.maxWidthRowBias, oldCount),
-        'max_height_col_bias': weightedAvg(oldRow['max_height_col_bias'] as double? ?? 0.0, newFeature.maxHeightColBias, oldCount),
-        'bottom_center_density': weightedAvg(oldRow['bottom_center_density'] as double? ?? 0.0, newFeature.bottomCenterDensity, oldCount),
-        'corner_density': weightedAvg(oldRow['corner_density'] as double? ?? 0.0, newFeature.cornerDensity, oldCount),
-        'diagonal_density': weightedAvg(oldRow['diagonal_density'] as double? ?? 0.0, newFeature.diagonalDensity, oldCount),
-        'lower_quadrant_symmetry': weightedAvg(oldRow['lower_quadrant_symmetry'] as double? ?? 0.0, newFeature.lowerQuadrantSymmetry, oldCount),
-        'horizontal_centroid_shift': weightedAvg(oldRow['horizontal_centroid_shift'] as double? ?? 0.0, newFeature.horizontalCentroidShift, oldCount),
-        'convex_hull_ratio': weightedAvg(oldRow['convex_hull_ratio'] as double? ?? 0.0, newFeature.convexHullRatio, oldCount),
-        'vertical_mass_distribution': weightedAvg(oldRow['vertical_mass_distribution'] as double? ?? 0.0, newFeature.verticalMassDistribution, oldCount),
-        'color_granularity': weightedAvg(oldRow['color_granularity'] as double? ?? 0.0, newFeature.colorGranularity, oldCount),
-        'fringe_density': weightedAvg(oldRow['fringe_density'] as double? ?? 0.0, newFeature.fringeDensity, oldCount),
-        'vertical_thinning': weightedAvg(oldRow['vertical_thinning'] as double? ?? 0.0, newFeature.verticalThinning, oldCount),
-        'local_symmetry': weightedAvg(oldRow['local_symmetry'] as double? ?? 0.0, newFeature.localSymmetry, oldCount),
-        'color_clustering': weightedAvg(oldRow['color_clustering'] as double? ?? 0.0, newFeature.colorClustering, oldCount),
-        'y_gradient': weightedAvg(oldRow['y_gradient'] as double? ?? 0.0, newFeature.yGradient, oldCount),
-        'width_variance': weightedAvg(oldRow['width_variance'] as double? ?? 0.0, newFeature.widthVariance, oldCount),
-        'shell_index': weightedAvg(oldRow['shell_index'] as double? ?? 0.0, newFeature.shellIndex, oldCount),
-        'radial_overlap': weightedAvg(oldRow['radial_overlap'] as double? ?? 0.0, newFeature.radialOverlap, oldCount),
-        'y_centroid': weightedAvg(oldRow['y_centroid'] as double? ?? 0.0, newFeature.yCentroid, oldCount),
-        'jaggedness': weightedAvg(oldRow['jaggedness'] as double? ?? 0.0, newFeature.jaggedness, oldCount),
-        'top_third_density': weightedAvg(oldRow['top_third_density'] as double? ?? 0.0, newFeature.topThirdDensity, oldCount),
-        'bilateral_sym': weightedAvg(oldRow['bilateral_sym'] as double? ?? 0.0, newFeature.bilateralSym, oldCount),
+          oldRow['edge_density'] as double,
+          newFeature.edgeDensity,
+          oldCount,
+        ),
+        'core_solidity': weightedAvg(
+          oldRow['core_solidity'] as double? ?? 0.0,
+          newFeature.coreSolidity,
+          oldCount,
+        ),
+        'bottom_heavy_bias': weightedAvg(
+          oldRow['bottom_heavy_bias'] as double? ?? 0.0,
+          newFeature.bottomHeavyBias,
+          oldCount,
+        ),
+        'max_width_row_bias': weightedAvg(
+          oldRow['max_width_row_bias'] as double? ?? 0.0,
+          newFeature.maxWidthRowBias,
+          oldCount,
+        ),
+        'max_height_col_bias': weightedAvg(
+          oldRow['max_height_col_bias'] as double? ?? 0.0,
+          newFeature.maxHeightColBias,
+          oldCount,
+        ),
+        'bottom_center_density': weightedAvg(
+          oldRow['bottom_center_density'] as double? ?? 0.0,
+          newFeature.bottomCenterDensity,
+          oldCount,
+        ),
+        'corner_density': weightedAvg(
+          oldRow['corner_density'] as double? ?? 0.0,
+          newFeature.cornerDensity,
+          oldCount,
+        ),
+        'diagonal_density': weightedAvg(
+          oldRow['diagonal_density'] as double? ?? 0.0,
+          newFeature.diagonalDensity,
+          oldCount,
+        ),
+        'lower_quadrant_symmetry': weightedAvg(
+          oldRow['lower_quadrant_symmetry'] as double? ?? 0.0,
+          newFeature.lowerQuadrantSymmetry,
+          oldCount,
+        ),
+        'horizontal_centroid_shift': weightedAvg(
+          oldRow['horizontal_centroid_shift'] as double? ?? 0.0,
+          newFeature.horizontalCentroidShift,
+          oldCount,
+        ),
+        'convex_hull_ratio': weightedAvg(
+          oldRow['convex_hull_ratio'] as double? ?? 0.0,
+          newFeature.convexHullRatio,
+          oldCount,
+        ),
+        'vertical_mass_distribution': weightedAvg(
+          oldRow['vertical_mass_distribution'] as double? ?? 0.0,
+          newFeature.verticalMassDistribution,
+          oldCount,
+        ),
+        'color_granularity': weightedAvg(
+          oldRow['color_granularity'] as double? ?? 0.0,
+          newFeature.colorGranularity,
+          oldCount,
+        ),
+        'fringe_density': weightedAvg(
+          oldRow['fringe_density'] as double? ?? 0.0,
+          newFeature.fringeDensity,
+          oldCount,
+        ),
+        'vertical_thinning': weightedAvg(
+          oldRow['vertical_thinning'] as double? ?? 0.0,
+          newFeature.verticalThinning,
+          oldCount,
+        ),
+        'local_symmetry': weightedAvg(
+          oldRow['local_symmetry'] as double? ?? 0.0,
+          newFeature.localSymmetry,
+          oldCount,
+        ),
+        'color_clustering': weightedAvg(
+          oldRow['color_clustering'] as double? ?? 0.0,
+          newFeature.colorClustering,
+          oldCount,
+        ),
+        'y_gradient': weightedAvg(
+          oldRow['y_gradient'] as double? ?? 0.0,
+          newFeature.yGradient,
+          oldCount,
+        ),
+        'width_variance': weightedAvg(
+          oldRow['width_variance'] as double? ?? 0.0,
+          newFeature.widthVariance,
+          oldCount,
+        ),
+        'shell_index': weightedAvg(
+          oldRow['shell_index'] as double? ?? 0.0,
+          newFeature.shellIndex,
+          oldCount,
+        ),
+        'radial_overlap': weightedAvg(
+          oldRow['radial_overlap'] as double? ?? 0.0,
+          newFeature.radialOverlap,
+          oldCount,
+        ),
+        'y_centroid': weightedAvg(
+          oldRow['y_centroid'] as double? ?? 0.0,
+          newFeature.yCentroid,
+          oldCount,
+        ),
+        'jaggedness': weightedAvg(
+          oldRow['jaggedness'] as double? ?? 0.0,
+          newFeature.jaggedness,
+          oldCount,
+        ),
+        'top_third_density': weightedAvg(
+          oldRow['top_third_density'] as double? ?? 0.0,
+          newFeature.topThirdDensity,
+          oldCount,
+        ),
+        'bilateral_sym': weightedAvg(
+          oldRow['bilateral_sym'] as double? ?? 0.0,
+          newFeature.bilateralSym,
+          oldCount,
+        ),
+        'vertical_bias': weightedAvg(
+          oldRow['vertical_bias'] as double? ?? 0.5,
+          newFeature.verticalBias,
+          oldCount,
+        ),
+        'top_heavy_bias': weightedAvg(
+          oldRow['top_heavy_bias'] as double? ?? 0.5,
+          newFeature.topHeavyBias,
+          oldCount,
+        ),
+        'hue_complexity': weightedAvg(
+          oldRow['hue_complexity'] as double? ?? 0.0,
+          newFeature.hueComplexity,
+          oldCount,
+        ),
+        'compactness': weightedAvg(
+          oldRow['compactness'] as double? ?? 1.0,
+          newFeature.compactness,
+          oldCount,
+        ),
+        'limb_density': weightedAvg(
+          oldRow['limb_density'] as double? ?? 0.0,
+          newFeature.limbDensity,
+          oldCount,
+        ),
+        'directional_edge_bias': weightedAvg(
+          oldRow['directional_edge_bias'] as double? ?? 0.0,
+          newFeature.directionalEdgeBias,
+          oldCount,
+        ),
       };
 
-      final oldHueBins =
-          Map<String, double>.from(jsonDecode(oldRow['hue_bins'] as String));
+      final oldHueBins = Map<String, double>.from(
+        jsonDecode(oldRow['hue_bins'] as String),
+      );
       final newHueBins = newFeature.hueBins;
       final mergedHueBins = <String, double>{};
       for (final key in {...oldHueBins.keys, ...newHueBins.keys}) {
         mergedHueBins[key] = weightedAvg(
-            oldHueBins[key] ?? 0, newHueBins[key] ?? 0, oldCount);
+          oldHueBins[key] ?? 0,
+          newHueBins[key] ?? 0,
+          oldCount,
+        );
       }
 
       Map<String, double>? mergedSpatialBins;
       if (oldRow['spatial_hue_bins'] != null) {
         final oldSpatial = Map<String, double>.from(
-            jsonDecode(oldRow['spatial_hue_bins'] as String));
+          jsonDecode(oldRow['spatial_hue_bins'] as String),
+        );
         final newSpatial = newFeature.spatialHueBins ?? {};
         mergedSpatialBins = <String, double>{};
         for (final key in {...oldSpatial.keys, ...newSpatial.keys}) {
           mergedSpatialBins[key] = weightedAvg(
-              oldSpatial[key] ?? 0, newSpatial[key] ?? 0, oldCount);
+            oldSpatial[key] ?? 0,
+            newSpatial[key] ?? 0,
+            oldCount,
+          );
         }
       }
 
@@ -394,11 +563,11 @@ class FeatureDbService {
           'hue_bins': jsonEncode(mergedHueBins),
           if (mergedSpatialBins != null)
             'spatial_hue_bins': jsonEncode(mergedSpatialBins),
-          'dominant_colors': jsonEncode(newFeature.dominantColors.map((c) => c.value).toList()),
+          'dominant_colors': jsonEncode(
+            newFeature.dominantColors.map((c) => c.value).toList(),
+          ),
           ...mergedData,
           if (effectiveClass != null) 'animal_class': effectiveClass,
-          if (effectiveDiet != null) 'diet': effectiveDiet,
-          if (effectiveWeight != null) 'weight': effectiveWeight,
           'training_count': newCount,
           'updated_at': DateTime.now().toIso8601String(),
         },
@@ -411,7 +580,9 @@ class FeatureDbService {
         'scientific_name': scientificName,
         'hue_bins': jsonEncode(newFeature.hueBins),
         'spatial_hue_bins': jsonEncode(newFeature.spatialHueBins),
-        'dominant_colors': jsonEncode(newFeature.dominantColors.map((c) => c.value).toList()),
+        'dominant_colors': jsonEncode(
+          newFeature.dominantColors.map((c) => c.value).toList(),
+        ),
         'avg_brightness': newFeature.avgBrightness,
         'avg_saturation': newFeature.avgSaturation,
         'aspect_ratio': newFeature.aspectRatio,
@@ -443,9 +614,13 @@ class FeatureDbService {
         'jaggedness': newFeature.jaggedness,
         'top_third_density': newFeature.topThirdDensity,
         'bilateral_sym': newFeature.bilateralSym,
+        'vertical_bias': newFeature.verticalBias,
+        'top_heavy_bias': newFeature.topHeavyBias,
+        'hue_complexity': newFeature.hueComplexity,
+        'compactness': newFeature.compactness,
+        'limb_density': newFeature.limbDensity,
+        'directional_edge_bias': newFeature.directionalEdgeBias,
         'animal_class': effectiveClass,
-        'diet': effectiveDiet,
-        'weight': effectiveWeight,
         'training_count': 1,
       });
     }
@@ -459,29 +634,33 @@ class FeatureDbService {
     required int count,
   }) async {
     if (_db == null) return;
-    await _db!.insert(
-      'taxonomy_profiles',
-      {
-        'animal_class': animalClass,
-        'feature_means': jsonEncode(means),
-        'feature_variances': jsonEncode(variances),
-        'sample_count': count,
-        'updated_at': DateTime.now().toIso8601String(),
-      },
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    await _db!.insert('taxonomy_profiles', {
+      'animal_class': animalClass,
+      'feature_means': jsonEncode(means),
+      'feature_variances': jsonEncode(variances),
+      'sample_count': count,
+      'updated_at': DateTime.now().toIso8601String(),
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   /// Get all taxonomic profiles from the database.
   Future<List<Map<String, dynamic>>> getAllTaxonomyProfiles() async {
     if (_db == null) return [];
     final results = await _db!.query('taxonomy_profiles');
-    return results.map((r) => {
-      'class': r['animal_class'] as String,
-      'means': Map<String, double>.from(jsonDecode(r['feature_means'] as String)),
-      'variances': Map<String, double>.from(jsonDecode(r['feature_variances'] as String)),
-      'count': r['sample_count'] as int,
-    }).toList();
+    return results
+        .map(
+          (r) => {
+            'class': r['animal_class'] as String,
+            'means': Map<String, double>.from(
+              jsonDecode(r['feature_means'] as String),
+            ),
+            'variances': Map<String, double>.from(
+              jsonDecode(r['feature_variances'] as String),
+            ),
+            'count': r['sample_count'] as int,
+          },
+        )
+        .toList();
   }
 
   /// Get taxonomy metadata from the database.

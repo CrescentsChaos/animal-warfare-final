@@ -91,37 +91,43 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
         bytes,
         maxResults: 15,
         hint: _hintController.text,
-        onProgress: (status, progress, {predictedClass, predictedDiet, predictedWeight}) {
-          if (mounted) {
-            setState(() {
-              _statusText = status.toUpperCase();
-              _progress = progress;
-              if (predictedClass != null) _predictedClass = predictedClass;
-              if (predictedDiet != null) _predictedDiet = predictedDiet;
-              if (predictedWeight != null) _predictedWeight = predictedWeight;
-            });
-          }
-        },
+        onProgress:
+            (
+              status,
+              progress, {
+              predictedClass,
+              predictedDiet,
+              predictedWeight,
+            }) {
+              if (mounted) {
+                setState(() {
+                  _statusText = status.toUpperCase();
+                  _progress = progress;
+                  if (predictedClass != null) _predictedClass = predictedClass;
+                  if (predictedDiet != null) _predictedDiet = predictedDiet;
+                  if (predictedWeight != null)
+                    _predictedWeight = predictedWeight;
+                });
+              }
+            },
       );
 
       final masked = results.isNotEmpty ? results.first.maskedImage : null;
 
-        if (mounted) {
-          setState(() {
-            if (results.isNotEmpty) {
-              _predictedClass = results.first.detectedClass;
-              _predictedDiet = results.first.predictedDiet;
-              _predictedWeight = results.first.predictedWeight;
-            }
-            _results = results;
-            _sortResults();
-            _isScanning = false;
-            _hasScanned = true;
-            _statusText = results.isEmpty
-                ? 'NO MATCH FOUND'
-                : '${results.length} SPECIES IDENTIFIED';
-          });
-        }
+      if (mounted) {
+        setState(() {
+          if (results.isNotEmpty) {
+            _predictedClass = results.first.detectedClass;
+          }
+          _results = results;
+          _sortResults();
+          _isScanning = false;
+          _hasScanned = true;
+          _statusText = results.isEmpty
+              ? 'NO MATCH FOUND'
+              : '${results.length} SPECIES IDENTIFIED';
+        });
+      }
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -143,25 +149,24 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
       _imageBytes!,
       maxResults: 15,
       hint: _hintController.text,
-      onProgress: (status, progress, {predictedClass, predictedDiet, predictedWeight}) {
-        if (mounted) {
-          setState(() {
-            _statusText = status.toUpperCase();
-            _progress = progress;
-            if (predictedClass != null) _predictedClass = predictedClass;
-            if (predictedDiet != null) _predictedDiet = predictedDiet;
-            if (predictedWeight != null) _predictedWeight = predictedWeight;
-          });
-        }
-      },
+      onProgress:
+          (status, progress, {predictedClass, predictedDiet, predictedWeight}) {
+            if (mounted) {
+              setState(() {
+                _statusText = status.toUpperCase();
+                _progress = progress;
+                if (predictedClass != null) _predictedClass = predictedClass;
+                if (predictedDiet != null) _predictedDiet = predictedDiet;
+                if (predictedWeight != null) _predictedWeight = predictedWeight;
+              });
+            }
+          },
     );
 
     if (mounted) {
       setState(() {
         if (results.isNotEmpty) {
           _predictedClass = results.first.detectedClass;
-          _predictedDiet = results.first.predictedDiet;
-          _predictedWeight = results.first.predictedWeight;
         }
         _results = results;
         _sortResults();
@@ -196,22 +201,27 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
           _imageBytes!,
           preSegmentedBytes: _maskedBytes,
           hint: _hintController.text,
-          onProgress: (msg, p, {predictedClass, predictedDiet, predictedWeight}) => setState(() {
-            _statusText = msg.toUpperCase();
-            _progress = p;
-            if (predictedClass != null) _predictedClass = predictedClass;
-            if (predictedDiet != null) _predictedDiet = predictedDiet;
-            if (predictedWeight != null) _predictedWeight = predictedWeight;
-          }),
+          onProgress:
+              (
+                msg,
+                p, {
+                predictedClass,
+                predictedDiet,
+                predictedWeight,
+              }) => setState(() {
+                _statusText = msg.toUpperCase();
+                _progress = p;
+                if (predictedClass != null) _predictedClass = predictedClass;
+                if (predictedDiet != null) _predictedDiet = predictedDiet;
+                if (predictedWeight != null) _predictedWeight = predictedWeight;
+              }),
         );
 
         setState(() {
           if (results.isNotEmpty) {
-          _predictedClass = results.first.detectedClass;
-          _predictedDiet = results.first.predictedDiet;
-          _predictedWeight = results.first.predictedWeight;
-        }
-        _results = results;
+            _predictedClass = results.first.detectedClass;
+          }
+          _results = results;
           _sortResults();
           _isScanning = false;
           _hasScanned = true;
@@ -663,9 +673,9 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
   }
 
   Widget _buildPredictedProfileBadge() {
-    final String label = _predictedClass == AnimalClass.unknown 
-      ? 'GENERIC BIOLOGY' 
-      : _predictedClass.name.toUpperCase();
+    final String label = _predictedClass == AnimalClass.unknown
+        ? 'GENERIC BIOLOGY'
+        : _predictedClass.name.toUpperCase();
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -701,8 +711,9 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
   }
 
   Widget _buildPredictionPanel() {
-    if (_predictedClass == AnimalClass.unknown && !_isScanning) return const SizedBox.shrink();
-    
+    if (_predictedClass == AnimalClass.unknown && !_isScanning)
+      return const SizedBox.shrink();
+
     return Container(
       margin: const EdgeInsets.only(top: 16),
       padding: const EdgeInsets.all(12),
@@ -723,11 +734,9 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
           ),
           const SizedBox(height: 12),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildPredictiveStat('CLASS', _predictedClass.name.toUpperCase()),
-              _buildPredictiveStat('DIET', _predictedDiet.toUpperCase()),
-              _buildPredictiveStat('WEIGHT', _predictedWeight > 0 ? '${_predictedWeight}KG' : '---'),
+              _buildPredictiveStat('IDENTIFIED BIOTYPE', _predictedClass.name.toUpperCase()),
             ],
           ),
         ],
@@ -1041,10 +1050,10 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
     final tileColor = result.isPinpointed
         ? Colors.amberAccent
         : result.confidence > 0.7
-            ? Colors.greenAccent
-            : result.confidence > 0.4
-                ? Colors.yellowAccent
-                : Colors.orangeAccent;
+        ? Colors.greenAccent
+        : result.confidence > 0.4
+        ? Colors.yellowAccent
+        : Colors.orangeAccent;
 
     final spritePath = result.isExternal
         ? org.sprite
@@ -1069,7 +1078,7 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
                   color: Colors.amberAccent.withAlpha(20),
                   blurRadius: 8,
                   spreadRadius: 1,
-                )
+                ),
               ]
             : null,
       ),
@@ -1189,9 +1198,15 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
           children: [
             _buildMiniBadge(org.animalClass.toUpperCase(), Colors.white24),
             const SizedBox(width: 4),
-            _buildMiniBadge(org.diet.toUpperCase(), Colors.green.withAlpha(100)),
+            _buildMiniBadge(
+              org.diet.toUpperCase(),
+              Colors.green.withAlpha(100),
+            ),
             const SizedBox(width: 4),
-            _buildMiniBadge('${org.formattedWeight}KG', Colors.cyan.withAlpha(100)),
+            _buildMiniBadge(
+              '${org.formattedWeight}KG',
+              Colors.cyan.withAlpha(100),
+            ),
           ],
         ),
         const SizedBox(height: 4),
@@ -1398,11 +1413,20 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            _buildMiniBadge(org.animalClass.toUpperCase(), Colors.white24),
+                            _buildMiniBadge(
+                              org.animalClass.toUpperCase(),
+                              Colors.white24,
+                            ),
                             const SizedBox(width: 4),
-                            _buildMiniBadge(org.diet.toUpperCase(), Colors.green.withAlpha(100)),
+                            _buildMiniBadge(
+                              org.diet.toUpperCase(),
+                              Colors.green.withAlpha(100),
+                            ),
                             const SizedBox(width: 4),
-                            _buildMiniBadge('${org.formattedWeight}KG', Colors.cyan.withAlpha(100)),
+                            _buildMiniBadge(
+                              '${org.formattedWeight}KG',
+                              Colors.cyan.withAlpha(100),
+                            ),
                           ],
                         ),
                       ],
@@ -1464,8 +1488,15 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
               ),
               _buildComparisonRow('SHADE', result.featureScores['Shade'] ?? 0),
               _buildComparisonRow('SHAPE', result.featureScores['Shape'] ?? 0),
-              _buildComparisonRow('WEIGHT PLAUSIBILITY', result.featureScores['Weight'] ?? 1.0),
-              _buildComparisonRow('DIET CONSISTENCY', result.featureScores['Diet'] ?? 1.0),
+              _buildComparisonRow(
+                'STRUCTURE',
+                result.featureScores['Structure'] ?? 0,
+              ),
+              _buildComparisonRow('POSE', result.featureScores['Pose'] ?? 0),
+              _buildComparisonRow(
+                'SYMMETRY',
+                result.featureScores['Symmetry'] ?? 0,
+              ),
 
               const SizedBox(height: 32),
 

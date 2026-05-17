@@ -92,8 +92,6 @@ class TaxonomyService {
     return {
       'class': finalClass,
       'confidence': finalConfidence,
-      'diet': _predictDiet(finalClass, imageBytes),
-      'weight': _predictTypicalWeight(finalClass),
       'source': source,
     };
   }
@@ -140,8 +138,6 @@ class TaxonomyService {
         'confidence': (topResult['vision_score'] as num).toDouble(),
         'taxon': taxon['name'],
         'common_name': taxon['preferred_common_name'],
-        'diet': _predictDiet(cls, imageBytes),
-        'weight': _predictTypicalWeight(cls),
         'source': 'inaturalist',
       };
     } catch (_) {
@@ -192,40 +188,32 @@ class TaxonomyService {
           (dominantHue >= 10 && dominantHue <= 60 && avgSaturation > 0.15);
       bool isAchromatic = (avgSaturation < 0.15);
 
-      // MAMMAL SCORE
+      // MAMMAL/LAND SCORE
       double mammalScore = 0;
       if (isEarthTone) mammalScore += 0.4;
       if (isAchromatic) mammalScore += 0.4;
-      if (hasLegGaps) mammalScore += 0.5;
-      if (aspect > 0.8 && aspect < 2.2) mammalScore += 0.3;
-      if (solidity > 0.5) mammalScore += 0.3;
+      if (hasLegGaps) mammalScore += 0.6; // High indicator of legs
+      if (aspect > 0.8 && aspect < 2.5) mammalScore += 0.3;
+      if (solidity > 0.3 && solidity < 0.8) mammalScore += 0.3;
 
       if (mammalScore >= 0.7) return AnimalClass.mammal;
 
-      // FISH SCORE
+      // FISH SCORE (Stricter)
       bool isAquaticTone = (dominantHue > 165 && dominantHue < 255);
-      if (aspect > 1.3 && isAquaticTone && verticalBias < 0.45) {
-        return AnimalClass.fish;
-      }
-      if (aspect > 1.4 && !hasLegGaps && verticalBias < 0.4) {
-        return AnimalClass.fish;
+      // Fish are usually very solid (no legs), long (aspect > 1.3), and have low vertical bias (bottom center)
+      if (!hasLegGaps && solidity > 0.45 && aspect > 1.2) {
+        if (isAquaticTone) return AnimalClass.fish;
+        if (verticalBias < 0.4) return AnimalClass.fish;
       }
 
       // BIRD
-      if (aspect < 1.0 && verticalBias > 0.6) return AnimalClass.bird;
-
-      // INSECT (Strictly low solidity)
-      if (solidity < 0.4 && aspect > 0.5 && aspect < 2.5 && !hasLegGaps) {
-        return AnimalClass.insect;
-      }
+      if (aspect < 1.0 && verticalBias > 0.5) return AnimalClass.bird;
 
       // REPTILE/AMPHIBIAN
-      if (aspect > 1.4 &&
-          (dominantHue > 45 && dominantHue < 100) &&
-          verticalBias < 0.4) {
+      if (aspect > 1.4 && (dominantHue > 45 && dominantHue < 100)) {
         return AnimalClass.reptile;
       }
-      if (aspect > 2.5 && !hasLegGaps) return AnimalClass.reptile;
+      if (aspect > 2.0 && !hasLegGaps) return AnimalClass.reptile;
 
       // FALLBACKS
       if (isEarthTone || isAchromatic) return AnimalClass.mammal;
@@ -317,65 +305,5 @@ class TaxonomyService {
       h /= 6;
     }
     return [h * 360, maxV == 0 ? 0 : d / maxV, maxV];
-  }
-
-  String _predictDiet(AnimalClass cls, Uint8List bytes) {
-    switch (cls) {
-      case AnimalClass.mammal:
-        return 'omnivore';
-      case AnimalClass.bird:
-        return 'omnivore';
-      case AnimalClass.fish:
-        return 'carnivore';
-      case AnimalClass.reptile:
-        return 'carnivore';
-      case AnimalClass.insect:
-        return 'herbivore';
-      case AnimalClass.arachnid:
-        return 'carnivore';
-      case AnimalClass.crustacean:
-        return 'omnivore';
-      case AnimalClass.mollusk:
-        return 'herbivore';
-      case AnimalClass.cnidarian:
-        return 'carnivore';
-      case AnimalClass.echinoderm:
-        return 'detritivore';
-      case AnimalClass.annelid:
-        return 'detritivore';
-      default:
-        return 'unknown';
-    }
-  }
-
-  double _predictTypicalWeight(AnimalClass cls) {
-    switch (cls) {
-      case AnimalClass.mammal:
-        return 25.0;
-      case AnimalClass.bird:
-        return 1.5;
-      case AnimalClass.fish:
-        return 5.0;
-      case AnimalClass.reptile:
-        return 2.0;
-      case AnimalClass.amphibian:
-        return 0.2;
-      case AnimalClass.insect:
-        return 0.01;
-      case AnimalClass.arachnid:
-        return 0.02;
-      case AnimalClass.crustacean:
-        return 0.5;
-      case AnimalClass.mollusk:
-        return 0.1;
-      case AnimalClass.cnidarian:
-        return 1.0;
-      case AnimalClass.echinoderm:
-        return 0.2;
-      case AnimalClass.annelid:
-        return 0.05;
-      default:
-        return 0.0;
-    }
   }
 }

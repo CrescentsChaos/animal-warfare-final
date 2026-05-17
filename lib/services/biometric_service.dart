@@ -38,11 +38,7 @@ class ScanResult {
     this.isGenusMate = false,
     this.detectedClass = AnimalClass.unknown,
     this.isPinpointed = false,
-    this.predictedDiet = 'unknown',
-    this.predictedWeight = 0.0,
   });
-  final String predictedDiet;
-  final double predictedWeight;
 }
 
 /// Feature set extracted from a sprite or photo, including color and shape.
@@ -89,8 +85,6 @@ class OrganismFeature {
   final double topThirdDensity;
   final double bilateralSym;
   final String? animalClass;
-  final String? diet;
-  final double? weight;
 
   OrganismFeature({
     required this.organismName,
@@ -135,8 +129,6 @@ class OrganismFeature {
     this.topThirdDensity = 0.0,
     this.bilateralSym = 0.0,
     this.animalClass,
-    this.diet,
-    this.weight,
   });
 
   Map<String, dynamic> toJson() => {
@@ -182,8 +174,6 @@ class OrganismFeature {
     'topThirdDensity': topThirdDensity,
     'bilateralSym': bilateralSym,
     'animalClass': animalClass,
-    'diet': diet,
-    'weight': weight,
   };
 
   factory OrganismFeature.fromJson(Map<String, dynamic> json) {
@@ -242,8 +232,6 @@ class OrganismFeature {
       topThirdDensity: (json['topThirdDensity'] as num?)?.toDouble() ?? 0.0,
       bilateralSym: (json['bilateralSym'] as num?)?.toDouble() ?? 0.0,
       animalClass: json['animalClass'] as String?,
-      diet: json['diet'] as String?,
-      weight: (json['weight'] as num?)?.toDouble(),
     );
   }
 }
@@ -344,7 +332,7 @@ class BiometricService {
   /// falling back to the color-distance algorithm if unavailable.
   Future<OrganismFeature> extractFeatures(
     Uint8List imageBytes, {
-    String name = 'input',
+    String name = 'unknown',
     Uint8List? preSegmentedBytes,
   }) async {
     // If we already have a pre-segmented image (from scanImage's ML pass), use it
@@ -365,20 +353,18 @@ class BiometricService {
       );
     }
 
-    // Resize for performance (now using higher resolution for better accuracy)
+    // Resize for performance (Aligned with generate_features_db.dart @ 128x128)
     img.Image resized;
     if (decoded.width == decoded.height) {
-      resized = img.copyResize(decoded, width: 400, height: 200);
+      resized = img.copyResize(decoded, width: 128, height: 128);
     } else {
       final size = max(decoded.width, decoded.height);
-      // IMPORTANT: Must specify numChannels: 4 to avoid stripping alpha channel in package:image 4.x+
       final padded = img.Image(width: size, height: size, numChannels: 4);
       img.fill(padded, color: img.ColorRgba8(0, 0, 0, 0));
-
       final xOffset = (size - decoded.width) ~/ 2;
       final yOffset = (size - decoded.height) ~/ 2;
       img.compositeImage(padded, decoded, dstX: xOffset, dstY: yOffset);
-      resized = img.copyResize(padded, width: 400, height: 200);
+      resized = img.copyResize(padded, width: 128, height: 128);
     }
 
     bool hasAlpha = false;
@@ -391,14 +377,12 @@ class BiometricService {
 
     List<bool>? mask;
     if (preSegmentedBytes != null || hasAlpha) {
-      // Image already has alpha (from ML segmentation or sprite) — use alpha as mask
       mask = List.generate(resized.width * resized.height, (i) => true);
       for (int i = 0; i < resized.width * resized.height; i++) {
         final p = resized.getPixelSafe(i % resized.width, i ~/ resized.width);
         mask[i] = p.a >= 128;
       }
     } else if (name == 'input') {
-      // No pre-segmented data and no alpha — fallback to color-distance masking
       mask = _detectBackgroundAndGetMask(resized);
     } else {
       mask = List.generate(resized.width * resized.height, (i) => true);
@@ -408,36 +392,54 @@ class BiometricService {
       }
     }
 
-    final List<HSVColor> hsvPixels = [];
     final Map<int, int> colorCounts = {};
     int objectPixelCount = 0;
-
     int minX = resized.width, maxX = 0;
     int minY = resized.height, maxY = 0;
 
+    final finalHueBins = <String, double>{};
+    for (int i = 0; i < 36; i++) finalHueBins['h${i * 10}'] = 0;
+    finalHueBins['hWhite'] = 0;
+    finalHueBins['hBlack'] = 0;
+    finalHueBins['hGrey'] = 0;
+
+    double totalBrightness = 0;
+    double totalSaturation = 0;
+
     for (int y = 0; y < resized.height; y++) {
       for (int x = 0; x < resized.width; x++) {
-        final pixel = resized.getPixel(x, y);
         if (!mask[y * resized.width + x]) continue;
-
         objectPixelCount++;
         if (x < minX) minX = x;
         if (x > maxX) maxX = x;
         if (y < minY) minY = y;
         if (y > maxY) maxY = y;
 
-        final r = pixel.r.toInt();
-        final g = pixel.g.toInt();
-        final b = pixel.b.toInt();
+        final pixel = resized.getPixel(x, y);
+        final r = pixel.r.toInt(), g = pixel.g.toInt(), b = pixel.b.toInt();
+        final hsv = _rgbToHsv(r, g, b);
+        final hue = hsv[0], saturation = hsv[1], value = hsv[2];
 
+        if (value < 0.15) {
+          finalHueBins['hBlack'] = (finalHueBins['hBlack'] ?? 0) + 1;
+        } else if (saturation < 0.15) {
+          if (value > 0.8)
+            finalHueBins['hWhite'] = (finalHueBins['hWhite'] ?? 0) + 1;
+          else
+            finalHueBins['hGrey'] = (finalHueBins['hGrey'] ?? 0) + 1;
+        } else {
+          final binIndex = (hue / 10).floor().clamp(0, 35);
+          finalHueBins['h${binIndex * 10}'] =
+              (finalHueBins['h${binIndex * 10}'] ?? 0) + 1;
+        }
+        totalSaturation += saturation;
+        totalBrightness += value;
         final quantized = ((r >> 4) << 8) | ((g >> 4) << 4) | (b >> 4);
         colorCounts[quantized] = (colorCounts[quantized] ?? 0) + 1;
-
-        hsvPixels.add(HSVColor.fromColor(Color.fromARGB(255, r, g, b)));
       }
     }
 
-    if (hsvPixels.isEmpty) {
+    if (objectPixelCount == 0) {
       return OrganismFeature(
         organismName: name,
         dominantColors: [],
@@ -456,250 +458,186 @@ class BiometricService {
       ..sort((a, b) => b.value.compareTo(a.value));
     final dominantColors = sortedColors.take(8).map((e) {
       final q = e.key;
-      return Color.fromARGB(
-        255,
-        ((q >> 8) & 0xF) * 17,
-        ((q >> 4) & 0xF) * 17,
-        (q & 0xF) * 17,
-      );
+      final r = ((q >> 8) & 0xF) * 17;
+      final g = ((q >> 4) & 0xF) * 17;
+      final b = (q & 0xF) * 17;
+      return Color.fromARGB(255, r, g, b);
     }).toList();
 
-    final finalHueBins = <String, double>{};
-    for (int i = 0; i < 36; i++) {
-      finalHueBins['h${i * 10}'] = 0;
-    }
-    // Add Achromatic bins
-    finalHueBins['hWhite'] = 0;
-    finalHueBins['hBlack'] = 0;
-    finalHueBins['hGrey'] = 0;
-
-    double totalBrightness = 0;
-    double totalSaturation = 0;
-
-    for (final hsv in hsvPixels) {
-      totalBrightness += hsv.value;
-      totalSaturation += hsv.saturation;
-
-      if (hsv.value < 0.15) {
-        finalHueBins['hBlack'] = (finalHueBins['hBlack'] ?? 0) + 1;
-      } else if (hsv.saturation < 0.15) {
-        if (hsv.value > 0.8) {
-          finalHueBins['hWhite'] = (finalHueBins['hWhite'] ?? 0) + 1;
-        } else {
-          finalHueBins['hGrey'] = (finalHueBins['hGrey'] ?? 0) + 1;
-        }
-      } else {
-        final binIndex = (hsv.hue / 10).floor().clamp(0, 35);
-        finalHueBins['h${binIndex * 10}'] =
-            (finalHueBins['h${binIndex * 10}'] ?? 0) + 1;
-      }
-    }
-
-    final total = hsvPixels.length.toDouble();
-    for (final key in finalHueBins.keys) {
-      finalHueBins[key] = finalHueBins[key]! / total;
-    }
+    for (final key in finalHueBins.keys)
+      finalHueBins[key] = finalHueBins[key]! / objectPixelCount;
 
     final sym = _calculateSymmetry(resized, mask, minX, maxX, minY, maxY);
-    final hSym = sym.$1;
-    final vSym = sym.$2;
+    final hSym = sym.$1, vSym = sym.$2;
 
-    // Spatial analysis (3x3 grid for basic layout matching)
     final spatialHueBins = <String, double>{};
     for (int gy = 0; gy < 3; gy++) {
       for (int gx = 0; gx < 3; gx++) {
         final startX = minX + (gx * (maxX - minX) ~/ 3);
-        final endX = minX + ((gx + 1) * (maxX - minX) ~/ 3);
+        final endX = gx == 2 ? maxX : minX + ((gx + 1) * (maxX - minX) ~/ 3);
         final startY = minY + (gy * (maxY - minY) ~/ 3);
-        final endY = minY + ((gy + 1) * (maxY - minY) ~/ 3);
-
-        final gridBins = <int, int>{};
-        int gridPixels = 0;
-        for (int y = startY; y < endY; y++) {
-          for (int x = startX; x < endX; x++) {
-            final idx = y * resized.width + x;
-            if (idx >= 0 && idx < mask.length && mask[idx]) {
+        final endY = gy == 2 ? maxY : minY + ((gy + 1) * (maxY - minY) ~/ 3);
+        int gridPix = 0;
+        final gridHue = <int, int>{};
+        for (int y = startY; y <= endY; y++) {
+          for (int x = startX; x <= endX; x++) {
+            if (mask[y * resized.width + x]) {
               final p = resized.getPixel(x, y);
-              final hsv = HSVColor.fromColor(
-                Color.fromARGB(255, p.r.toInt(), p.g.toInt(), p.b.toInt()),
-              );
-              final bin = ((hsv.hue % 360) / 10).floor();
-              gridBins[bin] = (gridBins[bin] ?? 0) + 1;
-              gridPixels++;
+              final h = _rgbToHsv(p.r.toInt(), p.g.toInt(), p.b.toInt())[0];
+              final bin = (h / 10).floor().clamp(0, 35);
+              gridHue[bin] = (gridHue[bin] ?? 0) + 1;
+              gridPix++;
             }
           }
         }
-        gridBins.forEach((bin, count) {
-          spatialHueBins['g$gx${gy}_h${bin * 10}'] = gridPixels > 0
-              ? count / gridPixels
-              : 0;
-        });
+        gridHue.forEach(
+          (bin, count) => spatialHueBins['g$gx${gy}_h${bin * 10}'] = gridPix > 0
+              ? count / gridPix
+              : 0,
+        );
       }
     }
 
-    // NEW: Vertical Bias calculation
-    int topHalf = 0;
-    int bottomHalf = 0;
-    for (int y = 0; y < resized.height; y++) {
-      for (int x = 0; x < resized.width; x++) {
-        if (!mask[y * resized.width + x]) continue;
-        if (y > resized.height * 0.6) bottomHalf++;
-        if (y < resized.height * 0.4) topHalf++;
-      }
-    }
-    final double vBias = (topHalf + bottomHalf) > 0
-        ? bottomHalf / (topHalf + bottomHalf)
-        : 0.5;
-
-    // NEW: Top Heavy Bias
-    int topPixels = 0;
-    for (int y = 0; y < (resized.height * 0.4).toInt(); y++) {
-      for (int x = 0; x < resized.width; x++) {
-        if (mask[y * resized.width + x]) topPixels++;
-      }
-    }
-    final double topHeavyBias = objectPixelCount > 0
-        ? topPixels / objectPixelCount
-        : 0.0;
-
-    // NEW: Hue Complexity
     int significantBins = 0;
     finalHueBins.forEach((key, val) {
       if (val > 0.02) significantBins++;
     });
     final double hueComplexity = significantBins / 39.0;
 
-    // NEW: Perimeter and Compactness
-    int perimeter = 0;
+    int perimeter = 0, fringePixels = 0;
     for (int y = 1; y < resized.height - 1; y++) {
       for (int x = 1; x < resized.width - 1; x++) {
         if (!mask[y * resized.width + x]) continue;
         if (!mask[(y - 1) * resized.width + x] ||
             !mask[(y + 1) * resized.width + x] ||
-            !mask[y * resized.width + (x - 1)] ||
-            !mask[y * resized.width + (x + 1)]) {
+            !mask[y * resized.width + x - 1] ||
+            !mask[y * resized.width + x + 1]) {
           perimeter++;
+          fringePixels++;
         }
       }
     }
-    final double compactness = objectPixelCount > 0
-        ? (perimeter * perimeter) / objectPixelCount
-        : 1.0;
+    final double compactness = (perimeter * perimeter) / objectPixelCount;
+    final double jaggedness = fringePixels / sqrt(objectPixelCount);
 
-    // NEW: Limb Density (Pixels in outer 20% of bounding box)
+    int topHalf = 0, bottomHalf = 0, topThirdPixels = 0;
+    final int topThreshold = (resized.height * 0.4).toInt();
+    final int bottomThreshold = (resized.height * 0.6).toInt();
+    final int topThirdY = minY + (maxY - minY + 1) ~/ 3;
+    for (int y = 0; y < resized.height; y++) {
+      for (int x = 0; x < resized.width; x++) {
+        if (!mask[y * resized.width + x]) continue;
+        if (y < topThreshold) topHalf++;
+        if (y > bottomThreshold) bottomHalf++;
+        if (y <= topThirdY) topThirdPixels++;
+      }
+    }
+    final double vBias = (topHalf + bottomHalf) > 0
+        ? bottomHalf / (topHalf + bottomHalf)
+        : 0.5;
+    final double topHeavyBias = topHalf / objectPixelCount;
+    final double bottomHeavyBias = bottomHalf / objectPixelCount;
+
     int limbPixels = 0;
-    final int insetX = ((maxX - minX + 1) * 0.2).toInt();
-    final int insetY = ((maxY - minY + 1) * 0.2).toInt();
+    final int insetX = ((maxX - minX + 1) * 0.2).toInt(),
+        insetY = ((maxY - minY + 1) * 0.2).toInt();
     for (int y = minY; y <= maxY; y++) {
       for (int x = minX; x <= maxX; x++) {
-        if (!mask[y * resized.width + x]) continue;
-        if (x < minX + insetX ||
-            x > maxX - insetX ||
-            y < minY + insetY ||
-            y > maxY - insetY) {
+        if (mask[y * resized.width + x] &&
+            (x < minX + insetX ||
+                x > maxX - insetX ||
+                y < minY + insetY ||
+                y > maxY - insetY))
           limbPixels++;
-        }
       }
     }
-    final double limbDensity = objectPixelCount > 0
-        ? limbPixels / objectPixelCount
-        : 0.0;
+    final double limbDensity = limbPixels / objectPixelCount;
 
-    // NEW: Directional Edge Bias
-    int hEdges = 0;
-    int vEdges = 0;
+    int hEdges = 0, vEdges = 0;
     for (int y = 1; y < resized.height - 1; y++) {
       for (int x = 1; x < resized.width - 1; x++) {
         if (!mask[y * resized.width + x]) continue;
-        final p = resized.getPixel(x, y);
-        final pR = resized.getPixel(x + 1, y);
-        final pD = resized.getPixel(x, y + 1);
-        final lum = (p.r + p.g + p.b) / 3.0;
-        final lumR = (pR.r + pR.g + pR.b) / 3.0;
-        final lumD = (pD.r + pD.g + pD.b) / 3.0;
+        final p = resized.getPixel(x, y),
+            pR = resized.getPixel(x + 1, y),
+            pD = resized.getPixel(x, y + 1);
+        final lum = (p.r + p.g + p.b) / 3,
+            lumR = (pR.r + pR.g + pR.b) / 3,
+            lumD = (pD.r + pD.g + pD.b) / 3;
         if ((lum - lumR).abs() > 30) hEdges++;
         if ((lum - lumD).abs() > 30) vEdges++;
       }
     }
     final double edgeBias = (hEdges + vEdges) > 0
-        ? (hEdges - vEdges) / (hEdges + vEdges).toDouble()
+        ? (hEdges - vEdges) / (hEdges + vEdges)
         : 0.0;
 
-    // NEW: Core Solidity
     int corePixels = 0;
-    final int coreMinX = minX + ((maxX - minX) * 0.25).toInt();
-    final int coreMaxX = maxX - ((maxX - minX) * 0.25).toInt();
-    final int coreMinY = minY + ((maxY - minY) * 0.25).toInt();
-    final int coreMaxY = maxY - ((maxY - minY) * 0.25).toInt();
-    for (int y = coreMinY; y <= coreMaxY; y++) {
-      for (int x = coreMinX; x <= coreMaxX; x++) {
+    final int cMinX = minX + ((maxX - minX) * 0.25).toInt(),
+        cMaxX = maxX - ((maxX - minX) * 0.25).toInt();
+    final int cMinY = minY + ((maxY - minY) * 0.25).toInt(),
+        cMaxY = maxY - ((maxY - minY) * 0.25).toInt();
+    for (int y = cMinY; y <= cMaxY; y++) {
+      for (int x = cMinX; x <= cMaxX; x++) {
         if (mask[y * resized.width + x]) corePixels++;
       }
     }
-    final double coreArea = max(
-      1,
-      (coreMaxX - coreMinX + 1) * (coreMaxY - coreMinY + 1),
-    ).toDouble();
-    final double coreSolidity = corePixels / coreArea;
+    final double coreSolidity =
+        corePixels / max(1, (cMaxX - cMinX + 1) * (cMaxY - cMinY + 1));
 
-    // NEW: Bottom Heavy Bias
-    final double bottomHeavyBias = objectPixelCount > 0
-        ? bottomHalf / objectPixelCount
-        : 0.0;
-
-    // NEW: Max Width Row Bias
-    int maxRowPixels = -1;
-    int maxRowY = minY;
+    int maxRowPixels = -1,
+        maxRowY = minY,
+        minRowWidth = maxX - minX + 1,
+        maxRowWidth = 0;
     for (int y = minY; y <= maxY; y++) {
-      int rowPixels = 0;
+      int rowW = 0;
       for (int x = minX; x <= maxX; x++) {
-        if (mask[y * resized.width + x]) rowPixels++;
+        if (mask[y * resized.width + x]) rowW++;
       }
-      if (rowPixels > maxRowPixels) {
-        maxRowPixels = rowPixels;
-        maxRowY = y;
+      if (rowW > 0) {
+        if (rowW > maxRowPixels) {
+          maxRowPixels = rowW;
+          maxRowY = y;
+        }
+        if (rowW < minRowWidth) minRowWidth = rowW;
+        if (rowW > maxRowWidth) maxRowWidth = rowW;
       }
     }
     final double maxWidthRowBias = (maxY > minY)
         ? (maxRowY - minY) / (maxY - minY)
         : 0.5;
+    final double verticalThinning = maxRowWidth > 0
+        ? minRowWidth / maxRowWidth
+        : 0.0;
 
-    // NEW: Max Height Col Bias
-    int maxColPixels = -1;
-    int maxColX = minX;
-    for (int x = minX; x <= maxX; x++) {
-      int colPixels = 0;
-      for (int y = minY; y <= maxY; y++) {
-        if (mask[y * resized.width + x]) colPixels++;
-      }
-      if (colPixels > maxColPixels) {
-        maxColPixels = colPixels;
-        maxColX = x;
+    int totalX = 0, totalY = 0;
+    for (int y = minY; y <= maxY; y++) {
+      for (int x = minX; x <= maxX; x++) {
+        if (mask[y * resized.width + x]) {
+          totalX += x;
+          totalY += y;
+        }
       }
     }
-    final double colXNorm = (maxX > minX)
-        ? (maxColX - minX) / (maxX - minX)
+    final double centroidY = totalY / objectPixelCount;
+    final double horizontalCentroidShift = (maxX > minX)
+        ? (totalX / objectPixelCount - minX) / (maxX - minX)
         : 0.5;
-    final double maxHeightColBias = (colXNorm - 0.5).abs() * 2.0;
+    final double yCentroid = centroidY / resized.height;
 
-    // NEW: Bottom Center Density
+    // Calculate Bottom Center Density
     final int bcMinX = minX + ((maxX - minX) * 0.35).toInt();
     final int bcMaxX = maxX - ((maxX - minX) * 0.35).toInt();
     final int bcMinY = maxY - ((maxY - minY) * 0.3).toInt();
-    final int bcMaxY = maxY;
     int bcPixels = 0;
-    for (int y = bcMinY; y <= bcMaxY; y++) {
+    for (int y = bcMinY; y <= maxY; y++) {
       for (int x = bcMinX; x <= bcMaxX; x++) {
         if (mask[y * resized.width + x]) bcPixels++;
       }
     }
-    final double bcArea = max(
-      1,
-      (bcMaxX - bcMinX + 1) * (bcMaxY - bcMinY + 1),
-    ).toDouble();
-    final double bottomCenterDensity = bcPixels / bcArea;
+    final double bottomCenterDensity =
+        bcPixels / max(1, (bcMaxX - bcMinX + 1) * (maxY - bcMinY + 1));
 
-    // NEW: Corner Density
+    // Calculate Corner Density
     final int cornerW = max(1, (maxX - minX) * 0.2).toInt();
     final int cornerH = max(1, (maxY - minY) * 0.2).toInt();
     int cornerPixels = 0;
@@ -719,12 +657,10 @@ class BiometricService {
         if (mask[y * resized.width + x]) cornerPixels++;
       }
     }
-    final double cornerArea = max(1, cornerW * cornerH * 4).toDouble();
-    final double cornerDensity = cornerPixels / cornerArea;
+    final double cornerDensity = cornerPixels / max(1, cornerW * cornerH * 4.0);
 
-    // NEW: Diagonal Density
-    int diagPixels = 0;
-    int diagArea = 0;
+    // Calculate Diagonal Density
+    int diagPixels = 0, diagArea = 0;
     final int boxW = max(1, maxX - minX);
     final int boxH = max(1, maxY - minY);
     for (int y = minY; y <= maxY; y++) {
@@ -738,260 +674,65 @@ class BiometricService {
       }
     }
     final double diagonalDensity = diagArea > 0 ? diagPixels / diagArea : 0.0;
+    final int midX = minX + (maxX - minX) ~/ 2;
 
-    // NEW: Lower Quadrant Symmetry
-    int lqLeft = 0;
-    int lqRight = 0;
-    final int lqMidY = minY + ((maxY - minY) * 0.5).toInt();
-    final int lqMidX = minX + ((maxX - minX) * 0.5).toInt();
-    for (int y = lqMidY; y <= maxY; y++) {
-      for (int x = minX; x < lqMidX; x++) {
-        if (mask[y * resized.width + x]) lqLeft++;
+    // Calculate maxHeightColBias
+    int maxColH = 0;
+    int maxColX = minX;
+    for (int x = minX; x <= maxX; x++) {
+      int colH = 0;
+      for (int y = minY; y <= maxY; y++) {
+        if (mask[y * resized.width + x]) colH++;
       }
-      for (int x = lqMidX; x <= maxX; x++) {
-        if (mask[y * resized.width + x]) lqRight++;
+      if (colH > maxColH) {
+        maxColH = colH;
+        maxColX = x;
       }
     }
-    final double lowerQuadrantSymmetry = (lqLeft + lqRight) > 0
-        ? min(lqLeft, lqRight) / max(lqLeft, lqRight)
-        : 0.0;
-
-    // NEW: Horizontal Centroid Shift
-    int totalX = 0;
-    for (int y = minY; y <= maxY; y++) {
-      for (int x = minX; x <= maxX; x++) {
-        if (mask[y * resized.width + x]) {
-          totalX += x;
-        }
-      }
-    }
-    final double centroidX = objectPixelCount > 0
-        ? totalX / objectPixelCount
-        : lqMidX.toDouble();
-    final double horizontalCentroidShift = (maxX > minX)
-        ? (centroidX - minX) / (maxX - minX)
+    final double maxHeightColBias = (maxX > minX)
+        ? (maxColX - minX) / (maxX - minX)
         : 0.5;
 
-    // NEW: Convex Hull Ratio (Proxy using diamond area)
-    final double diamondArea = (maxX - minX + 1) * (maxY - minY + 1) / 2.0;
-    final double convexHullRatio = diamondArea > 0
-        ? (objectPixelCount / diamondArea).clamp(0.0, 1.0)
-        : 0.0;
-
-    // NEW: Vertical Mass Distribution
-    int edgeMass = 0;
-    final int vmdQ1 = minY + ((maxY - minY) * 0.25).toInt();
-    final int vmdQ3 = minY + ((maxY - minY) * 0.75).toInt();
-    for (int y = minY; y <= maxY; y++) {
-      if (y <= vmdQ1 || y >= vmdQ3) {
-        for (int x = minX; x <= maxX; x++) {
-          if (mask[y * resized.width + x]) edgeMass++;
-        }
-      }
-    }
-    final double verticalMassDistribution = objectPixelCount > 0
-        ? edgeMass / objectPixelCount
-        : 0.0;
-
-    // NEW: Color Granularity
-    int distinctColors = 0;
-    final Set<int> uniqueColors = {};
+    // Calculate verticalMassDistribution (Standard deviation of Y positions)
+    double sumYDist = 0;
     for (int y = minY; y <= maxY; y++) {
       for (int x = minX; x <= maxX; x++) {
         if (mask[y * resized.width + x]) {
-          final p = resized.getPixel(x, y);
-          int qColor = ((p.r ~/ 16) << 16) | ((p.g ~/ 16) << 8) | (p.b ~/ 16);
-          uniqueColors.add(qColor);
+          sumYDist += pow(y - centroidY, 2);
         }
       }
     }
-    final double colorGranularity = (uniqueColors.length / 4096.0).clamp(
-      0.0,
-      1.0,
-    );
-
-    // NEW: Fringe Density (Alpha boundary pixels)
-    int fringePixels = 0;
-    for (int y = minY; y <= maxY; y++) {
-      for (int x = minX; x <= maxX; x++) {
-        if (mask[y * resized.width + x]) {
-          if (x == minX ||
-              x == maxX ||
-              y == minY ||
-              y == maxY ||
-              !mask[(y - 1) * resized.width + x] ||
-              !mask[(y + 1) * resized.width + x] ||
-              !mask[y * resized.width + (x - 1)] ||
-              !mask[y * resized.width + (x + 1)]) {
-            fringePixels++;
-          }
-        }
-      }
-    }
-    final double fringeDensity = objectPixelCount > 0
-        ? fringePixels / objectPixelCount
+    final double verticalMassDistribution = (maxY > minY)
+        ? sqrt(sumYDist / objectPixelCount) / (maxY - minY)
         : 0.0;
 
-    // NEW: Vertical Thinning & Width Variance
-    int minRowWidth = maxX - minX + 1;
-    int maxRowWidth = 0;
-    int totalRowWidth = 0;
-    List<int> rowWidths = [];
-    for (int y = minY; y <= maxY; y++) {
-      int rowW = 0;
-      for (int x = minX; x <= maxX; x++) {
-        if (mask[y * resized.width + x]) rowW++;
-      }
-      if (rowW > 0) {
-        if (rowW < minRowWidth) minRowWidth = rowW;
-        if (rowW > maxRowWidth) maxRowWidth = rowW;
-        totalRowWidth += rowW;
-        rowWidths.add(rowW);
+    final bilateralSym = hSym; // Use horizontal symmetry as bilateral baseline
+
+    // Calculate Local Symmetry (Quadrant-based)
+    int qMatches = 0, qTotal = 0;
+    final midY = minY + (maxY - minY) ~/ 2;
+    for (int qy = 0; qy < 2; qy++) {
+      for (int qx = 0; qx < 2; qx++) {
+        final qXStart = qx == 0 ? minX : midX;
+        final qXEnd = qx == 0 ? midX : maxX;
+        final qYStart = qy == 0 ? minY : midY;
+        final qYEnd = qy == 0 ? midY : maxY;
+        final qSym = _calculateSymmetry(
+          resized,
+          mask,
+          qXStart,
+          qXEnd,
+          qYStart,
+          qYEnd,
+        );
+        qMatches += (qSym.$1 * 100).toInt() + (qSym.$2 * 100).toInt();
+        qTotal += 200;
       }
     }
-    final double verticalThinning = maxRowWidth > 0
-        ? minRowWidth / maxRowWidth
-        : 0.0;
-    double widthVariance = 0.0;
-    if (rowWidths.isNotEmpty && maxRowWidth > 0) {
-      double avgRow = totalRowWidth / rowWidths.length;
-      double varSum = 0;
-      for (int w in rowWidths) {
-        varSum += (w - avgRow).abs();
-      }
-      widthVariance = (varSum / rowWidths.length) / maxRowWidth;
-    }
+    final localSymmetry = qTotal > 0 ? qMatches / qTotal : 0.5;
 
-    // NEW: Local Symmetry (Average symmetry of 4 horizontal slices)
-    double localSymSum = 0;
-    int slices = 4;
-    int sliceH = max(1, (maxY - minY + 1) ~/ slices);
-    for (int s = 0; s < slices; s++) {
-      int sMinY = minY + s * sliceH;
-      int sMaxY = (s == slices - 1) ? maxY : sMinY + sliceH - 1;
-      int slLeft = 0, slRight = 0;
-      for (int y = sMinY; y <= sMaxY; y++) {
-        for (int x = minX; x < lqMidX; x++) {
-          if (mask[y * resized.width + x]) slLeft++;
-        }
-        for (int x = lqMidX; x <= maxX; x++) {
-          if (mask[y * resized.width + x]) slRight++;
-        }
-      }
-      if (slLeft + slRight > 0) {
-        localSymSum += min(slLeft, slRight) / max(slLeft, slRight);
-      }
-    }
-    final double localSymmetry = localSymSum / slices;
-
-    // NEW: Color Clustering
-    int clusteredPixels = 0;
-    for (int y = minY + 1; y <= maxY; y++) {
-      for (int x = minX + 1; x <= maxX; x++) {
-        if (mask[y * resized.width + x]) {
-          final p = resized.getPixel(x, y);
-          int qc = ((p.r ~/ 32) << 16) | ((p.g ~/ 32) << 8) | (p.b ~/ 32);
-          if (mask[(y - 1) * resized.width + x]) {
-            final pt = resized.getPixel(x, y - 1);
-            if (qc ==
-                (((pt.r ~/ 32) << 16) | ((pt.g ~/ 32) << 8) | (pt.b ~/ 32))) {
-              clusteredPixels++;
-            }
-          } else if (mask[y * resized.width + x - 1]) {
-            final pl = resized.getPixel(x - 1, y);
-            if (qc ==
-                (((pl.r ~/ 32) << 16) | ((pl.g ~/ 32) << 8) | (pl.b ~/ 32))) {
-              clusteredPixels++;
-            }
-          }
-        }
-      }
-    }
-    final double colorClustering = objectPixelCount > 0
-        ? clusteredPixels / objectPixelCount
-        : 0.0;
-
-    // NEW: Y Gradient (Vertical Centroid)
-    int totalY = 0;
-    for (int y = minY; y <= maxY; y++) {
-      for (int x = minX; x <= maxX; x++) {
-        if (mask[y * resized.width + x]) totalY += y;
-      }
-    }
-    final double centroidY = objectPixelCount > 0
-        ? totalY / objectPixelCount
-        : lqMidY.toDouble();
-    final double yGradient = (maxY > minY)
-        ? (centroidY - minY) / (maxY - minY)
-        : 0.5;
-
-    // NEW: Shell Index (Pixels within 15% of bounding box edge)
-    int shellPixels = 0;
-    int shEdgeX = max(1, (maxX - minX) * 0.15).toInt();
-    int shEdgeY = max(1, (maxY - minY) * 0.15).toInt();
-    for (int y = minY; y <= maxY; y++) {
-      for (int x = minX; x <= maxX; x++) {
-        if (mask[y * resized.width + x]) {
-          if (x <= minX + shEdgeX ||
-              x >= maxX - shEdgeX ||
-              y <= minY + shEdgeY ||
-              y >= maxY - shEdgeY) {
-            shellPixels++;
-          }
-        }
-      }
-    }
-    final double shellIndex = objectPixelCount > 0
-        ? shellPixels / objectPixelCount
-        : 0.0;
-
-    // NEW: Radial Overlap (Ellipse Area)
-    final double ellipseArea =
-        pi * ((maxX - minX + 1) / 2.0) * ((maxY - minY + 1) / 2.0);
-    final double radialOverlap = ellipseArea > 0
-        ? (objectPixelCount / ellipseArea).clamp(0.0, 1.0)
-        : 0.0;
-
-    // NEW: yCentroid (Absolute normalized vertical center of mass)
-    final double yCentroid = objectPixelCount > 0
-        ? centroidY / resized.height
-        : 0.5;
-
-    // NEW: Jaggedness (Perimeter proxy)
-    final double jaggedness = objectPixelCount > 0
-        ? fringePixels / sqrt(objectPixelCount)
-        : 0.0;
-
-    // NEW: Top Third Density
-    int topThirdPixels = 0;
-    int topThirdY = minY + (maxY - minY + 1) ~/ 3;
-    for (int y = minY; y <= topThirdY; y++) {
-      for (int x = minX; x <= maxX; x++) {
-        if (mask[y * resized.width + x]) topThirdPixels++;
-      }
-    }
-    final double topThirdDensity = objectPixelCount > 0
-        ? topThirdPixels / objectPixelCount
-        : 0.0;
-
-    // NEW: Bilateral Symmetry (Point-by-point matching)
-    int matchedSymmetryPixels = 0;
-    int totalSymmetryCheck = 0;
-    for (int y = minY; y <= maxY; y++) {
-      for (int x = minX; x < lqMidX; x++) {
-        int oppositeX = maxX - (x - minX);
-        if (oppositeX >= 0 && oppositeX < resized.width) {
-          totalSymmetryCheck++;
-          if (mask[y * resized.width + x] ==
-              mask[y * resized.width + oppositeX]) {
-            matchedSymmetryPixels++;
-          }
-        }
-      }
-    }
-    final double bilateralSym = totalSymmetryCheck > 0
-        ? matchedSymmetryPixels / totalSymmetryCheck
-        : 0.0;
+    final lowerSym = _calculateSymmetry(resized, mask, minX, maxX, midY, maxY);
+    final lowerQuadrantSymmetry = lowerSym.$1;
 
     return OrganismFeature(
       organismName: name,
@@ -1020,20 +761,21 @@ class BiometricService {
       diagonalDensity: diagonalDensity,
       lowerQuadrantSymmetry: lowerQuadrantSymmetry,
       horizontalCentroidShift: horizontalCentroidShift,
-      convexHullRatio: convexHullRatio,
+      convexHullRatio:
+          objectPixelCount / ((maxX - minX + 1) * (maxY - minY + 1) / 2.0),
       verticalMassDistribution: verticalMassDistribution,
-      colorGranularity: colorGranularity,
-      fringeDensity: fringeDensity,
+      colorGranularity: 0.0,
+      fringeDensity: fringePixels / objectPixelCount,
       verticalThinning: verticalThinning,
       localSymmetry: localSymmetry,
-      colorClustering: colorClustering,
-      yGradient: yGradient,
-      widthVariance: widthVariance,
-      shellIndex: shellIndex,
-      radialOverlap: radialOverlap,
+      colorClustering: 0.0,
+      yGradient: (maxY > minY) ? (centroidY - minY) / (maxY - minY) : 0.5,
+      widthVariance: 0.0,
+      shellIndex: 0.0,
+      radialOverlap: 0.0,
       yCentroid: yCentroid,
       jaggedness: jaggedness,
-      topThirdDensity: topThirdDensity,
+      topThirdDensity: topThirdPixels / objectPixelCount,
       bilateralSym: bilateralSym,
     );
   }
@@ -1172,7 +914,7 @@ class BiometricService {
         final lumD = (pDown.r + pDown.g + pDown.b) / 3.0;
 
         final grad = (lum - lumR).abs() + (lum - lumD).abs();
-        if (grad > 30) edgePixels++;
+        if (grad > 40) edgePixels++;
         totalPixels++;
       }
     }
@@ -1282,38 +1024,31 @@ class BiometricService {
         (taxonomyResult['confidence'] as num?)?.toDouble() ?? 0.0;
     final String classSource = taxonomyResult['source'] ?? 'none';
 
-    // CRITICAL: Only trust the classification if confidence is high.
-    // Low-confidence local classification (AI engine / heuristic) is unreliable
-    // and causes the class/diet gates to destroy correct matches.
-    // High confidence = iNaturalist (> 0.7) or very strong AI match.
+    // CRITICAL: We use the classification hint even at low confidence (>= 0.2)
+    // to provide a baseline 'sanity check' for the matching engine.
+    // This prevents impossible cross-class matches (e.g. Fish vs Mammal).
     AnimalClass detectedClass;
-    if (classConfidence > 0.7) {
+    if (classConfidence >= 0.2) {
       detectedClass = taxonomyResult['class'] ?? AnimalClass.unknown;
       debugPrint(
-        'BiometricService: HIGH confidence ($classSource): ${detectedClass.name} @ ${(classConfidence * 100).toStringAsFixed(0)}%',
+        'BiometricService: Classification hint ($classSource): ${detectedClass.name} @ ${(classConfidence * 100).toStringAsFixed(0)}%',
       );
     } else {
       detectedClass = AnimalClass.unknown;
       debugPrint(
-        'BiometricService: LOW confidence ($classSource) — gates DISABLED',
+        'BiometricService: NO reliable classification — gates minimized',
       );
     }
 
     // Always show the classification hint in the UI (even if gates are disabled)
     final AnimalClass displayClass =
         taxonomyResult['class'] ?? AnimalClass.unknown;
-    final String predictedDiet = taxonomyResult['diet'] ?? 'unknown';
-    final double predictedWeight =
-        (taxonomyResult['weight'] as num?)?.toDouble() ?? 0.0;
-
     onProgress?.call(
       displayClass != AnimalClass.unknown
           ? 'SUBJECT TYPE: ${displayClass.name.toUpperCase()}'
           : 'IDENTIFYING SUBJECT TYPE...',
       0.25,
       predictedClass: displayClass,
-      predictedDiet: predictedDiet,
-      predictedWeight: predictedWeight,
     );
 
     onProgress?.call('Decoding image...', 0.25);
@@ -1376,8 +1111,6 @@ class BiometricService {
         cachedFeature,
         org,
         detectedClass: detectedClass,
-        predictedDiet: predictedDiet,
-        predictedWeight: predictedWeight,
       );
 
       // Hint-based filter
@@ -1400,8 +1133,6 @@ class BiometricService {
             featureScores: result.featureScores,
             detectedClass: displayClass,
             isPinpointed: result.isPinpointed,
-            predictedDiet: predictedDiet,
-            predictedWeight: predictedWeight,
           ),
         );
       }
@@ -1444,8 +1175,6 @@ class BiometricService {
                     featureScores: result.featureScores,
                     isGenusMate: true,
                     isPinpointed: result.isPinpointed,
-                    predictedDiet: predictedDiet,
-                    predictedWeight: predictedWeight,
                   ),
                 );
               }
@@ -1485,8 +1214,6 @@ class BiometricService {
     OrganismFeature f2,
     Organism target, {
     required AnimalClass detectedClass,
-    String predictedDiet = 'unknown',
-    double predictedWeight = 0.0,
   }) {
     // 1. ADVANCED COLOR MATCH (Smoothing for lighting tolerance)
     double globalColorMatch = 0;
@@ -1537,20 +1264,25 @@ class BiometricService {
         pow((1.0 - (aspectDiff * 0.6)).clamp(0.0, 1.0), 1.5).toDouble() * 0.6 +
         pow((1.0 - (solidityDiff * 1.6)).clamp(0.0, 1.0), 1.5).toDouble() * 0.4;
 
-    // 4. PATTERN (Symmetry & Edge Density)
+    // 4. PATTERN (Symmetry & Texture Signature)
+    // We use abstracted symmetry and edge markers to be pose-invariant.
     final symDiff =
-        (f1.verticalSymmetry - f2.verticalSymmetry).abs() +
-        (f1.horizontalSymmetry - f2.horizontalSymmetry).abs();
+        (f1.bilateralSym - f2.bilateralSym).abs() +
+        (f1.localSymmetry - f2.localSymmetry).abs();
     final edgeDiff = (f1.edgeDensity - f2.edgeDensity).abs();
-    // Texture boost: if both are highly textured, pattern is VERY important
-    double patternImportance = 0.7;
-    if (f1.edgeDensity > 0.15 && f2.edgeDensity > 0.15) {
-      patternImportance = 0.85;
+    final biasDiff = (f1.directionalEdgeBias - f2.directionalEdgeBias).abs();
+
+    // Texture Importance: if both have high edge density, texture match is critical
+    double patternImportance = 0.6;
+    if (f1.edgeDensity > 0.12 && f2.edgeDensity > 0.12) {
+      patternImportance = 0.8;
     }
 
     final patternScore =
         (1.0 - (symDiff / 2.0)).clamp(0.0, 1.0) * (1.0 - patternImportance) +
-        (1.0 - (edgeDiff * 4.0)).clamp(0.0, 1.0) * patternImportance;
+        ((1.0 - edgeDiff).clamp(0.0, 1.0) * 0.7 +
+                (1.0 - biasDiff).clamp(0.0, 1.0) * 0.3) *
+            patternImportance;
 
     // 5. SHADE & SATURATION
     final shadeScore = (1.0 - (f1.avgBrightness - f2.avgBrightness).abs())
@@ -1561,89 +1293,105 @@ class BiometricService {
     );
     final finalShadeScore = (shadeScore * 0.7 + satScore * 0.3).clamp(0.0, 1.0);
 
+    // 6. ADVANCED BIOMETRIC COMPONENTS (Structural, Pose, Detail, AdvSymmetry)
+
+    // Structural Score: coreSolidity, convexHullRatio, radialOverlap, shellIndex
+    final structScore =
+        (1.0 - (f1.coreSolidity - f2.coreSolidity).abs()) * 0.3 +
+        (1.0 - (f1.convexHullRatio - f2.convexHullRatio).abs()) * 0.3 +
+        (1.0 - (f1.radialOverlap - f2.radialOverlap).abs()) * 0.2 +
+        (1.0 - (f1.shellIndex - f2.shellIndex).abs()) * 0.2;
+
+    // Pose/Orientation Score: bottomHeavyBias, maxWidthRowBias, maxHeightColBias, yCentroid, horizontalCentroidShift, verticalMassDistribution, verticalThinning
+    final poseScore =
+        (1.0 - (f1.bottomHeavyBias - f2.bottomHeavyBias).abs()) * 0.15 +
+        (1.0 - (f1.maxWidthRowBias - f2.maxWidthRowBias).abs()) * 0.15 +
+        (1.0 - (f1.maxHeightColBias - f2.maxHeightColBias).abs()) * 0.15 +
+        (1.0 - (f1.yCentroid - f2.yCentroid).abs()) * 0.15 +
+        (1.0 -
+                (f1.horizontalCentroidShift - f2.horizontalCentroidShift)
+                    .abs()) *
+            0.15 +
+        (1.0 -
+                (f1.verticalMassDistribution - f2.verticalMassDistribution)
+                    .abs()) *
+            0.15 +
+        (1.0 - (f1.verticalThinning - f2.verticalThinning).abs()) * 0.1;
+
+    // Detail/Complexity Score: colorGranularity, fringeDensity, jaggedness, colorClustering, widthVariance, topThirdDensity
+    final detailScore =
+        (1.0 - (f1.colorGranularity - f2.colorGranularity).abs()) * 0.2 +
+        (1.0 - (f1.fringeDensity - f2.fringeDensity).abs()) * 0.2 +
+        (1.0 - (f1.jaggedness - f2.jaggedness).abs() * 0.1).clamp(0.0, 1.0) *
+            0.15 +
+        (1.0 - (f1.colorClustering - f2.colorClustering).abs()) * 0.15 +
+        (1.0 - (f1.widthVariance - f2.widthVariance).abs()) * 0.15 +
+        (1.0 - (f1.topThirdDensity - f2.topThirdDensity).abs()) * 0.15;
+
+    // Advanced Symmetry: lowerQuadrantSymmetry, localSymmetry, bilateralSym
+    final advSymScore =
+        (1.0 - (f1.lowerQuadrantSymmetry - f2.lowerQuadrantSymmetry).abs()) *
+            0.3 +
+        (1.0 - (f1.localSymmetry - f2.localSymmetry).abs()) * 0.3 +
+        (1.0 - (f1.bilateralSym - f2.bilateralSym).abs()) * 0.4;
+
     // --- BIOLOGICAL GATES ---
 
-    // Weight Gate
-    double weightScore = 1.0;
-    if (target.weight > 0 && detectedClass != AnimalClass.unknown) {
-      final range = _expectedWeightRange(detectedClass);
-      if (target.weight < range.$1 * 0.1 || target.weight > range.$2 * 10) {
-        weightScore = 0.1;
-      } else if (target.weight < range.$1 || target.weight > range.$2) {
-        final distRatio = target.weight < range.$1
-            ? (range.$1 / target.weight)
-            : (target.weight / range.$2);
-        weightScore = (1.0 / sqrt(distRatio)).clamp(0.2, 0.9);
-      }
-    }
-
-    // Diet Gate: Soft penalty — unreliable when detectedClass is wrong
-    double dietScore = 1.0;
-    if (target.diet.isNotEmpty &&
-        target.diet != 'unknown' &&
-        detectedClass != AnimalClass.unknown) {
-      final plausibleDiets = _plausibleDietsForClass(detectedClass);
-      if (plausibleDiets.isNotEmpty &&
-          !plausibleDiets.contains(target.diet.toLowerCase())) {
-        dietScore = 0.9; // VERY soft penalty — AI class may be wrong
-      }
-    }
-
-    // Class Gate: Soft penalty since AI classification is approximate
-    // The organism's ground-truth class vs the detected class
+    // Class Gate: High-fidelity species categorization
     double classScore = 1.0;
-    if (target.animalClass.isNotEmpty &&
-        target.animalClass != 'unknown' &&
-        detectedClass != AnimalClass.unknown) {
-      if (target.animalClass.toLowerCase() !=
-          detectedClass.name.toLowerCase()) {
-        // Soft penalty — AI classification is not fully reliable
-        classScore = 0.8;
+    final String targetClass = target.animalClass.toLowerCase();
+    final String detectedClassName = detectedClass.name.toLowerCase();
+
+    if (targetClass != 'unknown' && detectedClassName != 'unknown') {
+      if (targetClass != detectedClassName) {
+        // Massive penalty for fundamental class mismatches (e.g. Mammal vs Fish)
+        classScore = 0.15;
       } else {
-        // Class MATCH — small boost for agreement
-        classScore = 1.1;
+        classScore = 1.15; // Moderate boost for class agreement
+      }
+    }
+
+    // Structural Gate (LIMB PENALTY): Fixes Mammal/Dinosaur vs Fish bias
+    double structGate = 1.0;
+    // If subject has legs/limbs (fringe/jaggedness) but target is Fish
+    if (targetClass == 'fish') {
+      if (f1.limbDensity > 0.12 || f1.jaggedness > 0.35) {
+        structGate *= 0.1; // Extremely strict: Leggy things are not fish
+      }
+    }
+    // If target has legs (Mammal/Reptile) but subject is a smooth blob (Fish-like)
+    if (targetClass == 'mammal' || targetClass == 'reptile') {
+      if (f1.limbDensity < 0.04 && f1.jaggedness < 0.15) {
+        structGate *= 0.2; // Mammals/Reptiles usually have limbs/necks
       }
     }
 
     // Combine visual scores with weighted importance
-    // We prioritize Shape and Pattern over global Color to fix "Fish Bias"
-    double visualWeightColor = 0.3;
-    double visualWeightSpatial = 0.1;
-    double visualWeightShape = 0.3;
-    double visualWeightPattern = 0.2;
-    double visualWeightShade = 0.1;
-
-    // Aquatic Sensitivity: Fish need more spatial/pattern detail because they look similar
-    if (target.animalClass.toLowerCase() == 'fish') {
-      visualWeightSpatial = 0.2;
-      visualWeightPattern = 0.25;
-      visualWeightColor = 0.25; // Reduce color reliance
-    }
+    double visualWeightColor = 0.10;
+    double visualWeightSpatial = 0.05;
+    double visualWeightShape = 0.20;
+    double visualWeightPattern = 0.10;
+    double visualWeightShade = 0.05;
+    double visualWeightStruct = 0.30; // Prioritize anatomy
+    double visualWeightPose = 0.15;
+    double visualWeightDetail = 0.00; // Detail often includes noise
+    double visualWeightAdvSym = 0.05;
 
     final double visualConfidence =
         (colorScore * visualWeightColor +
                 spatialScore * visualWeightSpatial +
                 finalShadeScore * visualWeightShade +
                 shapeScore * visualWeightShape +
-                patternScore * visualWeightPattern)
+                patternScore * visualWeightPattern +
+                structScore * visualWeightStruct +
+                poseScore * visualWeightPose +
+                detailScore * visualWeightDetail +
+                advSymScore * visualWeightAdvSym)
             .clamp(0.0, 1.0);
 
-    // Numerosity Correction: only for fish (they have 799 samples vs 385 mammals)
-    double numerosityCorrection = 1.0;
-    if (detectedClass == AnimalClass.unknown && visualConfidence < 0.90) {
-      if (target.animalClass.toLowerCase() == 'fish') {
-        numerosityCorrection = 0.85;
-      }
-    }
-
-    // Apply biological gates and numerosity correction
-    final double finalConfidence =
-        (visualConfidence *
-                weightScore *
-                dietScore *
-                classScore *
-                numerosityCorrection)
-            .clamp(0.0, 1.0);
+    // Apply biological gates and structural gate
+    final double finalConfidence = (visualConfidence * classScore * structGate)
+        .clamp(0.0, 1.0);
 
     // PINPOINT THRESHOLD (90%)
     final bool pinpointed = finalConfidence > 0.90;
@@ -1659,14 +1407,14 @@ class BiometricService {
         'Pattern': patternScore,
         'Shade': finalShadeScore,
         'Shape': shapeScore,
-        'Weight': weightScore,
-        'Diet': dietScore,
+        'Structure': structScore,
+        'Pose': poseScore,
+        'Detail': detailScore,
+        'Symmetry': advSymScore,
         'Class': classScore,
       },
       detectedClass: detectedClass,
       isPinpointed: pinpointed,
-      predictedDiet: predictedDiet,
-      predictedWeight: predictedWeight,
     );
   }
 
@@ -1868,6 +1616,15 @@ class BiometricService {
     return features;
   }
 
+  double _predictWeightByDensity(OrganismFeature f) {
+    // Simple heuristic: Weight scales with (Bounding Box Area * Solidity)^2.2
+    // Adjusted for a 128x128 normalized space.
+    // This provides a rough order-of-magnitude estimate to block impossible matches.
+    final double area = f.solidity; // 0..1
+    final double baseWeight = pow(area * 10.0, 3).toDouble();
+    return baseWeight * (f.aspectRatio > 1.4 ? 2.5 : 1.0);
+  }
+
   /// Expected weight range (kg) for each animal class.
   /// Used as a biological plausibility filter during scanning.
   (double, double) _expectedWeightRange(AnimalClass cls) {
@@ -1875,31 +1632,31 @@ class BiometricService {
       case AnimalClass.insect:
         return (0.0001, 0.5);
       case AnimalClass.amphibian:
-        return (0.001, 10.0);
+        return (0.001, 15.0);
       case AnimalClass.fish:
-        return (0.001, 1000.0);
+        return (0.001, 2000.0);
       case AnimalClass.bird:
-        return (0.002, 150.0);
+        return (0.002, 160.0);
       case AnimalClass.reptile:
-        return (0.001, 1500.0);
+        return (0.001, 25000.0); // Dinosaur-ready
       case AnimalClass.mammal:
-        return (0.002, 6000.0);
+        return (0.002, 10000.0); // Whale/Elephant-ready
       case AnimalClass.arachnid:
-        return (0.0001, 0.2);
+        return (0.0001, 0.3);
       case AnimalClass.crustacean:
-        return (0.001, 20.0);
+        return (0.001, 25.0);
       case AnimalClass.mollusk:
-        return (0.0001, 500.0);
+        return (0.0001, 1000.0); // Giant Squid
       case AnimalClass.annelid:
         return (0.0001, 5.0);
       case AnimalClass.cnidarian:
-        return (0.0001, 200.0);
+        return (0.0001, 500.0);
       case AnimalClass.echinoderm:
-        return (0.001, 10.0);
+        return (0.001, 15.0);
       case AnimalClass.otherInvertebrate:
-        return (0.0001, 100.0);
+        return (0.0001, 200.0);
       case AnimalClass.unknown:
-        return (0.0001, 10000.0);
+        return (0.0001, 50000.0);
     }
   }
 
@@ -1964,5 +1721,25 @@ class BiometricService {
       case AnimalClass.unknown:
         return {}; // Unknown = all diets plausible
     }
+  }
+
+  /// Helper to convert RGB to HSV values (0-360, 0-1, 0-1).
+  List<double> _rgbToHsv(int r, int g, int b) {
+    double rf = r / 255.0, gf = g / 255.0, bf = b / 255.0;
+    double maxV = [rf, gf, bf].reduce((a, b) => a > b ? a : b);
+    double minV = [rf, gf, bf].reduce((a, b) => a < b ? a : b);
+    double d = maxV - minV;
+    double h = 0;
+    if (d != 0) {
+      if (maxV == rf) {
+        h = (gf - bf) / d + (gf < bf ? 6 : 0);
+      } else if (maxV == gf) {
+        h = (bf - rf) / d + 2;
+      } else {
+        h = (rf - gf) / d + 4;
+      }
+      h /= 6;
+    }
+    return [h * 360, maxV == 0 ? 0 : d / maxV, maxV];
   }
 }
