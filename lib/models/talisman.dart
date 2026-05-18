@@ -237,6 +237,7 @@ class Talisman {
   final String name;
   final String description;
   final List<TalismanEffect> effects;
+  final double dropChance;
 
   const Talisman({
     required this.id,
@@ -248,6 +249,7 @@ class Talisman {
     this.preferredClass,
     this.preferredSpecies,
     this.nutritionalValue = 0,
+    this.dropChance = 1.0,
   });
 
   String get spritePath =>
@@ -314,6 +316,7 @@ class Talisman {
       preferredClass: json['preferred_class'] as String?,
       preferredSpecies: json['preferred_species'] as String?,
       nutritionalValue: (json['nutritional_value'] as num? ?? 0).toInt(),
+      dropChance: (json['drop_chance'] as num? ?? 1.0).toDouble(),
     );
   }
 

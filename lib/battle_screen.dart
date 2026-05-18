@@ -18,11 +18,11 @@ import 'package:animal_warfare/main_screen.dart';
 import 'package:animal_warfare/rogue/biome_select_screen.dart';
 import 'package:animal_warfare/models/weather.dart';
 import 'package:animal_warfare/models/terrain.dart';
-import 'package:animal_warfare/models/loot_item.dart';
 import 'package:animal_warfare/services/audio_service.dart';
 import 'package:animal_warfare/game/battle_models.dart';
 import 'package:animal_warfare/game/move_animations.dart' as anims;
 import 'package:animal_warfare/models/organism.dart';
+import 'package:animal_warfare/models/talisman.dart';
 import 'package:animal_warfare/game/ai_decision_engine.dart';
 import 'package:animal_warfare/game/time_service.dart';
 import 'package:animal_warfare/models/elemental_type.dart'; // Added
@@ -3704,14 +3704,13 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           }
         }
 
-        final String? lootId = battleManager.droppedLoot;
-        final String? lootName = lootId != null
-            ? LootItem.findById(lootId).name
-            : null;
-
+        final Map<String, int> droppedLoot = battleManager.droppedLoot;
+        
         // Handle loot drop
-        if (battleManager.result == BattleResult.win && lootId != null) {
-          await userState.addLoot(lootId, 1);
+        if (battleManager.result == BattleResult.win && droppedLoot.isNotEmpty) {
+          for (final entry in droppedLoot.entries) {
+            await userState.addLoot(entry.key, entry.value);
+          }
         }
 
         if (!mounted) return;
@@ -3806,7 +3805,6 @@ class _BattleScreenContentState extends State<BattleScreenContent>
             context,
             battleManager,
             moneyEarned,
-            lootName,
             userState,
             xpResults: xpResults,
           );
@@ -3815,7 +3813,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
       } catch (e) {
         debugPrint('Error during battle end handling: $e');
         if (context.mounted) {
-          _showBattleResultDialog(context, battleManager, 0, null, userState);
+          _showBattleResultDialog(context, battleManager, 0, userState);
         }
         _isHandlingBattleEnd = false; // Reset here
       } finally {
@@ -3828,7 +3826,6 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     BuildContext context,
     BattleManager battleManager,
     int moneyEarned,
-    String? lootName,
     UserState userState, {
     Map<String, dynamic> xpResults = const {},
   }) {
@@ -3843,7 +3840,6 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           opponentName: battleManager.opponent.organism.baseOrganism.name,
           playerName: battleManager.player.organism.baseOrganism.name,
           moneyEarned: moneyEarned,
-          lootName: lootName,
           themeColor: _getBiomeThemeColor(),
           primaryColor: _getBiomePrimaryColor(),
           secondaryColor: _getBiomeSecondaryColor(),
@@ -3933,7 +3929,6 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               context,
               Provider.of<BattleManager>(context, listen: false),
               0, // No money in rogue
-              null, // Loot handled separately or not needed to re-show
               userState,
             );
           }
@@ -3952,7 +3947,6 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               context,
               Provider.of<BattleManager>(context, listen: false),
               0,
-              null,
               userState,
             );
           }
@@ -4455,7 +4449,6 @@ class _BattleResultDialog extends StatefulWidget {
   final String opponentName;
   final String playerName;
   final int moneyEarned;
-  final String? lootName;
   final VoidCallback onConfirm;
   final Color themeColor;
   final Color primaryColor;
@@ -4470,7 +4463,6 @@ class _BattleResultDialog extends StatefulWidget {
     required this.opponentName,
     required this.playerName,
     required this.moneyEarned,
-    this.lootName,
     required this.onConfirm,
     required this.themeColor,
     required this.primaryColor,
@@ -4779,16 +4771,45 @@ class _BattleResultDialogState extends State<_BattleResultDialog> {
                 '${widget.moneyEarned}',
                 Colors.amber,
               ),
-              if (widget.lootName != null) ...[
-                const SizedBox(width: 24),
-                _buildRewardItem(
-                  Icons.inventory_2,
-                  widget.lootName!,
-                  Colors.purpleAccent,
-                ),
-              ],
             ],
           ),
+          if (widget.battleManager.droppedLoot.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 16,
+              runSpacing: 8,
+              children: widget.battleManager.droppedLoot.entries.map((entry) {
+                final String dropId = entry.key;
+                final int count = entry.value;
+                // Find actual name, fallback to raw string
+                final talisman = Talisman.findById(dropId);
+                final String dropName = talisman?.name ?? dropId;
+                
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Image.asset(
+                      'assets/items/${dropName.toLowerCase().replaceAll(' ', '-')}.png',
+                      width: 20,
+                      height: 20,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Icon(Icons.inventory_2, color: Colors.purpleAccent, size: 20);
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '${dropName.toUpperCase()} x$count',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontFamily: 'PressStart2P',
+                        fontSize: 8,
+                      ),
+                    ),
+                  ],
+                );
+              }).toList(),
+            ),
+          ],
         ],
       ),
     );

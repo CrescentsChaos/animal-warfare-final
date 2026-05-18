@@ -350,6 +350,11 @@ class UserState with ChangeNotifier {
     await _readModifyWrite((u) => u.copyWith(anidexUnlocked: unlocked));
   }
 
+  Future<void> toggleIgnoreBiomeRequirements(bool ignore) async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) => u.copyWith(ignoreBiomeRequirements: ignore));
+  }
+
   Future<void> toggleUnitSystem() async {
     if (_currentUser == null) return;
     final newSystem = _currentUser!.unitSystem == 'metric' ? 'imperial' : 'metric';

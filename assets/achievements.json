@@ -30,7 +30,7 @@
   {
     "title": "Life Encyclopedia",
     "description": "Discover all unique animals.",
-    "requiredCount": 2700,
+    "requiredCount": 3200,
     "tier": "gold",
     "imagePath": "assets/achievements/life_encyclopedia.png"
   },

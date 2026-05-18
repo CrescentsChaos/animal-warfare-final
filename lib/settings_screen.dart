@@ -41,6 +41,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _isLoading = true;
   bool _anidexUnlocked = false;
   String _unitSystem = 'metric';
+  bool _ignoreBiomeRequirements = false;
 
   @override
   void initState() {
@@ -60,6 +61,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _appVersion = pkgVersion.isNotEmpty ? pkgVersion : kAppVersion;
       _anidexUnlocked = widget.currentUser.anidexUnlocked;
       _unitSystem = widget.currentUser.unitSystem;
+      _ignoreBiomeRequirements = widget.currentUser.ignoreBiomeRequirements;
       _isLoading = false;
     });
   }
@@ -326,6 +328,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     setState(() => _anidexUnlocked = val);
                     HapticService.medium();
                     Provider.of<UserState>(context, listen: false).toggleAnidexUnlocked(val);
+                  },
+                ),
+                _buildToggleControl(
+                  title: 'Ignore Biome Requirements',
+                  icon: Icons.explore_outlined,
+                  isEnabled: _ignoreBiomeRequirements,
+                  onToggle: (val) {
+                    setState(() => _ignoreBiomeRequirements = val);
+                    HapticService.medium();
+                    Provider.of<UserState>(context, listen: false).toggleIgnoreBiomeRequirements(val);
                   },
                 ),
                 _buildUnitToggle(),

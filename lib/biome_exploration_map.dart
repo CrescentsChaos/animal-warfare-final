@@ -3808,38 +3808,47 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
             height: 24,
             margin: const EdgeInsets.only(right: 8),
             decoration: BoxDecoration(
-              border: Border.all(color: _biomeHighlightColor, width: 2),
               borderRadius: BorderRadius.circular(12),
               color: _biomeDarkColor,
             ),
-            clipBehavior: Clip.antiAlias,
-            child: Stack(
-              children: [
-                FractionallySizedBox(
-                  widthFactor: progress,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: user.stamina > 25
-                            ? [Colors.greenAccent, Colors.green]
-                            : [Colors.redAccent, Colors.red],
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Stack(
+                children: [
+                  FractionallySizedBox(
+                    widthFactor: progress,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: user.stamina > 25
+                              ? [Colors.greenAccent, Colors.green]
+                              : [Colors.redAccent, Colors.red],
+                        ),
                       ),
                     ),
                   ),
-                ),
-                Center(
-                  child: Text(
-                    '${user.stamina}/100',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontFamily: 'PressStart2P',
-                      fontSize: 7,
-                      fontWeight: FontWeight.bold,
-                      shadows: [Shadow(color: Colors.black, blurRadius: 2)],
+                  Center(
+                    child: Text(
+                      '${user.stamina}/100',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontFamily: 'PressStart2P',
+                        fontSize: 7,
+                        fontWeight: FontWeight.bold,
+                        shadows: [Shadow(color: Colors.black, blurRadius: 2)],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                  IgnorePointer(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: _biomeHighlightColor, width: 2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         },

@@ -332,6 +332,31 @@ class _ExploreScreenState extends State<ExploreScreen> {
     return 'night';
   }
 
+  Widget _getTemperatureIcon(double temp, {double size = 16}) {
+    String iconPath;
+    if (temp <= 0) {
+      iconPath = 'assets/icon/feezing.png';
+    } else if (temp <= 15) {
+      iconPath = 'assets/icon/cool.png';
+    } else if (temp <= 25) {
+      iconPath = 'assets/icon/normal.png';
+    } else if (temp <= 35) {
+      iconPath = 'assets/icon/warm.png';
+    } else if (temp <= 45) {
+      iconPath = 'assets/icon/hot.png';
+    } else {
+      iconPath = 'assets/icon/burning.png';
+    }
+    return Image.asset(
+      iconPath,
+      width: size,
+      height: size,
+      fit: BoxFit.contain,
+      errorBuilder: (context, error, stackTrace) =>
+          Icon(Icons.thermostat, color: Colors.white, size: size),
+    );
+  }
+
   Widget _buildWeatherAndTemp(String biomeName) {
     final weather = WeatherService().getCurrentWeather(biomeName);
     final forecast = WeatherService().getForecast(biomeName);
@@ -348,12 +373,14 @@ class _ExploreScreenState extends State<ExploreScreen> {
         children: [
           Image.asset(
             weather.iconPath,
-            width: 12,
-            height: 12,
+            width: 16,
+            height: 16,
             fit: BoxFit.contain,
             errorBuilder: (context, error, stackTrace) =>
-                const Icon(Icons.wb_cloudy, color: Colors.white, size: 12),
+                const Icon(Icons.wb_cloudy, color: Colors.white, size: 16),
           ),
+          const SizedBox(width: 4),
+          _getTemperatureIcon(today.temperatureCelsius, size: 16),
           const SizedBox(width: 4),
           Text(
             "${today.temperatureCelsius.toStringAsFixed(0)}°C",

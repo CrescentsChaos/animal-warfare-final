@@ -101,6 +101,9 @@ class UserData {
   /// Preferred unit system: 'metric' or 'imperial'
   final String unitSystem;
 
+  /// Global toggle to ignore biome requirements (Flash/Dive)
+  final bool ignoreBiomeRequirements;
+
   // --- Profile Customization ---
   final String avatarFrame;
   final String profileBackground;
@@ -126,6 +129,7 @@ class UserData {
     this.phoneWallpaper = 'plains-bg.png',
     this.anidexUnlocked = false,
     this.unitSystem = 'metric',
+    this.ignoreBiomeRequirements = false,
     this.avatarFrame = '',
     this.profileBackground = '',
     List<String>? unlockedFrames,
@@ -221,6 +225,7 @@ class UserData {
     int? lastMedicalCenterCol,
     bool? anidexUnlocked,
     String? unitSystem,
+    bool? ignoreBiomeRequirements,
     String? avatarFrame,
     String? profileBackground,
     List<String>? unlockedFrames,
@@ -274,6 +279,8 @@ class UserData {
       lastMedicalCenterCol: lastMedicalCenterCol ?? this.lastMedicalCenterCol,
       anidexUnlocked: anidexUnlocked ?? this.anidexUnlocked,
       unitSystem: unitSystem ?? this.unitSystem,
+      ignoreBiomeRequirements:
+          ignoreBiomeRequirements ?? this.ignoreBiomeRequirements,
       avatarFrame: avatarFrame ?? this.avatarFrame,
       profileBackground: profileBackground ?? this.profileBackground,
       unlockedFrames: unlockedFrames ?? this.unlockedFrames,
@@ -392,6 +399,7 @@ class UserData {
     'lastMedicalCenterCol': lastMedicalCenterCol,
     'anidexUnlocked': anidexUnlocked,
     'unitSystem': unitSystem,
+    'ignoreBiomeRequirements': ignoreBiomeRequirements,
     'avatarFrame': avatarFrame,
     'profileBackground': profileBackground,
     'unlockedFrames': unlockedFrames,
@@ -553,6 +561,7 @@ class UserData {
       lastMedicalCenterCol: (json['lastMedicalCenterCol'] as num?)?.toInt(),
       anidexUnlocked: json['anidexUnlocked'] as bool? ?? false,
       unitSystem: json['unitSystem'] as String? ?? 'metric',
+      ignoreBiomeRequirements: json['ignoreBiomeRequirements'] as bool? ?? false,
       avatarFrame: json['avatarFrame'] as String? ?? '',
       profileBackground: json['profileBackground'] as String? ?? '',
       unlockedFrames: (json['unlockedFrames'] as List<dynamic>?)?.map((e) => e as String).toList() ?? [],

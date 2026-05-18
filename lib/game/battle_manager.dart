@@ -256,8 +256,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   String? lastBlowOrganismId;
 
   // LOOT DROP
-  String? _droppedLoot;
-  String? get droppedLoot => _droppedLoot;
+  Map<String, int> _droppedLoot = {};
+  Map<String, int> get droppedLoot => _droppedLoot;
   final bool isArenaBattle;
   final bool isRogueMode;
   final bool isTrainerBattle;
@@ -4319,7 +4319,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             target,
             statusType,
             chance: effect.chance,
-            duration: move.isRest
+            duration: (move.isRest || move.name.toLowerCase() == 'rest')
                 ? 2
                 : (effect.value > 0 ? effect.value : null),
           );
@@ -7845,17 +7845,19 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
       // Roll for loot (only in wild battles, not Rogue-like)
       if (!isRogueMode) {
-        _droppedLoot = opponent.organism.baseOrganism.rollLootDrop();
+        _droppedLoot = opponent.organism.baseOrganism.rollLootDrops(opponent.organism.level);
       }
-      if (_droppedLoot != null) {
-        addToLog(
-          'The wild ${opponent.organism.baseOrganism.name} fainted! You won the battle.',
-        );
-        if (!isTesting) {
-          _audioService.playOrganismCry(opponent.organism.baseOrganism.cry);
-        }
+      if (_droppedLoot.isNotEmpty) {
+        // Let UI handle the loot addition to show it properly
       }
-
+      
+      addToLog(
+        'The wild ${opponent.organism.baseOrganism.name} fainted! You won the battle.',
+      );
+      if (!isTesting) {
+        _audioService.playOrganismCry(opponent.organism.baseOrganism.cry);
+      }
+      
       _cleanupStatusEffects();
       currentState = BattleState.battleEnd;
       onVictory?.call();

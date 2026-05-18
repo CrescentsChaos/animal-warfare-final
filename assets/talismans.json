@@ -53,7 +53,7 @@
     "effects": [
       {
         "type": "one_hit_save",
-        "magnitude": 1.0
+        "magnitude": 1
       }
     ]
   },
@@ -84,7 +84,7 @@
       },
       {
         "type": "block_status_moves",
-        "magnitude": 1.0
+        "magnitude": 1
       }
     ]
   },
@@ -96,7 +96,7 @@
       {
         "type": "weakness_boost",
         "stat": "attack,power",
-        "magnitude": 2.0
+        "magnitude": 2
       }
     ]
   },
@@ -199,7 +199,7 @@
     "effects": [
       {
         "type": "crit_boost",
-        "magnitude": 10.0
+        "magnitude": 10
       }
     ]
   },
@@ -223,7 +223,7 @@
       {
         "type": "self_status",
         "status": "burn",
-        "magnitude": 1.0
+        "magnitude": 1
       }
     ]
   },
@@ -235,7 +235,7 @@
       {
         "type": "self_status",
         "status": "poison",
-        "magnitude": 1.0
+        "magnitude": 1
       }
     ]
   },
@@ -281,7 +281,7 @@
     "effects": [
       {
         "type": "crit_boost",
-        "magnitude": 12.0
+        "magnitude": 12
       }
     ]
   },
@@ -325,7 +325,7 @@
     "effects": [
       {
         "type": "air_balloon",
-        "magnitude": 1.0
+        "magnitude": 1
       }
     ]
   },
@@ -336,7 +336,7 @@
     "effects": [
       {
         "type": "white_herb",
-        "magnitude": 1.0
+        "magnitude": 1
       }
     ]
   },
@@ -359,7 +359,7 @@
     "effects": [
       {
         "type": "berry_heal_flat",
-        "magnitude": 10.0,
+        "magnitude": 10,
         "threshold": 0.5
       }
     ]
@@ -372,7 +372,7 @@
       {
         "type": "berry_cure_status",
         "curesStatus": "all",
-        "magnitude": 1.0
+        "magnitude": 1
       }
     ]
   },
@@ -384,7 +384,7 @@
       {
         "type": "berry_cure_status",
         "curesStatus": "burn",
-        "magnitude": 1.0
+        "magnitude": 1
       }
     ]
   },
@@ -396,7 +396,7 @@
       {
         "type": "berry_cure_status",
         "curesStatus": "paralysis",
-        "magnitude": 1.0
+        "magnitude": 1
       }
     ]
   },
@@ -408,7 +408,7 @@
       {
         "type": "berry_cure_status",
         "curesStatus": "sleep",
-        "magnitude": 1.0
+        "magnitude": 1
       }
     ]
   },
@@ -420,7 +420,7 @@
       {
         "type": "berry_cure_status",
         "curesStatus": "poison",
-        "magnitude": 1.0
+        "magnitude": 1
       }
     ]
   },
@@ -432,7 +432,7 @@
       {
         "type": "berry_cure_status",
         "curesStatus": "freeze",
-        "magnitude": 1.0
+        "magnitude": 1
       }
     ]
   },
@@ -444,7 +444,7 @@
       {
         "type": "berry_stat_boost",
         "stat": "speed",
-        "magnitude": 1.0,
+        "magnitude": 1,
         "threshold": 0.25
       }
     ]
@@ -457,7 +457,7 @@
       {
         "type": "berry_stat_boost",
         "stat": "power",
-        "magnitude": 1.0,
+        "magnitude": 1,
         "threshold": 0.25
       }
     ]
@@ -470,7 +470,7 @@
       {
         "type": "berry_stat_boost",
         "stat": "attack",
-        "magnitude": 1.0,
+        "magnitude": 1,
         "threshold": 0.25
       }
     ]
@@ -482,7 +482,7 @@
     "effects": [
       {
         "type": "berry_crit_boost",
-        "magnitude": 25.0,
+        "magnitude": 25,
         "threshold": 0.25
       }
     ]
@@ -529,7 +529,7 @@
     "effects": [
       {
         "type": "power_herb",
-        "magnitude": 1.0
+        "magnitude": 1
       }
     ]
   },
@@ -745,7 +745,7 @@
       {
         "type": "weather_duration",
         "stat": "rain",
-        "magnitude": 8.0
+        "magnitude": 8
       }
     ]
   },
@@ -757,7 +757,7 @@
       {
         "type": "weather_duration",
         "stat": "sunny",
-        "magnitude": 8.0
+        "magnitude": 8
       }
     ]
   },
@@ -769,7 +769,7 @@
       {
         "type": "weather_duration",
         "stat": "sandstorm",
-        "magnitude": 8.0
+        "magnitude": 8
       }
     ]
   },
@@ -781,7 +781,7 @@
       {
         "type": "weather_duration",
         "stat": "snowstorm,blizzard",
-        "magnitude": 8.0
+        "magnitude": 8
       }
     ]
   },
@@ -1609,7 +1609,7 @@
       {
         "type": "miss_stat_boost",
         "stat": "speed",
-        "magnitude": 2.0
+        "magnitude": 2
       }
     ]
   },
@@ -1633,7 +1633,7 @@
       {
         "type": "priority_low_hp",
         "threshold": 0.25,
-        "magnitude": 1.0
+        "magnitude": 1
       }
     ]
   },
@@ -1644,7 +1644,7 @@
     "effects": [
       {
         "type": "hazard_immunity",
-        "magnitude": 1.0
+        "magnitude": 1
       }
     ]
   },
@@ -1661,7 +1661,7 @@
     "effects": [
       {
         "type": "forced_switch",
-        "magnitude": 1.0,
+        "magnitude": 1,
         "condition": "forced_switch"
       }
     ]
@@ -1674,7 +1674,7 @@
       {
         "type": "stat_boost",
         "stat": "hp",
-        "magnitude": 0.10,
+        "magnitude": 0.1,
         "condition": "hp_low"
       }
     ]
@@ -1745,6 +1745,13 @@
     "diet_type": "omnivore",
     "preferred_species": "Brown Bear,Grizzly Bear,Polar Bear",
     "nutritional_value": 80,
+    "effects": []
+  },
+  {
+    "id": "ambergris",
+    "name": "Ambergris",
+    "description": "A valuable waxy substance produced in the digestive system of sperm whales.",
+    "drop_chance": 0.1,
     "effects": []
   }
 ]

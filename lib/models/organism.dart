@@ -1,5 +1,6 @@
 // lib/models/organism.dart
 import 'package:animal_warfare/models/elemental_type.dart';
+import 'package:animal_warfare/models/talisman.dart';
 import 'dart:math';
 
 enum AnimalClass {
@@ -219,26 +220,68 @@ class Organism {
     return 1.0;
   }
 
-  /// Roll for a random loot drop directly from the JSON field.
-  /// Returns a Title Case string (e.g., "Fur", "Meat").
-  String? rollLootDrop() {
-    if (drops.isEmpty) return null;
+  /// Roll for loot drops directly from the JSON field.
+  /// Returns a map of item ID to count (e.g., {"raw_meat": 5, "ambergris": 1}).
+  /// It considers drop chances defined in talismans.json and scales counts by weight, size, and level.
+  Map<String, int> rollLootDrops(int level) {
+    if (drops.isEmpty || drops.trim().toLowerCase() == 'n/a') return {};
 
     final dropsList = drops
         .split(',')
         .map((e) {
           final trimmed = e.trim();
           if (trimmed.isEmpty) return '';
-          // Simple Title Case: capitalize first letter, lowercase rest
           return trimmed[0].toUpperCase() + trimmed.substring(1).toLowerCase();
         })
         .where((e) => e.isNotEmpty)
         .toList();
 
-    if (dropsList.isEmpty) return null;
+    if (dropsList.isEmpty) return {};
 
-    // Pick one at random
-    return dropsList[Random().nextInt(dropsList.length)];
+    final random = Random();
+    final Map<String, int> finalDrops = {};
+
+    int dropSlots = _calculateDropSlots(level);
+
+    for (final dropName in dropsList) {
+      final dropId = dropName.toLowerCase().replaceAll(' ', '_');
+      final talisman = Talisman.findById(dropId) ?? Talisman.findByName(dropName);
+      final double dropChance = talisman?.dropChance ?? 1.0; 
+      
+      final itemKey = talisman?.id ?? dropId;
+      
+      int countForThisItem = 0;
+      for (int i = 0; i < dropSlots; i++) {
+        if (random.nextDouble() <= dropChance) {
+          countForThisItem++;
+        }
+      }
+      
+      if (countForThisItem > 0) {
+        finalDrops[itemKey] = (finalDrops[itemKey] ?? 0) + countForThisItem;
+      }
+    }
+
+    return finalDrops;
+  }
+
+  int _calculateDropSlots(int level) {
+    double wLog = weight > 0 ? (log(weight) / ln10) : 0; 
+    double sLog = size > 0 ? (log(size) / ln10) : 0;
+    
+    double wNormalized = wLog + 10;
+    if (wNormalized < 0) wNormalized = 0;
+    double sNormalized = sLog + 5;
+    if (sNormalized < 0) sNormalized = 0;
+    
+    double metric = wNormalized + sNormalized; 
+    double baseItems = 1.0 + (metric / 22.0) * 8.0; 
+    double levelBonus = (level / 100.0) * 6.0;
+    
+    int finalCount = (baseItems + levelBonus).floor();
+    if (finalCount < 1) finalCount = 1;
+    if (finalCount > 20) finalCount = 20;
+    return finalCount;
   }
 
   Organism copyWith({

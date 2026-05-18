@@ -454,13 +454,30 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
     } else if (biome.contains('mountain') || biome.contains('cave')) {
       requiredMove = 'Rock Smash';
     }
-    if (requiredMove == null) return null;
-    if (biome.contains('cave')) {
+
+    final ignoreFlashOrDive = _currentUser.ignoreBiomeRequirements;
+
+    if (requiredMove == 'Dive' && ignoreFlashOrDive) {
+      requiredMove = null;
+    }
+
+    if (requiredMove == null) {
+      if (biome.contains('cave') && !ignoreFlashOrDive) {
+        bool hasFlash = team.any(
+          (org) => org.selectedMoveNames.contains('Flash'),
+        );
+        if (!hasFlash) return 'Flash';
+      }
+      return null;
+    }
+
+    if (biome.contains('cave') && !ignoreFlashOrDive) {
       bool hasFlash = team.any(
         (org) => org.selectedMoveNames.contains('Flash'),
       );
       if (!hasFlash) return 'Flash';
     }
+
     bool hasMove = team.any(
       (org) => org.selectedMoveNames.contains(requiredMove!),
     );
@@ -599,38 +616,47 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
             height: 24,
             margin: const EdgeInsets.only(right: 8),
             decoration: BoxDecoration(
-              border: Border.all(color: _biomeHighlightColor, width: 2),
               borderRadius: BorderRadius.circular(12),
               color: _biomeDarkColor,
             ),
-            clipBehavior: Clip.antiAlias,
-            child: Stack(
-              children: [
-                FractionallySizedBox(
-                  widthFactor: progress,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: user.stamina > 25
-                            ? [Colors.greenAccent, Colors.green]
-                            : [Colors.redAccent, Colors.red],
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Stack(
+                children: [
+                  FractionallySizedBox(
+                    widthFactor: progress,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: user.stamina > 25
+                              ? [Colors.greenAccent, Colors.green]
+                              : [Colors.redAccent, Colors.red],
+                        ),
                       ),
                     ),
                   ),
-                ),
-                Center(
-                  child: Text(
-                    '${user.stamina}/100',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontFamily: 'PressStart2P',
-                      fontSize: 7,
-                      fontWeight: FontWeight.bold,
-                      shadows: [Shadow(color: Colors.black, blurRadius: 2)],
+                  Center(
+                    child: Text(
+                      '${user.stamina}/100',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontFamily: 'PressStart2P',
+                        fontSize: 7,
+                        fontWeight: FontWeight.bold,
+                        shadows: [Shadow(color: Colors.black, blurRadius: 2)],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                  IgnorePointer(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: _biomeHighlightColor, width: 2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         },
@@ -776,7 +802,9 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      _getWeatherIcon(weather),
+                      _getWeatherIcon(weather, size: 20),
+                      const SizedBox(width: 8),
+                      _getTemperatureIcon(WeatherService().getForecast(widget.biomeName).first.temperatureCelsius, size: 20),
                       const SizedBox(width: 8),
                       Text(
                         "${WeatherService().getForecast(widget.biomeName).first.temperatureCelsius.toStringAsFixed(1)}°C",
@@ -797,43 +825,40 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
     );
   }
 
-  Widget _getWeatherIcon(Weather weather) {
-    switch (weather) {
-      case Weather.clear:
-        return const Icon(
-          Icons.wb_sunny_outlined,
-          color: Colors.yellow,
-          size: 16,
-        );
-      case Weather.rain:
-        return const Icon(Icons.umbrella, color: Colors.blue, size: 16);
-      case Weather.heavyRain:
-        return const Icon(
-          Icons.beach_access,
-          color: Colors.blueAccent,
-          size: 16,
-        );
-      case Weather.sunny:
-        return const Icon(Icons.wb_sunny, color: Colors.orange, size: 16);
-      case Weather.snowstorm:
-        return const Icon(
-          Icons.ac_unit,
-          color: Colors.lightBlueAccent,
-          size: 16,
-        );
-      case Weather.hail:
-        return const Icon(Icons.grain, color: Colors.white, size: 16);
-      case Weather.sandstorm:
-        return const Icon(Icons.waves, color: Colors.brown, size: 16);
-      case Weather.windstorm:
-        return const Icon(Icons.air, color: Colors.white70, size: 16);
-      case Weather.thunderstorm:
-        return const Icon(Icons.bolt, color: Colors.yellowAccent, size: 16);
-      case Weather.fog:
-        return const Icon(Icons.cloud_queue, color: Colors.grey, size: 16);
-      default:
-        return const Icon(Icons.wb_cloudy, color: Colors.white, size: 16);
+  Widget _getWeatherIcon(Weather weather, {double size = 20}) {
+    return Image.asset(
+      weather.iconPath,
+      width: size,
+      height: size,
+      fit: BoxFit.contain,
+      errorBuilder: (context, error, stackTrace) =>
+          Icon(Icons.wb_cloudy, color: Colors.white, size: size),
+    );
+  }
+
+  Widget _getTemperatureIcon(double temp, {double size = 20}) {
+    String iconPath;
+    if (temp <= 0) {
+      iconPath = 'assets/icon/feezing.png';
+    } else if (temp <= 15) {
+      iconPath = 'assets/icon/cool.png';
+    } else if (temp <= 25) {
+      iconPath = 'assets/icon/normal.png';
+    } else if (temp <= 35) {
+      iconPath = 'assets/icon/warm.png';
+    } else if (temp <= 45) {
+      iconPath = 'assets/icon/hot.png';
+    } else {
+      iconPath = 'assets/icon/burning.png';
     }
+    return Image.asset(
+      iconPath,
+      width: size,
+      height: size,
+      fit: BoxFit.contain,
+      errorBuilder: (context, error, stackTrace) =>
+          Icon(Icons.thermostat, color: Colors.white, size: size),
+    );
   }
 
   Widget _buildEncounterResultCard(SpawnResult result) {
