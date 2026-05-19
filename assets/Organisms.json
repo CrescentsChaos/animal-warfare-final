@@ -23894,10 +23894,10 @@
         "rarity": "Common",
         "resistance": 56,
         "scientific_name": "Bogertophis subocularis",
-        "size": 1,
+        "size": 1.41,
         "spawn_tiles": "tall_grass",
         "speed": 70,
-        "weight": 1
+        "weight": 0.85
     },
     {
         "abilities": "Sand Veil , Infiltrator",
@@ -23919,10 +23919,10 @@
         "rarity": "Common",
         "resistance": 45,
         "scientific_name": "Chionactis occipitalis",
-        "size": 1,
+        "size": 0.32,
         "spawn_tiles": "tall_grass",
         "speed": 80,
-        "weight": 1
+        "weight": 0.02
     },
     {
         "abilities": "Sand Veil",
@@ -23944,10 +23944,10 @@
         "rarity": "Rare",
         "resistance": 75,
         "scientific_name": "Naja arabica",
-        "size": 1,
+        "size": 1.62,
         "spawn_tiles": "tall_grass",
         "speed": 110,
-        "weight": 1
+        "weight": 1.35
     },
     {
         "abilities": "Shed Skin",
@@ -23969,10 +23969,10 @@
         "rarity": "Rare",
         "resistance": 90,
         "scientific_name": "Naja nivea",
-        "size": 1,
+        "size": 1.55,
         "spawn_tiles": "tall_grass",
         "speed": 105,
-        "weight": 1
+        "weight": 1.15
     },
     {
         "abilities": "Poison Sting",
@@ -23994,10 +23994,10 @@
         "rarity": "Uncommon",
         "resistance": 67,
         "scientific_name": "Walterinnesia aegyptia",
-        "size": 1,
+        "size": 1.1,
         "spawn_tiles": "tall_grass",
         "speed": 65,
-        "weight": 1
+        "weight": 0.7
     },
     {
         "abilities": "Shed Skin",
@@ -24019,10 +24019,10 @@
         "rarity": "Rare",
         "resistance": 100,
         "scientific_name": "Naja haje",
-        "size": 1,
+        "size": 1.95,
         "spawn_tiles": "tall_grass",
         "speed": 75,
-        "weight": 1
+        "weight": 1.8
     },
     {
         "abilities": "Sand Veil",
@@ -24069,10 +24069,10 @@
         "rarity": "Rare",
         "resistance": 85,
         "scientific_name": "Crotalus molossus",
-        "size": 1,
+        "size": 1.05,
         "spawn_tiles": "tall_grass",
         "speed": 70,
-        "weight": 1
+        "weight": 1.15
     },
     {
         "abilities": "Merciless , Static",
@@ -24094,10 +24094,10 @@
         "rarity": "Epic",
         "resistance": 100,
         "scientific_name": "Crotalus scutulatus",
-        "size": 1,
+        "size": 1.08,
         "spawn_tiles": "tall_grass",
         "speed": 75,
-        "weight": 1
+        "weight": 0.95
     },
     {
         "abilities": "Sand Veil , Arena Trap",
@@ -24144,10 +24144,10 @@
         "rarity": "Rare",
         "resistance": 105,
         "scientific_name": "Crotalus mitchellii",
-        "size": 1,
+        "size": 0.96,
         "spawn_tiles": "tall_grass",
         "speed": 70,
-        "weight": 1
+        "weight": 0.7
     },
     {
         "abilities": "Strong Jaw,Merciless , Infiltrator",
@@ -24169,10 +24169,10 @@
         "rarity": "Rare",
         "resistance": 110,
         "scientific_name": "Crotalus tigris",
-        "size": 1,
+        "size": 0.76,
         "spawn_tiles": "tall_grass",
         "speed": 80,
-        "weight": 1
+        "weight": 0.45
     },
     {
         "abilities": "Battle Armor",
@@ -24894,10 +24894,10 @@
         "rarity": "Rare",
         "resistance": 74,
         "scientific_name": "Pangasius sanitwongsei",
-        "size": 1,
+        "size": 2.75,
         "spawn_tiles": "water",
         "speed": 70,
-        "weight": 1
+        "weight": 195
     },
     {
         "abilities": "Magma Armor",
@@ -24969,10 +24969,10 @@
         "rarity": "Uncommon",
         "resistance": 46,
         "scientific_name": "Sahyadria denisonii",
-        "size": 1,
+        "size": 0.13,
         "spawn_tiles": "water",
         "speed": 85,
-        "weight": 1
+        "weight": 0.03
     },
     {
         "abilities": "Spiky Body",
@@ -25044,10 +25044,10 @@
         "rarity": "Rare",
         "resistance": 52,
         "scientific_name": "Scolopendra subspinipes mutilans",
-        "size": 1,
+        "size": 0.17,
         "spawn_tiles": "tall_grass",
         "speed": 80,
-        "weight": 1
+        "weight": 0.015
     },
     {
         "abilities": "Poison Sting",
@@ -25069,10 +25069,10 @@
         "rarity": "Rare",
         "resistance": 63,
         "scientific_name": "Scolopendra subspinipes japonica",
-        "size": 1,
+        "size": 0.15,
         "spawn_tiles": "tall_grass",
         "speed": 82,
-        "weight": 1
+        "weight": 0.012
     },
     {
         "abilities": "Poison Sting",
@@ -25094,10 +25094,10 @@
         "rarity": "Rare",
         "resistance": 57,
         "scientific_name": "Scolopendra dehaani",
-        "size": 1,
+        "size": 0.23,
         "spawn_tiles": "tall_grass",
         "speed": 83,
-        "weight": 1
+        "weight": 0.045
     },
     {
         "abilities": "Poison Sting",
@@ -25119,10 +25119,10 @@
         "rarity": "Epic",
         "resistance": 56,
         "scientific_name": "Scolopendra gigantea",
-        "size": 1,
+        "size": 0.28,
         "spawn_tiles": "tall_grass",
         "speed": 85,
-        "weight": 1
+        "weight": 0.075
     },
     {
         "abilities": "Poison Sting",
@@ -25169,10 +25169,10 @@
         "rarity": "Rare",
         "resistance": 59,
         "scientific_name": "Scolopendra sp.",
-        "size": 1,
+        "size": 0.22,
         "spawn_tiles": "tall_grass",
         "speed": 85,
-        "weight": 1
+        "weight": 0.042
     },
     {
         "abilities": "Poison Sting",
@@ -25194,10 +25194,10 @@
         "rarity": "Rare",
         "resistance": 70,
         "scientific_name": "Scolopendra subspinipes",
-        "size": 1,
+        "size": 0.23,
         "spawn_tiles": "tall_grass",
         "speed": 83,
-        "weight": 1
+        "weight": 0.045
     },
     {
         "abilities": "Regenerator, Natural Cure",
@@ -25447,7 +25447,7 @@
         "size": 1.18,
         "spawn_tiles": "sky",
         "speed": 95,
-        "weight": 1
+        "weight": 1.05
     },
     {
         "abilities": "Keen Eye, Sand Force",
@@ -25844,10 +25844,10 @@
         "rarity": "Rare",
         "resistance": 66,
         "scientific_name": "Chelodina novaeguineae",
-        "size": 1,
+        "size": 0.26,
         "spawn_tiles": "tall_grass",
         "speed": 50,
-        "weight": 1
+        "weight": 0.72
     },
     {
         "abilities": "Camouflage Carapace, Cold-blooded",
@@ -27894,10 +27894,10 @@
         "rarity": "Common",
         "resistance": 32,
         "scientific_name": "Porcellio bovis",
-        "size": 1,
+        "size": 0.018,
         "spawn_tiles": "tall_grass",
         "speed": 20,
-        "weight": 1
+        "weight": 0.00015
     },
     {
         "abilities": "Strong Jaw",
@@ -27944,10 +27944,10 @@
         "rarity": "Common",
         "resistance": 37,
         "scientific_name": "Cubaris sp.",
-        "size": 1,
+        "size": 0.016,
         "spawn_tiles": "tall_grass",
         "speed": 22,
-        "weight": 1
+        "weight": 0.00025
     },
     {
         "abilities": "Rough Skill",
@@ -29744,10 +29744,10 @@
         "rarity": "Common",
         "resistance": 17,
         "scientific_name": "Daphnia pulex",
-        "size": 1,
+        "size": 0.003,
         "spawn_tiles": "tall_grass",
         "speed": 65,
-        "weight": 1
+        "weight": 8e-07
     },
     {
         "abilities": "Surface Ambush",
@@ -29769,10 +29769,10 @@
         "rarity": "Rare",
         "resistance": 62,
         "scientific_name": "Channa marulius",
-        "size": 1,
+        "size": 1.15,
         "spawn_tiles": "water",
         "speed": 55,
-        "weight": 1
+        "weight": 8.2
     },
     {
         "abilities": "Quick Feet",
@@ -29894,10 +29894,10 @@
         "rarity": "Epic",
         "resistance": 80,
         "scientific_name": "Mitsukurina owstoni",
-        "size": 1,
+        "size": 4.35,
         "spawn_tiles": "water",
         "speed": 40,
-        "weight": 1
+        "weight": 185
     },
     {
         "abilities": "Strong Jaw , Water Veil",
@@ -29969,10 +29969,10 @@
         "rarity": "Rare",
         "resistance": 80,
         "scientific_name": "Chrysopelea ornata",
-        "size": 1,
+        "size": 1.15,
         "spawn_tiles": "tall_grass",
         "speed": 130,
-        "weight": 1
+        "weight": 0.28
     },
     {
         "abilities": "Magic Bounce",
@@ -31094,10 +31094,10 @@
         "rarity": "Uncommon",
         "resistance": 64,
         "scientific_name": "Erpeton tentaculatum",
-        "size": 1,
+        "size": 0.72,
         "spawn_tiles": "water",
         "speed": 70,
-        "weight": 1
+        "weight": 0.22
     },
     {
         "abilities": "Suction Cups",
@@ -31219,10 +31219,10 @@
         "rarity": "Rare",
         "resistance": 100,
         "scientific_name": "Rhinopias frondosa",
-        "size": 1,
+        "size": 0.21,
         "spawn_tiles": "water",
         "speed": 30,
-        "weight": 1
+        "weight": 0.65
     },
     {
         "abilities": "Long Reach",
@@ -32194,10 +32194,10 @@
         "rarity": "Uncommon",
         "resistance": 140,
         "scientific_name": "Thalassina anomala",
-        "size": 1,
+        "size": 0.24,
         "spawn_tiles": "water",
         "speed": 40,
-        "weight": 1
+        "weight": 0.18
     },
     {
         "abilities": "Intimidate",
@@ -32444,10 +32444,10 @@
         "rarity": "Rare",
         "resistance": 70,
         "scientific_name": "Pterois radiata",
-        "size": 1,
+        "size": 0.22,
         "spawn_tiles": "water",
         "speed": 95,
-        "weight": 1
+        "weight": 0.42
     },
     {
         "abilities": "Poison Point",
@@ -32494,10 +32494,10 @@
         "rarity": "Rare",
         "resistance": 95,
         "scientific_name": "Pterois lunulata",
-        "size": 1,
+        "size": 0.3,
         "spawn_tiles": "water",
         "speed": 20,
-        "weight": 1
+        "weight": 0.65
     },
     {
         "abilities": "Adaptability, Reef Camouflage, Poison Point",
@@ -32519,10 +32519,10 @@
         "rarity": "Rare",
         "resistance": 80,
         "scientific_name": "Pterois antennata",
-        "size": 1,
+        "size": 0.23,
         "spawn_tiles": "water",
         "speed": 65,
-        "weight": 1
+        "weight": 0.52
     },
     {
         "abilities": "Adaptability, Reef Camouflage, Poison Point",
@@ -32544,10 +32544,10 @@
         "rarity": "Uncommon",
         "resistance": 85,
         "scientific_name": "Pterois volitans",
-        "size": 1,
+        "size": 0.38,
         "spawn_tiles": "water",
         "speed": 40,
-        "weight": 1
+        "weight": 1.05
     },
     {
         "abilities": "Adaptability, Reef Camouflage, Poison Point",
@@ -32569,10 +32569,10 @@
         "rarity": "Uncommon",
         "resistance": 110,
         "scientific_name": "Dendrochirus zebra",
-        "size": 1,
+        "size": 0.22,
         "spawn_tiles": "water",
         "speed": 40,
-        "weight": 1
+        "weight": 0.38
     },
     {
         "abilities": "Battle Armor",
@@ -32619,10 +32619,10 @@
         "rarity": "Rare",
         "resistance": 85,
         "scientific_name": "Dendrochirus barberi",
-        "size": 1,
+        "size": 0.14,
         "spawn_tiles": "water",
         "speed": 40,
-        "weight": 1
+        "weight": 0.22
     },
     {
         "abilities": "Magic Guard",
@@ -32819,10 +32819,10 @@
         "rarity": "Rare",
         "resistance": 115,
         "scientific_name": "Paracentropogon longispinis",
-        "size": 1,
+        "size": 0.11,
         "spawn_tiles": "water",
         "speed": 40,
-        "weight": 1
+        "weight": 0.045
     },
     {
         "abilities": "Poison Touch",
@@ -32844,10 +32844,10 @@
         "rarity": "Uncommon",
         "resistance": 115,
         "scientific_name": "Ablabys macracanthus",
-        "size": 1,
+        "size": 0.16,
         "spawn_tiles": "water",
         "speed": 40,
-        "weight": 1
+        "weight": 0.082
     },
     {
         "abilities": "Mimic",
@@ -33219,10 +33219,10 @@
         "rarity": "Common",
         "resistance": 62,
         "scientific_name": "Boaedon capensis",
-        "size": 1,
+        "size": 0.95,
         "spawn_tiles": "tall_grass",
         "speed": 85,
-        "weight": 1
+        "weight": 0.45
     },
     {
         "abilities": "Cold-blooded, Rough Skin",
@@ -33419,10 +33419,10 @@
         "rarity": "Common",
         "resistance": 17,
         "scientific_name": "Gambusia holbrooki",
-        "size": 1,
+        "size": 0.06,
         "spawn_tiles": "water",
         "speed": 90,
-        "weight": 1
+        "weight": 0.003
     },
     {
         "abilities": "Liquid Ooze",
@@ -33544,10 +33544,10 @@
         "rarity": "Uncommon",
         "resistance": 52,
         "scientific_name": "Acreichthys tomentosus",
-        "size": 1,
+        "size": 0.1,
         "spawn_tiles": "water",
         "speed": 50,
-        "weight": 1
+        "weight": 0.18
     },
     {
         "abilities": "Schooling",
@@ -33794,10 +33794,10 @@
         "rarity": "Uncommon",
         "resistance": 115,
         "scientific_name": "Pseudemys nelsoni",
-        "size": 1,
+        "size": 0.31,
         "spawn_tiles": "tall_grass",
         "speed": 45,
-        "weight": 1
+        "weight": 2.95
     },
     {
         "abilities": "Sturdy",
@@ -34019,10 +34019,10 @@
         "rarity": "Uncommon",
         "resistance": 38,
         "scientific_name": "Hypseleotris acropinna",
-        "size": 1,
+        "size": 0.045,
         "spawn_tiles": "water",
         "speed": 95,
-        "weight": 1
+        "weight": 0.004
     },
     {
         "abilities": "Punk Rock",
@@ -34069,10 +34069,10 @@
         "rarity": "Uncommon",
         "resistance": 30,
         "scientific_name": "Parambassis ranga",
-        "size": 1,
+        "size": 0.065,
         "spawn_tiles": "water",
         "speed": 85,
-        "weight": 1
+        "weight": 0.008
     },
     {
         "abilities": "Dazzling , Competitive",
@@ -34094,10 +34094,10 @@
         "rarity": "Rare",
         "resistance": 35,
         "scientific_name": "Mogurnda adspersa",
-        "size": 1,
+        "size": 0.15,
         "spawn_tiles": "water",
         "speed": 70,
-        "weight": 1
+        "weight": 0.095
     },
     {
         "abilities": "Leaf Guard",
@@ -34144,10 +34144,10 @@
         "rarity": "Uncommon",
         "resistance": 24,
         "scientific_name": "Boraras brigittae",
-        "size": 1,
+        "size": 0.018,
         "spawn_tiles": "water",
         "speed": 95,
-        "weight": 1
+        "weight": 0.0001
     },
     {
         "abilities": "No Guard",
@@ -34169,10 +34169,10 @@
         "rarity": "Uncommon",
         "resistance": 25,
         "scientific_name": "Astyanax jordani",
-        "size": 1,
+        "size": 0.095,
         "spawn_tiles": "water",
         "speed": 30,
-        "weight": 1
+        "weight": 0.008
     },
     {
         "abilities": "Infiltrator",
@@ -34419,10 +34419,10 @@
         "rarity": "Uncommon",
         "resistance": 45,
         "scientific_name": "Leptodeira annulata",
-        "size": 1,
+        "size": 0.75,
         "spawn_tiles": "tall_grass",
         "speed": 90,
-        "weight": 1
+        "weight": 0.18
     },
     {
         "abilities": "Toxic Skin",
@@ -34619,10 +34619,10 @@
         "rarity": "Rare",
         "resistance": 59,
         "scientific_name": "Toxotes blythii",
-        "size": 1,
+        "size": 0.14,
         "spawn_tiles": "water",
         "speed": 80,
-        "weight": 1
+        "weight": 0.22
     },
     {
         "abilities": "Float",
@@ -34669,10 +34669,10 @@
         "rarity": "Epic",
         "resistance": 60,
         "scientific_name": "Calliophis bivirgata",
-        "size": 1,
+        "size": 1.6,
         "spawn_tiles": "tall_grass",
         "speed": 115,
-        "weight": 1
+        "weight": 0.55
     },
     {
         "abilities": "Shed Skin , Natural Cure",
@@ -34694,10 +34694,10 @@
         "rarity": "Uncommon",
         "resistance": 60,
         "scientific_name": "Pantherophis guttatus",
-        "size": 1,
+        "size": 1.35,
         "spawn_tiles": "tall_grass",
         "speed": 85,
-        "weight": 1
+        "weight": 0.65
     },
     {
         "abilities": "Illusion",
@@ -34719,10 +34719,10 @@
         "rarity": "Uncommon",
         "resistance": 72,
         "scientific_name": "Lampropeltis triangulum annulata",
-        "size": 1,
+        "size": 0.78,
         "spawn_tiles": "tall_grass",
         "speed": 98,
-        "weight": 1
+        "weight": 0.35
     },
     {
         "abilities": "Multiscale",
@@ -34744,10 +34744,10 @@
         "rarity": "Rare",
         "resistance": 105,
         "scientific_name": "Farancia erytrogramma",
-        "size": 1,
+        "size": 1.32,
         "spawn_tiles": "tall_grass",
         "speed": 92,
-        "weight": 1
+        "weight": 1.15
     },
     {
         "abilities": "Adaptability",
@@ -34794,10 +34794,10 @@
         "rarity": "Uncommon",
         "resistance": 70,
         "scientific_name": "Lampropeltis triangulum sinaloae",
-        "size": 1,
+        "size": 1.05,
         "spawn_tiles": "tall_grass",
         "speed": 102,
-        "weight": 1
+        "weight": 0.55
     },
     {
         "abilities": "Intimidate",
@@ -34819,10 +34819,10 @@
         "rarity": "Rare",
         "resistance": 75,
         "scientific_name": "Pituophis catenifer sayi",
-        "size": 1,
+        "size": 1.95,
         "spawn_tiles": "tall_grass",
         "speed": 90,
-        "weight": 1
+        "weight": 2.45
     },
     {
         "abilities": "Shed Skin",
@@ -34844,10 +34844,10 @@
         "rarity": "Uncommon",
         "resistance": 50,
         "scientific_name": "Rhinocheilus lecontei",
-        "size": 1,
+        "size": 0.72,
         "spawn_tiles": "tall_grass",
         "speed": 65,
-        "weight": 1
+        "weight": 0.22
     },
     {
         "abilities": "Rattled",
@@ -34897,7 +34897,7 @@
         "size": 0.08,
         "spawn_tiles": "tall_grass",
         "speed": 20,
-        "weight": 1
+        "weight": 0.0008
     },
     {
         "abilities": "Color Change",
@@ -34919,10 +34919,10 @@
         "rarity": "Common",
         "resistance": 45,
         "scientific_name": "Sonora semiannulata",
-        "size": 1,
+        "size": 0.32,
         "spawn_tiles": "tall_grass",
         "speed": 50,
-        "weight": 1
+        "weight": 0.015
     },
     {
         "abilities": "Merciless",
@@ -35094,10 +35094,10 @@
         "rarity": "Epic",
         "resistance": 90,
         "scientific_name": "Hydrophis peronii",
-        "size": 1,
+        "size": 1.15,
         "spawn_tiles": "tall_grass",
         "speed": 100,
-        "weight": 1
+        "weight": 0.45
     },
     {
         "abilities": "Drill Sting",
@@ -35219,10 +35219,10 @@
         "rarity": "Rare",
         "resistance": 70,
         "scientific_name": "Lamprima adolphinae",
-        "size": 1,
+        "size": 0.08,
         "spawn_tiles": "tall_grass",
         "speed": 120,
-        "weight": 1
+        "weight": 0.012
     },
     {
         "abilities": "Poison Touch",
@@ -35244,10 +35244,10 @@
         "rarity": "Rare",
         "resistance": 71,
         "scientific_name": "Aipysurus laevis",
-        "size": 1,
+        "size": 1.65,
         "spawn_tiles": "tall_grass",
         "speed": 70,
-        "weight": 1
+        "weight": 1.95
     },
     {
         "abilities": "Roll Defense",
@@ -35494,10 +35494,10 @@
         "rarity": "Rare",
         "resistance": 72,
         "scientific_name": "Sphyrna tiburo",
-        "size": 1,
+        "size": 1.15,
         "spawn_tiles": "water",
         "speed": 60,
-        "weight": 1
+        "weight": 7.45
     },
     {
         "abilities": "Poison Point",
@@ -35569,10 +35569,10 @@
         "rarity": "Rare",
         "resistance": 79,
         "scientific_name": "Lutjanus analis",
-        "size": 1,
+        "size": 0.72,
         "spawn_tiles": "water",
         "speed": 65,
-        "weight": 1
+        "weight": 9.35
     },
     {
         "abilities": "Aftermath",
@@ -35594,10 +35594,10 @@
         "rarity": "Uncommon",
         "resistance": 51,
         "scientific_name": "Sphoeroides nephelus",
-        "size": 1,
+        "size": 0.25,
         "spawn_tiles": "water",
         "speed": 25,
-        "weight": 1
+        "weight": 0.42
     },
     {
         "abilities": "Adaptability",
@@ -35644,10 +35644,10 @@
         "rarity": "Common",
         "resistance": 17,
         "scientific_name": "Danio rerio var. frankei",
-        "size": 1,
+        "size": 0.05,
         "spawn_tiles": "water",
         "speed": 50,
-        "weight": 1
+        "weight": 0.002
     },
     {
         "abilities": "Competitive",
@@ -35669,10 +35669,10 @@
         "rarity": "Common",
         "resistance": 52,
         "scientific_name": "Lepomis auritus",
-        "size": 1,
+        "size": 0.24,
         "spawn_tiles": "water",
         "speed": 40,
-        "weight": 1
+        "weight": 0.55
     },
     {
         "abilities": "Rock Head, Sturdy",
@@ -35794,10 +35794,10 @@
         "rarity": "Uncommon",
         "resistance": 53,
         "scientific_name": "Cynoscion nebulosus",
-        "size": 1,
+        "size": 0.61,
         "spawn_tiles": "water",
         "speed": 60,
-        "weight": 1
+        "weight": 4.25
     },
     {
         "abilities": "Adrenal Surge",
@@ -35969,10 +35969,10 @@
         "rarity": "Common",
         "resistance": 54,
         "scientific_name": "Lepomis punctatus",
-        "size": 1,
+        "size": 0.16,
         "spawn_tiles": "water",
         "speed": 45,
-        "weight": 1
+        "weight": 0.18
     },
     {
         "abilities": "Punk Rock",
@@ -36144,10 +36144,10 @@
         "rarity": "Common",
         "resistance": 58,
         "scientific_name": "Menticirrhus americanus",
-        "size": 1,
+        "size": 0.38,
         "spawn_tiles": "water",
         "speed": 50,
-        "weight": 1
+        "weight": 0.73
     },
     {
         "abilities": "Adaptability",
@@ -36169,10 +36169,10 @@
         "rarity": "Common",
         "resistance": 44,
         "scientific_name": "Tilapia mariae",
-        "size": 1,
+        "size": 0.28,
         "spawn_tiles": "water",
         "speed": 40,
-        "weight": 1
+        "weight": 0.95
     },
     {
         "abilities": "Adaptability",
@@ -36244,10 +36244,10 @@
         "rarity": "Common",
         "resistance": 60,
         "scientific_name": "Lepomis cyanellus",
-        "size": 1,
+        "size": 0.21,
         "spawn_tiles": "water",
         "speed": 40,
-        "weight": 1
+        "weight": 0.42
     },
     {
         "abilities": "Shark Sense",
@@ -36269,10 +36269,10 @@
         "rarity": "Epic",
         "resistance": 80,
         "scientific_name": "Carcharhinus amblyrhynchos",
-        "size": 1,
+        "size": 1.54,
         "spawn_tiles": "water",
         "speed": 90,
-        "weight": 1
+        "weight": 26.35
     },
     {
         "abilities": "Swift Swim , Rattled",
@@ -36294,10 +36294,10 @@
         "rarity": "Common",
         "resistance": 42,
         "scientific_name": "Alosa mediocris",
-        "size": 1,
+        "size": 0.49,
         "spawn_tiles": "water",
         "speed": 70,
-        "weight": 1
+        "weight": 1.15
     },
     {
         "abilities": "Rattled",
@@ -36469,10 +36469,10 @@
         "rarity": "Uncommon",
         "resistance": 66,
         "scientific_name": "Oncorhynchus mykiss",
-        "size": 1,
+        "size": 0.72,
         "spawn_tiles": "water",
         "speed": 65,
-        "weight": 1
+        "weight": 5.2
     },
     {
         "abilities": "Sand Veil",
@@ -36519,10 +36519,10 @@
         "rarity": "Common",
         "resistance": 62,
         "scientific_name": "Ictiobus bubalus",
-        "size": 1,
+        "size": 0.79,
         "spawn_tiles": "water",
         "speed": 40,
-        "weight": 1
+        "weight": 16.8
     },
     {
         "abilities": "Swift Swim",
@@ -36694,10 +36694,10 @@
         "rarity": "Uncommon",
         "resistance": 74,
         "scientific_name": "Raja eglanteria",
-        "size": 1,
+        "size": 0.63,
         "spawn_tiles": "water",
         "speed": 40,
-        "weight": 1
+        "weight": 2.1
     },
     {
         "abilities": "Swift Swim",
@@ -39619,10 +39619,10 @@
         "rarity": "Uncommon",
         "resistance": 70,
         "scientific_name": "Poroderma pantherinum",
-        "size": 1,
+        "size": 0.72,
         "spawn_tiles": "water",
         "speed": 95,
-        "weight": 1
+        "weight": 2.45
     },
     {
         "abilities": "Body Inflation",
@@ -39669,10 +39669,10 @@
         "rarity": "Common",
         "resistance": 90,
         "scientific_name": "Scyliorhinus canicula",
-        "size": 1,
+        "size": 0.85,
         "spawn_tiles": "water",
         "speed": 55,
-        "weight": 1
+        "weight": 1.15
     },
     {
         "abilities": "Reef Camouflage",
@@ -39694,10 +39694,10 @@
         "rarity": "Uncommon",
         "resistance": 75,
         "scientific_name": "Poroderma africanum",
-        "size": 1,
+        "size": 0.95,
         "spawn_tiles": "water",
         "speed": 85,
-        "weight": 1
+        "weight": 5.8
     },
     {
         "abilities": "Body Inflation",
@@ -39744,10 +39744,10 @@
         "rarity": "Uncommon",
         "resistance": 70,
         "scientific_name": "Atelomycterus baliensis",
-        "size": 1,
+        "size": 0.62,
         "spawn_tiles": "water",
         "speed": 90,
-        "weight": 1
+        "weight": 0.45
     },
     {
         "abilities": "Adaptability",
@@ -39769,10 +39769,10 @@
         "rarity": "Rare",
         "resistance": 65,
         "scientific_name": "Scyliorhinus boa",
-        "size": 1,
+        "size": 0.48,
         "spawn_tiles": "water",
         "speed": 85,
-        "weight": 1
+        "weight": 0.38
     },
     {
         "abilities": "Reef Camouflage",
@@ -39794,10 +39794,10 @@
         "rarity": "Uncommon",
         "resistance": 105,
         "scientific_name": "Scyliorhinus retifer",
-        "size": 1,
+        "size": 0.45,
         "spawn_tiles": "water",
         "speed": 50,
-        "weight": 1
+        "weight": 0.58
     },
     {
         "abilities": "Reef Camouflage",
@@ -39819,10 +39819,10 @@
         "rarity": "Common",
         "resistance": 80,
         "scientific_name": "Scyliorhinus torazame",
-        "size": 1,
+        "size": 0.43,
         "spawn_tiles": "water",
         "speed": 40,
-        "weight": 1
+        "weight": 0.41
     },
     {
         "abilities": "Reef Camouflage",
@@ -39844,10 +39844,10 @@
         "rarity": "Uncommon",
         "resistance": 80,
         "scientific_name": "Atelomycterus marmoratus",
-        "size": 1,
+        "size": 0.61,
         "spawn_tiles": "water",
         "speed": 75,
-        "weight": 1
+        "weight": 0.35
     },
     {
         "abilities": "Rough Skin",
@@ -39894,10 +39894,10 @@
         "rarity": "Uncommon",
         "resistance": 90,
         "scientific_name": "Atelomycterus erdmanni",
-        "size": 1,
+        "size": 0.41,
         "spawn_tiles": "water",
         "speed": 55,
-        "weight": 1
+        "weight": 0.28
     },
     {
         "abilities": "Reef Camouflage",
@@ -39919,10 +39919,10 @@
         "rarity": "Uncommon",
         "resistance": 70,
         "scientific_name": "Halaelurus natalensis",
-        "size": 1,
+        "size": 0.46,
         "spawn_tiles": "water",
         "speed": 95,
-        "weight": 1
+        "weight": 0.45
     },
     {
         "abilities": "Reef Camouflage",
@@ -39944,10 +39944,10 @@
         "rarity": "Uncommon",
         "resistance": 75,
         "scientific_name": "Figaro boardmani",
-        "size": 1,
+        "size": 0.54,
         "spawn_tiles": "water",
         "speed": 45,
-        "weight": 1
+        "weight": 0.48
     },
     {
         "abilities": "Adaptability",
@@ -39969,10 +39969,10 @@
         "rarity": "Rare",
         "resistance": 85,
         "scientific_name": "Galeus melastomus",
-        "size": 1,
+        "size": 0.73,
         "spawn_tiles": "water",
         "speed": 80,
-        "weight": 1
+        "weight": 0.88
     },
     {
         "abilities": "Adaptability",
@@ -39994,10 +39994,10 @@
         "rarity": "Rare",
         "resistance": 80,
         "scientific_name": "Apristurus brunneus",
-        "size": 1,
+        "size": 0.55,
         "spawn_tiles": "water",
         "speed": 60,
-        "weight": 1
+        "weight": 0.36
     },
     {
         "abilities": "Strong Jaw , Justified",
@@ -40044,10 +40044,10 @@
         "rarity": "Rare",
         "resistance": 105,
         "scientific_name": "Apristurus herklotsi",
-        "size": 1,
+        "size": 0.26,
         "spawn_tiles": "water",
         "speed": 15,
-        "weight": 1
+        "weight": 0.12
     },
     {
         "abilities": "Adaptability",
@@ -40069,10 +40069,10 @@
         "rarity": "Rare",
         "resistance": 70,
         "scientific_name": "Apristurus platyrhynchus",
-        "size": 1,
+        "size": 0.61,
         "spawn_tiles": "water",
         "speed": 105,
-        "weight": 1
+        "weight": 0.42
     },
     {
         "abilities": "Endless Pursuit",
@@ -47744,10 +47744,10 @@
         "rarity": "Uncommon",
         "resistance": 85,
         "scientific_name": "Galeus melastomus",
-        "size": 1,
+        "size": 0.52,
         "spawn_tiles": "water",
         "speed": 60,
-        "weight": 1
+        "weight": 0.38
     },
     {
         "abilities": "Schooling",
