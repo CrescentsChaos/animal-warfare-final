@@ -37,6 +37,7 @@ import 'package:animal_warfare/game/overworld_npc.dart';
 import 'package:animal_warfare/game/npc_team_loader.dart';
 import 'package:animal_warfare/game/archetype_teams.dart';
 import 'package:animal_warfare/models/quest.dart';
+import 'package:animal_warfare/game/trainer_data.dart';
 
 class BiomeExplorationMap extends StatefulWidget {
   final String biomeName;
@@ -1563,6 +1564,16 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     AudioService.instance.pauseAll();
     if (!mounted) return;
 
+    final trainerInfo = TrainerInfo(
+      title: 'Rival',
+      name: 'Gary',
+      sprite: 'Ace_Trainer_Male_W.webp',
+      gender: 'male',
+      introDialogue: const ['Smell ya later! Let\'s see how strong you\'ve got!'],
+      midBattleDialogue: const ['Not bad, but you can\'t beat my team!'],
+      defeatDialogue: const ['Unbelievable! You actually won...'],
+    );
+
     final result = await Navigator.of(context).push<BattleResult>(
       MaterialPageRoute(
         builder: (context) => BattleScreen(
@@ -1574,6 +1585,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
           isTrainerBattle: true,
           battleTitle: 'VS Rival Gary',
           mapScreenshot: mapScreenshot,
+          trainerInfo: trainerInfo,
         ),
       ),
     );
@@ -3172,6 +3184,9 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         AudioService.instance.pauseAll();
         if (!mounted) return;
 
+        final trainerInfo = TrainerDataLoader.generateByName(trainerName) ??
+            TrainerDataLoader.generateRandom(biome: _currentBiomeName);
+
         final BattleResult? result = await Navigator.of(context)
             .push<BattleResult>(
               MaterialPageRoute(
@@ -3182,9 +3197,10 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
                   opponentTeam: opponentTeam,
                   mapScreenshot: mapScreenshot,
                   isTrainerBattle: true,
-                  battleTitle: 'VS $trainerName',
+                  battleTitle: 'VS ${trainerInfo.displayName}',
                   timeOfDay: timeOfDay,
                   biomeName: _currentBiomeName,
+                  trainerInfo: trainerInfo,
                 ),
               ),
             );

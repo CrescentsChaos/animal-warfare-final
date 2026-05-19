@@ -157,6 +157,7 @@ class BattleOrganism {
     thrashMove = null;
     throatChopTurns = 0;
     clampingTurns = 0;
+    clampedBy = null;
     isFirstTurnOutOfBall = true;
     wasSwitchedInThisTurn = true;
     isSwitchingOut = false;
@@ -344,6 +345,7 @@ class BattleOrganism {
   bool isTrapped = false; // For trapping effects like Mean Look
   int throatChopTurns = 0;
   int clampingTurns = 0;
+  BattleOrganism? clampedBy;
   int poisonTurnCount = 0;
   bool isFirstTurnOutOfBall = true;
   bool wasSwitchedInThisTurn = false;

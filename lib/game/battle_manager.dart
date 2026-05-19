@@ -1,4 +1,5 @@
 // lib/game/battle_manager.dart
+// ignore_for_file: unnecessary_this
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
@@ -19,10 +20,12 @@ import 'package:animal_warfare/services/audio_service.dart';
 import 'package:animal_warfare/services/weather_service.dart';
 import 'package:animal_warfare/game/ai_decision_engine.dart';
 import 'package:animal_warfare/game/player_history.dart';
+import 'package:animal_warfare/game/trainer_data.dart';
 
 // --- Enums ---
 enum BattleState {
   intro, // New state for initialization sequence
+  trainerIntro, // Trainer sprite + dialogue shown before battle
   choosingLead, // Player must select their lead animal before battle starts
   waitingForInput, // Player must select Move, Capture, or Run
   playerTurn,
@@ -265,6 +268,21 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   int currentOpponentIndex = 0;
   final bool startAsleep;
 
+  // ── TRAINER DIALOGUE SYSTEM ──
+  TrainerInfo? trainerInfo;
+  String? trainerDialogue; // Current dialogue text shown on screen
+  bool trainerDialogueActive = false; // Whether trainer dialogue overlay is visible
+  Completer<void>? _dialogueCompleter;
+  bool get isWaitingForDialogueClick => _dialogueCompleter != null;
+  bool opponentAnimalSent = false;
+  bool playerAnimalSent = false;
+
+  void advanceDialogue() {
+    if (_dialogueCompleter != null && !_dialogueCompleter!.isCompleted) {
+      _dialogueCompleter!.complete();
+    }
+  }
+
   // GIMMICK USAGE TRACKING (Side-level)
   bool playerPrismorphUsed = false;
   bool opponentPrismorphUsed = false;
@@ -416,12 +434,17 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     this.isTesting = false,
     TeamArchetype? opponentArchetype,
     this.startAsleep = false,
+    this.trainerInfo,
     Random? random,
   }) : _random = random ?? Random(),
        playerTeam = (team?.isNotEmpty ?? false) ? team! : [initialPlayer],
        opponentTeam = (opponentTeam?.isNotEmpty ?? false)
            ? opponentTeam!
            : [opponentOrganism] {
+    // Auto-generate trainer info for trainer battles if not provided
+    if (isTrainerBattle && trainerInfo == null) {
+      trainerInfo = TrainerDataLoader.generateRandom(biome: biomeName);
+    }
     if (opponentArchetype != null) {
       this.opponentArchetype = opponentArchetype;
     }
@@ -527,6 +550,39 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     // Removed stamina restoration at start of battle to allow persistence
 
+    // ── TRAINER INTRO SEQUENCE ──
+    // Show trainer sprite + dialogue BEFORE lead selection (like Pokémon)
+    if (isTrainerBattle && trainerInfo != null && !isTesting) {
+      currentState = BattleState.trainerIntro;
+      trainerDialogueActive = true;
+
+      // First dialogue
+      final firstMsg = '${trainerInfo!.displayName} wants to battle!';
+      trainerDialogue = firstMsg;
+      addToLog(firstMsg);
+      notifyListeners();
+
+      _dialogueCompleter = Completer<void>();
+      await _dialogueCompleter!.future;
+      _dialogueCompleter = null;
+
+      // Second dialogue: Intro line
+      final introMsg = '${trainerInfo!.displayName}: "${trainerInfo!.randomIntro(_random)}"';
+      trainerDialogue = introMsg;
+      addToLog(introMsg);
+      notifyListeners();
+
+      _dialogueCompleter = Completer<void>();
+      await _dialogueCompleter!.future;
+      _dialogueCompleter = null;
+
+      // Dismiss trainer dialogue
+      trainerDialogueActive = false;
+      currentState = BattleState.intro;
+      notifyListeners();
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
+
     if (isArenaBattle && !isRogueMode) {
       // In Arena mode (non-rogue), we let the player choose a lead BEFORE any announcements
       currentState = BattleState.choosingLead;
@@ -537,6 +593,14 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       _switchCompleter = null;
 
       // Lead is set in setLeadAnimal()
+    } else if (isTrainerBattle && !isRogueMode) {
+      // Trainer battles also let player choose lead
+      currentState = BattleState.choosingLead;
+      notifyListeners();
+
+      _switchCompleter = Completer<void>();
+      await _switchCompleter!.future;
+      _switchCompleter = null;
     } else {
       // Rogue mode or wild battle - lead is already decided in constructor or can be set to 0
       if (!isRogueMode) {
@@ -556,7 +620,11 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     }
 
     // Now reveal the opponent
-    if (isArenaBattle) {
+    opponentAnimalSent = true;
+    if (isTrainerBattle && trainerInfo != null) {
+      // Trainer sends out their animal
+      addToLog('${trainerInfo!.displayName} sent out ${opponent.name}!');
+    } else if (isArenaBattle) {
       addToLog('Battle Arena: ${opponent.name} challenged you!');
     } else {
       addToLog('A wild ${opponent.name} appeared!');
@@ -583,6 +651,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     }
 
     // Now reveal the player's animal
+    playerAnimalSent = true;
     addToLog('Go, ${player.name}!');
     if (!isTesting) {
       _audioService.playOrganismCry(player.organism.baseOrganism.cry);
@@ -2098,44 +2167,11 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       }
     }
 
-    // Wait 1 second before playing the sound effect as requested
-    if (!isTesting) await Future.delayed(const Duration(seconds: 1));
-
-    // Play move sound effect
-    if (!isTesting) {
-      String soundPath =
-          move.soundEffect ??
-          _audioService.getDefaultSoundEffect(
-            move.category.toString().split('.').last,
-          );
-      await _audioService.playSound(soundPath);
-    }
-
-    // Switch battle music if move has custom music
-    if (move.battleMusic != null && move.battleMusic!.isNotEmpty) {
-      await _audioService.playMusic(move.battleMusic!);
-    }
-
-    notifyListeners();
-    // Trigger attack animation
-    onAttack?.call(attacker, move);
-
     // Track revealed move
     final attackerStats = _getStats(attacker.organism.id);
     attackerStats.revealedMoves.add(move.name);
     attacker.revealedMoves.add(move.name);
     attacker.movesUsedInBattle.add(move.name);
-
-    if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
-
-    // --- Ability Triggers: onCalculateDamage (Self) ---
-    for (final ab in attacker.abilities) {
-      if (ab.trigger == AbilityTrigger.onCalculateDamage) {
-        if (ab.name == 'Adaptability' && attacker.types.contains(move.type)) {
-          // Handled below in STAB
-        }
-      }
-    }
 
     // 1. Accuracy Check
     int accuracy = _calculateMoveAccuracy(attacker, defender, move);
@@ -2180,6 +2216,39 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       notifyListeners();
       if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
       return;
+    }
+
+    // Wait 1 second before playing the sound effect as requested
+    if (!isTesting) await Future.delayed(const Duration(seconds: 1));
+
+    // Play move sound effect
+    if (!isTesting) {
+      String soundPath =
+          move.soundEffect ??
+          _audioService.getDefaultSoundEffect(
+            move.category.toString().split('.').last,
+          );
+      await _audioService.playSound(soundPath);
+    }
+
+    // Switch battle music if move has custom music
+    if (move.battleMusic != null && move.battleMusic!.isNotEmpty) {
+      await _audioService.playMusic(move.battleMusic!);
+    }
+
+    notifyListeners();
+    // Trigger attack animation
+    onAttack?.call(attacker, move);
+
+    if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
+
+    // --- Ability Triggers: onCalculateDamage (Self) ---
+    for (final ab in attacker.abilities) {
+      if (ab.trigger == AbilityTrigger.onCalculateDamage) {
+        if (ab.name == 'Adaptability' && attacker.types.contains(move.type)) {
+          // Handled below in STAB
+        }
+      }
     }
 
     bool isSelfOrFieldMove =
@@ -2480,6 +2549,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             break;
           }
         }
+
+        // Trigger attack animation for subsequent hits
+        onAttack?.call(attacker, move);
 
         // Play sound effect for each hit after the first (first already played before loop)
         String soundPath =
@@ -4022,8 +4094,15 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     }
 
     if (Random().nextInt(100) >= finalChance) return false;
-    if (target.health <= 0) return false;
     if (type == StatusEffectType.none) return false;
+    if (target.health <= 0) return false;
+
+    // If target is faster than the attacker, target cannot get stunned.
+    if (type == StatusEffectType.stun && source != null) {
+      if (_getEffectiveSpeed(target) > _getEffectiveSpeed(source)) {
+        return false;
+      }
+    }
 
     // Comatose
     if (target.abilities.any((ab) => ab.name == 'Comatose') &&
@@ -4322,6 +4401,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             duration: (move.isRest || move.name.toLowerCase() == 'rest')
                 ? 2
                 : (effect.value > 0 ? effect.value : null),
+            source: attacker,
           );
           break;
         case MoveEffectType.none:
@@ -4824,7 +4904,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           break;
         case MoveEffectType.snore:
           if (Random().nextInt(100) < 30) {
-            await applyStatusEffect(defender, StatusEffectType.stun);
+            await applyStatusEffect(defender, StatusEffectType.stun, source: attacker);
           }
           break;
         case MoveEffectType.magicCoat:
@@ -5000,6 +5080,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         case MoveEffectType.clamping:
           defender.clampingTurns = 2 + Random().nextInt(4); // 2-5 turns
           defender.isTrapped = true;
+          defender.clampedBy = attacker;
           addToLog('${defender.name} was trapped by ${move.name}!');
           break;
         case MoveEffectType.trapIndices:
@@ -5054,6 +5135,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           }
           attacker.clampingTurns = 0;
           attacker.isTrapped = false;
+          attacker.clampedBy = null;
           addToLog(
             '${attacker.name} blew away the entry hazards and binding effects!',
           );
@@ -6555,6 +6637,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       notifyListeners();
       if (target.clampingTurns == 0) {
         target.isTrapped = false;
+        target.clampedBy = null;
         addToLog('${target.name} was freed from the trapping effect!');
       }
       if (!isTesting) await Future.delayed(const Duration(milliseconds: 3000));
@@ -7092,10 +7175,11 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     if (player.thrashTurnCount > 0 ||
         player.rolloutTurnCount > 0 ||
         player.isTrapped ||
+        player.clampingTurns > 0 ||
         player.isJawLocked ||
         opponent.isJawLocked) {
       String reason = '${player.name} is locked into its move!';
-      if (player.isTrapped) {
+      if (player.isTrapped || player.clampingTurns > 0) {
         reason = '${player.name} is trapped and cannot dash back!';
       } else if (player.isJawLocked || opponent.isJawLocked) {
         reason = 'Both animals are locked in a jaw grip!';
@@ -7249,6 +7333,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     if (!isForced &&
         (player.isTrapped ||
+            player.clampingTurns > 0 ||
             player.isJawLocked ||
             opponent.isJawLocked ||
             player.thrashTurnCount > 0 ||
@@ -7652,12 +7737,33 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     // Trigger Entry Hazards
     await triggerHazards(player, playerHazards);
 
+    _checkClampingValidity();
     notifyListeners();
+  }
+
+  void _checkClampingValidity() {
+    if (player.clampingTurns > 0 && player.clampedBy != null) {
+      if (player.clampedBy != opponent || opponent.health <= 0) {
+        player.clampingTurns = 0;
+        player.isTrapped = false;
+        player.clampedBy = null;
+        addToLog('${player.name} was freed from clamping!');
+      }
+    }
+    if (opponent.clampingTurns > 0 && opponent.clampedBy != null) {
+      if (opponent.clampedBy != player || player.health <= 0) {
+        opponent.clampingTurns = 0;
+        opponent.isTrapped = false;
+        opponent.clampedBy = null;
+        addToLog('${opponent.name} was freed from clamping!');
+      }
+    }
   }
 
   // --- End Check ---
 
   bool _checkBattleEnd() {
+    _checkClampingValidity();
     if (player.health <= 0) {
       lastPlayerFaintTurn = currentTurn;
       // Check if team has more healthy animals
@@ -7823,10 +7929,15 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
                 );
           onOpponentFainted?.call(killerBO, opponent);
         }
-        _cleanupStatusEffects();
-        currentState = BattleState.battleEnd;
-        onVictory?.call();
-        notifyListeners();
+
+        if (isTrainerBattle && trainerInfo != null && !isTesting) {
+          _runTrainerDefeatSequence();
+        } else {
+          _cleanupStatusEffects();
+          currentState = BattleState.battleEnd;
+          onVictory?.call();
+          notifyListeners();
+        }
         return true;
       }
 
@@ -7865,6 +7976,25 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       return true;
     }
     return false;
+  }
+
+  Future<void> _runTrainerDefeatSequence() async {
+    trainerDialogueActive = true;
+    final defeatDialogue = trainerInfo!.randomDefeat(_random);
+    trainerDialogue = defeatDialogue;
+    final defeatMsg = '${trainerInfo!.displayName}: "$defeatDialogue"';
+    addToLog(defeatMsg);
+    notifyListeners();
+
+    _dialogueCompleter = Completer<void>();
+    await _dialogueCompleter!.future;
+    _dialogueCompleter = null;
+
+    trainerDialogueActive = false;
+    _cleanupStatusEffects();
+    currentState = BattleState.battleEnd;
+    onVictory?.call();
+    notifyListeners();
   }
 
   Future<void> _switchOpponentTo(int index) async {
@@ -7944,7 +8074,28 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     opponent.revealedMoves.addAll(stats.revealedMoves);
     opponentMoves = _getOrganismMoves(opponentTeam[currentOpponentIndex]);
 
-    addToLog('${opponent.name} enters the field!');
+    // ── TRAINER MID-BATTLE DIALOGUE ──
+    if (isTrainerBattle && trainerInfo != null && !isTesting) {
+      final midDialogue = trainerInfo!.randomMidBattle(_random);
+      trainerDialogue = midDialogue;
+      trainerDialogueActive = true;
+      final midMsg = '${trainerInfo!.displayName}: "${midDialogue}"';
+      addToLog(midMsg);
+      notifyListeners();
+
+      await Future.delayed(const Duration(milliseconds: 2000));
+
+      trainerDialogueActive = false;
+      notifyListeners();
+      await Future.delayed(const Duration(milliseconds: 300));
+      addToLog('${trainerInfo!.displayName} sent out ${opponent.name}!');
+      notifyListeners();
+      if (!isTesting) await Future.delayed(const Duration(milliseconds: 2000));
+    } else {
+      addToLog('${opponent.name} enters the field!');
+      notifyListeners();
+      if (!isTesting) await Future.delayed(const Duration(milliseconds: 2000));
+    }
 
     if (healingWishPending) {
       healingWishPending = false;
@@ -7961,6 +8112,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     // Trigger Entry Hazards
     await triggerHazards(opponent, opponentHazards);
 
+    _checkClampingValidity();
     notifyListeners();
   }
 
@@ -9917,7 +10069,13 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       isTrapped = true;
     }
 
-    if (isTrapped) return null;
+    if (isTrapped ||
+        opponent.isTrapped ||
+        opponent.clampingTurns > 0 ||
+        opponent.isJawLocked ||
+        player.isJawLocked) {
+      return null;
+    }
 
     final aiTeamBO = opponentTeam
         .map(

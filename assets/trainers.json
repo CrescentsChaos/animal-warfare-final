@@ -1,0 +1,510 @@
+{
+  "male": {
+    "titles": [
+      {
+        "title": "Youngster",
+        "sprite": "Youngster_W.webp",
+        "sprites": [
+          "Youngster_W.webp",
+          "youngster-gen4.png",
+          "youngster-gen6.png",
+          "youngster-gen7.png",
+          "youngster-gen8.png",
+          "youngster-gen9.png",
+          "youngster.png"
+        ],
+        "names": ["Joey", "Timmy", "Ben", "Mikey", "Cal", "Danny", "Josh", "Ryan"],
+        "intro_dialogue": [
+          "Hey! I just caught my first animal! Let's battle!",
+          "I'm gonna be the best trainer ever! Watch me!",
+          "My animals are the coolest! You ready?",
+          "My dad says I need more practice... but I'll show him!",
+          "I've been waiting in this grass all day for a challenger!"
+        ],
+        "mid_battle_dialogue": [
+          "No way! My animal can't lose!",
+          "Come on, buddy! You can do it!",
+          "This isn't over yet!",
+          "I trained really hard for this!",
+          "Wait till you see my next one!"
+        ],
+        "defeat_dialogue": [
+          "Aww man... I lost again.",
+          "My animals need more training I guess...",
+          "You're really strong! I'll get better though!"
+        ]
+      },
+      {
+        "title": "Black Belt",
+        "sprite": "Black_Belt_sprite.webp",
+        "names": ["Kenji", "Ryu", "Hiro", "Marcus", "Jet", "Khan", "Bruce", "Tang"],
+        "preferred_type": "Martial",
+        "intro_dialogue": [
+          "HAAAA! My fighting spirit burns bright! Let's go!",
+          "I've trained my body AND my animals to perfection!",
+          "Strength comes from discipline! I'll show you mine!",
+          "My animals fight with the fury of a thousand storms!",
+          "You dare challenge me? Then face my wrath!"
+        ],
+        "mid_battle_dialogue": [
+          "The fight isn't over until the last one falls!",
+          "Concentrate! Find the opening!",
+          "Feel the power of my training!",
+          "My spirit is unbreakable!",
+          "HYAAAH! Next animal, GO!"
+        ],
+        "defeat_dialogue": [
+          "Your strength... it surpasses my own. Well fought.",
+          "I must train harder. You've humbled me.",
+          "Impressive technique! I bow to your skill."
+        ]
+      },
+      {
+        "title": "Gentleman",
+        "sprite": "gentleman.webp",
+        "names": ["Arthur", "Charles", "Winston", "Edward", "Reginald", "Theodore", "Bernard", "Percival"],
+        "intro_dialogue": [
+          "Ah, a challenger! How delightful. Shall we?",
+          "I trust you'll provide a sophisticated battle, hmm?",
+          "My dear friend, let us engage in a proper duel!",
+          "One must always be prepared for a good battle, no?",
+          "Do pardon me, but I simply must test your mettle!"
+        ],
+        "mid_battle_dialogue": [
+          "Quite impressive, I must say!",
+          "Oh my! This is getting rather exciting!",
+          "A splendid exchange! But I'm not done yet.",
+          "My next companion shall turn this around, I assure you.",
+          "How invigorating! Come now, let's continue!"
+        ],
+        "defeat_dialogue": [
+          "Bravo! A most excellent performance!",
+          "Well played indeed! Here, take this as a token of my respect.",
+          "You've bested me fair and square. Good show!"
+        ]
+      },
+      {
+        "title": "Hiker",
+        "sprite": "Hiker_sprite.webp",
+        "biome_exclusive": ["Mountain", "Cave", "Volcano"],
+        "names": ["Clark", "Brock", "Cliff", "Ridge", "Marco", "Otis", "Earl", "Dale"],
+        "intro_dialogue": [
+          "GAHAHA! You came all the way out here? Let's battle!",
+          "The mountains make animals tough! Mine are no exception!",
+          "I've been hiking these trails for years! My animals are hardy!",
+          "Whew! Nice weather for a battle, don'tcha think?",
+          "Hold on, let me catch my breath... Okay, I'm ready!"
+        ],
+        "mid_battle_dialogue": [
+          "My animals are as sturdy as the mountains themselves!",
+          "You can't shake us! We're built tough!",
+          "GAHAHA! This is fun!",
+          "My next partner is even tougher!",
+          "We've weathered worse storms than this!"
+        ],
+        "defeat_dialogue": [
+          "GAHAHA! You knocked me flat! Good battle!",
+          "Well, time to hike back and train some more!",
+          "The mountain will make us stronger. Until next time!"
+        ]
+      },
+      {
+        "title": "Bug Catcher",
+        "sprite": "Bugcatcherf.webp",
+        "biome_exclusive": ["Rainforest", "Jungle", "Swamp", "Mangrove"],
+        "names": ["Wade", "Liam", "Doug", "Rick", "Greg", "Cody", "Felix", "Oscar"],
+        "preferred_class": "Insect",
+        "intro_dialogue": [
+          "Check out the awesome bugs I caught! Let's battle!",
+          "Insects are the most diverse creatures on Earth! I'll prove it!",
+          "I spent all morning catching these beauties!",
+          "Don't underestimate bugs! They're incredible!",
+          "My net's my best friend, and my bugs are my warriors!"
+        ],
+        "mid_battle_dialogue": [
+          "Bugs never give up! Just like me!",
+          "Wait till you see this one's moves!",
+          "My collection is vast! There's always more!",
+          "Every bug has a unique strength!",
+          "The swarm continues!"
+        ],
+        "defeat_dialogue": [
+          "My bugs... I need to find stronger ones!",
+          "Back to the tall grass to catch more!",
+          "You're tough, but I'll be back with an even better collection!"
+        ]
+      },
+      {
+        "title": "Fisherman",
+        "sprite": "Fisherman_sprite.webp",
+        "biome_exclusive": ["Coastal", "Lake", "River", "Wetlands", "Kelp Forest"],
+        "names": ["Ralph", "Ned", "Earl", "Barney", "Wade", "Gene", "Hank", "Gill"],
+        "preferred_class": "Aquatic",
+        "intro_dialogue": [
+          "I've been fishing here all day! How about a battle?",
+          "You should see the size of the one I caught yesterday!",
+          "My aquatic partners are fierce! Don't get soaked!",
+          "The water holds many secrets... and strong animals!",
+          "Patience is key in fishing AND in battle!"
+        ],
+        "mid_battle_dialogue": [
+          "My fish aren't just for show!",
+          "Hook, line, and sinker!",
+          "The water runs deep, and so does my team!",
+          "Reel 'em in, partner!",
+          "There's plenty more fish in the sea!"
+        ],
+        "defeat_dialogue": [
+          "Looks like you reeled in the victory!",
+          "Back to the fishing hole for me...",
+          "That was a real catch of a battle!"
+        ]
+      },
+      {
+        "title": "Scientist",
+        "sprite": "ScientistAdjust.webp",
+        "names": ["Newton", "Edison", "Darwin", "Tesla", "Pascal", "Kelvin", "Faraday", "Gauss"],
+        "intro_dialogue": [
+          "Fascinating! A wild trainer appears! Let me collect data!",
+          "I hypothesize that my animals are superior. Let's test that!",
+          "My research demands combat data! Battle me!",
+          "Every battle is an experiment in progress!",
+          "The scientific method: Observe, hypothesize, BATTLE!"
+        ],
+        "mid_battle_dialogue": [
+          "Interesting data point! But the experiment continues!",
+          "Recalculating strategy parameters...",
+          "My next subject should prove more effective!",
+          "The results so far are... inconclusive!",
+          "Adjusting variables for optimal performance!"
+        ],
+        "defeat_dialogue": [
+          "The data doesn't lie... you're the stronger trainer.",
+          "I need to revise my methodology entirely!",
+          "A failed experiment is still a learning opportunity!"
+        ]
+      },
+      {
+        "title": "Sailor",
+        "sprite": "Sailor_sprite.webp",
+        "biome_exclusive": ["Ocean", "Deep Sea", "Coral Reef", "Frozen Ocean", "Coastal"],
+        "names": ["Huey", "Duncan", "Barnacle", "Morgan", "Drake", "Skipper", "Ahab", "Finn"],
+        "intro_dialogue": [
+          "Ahoy! Ye want a battle? I'll show ye sea-worthy power!",
+          "These waters be treacherous, and so are my animals!",
+          "I've sailed the seven seas! My crew is battle-hardened!",
+          "Batten down the hatches! A storm of a battle approaches!",
+          "Arr! Ye look like a worthy adversary!"
+        ],
+        "mid_battle_dialogue": [
+          "Shiver me timbers! That was a good hit!",
+          "The sea is rough, but my crew's rougher!",
+          "All hands on deck! Next animal, report!",
+          "Ye can't sink this ship that easily!",
+          "Man overboard! But the fleet continues!"
+        ],
+        "defeat_dialogue": [
+          "Ye've sunk my battleship! Well fought, matey!",
+          "I'll sail back stronger next time!",
+          "A captain goes down with his ship... Fair play!"
+        ]
+      },
+      {
+        "title": "Ace Trainer",
+        "sprite": "Ace_Trainer_Male_W.webp",
+        "names": ["Lance", "Drake", "Kanto", "Blaze", "Victor", "Rex", "Atlas", "Zane"],
+        "intro_dialogue": [
+          "I've trained every day for this moment. Let's go!",
+          "You think you can beat an Ace Trainer? Prove it!",
+          "My strategy is flawless. Show me yours!",
+          "Only the strongest trainers earn this title. Can you keep up?",
+          "I've studied every type matchup. Bring your best!"
+        ],
+        "mid_battle_dialogue": [
+          "Just as I calculated!",
+          "You're good, but I'm better!",
+          "Phase two of my strategy begins now!",
+          "That's the spirit! Now face my ace!",
+          "Impressive... but I won't go down easily!"
+        ],
+        "defeat_dialogue": [
+          "You've earned my respect. That was a true battle!",
+          "I'll remember this loss and grow from it.",
+          "An Ace knows when they've been outplayed. Well done!"
+        ]
+      },
+      {
+        "title": "Psychic",
+        "sprite": "Psychic_M_Battlesprite_WIP.webp",
+        "names": ["Tyron", "Elias", "Darius", "Jasper", "Orion", "Sage", "Cyrus", "Silas"],
+        "preferred_type": "Aura",
+        "intro_dialogue": [
+          "I foresaw your arrival... and your defeat!",
+          "My third eye reveals all! Let's battle!",
+          "The mind is the greatest weapon. Observe!",
+          "I sense strong energy from you... This will be interesting!",
+          "Close your eyes... and prepare to lose!"
+        ],
+        "mid_battle_dialogue": [
+          "The visions told me to expect this...",
+          "My psychic bond with my animals is unbreakable!",
+          "I predicted this move! Now face the counter!",
+          "The cosmic forces align in my favor!",
+          "Your mind is an open book to me!"
+        ],
+        "defeat_dialogue": [
+          "I... didn't foresee this outcome.",
+          "The universe works in mysterious ways...",
+          "Your willpower overwhelms my visions!"
+        ]
+      },
+      {
+        "title": "Veteran",
+        "sprite": "Veteran_M.webp",
+        "names": ["Hugo", "Sterling", "Barrett", "Knox", "Roland", "Garrison", "Colt", "Magnus"],
+        "intro_dialogue": [
+          "I've fought in countless battles. One more won't hurt!",
+          "Experience is the greatest teacher. Let me show you!",
+          "I've been battling since before you were born, kid!",
+          "A true veteran never backs down from a challenge!",
+          "My years of experience give me the edge. Ready?"
+        ],
+        "mid_battle_dialogue": [
+          "I've seen worse! This is nothing!",
+          "Old soldiers never die... and neither do my animals!",
+          "Strategy wins wars, not brute force!",
+          "My tactical reserve enters the fray!",
+          "You fight well, but I've got tricks up my sleeve!"
+        ],
+        "defeat_dialogue": [
+          "I salute you, soldier. You've won this battle.",
+          "Even veterans can learn new things. Thank you!",
+          "A well-deserved victory. Carry on, champion!"
+        ]
+      },
+      {
+        "title": "Ranger",
+        "sprite": "Pkmn_Ranger.webp",
+        "biome_exclusive": ["Rainforest", "Taiga", "Redwoods", "Mountain", "Jungle"],
+        "names": ["Drake", "Forrest", "Bryce", "Ash", "Heath", "Cedar", "Reed", "Stone"],
+        "intro_dialogue": [
+          "Halt! Rangers protect these lands! Show your strength!",
+          "The wild has made my animals fierce! Can you handle them?",
+          "I patrol these routes daily. No one passes without a battle!",
+          "Nature gives us power! Let me show you!",
+          "My bond with my animals is forged in the wild!"
+        ],
+        "mid_battle_dialogue": [
+          "The wild calls for reinforcements!",
+          "Nature always finds a way!",
+          "My partner won't let me down!",
+          "Rangers never give up!",
+          "The forest has more surprises in store!"
+        ],
+        "defeat_dialogue": [
+          "You've proven your worth. Pass freely!",
+          "The wild respects strength. Well fought!",
+          "I'll report your skills to headquarters!"
+        ]
+      }
+    ]
+  },
+  "female": {
+    "titles": [
+      {
+        "title": "Lass",
+        "sprite": "Lass2.webp",
+        "names": ["Lisa", "Sally", "Anna", "Emma", "Mia", "Lily", "Rose", "Chloe"],
+        "intro_dialogue": [
+          "Hey there! I've been looking for someone to battle!",
+          "My animals are super cute AND super strong!",
+          "Don't go easy on me just because I'm a girl!",
+          "I've raised my animals with love! They won't lose!",
+          "Let's have a fun battle! Ready?"
+        ],
+        "mid_battle_dialogue": [
+          "That was a lucky hit! My next one is tougher!",
+          "Come on, sweetie! You can do it!",
+          "We're not giving up that easily!",
+          "My cutest animal is also my strongest!",
+          "Here comes my secret weapon!"
+        ],
+        "defeat_dialogue": [
+          "Oh no! I lost... That was still fun though!",
+          "You're really good! Let's battle again sometime!",
+          "My animals did their best. I'm proud of them!"
+        ]
+      },
+      {
+        "title": "Beauty",
+        "sprite": "Beauty_sprite.webp",
+        "names": ["Victoria", "Isabelle", "Camilla", "Seraphina", "Vivienne", "Celeste", "Rosalind", "Diana"],
+        "intro_dialogue": [
+          "Oh my! A battle? How thrilling! Let me fix my hair first...",
+          "Beauty AND skill! I have both, darling!",
+          "My animals are as gorgeous as they are powerful!",
+          "A lady must always be prepared for battle!",
+          "Shall we make this interesting? Battle me, won't you?"
+        ],
+        "mid_battle_dialogue": [
+          "Oh my! That was rather rough!",
+          "Beauty fades, but strength endures!",
+          "My next darling will dazzle you!",
+          "A lady never shows all her cards at once!",
+          "How graceful! But can you handle this?"
+        ],
+        "defeat_dialogue": [
+          "Oh gracious! You've bested me!",
+          "A lady knows when to concede. Bravo!",
+          "You fight with such elegance! I approve!"
+        ]
+      },
+      {
+        "title": "Battle Girl",
+        "sprite": "BattleGirl_Colors.webp",
+        "names": ["Sakura", "Hana", "Mai", "Yuki", "Rena", "Akira", "Sora", "Kira"],
+        "intro_dialogue": [
+          "I train every day! My fighting spirit is at MAX!",
+          "Bring it on! I love a good challenge!",
+          "My animals and I are a perfect team! Let's go!",
+          "HYAAAH! Ready for the battle of your life?",
+          "I've been doing push-ups all morning! I'm fired up!"
+        ],
+        "mid_battle_dialogue": [
+          "That's the fire I was looking for!",
+          "YEAH! This is what a real battle feels like!",
+          "My next fighter is even more intense!",
+          "The battle isn't over till the last punch!",
+          "COME ON! Give me everything you've got!"
+        ],
+        "defeat_dialogue": [
+          "WOW! What a battle! You're incredible!",
+          "I need to train harder! You really pushed me!",
+          "That was AWESOME! Let's do it again!"
+        ]
+      },
+      {
+        "title": "Ace Trainer",
+        "sprite": "Ace_Trainer_Female_W.webp",
+        "names": ["Natasha", "Elena", "Serena", "Quinn", "Petra", "Luna", "Freya", "Nova"],
+        "intro_dialogue": [
+          "An Ace Trainer never refuses a challenge! Let's battle!",
+          "I've trained under the best. Can you keep up?",
+          "My team is perfectly balanced. Show me what you've got!",
+          "I didn't earn this title for nothing! Prepare yourself!",
+          "Strategy and power — I have both! Ready?"
+        ],
+        "mid_battle_dialogue": [
+          "Exactly according to plan!",
+          "You're skilled, but I've planned for this!",
+          "Time for my trump card!",
+          "An Ace always has a backup plan!",
+          "Impressive! But the real battle starts now!"
+        ],
+        "defeat_dialogue": [
+          "You're the real ace here. Well played!",
+          "I'll take this lesson and come back stronger!",
+          "A defeat is just a stepping stone. Until next time!"
+        ]
+      },
+      {
+        "title": "Parasol Lady",
+        "sprite": "ParasolGirlC.webp",
+        "names": ["Madeline", "Clarissa", "Helena", "Priscilla", "Beatrice", "Cordelia", "Ophelia", "Genevieve"],
+        "intro_dialogue": [
+          "The weather is perfect for a battle, don't you think?",
+          "My animals love rain or shine! Let's have a match!",
+          "Don't let the parasol fool you — I'm tough!",
+          "A little shade won't stop a great battle!",
+          "Oh, how lovely! A challenger on this fine day!"
+        ],
+        "mid_battle_dialogue": [
+          "The weather may change, but my resolve won't!",
+          "My next companion thrives in any condition!",
+          "Rain or shine, we battle on!",
+          "The breeze carries my determination!",
+          "A lady with a parasol is never defenseless!"
+        ],
+        "defeat_dialogue": [
+          "Oh my! You've defeated me quite thoroughly!",
+          "What a refreshing battle! Thank you, dear!",
+          "I'll train under the sun and come back stronger!"
+        ]
+      },
+      {
+        "title": "Aroma Lady",
+        "sprite": "Aroma_Lady_Adjust.webp",
+        "biome_exclusive": ["Plains", "Savanna", "Wetlands", "Mangrove"],
+        "names": ["Violet", "Jasmine", "Daisy", "Iris", "Petunia", "Lavender", "Willow", "Fern"],
+        "intro_dialogue": [
+          "Can you smell the flowers? My animals love this meadow!",
+          "Nature's fragrance empowers my partners! Let's battle!",
+          "The aroma of battle is intoxicating, isn't it?",
+          "My garden-trained animals are tougher than they look!",
+          "Take a deep breath... and prepare for battle!"
+        ],
+        "mid_battle_dialogue": [
+          "The scent of victory is close!",
+          "My next bloom is the most dangerous!",
+          "Every petal hides a thorn!",
+          "The garden always has more to offer!",
+          "The sweet smell of a comeback!"
+        ],
+        "defeat_dialogue": [
+          "Oh... the petals have fallen. Well battled!",
+          "I'll tend my garden and grow stronger!",
+          "Your strength is like a mighty oak. I'm impressed!"
+        ]
+      },
+      {
+        "title": "Psychic",
+        "sprite": "Psychic_F_Battlesprite1.webp",
+        "names": ["Mystica", "Selene", "Astrid", "Raven", "Thalia", "Celeste", "Morgana", "Sibyl"],
+        "intro_dialogue": [
+          "I knew you would come... The stars told me!",
+          "My psychic powers reveal your every move!",
+          "The cosmos demands a battle! Who am I to refuse?",
+          "Look into my eyes... and see your defeat!",
+          "The spirits are restless... They hunger for battle!"
+        ],
+        "mid_battle_dialogue": [
+          "The astral plane shifts in my favor!",
+          "I channeled this outcome long ago!",
+          "My next vision shows victory!",
+          "The crystal ball never lies!",
+          "Cosmic energy flows through my animals!"
+        ],
+        "defeat_dialogue": [
+          "The stars... they foretold your victory after all.",
+          "Even seers can be surprised. Well played!",
+          "I must meditate on this defeat..."
+        ]
+      },
+      {
+        "title": "Ranger",
+        "sprite": "Pkmn-ranger-f.webp",
+        "biome_exclusive": ["Rainforest", "Taiga", "Redwoods", "Mountain", "Jungle"],
+        "names": ["Sierra", "Ivy", "Autumn", "Brooke", "Terra", "Wren", "Sage", "Fawn"],
+        "intro_dialogue": [
+          "Rangers defend the wild! Show me you're worthy to pass!",
+          "I've bonded with nature itself! My animals are proof!",
+          "These trails are under my protection! Battle me!",
+          "The wilderness has sharpened my skills! Ready?",
+          "My animals and I share a bond forged in nature!"
+        ],
+        "mid_battle_dialogue": [
+          "Nature provides! My next partner is ready!",
+          "The wild always has reinforcements!",
+          "Rangers adapt! We're not done yet!",
+          "Mother Nature fights beside me!",
+          "The forest canopy hides my strength!"
+        ],
+        "defeat_dialogue": [
+          "You've earned passage. Travel safely!",
+          "The wild acknowledges your strength!",
+          "A worthy challenger! The forest remembers you!"
+        ]
+      }
+    ]
+  }
+}

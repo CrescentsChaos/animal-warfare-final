@@ -129,6 +129,7 @@ flutter:
     - assets/overworld_spawns.json
     - assets/npc_sprite.json
     - assets/npc_teams.json
+    - assets/trainers.json
     - assets/overworld/npc/
     - assets/platforms/
     - assets/icon/

@@ -14,7 +14,9 @@ import 'package:animal_warfare/ranked_screen.dart';
 import 'package:animal_warfare/replay_list_screen.dart';
 import 'package:animal_warfare/double_battle_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:animal_warfare/game/trainer_data.dart';
 import 'dart:convert';
+import 'dart:math';
 
 class BattleTabScreen extends StatefulWidget {
   const BattleTabScreen({super.key});
@@ -53,7 +55,11 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
     }
   }
 
-  ArchetypeResult _generateRandomTeam({bool withTalismans = false}) {
+  ArchetypeResult _generateRandomTeam({
+    bool withTalismans = false,
+    String? preferredClass,
+    String? preferredType,
+  }) {
     if (_allOrganisms.isEmpty) {
       return ArchetypeResult(archetype: null, archetypeName: 'Chaos', team: []);
     }
@@ -61,8 +67,20 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
       _allOrganisms,
       withTalismans: withTalismans,
       allowChaos: true,
+      preferredClass: preferredClass,
+      preferredType: preferredType,
     );
   }
+
+  static const List<String> _biomes = [
+    'Volcano', 'Cave', 'Coastal', 'Coral Reef', 'Deep Sea',
+    'Frozen Ocean', 'Kelp Forest', 'Swamp', 'Lake', 'Mangrove',
+    'Polar', 'Rainforest', 'Taiga', 'Tundra', 'Urban', 'Jungle',
+    'Desert', 'Savanna', 'River', 'Ocean', 'Mountain', 'Redwoods',
+    'Wetlands', 'Plains',
+  ];
+
+  String _getRandomBiome() => _biomes[Random().nextInt(_biomes.length)];
 
   void _startBattle({
     required List<CapturedOrganism> playerTeam,
@@ -70,6 +88,9 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
     required String battleTitle,
     TeamArchetype? opponentArchetype,
     bool shouldPersistResults = true,
+    bool isTrainerBattle = false,
+    String? biomeName,
+    TrainerInfo? trainerInfo,
   }) async {
     if (playerTeam.isEmpty || opponentTeam.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -90,18 +111,22 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
           .toList();
     }
 
+    final effectiveBiome = biomeName ?? 'Battle Arena';
+
     final result = await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => BattleScreen(
           playerOrganism: effectivePlayerTeam[0],
           opponentOrganism: opponentTeam[0],
-          biomeName: 'Battle Arena',
+          biomeName: effectiveBiome,
           playerTeam: effectivePlayerTeam,
           opponentTeam: opponentTeam,
           battleTitle: battleTitle,
           isArenaBattle: true,
+          isTrainerBattle: isTrainerBattle,
           opponentArchetype: opponentArchetype,
           shouldPersistResults: shouldPersistResults,
+          trainerInfo: trainerInfo,
         ),
       ),
     );
@@ -361,13 +386,20 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
                 );
                 return;
               }
-              final aiRes = _generateRandomTeam(withTalismans: true);
+              final trainer = TrainerDataLoader.generateRandom();
+              final aiRes = _generateRandomTeam(
+                withTalismans: true,
+                preferredClass: trainer.preferredClass,
+                preferredType: trainer.preferredType,
+              );
               _startBattle(
                 playerTeam: user.teamOrganisms,
                 opponentTeam: aiRes.team,
-                battleTitle: 'vs AI',
+                battleTitle: 'vs ${trainer.displayName}',
                 opponentArchetype: aiRes.archetype,
                 shouldPersistResults: true,
+                isTrainerBattle: true,
+                trainerInfo: trainer,
               );
             },
           ),
@@ -397,14 +429,23 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
             icon: Icons.shuffle_rounded,
             accentColor: const Color(0xFFEF5350),
             onTap: () {
+              final randomBiome = _getRandomBiome();
+              final trainer = TrainerDataLoader.generateRandom(biome: randomBiome);
               final playerRes = _generateRandomTeam(withTalismans: true);
-              final aiRes = _generateRandomTeam(withTalismans: true);
+              final aiRes = _generateRandomTeam(
+                withTalismans: true,
+                preferredClass: trainer.preferredClass,
+                preferredType: trainer.preferredType,
+              );
               _startBattle(
                 playerTeam: playerRes.team,
                 opponentTeam: aiRes.team,
-                battleTitle: 'Randoms',
+                battleTitle: 'vs ${trainer.displayName}',
                 opponentArchetype: aiRes.archetype,
                 shouldPersistResults: false,
+                isTrainerBattle: true,
+                biomeName: randomBiome,
+                trainerInfo: trainer,
               );
             },
           ),
@@ -416,8 +457,13 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
             icon: Icons.groups_rounded,
             accentColor: const Color(0xFFFFA000),
             onTap: () {
+              final trainer = TrainerDataLoader.generateRandom();
               final playerRes = _generateRandomTeam(withTalismans: true);
-              final aiRes = _generateRandomTeam(withTalismans: true);
+              final aiRes = _generateRandomTeam(
+                withTalismans: true,
+                preferredClass: trainer.preferredClass,
+                preferredType: trainer.preferredType,
+              );
               
               if (playerRes.team.isEmpty || aiRes.team.isEmpty) return;
               
@@ -429,7 +475,7 @@ class _BattleTabScreenState extends State<BattleTabScreen> {
                     biomeName: 'Double Arena',            // Placeholder
                     playerTeam: playerRes.team,
                     opponentTeam: aiRes.team,
-                    battleTitle: 'Doubles Random',
+                    battleTitle: 'vs ${trainer.displayName}',
                     isArenaBattle: true,
                     opponentArchetype: aiRes.archetype,
                     shouldPersistResults: false,

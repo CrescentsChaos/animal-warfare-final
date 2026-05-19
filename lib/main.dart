@@ -17,6 +17,7 @@ import 'package:animal_warfare/models/recipe.dart';
 import 'package:animal_warfare/models/ability.dart';
 import 'package:animal_warfare/game/biome_map_data.dart';
 import 'package:animal_warfare/game/npc_team_loader.dart';
+import 'package:animal_warfare/game/trainer_data.dart';
 
 import 'package:animal_warfare/services/nutrition_service.dart';
 
@@ -83,6 +84,8 @@ void main() async {
   await BiomeDataManager.loadData();
   // Load NPC trainer teams
   await NpcTeamLoader.loadData();
+  // Load Trainer Info data
+  await TrainerDataLoader.loadData();
 
   // 3. Initialize Firebase (Retained from your file)
   try {

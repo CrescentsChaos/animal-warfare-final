@@ -52,6 +52,16 @@ class BattleSpriteState extends State<BattleSprite>
   late Animation<double> _statChangeAnimation;
   bool _isStatBuff = true;
 
+  bool get _shouldHideAnimal {
+    final bo = widget.organism;
+    BattleManager? bm;
+    try {
+      bm = Provider.of<BattleManager>(context, listen: false);
+    } catch (_) {}
+    final isAnimalSent = bm == null || (bo.isPlayer ? bm.playerAnimalSent : bm.opponentAnimalSent);
+    return widget.hideAnimal || !isAnimalSent;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -379,7 +389,7 @@ class BattleSpriteState extends State<BattleSprite>
     required bool isPrismorphed,
     required ElementalType? teraType,
   }) {
-    if (bo.isInvulnerable || widget.hideAnimal) {
+    if (bo.isInvulnerable || _shouldHideAnimal) {
       return SizedBox(width: size, height: size);
     }
 
@@ -535,7 +545,7 @@ class BattleSpriteState extends State<BattleSprite>
     required String imagePath,
     required double size,
   }) {
-    if (bo.isInvulnerable || widget.hideAnimal) {
+    if (bo.isInvulnerable || _shouldHideAnimal) {
       return const SizedBox.shrink();
     }
 
@@ -567,6 +577,17 @@ class BattleSpriteState extends State<BattleSprite>
     final isPrismorphed = bo.isPrismorphed;
     final teraType = bo.activeTeraType;
 
+    BattleManager? bm;
+    try {
+      bm = Provider.of<BattleManager>(context);
+    } catch (_) {}
+
+    final showTrainer = bm != null &&
+        !bo.isPlayer &&
+        bm.isTrainerBattle &&
+        bm.trainerDialogueActive &&
+        bm.trainerInfo != null;
+
     if (_imageSourceType == null) {
       return SizedBox(
         width: size,
@@ -591,6 +612,154 @@ class BattleSpriteState extends State<BattleSprite>
         : const StatusEffect(type: StatusEffectType.none);
     final overlayPath = overlayStatus.overlayAssetPath;
 
+    final animalStack = Stack(
+      alignment: Alignment.center,
+      clipBehavior: Clip.none,
+      children: [
+        AnimatedBuilder(
+          animation: Listenable.merge([
+            _bounceController,
+            _entryController,
+            _pulseController,
+            _faintController,
+          ]),
+          builder: (context, _) {
+            return Transform.translate(
+              offset: Offset(0, _bounceAnimation.value),
+              child: Transform.scale(
+                scale: _entryAnimation.value,
+                alignment: Alignment.bottomCenter,
+                child: Stack(
+                  children: [
+                    // Outlines
+                    for (var x in [-outlineOffset, outlineOffset])
+                      for (var y in [-outlineOffset, outlineOffset])
+                        Transform.translate(
+                          offset: Offset(x, y),
+                          child: _buildOutlineLayer(
+                            bo: bo,
+                            imagePath: _imagePath,
+                            size: size,
+                          ),
+                        ),
+                    for (var x in [-outlineOffset, outlineOffset])
+                      Transform.translate(
+                        offset: Offset(x, 0),
+                        child: _buildOutlineLayer(
+                          bo: bo,
+                          imagePath: _imagePath,
+                          size: size,
+                        ),
+                      ),
+                    for (var y in [-outlineOffset, outlineOffset])
+                      Transform.translate(
+                        offset: Offset(0, y),
+                        child: _buildOutlineLayer(
+                          bo: bo,
+                          imagePath: _imagePath,
+                          size: size,
+                        ),
+                      ),
+
+                    // Main sprite
+                    Opacity(
+                      opacity: _faintOpacity.value,
+                      child: Stack(
+                        children: [
+                          _buildBaseSpriteLayer(
+                            bo: bo,
+                            imagePath: _imagePath,
+                            size: size,
+                            isPrismorphed: isPrismorphed,
+                            teraType: teraType,
+                          ),
+                          // Stat Change Animation Overlay
+                          Positioned.fill(
+                            child: AnimatedBuilder(
+                              animation: _statChangeAnimation,
+                              builder: (context, _) {
+                                if (_statChangeController.isDismissed) {
+                                  return const SizedBox.shrink();
+                                }
+                                final double progress =
+                                    _statChangeAnimation.value;
+                                final double opacity = progress < 0.2
+                                    ? progress / 0.2
+                                    : (progress > 0.8
+                                          ? (1.0 - progress) / 0.2
+                                          : 1.0);
+
+                                final color = _isStatBuff
+                                    ? Colors.cyanAccent
+                                    : Colors.orangeAccent;
+                                final offset = _isStatBuff
+                                    ? -20.0 * progress
+                                    : 20.0 * progress;
+
+                                return Transform.translate(
+                                  offset: Offset(0, offset),
+                                  child: Opacity(
+                                    opacity: opacity * 0.5,
+                                    child: ShaderMask(
+                                      shaderCallback: (bounds) =>
+                                          LinearGradient(
+                                            begin: Alignment.topCenter,
+                                            end: Alignment.bottomCenter,
+                                            colors: [
+                                              color,
+                                              color.withValues(alpha: 0),
+                                            ],
+                                          ).createShader(bounds),
+                                      blendMode: BlendMode.srcATop,
+                                      child: _buildBaseSpriteLayer(
+                                        bo: bo,
+                                        imagePath: _imagePath,
+                                        size: size,
+                                        isPrismorphed: isPrismorphed,
+                                        teraType: teraType,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          if (_faintFlash.value > 0)
+                            Positioned.fill(
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(
+                                    alpha: _faintFlash.value,
+                                  ),
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+        if (!bo.isInvulnerable && overlayPath != null)
+          Positioned.fill(
+            child: Image.asset(
+              overlayPath,
+              fit: BoxFit.contain,
+              opacity: const AlwaysStoppedAnimation(0.85),
+              errorBuilder: (_, _, _) => const SizedBox.shrink(),
+            ),
+          ),
+        Positioned.fill(child: _buildHazards()),
+        Positioned.fill(
+          child: ScreenShieldOverlay(organism: widget.organism, size: size),
+        ),
+      ],
+    );
+
     return GestureDetector(
       onTap: widget.onTap,
       child: SizedBox(
@@ -609,147 +778,34 @@ class BattleSpriteState extends State<BattleSprite>
                 errorBuilder: (_, _, _) => const SizedBox.shrink(),
               ),
             ),
-            AnimatedBuilder(
-              animation: Listenable.merge([
-                _bounceController,
-                _entryController,
-                _pulseController,
-                _faintController,
-              ]),
-              builder: (context, _) {
-                return Transform.translate(
-                  offset: Offset(0, _bounceAnimation.value),
-                  child: Transform.scale(
-                    scale: _entryAnimation.value,
-                    alignment: Alignment.bottomCenter,
-                    child: Stack(
-                      children: [
-                        // Outlines
-                        for (var x in [-outlineOffset, outlineOffset])
-                          for (var y in [-outlineOffset, outlineOffset])
-                            Transform.translate(
-                              offset: Offset(x, y),
-                              child: _buildOutlineLayer(
-                                bo: bo,
-                                imagePath: _imagePath,
-                                size: size,
-                              ),
-                            ),
-                        for (var x in [-outlineOffset, outlineOffset])
-                          Transform.translate(
-                            offset: Offset(x, 0),
-                            child: _buildOutlineLayer(
-                              bo: bo,
-                              imagePath: _imagePath,
-                              size: size,
-                            ),
-                          ),
-                        for (var y in [-outlineOffset, outlineOffset])
-                          Transform.translate(
-                            offset: Offset(0, y),
-                            child: _buildOutlineLayer(
-                              bo: bo,
-                              imagePath: _imagePath,
-                              size: size,
-                            ),
-                          ),
-
-                        // Main sprite
-                        Opacity(
-                          opacity: _faintOpacity.value,
-                          child: Stack(
-                            children: [
-                              _buildBaseSpriteLayer(
-                                bo: bo,
-                                imagePath: _imagePath,
-                                size: size,
-                                isPrismorphed: isPrismorphed,
-                                teraType: teraType,
-                              ),
-                              // Stat Change Animation Overlay
-                              Positioned.fill(
-                                child: AnimatedBuilder(
-                                  animation: _statChangeAnimation,
-                                  builder: (context, _) {
-                                    if (_statChangeController.isDismissed) {
-                                      return const SizedBox.shrink();
-                                    }
-                                    final double progress =
-                                        _statChangeAnimation.value;
-                                    final double opacity = progress < 0.2
-                                        ? progress / 0.2
-                                        : (progress > 0.8
-                                              ? (1.0 - progress) / 0.2
-                                              : 1.0);
-
-                                    final color = _isStatBuff
-                                        ? Colors.cyanAccent
-                                        : Colors.orangeAccent;
-                                    final offset = _isStatBuff
-                                        ? -20.0 * progress
-                                        : 20.0 * progress;
-
-                                    return Transform.translate(
-                                      offset: Offset(0, offset),
-                                      child: Opacity(
-                                        opacity: opacity * 0.5,
-                                        child: ShaderMask(
-                                          shaderCallback: (bounds) =>
-                                              LinearGradient(
-                                                begin: Alignment.topCenter,
-                                                end: Alignment.bottomCenter,
-                                                colors: [
-                                                  color,
-                                                  color.withValues(alpha: 0),
-                                                ],
-                                              ).createShader(bounds),
-                                          blendMode: BlendMode.srcATop,
-                                          child: _buildBaseSpriteLayer(
-                                            bo: bo,
-                                            imagePath: _imagePath,
-                                            size: size,
-                                            isPrismorphed: isPrismorphed,
-                                            teraType: teraType,
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                              if (_faintFlash.value > 0)
-                                Positioned.fill(
-                                  child: DecoratedBox(
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withValues(
-                                        alpha: _faintFlash.value,
-                                      ),
-                                      shape: BoxShape.circle,
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                      ],
+            if (showTrainer)
+              if (!_shouldHideAnimal)
+                Transform.translate(
+                  offset: Offset(-size * 0.22, 0),
+                  child: animalStack,
+                )
+              else
+                const SizedBox.shrink()
+            else if (!_shouldHideAnimal)
+              animalStack,
+            if (showTrainer)
+              Positioned(
+                child: Transform.translate(
+                  offset: Offset(_shouldHideAnimal ? 0 : size * 0.28, 0),
+                  child: Image.asset(
+                    bm!.trainerInfo!.spritePath,
+                    width: size * 0.9,
+                    height: size * 0.9,
+                    fit: BoxFit.contain,
+                    filterQuality: FilterQuality.none,
+                    errorBuilder: (context, error, stackTrace) => Icon(
+                      Icons.person,
+                      size: size * 0.6,
+                      color: Colors.white,
                     ),
                   ),
-                );
-              },
-            ),
-            if (!bo.isInvulnerable && overlayPath != null)
-              Positioned.fill(
-                child: Image.asset(
-                  overlayPath,
-                  fit: BoxFit.contain,
-                  opacity: const AlwaysStoppedAnimation(0.85),
-                  errorBuilder: (_, _, _) => const SizedBox.shrink(),
                 ),
               ),
-            Positioned.fill(child: _buildHazards()),
-            Positioned.fill(
-              child: ScreenShieldOverlay(organism: widget.organism, size: size),
-            ),
           ],
         ),
       ),

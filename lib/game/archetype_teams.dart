@@ -47,6 +47,8 @@ class ArchetypeTeamBuilder {
     int level = 50,
     int teamSize = 5,
     int minIV = 24,
+    String? preferredClass,
+    String? preferredType,
   }) {
     if (allOrganisms.isEmpty) {
       return const ArchetypeResult(
@@ -61,8 +63,15 @@ class ArchetypeTeamBuilder {
     if (_rng.nextDouble() < chaosCutoff) {
       // Filter out God-Tier organisms (test entries with 999 stats)
       final normalPool = allOrganisms.where((o) => !_isGodTier(o)).toList();
+      var pool = normalPool.where((o) {
+        if (preferredClass != null && o.animalClass.toLowerCase() != preferredClass.toLowerCase()) return false;
+        if (preferredType != null && !o.types.map((t) => t.toLowerCase()).contains(preferredType.toLowerCase())) return false;
+        return true;
+      }).toList();
+      if (pool.isEmpty) pool = normalPool;
+      
       final team = buildChaos(
-        normalPool.isEmpty ? allOrganisms : normalPool,
+        pool.isEmpty ? allOrganisms : pool,
         withTalismans: withTalismans,
         level: level,
         teamSize: teamSize,
@@ -79,9 +88,16 @@ class ArchetypeTeamBuilder {
     final archetypes = TeamArchetype.values;
     final archetype = archetypes[_rng.nextInt(archetypes.length)];
 
+    var pool = allOrganisms.where((o) {
+      if (preferredClass != null && o.animalClass.toLowerCase() != preferredClass.toLowerCase()) return false;
+      if (preferredType != null && !o.types.map((t) => t.toLowerCase()).contains(preferredType.toLowerCase())) return false;
+      return true;
+    }).toList();
+    if (pool.isEmpty) pool = allOrganisms;
+
     final team = buildForArchetype(
       archetype,
-      allOrganisms,
+      pool,
       withTalismans: withTalismans,
       level: level,
       teamSize: teamSize,
