@@ -983,34 +983,70 @@ class BattleDetailsSheet extends StatelessWidget {
   // _getTypeIcon was used for old IconData icons - removing in favor of direct Image.asset usage
 
   Widget _buildLoadout(Organism org, bool captured, Color themeColor) {
-    if (!captured && !isPlayer) {
+    final showAbility = isPlayer || captured || bo.isAbilityRevealed;
+    final showItem = isPlayer || captured || bo.isItemRevealed;
+
+    if (!showAbility && !showItem) {
       return _buildLockedSection('ABILITY & ITEM DATA ENCRYPTED');
     }
 
     return Column(
       children: [
-        _buildInfoTile(
-          'ABILITY',
-          bo.abilities.isNotEmpty
-              ? bo.abilities.first.name.toUpperCase()
-              : 'NONE',
-          bo.abilities.isNotEmpty
-              ? bo.abilities.first.description
-              : 'NO ABILITY DETECTED.',
-          Icon(Icons.auto_awesome_outlined, color: themeColor, size: 24),
-          themeColor,
-        ),
+        if (showAbility)
+          _buildInfoTile(
+            'ABILITY',
+            bo.abilities.isNotEmpty
+                ? bo.abilities.first.name.toUpperCase()
+                : 'NONE',
+            bo.abilities.isNotEmpty
+                ? bo.abilities.first.description
+                : 'NO ABILITY DETECTED.',
+            Icon(Icons.auto_awesome_outlined, color: themeColor, size: 24),
+            themeColor,
+          )
+        else
+          _buildLockedInfoTile('ABILITY DATA ENCRYPTED', themeColor),
         const SizedBox(height: 12),
-        _buildInfoTile(
-          'HELD ITEM',
-          bo.organism.equippedTalisman?.name.toUpperCase() ?? 'NONE',
-          bo.organism.equippedTalisman?.description ?? 'NO HELD ITEM DETECTED.',
-          bo.organism.equippedTalisman != null
-              ? ItemIcon(itemName: bo.organism.equippedTalisman!.name, size: 24)
-              : Icon(Icons.inventory_2_outlined, color: themeColor, size: 24),
-          themeColor,
-        ),
+        if (showItem)
+          _buildInfoTile(
+            'HELD ITEM',
+            bo.organism.equippedTalisman?.name.toUpperCase() ?? 'NONE',
+            bo.organism.equippedTalisman?.description ?? 'NO HELD ITEM DETECTED.',
+            bo.organism.equippedTalisman != null
+                ? ItemIcon(itemName: bo.organism.equippedTalisman!.name, size: 24)
+                : Icon(Icons.inventory_2_outlined, color: themeColor, size: 24),
+            themeColor,
+          )
+        else
+          _buildLockedInfoTile('HELD ITEM DATA ENCRYPTED', themeColor),
       ],
+    );
+  }
+
+  Widget _buildLockedInfoTile(String message, Color themeColor) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.02),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.lock_outline, color: Colors.white24, size: 24),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              message,
+              style: const TextStyle(
+                color: Colors.white24,
+                fontSize: 10,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

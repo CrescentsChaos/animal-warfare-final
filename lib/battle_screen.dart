@@ -1185,9 +1185,16 @@ class _BattleScreenContentState extends State<BattleScreenContent>
         }
       },
       child: Scaffold(
-        body: Transform.translate(
-          offset: Offset(_screenShakeX, _screenShakeY),
-          child: Stack(
+        body: GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: () {
+            if (battleManager.isWaitingForDialogueClick) {
+              battleManager.advanceDialogue();
+            }
+          },
+          child: Transform.translate(
+            offset: Offset(_screenShakeX, _screenShakeY),
+            child: Stack(
             children: [
               // Background: use blurred map screenshot if available, else biome asset
               if (widget.mapScreenshot != null)
@@ -1514,17 +1521,9 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                       : (_gimmickTarget?.activeTeraType ?? ElementalType.basic)
                             .color,
                 ),
-              // Trainer Intro/Dialogue Overlay
-              if (battleManager.trainerDialogueActive &&
-                  battleManager.trainerInfo != null)
-                _TrainerIntroOverlay(
-                  trainerInfo: battleManager.trainerInfo!,
-                  dialogue: battleManager.trainerDialogue ?? '',
-                  themeColor: _getBiomeThemeColor(),
-                  isIntro: battleManager.currentState == BattleState.trainerIntro,
-                ),
             ],
           ),
+        ),
         ),
       ),
     );
@@ -1752,9 +1751,9 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               runSpacing: 4,
               children: [
                 if (bm.currentWeather.weather != Weather.none)
-                  _buildWeatherIndicator(bm.currentWeather.weather),
+                  _buildWeatherIndicator(bm.currentWeather.weather, bm.weatherTurnsLeft),
                 if (bm.currentTerrain.terrain != Terrain.none)
-                  _buildTerrainIndicator(bm.currentTerrain.terrain),
+                  _buildTerrainIndicator(bm.currentTerrain.terrain, bm.terrainTurnsLeft),
                 if (bm.trickRoomTurns > 0)
                   _buildFieldEffectIcon(
                     iconPath: 'assets/icon/trick_room.png',
@@ -1898,22 +1897,22 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     );
   }
 
-  Widget _buildWeatherIndicator(Weather weather) {
+  Widget _buildWeatherIndicator(Weather weather, int turns) {
     if (weather == Weather.clear || weather == Weather.none) {
       return const SizedBox.shrink();
     }
     return _buildFieldEffectIcon(
       iconPath: weather.iconPath,
-      turns: 0, // Weather duration usually not shown as a number in main UI
+      turns: turns,
       tooltip: weather.name.toUpperCase(),
     );
   }
 
-  Widget _buildTerrainIndicator(Terrain terrain) {
+  Widget _buildTerrainIndicator(Terrain terrain, int turns) {
     if (terrain == Terrain.none) return const SizedBox.shrink();
     return _buildFieldEffectIcon(
       iconPath: terrain.iconPath,
-      turns: 0,
+      turns: turns,
       tooltip: terrain.name.toUpperCase(),
     );
   }
@@ -2601,6 +2600,15 @@ class _BattleScreenContentState extends State<BattleScreenContent>
     final battleManager = Provider.of<BattleManager>(context);
     final showCursor = battleManager.isWaitingForDialogueClick;
 
+    Color textColor = Colors.white;
+    if (battleManager.isTrainerBattle && battleManager.trainerInfo != null) {
+      if (message.startsWith(battleManager.trainerInfo!.displayName)) {
+        textColor = battleManager.trainerInfo!.gender == 'female'
+            ? Colors.pinkAccent
+            : Colors.blueAccent;
+      }
+    }
+
     return GestureDetector(
       onTap: () {
         if (battleManager.isWaitingForDialogueClick) {
@@ -2666,9 +2674,9 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                     reverse: false,
                     child: TypewriterText(
                       message,
-                      speed: Duration(milliseconds: _isFastMode ? 17 : 50),
+                      speed: Duration(milliseconds: _isFastMode ? 5 : 20),
                       style: TextStyle(
-                        color: Colors.white,
+                        color: textColor,
                         fontSize: isNarrow ? 10 : 12,
                         fontFamily: 'PressStart2P',
                         height: 1.2,
@@ -7456,232 +7464,6 @@ class _GimmickBannerState extends State<_GimmickBanner>
 }
 
 // ─── TRAINER INTRO / DIALOGUE OVERLAY ───
-class _TrainerIntroOverlay extends StatefulWidget {
-  final TrainerInfo trainerInfo;
-  final String dialogue;
-  final Color themeColor;
-  final bool isIntro;
-
-  const _TrainerIntroOverlay({
-    required this.trainerInfo,
-    required this.dialogue,
-    required this.themeColor,
-    this.isIntro = true,
-  });
-
-  @override
-  State<_TrainerIntroOverlay> createState() => _TrainerIntroOverlayState();
-}
-
-class _TrainerIntroOverlayState extends State<_TrainerIntroOverlay>
-    with TickerProviderStateMixin {
-  late AnimationController _slideController;
-  late Animation<Offset> _slideAnimation;
-
-  String _displayedText = '';
-  int _charIndex = 0;
-  Ticker? _typewriterTicker;
-  bool _isTypewriterComplete = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _slideController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 600),
-    );
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(1.5, 0.0),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _slideController,
-      curve: Curves.easeOutBack,
-    ));
-
-    _slideController.forward();
-    _startTypewriter(widget.dialogue);
-  }
-
-  @override
-  void didUpdateWidget(_TrainerIntroOverlay oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.dialogue != widget.dialogue) {
-      _startTypewriter(widget.dialogue);
-    }
-  }
-
-  void _startTypewriter(String text) {
-    _typewriterTicker?.stop();
-    _typewriterTicker?.dispose();
-
-    _isTypewriterComplete = false;
-    _displayedText = '';
-    _charIndex = 0;
-
-    if (text.isEmpty) {
-      setState(() {
-        _isTypewriterComplete = true;
-      });
-      return;
-    }
-
-    const stepDuration = Duration(milliseconds: 30);
-    _typewriterTicker = createTicker((elapsed) {
-      final ticks = (elapsed.inMilliseconds / stepDuration.inMilliseconds).floor();
-      if (ticks > _charIndex) {
-        if (_charIndex < text.length) {
-          setState(() {
-            _charIndex = ticks.clamp(0, text.length);
-            _displayedText = text.substring(0, _charIndex);
-          });
-        } else {
-          setState(() {
-            _isTypewriterComplete = true;
-          });
-          _typewriterTicker?.stop();
-        }
-      }
-    });
-    _typewriterTicker?.start();
-  }
-
-  @override
-  void dispose() {
-    _slideController.dispose();
-    _typewriterTicker?.stop();
-    _typewriterTicker?.dispose();
-    super.dispose();
-  }
-
-  void _onTapScreen(BattleManager battleManager) {
-    if (!_isTypewriterComplete) {
-      setState(() {
-        _displayedText = widget.dialogue;
-        _isTypewriterComplete = true;
-        _typewriterTicker?.stop();
-      });
-    } else {
-      battleManager.advanceDialogue();
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final battleManager = Provider.of<BattleManager>(context, listen: false);
-    final isLandscape =
-        MediaQuery.of(context).orientation == Orientation.landscape;
-
-    final spriteHeight =
-        (MediaQuery.of(context).size.height * (isLandscape ? 0.35 : 0.25))
-            .clamp(120.0, 200.0);
-
-    return Positioned.fill(
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () => _onTapScreen(battleManager),
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: Container(
-                color: Colors.black.withValues(alpha: 0.4),
-              ),
-            ),
-            Align(
-              alignment: isLandscape ? const Alignment(0.6, -0.2) : const Alignment(0.0, -0.3),
-              child: SlideTransition(
-                position: _slideAnimation,
-                child: Image.asset(
-                  widget.trainerInfo.spritePath,
-                  height: spriteHeight,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Image.asset(
-                      'assets/npc/gentleman.webp',
-                      height: spriteHeight,
-                      fit: BoxFit.contain,
-                    );
-                  },
-                ),
-              ),
-            ),
-            Positioned(
-              bottom: 24,
-              left: 16,
-              right: 16,
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1E1E1E).withValues(alpha: 0.95),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: widget.themeColor.withValues(alpha: 0.8),
-                    width: 2.5,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: widget.themeColor.withValues(alpha: 0.3),
-                      blurRadius: 16,
-                      spreadRadius: 2,
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: widget.themeColor.withValues(alpha: 0.25),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: widget.themeColor.withValues(alpha: 0.7),
-                          width: 1.5,
-                        ),
-                      ),
-                      child: Text(
-                        widget.trainerInfo.displayName.toUpperCase(),
-                        style: TextStyle(
-                          color: widget.themeColor,
-                          fontSize: 9,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'PressStart2P',
-                          letterSpacing: 1.0,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    ConstrainedBox(
-                      constraints: const BoxConstraints(minHeight: 54),
-                      child: Text(
-                        _displayedText,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 11,
-                          fontFamily: 'PressStart2P',
-                          height: 1.7,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ),
-                    if (_isTypewriterComplete)
-                      Align(
-                        alignment: Alignment.bottomRight,
-                        child: _TypewriterCursor(color: widget.themeColor),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 // Blinking cursor widget for typewriter effect
 class _TypewriterCursor extends StatefulWidget {

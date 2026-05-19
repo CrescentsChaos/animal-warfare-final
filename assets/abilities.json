@@ -634,10 +634,10 @@
   },
   {
     "name": "Berserk",
-    "description": "Boosts Attack when HP falls below 50% due to an attack.",
+    "description": "Boosts Power when HP falls below 50% due to an attack.",
     "trigger": "onDamageTaken",
     "effectType": "statChange",
-    "targetStat": "attack",
+    "targetStat": "power",
     "magnitude": 1,
     "conditions": [
       "hp_below_50"

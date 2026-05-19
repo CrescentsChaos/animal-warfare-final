@@ -350,6 +350,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
   /// Completer used to pause U-turn/Volt Switch mid-turn until player selects a new animal.
   Completer<void>? _switchCompleter;
+  Future<void>? _activeSwitchFuture;
 
   // Callbacks for UI
   Function(BattleOrganism, Move)? onAttack;
@@ -1432,7 +1433,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
               false; // We'll handle it in _executeTurn or after
           pendingOpponentSwitchIndex = switchIndex;
         } else {
-          _switchOpponentTo(switchIndex);
+          await _switchOpponentTo(switchIndex);
           opponentJustSwitched = true;
           lastOpponentSwitchTurn = currentTurn;
         }
@@ -1621,11 +1622,12 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         playerMovedThisTurn = true;
       }
       if (_checkBattleEnd()) return;
+      if (_activeSwitchFuture != null) await _activeSwitchFuture;
       if (currentState == BattleState.waitingForPlayerSwitch) return;
 
       // Handle pending opponent switch after player's turn (if Pursuit was used)
       if (pendingOpponentSwitchIndex != null && playerMovedThisTurn) {
-        _switchOpponentTo(pendingOpponentSwitchIndex!);
+        await _switchOpponentTo(pendingOpponentSwitchIndex!);
         opponentJustSwitched = true;
         pendingOpponentSwitchIndex = null;
       }
@@ -1643,6 +1645,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         opponentMovedThisTurn = true;
       }
       if (_checkBattleEnd()) return;
+      if (_activeSwitchFuture != null) await _activeSwitchFuture;
       if (currentState == BattleState.waitingForPlayerSwitch) return;
     } else {
       // Opponent Turn
@@ -1658,6 +1661,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         opponentMovedThisTurn = true;
       }
       if (_checkBattleEnd()) return;
+      if (_activeSwitchFuture != null) await _activeSwitchFuture;
       if (currentState == BattleState.waitingForPlayerSwitch) return;
 
       // Player Turn
@@ -1673,6 +1677,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         playerMovedThisTurn = true;
       }
       if (_checkBattleEnd()) return;
+      if (_activeSwitchFuture != null) await _activeSwitchFuture;
       if (currentState == BattleState.waitingForPlayerSwitch) return;
 
       // START FIX: Delay to show new animal before finalizing turn
@@ -2012,7 +2017,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           );
           if (healthyIndex != -1) {
             addToLog('${defender.name} was blown away!');
-            _switchOpponentTo(healthyIndex);
+            await _switchOpponentTo(healthyIndex);
             opponentJustSwitched = true;
             notifyListeners();
             if (!isTesting) {
@@ -2818,19 +2823,6 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             onDamage?.call(defender, effectiveDamage);
             if (defender.health <= 0 && attacker.isPlayer) {
               lastBlowOrganismId = attacker.organism.id;
-            }
-
-            // Berserk
-            if (defender.abilities.any((ab) => ab.name == 'Berserk') &&
-                oldHealth > defender.maxHealth / 2 &&
-                defender.health <= defender.maxHealth / 2 &&
-                defender.health > 0) {
-              await notifyAbilityTrigger(
-                defender,
-                defender.abilities.firstWhere((a) => a.name == 'Berserk'),
-              );
-              await applyStatChange(defender, 'power', 1);
-              addToLog('${defender.name}\'s Berserk raised its power!');
             }
           }
 
@@ -7668,6 +7660,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         target.health = 0;
         target.perishTurnCount = null;
         _checkBattleEnd();
+        if (_activeSwitchFuture != null) await _activeSwitchFuture;
       }
       notifyListeners();
       if (!isTesting) await Future.delayed(const Duration(milliseconds: 1500));
@@ -7998,6 +7991,21 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   }
 
   Future<void> _switchOpponentTo(int index) async {
+    final completer = Completer<void>();
+    _activeSwitchFuture = completer.future;
+    try {
+      await _switchOpponentToBody(index);
+      completer.complete();
+    } catch (e, stackTrace) {
+      completer.completeError(e, stackTrace);
+    } finally {
+      if (_activeSwitchFuture == completer.future) {
+        _activeSwitchFuture = null;
+      }
+    }
+  }
+
+  Future<void> _switchOpponentToBody(int index) async {
     if (index < 0 || index >= opponentTeam.length) return;
 
     // Baton Pass check
@@ -10369,6 +10377,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     if (hazards.isEmpty) return;
     if (target.health <= 0) return;
 
+    final initialSwitchFuture = _activeSwitchFuture;
+
     // Heavy-Duty Boots: Hazard Immunity
     if (target.organism.equippedTalisman != null && !target.talismanConsumed) {
       if (target.organism.equippedTalisman!.effects.any(
@@ -10395,6 +10405,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     final hazardsToRemove = <String>[];
 
     for (final entry in hazardCounts.entries) {
+      if (target.health <= 0) break;
+
       final hazard = entry.key;
       final count = entry.value;
 
@@ -10431,6 +10443,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         addToLog('${target.name} was hurt by Stealth Rock!');
         notifyListeners();
         if (_checkBattleEnd()) return;
+        if (_activeSwitchFuture != null && _activeSwitchFuture != initialSwitchFuture) {
+          await _activeSwitchFuture;
+        }
       } else if (hazard == 'toxic_spikes' && isGrounded) {
         if (target.types.contains(ElementalType.toxic)) {
           addToLog('${target.name} absorbed the Toxic Spikes!');
@@ -10457,6 +10472,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     }
 
     _checkBattleEnd();
+    if (_activeSwitchFuture != null && _activeSwitchFuture != initialSwitchFuture) {
+      await _activeSwitchFuture;
+    }
   }
 
   void _startSuggestionTimer() {

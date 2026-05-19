@@ -13,7 +13,16 @@
           "youngster-gen9.png",
           "youngster.png"
         ],
-        "names": ["Joey", "Timmy", "Ben", "Mikey", "Cal", "Danny", "Josh", "Ryan"],
+        "names": [
+          "Joey",
+          "Timmy",
+          "Ben",
+          "Mikey",
+          "Cal",
+          "Danny",
+          "Josh",
+          "Ryan"
+        ],
         "intro_dialogue": [
           "Hey! I just caught my first animal! Let's battle!",
           "I'm gonna be the best trainer ever! Watch me!",
@@ -37,7 +46,16 @@
       {
         "title": "Black Belt",
         "sprite": "Black_Belt_sprite.webp",
-        "names": ["Kenji", "Ryu", "Hiro", "Marcus", "Jet", "Khan", "Bruce", "Tang"],
+        "names": [
+          "Kenji",
+          "Ryu",
+          "Hiro",
+          "Marcus",
+          "Jet",
+          "Khan",
+          "Bruce",
+          "Tang"
+        ],
         "preferred_type": "Martial",
         "intro_dialogue": [
           "HAAAA! My fighting spirit burns bright! Let's go!",
@@ -62,7 +80,16 @@
       {
         "title": "Gentleman",
         "sprite": "gentleman.webp",
-        "names": ["Arthur", "Charles", "Winston", "Edward", "Reginald", "Theodore", "Bernard", "Percival"],
+        "names": [
+          "Arthur",
+          "Charles",
+          "Winston",
+          "Edward",
+          "Reginald",
+          "Theodore",
+          "Bernard",
+          "Percival"
+        ],
         "intro_dialogue": [
           "Ah, a challenger! How delightful. Shall we?",
           "I trust you'll provide a sophisticated battle, hmm?",
@@ -86,8 +113,21 @@
       {
         "title": "Hiker",
         "sprite": "Hiker_sprite.webp",
-        "biome_exclusive": ["Mountain", "Cave", "Volcano"],
-        "names": ["Clark", "Brock", "Cliff", "Ridge", "Marco", "Otis", "Earl", "Dale"],
+        "biome_exclusive": [
+          "Mountain",
+          "Cave",
+          "Volcano"
+        ],
+        "names": [
+          "Clark",
+          "Brock",
+          "Cliff",
+          "Ridge",
+          "Marco",
+          "Otis",
+          "Earl",
+          "Dale"
+        ],
         "intro_dialogue": [
           "GAHAHA! You came all the way out here? Let's battle!",
           "The mountains make animals tough! Mine are no exception!",
@@ -111,8 +151,22 @@
       {
         "title": "Bug Catcher",
         "sprite": "Bugcatcherf.webp",
-        "biome_exclusive": ["Rainforest", "Jungle", "Swamp", "Mangrove"],
-        "names": ["Wade", "Liam", "Doug", "Rick", "Greg", "Cody", "Felix", "Oscar"],
+        "biome_exclusive": [
+          "Rainforest",
+          "Jungle",
+          "Swamp",
+          "Mangrove"
+        ],
+        "names": [
+          "Wade",
+          "Liam",
+          "Doug",
+          "Rick",
+          "Greg",
+          "Cody",
+          "Felix",
+          "Oscar"
+        ],
         "preferred_class": "Insect",
         "intro_dialogue": [
           "Check out the awesome bugs I caught! Let's battle!",
@@ -137,8 +191,23 @@
       {
         "title": "Fisherman",
         "sprite": "Fisherman_sprite.webp",
-        "biome_exclusive": ["Coastal", "Lake", "River", "Wetlands", "Kelp Forest"],
-        "names": ["Ralph", "Ned", "Earl", "Barney", "Wade", "Gene", "Hank", "Gill"],
+        "biome_exclusive": [
+          "Coastal",
+          "Lake",
+          "River",
+          "Wetlands",
+          "Kelp Forest"
+        ],
+        "names": [
+          "Ralph",
+          "Ned",
+          "Earl",
+          "Barney",
+          "Wade",
+          "Gene",
+          "Hank",
+          "Gill"
+        ],
         "preferred_class": "Aquatic",
         "intro_dialogue": [
           "I've been fishing here all day! How about a battle?",
@@ -163,7 +232,16 @@
       {
         "title": "Scientist",
         "sprite": "ScientistAdjust.webp",
-        "names": ["Newton", "Edison", "Darwin", "Tesla", "Pascal", "Kelvin", "Faraday", "Gauss"],
+        "names": [
+          "Newton",
+          "Edison",
+          "Darwin",
+          "Tesla",
+          "Pascal",
+          "Kelvin",
+          "Faraday",
+          "Gauss"
+        ],
         "intro_dialogue": [
           "Fascinating! A wild trainer appears! Let me collect data!",
           "I hypothesize that my animals are superior. Let's test that!",
@@ -187,8 +265,23 @@
       {
         "title": "Sailor",
         "sprite": "Sailor_sprite.webp",
-        "biome_exclusive": ["Ocean", "Deep Sea", "Coral Reef", "Frozen Ocean", "Coastal"],
-        "names": ["Huey", "Duncan", "Barnacle", "Morgan", "Drake", "Skipper", "Ahab", "Finn"],
+        "biome_exclusive": [
+          "Ocean",
+          "Deep Sea",
+          "Coral Reef",
+          "Frozen Ocean",
+          "Coastal"
+        ],
+        "names": [
+          "Huey",
+          "Duncan",
+          "Barnacle",
+          "Morgan",
+          "Drake",
+          "Skipper",
+          "Ahab",
+          "Finn"
+        ],
         "intro_dialogue": [
           "Ahoy! Ye want a battle? I'll show ye sea-worthy power!",
           "These waters be treacherous, and so are my animals!",
@@ -212,7 +305,16 @@
       {
         "title": "Ace Trainer",
         "sprite": "Ace_Trainer_Male_W.webp",
-        "names": ["Lance", "Drake", "Kanto", "Blaze", "Victor", "Rex", "Atlas", "Zane"],
+        "names": [
+          "Lance",
+          "Drake",
+          "Kanto",
+          "Blaze",
+          "Victor",
+          "Rex",
+          "Atlas",
+          "Zane"
+        ],
         "intro_dialogue": [
           "I've trained every day for this moment. Let's go!",
           "You think you can beat an Ace Trainer? Prove it!",
@@ -236,7 +338,16 @@
       {
         "title": "Psychic",
         "sprite": "Psychic_M_Battlesprite_WIP.webp",
-        "names": ["Tyron", "Elias", "Darius", "Jasper", "Orion", "Sage", "Cyrus", "Silas"],
+        "names": [
+          "Tyron",
+          "Elias",
+          "Darius",
+          "Jasper",
+          "Orion",
+          "Sage",
+          "Cyrus",
+          "Silas"
+        ],
         "preferred_type": "Aura",
         "intro_dialogue": [
           "I foresaw your arrival... and your defeat!",
@@ -261,7 +372,16 @@
       {
         "title": "Veteran",
         "sprite": "Veteran_M.webp",
-        "names": ["Hugo", "Sterling", "Barrett", "Knox", "Roland", "Garrison", "Colt", "Magnus"],
+        "names": [
+          "Hugo",
+          "Sterling",
+          "Barrett",
+          "Knox",
+          "Roland",
+          "Garrison",
+          "Colt",
+          "Magnus"
+        ],
         "intro_dialogue": [
           "I've fought in countless battles. One more won't hurt!",
           "Experience is the greatest teacher. Let me show you!",
@@ -285,8 +405,23 @@
       {
         "title": "Ranger",
         "sprite": "Pkmn_Ranger.webp",
-        "biome_exclusive": ["Rainforest", "Taiga", "Redwoods", "Mountain", "Jungle"],
-        "names": ["Drake", "Forrest", "Bryce", "Ash", "Heath", "Cedar", "Reed", "Stone"],
+        "biome_exclusive": [
+          "Rainforest",
+          "Taiga",
+          "Redwoods",
+          "Mountain",
+          "Jungle"
+        ],
+        "names": [
+          "Drake",
+          "Forrest",
+          "Bryce",
+          "Ash",
+          "Heath",
+          "Cedar",
+          "Reed",
+          "Stone"
+        ],
         "intro_dialogue": [
           "Halt! Rangers protect these lands! Show your strength!",
           "The wild has made my animals fierce! Can you handle them?",
@@ -314,7 +449,16 @@
       {
         "title": "Lass",
         "sprite": "Lass2.webp",
-        "names": ["Lisa", "Sally", "Anna", "Emma", "Mia", "Lily", "Rose", "Chloe"],
+        "names": [
+          "Lisa",
+          "Sally",
+          "Anna",
+          "Emma",
+          "Mia",
+          "Lily",
+          "Rose",
+          "Chloe"
+        ],
         "intro_dialogue": [
           "Hey there! I've been looking for someone to battle!",
           "My animals are super cute AND super strong!",
@@ -337,8 +481,17 @@
       },
       {
         "title": "Beauty",
-        "sprite": "Beauty_sprite.webp",
-        "names": ["Victoria", "Isabelle", "Camilla", "Seraphina", "Vivienne", "Celeste", "Rosalind", "Diana"],
+        "sprite": "Beauty.webp",
+        "names": [
+          "Victoria",
+          "Isabelle",
+          "Camilla",
+          "Seraphina",
+          "Vivienne",
+          "Celeste",
+          "Rosalind",
+          "Diana"
+        ],
         "intro_dialogue": [
           "Oh my! A battle? How thrilling! Let me fix my hair first...",
           "Beauty AND skill! I have both, darling!",
@@ -361,8 +514,17 @@
       },
       {
         "title": "Battle Girl",
-        "sprite": "BattleGirl_Colors.webp",
-        "names": ["Sakura", "Hana", "Mai", "Yuki", "Rena", "Akira", "Sora", "Kira"],
+        "sprite": "BattleGirl.webp",
+        "names": [
+          "Sakura",
+          "Hana",
+          "Mai",
+          "Yuki",
+          "Rena",
+          "Akira",
+          "Sora",
+          "Kira"
+        ],
         "intro_dialogue": [
           "I train every day! My fighting spirit is at MAX!",
           "Bring it on! I love a good challenge!",
@@ -386,7 +548,16 @@
       {
         "title": "Ace Trainer",
         "sprite": "Ace_Trainer_Female_W.webp",
-        "names": ["Natasha", "Elena", "Serena", "Quinn", "Petra", "Luna", "Freya", "Nova"],
+        "names": [
+          "Natasha",
+          "Elena",
+          "Serena",
+          "Quinn",
+          "Petra",
+          "Luna",
+          "Freya",
+          "Nova"
+        ],
         "intro_dialogue": [
           "An Ace Trainer never refuses a challenge! Let's battle!",
           "I've trained under the best. Can you keep up?",
@@ -410,7 +581,16 @@
       {
         "title": "Parasol Lady",
         "sprite": "ParasolGirlC.webp",
-        "names": ["Madeline", "Clarissa", "Helena", "Priscilla", "Beatrice", "Cordelia", "Ophelia", "Genevieve"],
+        "names": [
+          "Madeline",
+          "Clarissa",
+          "Helena",
+          "Priscilla",
+          "Beatrice",
+          "Cordelia",
+          "Ophelia",
+          "Genevieve"
+        ],
         "intro_dialogue": [
           "The weather is perfect for a battle, don't you think?",
           "My animals love rain or shine! Let's have a match!",
@@ -434,8 +614,22 @@
       {
         "title": "Aroma Lady",
         "sprite": "Aroma_Lady_Adjust.webp",
-        "biome_exclusive": ["Plains", "Savanna", "Wetlands", "Mangrove"],
-        "names": ["Violet", "Jasmine", "Daisy", "Iris", "Petunia", "Lavender", "Willow", "Fern"],
+        "biome_exclusive": [
+          "Plains",
+          "Savanna",
+          "Wetlands",
+          "Mangrove"
+        ],
+        "names": [
+          "Violet",
+          "Jasmine",
+          "Daisy",
+          "Iris",
+          "Petunia",
+          "Lavender",
+          "Willow",
+          "Fern"
+        ],
         "intro_dialogue": [
           "Can you smell the flowers? My animals love this meadow!",
           "Nature's fragrance empowers my partners! Let's battle!",
@@ -459,7 +653,16 @@
       {
         "title": "Psychic",
         "sprite": "Psychic_F_Battlesprite1.webp",
-        "names": ["Mystica", "Selene", "Astrid", "Raven", "Thalia", "Celeste", "Morgana", "Sibyl"],
+        "names": [
+          "Mystica",
+          "Selene",
+          "Astrid",
+          "Raven",
+          "Thalia",
+          "Celeste",
+          "Morgana",
+          "Sibyl"
+        ],
         "intro_dialogue": [
           "I knew you would come... The stars told me!",
           "My psychic powers reveal your every move!",
@@ -482,9 +685,24 @@
       },
       {
         "title": "Ranger",
-        "sprite": "Pkmn-ranger-f.webp",
-        "biome_exclusive": ["Rainforest", "Taiga", "Redwoods", "Mountain", "Jungle"],
-        "names": ["Sierra", "Ivy", "Autumn", "Brooke", "Terra", "Wren", "Sage", "Fawn"],
+        "sprite": "Pkmn-ranger-f.png",
+        "biome_exclusive": [
+          "Rainforest",
+          "Taiga",
+          "Redwoods",
+          "Mountain",
+          "Jungle"
+        ],
+        "names": [
+          "Sierra",
+          "Ivy",
+          "Autumn",
+          "Brooke",
+          "Terra",
+          "Wren",
+          "Sage",
+          "Fawn"
+        ],
         "intro_dialogue": [
           "Rangers defend the wild! Show me you're worthy to pass!",
           "I've bonded with nature itself! My animals are proof!",

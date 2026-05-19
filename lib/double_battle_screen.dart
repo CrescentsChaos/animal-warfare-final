@@ -1081,7 +1081,7 @@ class _DoubleBattleScreenContentState extends State<DoubleBattleScreenContent>
                     reverse: false,
                     child: _TypewriterText(
                       message,
-                      speed: Duration(milliseconds: _isFastMode ? 17 : 50),
+                      speed: Duration(milliseconds: _isFastMode ? 5 : 20),
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: isNarrow ? 10 : 12,

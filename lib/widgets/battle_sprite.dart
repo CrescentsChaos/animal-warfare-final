@@ -59,7 +59,18 @@ class BattleSpriteState extends State<BattleSprite>
       bm = Provider.of<BattleManager>(context, listen: false);
     } catch (_) {}
     final isAnimalSent = bm == null || (bo.isPlayer ? bm.playerAnimalSent : bm.opponentAnimalSent);
-    return widget.hideAnimal || !isAnimalSent;
+    if (widget.hideAnimal || !isAnimalSent) return true;
+
+    // Hide opponent animal during trainer intro or mid-battle switch dialogue (only when health > 0)
+    if (bm != null &&
+        !bo.isPlayer &&
+        bm.isTrainerBattle &&
+        bm.trainerDialogueActive &&
+        bo.health > 0) {
+      return true;
+    }
+
+    return false;
   }
 
   @override
@@ -762,51 +773,57 @@ class BattleSpriteState extends State<BattleSprite>
 
     return GestureDetector(
       onTap: widget.onTap,
-      child: SizedBox(
-        width: size,
-        height: size,
-        child: Stack(
-          alignment: Alignment.center,
-          clipBehavior: Clip.none,
-          children: [
-            Positioned(
-              bottom: -size * 0.05 + 20.0,
-              child: Image.asset(
-                _platformImagePath,
-                width: size * 1.5,
-                fit: BoxFit.contain,
-                errorBuilder: (_, _, _) => const SizedBox.shrink(),
-              ),
-            ),
-            if (showTrainer)
-              if (!_shouldHideAnimal)
-                Transform.translate(
-                  offset: Offset(-size * 0.22, 0),
-                  child: animalStack,
-                )
-              else
-                const SizedBox.shrink()
-            else if (!_shouldHideAnimal)
-              animalStack,
-            if (showTrainer)
+      child: Padding(
+        padding: EdgeInsets.only(
+          right: showTrainer ? size * 0.25 : 0.0,
+        ),
+        child: SizedBox(
+          width: size,
+          height: size,
+          child: Stack(
+            alignment: Alignment.center,
+            clipBehavior: Clip.none,
+            children: [
               Positioned(
-                child: Transform.translate(
-                  offset: Offset(_shouldHideAnimal ? 0 : size * 0.28, 0),
-                  child: Image.asset(
-                    bm!.trainerInfo!.spritePath,
-                    width: size * 0.9,
-                    height: size * 0.9,
-                    fit: BoxFit.contain,
-                    filterQuality: FilterQuality.none,
-                    errorBuilder: (context, error, stackTrace) => Icon(
-                      Icons.person,
-                      size: size * 0.6,
-                      color: Colors.white,
+                bottom: -size * 0.05 + 20.0,
+                child: Image.asset(
+                  _platformImagePath,
+                  width: size * 1.5,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                ),
+              ),
+              if (showTrainer)
+                if (!_shouldHideAnimal)
+                  Transform.translate(
+                    offset: Offset(-size * 0.22, 0),
+                    child: animalStack,
+                  )
+                else
+                  const SizedBox.shrink()
+              else if (!_shouldHideAnimal)
+                animalStack,
+              if (showTrainer)
+                Positioned(
+                  bottom: -size * 0.05 + 10.0,
+                  child: Transform.translate(
+                    offset: Offset(_shouldHideAnimal ? 0 : size * 0.28, 0),
+                    child: Image.asset(
+                      bm.trainerInfo!.spritePath,
+                      width: size * 0.9,
+                      height: size * 0.9,
+                      fit: BoxFit.contain,
+                      filterQuality: FilterQuality.none,
+                      errorBuilder: (context, error, stackTrace) => Icon(
+                        Icons.person,
+                        size: size * 0.6,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );
