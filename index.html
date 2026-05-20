@@ -193,7 +193,7 @@
                 <div class="filter-section">
                     <div class="filter-label">SORT BY</div>
                     <div class="sort-chips" id="sort-chips">
-                        <button class="sort-chip active" data-sort="name" onclick="App.setSort('name')">NAME</button>
+                        <button class="sort-chip" data-sort="name" onclick="App.setSort('name')">NAME</button>
                         <button class="sort-chip" data-sort="health" onclick="App.setSort('health')">HP</button>
                         <button class="sort-chip" data-sort="attack" onclick="App.setSort('attack')">ATK</button>
                         <button class="sort-chip" data-sort="defense" onclick="App.setSort('defense')">DEF</button>
@@ -202,7 +202,7 @@
                             onclick="App.setSort('resistance')">RES</button>
                         <button class="sort-chip" data-sort="speed" onclick="App.setSort('speed')">SPD</button>
                         <button class="sort-chip" data-sort="bst" onclick="App.setSort('bst')">BST</button>
-                        <button class="sort-chip" data-sort="weight" onclick="App.setSort('weight')">WEIGHT</button>
+                        <button class="sort-chip active" data-sort="weight" onclick="App.setSort('weight')">WEIGHT</button>
                         <button class="sort-chip" data-sort="size" onclick="App.setSort('size')">SIZE</button>
                         <button class="sort-chip" data-sort="robustness" onclick="App.setSort('robustness')">ROBUSTNESS</button>
                     </div>
@@ -259,7 +259,7 @@
             displayedCount: 0,
             batchSize: 24,
             mode: 'animals',
-            sortBy: 'name',
+            sortBy: 'weight',
             ascending: true,
             unitSystem: 'metric',
             observer: null,
