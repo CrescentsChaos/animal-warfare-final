@@ -130,23 +130,20 @@
 
                 <div class="filter-section">
                     <div class="filter-label">ORDER</div>
-                    <select id="flt-order" onchange="App.filter()">
-                        <option value="">All Orders</option>
-                    </select>
+                    <div class="custom-select-trigger" id="trigger-order" onclick="App.openSearchSelector('order')">All Orders</div>
+                    <input type="hidden" id="flt-order" value="">
                 </div>
 
                 <div class="filter-section">
                     <div class="filter-label">FAMILY</div>
-                    <select id="flt-family" onchange="App.filter()">
-                        <option value="">All Families</option>
-                    </select>
+                    <div class="custom-select-trigger" id="trigger-family" onclick="App.openSearchSelector('family')">All Families</div>
+                    <input type="hidden" id="flt-family" value="">
                 </div>
 
                 <div class="filter-section">
                     <div class="filter-label">SUBFAMILY</div>
-                    <select id="flt-subfamily" onchange="App.filter()">
-                        <option value="">All Subfamilies</option>
-                    </select>
+                    <div class="custom-select-trigger" id="trigger-subfamily" onclick="App.openSearchSelector('subfamily')">All Subfamilies</div>
+                    <input type="hidden" id="flt-subfamily" value="">
                 </div>
 
                 <div class="filter-section">
@@ -273,6 +270,26 @@
         </div>
     </div>
 
+    <!-- Search Selector Modal -->
+    <div id="search-selector-modal" class="modal-overlay" onclick="App.closeSearchSelector()">
+        <div class="modal-box search-selector-box" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="App.closeSearchSelector()">✕</button>
+            <div class="search-selector-header">
+                <div class="search-selector-title" id="search-selector-title">SELECT ORDER</div>
+                <div class="search-selector-search-wrap">
+                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8" />
+                        <path d="m21 21-4.35-4.35" />
+                    </svg>
+                    <input type="text" id="search-selector-input" placeholder="Type to search..." oninput="App.filterSearchSelector()" autocomplete="off">
+                </div>
+            </div>
+            <div class="search-selector-body" id="search-selector-options">
+                <!-- Dynamically generated items -->
+            </div>
+        </div>
+    </div>
+
     <script>
         const App = {
             db: { orgs: [], orgs2: [], moves: {}, items: [], abilities: {} },
@@ -284,6 +301,12 @@
             ascending: true,
             unitSystem: 'metric',
             observer: null,
+            searchSelector: {
+                type: '',
+                options: [],
+                filtered: [],
+                selectedValue: ''
+            },
 
             async start() {
                 try {
@@ -336,24 +359,6 @@
                 // Classes
                 const classes = [...new Set(orgs.map(o => o.class || o.animal_class).filter(Boolean))].sort();
                 this._populate('flt-class', classes);
-
-                // Orders
-                const orders = [...new Set(orgs.map(o => o.order).filter(Boolean))]
-                    .filter(s => s.toLowerCase() !== 'unknown')
-                    .sort();
-                this._populate('flt-order', orders);
-
-                // Families
-                const families = [...new Set(orgs.map(o => o.family).filter(Boolean))]
-                    .filter(s => s.toLowerCase() !== 'unknown')
-                    .sort();
-                this._populate('flt-family', families);
-
-                // Subfamilies
-                const subfamilies = [...new Set(orgs.map(o => o.subfamily).filter(Boolean))]
-                    .filter(s => s.toLowerCase() !== 'unknown')
-                    .sort();
-                this._populate('flt-subfamily', subfamilies);
 
                 // Diets
                 const diets = [...new Set(orgs.map(o => o.diet).filter(Boolean))].sort();
@@ -931,8 +936,18 @@
                 document.getElementById('q').value = '';
                 ['flt-biome', 'flt-cat1', 'flt-cat2', 'flt-rarity', 'flt-ability', 'flt-move', 'flt-drop', 'flt-class', 'flt-order', 'flt-family', 'flt-subfamily', 'flt-diet', 'flt-weight', 'flt-size', 'flt-robustness', 'flt-bst', 'flt-item-cat'].forEach(id => {
                     const el = document.getElementById(id);
-                    if (el) el.selectedIndex = 0;
+                    if (el) {
+                        if (el.tagName === 'SELECT') {
+                            el.selectedIndex = 0;
+                        } else {
+                            el.value = '';
+                        }
+                    }
                 });
+                document.getElementById('trigger-order').textContent = 'All Orders';
+                document.getElementById('trigger-family').textContent = 'All Families';
+                document.getElementById('trigger-subfamily').textContent = 'All Subfamilies';
+
                 document.getElementById('chk-exclude-mythical').checked = false;
                 this.sortBy = 'name';
                 this.ascending = true;
@@ -963,6 +978,102 @@
                 if (r.includes('legendary')) return 'assets/icon/legendary.png';
                 if (r.includes('mythical')) return 'assets/icon/mythical.png';
                 return 'assets/icon/common.png';
+            },
+
+            openSearchSelector(type) {
+                this.searchSelector.type = type;
+                const orgs = this.db.orgs;
+                
+                // Get all values for this field and calculate their counts
+                const counts = {};
+                orgs.forEach(o => {
+                    const val = o[type];
+                    if (val && val.toLowerCase() !== 'unknown') {
+                        counts[val] = (counts[val] || 0) + 1;
+                    }
+                });
+
+                // Convert to sorted array of objects
+                const options = Object.keys(counts).sort().map(val => ({
+                    value: val,
+                    count: counts[val]
+                }));
+
+                this.searchSelector.options = options;
+                this.searchSelector.filtered = [...options];
+                this.searchSelector.selectedValue = document.getElementById(`flt-${type}`).value;
+
+                // Update UI title
+                document.getElementById('search-selector-title').textContent = `SELECT ${type.toUpperCase()}`;
+                
+                // Clear input
+                const inp = document.getElementById('search-selector-input');
+                inp.value = '';
+                
+                this.renderSearchSelectorOptions();
+                
+                // Open modal
+                const modal = document.getElementById('search-selector-modal');
+                modal.classList.add('open');
+                document.body.style.overflow = 'hidden';
+
+                // Focus search input
+                setTimeout(() => inp.focus(), 50);
+            },
+
+            closeSearchSelector() {
+                document.getElementById('search-selector-modal').classList.remove('open');
+                // Only restore body overflow if primary detail modal is also closed
+                if (!document.getElementById('modal').classList.contains('open')) {
+                    document.body.style.overflow = '';
+                }
+            },
+
+            filterSearchSelector() {
+                const q = document.getElementById('search-selector-input').value.toLowerCase();
+                this.searchSelector.filtered = this.searchSelector.options.filter(opt => 
+                    opt.value.toLowerCase().includes(q)
+                );
+                this.renderSearchSelectorOptions();
+            },
+
+            selectSearchSelectorOption(val) {
+                const type = this.searchSelector.type;
+                const hiddenInput = document.getElementById(`flt-${type}`);
+                const triggerBtn = document.getElementById(`trigger-${type}`);
+                
+                hiddenInput.value = val;
+                triggerBtn.textContent = val ? val.toUpperCase() : `All ${type.charAt(0).toUpperCase() + type.slice(1)}s`;
+                
+                this.closeSearchSelector();
+                this.filter();
+            },
+
+            renderSearchSelectorOptions() {
+                const container = document.getElementById('search-selector-options');
+                container.innerHTML = '';
+
+                // Add "ALL" option first
+                const allOpt = document.createElement('div');
+                const isAllSelected = !this.searchSelector.selectedValue;
+                allOpt.className = `search-option-item ${isAllSelected ? 'selected' : ''}`;
+                allOpt.innerHTML = `<span>ALL ${this.searchSelector.type.toUpperCase()}S</span><span class="badge">${this.db.orgs.filter(o => o[this.searchSelector.type] && o[this.searchSelector.type].toLowerCase() !== 'unknown').length}</span>`;
+                allOpt.onclick = () => this.selectSearchSelectorOption('');
+                container.appendChild(allOpt);
+
+                if (this.searchSelector.filtered.length === 0) {
+                    container.innerHTML = `<div class="search-selector-empty">NO OPTIONS FOUND</div>`;
+                    return;
+                }
+
+                this.searchSelector.filtered.forEach(opt => {
+                    const isSelected = this.searchSelector.selectedValue === opt.value;
+                    const el = document.createElement('div');
+                    el.className = `search-option-item ${isSelected ? 'selected' : ''}`;
+                    el.innerHTML = `<span>${opt.value.toUpperCase()}</span><span class="badge">${opt.count}</span>`;
+                    el.onclick = () => this.selectSearchSelectorOption(opt.value);
+                    container.appendChild(el);
+                });
             }
         };
 
