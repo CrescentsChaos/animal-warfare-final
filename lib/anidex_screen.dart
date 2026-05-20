@@ -44,6 +44,9 @@ class _AnidexScreenState extends State<AnidexScreen>
   List<String> _allCategories = [];
   List<String> _allRarities = [];
   List<String> _allClasses = [];
+  List<String> _allOrders = [];
+  List<String> _allFamilies = [];
+  List<String> _allSubfamilies = [];
   List<String> _allDiets = [];
 
   final TextEditingController _searchController = TextEditingController();
@@ -63,6 +66,9 @@ class _AnidexScreenState extends State<AnidexScreen>
   String? _selectedMove;
   String? _selectedDrop;
   String? _selectedClass;
+  String? _selectedOrder;
+  String? _selectedFamily;
+  String? _selectedSubfamily;
   String? _selectedDiet;
   String? _selectedWeight;
   String? _selectedSize;
@@ -206,6 +212,27 @@ class _AnidexScreenState extends State<AnidexScreen>
               .toSet()
               .toList()
             ..sort();
+      _allOrders =
+          _allOrganisms
+              .map((o) => o.order)
+              .where((s) => s.isNotEmpty && s.toLowerCase() != 'unknown')
+              .toSet()
+              .toList()
+            ..sort();
+      _allFamilies =
+          _allOrganisms
+              .map((o) => o.family)
+              .where((s) => s.isNotEmpty && s.toLowerCase() != 'unknown')
+              .toSet()
+              .toList()
+            ..sort();
+      _allSubfamilies =
+          _allOrganisms
+              .map((o) => o.subfamily)
+              .where((s) => s.isNotEmpty && s.toLowerCase() != 'unknown')
+              .toSet()
+              .toList()
+            ..sort();
       _allDiets =
           _allOrganisms
               .map((o) => o.diet)
@@ -260,6 +287,15 @@ class _AnidexScreenState extends State<AnidexScreen>
         return false;
       }
       if (_selectedClass != null && org.animalClass != _selectedClass) {
+        return false;
+      }
+      if (_selectedOrder != null && org.order != _selectedOrder) {
+        return false;
+      }
+      if (_selectedFamily != null && org.family != _selectedFamily) {
+        return false;
+      }
+      if (_selectedSubfamily != null && org.subfamily != _selectedSubfamily) {
         return false;
       }
       if (_selectedDiet != null && org.diet != _selectedDiet) {
@@ -840,6 +876,24 @@ class _AnidexScreenState extends State<AnidexScreen>
                   (v) => setState(() => _selectedClass = v),
                 ),
                 _buildSearchableFilter(
+                  'ORDER',
+                  _selectedOrder,
+                  _allOrders,
+                  (v) => setState(() => _selectedOrder = v),
+                ),
+                _buildSearchableFilter(
+                  'FAMILY',
+                  _selectedFamily,
+                  _allFamilies,
+                  (v) => setState(() => _selectedFamily = v),
+                ),
+                _buildSearchableFilter(
+                  'SUBFAMILY',
+                  _selectedSubfamily,
+                  _allSubfamilies,
+                  (v) => setState(() => _selectedSubfamily = v),
+                ),
+                _buildSearchableFilter(
                   'DIET',
                   _selectedDiet,
                   _allDiets,
@@ -947,6 +1001,9 @@ class _AnidexScreenState extends State<AnidexScreen>
                   _selectedMove = null;
                   _selectedDrop = null;
                   _selectedClass = null;
+                  _selectedOrder = null;
+                  _selectedFamily = null;
+                  _selectedSubfamily = null;
                   _selectedDiet = null;
                   _selectedWeight = null;
                   _selectedSize = null;

@@ -46,6 +46,9 @@ class Organism {
   final String
   pheno; // NEW: Overworld sprite prefix (e.g., "giant_water_bug"), or "none"
   final String animalClass; // NEW: Taxonomic class (mammal, bird, etc.)
+  final String order; // NEW: Taxonomic order
+  final String family; // NEW: Taxonomic family
+  final String subfamily; // NEW: Taxonomic subfamily
   final String diet; // NEW: Diet (carnivore, herbivore, etc.)
   final double size; // NEW: Size in meters
 
@@ -73,6 +76,9 @@ class Organism {
     this.spawnTiles = 'any', // Default
     this.pheno = 'none', // Default
     this.animalClass = 'unknown', // Default
+    this.order = 'unknown', // Default
+    this.family = 'unknown', // Default
+    this.subfamily = 'unknown', // Default
     this.diet = 'unknown', // Default
     this.size = 1.0, // Default 1.0 m
   });
@@ -127,6 +133,9 @@ class Organism {
       pheno: (json['pheno']?.toString() ?? 'none'),
       animalClass:
           (json['class'] ?? json['animal_class'])?.toString() ?? 'unknown',
+      order: (json['order']?.toString() ?? 'unknown'),
+      family: (json['family']?.toString() ?? 'unknown'),
+      subfamily: (json['subfamily']?.toString() ?? 'unknown'),
       diet: (json['diet']?.toString() ?? 'unknown'),
       size: (json['size'] as num? ?? 1.0).toDouble(),
     );
@@ -308,6 +317,9 @@ class Organism {
     String? spawnTiles,
     String? pheno,
     String? animalClass,
+    String? order,
+    String? family,
+    String? subfamily,
     String? diet,
     double? size,
   }) {
@@ -335,6 +347,9 @@ class Organism {
       spawnTiles: spawnTiles ?? this.spawnTiles,
       pheno: pheno ?? this.pheno,
       animalClass: animalClass ?? this.animalClass,
+      order: order ?? this.order,
+      family: family ?? this.family,
+      subfamily: subfamily ?? this.subfamily,
       diet: diet ?? this.diet,
       size: size ?? this.size,
     );
@@ -365,6 +380,9 @@ class Organism {
       'spawn_tiles': spawnTiles,
       'pheno': pheno,
       'class': animalClass,
+      'order': order,
+      'family': family,
+      'subfamily': subfamily,
       'diet': diet,
       'size': size,
     };
@@ -431,6 +449,9 @@ class Organism {
     cry: 'default',
     spawnTiles: 'any',
     animalClass: 'mammal',
+    order: 'primates',
+    family: 'hominidae',
+    subfamily: 'homininae',
     diet: 'omnivore',
     size: 1.7,
   );
@@ -459,6 +480,9 @@ class Organism {
     cry: 'default',
     spawnTiles: 'any',
     animalClass: 'unknown',
+    order: 'unknown',
+    family: 'unknown',
+    subfamily: 'unknown',
     diet: 'unknown',
     size: 1.0,
   );

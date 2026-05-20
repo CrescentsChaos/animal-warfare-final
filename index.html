@@ -129,6 +129,27 @@
                 </div>
 
                 <div class="filter-section">
+                    <div class="filter-label">ORDER</div>
+                    <select id="flt-order" onchange="App.filter()">
+                        <option value="">All Orders</option>
+                    </select>
+                </div>
+
+                <div class="filter-section">
+                    <div class="filter-label">FAMILY</div>
+                    <select id="flt-family" onchange="App.filter()">
+                        <option value="">All Families</option>
+                    </select>
+                </div>
+
+                <div class="filter-section">
+                    <div class="filter-label">SUBFAMILY</div>
+                    <select id="flt-subfamily" onchange="App.filter()">
+                        <option value="">All Subfamilies</option>
+                    </select>
+                </div>
+
+                <div class="filter-section">
                     <div class="filter-label">DIET</div>
                     <select id="flt-diet" onchange="App.filter()">
                         <option value="">All Diets</option>
@@ -316,6 +337,24 @@
                 const classes = [...new Set(orgs.map(o => o.class || o.animal_class).filter(Boolean))].sort();
                 this._populate('flt-class', classes);
 
+                // Orders
+                const orders = [...new Set(orgs.map(o => o.order).filter(Boolean))]
+                    .filter(s => s.toLowerCase() !== 'unknown')
+                    .sort();
+                this._populate('flt-order', orders);
+
+                // Families
+                const families = [...new Set(orgs.map(o => o.family).filter(Boolean))]
+                    .filter(s => s.toLowerCase() !== 'unknown')
+                    .sort();
+                this._populate('flt-family', families);
+
+                // Subfamilies
+                const subfamilies = [...new Set(orgs.map(o => o.subfamily).filter(Boolean))]
+                    .filter(s => s.toLowerCase() !== 'unknown')
+                    .sort();
+                this._populate('flt-subfamily', subfamilies);
+
                 // Diets
                 const diets = [...new Set(orgs.map(o => o.diet).filter(Boolean))].sort();
                 this._populate('flt-diet', diets);
@@ -350,6 +389,9 @@
                 const move = document.getElementById('flt-move').value;
                 const drop = document.getElementById('flt-drop').value;
                 const aClass = document.getElementById('flt-class').value;
+                const aOrder = document.getElementById('flt-order').value;
+                const aFamily = document.getElementById('flt-family').value;
+                const aSubfamily = document.getElementById('flt-subfamily').value;
                 const aDiet = document.getElementById('flt-diet').value;
                 const weight = document.getElementById('flt-weight').value;
                 const sizeVal = document.getElementById('flt-size').value;
@@ -369,6 +411,9 @@
                     if (move && !(o.moves || '').includes(move)) return false;
                     if (drop && !(o.drops || '').includes(drop)) return false;
                     if (aClass && (o.class || o.animal_class) !== aClass) return false;
+                    if (aOrder && o.order !== aOrder) return false;
+                    if (aFamily && o.family !== aFamily) return false;
+                    if (aSubfamily && o.subfamily !== aSubfamily) return false;
                     if (aDiet && o.diet !== aDiet) return false;
                     if (excludeMythical && (o.rarity || '').toLowerCase() === 'mythical') return false;
                     if (weight) {
@@ -626,6 +671,9 @@
                     : '<span class="dim">No drops</span>';
 
                 const aClass = org.class || org.animal_class || 'Unknown';
+                const aOrder = org.order || 'Unknown';
+                const aFamily = org.family || 'Unknown';
+                const aSubfamily = org.subfamily || 'Unknown';
                 const aDiet = org.diet || 'Unknown';
                 const aActivity = org.active_time || org.activity || 'Unknown';
 
@@ -697,6 +745,27 @@
                                 <div class="badge-label">
                                     <span class="badge-type">Diet</span>
                                     <span class="badge-value">${aDiet.toUpperCase()}</span>
+                                </div>
+                            </div>
+                            <div class="class-badge">
+                                <div style="font-size:20px;line-height:22px;text-align:center;width:22px;">🌿</div>
+                                <div class="badge-label">
+                                    <span class="badge-type">Order</span>
+                                    <span class="badge-value">${aOrder.toUpperCase()}</span>
+                                </div>
+                            </div>
+                            <div class="class-badge">
+                                <div style="font-size:20px;line-height:22px;text-align:center;width:22px;">🧬</div>
+                                <div class="badge-label">
+                                    <span class="badge-type">Family</span>
+                                    <span class="badge-value">${aFamily.toUpperCase()}</span>
+                                </div>
+                            </div>
+                            <div class="class-badge">
+                                <div style="font-size:20px;line-height:22px;text-align:center;width:22px;">🔍</div>
+                                <div class="badge-label">
+                                    <span class="badge-type">Subfamily</span>
+                                    <span class="badge-value">${aSubfamily.toUpperCase()}</span>
                                 </div>
                             </div>
                             <div class="class-badge">
@@ -860,7 +929,7 @@
 
             reset() {
                 document.getElementById('q').value = '';
-                ['flt-biome', 'flt-cat1', 'flt-cat2', 'flt-rarity', 'flt-ability', 'flt-move', 'flt-drop', 'flt-class', 'flt-diet', 'flt-weight', 'flt-size', 'flt-robustness', 'flt-bst', 'flt-item-cat'].forEach(id => {
+                ['flt-biome', 'flt-cat1', 'flt-cat2', 'flt-rarity', 'flt-ability', 'flt-move', 'flt-drop', 'flt-class', 'flt-order', 'flt-family', 'flt-subfamily', 'flt-diet', 'flt-weight', 'flt-size', 'flt-robustness', 'flt-bst', 'flt-item-cat'].forEach(id => {
                     const el = document.getElementById(id);
                     if (el) el.selectedIndex = 0;
                 });
