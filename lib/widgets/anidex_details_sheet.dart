@@ -772,13 +772,21 @@ class DropChip extends StatefulWidget {
 class _DropChipState extends State<DropChip> {
   bool _imageError = false;
 
+  String _toTitleCase(String text) {
+    if (text.isEmpty) return text;
+    return text.split(' ').map((word) {
+      if (word.isEmpty) return word;
+      return word[0].toUpperCase() + word.substring(1).toLowerCase();
+    }).join(' ');
+  }
+
   @override
   Widget build(BuildContext context) {
     final assetName = widget.dropName.toLowerCase().replaceAll(' ', '-');
     final assetPath = 'assets/items/$assetName.png';
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(20),
@@ -789,8 +797,8 @@ class _DropChipState extends State<DropChip> {
           if (!_imageError) ...[
             Image.asset(
               assetPath,
-              width: 18,
-              height: 18,
+              width: 22,
+              height: 22,
               fit: BoxFit.contain,
               errorBuilder: (context, error, stackTrace) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -803,10 +811,10 @@ class _DropChipState extends State<DropChip> {
                 return const SizedBox.shrink();
               },
             ),
-            if (!_imageError) const SizedBox(width: 6),
+            if (!_imageError) const SizedBox(width: 8),
           ],
           Text(
-            widget.dropName,
+            _toTitleCase(widget.dropName),
             style: GoogleFonts.inter(
               color: Colors.white.withValues(alpha: 0.7),
               fontSize: 12,

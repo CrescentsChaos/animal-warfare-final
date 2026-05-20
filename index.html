@@ -456,9 +456,6 @@
                         <div class="sprite-fallback" style="display:none">📦</div>
                     </div>
                     <div class="card-body">
-                        <div class="card-type-row">
-                            <span class="type-badge" style="background:var(--accent-dim);color:var(--accent)">${(item.category || 'item').toUpperCase()}</span>
-                        </div>
                         <div class="card-name">${(item.name || '').replace(/_/g, ' ').toUpperCase()}</div>
                         <div class="card-sub">${item.price ? item.price + 'G' : ''}</div>
                     </div>`;
@@ -623,7 +620,8 @@
                 const dropsHTML = drops.length
                     ? drops.map(d => {
                         const cleanName = d.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-                        return `<span class="drop-tag"><img class="drop-icon" src="assets/items/${cleanName}.png" onerror="this.style.display='none'" alt="">${d}</span>`;
+                        const titleName = d.split(' ').map(w => w ? w.charAt(0).toUpperCase() + w.substring(1).toLowerCase() : '').join(' ');
+                        return `<span class="drop-tag"><img class="drop-icon" src="assets/items/${cleanName}.png" onerror="this.style.display='none'" alt="">${titleName}</span>`;
                     }).join('')
                     : '<span class="dim">No drops</span>';
 
