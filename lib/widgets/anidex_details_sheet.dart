@@ -60,8 +60,13 @@ class AnidexDetailsPage extends StatelessWidget {
                   _buildAbilitySection(),
                   const SizedBox(height: 32),
                   _buildMoveSection(context, isCaptured),
+                  const SizedBox(height: 32),
                 ],
-                const SizedBox(height: 100),
+                if (isDiscovered) ...[
+                  _buildDropsSection(context),
+                  const SizedBox(height: 32),
+                ],
+                const SizedBox(height: 68),
               ]),
             ),
           ),
@@ -676,6 +681,33 @@ class AnidexDetailsPage extends StatelessWidget {
       case ElementalType.holy: return const Color.fromARGB(255, 255, 208, 0);
     }
   }
+
+  Widget _buildDropsSection(BuildContext context) {
+    if (organism.drops.isEmpty || organism.drops.trim().toLowerCase() == 'n/a') {
+      return const SizedBox.shrink();
+    }
+
+    final dropsList = organism.drops
+        .split(',')
+        .map((s) => s.trim())
+        .where((s) => s.isNotEmpty)
+        .toList();
+
+    if (dropsList.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionTitle('🎁 LOOT DROPS'),
+        const SizedBox(height: 16),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: dropsList.map((dropName) => DropChip(dropName: dropName)).toList(),
+        ),
+      ],
+    );
+  }
 }
 
 class OrganismSpriteDisplay extends StatelessWidget {
@@ -726,5 +758,63 @@ class OrganismSpriteDisplay extends StatelessWidget {
         .replaceAll("'", '_')
         .replaceAll("-", '_');
     return 'assets/sprites/$fileName.png';
+  }
+}
+
+class DropChip extends StatefulWidget {
+  final String dropName;
+  const DropChip({super.key, required this.dropName});
+
+  @override
+  State<DropChip> createState() => _DropChipState();
+}
+
+class _DropChipState extends State<DropChip> {
+  bool _imageError = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final assetName = widget.dropName.toLowerCase().replaceAll(' ', '-');
+    final assetPath = 'assets/items/$assetName.png';
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (!_imageError) ...[
+            Image.asset(
+              assetPath,
+              width: 18,
+              height: 18,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (mounted) {
+                    setState(() {
+                      _imageError = true;
+                    });
+                  }
+                });
+                return const SizedBox.shrink();
+              },
+            ),
+            if (!_imageError) const SizedBox(width: 6),
+          ],
+          Text(
+            widget.dropName,
+            style: GoogleFonts.inter(
+              color: Colors.white.withValues(alpha: 0.7),
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

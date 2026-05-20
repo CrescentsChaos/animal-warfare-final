@@ -621,7 +621,10 @@
                 }).join('') || '<span class="dim">Unknown</span>';
 
                 const dropsHTML = drops.length
-                    ? drops.map(d => `<span class="drop-tag">${d}</span>`).join('')
+                    ? drops.map(d => {
+                        const cleanName = d.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+                        return `<span class="drop-tag"><img class="drop-icon" src="assets/items/${cleanName}.png" onerror="this.style.display='none'" alt="">${d}</span>`;
+                    }).join('')
                     : '<span class="dim">No drops</span>';
 
                 const aClass = org.class || org.animal_class || 'Unknown';

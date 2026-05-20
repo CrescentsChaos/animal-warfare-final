@@ -962,11 +962,19 @@ main {
 
 .drop-tag {
     background: rgba(255,255,255,0.04);
-    border: 1px solid var(--border);
     border-radius: 20px;
-    padding: 4px 12px;
+    padding: 6px 12px;
     font-size: 10px;
     color: var(--text-dim);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.drop-icon {
+    width: 14px;
+    height: 14px;
+    object-fit: contain;
 }
 
 /* Dim text */
