@@ -1079,6 +1079,26 @@
 
         App.start();
     </script>
+
+    <!-- Search Selector Modal -->
+    <div id="search-selector-modal" class="modal-overlay" onclick="App.closeSearchSelector()">
+        <div class="modal-box search-selector-box" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="App.closeSearchSelector()">✕</button>
+            <div class="search-selector-header">
+                <div class="search-selector-title" id="search-selector-title">SELECT ORDER</div>
+                <div class="search-selector-search-wrap">
+                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8" />
+                        <path d="m21 21-4.35-4.35" />
+                    </svg>
+                    <input type="text" id="search-selector-input" placeholder="Type to search..." oninput="App.filterSearchSelector()" autocomplete="off">
+                </div>
+            </div>
+            <div class="search-selector-body" id="search-selector-options">
+                <!-- Dynamically generated items -->
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>
