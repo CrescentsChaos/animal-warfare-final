@@ -11,6 +11,7 @@ import 'package:animal_warfare/local_auth_service.dart';
 import 'package:animal_warfare/services/audio_service.dart';
 import 'package:animal_warfare/achievement_service.dart';
 import 'dart:convert';
+import 'dart:math' as math;
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:provider/provider.dart';
 import 'package:animal_warfare/user_state.dart';
@@ -23,6 +24,20 @@ import 'package:animal_warfare/widgets/game_clock_widget.dart';
 import 'package:animal_warfare/services/weather_service.dart';
 import 'package:animal_warfare/widgets/weather_overlay.dart';
 import 'package:animal_warfare/models/weather.dart';
+
+class ItemFindResult {
+  final String itemId;
+  final String itemName;
+  final int count;
+  final String message;
+
+  ItemFindResult({
+    required this.itemId,
+    required this.itemName,
+    required this.count,
+    required this.message,
+  });
+}
 
 class BiomeDetailScreen extends StatefulWidget {
   final String biomeName;
@@ -48,6 +63,7 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
 
   SpawnResult? _currentEncounter;
   CapturedOrganism? _persistentEncounter; // Added to track specific instance
+  ItemFindResult? _foundItem;
   bool _isExploring = false;
   bool _isNameRevealed = false;
 
@@ -60,6 +76,7 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
   List<dynamic> _allOrganismsJson = [];
   late AchievementService _achievementService;
   late UserData _currentUser;
+  Map<String, dynamic> _explorationDropData = {};
 
   @override
   void initState() {
@@ -81,6 +98,7 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
     if (_allOrganismsJson.isEmpty) {
       _loadOrganismsData();
     }
+    _loadExplorationDropData();
 
     WidgetsBinding.instance.addObserver(this);
     TimeService().start();
@@ -426,7 +444,9 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
       organism.name,
     );
     await _refreshUserData();
-    final newAchievements = await userState.checkAndUnlockAchievements(_achievementService);
+    final newAchievements = await userState.checkAndUnlockAchievements(
+      _achievementService,
+    );
     if (newAchievements.isNotEmpty) {
       await _refreshUserData();
       for (final title in newAchievements) {
@@ -458,6 +478,9 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
     final ignoreFlashOrDive = _currentUser.ignoreBiomeRequirements;
 
     if (requiredMove == 'Dive' && ignoreFlashOrDive) {
+      requiredMove = null;
+    }
+    if (requiredMove == 'Rock Smash' && ignoreFlashOrDive) {
       requiredMove = null;
     }
 
@@ -545,9 +568,10 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
     setState(() {
       _isExploring = true;
       _currentEncounter = null;
+      _foundItem = null;
       _isNameRevealed = false;
     });
-    Future.delayed(const Duration(seconds: 1), () {
+    Future.delayed(const Duration(seconds: 1), () async {
       if (_persistentEncounter != null && mounted) {
         setState(() {
           _currentEncounter = SpawnResult(
@@ -561,6 +585,36 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
           _isNameRevealed = _isDiscovered(_persistentEncounter!.baseOrganism);
         });
         return;
+      }
+
+      final random = math.Random();
+      final bool findItem = random.nextDouble() < 0.30;
+
+      if (findItem) {
+        final itemPool = _getItemPoolForBiome(widget.biomeName);
+        if (itemPool.isNotEmpty) {
+          final selectedItem = itemPool[random.nextInt(itemPool.length)];
+          final count = random.nextInt(3) + 1;
+          final message = _getRandomFindMessage(
+            selectedItem['name']!,
+            widget.biomeName,
+          );
+
+          await userState.addLoot(selectedItem['id']!, count);
+
+          if (mounted) {
+            setState(() {
+              _foundItem = ItemFindResult(
+                itemId: selectedItem['id']!,
+                itemName: selectedItem['name']!,
+                count: count,
+                message: message,
+              );
+              _isExploring = false;
+            });
+          }
+          return;
+        }
       }
 
       final encounter = getWeightedRandomOrganism(
@@ -588,6 +642,93 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
         });
       }
     });
+  }
+
+  Future<void> _loadExplorationDropData() async {
+    try {
+      final raw = await rootBundle.loadString(
+        'assets/biome_exploration_drops.json',
+      );
+      if (mounted) {
+        setState(() {
+          _explorationDropData = jsonDecode(raw) as Map<String, dynamic>;
+        });
+      }
+    } catch (e) {
+      debugPrint('BiomeDetail: failed to load exploration drop data: $e');
+    }
+  }
+
+  List<Map<String, String>> _getItemPoolForBiome(String biomeName) {
+    final name = biomeName.toLowerCase();
+    final data = _explorationDropData;
+
+    // Build combined pool: base + matching biome-specific items
+    final pool = <Map<String, String>>[];
+
+    // Base pool
+    final basePool = (data['base_pool'] as List<dynamic>? ?? []);
+    for (final entry in basePool) {
+      pool.add({'id': entry['id'] as String, 'name': entry['name'] as String});
+    }
+
+    // Biome-specific extras — first matching entry wins
+    final biomePools = (data['biome_pools'] as List<dynamic>? ?? []);
+    for (final biomeEntry in biomePools) {
+      final keywords = (biomeEntry['keywords'] as List<dynamic>).cast<String>();
+      final matched = keywords.any((kw) => name.contains(kw));
+      if (matched) {
+        for (final item in (biomeEntry['items'] as List<dynamic>)) {
+          final entry = {
+            'id': item['id'] as String,
+            'name': item['name'] as String,
+          };
+          // Avoid duplicate ids
+          if (!pool.any((p) => p['id'] == entry['id'])) {
+            pool.add(entry);
+          }
+        }
+        break; // only apply first matching biome pool
+      }
+    }
+
+    return pool;
+  }
+
+  String _getRandomFindMessage(String itemName, String biomeName) {
+    final random = math.Random();
+    final name = biomeName.toLowerCase();
+    final data = _explorationDropData;
+
+    final messageGroups = (data['messages'] as List<dynamic>? ?? []);
+
+    List<String> templates = [];
+
+    // Find the first matching group (skip the 'default' fallback)
+    for (final group in messageGroups) {
+      final id = group['id'] as String;
+      if (id == 'default') continue;
+      final keywords = (group['keywords'] as List<dynamic>).cast<String>();
+      if (keywords.any((kw) => name.contains(kw))) {
+        templates = (group['templates'] as List<dynamic>).cast<String>();
+        break;
+      }
+    }
+
+    // Fall back to 'default' group
+    if (templates.isEmpty) {
+      final defaultGroup = messageGroups.firstWhere(
+        (g) => g['id'] == 'default',
+        orElse: () => {'templates': <String>[]},
+      );
+      templates = (defaultGroup['templates'] as List<dynamic>? ?? [])
+          .cast<String>();
+    }
+
+    if (templates.isEmpty) return 'You found some $itemName!';
+
+    final template = templates[random.nextInt(templates.length)];
+    return template.replaceAll('{item}', itemName);
   }
 
   void _showStatsModal(BuildContext context) {
@@ -650,7 +791,10 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
                   IgnorePointer(
                     child: Container(
                       decoration: BoxDecoration(
-                        border: Border.all(color: _biomeHighlightColor, width: 2),
+                        border: Border.all(
+                          color: _biomeHighlightColor,
+                          width: 2,
+                        ),
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
@@ -754,14 +898,18 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
                         ),
                       if (!_isExploring && _currentEncounter != null)
                         _buildEncounterResultCard(_currentEncounter!),
-                      if (!_isExploring && _currentEncounter == null)
+                      if (!_isExploring && _foundItem != null)
+                        _buildItemFindCard(_foundItem!),
+                      if (!_isExploring &&
+                          _currentEncounter == null &&
+                          _foundItem == null)
                         ElevatedButton(
                           onPressed: _startExploration,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: _biomeDarkColor,
-                            shape: StadiumBorder(
+                            shape: const StadiumBorder(
                               side: BorderSide(
-                                color: _biomeHighlightColor,
+                                color: Color(0xFFDAA520),
                                 width: 2,
                               ),
                             ),
@@ -804,7 +952,13 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
                     children: [
                       _getWeatherIcon(weather, size: 20),
                       const SizedBox(width: 8),
-                      _getTemperatureIcon(WeatherService().getForecast(widget.biomeName).first.temperatureCelsius, size: 20),
+                      _getTemperatureIcon(
+                        WeatherService()
+                            .getForecast(widget.biomeName)
+                            .first
+                            .temperatureCelsius,
+                        size: 20,
+                      ),
                       const SizedBox(width: 8),
                       Text(
                         "${WeatherService().getForecast(widget.biomeName).first.temperatureCelsius.toStringAsFixed(1)}°C",
@@ -859,6 +1013,152 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
       errorBuilder: (context, error, stackTrace) =>
           Icon(Icons.thermostat, color: Colors.white, size: size),
     );
+  }
+
+  Widget _buildItemFindCard(ItemFindResult result) {
+    final assetName = result.itemId.replaceAll('_', '-');
+    final assetPath = 'assets/items/$assetName.png';
+
+    return Card(
+      elevation: 12,
+      shadowColor: _biomeHighlightColor.withValues(alpha: 0.6),
+      color: _biomeDarkColor.withValues(alpha: 0.9),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: BorderSide(color: _biomeHighlightColor, width: 3),
+      ),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'ITEM ACQUIRED!',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white,
+                fontFamily: 'PressStart2P',
+                fontSize: 12,
+                letterSpacing: 2.0,
+                shadows: [
+                  Shadow(color: _biomeHighlightColor, blurRadius: 10.0),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            // Display item image with no border and a clean background
+            Container(
+              width: 90,
+              height: 90,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              alignment: Alignment.center,
+              child: Image.asset(
+                assetPath,
+                width: 60,
+                height: 60,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) =>
+                    const Text('📦', style: TextStyle(fontSize: 36)),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              '${_toTitleCase(result.itemName)} x${result.count}',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontFamily: 'PressStart2P',
+                fontSize: 12,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Text(
+                result.message,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontFamily: 'PressStart2P',
+                  fontSize: 8,
+                  height: 1.6,
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: ElevatedButton(
+                    onPressed: _startExploration,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _biomeHighlightColor,
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      elevation: 8,
+                    ),
+                    child: const Text(
+                      'EXPLORE AGAIN',
+                      style: TextStyle(
+                        fontFamily: 'PressStart2P',
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  flex: 2,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        _foundItem = null;
+                      });
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black26,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        side: const BorderSide(color: Colors.white24, width: 2),
+                      ),
+                    ),
+                    child: const Text(
+                      'CLOSE',
+                      style: TextStyle(
+                        fontFamily: 'PressStart2P',
+                        fontSize: 10,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _toTitleCase(String text) {
+    if (text.isEmpty) return text;
+    return text
+        .split(' ')
+        .map((word) {
+          if (word.isEmpty) return word;
+          return word[0].toUpperCase() + word.substring(1).toLowerCase();
+        })
+        .join(' ');
   }
 
   Widget _buildEncounterResultCard(SpawnResult result) {

@@ -1,0 +1,298 @@
+{
+  "drop_chance": 0.30,
+  "base_pool": [
+    {
+      "id": "wild_herbs",
+      "name": "Wild Herbs"
+    },
+    {
+      "id": "truffle",
+      "name": "Truffle"
+    },
+    {
+      "id": "chicken_egg",
+      "name": "Eggs"
+    },
+    {
+      "id": "blueberry",
+      "name": "Blueberries"
+    },
+    {
+      "id": "raspberry",
+      "name": "Raspberries"
+    }
+  ],
+  "biome_pools": [
+    {
+      "id": "rainforest",
+      "keywords": [
+        "jungle",
+        "rainforest",
+        "redwoods"
+      ],
+      "items": [
+        {
+          "id": "strawberry_seed",
+          "name": "Strawberry Seeds"
+        },
+        {
+          "id": "apple_seed",
+          "name": "Apple Seeds"
+        },
+        {
+          "id": "pear_seed",
+          "name": "Pear Seeds"
+        },
+        {
+          "id": "wild_herbs",
+          "name": "Wild Herbs"
+        },
+        {
+          "id": "truffle",
+          "name": "Truffle"
+        }
+      ]
+    },
+    {
+      "id": "grassland",
+      "keywords": [
+        "plains",
+        "savanna",
+        "wetlands",
+        "swamp",
+        "mangrove"
+      ],
+      "items": [
+        {
+          "id": "strawberry_seed",
+          "name": "Strawberry Seeds"
+        },
+        {
+          "id": "pear_seed",
+          "name": "Pear Seeds"
+        },
+        {
+          "id": "blueberry",
+          "name": "Blueberries"
+        },
+        {
+          "id": "raspberry",
+          "name": "Raspberries"
+        }
+      ]
+    },
+    {
+      "id": "mountain",
+      "keywords": [
+        "mountain",
+        "taiga",
+        "tundra",
+        "polar"
+      ],
+      "items": [
+        {
+          "id": "apple_seed",
+          "name": "Apple Seeds"
+        },
+        {
+          "id": "pear_seed",
+          "name": "Pear Seeds"
+        },
+        {
+          "id": "truffle",
+          "name": "Truffle"
+        },
+        {
+          "id": "wild_herbs",
+          "name": "Wild Herbs"
+        }
+      ]
+    },
+    {
+      "id": "aquatic",
+      "keywords": [
+        "ocean",
+        "deep sea",
+        "coral reef",
+        "kelp forest",
+        "lake",
+        "river",
+        "coastal"
+      ],
+      "items": [
+        {
+          "id": "blueberry",
+          "name": "Blueberries"
+        },
+        {
+          "id": "raspberry",
+          "name": "Raspberries"
+        },
+        {
+          "id": "wild_herbs",
+          "name": "Wild Herbs"
+        }
+      ]
+    },
+    {
+      "id": "cave",
+      "keywords": [
+        "cave"
+      ],
+      "items": [
+        {
+          "id": "truffle",
+          "name": "Truffle"
+        },
+        {
+          "id": "wild_herbs",
+          "name": "Wild Herbs"
+        }
+      ]
+    },
+    {
+      "id": "desert",
+      "keywords": [
+        "desert"
+      ],
+      "items": [
+        {
+          "id": "wild_herbs",
+          "name": "Wild Herbs"
+        },
+        {
+          "id": "raspberry",
+          "name": "Raspberries"
+        }
+      ]
+    },
+    {
+      "id": "urban",
+      "keywords": [
+        "urban"
+      ],
+      "items": [
+        {
+          "id": "wild_herbs",
+          "name": "Wild Herbs"
+        },
+        {
+          "id": "blueberry",
+          "name": "Blueberries"
+        },
+        {
+          "id": "strawberry_seed",
+          "name": "Strawberry Seeds"
+        }
+      ]
+    }
+  ],
+  "messages": [
+    {
+      "id": "desert",
+      "keywords": [
+        "desert",
+        "volcano"
+      ],
+      "templates": [
+        "Sifting through the warm sand, you uncover some {item}!",
+        "Under the shade of a thorny shrub, you spot some {item}!",
+        "Tucked away in the dry soil, you find some {item}!",
+        "A desert wind reveals a hidden cluster of {item}!",
+        "Near a crumbling rock formation, you collect some {item}."
+      ]
+    },
+    {
+      "id": "snow",
+      "keywords": [
+        "snow",
+        "ice",
+        "polar",
+        "tundra",
+        "frozen"
+      ],
+      "templates": [
+        "Sweeping away a layer of frost, you gather some {item}!",
+        "Buried in the snow, you discover some frozen {item}!",
+        "Near a thermal hot spring, you forage some resilient {item}!",
+        "Beneath an icy ledge, you spot some preserved {item}.",
+        "The frozen ground hides a small stash of {item}!"
+      ]
+    },
+    {
+      "id": "cave",
+      "keywords": [
+        "cave"
+      ],
+      "templates": [
+        "Your flashlight beam catches a cluster of {item} growing in the dark dampness!",
+        "Clinging to a cavern wall, you gather some cave-dwelling {item}!",
+        "In a secret cavern alcove, you locate some {item}!",
+        "Echoing drips guide you to a patch of {item} in the dark.",
+        "Tucked behind a stalagmite, you find some {item}."
+      ]
+    },
+    {
+      "id": "aquatic",
+      "keywords": [
+        "ocean",
+        "sea",
+        "beach",
+        "coastal",
+        "lake",
+        "river",
+        "coral"
+      ],
+      "templates": [
+        "Washed up on the shore, you salvage some fresh {item}!",
+        "Tangled in sea vegetation, you discover some {item}!",
+        "Under a smooth tide pool stone, you harvest some {item}!",
+        "The receding tide exposes a hidden patch of {item}.",
+        "Along the riverbank, you spot some {item} growing wild."
+      ]
+    },
+    {
+      "id": "urban",
+      "keywords": [
+        "urban"
+      ],
+      "templates": [
+        "In an overgrown alleyway, you stumble upon some {item}!",
+        "Tucked behind an abandoned building, you find some {item}.",
+        "Growing between the cracks of old pavement, you gather some {item}!",
+        "A rooftop garden yields some unexpected {item}.",
+        "Under a rusted fire escape, you discover some wild {item}!"
+      ]
+    },
+    {
+      "id": "mountain",
+      "keywords": [
+        "mountain",
+        "taiga"
+      ],
+      "templates": [
+        "Clinging to a rocky ledge, you harvest some {item}!",
+        "In a sheltered mountain hollow, you find some {item}.",
+        "Beneath a canopy of pines, you gather some {item}!",
+        "A hidden alpine meadow yields some fresh {item}.",
+        "At the foot of a mossy boulder, you spot some {item}!"
+      ]
+    },
+    {
+      "id": "default",
+      "keywords": [],
+      "templates": [
+        "You forage through the brush and discover some {item}!",
+        "While scanning the forest floor, you spot some {item} hidden under the roots!",
+        "A rustling in the bushes leads you to a patch of {item}!",
+        "Nestled between the mossy rocks, you gather some {item}!",
+        "You carefully collect some {item} growing wild here.",
+        "Under a fallen log, you uncover some {item}!",
+        "Your keen eye catches a glint of {item} among the undergrowth.",
+        "A game trail leads you to a surprising cache of {item}.",
+        "Parting the tall grass, you find a cluster of {item}.",
+        "After a long search, you finally locate some {item}!"
+      ]
+    }
+  ]
+}
