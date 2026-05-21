@@ -1041,8 +1041,40 @@ class BiometricService {
     }
 
     // Always show the classification hint in the UI (even if gates are disabled)
-    final String displayClass =
+    String displayClass =
         taxonomyResult['class'] ?? 'unknown';
+
+    // Pre-pass: Find the candidate with the highest pure visual confidence (without taxonomic gates)
+    Organism? topVisualOrg;
+    double topVisualConf = 0.0;
+    if (_organisms != null) {
+      for (final org in _organisms!) {
+        final cachedFeature = _spriteFeatures?[org.name];
+        if (cachedFeature == null) continue; // Skip non-cached in pre-pass for extreme speed
+        
+        final visualResult = _featureSimilarity(
+          inputFeature,
+          cachedFeature,
+          org,
+          detectedClass: 'unknown',
+        );
+        if (visualResult.confidence > topVisualConf) {
+          topVisualConf = visualResult.confidence;
+          topVisualOrg = org;
+        }
+      }
+    }
+
+    // If pure visual match is highly confident, override the detected class and display class to prioritize visual match
+    if (topVisualConf >= 0.80 && topVisualOrg != null && topVisualOrg.animalClass != 'unknown') {
+      final oldClass = detectedClass;
+      detectedClass = topVisualOrg.animalClass;
+      displayClass = topVisualOrg.animalClass;
+      debugPrint(
+        'BiometricService: Highly confident visual match (${topVisualOrg.name} @ ${(topVisualConf * 100).toStringAsFixed(0)}%) overrides detected taxonomy "$oldClass" with: $detectedClass',
+      );
+    }
+
     onProgress?.call(
       displayClass != 'unknown'
           ? 'SUBJECT TYPE: ${displayClass.toUpperCase()}'
@@ -1407,6 +1439,19 @@ class BiometricService {
       // rather than acting as a hard multiplier. This prevents mediocre visual
       // matches from artificially jumping straight to 100%.
       double boostFactor = (classScore - 1.0).clamp(0.0, 1.0);
+      
+      // Scale taxonomic boost based on visual confidence:
+      // - No boost for poor visual matches (visualConfidence < 0.75)
+      // - Linear scaling between 0.75 and 0.85
+      // - Full boost for excellent visual matches (visualConfidence >= 0.85)
+      double scale = 0.0;
+      if (visualConfidence >= 0.85) {
+        scale = 1.0;
+      } else if (visualConfidence >= 0.75) {
+        scale = (visualConfidence - 0.75) / 0.10;
+      }
+      boostFactor *= scale;
+      
       finalConfidence = baseConfidence + (1.0 - baseConfidence) * boostFactor;
     } else {
       // If it's a penalty, multiply to strictly suppress false positives.
