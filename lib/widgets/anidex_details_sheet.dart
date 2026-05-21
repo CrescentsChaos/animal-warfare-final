@@ -311,6 +311,9 @@ class AnidexDetailsPage extends StatelessWidget {
           crossAxisSpacing: 12,
           children: [
             _buildInfoCard('CLASS', organism.animalClass, 'assets/icon/${organism.animalClass.toLowerCase().replaceAll(' ', '_')}.png'),
+            _buildInfoCard('ORDER', organism.order, null, iconData: Icons.account_tree_outlined),
+            _buildInfoCard('FAMILY', organism.family, null, iconData: Icons.hub_outlined),
+            _buildInfoCard('SUBFAMILY', organism.subfamily, null, iconData: Icons.bubble_chart_outlined),
             _buildInfoCard('DIET', organism.diet, 'assets/icon/${organism.diet.toLowerCase().replaceAll(' ', '_')}.png'),
             _buildInfoCard('SIZE', organism.formattedSizeForSystem(unitSystem), null, iconData: Icons.straighten),
             _buildInfoCard('WEIGHT', organism.formattedWeightForSystem(unitSystem), null, iconData: Icons.scale),
