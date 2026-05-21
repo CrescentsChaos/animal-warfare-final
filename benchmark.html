@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biometric Scanner Benchmark</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #111;
+            color: #0f0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            border: 1px solid #0f0;
+            padding: 20px;
+            box-shadow: 0 0 10px #0f02;
+        }
+        h1 { margin-top: 0; border-bottom: 1px solid #0f0; padding-bottom: 10px; }
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+            font-size: 1.2rem;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            border: 1px solid #0f0;
+            margin-bottom: 20px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #0f0;
+            width: 0%;
+            transition: width 0.1s;
+        }
+        #current-img {
+            max-width: 128px;
+            max-height: 128px;
+            image-rendering: pixelated;
+            border: 1px solid #333;
+        }
+        .log-box {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #333;
+            padding: 10px;
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+        .fail { color: #f55; }
+        .success { color: #5f5; }
+        button {
+            background: #0f0;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-family: inherit;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        button:hover { background: #5f5; }
+        button:disabled { background: #555; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Biometric Engine Benchmark Suite</h1>
+        <p>Testing strict parity of JS feature extraction against SQLite baseline signatures.</p>
+        
+        <button id="start-btn" onclick="startBenchmark()">RUN BENCHMARK</button>
+
+        <div class="stats">
+            <div>Processed: <span id="val-processed">0</span> / <span id="val-total">0</span></div>
+            <div>Top-1 Accuracy: <span id="val-top1">0.0%</span></div>
+            <div>Top-3 Accuracy: <span id="val-top3">0.0%</span></div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+
+        <div style="display:flex; gap: 20px; margin-bottom: 20px;">
+            <div>
+                <div>Current Subject:</div>
+                <img id="current-img" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=">
+            </div>
+            <div style="flex:1">
+                <div>Test Logs (Failures):</div>
+                <div class="log-box" id="log-box"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scanner Engine -->
+    <script src="bio_scanner.js"></script>
+
+    <script>
+        const norm = str => str.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+        async function startBenchmark() {
+            document.getElementById('start-btn').disabled = true;
+            const logBox = document.getElementById('log-box');
+            logBox.innerHTML = '';
+            const log = (msg, isFail) => {
+                const d = document.createElement('div');
+                d.textContent = msg;
+                if (isFail) d.className = 'fail';
+                logBox.appendChild(d);
+                logBox.scrollTop = logBox.scrollHeight;
+            };
+
+            log("Loading sprite list...");
+            const resp = await fetch('assets/sprite_list.json');
+            const sprites = await resp.json();
+            
+            log("Initializing BioScannerService...");
+            await window.BioScannerService.initialize();
+
+            let processed = 0;
+            let top1Hits = 0;
+            let top3Hits = 0;
+            
+            document.getElementById('val-total').textContent = sprites.length;
+
+            const imgEl = document.getElementById('current-img');
+
+            for (let i = 0; i < sprites.length; i++) {
+                const filename = sprites[i];
+                const expectedNorm = norm(filename.replace('.png', ''));
+
+                // Load image
+                imgEl.src = `assets/sprites/${filename}`;
+                await new Promise((resolve, reject) => {
+                    imgEl.onload = resolve;
+                    imgEl.onerror = () => { log(`Failed to load ${filename}`, true); resolve(); };
+                });
+
+                // Scan without progress callbacks for speed
+                const results = await window.BioScannerService.scan(imgEl);
+                processed++;
+
+                if (results && results.length > 0) {
+                    const top1Norm = norm(results[0].name);
+                    let foundInTop3 = false;
+                    for (let j = 0; j < Math.min(3, results.length); j++) {
+                        if (norm(results[j].name) === expectedNorm) {
+                            foundInTop3 = true;
+                            break;
+                        }
+                    }
+
+                    if (top1Norm === expectedNorm) {
+                        top1Hits++;
+                        top3Hits++;
+                    } else if (foundInTop3) {
+                        top3Hits++;
+                        log(`[Top-3] ${filename} matched as ${results[0].name}, but was #2/#3.`, true);
+                    } else {
+                        log(`[FAIL] ${filename} top match: ${results[0].name} (${(results[0].confidence*100).toFixed(1)}%)`, true);
+                    }
+                } else {
+                    log(`[FAIL] ${filename} returned no results.`, true);
+                }
+
+                // Update UI
+                document.getElementById('val-processed').textContent = processed;
+                document.getElementById('progress-fill').style.width = (processed / sprites.length * 100) + '%';
+                
+                const t1Acc = (top1Hits / processed * 100).toFixed(2);
+                const t3Acc = (top3Hits / processed * 100).toFixed(2);
+                document.getElementById('val-top1').textContent = t1Acc + '%';
+                document.getElementById('val-top3').textContent = t3Acc + '%';
+
+                // Yield to UI thread every 10 images
+                if (i % 10 === 0) await new Promise(r => setTimeout(r, 0));
+            }
+
+            log(`Benchmark complete. Top-1: ${(top1Hits / processed * 100).toFixed(2)}%, Top-3: ${(top3Hits / processed * 100).toFixed(2)}%`);
+            document.getElementById('start-btn').disabled = false;
+        }
+    </script>
+</body>
+</html>

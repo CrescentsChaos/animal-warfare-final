@@ -1,17 +1,31 @@
 // bio_scanner.js
 // Javascript port of the Biometric Scanner Engine
+// Mathematically matches biometric_service.dart
 
 class BioScanner {
     constructor() {
         this.spriteFeatures = null;
         this.isInitialized = false;
+        this.organisms = [];
     }
 
     async initialize() {
         if (this.isInitialized) return;
         try {
-            const resp = await fetch('assets/ml/sprite_features.json');
+            const [resp, orgsResp] = await Promise.all([
+                fetch('assets/ml/sprite_features.json'),
+                fetch('assets/Organisms.json')
+            ]);
             this.spriteFeatures = await resp.json();
+            
+            let orgs = await orgsResp.json();
+            try {
+                const orgs2Resp = await fetch('assets/Organisms2.json');
+                const orgs2 = await orgs2Resp.json();
+                orgs = orgs.concat(orgs2);
+            } catch(e) {}
+            this.organisms = orgs;
+            
             this.isInitialized = true;
         } catch (e) {
             console.error("BioScanner init failed:", e);
@@ -143,7 +157,6 @@ class BioScanner {
         const imgData = ctx.getImageData(0, 0, 128, 128).data;
         const width = 128, height = 128;
         
-        // Detect if has alpha transparency
         let hasAlpha = false;
         for (let i = 3; i < imgData.length; i += 4) {
             if (imgData[i] < 128) { hasAlpha = true; break; }
@@ -159,8 +172,16 @@ class BioScanner {
             mask = this._detectBackgroundAndGetMask(imgData, width, height);
         }
 
-        let objectPixelCount = 0;
-        let minX = width, maxX = 0, minY = height, maxY = 0;
+        const getPixel = (x, y) => {
+            const i = (y * width + x) * 4;
+            return [imgData[i], imgData[i+1], imgData[i+2]];
+        };
+
+        const getPixelSafe = (x, y) => {
+            if (x < 0 || x >= width || y < 0 || y >= height) return [0,0,0];
+            return getPixel(x, y);
+        };
+
         const finalHueBins = {};
         for (let i = 0; i < 36; i++) finalHueBins[`h${i * 10}`] = 0;
         finalHueBins['hWhite'] = 0;
@@ -169,11 +190,8 @@ class BioScanner {
 
         let totalBrightness = 0, totalSaturation = 0;
         const colorCounts = {};
-
-        const getPixel = (x, y) => {
-            const i = (y * width + x) * 4;
-            return [imgData[i], imgData[i+1], imgData[i+2]];
-        };
+        let objectPixelCount = 0;
+        let minX = width, maxX = 0, minY = height, maxY = 0;
 
         for (let y = 0; y < height; y++) {
             for (let x = 0; x < width; x++) {
@@ -209,7 +227,100 @@ class BioScanner {
         
         const [hSym, vSym] = this._calculateSymmetry(imgData, mask, width, height, minX, maxX, minY, maxY);
 
-        // Core Solidity
+        // Spatial Hue Bins
+        const spatialHueBins = {};
+        for (let gy = 0; gy < 3; gy++) {
+            for (let gx = 0; gx < 3; gx++) {
+                const startX = minX + Math.floor(gx * (maxX - minX) / 3);
+                const endX = gx === 2 ? maxX : minX + Math.floor((gx + 1) * (maxX - minX) / 3);
+                const startY = minY + Math.floor(gy * (maxY - minY) / 3);
+                const endY = gy === 2 ? maxY : minY + Math.floor((gy + 1) * (maxY - minY) / 3);
+                let gridPix = 0;
+                const gridHue = {};
+                for (let y = startY; y <= endY; y++) {
+                    for (let x = startX; x <= endX; x++) {
+                        if (mask[y * width + x]) {
+                            const p = getPixel(x, y);
+                            const h = this._rgbToHsv(p[0], p[1], p[2])[0];
+                            const bin = Math.max(0, Math.min(35, Math.floor(h / 10)));
+                            gridHue[bin] = (gridHue[bin] || 0) + 1;
+                            gridPix++;
+                        }
+                    }
+                }
+                for (const [bin, count] of Object.entries(gridHue)) {
+                    spatialHueBins[`g${gx}${gy}_h${bin * 10}`] = gridPix > 0 ? count / gridPix : 0;
+                }
+            }
+        }
+
+        let significantBins = 0;
+        for (const [key, val] of Object.entries(finalHueBins)) {
+            if (val > 0.02) significantBins++;
+        }
+        const hueComplexity = significantBins / 39.0;
+
+        let perimeter = 0, fringePixels = 0;
+        for (let y = 1; y < height - 1; y++) {
+            for (let x = 1; x < width - 1; x++) {
+                if (!mask[y * width + x]) continue;
+                if (!mask[(y - 1) * width + x] || !mask[(y + 1) * width + x] || 
+                    !mask[y * width + x - 1] || !mask[y * width + x + 1]) {
+                    perimeter++;
+                    fringePixels++;
+                }
+            }
+        }
+        const compactness = (perimeter * perimeter) / objectPixelCount;
+        const jaggedness = fringePixels / Math.sqrt(objectPixelCount);
+
+        let topHalf = 0, bottomHalf = 0, topThirdPixels = 0;
+        const topThreshold = Math.floor(height * 0.4);
+        const bottomThreshold = Math.floor(height * 0.6);
+        const topThirdY = minY + Math.floor((maxY - minY + 1) / 3);
+        
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                if (!mask[y * width + x]) continue;
+                if (y < topThreshold) topHalf++;
+                if (y > bottomThreshold) bottomHalf++;
+                if (y <= topThirdY) topThirdPixels++;
+            }
+        }
+        const vBias = (topHalf + bottomHalf) > 0 ? bottomHalf / (topHalf + bottomHalf) : 0.5;
+        const topHeavyBias = topHalf / objectPixelCount;
+        const bottomHeavyBias = bottomHalf / objectPixelCount;
+
+        let limbPixels = 0;
+        const insetX = Math.floor((maxX - minX + 1) * 0.2);
+        const insetY = Math.floor((maxY - minY + 1) * 0.2);
+        for (let y = minY; y <= maxY; y++) {
+            for (let x = minX; x <= maxX; x++) {
+                if (mask[y * width + x] && 
+                   (x < minX + insetX || x > maxX - insetX || y < minY + insetY || y > maxY - insetY)) {
+                    limbPixels++;
+                }
+            }
+        }
+        const limbDensity = limbPixels / objectPixelCount;
+
+        let hEdges = 0, vEdges = 0;
+        let edgePixels = 0, totalEdgeCheck = 0;
+        for (let y = 1; y < height - 1; y++) {
+            for (let x = 1; x < width - 1; x++) {
+                if (!mask[y * width + x]) continue;
+                const p = getPixel(x, y), pR = getPixel(x+1, y), pD = getPixel(x, y+1);
+                const lum = (p[0]+p[1]+p[2])/3, lumR = (pR[0]+pR[1]+pR[2])/3, lumD = (pD[0]+pD[1]+pD[2])/3;
+                if (Math.abs(lum - lumR) > 30) hEdges++;
+                if (Math.abs(lum - lumD) > 30) vEdges++;
+                
+                if (Math.abs(lum - lumR) + Math.abs(lum - lumD) > 40) edgePixels++;
+                totalEdgeCheck++;
+            }
+        }
+        const directionalEdgeBias = (hEdges + vEdges) > 0 ? (hEdges - vEdges) / (hEdges + vEdges) : 0.0;
+        const edgeDensity = totalEdgeCheck > 0 ? edgePixels / totalEdgeCheck : 0.0;
+
         let corePixels = 0;
         const cMinX = minX + Math.floor((maxX - minX) * 0.25);
         const cMaxX = maxX - Math.floor((maxX - minX) * 0.25);
@@ -222,75 +333,163 @@ class BioScanner {
         }
         const coreSolidity = corePixels / Math.max(1, (cMaxX - cMinX + 1) * (cMaxY - cMinY + 1));
 
-        let topHalf = 0, bottomHalf = 0;
-        const topThresh = Math.floor(height * 0.4);
-        const botThresh = Math.floor(height * 0.6);
-        for (let y = 0; y < height; y++) {
-            for (let x = 0; x < width; x++) {
-                if (!mask[y * width + x]) continue;
-                if (y < topThresh) topHalf++;
-                if (y > botThresh) bottomHalf++;
+        let maxRowPixels = -1, maxRowY = minY, minRowWidth = maxX - minX + 1, maxRowWidth = 0;
+        for (let y = minY; y <= maxY; y++) {
+            let rowW = 0;
+            for (let x = minX; x <= maxX; x++) {
+                if (mask[y * width + x]) rowW++;
+            }
+            if (rowW > 0) {
+                if (rowW > maxRowPixels) { maxRowPixels = rowW; maxRowY = y; }
+                if (rowW < minRowWidth) minRowWidth = rowW;
+                if (rowW > maxRowWidth) maxRowWidth = rowW;
             }
         }
+        const maxWidthRowBias = (maxY > minY) ? (maxRowY - minY) / (maxY - minY) : 0.5;
+        const verticalThinning = maxRowWidth > 0 ? minRowWidth / maxRowWidth : 0.0;
 
-        // Edge density
-        let edgePixels = 0, totalEdgeCheck = 0;
-        for (let y = 1; y < height - 1; y++) {
-            for (let x = 1; x < width - 1; x++) {
-                if (!mask[y * width + x]) continue;
-                const p = getPixel(x, y), pR = getPixel(x+1, y), pD = getPixel(x, y+1);
-                const lum = (p[0]+p[1]+p[2])/3, lumR = (pR[0]+pR[1]+pR[2])/3, lumD = (pD[0]+pD[1]+pD[2])/3;
-                if (Math.abs(lum - lumR) + Math.abs(lum - lumD) > 40) edgePixels++;
-                totalEdgeCheck++;
+        let totalX = 0, totalY = 0;
+        for (let y = minY; y <= maxY; y++) {
+            for (let x = minX; x <= maxX; x++) {
+                if (mask[y * width + x]) {
+                    totalX += x;
+                    totalY += y;
+                }
             }
         }
+        const centroidY = totalY / objectPixelCount;
+        const horizontalCentroidShift = (maxX > minX) ? (totalX / objectPixelCount - minX) / (maxX - minX) : 0.5;
+        const yCentroid = centroidY / height;
 
-        // Just basic features for JS fallback, matching database signature
+        const bcMinX = minX + Math.floor((maxX - minX) * 0.35);
+        const bcMaxX = maxX - Math.floor((maxX - minX) * 0.35);
+        const bcMinY = maxY - Math.floor((maxY - minY) * 0.3);
+        let bcPixels = 0;
+        for (let y = bcMinY; y <= maxY; y++) {
+            for (let x = bcMinX; x <= bcMaxX; x++) {
+                if (mask[y * width + x]) bcPixels++;
+            }
+        }
+        const bottomCenterDensity = bcPixels / Math.max(1, (bcMaxX - bcMinX + 1) * (maxY - bcMinY + 1));
+
+        const cornerW = Math.max(1, Math.floor((maxX - minX) * 0.2));
+        const cornerH = Math.max(1, Math.floor((maxY - minY) * 0.2));
+        let cornerPixels = 0;
+        for (let y = minY; y < minY + cornerH; y++) {
+            for (let x = minX; x < minX + cornerW; x++) if (mask[y * width + x]) cornerPixels++;
+            for (let x = maxX - cornerW + 1; x <= maxX; x++) if (mask[y * width + x]) cornerPixels++;
+        }
+        for (let y = maxY - cornerH + 1; y <= maxY; y++) {
+            for (let x = minX; x < minX + cornerW; x++) if (mask[y * width + x]) cornerPixels++;
+            for (let x = maxX - cornerW + 1; x <= maxX; x++) if (mask[y * width + x]) cornerPixels++;
+        }
+        const cornerDensity = cornerPixels / Math.max(1, cornerW * cornerH * 4.0);
+
+        let diagPixels = 0, diagArea = 0;
+        const boxW = Math.max(1, maxX - minX);
+        const boxH = Math.max(1, maxY - minY);
+        for (let y = minY; y <= maxY; y++) {
+            for (let x = minX; x <= maxX; x++) {
+                const nx = (x - minX) / boxW;
+                const ny = (y - minY) / boxH;
+                if (Math.abs(nx - ny) < 0.1 || Math.abs(nx - (1 - ny)) < 0.1) {
+                    diagArea++;
+                    if (mask[y * width + x]) diagPixels++;
+                }
+            }
+        }
+        const diagonalDensity = diagArea > 0 ? diagPixels / diagArea : 0.0;
+        const midX = minX + Math.floor((maxX - minX) / 2);
+
+        let maxColH = 0;
+        let maxColX = minX;
+        for (let x = minX; x <= maxX; x++) {
+            let colH = 0;
+            for (let y = minY; y <= maxY; y++) {
+                if (mask[y * width + x]) colH++;
+            }
+            if (colH > maxColH) { maxColH = colH; maxColX = x; }
+        }
+        const maxHeightColBias = (maxX > minX) ? (maxColX - minX) / (maxX - minX) : 0.5;
+
+        let sumYDist = 0;
+        for (let y = minY; y <= maxY; y++) {
+            for (let x = minX; x <= maxX; x++) {
+                if (mask[y * width + x]) {
+                    sumYDist += Math.pow(y - centroidY, 2);
+                }
+            }
+        }
+        const verticalMassDistribution = (maxY > minY) ? Math.sqrt(sumYDist / objectPixelCount) / (maxY - minY) : 0.0;
+
+        const bilateralSym = hSym;
+
+        let qMatches = 0, qTotal = 0;
+        const midY = minY + Math.floor((maxY - minY) / 2);
+        for (let qy = 0; qy < 2; qy++) {
+            for (let qx = 0; qx < 2; qx++) {
+                const qXStart = qx === 0 ? minX : midX;
+                const qXEnd = qx === 0 ? midX : maxX;
+                const qYStart = qy === 0 ? minY : midY;
+                const qYEnd = qy === 0 ? midY : maxY;
+                const qSym = this._calculateSymmetry(imgData, mask, width, height, qXStart, qXEnd, qYStart, qYEnd);
+                qMatches += Math.floor(qSym[0] * 100) + Math.floor(qSym[1] * 100);
+                qTotal += 200;
+            }
+        }
+        const localSymmetry = qTotal > 0 ? qMatches / qTotal : 0.5;
+
+        const lowerSym = this._calculateSymmetry(imgData, mask, width, height, minX, maxX, midY, maxY);
+        const lowerQuadrantSymmetry = lowerSym[0];
+
         return {
             hueBins: finalHueBins,
+            spatialHueBins: spatialHueBins,
             avgBrightness: totalBrightness / objectPixelCount,
             avgSaturation: totalSaturation / objectPixelCount,
             aspectRatio: (maxX - minX + 1) / (maxY - minY + 1),
             solidity: objectPixelCount / ((maxX - minX + 1) * (maxY - minY + 1)),
             verticalSymmetry: vSym,
             horizontalSymmetry: hSym,
-            bilateralSym: hSym,
-            localSymmetry: hSym, // approximate
-            edgeDensity: totalEdgeCheck > 0 ? edgePixels / totalEdgeCheck : 0,
-            directionalEdgeBias: 0.0,
+            edgeDensity: edgeDensity,
+            verticalBias: vBias,
+            topHeavyBias: topHeavyBias,
+            hueComplexity: hueComplexity,
+            compactness: compactness,
+            limbDensity: limbDensity,
+            directionalEdgeBias: directionalEdgeBias,
             coreSolidity: coreSolidity,
-            bottomHeavyBias: bottomHalf / objectPixelCount,
-            maxWidthRowBias: 0.5,
-            maxHeightColBias: 0.5,
-            bottomCenterDensity: 0.0,
-            cornerDensity: 0.0,
-            diagonalDensity: 0.0,
-            lowerQuadrantSymmetry: hSym,
-            horizontalCentroidShift: 0.5,
-            convexHullRatio: objectPixelCount / ((maxX - minX + 1) * (maxY - minY + 1) / 2.0),
-            verticalMassDistribution: 0.2,
+            bottomHeavyBias: bottomHeavyBias,
+            maxWidthRowBias: maxWidthRowBias,
+            maxHeightColBias: maxHeightColBias,
+            bottomCenterDensity: bottomCenterDensity,
+            cornerDensity: cornerDensity,
+            diagonalDensity: diagonalDensity,
+            lowerQuadrantSymmetry: lowerQuadrantSymmetry,
+            horizontalCentroidShift: horizontalCentroidShift,
+            convexHullRatio: objectPixelCount / (((maxX - minX + 1) * (maxY - minY + 1)) / 2.0),
+            verticalMassDistribution: verticalMassDistribution,
             colorGranularity: 0.0,
-            fringeDensity: 0.1,
-            verticalThinning: 0.5,
+            fringeDensity: fringePixels / objectPixelCount,
+            verticalThinning: verticalThinning,
+            localSymmetry: localSymmetry,
             colorClustering: 0.0,
-            yGradient: 0.5,
+            yGradient: (maxY > minY) ? (centroidY - minY) / (maxY - minY) : 0.5,
             widthVariance: 0.0,
             shellIndex: 0.0,
             radialOverlap: 0.0,
-            yCentroid: 0.5,
-            jaggedness: 0.1,
-            topThirdDensity: topHalf / objectPixelCount,
-            limbDensity: 0.0,
-            animalClass: 'unknown'
+            yCentroid: yCentroid,
+            jaggedness: jaggedness,
+            topThirdDensity: topThirdPixels / objectPixelCount,
+            bilateralSym: bilateralSym
         };
     }
 
-    _featureSimilarity(f1, f2, targetClass) {
-        // Color match
+    _featureSimilarity(f1, f2, targetOrg) {
         let globalColorMatch = 0;
         for (const [key, val] of Object.entries(f1.hueBins)) {
             if (val === 0) continue;
-            if (['hWhite', 'hBlack', 'hGrey'].includes(key)) {
+            if (key === 'hWhite' || key === 'hBlack' || key === 'hGrey') {
                 globalColorMatch += Math.min(val, f2.hueBins[key] || 0);
                 continue;
             }
@@ -301,33 +500,107 @@ class BioScanner {
             const nextHue = (hue + 10) % 360;
             const prevVal = f2.hueBins[`h${prevHue}`] || 0;
             const nextVal = f2.hueBins[`h${nextHue}`] || 0;
-            globalColorMatch += Math.min(val, exact + prevVal * 0.4 + nextVal * 0.4);
+            const effectiveF2 = exact + (prevVal * 0.4) + (nextVal * 0.4);
+            globalColorMatch += Math.min(val, effectiveF2);
         }
-        const colorScore = Math.min(1.0, globalColorMatch);
+        const colorScore = Math.max(0, Math.min(1.0, globalColorMatch));
 
-        // Shape
+        let spatialScore = colorScore;
+        if (f1.spatialHueBins && f2.spatialHueBins) {
+            let spatialSum = 0;
+            let activeCells = 0;
+            for (const [key, val] of Object.entries(f1.spatialHueBins)) {
+                if (f2.spatialHueBins[key] !== undefined) {
+                    spatialSum += Math.min(val, f2.spatialHueBins[key]);
+                }
+                activeCells++;
+            }
+            if (activeCells > 0) {
+                spatialScore = Math.max(0, Math.min(1.0, spatialSum / activeCells));
+            }
+        }
+
         const aspectDiff = Math.abs(Math.log(f1.aspectRatio || 1) - Math.log(f2.aspectRatio || 1));
         const solidityDiff = Math.abs(f1.solidity - f2.solidity);
-        const shapeScore = Math.pow(Math.max(0, 1 - aspectDiff * 0.6), 1.5) * 0.6 + 
-                           Math.pow(Math.max(0, 1 - solidityDiff * 1.6), 1.5) * 0.4;
+        const shapeScore = Math.pow(Math.max(0, 1.0 - (aspectDiff * 0.6)), 1.5) * 0.6 +
+                           Math.pow(Math.max(0, 1.0 - (solidityDiff * 1.6)), 1.5) * 0.4;
 
-        // Pattern
         const symDiff = Math.abs(f1.bilateralSym - f2.bilateralSym) + Math.abs(f1.localSymmetry - f2.localSymmetry);
         const edgeDiff = Math.abs(f1.edgeDensity - f2.edgeDensity);
-        const patternScore = Math.max(0, 1 - symDiff/2.0) * 0.4 + Math.max(0, 1 - edgeDiff) * 0.6;
+        const biasDiff = Math.abs(f1.directionalEdgeBias - f2.directionalEdgeBias);
 
-        // Shade & Saturation
-        const shadeScore = Math.max(0, 1 - Math.abs(f1.avgBrightness - f2.avgBrightness));
-        const satScore = Math.max(0, 1 - Math.abs(f1.avgSaturation - f2.avgSaturation));
-        const finalShadeScore = shadeScore * 0.7 + satScore * 0.3;
+        let patternImportance = 0.6;
+        if (f1.edgeDensity > 0.12 && f2.edgeDensity > 0.12) {
+            patternImportance = 0.8;
+        }
 
-        // Structure
-        const structScore = Math.max(0, 1 - Math.abs(f1.coreSolidity - f2.coreSolidity)) * 0.5 + 
-                            Math.max(0, 1 - Math.abs(f1.convexHullRatio - f2.convexHullRatio)) * 0.5;
+        const patternScore = Math.max(0, 1.0 - (symDiff / 2.0)) * (1.0 - patternImportance) +
+            (Math.max(0, 1.0 - edgeDiff) * 0.7 + Math.max(0, 1.0 - biasDiff) * 0.3) * patternImportance;
 
-        // Combine
-        const conf = colorScore * 0.35 + shapeScore * 0.25 + patternScore * 0.15 + finalShadeScore * 0.15 + structScore * 0.10;
-        return conf;
+        const shadeScore = Math.max(0, 1.0 - Math.abs(f1.avgBrightness - f2.avgBrightness));
+        const satScore = Math.max(0, 1.0 - Math.abs(f1.avgSaturation - f2.avgSaturation));
+        const finalShadeScore = Math.max(0, shadeScore * 0.7 + satScore * 0.3);
+
+        const structScore = (1.0 - Math.abs(f1.coreSolidity - f2.coreSolidity)) * 0.3 +
+                            (1.0 - Math.abs(f1.convexHullRatio - f2.convexHullRatio)) * 0.3 +
+                            (1.0 - Math.abs(f1.radialOverlap - f2.radialOverlap)) * 0.2 +
+                            (1.0 - Math.abs(f1.shellIndex - f2.shellIndex)) * 0.2;
+
+        const poseScore = (1.0 - Math.abs(f1.bottomHeavyBias - f2.bottomHeavyBias)) * 0.15 +
+                          (1.0 - Math.abs(f1.maxWidthRowBias - f2.maxWidthRowBias)) * 0.15 +
+                          (1.0 - Math.abs(f1.maxHeightColBias - f2.maxHeightColBias)) * 0.15 +
+                          (1.0 - Math.abs(f1.yCentroid - f2.yCentroid)) * 0.15 +
+                          (1.0 - Math.abs(f1.horizontalCentroidShift - f2.horizontalCentroidShift)) * 0.15 +
+                          (1.0 - Math.abs(f1.verticalMassDistribution - f2.verticalMassDistribution)) * 0.15 +
+                          (1.0 - Math.abs(f1.verticalThinning - f2.verticalThinning)) * 0.1;
+
+        const detailScore = (1.0 - Math.abs(f1.colorGranularity - f2.colorGranularity)) * 0.2 +
+                            (1.0 - Math.abs(f1.fringeDensity - f2.fringeDensity)) * 0.2 +
+                            Math.max(0, Math.min(1.0, 1.0 - Math.abs(f1.jaggedness - f2.jaggedness) * 0.1)) * 0.15 +
+                            (1.0 - Math.abs(f1.colorClustering - f2.colorClustering)) * 0.15 +
+                            (1.0 - Math.abs(f1.widthVariance - f2.widthVariance)) * 0.15 +
+                            (1.0 - Math.abs(f1.topThirdDensity - f2.topThirdDensity)) * 0.15;
+
+        const advSymScore = (1.0 - Math.abs(f1.lowerQuadrantSymmetry - f2.lowerQuadrantSymmetry)) * 0.3 +
+                            (1.0 - Math.abs(f1.localSymmetry - f2.localSymmetry)) * 0.3 +
+                            (1.0 - Math.abs(f1.bilateralSym - f2.bilateralSym)) * 0.4;
+
+        // Class Gate
+        let classScore = 1.0;
+        const detectedTaxon = 'unknown'; // we don't have taxonomy ai in JS fallback
+        
+        let structGate = 1.0;
+        const targetClass = (targetOrg.class || targetOrg.animal_class || 'unknown').toLowerCase().trim();
+        if (targetClass === 'fish') {
+            if (f1.limbDensity > 0.12 || f1.jaggedness > 0.35) structGate *= 0.1;
+        }
+        if (targetClass === 'mammal' || targetClass === 'reptile') {
+            if (f1.limbDensity < 0.04 && f1.jaggedness < 0.15) structGate *= 0.2;
+        }
+
+        const visualWeightColor = 0.10;
+        const visualWeightSpatial = 0.05;
+        const visualWeightShape = 0.20;
+        const visualWeightPattern = 0.10;
+        const visualWeightShade = 0.05;
+        const visualWeightStruct = 0.30;
+        const visualWeightPose = 0.15;
+        const visualWeightDetail = 0.00;
+        const visualWeightAdvSym = 0.05;
+
+        const visualConfidence = Math.max(0, Math.min(1.0, 
+            colorScore * visualWeightColor +
+            spatialScore * visualWeightSpatial +
+            finalShadeScore * visualWeightShade +
+            shapeScore * visualWeightShape +
+            patternScore * visualWeightPattern +
+            structScore * visualWeightStruct +
+            poseScore * visualWeightPose +
+            detailScore * visualWeightDetail +
+            advSymScore * visualWeightAdvSym
+        ));
+
+        return Math.max(0, Math.min(1.0, visualConfidence * classScore * structGate));
     }
 
     async scan(imageElement, onProgress) {
@@ -347,7 +620,9 @@ class BioScanner {
             i++;
             if (i % 100 === 0 && onProgress) onProgress("Matching Bio-Data...", 60 + (30 * (i / entries.length)));
             
-            const conf = this._featureSimilarity(inputFeature, targetFeature, 'unknown');
+            const targetOrg = this.organisms.find(o => o.name === name) || {};
+            const conf = this._featureSimilarity(inputFeature, targetFeature, targetOrg);
+            
             if (conf > 0.15) {
                 results.push({ name, confidence: conf });
             }
