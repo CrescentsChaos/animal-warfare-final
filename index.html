@@ -19,6 +19,7 @@
     <header class="mobile-header">
         <span class="brand-pixel">ANIDEX</span>
         <div class="mobile-actions">
+            <button class="icon-btn" onclick="App.triggerBioScanner()" title="Bio Scanner">📷</button>
             <button class="icon-btn" onclick="App.toggleFilter()" title="Filters">&#9776;</button>
         </div>
     </header>
@@ -29,8 +30,9 @@
             <div class="sidebar-brand">
                 <span class="brand-pixel">ANIDEX</span>
                 <span class="sidebar-subtitle">ANIMAL WARFARE DATABASE</span>
+                <button class="tab-btn" style="margin-top:15px;width:100%;background:var(--accent);color:var(--bg-root);border:none;cursor:pointer;" onclick="App.triggerBioScanner()">📷 BIO SCANNER</button>
                 <a href="animal_report.html" class="tab-btn"
-                    style="margin-top:15px;text-decoration:none;display:block;text-align:center;width:100%;box-sizing:border-box;">&#127894;
+                    style="margin-top:10px;text-decoration:none;display:block;text-align:center;width:100%;box-sizing:border-box;">&#127894;
                     FULL RANKINGS</a>
             </div>
 
@@ -1150,6 +1152,49 @@
                     el.onclick = () => this.selectSearchSelectorOption(opt.value);
                     container.appendChild(el);
                 });
+            },
+
+            triggerBioScanner() {
+                document.getElementById('bio-scanner-upload').click();
+            },
+
+            async handleBioScan(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const img = new Image();
+                img.src = URL.createObjectURL(file);
+                await new Promise(r => img.onload = r);
+
+                const overlay = document.getElementById('bio-scanner-overlay');
+                const status = document.getElementById('bio-scanner-status');
+                const progress = document.getElementById('bio-scanner-progress');
+                
+                overlay.style.display = 'flex';
+                status.textContent = 'Initializing Scanner...';
+                progress.style.width = '0%';
+
+                try {
+                    const results = await window.BioScannerService.scan(img, (msg, pct) => {
+                        status.textContent = msg;
+                        progress.style.width = pct + '%';
+                    });
+
+                    setTimeout(() => {
+                        overlay.style.display = 'none';
+                        event.target.value = ''; // Reset
+                        if (results && results.length > 0) {
+                            App.showDetail(results[0].name);
+                        } else {
+                            alert("No match found.");
+                        }
+                    }, 500);
+                } catch (e) {
+                    console.error(e);
+                    alert("Scanner failed.");
+                    overlay.style.display = 'none';
+                    event.target.value = '';
+                }
             }
         };
 
@@ -1175,6 +1220,21 @@
             </div>
         </div>
     </div>
+
+    <!-- Bio Scanner UI -->
+    <input type="file" id="bio-scanner-upload" accept="image/*" capture="environment" onchange="App.handleBioScan(event)" style="display:none;">
+    <div id="bio-scanner-overlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.95); z-index:10000; flex-direction:column; align-items:center; justify-content:center; color:var(--accent); font-family:'Press Start 2P', monospace;">
+        <div style="font-size:3rem; margin-bottom:20px; animation: pulse 1s infinite alternate;">🧬</div>
+        <div id="bio-scanner-status" style="margin-bottom:20px; font-size:12px; letter-spacing:2px; text-align:center;">Initializing Scanner...</div>
+        <div style="width:200px; height:4px; background:#333; border-radius:2px; overflow:hidden;">
+            <div id="bio-scanner-progress" style="width:0%; height:100%; background:var(--accent); transition: width 0.2s;"></div>
+        </div>
+        <style>
+            @keyframes pulse { from { opacity: 0.5; transform: scale(0.9); } to { opacity: 1; transform: scale(1.1); } }
+        </style>
+    </div>
+    
+    <script src="bio_scanner.js"></script>
 </body>
 
 </html>
