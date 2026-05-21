@@ -1281,9 +1281,7 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
         const SizedBox(width: 6),
         _FeatureDot(label: 'SHD', score: scores['Shade'] ?? 0),
         const SizedBox(width: 6),
-        _FeatureDot(label: 'WGT', score: scores['Weight'] ?? 1.0),
-        const SizedBox(width: 6),
-        _FeatureDot(label: 'DIT', score: scores['Diet'] ?? 1.0),
+        _FeatureDot(label: 'TAX', score: scores['Taxonomy'] ?? 0),
       ],
     );
   }
@@ -1496,6 +1494,10 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
               _buildComparisonRow(
                 'SYMMETRY',
                 result.featureScores['Symmetry'] ?? 0,
+              ),
+              _buildComparisonRow(
+                'TAXONOMY',
+                result.featureScores['Taxonomy'] ?? 0,
               ),
 
               const SizedBox(height: 32),

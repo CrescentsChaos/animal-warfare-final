@@ -152,6 +152,7 @@ class BioScanner {
         
         ctx.fillStyle = 'rgba(0,0,0,0)';
         ctx.fillRect(0, 0, 128, 128);
+        ctx.imageSmoothingEnabled = false;
         ctx.drawImage(imgElement, dx, dy, dw, dh);
         
         const imgData = ctx.getImageData(0, 0, 128, 128).data;

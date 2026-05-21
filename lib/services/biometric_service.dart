@@ -1086,23 +1086,9 @@ class BiometricService {
     final results = <ScanResult>[];
     
     // Efficiency optimization: pre-filter candidates by predicted taxon
+    // We removed strict pre-filtering because it causes false negatives 
+    // when the taxonomic AI misclassifies the input image.
     List<Organism> candidates = _organisms!;
-    if (detectedClass != 'unknown') {
-      final preCount = candidates.length;
-      candidates = candidates.where((o) => 
-        o.subfamily.toLowerCase().trim() == detectedClass || 
-        o.family.toLowerCase().trim() == detectedClass || 
-        o.order.toLowerCase().trim() == detectedClass ||
-        (o.animalClass.toLowerCase().trim() == detectedClass && detectedClass != 'unknown') ||
-        o.name.toLowerCase() == detectedClass
-      ).toList();
-      
-      // If filtering was too aggressive (e.g., empty), fallback to full scan
-      if (candidates.isEmpty) {
-        candidates = _organisms!;
-      }
-      debugPrint('BiometricService: Candidate pool filtered from $preCount to ${candidates.length}');
-    }
 
     final totalOrgs = candidates.length;
     int processed = 0;
@@ -1357,24 +1343,29 @@ class BiometricService {
 
     // --- BIOLOGICAL GATES ---
 
-    // Class Gate: High-fidelity species categorization
-    // Now uses fine-grained taxonomy (subfamily/family/order) for matching
+    // Class Gate: Graded taxonomic categorization
     double classScore = 1.0;
+    double rawTaxonomyAccuracy = 1.0;
     final String detectedTaxon = detectedClass.toLowerCase().trim();
 
     if (detectedTaxon != 'unknown') {
-      // Check if the target organism matches at any taxonomy level
-      final bool taxonMatch = 
-        target.subfamily.toLowerCase().trim() == detectedTaxon ||
-        target.family.toLowerCase().trim() == detectedTaxon ||
-        target.order.toLowerCase().trim() == detectedTaxon ||
-        target.animalClass.toLowerCase().trim() == detectedTaxon;
-
-      if (taxonMatch) {
-        classScore = 1.15; // Boost for taxonomy agreement
+      // Prioritize checking broader taxonomy first as requested (class > order > family > subfamily)
+      if (target.animalClass.toLowerCase().trim() == detectedTaxon) {
+        classScore = 1.30;
+        rawTaxonomyAccuracy = 1.0;
+      } else if (target.order.toLowerCase().trim() == detectedTaxon) {
+        classScore = 1.20;
+        rawTaxonomyAccuracy = 0.85;
+      } else if (target.family.toLowerCase().trim() == detectedTaxon) {
+        classScore = 1.10;
+        rawTaxonomyAccuracy = 0.70;
+      } else if (target.subfamily.toLowerCase().trim() == detectedTaxon) {
+        classScore = 1.05;
+        rawTaxonomyAccuracy = 0.50;
       } else {
-        // Penalty for taxonomy mismatch
-        classScore = 0.15;
+        // Soft penalty to give visual prediction priority
+        classScore = 0.80;
+        rawTaxonomyAccuracy = 0.20;
       }
     }
 
@@ -1384,13 +1375,13 @@ class BiometricService {
     // If subject has legs/limbs (fringe/jaggedness) but target is Fish
     if (targetClass == 'fish') {
       if (f1.limbDensity > 0.12 || f1.jaggedness > 0.35) {
-        structGate *= 0.1; // Extremely strict: Leggy things are not fish
+        structGate *= 0.15; // Extremely strict: Leggy things are not fish
       }
     }
     // If target has legs (Mammal/Reptile) but subject is a smooth blob (Fish-like)
     if (targetClass == 'mammal' || targetClass == 'reptile') {
       if (f1.limbDensity < 0.04 && f1.jaggedness < 0.15) {
-        structGate *= 0.2; // Mammals/Reptiles usually have limbs/necks
+        structGate *= 0.25; // Mammals/Reptiles usually have limbs/necks
       }
     }
 
@@ -1417,9 +1408,30 @@ class BiometricService {
                 advSymScore * visualWeightAdvSym)
             .clamp(0.0, 1.0);
 
+    // Smoothly blend taxonomy penalties out as visual confidence gets high (Visual Priority)
+    if (visualConfidence > 0.75) {
+      double overrideFactor = ((visualConfidence - 0.75) / 0.25).clamp(0.0, 1.0);
+      classScore = classScore + (max(1.0, classScore) - classScore) * overrideFactor;
+      structGate = structGate + (1.0 - structGate) * overrideFactor;
+      rawTaxonomyAccuracy = rawTaxonomyAccuracy + (1.0 - rawTaxonomyAccuracy) * overrideFactor;
+    }
+
     // Apply biological gates and structural gate
-    final double finalConfidence = (visualConfidence * classScore * structGate)
-        .clamp(0.0, 1.0);
+    final double baseConfidence = (visualConfidence * structGate).clamp(0.0, 1.0);
+    double finalConfidence;
+    
+    if (classScore > 1.0) {
+      // If taxonomy is a match, use the boost to close the gap to 100%
+      // rather than acting as a hard multiplier. This prevents mediocre visual
+      // matches from artificially jumping straight to 100%.
+      double boostFactor = (classScore - 1.0).clamp(0.0, 1.0);
+      finalConfidence = baseConfidence + (1.0 - baseConfidence) * boostFactor;
+    } else {
+      // If it's a penalty, multiply to strictly suppress false positives.
+      finalConfidence = baseConfidence * classScore;
+    }
+    
+    finalConfidence = finalConfidence.clamp(0.0, 1.0);
 
     // PINPOINT THRESHOLD (90%)
     final bool pinpointed = finalConfidence > 0.90;
@@ -1440,6 +1452,7 @@ class BiometricService {
         'Detail': detailScore,
         'Symmetry': advSymScore,
         'Class': classScore,
+        'Taxonomy': rawTaxonomyAccuracy,
       },
       detectedClass: detectedClass,
       isPinpointed: pinpointed,
