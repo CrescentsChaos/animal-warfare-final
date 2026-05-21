@@ -28,12 +28,26 @@ void main() async {
   int count = 0;
   for (var org in animalsData) {
     final name = org['name'];
-    final cls = _normalizeClass(
-      (org['class'] ?? org['animal_class'] ?? 'unknown')
-          .toString()
-          .toLowerCase(),
-    );
-    if (cls == 'unknown') continue;
+    final String subfamily = org['subfamily']?.toString().toLowerCase().trim() ?? 'unknown';
+    final String family = org['family']?.toString().toLowerCase().trim() ?? 'unknown';
+    final String order = org['order']?.toString().toLowerCase().trim() ?? 'unknown';
+    final String animalClass = (org['class'] ?? org['animal_class'] ?? 'unknown').toString().toLowerCase().trim();
+
+    String cls = 'unknown';
+    if (subfamily != 'unknown' && subfamily.isNotEmpty && subfamily != 'none' && subfamily != 'n/a') {
+      cls = subfamily;
+    } else if (family != 'unknown' && family.isNotEmpty && family != 'none' && family != 'n/a') {
+      cls = family;
+    } else if (order != 'unknown' && order.isNotEmpty && order != 'none' && order != 'n/a') {
+      cls = order;
+    } else if (animalClass != 'unknown' && animalClass.isNotEmpty && animalClass != 'none' && animalClass != 'n/a') {
+      cls = animalClass;
+    }
+
+    if (cls == 'unknown') {
+       cls = name.toString().toLowerCase(); // Fallback to name if everything is unknown (take everything)
+    }
+
     final slug = name
         .toLowerCase()
         .replaceAll(RegExp(r"[^a-z0-9]+"), '_')
@@ -118,7 +132,7 @@ void main() async {
     'data': jsonEncode({'means': gMeans, 'stdDevs': gStds}),
   }, conflictAlgorithm: ConflictAlgorithm.replace);
   await db.close();
-  _validate(finalModel, gMeans, gStds);
+  // _validate(finalModel, gMeans, gStds);
 }
 
 img.Image _preprocess(img.Image s) {

@@ -32,7 +32,7 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
   List<ScanResult> _results = [];
   Uint8List? _imageBytes;
   Uint8List? _maskedBytes;
-  AnimalClass _predictedClass = AnimalClass.unknown;
+  String _predictedClass = 'unknown';
   String _predictedDiet = 'unknown';
   double _predictedWeight = 0.0;
   String _sortBy = 'Overall';
@@ -673,9 +673,9 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
   }
 
   Widget _buildPredictedProfileBadge() {
-    final String label = _predictedClass == AnimalClass.unknown
+    final String label = _predictedClass == 'unknown'
         ? 'GENERIC BIOLOGY'
-        : _predictedClass.name.toUpperCase();
+        : _predictedClass.toUpperCase();
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -697,7 +697,7 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
           const Icon(Icons.psychology, color: Colors.cyanAccent, size: 14),
           const SizedBox(width: 6),
           Text(
-            'AI PROFILE: ${_predictedClass.name.toUpperCase()} | ${_predictedDiet.toUpperCase()} | ${_predictedWeight.toStringAsFixed(1)}KG',
+            'AI PROFILE: ${_predictedClass.toUpperCase()} | ${_predictedDiet.toUpperCase()} | ${_predictedWeight.toStringAsFixed(1)}KG',
             style: GoogleFonts.shareTechMono(
               color: Colors.cyanAccent,
               fontSize: 10,
@@ -711,7 +711,7 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
   }
 
   Widget _buildPredictionPanel() {
-    if (_predictedClass == AnimalClass.unknown && !_isScanning)
+    if (_predictedClass == 'unknown' && !_isScanning)
       return const SizedBox.shrink();
 
     return Container(
@@ -736,7 +736,7 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildPredictiveStat('IDENTIFIED BIOTYPE', _predictedClass.name.toUpperCase()),
+              _buildPredictiveStat('IDENTIFIED BIOTYPE', _predictedClass.toUpperCase()),
             ],
           ),
         ],

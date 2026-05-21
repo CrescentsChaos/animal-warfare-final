@@ -48,45 +48,45 @@ class TaxonomyService {
     }
 
     // 2. AI Engine (trained on sprite features)
-    AnimalClass aiClass = AnimalClass.unknown;
+    String aiClass = 'unknown';
     double aiConfidence = 0.0;
 
     if (preExtractedFeatures != null) {
       final aiResult = _engine.classify(preExtractedFeatures);
-      aiClass = aiResult['class'] ?? AnimalClass.unknown;
+      aiClass = aiResult['class'] ?? 'unknown';
       aiConfidence = (aiResult['confidence'] as num?)?.toDouble() ?? 0.0;
     }
 
     // 3. Heuristic fallback (always computed as a second opinion)
-    final heuristicClass = _heuristicClassification(imageBytes);
+    final heuristicClass = _heuristicClassification(imageBytes).name;
 
     // Decision logic: trust AI if confident, otherwise heuristic
-    AnimalClass finalClass;
+    String finalClass;
     double finalConfidence;
     String source;
 
-    if (aiClass != AnimalClass.unknown && aiConfidence > 0.35) {
+    if (aiClass != 'unknown' && aiConfidence > 0.35) {
       finalClass = aiClass;
       finalConfidence = aiConfidence;
       source = 'ai_engine';
-    } else if (heuristicClass != AnimalClass.unknown) {
+    } else if (heuristicClass != 'unknown') {
       finalClass = heuristicClass;
       finalConfidence = 0.4;
       source = 'heuristic';
-    } else if (aiClass != AnimalClass.unknown) {
+    } else if (aiClass != 'unknown') {
       // Low-confidence AI is better than nothing
       finalClass = aiClass;
       finalConfidence = aiConfidence;
       source = 'ai_engine_low';
     } else {
-      finalClass = AnimalClass.unknown;
+      finalClass = 'unknown';
       finalConfidence = 0.0;
       source = 'none';
     }
 
     debugPrint(
-      'TaxonomyService: AI=${aiClass.name}(${(aiConfidence * 100).toStringAsFixed(0)}%) '
-      'Heuristic=${heuristicClass.name} → Final=${finalClass.name} via $source',
+      'TaxonomyService: AI=$aiClass(${(aiConfidence * 100).toStringAsFixed(0)}%) '
+      'Heuristic=$heuristicClass → Final=$finalClass via $source',
     );
 
     return {

@@ -6,12 +6,12 @@ import 'package:animal_warfare/services/feature_db_service.dart';
 
 /// A statistical profile for an animal class (e.g., Mammal).
 class TaxonomicProfile {
-  final AnimalClass animalClass;
+  final String taxon;
   final Map<String, double> featureMeans;
   final Map<String, double> featureVariances;
   final int sampleCount;
   TaxonomicProfile({
-    required this.animalClass,
+    required this.taxon,
     required this.featureMeans,
     required this.featureVariances,
     required this.sampleCount,
@@ -19,10 +19,7 @@ class TaxonomicProfile {
 
   factory TaxonomicProfile.fromJson(Map<String, dynamic> json) {
     return TaxonomicProfile(
-      animalClass: AnimalClass.values.firstWhere(
-        (e) => e.name == json['class'],
-        orElse: () => AnimalClass.unknown,
-      ),
+      taxon: json['class'] as String? ?? 'unknown',
       featureMeans: Map<String, double>.from(json['means']),
       featureVariances: Map<String, double>.from(json['variances']),
       sampleCount: json['count'] ?? 0,
@@ -37,7 +34,7 @@ class TaxonomyEngine {
   factory TaxonomyEngine() => _instance;
   TaxonomyEngine._internal();
 
-  Map<AnimalClass, List<TaxonomicProfile>>? _profiles;
+  Map<String, List<TaxonomicProfile>>? _profiles;
   Map<String, double>? _globalMeans;
   Map<String, double>? _globalStdDevs;
   int _totalSamples = 0;
@@ -68,19 +65,14 @@ class TaxonomyEngine {
             clsName = clsName.substring(0, clsName.lastIndexOf('_'));
           }
 
-          final cls = AnimalClass.values.firstWhere(
-            (e) => e.name == clsName,
-            orElse: () => AnimalClass.unknown,
-          );
-
-          if (cls != AnimalClass.unknown) {
+          if (clsName.isNotEmpty && clsName != 'unknown') {
             final profile = TaxonomicProfile(
-              animalClass: cls,
+              taxon: clsName,
               featureMeans: Map<String, double>.from(item['means']),
               featureVariances: Map<String, double>.from(item['variances']),
               sampleCount: item['count'] as int,
             );
-            _profiles!.putIfAbsent(cls, () => []).add(profile);
+            _profiles!.putIfAbsent(clsName, () => []).add(profile);
             _totalSamples += profile.sampleCount;
           }
         }
@@ -129,10 +121,10 @@ class TaxonomyEngine {
   /// Classifies a subject using Gaussian Mixture Model log-likelihood.
   Map<String, dynamic> classify(OrganismFeature feature) {
     if (!_isInitialized || _profiles == null || _profiles!.isEmpty) {
-      return {'class': AnimalClass.unknown, 'confidence': 0.0};
+      return {'class': 'unknown', 'confidence': 0.0};
     }
 
-    Map<AnimalClass, double> classScores = {};
+    Map<String, double> classScores = {};
 
     _profiles!.forEach((cls, componentList) {
       double bestComponentScore = double.negativeInfinity;
@@ -172,7 +164,7 @@ class TaxonomyEngine {
       classScores[cls] = bestComponentScore;
     });
 
-    AnimalClass bestClass = AnimalClass.unknown;
+    String bestClass = 'unknown';
     double bestLogLikelihood = double.negativeInfinity;
 
     classScores.forEach((cls, score) {
@@ -182,7 +174,7 @@ class TaxonomyEngine {
       }
     });
 
-    final posteriors = classScores.map((k, v) => MapEntry(k.name, v));
+    final posteriors = classScores;
 
     // Use a softer softmax (temperature scaling) for more human-friendly confidence
     double temperature = 2.0;
@@ -195,7 +187,7 @@ class TaxonomyEngine {
         exp((bestLogLikelihood - maxScore) / temperature) / sumExp;
 
     debugPrint(
-      'TaxonomyEngine: Distance-based classification: ${bestClass.name} (${(confidence * 100).toStringAsFixed(1)}%)',
+      'TaxonomyEngine: Distance-based classification: $bestClass (${(confidence * 100).toStringAsFixed(1)}%)',
     );
 
     return {

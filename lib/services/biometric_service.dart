@@ -25,7 +25,7 @@ class ScanResult {
   final Uint8List? maskedImage; // The segmented subject image
   final Map<String, double> featureScores; // Breakdown of match reasons
   final bool isGenusMate;
-  final AnimalClass detectedClass;
+  final String detectedClass;
   final bool isPinpointed;
 
   ScanResult({
@@ -36,7 +36,7 @@ class ScanResult {
     this.maskedImage,
     this.featureScores = const {},
     this.isGenusMate = false,
-    this.detectedClass = AnimalClass.unknown,
+    this.detectedClass = 'unknown',
     this.isPinpointed = false,
   });
 }
@@ -969,7 +969,7 @@ class BiometricService {
     void Function(
       String status,
       double progress, {
-      AnimalClass? predictedClass,
+      String? predictedClass,
       String? predictedDiet,
       double? predictedWeight,
     })?
@@ -1026,26 +1026,26 @@ class BiometricService {
 
     // CRITICAL: We use the classification hint even at low confidence (>= 0.2)
     // to provide a baseline 'sanity check' for the matching engine.
-    // This prevents impossible cross-class matches (e.g. Fish vs Mammal).
-    AnimalClass detectedClass;
+    // This prevents impossible cross-class matches.
+    String detectedClass;
     if (classConfidence >= 0.2) {
-      detectedClass = taxonomyResult['class'] ?? AnimalClass.unknown;
+      detectedClass = taxonomyResult['class'] ?? 'unknown';
       debugPrint(
-        'BiometricService: Classification hint ($classSource): ${detectedClass.name} @ ${(classConfidence * 100).toStringAsFixed(0)}%',
+        'BiometricService: Classification hint ($classSource): $detectedClass @ ${(classConfidence * 100).toStringAsFixed(0)}%',
       );
     } else {
-      detectedClass = AnimalClass.unknown;
+      detectedClass = 'unknown';
       debugPrint(
         'BiometricService: NO reliable classification — gates minimized',
       );
     }
 
     // Always show the classification hint in the UI (even if gates are disabled)
-    final AnimalClass displayClass =
-        taxonomyResult['class'] ?? AnimalClass.unknown;
+    final String displayClass =
+        taxonomyResult['class'] ?? 'unknown';
     onProgress?.call(
-      displayClass != AnimalClass.unknown
-          ? 'SUBJECT TYPE: ${displayClass.name.toUpperCase()}'
+      displayClass != 'unknown'
+          ? 'SUBJECT TYPE: ${displayClass.toUpperCase()}'
           : 'IDENTIFYING SUBJECT TYPE...',
       0.25,
       predictedClass: displayClass,
@@ -1084,10 +1084,30 @@ class BiometricService {
 
     // Step 5: Score all organisms
     final results = <ScanResult>[];
-    final totalOrgs = _organisms!.length;
+    
+    // Efficiency optimization: pre-filter candidates by predicted taxon
+    List<Organism> candidates = _organisms!;
+    if (detectedClass != 'unknown') {
+      final preCount = candidates.length;
+      candidates = candidates.where((o) => 
+        o.subfamily.toLowerCase().trim() == detectedClass || 
+        o.family.toLowerCase().trim() == detectedClass || 
+        o.order.toLowerCase().trim() == detectedClass ||
+        (o.animalClass.toLowerCase().trim() == detectedClass && detectedClass != 'unknown') ||
+        o.name.toLowerCase() == detectedClass
+      ).toList();
+      
+      // If filtering was too aggressive (e.g., empty), fallback to full scan
+      if (candidates.isEmpty) {
+        candidates = _organisms!;
+      }
+      debugPrint('BiometricService: Candidate pool filtered from $preCount to ${candidates.length}');
+    }
+
+    final totalOrgs = candidates.length;
     int processed = 0;
 
-    for (final org in _organisms!) {
+    for (final org in candidates) {
       processed++;
       if (processed % 100 == 0) {
         onProgress?.call(
@@ -1213,7 +1233,7 @@ class BiometricService {
     OrganismFeature f1,
     OrganismFeature f2,
     Organism target, {
-    required AnimalClass detectedClass,
+    required String detectedClass,
   }) {
     // 1. ADVANCED COLOR MATCH (Smoothing for lighting tolerance)
     double globalColorMatch = 0;
@@ -1338,21 +1358,29 @@ class BiometricService {
     // --- BIOLOGICAL GATES ---
 
     // Class Gate: High-fidelity species categorization
+    // Now uses fine-grained taxonomy (subfamily/family/order) for matching
     double classScore = 1.0;
-    final String targetClass = target.animalClass.toLowerCase();
-    final String detectedClassName = detectedClass.name.toLowerCase();
+    final String detectedTaxon = detectedClass.toLowerCase().trim();
 
-    if (targetClass != 'unknown' && detectedClassName != 'unknown') {
-      if (targetClass != detectedClassName) {
-        // Massive penalty for fundamental class mismatches (e.g. Mammal vs Fish)
-        classScore = 0.15;
+    if (detectedTaxon != 'unknown') {
+      // Check if the target organism matches at any taxonomy level
+      final bool taxonMatch = 
+        target.subfamily.toLowerCase().trim() == detectedTaxon ||
+        target.family.toLowerCase().trim() == detectedTaxon ||
+        target.order.toLowerCase().trim() == detectedTaxon ||
+        target.animalClass.toLowerCase().trim() == detectedTaxon;
+
+      if (taxonMatch) {
+        classScore = 1.15; // Boost for taxonomy agreement
       } else {
-        classScore = 1.15; // Moderate boost for class agreement
+        // Penalty for taxonomy mismatch
+        classScore = 0.15;
       }
     }
 
     // Structural Gate (LIMB PENALTY): Fixes Mammal/Dinosaur vs Fish bias
     double structGate = 1.0;
+    final String targetClass = target.animalClass.toLowerCase().trim();
     // If subject has legs/limbs (fringe/jaggedness) but target is Fish
     if (targetClass == 'fish') {
       if (f1.limbDensity > 0.12 || f1.jaggedness > 0.35) {
@@ -1627,44 +1655,44 @@ class BiometricService {
 
   /// Expected weight range (kg) for each animal class.
   /// Used as a biological plausibility filter during scanning.
-  (double, double) _expectedWeightRange(AnimalClass cls) {
-    switch (cls) {
-      case AnimalClass.insect:
+  (double, double) _expectedWeightRange(String cls) {
+    switch (cls.toLowerCase().trim()) {
+      case 'insect':
         return (0.0001, 0.5);
-      case AnimalClass.amphibian:
+      case 'amphibian':
         return (0.001, 15.0);
-      case AnimalClass.fish:
+      case 'fish':
         return (0.001, 2000.0);
-      case AnimalClass.bird:
+      case 'bird':
         return (0.002, 160.0);
-      case AnimalClass.reptile:
+      case 'reptile':
         return (0.001, 25000.0); // Dinosaur-ready
-      case AnimalClass.mammal:
+      case 'mammal':
         return (0.002, 10000.0); // Whale/Elephant-ready
-      case AnimalClass.arachnid:
+      case 'arachnid':
         return (0.0001, 0.3);
-      case AnimalClass.crustacean:
+      case 'crustacean':
         return (0.001, 25.0);
-      case AnimalClass.mollusk:
+      case 'mollusk':
         return (0.0001, 1000.0); // Giant Squid
-      case AnimalClass.annelid:
+      case 'annelid':
         return (0.0001, 5.0);
-      case AnimalClass.cnidarian:
+      case 'cnidarian':
         return (0.0001, 500.0);
-      case AnimalClass.echinoderm:
+      case 'echinoderm':
         return (0.001, 15.0);
-      case AnimalClass.otherInvertebrate:
+      case 'otherinvertebrate':
         return (0.0001, 200.0);
-      case AnimalClass.unknown:
+      default:
         return (0.0001, 50000.0);
     }
   }
 
   /// Biologically plausible diets for each animal class.
   /// Empty set means all diets are plausible.
-  Set<String> _plausibleDietsForClass(AnimalClass cls) {
-    switch (cls) {
-      case AnimalClass.insect:
+  Set<String> _plausibleDietsForClass(String cls) {
+    switch (cls.toLowerCase().trim()) {
+      case 'insect':
         return {
           'herbivore',
           'omnivore',
@@ -1672,9 +1700,9 @@ class BiometricService {
           'detritivore',
           'nectarivore',
         };
-      case AnimalClass.amphibian:
+      case 'amphibian':
         return {'carnivore', 'insectivore', 'omnivore'};
-      case AnimalClass.fish:
+      case 'fish':
         return {
           'carnivore',
           'omnivore',
@@ -1682,7 +1710,7 @@ class BiometricService {
           'planktivore',
           'filter feeder',
         };
-      case AnimalClass.bird:
+      case 'bird':
         return {
           'carnivore',
           'omnivore',
@@ -1693,23 +1721,23 @@ class BiometricService {
           'piscivore',
           'scavenger',
         };
-      case AnimalClass.reptile:
+      case 'reptile':
         return {'carnivore', 'omnivore', 'herbivore', 'insectivore'};
-      case AnimalClass.mammal:
+      case 'mammal':
         return {}; // Mammals have all possible diets
-      case AnimalClass.arachnid:
+      case 'arachnid':
         return {'carnivore', 'insectivore'};
-      case AnimalClass.crustacean:
+      case 'crustacean':
         return {'omnivore', 'detritivore', 'carnivore', 'scavenger'};
-      case AnimalClass.mollusk:
+      case 'mollusk':
         return {'herbivore', 'omnivore', 'carnivore', 'filter feeder'};
-      case AnimalClass.annelid:
+      case 'annelid':
         return {'detritivore', 'omnivore', 'herbivore'};
-      case AnimalClass.cnidarian:
+      case 'cnidarian':
         return {'carnivore', 'planktivore'};
-      case AnimalClass.echinoderm:
+      case 'echinoderm':
         return {'omnivore', 'detritivore', 'herbivore', 'carnivore'};
-      case AnimalClass.otherInvertebrate:
+      case 'otherinvertebrate':
         return {
           'herbivore',
           'omnivore',
@@ -1718,7 +1746,7 @@ class BiometricService {
           'filter feeder',
           'parasite',
         };
-      case AnimalClass.unknown:
+      default:
         return {}; // Unknown = all diets plausible
     }
   }

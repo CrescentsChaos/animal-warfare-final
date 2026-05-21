@@ -146,26 +146,9 @@ void main() async {
 
   final organismsJson = File('assets/Organisms.json').readAsStringSync();
   final List allOrganisms = jsonDecode(organismsJson);
-  const int maxSpeciesPerClass = 400;
-  final Map<String, List<dynamic>> classGroups = {};
-
-  for (var org in allOrganisms) {
-    final cls = (org['class'] ?? org['animal_class'] ?? 'unknown').toString().toLowerCase();
-    classGroups.putIfAbsent(cls, () => []).add(org);
-  }
-
-  final List balancedOrganisms = [];
-  final random = Random(42);
-  classGroups.forEach((cls, species) {
-    species.shuffle(random);
-    final limit = species.length > maxSpeciesPerClass ? maxSpeciesPerClass : species.length;
-    balancedOrganisms.addAll(species.take(limit));
-    print('Class "$cls": Added $limit species');
-  });
-
   int count = 0;
   int errors = 0;
-  for (var org in balancedOrganisms) {
+  for (var org in allOrganisms) {
     final name = org['name'] as String;
     final slug = name.toLowerCase().replaceAll(RegExp(r"[''']"), '').replaceAll(RegExp(r'[^a-z0-9]+'), '_').replaceAll(RegExp(r'_+'), '_').replaceAll(RegExp(r'^_|_$'), '');
     final path = 'assets/sprites/$slug.png';
