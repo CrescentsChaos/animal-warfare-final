@@ -1349,11 +1349,11 @@ class BiometricService {
     final String detectedTaxon = detectedClass.toLowerCase().trim();
 
     if (detectedTaxon != 'unknown') {
-      // Prioritize checking broader taxonomy first as requested (class > order > family > subfamily)
-      if (target.animalClass.toLowerCase().trim() == detectedTaxon) {
+      // Prioritize checking order > class > family > subfamily for detection
+      if (target.order.toLowerCase().trim() == detectedTaxon) {
         classScore = 1.30;
         rawTaxonomyAccuracy = 1.0;
-      } else if (target.order.toLowerCase().trim() == detectedTaxon) {
+      } else if (target.animalClass.toLowerCase().trim() == detectedTaxon) {
         classScore = 1.20;
         rawTaxonomyAccuracy = 0.85;
       } else if (target.family.toLowerCase().trim() == detectedTaxon) {
@@ -1366,22 +1366,6 @@ class BiometricService {
         // Soft penalty to give visual prediction priority
         classScore = 0.80;
         rawTaxonomyAccuracy = 0.20;
-      }
-    }
-
-    // Structural Gate (LIMB PENALTY): Fixes Mammal/Dinosaur vs Fish bias
-    double structGate = 1.0;
-    final String targetClass = target.animalClass.toLowerCase().trim();
-    // If subject has legs/limbs (fringe/jaggedness) but target is Fish
-    if (targetClass == 'fish') {
-      if (f1.limbDensity > 0.12 || f1.jaggedness > 0.35) {
-        structGate *= 0.15; // Extremely strict: Leggy things are not fish
-      }
-    }
-    // If target has legs (Mammal/Reptile) but subject is a smooth blob (Fish-like)
-    if (targetClass == 'mammal' || targetClass == 'reptile') {
-      if (f1.limbDensity < 0.04 && f1.jaggedness < 0.15) {
-        structGate *= 0.25; // Mammals/Reptiles usually have limbs/necks
       }
     }
 
@@ -1412,12 +1396,10 @@ class BiometricService {
     if (visualConfidence > 0.75) {
       double overrideFactor = ((visualConfidence - 0.75) / 0.25).clamp(0.0, 1.0);
       classScore = classScore + (max(1.0, classScore) - classScore) * overrideFactor;
-      structGate = structGate + (1.0 - structGate) * overrideFactor;
       rawTaxonomyAccuracy = rawTaxonomyAccuracy + (1.0 - rawTaxonomyAccuracy) * overrideFactor;
     }
 
-    // Apply biological gates and structural gate
-    final double baseConfidence = (visualConfidence * structGate).clamp(0.0, 1.0);
+    final double baseConfidence = visualConfidence.clamp(0.0, 1.0);
     double finalConfidence;
     
     if (classScore > 1.0) {
