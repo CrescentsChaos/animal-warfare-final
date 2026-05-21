@@ -43,10 +43,47 @@ class _AnidexScreenState extends State<AnidexScreen>
   List<String> _allDrops = [];
   List<String> _allCategories = [];
   List<String> _allRarities = [];
-  List<String> _allClasses = [];
-  List<String> _allOrders = [];
-  List<String> _allFamilies = [];
-  List<String> _allSubfamilies = [];
+  List<String> get _allClasses => _allOrganisms
+      .map((o) => o.animalClass)
+      .where((s) => s.isNotEmpty)
+      .toSet()
+      .toList()
+    ..sort();
+  List<String> get _allOrders => _allOrganisms
+      .where((o) => _selectedClass == null || o.animalClass == _selectedClass)
+      .map((o) => o.order)
+      .where((s) => s.isNotEmpty && s.toLowerCase() != 'unknown')
+      .toSet()
+      .toList()
+    ..sort();
+  List<String> get _allFamilies => _allOrganisms
+      .where((o) => _selectedClass == null || o.animalClass == _selectedClass)
+      .where((o) => _selectedOrder == null || o.order == _selectedOrder)
+      .map((o) => o.family)
+      .where((s) => s.isNotEmpty && s.toLowerCase() != 'unknown')
+      .toSet()
+      .toList()
+    ..sort();
+  List<String> get _allSubfamilies => _allOrganisms
+      .where((o) => _selectedClass == null || o.animalClass == _selectedClass)
+      .where((o) => _selectedOrder == null || o.order == _selectedOrder)
+      .where((o) => _selectedFamily == null || o.family == _selectedFamily)
+      .map((o) => o.subfamily)
+      .where((s) => s.isNotEmpty && s.toLowerCase() != 'unknown')
+      .toSet()
+      .toList()
+    ..sort();
+  List<String> get _allGenera => _allOrganisms
+      .where((o) => _selectedClass == null || o.animalClass == _selectedClass)
+      .where((o) => _selectedOrder == null || o.order == _selectedOrder)
+      .where((o) => _selectedFamily == null || o.family == _selectedFamily)
+      .where((o) => _selectedSubfamily == null || o.subfamily == _selectedSubfamily)
+      .map((o) => o.scientificName.split(' ').first)
+      .where((s) => s.isNotEmpty && s.toLowerCase() != 'unknown')
+      .toSet()
+      .toList()
+    ..sort();
+
   List<String> _allDiets = [];
 
   final TextEditingController _searchController = TextEditingController();
@@ -69,6 +106,7 @@ class _AnidexScreenState extends State<AnidexScreen>
   String? _selectedOrder;
   String? _selectedFamily;
   String? _selectedSubfamily;
+  String? _selectedGenus;
   String? _selectedDiet;
   String? _selectedWeight;
   String? _selectedSize;
@@ -205,34 +243,6 @@ class _AnidexScreenState extends State<AnidexScreen>
               .toSet()
               .toList()
             ..sort();
-      _allClasses =
-          _allOrganisms
-              .map((o) => o.animalClass)
-              .where((s) => s.isNotEmpty)
-              .toSet()
-              .toList()
-            ..sort();
-      _allOrders =
-          _allOrganisms
-              .map((o) => o.order)
-              .where((s) => s.isNotEmpty && s.toLowerCase() != 'unknown')
-              .toSet()
-              .toList()
-            ..sort();
-      _allFamilies =
-          _allOrganisms
-              .map((o) => o.family)
-              .where((s) => s.isNotEmpty && s.toLowerCase() != 'unknown')
-              .toSet()
-              .toList()
-            ..sort();
-      _allSubfamilies =
-          _allOrganisms
-              .map((o) => o.subfamily)
-              .where((s) => s.isNotEmpty && s.toLowerCase() != 'unknown')
-              .toSet()
-              .toList()
-            ..sort();
       _allDiets =
           _allOrganisms
               .map((o) => o.diet)
@@ -296,6 +306,9 @@ class _AnidexScreenState extends State<AnidexScreen>
         return false;
       }
       if (_selectedSubfamily != null && org.subfamily != _selectedSubfamily) {
+        return false;
+      }
+      if (_selectedGenus != null && org.scientificName.split(' ').first != _selectedGenus) {
         return false;
       }
       if (_selectedDiet != null && org.diet != _selectedDiet) {
@@ -384,6 +397,24 @@ class _AnidexScreenState extends State<AnidexScreen>
           break;
         case 'ROBUSTNESS':
           result = b.robustness.compareTo(a.robustness);
+          break;
+        case 'TAXONOMY':
+          result = a.animalClass.compareTo(b.animalClass);
+          if (result == 0) {
+            result = a.order.compareTo(b.order);
+            if (result == 0) {
+              result = a.family.compareTo(b.family);
+              if (result == 0) {
+                result = a.subfamily.compareTo(b.subfamily);
+                if (result == 0) {
+                  result = a.scientificName.split(' ').first.compareTo(b.scientificName.split(' ').first);
+                  if (result == 0) {
+                    result = a.name.compareTo(b.name);
+                  }
+                }
+              }
+            }
+          }
           break;
         default:
           result = a.name.compareTo(b.name);
@@ -873,25 +904,49 @@ class _AnidexScreenState extends State<AnidexScreen>
                   'CLASS',
                   _selectedClass,
                   _allClasses,
-                  (v) => setState(() => _selectedClass = v),
+                  (v) => setState(() {
+                    _selectedClass = v;
+                    _selectedOrder = null;
+                    _selectedFamily = null;
+                    _selectedSubfamily = null;
+                    _selectedGenus = null;
+                  }),
                 ),
                 _buildSearchableFilter(
                   'ORDER',
                   _selectedOrder,
                   _allOrders,
-                  (v) => setState(() => _selectedOrder = v),
+                  (v) => setState(() {
+                    _selectedOrder = v;
+                    _selectedFamily = null;
+                    _selectedSubfamily = null;
+                    _selectedGenus = null;
+                  }),
                 ),
                 _buildSearchableFilter(
                   'FAMILY',
                   _selectedFamily,
                   _allFamilies,
-                  (v) => setState(() => _selectedFamily = v),
+                  (v) => setState(() {
+                    _selectedFamily = v;
+                    _selectedSubfamily = null;
+                    _selectedGenus = null;
+                  }),
                 ),
                 _buildSearchableFilter(
                   'SUBFAMILY',
                   _selectedSubfamily,
                   _allSubfamilies,
-                  (v) => setState(() => _selectedSubfamily = v),
+                  (v) => setState(() {
+                    _selectedSubfamily = v;
+                    _selectedGenus = null;
+                  }),
+                ),
+                _buildSearchableFilter(
+                  'GENUS',
+                  _selectedGenus,
+                  _allGenera,
+                  (v) => setState(() => _selectedGenus = v),
                 ),
                 _buildSearchableFilter(
                   'DIET',
@@ -1004,6 +1059,7 @@ class _AnidexScreenState extends State<AnidexScreen>
                   _selectedOrder = null;
                   _selectedFamily = null;
                   _selectedSubfamily = null;
+                  _selectedGenus = null;
                   _selectedDiet = null;
                   _selectedWeight = null;
                   _selectedSize = null;
@@ -1079,6 +1135,7 @@ class _AnidexScreenState extends State<AnidexScreen>
       'WEIGHT',
       'SIZE',
       'ROBUSTNESS',
+      'TAXONOMY',
     ];
 
     return Column(

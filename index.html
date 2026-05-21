@@ -123,7 +123,7 @@
 
                 <div class="filter-section">
                     <div class="filter-label">CLASS</div>
-                    <select id="flt-class" onchange="App.filter()">
+                    <select id="flt-class" onchange="App.onClassChange()">
                         <option value="">All Classes</option>
                     </select>
                 </div>
@@ -144,6 +144,12 @@
                     <div class="filter-label">SUBFAMILY</div>
                     <div class="custom-select-trigger" id="trigger-subfamily" onclick="App.openSearchSelector('subfamily')">All Subfamilies</div>
                     <input type="hidden" id="flt-subfamily" value="">
+                </div>
+
+                <div class="filter-section">
+                    <div class="filter-label">GENUS</div>
+                    <div class="custom-select-trigger" id="trigger-genus" onclick="App.openSearchSelector('genus')">All Genus</div>
+                    <input type="hidden" id="flt-genus" value="">
                 </div>
 
                 <div class="filter-section">
@@ -223,6 +229,7 @@
                         <button class="sort-chip active" data-sort="weight" onclick="App.setSort('weight')">WEIGHT</button>
                         <button class="sort-chip" data-sort="size" onclick="App.setSort('size')">SIZE</button>
                         <button class="sort-chip" data-sort="robustness" onclick="App.setSort('robustness')">ROBUSTNESS</button>
+                        <button class="sort-chip" data-sort="taxonomy" onclick="App.setSort('taxonomy')">TAXONOMY</button>
                     </div>
                     <button class="order-btn" id="order-btn" onclick="App.toggleOrder()">
                         <span id="order-label">ASCENDING</span>
@@ -383,6 +390,18 @@
                 });
             },
 
+            onClassChange() {
+                document.getElementById('flt-order').value = '';
+                document.getElementById('trigger-order').textContent = 'All Orders';
+                document.getElementById('flt-family').value = '';
+                document.getElementById('trigger-family').textContent = 'All Families';
+                document.getElementById('flt-subfamily').value = '';
+                document.getElementById('trigger-subfamily').textContent = 'All Subfamilies';
+                document.getElementById('flt-genus').value = '';
+                document.getElementById('trigger-genus').textContent = 'All Genus';
+                this.filter();
+            },
+
             filter() {
                 if (this.mode === 'items') { this.filterItems(); return; }
                 const q = document.getElementById('q').value.toLowerCase();
@@ -397,6 +416,7 @@
                 const aOrder = document.getElementById('flt-order').value;
                 const aFamily = document.getElementById('flt-family').value;
                 const aSubfamily = document.getElementById('flt-subfamily').value;
+                const aGenus = document.getElementById('flt-genus').value;
                 const aDiet = document.getElementById('flt-diet').value;
                 const weight = document.getElementById('flt-weight').value;
                 const sizeVal = document.getElementById('flt-size').value;
@@ -419,6 +439,7 @@
                     if (aOrder && o.order !== aOrder) return false;
                     if (aFamily && o.family !== aFamily) return false;
                     if (aSubfamily && o.subfamily !== aSubfamily) return false;
+                    if (aGenus && (o.scientific_name || '').split(' ')[0] !== aGenus) return false;
                     if (aDiet && o.diet !== aDiet) return false;
                     if (excludeMythical && (o.rarity || '').toLowerCase() === 'mythical') return false;
                     if (weight) {
@@ -471,6 +492,22 @@
                             vb = parseFloat(b[this.sortBy]) || 0;
                         }
                         return this.ascending ? va - vb : vb - va;
+                    }
+                    if (this.sortBy === 'taxonomy') {
+                        const ca = (a.class || a.animal_class || '').localeCompare(b.class || b.animal_class || '');
+                        if (ca !== 0) return this.ascending ? ca : -ca;
+                        const oa = (a.order || '').localeCompare(b.order || '');
+                        if (oa !== 0) return this.ascending ? oa : -oa;
+                        const fa = (a.family || '').localeCompare(b.family || '');
+                        if (fa !== 0) return this.ascending ? fa : -fa;
+                        const sa = (a.subfamily || '').localeCompare(b.subfamily || '');
+                        if (sa !== 0) return this.ascending ? sa : -sa;
+                        const g1 = (a.scientific_name || '').split(' ')[0];
+                        const g2 = (b.scientific_name || '').split(' ')[0];
+                        const ga = g1.localeCompare(g2);
+                        if (ga !== 0) return this.ascending ? ga : -ga;
+                        const na = (a.name || '').localeCompare(b.name || '');
+                        return this.ascending ? na : -na;
                     }
                     return this.ascending ? (a.name || '').localeCompare(b.name || '') : (b.name || '').localeCompare(a.name || '');
                 });
@@ -947,6 +984,7 @@
                 document.getElementById('trigger-order').textContent = 'All Orders';
                 document.getElementById('trigger-family').textContent = 'All Families';
                 document.getElementById('trigger-subfamily').textContent = 'All Subfamilies';
+                document.getElementById('trigger-genus').textContent = 'All Genus';
 
                 document.getElementById('chk-exclude-mythical').checked = false;
                 this.sortBy = 'name';
@@ -982,12 +1020,33 @@
 
             openSearchSelector(type) {
                 this.searchSelector.type = type;
-                const orgs = this.db.orgs;
+                
+                const aClass = document.getElementById('flt-class').value;
+                const aOrder = document.getElementById('flt-order').value;
+                const aFamily = document.getElementById('flt-family').value;
+                const aSubfamily = document.getElementById('flt-subfamily').value;
+
+                let orgs = this.db.orgs;
+                if (type === 'order' || type === 'family' || type === 'subfamily' || type === 'genus') {
+                    if (aClass) orgs = orgs.filter(o => (o.class || o.animal_class) === aClass);
+                }
+                if (type === 'family' || type === 'subfamily' || type === 'genus') {
+                    if (aOrder) orgs = orgs.filter(o => o.order === aOrder);
+                }
+                if (type === 'subfamily' || type === 'genus') {
+                    if (aFamily) orgs = orgs.filter(o => o.family === aFamily);
+                }
+                if (type === 'genus') {
+                    if (aSubfamily) orgs = orgs.filter(o => o.subfamily === aSubfamily);
+                }
                 
                 // Get all values for this field and calculate their counts
                 const counts = {};
                 orgs.forEach(o => {
-                    const val = o[type];
+                    let val = o[type];
+                    if (type === 'genus') {
+                        val = (o.scientific_name || '').split(' ')[0];
+                    }
                     if (val && val.toLowerCase() !== 'unknown') {
                         counts[val] = (counts[val] || 0) + 1;
                     }
@@ -1045,6 +1104,23 @@
                 hiddenInput.value = val;
                 triggerBtn.textContent = val ? val.toUpperCase() : `All ${type.charAt(0).toUpperCase() + type.slice(1)}s`;
                 
+                if (type === 'order') {
+                    document.getElementById('flt-family').value = '';
+                    document.getElementById('trigger-family').textContent = 'All Families';
+                    document.getElementById('flt-subfamily').value = '';
+                    document.getElementById('trigger-subfamily').textContent = 'All Subfamilies';
+                    document.getElementById('flt-genus').value = '';
+                    document.getElementById('trigger-genus').textContent = 'All Genus';
+                } else if (type === 'family') {
+                    document.getElementById('flt-subfamily').value = '';
+                    document.getElementById('trigger-subfamily').textContent = 'All Subfamilies';
+                    document.getElementById('flt-genus').value = '';
+                    document.getElementById('trigger-genus').textContent = 'All Genus';
+                } else if (type === 'subfamily') {
+                    document.getElementById('flt-genus').value = '';
+                    document.getElementById('trigger-genus').textContent = 'All Genus';
+                }
+
                 this.closeSearchSelector();
                 this.filter();
             },
@@ -1057,7 +1133,7 @@
                 const allOpt = document.createElement('div');
                 const isAllSelected = !this.searchSelector.selectedValue;
                 allOpt.className = `search-option-item ${isAllSelected ? 'selected' : ''}`;
-                allOpt.innerHTML = `<span>ALL ${this.searchSelector.type.toUpperCase()}S</span><span class="badge">${this.db.orgs.filter(o => o[this.searchSelector.type] && o[this.searchSelector.type].toLowerCase() !== 'unknown').length}</span>`;
+                allOpt.innerHTML = `<span>ALL ${this.searchSelector.type.toUpperCase()}S</span><span class="badge">${this.searchSelector.options.reduce((sum, opt) => sum + opt.count, 0)}</span>`;
                 allOpt.onclick = () => this.selectSearchSelectorOption('');
                 container.appendChild(allOpt);
 
