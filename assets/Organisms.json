@@ -19201,11 +19201,11 @@
         "rarity": "Uncommon",
         "resistance": 125,
         "scientific_name": "Panagaeus cruciger",
-        "size": 0.0125,
+        "size": 0.009,
         "spawn_tiles": "tall_grass",
         "speed": 50,
         "subfamily": "Harpalinae",
-        "weight": 4.5e-05
+        "weight": 0.0001
     },
     {
         "abilities": "Rough Skin",
@@ -19257,11 +19257,11 @@
         "rarity": "Epic",
         "resistance": 95,
         "scientific_name": "Dynastes hercules",
-        "size": 0.125,
+        "size": 0.155,
         "spawn_tiles": "tall_grass",
         "speed": 25,
         "subfamily": "Dynastinae",
-        "weight": 0.065
+        "weight": 0.063
     },
     {
         "abilities": "Damp , Water Compaction",
@@ -19481,11 +19481,11 @@
         "rarity": "Epic",
         "resistance": 80,
         "scientific_name": "Megasoma elephas",
-        "size": 0.09,
+        "size": 0.1,
         "spawn_tiles": "tall_grass",
         "speed": 10,
         "subfamily": "Dynastinae",
-        "weight": 0.052
+        "weight": 0.055
     },
     {
         "abilities": "Intimidate, Electric Surge",
@@ -27377,11 +27377,11 @@
         "rarity": "Uncommon",
         "resistance": 70,
         "scientific_name": "Scarabaeidae",
-        "size": 0.045,
+        "size": 0.035,
         "spawn_tiles": "tall_grass",
         "speed": 70,
         "subfamily": "Scarabaeinae",
-        "weight": 0.052
+        "weight": 0.005
     },
     {
         "abilities": "No Guard",
@@ -38045,11 +38045,11 @@
         "rarity": "Uncommon",
         "resistance": 34,
         "scientific_name": "Tabanus atratus",
-        "size": 0.3,
+        "size": 0.055,
         "spawn_tiles": "tall_grass",
         "speed": 70,
         "subfamily": "Tabaninae",
-        "weight": 0.01
+        "weight": 0.0018
     },
     {
         "abilities": "Flame Body, Gale Wings",
@@ -38129,11 +38129,11 @@
         "rarity": "Common",
         "resistance": 15,
         "scientific_name": "Acheta domesticus",
-        "size": 0.4,
+        "size": 0.0185,
         "spawn_tiles": "tall_grass",
         "speed": 110,
         "subfamily": "Gryllinae",
-        "weight": 0.003
+        "weight": 0.0006
     },
     {
         "abilities": "Clear Body",
@@ -38353,11 +38353,11 @@
         "rarity": "Common",
         "resistance": 90,
         "scientific_name": "Morpho peleides",
-        "size": 0.5,
+        "size": 0.175,
         "spawn_tiles": "flower1,flower2",
         "speed": 105,
         "subfamily": "Morphinae",
-        "weight": 0.02
+        "weight": 0.0035
     },
     {
         "abilities": "Poison Skin, True Flight",
@@ -38381,11 +38381,11 @@
         "rarity": "Common",
         "resistance": 29,
         "scientific_name": "Danaus plexippus",
-        "size": 0.5,
+        "size": 0.102,
         "spawn_tiles": "flower1,flower2",
         "speed": 60,
         "subfamily": "Danainae",
-        "weight": 0.01
+        "weight": 0.0005
     },
     {
         "abilities": "Jump",
@@ -38521,11 +38521,11 @@
         "rarity": "Common",
         "resistance": 65,
         "scientific_name": "Periplaneta americana",
-        "size": 0.6,
+        "size": 0.04,
         "spawn_tiles": "tall_grass",
         "speed": 135,
         "subfamily": "Blattinae",
-        "weight": 0.02
+        "weight": 0.001
     },
     {
         "abilities": "Compound Eyes , Infiltrator",
@@ -39221,11 +39221,11 @@
         "rarity": "Rare",
         "resistance": 67,
         "scientific_name": "Hierodula patellifera",
-        "size": 0.7,
+        "size": 0.085,
         "spawn_tiles": "tall_grass",
         "speed": 110,
         "subfamily": "Hierodulinae",
-        "weight": 0.06
+        "weight": 0.0065
     },
     {
         "abilities": "Resilience",
@@ -39361,11 +39361,11 @@
         "rarity": "Uncommon",
         "resistance": 47,
         "scientific_name": "Phyllium bioculatum",
-        "size": 0.35,
+        "size": 0.1,
         "spawn_tiles": "tall_grass",
         "speed": 35,
         "subfamily": "Phylliinae",
-        "weight": 0.05
+        "weight": 0.0225
     },
     {
         "abilities": "Battle Armor , Poison Touch",
@@ -39613,11 +39613,11 @@
         "rarity": "Rare",
         "resistance": 51,
         "scientific_name": "Empusa pennata",
-        "size": 0.7,
+        "size": 0.065,
         "spawn_tiles": "tall_grass",
         "speed": 92,
         "subfamily": "Empusinae",
-        "weight": 0.05
+        "weight": 0.0025
     },
     {
         "abilities": "Ture Flight",
@@ -39641,11 +39641,11 @@
         "rarity": "Rare",
         "resistance": 62,
         "scientific_name": "Pseudocreobotra wahlbergi",
-        "size": 0.8,
+        "size": 0.04,
         "spawn_tiles": "tall_grass",
         "speed": 98,
         "subfamily": "Hymenopodinae",
-        "weight": 0.06
+        "weight": 0.0012
     },
     {
         "abilities": "Poison Point",
@@ -45969,11 +45969,11 @@
         "rarity": "Common",
         "resistance": 13,
         "scientific_name": "Teleopsis dalmanni",
-        "size": 0.4,
+        "size": 0.01,
         "spawn_tiles": "tall_grass",
         "speed": 60,
         "subfamily": "Diopsinae",
-        "weight": 0.0002
+        "weight": 1e-05
     },
     {
         "abilities": "Strong Mandibles",
@@ -45997,11 +45997,11 @@
         "rarity": "Common",
         "resistance": 5,
         "scientific_name": "Curculio glandium",
-        "size": 0.6,
+        "size": 0.015,
         "spawn_tiles": "tall_grass",
         "speed": 2,
         "subfamily": "Curculioninae",
-        "weight": 0.002
+        "weight": 0.0001
     },
     {
         "abilities": "Camouflage",
@@ -46025,11 +46025,11 @@
         "rarity": "Common",
         "resistance": 13,
         "scientific_name": "Bocydium globulare",
-        "size": 0.5,
+        "size": 0.006,
         "spawn_tiles": "tall_grass",
         "speed": 20,
         "subfamily": "Membracinae",
-        "weight": 0.003
+        "weight": 0.0001
     },
     {
         "abilities": "Night Vision",
@@ -46809,11 +46809,11 @@
         "rarity": "Common",
         "resistance": 40,
         "scientific_name": "Cicadidae sp.",
-        "size": 0.8,
+        "size": 0.1,
         "spawn_tiles": "tall_grass",
         "speed": 140,
         "subfamily": "Cicadinae",
-        "weight": 0.02
+        "weight": 0.0025
     },
     {
         "abilities": "Infiltrator",
@@ -47145,11 +47145,11 @@
         "rarity": "Rare",
         "resistance": 6,
         "scientific_name": "Petalura ingentissima",
-        "size": 0.6,
+        "size": 0.16,
         "spawn_tiles": "tall_grass",
         "speed": 20,
         "subfamily": "Petalurinae",
-        "weight": 0.02
+        "weight": 0.0028
     },
     {
         "abilities": "True Flight",
@@ -47173,11 +47173,11 @@
         "rarity": "Rare",
         "resistance": 20,
         "scientific_name": "Petalura gigantea",
-        "size": 0.6,
+        "size": 0.12,
         "spawn_tiles": "tall_grass",
         "speed": 20,
         "subfamily": "Petalurinae",
-        "weight": 0.02
+        "weight": 0.0018
     },
     {
         "abilities": "True Flight",
@@ -47201,11 +47201,11 @@
         "rarity": "Common",
         "resistance": 20,
         "scientific_name": "Pachydiplax longipennis",
-        "size": 0.7,
+        "size": 0.05,
         "spawn_tiles": "dw_pond_we_2,dw_pond",
         "speed": 95,
         "subfamily": "Libellulinae",
-        "weight": 0.01
+        "weight": 0.0006
     },
     {
         "abilities": "Solar Power, True Flight",
@@ -47257,11 +47257,11 @@
         "rarity": "Common",
         "resistance": 22,
         "scientific_name": "Crocothemis servilia",
-        "size": 0.7,
+        "size": 0.075,
         "spawn_tiles": "dw_pond_we_2,dw_pond",
         "speed": 90,
         "subfamily": "Trithemistinae",
-        "weight": 0.015
+        "weight": 0.0011
     },
     {
         "abilities": "True Flight, Speed Boost",
@@ -47285,11 +47285,11 @@
         "rarity": "Uncommon",
         "resistance": 17,
         "scientific_name": "Sympetrum pedemontanum",
-        "size": 0.7,
+        "size": 0.06,
         "spawn_tiles": "dw_pond_we_2,dw_pond",
         "speed": 89,
         "subfamily": "Sympetrinae",
-        "weight": 0.012
+        "weight": 0.0005
     },
     {
         "abilities": "Compound Eyes",
@@ -47313,11 +47313,11 @@
         "rarity": "Uncommon",
         "resistance": 15,
         "scientific_name": "Cordulegaster boltonii",
-        "size": 0.8,
+        "size": 0.105,
         "spawn_tiles": "dw_pond_we_2,dw_pond",
         "speed": 88,
         "subfamily": "Cordulegastrinae",
-        "weight": 0.02
+        "weight": 0.0011
     },
     {
         "abilities": "Speed Boost",
@@ -47341,11 +47341,11 @@
         "rarity": "Common",
         "resistance": 22,
         "scientific_name": "Diplacodes nebulosa",
-        "size": 0.8,
+        "size": 0.05,
         "spawn_tiles": "dw_pond_we_2,dw_pond",
         "speed": 93,
         "subfamily": "Diplacinae",
-        "weight": 0.02
+        "weight": 0.0004
     },
     {
         "abilities": "True Flight, Speed Boost",
@@ -47369,11 +47369,11 @@
         "rarity": "Rare",
         "resistance": 27,
         "scientific_name": "Anax imperator",
-        "size": 0.8,
+        "size": 0.105,
         "spawn_tiles": "dw_pond_we_2,dw_pond",
         "speed": 97,
         "subfamily": "Anaxinae",
-        "weight": 0.025
+        "weight": 0.0013
     },
     {
         "abilities": "Compound Eyes , Infiltrator",
@@ -47397,11 +47397,11 @@
         "rarity": "Uncommon",
         "resistance": 14,
         "scientific_name": "Celithemis eponina",
-        "size": 0.7,
+        "size": 0.065,
         "spawn_tiles": "dw_pond_we_2,dw_pond",
         "speed": 90,
         "subfamily": "Sympetrinae",
-        "weight": 0.018
+        "weight": 0.0006
     },
     {
         "abilities": "True Flight",
@@ -47425,11 +47425,11 @@
         "rarity": "Uncommon",
         "resistance": 31,
         "scientific_name": "Aeshna umbrosa",
-        "size": 0.8,
+        "size": 0.1,
         "spawn_tiles": "dw_pond_we_2,dw_pond",
         "speed": 91,
         "subfamily": "Aeshninae",
-        "weight": 0.02
+        "weight": 0.0011
     },
     {
         "abilities": "Scavenge Sense",
@@ -47481,11 +47481,11 @@
         "rarity": "Common",
         "resistance": 11,
         "scientific_name": "Orthemis ferruginea",
-        "size": 0.7,
+        "size": 0.08,
         "spawn_tiles": "dw_pond_we_2,dw_pond",
         "speed": 90,
         "subfamily": "Trithemistinae",
-        "weight": 0.015
+        "weight": 0.0012
     },
     {
         "abilities": "Battle Armor",
@@ -47677,11 +47677,11 @@
         "rarity": "Rare",
         "resistance": 29,
         "scientific_name": "Renaldus splendens",
-        "size": 0.6,
+        "size": 0.035,
         "spawn_tiles": "tall_grass",
         "speed": 85,
         "subfamily": "Theclinae",
-        "weight": 0.03
+        "weight": 0.0003
     },
     {
         "abilities": "Clear Body",
@@ -48713,11 +48713,11 @@
         "rarity": "Common",
         "resistance": 19,
         "scientific_name": "Gelastocoris oculatus",
-        "size": 0.6,
+        "size": 0.009,
         "spawn_tiles": "tall_grass",
         "speed": 40,
         "subfamily": "Gelastocorinae",
-        "weight": 0.01
+        "weight": 0.0001
     },
     {
         "abilities": "Tunnel Hunter",
@@ -50085,11 +50085,11 @@
         "rarity": "Rare",
         "resistance": 56,
         "scientific_name": "Vespa orientalis",
-        "size": 0.9,
+        "size": 0.035,
         "spawn_tiles": "tall_grass",
         "speed": 90,
         "subfamily": "Vespinae",
-        "weight": 0.02
+        "weight": 0.0014
     },
     {
         "abilities": "Berserk",
@@ -50393,11 +50393,11 @@
         "rarity": "Common",
         "resistance": 41,
         "scientific_name": "Megaphasma denticrus",
-        "size": 0.451,
+        "size": 0.3,
         "spawn_tiles": "tall_grass",
         "speed": 20,
         "subfamily": "Phasmatinae",
-        "weight": 0.045
+        "weight": 0.035
     },
     {
         "abilities": "Shield Dust ,Thick Fat",
@@ -50449,11 +50449,11 @@
         "rarity": "Rare",
         "resistance": 49,
         "scientific_name": "Phobaeticus chani",
-        "size": 0.512,
+        "size": 0.357,
         "spawn_tiles": "tall_grass",
         "speed": 20,
         "subfamily": "Clitumninae",
-        "weight": 0.051
+        "weight": 0.045
     },
     {
         "abilities": "Queenly Majesty, True Flight",
@@ -50477,11 +50477,11 @@
         "rarity": "Legendary",
         "resistance": 21,
         "scientific_name": "Ornithoptera alexandrae",
-        "size": 1.2,
+        "size": 0.235,
         "spawn_tiles": "tall_grass",
         "speed": 70,
         "subfamily": "Troidinae",
-        "weight": 0.03
+        "weight": 0.0185
     },
     {
         "abilities": "Strong Jaw",
@@ -50505,11 +50505,11 @@
         "rarity": "Epic",
         "resistance": 99,
         "scientific_name": "Titanus giganteus",
-        "size": 0.13,
+        "size": 0.15,
         "spawn_tiles": "tall_grass",
         "speed": 30,
         "subfamily": "Prioninae",
-        "weight": 0.065
+        "weight": 0.035
     },
     {
         "abilities": "True Flight",
@@ -50533,11 +50533,11 @@
         "rarity": "Rare",
         "resistance": 20,
         "scientific_name": "Thysania agrippina",
-        "size": 1.1,
+        "size": 0.285,
         "spawn_tiles": "tall_grass",
         "speed": 50,
         "subfamily": "Erebinae",
-        "weight": 0.02
+        "weight": 0.0085
     },
     {
         "abilities": "Adaptability, Solid Rock",
@@ -50561,11 +50561,11 @@
         "rarity": "Uncommon",
         "resistance": 70,
         "scientific_name": "Macropanesthia rhinoceros",
-        "size": 1.2,
+        "size": 0.0775,
         "spawn_tiles": "tall_grass",
         "speed": 20,
         "subfamily": "Macropanesthiinae",
-        "weight": 0.03
+        "weight": 0.0325
     },
     {
         "abilities": "Flight",
@@ -50589,11 +50589,11 @@
         "rarity": "Rare",
         "resistance": 42,
         "scientific_name": "Polystoechotes punctata",
-        "size": 1.1,
+        "size": 0.065,
         "spawn_tiles": "tall_grass",
         "speed": 60,
         "subfamily": "Myrmeleontinae",
-        "weight": 0.02
+        "weight": 0.0008
     },
     {
         "abilities": "Merciless",
@@ -50645,11 +50645,11 @@
         "rarity": "Rare",
         "resistance": 38,
         "scientific_name": "Coscinocera hercules",
-        "size": 1.2,
+        "size": 0.315,
         "spawn_tiles": "tall_grass",
         "speed": 40,
         "subfamily": "Saturniinae",
-        "weight": 0.02
+        "weight": 0.0235
     },
     {
         "abilities": "Shed Skin",
@@ -50701,11 +50701,11 @@
         "rarity": "Uncommon",
         "resistance": 43,
         "scientific_name": "Corydalus cornutus",
-        "size": 1.1,
+        "size": 0.125,
         "spawn_tiles": "tall_grass",
         "speed": 40,
         "subfamily": "Corydalinae",
-        "weight": 0.02
+        "weight": 0.0035
     },
     {
         "abilities": "Speed Boost, Infiltrator",
@@ -50729,11 +50729,11 @@
         "rarity": "Common",
         "resistance": 50,
         "scientific_name": "Pomponia imperatoria",
-        "size": 1.1,
+        "size": 0.165,
         "spawn_tiles": "tall_grass",
         "speed": 160,
         "subfamily": "Cicadinae",
-        "weight": 0.02
+        "weight": 0.0125
     },
     {
         "abilities": "Battle Armor",
@@ -50813,11 +50813,11 @@
         "rarity": "Epic",
         "resistance": 91,
         "scientific_name": "Chalcosoma atlas",
-        "size": 0.14,
+        "size": 0.095,
         "spawn_tiles": "tall_grass",
         "speed": 30,
         "subfamily": "Dynastinae",
-        "weight": 8.5e-05
+        "weight": 0.035
     },
     {
         "abilities": "Swift Swim , Strong Jaw",
@@ -50897,11 +50897,11 @@
         "rarity": "Uncommon",
         "resistance": 65,
         "scientific_name": "Acrocinus longimanus",
-        "size": 0.08,
+        "size": 0.076,
         "spawn_tiles": "tall_grass",
         "speed": 35,
         "subfamily": "Lamiinae",
-        "weight": 0.02
+        "weight": 0.015
     },
     {
         "abilities": "Rough Skin",
@@ -50953,11 +50953,11 @@
         "rarity": "Epic",
         "resistance": 92,
         "scientific_name": "Megasoma actaeon",
-        "size": 0.12,
+        "size": 0.113,
         "spawn_tiles": "tall_grass",
         "speed": 25,
         "subfamily": "Dynastinae",
-        "weight": 0.075
+        "weight": 0.118
     },
     {
         "abilities": "Sand Force",
@@ -50981,11 +50981,11 @@
         "rarity": "Uncommon",
         "resistance": 47,
         "scientific_name": "Gryllotalpa major",
-        "size": 1.1,
+        "size": 0.1,
         "spawn_tiles": "tall_grass",
         "speed": 35,
         "subfamily": "Gryllacridinae",
-        "weight": 0.02
+        "weight": 0.016
     },
     {
         "abilities": "Intimidate , Shield Dust",
@@ -51009,11 +51009,11 @@
         "rarity": "Uncommon",
         "resistance": 49,
         "scientific_name": "Citheronia regalis",
-        "size": 1.2,
+        "size": 0.14,
         "spawn_tiles": "tall_grass",
         "speed": 25,
         "subfamily": "Ceratocampinae",
-        "weight": 0.03
+        "weight": 0.0145
     },
     {
         "abilities": "Jump",
@@ -51037,11 +51037,11 @@
         "rarity": "Common",
         "resistance": 45,
         "scientific_name": "Dactylotum bicolor",
-        "size": 1.1,
+        "size": 0.03,
         "spawn_tiles": "tall_grass",
         "speed": 60,
         "subfamily": "Pyrgomorphinae",
-        "weight": 0.02
+        "weight": 0.0018
     },
     {
         "abilities": "True Flight",
@@ -51065,11 +51065,11 @@
         "rarity": "Rare",
         "resistance": 39,
         "scientific_name": "Citheronia regalis",
-        "size": 1.2,
+        "size": 0.125,
         "spawn_tiles": "tall_grass",
         "speed": 35,
         "subfamily": "Ceratocampinae",
-        "weight": 0.03
+        "weight": 0.0065
     },
     {
         "abilities": "True Flight",
@@ -51429,11 +51429,11 @@
         "rarity": "Rare",
         "resistance": 23,
         "scientific_name": "Megalopyge opercularis",
-        "size": 0.8,
+        "size": 0.03,
         "spawn_tiles": "tall_grass",
         "speed": 25,
         "subfamily": "Megalopyginae",
-        "weight": 0.003
+        "weight": 0.0065
     },
     {
         "abilities": "Rough Skin , Effect Spore",
@@ -51457,11 +51457,11 @@
         "rarity": "Rare",
         "resistance": 25,
         "scientific_name": "Acharia stimulea",
-        "size": 0.8,
+        "size": 0.025,
         "spawn_tiles": "tall_grass",
         "speed": 20,
         "subfamily": "Limacodinae",
-        "weight": 0.004
+        "weight": 0.0045
     },
     {
         "abilities": "Reef Camouflage",
@@ -52269,11 +52269,11 @@
         "rarity": "Common",
         "resistance": 18,
         "scientific_name": "Actias luna",
-        "size": 1.1,
+        "size": 0.145,
         "spawn_tiles": "tall_grass",
         "speed": 35,
         "subfamily": "Saturniinae",
-        "weight": 0.02
+        "weight": 0.0025
     },
     {
         "abilities": "Reef Camouflage",
@@ -52969,11 +52969,11 @@
         "rarity": "Uncommon",
         "resistance": 41,
         "scientific_name": "Stenopelmatus fuscus",
-        "size": 0.7,
+        "size": 0.06,
         "spawn_tiles": "tall_grass",
         "speed": 30,
         "subfamily": "Stenopelmatinae",
-        "weight": 0.02
+        "weight": 0.0125
     },
     {
         "abilities": "Rough Skin",
@@ -57533,11 +57533,11 @@
         "rarity": "Uncommon",
         "resistance": 5,
         "scientific_name": "Hemaris thysbe",
-        "size": 0.9,
+        "size": 0.045,
         "spawn_tiles": "tall_grass",
         "speed": 85,
         "subfamily": "Macroglossinae",
-        "weight": 0.01
+        "weight": 0.0006
     },
     {
         "abilities": "True Flight",
@@ -57561,11 +57561,11 @@
         "rarity": "Common",
         "resistance": 16,
         "scientific_name": "Hemaris diffinis",
-        "size": 0.9,
+        "size": 0.05,
         "spawn_tiles": "tall_grass",
         "speed": 82,
         "subfamily": "Macroglossinae",
-        "weight": 0.01
+        "weight": 0.0007
     },
     {
         "abilities": "Gluttony",
@@ -57813,11 +57813,11 @@
         "rarity": "Uncommon",
         "resistance": 17,
         "scientific_name": "Macrocilix maia",
-        "size": 0.9,
+        "size": 0.05,
         "spawn_tiles": "tall_grass",
         "speed": 60,
         "subfamily": "Drepaninae",
-        "weight": 0.02
+        "weight": 0.0004
     },
     {
         "abilities": "Poison Touch",
@@ -57841,11 +57841,11 @@
         "rarity": "Rare",
         "resistance": 70,
         "scientific_name": "Euspinolia militaris",
-        "size": 0.5,
+        "size": 0.0065,
         "spawn_tiles": "tall_grass",
         "speed": 110,
         "subfamily": "Euspinoliinae",
-        "weight": 0.001
+        "weight": 5e-05
     },
     {
         "abilities": "Nut Cracking",
@@ -58009,11 +58009,11 @@
         "rarity": "Uncommon",
         "resistance": 7,
         "scientific_name": "Sabethes cyaneus",
-        "size": 0.6,
+        "size": 0.008,
         "spawn_tiles": "tall_grass",
         "speed": 70,
         "subfamily": "Sabethinae",
-        "weight": 0.0005
+        "weight": 5e-06
     },
     {
         "abilities": "Canopy Leap",
@@ -58401,11 +58401,11 @@
         "rarity": "Epic",
         "resistance": 21,
         "scientific_name": "Ornithoptera goliath",
-        "size": 1.3,
+        "size": 0.225,
         "spawn_tiles": "tall_grass",
         "speed": 70,
         "subfamily": "Troidinae",
-        "weight": 0.03
+        "weight": 0.012
     },
     {
         "abilities": "True Flight",
@@ -58429,11 +58429,11 @@
         "rarity": "Common",
         "resistance": 9,
         "scientific_name": "Papilio machaon",
-        "size": 1.1,
+        "size": 0.08,
         "spawn_tiles": "tall_grass",
         "speed": 68,
         "subfamily": "Papilioninae",
-        "weight": 0.02
+        "weight": 0.0012
     },
     {
         "abilities": "True Flight",
@@ -58457,11 +58457,11 @@
         "rarity": "Rare",
         "resistance": 110,
         "scientific_name": "Papilio antimachus",
-        "size": 1.3,
+        "size": 0.205,
         "spawn_tiles": "tall_grass",
         "speed": 105,
         "subfamily": "Papilioninae",
-        "weight": 0.03
+        "weight": 0.008
     },
     {
         "abilities": "True Flight",
@@ -58485,11 +58485,11 @@
         "rarity": "Uncommon",
         "resistance": 18,
         "scientific_name": "Troides aeacus",
-        "size": 1.3,
+        "size": 0.17,
         "spawn_tiles": "tall_grass",
         "speed": 66,
         "subfamily": "Troidinae",
-        "weight": 0.03
+        "weight": 0.005
     },
     {
         "abilities": "True Flight",
@@ -58513,11 +58513,11 @@
         "rarity": "Epic",
         "resistance": 22,
         "scientific_name": "Morpho menelaus",
-        "size": 1.2,
+        "size": 0.175,
         "spawn_tiles": "tall_grass",
         "speed": 72,
         "subfamily": "Morphinae",
-        "weight": 0.02
+        "weight": 0.0035
     },
     {
         "abilities": "True Flight",
@@ -58541,11 +58541,11 @@
         "rarity": "Rare",
         "resistance": 14,
         "scientific_name": "Morpho hecuba",
-        "size": 1.2,
+        "size": 0.16,
         "spawn_tiles": "tall_grass",
         "speed": 70,
         "subfamily": "Morphinae",
-        "weight": 0.02
+        "weight": 0.004
     },
     {
         "abilities": "Sturdy",
@@ -58569,11 +58569,11 @@
         "rarity": "Epic",
         "resistance": 80,
         "scientific_name": "Goliathus goliatus",
-        "size": 0.1,
+        "size": 0.085,
         "spawn_tiles": "tall_grass",
         "speed": 35,
         "subfamily": "Cetoniinae",
-        "weight": 0.0001
+        "weight": 0.05
     },
     {
         "abilities": "True Flight",
@@ -58597,11 +58597,11 @@
         "rarity": "Rare",
         "resistance": 24,
         "scientific_name": "Endoxyla cinereus",
-        "size": 1.4,
+        "size": 0.23,
         "spawn_tiles": "tall_grass",
         "speed": 25,
         "subfamily": "Zeuzerinae",
-        "weight": 0.05
+        "weight": 0.0225
     },
     {
         "abilities": "Dominance",
@@ -58625,11 +58625,11 @@
         "rarity": "Epic",
         "resistance": 66,
         "scientific_name": "Goliathus regius",
-        "size": 0.11,
+        "size": 0.09,
         "spawn_tiles": "tall_grass",
         "speed": 33,
         "subfamily": "Cetoniinae",
-        "weight": 9.5e-05
+        "weight": 0.055
     },
     {
         "abilities": "Strong Grip",
@@ -58653,11 +58653,11 @@
         "rarity": "Epic",
         "resistance": 52,
         "scientific_name": "Xixuthrus heros",
-        "size": 0.12,
+        "size": 0.145,
         "spawn_tiles": "tall_grass",
         "speed": 30,
         "subfamily": "Lamiinae",
-        "weight": 0.06
+        "weight": 0.009
     },
     {
         "abilities": "Mandible Lock",
@@ -58681,11 +58681,11 @@
         "rarity": "Epic",
         "resistance": 62,
         "scientific_name": "Macrodontia cervicornis",
-        "size": 0.09,
+        "size": 0.14,
         "spawn_tiles": "tall_grass",
         "speed": 32,
         "subfamily": "Lamiinae",
-        "weight": 0.04
+        "weight": 0.025
     },
     {
         "abilities": "Dung Roll",
@@ -58709,11 +58709,11 @@
         "rarity": "Uncommon",
         "resistance": 45,
         "scientific_name": "Scarabaeus viettei",
-        "size": 0.06,
+        "size": 0.065,
         "spawn_tiles": "tall_grass",
         "speed": 40,
         "subfamily": "Scarabaeinae",
-        "weight": 0.02
+        "weight": 0.025
     },
     {
         "abilities": "Leverage Grip",
@@ -58737,11 +58737,11 @@
         "rarity": "Uncommon",
         "resistance": 43,
         "scientific_name": "Lasiorhynchus barbicornis",
-        "size": 0.08,
+        "size": 0.033,
         "spawn_tiles": "tall_grass",
         "speed": 45,
         "subfamily": "Molytinae",
-        "weight": 0.03
+        "weight": 0.008
     },
     {
         "abilities": "Filter",
@@ -58849,11 +58849,11 @@
         "rarity": "Rare",
         "resistance": 64,
         "scientific_name": "Deinacrida heteracantha",
-        "size": 1.1,
+        "size": 0.13,
         "spawn_tiles": "tall_grass",
         "speed": 22,
         "subfamily": "Deinacridinae",
-        "weight": 0.03
+        "weight": 0.0525
     },
     {
         "abilities": "Cold Tolerance",
@@ -58877,11 +58877,11 @@
         "rarity": "Rare",
         "resistance": 51,
         "scientific_name": "Deinacrida rugosa",
-        "size": 1.2,
+        "size": 0.085,
         "spawn_tiles": "tall_grass",
         "speed": 20,
         "subfamily": "Deinacridinae",
-        "weight": 0.05
+        "weight": 0.0325
     },
     {
         "abilities": "Island Resilience",
@@ -58905,11 +58905,11 @@
         "rarity": "Epic",
         "resistance": 59,
         "scientific_name": "Deinacrida fallai",
-        "size": 1.2,
+        "size": 0.095,
         "spawn_tiles": "tall_grass",
         "speed": 22,
         "subfamily": "Deinacridinae",
-        "weight": 0.05
+        "weight": 0.0375
     },
     {
         "abilities": "Rock Blend",
@@ -58961,11 +58961,11 @@
         "rarity": "Rare",
         "resistance": 59,
         "scientific_name": "Deinacrida rugosa",
-        "size": 1.2,
+        "size": 0.07,
         "spawn_tiles": "tall_grass",
         "speed": 21,
         "subfamily": "Deinacridinae",
-        "weight": 0.05
+        "weight": 0.015
     },
     {
         "abilities": "Adaptability",
@@ -58989,11 +58989,11 @@
         "rarity": "Rare",
         "resistance": 64,
         "scientific_name": "Deinacrida mahoenui",
-        "size": 1.2,
+        "size": 0.06,
         "spawn_tiles": "tall_grass",
         "speed": 23,
         "subfamily": "Deinacridinae",
-        "weight": 0.05
+        "weight": 0.0115
     },
     {
         "abilities": "Alpine Hardiness",
@@ -59017,11 +59017,11 @@
         "rarity": "Rare",
         "resistance": 56,
         "scientific_name": "Deinacrida pluvialis",
-        "size": 1.2,
+        "size": 0.075,
         "spawn_tiles": "tall_grass",
         "speed": 18,
         "subfamily": "Deinacridinae",
-        "weight": 0.05
+        "weight": 0.019
     },
     {
         "abilities": "Dominant Size",
@@ -59045,11 +59045,11 @@
         "rarity": "Epic",
         "resistance": 59,
         "scientific_name": "Deinacrida heteracantha",
-        "size": 1.3,
+        "size": 0.139,
         "spawn_tiles": "tall_grass",
         "speed": 20,
         "subfamily": "Deinacridinae",
-        "weight": 0.06
+        "weight": 0.0525
     },
     {
         "abilities": "Digging Limbs",
@@ -59073,11 +59073,11 @@
         "rarity": "Uncommon",
         "resistance": 51,
         "scientific_name": "Deinacrida talpa",
-        "size": 1.2,
+        "size": 0.075,
         "spawn_tiles": "tall_grass",
         "speed": 28,
         "subfamily": "Anostostomatinae",
-        "weight": 0.05
+        "weight": 0.0245
     },
     {
         "abilities": "Loud Call",
@@ -59101,11 +59101,11 @@
         "rarity": "Common",
         "resistance": 37,
         "scientific_name": "Teleogryllus commodus",
-        "size": 0.9,
+        "size": 0.065,
         "spawn_tiles": "tall_grass",
         "speed": 55,
         "subfamily": "Gryllinae",
-        "weight": 0.02
+        "weight": 0.0125
     },
     {
         "abilities": "True Flight, Punk Rock",
@@ -59129,11 +59129,11 @@
         "rarity": "Uncommon",
         "resistance": 23,
         "scientific_name": "Macrolyristes corporalis",
-        "size": 1.1,
+        "size": 0.2,
         "spawn_tiles": "tall_grass",
         "speed": 60,
         "subfamily": "Phaneropterinae",
-        "weight": 0.03
+        "weight": 0.0145
     },
     {
         "abilities": "Flash Escape",
@@ -59157,11 +59157,11 @@
         "rarity": "Common",
         "resistance": 27,
         "scientific_name": "Oedipoda caerulescens",
-        "size": 0.8,
+        "size": 0.045,
         "spawn_tiles": "tall_grass",
         "speed": 70,
         "subfamily": "Oedipodinae",
-        "weight": 0.01
+        "weight": 0.0009
     },
     {
         "abilities": "Startle Display",
@@ -59185,11 +59185,11 @@
         "rarity": "Common",
         "resistance": 27,
         "scientific_name": "Oedipoda germanica",
-        "size": 0.8,
+        "size": 0.055,
         "spawn_tiles": "tall_grass",
         "speed": 72,
         "subfamily": "Oedipodinae",
-        "weight": 0.01
+        "weight": 0.0011
     },
     {
         "abilities": "Chlorophyll",
@@ -59241,11 +59241,11 @@
         "rarity": "Epic",
         "resistance": 40,
         "scientific_name": "Amissus Atlas",
-        "size": 0.3,
+        "size": 0.065,
         "spawn_tiles": "tall_grass",
         "speed": 25,
         "subfamily": "Coreinae",
-        "weight": 0.03
+        "weight": 0.0085
     },
     {
         "abilities": "True Flight",
@@ -59269,11 +59269,11 @@
         "rarity": "Uncommon",
         "resistance": 50,
         "scientific_name": "Pomponia imperatoria",
-        "size": 1.1,
+        "size": 0.2,
         "spawn_tiles": "tall_grass",
         "speed": 160,
         "subfamily": "Cicadinae",
-        "weight": 0.03
+        "weight": 0.0215
     },
     {
         "abilities": "True Flight",
@@ -59297,11 +59297,11 @@
         "rarity": "Uncommon",
         "resistance": 24,
         "scientific_name": "Pyrops candelaria",
-        "size": 0.8,
+        "size": 0.075,
         "spawn_tiles": "tall_grass",
         "speed": 75,
         "subfamily": "Pyropsinae",
-        "weight": 0.01
+        "weight": 0.0014
     },
     {
         "abilities": "Stench , Compound Eyes",
@@ -59325,11 +59325,11 @@
         "rarity": "Common",
         "resistance": 17,
         "scientific_name": "Graphosoma italicum",
-        "size": 0.8,
+        "size": 0.01,
         "spawn_tiles": "tall_grass",
         "speed": 40,
         "subfamily": "Pentatominae",
-        "weight": 0.01
+        "weight": 0.0002
     },
     {
         "abilities": "Water Bubble , Swift Swim",
@@ -59353,11 +59353,11 @@
         "rarity": "Uncommon",
         "resistance": 35,
         "scientific_name": "Aquarius remigis",
-        "size": 0.9,
+        "size": 0.22,
         "spawn_tiles": "tall_grass",
         "speed": 80,
         "subfamily": "Gerrinae",
-        "weight": 0.02
+        "weight": 0.0004
     },
     {
         "abilities": "Keen Eye",
@@ -59409,11 +59409,11 @@
         "rarity": "Rare",
         "resistance": 22,
         "scientific_name": "Megarhyssa macrurus",
-        "size": 0.9,
+        "size": 0.15,
         "spawn_tiles": "tall_grass",
         "speed": 50,
         "subfamily": "Rhyssinae",
-        "weight": 0.02
+        "weight": 0.0015
     },
     {
         "abilities": "Adaptability",
@@ -59493,11 +59493,11 @@
         "rarity": "Common",
         "resistance": 7,
         "scientific_name": "Melanitis leda",
-        "size": 0.9,
+        "size": 0.07,
         "spawn_tiles": "flower1,flower2",
         "speed": 65,
         "subfamily": "Satyrinae",
-        "weight": 0.01
+        "weight": 0.0006
     },
     {
         "abilities": "Mimic",
@@ -59801,11 +59801,11 @@
         "rarity": "Common",
         "resistance": 110,
         "scientific_name": "Chilades pandava",
-        "size": 0.9,
+        "size": 0.025,
         "spawn_tiles": "flower1,flower2",
         "speed": 120,
         "subfamily": "Polyommatinae",
-        "weight": 0.01
+        "weight": 0.0002
     },
     {
         "abilities": "Toxic Secretion",
@@ -59885,11 +59885,11 @@
         "rarity": "Common",
         "resistance": 21,
         "scientific_name": "Crocothemis servilia",
-        "size": 0.9,
+        "size": 0.075,
         "spawn_tiles": "dw_pond_we_2,dw_pond",
         "speed": 75,
         "subfamily": "Trithemistinae",
-        "weight": 0.02
+        "weight": 0.0011
     },
     {
         "abilities": "Water Bubble , Liquid Voice",
@@ -60081,11 +60081,11 @@
         "rarity": "Common",
         "resistance": 15,
         "scientific_name": "Brachythemis contaminata",
-        "size": 0.9,
+        "size": 0.065,
         "spawn_tiles": "dw_pond_we_2,dw_pond",
         "speed": 80,
         "subfamily": "Brachydiplacinae",
-        "weight": 0.02
+        "weight": 0.0009
     },
     {
         "abilities": "True Flight, Tinted Lens",
@@ -60109,11 +60109,11 @@
         "rarity": "Common",
         "resistance": 70,
         "scientific_name": "Ceratina smaragdula",
-        "size": 0.8,
+        "size": 0.015,
         "spawn_tiles": "honey_tree,flower1,flower2",
         "speed": 45,
         "subfamily": "Xylocopinae",
-        "weight": 0.01
+        "weight": 0.0003
     },
     {
         "abilities": "Opportunistic Forage",
@@ -60165,11 +60165,11 @@
         "rarity": "Common",
         "resistance": 6,
         "scientific_name": "Eurema hecabe",
-        "size": 0.8,
+        "size": 0.04,
         "spawn_tiles": "flower1,flower2",
         "speed": 75,
         "subfamily": "Coliadinae",
-        "weight": 0.01
+        "weight": 0.0005
     },
     {
         "abilities": "True Flight",
@@ -60193,11 +60193,11 @@
         "rarity": "Common",
         "resistance": 19,
         "scientific_name": "Papilio polytes",
-        "size": 1.1,
+        "size": 0.095,
         "spawn_tiles": "tall_grass",
         "speed": 70,
         "subfamily": "Papilioninae",
-        "weight": 0.02
+        "weight": 0.0012
     },
     {
         "abilities": "True Flight",
@@ -60221,11 +60221,11 @@
         "rarity": "Common",
         "resistance": 12,
         "scientific_name": "Junonia atlites",
-        "size": 0.9,
+        "size": 0.06,
         "spawn_tiles": "flower1,flower2",
         "speed": 65,
         "subfamily": "Nymphalinae",
-        "weight": 0.01
+        "weight": 0.0006
     },
     {
         "abilities": "Problem Solving",
@@ -60305,11 +60305,11 @@
         "rarity": "Common",
         "resistance": 12,
         "scientific_name": "Papilio demoleus",
-        "size": 1.1,
+        "size": 0.09,
         "spawn_tiles": "tall_grass",
         "speed": 72,
         "subfamily": "Papilioninae",
-        "weight": 0.02
+        "weight": 0.0011
     },
     {
         "abilities": "True Flight, Curse Body, Infiltrator",
@@ -60333,11 +60333,11 @@
         "rarity": "Common",
         "resistance": 21,
         "scientific_name": "Neurothemis tullia",
-        "size": 0.9,
+        "size": 0.055,
         "spawn_tiles": "tall_grass",
         "speed": 78,
         "subfamily": "Brachydiplacinae",
-        "weight": 0.02
+        "weight": 0.0008
     },
     {
         "abilities": "Reflective Shield",
@@ -60753,11 +60753,11 @@
         "rarity": "Uncommon",
         "resistance": 50,
         "scientific_name": "Trigona sp",
-        "size": 0.7,
+        "size": 0.03,
         "spawn_tiles": "honey_tree,flower1,flower2",
         "speed": 85,
         "subfamily": "Xylocopinae",
-        "weight": 0.01
+        "weight": 0.0002
     },
     {
         "abilities": "Strong Jaw",
@@ -61509,11 +61509,11 @@
         "rarity": "Uncommon",
         "resistance": 65,
         "scientific_name": "Oryctes rhinoceros",
-        "size": 0.09,
+        "size": 0.045,
         "spawn_tiles": "tall_grass",
         "speed": 30,
         "subfamily": "Dynastinae",
-        "weight": 7e-05
+        "weight": 0.008
     },
     {
         "abilities": "Water Absorb",
@@ -61873,11 +61873,11 @@
         "rarity": "Rare",
         "resistance": 55,
         "scientific_name": "Panacanthus cuspidatus",
-        "size": 1.1,
+        "size": 0.085,
         "spawn_tiles": "tall_grass",
         "speed": 65,
         "subfamily": "Phaneropterinae",
-        "weight": 0.03
+        "weight": 0.0045
     },
     {
         "abilities": "Anger Point",
@@ -61957,11 +61957,11 @@
         "rarity": "Uncommon",
         "resistance": 60,
         "scientific_name": "Atlanticus pachymerus",
-        "size": 1.2,
+        "size": 0.065,
         "spawn_tiles": "tall_grass",
         "speed": 55,
         "subfamily": "Tettigoniinae",
-        "weight": 0.04
+        "weight": 0.0125
     },
     {
         "abilities": "Drizzle",
@@ -62573,11 +62573,11 @@
         "rarity": "Rare",
         "resistance": 45,
         "scientific_name": "Polyura athamas larva",
-        "size": 0.8,
+        "size": 0.065,
         "spawn_tiles": "tall_grass",
         "speed": 50,
         "subfamily": "Papilioninae",
-        "weight": 0.02
+        "weight": 0.0045
     },
     {
         "abilities": "Slush Rush , Infiltrator",
@@ -62629,11 +62629,11 @@
         "rarity": "Epic",
         "resistance": 40,
         "scientific_name": "Saturnia japonica larva",
-        "size": 0.9,
+        "size": 0.09,
         "spawn_tiles": "tall_grass",
         "speed": 45,
         "subfamily": "Saturniinae",
-        "weight": 0.03
+        "weight": 0.0095
     },
     {
         "abilities": "Intimidate",
@@ -69629,11 +69629,11 @@
         "rarity": "Common",
         "resistance": 34,
         "scientific_name": "Bombylius major",
-        "size": 0.8,
+        "size": 0.025,
         "spawn_tiles": "tall_grass",
         "speed": 82,
         "subfamily": "Bombyliinae",
-        "weight": 0.01
+        "weight": 0.0004
     },
     {
         "abilities": "Intimidate",
@@ -69741,11 +69741,11 @@
         "rarity": "Common",
         "resistance": 30,
         "scientific_name": "Platycotis vittata",
-        "size": 0.8,
+        "size": 0.01,
         "spawn_tiles": "tall_grass",
         "speed": 52,
         "subfamily": "Smiliinae",
-        "weight": 0.01
+        "weight": 0.0003
     },
     {
         "abilities": "Defiant",
@@ -72205,11 +72205,11 @@
         "rarity": "Common",
         "resistance": 28,
         "scientific_name": "Notonecta glauca",
-        "size": 0.8,
+        "size": 0.015,
         "spawn_tiles": "tall_grass",
         "speed": 52,
         "subfamily": "Notonectinae",
-        "weight": 0.01
+        "weight": 0.0004
     },
     {
         "abilities": "Swift Swim",
@@ -72233,11 +72233,11 @@
         "rarity": "Common",
         "resistance": 36,
         "scientific_name": "Zygoptera nympha",
-        "size": 0.9,
+        "size": 0.025,
         "spawn_tiles": "tall_grass",
         "speed": 38,
         "subfamily": "Unknown",
-        "weight": 0.02
+        "weight": 0.0003
     },
     {
         "abilities": "Strong Jaw",
@@ -72289,11 +72289,11 @@
         "rarity": "Common",
         "resistance": 26,
         "scientific_name": "Corixidae aquaticus",
-        "size": 0.8,
+        "size": 0.012,
         "spawn_tiles": "tall_grass",
         "speed": 42,
         "subfamily": "Corixinae",
-        "weight": 0.01
+        "weight": 0.0001
     },
     {
         "abilities": "Strong Jaw",
@@ -72429,11 +72429,11 @@
         "rarity": "Common",
         "resistance": 24,
         "scientific_name": "Ephemeroptera nympha",
-        "size": 0.9,
+        "size": 0.015,
         "spawn_tiles": "tall_grass",
         "speed": 28,
         "subfamily": "Unknown",
-        "weight": 0.02
+        "weight": 0.0002
     },
     {
         "abilities": "Water Veil,Liquid Ooze",
@@ -74613,11 +74613,11 @@
         "rarity": "Uncommon",
         "resistance": 36,
         "scientific_name": "Phyllocrania paradoxa",
-        "size": 0.9,
+        "size": 0.045,
         "spawn_tiles": "tall_grass",
         "speed": 54,
         "subfamily": "Empusinae",
-        "weight": 0.01
+        "weight": 0.0015
     },
     {
         "abilities": "Shell Armor, Multiscale",
@@ -74669,11 +74669,11 @@
         "rarity": "Common",
         "resistance": 36,
         "scientific_name": "Cyclochila australasiae",
-        "size": 0.9,
+        "size": 0.12,
         "spawn_tiles": "tall_grass",
         "speed": 58,
         "subfamily": "Cicadinae",
-        "weight": 0.02
+        "weight": 0.0035
     },
     {
         "abilities": "Shell Armor",
@@ -77245,11 +77245,11 @@
         "rarity": "Common",
         "resistance": 35,
         "scientific_name": "Calliphora vomitoria",
-        "size": 0.8,
+        "size": 0.022,
         "spawn_tiles": "tall_grass",
         "speed": 70,
         "subfamily": "Calliphorinae",
-        "weight": 0.01
+        "weight": 6e-05
     },
     {
         "abilities": "Swarm",
@@ -77273,11 +77273,11 @@
         "rarity": "Common",
         "resistance": 40,
         "scientific_name": "Pollenia rudis",
-        "size": 0.8,
+        "size": 0.018,
         "spawn_tiles": "tall_grass",
         "speed": 55,
         "subfamily": "Polleniinae",
-        "weight": 0.01
+        "weight": 7e-05
     },
     {
         "abilities": "Hydration, True Flight",
@@ -77301,11 +77301,11 @@
         "rarity": "Common",
         "resistance": 35,
         "scientific_name": "Psychodidae spp",
-        "size": 0.8,
+        "size": 0.004,
         "spawn_tiles": "tall_grass",
         "speed": 45,
         "subfamily": "Psychodinae",
-        "weight": 0.01
+        "weight": 1e-06
     },
     {
         "abilities": "Compound Eyes, Regenerator, True Flight",
@@ -77329,11 +77329,11 @@
         "rarity": "Common",
         "resistance": 38,
         "scientific_name": "Lucilia sericata",
-        "size": 0.8,
+        "size": 0.018,
         "spawn_tiles": "tall_grass",
         "speed": 72,
         "subfamily": "Luciliinae",
-        "weight": 0.01
+        "weight": 4e-05
     },
     {
         "abilities": "Speed Boost",
@@ -77357,11 +77357,11 @@
         "rarity": "Common",
         "resistance": 40,
         "scientific_name": "Musca domestica",
-        "size": 0.8,
+        "size": 0.014,
         "spawn_tiles": "tall_grass",
         "speed": 75,
         "subfamily": "Muscinae",
-        "weight": 0.01
+        "weight": 1.5e-05
     },
     {
         "abilities": "Rattled",
@@ -77385,11 +77385,11 @@
         "rarity": "Common",
         "resistance": 38,
         "scientific_name": "Fannia canicularis",
-        "size": 0.8,
+        "size": 0.011,
         "spawn_tiles": "tall_grass",
         "speed": 78,
         "subfamily": "Fanniinae",
-        "weight": 0.01
+        "weight": 8e-06
     },
     {
         "abilities": "Poison Touch, True Flight",
@@ -77413,11 +77413,11 @@
         "rarity": "Uncommon",
         "resistance": 45,
         "scientific_name": "Stomoxys calcitrans",
-        "size": 0.8,
+        "size": 0.013,
         "spawn_tiles": "tall_grass",
         "speed": 68,
         "subfamily": "Stomoxyinae",
-        "weight": 0.01
+        "weight": 1.8e-05
     },
     {
         "abilities": "Sharpness",
@@ -78365,11 +78365,11 @@
         "rarity": "Uncommon",
         "resistance": 40,
         "scientific_name": "Simandoa conserfariam",
-        "size": 0.9,
+        "size": 0.055,
         "spawn_tiles": "tall_grass",
         "speed": 30,
         "subfamily": "Blattellinae",
-        "weight": 0.02
+        "weight": 0.0045
     },
     {
         "abilities": "Rattled",
@@ -82089,11 +82089,11 @@
         "rarity": "Uncommon",
         "resistance": 40,
         "scientific_name": "Phileurus truncatus",
-        "size": 0.08,
+        "size": 0.032,
         "spawn_tiles": "tall_grass",
         "speed": 18,
         "subfamily": "Dynastinae",
-        "weight": 2e-05
+        "weight": 0.005
     },
     {
         "abilities": "Water Bubble, Shield Dust",
@@ -82397,11 +82397,11 @@
         "rarity": "Uncommon",
         "resistance": 36,
         "scientific_name": "Orthosoma brunneum",
-        "size": 0.09,
+        "size": 0.035,
         "spawn_tiles": "tall_grass",
         "speed": 18,
         "subfamily": "Prioninae",
-        "weight": 3e-05
+        "weight": 0.004
     },
     {
         "abilities": "Light Metal, Filter",
@@ -87521,11 +87521,11 @@
         "rarity": "Mythical",
         "resistance": 48,
         "scientific_name": "Meganeura monyi",
-        "size": 0.68,
+        "size": 0.7,
         "spawn_tiles": "tall_grass",
         "speed": 126,
         "subfamily": "Unknown",
-        "weight": 0.00018
+        "weight": 0.45
     },
     {
         "abilities": "Strong Jaw, Sturdy",
