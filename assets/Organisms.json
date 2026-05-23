@@ -50817,7 +50817,7 @@
         "spawn_tiles": "tall_grass",
         "speed": 30,
         "subfamily": "Dynastinae",
-        "weight": 0.09
+        "weight": 8.5e-05
     },
     {
         "abilities": "Swift Swim , Strong Jaw",
@@ -58573,7 +58573,7 @@
         "spawn_tiles": "tall_grass",
         "speed": 35,
         "subfamily": "Cetoniinae",
-        "weight": 0.08
+        "weight": 0.0001
     },
     {
         "abilities": "True Flight",
@@ -58629,7 +58629,7 @@
         "spawn_tiles": "tall_grass",
         "speed": 33,
         "subfamily": "Cetoniinae",
-        "weight": 0.09
+        "weight": 9.5e-05
     },
     {
         "abilities": "Strong Grip",
@@ -61513,7 +61513,7 @@
         "spawn_tiles": "tall_grass",
         "speed": 30,
         "subfamily": "Dynastinae",
-        "weight": 0.085
+        "weight": 7e-05
     },
     {
         "abilities": "Water Absorb",
@@ -81841,7 +81841,7 @@
         "spawn_tiles": "tall_grass",
         "speed": 34,
         "subfamily": "Gryllacridinae",
-        "weight": 1.2
+        "weight": 4e-06
     },
     {
         "abilities": "Sturdy",
@@ -81869,7 +81869,7 @@
         "spawn_tiles": "tall_grass",
         "speed": 40,
         "subfamily": "Elaterinae",
-        "weight": 1.1
+        "weight": 3e-06
     },
     {
         "abilities": "Tinted Lens, Swarm",
@@ -81897,7 +81897,7 @@
         "spawn_tiles": "tall_grass",
         "speed": 55,
         "subfamily": "Vespinae",
-        "weight": 2.4
+        "weight": 3e-06
     },
     {
         "abilities": "Gluttony, Chlorophyll",
@@ -81925,7 +81925,7 @@
         "spawn_tiles": "tall_grass",
         "speed": 22,
         "subfamily": "Rutelinae",
-        "weight": 3.5
+        "weight": 1.8e-05
     },
     {
         "abilities": "Merciless, Swarm",
@@ -81953,7 +81953,7 @@
         "spawn_tiles": "tall_grass",
         "speed": 58,
         "subfamily": "Polistinae",
-        "weight": 1.6
+        "weight": 2e-06
     },
     {
         "abilities": "Shield Dust",
@@ -81981,7 +81981,7 @@
         "spawn_tiles": "tall_grass",
         "speed": 42,
         "subfamily": "Flatinae",
-        "weight": 0.8
+        "weight": 2e-06
     },
     {
         "abilities": "Guard Dog, Swarm",
@@ -82093,7 +82093,7 @@
         "spawn_tiles": "tall_grass",
         "speed": 18,
         "subfamily": "Dynastinae",
-        "weight": 5.2
+        "weight": 2e-05
     },
     {
         "abilities": "Water Bubble, Shield Dust",
@@ -82121,7 +82121,7 @@
         "spawn_tiles": "tall_grass",
         "speed": 44,
         "subfamily": "Smiliinae",
-        "weight": 0.5
+        "weight": 1e-06
     },
     {
         "abilities": "Big Pecks, Early Bird",
@@ -82373,7 +82373,7 @@
         "spawn_tiles": "tall_grass",
         "speed": 18,
         "subfamily": "Passalinae",
-        "weight": 2.8
+        "weight": 1.2e-05
     },
     {
         "abilities": "Strong Jaw, Battle Armor",
@@ -82401,7 +82401,7 @@
         "spawn_tiles": "tall_grass",
         "speed": 18,
         "subfamily": "Prioninae",
-        "weight": 4.5
+        "weight": 3e-05
     },
     {
         "abilities": "Light Metal, Filter",
@@ -82429,7 +82429,7 @@
         "spawn_tiles": "tall_grass",
         "speed": 24,
         "subfamily": "Cerambycinae",
-        "weight": 2.1
+        "weight": 5e-06
     },
     {
         "abilities": "Strong Jaw, Shell Armor",
@@ -82457,7 +82457,7 @@
         "spawn_tiles": "tall_grass",
         "speed": 26,
         "subfamily": "Lamiinae",
-        "weight": 3.2
+        "weight": 2.2e-05
     },
     {
         "abilities": "Rough Skin, Battle Armor",
@@ -82485,7 +82485,7 @@
         "spawn_tiles": "tall_grass",
         "speed": 22,
         "subfamily": "Cerambycinae",
-        "weight": 3.8
+        "weight": 4e-06
     },
     {
         "abilities": "Stench, Rattled",
@@ -82513,7 +82513,7 @@
         "spawn_tiles": "tall_grass",
         "speed": 20,
         "subfamily": "Nicrophorinae",
-        "weight": 2.9
+        "weight": 1e-05
     },
     {
         "abilities": "Shield Dust, Poison Point",
@@ -82541,7 +82541,7 @@
         "spawn_tiles": "tall_grass",
         "speed": 38,
         "subfamily": "Lymantriinae",
-        "weight": 0.7
+        "weight": 4e-06
     },
     {
         "abilities": "Shield Dust",
@@ -82569,7 +82569,7 @@
         "spawn_tiles": "tall_grass",
         "speed": 42,
         "subfamily": "Arctiinae",
-        "weight": 1.3
+        "weight": 6e-06
     },
     {
         "abilities": "Serene Grace, Shield Dust",
@@ -82597,7 +82597,7 @@
         "spawn_tiles": "tall_grass",
         "speed": 34,
         "subfamily": "Ceratocampinae",
-        "weight": 2.6
+        "weight": 8e-06
     },
     {
         "abilities": "Infiltrator, Shield Dust",
@@ -82653,7 +82653,7 @@
         "spawn_tiles": "tall_grass",
         "speed": 40,
         "subfamily": "Ceratocampinae",
-        "weight": 0.5
+        "weight": 3e-06
     },
     {
         "abilities": "Soundproof, Rattled",
@@ -82681,7 +82681,7 @@
         "spawn_tiles": "tall_grass",
         "speed": 20,
         "subfamily": "Dynastinae",
-        "weight": 5.5
+        "weight": 1.5e-05
     },
     {
         "abilities": "Keen Eye, Water Veil",
@@ -87525,7 +87525,7 @@
         "spawn_tiles": "tall_grass",
         "speed": 126,
         "subfamily": "Unknown",
-        "weight": 0.14
+        "weight": 0.00018
     },
     {
         "abilities": "Strong Jaw, Sturdy",
@@ -93237,7 +93237,7 @@
         "spawn_tiles": "tall_grass",
         "speed": 70,
         "subfamily": "Formiciinae",
-        "weight": 0.18
+        "weight": 0.00012
     },
     {
         "abilities": "Forewarn",
