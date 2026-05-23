@@ -8589,7 +8589,7 @@
         "rarity": "Uncommon",
         "resistance": 52,
         "scientific_name": "Fregata minor",
-        "size": null,
+        "size": 2,
         "spawn_tiles": "sky",
         "speed": 90,
         "subfamily": "Fregatinae",
