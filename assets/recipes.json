@@ -158,5 +158,28 @@
             "Tomato": 1,
             "Berry Catalyst": 1
         }
+    },
+    {
+        "id": "recipe_venison_stew",
+        "resultTalismanId": "venison_stew",
+        "requiredLoot": {
+            "Venison": 1,
+            "Potato": 2,
+            "Carrot": 2,
+            "Onion": 1,
+            "Thyme": 1,
+            "Water": 1
+        }
+    },
+    {
+        "id": "recipe_truffle_venison_carpaccio",
+        "resultTalismanId": "truffle_venison_carpaccio",
+        "requiredLoot": {
+            "Venison": 1,
+            "truffle": 2,
+            "lemon": 2,
+            "arugula": 1,
+            "cheese": 1
+        }
     }
 ]

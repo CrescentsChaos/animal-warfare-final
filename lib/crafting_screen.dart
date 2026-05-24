@@ -278,7 +278,7 @@ class _RecipeCardState extends State<_RecipeCard>
     _glowCtrl.repeat(reverse: true);
     await Future.delayed(const Duration(milliseconds: 600));
     if (!ctx.mounted) return;
-    
+
     final userState = Provider.of<UserState>(ctx, listen: false);
     final success = await userState.craftTalisman(
       widget.recipe.resultTalismanId,
@@ -462,12 +462,18 @@ class _RecipeCardState extends State<_RecipeCard>
                                   children: [
                                     Row(
                                       children: [
-                                        const Icon(
-                                          Icons.hexagon_outlined,
-                                          size: 12,
-                                          color: Colors.white38,
+                                        // Replace the old Icon with your custom ItemIcon asset wrapper
+                                        Container(
+                                          width: 16,
+                                          height: 16,
+                                          margin: const EdgeInsets.only(
+                                            right: 6,
+                                          ),
+                                          child: ItemIcon(
+                                            itemName: loot.name,
+                                            size: 16,
+                                          ),
                                         ),
-                                        const SizedBox(width: 6),
                                         Expanded(
                                           child: Text(
                                             loot.name,
@@ -752,12 +758,14 @@ class _MaterialsTabState extends State<_MaterialsTab> {
                                     entry.key == 'sickle'
                                         ? 'STATUS: ${userState.eventFlags.isSickleActive ? "ON" : "OFF"}'
                                         : (usedIn > 0
-                                            ? 'Used in $usedIn recipe${usedIn > 1 ? 's' : ''}'
-                                            : 'Drop item'),
+                                              ? 'Used in $usedIn recipe${usedIn > 1 ? 's' : ''}'
+                                              : 'Drop item'),
                                     style: TextStyle(
                                       fontSize: 9,
-                                      color: entry.key == 'sickle' &&
-                                              userState.eventFlags
+                                      color:
+                                          entry.key == 'sickle' &&
+                                              userState
+                                                  .eventFlags
                                                   .isSickleActive
                                           ? Colors.greenAccent
                                           : Colors.white.withValues(

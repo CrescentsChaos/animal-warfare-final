@@ -763,5 +763,306 @@
         "description": "A sharp tool used for cutting tall grass. Grass regrows in 1 game day.",
         "price": 300,
         "category": "tools"
+    },
+    {
+        "id": "raw_meat",
+        "name": "Raw Meat",
+        "description": "Raw meat from an animal.",
+        "price": 50,
+        "category": "food"
+    },
+    {
+        "id": "fish_fillet",
+        "name": "Fish Fillet",
+        "description": "A fillet of fish.",
+        "price": 100,
+        "category": "food"
+    },
+    {
+        "id": "beef",
+        "name": "Beef",
+        "description": "Beef from a cow.",
+        "price": 200,
+        "category": "food"
+    },
+    {
+        "id": "venison",
+        "name": "Venison",
+        "description": "Venison from a deer.",
+        "price": 200,
+        "category": "food"
+    },
+    {
+        "id": "crab_meat",
+        "name": "Crab Meat",
+        "description": "Crab meat from a crab.",
+        "price": 200,
+        "category": "food"
+    },
+    {
+        "id": "croc_skin",
+        "name": "Croc Skin",
+        "description": "Croc skin from a crocodile.",
+        "price": 150,
+        "category": "materials"
+    },
+    {
+        "id": "truffle",
+        "name": "Truffle",
+        "description": "A rare mushroom found underground.",
+        "price": 1500,
+        "category": "food"
+    },
+    {
+        "id": "sugar",
+        "name": "Sugar",
+        "description": "Sugar cubes for sweetening food.",
+        "price": 100,
+        "category": "food"
+    },
+    {
+        "id": "salt",
+        "name": "Salt",
+        "description": "Salt for seasoning food.",
+        "price": 100,
+        "category": "food"
+    },
+    {
+        "id": "wild_herbs",
+        "name": "Wild Herbs",
+        "description": "Wild herbs for making potions.",
+        "price": 500,
+        "category": "food"
+    },
+    {
+        "id": "olive_oil",
+        "name": "Olive Oil",
+        "description": "Olive oil for cooking.",
+        "price": 250,
+        "category": "food"
+    },
+    {
+        "id": "raspberry",
+        "name": "Raspberry",
+        "description": "Raspberry fruit.",
+        "price": 500,
+        "category": "food"
+    },
+    {
+        "id": "blueberry",
+        "name": "Blueberry",
+        "description": "Blueberry fruit.",
+        "price": 500,
+        "category": "food"
+    },
+    {
+        "id": "flour",
+        "name": "Flour",
+        "description": "Flour for baking.",
+        "price": 100,
+        "category": "food"
+    },
+    {
+        "id": "chicken_egg",
+        "name": "Chicken Egg",
+        "description": "Egg from a chicken.",
+        "price": 12,
+        "category": "food"
+    },
+    {
+        "id": "butter",
+        "name": "Butter",
+        "description": "Butter from a cow.",
+        "price": 100,
+        "category": "food"
+    },
+    {
+        "id": "water",
+        "name": "Water",
+        "description": "Water for drinking.",
+        "price": 100,
+        "category": "food"
+    },
+    {
+        "id": "onion",
+        "name": "Onion",
+        "description": "Onion for cooking.",
+        "price": 100,
+        "category": "food"
+    },
+    {
+        "id": "potato",
+        "name": "Potato",
+        "description": "Potato for cooking.",
+        "price": 100,
+        "category": "food"
+    },
+    {
+        "id": "carrot",
+        "name": "Carrot",
+        "description": "Carrot for cooking.",
+        "price": 100,
+        "category": "food"
+    },
+    {
+        "id": "venison_stew",
+        "name": "Venison Stew",
+        "description": "Hearty venison stew.",
+        "price": 5000,
+        "category": "food"
+    },
+    {
+        "id": "berry_catalyst",
+        "name": "Berry Catalyst",
+        "description": "Catalyst for making berries.",
+        "price": 500,
+        "category": "food"
+    },
+    {
+        "id": "red_wine",
+        "name": "Red Wine",
+        "description": "Red wine made from grapes.",
+        "price": 1000,
+        "category": "food"
+    },
+    {
+        "id": "lemon",
+        "name": "Lemon",
+        "description": "Lemon fruit.",
+        "price": 100,
+        "category": "food"
+    },
+    {
+        "id": "lime",
+        "name": "Lime",
+        "description": "Lime fruit.",
+        "price": 100,
+        "category": "food"
+    },
+    {
+        "id": "mushroom",
+        "name": "Mushroom",
+        "description": "Mushroom for cooking.",
+        "price": 250,
+        "category": "food"
+    },
+    {
+        "id": "truffle_venison_carpaccio",
+        "name": "Truffle Venison Carpaccio",
+        "description": "Truffle venison carpaccio.",
+        "price": 10000,
+        "category": "food"
+    },
+    {
+        "id": "bacon",
+        "name": "Bacon",
+        "description": "Bacon.",
+        "price": 500,
+        "category": "food"
+    },
+    {
+        "id": "cheese",
+        "name": "Cheese",
+        "description": "Cheese.",
+        "price": 500,
+        "category": "food"
+    },
+    {
+        "id": "arugula",
+        "name": "Arugula",
+        "description": "Arugula.",
+        "price": 500,
+        "category": "food"
+    },
+    {
+        "id": "thyme",
+        "name": "Thyme",
+        "description": "Thyme.",
+        "price": 500,
+        "category": "food"
+    },
+    {
+        "id": "animal_fat",
+        "name": "Animal Fat",
+        "description": "Animal fat.",
+        "price": 250,
+        "category": "food"
+    },
+    {
+        "id": "apple_juice",
+        "name": "Apple Juice",
+        "description": "Apple juice.",
+        "price": 320,
+        "category": "food"
+    },
+    {
+        "id": "black_pepper",
+        "name": "Black Pepper",
+        "description": "Black pepper.",
+        "price": 150,
+        "category": "food"
+    },
+    {
+        "id": "garlic",
+        "name": "Garlic",
+        "description": "Garlic.",
+        "price": 100,
+        "category": "food"
+    },
+    {
+        "id": "elder_berry",
+        "name": "Elder Berry",
+        "description": "Elder berry.",
+        "price": 3500,
+        "category": "food"
+    },
+    {
+        "id": "red_chili",
+        "name": "Red Chili",
+        "description": "Red chili.",
+        "price": 90,
+        "category": "food"
+    },
+    {
+        "id": "mustard_oil",
+        "name": "Mustard Oil",
+        "description": "Mustard oil.",
+        "price": 380,
+        "category": "food"
+    },
+    {
+        "id": "rosemary",
+        "name": "Rosemary",
+        "description": "Rosemary.",
+        "price": 80,
+        "category": "food"
+    },
+    {
+        "id": "vinegar",
+        "name": "Vinegar",
+        "description": "Vinegar.",
+        "price": 40,
+        "category": "food"
+    },
+    {
+        "id": "soya_sauce",
+        "name": "Soya Sauce",
+        "description": "Soya sauce.",
+        "price": 50,
+        "category": "food"
+    },
+    {
+        "id": "soya_bean_oil",
+        "name": "Soya Bean Oil",
+        "description": "Soya bean oil.",
+        "price": 200,
+        "category": "food"
+    },
+    {
+        "id": "mustard",
+        "name": "Mustard",
+        "description": "Mustard.",
+        "price": 210,
+        "category": "food"
     }
 ]

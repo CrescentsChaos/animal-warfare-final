@@ -1689,8 +1689,8 @@
     "effects": []
   },
   {
-    "id": "prime_beef",
-    "name": "Prime Beef",
+    "id": "beef",
+    "name": "Beef",
     "description": "High-quality red meat. Highly preferred by large carnivorous mammals.",
     "is_food": true,
     "diet_type": "carnivore",
@@ -1709,8 +1709,8 @@
     "effects": []
   },
   {
-    "id": "gourmet_fillet",
-    "name": "Gourmet Fillet",
+    "id": "fish_fillet",
+    "name": "Fish Fillet",
     "description": "Exquisite fish fillet. A delicacy for piscivores.",
     "is_food": true,
     "diet_type": "piscivore",
@@ -1732,8 +1732,8 @@
     "name": "Insect Jelly",
     "description": "Sweet, protein-packed jelly. Insects find it irresistible.",
     "is_food": true,
-    "diet_type": "omnivore",
-    "preferred_class": "insect,arachnid",
+    "diet_type": "insectivore",
+    "preferred_class": "insect,arachnid,bird,amphibian,reptile",
     "nutritional_value": 45,
     "effects": []
   },
@@ -1752,6 +1752,18 @@
     "name": "Ambergris",
     "description": "A valuable waxy substance produced in the digestive system of sperm whales.",
     "drop_chance": 0.1,
+    "effects": []
+  },
+  {
+    "id": "truffle_venison_carpaccio",
+    "name": "Truffle Venison Carpaccio",
+    "description": "A dish made with thinly sliced venison, truffle, lemon, arugula, and cheese.",
+    "effects": []
+  },
+  {
+    "id": "venison_stew",
+    "name": "Venison Stew",
+    "description": "A hearty stew made with venison, potatoes, carrots, onion, and thyme.",
     "effects": []
   }
 ]
