@@ -30,7 +30,9 @@
             <div class="sidebar-brand">
                 <span class="brand-pixel">ANIDEX</span>
                 <span class="sidebar-subtitle">ANIMAL WARFARE DATABASE</span>
-                <button class="tab-btn" style="margin-top:15px;width:100%;background:var(--accent);color:var(--bg-root);border:none;cursor:pointer;" onclick="App.triggerBioScanner()">📷 BIO SCANNER</button>
+                <button class="tab-btn"
+                    style="margin-top:15px;width:100%;background:var(--accent);color:var(--bg-root);border:none;cursor:pointer;"
+                    onclick="App.triggerBioScanner()">📷 BIO SCANNER</button>
                 <a href="animal_report.html" class="tab-btn"
                     style="margin-top:10px;text-decoration:none;display:block;text-align:center;width:100%;box-sizing:border-box;">&#127894;
                     FULL RANKINGS</a>
@@ -132,25 +134,29 @@
 
                 <div class="filter-section">
                     <div class="filter-label">ORDER</div>
-                    <div class="custom-select-trigger" id="trigger-order" onclick="App.openSearchSelector('order')">All Orders</div>
+                    <div class="custom-select-trigger" id="trigger-order" onclick="App.openSearchSelector('order')">All
+                        Orders</div>
                     <input type="hidden" id="flt-order" value="">
                 </div>
 
                 <div class="filter-section">
                     <div class="filter-label">FAMILY</div>
-                    <div class="custom-select-trigger" id="trigger-family" onclick="App.openSearchSelector('family')">All Families</div>
+                    <div class="custom-select-trigger" id="trigger-family" onclick="App.openSearchSelector('family')">
+                        All Families</div>
                     <input type="hidden" id="flt-family" value="">
                 </div>
 
                 <div class="filter-section">
                     <div class="filter-label">SUBFAMILY</div>
-                    <div class="custom-select-trigger" id="trigger-subfamily" onclick="App.openSearchSelector('subfamily')">All Subfamilies</div>
+                    <div class="custom-select-trigger" id="trigger-subfamily"
+                        onclick="App.openSearchSelector('subfamily')">All Subfamilies</div>
                     <input type="hidden" id="flt-subfamily" value="">
                 </div>
 
                 <div class="filter-section">
                     <div class="filter-label">GENUS</div>
-                    <div class="custom-select-trigger" id="trigger-genus" onclick="App.openSearchSelector('genus')">All Genus</div>
+                    <div class="custom-select-trigger" id="trigger-genus" onclick="App.openSearchSelector('genus')">All
+                        Genus</div>
                     <input type="hidden" id="flt-genus" value="">
                 </div>
 
@@ -228,10 +234,13 @@
                             onclick="App.setSort('resistance')">RES</button>
                         <button class="sort-chip" data-sort="speed" onclick="App.setSort('speed')">SPD</button>
                         <button class="sort-chip" data-sort="bst" onclick="App.setSort('bst')">BST</button>
-                        <button class="sort-chip active" data-sort="weight" onclick="App.setSort('weight')">WEIGHT</button>
+                        <button class="sort-chip active" data-sort="weight"
+                            onclick="App.setSort('weight')">WEIGHT</button>
                         <button class="sort-chip" data-sort="size" onclick="App.setSort('size')">SIZE</button>
-                        <button class="sort-chip" data-sort="robustness" onclick="App.setSort('robustness')">ROBUSTNESS</button>
-                        <button class="sort-chip" data-sort="taxonomy" onclick="App.setSort('taxonomy')">TAXONOMY</button>
+                        <button class="sort-chip" data-sort="robustness"
+                            onclick="App.setSort('robustness')">ROBUSTNESS</button>
+                        <button class="sort-chip" data-sort="taxonomy"
+                            onclick="App.setSort('taxonomy')">TAXONOMY</button>
                     </div>
                     <button class="order-btn" id="order-btn" onclick="App.toggleOrder()">
                         <span id="order-label">ASCENDING</span>
@@ -290,7 +299,8 @@
                         <circle cx="11" cy="11" r="8" />
                         <path d="m21 21-4.35-4.35" />
                     </svg>
-                    <input type="text" id="search-selector-input" placeholder="Type to search..." oninput="App.filterSearchSelector()" autocomplete="off">
+                    <input type="text" id="search-selector-input" placeholder="Type to search..."
+                        oninput="App.filterSearchSelector()" autocomplete="off">
                 </div>
             </div>
             <div class="search-selector-body" id="search-selector-options">
@@ -340,7 +350,16 @@
                     document.getElementById('grid').innerHTML = '<div class="empty-state"><p>⚠️ Failed to load data. Open via a local server or file server.</p></div>';
                 }
             },
+            playCry(name) {
+                const cleanName = name.toLowerCase()
+                    .replace(/[^a-z0-9]/g, '_')
+                    .replace(/_+/g, '_')
+                    .replace(/^_|_$/g, '');
 
+                // Assumes your files are named like 'lion.mp3' or 'african_elephant.mp3'
+                const audio = new Audio(`assets/audio/cries/${cleanName}.mp3`);
+                audio.play().catch(e => console.error("Audio file not found:", e));
+            },
             populateFilters() {
                 const orgs = this.db.orgs;
 
@@ -774,7 +793,13 @@
                         <div class="type-row">
                             ${types.map(t => { const tSlug = t.toLowerCase().replace(/ /g, '_'); return `<span class="type-badge type-${tSlug}" title="${t.toUpperCase()}"><img src="assets/icon/${tSlug}.png" class="type-icon" alt="${t}" onerror="this.style.display='none'"></span>` }).join('')}
                         </div>
-                        <h2 class="detail-name">${org.name.toUpperCase()}</h2>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <h2 class="detail-name" style="margin:0;">${org.name.toUpperCase()}</h2>
+                            <button onclick="App.playCry('${org.name.replace(/'/g, "\\'")}')" 
+                                    style="background:none; border:none; font-size:24px; cursor:pointer; filter: drop-shadow(0 0 5px var(--accent));">
+                                    🔊
+                            </button>
+                        </div>
                         <div class="detail-sciname">${org.scientific_name || ''}</div>
                         <div class="classification-row">
                             <div class="class-badge">
@@ -1022,7 +1047,7 @@
 
             openSearchSelector(type) {
                 this.searchSelector.type = type;
-                
+
                 const aClass = document.getElementById('flt-class').value;
                 const aOrder = document.getElementById('flt-order').value;
                 const aFamily = document.getElementById('flt-family').value;
@@ -1041,7 +1066,7 @@
                 if (type === 'genus') {
                     if (aSubfamily) orgs = orgs.filter(o => o.subfamily === aSubfamily);
                 }
-                
+
                 // Get all values for this field and calculate their counts
                 const counts = {};
                 orgs.forEach(o => {
@@ -1066,13 +1091,13 @@
 
                 // Update UI title
                 document.getElementById('search-selector-title').textContent = `SELECT ${type.toUpperCase()}`;
-                
+
                 // Clear input
                 const inp = document.getElementById('search-selector-input');
                 inp.value = '';
-                
+
                 this.renderSearchSelectorOptions();
-                
+
                 // Open modal
                 const modal = document.getElementById('search-selector-modal');
                 modal.classList.add('open');
@@ -1092,7 +1117,7 @@
 
             filterSearchSelector() {
                 const q = document.getElementById('search-selector-input').value.toLowerCase();
-                this.searchSelector.filtered = this.searchSelector.options.filter(opt => 
+                this.searchSelector.filtered = this.searchSelector.options.filter(opt =>
                     opt.value.toLowerCase().includes(q)
                 );
                 this.renderSearchSelectorOptions();
@@ -1102,10 +1127,10 @@
                 const type = this.searchSelector.type;
                 const hiddenInput = document.getElementById(`flt-${type}`);
                 const triggerBtn = document.getElementById(`trigger-${type}`);
-                
+
                 hiddenInput.value = val;
                 triggerBtn.textContent = val ? val.toUpperCase() : `All ${type.charAt(0).toUpperCase() + type.slice(1)}s`;
-                
+
                 if (type === 'order') {
                     document.getElementById('flt-family').value = '';
                     document.getElementById('trigger-family').textContent = 'All Families';
@@ -1169,7 +1194,7 @@
                 const overlay = document.getElementById('bio-scanner-overlay');
                 const status = document.getElementById('bio-scanner-status');
                 const progress = document.getElementById('bio-scanner-progress');
-                
+
                 overlay.style.display = 'flex';
                 status.textContent = 'Initializing Scanner...';
                 progress.style.width = '0%';
@@ -1212,7 +1237,8 @@
                         <circle cx="11" cy="11" r="8" />
                         <path d="m21 21-4.35-4.35" />
                     </svg>
-                    <input type="text" id="search-selector-input" placeholder="Type to search..." oninput="App.filterSearchSelector()" autocomplete="off">
+                    <input type="text" id="search-selector-input" placeholder="Type to search..."
+                        oninput="App.filterSearchSelector()" autocomplete="off">
                 </div>
             </div>
             <div class="search-selector-body" id="search-selector-options">
@@ -1222,18 +1248,32 @@
     </div>
 
     <!-- Bio Scanner UI -->
-    <input type="file" id="bio-scanner-upload" accept="image/*" capture="environment" onchange="App.handleBioScan(event)" style="display:none;">
-    <div id="bio-scanner-overlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.95); z-index:10000; flex-direction:column; align-items:center; justify-content:center; color:var(--accent); font-family:'Press Start 2P', monospace;">
+    <input type="file" id="bio-scanner-upload" accept="image/*" capture="environment"
+        onchange="App.handleBioScan(event)" style="display:none;">
+    <div id="bio-scanner-overlay"
+        style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.95); z-index:10000; flex-direction:column; align-items:center; justify-content:center; color:var(--accent); font-family:'Press Start 2P', monospace;">
         <div style="font-size:3rem; margin-bottom:20px; animation: pulse 1s infinite alternate;">🧬</div>
-        <div id="bio-scanner-status" style="margin-bottom:20px; font-size:12px; letter-spacing:2px; text-align:center;">Initializing Scanner...</div>
+        <div id="bio-scanner-status" style="margin-bottom:20px; font-size:12px; letter-spacing:2px; text-align:center;">
+            Initializing Scanner...</div>
         <div style="width:200px; height:4px; background:#333; border-radius:2px; overflow:hidden;">
-            <div id="bio-scanner-progress" style="width:0%; height:100%; background:var(--accent); transition: width 0.2s;"></div>
+            <div id="bio-scanner-progress"
+                style="width:0%; height:100%; background:var(--accent); transition: width 0.2s;"></div>
         </div>
         <style>
-            @keyframes pulse { from { opacity: 0.5; transform: scale(0.9); } to { opacity: 1; transform: scale(1.1); } }
+            @keyframes pulse {
+                from {
+                    opacity: 0.5;
+                    transform: scale(0.9);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: scale(1.1);
+                }
+            }
         </style>
     </div>
-    
+
     <script src="bio_scanner.js"></script>
 </body>
 
