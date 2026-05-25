@@ -25,7 +25,7 @@ void main() async {
   }
 
   // mask
-  final mask = List<bool>.filled(resized.width * resized.height, true);
+  //final mask = List<bool>.filled(resized.width * resized.height, true);
   final List<List<int>> prototypes = [];
   for (int x in [0, resized.width - 1]) {
     for (int y in [0, resized.height - 1]) {
@@ -42,20 +42,20 @@ void main() async {
     prototypes.add([p.r.toInt(), p.g.toInt(), p.b.toInt()]);
   }
 
-  int unmasked = 0;
+  //int unmasked = 0;
   for (int y = 0; y < resized.height; y++) {
     for (int x = 0; x < resized.width; x++) {
-      final p = resized.getPixel(x, y);
-      final r = p.r.toInt(), g = p.g.toInt(), b = p.b.toInt();
+      //final p = resized.getPixel(x, y);
+      //final r = p.r.toInt(), g = p.g.toInt(), b = p.b.toInt();
 
-      double minStatsDist = 1000.0;
-      for (final bp in prototypes) {
-        final d =
-            (r - bp[0]).abs() +
-            (g - bp[1]).abs() +
-            (b - bp[2]).abs(); // wait, original uses sqrt(pow)
-        // I will use exact logic from biometric_service
-      }
+      //double minStatsDist = 1000.0;
+      //for (final bp in prototypes) {
+      //final d =
+      // (r - bp[0]).abs() +
+      // (g - bp[1]).abs() +
+      // (b - bp[2]).abs(); // wait, original uses sqrt(pow)
+      // I will use exact logic from biometric_service
+      //}
     }
   }
 }

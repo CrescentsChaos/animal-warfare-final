@@ -410,7 +410,7 @@ Future<void> upsertFeatureToDb(
   final result = await db.rawQuery(
     'SELECT COUNT(*) as count FROM organism_features',
   );
-  final totalCount = result.first['count'] as int;
+  //final totalCount = result.first['count'] as int;
 }
 
 double _parseWeight(dynamic val) {
