@@ -28,24 +28,45 @@ void main() async {
   int count = 0;
   for (var org in animalsData) {
     final name = org['name'];
-    final String subfamily = org['subfamily']?.toString().toLowerCase().trim() ?? 'unknown';
-    final String family = org['family']?.toString().toLowerCase().trim() ?? 'unknown';
-    final String order = org['order']?.toString().toLowerCase().trim() ?? 'unknown';
-    final String animalClass = (org['class'] ?? org['animal_class'] ?? 'unknown').toString().toLowerCase().trim();
+    final String subfamily =
+        org['subfamily']?.toString().toLowerCase().trim() ?? 'unknown';
+    final String family =
+        org['family']?.toString().toLowerCase().trim() ?? 'unknown';
+    final String order =
+        org['order']?.toString().toLowerCase().trim() ?? 'unknown';
+    final String animalClass =
+        (org['class'] ?? org['animal_class'] ?? 'unknown')
+            .toString()
+            .toLowerCase()
+            .trim();
 
     String cls = 'unknown';
-    if (subfamily != 'unknown' && subfamily.isNotEmpty && subfamily != 'none' && subfamily != 'n/a') {
+    if (subfamily != 'unknown' &&
+        subfamily.isNotEmpty &&
+        subfamily != 'none' &&
+        subfamily != 'n/a') {
       cls = subfamily;
-    } else if (family != 'unknown' && family.isNotEmpty && family != 'none' && family != 'n/a') {
+    } else if (family != 'unknown' &&
+        family.isNotEmpty &&
+        family != 'none' &&
+        family != 'n/a') {
       cls = family;
-    } else if (order != 'unknown' && order.isNotEmpty && order != 'none' && order != 'n/a') {
+    } else if (order != 'unknown' &&
+        order.isNotEmpty &&
+        order != 'none' &&
+        order != 'n/a') {
       cls = order;
-    } else if (animalClass != 'unknown' && animalClass.isNotEmpty && animalClass != 'none' && animalClass != 'n/a') {
+    } else if (animalClass != 'unknown' &&
+        animalClass.isNotEmpty &&
+        animalClass != 'none' &&
+        animalClass != 'n/a') {
       cls = animalClass;
     }
 
     if (cls == 'unknown') {
-       cls = name.toString().toLowerCase(); // Fallback to name if everything is unknown (take everything)
+      cls = name
+          .toString()
+          .toLowerCase(); // Fallback to name if everything is unknown (take everything)
     }
 
     final slug = name
@@ -244,23 +265,23 @@ double _maxWidthInRegion(List<bool> m, int y1, int y2, int minX, int maxX) {
   return maxW.toDouble();
 }
 
-String _normalizeClass(String c) {
-  for (var k in [
-    'mammal',
-    'bird',
-    'fish',
-    'insect',
-    'reptile',
-    'amphibian',
-    'arachnid',
-    'crustacean',
-    'mollusk',
-    'cnidarian',
-  ]) {
-    if (c.contains(k)) return k;
-  }
-  return 'otherInvertebrate';
-}
+// String _normalizeClass(String c) {
+//   for (var k in [
+//     'mammal',
+//     'bird',
+//     'fish',
+//     'insect',
+//     'reptile',
+//     'amphibian',
+//     'arachnid',
+//     'crustacean',
+//     'mollusk',
+//     'cnidarian',
+//   ]) {
+//     if (c.contains(k)) return k;
+//   }
+//   return 'otherInvertebrate';
+// }
 
 List<List<Map<String, double>>> _kMeans(List<Map<String, double>> s, int k) {
   final centroids = List.generate(

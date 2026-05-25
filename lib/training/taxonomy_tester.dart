@@ -116,11 +116,11 @@ void main(List<String> args) async {
     'jaggedness': 10.0,
     'topThirdDensity': 10.0,
     'bilateralSym': 12.0,
-    'solidity': 15.0,
+    // 'solidity': 15.0,
     'diagonalDensity': 12.0,
-    'edgeDensity': 8.0,
-    'hSymmetry': 10.0,
-    'vSymmetry': 10.0,
+    // 'edgeDensity': 8.0,
+    // 'hSymmetry': 10.0,
+    // 'vSymmetry': 10.0,
     'convexHullRatio': 10.0,
   };
 

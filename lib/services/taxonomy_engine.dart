@@ -1,6 +1,6 @@
 import 'dart:math';
 import 'package:flutter/foundation.dart';
-import 'package:animal_warfare/models/organism.dart';
+//import 'package:animal_warfare/models/organism.dart';
 import 'package:animal_warfare/services/biometric_service.dart';
 import 'package:animal_warfare/services/feature_db_service.dart';
 

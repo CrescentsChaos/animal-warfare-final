@@ -61,7 +61,7 @@ class _QuizScreenState extends State<QuizScreen>
         (modeStats?.containsKey('correct') == true ? modeStats!['correct'] : 0);
     final bestStreak = diffStats?['bestStreak'] as int? ?? 0;
     final bestPoints = diffStats?['bestPoints'] as int? ?? 0;
-    final totalPoints = diffStats?['totalPoints'] as int? ?? 0;
+    //final totalPoints = diffStats?['totalPoints'] as int? ?? 0;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),

@@ -928,37 +928,37 @@ class BiometricService {
   }
 
   /// Score how well an organism name/description matches the photo context.
-  double _textRelevanceScore(Organism org, List<String> detectedKeywords) {
-    if (detectedKeywords.isEmpty) return 0.5;
+  // double _textRelevanceScore(Organism org, List<String> detectedKeywords) {
+  //   if (detectedKeywords.isEmpty) return 0.5;
 
-    final nameLower = org.name.toLowerCase();
-    final sciLower = org.scientificName.toLowerCase();
-    final descLower = org.description.toLowerCase();
-    final habitatLower = org.habitat.toLowerCase();
-    final combinedText = '$nameLower $sciLower $descLower $habitatLower';
+  //   final nameLower = org.name.toLowerCase();
+  //   final sciLower = org.scientificName.toLowerCase();
+  //   final descLower = org.description.toLowerCase();
+  //   final habitatLower = org.habitat.toLowerCase();
+  //   final combinedText = '$nameLower $sciLower $descLower $habitatLower';
 
-    double score = 0;
-    int matchCount = 0;
+  //   double score = 0;
+  //   int matchCount = 0;
 
-    for (final keyword in detectedKeywords) {
-      final isShort = keyword.length <= 3;
-      final pattern = isShort ? RegExp('\\b$keyword\\b') : RegExp(keyword);
+  //   for (final keyword in detectedKeywords) {
+  //     final isShort = keyword.length <= 3;
+  //     final pattern = isShort ? RegExp('\\b$keyword\\b') : RegExp(keyword);
 
-      if (pattern.hasMatch(nameLower)) {
-        score += 3.0;
-        matchCount++;
-      } else if (pattern.hasMatch(sciLower)) {
-        score += 2.0;
-        matchCount++;
-      } else if (pattern.hasMatch(combinedText)) {
-        score += 1.0;
-        matchCount++;
-      }
-    }
+  //     if (pattern.hasMatch(nameLower)) {
+  //       score += 3.0;
+  //       matchCount++;
+  //     } else if (pattern.hasMatch(sciLower)) {
+  //       score += 2.0;
+  //       matchCount++;
+  //     } else if (pattern.hasMatch(combinedText)) {
+  //       score += 1.0;
+  //       matchCount++;
+  //     }
+  //   }
 
-    if (matchCount == 0) return 0.0;
-    return min(1.0, score / (detectedKeywords.length * 3.0));
-  }
+  //   if (matchCount == 0) return 0.0;
+  //   return min(1.0, score / (detectedKeywords.length * 3.0));
+  // }
 
   /// Main scan method: analyze an image and return top matches.
   Future<List<ScanResult>> scanImage(
@@ -1041,8 +1041,7 @@ class BiometricService {
     }
 
     // Always show the classification hint in the UI (even if gates are disabled)
-    String displayClass =
-        taxonomyResult['class'] ?? 'unknown';
+    String displayClass = taxonomyResult['class'] ?? 'unknown';
 
     // Pre-pass: Find the candidate with the highest pure visual confidence (without taxonomic gates)
     Organism? topVisualOrg;
@@ -1050,8 +1049,9 @@ class BiometricService {
     if (_organisms != null) {
       for (final org in _organisms!) {
         final cachedFeature = _spriteFeatures?[org.name];
-        if (cachedFeature == null) continue; // Skip non-cached in pre-pass for extreme speed
-        
+        if (cachedFeature == null)
+          continue; // Skip non-cached in pre-pass for extreme speed
+
         final visualResult = _featureSimilarity(
           inputFeature,
           cachedFeature,
@@ -1066,7 +1066,9 @@ class BiometricService {
     }
 
     // If pure visual match is highly confident, override the detected class and display class to prioritize visual match
-    if (topVisualConf >= 0.80 && topVisualOrg != null && topVisualOrg.animalClass != 'unknown') {
+    if (topVisualConf >= 0.80 &&
+        topVisualOrg != null &&
+        topVisualOrg.animalClass != 'unknown') {
       final oldClass = detectedClass;
       detectedClass = topVisualOrg.animalClass;
       displayClass = topVisualOrg.animalClass;
@@ -1112,13 +1114,13 @@ class BiometricService {
 
     // Step 4: Detect potential category keywords from image colors
     onProgress?.call('Running pattern recognition...', 0.20);
-    final detectedCategories = _detectCategoriesFromColors(inputFeature);
+    //final detectedCategories = _detectCategoriesFromColors(inputFeature);
 
     // Step 5: Score all organisms
     final results = <ScanResult>[];
-    
+
     // Efficiency optimization: pre-filter candidates by predicted taxon
-    // We removed strict pre-filtering because it causes false negatives 
+    // We removed strict pre-filtering because it causes false negatives
     // when the taxonomic AI misclassifies the input image.
     List<Organism> candidates = _organisms!;
 
@@ -1426,20 +1428,25 @@ class BiometricService {
 
     // Smoothly blend taxonomy penalties out as visual confidence gets high (Visual Priority)
     if (visualConfidence > 0.75) {
-      double overrideFactor = ((visualConfidence - 0.75) / 0.25).clamp(0.0, 1.0);
-      classScore = classScore + (max(1.0, classScore) - classScore) * overrideFactor;
-      rawTaxonomyAccuracy = rawTaxonomyAccuracy + (1.0 - rawTaxonomyAccuracy) * overrideFactor;
+      double overrideFactor = ((visualConfidence - 0.75) / 0.25).clamp(
+        0.0,
+        1.0,
+      );
+      classScore =
+          classScore + (max(1.0, classScore) - classScore) * overrideFactor;
+      rawTaxonomyAccuracy =
+          rawTaxonomyAccuracy + (1.0 - rawTaxonomyAccuracy) * overrideFactor;
     }
 
     final double baseConfidence = visualConfidence.clamp(0.0, 1.0);
     double finalConfidence;
-    
+
     if (classScore > 1.0) {
       // If taxonomy is a match, use the boost to close the gap to 100%
       // rather than acting as a hard multiplier. This prevents mediocre visual
       // matches from artificially jumping straight to 100%.
       double boostFactor = (classScore - 1.0).clamp(0.0, 1.0);
-      
+
       // Scale taxonomic boost based on visual confidence:
       // - No boost for poor visual matches (visualConfidence < 0.75)
       // - Linear scaling between 0.75 and 0.85
@@ -1451,13 +1458,13 @@ class BiometricService {
         scale = (visualConfidence - 0.75) / 0.10;
       }
       boostFactor *= scale;
-      
+
       finalConfidence = baseConfidence + (1.0 - baseConfidence) * boostFactor;
     } else {
       // If it's a penalty, multiply to strictly suppress false positives.
       finalConfidence = baseConfidence * classScore;
     }
-    
+
     finalConfidence = finalConfidence.clamp(0.0, 1.0);
 
     // PINPOINT THRESHOLD (90%)
@@ -1525,7 +1532,7 @@ class BiometricService {
       final name = taxon['preferred_common_name'] ?? taxon['name'];
       final scientificName = taxon['name'];
       final score = (res['vision_score'] as num).toDouble();
-      final photoUrl = taxon['default_photo']?['medium_url'];
+      //final photoUrl = taxon['default_photo']?['medium_url'];
 
       // Find if we have a local match
       final localMatch = _organisms?.firstWhere(
@@ -1611,49 +1618,49 @@ class BiometricService {
   }
 
   /// Detect broad category keywords from image color characteristics.
-  List<String> _detectCategoriesFromColors(OrganismFeature feature) {
-    final keywords = <String>[];
+  // List<String> _detectCategoriesFromColors(OrganismFeature feature) {
+  //   final keywords = <String>[];
 
-    // Analyze dominant hues to infer environment/category
-    final greenHue =
-        (feature.hueBins['h90'] ?? 0) + (feature.hueBins['h120'] ?? 0);
-    final blueHue =
-        (feature.hueBins['h180'] ?? 0) +
-        (feature.hueBins['h210'] ?? 0) +
-        (feature.hueBins['h240'] ?? 0);
-    final warmHue =
-        (feature.hueBins['h0'] ?? 0) +
-        (feature.hueBins['h30'] ?? 0) +
-        (feature.hueBins['h330'] ?? 0);
-    final yellowHue = (feature.hueBins['h60'] ?? 0);
+  //   // Analyze dominant hues to infer environment/category
+  //   final greenHue =
+  //       (feature.hueBins['h90'] ?? 0) + (feature.hueBins['h120'] ?? 0);
+  //   final blueHue =
+  //       (feature.hueBins['h180'] ?? 0) +
+  //       (feature.hueBins['h210'] ?? 0) +
+  //       (feature.hueBins['h240'] ?? 0);
+  //   final warmHue =
+  //       (feature.hueBins['h0'] ?? 0) +
+  //       (feature.hueBins['h30'] ?? 0) +
+  //       (feature.hueBins['h330'] ?? 0);
+  //   final yellowHue = (feature.hueBins['h60'] ?? 0);
 
-    // High green → likely terrestrial
-    if (greenHue > 0.3) {
-      keywords.addAll(['green', 'forest', 'nature', 'terrestrial']);
-    }
-    // High blue → aquatic
-    if (blueHue > 0.3) {
-      keywords.addAll(['blue', 'water', 'marine', 'ocean', 'aquatic']);
-    }
-    // Warm tones → earth, dry environment
-    if (warmHue > 0.3) {
-      keywords.addAll(['brown', 'earth', 'warm', 'mammal', 'dry']);
-    }
-    // Yellow → bright, savanna
-    if (yellowHue > 0.15) {
-      keywords.addAll(['yellow', 'bright', 'savanna', 'sand']);
-    }
-    // Dark/low brightness → nocturnal
-    if (feature.avgBrightness < 0.3) {
-      keywords.addAll(['dark', 'nocturnal', 'shadow']);
-    }
-    // Very bright/saturated → tropical
-    if (feature.avgSaturation > 0.7 && feature.avgBrightness > 0.6) {
-      keywords.addAll(['tropical', 'vibrant', 'colorful']);
-    }
+  //   // High green → likely terrestrial
+  //   if (greenHue > 0.3) {
+  //     keywords.addAll(['green', 'forest', 'nature', 'terrestrial']);
+  //   }
+  //   // High blue → aquatic
+  //   if (blueHue > 0.3) {
+  //     keywords.addAll(['blue', 'water', 'marine', 'ocean', 'aquatic']);
+  //   }
+  //   // Warm tones → earth, dry environment
+  //   if (warmHue > 0.3) {
+  //     keywords.addAll(['brown', 'earth', 'warm', 'mammal', 'dry']);
+  //   }
+  //   // Yellow → bright, savanna
+  //   if (yellowHue > 0.15) {
+  //     keywords.addAll(['yellow', 'bright', 'savanna', 'sand']);
+  //   }
+  //   // Dark/low brightness → nocturnal
+  //   if (feature.avgBrightness < 0.3) {
+  //     keywords.addAll(['dark', 'nocturnal', 'shadow']);
+  //   }
+  //   // Very bright/saturated → tropical
+  //   if (feature.avgSaturation > 0.7 && feature.avgBrightness > 0.6) {
+  //     keywords.addAll(['tropical', 'vibrant', 'colorful']);
+  //   }
 
-    return keywords;
-  }
+  //   return keywords;
+  // }
 
   /// Pre-compute sprite features for ALL organisms (batch operation).
   /// For CLI generation, use: dart run scratch/generate_features_db.dart
@@ -1684,112 +1691,112 @@ class BiometricService {
     return features;
   }
 
-  double _predictWeightByDensity(OrganismFeature f) {
-    // Simple heuristic: Weight scales with (Bounding Box Area * Solidity)^2.2
-    // Adjusted for a 128x128 normalized space.
-    // This provides a rough order-of-magnitude estimate to block impossible matches.
-    final double area = f.solidity; // 0..1
-    final double baseWeight = pow(area * 10.0, 3).toDouble();
-    return baseWeight * (f.aspectRatio > 1.4 ? 2.5 : 1.0);
-  }
+  // double _predictWeightByDensity(OrganismFeature f) {
+  //   // Simple heuristic: Weight scales with (Bounding Box Area * Solidity)^2.2
+  //   // Adjusted for a 128x128 normalized space.
+  //   // This provides a rough order-of-magnitude estimate to block impossible matches.
+  //   final double area = f.solidity; // 0..1
+  //   final double baseWeight = pow(area * 10.0, 3).toDouble();
+  //   return baseWeight * (f.aspectRatio > 1.4 ? 2.5 : 1.0);
+  // }
 
-  /// Expected weight range (kg) for each animal class.
-  /// Used as a biological plausibility filter during scanning.
-  (double, double) _expectedWeightRange(String cls) {
-    switch (cls.toLowerCase().trim()) {
-      case 'insect':
-        return (0.0001, 0.5);
-      case 'amphibian':
-        return (0.001, 15.0);
-      case 'fish':
-        return (0.001, 2000.0);
-      case 'bird':
-        return (0.002, 160.0);
-      case 'reptile':
-        return (0.001, 25000.0); // Dinosaur-ready
-      case 'mammal':
-        return (0.002, 10000.0); // Whale/Elephant-ready
-      case 'arachnid':
-        return (0.0001, 0.3);
-      case 'crustacean':
-        return (0.001, 25.0);
-      case 'mollusk':
-        return (0.0001, 1000.0); // Giant Squid
-      case 'annelid':
-        return (0.0001, 5.0);
-      case 'cnidarian':
-        return (0.0001, 500.0);
-      case 'echinoderm':
-        return (0.001, 15.0);
-      case 'otherinvertebrate':
-        return (0.0001, 200.0);
-      default:
-        return (0.0001, 50000.0);
-    }
-  }
+  // /// Expected weight range (kg) for each animal class.
+  // /// Used as a biological plausibility filter during scanning.
+  // (double, double) _expectedWeightRange(String cls) {
+  //   switch (cls.toLowerCase().trim()) {
+  //     case 'insect':
+  //       return (0.0001, 0.5);
+  //     case 'amphibian':
+  //       return (0.001, 15.0);
+  //     case 'fish':
+  //       return (0.001, 2000.0);
+  //     case 'bird':
+  //       return (0.002, 160.0);
+  //     case 'reptile':
+  //       return (0.001, 25000.0); // Dinosaur-ready
+  //     case 'mammal':
+  //       return (0.002, 10000.0); // Whale/Elephant-ready
+  //     case 'arachnid':
+  //       return (0.0001, 0.3);
+  //     case 'crustacean':
+  //       return (0.001, 25.0);
+  //     case 'mollusk':
+  //       return (0.0001, 1000.0); // Giant Squid
+  //     case 'annelid':
+  //       return (0.0001, 5.0);
+  //     case 'cnidarian':
+  //       return (0.0001, 500.0);
+  //     case 'echinoderm':
+  //       return (0.001, 15.0);
+  //     case 'otherinvertebrate':
+  //       return (0.0001, 200.0);
+  //     default:
+  //       return (0.0001, 50000.0);
+  //   }
+  // }
 
   /// Biologically plausible diets for each animal class.
   /// Empty set means all diets are plausible.
-  Set<String> _plausibleDietsForClass(String cls) {
-    switch (cls.toLowerCase().trim()) {
-      case 'insect':
-        return {
-          'herbivore',
-          'omnivore',
-          'carnivore',
-          'detritivore',
-          'nectarivore',
-        };
-      case 'amphibian':
-        return {'carnivore', 'insectivore', 'omnivore'};
-      case 'fish':
-        return {
-          'carnivore',
-          'omnivore',
-          'herbivore',
-          'planktivore',
-          'filter feeder',
-        };
-      case 'bird':
-        return {
-          'carnivore',
-          'omnivore',
-          'herbivore',
-          'insectivore',
-          'granivore',
-          'nectarivore',
-          'piscivore',
-          'scavenger',
-        };
-      case 'reptile':
-        return {'carnivore', 'omnivore', 'herbivore', 'insectivore'};
-      case 'mammal':
-        return {}; // Mammals have all possible diets
-      case 'arachnid':
-        return {'carnivore', 'insectivore'};
-      case 'crustacean':
-        return {'omnivore', 'detritivore', 'carnivore', 'scavenger'};
-      case 'mollusk':
-        return {'herbivore', 'omnivore', 'carnivore', 'filter feeder'};
-      case 'annelid':
-        return {'detritivore', 'omnivore', 'herbivore'};
-      case 'cnidarian':
-        return {'carnivore', 'planktivore'};
-      case 'echinoderm':
-        return {'omnivore', 'detritivore', 'herbivore', 'carnivore'};
-      case 'otherinvertebrate':
-        return {
-          'herbivore',
-          'omnivore',
-          'carnivore',
-          'detritivore',
-          'filter feeder',
-          'parasite',
-        };
-      default:
-        return {}; // Unknown = all diets plausible
-    }
-  }
+  // Set<String> _plausibleDietsForClass(String cls) {
+  //   switch (cls.toLowerCase().trim()) {
+  //     case 'insect':
+  //       return {
+  //         'herbivore',
+  //         'omnivore',
+  //         'carnivore',
+  //         'detritivore',
+  //         'nectarivore',
+  //       };
+  //     case 'amphibian':
+  //       return {'carnivore', 'insectivore', 'omnivore'};
+  //     case 'fish':
+  //       return {
+  //         'carnivore',
+  //         'omnivore',
+  //         'herbivore',
+  //         'planktivore',
+  //         'filter feeder',
+  //       };
+  //     case 'bird':
+  //       return {
+  //         'carnivore',
+  //         'omnivore',
+  //         'herbivore',
+  //         'insectivore',
+  //         'granivore',
+  //         'nectarivore',
+  //         'piscivore',
+  //         'scavenger',
+  //       };
+  //     case 'reptile':
+  //       return {'carnivore', 'omnivore', 'herbivore', 'insectivore'};
+  //     case 'mammal':
+  //       return {}; // Mammals have all possible diets
+  //     case 'arachnid':
+  //       return {'carnivore', 'insectivore'};
+  //     case 'crustacean':
+  //       return {'omnivore', 'detritivore', 'carnivore', 'scavenger'};
+  //     case 'mollusk':
+  //       return {'herbivore', 'omnivore', 'carnivore', 'filter feeder'};
+  //     case 'annelid':
+  //       return {'detritivore', 'omnivore', 'herbivore'};
+  //     case 'cnidarian':
+  //       return {'carnivore', 'planktivore'};
+  //     case 'echinoderm':
+  //       return {'omnivore', 'detritivore', 'herbivore', 'carnivore'};
+  //     case 'otherinvertebrate':
+  //       return {
+  //         'herbivore',
+  //         'omnivore',
+  //         'carnivore',
+  //         'detritivore',
+  //         'filter feeder',
+  //         'parasite',
+  //       };
+  //     default:
+  //       return {}; // Unknown = all diets plausible
+  //   }
+  // }
 
   /// Helper to convert RGB to HSV values (0-360, 0-1, 0-1).
   List<double> _rgbToHsv(int r, int g, int b) {

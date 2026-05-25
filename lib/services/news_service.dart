@@ -117,7 +117,6 @@ class NewsService {
 
       _isInitialized = true;
     } catch (e) {
-      print("Error initializing NewsService: $e");
       // Fallback defaults if file missing
       _channels = [
         {
@@ -664,7 +663,7 @@ class NewsService {
     GameTime time,
   ) {
     // Pick single values for cleaner text with null safety
-    final allMoves = (org.moves ?? "")
+    final allMoves = (org.moves)
         .split(',')
         .map((e) => e.trim())
         .where((e) => e.isNotEmpty)
@@ -673,7 +672,7 @@ class NewsService {
         ? allMoves[rng.nextInt(allMoves.length)]
         : "standard strike";
 
-    final allHabitats = (org.habitat ?? "")
+    final allHabitats = (org.habitat)
         .split(',')
         .map((e) => e.trim())
         .where((e) => e.isNotEmpty)
@@ -682,7 +681,7 @@ class NewsService {
         ? allHabitats[rng.nextInt(allHabitats.length)]
         : "wild";
 
-    final allTiles = (org.spawnTiles ?? "")
+    final allTiles = (org.spawnTiles)
         .split(',')
         .map((e) => e.trim())
         .where((e) => e.isNotEmpty)
@@ -691,7 +690,7 @@ class NewsService {
         ? allTiles[rng.nextInt(allTiles.length)]
         : "ground";
 
-    final allAbilities = (org.abilities ?? "")
+    final allAbilities = (org.abilities)
         .split(',')
         .map((e) => e.trim())
         .where((e) => e.isNotEmpty)
@@ -700,7 +699,7 @@ class NewsService {
         ? allAbilities[rng.nextInt(allAbilities.length)]
         : "standard abilities";
 
-    final allDrops = (org.drops ?? "")
+    final allDrops = (org.drops)
         .split(',')
         .map((e) => e.trim())
         .where((e) => e.isNotEmpty)
@@ -720,7 +719,7 @@ class NewsService {
     };
     final rEmoji = rarityEmojis[org.rarity] ?? '📝';
 
-    String activeTimeFormatted = org.activeTime ?? "any";
+    String activeTimeFormatted = org.activeTime;
     if (activeTimeFormatted.toLowerCase() == 'any') {
       activeTimeFormatted = "any time";
     }
@@ -736,30 +735,33 @@ class NewsService {
     String dangerLevel = "Low";
     if (dangerRating > 15) {
       dangerLevel = "Extreme";
-    } else if (dangerRating > 10)
+    } else if (dangerRating > 10) {
       dangerLevel = "High";
-    else if (dangerRating > 5)
+    } else if (dangerRating > 5) {
       dangerLevel = "Moderate";
+    }
 
     String tier = "C";
     if (bst1 > 550) {
       tier = "S";
-    } else if (bst1 > 450)
+    } else if (bst1 > 450) {
       tier = "A";
-    else if (bst1 > 350)
+    } else if (bst1 > 350) {
       tier = "B";
-    else if (bst1 < 250)
+    } else if (bst1 < 250) {
       tier = "F";
+    }
 
     String weightClass = "Medium-weight";
     if (org.weight < 0.1) {
       weightClass = "Microscopic";
-    } else if (org.weight < 2)
+    } else if (org.weight < 2) {
       weightClass = "Feather-weight";
-    else if (org.weight > 1000)
+    } else if (org.weight > 1000) {
       weightClass = "Super-heavyweight";
-    else if (org.weight > 200)
+    } else if (org.weight > 200) {
       weightClass = "Heavy-weight";
+    }
 
     // Power Ranking / Playstyle
     String powerRank = "Generalist";
@@ -767,28 +769,31 @@ class NewsService {
     final totalDefense = org.defense + org.resistance;
     if (org.speed > 110 && totalOffense > 150) {
       powerRank = "Glass Cannon";
-    } else if (org.health > 180 && totalDefense > 200)
+    } else if (org.health > 180 && totalDefense > 200) {
       powerRank = "Behemoth";
-    else if (org.speed > 130)
+    } else if (org.speed > 130) {
       powerRank = "Speedster";
-    else if (totalDefense > 250)
+    } else if (totalDefense > 250) {
       powerRank = "Stall-master";
-    else if (totalOffense > 250)
+    } else if (totalOffense > 250) {
       powerRank = "Apex Striker";
+    }
 
     String speedComp = "comparable in speed";
     if (org.speed > org2.speed + 30) {
       speedComp = "far faster";
-    } else if (org.speed < org2.speed - 30)
+    } else if (org.speed < org2.speed - 30) {
       speedComp = "much slower";
+    }
 
     String timeOfDay = "Day";
     if (time.hour < 6 || time.hour > 18) {
       timeOfDay = "Night";
-    } else if (time.hour < 9)
+    } else if (time.hour < 9) {
       timeOfDay = "Dawn";
-    else if (time.hour > 16)
+    } else if (time.hour > 16) {
       timeOfDay = "Dusk";
+    }
 
     return {
       '{name}': org.name,
@@ -847,9 +852,9 @@ class NewsService {
   /// Determines if an author is biologically/thematically compatible with an organism.
   static bool _isAuthorCompatible(String author, Organism org) {
     final authorLower = author.toLowerCase();
-    final orgClass = (org.animalClass ?? "").toLowerCase();
-    final orgHabitat = (org.habitat ?? "").toLowerCase();
-    final orgName = (org.name ?? "").toLowerCase();
+    final orgClass = (org.animalClass).toLowerCase();
+    final orgHabitat = (org.habitat).toLowerCase();
+    final orgName = (org.name).toLowerCase();
 
     // Fishingarrett: Only Reptiles or Swamp dwellers
     if (authorLower.contains('fishingarrett')) {

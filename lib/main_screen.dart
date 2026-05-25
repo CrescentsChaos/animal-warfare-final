@@ -168,7 +168,7 @@ class _MainScreenState extends State<MainScreen> {
       body: StreamBuilder<GameTime>(
         stream: TimeService().timeStream,
         builder: (context, snapshot) {
-          final hour = TimeService().currentGameTime.hour;
+          //final hour = TimeService().currentGameTime.hour;
           // final isDay = hour >= 6 && hour < 18;
           // final isEvening = hour >= 18 && hour < 21;
 
