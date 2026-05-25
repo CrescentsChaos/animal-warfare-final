@@ -68,15 +68,15 @@ void main(List<String> args) async {
 
   if (org == null) {
     // Show similar matches
-    final firstWord = scientificName.split(' ').first.toLowerCase();
-    final matches = organisms.where(
-      (o) => ((o['scientific_name'] as String?) ?? '').toLowerCase().contains(
-        firstWord,
-      ),
-    );
-    if (matches.isNotEmpty) {
-      for (var m in matches.take(10)) {}
-    }
+    //final firstWord = scientificName.split(' ').first.toLowerCase();
+    // final matches = organisms.where(
+    //   (o) => ((o['scientific_name'] as String?) ?? '').toLowerCase().contains(
+    //     firstWord,
+    //   ),
+    // );
+    // if (matches.isNotEmpty) {
+    //   for (var m in matches.take(10)) {}
+    // }
     exit(1);
   }
 
@@ -407,9 +407,9 @@ Future<void> upsertFeatureToDb(
   }
 
   // Show final stats
-  final result = await db.rawQuery(
-    'SELECT COUNT(*) as count FROM organism_features',
-  );
+  // final result = await db.rawQuery(
+  //   'SELECT COUNT(*) as count FROM organism_features',
+  // );
   //final totalCount = result.first['count'] as int;
 }
 
