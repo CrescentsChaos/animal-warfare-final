@@ -116,12 +116,8 @@ class _MainScreenState extends State<MainScreen> {
                   width: 56,
                   height: 56,
                   fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) => 
-                    Icon(
-                      Icons.error_outline,
-                      color: color ?? Colors.white54,
-                      size: 28,
-                    ),
+                  errorBuilder: (context, error, stackTrace) =>
+                      Icon(Icons.error_outline, color: color, size: 28),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -173,8 +169,8 @@ class _MainScreenState extends State<MainScreen> {
         stream: TimeService().timeStream,
         builder: (context, snapshot) {
           final hour = TimeService().currentGameTime.hour;
-          final isDay = hour >= 6 && hour < 18;
-          final isEvening = hour >= 18 && hour < 21;
+          // final isDay = hour >= 6 && hour < 18;
+          // final isEvening = hour >= 18 && hour < 21;
 
           return Stack(
             children: [
@@ -360,10 +356,9 @@ class _MainScreenState extends State<MainScreen> {
                               width: 7,
                               height: 7,
                               decoration: BoxDecoration(
-                                color:
-                                    isLoggedIn
-                                        ? AppColors.primary
-                                        : AppColors.textMuted,
+                                color: isLoggedIn
+                                    ? AppColors.primary
+                                    : AppColors.textMuted,
                                 shape: BoxShape.circle,
                               ),
                             ),

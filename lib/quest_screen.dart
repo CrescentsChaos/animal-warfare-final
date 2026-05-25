@@ -128,18 +128,9 @@ class _QuestScreenState extends State<QuestScreen> {
     final random = Random();
 
     // Refined Fish Detection based on drops
-    final fishDrops = [
-      'fillet',
-      'shark fin',
-      'fish scales',
-      'stingray tail',
-      'roe',
-      'fish bone',
-      'caviar',
-    ];
     final fishOptions = _allOrganisms.where((o) {
-      final drops = o.drops.toLowerCase();
-      return fishDrops.any((drop) => drops.contains(drop));
+      final animalClass = o.animalClass.toLowerCase();
+      return animalClass.contains('fish');
     }).toList();
 
     // Fallback if no specific drops found (shouldn't happen with large DB)

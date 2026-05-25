@@ -7,7 +7,7 @@ import 'package:animal_warfare/services/biometric_service.dart';
 import 'package:animal_warfare/services/segmentation_service.dart';
 import 'package:animal_warfare/widgets/organism_sprite_widget.dart';
 import 'package:animal_warfare/widgets/anidex_details_sheet.dart';
-import 'package:animal_warfare/models/organism.dart';
+//import 'package:animal_warfare/models/organism.dart';
 import 'package:animal_warfare/manual_masking_screen.dart';
 
 class BiometricScannerScreen extends StatefulWidget {
@@ -33,8 +33,6 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
   Uint8List? _imageBytes;
   Uint8List? _maskedBytes;
   String _predictedClass = 'unknown';
-  String _predictedDiet = 'unknown';
-  double _predictedWeight = 0.0;
   String _sortBy = 'Overall';
   final TextEditingController _hintController = TextEditingController();
   late AnimationController _pulseController;
@@ -104,15 +102,12 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
                   _statusText = status.toUpperCase();
                   _progress = progress;
                   if (predictedClass != null) _predictedClass = predictedClass;
-                  if (predictedDiet != null) _predictedDiet = predictedDiet;
-                  if (predictedWeight != null)
-                    _predictedWeight = predictedWeight;
                 });
               }
             },
       );
 
-      final masked = results.isNotEmpty ? results.first.maskedImage : null;
+      //final masked = results.isNotEmpty ? results.first.maskedImage : null;
 
       if (mounted) {
         setState(() {
@@ -156,8 +151,6 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
                 _statusText = status.toUpperCase();
                 _progress = progress;
                 if (predictedClass != null) _predictedClass = predictedClass;
-                if (predictedDiet != null) _predictedDiet = predictedDiet;
-                if (predictedWeight != null) _predictedWeight = predictedWeight;
               });
             }
           },
@@ -202,19 +195,14 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
           preSegmentedBytes: _maskedBytes,
           hint: _hintController.text,
           onProgress:
-              (
-                msg,
-                p, {
-                predictedClass,
-                predictedDiet,
-                predictedWeight,
-              }) => setState(() {
-                _statusText = msg.toUpperCase();
-                _progress = p;
-                if (predictedClass != null) _predictedClass = predictedClass;
-                if (predictedDiet != null) _predictedDiet = predictedDiet;
-                if (predictedWeight != null) _predictedWeight = predictedWeight;
-              }),
+              (msg, p, {predictedClass, predictedDiet, predictedWeight}) =>
+                  setState(() {
+                    _statusText = msg.toUpperCase();
+                    _progress = p;
+                    if (predictedClass != null) {
+                      predictedClass = predictedClass;
+                    }
+                  }),
         );
 
         setState(() {
@@ -672,43 +660,43 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
     );
   }
 
-  Widget _buildPredictedProfileBadge() {
-    final String label = _predictedClass == 'unknown'
-        ? 'GENERIC BIOLOGY'
-        : _predictedClass.toUpperCase();
+  // Widget _buildPredictedProfileBadge() {
+  //   final String label = _predictedClass == 'unknown'
+  //       ? 'GENERIC BIOLOGY'
+  //       : _predictedClass.toUpperCase();
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.cyanAccent.withAlpha(20),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.cyanAccent.withAlpha(80), width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.cyanAccent.withAlpha(30),
-            blurRadius: 10,
-            spreadRadius: 1,
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.psychology, color: Colors.cyanAccent, size: 14),
-          const SizedBox(width: 6),
-          Text(
-            'AI PROFILE: ${_predictedClass.toUpperCase()} | ${_predictedDiet.toUpperCase()} | ${_predictedWeight.toStringAsFixed(1)}KG',
-            style: GoogleFonts.shareTechMono(
-              color: Colors.cyanAccent,
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.0,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  //   return Container(
+  //     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+  //     decoration: BoxDecoration(
+  //       color: Colors.cyanAccent.withAlpha(20),
+  //       borderRadius: BorderRadius.circular(20),
+  //       border: Border.all(color: Colors.cyanAccent.withAlpha(80), width: 1),
+  //       boxShadow: [
+  //         BoxShadow(
+  //           color: Colors.cyanAccent.withAlpha(30),
+  //           blurRadius: 10,
+  //           spreadRadius: 1,
+  //         ),
+  //       ],
+  //     ),
+  //     child: Row(
+  //       mainAxisSize: MainAxisSize.min,
+  //       children: [
+  //         const Icon(Icons.psychology, color: Colors.cyanAccent, size: 14),
+  //         const SizedBox(width: 6),
+  //         Text(
+  //           'AI PROFILE: ${_predictedClass.toUpperCase()} | ${_predictedDiet.toUpperCase()} | ${_predictedWeight.toStringAsFixed(1)}KG',
+  //           style: GoogleFonts.shareTechMono(
+  //             color: Colors.cyanAccent,
+  //             fontSize: 10,
+  //             fontWeight: FontWeight.bold,
+  //             letterSpacing: 1.0,
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _buildPredictionPanel() {
     if (_predictedClass == 'unknown' && !_isScanning)
@@ -736,7 +724,10 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildPredictiveStat('IDENTIFIED BIOTYPE', _predictedClass.toUpperCase()),
+              _buildPredictiveStat(
+                'IDENTIFIED BIOTYPE',
+                _predictedClass.toUpperCase(),
+              ),
             ],
           ),
         ],

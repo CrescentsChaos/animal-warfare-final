@@ -5,9 +5,7 @@ import 'dart:ui';
 import 'dart:ui' as ui;
 import 'package:animal_warfare/models/battle_replay.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:flutter/services.dart'
-    show SystemChrome, DeviceOrientation;
+import 'package:flutter/services.dart' show SystemChrome, DeviceOrientation;
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:provider/provider.dart';
@@ -1195,335 +1193,346 @@ class _BattleScreenContentState extends State<BattleScreenContent>
           child: Transform.translate(
             offset: Offset(_screenShakeX, _screenShakeY),
             child: Stack(
-            children: [
-              // Background: use blurred map screenshot if available, else biome asset
-              if (widget.mapScreenshot != null)
-                Positioned.fill(
-                  child: ImageFiltered(
-                    imageFilter: ImageFilter.blur(
-                      sigmaX: 1.5,
-                      sigmaY: 1.5,
-                      tileMode: TileMode.clamp,
-                    ),
-                    child: RawImage(
-                      image: widget.mapScreenshot,
-                      fit: BoxFit.cover,
+              children: [
+                // Background: use blurred map screenshot if available, else biome asset
+                if (widget.mapScreenshot != null)
+                  Positioned.fill(
+                    child: ImageFiltered(
+                      imageFilter: ImageFilter.blur(
+                        sigmaX: 1.5,
+                        sigmaY: 1.5,
+                        tileMode: TileMode.clamp,
+                      ),
+                      child: RawImage(
+                        image: widget.mapScreenshot,
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
-                ),
-              if (widget.mapScreenshot != null)
-                Positioned.fill(
-                  child: Container(color: Colors.black.withValues(alpha: 0.35)),
-                ),
-              if (widget.mapScreenshot == null)
-                StreamBuilder<GameTime>(
-                  stream: TimeService().timeStream,
-                  builder: (context, snapshot) {
-                    final hour = TimeService().currentGameTime.hour;
-                    final timeOfDay = (hour >= 6 && hour < 18)
-                        ? 'day'
-                        : (hour >= 18 && hour < 21 ? 'evening' : 'night');
+                if (widget.mapScreenshot != null)
+                  Positioned.fill(
+                    child: Container(
+                      color: Colors.black.withValues(alpha: 0.35),
+                    ),
+                  ),
+                if (widget.mapScreenshot == null)
+                  StreamBuilder<GameTime>(
+                    stream: TimeService().timeStream,
+                    builder: (context, snapshot) {
+                      //final hour = TimeService().currentGameTime.hour;
+                      // final timeOfDay = (hour >= 6 && hour < 18)
+                      //     ? 'day'
+                      //     : (hour >= 18 && hour < 21 ? 'evening' : 'night');
 
-                    return Container(
-                      decoration: BoxDecoration(
-                        image: DecorationImage(
-                          image: AssetImage(_getAssetPath(widget.biomeName)),
-                          fit: BoxFit.cover,
+                      return Container(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: AssetImage(_getAssetPath(widget.biomeName)),
+                            fit: BoxFit.cover,
+                          ),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
+                if (battleManager.trickRoomTurns > 0) const _TrickRoomOverlay(),
+                // Weather Overlay
+                WeatherOverlay(weather: battleManager.currentWeather.weather),
+                // Terrain Overlay
+                if (battleManager.currentTerrain.terrain != Terrain.none)
+                  TerrainOverlay(terrain: battleManager.currentTerrain.terrain),
+                // Tailwind Overlay
+                TailwindOverlay(
+                  isActive:
+                      battleManager.playerTailwindTurns > 0 ||
+                      battleManager.opponentTailwindTurns > 0,
                 ),
-              if (battleManager.trickRoomTurns > 0) const _TrickRoomOverlay(),
-              // Weather Overlay
-              WeatherOverlay(weather: battleManager.currentWeather.weather),
-              // Terrain Overlay
-              if (battleManager.currentTerrain.terrain != Terrain.none)
-                TerrainOverlay(terrain: battleManager.currentTerrain.terrain),
-              // Tailwind Overlay
-              TailwindOverlay(
-                isActive:
-                    battleManager.playerTailwindTurns > 0 ||
-                    battleManager.opponentTailwindTurns > 0,
-              ),
-              SafeArea(
-                child: Stack(
-                  children: [
-                    // Portrait layout uses a Column with fixed bottom panel
-                    OrientationBuilder(
-                      builder: (context, orientation) {
-                        final isLandscape =
-                            orientation == Orientation.landscape;
+                SafeArea(
+                  child: Stack(
+                    children: [
+                      // Portrait layout uses a Column with fixed bottom panel
+                      OrientationBuilder(
+                        builder: (context, orientation) {
+                          final isLandscape =
+                              orientation == Orientation.landscape;
 
-                        if (isLandscape) {
-                          return Column(
-                            children: [
-                              _buildHeader(
-                                context,
-                                battleManager,
-                                overlayColor,
-                              ),
-                              Expanded(
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    // Left side: Animal Statuses and Sprites
-                                    Expanded(
-                                      flex: 5,
-                                      child: Column(
-                                        children: [
-                                          _buildFieldEffects(
-                                            context,
-                                            battleManager,
-                                          ),
-                                          const SizedBox(height: 2),
-                                          AnimatedBuilder(
-                                            animation: _opponentShakeAnimation,
-                                            builder: (context, child) =>
-                                                Transform.translate(
-                                                  offset: Offset(
-                                                    _opponentShakeAnimation
-                                                        .value,
-                                                    0,
-                                                  ),
-                                                  child: child,
-                                                ),
-                                            child: _buildOpponentStatus(
-                                              context,
-                                              battleManager.opponent,
-                                              overlayColor,
-                                              isNarrow,
-                                              battleManager.opponentHazards,
-                                              battleManager,
-                                              spriteKey: _opponentSpriteKey,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 2),
-                                          AnimatedBuilder(
-                                            animation: _playerShakeAnimation,
-                                            builder: (context, child) =>
-                                                Transform.translate(
-                                                  offset: Offset(
-                                                    _playerShakeAnimation.value,
-                                                    0,
-                                                  ),
-                                                  child: child,
-                                                ),
-                                            child: _buildPlayerStatus(
-                                              context,
-                                              battleManager.player,
-                                              overlayColor,
-                                              isNarrow,
-                                              battleManager.playerHazards,
-                                              battleManager,
-                                              spriteKey: _playerSpriteKey,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    // Right side: Logs and Controls
-                                    Expanded(
-                                      flex: 4,
-                                      child: Column(
-                                        children: [
-                                          // Empty space where logs would be, leaving room for animations
-                                          Expanded(child: const SizedBox()),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
+                          if (isLandscape) {
+                            return Column(
+                              children: [
+                                _buildHeader(
+                                  context,
+                                  battleManager,
+                                  overlayColor,
                                 ),
-                              ),
-                            ],
-                          );
-                        }
-
-                        // Portrait layout: split into battle field (top) + bottom panel (Expanded)
-                        return Column(
-                          children: [
-                            // === BATTLE FIELD AREA (top, takes only needed height) ===
-                            Flexible(
-                              fit: FlexFit.loose,
-                              child: SingleChildScrollView(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    _buildHeader(
-                                      context,
-                                      battleManager,
-                                      overlayColor,
-                                    ),
-                                    const SizedBox(height: 2),
-                                    const Divider(
-                                      height: 1,
-                                      color: Colors.white24,
-                                    ),
-                                    const SizedBox(height: 2),
-                                    _buildFieldEffects(context, battleManager),
-                                    const SizedBox(height: 2),
-                                    // Participant area - takes min height
-                                    LayoutBuilder(
-                                      builder: (context, constraints) {
-                                        return Stack(
-                                          clipBehavior: Clip.hardEdge,
+                                Expanded(
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      // Left side: Animal Statuses and Sprites
+                                      Expanded(
+                                        flex: 5,
+                                        child: Column(
                                           children: [
-                                            Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                AnimatedBuilder(
-                                                  animation:
-                                                      _opponentShakeAnimation,
-                                                  builder: (context, child) =>
-                                                      Transform.translate(
-                                                        offset: Offset(
-                                                          _opponentShakeAnimation
-                                                              .value,
-                                                          0,
-                                                        ),
-                                                        child: child,
-                                                      ),
-                                                  child: _buildOpponentStatus(
-                                                    context,
-                                                    battleManager.opponent,
-                                                    overlayColor,
-                                                    isNarrow,
-                                                    battleManager
-                                                        .opponentHazards,
-                                                    battleManager,
-                                                    spriteKey:
-                                                        _opponentSpriteKey,
+                                            _buildFieldEffects(
+                                              context,
+                                              battleManager,
+                                            ),
+                                            const SizedBox(height: 2),
+                                            AnimatedBuilder(
+                                              animation:
+                                                  _opponentShakeAnimation,
+                                              builder: (context, child) =>
+                                                  Transform.translate(
+                                                    offset: Offset(
+                                                      _opponentShakeAnimation
+                                                          .value,
+                                                      0,
+                                                    ),
+                                                    child: child,
                                                   ),
-                                                ),
-                                                const SizedBox(height: 4),
-                                                AnimatedBuilder(
-                                                  animation:
-                                                      _playerShakeAnimation,
-                                                  builder: (context, child) =>
-                                                      Transform.translate(
-                                                        offset: Offset(
-                                                          _playerShakeAnimation
-                                                              .value,
-                                                          0,
-                                                        ),
-                                                        child: child,
-                                                      ),
-                                                  child: _buildPlayerStatus(
-                                                    context,
-                                                    battleManager.player,
-                                                    overlayColor,
-                                                    isNarrow,
-                                                    battleManager.playerHazards,
-                                                    battleManager,
-                                                    spriteKey: _playerSpriteKey,
+                                              child: _buildOpponentStatus(
+                                                context,
+                                                battleManager.opponent,
+                                                overlayColor,
+                                                isNarrow,
+                                                battleManager.opponentHazards,
+                                                battleManager,
+                                                spriteKey: _opponentSpriteKey,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 2),
+                                            AnimatedBuilder(
+                                              animation: _playerShakeAnimation,
+                                              builder: (context, child) =>
+                                                  Transform.translate(
+                                                    offset: Offset(
+                                                      _playerShakeAnimation
+                                                          .value,
+                                                      0,
+                                                    ),
+                                                    child: child,
                                                   ),
-                                                ),
-                                                const SizedBox(height: 8),
-                                              ],
+                                              child: _buildPlayerStatus(
+                                                context,
+                                                battleManager.player,
+                                                overlayColor,
+                                                isNarrow,
+                                                battleManager.playerHazards,
+                                                battleManager,
+                                                spriteKey: _playerSpriteKey,
+                                              ),
                                             ),
                                           ],
-                                        );
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            // UI Panel - Expanded to fill remaining space (the "red spot")
-                            Expanded(
-                              child: SafeArea(
-                                top: false,
-                                child: Container(
-                                  color: const Color.fromARGB(255, 255, 0, 0)
-                                      .withValues(
-                                        alpha: 0.0,
-                                      ), //criminal background
-                                  child: Column(
-                                    children: [
-                                      // Text log — Expanded to fill available space
-                                      Expanded(
-                                        child: _buildMessageBox(
-                                          context,
-                                          battleManager.battleLog,
-                                          isNarrow,
-                                          expanded: true,
                                         ),
                                       ),
-
-                                      // Move controls — only during input
-                                      if (battleManager.currentState ==
-                                          BattleState.waitingForInput)
-                                        _buildActionControls(
-                                          context,
-                                          battleManager,
-                                          overlayColor,
-                                          isNarrow,
-                                          userState,
+                                      // Right side: Logs and Controls
+                                      Expanded(
+                                        flex: 4,
+                                        child: Column(
+                                          children: [
+                                            // Empty space where logs would be, leaving room for animations
+                                            Expanded(child: const SizedBox()),
+                                          ],
                                         ),
-                                      const SizedBox(height: 10),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            );
+                          }
+
+                          // Portrait layout: split into battle field (top) + bottom panel (Expanded)
+                          return Column(
+                            children: [
+                              // === BATTLE FIELD AREA (top, takes only needed height) ===
+                              Flexible(
+                                fit: FlexFit.loose,
+                                child: SingleChildScrollView(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      _buildHeader(
+                                        context,
+                                        battleManager,
+                                        overlayColor,
+                                      ),
+                                      const SizedBox(height: 2),
+                                      const Divider(
+                                        height: 1,
+                                        color: Colors.white24,
+                                      ),
+                                      const SizedBox(height: 2),
+                                      _buildFieldEffects(
+                                        context,
+                                        battleManager,
+                                      ),
+                                      const SizedBox(height: 2),
+                                      // Participant area - takes min height
+                                      LayoutBuilder(
+                                        builder: (context, constraints) {
+                                          return Stack(
+                                            clipBehavior: Clip.hardEdge,
+                                            children: [
+                                              Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  AnimatedBuilder(
+                                                    animation:
+                                                        _opponentShakeAnimation,
+                                                    builder: (context, child) =>
+                                                        Transform.translate(
+                                                          offset: Offset(
+                                                            _opponentShakeAnimation
+                                                                .value,
+                                                            0,
+                                                          ),
+                                                          child: child,
+                                                        ),
+                                                    child: _buildOpponentStatus(
+                                                      context,
+                                                      battleManager.opponent,
+                                                      overlayColor,
+                                                      isNarrow,
+                                                      battleManager
+                                                          .opponentHazards,
+                                                      battleManager,
+                                                      spriteKey:
+                                                          _opponentSpriteKey,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  AnimatedBuilder(
+                                                    animation:
+                                                        _playerShakeAnimation,
+                                                    builder: (context, child) =>
+                                                        Transform.translate(
+                                                          offset: Offset(
+                                                            _playerShakeAnimation
+                                                                .value,
+                                                            0,
+                                                          ),
+                                                          child: child,
+                                                        ),
+                                                    child: _buildPlayerStatus(
+                                                      context,
+                                                      battleManager.player,
+                                                      overlayColor,
+                                                      isNarrow,
+                                                      battleManager
+                                                          .playerHazards,
+                                                      battleManager,
+                                                      spriteKey:
+                                                          _playerSpriteKey,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 8),
+                                                ],
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      ),
                                     ],
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                  ],
+                              // UI Panel - Expanded to fill remaining space (the "red spot")
+                              Expanded(
+                                child: SafeArea(
+                                  top: false,
+                                  child: Container(
+                                    color: const Color.fromARGB(255, 255, 0, 0)
+                                        .withValues(
+                                          alpha: 0.0,
+                                        ), //criminal background
+                                    child: Column(
+                                      children: [
+                                        // Text log — Expanded to fill available space
+                                        Expanded(
+                                          child: _buildMessageBox(
+                                            context,
+                                            battleManager.battleLog,
+                                            isNarrow,
+                                            expanded: true,
+                                          ),
+                                        ),
+
+                                        // Move controls — only during input
+                                        if (battleManager.currentState ==
+                                            BattleState.waitingForInput)
+                                          _buildActionControls(
+                                            context,
+                                            battleManager,
+                                            overlayColor,
+                                            isNarrow,
+                                            userState,
+                                          ),
+                                        const SizedBox(height: 10),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              // Animations clipped to battle field only
-              ..._moveAnims.map(
-                (anim) => anims.MoveAnimationOverlay(
-                  key: ValueKey(anim.id),
-                  data: anim,
-                  player1Link: _playerLink,
-                  player2Link: LayerLink(),
-                  opponent1Link: _opponentLink,
-                  opponent2Link: LayerLink(),
+                // Animations clipped to battle field only
+                ..._moveAnims.map(
+                  (anim) => anims.MoveAnimationOverlay(
+                    key: ValueKey(anim.id),
+                    data: anim,
+                    player1Link: _playerLink,
+                    player2Link: LayerLink(),
+                    opponent1Link: _opponentLink,
+                    opponent2Link: LayerLink(),
+                  ),
                 ),
-              ),
-              // Stat Change Indicators
-              ..._indicators.map((indicator) {
-                return _FloatingIndicatorWidget(
-                  key: ValueKey(indicator.id),
-                  data: indicator,
-                  link: indicator.isPlayer ? _playerLink : _opponentLink,
-                );
-              }),
-              // Ability Pop-up Overlay
-              if (battleManager.currentAbilityNotify != null)
-                _AbilityPopUp(
-                  notification: battleManager.currentAbilityNotify!,
-                  themeColor: _getBiomeThemeColor(),
-                  link: battleManager.currentAbilityNotify!.isPlayer
-                      ? _playerLink
-                      : _opponentLink,
-                ),
-              if (battleManager.isCapturing)
-                CaptureNetOverlay(
-                  shakeCount: battleManager.captureShakeCount,
-                  isSuccess: battleManager.result == BattleResult.capture,
-                  isFailed:
-                      battleManager.result == null &&
-                      battleManager.currentState == BattleState.opponentTurn,
-                  link: _opponentLink,
-                  onComplete: () {},
-                ),
-              // Gimmick Banner Overlay
-              if (_showGimmickBanner)
-                _GimmickBanner(
-                  type: _activeGimmickType ?? 'gimmick',
-                  targetName: _gimmickTarget?.name ?? '',
-                  color: _activeGimmickType == 'titanize'
-                      ? Colors.redAccent
-                      : (_gimmickTarget?.activeTeraType ?? ElementalType.basic)
-                            .color,
-                ),
-            ],
+                // Stat Change Indicators
+                ..._indicators.map((indicator) {
+                  return _FloatingIndicatorWidget(
+                    key: ValueKey(indicator.id),
+                    data: indicator,
+                    link: indicator.isPlayer ? _playerLink : _opponentLink,
+                  );
+                }),
+                // Ability Pop-up Overlay
+                if (battleManager.currentAbilityNotify != null)
+                  _AbilityPopUp(
+                    notification: battleManager.currentAbilityNotify!,
+                    themeColor: _getBiomeThemeColor(),
+                    link: battleManager.currentAbilityNotify!.isPlayer
+                        ? _playerLink
+                        : _opponentLink,
+                  ),
+                if (battleManager.isCapturing)
+                  CaptureNetOverlay(
+                    shakeCount: battleManager.captureShakeCount,
+                    isSuccess: battleManager.result == BattleResult.capture,
+                    isFailed:
+                        battleManager.result == null &&
+                        battleManager.currentState == BattleState.opponentTurn,
+                    link: _opponentLink,
+                    onComplete: () {},
+                  ),
+                // Gimmick Banner Overlay
+                if (_showGimmickBanner)
+                  _GimmickBanner(
+                    type: _activeGimmickType ?? 'gimmick',
+                    targetName: _gimmickTarget?.name ?? '',
+                    color: _activeGimmickType == 'titanize'
+                        ? Colors.redAccent
+                        : (_gimmickTarget?.activeTeraType ??
+                                  ElementalType.basic)
+                              .color,
+                  ),
+              ],
+            ),
           ),
-        ),
         ),
       ),
     );
@@ -1751,9 +1760,15 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               runSpacing: 4,
               children: [
                 if (bm.currentWeather.weather != Weather.none)
-                  _buildWeatherIndicator(bm.currentWeather.weather, bm.weatherTurnsLeft),
+                  _buildWeatherIndicator(
+                    bm.currentWeather.weather,
+                    bm.weatherTurnsLeft,
+                  ),
                 if (bm.currentTerrain.terrain != Terrain.none)
-                  _buildTerrainIndicator(bm.currentTerrain.terrain, bm.terrainTurnsLeft),
+                  _buildTerrainIndicator(
+                    bm.currentTerrain.terrain,
+                    bm.terrainTurnsLeft,
+                  ),
                 if (bm.trickRoomTurns > 0)
                   _buildFieldEffectIcon(
                     iconPath: 'assets/icon/trick_room.png',
@@ -3752,9 +3767,10 @@ class _BattleScreenContentState extends State<BattleScreenContent>
         }
 
         final Map<String, int> droppedLoot = battleManager.droppedLoot;
-        
+
         // Handle loot drop
-        if (battleManager.result == BattleResult.win && droppedLoot.isNotEmpty) {
+        if (battleManager.result == BattleResult.win &&
+            droppedLoot.isNotEmpty) {
           for (final entry in droppedLoot.entries) {
             await userState.addLoot(entry.key, entry.value);
           }
@@ -4831,7 +4847,7 @@ class _BattleResultDialogState extends State<_BattleResultDialog> {
                 // Find actual name, fallback to raw string
                 final talisman = Talisman.findById(dropId);
                 final String dropName = talisman?.name ?? dropId;
-                
+
                 return Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -4840,7 +4856,11 @@ class _BattleResultDialogState extends State<_BattleResultDialog> {
                       width: 20,
                       height: 20,
                       errorBuilder: (context, error, stackTrace) {
-                        return const Icon(Icons.inventory_2, color: Colors.purpleAccent, size: 20);
+                        return const Icon(
+                          Icons.inventory_2,
+                          color: Colors.purpleAccent,
+                          size: 20,
+                        );
                       },
                     ),
                     const SizedBox(width: 8),
@@ -5729,7 +5749,6 @@ class _XPResultRowState extends State<_XPResultRow>
     );
   }
 }
-
 
 class TypewriterText extends StatefulWidget {
   final String text;
@@ -7499,11 +7518,7 @@ class _TypewriterCursorState extends State<_TypewriterCursor>
       animation: _blinkController,
       builder: (context, child) => Opacity(
         opacity: _blinkController.value,
-        child: Icon(
-          Icons.arrow_drop_down,
-          color: widget.color,
-          size: 16,
-        ),
+        child: Icon(Icons.arrow_drop_down, color: widget.color, size: 16),
       ),
     );
   }

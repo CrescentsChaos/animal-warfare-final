@@ -132,7 +132,8 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
   Future<void> _handleRefresh() async {
     setState(() {
       _isRefreshing = true;
-      NewsService.refreshSeed += (DateTime.now().millisecondsSinceEpoch % 1000) + 1;
+      NewsService.refreshSeed +=
+          (DateTime.now().millisecondsSinceEpoch % 1000) + 1;
     });
     await _loadNews();
     setState(() {
@@ -142,7 +143,7 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final gameTime = TimeService().currentGameTime;
+    //final gameTime = TimeService().currentGameTime;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -442,9 +443,11 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24),
           image: DecorationImage(
-            image: AssetImage(article.biome != null 
-                ? 'assets/biomes/${article.biome}.png' 
-                : 'assets/background.png'),
+            image: AssetImage(
+              article.biome != null
+                  ? 'assets/biomes/${article.biome}.png'
+                  : 'assets/background.png',
+            ),
             fit: BoxFit.cover,
             opacity: 0.4,
           ),
@@ -453,10 +456,7 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
             end: Alignment.bottomCenter,
             colors: [Colors.transparent, AppColors.surface],
           ),
-          border: Border.all(
-            color: AppColors.border,
-            width: 1.5,
-          ),
+          border: Border.all(color: AppColors.border, width: 1.5),
           boxShadow: [
             BoxShadow(
               color: catColor.withValues(alpha: 0.1),
@@ -476,19 +476,31 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.1),
+                      ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         if (article.channelIcon.startsWith('assets/'))
-                          Image.asset(article.channelIcon, width: 14, height: 14)
+                          Image.asset(
+                            article.channelIcon,
+                            width: 14,
+                            height: 14,
+                          )
                         else
-                          Text(article.channelIcon, style: const TextStyle(fontSize: 10)),
+                          Text(
+                            article.channelIcon,
+                            style: const TextStyle(fontSize: 10),
+                          ),
                         const SizedBox(width: 6),
                         Text(
                           article.channel.toUpperCase(),
@@ -545,16 +557,17 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
                               ? Image.asset(
                                   article.authorIcon!,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) => Center(
-                                    child: Text(
-                                      article.author[0],
-                                      style: GoogleFonts.inter(
-                                        color: catColor,
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w900,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      Center(
+                                        child: Text(
+                                          article.author[0],
+                                          style: GoogleFonts.inter(
+                                            color: catColor,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w900,
+                                          ),
+                                        ),
                                       ),
-                                    ),
-                                  ),
                                 )
                               : Center(
                                   child: Text(
@@ -580,7 +593,11 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
                             ),
                           ),
                           const SizedBox(width: 4),
-                          const Icon(Icons.verified, color: Colors.blue, size: 14),
+                          const Icon(
+                            Icons.verified,
+                            color: Colors.blue,
+                            size: 14,
+                          ),
                         ],
                       ),
                       const Spacer(),
@@ -633,11 +650,16 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
                 children: [
                   // Channel Source Pill
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: catColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: catColor.withValues(alpha: 0.2)),
+                      border: Border.all(
+                        color: catColor.withValues(alpha: 0.2),
+                      ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -692,16 +714,17 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
                               ? Image.asset(
                                   article.authorIcon!,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) => Center(
-                                    child: Text(
-                                      article.author[0],
-                                      style: GoogleFonts.inter(
-                                        color: catColor,
-                                        fontSize: 9,
-                                        fontWeight: FontWeight.w900,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      Center(
+                                        child: Text(
+                                          article.author[0],
+                                          style: GoogleFonts.inter(
+                                            color: catColor,
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.w900,
+                                          ),
+                                        ),
                                       ),
-                                    ),
-                                  ),
                                 )
                               : Center(
                                   child: Text(
@@ -1025,7 +1048,9 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
                       ),
                       image: article.biome != null
                           ? DecorationImage(
-                              image: AssetImage('assets/biomes/${article.biome}.png'),
+                              image: AssetImage(
+                                'assets/biomes/${article.biome}.png',
+                              ),
                               fit: BoxFit.cover,
                               opacity: 0.6,
                             )
@@ -1063,16 +1088,26 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
                     right: 8,
                     child: article.habitatName != null
                         ? Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.black.withValues(alpha: 0.6),
                               borderRadius: BorderRadius.circular(4),
-                              border: Border.all(color: Colors.white24, width: 0.5),
+                              border: Border.all(
+                                color: Colors.white24,
+                                width: 0.5,
+                              ),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.location_on, color: Colors.white70, size: 8),
+                                const Icon(
+                                  Icons.location_on,
+                                  color: Colors.white70,
+                                  size: 8,
+                                ),
                                 const SizedBox(width: 2),
                                 Text(
                                   article.habitatName!,
@@ -1123,16 +1158,17 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
                                 ? Image.asset(
                                     article.authorIcon!,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) => Center(
-                                      child: Text(
-                                        article.author[0],
-                                        style: GoogleFonts.inter(
-                                          color: catColor,
-                                          fontSize: 8,
-                                          fontWeight: FontWeight.w900,
+                                    errorBuilder:
+                                        (context, error, stackTrace) => Center(
+                                          child: Text(
+                                            article.author[0],
+                                            style: GoogleFonts.inter(
+                                              color: catColor,
+                                              fontSize: 8,
+                                              fontWeight: FontWeight.w900,
+                                            ),
+                                          ),
                                         ),
-                                      ),
-                                    ),
                                   )
                                 : Center(
                                     child: Text(
@@ -1160,7 +1196,11 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
                           ),
                         ),
                         const SizedBox(width: 2),
-                        const Icon(Icons.verified, color: Colors.blue, size: 10),
+                        const Icon(
+                          Icons.verified,
+                          color: Colors.blue,
+                          size: 10,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           _formatTime(article.publishedAt),

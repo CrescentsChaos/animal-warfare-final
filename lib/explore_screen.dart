@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'dart:math' as math;
 import 'package:animal_warfare/services/weather_service.dart';
-import 'package:animal_warfare/game/time_service.dart';
+//import 'package:animal_warfare/game/time_service.dart';
 import 'package:animal_warfare/models/weather.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:animal_warfare/models/organism.dart'; // Must import the model
@@ -90,7 +90,7 @@ SpawnResult? getWeightedRandomOrganism(
         // Tallgrass usually has land/ambush creatures
         if (isAquatic &&
             !habitat.contains('swamp') &&
-            !habitat.contains('marsh')) {
+            !habitat.contains('wetlands')) {
           return false;
         }
       } else if (encounterType == 'land') {
@@ -143,11 +143,12 @@ SpawnResult? getWeightedRandomOrganism(
     //if (rarity == 'uncommon' && accountLevel < 10) return false;
 
     // Fishing Logic
-    final drops = org.drops.toLowerCase();
+    //final drops = org.drops.toLowerCase();
 
     final isAquaticOrg =
         categories.contains('aquatic') ||
         habitat.contains('river') ||
+        habitat.contains('wetlands') ||
         habitat.contains('lake') ||
         habitat.contains('ocean') ||
         habitat.contains('coastal') ||
@@ -155,7 +156,7 @@ SpawnResult? getWeightedRandomOrganism(
         habitat.contains('coral') ||
         habitat.contains('mangrove');
 
-    final isFishDrop = drops.contains('fillet') || drops.contains('shark fin');
+    final isFishDrop = org.animalClass == 'fish';
 
     if (isAquaticOrg && isFishDrop && !hasSurf) {
       if (rarity == 'common') {
@@ -324,13 +325,13 @@ class _ExploreScreenState extends State<ExploreScreen> {
     return 'assets/biomes/$fileName.png';
   }
 
-  String _getTimeOfDay() {
-    final gameTime = TimeService().currentGameTime;
-    final hour = gameTime.hour;
-    if (hour >= 6 && hour < 17) return 'day';
-    if (hour >= 17 && hour < 20) return 'evening';
-    return 'night';
-  }
+  // String _getTimeOfDay() {
+  //   final gameTime = TimeService().currentGameTime;
+  //   final hour = gameTime.hour;
+  //   if (hour >= 6 && hour < 17) return 'day';
+  //   if (hour >= 17 && hour < 20) return 'evening';
+  //   return 'night';
+  // }
 
   Widget _getTemperatureIcon(double temp, {double size = 16}) {
     String iconPath;
@@ -396,7 +397,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
   }
 
   Widget _buildBiomeButton(BuildContext context, String biomeName) {
-    final timeOfDay = _getTimeOfDay();
+    //final timeOfDay = _getTimeOfDay();
 
     return InkWell(
       onTap: () => _navigateToBiomeDetail(context, biomeName),

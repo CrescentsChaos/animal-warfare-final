@@ -49,12 +49,10 @@ void main(List<String> args) async {
 
   // Validate inputs
   if (scientificName == null || scientificName.isEmpty) {
-    print('Error: Scientific name is required.');
     _printUsage();
     exit(1);
   }
   if (imagePath == null || !File(imagePath).existsSync()) {
-    print('Error: Image file not found: $imagePath');
     exit(1);
   }
 
@@ -69,8 +67,6 @@ void main(List<String> args) async {
   );
 
   if (org == null) {
-    print('Error: No organism found with scientific name "$scientificName"');
-    print('');
     // Show similar matches
     final firstWord = scientificName.split(' ').first.toLowerCase();
     final matches = organisms.where(
@@ -79,16 +75,12 @@ void main(List<String> args) async {
       ),
     );
     if (matches.isNotEmpty) {
-      print('Did you mean one of these?');
-      for (var m in matches.take(10)) {
-        print('  - ${m['name']} (${m['scientific_name']})');
-      }
+      for (var m in matches.take(10)) {}
     }
     exit(1);
   }
 
   final organismName = org['name'] as String;
-  print('Found: $organismName ($scientificName)');
 
   // Open DB
   sqfliteFfiInit();
@@ -101,25 +93,20 @@ void main(List<String> args) async {
   );
 
   if (!File(dbPath).existsSync()) {
-    print('Error: Database not found at $dbPath');
-    print('Run "dart run scratch/generate_features_db.dart" first.');
     exit(1);
   }
 
   final db = await factory.openDatabase(dbPath);
 
   // Extract features from image
-  print('Extracting features from $imagePath...');
   final imageBytes = File(imagePath).readAsBytesSync();
   final decoded = img.decodeImage(imageBytes);
   if (decoded == null) {
-    print('Error: Could not decode image.');
     await db.close();
     exit(1);
   }
 
   final newFeatures = extractFeatures(decoded, organismName);
-  print('Features extracted successfully.');
 
   await upsertFeatureToDb(
     db,
@@ -130,12 +117,7 @@ void main(List<String> args) async {
     diet: org['diet']?.toString() ?? 'unknown',
     weight: _parseWeight(org['weight']),
   );
-  print('Database updated successfully.');
   await db.close();
-  print('');
-  print('--- Biometric Training Summary ---');
-  print('Species: $organismName');
-  print('----------------------------------');
 }
 
 Future<void> upsertFeatureToDb(
@@ -317,7 +299,6 @@ Future<void> upsertFeatureToDb(
         newFeatures['bilateralSym'] as double,
         oldCount,
       ),
-
     };
 
     // Merge hue bins
@@ -400,9 +381,11 @@ Future<void> upsertFeatureToDb(
       'corner_density': newFeatures['cornerDensity'] ?? 0.0,
       'diagonal_density': newFeatures['diagonalDensity'] ?? 0.0,
       'lower_quadrant_symmetry': newFeatures['lowerQuadrantSymmetry'] ?? 0.0,
-      'horizontal_centroid_shift': newFeatures['horizontalCentroidShift'] ?? 0.0,
+      'horizontal_centroid_shift':
+          newFeatures['horizontalCentroidShift'] ?? 0.0,
       'convex_hull_ratio': newFeatures['convexHullRatio'] ?? 0.0,
-      'vertical_mass_distribution': newFeatures['verticalMassDistribution'] ?? 0.0,
+      'vertical_mass_distribution':
+          newFeatures['verticalMassDistribution'] ?? 0.0,
       'color_granularity': newFeatures['colorGranularity'] ?? 0.0,
       'fringe_density': newFeatures['fringeDensity'] ?? 0.0,
       'vertical_thinning': newFeatures['verticalThinning'] ?? 0.0,
@@ -421,12 +404,6 @@ Future<void> upsertFeatureToDb(
       'weight': weight ?? 0.0,
       'training_count': 1,
     });
-
-    print('');
-    print('=== Training Complete ===');
-    print('Organism: $organismName');
-    print('Scientific Name: $scientificName');
-    print('New feature entry created.');
   }
 
   // Show final stats
@@ -434,7 +411,6 @@ Future<void> upsertFeatureToDb(
     'SELECT COUNT(*) as count FROM organism_features',
   );
   final totalCount = result.first['count'] as int;
-  print('Total features in DB: $totalCount');
 }
 
 double _parseWeight(dynamic val) {
@@ -452,25 +428,7 @@ double _weightedAvg(double oldVal, double newVal, int oldCount) {
   return (oldVal * oldCount + newVal) / (oldCount + 1);
 }
 
-void _printUsage() {
-  print('');
-  print('Train Features - Add/update organism biometric features');
-  print('');
-  print('Usage:');
-  print('  dart run scratch/train_features.dart [options]');
-  print('');
-  print('Options:');
-  print('  -s, --scientific-name  Scientific name (e.g. "Panthera tigris")');
-  print('  -i, --image            Path to image file');
-  print('  -h, --help             Show this help');
-  print('');
-  print('Examples:');
-  print('  dart run scratch/train_features.dart \\');
-  print('    --scientific-name "Panthera tigris" \\');
-  print('    --image photos/tiger.jpg');
-  print('');
-  print('  dart run scratch/train_features.dart  (interactive mode)');
-}
+void _printUsage() {}
 
 // ============================================================
 // Feature extraction (mirrors BiometricService logic exactly)
@@ -639,7 +597,10 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
       if (mask[y * resized.width + x]) corePixels++;
     }
   }
-  final double coreArea = max(1, (coreMaxX - coreMinX + 1) * (coreMaxY - coreMinY + 1)).toDouble();
+  final double coreArea = max(
+    1,
+    (coreMaxX - coreMinX + 1) * (coreMaxY - coreMinY + 1),
+  ).toDouble();
   final double coreSolidity = corePixels / coreArea;
 
   int bottomHalf = 0;
@@ -649,7 +610,9 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
       if (y > resized.height * 0.6) bottomHalf++;
     }
   }
-  final double bottomHeavyBias = objectPixelCount > 0 ? bottomHalf / objectPixelCount : 0.0;
+  final double bottomHeavyBias = objectPixelCount > 0
+      ? bottomHalf / objectPixelCount
+      : 0.0;
 
   int maxRowPixels = -1;
   int maxRowY = minY;
@@ -663,7 +626,9 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
       maxRowY = y;
     }
   }
-  final double maxWidthRowBias = (maxY > minY) ? (maxRowY - minY) / (maxY - minY) : 0.5;
+  final double maxWidthRowBias = (maxY > minY)
+      ? (maxRowY - minY) / (maxY - minY)
+      : 0.5;
 
   int maxColPixels = -1;
   int maxColX = minX;
@@ -677,7 +642,9 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
       maxColX = x;
     }
   }
-  final double colXNorm = (maxX > minX) ? (maxColX - minX) / (maxX - minX) : 0.5;
+  final double colXNorm = (maxX > minX)
+      ? (maxColX - minX) / (maxX - minX)
+      : 0.5;
   final double maxHeightColBias = (colXNorm - 0.5).abs() * 2.0;
 
   final int bcMinX = minX + ((maxX - minX) * 0.35).toInt();
@@ -690,21 +657,33 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
       if (mask[y * resized.width + x]) bcPixels++;
     }
   }
-  final double bcArea = max(1, (bcMaxX - bcMinX + 1) * (bcMaxY - bcMinY + 1)).toDouble();
+  final double bcArea = max(
+    1,
+    (bcMaxX - bcMinX + 1) * (bcMaxY - bcMinY + 1),
+  ).toDouble();
   final double bottomCenterDensity = bcPixels / bcArea;
 
   final int cornerW = max(1, (maxX - minX) * 0.2).toInt();
   final int cornerH = max(1, (maxY - minY) * 0.2).toInt();
   int cornerPixels = 0;
   for (int y = minY; y < minY + cornerH; y++) {
-    for (int x = minX; x < minX + cornerW; x++) if (mask[y * resized.width + x]) cornerPixels++;
-    for (int x = maxX - cornerW + 1; x <= maxX; x++) if (mask[y * resized.width + x]) cornerPixels++;
+    for (int x = minX; x < minX + cornerW; x++) {
+      if (mask[y * resized.width + x]) cornerPixels++;
+    }
+    for (int x = maxX - cornerW + 1; x <= maxX; x++) {
+      if (mask[y * resized.width + x]) cornerPixels++;
+    }
   }
   for (int y = maxY - cornerH + 1; y <= maxY; y++) {
-    for (int x = minX; x < minX + cornerW; x++) if (mask[y * resized.width + x]) cornerPixels++;
-    for (int x = maxX - cornerW + 1; x <= maxX; x++) if (mask[y * resized.width + x]) cornerPixels++;
+    for (int x = minX; x < minX + cornerW; x++) {
+      if (mask[y * resized.width + x]) cornerPixels++;
+    }
+    for (int x = maxX - cornerW + 1; x <= maxX; x++) {
+      if (mask[y * resized.width + x]) cornerPixels++;
+    }
   }
-  final double cornerDensity = cornerPixels / max(1, cornerW * cornerH * 4).toDouble();
+  final double cornerDensity =
+      cornerPixels / max(1, cornerW * cornerH * 4).toDouble();
 
   int diagPixels = 0;
   int diagArea = 0;
@@ -726,10 +705,16 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
   final int lqMidY = minY + ((maxY - minY) * 0.5).toInt();
   final int lqMidX = minX + ((maxX - minX) * 0.5).toInt();
   for (int y = lqMidY; y <= maxY; y++) {
-    for (int x = minX; x < lqMidX; x++) if (mask[y * resized.width + x]) lqLeft++;
-    for (int x = lqMidX; x <= maxX; x++) if (mask[y * resized.width + x]) lqRight++;
+    for (int x = minX; x < lqMidX; x++) {
+      if (mask[y * resized.width + x]) lqLeft++;
+    }
+    for (int x = lqMidX; x <= maxX; x++) {
+      if (mask[y * resized.width + x]) lqRight++;
+    }
   }
-  final double lowerQuadrantSymmetry = (lqLeft + lqRight) > 0 ? min(lqLeft, lqRight) / max(lqLeft, lqRight) : 0.0;
+  final double lowerQuadrantSymmetry = (lqLeft + lqRight) > 0
+      ? min(lqLeft, lqRight) / max(lqLeft, lqRight)
+      : 0.0;
 
   int totalX = 0, totalY = 0;
   for (int y = minY; y <= maxY; y++) {
@@ -740,53 +725,79 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
       }
     }
   }
-  final double centroidX = objectPixelCount > 0 ? totalX / objectPixelCount : lqMidX.toDouble();
-  final double centroidY = objectPixelCount > 0 ? totalY / objectPixelCount : lqMidY.toDouble();
-  final double horizontalCentroidShift = (maxX > minX) ? (centroidX - minX) / (maxX - minX) : 0.5;
+  final double centroidX = objectPixelCount > 0
+      ? totalX / objectPixelCount
+      : lqMidX.toDouble();
+  final double centroidY = objectPixelCount > 0
+      ? totalY / objectPixelCount
+      : lqMidY.toDouble();
+  final double horizontalCentroidShift = (maxX > minX)
+      ? (centroidX - minX) / (maxX - minX)
+      : 0.5;
 
   final double diamondArea = (maxX - minX + 1) * (maxY - minY + 1) / 2.0;
-  final double convexHullRatio = diamondArea > 0 ? (objectPixelCount / diamondArea).clamp(0.0, 1.0) : 0.0;
+  final double convexHullRatio = diamondArea > 0
+      ? (objectPixelCount / diamondArea).clamp(0.0, 1.0)
+      : 0.0;
 
   int edgeMass = 0;
   final int vmdQ1 = minY + ((maxY - minY) * 0.25).toInt();
   final int vmdQ3 = minY + ((maxY - minY) * 0.75).toInt();
   for (int y = minY; y <= maxY; y++) {
     if (y <= vmdQ1 || y >= vmdQ3) {
-      for (int x = minX; x <= maxX; x++) if (mask[y * resized.width + x]) edgeMass++;
+      for (int x = minX; x <= maxX; x++) {
+        if (mask[y * resized.width + x]) edgeMass++;
+      }
     }
   }
-  final double verticalMassDistribution = objectPixelCount > 0 ? edgeMass / objectPixelCount : 0.0;
+  final double verticalMassDistribution = objectPixelCount > 0
+      ? edgeMass / objectPixelCount
+      : 0.0;
 
   final Set<int> uniqueColors = {};
   for (int y = minY; y <= maxY; y++) {
     for (int x = minX; x <= maxX; x++) {
       if (mask[y * resized.width + x]) {
         final p = resized.getPixel(x, y);
-        uniqueColors.add(((p.r ~/ 16) << 16) | ((p.g ~/ 16) << 8) | (p.b ~/ 16));
+        uniqueColors.add(
+          ((p.r ~/ 16) << 16) | ((p.g ~/ 16) << 8) | (p.b ~/ 16),
+        );
       }
     }
   }
-  final double colorGranularity = (uniqueColors.length / 4096.0).clamp(0.0, 1.0);
+  final double colorGranularity = (uniqueColors.length / 4096.0).clamp(
+    0.0,
+    1.0,
+  );
 
   int fringePixels = 0;
   for (int y = minY; y <= maxY; y++) {
     for (int x = minX; x <= maxX; x++) {
       if (mask[y * resized.width + x]) {
-        if (x == minX || x == maxX || y == minY || y == maxY ||
-            !mask[(y - 1) * resized.width + x] || !mask[(y + 1) * resized.width + x] ||
-            !mask[y * resized.width + (x - 1)] || !mask[y * resized.width + (x + 1)]) {
+        if (x == minX ||
+            x == maxX ||
+            y == minY ||
+            y == maxY ||
+            !mask[(y - 1) * resized.width + x] ||
+            !mask[(y + 1) * resized.width + x] ||
+            !mask[y * resized.width + (x - 1)] ||
+            !mask[y * resized.width + (x + 1)]) {
           fringePixels++;
         }
       }
     }
   }
-  final double fringeDensity = objectPixelCount > 0 ? fringePixels / objectPixelCount : 0.0;
+  final double fringeDensity = objectPixelCount > 0
+      ? fringePixels / objectPixelCount
+      : 0.0;
 
   int minRowWidth = maxX - minX + 1, maxRowWidth = 0, totalRowWidth = 0;
   List<int> rowWidths = [];
   for (int y = minY; y <= maxY; y++) {
     int rowW = 0;
-    for (int x = minX; x <= maxX; x++) if (mask[y * resized.width + x]) rowW++;
+    for (int x = minX; x <= maxX; x++) {
+      if (mask[y * resized.width + x]) rowW++;
+    }
     if (rowW > 0) {
       if (rowW < minRowWidth) minRowWidth = rowW;
       if (rowW > maxRowWidth) maxRowWidth = rowW;
@@ -794,25 +805,36 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
       rowWidths.add(rowW);
     }
   }
-  final double verticalThinning = maxRowWidth > 0 ? minRowWidth / maxRowWidth : 0.0;
+  final double verticalThinning = maxRowWidth > 0
+      ? minRowWidth / maxRowWidth
+      : 0.0;
   double widthVariance = 0.0;
   if (rowWidths.isNotEmpty && maxRowWidth > 0) {
     double avgRow = totalRowWidth / rowWidths.length;
     double varSum = 0;
-    for (int w in rowWidths) varSum += (w - avgRow).abs();
+    for (int w in rowWidths) {
+      varSum += (w - avgRow).abs();
+    }
     widthVariance = (varSum / rowWidths.length) / maxRowWidth;
   }
 
   double localSymSum = 0;
   int slices = 4, sliceH = max(1, (maxY - minY + 1) ~/ slices);
   for (int s = 0; s < slices; s++) {
-    int sMinY = minY + s * sliceH, sMaxY = (s == slices - 1) ? maxY : sMinY + sliceH - 1;
+    int sMinY = minY + s * sliceH,
+        sMaxY = (s == slices - 1) ? maxY : sMinY + sliceH - 1;
     int slLeft = 0, slRight = 0;
     for (int y = sMinY; y <= sMaxY; y++) {
-      for (int x = minX; x < lqMidX; x++) if (mask[y * resized.width + x]) slLeft++;
-      for (int x = lqMidX; x <= maxX; x++) if (mask[y * resized.width + x]) slRight++;
+      for (int x = minX; x < lqMidX; x++) {
+        if (mask[y * resized.width + x]) slLeft++;
+      }
+      for (int x = lqMidX; x <= maxX; x++) {
+        if (mask[y * resized.width + x]) slRight++;
+      }
     }
-    if (slLeft + slRight > 0) localSymSum += min(slLeft, slRight) / max(slLeft, slRight);
+    if (slLeft + slRight > 0) {
+      localSymSum += min(slLeft, slRight) / max(slLeft, slRight);
+    }
   }
   final double localSymmetry = localSymSum / slices;
 
@@ -824,16 +846,26 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
         int qc = ((p.r ~/ 32) << 16) | ((p.g ~/ 32) << 8) | (p.b ~/ 32);
         if (mask[(y - 1) * resized.width + x]) {
           final pt = resized.getPixel(x, y - 1);
-          if (qc == (((pt.r ~/ 32) << 16) | ((pt.g ~/ 32) << 8) | (pt.b ~/ 32))) clusteredPixels++;
+          if (qc ==
+              (((pt.r ~/ 32) << 16) | ((pt.g ~/ 32) << 8) | (pt.b ~/ 32))) {
+            clusteredPixels++;
+          }
         } else if (mask[y * resized.width + x - 1]) {
           final pl = resized.getPixel(x - 1, y);
-          if (qc == (((pl.r ~/ 32) << 16) | ((pl.g ~/ 32) << 8) | (pl.b ~/ 32))) clusteredPixels++;
+          if (qc ==
+              (((pl.r ~/ 32) << 16) | ((pl.g ~/ 32) << 8) | (pl.b ~/ 32))) {
+            clusteredPixels++;
+          }
         }
       }
     }
   }
-  final double colorClustering = objectPixelCount > 0 ? clusteredPixels / objectPixelCount : 0.0;
-  final double yGradient = (maxY > minY) ? (centroidY - minY) / (maxY - minY) : 0.5;
+  final double colorClustering = objectPixelCount > 0
+      ? clusteredPixels / objectPixelCount
+      : 0.0;
+  final double yGradient = (maxY > minY)
+      ? (centroidY - minY) / (maxY - minY)
+      : 0.5;
 
   int shellPixels = 0;
   int shEdgeX = max(1, (maxX - minX) * 0.15).toInt();
@@ -841,21 +873,39 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
   for (int y = minY; y <= maxY; y++) {
     for (int x = minX; x <= maxX; x++) {
       if (mask[y * resized.width + x]) {
-        if (x <= minX + shEdgeX || x >= maxX - shEdgeX || y <= minY + shEdgeY || y >= maxY - shEdgeY) shellPixels++;
+        if (x <= minX + shEdgeX ||
+            x >= maxX - shEdgeX ||
+            y <= minY + shEdgeY ||
+            y >= maxY - shEdgeY) {
+          shellPixels++;
+        }
       }
     }
   }
-  final double shellIndex = objectPixelCount > 0 ? shellPixels / objectPixelCount : 0.0;
-  final double ellipseArea = pi * ((maxX - minX + 1) / 2.0) * ((maxY - minY + 1) / 2.0);
-  final double radialOverlap = ellipseArea > 0 ? (objectPixelCount / ellipseArea).clamp(0.0, 1.0) : 0.0;
-  final double yCentroid = objectPixelCount > 0 ? centroidY / resized.height : 0.5;
-  final double jaggedness = objectPixelCount > 0 ? fringePixels / sqrt(objectPixelCount) : 0.0;
+  final double shellIndex = objectPixelCount > 0
+      ? shellPixels / objectPixelCount
+      : 0.0;
+  final double ellipseArea =
+      pi * ((maxX - minX + 1) / 2.0) * ((maxY - minY + 1) / 2.0);
+  final double radialOverlap = ellipseArea > 0
+      ? (objectPixelCount / ellipseArea).clamp(0.0, 1.0)
+      : 0.0;
+  final double yCentroid = objectPixelCount > 0
+      ? centroidY / resized.height
+      : 0.5;
+  final double jaggedness = objectPixelCount > 0
+      ? fringePixels / sqrt(objectPixelCount)
+      : 0.0;
 
   int topThirdPixels = 0, topThirdY = minY + (maxY - minY + 1) ~/ 3;
   for (int y = minY; y <= topThirdY; y++) {
-    for (int x = minX; x <= maxX; x++) if (mask[y * resized.width + x]) topThirdPixels++;
+    for (int x = minX; x <= maxX; x++) {
+      if (mask[y * resized.width + x]) topThirdPixels++;
+    }
   }
-  final double topThirdDensity = objectPixelCount > 0 ? topThirdPixels / objectPixelCount : 0.0;
+  final double topThirdDensity = objectPixelCount > 0
+      ? topThirdPixels / objectPixelCount
+      : 0.0;
 
   int matchedSymmetryPixels = 0, totalSymmetryCheck = 0;
   for (int y = minY; y <= maxY; y++) {
@@ -863,11 +913,16 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
       int oppositeX = maxX - (x - minX);
       if (oppositeX >= 0 && oppositeX < resized.width) {
         totalSymmetryCheck++;
-        if (mask[y * resized.width + x] == mask[y * resized.width + oppositeX]) matchedSymmetryPixels++;
+        if (mask[y * resized.width + x] ==
+            mask[y * resized.width + oppositeX]) {
+          matchedSymmetryPixels++;
+        }
       }
     }
   }
-  final double bilateralSym = totalSymmetryCheck > 0 ? matchedSymmetryPixels / totalSymmetryCheck : 0.0;
+  final double bilateralSym = totalSymmetryCheck > 0
+      ? matchedSymmetryPixels / totalSymmetryCheck
+      : 0.0;
 
   final sym = _calculateSymmetry(resized, mask, minX, maxX, minY, maxY);
 
@@ -908,7 +963,6 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
     'topThirdDensity': topThirdDensity,
     'bilateralSym': bilateralSym,
   };
-
 }
 
 (double, double) _calculateSymmetry(
@@ -978,10 +1032,11 @@ List<double> rgbToHsv(int r, int g, int b) {
   if (d != 0) {
     if (maxV == rf) {
       h = (gf - bf) / d + (gf < bf ? 6 : 0);
-    } else if (maxV == gf)
+    } else if (maxV == gf) {
       h = (bf - rf) / d + 2;
-    else
+    } else {
       h = (rf - gf) / d + 4;
+    }
     h /= 6;
   }
   return [h * 360, maxV == 0 ? 0 : d / maxV, maxV];

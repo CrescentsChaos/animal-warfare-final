@@ -34,7 +34,7 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
   static const Color primaryButtonColor = AppColors.primary;
   static const Color secondaryButtonColor = AppColors.surface;
   static const Color highlightColor = AppColors.highlight;
-  static const Color neonGreen = AppColors.correctGreen;
+  //static const Color neonGreen = AppColors.correctGreen;
 
   @override
   void initState() {

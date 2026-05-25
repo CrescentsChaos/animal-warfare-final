@@ -12,9 +12,9 @@ import 'package:animal_warfare/models/elemental_type.dart';
 import 'package:animal_warfare/models/shop_item.dart';
 import 'package:animal_warfare/widgets/anidex_details_sheet.dart';
 import 'package:animal_warfare/widgets/organism_sprite_widget.dart';
-import 'package:animal_warfare/services/audio_service.dart';
+//import 'package:animal_warfare/services/audio_service.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:animal_warfare/widgets/pop_menu_layout.dart';
+//import 'package:animal_warfare/widgets/pop_menu_layout.dart';
 
 class AnidexScreen extends StatefulWidget {
   final UserData currentUser;
@@ -43,46 +43,62 @@ class _AnidexScreenState extends State<AnidexScreen>
   List<String> _allDrops = [];
   List<String> _allCategories = [];
   List<String> _allRarities = [];
-  List<String> get _allClasses => _allOrganisms
-      .map((o) => o.animalClass)
-      .where((s) => s.isNotEmpty)
-      .toSet()
-      .toList()
-    ..sort();
-  List<String> get _allOrders => _allOrganisms
-      .where((o) => _selectedClass == null || o.animalClass == _selectedClass)
-      .map((o) => o.order)
-      .where((s) => s.isNotEmpty && s.toLowerCase() != 'unknown')
-      .toSet()
-      .toList()
-    ..sort();
-  List<String> get _allFamilies => _allOrganisms
-      .where((o) => _selectedClass == null || o.animalClass == _selectedClass)
-      .where((o) => _selectedOrder == null || o.order == _selectedOrder)
-      .map((o) => o.family)
-      .where((s) => s.isNotEmpty && s.toLowerCase() != 'unknown')
-      .toSet()
-      .toList()
-    ..sort();
-  List<String> get _allSubfamilies => _allOrganisms
-      .where((o) => _selectedClass == null || o.animalClass == _selectedClass)
-      .where((o) => _selectedOrder == null || o.order == _selectedOrder)
-      .where((o) => _selectedFamily == null || o.family == _selectedFamily)
-      .map((o) => o.subfamily)
-      .where((s) => s.isNotEmpty && s.toLowerCase() != 'unknown')
-      .toSet()
-      .toList()
-    ..sort();
-  List<String> get _allGenera => _allOrganisms
-      .where((o) => _selectedClass == null || o.animalClass == _selectedClass)
-      .where((o) => _selectedOrder == null || o.order == _selectedOrder)
-      .where((o) => _selectedFamily == null || o.family == _selectedFamily)
-      .where((o) => _selectedSubfamily == null || o.subfamily == _selectedSubfamily)
-      .map((o) => o.scientificName.split(' ').first)
-      .where((s) => s.isNotEmpty && s.toLowerCase() != 'unknown')
-      .toSet()
-      .toList()
-    ..sort();
+  List<String> get _allClasses =>
+      _allOrganisms
+          .map((o) => o.animalClass)
+          .where((s) => s.isNotEmpty)
+          .toSet()
+          .toList()
+        ..sort();
+  List<String> get _allOrders =>
+      _allOrganisms
+          .where(
+            (o) => _selectedClass == null || o.animalClass == _selectedClass,
+          )
+          .map((o) => o.order)
+          .where((s) => s.isNotEmpty && s.toLowerCase() != 'unknown')
+          .toSet()
+          .toList()
+        ..sort();
+  List<String> get _allFamilies =>
+      _allOrganisms
+          .where(
+            (o) => _selectedClass == null || o.animalClass == _selectedClass,
+          )
+          .where((o) => _selectedOrder == null || o.order == _selectedOrder)
+          .map((o) => o.family)
+          .where((s) => s.isNotEmpty && s.toLowerCase() != 'unknown')
+          .toSet()
+          .toList()
+        ..sort();
+  List<String> get _allSubfamilies =>
+      _allOrganisms
+          .where(
+            (o) => _selectedClass == null || o.animalClass == _selectedClass,
+          )
+          .where((o) => _selectedOrder == null || o.order == _selectedOrder)
+          .where((o) => _selectedFamily == null || o.family == _selectedFamily)
+          .map((o) => o.subfamily)
+          .where((s) => s.isNotEmpty && s.toLowerCase() != 'unknown')
+          .toSet()
+          .toList()
+        ..sort();
+  List<String> get _allGenera =>
+      _allOrganisms
+          .where(
+            (o) => _selectedClass == null || o.animalClass == _selectedClass,
+          )
+          .where((o) => _selectedOrder == null || o.order == _selectedOrder)
+          .where((o) => _selectedFamily == null || o.family == _selectedFamily)
+          .where(
+            (o) =>
+                _selectedSubfamily == null || o.subfamily == _selectedSubfamily,
+          )
+          .map((o) => o.scientificName.split(' ').first)
+          .where((s) => s.isNotEmpty && s.toLowerCase() != 'unknown')
+          .toSet()
+          .toList()
+        ..sort();
 
   List<String> _allDiets = [];
 
@@ -308,7 +324,8 @@ class _AnidexScreenState extends State<AnidexScreen>
       if (_selectedSubfamily != null && org.subfamily != _selectedSubfamily) {
         return false;
       }
-      if (_selectedGenus != null && org.scientificName.split(' ').first != _selectedGenus) {
+      if (_selectedGenus != null &&
+          org.scientificName.split(' ').first != _selectedGenus) {
         return false;
       }
       if (_selectedDiet != null && org.diet != _selectedDiet) {
@@ -407,7 +424,10 @@ class _AnidexScreenState extends State<AnidexScreen>
               if (result == 0) {
                 result = a.subfamily.compareTo(b.subfamily);
                 if (result == 0) {
-                  result = a.scientificName.split(' ').first.compareTo(b.scientificName.split(' ').first);
+                  result = a.scientificName
+                      .split(' ')
+                      .first
+                      .compareTo(b.scientificName.split(' ').first);
                   if (result == 0) {
                     result = a.name.compareTo(b.name);
                   }
@@ -610,10 +630,8 @@ class _AnidexScreenState extends State<AnidexScreen>
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => AnidexDetailsPage(
-              organism: org,
-              showScaledStats: false,
-            ),
+            builder: (context) =>
+                AnidexDetailsPage(organism: org, showScaledStats: false),
           ),
         );
       },
@@ -632,7 +650,9 @@ class _AnidexScreenState extends State<AnidexScreen>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              discovered ? rarityColor.withValues(alpha: 0.3) : Colors.grey.shade900,
+              discovered
+                  ? rarityColor.withValues(alpha: 0.3)
+                  : Colors.grey.shade900,
               AppColors.surface, // Using a solid surface color
             ],
           ),
