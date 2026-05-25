@@ -10977,7 +10977,7 @@
     },
     {
         "abilities": "Rough Skin",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 105,
         "category": "Aquatic, Earth",
         "class": "Fish",
@@ -11005,7 +11005,7 @@
     },
     {
         "abilities": "Battle Armor",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 110,
         "category": "Aquatic, Rock",
         "class": "Fish",
@@ -11033,7 +11033,7 @@
     },
     {
         "abilities": "Swift Swim",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 102,
         "category": "Aquatic, Grass",
         "class": "Fish",
@@ -11061,7 +11061,7 @@
     },
     {
         "abilities": "Sharpness , Rough Skin",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 90,
         "category": "Aquatic, Grass",
         "class": "Fish",
@@ -11089,7 +11089,7 @@
     },
     {
         "abilities": "Rough Skin",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 95,
         "category": "Aquatic, Metal",
         "class": "Fish",
@@ -11117,7 +11117,7 @@
     },
     {
         "abilities": "School Swimmer",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 30,
         "category": "Aquatic, Earth",
         "class": "Fish",
@@ -11173,7 +11173,7 @@
     },
     {
         "abilities": "Sturdy",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 50,
         "category": "Aquatic, Rock",
         "class": "Fish",
@@ -11285,7 +11285,7 @@
     },
     {
         "abilities": "Rivalry",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 35,
         "category": "Aquatic",
         "class": "Fish",
@@ -11313,7 +11313,7 @@
     },
     {
         "abilities": "Sturdy",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 80,
         "category": "Aquatic, Rock",
         "class": "Fish",
@@ -11341,7 +11341,7 @@
     },
     {
         "abilities": "Pressure",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 145,
         "category": "Aquatic, Drake",
         "class": "Fish",
@@ -11369,7 +11369,7 @@
     },
     {
         "abilities": "Limber",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 75,
         "category": "Aquatic, Toxic",
         "class": "Fish",
@@ -11397,7 +11397,7 @@
     },
     {
         "abilities": "Speed Boost",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 105,
         "category": "Earth, Electric",
         "class": "Mammal",
@@ -11453,7 +11453,7 @@
     },
     {
         "abilities": "Infiltrator",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 125,
         "category": "Darkness, Spectral",
         "class": "Mammal",
@@ -11509,7 +11509,7 @@
     },
     {
         "abilities": "Rock Head",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 80,
         "category": "Basic, Earth",
         "class": "Mammal",
@@ -11733,7 +11733,7 @@
     },
     {
         "abilities": "Swift Swim",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 65,
         "category": "Aquatic",
         "class": "Fish",
@@ -11761,7 +11761,7 @@
     },
     {
         "abilities": "Ambush Predator",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 70,
         "category": "Aquatic",
         "class": "Fish",
@@ -11789,7 +11789,7 @@
     },
     {
         "abilities": "Water Veil",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 60,
         "category": "Aquatic, Aura",
         "class": "Fish",
@@ -11845,7 +11845,7 @@
     },
     {
         "abilities": "Strong Jaw",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 120,
         "category": "Aquatic, Drake",
         "class": "Fish",
@@ -11901,7 +11901,7 @@
     },
     {
         "abilities": "Forest Shadow",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 80,
         "category": "Darkness, Earth",
         "class": "Mammal",
@@ -11929,7 +11929,7 @@
     },
     {
         "abilities": "Guard Dog",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 100,
         "category": "Basic, Darkness",
         "class": "Mammal",
@@ -11985,7 +11985,7 @@
     },
     {
         "abilities": "Anger Point",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 80,
         "category": "Darkness, Martial",
         "class": "Mammal",
@@ -12013,7 +12013,7 @@
     },
     {
         "abilities": "Gulp Missile, True Flight",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 70,
         "category": "Aquatic, Darkness",
         "class": "Bird",
@@ -12041,7 +12041,7 @@
     },
     {
         "abilities": "Hydration",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 65,
         "category": "Flying, Aquatic",
         "class": "Bird",
@@ -12153,7 +12153,7 @@
     },
     {
         "abilities": "Iron Barbs , Rough Skin",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 75,
         "category": "Aquatic, Toxic",
         "class": "Echinoderm",
@@ -12181,7 +12181,7 @@
     },
     {
         "abilities": "Iron Barbs , Poison Point",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 80,
         "category": "Aquatic, Rock",
         "class": "Echinoderm",
@@ -12293,7 +12293,7 @@
     },
     {
         "abilities": "Regenerator , Shell Armor",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 55,
         "category": "Aquatic",
         "class": "Echinoderm",
@@ -12321,7 +12321,7 @@
     },
     {
         "abilities": "Regenerator",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 50,
         "category": "Aquatic",
         "class": "Echinoderm",
@@ -12349,7 +12349,7 @@
     },
     {
         "abilities": "Swift Hunter",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 85,
         "category": "Aquatic, Darkness",
         "class": "Fish",
@@ -12377,7 +12377,7 @@
     },
     {
         "abilities": "Defiant",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 90,
         "category": "Aquatic, Martial",
         "class": "Fish",
@@ -12405,7 +12405,7 @@
     },
     {
         "abilities": "Striped Stalker",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 85,
         "category": "Aquatic, Darkness",
         "class": "Fish",
@@ -12461,7 +12461,7 @@
     },
     {
         "abilities": "Static",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 80,
         "category": "Aquatic, Electric",
         "class": "Fish",
@@ -12517,7 +12517,7 @@
     },
     {
         "abilities": "Grassy Surge, Regenerator",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 70,
         "category": "Aquatic, Grass",
         "class": "Fish",
@@ -12545,7 +12545,7 @@
     },
     {
         "abilities": "Rough Skin",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 75,
         "category": "Aquatic, Rock",
         "class": "Fish",
@@ -12573,7 +12573,7 @@
     },
     {
         "abilities": "Sturdy , Rough Skin",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 55,
         "category": "Aquatic, Rock",
         "class": "Fish",
@@ -12601,7 +12601,7 @@
     },
     {
         "abilities": "Guts , No Guard",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 60,
         "category": "Aquatic, Martial",
         "class": "Fish",
@@ -12657,7 +12657,7 @@
     },
     {
         "abilities": "Sticky Hold",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 50,
         "category": "Aquatic, Earth",
         "class": "Fish",
@@ -12685,7 +12685,7 @@
     },
     {
         "abilities": "Sniper , Swift Swim",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 45,
         "category": "Aquatic, Metal",
         "class": "Fish",
@@ -12741,7 +12741,7 @@
     },
     {
         "abilities": "Adaptability",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 50,
         "category": "Aquatic",
         "class": "Fish",
@@ -12769,7 +12769,7 @@
     },
     {
         "abilities": "Dazzling , Color Change",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 40,
         "category": "Aquatic, Mystic",
         "class": "Fish",
@@ -12797,7 +12797,7 @@
     },
     {
         "abilities": "Gluttony",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 65,
         "category": "Aquatic, Grass",
         "class": "Fish",
@@ -12825,7 +12825,7 @@
     },
     {
         "abilities": "Multiscale , Filter",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 80,
         "category": "Aquatic, Drake",
         "class": "Fish",
@@ -12853,7 +12853,7 @@
     },
     {
         "abilities": "Anticipation, Competitive",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 45,
         "category": "Aquatic, Aura",
         "class": "Fish",
@@ -12881,7 +12881,7 @@
     },
     {
         "abilities": "Defiant",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 45,
         "category": "Aquatic, Darkness",
         "class": "Fish",
@@ -12909,7 +12909,7 @@
     },
     {
         "abilities": "Cute Charm , Illuminate",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 35,
         "category": "Aquatic, Mystic",
         "class": "Fish",
@@ -12937,7 +12937,7 @@
     },
     {
         "abilities": "Rough Skin",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 50,
         "category": "Aquatic, Metal",
         "class": "Fish",
@@ -12965,7 +12965,7 @@
     },
     {
         "abilities": "Guts",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 48,
         "category": "Martial, Aquatic",
         "class": "Fish",
@@ -12993,7 +12993,7 @@
     },
     {
         "abilities": "Defiant , Intimidate",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 55,
         "category": "Aquatic, Martial",
         "class": "Fish",
@@ -13021,7 +13021,7 @@
     },
     {
         "abilities": "Swift Swim , Serene Grace",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 40,
         "category": "Aquatic, Mystic",
         "class": "Fish",
@@ -13049,7 +13049,7 @@
     },
     {
         "abilities": "Adaptability , Sturdy",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 38,
         "category": "Aquatic, Toxic",
         "class": "Fish",
@@ -13077,7 +13077,7 @@
     },
     {
         "abilities": "Damp",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 52,
         "category": "Aquatic, Earth",
         "class": "Fish",
@@ -13105,7 +13105,7 @@
     },
     {
         "abilities": "Early Bird , Aftermath",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 42,
         "category": "Aquatic, Spectral",
         "class": "Fish",
@@ -13133,7 +13133,7 @@
     },
     {
         "abilities": "Clear Body",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 35,
         "category": "Aquatic, Toxic",
         "class": "Cnidarian",
@@ -13189,7 +13189,7 @@
     },
     {
         "abilities": "Swift Swim , Suction Cups",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 100,
         "category": "Aquatic, Flying",
         "class": "Mollusk",
@@ -13217,7 +13217,7 @@
     },
     {
         "abilities": "Speed Boost , Infiltrator",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 45,
         "category": "Aquatic, Metal",
         "class": "Fish",
@@ -13273,7 +13273,7 @@
     },
     {
         "abilities": "Illuminate , Dazzling",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 38,
         "category": "Aquatic, Electric",
         "class": "Fish",
@@ -13357,7 +13357,7 @@
     },
     {
         "abilities": "Illuminate , Dazzling",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 42,
         "category": "Aquatic, Electric",
         "class": "Fish",
@@ -13385,7 +13385,7 @@
     },
     {
         "abilities": "Swift Swim , Symbiosis",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 60,
         "category": "Aquatic",
         "class": "Fish",
@@ -13413,7 +13413,7 @@
     },
     {
         "abilities": "Infiltrator",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 80,
         "category": "Aquatic",
         "class": "Fish",
@@ -13497,7 +13497,7 @@
     },
     {
         "abilities": "Swift Swim , Speed Boost",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 85,
         "category": "Aquatic",
         "class": "Fish",
@@ -13525,7 +13525,7 @@
     },
     {
         "abilities": "Motor Drive",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 90,
         "category": "Aquatic, Electric",
         "class": "Fish",
@@ -13553,7 +13553,7 @@
     },
     {
         "abilities": "Swift Swim",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 95,
         "category": "Aquatic, Metal",
         "class": "Fish",
@@ -13581,7 +13581,7 @@
     },
     {
         "abilities": "Speed Boost , Sniper",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 72,
         "category": "Aquatic",
         "class": "Fish",
@@ -13609,7 +13609,7 @@
     },
     {
         "abilities": "Swift Swim",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 32,
         "category": "Aquatic",
         "class": "Fish",
@@ -13637,7 +13637,7 @@
     },
     {
         "abilities": "Dazzling",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 34,
         "category": "Aquatic, Mystic",
         "class": "Fish",
@@ -13665,7 +13665,7 @@
     },
     {
         "abilities": "Schooling",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 36,
         "category": "Aquatic",
         "class": "Fish",
@@ -13693,7 +13693,7 @@
     },
     {
         "abilities": "Rattled",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 38,
         "category": "Aquatic",
         "class": "Fish",
@@ -13721,7 +13721,7 @@
     },
     {
         "abilities": "Keen Eye",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 55,
         "category": "Aquatic",
         "class": "Fish",
@@ -13805,7 +13805,7 @@
     },
     {
         "abilities": "Dazzling",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 58,
         "category": "Aquatic, Earth",
         "class": "Fish",
@@ -13833,7 +13833,7 @@
     },
     {
         "abilities": "Intimidate",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 74,
         "category": "Aquatic, Darkness",
         "class": "Fish",
@@ -13861,7 +13861,7 @@
     },
     {
         "abilities": "Infiltrator",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 52,
         "category": "Aquatic, Grass",
         "class": "Fish",
@@ -13889,7 +13889,7 @@
     },
     {
         "abilities": "Shoal Protection",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 46,
         "category": "Aquatic, Flying",
         "class": "Fish",
@@ -13917,7 +13917,7 @@
     },
     {
         "abilities": "Shed Skin",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 110,
         "category": "Aquatic",
         "class": "Fish",
@@ -13973,7 +13973,7 @@
     },
     {
         "abilities": "Adaptability, Reef Camouflage, Poison Point",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 125,
         "category": "Aquatic, Toxic",
         "class": "Fish",
@@ -14029,7 +14029,7 @@
     },
     {
         "abilities": "Regenerator",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 90,
         "category": "Aquatic, Grass",
         "class": "Fish",
@@ -14057,7 +14057,7 @@
     },
     {
         "abilities": "Defiant",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 129,
         "category": "Martial",
         "class": "Bird",
@@ -14085,7 +14085,7 @@
     },
     {
         "abilities": "Sniper",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 70,
         "category": "Aquatic, Martial",
         "class": "Fish",
@@ -14141,7 +14141,7 @@
     },
     {
         "abilities": "Swift Swim",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 28,
         "category": "Aquatic, Holy",
         "class": "Fish",
@@ -14169,7 +14169,7 @@
     },
     {
         "abilities": "Intimidate",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 68,
         "category": "Aquatic, Darkness",
         "class": "Fish",
@@ -14197,7 +14197,7 @@
     },
     {
         "abilities": "Suction Cups",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 74,
         "category": "Aquatic, Metal",
         "class": "Fish",
@@ -14253,7 +14253,7 @@
     },
     {
         "abilities": "Strong Jaw , Shell Armor",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 46,
         "category": "Aquatic, Rock",
         "class": "Fish",
@@ -14281,7 +14281,7 @@
     },
     {
         "abilities": "Rock Head, Sturdy",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 115,
         "category": "Aquatic, Earth",
         "class": "Fish",
@@ -14365,7 +14365,7 @@
     },
     {
         "abilities": "Reef Camouflage",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 40,
         "category": "Toxic, Aquatic",
         "class": "Mollusk",
@@ -14393,7 +14393,7 @@
     },
     {
         "abilities": "Wading Sweep",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 44,
         "category": "Flying, Aquatic",
         "class": "Bird",
@@ -14421,7 +14421,7 @@
     },
     {
         "abilities": "Pickpocket",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 66,
         "category": "Darkness, Flying",
         "class": "Bird",
@@ -14449,7 +14449,7 @@
     },
     {
         "abilities": "Dazzling , Intimidate",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 42,
         "category": "Earth, Aura",
         "class": "Reptile",
@@ -14477,7 +14477,7 @@
     },
     {
         "abilities": "Long Reach , Strong Jaw",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 78,
         "category": "Flying, Aquatic",
         "class": "Bird",
@@ -14505,7 +14505,7 @@
     },
     {
         "abilities": "Swift Swim , Water Veil",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 110,
         "category": "Martial, Aquatic",
         "class": "Mammal",
@@ -14533,7 +14533,7 @@
     },
     {
         "abilities": "Water Veil",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 58,
         "category": "Basic, Aquatic",
         "class": "Mammal",
@@ -14561,7 +14561,7 @@
     },
     {
         "abilities": "Pickpocket",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 54,
         "category": "Basic, Aquatic",
         "class": "Mammal",
@@ -14617,7 +14617,7 @@
     },
     {
         "abilities": "Burrow Dash",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 34,
         "category": "Arthropod, Spectral",
         "class": "Crustacean",
@@ -14701,7 +14701,7 @@
     },
     {
         "abilities": "Burrow Guard",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 36,
         "category": "Arthropod",
         "class": "Crustacean",
@@ -14785,7 +14785,7 @@
     },
     {
         "abilities": "Sniper,Keen Eye",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 48,
         "category": "Aquatic, Grass",
         "class": "Fish",
@@ -14841,7 +14841,7 @@
     },
     {
         "abilities": "Strong Jaw",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 74,
         "category": "Aquatic, Grass",
         "class": "Fish",
@@ -14897,7 +14897,7 @@
     },
     {
         "abilities": "Triage",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 32,
         "category": "Flying, Grass",
         "class": "Bird",
@@ -14925,7 +14925,7 @@
     },
     {
         "abilities": "Stakeout",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 40,
         "category": "Flying, Electric",
         "class": "Bird",
@@ -15065,7 +15065,7 @@
     },
     {
         "abilities": "Thick Fat , Infiltrator",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 65,
         "category": "Earth, Darkness",
         "class": "Mammal",
@@ -15093,7 +15093,7 @@
     },
     {
         "abilities": "Thick Fat , Sap Sipper",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 63,
         "category": "Earth, Cryo",
         "class": "Mammal",
@@ -15121,7 +15121,7 @@
     },
     {
         "abilities": "Shadow Tag",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 115,
         "category": "Darkness",
         "class": "Mammal",
@@ -15177,7 +15177,7 @@
     },
     {
         "abilities": "Thick Fat , Sap Sipper",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 64,
         "category": "Aquatic, Earth",
         "class": "Mammal",
@@ -15205,7 +15205,7 @@
     },
     {
         "abilities": "Fluffy",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 65,
         "category": "Grass, Blaze",
         "class": "Mammal",
@@ -15233,7 +15233,7 @@
     },
     {
         "abilities": "Anger Point, Strong Jaw, Tough Claws",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 115,
         "category": "Darkness, Martial",
         "class": "Mammal",
@@ -15317,7 +15317,7 @@
     },
     {
         "abilities": "Dazzling",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 70,
         "category": "Basic",
         "class": "Mammal",
@@ -15401,7 +15401,7 @@
     },
     {
         "abilities": "Gorilla Tactics, Inner Focus",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 125,
         "category": "Martial",
         "class": "Mammal",
@@ -15457,7 +15457,7 @@
     },
     {
         "abilities": "Horn Charge",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 125,
         "category": "Earth, Martial",
         "class": "Mammal",
@@ -15485,7 +15485,7 @@
     },
     {
         "abilities": "Swift Swim, Sand Rush",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 135,
         "category": "Aquatic, Earth",
         "class": "Mammal",
@@ -15597,7 +15597,7 @@
     },
     {
         "abilities": "Run Away , Rattled",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 70,
         "category": "Basic",
         "class": "Mammal",
@@ -15625,7 +15625,7 @@
     },
     {
         "abilities": "Horn Charge",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 73,
         "category": "Basic, Spectral",
         "class": "Mammal",
@@ -15681,7 +15681,7 @@
     },
     {
         "abilities": "Merciless",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 138,
         "category": "Toxic, Drake",
         "class": "Reptile",
@@ -15709,7 +15709,7 @@
     },
     {
         "abilities": "Strong Jaw",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 145,
         "category": "Toxic, Earth",
         "class": "Reptile",
@@ -15737,7 +15737,7 @@
     },
     {
         "abilities": "Merciless",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 80,
         "category": "Toxic, Earth",
         "class": "Reptile",
@@ -15765,7 +15765,7 @@
     },
     {
         "abilities": "Adaptability",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 115,
         "category": "Earth, Darkness",
         "class": "Reptile",
@@ -15793,7 +15793,7 @@
     },
     {
         "abilities": "Rough Skin",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 142,
         "category": "Toxic, Drake",
         "class": "Reptile",
@@ -15821,7 +15821,7 @@
     },
     {
         "abilities": "Adaptability",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 65,
         "category": "Earth, Darkness",
         "class": "Reptile",
@@ -15849,7 +15849,7 @@
     },
     {
         "abilities": "Intimidate",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 125,
         "category": "Toxic, Earth",
         "class": "Reptile",
@@ -15877,7 +15877,7 @@
     },
     {
         "abilities": "Adaptability",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 100,
         "category": "Grass",
         "class": "Reptile",
@@ -15905,7 +15905,7 @@
     },
     {
         "abilities": "Infiltrator",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 115,
         "category": "Toxic, Darkness",
         "class": "Reptile",
@@ -15961,7 +15961,7 @@
     },
     {
         "abilities": "Merciless",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 90,
         "category": "Grass, Toxic",
         "class": "Reptile",
@@ -15989,7 +15989,7 @@
     },
     {
         "abilities": "Immunity, Intimidate",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 125,
         "category": "Toxic, Drake",
         "class": "Reptile",
@@ -16101,7 +16101,7 @@
     },
     {
         "abilities": "Poison Touch",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 80,
         "category": "Grass, Toxic",
         "class": "Reptile",
@@ -16157,7 +16157,7 @@
     },
     {
         "abilities": "Intimidate , Rough Skin",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 125,
         "category": "Toxic, Earth",
         "class": "Reptile",
@@ -16185,7 +16185,7 @@
     },
     {
         "abilities": "Merciless",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 140,
         "category": "Toxic, Metal",
         "class": "Reptile",
@@ -16213,7 +16213,7 @@
     },
     {
         "abilities": "Intimidate",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 75,
         "category": "Drake, Basic",
         "class": "Reptile",
@@ -16241,7 +16241,7 @@
     },
     {
         "abilities": "Corrosion",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 110,
         "category": "Toxic, Earth",
         "class": "Reptile",
@@ -16269,7 +16269,7 @@
     },
     {
         "abilities": "Compound Eyes",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 50,
         "category": "Arthropod, Grass",
         "class": "Arachnid",
@@ -16297,7 +16297,7 @@
     },
     {
         "abilities": "Gluttony",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 60,
         "category": "Aquatic",
         "class": "Fish",
@@ -16437,7 +16437,7 @@
     },
     {
         "abilities": "Merciless",
-        "active_time": "any",
+        "active_time": "day",
         "attack": 85,
         "category": "Toxic, Aquatic",
         "class": "Reptile",
@@ -16493,7 +16493,7 @@
     },
     {
         "abilities": "Bottom Dweller",
-        "active_time": "any",
+        "active_time": "night",
         "attack": 80,
         "category": "Aquatic",
         "class": "Fish",
@@ -59421,7 +59421,7 @@
         "attack": 30,
         "category": "Darkness, Flying",
         "class": "Bird",
-        "cry": "default",
+        "cry": "red_vented_bulbul",
         "defense": 25,
         "description": "The red-vented bulbul is a familiar bird in gardens and towns across South Asia. It feeds on fruits and insects while living in small groups that move actively through vegetation.",
         "diet": "Omnivore",
@@ -86983,7 +86983,7 @@
         "health": 109,
         "moves": "Water Pulse, Echoed Voice, Aqua Jet, Hyper Voice, Liquidation, Noble Roar, Rain Dance, Flip Turn, Hydro Pump, Brine, Whirlpool, Dive, Agility, Snarl, Scald, Ice Beam, Protect, Surf, Body Slam, U-turn",
         "name": "Platecarpus",
-        "order": "Ornithischia",
+        "order": "Mosasauria",
         "pheno": "none",
         "power": 84,
         "rarity": "Mythical",
@@ -92611,7 +92611,7 @@
         "health": 52,
         "moves": "Glide,Claw,Pounce,Screech",
         "name": "Microraptor",
-        "order": "Dromaeosauridae",
+        "order": "Theropoda",
         "pheno": "none",
         "power": 56,
         "rarity": "Mythical",
@@ -93370,7 +93370,7 @@
         "order": "Ornithischia",
         "pheno": "none",
         "power": 78,
-        "rarity": "Epic",
+        "rarity": "Mythical",
         "resistance": 88,
         "scientific_name": "Barsboldia sicinskii",
         "size": 8.4,
@@ -93398,7 +93398,7 @@
         "order": "Eugeneodontida",
         "pheno": "none",
         "power": 104,
-        "rarity": "Legendary",
+        "rarity": "Mythical",
         "resistance": 68,
         "scientific_name": "Edestus heinrichi",
         "size": 5.7,
