@@ -18,10 +18,6 @@ void main() async {
   sqfliteFfiInit();
 
   final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 8080);
-  print('==================================================');
-  print(' Trainer Server is running!');
-  print(' Open your browser to: http://localhost:8080');
-  print('==================================================');
 
   await for (HttpRequest request in server) {
     // Enable CORS just in case

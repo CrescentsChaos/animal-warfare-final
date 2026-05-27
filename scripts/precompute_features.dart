@@ -13,7 +13,7 @@ void main() async {
   final outputFile = File('assets/ml/sprite_features.json');
 
   if (!spriteDir.existsSync()) {
-    print('Error: assets/sprites directory not found.');
+    //print('Error: assets/sprites directory not found.');
     return;
   }
 
@@ -28,7 +28,7 @@ void main() async {
   }
 
   final entities = spriteDir.listSync().whereType<File>().toList();
-  print('Found ${entities.length} sprites. Starting computation...');
+  //print('Found ${entities.length} sprites. Starting computation...');
 
   final features = <String, dynamic>{};
   int count = 0;
@@ -55,17 +55,12 @@ void main() async {
       features[name] = feature;
 
       count++;
-      if (count % 100 == 0) {
-        print('Processed $count / ${entities.length}...');
-      }
     } catch (e) {
-      print('Error processing ${file.path}: $e');
+      //print('Error processing ${file.path}: $e');
     }
   }
 
-  print('Writing results to ${outputFile.path}...');
   outputFile.writeAsStringSync(JsonEncoder.withIndent('  ').convert(features));
-  print('Done! Successfully processed $count sprites.');
 }
 
 Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
@@ -246,10 +241,11 @@ List<double> rgbToHsv(int r, int g, int b) {
   if (d != 0) {
     if (max == rf) {
       h = (gf - bf) / d + (gf < bf ? 6 : 0);
-    } else if (max == gf)
+    } else if (max == gf) {
       h = (bf - rf) / d + 2;
-    else
+    } else {
       h = (rf - gf) / d + 4;
+    }
     h /= 6;
   }
   return [h * 360, max == 0 ? 0 : d / max, max];

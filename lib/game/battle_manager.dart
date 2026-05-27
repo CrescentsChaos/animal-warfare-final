@@ -271,7 +271,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   // ── TRAINER DIALOGUE SYSTEM ──
   TrainerInfo? trainerInfo;
   String? trainerDialogue; // Current dialogue text shown on screen
-  bool trainerDialogueActive = false; // Whether trainer dialogue overlay is visible
+  bool trainerDialogueActive =
+      false; // Whether trainer dialogue overlay is visible
   Completer<void>? _dialogueCompleter;
   bool get isWaitingForDialogueClick => _dialogueCompleter != null;
   bool opponentAnimalSent = false;
@@ -568,7 +569,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       _dialogueCompleter = null;
 
       // Second dialogue: Intro line
-      final introMsg = '${trainerInfo!.displayName}: "${trainerInfo!.randomIntro(_random)}"';
+      final introMsg =
+          '${trainerInfo!.displayName}: "${trainerInfo!.randomIntro(_random)}"';
       trainerDialogue = introMsg;
       addToLog(introMsg);
       notifyListeners();
@@ -4896,7 +4898,11 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           break;
         case MoveEffectType.snore:
           if (Random().nextInt(100) < 30) {
-            await applyStatusEffect(defender, StatusEffectType.stun, source: attacker);
+            await applyStatusEffect(
+              defender,
+              StatusEffectType.stun,
+              source: attacker,
+            );
           }
           break;
         case MoveEffectType.magicCoat:
@@ -6289,9 +6295,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         );
         notifyListeners();
         if (!isTesting) {
-          if (!isTesting) {
-            await Future.delayed(const Duration(milliseconds: 3000));
-          }
+          await Future.delayed(const Duration(milliseconds: 2000));
         }
         return; // Status cured, skip damage processing
       }
@@ -7949,19 +7953,21 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
       // Roll for loot (only in wild battles, not Rogue-like)
       if (!isRogueMode) {
-        _droppedLoot = opponent.organism.baseOrganism.rollLootDrops(opponent.organism.level);
+        _droppedLoot = opponent.organism.baseOrganism.rollLootDrops(
+          opponent.organism.level,
+        );
       }
       if (_droppedLoot.isNotEmpty) {
         // Let UI handle the loot addition to show it properly
       }
-      
+
       addToLog(
         'The wild ${opponent.organism.baseOrganism.name} fainted! You won the battle.',
       );
       if (!isTesting) {
         _audioService.playOrganismCry(opponent.organism.baseOrganism.cry);
       }
-      
+
       _cleanupStatusEffects();
       currentState = BattleState.battleEnd;
       onVictory?.call();
@@ -10443,7 +10449,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         addToLog('${target.name} was hurt by Stealth Rock!');
         notifyListeners();
         if (_checkBattleEnd()) return;
-        if (_activeSwitchFuture != null && _activeSwitchFuture != initialSwitchFuture) {
+        if (_activeSwitchFuture != null &&
+            _activeSwitchFuture != initialSwitchFuture) {
           await _activeSwitchFuture;
         }
       } else if (hazard == 'toxic_spikes' && isGrounded) {
@@ -10472,7 +10479,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     }
 
     _checkBattleEnd();
-    if (_activeSwitchFuture != null && _activeSwitchFuture != initialSwitchFuture) {
+    if (_activeSwitchFuture != null &&
+        _activeSwitchFuture != initialSwitchFuture) {
       await _activeSwitchFuture;
     }
   }
