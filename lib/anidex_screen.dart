@@ -738,16 +738,17 @@ class _AnidexScreenState extends State<AnidexScreen>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    discovered ? org.name.toUpperCase() : '???',
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.orbitron(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
-                      color: discovered ? Colors.white : Colors.white38,
-                      letterSpacing: 1,
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      discovered ? org.name.toUpperCase() : '???',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.orbitron(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        color: discovered ? Colors.white : Colors.white38,
+                        letterSpacing: 1,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -1428,12 +1429,12 @@ class _AnidexScreenState extends State<AnidexScreen>
 
   String _getRarityBackground(String rarity) {
     final r = rarity.toLowerCase();
-    if (r.contains('common')) return 'assets/icon/common.png';
-    if (r.contains('uncommon')) return 'assets/icon/uncommon.png';
-    if (r.contains('rare')) return 'assets/icon/rare.png';
-    if (r.contains('epic')) return 'assets/icon/epic.png';
-    if (r.contains('legendary')) return 'assets/icon/legendary.png';
-    if (r.contains('mythical')) return 'assets/icon/mythical.png';
+    if (r == 'common') return 'assets/icon/common.png';
+    if (r == 'uncommon') return 'assets/icon/uncommon.png';
+    if (r == 'rare') return 'assets/icon/rare.png';
+    if (r == 'epic') return 'assets/icon/epic.png';
+    if (r == 'legendary') return 'assets/icon/legendary.png';
+    if (r == 'mythical') return 'assets/icon/mythical.png';
     return 'assets/icon/common.png';
   }
 }
@@ -1517,12 +1518,34 @@ class __OrganismSpriteDisplayState extends State<_OrganismSpriteDisplay> {
     }
 
     // If discovered, show full color. If not, show silhouette.
-    return buildSilhouetteSprite(
-      imageUrl: _imagePath!,
-      silhouetteColor: widget.isDiscovered ? null : Colors.black45,
-      outlineColor: widget.isDiscovered ? Colors.black : Colors.white,
-      outlineWidth: 2.0,
-      fit: BoxFit.contain,
+    return GestureDetector(
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (context) => Dialog(
+            backgroundColor: Colors.transparent,
+            insetPadding: const EdgeInsets.all(16),
+            child: InteractiveViewer(
+              maxScale: 5.0,
+              child: buildSilhouetteSprite(
+                imageUrl: _imagePath!,
+                silhouetteColor: widget.isDiscovered ? null : Colors.black45,
+                outlineColor: widget.isDiscovered ? Colors.black : Colors.white,
+                outlineWidth: 2.0,
+                height: MediaQuery.of(context).size.height * 0.5,
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+        );
+      },
+      child: buildSilhouetteSprite(
+        imageUrl: _imagePath!,
+        silhouetteColor: widget.isDiscovered ? null : Colors.black45,
+        outlineColor: widget.isDiscovered ? Colors.black : Colors.white,
+        outlineWidth: 2.0,
+        fit: BoxFit.contain,
+      ),
     );
   }
 }

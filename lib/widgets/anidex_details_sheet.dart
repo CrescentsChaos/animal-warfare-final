@@ -651,12 +651,12 @@ class AnidexDetailsPage extends StatelessWidget {
 
   static String _getRarityBackground(String rarity) {
     final r = rarity.toLowerCase();
-    if (r.contains('common')) return 'assets/icon/common.png';
-    if (r.contains('uncommon')) return 'assets/icon/uncommon.png';
-    if (r.contains('rare')) return 'assets/icon/rare.png';
-    if (r.contains('epic')) return 'assets/icon/epic.png';
-    if (r.contains('legendary')) return 'assets/icon/legendary.png';
-    if (r.contains('mythical')) return 'assets/icon/mythical.png';
+    if (r == 'common') return 'assets/icon/common.png';
+    if (r == 'uncommon') return 'assets/icon/uncommon.png';
+    if (r == 'rare') return 'assets/icon/rare.png';
+    if (r == 'epic') return 'assets/icon/epic.png';
+    if (r == 'legendary') return 'assets/icon/legendary.png';
+    if (r == 'mythical') return 'assets/icon/mythical.png';
     return 'assets/icon/common.png';
   }
 
@@ -733,17 +733,39 @@ class OrganismSpriteDisplay extends StatelessWidget {
   Widget build(BuildContext context) {
     final spritePath = _getSpritePath();
     final isNetwork = spritePath.startsWith('http');
-    return _buildImage(spritePath, isNetwork);
+    return _buildImage(context, spritePath, isNetwork);
   }
 
-  Widget _buildImage(String path, bool isNetwork) {
-    return buildSilhouetteSprite(
-      imageUrl: path,
-      silhouetteColor: isDiscovered ? null : Colors.black45,
-      outlineColor: isDiscovered ? Colors.black : Colors.white,
-      outlineWidth: 2.0,
-      height: height,
-      fit: BoxFit.contain,
+  Widget _buildImage(BuildContext context, String path, bool isNetwork) {
+    return GestureDetector(
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (context) => Dialog(
+            backgroundColor: Colors.transparent,
+            insetPadding: const EdgeInsets.all(16),
+            child: InteractiveViewer(
+              maxScale: 5.0,
+              child: buildSilhouetteSprite(
+                imageUrl: path,
+                silhouetteColor: isDiscovered ? null : Colors.black45,
+                outlineColor: isDiscovered ? Colors.black : Colors.white,
+                outlineWidth: 2.0,
+                height: MediaQuery.of(context).size.height * 0.5,
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+        );
+      },
+      child: buildSilhouetteSprite(
+        imageUrl: path,
+        silhouetteColor: isDiscovered ? null : Colors.black45,
+        outlineColor: isDiscovered ? Colors.black : Colors.white,
+        outlineWidth: 2.0,
+        height: height,
+        fit: BoxFit.contain,
+      ),
     );
   }
 

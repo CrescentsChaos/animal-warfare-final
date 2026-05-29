@@ -74,8 +74,10 @@ class AudioService {
     );
 
     // Apply specific contexts to each player
-    await _musicPlayer.setAudioContext(musicContext);
-    await _soundPlayer.setAudioContext(sfxContext);
+    if (!kIsWeb) {
+      await _musicPlayer.setAudioContext(musicContext);
+      await _soundPlayer.setAudioContext(sfxContext);
+    }
 
     // Set music player to loop by default
     _musicPlayer.setReleaseMode(ReleaseMode.loop);
