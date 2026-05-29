@@ -699,8 +699,9 @@ class _BiometricScannerScreenState extends State<BiometricScannerScreen>
   // }
 
   Widget _buildPredictionPanel() {
-    if (_predictedClass == 'unknown' && !_isScanning)
+    if (_predictedClass == 'unknown' && !_isScanning) {
       return const SizedBox.shrink();
+    }
 
     return Container(
       margin: const EdgeInsets.only(top: 16),

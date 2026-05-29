@@ -694,6 +694,106 @@ class _MaterialsTabState extends State<_MaterialsTab> {
                       onTap: () {
                         if (entry.key == 'sickle') {
                           userState.toggleSickle();
+                        } else if (LootItem.findById(entry.key).name.contains('Lure') || LootItem.findById(entry.key).name.contains('Bait') || LootItem.findById(entry.key).name.contains('Feast')) {
+                          final talisman = Talisman.findById(entry.key);
+                          if (talisman != null && talisman.isLure) {
+                            showDialog(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                backgroundColor: const Color(0xFF14142A),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  side: const BorderSide(color: Colors.white10),
+                                ),
+                                title: const Text(
+                                  'CONSUME LURE?',
+                                  style: TextStyle(
+                                    fontFamily: 'PressStart2P',
+                                    fontSize: 12,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                content: Text(
+                                  'Consume ${talisman.name}? This will apply a ${talisman.lureMultiplier}x encounter rate for ${talisman.targetTaxonomyValue?.toUpperCase()} for ${talisman.durationMinutes} minutes.\n\nOnly one effect per taxonomy group can be active at a time.',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.white70,
+                                  ),
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(ctx),
+                                    child: const Text('CANCEL', style: TextStyle(color: Colors.white54)),
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.pop(ctx);
+                                      userState.consumeLure(talisman).then((success) {
+                                        if (success && mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(content: Text('Consumed ${talisman.name}! effect active.')),
+                                          );
+                                        }
+                                      });
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppColors.highlightColor,
+                                    ),
+                                    child: const Text('CONSUME', style: TextStyle(fontWeight: FontWeight.bold)),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+                        } else if (Talisman.findById(entry.key)?.isSurvivalItem == true) {
+                          final talisman = Talisman.findById(entry.key)!;
+                          showDialog(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              backgroundColor: const Color(0xFF14142A),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                side: const BorderSide(color: Colors.white10),
+                              ),
+                              title: const Text(
+                                'CONSUME DRINK?',
+                                style: TextStyle(
+                                  fontFamily: 'PressStart2P',
+                                  fontSize: 12,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              content: Text(
+                                'Consume ${talisman.name}? This will grant a ${talisman.mitigatesSeverity?.toUpperCase()} protection effect for ${talisman.survivalDurationMinutes} minutes.',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.white70,
+                                ),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx),
+                                  child: const Text('CANCEL', style: TextStyle(color: Colors.white54)),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.pop(ctx);
+                                    userState.consumeSurvivalItem(talisman).then((success) {
+                                      if (success && mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(content: Text('Consumed ${talisman.name}! protection active.')),
+                                        );
+                                      }
+                                    });
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.highlightColor,
+                                  ),
+                                  child: const Text('CONSUME', style: TextStyle(fontWeight: FontWeight.bold)),
+                                ),
+                              ],
+                            ),
+                          );
                         } else {
                           final config =
                               userState.farmingConfig['seed_picking']?[entry.key

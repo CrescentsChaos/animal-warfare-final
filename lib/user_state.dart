@@ -6,6 +6,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:animal_warfare/models/captured_organism.dart';
 import 'package:animal_warfare/models/talisman.dart';
 import 'package:animal_warfare/models/move.dart';
+import 'package:animal_warfare/models/player_active_effect.dart';
 import 'package:animal_warfare/models/quest.dart';
 import 'package:animal_warfare/models/organism.dart';
 import 'package:animal_warfare/models/nature.dart';
@@ -16,6 +17,9 @@ import 'package:animal_warfare/models/battle_replay.dart';
 import 'package:animal_warfare/models/saved_map_state.dart';
 import 'package:animal_warfare/models/event_flags.dart';
 import 'package:animal_warfare/game/time_service.dart';
+import 'package:animal_warfare/models/survival_effect.dart';
+import 'package:animal_warfare/models/weather.dart';
+import 'package:animal_warfare/services/weather_service.dart';
 import 'local_auth_service.dart';
 import 'achievement_service.dart';
 
@@ -126,7 +130,26 @@ class UserState with ChangeNotifier {
           _regenerateStamina(20);
         }
         _processPlantGrowth();
+        _cleanExpiredEffects();
       }
+    });
+  }
+
+  Future<void> _cleanExpiredEffects() async {
+    if (_currentUser == null) return;
+    final now = DateTime.now();
+    final hasExpiredLures = _currentUser!.activeEffects.any((e) => now.isAfter(e.expiresAt));
+    final hasExpiredSurvival = _currentUser!.activeSurvivalEffects.any((e) => now.isAfter(e.expiresAt));
+    
+    if (!hasExpiredLures && !hasExpiredSurvival) return;
+
+    await _readModifyWrite((u) {
+      final filteredLures = u.activeEffects.where((e) => !now.isAfter(e.expiresAt)).toList();
+      final filteredSurvival = u.activeSurvivalEffects.where((e) => !now.isAfter(e.expiresAt)).toList();
+      return u.copyWith(
+        activeEffects: filteredLures,
+        activeSurvivalEffects: filteredSurvival,
+      );
     });
   }
 
@@ -290,6 +313,94 @@ class UserState with ChangeNotifier {
     });
   }
 
+  /// Atomically consumes a taxonomic lure from inventory and adds its player effect.
+  Future<bool> consumeLure(Talisman lure) async {
+    if (_currentUser == null) return false;
+    if (!lure.isLure) return false;
+
+    bool success = false;
+    await _readModifyWrite((u) {
+      final inventory = Map<String, int>.from(u.inventory);
+      final count = inventory[lure.id] ?? 0;
+      if (count <= 0) return u; // Not in inventory
+
+      // Decrement count
+      inventory[lure.id] = count - 1;
+      if (inventory[lure.id] == 0) {
+        inventory.remove(lure.id);
+      }
+
+      // Add active effect
+      final activeEffects = List<PlayerActiveEffect>.from(u.activeEffects);
+      
+      // Calculate expiration time
+      final duration = Duration(minutes: lure.durationMinutes ?? 15);
+      final expiresAt = DateTime.now().add(duration);
+      
+      activeEffects.add(PlayerActiveEffect(
+        id: lure.id,
+        name: lure.name,
+        targetType: lure.targetTaxonomyType ?? 'class',
+        targetValue: lure.targetTaxonomyValue ?? '',
+        multiplier: lure.lureMultiplier ?? 2.0,
+        expiresAt: expiresAt,
+      ));
+
+      success = true;
+      return u.copyWith(
+        inventory: inventory,
+        activeEffects: activeEffects,
+      );
+    });
+
+    return success;
+  }
+
+  /// Atomically consumes a survival item (hot cocoa, etc.) and adds its effect.
+  Future<bool> consumeSurvivalItem(Talisman item) async {
+    if (_currentUser == null) return false;
+    if (!item.isSurvivalItem) return false;
+
+    bool success = false;
+    await _readModifyWrite((u) {
+      final inventory = Map<String, int>.from(u.inventory);
+      final count = inventory[item.id] ?? 0;
+      if (count <= 0) return u; // Not in inventory
+
+      // Decrement count
+      inventory[item.id] = count - 1;
+      if (inventory[item.id] == 0) {
+        inventory.remove(item.id);
+      }
+
+      // Add active effect
+      final activeSurvivalEffects = List<SurvivalEffect>.from(u.activeSurvivalEffects);
+      
+      // Calculate expiration time
+      final duration = Duration(minutes: item.survivalDurationMinutes ?? 30);
+      final expiresAt = DateTime.now().add(duration);
+      
+      activeSurvivalEffects.add(SurvivalEffect(
+        id: item.id,
+        name: item.name,
+        mitigatesSeverity: EnvironmentalSeverity.values.firstWhere(
+          (e) => e.name == item.mitigatesSeverity,
+          orElse: () => EnvironmentalSeverity.comfortable,
+        ),
+        damageReductionMultiplier: item.survivalDamageReduction ?? 1.0,
+        expiresAt: expiresAt,
+      ));
+
+      success = true;
+      return u.copyWith(
+        inventory: inventory,
+        activeSurvivalEffects: activeSurvivalEffects,
+      );
+    });
+
+    return success;
+  }
+
   Future<void> healFullTeam() async {
     if (_currentUser == null) return;
     await _readModifyWrite((u) {
@@ -343,6 +454,52 @@ class UserState with ChangeNotifier {
   Future<void> decreaseStamina(int amount) async {
     if (_currentUser == null) return;
     await _readModifyWrite((u) => u.decreaseStamina(amount));
+  }
+
+  /// Calculates the stamina cost of taking an action (e.g. moving/exploring) based on weather and temperature
+  int calculateExplorationStaminaDrain(String biomeName) {
+    if (_currentUser == null) return 1; // Default
+    int drain = 1;
+
+    final severity = WeatherService().getEnvironmentalSeverity(biomeName);
+    final weather = WeatherService().getCurrentWeather(biomeName);
+    
+    // Severity penalty
+    if (severity == EnvironmentalSeverity.freezing || severity == EnvironmentalSeverity.scorching) {
+      drain += 4; // Cost is 5
+    } else if (severity == EnvironmentalSeverity.cold || severity == EnvironmentalSeverity.hot) {
+      drain += 2; // Cost is 3
+    }
+
+    // Weather multiplier
+    drain = (drain * weather.staminaDrainMultiplier).round();
+
+    // Check inventory for passive items
+    double passiveReduction = 0.0;
+    if (severity == EnvironmentalSeverity.freezing || severity == EnvironmentalSeverity.cold) {
+      if ((_currentUser!.inventory['thermal_coat'] ?? 0) > 0) passiveReduction = 0.5;
+    } else if (severity == EnvironmentalSeverity.scorching || severity == EnvironmentalSeverity.hot) {
+      if ((_currentUser!.inventory['cooling_vest'] ?? 0) > 0) passiveReduction = 0.5;
+    }
+
+    // Active effects (drinks)
+    for (var effect in _currentUser!.activeSurvivalEffects) {
+      if (severity == EnvironmentalSeverity.freezing || severity == EnvironmentalSeverity.cold) {
+         if (effect.mitigatesSeverity == EnvironmentalSeverity.freezing) {
+             passiveReduction = 1.0; // 100% reduction of extra drain
+         }
+      }
+      if (severity == EnvironmentalSeverity.scorching || severity == EnvironmentalSeverity.hot) {
+         if (effect.mitigatesSeverity == EnvironmentalSeverity.scorching) {
+             passiveReduction = 1.0;
+         }
+      }
+    }
+
+    // Base cost is 1, only reduce the extra cost, never go below 1
+    int extraCost = drain - 1;
+    extraCost = (extraCost * (1.0 - passiveReduction)).round();
+    return 1 + extraCost;
   }
 
   Future<void> toggleAnidexUnlocked(bool unlocked) async {

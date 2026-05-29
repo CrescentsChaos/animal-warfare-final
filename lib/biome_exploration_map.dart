@@ -38,6 +38,8 @@ import 'package:animal_warfare/game/npc_team_loader.dart';
 import 'package:animal_warfare/game/archetype_teams.dart';
 import 'package:animal_warfare/models/quest.dart';
 import 'package:animal_warfare/game/trainer_data.dart';
+import 'package:animal_warfare/widgets/exploration_event_dialog.dart';
+import 'package:animal_warfare/widgets/fishing_minigame_overlay.dart';
 
 class BiomeExplorationMap extends StatefulWidget {
   final String biomeName;
@@ -865,20 +867,20 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         _velX = 0;
         _velY = 0;
         _walkFrame = 0; // Reset to idle frame
-
-        // Check encounter and count step exactly on tile
-        _checkStepEncounter(
-          ((_playerY + tileSize / 2) / tileSize).floor(),
-          ((_playerX + tileSize / 2) / tileSize).floor(),
-        );
-        _checkTileEvents(
-          ((_playerY + tileSize / 2) / tileSize).floor(),
-          ((_playerX + tileSize / 2) / tileSize).floor(),
-        );
-
-        // Check collision with overworld sprites
-        _checkPhenoCollision();
       });
+
+      // Check encounter and count step exactly on tile
+      _checkStepEncounter(
+        ((_playerY + tileSize / 2) / tileSize).floor(),
+        ((_playerX + tileSize / 2) / tileSize).floor(),
+      );
+      _checkTileEvents(
+        ((_playerY + tileSize / 2) / tileSize).floor(),
+        ((_playerX + tileSize / 2) / tileSize).floor(),
+      );
+
+      // Check collision with overworld sprites
+      _checkPhenoCollision();
     } else {
       // Move closer
       setState(() {
@@ -1036,6 +1038,12 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
       final roll = _rng.nextDouble();
       if (roll < rate) {
+        if (_rng.nextDouble() < 0.15) {
+          // 15% chance of the encounter being an event instead
+          _triggerChoiceEvent();
+          return;
+        }
+
         setState(() {
           _encounterActive = true;
           _velX = 0;
@@ -1051,6 +1059,106 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         _triggerEncounter(activeTile);
       }
     }
+  }
+
+  void _triggerChoiceEvent() async {
+    setState(() {
+      _encounterActive = true;
+      _velX = 0;
+      _velY = 0;
+      _isMovingToTarget = false;
+      _walkFrame = 0;
+    });
+
+    final eventType = _rng.nextInt(3);
+    String title = '';
+    String description = '';
+    Map<String, EventOutcome> choices = {};
+
+    if (eventType == 0) {
+      title = 'Suspicious Rock';
+      description = 'You spot a loose rock that seems slightly out of place.';
+      choices = {
+        'Flip it over': EventOutcome.loot,
+        'Leave it be': EventOutcome.nothing,
+      };
+    } else if (eventType == 1) {
+      title = 'Rustling Bushes';
+      description =
+          'You hear a strange rustling sound coming from nearby bushes.';
+      choices = {
+        'Investigate': EventOutcome.loot,
+        'Keep walking': EventOutcome.nothing,
+      };
+    } else {
+      title = 'Glint in the Dirt';
+      description = 'Something shiny catches your eye half-buried in the dirt.';
+      choices = {
+        'Dig it out': EventOutcome.loot,
+        'Not worth it': EventOutcome.nothing,
+      };
+    }
+
+    final choice = await showDialog<EventOutcome>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => ExplorationEventDialog(
+        title: title,
+        description: description,
+        options: choices,
+      ),
+    );
+
+    if (choice == EventOutcome.loot) {
+      final outcome = _rng.nextDouble();
+      if (outcome < 0.3) {
+        final items = [
+          'meat_bait',
+          'plant_bait',
+          'universal_bait',
+          'capture_net',
+          'talisman_fragment',
+        ];
+        if (_rng.nextDouble() < 0.1) items.add('old_rod');
+        final item = items[_rng.nextInt(items.length)];
+        _userState.addLoot(item, 1);
+        _showInteractionBubble('You found a $item!');
+      } else if (outcome < 0.6) {
+        _showInteractionBubble('Something jumped out at you!');
+        await Future.delayed(const Duration(seconds: 1));
+
+        final hour = TimeService().currentGameTime.hour;
+        String timeOfDay = 'day';
+        if (hour >= 18 && hour < 21) {
+          timeOfDay = 'evening';
+        } else if (hour >= 21 || hour < 6)
+          timeOfDay = 'night';
+
+        final encounter = getWeightedRandomOrganism(
+          _currentBiomeName,
+          widget.allOrganisms,
+          accountLevel: _userState.currentUser?.accountLevel ?? 1,
+          inventory: _userState.currentUser?.inventory ?? {},
+          teamMoveNames:
+              _userState.currentUser?.teamOrganisms
+                  .expand((o) => o.selectedMoveNames)
+                  .toList() ??
+              <String>[],
+          currentTimeOfDay: timeOfDay,
+          encounterType: 'tallgrass',
+        );
+        if (encounter != null) {
+          _onFight(encounter.organism, 'grass');
+          return;
+        }
+      } else {
+        _showInteractionBubble('It was nothing but dirt.');
+      }
+    }
+
+    setState(() {
+      _encounterActive = false;
+    });
   }
 
   bool _handleTeleport(int row, int col) {
@@ -1389,6 +1497,243 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     }
   }
 
+  void _startFishing(int targetR, int targetC) async {
+    setState(() {
+      _encounterActive = true;
+      _velX = 0;
+      _velY = 0;
+      _isMovingToTarget = false;
+      _walkFrame = 0;
+    });
+
+    final user = _userState.currentUser;
+    if (user == null) {
+      setState(() => _encounterActive = false);
+      return;
+    }
+
+    final hasMeatBait = (user.inventory['meat_bait'] ?? 0) > 0;
+    final hasPlantBait = (user.inventory['plant_bait'] ?? 0) > 0;
+    final hasUniversalBait = (user.inventory['universal_bait'] ?? 0) > 0;
+
+    if (!hasMeatBait && !hasPlantBait && !hasUniversalBait) {
+      _showInteractionBubble(
+        'You need bait to fish! (meat_bait, plant_bait, universal_bait)',
+      );
+      setState(() => _encounterActive = false);
+      return;
+    }
+
+    String? selectedDiet;
+    final selectedBait = await showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1E3F2A),
+        title: const Text(
+          'Select Bait',
+          style: TextStyle(
+            color: Colors.white,
+            fontFamily: 'PressStart2P',
+            fontSize: 14,
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (hasMeatBait)
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red[900],
+                ),
+                onPressed: () => Navigator.of(context).pop('carnivore'),
+                child: const Text(
+                  'Meat Bait (Carnivores)',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            if (hasPlantBait)
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green[900],
+                ),
+                onPressed: () => Navigator.of(context).pop('herbivore'),
+                child: const Text(
+                  'Plant Bait (Herbivores)',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            if (hasUniversalBait)
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue[900],
+                ),
+                onPressed: () => Navigator.of(context).pop('omnivore'),
+                child: const Text(
+                  'Universal Bait (Any)',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            const SizedBox(height: 12),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(null),
+              child: const Text('Cancel', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (selectedBait == null) {
+      setState(() => _encounterActive = false);
+      return;
+    }
+
+    selectedDiet = selectedBait == 'omnivore' ? null : selectedBait;
+
+    final success = await showDialog<bool>(
+      context: context,
+      barrierColor: Colors.transparent, // Keeps game visible underneath
+      builder: (context) => const FishingMinigameOverlay(),
+    );
+
+    if (success == true) {
+      _showInteractionBubble('You hooked something!');
+      await Future.delayed(const Duration(seconds: 1));
+
+      final hour = TimeService().currentGameTime.hour;
+      String timeOfDay = 'day';
+      if (hour >= 18 && hour < 21) {
+        timeOfDay = 'evening';
+      } else if (hour >= 21 || hour < 6)
+        timeOfDay = 'night';
+
+      final encounter = getWeightedRandomOrganism(
+        _currentBiomeName,
+        widget.allOrganisms,
+        accountLevel: _userState.currentUser?.accountLevel ?? 1,
+        inventory: _userState.currentUser?.inventory ?? {},
+        teamMoveNames:
+            _userState.currentUser?.teamOrganisms
+                .expand((o) => o.selectedMoveNames)
+                .toList() ??
+            <String>[],
+        currentTimeOfDay: timeOfDay,
+        encounterType: 'Aquatic',
+        targetDiet: selectedDiet,
+      );
+
+      if (encounter != null) {
+        final rng = Random();
+        final wildLevel =
+            _mapData.minLevel +
+            rng.nextInt(_mapData.maxLevel - _mapData.minLevel + 1);
+        final preSpawned = CapturedOrganism.spawn(
+          encounter.organism,
+          level: wildLevel,
+          captureLocation: _currentMapName,
+        );
+
+        final caughtSize = encounter.organism.size * preSpawned.sizeScale;
+        final caughtWeight = encounter.organism.weight * preSpawned.weightScale;
+
+        final proceed = await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => AlertDialog(
+            backgroundColor: const Color(0xFF1E3F2A),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: const BorderSide(color: Color(0xFFDAA520), width: 3),
+            ),
+            title: const Text(
+              'Great Catch!',
+              style: TextStyle(
+                color: Color(0xFFDAA520),
+                fontFamily: 'PressStart2P',
+                fontSize: 16,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'A wild ${encounter.organism.name} appeared!',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Column(
+                      children: [
+                        const Icon(Icons.straighten, color: Colors.blueAccent),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${caughtSize.toStringAsFixed(2)} m',
+                          style: const TextStyle(color: Colors.white70),
+                        ),
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        const Icon(
+                          Icons.fitness_center,
+                          color: Colors.redAccent,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${caughtWeight.toStringAsFixed(2)} kg',
+                          style: const TextStyle(color: Colors.white70),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            actions: [
+              Center(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2E8B57),
+                    side: const BorderSide(color: Color(0xFFDAA520), width: 2),
+                  ),
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: const Text(
+                    'BATTLE!',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontFamily: 'PressStart2P',
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+
+        if (proceed == true) {
+          _onFight(encounter.organism, 'water', preSpawnedFighter: preSpawned);
+          return;
+        }
+      } else {
+        _showInteractionBubble('Nothing seems to be biting this bait here...');
+      }
+    } else {
+      _showInteractionBubble('It got away...');
+    }
+    setState(() => _encounterActive = false);
+  }
+
   /// Updates camera position based on current player position.
   /// Call this AFTER movement to ensure zero-lag centering.
   void _updateCamera() {
@@ -1431,33 +1776,69 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     return null;
   }
 
-  void _onFight(Organism wildOrganism, String encounterTileId) async {
-    _userState.discoverOrganism(wildOrganism.name);
+  Future<CapturedOrganism?> _getConsciousPlayerFighter() async {
     final user = _userState.currentUser;
-    if (user == null) return;
+    if (user == null) return null;
 
-    CapturedOrganism playerFighter;
-    if (user.teamOrganisms.isNotEmpty) {
-      playerFighter = user.teamOrganisms.first;
+    final aliveTeamMembers = user.teamOrganisms
+        .where((o) => o.currentHealth > 0)
+        .toList();
+    if (aliveTeamMembers.isEmpty && user.teamOrganisms.isNotEmpty) {
+      _showInteractionBubble('Your team is exhausted!');
+      setState(() => _encounterActive = false);
+      await Future.delayed(const Duration(seconds: 2));
+      await _userState.healFullTeam();
+      _handleUnstuck();
+      return null;
+    }
+
+    if (aliveTeamMembers.isNotEmpty) {
+      return aliveTeamMembers.first;
     } else if (user.capturedOrganisms.isNotEmpty) {
-      playerFighter = user.capturedOrganisms.first;
+      final aliveBoxMembers = user.capturedOrganisms
+          .where((o) => o.currentHealth > 0)
+          .toList();
+      if (aliveBoxMembers.isEmpty) {
+        _showInteractionBubble('All your animals are exhausted!');
+        setState(() => _encounterActive = false);
+        await Future.delayed(const Duration(seconds: 2));
+        await _userState.healFullTeam();
+        _handleUnstuck();
+        return null;
+      }
+      return aliveBoxMembers.first;
     } else {
-      playerFighter = CapturedOrganism.spawn(
+      return CapturedOrganism.spawn(
         Organism.humanOrganism.copyWith(name: user.username),
         level: user.accountLevel,
       );
     }
+  }
+
+  void _onFight(
+    Organism wildOrganism,
+    String encounterTileId, {
+    CapturedOrganism? preSpawnedFighter,
+  }) async {
+    _userState.discoverOrganism(wildOrganism.name);
+    final user = _userState.currentUser;
+    if (user == null) return;
+
+    final playerFighter = await _getConsciousPlayerFighter();
+    if (playerFighter == null) return;
 
     final rng = Random();
     final wildLevel =
         _mapData.minLevel +
         rng.nextInt(_mapData.maxLevel - _mapData.minLevel + 1);
 
-    final wildFighter = CapturedOrganism.spawn(
-      wildOrganism,
-      level: wildLevel,
-      captureLocation: _currentMapName,
-    );
+    final wildFighter =
+        preSpawnedFighter ??
+        CapturedOrganism.spawn(
+          wildOrganism,
+          level: wildLevel,
+          captureLocation: _currentMapName,
+        );
 
     final hour = TimeService().currentGameTime.hour;
     String timeOfDay;
@@ -1564,12 +1945,17 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     AudioService.instance.pauseAll();
     if (!mounted) return;
 
+    final playerFighter = await _getConsciousPlayerFighter();
+    if (playerFighter == null) return;
+
     final trainerInfo = TrainerInfo(
       title: 'Rival',
       name: 'Gary',
       sprite: 'Ace_Trainer_Male_W.webp',
       gender: 'male',
-      introDialogue: const ['Smell ya later! Let\'s see how strong you\'ve got!'],
+      introDialogue: const [
+        'Smell ya later! Let\'s see how strong you\'ve got!',
+      ],
       midBattleDialogue: const ['Not bad, but you can\'t beat my team!'],
       defeatDialogue: const ['Unbelievable! You actually won...'],
     );
@@ -1577,7 +1963,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     final result = await Navigator.of(context).push<BattleResult>(
       MaterialPageRoute(
         builder: (context) => BattleScreen(
-          playerOrganism: user.teamOrganisms.first,
+          playerOrganism: playerFighter,
           opponentOrganism: opponent,
           opponentTeam: rivalTeam,
           playerTeam: user.teamOrganisms,
@@ -2428,10 +2814,50 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     }
 
     // 3. Enhanced environmental interactions
-    // Water edge (not swimming, facing water)
-    if (!_isSwimming && isWater && !canSwimHere) {
-      _showInteractionBubble('The water looks deep...');
-      return;
+    // Fishing check
+    if (isWater) {
+      final isAquatic = [
+        'ocean',
+        'river',
+        'lake',
+        'swamp',
+        'coastal',
+        'beach',
+        'water',
+        'sea',
+      ].any((b) => _currentBiomeName.toLowerCase().contains(b));
+
+      if (!isAquatic) {
+        _showInteractionBubble(
+          'This water looks empty. Try fishing in an aquatic biome.',
+        );
+        return;
+      }
+
+      final user = _userState.currentUser;
+      if (user != null && user.inventory.keys.any((k) => k.contains('rod'))) {
+        _startFishing(targetR, targetC);
+        return;
+      } else {
+        if (!_isSwimming && !canSwimHere) {
+          if (_rng.nextDouble() < 0.5 &&
+              user != null &&
+              !(user.inventory.keys.any((k) => k.contains('rod')))) {
+            _userState.addLoot('old_rod', 1);
+            _showInteractionBubble(
+              'You found an old_rod tangled in the weeds!',
+            );
+          } else {
+            _showInteractionBubble(
+              'The water looks deep... Maybe a fishing rod would be useful.',
+            );
+          }
+          return;
+        } else if (_isSwimming) {
+          _showInteractionBubble('🎣 You could fish here if you had a rod!');
+          return;
+        }
+      }
     }
 
     // ── Headbutt / Tree Interaction ──
@@ -2503,12 +2929,6 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
       ];
       final msg = messages[Random().nextInt(messages.length)];
       _showInteractionBubble(msg);
-      return;
-    }
-
-    // Fishing spot (swimming, press A facing water)
-    if (_isSwimming && isWater) {
-      _showInteractionBubble('🎣 You could fish here!');
       return;
     }
 
@@ -2721,7 +3141,8 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
     npc.faceToward(pRow, pCol);
 
     // If this is a defeated trainer, skip pre-battle dialogue and only show defeat text
-    final isTrainerType = npc.data.scriptType == 'trainer' ||
+    final isTrainerType =
+        npc.data.scriptType == 'trainer' ||
         npc.data.scriptType == 'rival' ||
         npc.data.scriptType == 'major_trainer' ||
         npc.data.scriptType == 'evil_team' ||
@@ -3156,16 +3577,11 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         }
 
         // Get player's fighter
-        CapturedOrganism playerFighter;
-        if (user.teamOrganisms.isNotEmpty) {
-          playerFighter = user.teamOrganisms.first;
-        } else if (user.capturedOrganisms.isNotEmpty) {
-          playerFighter = user.capturedOrganisms.first;
-        } else {
-          playerFighter = CapturedOrganism.spawn(
-            Organism.humanOrganism.copyWith(name: user.username),
-            level: user.accountLevel,
-          );
+        final playerFighter = await _getConsciousPlayerFighter();
+        if (playerFighter == null) {
+          _approachingNPC = null;
+          npc.hasTriggeredBattle = false;
+          return;
         }
 
         final trainerName = NpcTeamLoader.getTrainerName(npc.data.teamId);
@@ -3184,7 +3600,8 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
         AudioService.instance.pauseAll();
         if (!mounted) return;
 
-        final trainerInfo = TrainerDataLoader.generateByName(trainerName) ??
+        final trainerInfo =
+            TrainerDataLoader.generateByName(trainerName) ??
             TrainerDataLoader.generateRandom(biome: _currentBiomeName);
 
         final BattleResult? result = await Navigator.of(context)
@@ -3858,7 +4275,10 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
                   IgnorePointer(
                     child: Container(
                       decoration: BoxDecoration(
-                        border: Border.all(color: _biomeHighlightColor, width: 2),
+                        border: Border.all(
+                          color: _biomeHighlightColor,
+                          width: 2,
+                        ),
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
@@ -4357,11 +4777,13 @@ class _BiomeMapPainter extends CustomPainter {
 
     // Calculate visible range (viewport culling)
     final int startCol = (cameraX / tileSize).floor().clamp(0, mapData.width);
-    final int endCol =
-        ((cameraX + size.width / zoomScale) / tileSize).ceil().clamp(0, mapData.width);
+    final int endCol = ((cameraX + size.width / zoomScale) / tileSize)
+        .ceil()
+        .clamp(0, mapData.width);
     final int startRow = (cameraY / tileSize).floor().clamp(0, mapData.height);
-    final int endRow =
-        ((cameraY + size.height / zoomScale) / tileSize).ceil().clamp(0, mapData.height);
+    final int endRow = ((cameraY + size.height / zoomScale) / tileSize)
+        .ceil()
+        .clamp(0, mapData.height);
 
     // 1. Ground Layer (Base Terrain + Floating Tiles)
     for (int r = startRow; r < endRow; r++) {

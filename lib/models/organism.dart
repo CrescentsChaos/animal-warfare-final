@@ -218,6 +218,57 @@ class Organism {
     }
   }
 
+  String formatScaledWeight(double scale, String unitSystem) {
+    final scaledWeight = weight * scale;
+    if (unitSystem == 'imperial') {
+      final lbs = scaledWeight * 2.20462;
+      return "${lbs.toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')} LBS";
+    }
+    // Metric scaling
+    if (scaledWeight >= 1000) {
+      return "${(scaledWeight / 1000).toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')} TONS";
+    } else if (scaledWeight >= 1) {
+      return "${scaledWeight.toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')} KG";
+    } else if (scaledWeight >= 0.001) {
+      return "${(scaledWeight * 1000).toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')} G";
+    } else if (scaledWeight >= 0.000001) {
+      return "${(scaledWeight * 1000000).toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')} MG";
+    } else if (scaledWeight >= 0.000000001) {
+      return "${(scaledWeight * 1000000000).toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')} UG";
+    } else {
+      return "${(scaledWeight * 1000000000000).toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')} NG";
+    }
+  }
+
+  String formatScaledSize(double scale, String unitSystem) {
+    final scaledSize = size * scale;
+    if (unitSystem == 'imperial') {
+      final totalInches = scaledSize * 39.3701;
+      final feet = (totalInches / 12).floor();
+      final inches = (totalInches % 12).round();
+
+      if (feet > 0) {
+        if (inches == 0) return "$feet FT";
+        return "$feet FT $inches IN";
+      }
+      return "$inches IN";
+    }
+    // Metric scaling
+    if (scaledSize >= 1000) {
+      return "${(scaledSize / 1000).toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')} KM";
+    } else if (scaledSize >= 1) {
+      return "${scaledSize.toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')} M";
+    } else if (scaledSize >= 0.01) {
+      return "${(scaledSize * 100).toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')} CM";
+    } else if (scaledSize >= 0.001) {
+      return "${(scaledSize * 1000).toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')} MM";
+    } else if (scaledSize >= 0.000001) {
+      return "${(scaledSize * 1000000).toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')} UM";
+    } else {
+      return "${(scaledSize * 1000000000).toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')} NM";
+    }
+  }
+
   static double _parseWeight(dynamic value) {
     if (value == null) return 1.0;
     if (value is num) return value.toDouble();

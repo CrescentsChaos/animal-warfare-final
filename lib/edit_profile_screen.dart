@@ -176,7 +176,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     _buildDropdown(
                       'AVATAR FRAME',
                       _selectedFrame,
-                      <String>{'', ...(_currentUser?.unlockedFrames ?? []), if (_selectedFrame != null) _selectedFrame!}.toList(),
+                      <String>{
+                        '',
+                        ...(_currentUser?.unlockedFrames ?? []),
+                        ?_selectedFrame,
+                      }.toList(),
                       (v) => setState(() => _selectedFrame = v),
                     ),
 
@@ -425,7 +429,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               items: items.map((g) {
                 String displayString = 'NONE';
                 if (g.isNotEmpty) {
-                  displayString = g.split('_').map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '').join(' ');
+                  displayString = g
+                      .split('_')
+                      .map(
+                        (w) => w.isNotEmpty
+                            ? '${w[0].toUpperCase()}${w.substring(1)}'
+                            : '',
+                      )
+                      .join(' ');
                 }
                 return DropdownMenuItem(
                   value: g,

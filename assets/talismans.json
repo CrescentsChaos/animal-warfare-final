@@ -1765,5 +1765,170 @@
     "name": "Venison Stew",
     "description": "A hearty stew made with venison, potatoes, carrots, onion, and thyme.",
     "effects": []
+  },
+  {
+    "id": "meat_bait",
+    "name": "Meat Bait",
+    "description": "Bait made from raw meat. Attracts carnivorous fish.",
+    "effects": []
+  },
+  {
+    "id": "plant_bait",
+    "name": "Plant Bait",
+    "description": "Bait made from plants. Attracts herbivorous fish.",
+    "effects": []
+  },
+  {
+    "id": "universal_bait",
+    "name": "Universal Bait",
+    "description": "High-quality bait that attracts all types of fish.",
+    "effects": []
+  },
+  {
+    "id": "old_rod",
+    "name": "Old Rod",
+    "description": "An old, beat-up fishing rod. Catches small or weak fish.",
+    "effects": []
+  },
+  {
+    "id": "good_rod",
+    "name": "Good Rod",
+    "description": "A decent fishing rod. Can catch a variety of fish.",
+    "effects": []
+  },
+  {
+    "id": "super_rod",
+    "name": "Super Rod",
+    "description": "The best fishing rod. Capable of catching rare and massive fish.",
+    "effects": []
+  },
+  {
+    "id": "insect_lure_common",
+    "name": "Insect Lure (Common)",
+    "description": "A basic lure. Increases encounter rates of Insects by 2x for 15 minutes.",
+    "effects": [],
+    "is_food": true,
+    "is_lure": true,
+    "target_taxonomy_type": "class",
+    "target_taxonomy_value": "insect",
+    "lure_multiplier": 2.0,
+    "duration_minutes": 15,
+    "rarity": "Common"
+  },
+  {
+    "id": "carnivora_bait_uncommon",
+    "name": "Carnivora Bait (Uncommon)",
+    "description": "Smells like raw meat. Increases encounter rates of Carnivora by 2.5x for 20 minutes.",
+    "effects": [],
+    "is_food": true,
+    "is_lure": true,
+    "target_taxonomy_type": "order",
+    "target_taxonomy_value": "carnivora",
+    "lure_multiplier": 2.5,
+    "duration_minutes": 20,
+    "rarity": "Uncommon"
+  },
+  {
+    "id": "mammal_lure_rare",
+    "name": "Mammal Lure (Rare)",
+    "description": "A high-quality lure. Increases encounter rates of Mammals by 3x for 25 minutes.",
+    "effects": [],
+    "is_food": true,
+    "is_lure": true,
+    "target_taxonomy_type": "class",
+    "target_taxonomy_value": "mammal",
+    "lure_multiplier": 3.0,
+    "duration_minutes": 25,
+    "rarity": "Rare"
+  },
+  {
+    "id": "bird_lure_epic",
+    "name": "Bird Lure (Epic)",
+    "description": "A beautifully crafted lure. Increases encounter rates of Birds by 4x for 30 minutes.",
+    "effects": [],
+    "is_food": true,
+    "is_lure": true,
+    "target_taxonomy_type": "class",
+    "target_taxonomy_value": "bird",
+    "lure_multiplier": 4.0,
+    "duration_minutes": 30,
+    "rarity": "Epic"
+  },
+  {
+    "id": "homininae_feast_epic",
+    "name": "Homininae Feast (Epic)",
+    "description": "A feast fit for apes. Increases encounter rates of Homininae by 4x for 30 minutes.",
+    "effects": [],
+    "is_food": true,
+    "is_lure": true,
+    "target_taxonomy_type": "subfamily",
+    "target_taxonomy_value": "homininae",
+    "lure_multiplier": 4.0,
+    "duration_minutes": 30,
+    "rarity": "Epic"
+  },
+  {
+    "id": "primates_lure_legendary",
+    "name": "Primates Lure (Legendary)",
+    "description": "The ultimate primate lure. Increases encounter rates of Primates by 5x for 45 minutes.",
+    "effects": [],
+    "is_food": true,
+    "is_lure": true,
+    "target_taxonomy_type": "order",
+    "target_taxonomy_value": "primates",
+    "lure_multiplier": 5.0,
+    "duration_minutes": 45,
+    "rarity": "Legendary"
+  },
+  {
+    "id": "custom_lure_template",
+    "name": "Custom Lure Template",
+    "description": "TEMPLATE: Copy and paste this to create custom taxonomic lures.",
+    "effects": [],
+    "is_food": true,
+    "is_lure": true,
+    "target_taxonomy_type": "class",
+    "target_taxonomy_value": "fish",
+    "lure_multiplier": 2.0,
+    "duration_minutes": 15,
+    "rarity": "Common"
+  },
+  {
+    "id": "hot_cocoa",
+    "name": "Hot Cocoa",
+    "description": "A warm drink. Protects against freezing and cold for 30 minutes.",
+    "effects": [],
+    "is_food": true,
+    "is_survival_item": true,
+    "mitigates_severity": "freezing",
+    "survival_damage_reduction": 1.0,
+    "survival_duration_minutes": 30,
+    "rarity": "Common"
+  },
+  {
+    "id": "ice_water",
+    "name": "Ice Water",
+    "description": "A refreshing cold drink. Protects against scorching and hot temperatures for 30 minutes.",
+    "effects": [],
+    "is_food": true,
+    "is_survival_item": true,
+    "mitigates_severity": "scorching",
+    "survival_damage_reduction": 1.0,
+    "survival_duration_minutes": 30,
+    "rarity": "Common"
+  },
+  {
+    "id": "thermal_coat",
+    "name": "Thermal Coat",
+    "description": "A heavy coat. Having this in your inventory permanently reduces the stamina drain of freezing temperatures by half.",
+    "effects": [],
+    "rarity": "Epic"
+  },
+  {
+    "id": "cooling_vest",
+    "name": "Cooling Vest",
+    "description": "A vest with built-in cooling. Having this in your inventory permanently reduces the stamina drain of scorching temperatures by half.",
+    "effects": [],
+    "rarity": "Epic"
   }
 ]

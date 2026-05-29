@@ -11,6 +11,7 @@ import 'package:animal_warfare/models/organism.dart'; // Must import the model
 import 'biome_detail_screen.dart';
 import 'package:animal_warfare/local_auth_service.dart'; // ADDED: Import service
 import 'package:animal_warfare/game/biome_map_data.dart'; // ADDED: For TileCategory
+import 'package:animal_warfare/models/player_active_effect.dart';
 
 // --- Biome Spawning Logic (Uses Organism.habitat and Organism.rarity) ---
 
@@ -45,6 +46,28 @@ int _getRarityWeight(String rarity) {
 
 /// Selects a random organism from the biome by filtering on Organism.habitat,
 /// active_time, and weighting by Organism.rarity.
+/// Helper to calculate weight of an organism incorporating active lures
+int _getOrganismWeight(Organism org, List<PlayerActiveEffect> activeEffects) {
+  double multiplier = 1.0;
+  for (final effect in activeEffects) {
+    if (effect.isExpired) continue;
+    
+    bool matches = false;
+    if (effect.targetType == 'class' && org.animalClass.toLowerCase() == effect.targetValue.toLowerCase()) {
+      matches = true;
+    } else if (effect.targetType == 'order' && org.order.toLowerCase() == effect.targetValue.toLowerCase()) {
+      matches = true;
+    } else if (effect.targetType == 'subfamily' && org.subfamily.toLowerCase() == effect.targetValue.toLowerCase()) {
+      matches = true;
+    }
+    
+    if (matches) {
+      multiplier *= effect.multiplier;
+    }
+  }
+  return (_getRarityWeight(org.rarity) * multiplier).round();
+}
+
 SpawnResult? getWeightedRandomOrganism(
   String biomeName,
   List<Organism> allOrganisms, {
@@ -56,6 +79,8 @@ SpawnResult? getWeightedRandomOrganism(
   String? currentTileId,
   TileCategory? currentTileCategory,
   String? biomeId,
+  String? targetDiet, // e.g., 'carnivore', 'herbivore'
+  List<PlayerActiveEffect> activeEffects = const [],
 }) {
   // Normalize the selected biome name for case-insensitive search
   final String searchBiome = (biomeId ?? biomeName).toLowerCase();
@@ -96,6 +121,11 @@ SpawnResult? getWeightedRandomOrganism(
       } else if (encounterType == 'land') {
         if (isAquatic) return false;
       }
+    }
+
+    // Diet Filtering
+    if (targetDiet != null) {
+      if (org.diet.toLowerCase() != targetDiet.toLowerCase()) return false;
     }
 
     // Tile-specific spawning
@@ -195,7 +225,7 @@ SpawnResult? getWeightedRandomOrganism(
   // 2. Calculate total weight
   final totalWeight = biomeOrganisms.fold<int>(
     0,
-    (sum, org) => sum + _getRarityWeight(org.rarity),
+    (sum, org) => sum + _getOrganismWeight(org, activeEffects),
   );
 
   if (totalWeight == 0) return null;
@@ -207,7 +237,7 @@ SpawnResult? getWeightedRandomOrganism(
   // 4. Find the organism corresponding to the random weight
   Organism? selectedOrganism;
   for (final organism in biomeOrganisms) {
-    int weight = _getRarityWeight(organism.rarity);
+    int weight = _getOrganismWeight(organism, activeEffects);
     if (randomWeight < weight) {
       selectedOrganism = organism;
       break;

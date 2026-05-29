@@ -3,10 +3,30 @@ import 'package:animal_warfare/models/weather.dart';
 import 'package:animal_warfare/game/time_service.dart';
 import 'dart:math' as math;
 
+enum EnvironmentalSeverity {
+  freezing,
+  cold,
+  comfortable,
+  hot,
+  scorching,
+}
+
 class WeatherService {
   static final WeatherService _instance = WeatherService._internal();
   factory WeatherService() => _instance;
   WeatherService._internal();
+
+  /// Gets the environmental severity for a biome.
+  EnvironmentalSeverity getEnvironmentalSeverity(String biomeName) {
+    final weather = getCurrentWeather(biomeName);
+    final temp = getTemperature(biomeName, weather);
+    
+    if (temp < 0) return EnvironmentalSeverity.freezing;
+    if (temp <= 10) return EnvironmentalSeverity.cold;
+    if (temp <= 30) return EnvironmentalSeverity.comfortable;
+    if (temp <= 40) return EnvironmentalSeverity.hot;
+    return EnvironmentalSeverity.scorching;
+  }
 
   /// Gets the current weather for a specific biome.
   Weather getCurrentWeather(String biomeName) {

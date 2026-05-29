@@ -208,6 +208,29 @@ class WeatherEffect {
 extension WeatherExtension on Weather {
   String get name => toString().split('.').last;
 
+  double get staminaDrainMultiplier {
+    switch (this) {
+      case Weather.heavyRain:
+      case Weather.thunderstorm:
+      case Weather.hail:
+      case Weather.sandstorm:
+      case Weather.windstorm:
+        return 1.5;
+      case Weather.snowstorm:
+      case Weather.typhoon:
+      case Weather.tornado:
+      case Weather.hurricane:
+      case Weather.blizzard:
+        return 2.0;
+      case Weather.volcanoEruption:
+      case Weather.tsunami:
+      case Weather.earthquake:
+        return 3.0;
+      default:
+        return 1.0;
+    }
+  }
+
   String get iconPath {
     switch (this) {
       case Weather.clear:

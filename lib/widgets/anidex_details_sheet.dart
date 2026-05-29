@@ -27,8 +27,10 @@ class AnidexDetailsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     bool isDiscovered = _isDiscovered(context, organism);
-    bool isCaptured = capturedOverride != null || _isCaptured(context, organism);
-    CapturedOrganism? capturedOrg = capturedOverride ??
+    bool isCaptured =
+        capturedOverride != null || _isCaptured(context, organism);
+    CapturedOrganism? capturedOrg =
+        capturedOverride ??
         (isCaptured ? _getCapturedOrganism(context, organism) : null);
     Color rarityColor = _getRarityColor(organism.rarity);
 
@@ -75,20 +77,34 @@ class AnidexDetailsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSliverHeader(BuildContext context, Color color, bool discovered, bool isCaptured) {
+  Widget _buildSliverHeader(
+    BuildContext context,
+    Color color,
+    bool discovered,
+    bool isCaptured,
+  ) {
     return SliverAppBar(
       expandedHeight: 400,
       backgroundColor: AppColors.surface,
       pinned: true,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
+        icon: const Icon(
+          Icons.arrow_back_ios_new,
+          color: Colors.white,
+          size: 20,
+        ),
         onPressed: () => Navigator.pop(context),
       ),
       actions: [
         if (discovered)
           IconButton(
-            icon: const Icon(Icons.volume_up_rounded, color: Colors.white, size: 24),
-            onPressed: () => AudioService.instance.playOrganismCry(organism.cry),
+            icon: const Icon(
+              Icons.volume_up_rounded,
+              color: Colors.white,
+              size: 24,
+            ),
+            onPressed: () =>
+                AudioService.instance.playOrganismCry(organism.cry),
           ),
         const SizedBox(width: 8),
       ],
@@ -101,7 +117,9 @@ class AnidexDetailsPage extends StatelessWidget {
               decoration: BoxDecoration(
                 image: discovered
                     ? DecorationImage(
-                        image: AssetImage(_getRarityBackground(organism.rarity)),
+                        image: AssetImage(
+                          _getRarityBackground(organism.rarity),
+                        ),
                         fit: BoxFit.cover,
                         opacity: 0.4,
                       )
@@ -113,7 +131,7 @@ class AnidexDetailsPage extends StatelessWidget {
                 ),
               ),
             ),
-            
+
             // Sprite Display
             Positioned(
               top: 80,
@@ -144,14 +162,17 @@ class AnidexDetailsPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  Text(
-                    discovered ? organism.name.toUpperCase() : 'CLASSIFIED',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.orbitron(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w900,
-                      color: discovered ? Colors.white : Colors.white24,
-                      letterSpacing: 2,
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      discovered ? organism.name.toUpperCase() : 'CLASSIFIED',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.orbitron(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        color: discovered ? Colors.white : Colors.white24,
+                        letterSpacing: 2,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -179,14 +200,20 @@ class AnidexDetailsPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
-        color: discovered && isCaptured ? color.withValues(alpha: 0.15) : Colors.white.withValues(alpha: 0.05),
+        color: discovered && isCaptured
+            ? color.withValues(alpha: 0.15)
+            : Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: discovered && isCaptured ? color.withValues(alpha: 0.4) : Colors.white.withValues(alpha: 0.1),
+          color: discovered && isCaptured
+              ? color.withValues(alpha: 0.4)
+              : Colors.white.withValues(alpha: 0.1),
         ),
       ),
       child: Text(
-        discovered ? (isCaptured ? organism.rarity.toUpperCase() : 'UNIDENTIFIED') : 'UNIDENTIFIED',
+        discovered
+            ? (isCaptured ? organism.rarity.toUpperCase() : 'UNIDENTIFIED')
+            : 'UNIDENTIFIED',
         style: GoogleFonts.orbitron(
           color: discovered && isCaptured ? color : Colors.white54,
           fontSize: 10,
@@ -246,7 +273,9 @@ class AnidexDetailsPage extends StatelessWidget {
                 margin: const EdgeInsets.only(right: 16),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.1),
+                  ),
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(15),
@@ -256,14 +285,18 @@ class AnidexDetailsPage extends StatelessWidget {
                       Image.asset(
                         assetPath,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(color: Colors.black45),
+                        errorBuilder: (context, error, stackTrace) =>
+                            Container(color: Colors.black45),
                       ),
                       Container(
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             begin: Alignment.bottomCenter,
                             end: Alignment.center,
-                            colors: [Colors.black.withValues(alpha: 0.8), Colors.transparent],
+                            colors: [
+                              Colors.black.withValues(alpha: 0.8),
+                              Colors.transparent,
+                            ],
                           ),
                         ),
                       ),
@@ -310,22 +343,70 @@ class AnidexDetailsPage extends StatelessWidget {
           mainAxisSpacing: 12,
           crossAxisSpacing: 12,
           children: [
-            _buildInfoCard('CLASS', organism.animalClass, 'assets/icon/${organism.animalClass.toLowerCase().replaceAll(' ', '_')}.png'),
-            _buildInfoCard('ORDER', organism.order, null, iconData: Icons.account_tree_outlined),
-            _buildInfoCard('FAMILY', organism.family, null, iconData: Icons.hub_outlined),
-            _buildInfoCard('SUBFAMILY', organism.subfamily, null, iconData: Icons.bubble_chart_outlined),
-            _buildInfoCard('DIET', organism.diet, 'assets/icon/${organism.diet.toLowerCase().replaceAll(' ', '_')}.png'),
-            _buildInfoCard('SIZE', organism.formattedSizeForSystem(unitSystem), null, iconData: Icons.straighten),
-            _buildInfoCard('WEIGHT', organism.formattedWeightForSystem(unitSystem), null, iconData: Icons.scale),
-            _buildInfoCard('ROBUSTNESS', organism.formattedRobustness, null, iconData: Icons.fitness_center),
-            _buildInfoCard('ACTIVITY', organism.activeTime, null, iconData: Icons.wb_sunny_outlined),
+            _buildInfoCard(
+              'CLASS',
+              organism.animalClass,
+              'assets/icon/${organism.animalClass.toLowerCase().replaceAll(' ', '_')}.png',
+            ),
+            _buildInfoCard(
+              'ORDER',
+              organism.order,
+              null,
+              iconData: Icons.account_tree_outlined,
+            ),
+            _buildInfoCard(
+              'FAMILY',
+              organism.family,
+              null,
+              iconData: Icons.hub_outlined,
+            ),
+            _buildInfoCard(
+              'SUBFAMILY',
+              organism.subfamily,
+              null,
+              iconData: Icons.bubble_chart_outlined,
+            ),
+            _buildInfoCard(
+              'DIET',
+              organism.diet,
+              'assets/icon/${organism.diet.toLowerCase().replaceAll(' ', '_')}.png',
+            ),
+            _buildInfoCard(
+              'SIZE',
+              organism.formattedSizeForSystem(unitSystem),
+              null,
+              iconData: Icons.straighten,
+            ),
+            _buildInfoCard(
+              'WEIGHT',
+              organism.formattedWeightForSystem(unitSystem),
+              null,
+              iconData: Icons.scale,
+            ),
+            _buildInfoCard(
+              'ROBUSTNESS',
+              organism.formattedRobustness,
+              null,
+              iconData: Icons.fitness_center,
+            ),
+            _buildInfoCard(
+              'ACTIVITY',
+              organism.activeTime,
+              null,
+              iconData: Icons.wb_sunny_outlined,
+            ),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildInfoCard(String label, String value, String? iconPath, {IconData? iconData}) {
+  Widget _buildInfoCard(
+    String label,
+    String value,
+    String? iconPath, {
+    IconData? iconData,
+  }) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -340,23 +421,42 @@ class AnidexDetailsPage extends StatelessWidget {
               iconPath,
               width: 24,
               height: 24,
-              errorBuilder: (_, __, ___) => Icon(iconData ?? Icons.info_outline, color: AppColors.highlightColor, size: 20),
+              errorBuilder: (_, _, _) => Icon(
+                iconData ?? Icons.info_outline,
+                color: AppColors.highlightColor,
+                size: 20,
+              ),
             )
           else
-            Icon(iconData ?? Icons.info_outline, color: AppColors.highlightColor, size: 20),
+            Icon(
+              iconData ?? Icons.info_outline,
+              color: AppColors.highlightColor,
+              size: 20,
+            ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(label, style: GoogleFonts.inter(color: Colors.white38, fontSize: 8, fontWeight: FontWeight.w800)),
+                Text(
+                  label,
+                  style: GoogleFonts.inter(
+                    color: Colors.white38,
+                    fontSize: 8,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
                 const SizedBox(height: 2),
                 FittedBox(
                   fit: BoxFit.scaleDown,
                   child: Text(
                     value.toUpperCase(),
-                    style: GoogleFonts.orbitron(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700),
+                    style: GoogleFonts.orbitron(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ],
@@ -374,7 +474,9 @@ class AnidexDetailsPage extends StatelessWidget {
         _buildSectionTitle('MISSION BRIEF'),
         const SizedBox(height: 12),
         Text(
-          discovered ? organism.description : 'DATA ENCRYPTED. FIELD OBSERVATION REQUIRED.',
+          discovered
+              ? organism.description
+              : 'DATA ENCRYPTED. FIELD OBSERVATION REQUIRED.',
           style: GoogleFonts.inter(
             color: Colors.white70,
             fontSize: 14,
@@ -392,17 +494,59 @@ class AnidexDetailsPage extends StatelessWidget {
       children: [
         _buildSectionTitle('COMBAT ANALYSIS'),
         const SizedBox(height: 20),
-        _buildStatRow('HEALTH', organism.health, 500, AppColors.statHealthColor, 'health'),
-        _buildStatRow('ATTACK', organism.attack, 200, AppColors.statAttackColor, 'attack'),
-        _buildStatRow('DEFENSE', organism.defense, 200, AppColors.statDefenseColor, 'defense'),
-        _buildStatRow('POWER', organism.power, 200, AppColors.statPowerColor, 'power'),
-        _buildStatRow('RESISTANCE', organism.resistance, 200, AppColors.statResistanceStatColor, 'resistance'),
-        _buildStatRow('SPEED', organism.speed, 200, AppColors.statSpeedColor, 'speed'),
+        _buildStatRow(
+          'HEALTH',
+          organism.health,
+          500,
+          AppColors.statHealthColor,
+          'health',
+        ),
+        _buildStatRow(
+          'ATTACK',
+          organism.attack,
+          200,
+          AppColors.statAttackColor,
+          'attack',
+        ),
+        _buildStatRow(
+          'DEFENSE',
+          organism.defense,
+          200,
+          AppColors.statDefenseColor,
+          'defense',
+        ),
+        _buildStatRow(
+          'POWER',
+          organism.power,
+          200,
+          AppColors.statPowerColor,
+          'power',
+        ),
+        _buildStatRow(
+          'RESISTANCE',
+          organism.resistance,
+          200,
+          AppColors.statResistanceStatColor,
+          'resistance',
+        ),
+        _buildStatRow(
+          'SPEED',
+          organism.speed,
+          200,
+          AppColors.statSpeedColor,
+          'speed',
+        ),
       ],
     );
   }
 
-  Widget _buildStatRow(String label, int value, int max, Color color, String iconName) {
+  Widget _buildStatRow(
+    String label,
+    int value,
+    int max,
+    Color color,
+    String iconName,
+  ) {
     final percent = (value / max).clamp(0.0, 1.0);
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -414,12 +558,27 @@ class AnidexDetailsPage extends StatelessWidget {
                 'assets/icon/$iconName.png',
                 width: 16,
                 height: 16,
-                errorBuilder: (_, __, ___) => Icon(Icons.bolt, color: color, size: 14),
+                errorBuilder: (_, _, _) =>
+                    Icon(Icons.bolt, color: color, size: 14),
               ),
               const SizedBox(width: 8),
-              Text(label, style: GoogleFonts.inter(color: Colors.white60, fontSize: 10, fontWeight: FontWeight.w800)),
+              Text(
+                label,
+                style: GoogleFonts.inter(
+                  color: Colors.white60,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
               const Spacer(),
-              Text('$value', style: GoogleFonts.orbitron(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700)),
+              Text(
+                '$value',
+                style: GoogleFonts.orbitron(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 8),
@@ -435,14 +594,19 @@ class AnidexDetailsPage extends StatelessWidget {
               ),
               Container(
                 height: 6,
-                width: percent * 300, // Should use LayoutBuilder for better precision
+                width:
+                    percent *
+                    300, // Should use LayoutBuilder for better precision
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [color.withValues(alpha: 0.5), color],
                   ),
                   borderRadius: BorderRadius.circular(3),
                   boxShadow: [
-                    BoxShadow(color: color.withValues(alpha: 0.3), blurRadius: 4),
+                    BoxShadow(
+                      color: color.withValues(alpha: 0.3),
+                      blurRadius: 4,
+                    ),
                   ],
                 ),
               ),
@@ -454,7 +618,10 @@ class AnidexDetailsPage extends StatelessWidget {
   }
 
   Widget _buildAbilitySection() {
-    final abs = organism.abilities.split(',').where((s) => s.trim().isNotEmpty).toList();
+    final abs = organism.abilities
+        .split(',')
+        .where((s) => s.trim().isNotEmpty)
+        .toList();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -475,13 +642,31 @@ class AnidexDetailsPage extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.settings_input_component, color: AppColors.highlightColor, size: 16),
+                    const Icon(
+                      Icons.settings_input_component,
+                      color: AppColors.highlightColor,
+                      size: 16,
+                    ),
                     const SizedBox(width: 12),
-                    Text(name.trim().toUpperCase(), style: GoogleFonts.orbitron(color: AppColors.highlightColor, fontSize: 12, fontWeight: FontWeight.bold)),
+                    Text(
+                      name.trim().toUpperCase(),
+                      style: GoogleFonts.orbitron(
+                        color: AppColors.highlightColor,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 8),
-                Text(ab?.description ?? 'UNKNOWN EFFECT.', style: GoogleFonts.inter(color: Colors.white54, fontSize: 11, height: 1.5)),
+                Text(
+                  ab?.description ?? 'UNKNOWN EFFECT.',
+                  style: GoogleFonts.inter(
+                    color: Colors.white54,
+                    fontSize: 11,
+                    height: 1.5,
+                  ),
+                ),
               ],
             ),
           );
@@ -491,7 +676,10 @@ class AnidexDetailsPage extends StatelessWidget {
   }
 
   Widget _buildMoveSection(BuildContext context, bool isCaptured) {
-    final moves = organism.moves.split(',').where((s) => s.trim().isNotEmpty).toList();
+    final moves = organism.moves
+        .split(',')
+        .where((s) => s.trim().isNotEmpty)
+        .toList();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -519,8 +707,22 @@ class AnidexDetailsPage extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(move.name.toUpperCase(), style: GoogleFonts.orbitron(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
-                          Text(move.category.name.toUpperCase(), style: GoogleFonts.inter(color: Colors.white24, fontSize: 8, fontWeight: FontWeight.w800)),
+                          Text(
+                            move.name.toUpperCase(),
+                            style: GoogleFonts.orbitron(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            move.category.name.toUpperCase(),
+                            style: GoogleFonts.inter(
+                              color: Colors.white24,
+                              fontSize: 8,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -551,8 +753,22 @@ class AnidexDetailsPage extends StatelessWidget {
       padding: const EdgeInsets.only(left: 12),
       child: Column(
         children: [
-          Text(label, style: GoogleFonts.inter(color: Colors.white24, fontSize: 7, fontWeight: FontWeight.w900)),
-          Text(value, style: GoogleFonts.orbitron(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.w700)),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              color: Colors.white24,
+              fontSize: 7,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          Text(
+            value,
+            style: GoogleFonts.orbitron(
+              color: Colors.white70,
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ],
       ),
     );
@@ -578,15 +794,32 @@ class AnidexDetailsPage extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.highlightColor.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.highlightColor.withValues(alpha: 0.3)),
+          border: Border.all(
+            color: AppColors.highlightColor.withValues(alpha: 0.3),
+          ),
         ),
         child: Row(
           children: [
-            const Icon(Icons.analytics_outlined, color: AppColors.highlightColor, size: 20),
+            const Icon(
+              Icons.analytics_outlined,
+              color: AppColors.highlightColor,
+              size: 20,
+            ),
             const SizedBox(width: 16),
-            Text('DEFENSIVE ANALYSIS', style: GoogleFonts.orbitron(color: AppColors.highlightColor, fontSize: 10, fontWeight: FontWeight.bold)),
+            Text(
+              'DEFENSIVE ANALYSIS',
+              style: GoogleFonts.orbitron(
+                color: AppColors.highlightColor,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const Spacer(),
-            const Icon(Icons.arrow_forward_ios, color: Colors.white24, size: 14),
+            const Icon(
+              Icons.arrow_forward_ios,
+              color: Colors.white24,
+              size: 14,
+            ),
           ],
         ),
       ),
@@ -596,7 +829,14 @@ class AnidexDetailsPage extends StatelessWidget {
   Widget _buildSectionTitle(String title) {
     return Row(
       children: [
-        Container(width: 3, height: 14, decoration: BoxDecoration(color: AppColors.highlightColor, borderRadius: BorderRadius.circular(2))),
+        Container(
+          width: 3,
+          height: 14,
+          decoration: BoxDecoration(
+            color: AppColors.highlightColor,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
         const SizedBox(width: 12),
         Text(
           title,
@@ -618,13 +858,21 @@ class AnidexDetailsPage extends StatelessWidget {
     if (userState.currentUser?.anidexUnlocked == true) return true;
     final stats = userState.currentUser?.speciesStats[organism.name];
     if (stats != null && stats['captured'] == 1) return true;
-    return userState.currentUser?.capturedOrganisms.any((co) => co.name == organism.name) ?? false;
+    return userState.currentUser?.capturedOrganisms.any(
+          (co) => co.name == organism.name,
+        ) ??
+        false;
   }
 
-  static CapturedOrganism? _getCapturedOrganism(BuildContext context, Organism organism) {
+  static CapturedOrganism? _getCapturedOrganism(
+    BuildContext context,
+    Organism organism,
+  ) {
     final userState = Provider.of<UserState>(context, listen: false);
     try {
-      return userState.currentUser?.capturedOrganisms.firstWhere((co) => co.name == organism.name);
+      return userState.currentUser?.capturedOrganisms.firstWhere(
+        (co) => co.name == organism.name,
+      );
     } catch (_) {
       return null;
     }
@@ -634,18 +882,26 @@ class AnidexDetailsPage extends StatelessWidget {
     if (organism.habitat == 'Global Registry') return true;
     final userState = Provider.of<UserState>(context, listen: false);
     if (userState.currentUser?.anidexUnlocked == true) return true;
-    return userState.currentUser?.discoveredOrganisms.contains(organism.name) ?? false;
+    return userState.currentUser?.discoveredOrganisms.contains(organism.name) ??
+        false;
   }
 
   static Color _getRarityColor(String rarity) {
     switch (rarity.toLowerCase()) {
-      case 'common': return Colors.grey;
-      case 'uncommon': return const Color(0xFF2ECC71);
-      case 'rare': return Colors.blueAccent;
-      case 'epic': return Colors.purpleAccent;
-      case 'legendary': return Colors.orangeAccent;
-      case 'mythical': return Colors.pinkAccent;
-      default: return Colors.white;
+      case 'common':
+        return Colors.grey;
+      case 'uncommon':
+        return const Color(0xFF2ECC71);
+      case 'rare':
+        return Colors.blueAccent;
+      case 'epic':
+        return Colors.purpleAccent;
+      case 'legendary':
+        return Colors.orangeAccent;
+      case 'mythical':
+        return Colors.pinkAccent;
+      default:
+        return Colors.white;
     }
   }
 
@@ -662,31 +918,52 @@ class AnidexDetailsPage extends StatelessWidget {
 
   static Color _getTypeColor(ElementalType type) {
     switch (type) {
-      case ElementalType.basic: return const Color.fromARGB(255, 168, 168, 130);
-      case ElementalType.flying: return const Color(0xFFA98FF3);
-      case ElementalType.aquatic: return const Color.fromARGB(255, 46, 60, 255);
-      case ElementalType.earth: return const Color(0xFFE2BF65);
-      case ElementalType.cryo: return const Color.fromARGB(255, 0, 247, 255);
-      case ElementalType.toxic: return const Color(0xFFA33EA1);
-      case ElementalType.rock: return const Color.fromARGB(255, 158, 97, 5);
-      case ElementalType.arthropod: return const Color.fromARGB(255, 111, 207, 0);
-      case ElementalType.electric: return const Color.fromARGB(255, 255, 251, 27);
-      case ElementalType.spectral: return const Color.fromARGB(255, 91, 11, 240);
-      case ElementalType.martial: return const Color.fromARGB(255, 160, 24, 0);
-      case ElementalType.blaze: return const Color.fromARGB(255, 226, 72, 0);
-      case ElementalType.grass: return const Color.fromARGB(255, 22, 131, 0);
-      case ElementalType.mystic: return const Color.fromARGB(255, 255, 81, 162);
-      case ElementalType.darkness: return const Color.fromARGB(255, 37, 36, 37);
-      case ElementalType.drake: return const Color.fromARGB(255, 76, 0, 255);
-      case ElementalType.metal: return const Color.fromARGB(255, 172, 168, 168);
-      case ElementalType.aura: return const Color.fromARGB(255, 229, 255, 79);
-      case ElementalType.sound: return const Color.fromARGB(255, 166, 70, 255);
-      case ElementalType.holy: return const Color.fromARGB(255, 255, 208, 0);
+      case ElementalType.basic:
+        return const Color.fromARGB(255, 168, 168, 130);
+      case ElementalType.flying:
+        return const Color(0xFFA98FF3);
+      case ElementalType.aquatic:
+        return const Color.fromARGB(255, 46, 60, 255);
+      case ElementalType.earth:
+        return const Color(0xFFE2BF65);
+      case ElementalType.cryo:
+        return const Color.fromARGB(255, 0, 247, 255);
+      case ElementalType.toxic:
+        return const Color(0xFFA33EA1);
+      case ElementalType.rock:
+        return const Color.fromARGB(255, 158, 97, 5);
+      case ElementalType.arthropod:
+        return const Color.fromARGB(255, 111, 207, 0);
+      case ElementalType.electric:
+        return const Color.fromARGB(255, 255, 251, 27);
+      case ElementalType.spectral:
+        return const Color.fromARGB(255, 91, 11, 240);
+      case ElementalType.martial:
+        return const Color.fromARGB(255, 160, 24, 0);
+      case ElementalType.blaze:
+        return const Color.fromARGB(255, 226, 72, 0);
+      case ElementalType.grass:
+        return const Color.fromARGB(255, 22, 131, 0);
+      case ElementalType.mystic:
+        return const Color.fromARGB(255, 255, 81, 162);
+      case ElementalType.darkness:
+        return const Color.fromARGB(255, 37, 36, 37);
+      case ElementalType.drake:
+        return const Color.fromARGB(255, 76, 0, 255);
+      case ElementalType.metal:
+        return const Color.fromARGB(255, 172, 168, 168);
+      case ElementalType.aura:
+        return const Color.fromARGB(255, 229, 255, 79);
+      case ElementalType.sound:
+        return const Color.fromARGB(255, 166, 70, 255);
+      case ElementalType.holy:
+        return const Color.fromARGB(255, 255, 208, 0);
     }
   }
 
   Widget _buildDropsSection(BuildContext context) {
-    if (organism.drops.isEmpty || organism.drops.trim().toLowerCase() == 'n/a') {
+    if (organism.drops.isEmpty ||
+        organism.drops.trim().toLowerCase() == 'n/a') {
       return const SizedBox.shrink();
     }
 
@@ -706,7 +983,9 @@ class AnidexDetailsPage extends StatelessWidget {
         Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: dropsList.map((dropName) => DropChip(dropName: dropName)).toList(),
+          children: dropsList
+              .map((dropName) => DropChip(dropName: dropName))
+              .toList(),
         ),
       ],
     );
@@ -799,10 +1078,13 @@ class _DropChipState extends State<DropChip> {
 
   String _toTitleCase(String text) {
     if (text.isEmpty) return text;
-    return text.split(' ').map((word) {
-      if (word.isEmpty) return word;
-      return word[0].toUpperCase() + word.substring(1).toLowerCase();
-    }).join(' ');
+    return text
+        .split(' ')
+        .map((word) {
+          if (word.isEmpty) return word;
+          return word[0].toUpperCase() + word.substring(1).toLowerCase();
+        })
+        .join(' ');
   }
 
   @override

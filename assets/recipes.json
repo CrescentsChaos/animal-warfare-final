@@ -181,5 +181,31 @@
             "arugula": 1,
             "cheese": 1
         }
+    },
+    {
+        "id": "recipe_meat_bait",
+        "resultTalismanId": "meat_bait",
+        "requiredLoot": {
+            "Raw Meat": 2,
+            "String": 1
+        }
+    },
+    {
+        "id": "recipe_plant_bait",
+        "resultTalismanId": "plant_bait",
+        "requiredLoot": {
+            "Apple": 2,
+            "String": 1
+        }
+    },
+    {
+        "id": "recipe_universal_bait",
+        "resultTalismanId": "universal_bait",
+        "requiredLoot": {
+            "Raw Meat": 1,
+            "Apple": 1,
+            "String": 1,
+            "truffle": 1
+        }
     }
 ]

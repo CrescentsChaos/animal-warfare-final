@@ -24,24 +24,38 @@
   ],
   "biome_pools": [
     {
-      "id": "rainforest",
+      "id": "swamp",
       "keywords": [
-        "jungle",
-        "rainforest",
-        "redwoods"
+        "swamp"
       ],
       "items": [
         {
-          "id": "strawberry_seed",
-          "name": "Strawberry Seeds"
+          "id": "peat_moss",
+          "name": "Peat Moss"
         },
         {
-          "id": "apple_seed",
-          "name": "Apple Seeds"
+          "id": "cattails",
+          "name": "Cattails"
         },
         {
-          "id": "pear_seed",
-          "name": "Pear Seeds"
+          "id": "willow_bark",
+          "name": "Willow Bark"
+        },
+        {
+          "id": "clay_deposits",
+          "name": "Clay Deposits"
+        },
+        {
+          "id": "bog_iron",
+          "name": "Bog Iron"
+        },
+        {
+          "id": "swamp_lily",
+          "name": "Swamp Lily"
+        },
+        {
+          "id": "cypress_knee",
+          "name": "Cypress Knee"
         },
         {
           "id": "wild_herbs",
@@ -54,95 +68,54 @@
       ]
     },
     {
-      "id": "grassland",
+      "id": "savanna",
       "keywords": [
-        "plains",
-        "savanna",
-        "wetlands",
-        "swamp",
-        "mangrove"
+        "savanna"
       ],
       "items": [
         {
-          "id": "strawberry_seed",
-          "name": "Strawberry Seeds"
+          "id": "acacia_bark",
+          "name": "Acacia Bark"
         },
         {
-          "id": "pear_seed",
-          "name": "Pear Seeds"
+          "id": "dried_dung_fuel",
+          "name": "Dried Dung Fuel"
         },
         {
-          "id": "blueberry",
-          "name": "Blueberries"
+          "id": "savanna_amber",
+          "name": "Savanna Amber"
         },
         {
-          "id": "raspberry",
-          "name": "Raspberries"
-        }
-      ]
-    },
-    {
-      "id": "mountain",
-      "keywords": [
-        "mountain",
-        "taiga",
-        "tundra",
-        "polar"
-      ],
-      "items": [
-        {
-          "id": "apple_seed",
-          "name": "Apple Seeds"
+          "id": "termite_mound_clay",
+          "name": "Termite Mound Clay"
         },
         {
-          "id": "pear_seed",
-          "name": "Pear Seeds"
+          "id": "baobab_fruit",
+          "name": "Baobab Fruit"
         },
         {
-          "id": "truffle",
-          "name": "Truffle"
+          "id": "weaver_bird_nest",
+          "name": "Weaver Bird Nest"
         },
         {
-          "id": "wild_herbs",
-          "name": "Wild Herbs"
-        }
-      ]
-    },
-    {
-      "id": "aquatic",
-      "keywords": [
-        "ocean",
-        "deep sea",
-        "coral reef",
-        "kelp forest",
-        "lake",
-        "river",
-        "coastal"
-      ],
-      "items": [
-        {
-          "id": "blueberry",
-          "name": "Blueberries"
+          "id": "zebra_stripe_stone",
+          "name": "Zebra Stripe Stone"
         },
         {
-          "id": "raspberry",
-          "name": "Raspberries"
+          "id": "dry_grass_bundle",
+          "name": "Dry Grass Bundle"
         },
         {
-          "id": "wild_herbs",
-          "name": "Wild Herbs"
-        }
-      ]
-    },
-    {
-      "id": "cave",
-      "keywords": [
-        "cave"
-      ],
-      "items": [
+          "id": "marula_fruit",
+          "name": "Marula Fruit"
+        },
         {
-          "id": "truffle",
-          "name": "Truffle"
+          "id": "horn_fragment",
+          "name": "Horn Fragment"
+        },
+        {
+          "id": "ostrich_feather",
+          "name": "Ostrich Feather"
         },
         {
           "id": "wild_herbs",
@@ -157,12 +130,316 @@
       ],
       "items": [
         {
-          "id": "wild_herbs",
-          "name": "Wild Herbs"
+          "id": "prickly_pear",
+          "name": "Prickly Pear"
         },
         {
-          "id": "raspberry",
-          "name": "Raspberries"
+          "id": "scorpion_venom",
+          "name": "Scorpion Venom"
+        },
+        {
+          "id": "sun_bleached_bone",
+          "name": "Sun-Bleached Bone"
+        },
+        {
+          "id": "sandstone_slab",
+          "name": "Sandstone Slab"
+        },
+        {
+          "id": "agave_hearts",
+          "name": "Agave Hearts"
+        },
+        {
+          "id": "flint_nodules",
+          "name": "Flint Nodules"
+        },
+        {
+          "id": "limestone",
+          "name": "Limestone"
+        },
+        {
+          "id": "dates",
+          "name": "Dates"
+        }
+      ]
+    },
+    {
+      "id": "taiga",
+      "keywords": [
+        "taiga"
+      ],
+      "items": [
+        {
+          "id": "pine_resin",
+          "name": "Pine Resin"
+        },
+        {
+          "id": "elk_antler",
+          "name": "Elk Antler"
+        },
+        {
+          "id": "frozen_sap",
+          "name": "Frozen Sap"
+        },
+        {
+          "id": "lichen_bundle",
+          "name": "Lichen Bundle"
+        },
+        {
+          "id": "birch_bark_scroll",
+          "name": "Birch Bark Scroll"
+        },
+        {
+          "id": "wolf_claw_mark",
+          "name": "Wolf Claw Mark"
+        },
+        {
+          "id": "spruce_cone",
+          "name": "Spruce Cone"
+        },
+        {
+          "id": "snowshoe_hare_fur",
+          "name": "Snowshoe Hare Fur"
+        },
+        {
+          "id": "taiga_mushroom",
+          "name": "Taiga Mushroom"
+        },
+        {
+          "id": "boreal_moss",
+          "name": "Boreal Moss"
+        },
+        {
+          "id": "pine_cone",
+          "name": "Pine Cone"
+        },
+        {
+          "id": "wild_herbs",
+          "name": "Wild Herbs"
+        }
+      ]
+    },
+    {
+      "id": "mountain",
+      "keywords": [
+        "mountain"
+      ],
+      "items": [
+        {
+          "id": "quartz_crystal",
+          "name": "Quartz Crystal"
+        },
+        {
+          "id": "alpine_edelweiss",
+          "name": "Alpine Edelweiss"
+        },
+        {
+          "id": "mountain_goat_horn",
+          "name": "Mountain Goat Horn"
+        },
+        {
+          "id": "eagle_feather",
+          "name": "Eagle Feather"
+        },
+        {
+          "id": "granite_shard",
+          "name": "Granite Shard"
+        },
+        {
+          "id": "summit_lichen",
+          "name": "Summit Lichen"
+        },
+        {
+          "id": "petrified_wood",
+          "name": "Petrified Wood"
+        },
+        {
+          "id": "alpine_spring_water",
+          "name": "Alpine Spring Water"
+        },
+        {
+          "id": "iron_ore_chunk",
+          "name": "Iron Ore Chunk"
+        },
+        {
+          "id": "marmot_whisker",
+          "name": "Marmot Whisker"
+        },
+        {
+          "id": "mountain_sage",
+          "name": "Mountain Sage"
+        },
+        {
+          "id": "cliff_rose",
+          "name": "Cliff Rose"
+        }
+      ]
+    },
+    {
+      "id": "coastal",
+      "keywords": [
+        "coastal"
+      ],
+      "items": [
+        {
+          "id": "sea_glass",
+          "name": "Sea Glass"
+        },
+        {
+          "id": "driftwood",
+          "name": "Driftwood"
+        },
+        {
+          "id": "tidal_pearl",
+          "name": "Tidal Pearl"
+        },
+        {
+          "id": "crab_shell",
+          "name": "Crab Shell"
+        },
+        {
+          "id": "kelp_wrap",
+          "name": "Kelp Wrap"
+        },
+        {
+          "id": "sand_dollar",
+          "name": "Sand Dollar"
+        },
+        {
+          "id": "coconut",
+          "name": "Coconut"
+        },
+        {
+          "id": "hermit_crab_shell",
+          "name": "Hermit Crab Shell"
+        },
+        {
+          "id": "tide_pool_anemone",
+          "name": "Tide Pool Anemone"
+        },
+        {
+          "id": "seagull_feather",
+          "name": "Seagull Feather"
+        },
+        {
+          "id": "saltwater_taffy_seaweed",
+          "name": "Saltwater Seaweed"
+        },
+        {
+          "id": "pumice_stone",
+          "name": "Pumice Stone"
+        }
+      ]
+    },
+    {
+      "id": "volcano",
+      "keywords": [
+        "volcano"
+      ],
+      "items": [
+        {
+          "id": "obsidian_shard",
+          "name": "Obsidian Shard"
+        },
+        {
+          "id": "lava_rock",
+          "name": "Lava Rock"
+        },
+        {
+          "id": "sulfur_crystal",
+          "name": "Sulfur Crystal"
+        },
+        {
+          "id": "volcanic_ash",
+          "name": "Volcanic Ash"
+        },
+        {
+          "id": "fire_opal",
+          "name": "Fire Opal"
+        },
+        {
+          "id": "basalt_fragment",
+          "name": "Basalt Fragment"
+        },
+        {
+          "id": "magma_glass",
+          "name": "Magma Glass"
+        },
+        {
+          "id": "pyroclastic_pebble",
+          "name": "Pyroclastic Pebble"
+        },
+        {
+          "id": "ember_moth_wing",
+          "name": "Ember Moth Wing"
+        },
+        {
+          "id": "heat_resistant_lichen",
+          "name": "Heat-Resistant Lichen"
+        },
+        {
+          "id": "geothermal_mineral",
+          "name": "Geothermal Mineral"
+        },
+        {
+          "id": "charred_bone",
+          "name": "Charred Bone"
+        }
+      ]
+    },
+    {
+      "id": "cave",
+      "keywords": [
+        "cave"
+      ],
+      "items": [
+        {
+          "id": "stalactite_fragment",
+          "name": "Stalactite Fragment"
+        },
+        {
+          "id": "bat_guano",
+          "name": "Bat Guano"
+        },
+        {
+          "id": "glowworm_essence",
+          "name": "Glowworm Essence"
+        },
+        {
+          "id": "cave_mushroom",
+          "name": "Cave Mushroom"
+        },
+        {
+          "id": "crystal_geode",
+          "name": "Crystal Geode"
+        },
+        {
+          "id": "cave_spider_silk",
+          "name": "Cave Spider Silk"
+        },
+        {
+          "id": "blind_fish_scale",
+          "name": "Blind Fish Scale"
+        },
+        {
+          "id": "phosphorescent_moss",
+          "name": "Phosphorescent Moss"
+        },
+        {
+          "id": "ancient_fossil",
+          "name": "Ancient Fossil"
+        },
+        {
+          "id": "echo_stone",
+          "name": "Echo Stone"
+        },
+        {
+          "id": "underground_spring_water",
+          "name": "Underground Spring Water"
+        },
+        {
+          "id": "truffle",
+          "name": "Truffle"
         }
       ]
     },
@@ -173,50 +450,1038 @@
       ],
       "items": [
         {
-          "id": "wild_herbs",
-          "name": "Wild Herbs"
+          "id": "scrap_metal",
+          "name": "Scrap Metal"
         },
         {
-          "id": "blueberry",
-          "name": "Blueberries"
+          "id": "circuit_board",
+          "name": "Circuit Board"
+        },
+        {
+          "id": "old_newspaper",
+          "name": "Old Newspaper"
+        },
+        {
+          "id": "rusty_key",
+          "name": "Rusty Key"
+        },
+        {
+          "id": "manhole_token",
+          "name": "Manhole Token"
+        },
+        {
+          "id": "pigeon_feather",
+          "name": "Pigeon Feather"
+        },
+        {
+          "id": "graffiti_paint_can",
+          "name": "Graffiti Paint Can"
+        },
+        {
+          "id": "subway_token",
+          "name": "Subway Token"
+        },
+        {
+          "id": "rooftop_honey",
+          "name": "Rooftop Honey"
+        },
+        {
+          "id": "cracked_phone_screen",
+          "name": "Cracked Phone Screen"
+        },
+        {
+          "id": "raccoon_trinket",
+          "name": "Raccoon Trinket"
         },
         {
           "id": "strawberry_seed",
           "name": "Strawberry Seeds"
         }
       ]
+    },
+    {
+      "id": "polar",
+      "keywords": [
+        "polar"
+      ],
+      "items": [
+        {
+          "id": "permafrost_core",
+          "name": "Permafrost Core"
+        },
+        {
+          "id": "arctic_lichen",
+          "name": "Arctic Lichen"
+        },
+        {
+          "id": "polar_fox_fur_tuft",
+          "name": "Polar Fox Fur Tuft"
+        },
+        {
+          "id": "ice_crystal",
+          "name": "Ice Crystal"
+        },
+        {
+          "id": "frozen_amber",
+          "name": "Frozen Amber"
+        },
+        {
+          "id": "aurora_fragment",
+          "name": "Aurora Fragment"
+        },
+        {
+          "id": "seal_whisker",
+          "name": "Seal Whisker"
+        },
+        {
+          "id": "snowflake_prism",
+          "name": "Snowflake Prism"
+        },
+        {
+          "id": "glacial_silt",
+          "name": "Glacial Silt"
+        },
+        {
+          "id": "penguin_pebble",
+          "name": "Penguin Pebble"
+        },
+        {
+          "id": "polar_moss",
+          "name": "Polar Moss"
+        },
+        {
+          "id": "walrus_ivory_chip",
+          "name": "Walrus Ivory Chip"
+        }
+      ]
+    },
+    {
+      "id": "ocean",
+      "keywords": [
+        "ocean"
+      ],
+      "items": [
+        {
+          "id": "pearl",
+          "name": "Pearl"
+        },
+        {
+          "id": "coral_fragment",
+          "name": "Coral Fragment"
+        },
+        {
+          "id": "barnacle_cluster",
+          "name": "Barnacle Cluster"
+        },
+        {
+          "id": "whale_bone",
+          "name": "Whale Bone"
+        },
+        {
+          "id": "sea_cucumber",
+          "name": "Sea Cucumber"
+        },
+        {
+          "id": "nautilus_shell",
+          "name": "Nautilus Shell"
+        },
+        {
+          "id": "ocean_salt_crystal",
+          "name": "Ocean Salt Crystal"
+        },
+        {
+          "id": "jellyfish_membrane",
+          "name": "Jellyfish Membrane"
+        },
+        {
+          "id": "shark_tooth",
+          "name": "Shark Tooth"
+        },
+        {
+          "id": "flying_fish_fin",
+          "name": "Flying Fish Fin"
+        },
+        {
+          "id": "ocean_foam_essence",
+          "name": "Ocean Foam Essence"
+        },
+        {
+          "id": "sailor_knot_rope",
+          "name": "Sailor Knot Rope"
+        }
+      ]
+    },
+    {
+      "id": "deep_sea",
+      "keywords": [
+        "deep sea"
+      ],
+      "items": [
+        {
+          "id": "angler_lure",
+          "name": "Angler Lure"
+        },
+        {
+          "id": "abyssal_scale",
+          "name": "Abyssal Scale"
+        },
+        {
+          "id": "pressure_crystal",
+          "name": "Pressure Crystal"
+        },
+        {
+          "id": "deep_vent_mineral",
+          "name": "Deep Vent Mineral"
+        },
+        {
+          "id": "bioluminescent_gel",
+          "name": "Bioluminescent Gel"
+        },
+        {
+          "id": "black_smoker_sulfide",
+          "name": "Black Smoker Sulfide"
+        },
+        {
+          "id": "giant_squid_ink",
+          "name": "Giant Squid Ink"
+        },
+        {
+          "id": "hadal_zone_sediment",
+          "name": "Hadal Zone Sediment"
+        },
+        {
+          "id": "vampire_squid_mantle",
+          "name": "Vampire Squid Mantle"
+        },
+        {
+          "id": "abyss_pearl",
+          "name": "Abyss Pearl"
+        },
+        {
+          "id": "tube_worm_casing",
+          "name": "Tube Worm Casing"
+        },
+        {
+          "id": "trench_fossil",
+          "name": "Trench Fossil"
+        }
+      ]
+    },
+    {
+      "id": "coral_reef",
+      "keywords": [
+        "coral reef",
+        "coral"
+      ],
+      "items": [
+        {
+          "id": "living_coral_piece",
+          "name": "Living Coral Piece"
+        },
+        {
+          "id": "reef_anemone",
+          "name": "Reef Anemone"
+        },
+        {
+          "id": "parrotfish_scale",
+          "name": "Parrotfish Scale"
+        },
+        {
+          "id": "sea_urchin_spine",
+          "name": "Sea Urchin Spine"
+        },
+        {
+          "id": "reef_sponge",
+          "name": "Reef Sponge"
+        },
+        {
+          "id": "clownfish_egg_cluster",
+          "name": "Clownfish Egg Cluster"
+        },
+        {
+          "id": "brain_coral_chunk",
+          "name": "Brain Coral Chunk"
+        },
+        {
+          "id": "fan_coral_frond",
+          "name": "Fan Coral Frond"
+        },
+        {
+          "id": "conch_shell",
+          "name": "Conch Shell"
+        },
+        {
+          "id": "reef_sand",
+          "name": "Reef Sand"
+        },
+        {
+          "id": "cleaner_shrimp",
+          "name": "Cleaner Shrimp"
+        },
+        {
+          "id": "starfish_arm",
+          "name": "Starfish Arm"
+        }
+      ]
+    },
+    {
+      "id": "rainforest",
+      "keywords": [
+        "rainforest"
+      ],
+      "items": [
+        {
+          "id": "orchid_petal",
+          "name": "Orchid Petal"
+        },
+        {
+          "id": "poison_frog_mucus",
+          "name": "Poison Frog Mucus"
+        },
+        {
+          "id": "mahogany_bark",
+          "name": "Mahogany Bark"
+        },
+        {
+          "id": "toucan_feather",
+          "name": "Toucan Feather"
+        },
+        {
+          "id": "vine_rope",
+          "name": "Vine Rope"
+        },
+        {
+          "id": "strangler_fig_root",
+          "name": "Strangler Fig Root"
+        },
+        {
+          "id": "bromeliad_water",
+          "name": "Bromeliad Water"
+        },
+        {
+          "id": "howler_monkey_tooth",
+          "name": "Howler Monkey Tooth"
+        },
+        {
+          "id": "canopy_nectar",
+          "name": "Canopy Nectar"
+        },
+        {
+          "id": "rainforest_amber",
+          "name": "Rainforest Amber"
+        },
+        {
+          "id": "kapok_fiber",
+          "name": "Kapok Fiber"
+        },
+        {
+          "id": "wild_herbs",
+          "name": "Wild Herbs"
+        },
+        {
+          "id": "strawberry_seed",
+          "name": "Strawberry Seeds"
+        },
+        {
+          "id": "apple_seed",
+          "name": "Apple Seeds"
+        }
+      ]
+    },
+    {
+      "id": "kelp_forest",
+      "keywords": [
+        "kelp forest",
+        "kelp"
+      ],
+      "items": [
+        {
+          "id": "giant_kelp_frond",
+          "name": "Giant Kelp Frond"
+        },
+        {
+          "id": "sea_otter_whisker",
+          "name": "Sea Otter Whisker"
+        },
+        {
+          "id": "kelp_holdfast",
+          "name": "Kelp Holdfast"
+        },
+        {
+          "id": "abalone_shell",
+          "name": "Abalone Shell"
+        },
+        {
+          "id": "urchin_test",
+          "name": "Urchin Test"
+        },
+        {
+          "id": "kelp_snail_shell",
+          "name": "Kelp Snail Shell"
+        },
+        {
+          "id": "garibaldi_scale",
+          "name": "Garibaldi Scale"
+        },
+        {
+          "id": "sea_hare_ink",
+          "name": "Sea Hare Ink"
+        },
+        {
+          "id": "kelp_crab_claw",
+          "name": "Kelp Crab Claw"
+        },
+        {
+          "id": "sunlit_kelp_blade",
+          "name": "Sunlit Kelp Blade"
+        },
+        {
+          "id": "kelp_forest_sponge",
+          "name": "Kelp Forest Sponge"
+        },
+        {
+          "id": "blueberry",
+          "name": "Blueberries"
+        }
+      ]
+    },
+    {
+      "id": "mangrove",
+      "keywords": [
+        "mangrove"
+      ],
+      "items": [
+        {
+          "id": "mangrove_root",
+          "name": "Mangrove Root"
+        },
+        {
+          "id": "mudskipper_scale",
+          "name": "Mudskipper Scale"
+        },
+        {
+          "id": "fiddler_crab_claw",
+          "name": "Fiddler Crab Claw"
+        },
+        {
+          "id": "tidal_sediment",
+          "name": "Tidal Sediment"
+        },
+        {
+          "id": "oyster_shell",
+          "name": "Oyster Shell"
+        },
+        {
+          "id": "mangrove_seed_pod",
+          "name": "Mangrove Seed Pod"
+        },
+        {
+          "id": "brackish_water_sample",
+          "name": "Brackish Water Sample"
+        },
+        {
+          "id": "stilted_root_bark",
+          "name": "Stilted Root Bark"
+        },
+        {
+          "id": "mangrove_crab_shell",
+          "name": "Mangrove Crab Shell"
+        },
+        {
+          "id": "aerial_root_fiber",
+          "name": "Aerial Root Fiber"
+        },
+        {
+          "id": "swamp_orchid",
+          "name": "Swamp Orchid"
+        },
+        {
+          "id": "wild_herbs",
+          "name": "Wild Herbs"
+        }
+      ]
+    },
+    {
+      "id": "frozen_ocean",
+      "keywords": [
+        "frozen ocean",
+        "frozen"
+      ],
+      "items": [
+        {
+          "id": "pack_ice_shard",
+          "name": "Pack Ice Shard"
+        },
+        {
+          "id": "narwhal_ivory_chip",
+          "name": "Narwhal Ivory Chip"
+        },
+        {
+          "id": "polar_plankton",
+          "name": "Polar Plankton"
+        },
+        {
+          "id": "glacial_melt",
+          "name": "Glacial Melt"
+        },
+        {
+          "id": "frost_coral",
+          "name": "Frost Coral"
+        },
+        {
+          "id": "iceberg_fragment",
+          "name": "Iceberg Fragment"
+        },
+        {
+          "id": "beluga_blubber",
+          "name": "Beluga Blubber"
+        },
+        {
+          "id": "arctic_krill",
+          "name": "Arctic Krill"
+        },
+        {
+          "id": "frozen_jellyfish",
+          "name": "Frozen Jellyfish"
+        },
+        {
+          "id": "ice_algae",
+          "name": "Ice Algae"
+        },
+        {
+          "id": "polar_cod_scale",
+          "name": "Polar Cod Scale"
+        },
+        {
+          "id": "frostbite_salve",
+          "name": "Frostbite Salve"
+        }
+      ]
+    },
+    {
+      "id": "river",
+      "keywords": [
+        "river"
+      ],
+      "items": [
+        {
+          "id": "river_stone",
+          "name": "River Stone"
+        },
+        {
+          "id": "freshwater_mussel",
+          "name": "Freshwater Mussel"
+        },
+        {
+          "id": "crawfish_claw",
+          "name": "Crawfish Claw"
+        },
+        {
+          "id": "driftwood_branch",
+          "name": "Driftwood Branch"
+        },
+        {
+          "id": "river_clay",
+          "name": "River Clay"
+        },
+        {
+          "id": "kingfisher_feather",
+          "name": "Kingfisher Feather"
+        },
+        {
+          "id": "river_pearl",
+          "name": "River Pearl"
+        },
+        {
+          "id": "otter_pelt_scrap",
+          "name": "Otter Pelt Scrap"
+        },
+        {
+          "id": "waterlogged_scroll",
+          "name": "Waterlogged Scroll"
+        },
+        {
+          "id": "salmon_roe",
+          "name": "Salmon Roe"
+        },
+        {
+          "id": "river_moss",
+          "name": "River Moss"
+        },
+        {
+          "id": "wild_herbs",
+          "name": "Wild Herbs"
+        }
+      ]
+    },
+    {
+      "id": "lake",
+      "keywords": [
+        "lake"
+      ],
+      "items": [
+        {
+          "id": "lake_sediment",
+          "name": "Lake Sediment"
+        },
+        {
+          "id": "lotus_root",
+          "name": "Lotus Root"
+        },
+        {
+          "id": "dragonfly_wing",
+          "name": "Dragonfly Wing"
+        },
+        {
+          "id": "lily_pad",
+          "name": "Lily Pad"
+        },
+        {
+          "id": "freshwater_pearl",
+          "name": "Freshwater Pearl"
+        },
+        {
+          "id": "cattail_pollen",
+          "name": "Cattail Pollen"
+        },
+        {
+          "id": "lake_trout_scale",
+          "name": "Lake Trout Scale"
+        },
+        {
+          "id": "heron_feather",
+          "name": "Heron Feather"
+        },
+        {
+          "id": "water_chestnut",
+          "name": "Water Chestnut"
+        },
+        {
+          "id": "pond_snail_shell",
+          "name": "Pond Snail Shell"
+        },
+        {
+          "id": "sunken_coin",
+          "name": "Sunken Coin"
+        },
+        {
+          "id": "blueberry",
+          "name": "Blueberries"
+        }
+      ]
+    },
+    {
+      "id": "tundra",
+      "keywords": [
+        "tundra"
+      ],
+      "items": [
+        {
+          "id": "caribou_moss",
+          "name": "Caribou Moss"
+        },
+        {
+          "id": "permafrost_fossil",
+          "name": "Permafrost Fossil"
+        },
+        {
+          "id": "tundra_lichen",
+          "name": "Tundra Lichen"
+        },
+        {
+          "id": "snowy_owl_feather",
+          "name": "Snowy Owl Feather"
+        },
+        {
+          "id": "ice_worm",
+          "name": "Ice Worm"
+        },
+        {
+          "id": "arctic_willow_bark",
+          "name": "Arctic Willow Bark"
+        },
+        {
+          "id": "lemming_fur_ball",
+          "name": "Lemming Fur Ball"
+        },
+        {
+          "id": "tundra_berries",
+          "name": "Tundra Berries"
+        },
+        {
+          "id": "frozen_peat",
+          "name": "Frozen Peat"
+        },
+        {
+          "id": "musk_ox_wool",
+          "name": "Musk Ox Wool"
+        },
+        {
+          "id": "stone_circle_fragment",
+          "name": "Stone Circle Fragment"
+        },
+        {
+          "id": "wild_herbs",
+          "name": "Wild Herbs"
+        }
+      ]
+    },
+    {
+      "id": "jungle",
+      "keywords": [
+        "jungle"
+      ],
+      "items": [
+        {
+          "id": "jungle_orchid",
+          "name": "Jungle Orchid"
+        },
+        {
+          "id": "monkey_nut",
+          "name": "Monkey Nut"
+        },
+        {
+          "id": "jungle_vine",
+          "name": "Jungle Vine"
+        },
+        {
+          "id": "beetle_carapace",
+          "name": "Beetle Carapace"
+        },
+        {
+          "id": "cocoa_pod",
+          "name": "Cocoa Pod"
+        },
+        {
+          "id": "macaw_feather",
+          "name": "Macaw Feather"
+        },
+        {
+          "id": "jaguar_claw_mark",
+          "name": "Jaguar Claw Mark"
+        },
+        {
+          "id": "pitcher_plant_nectar",
+          "name": "Pitcher Plant Nectar"
+        },
+        {
+          "id": "tree_frog_venom",
+          "name": "Tree Frog Venom"
+        },
+        {
+          "id": "passion_fruit",
+          "name": "Passion Fruit"
+        },
+        {
+          "id": "bamboo_shoot",
+          "name": "Bamboo Shoot"
+        },
+        {
+          "id": "wild_herbs",
+          "name": "Wild Herbs"
+        },
+        {
+          "id": "strawberry_seed",
+          "name": "Strawberry Seeds"
+        },
+        {
+          "id": "pear_seed",
+          "name": "Pear Seeds"
+        }
+      ]
+    },
+    {
+      "id": "redwoods",
+      "keywords": [
+        "redwoods"
+      ],
+      "items": [
+        {
+          "id": "redwood_bark",
+          "name": "Redwood Bark"
+        },
+        {
+          "id": "ancient_amber",
+          "name": "Ancient Amber"
+        },
+        {
+          "id": "banana_slug_slime",
+          "name": "Banana Slug Slime"
+        },
+        {
+          "id": "fern_frond",
+          "name": "Fern Frond"
+        },
+        {
+          "id": "redwood_cone",
+          "name": "Redwood Cone"
+        },
+        {
+          "id": "old_growth_moss",
+          "name": "Old Growth Moss"
+        },
+        {
+          "id": "spotted_owl_feather",
+          "name": "Spotted Owl Feather"
+        },
+        {
+          "id": "giant_bark_beetle",
+          "name": "Giant Bark Beetle"
+        },
+        {
+          "id": "forest_floor_humus",
+          "name": "Forest Floor Humus"
+        },
+        {
+          "id": "sorrel_leaf",
+          "name": "Sorrel Leaf"
+        },
+        {
+          "id": "woodpecker_feather",
+          "name": "Woodpecker Feather"
+        },
+        {
+          "id": "truffle",
+          "name": "Truffle"
+        },
+        {
+          "id": "apple_seed",
+          "name": "Apple Seeds"
+        }
+      ]
+    },
+    {
+      "id": "plains",
+      "keywords": [
+        "plains"
+      ],
+      "items": [
+        {
+          "id": "prairie_grass_bundle",
+          "name": "Prairie Grass Bundle"
+        },
+        {
+          "id": "bison_tuft",
+          "name": "Bison Tuft"
+        },
+        {
+          "id": "wildflower_bouquet",
+          "name": "Wildflower Bouquet"
+        },
+        {
+          "id": "gopher_hole_clay",
+          "name": "Gopher Hole Clay"
+        },
+        {
+          "id": "flint_chip",
+          "name": "Flint Chip"
+        },
+        {
+          "id": "meadowlark_feather",
+          "name": "Meadowlark Feather"
+        },
+        {
+          "id": "sunflower_seed",
+          "name": "Sunflower Seeds"
+        },
+        {
+          "id": "prairie_dog_whisker",
+          "name": "Prairie Dog Whisker"
+        },
+        {
+          "id": "coyote_fang",
+          "name": "Coyote Fang"
+        },
+        {
+          "id": "wind_polished_stone",
+          "name": "Wind-Polished Stone"
+        },
+        {
+          "id": "buffalo_grass_root",
+          "name": "Buffalo Grass Root"
+        },
+        {
+          "id": "raspberry",
+          "name": "Raspberries"
+        },
+        {
+          "id": "pear_seed",
+          "name": "Pear Seeds"
+        }
+      ]
+    },
+    {
+      "id": "wetlands",
+      "keywords": [
+        "wetlands"
+      ],
+      "items": [
+        {
+          "id": "cattail_stalk",
+          "name": "Cattail Stalk"
+        },
+        {
+          "id": "mud_clam",
+          "name": "Mud Clam"
+        },
+        {
+          "id": "reed_bundle",
+          "name": "Reed Bundle"
+        },
+        {
+          "id": "wetland_peat",
+          "name": "Wetland Peat"
+        },
+        {
+          "id": "snail_shell",
+          "name": "Snail Shell"
+        },
+        {
+          "id": "marsh_marigold",
+          "name": "Marsh Marigold"
+        },
+        {
+          "id": "bullfrog_vocal_sac",
+          "name": "Bullfrog Vocal Sac"
+        },
+        {
+          "id": "bittern_feather",
+          "name": "Bittern Feather"
+        },
+        {
+          "id": "bog_cotton",
+          "name": "Bog Cotton"
+        },
+        {
+          "id": "water_vole_fur",
+          "name": "Water Vole Fur"
+        },
+        {
+          "id": "marsh_gas_bubble",
+          "name": "Marsh Gas Bubble"
+        },
+        {
+          "id": "wild_herbs",
+          "name": "Wild Herbs"
+        },
+        {
+          "id": "blueberry",
+          "name": "Blueberries"
+        }
+      ]
     }
   ],
   "messages": [
     {
+      "id": "swamp",
+      "keywords": [
+        "swamp"
+      ],
+      "templates": [
+        "Wading through the murky water, you spot some {item} tangled in the roots!",
+        "Beneath a rotting log, you uncover some {item}!",
+        "A bubbling patch of swamp gas reveals some hidden {item}!",
+        "Clinging to a cypress knee, you gather some {item}!",
+        "Deep in the bog, your foot catches on something — it's {item}!",
+        "A heron flies off, leaving behind some {item} near its nest!",
+        "The thick moss parts to reveal a cache of {item}!",
+        "Fireflies guide you to a strange glow — it's {item}!"
+      ]
+    },
+    {
+      "id": "savanna",
+      "keywords": [
+        "savanna"
+      ],
+      "templates": [
+        "Under the shade of an acacia tree, you discover some {item}!",
+        "A termite mound crumbles, revealing some {item} inside!",
+        "The tall grass parts to show some {item} lying in the sun!",
+        "Near a dried watering hole, you find some {item}!",
+        "A weaver bird's abandoned nest contains some {item}!",
+        "The golden savanna yields a surprising find — {item}!",
+        "Dust devils clear away to reveal some {item} on the ground!",
+        "Between the scattered rocks, you spot some {item}!"
+      ]
+    },
+    {
       "id": "desert",
       "keywords": [
-        "desert",
-        "volcano"
+        "desert"
       ],
       "templates": [
         "Sifting through the warm sand, you uncover some {item}!",
         "Under the shade of a thorny shrub, you spot some {item}!",
         "Tucked away in the dry soil, you find some {item}!",
         "A desert wind reveals a hidden cluster of {item}!",
-        "Near a crumbling rock formation, you collect some {item}."
+        "Near a crumbling rock formation, you collect some {item}!",
+        "An oasis shimmer leads you to real {item}!",
+        "Half-buried in a sand dune, you dig up some {item}!",
+        "A sidewinder's trail leads you to a stash of {item}!"
       ]
     },
     {
-      "id": "snow",
+      "id": "taiga",
       "keywords": [
-        "snow",
-        "ice",
-        "polar",
-        "tundra",
-        "frozen"
+        "taiga"
       ],
       "templates": [
-        "Sweeping away a layer of frost, you gather some {item}!",
-        "Buried in the snow, you discover some frozen {item}!",
-        "Near a thermal hot spring, you forage some resilient {item}!",
-        "Beneath an icy ledge, you spot some preserved {item}.",
-        "The frozen ground hides a small stash of {item}!"
+        "Beneath the dense pine canopy, you gather some {item}!",
+        "Snow-dusted branches shake loose some {item}!",
+        "A frozen creek bed reveals some {item} in the ice!",
+        "Under a fallen birch, you discover some {item}!",
+        "The boreal silence is broken by your find — {item}!",
+        "Elk tracks lead you to a clearing with some {item}!",
+        "Scraping through frost, you uncover some {item}!",
+        "A woodpecker's hole holds a surprise — {item}!"
+      ]
+    },
+    {
+      "id": "mountain",
+      "keywords": [
+        "mountain"
+      ],
+      "templates": [
+        "Clinging to a rocky ledge, you harvest some {item}!",
+        "In a sheltered mountain hollow, you find some {item}!",
+        "Beneath a canopy of pines, you gather some {item}!",
+        "A hidden alpine meadow yields some fresh {item}!",
+        "At the foot of a mossy boulder, you spot some {item}!",
+        "The thin mountain air carries the scent of {item}!",
+        "A marmot's burrow entrance reveals some {item}!",
+        "Between the scree, something glints — it's {item}!"
+      ]
+    },
+    {
+      "id": "coastal",
+      "keywords": [
+        "coastal"
+      ],
+      "templates": [
+        "Washed up on the shore, you salvage some {item}!",
+        "Under a smooth tide pool stone, you harvest some {item}!",
+        "The receding tide exposes some {item} in the sand!",
+        "Tangled in washed-up seaweed, you find some {item}!",
+        "A hermit crab scuttles away, leaving behind some {item}!",
+        "The salt spray clears to reveal some {item} on the rocks!",
+        "Digging in the wet sand, your fingers close around {item}!",
+        "A wave deposits some {item} right at your feet!"
+      ]
+    },
+    {
+      "id": "volcano",
+      "keywords": [
+        "volcano"
+      ],
+      "templates": [
+        "Near a fumarole, you carefully collect some {item}!",
+        "Cooling lava reveals some {item} in its cracks!",
+        "The volcanic soil yields some {item}!",
+        "A geothermal vent spits out some {item}!",
+        "Between the obsidian flows, you spot some {item}!",
+        "The sulfurous air leads you to some {item}!",
+        "An old lava tube hides some {item} in its walls!",
+        "Ember moths scatter, revealing some {item} beneath!"
       ]
     },
     {
@@ -225,30 +1490,14 @@
         "cave"
       ],
       "templates": [
-        "Your flashlight beam catches a cluster of {item} growing in the dark dampness!",
-        "Clinging to a cavern wall, you gather some cave-dwelling {item}!",
+        "Your flashlight beam catches a cluster of {item} growing in the dark!",
+        "Clinging to a cavern wall, you gather some {item}!",
         "In a secret cavern alcove, you locate some {item}!",
-        "Echoing drips guide you to a patch of {item} in the dark.",
-        "Tucked behind a stalagmite, you find some {item}."
-      ]
-    },
-    {
-      "id": "aquatic",
-      "keywords": [
-        "ocean",
-        "sea",
-        "beach",
-        "coastal",
-        "lake",
-        "river",
-        "coral"
-      ],
-      "templates": [
-        "Washed up on the shore, you salvage some fresh {item}!",
-        "Tangled in sea vegetation, you discover some {item}!",
-        "Under a smooth tide pool stone, you harvest some {item}!",
-        "The receding tide exposes a hidden patch of {item}.",
-        "Along the riverbank, you spot some {item} growing wild."
+        "Echoing drips guide you to a patch of {item} in the dark!",
+        "Tucked behind a stalagmite, you find some {item}!",
+        "A bioluminescent glow leads you to some {item}!",
+        "Deep in the cave, your hand brushes against {item}!",
+        "A hidden chamber sparkles with {item}!"
       ]
     },
     {
@@ -258,24 +1507,255 @@
       ],
       "templates": [
         "In an overgrown alleyway, you stumble upon some {item}!",
-        "Tucked behind an abandoned building, you find some {item}.",
+        "Tucked behind an abandoned building, you find some {item}!",
         "Growing between the cracks of old pavement, you gather some {item}!",
-        "A rooftop garden yields some unexpected {item}.",
-        "Under a rusted fire escape, you discover some wild {item}!"
+        "A rooftop garden yields some unexpected {item}!",
+        "Under a rusted fire escape, you discover some wild {item}!",
+        "Rummaging through old debris, you salvage some {item}!",
+        "A raccoon drops something shiny — it's {item}!",
+        "Inside an abandoned subway car, you spot some {item}!"
       ]
     },
     {
-      "id": "mountain",
+      "id": "polar",
       "keywords": [
-        "mountain",
-        "taiga"
+        "polar"
       ],
       "templates": [
-        "Clinging to a rocky ledge, you harvest some {item}!",
-        "In a sheltered mountain hollow, you find some {item}.",
-        "Beneath a canopy of pines, you gather some {item}!",
-        "A hidden alpine meadow yields some fresh {item}.",
-        "At the foot of a mossy boulder, you spot some {item}!"
+        "Sweeping away a layer of frost, you gather some {item}!",
+        "Buried in the snow, you discover some frozen {item}!",
+        "Near a thermal hot spring, you forage some {item}!",
+        "Beneath an icy ledge, you spot some preserved {item}!",
+        "The frozen ground hides a small stash of {item}!",
+        "Aurora light reveals some glistening {item} in the ice!",
+        "A penguin colony's edge holds some scattered {item}!",
+        "The polar wind exposes some {item} frozen in time!"
+      ]
+    },
+    {
+      "id": "ocean",
+      "keywords": [
+        "ocean"
+      ],
+      "templates": [
+        "Diving beneath the waves, you find some {item}!",
+        "A current carries some {item} right to you!",
+        "On the ocean floor, you discover some {item}!",
+        "Tangled in sea vegetation, you spot some {item}!",
+        "A school of fish scatters, revealing some {item}!",
+        "The deep blue yields a treasure — {item}!",
+        "Floating debris holds some {item} in its grip!",
+        "A whale song echoes as you collect some {item}!"
+      ]
+    },
+    {
+      "id": "deep_sea",
+      "keywords": [
+        "deep sea"
+      ],
+      "templates": [
+        "In the crushing depths, you find some glowing {item}!",
+        "A hydrothermal vent deposits some {item}!",
+        "The abyssal darkness hides some {item}!",
+        "Bioluminescent creatures illuminate some {item}!",
+        "Descending further, you discover some {item}!",
+        "The deep sea current reveals some {item} on the trench wall!",
+        "An ancient seabed yields some {item}!",
+        "Strange deep-sea life guards some {item}!"
+      ]
+    },
+    {
+      "id": "coral_reef",
+      "keywords": [
+        "coral",
+        "reef"
+      ],
+      "templates": [
+        "Between the vibrant corals, you find some {item}!",
+        "A parrotfish swims away, exposing some {item}!",
+        "In a coral crevice, you discover some {item}!",
+        "The reef's colorful landscape yields some {item}!",
+        "A sea turtle glides past as you collect some {item}!",
+        "Hidden in the reef's sandy floor, you uncover some {item}!",
+        "Cleaning fish scatter to reveal some {item}!",
+        "The warm reef water washes some {item} toward you!"
+      ]
+    },
+    {
+      "id": "rainforest",
+      "keywords": [
+        "rainforest"
+      ],
+      "templates": [
+        "High in the canopy, you spot some {item}!",
+        "A howler monkey drops some {item} from above!",
+        "Under the massive buttress roots, you find some {item}!",
+        "The humid air carries the scent of {item}!",
+        "A bromeliad's pool holds some {item}!",
+        "Parting the thick undergrowth, you discover some {item}!",
+        "Climbing a vine, you reach some {item} in the treetops!",
+        "The forest floor's leaf litter conceals some {item}!"
+      ]
+    },
+    {
+      "id": "kelp_forest",
+      "keywords": [
+        "kelp"
+      ],
+      "templates": [
+        "Swaying kelp fronds reveal some {item}!",
+        "A sea otter drifts past with some {item} nearby!",
+        "At the base of the kelp holdfast, you find some {item}!",
+        "Sunlight filters through the kelp to illuminate some {item}!",
+        "A garibaldi fish guards some {item} on the reef!",
+        "Between the kelp stalks, you discover some {item}!",
+        "The kelp canopy shelters some hidden {item}!",
+        "Diving deeper into the kelp forest, you spot some {item}!"
+      ]
+    },
+    {
+      "id": "mangrove",
+      "keywords": [
+        "mangrove"
+      ],
+      "templates": [
+        "Tangled in the mangrove roots, you find some {item}!",
+        "A mudskipper leads you to some {item} in the mud!",
+        "The tidal flow exposes some {item} in the roots!",
+        "Fiddler crabs scatter, revealing some {item}!",
+        "In the brackish water, you discover some {item}!",
+        "The aerial roots hold some {item} in their grasp!",
+        "A mangrove seed pod floats past some {item}!",
+        "Between the stilted roots, you spot some {item}!"
+      ]
+    },
+    {
+      "id": "frozen_ocean",
+      "keywords": [
+        "frozen ocean",
+        "frozen"
+      ],
+      "templates": [
+        "Beneath the ice shelf, you find some {item}!",
+        "A crack in the pack ice reveals some {item}!",
+        "The freezing water holds some preserved {item}!",
+        "An iceberg's underwater shelf hides some {item}!",
+        "Narwhal tracks in the ice lead to some {item}!",
+        "The frozen surface breaks to reveal some {item}!",
+        "Polar currents deposit some {item} on the ice!",
+        "Diving beneath the ice, you discover some {item}!"
+      ]
+    },
+    {
+      "id": "river",
+      "keywords": [
+        "river"
+      ],
+      "templates": [
+        "Along the riverbank, you spot some {item} growing wild!",
+        "The current washes some {item} onto the shore!",
+        "Under a river stone, you discover some {item}!",
+        "A kingfisher dives, revealing some {item} below!",
+        "The shallow rapids expose some {item}!",
+        "Fishing downstream, you pull up some {item}!",
+        "A beaver dam traps some {item} in its structure!",
+        "The muddy bank yields some {item}!"
+      ]
+    },
+    {
+      "id": "lake",
+      "keywords": [
+        "lake"
+      ],
+      "templates": [
+        "On the lakeshore, you discover some {item}!",
+        "A dragonfly hovers over some {item} in the reeds!",
+        "Beneath a lily pad, you find some {item}!",
+        "The lake's calm surface hides some {item}!",
+        "A heron takes flight, leaving behind some {item}!",
+        "Diving into the clear lake, you spot some {item}!",
+        "The sandy lake bottom holds some {item}!",
+        "Near the dock's pilings, you discover some {item}!"
+      ]
+    },
+    {
+      "id": "tundra",
+      "keywords": [
+        "tundra"
+      ],
+      "templates": [
+        "The windswept tundra reveals some {item}!",
+        "Beneath the permafrost layer, you uncover some {item}!",
+        "A caribou herd passes, leaving behind some {item}!",
+        "The sparse vegetation hides some {item}!",
+        "An arctic fox's abandoned den holds some {item}!",
+        "The frozen ground cracks to show some {item}!",
+        "Tundra flowers bloom around some {item}!",
+        "A snowy owl's perch reveals some {item} below!"
+      ]
+    },
+    {
+      "id": "jungle",
+      "keywords": [
+        "jungle"
+      ],
+      "templates": [
+        "Vines part to reveal some {item} hanging from the canopy!",
+        "A monkey's screech leads you to some {item}!",
+        "Under the dense jungle floor, you discover some {item}!",
+        "A jaguar's tracks lead to a stash of {item}!",
+        "The thick humidity reveals some {item} on the bark!",
+        "Parrots scatter from a tree hiding some {item}!",
+        "A waterfall's mist conceals some {item} behind the rocks!",
+        "Hacking through bamboo, you find some {item}!"
+      ]
+    },
+    {
+      "id": "redwoods",
+      "keywords": [
+        "redwoods"
+      ],
+      "templates": [
+        "High up on the ancient bark, you find some {item}!",
+        "The massive tree's roots hold some {item}!",
+        "A banana slug trails past some {item} on a log!",
+        "In the misty redwood understory, you discover some {item}!",
+        "Peeling bark reveals some {item} underneath!",
+        "The towering giants shed some {item} at their base!",
+        "An owl pellet near the trunk contains some {item}!",
+        "The soft forest floor yields some {item}!"
+      ]
+    },
+    {
+      "id": "plains",
+      "keywords": [
+        "plains"
+      ],
+      "templates": [
+        "The wind-swept prairie reveals some {item}!",
+        "A bison herd has moved on, leaving some {item}!",
+        "Under the waving grass, you discover some {item}!",
+        "A prairie dog town's edge holds some {item}!",
+        "Wildflowers surround a cache of {item}!",
+        "The flat horizon hides some {item} in a hollow!",
+        "A hawk drops something — it's some {item}!",
+        "Digging near a gopher hole, you find some {item}!"
+      ]
+    },
+    {
+      "id": "wetlands",
+      "keywords": [
+        "wetlands"
+      ],
+      "templates": [
+        "Among the cattails, you discover some {item}!",
+        "The marshy ground squelches to reveal some {item}!",
+        "A heron's fishing spot holds some {item}!",
+        "Reed beds part to show some {item}!",
+        "The boggy water surface hides some {item}!",
+        "A bullfrog leaps off some {item}!",
+        "In the wetland's shallow pools, you find some {item}!",
+        "Marsh birds scatter, revealing some {item} in the mud!"
       ]
     },
     {

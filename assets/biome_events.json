@@ -1,0 +1,1655 @@
+{
+  "event_chance": 0.20,
+  "events": [
+    {
+      "id": "swamp_will_o_wisp",
+      "biomes": ["swamp", "wetlands"],
+      "title": "Will-o'-the-Wisp",
+      "description": "A mysterious blue-green light dances through the mist, beckoning you deeper into the bog...",
+      "icon": "🔥",
+      "category": "mystery",
+      "outcomes": [
+        {
+          "choice": "Follow the light",
+          "results": [
+            { "type": "loot", "id": "swamp_gas_vial", "count": 2, "text": "The light leads you to a pocket of rare swamp gas! You carefully collect some.", "chance": 0.6 },
+            { "type": "stamina", "value": -15, "text": "The light was a trap! You stumble into a hidden sinkhole and exhaust yourself climbing out.", "chance": 0.4 }
+          ]
+        },
+        {
+          "choice": "Ignore it",
+          "results": [
+            { "type": "nothing", "text": "You wisely keep to the solid path. The light fades into the fog.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "swamp_quicksand",
+      "biomes": ["swamp", "wetlands", "mangrove"],
+      "title": "Quicksand Pit!",
+      "description": "The ground beneath you starts to give way! The mud is pulling you down...",
+      "icon": "⚠️",
+      "category": "hazard",
+      "outcomes": [
+        {
+          "choice": "Struggle free",
+          "results": [
+            { "type": "stamina", "value": -20, "text": "You manage to pull yourself free, but you're exhausted!", "chance": 0.5 },
+            { "type": "loot", "id": "bog_iron", "count": 1, "text": "Your thrashing uncovers some bog iron buried in the muck! You pull yourself free with a prize.", "chance": 0.5 }
+          ]
+        },
+        {
+          "choice": "Use a vine",
+          "results": [
+            { "type": "loot", "id": "murky_pearl", "count": 1, "text": "Grabbing a vine overhead, you swing free — and notice a murky pearl in the mud!", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "swamp_hermit",
+      "biomes": ["swamp"],
+      "title": "The Swamp Hermit",
+      "description": "An old hermit emerges from a rickety shack hidden among the cypress trees. 'I've got wares, if you've got patience...'",
+      "icon": "🧙",
+      "category": "npc",
+      "outcomes": [
+        {
+          "choice": "Trade with hermit",
+          "results": [
+            { "type": "loot", "id": "leech_extract", "count": 3, "text": "The hermit trades you some potent leech extract! 'Good for what ails ya,' he mutters.", "chance": 0.7 },
+            { "type": "coins", "value": 500, "text": "The hermit hands you a pouch of coins! 'Been saving these. Take 'em before the swamp does.'", "chance": 0.3 }
+          ]
+        },
+        {
+          "choice": "Decline politely",
+          "results": [
+            { "type": "nothing", "text": "The hermit shrugs and disappears back into his shack. The swamp swallows the silence.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "swamp_gator_nest",
+      "biomes": ["swamp", "wetlands"],
+      "title": "Alligator Nest",
+      "description": "You spot a mound of vegetation and mud — an alligator's nest! There seem to be interesting items mixed in with the debris...",
+      "icon": "🐊",
+      "category": "discovery",
+      "outcomes": [
+        {
+          "choice": "Raid the nest",
+          "results": [
+            { "type": "loot", "id": "moss_covered_relic", "count": 1, "text": "You grab a moss-covered relic from the nest before the mother returns!", "chance": 0.4 },
+            { "type": "encounter", "text": "The mother alligator returns! Prepare for battle!", "chance": 0.6 }
+          ]
+        },
+        {
+          "choice": "Leave it alone",
+          "results": [
+            { "type": "nothing", "text": "You back away slowly. Some things are better left undisturbed.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "swamp_fog_roll",
+      "biomes": ["swamp", "mangrove"],
+      "title": "Thick Fog Rolls In",
+      "description": "An impenetrable fog descends on the swamp. Visibility drops to nearly zero...",
+      "icon": "🌫️",
+      "category": "weather",
+      "outcomes": [
+        {
+          "choice": "Push through",
+          "results": [
+            { "type": "loot", "id": "cypress_knee", "count": 2, "text": "Stumbling through the fog, you trip over some cypress knees — perfect crafting material!", "chance": 0.5 },
+            { "type": "stamina", "value": -10, "text": "The fog disoriented you. You wander in circles before finding your way.", "chance": 0.5 }
+          ]
+        },
+        {
+          "choice": "Wait it out",
+          "results": [
+            { "type": "stamina", "value": 5, "text": "You rest while the fog clears. The brief pause refreshes you.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "savanna_stampede",
+      "biomes": ["savanna", "plains"],
+      "title": "Stampede!",
+      "description": "The ground rumbles! A massive herd of wildebeest thunders across the plain directly towards you!",
+      "icon": "🦬",
+      "category": "hazard",
+      "outcomes": [
+        {
+          "choice": "Dive behind a rock",
+          "results": [
+            { "type": "loot", "id": "horn_fragment", "count": 2, "text": "You dodge behind a boulder! As the herd passes, you find horn fragments left behind.", "chance": 0.7 },
+            { "type": "stamina", "value": -15, "text": "You barely make it behind cover! The dust cloud leaves you coughing and drained.", "chance": 0.3 }
+          ]
+        },
+        {
+          "choice": "Climb a tree",
+          "results": [
+            { "type": "loot", "id": "weaver_bird_nest", "count": 1, "text": "Safe in the acacia tree, you find an abandoned weaver bird nest!", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "savanna_watering_hole",
+      "biomes": ["savanna"],
+      "title": "Watering Hole Gathering",
+      "description": "You discover a watering hole where dozens of animals have gathered. The scene is both beautiful and tense...",
+      "icon": "💧",
+      "category": "discovery",
+      "outcomes": [
+        {
+          "choice": "Observe quietly",
+          "results": [
+            { "type": "loot", "id": "savanna_amber", "count": 1, "text": "While watching, you notice a piece of amber glinting in the mud!", "chance": 0.6 },
+            { "type": "encounter", "text": "A predator spots you from across the water! It charges!", "chance": 0.4 }
+          ]
+        },
+        {
+          "choice": "Drink and leave",
+          "results": [
+            { "type": "stamina", "value": 10, "text": "The cool water refreshes you. You feel rejuvenated.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "savanna_trader_caravan",
+      "biomes": ["savanna", "desert"],
+      "title": "Traveling Trader",
+      "description": "A dusty caravan appears on the horizon. The trader waves you over with a warm smile.",
+      "icon": "🐪",
+      "category": "npc",
+      "outcomes": [
+        {
+          "choice": "Browse wares",
+          "results": [
+            { "type": "loot", "id": "baobab_fruit", "count": 3, "text": "The trader shares some baobab fruit from their journey!", "chance": 0.5 },
+            { "type": "coins", "value": 800, "text": "The trader is in a generous mood and gives you coins for your company!", "chance": 0.3 },
+            { "type": "loot", "id": "acacia_bark", "count": 2, "text": "You trade stories and receive some medicinal acacia bark.", "chance": 0.2 }
+          ]
+        },
+        {
+          "choice": "Wave and move on",
+          "results": [
+            { "type": "nothing", "text": "The trader tips their hat and continues on their way.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "savanna_dust_devil",
+      "biomes": ["savanna", "desert", "plains"],
+      "title": "Dust Devil",
+      "description": "A spinning column of dust races across the open ground, picking up debris in its path!",
+      "icon": "🌪️",
+      "category": "weather",
+      "outcomes": [
+        {
+          "choice": "Chase it",
+          "results": [
+            { "type": "loot", "id": "ostrich_feather", "count": 2, "text": "The dust devil deposits some beautiful ostrich feathers at your feet!", "chance": 0.5 },
+            { "type": "stamina", "value": -10, "text": "You get caught in the whirlwind and stumble around dizzy!", "chance": 0.5 }
+          ]
+        },
+        {
+          "choice": "Take cover",
+          "results": [
+            { "type": "loot", "id": "dry_grass_bundle", "count": 1, "text": "Sheltering behind a termite mound, you find some useful dry grass.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "desert_mirage",
+      "biomes": ["desert"],
+      "title": "Shimmering Mirage",
+      "description": "The heat haze warps your vision. You see what appears to be a lush oasis ahead... or is it?",
+      "icon": "🏜️",
+      "category": "mystery",
+      "outcomes": [
+        {
+          "choice": "Investigate",
+          "results": [
+            { "type": "loot", "id": "mirage_shard", "count": 1, "text": "The mirage fades, but where it was you find a crystallized shard of desert glass!", "chance": 0.4 },
+            { "type": "stamina", "value": -20, "text": "It was just a mirage. You've wasted precious energy chasing nothing.", "chance": 0.4 },
+            { "type": "coins", "value": 1000, "text": "It's real! A hidden oasis with a treasure chest half-buried in the sand!", "chance": 0.2 }
+          ]
+        },
+        {
+          "choice": "Stay the course",
+          "results": [
+            { "type": "nothing", "text": "You've seen enough mirages to know better. You press on.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "desert_sandstorm",
+      "biomes": ["desert"],
+      "title": "Sandstorm Incoming!",
+      "description": "The sky darkens as a wall of sand races across the desert. You need to act fast!",
+      "icon": "🌪️",
+      "category": "weather",
+      "outcomes": [
+        {
+          "choice": "Find shelter",
+          "results": [
+            { "type": "loot", "id": "desert_rose_crystal", "count": 1, "text": "You duck into a rock formation and find beautiful desert rose crystals!", "chance": 0.7 },
+            { "type": "stamina", "value": -5, "text": "You weather the storm in a shallow cave. A bit sandy but safe.", "chance": 0.3 }
+          ]
+        },
+        {
+          "choice": "Dig in",
+          "results": [
+            { "type": "loot", "id": "scarab_shell", "count": 2, "text": "Digging into the sand, you find scarab shells preserved beneath the surface!", "chance": 0.6 },
+            { "type": "stamina", "value": -15, "text": "The sand blasts you mercilessly. You're exhausted when it passes.", "chance": 0.4 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "desert_scorpion_den",
+      "biomes": ["desert"],
+      "title": "Scorpion Den",
+      "description": "You've stumbled upon a den of desert scorpions! Their tails glow under the moonlight...",
+      "icon": "🦂",
+      "category": "discovery",
+      "outcomes": [
+        {
+          "choice": "Carefully harvest venom",
+          "results": [
+            { "type": "loot", "id": "scorpion_venom", "count": 2, "text": "With steady hands, you extract some valuable scorpion venom!", "chance": 0.5 },
+            { "type": "stamina", "value": -25, "text": "Ouch! A scorpion stings you! The venom drains your energy.", "chance": 0.5 }
+          ]
+        },
+        {
+          "choice": "Back away",
+          "results": [
+            { "type": "nothing", "text": "You slowly back away. Not worth the risk.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "desert_ancient_ruins",
+      "biomes": ["desert"],
+      "title": "Ancient Ruins",
+      "description": "Half-buried sandstone pillars emerge from a dune. This was once a great structure...",
+      "icon": "🏛️",
+      "category": "discovery",
+      "outcomes": [
+        {
+          "choice": "Explore the ruins",
+          "results": [
+            { "type": "loot", "id": "sandstone_slab", "count": 1, "text": "You find an inscribed sandstone slab with ancient markings!", "chance": 0.4 },
+            { "type": "coins", "value": 1500, "text": "A hidden chamber contains a cache of ancient gold coins!", "chance": 0.3 },
+            { "type": "encounter", "text": "The ruins are guarded! A creature emerges from the shadows!", "chance": 0.3 }
+          ]
+        },
+        {
+          "choice": "Sketch and leave",
+          "results": [
+            { "type": "loot", "id": "sun_bleached_bone", "count": 1, "text": "You sketch the ruins and pick up an interesting bleached bone nearby.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "taiga_blizzard",
+      "biomes": ["taiga", "tundra", "polar"],
+      "title": "Sudden Blizzard",
+      "description": "Snow begins falling heavily. Within minutes, a full blizzard engulfs the area!",
+      "icon": "❄️",
+      "category": "weather",
+      "outcomes": [
+        {
+          "choice": "Build a snow shelter",
+          "results": [
+            { "type": "loot", "id": "frozen_sap", "count": 2, "text": "While building shelter under a pine, you find frozen sap crystals!", "chance": 0.6 },
+            { "type": "stamina", "value": -10, "text": "You survive the blizzard but it takes a toll on your stamina.", "chance": 0.4 }
+          ]
+        },
+        {
+          "choice": "Push through",
+          "results": [
+            { "type": "loot", "id": "snowshoe_hare_fur", "count": 1, "text": "Pressing on, you find a tuft of snowshoe hare fur caught on a branch!", "chance": 0.4 },
+            { "type": "stamina", "value": -20, "text": "The blizzard is relentless. You barely make it through.", "chance": 0.6 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "taiga_wolf_pack",
+      "biomes": ["taiga"],
+      "title": "Wolf Pack Sighting",
+      "description": "Yellow eyes gleam from the tree line. A wolf pack has spotted you...",
+      "icon": "🐺",
+      "category": "hazard",
+      "outcomes": [
+        {
+          "choice": "Stand your ground",
+          "results": [
+            { "type": "loot", "id": "wolf_claw_mark", "count": 1, "text": "The wolves respect your courage and leave. You find claw marks on a nearby tree — a trophy!", "chance": 0.6 },
+            { "type": "encounter", "text": "The alpha charges! Prepare to defend yourself!", "chance": 0.4 }
+          ]
+        },
+        {
+          "choice": "Slowly retreat",
+          "results": [
+            { "type": "loot", "id": "elk_antler", "count": 1, "text": "Backing away, you find a shed elk antler — the wolves' prey left this behind.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "taiga_old_cabin",
+      "biomes": ["taiga", "redwoods"],
+      "title": "Abandoned Cabin",
+      "description": "A moss-covered cabin sits in a clearing. Smoke once rose from its chimney, but it's been empty for years...",
+      "icon": "🏚️",
+      "category": "discovery",
+      "outcomes": [
+        {
+          "choice": "Search inside",
+          "results": [
+            { "type": "loot", "id": "birch_bark_scroll", "count": 1, "text": "Inside, you find a birch bark scroll with what appears to be a map!", "chance": 0.4 },
+            { "type": "coins", "value": 600, "text": "Under a loose floorboard, you discover a stash of coins!", "chance": 0.3 },
+            { "type": "loot", "id": "pine_resin", "count": 3, "text": "The cabin's shelves hold jars of preserved pine resin!", "chance": 0.3 }
+          ]
+        },
+        {
+          "choice": "Leave undisturbed",
+          "results": [
+            { "type": "nothing", "text": "You respect the former owner's privacy and move on.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mountain_rockslide",
+      "biomes": ["mountain", "cave"],
+      "title": "Rockslide!",
+      "description": "Rocks begin tumbling from above! The mountainside is unstable!",
+      "icon": "🪨",
+      "category": "hazard",
+      "outcomes": [
+        {
+          "choice": "Run for cover",
+          "results": [
+            { "type": "loot", "id": "granite_shard", "count": 2, "text": "You dodge the rocks and find some beautiful granite shards in the debris!", "chance": 0.6 },
+            { "type": "stamina", "value": -15, "text": "A rock clips your shoulder! You make it to safety but you're bruised.", "chance": 0.4 }
+          ]
+        },
+        {
+          "choice": "Shield behind pack",
+          "results": [
+            { "type": "loot", "id": "iron_ore_chunk", "count": 1, "text": "The rockslide reveals a vein of iron ore! You chip off a chunk.", "chance": 0.7 },
+            { "type": "stamina", "value": -10, "text": "Your pack takes the hits. You're shaken but safe.", "chance": 0.3 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mountain_eagle_nest",
+      "biomes": ["mountain"],
+      "title": "Eagle's Nest",
+      "description": "High on a cliff ledge, you spot an eagle's nest. Something glints among the sticks and feathers...",
+      "icon": "🦅",
+      "category": "discovery",
+      "outcomes": [
+        {
+          "choice": "Climb to the nest",
+          "results": [
+            { "type": "loot", "id": "eagle_feather", "count": 2, "text": "You reach the nest and find pristine eagle feathers!", "chance": 0.5 },
+            { "type": "loot", "id": "quartz_crystal", "count": 1, "text": "The eagle collected a beautiful quartz crystal! Finders keepers.", "chance": 0.3 },
+            { "type": "stamina", "value": -20, "text": "The mother eagle returns and drives you off! You scramble back down.", "chance": 0.2 }
+          ]
+        },
+        {
+          "choice": "Admire from below",
+          "results": [
+            { "type": "loot", "id": "alpine_edelweiss", "count": 1, "text": "Looking up, you notice a rare edelweiss growing on the cliff face!", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mountain_hot_spring",
+      "biomes": ["mountain", "volcano"],
+      "title": "Hidden Hot Spring",
+      "description": "Steam rises from a hidden pool among the rocks. A natural hot spring!",
+      "icon": "♨️",
+      "category": "discovery",
+      "outcomes": [
+        {
+          "choice": "Soak and rest",
+          "results": [
+            { "type": "stamina", "value": 20, "text": "The mineral-rich water soothes your aching muscles. You feel fully refreshed!", "chance": 0.7 },
+            { "type": "heal", "value": 15, "text": "The therapeutic waters heal your team's minor wounds!", "chance": 0.3 }
+          ]
+        },
+        {
+          "choice": "Collect minerals",
+          "results": [
+            { "type": "loot", "id": "alpine_spring_water", "count": 2, "text": "You bottle some of the mineral-rich spring water!", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "coastal_shipwreck",
+      "biomes": ["coastal", "ocean"],
+      "title": "Shipwreck on Shore",
+      "description": "The remains of an old ship lie scattered across the beach. Barnacles cover its hull...",
+      "icon": "🚢",
+      "category": "discovery",
+      "outcomes": [
+        {
+          "choice": "Explore the wreck",
+          "results": [
+            { "type": "coins", "value": 2000, "text": "In the captain's quarters, you find a chest of gold doubloons!", "chance": 0.3 },
+            { "type": "loot", "id": "sea_glass", "count": 3, "text": "Beautiful sea glass is scattered throughout the wreck!", "chance": 0.4 },
+            { "type": "encounter", "text": "Something living has made its home in the wreck! It attacks!", "chance": 0.3 }
+          ]
+        },
+        {
+          "choice": "Scavenge the beach",
+          "results": [
+            { "type": "loot", "id": "driftwood", "count": 2, "text": "You collect some useful driftwood from around the wreck.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "coastal_tidal_wave",
+      "biomes": ["coastal"],
+      "title": "Rogue Wave!",
+      "description": "A massive wave is building on the horizon and heading straight for the shore!",
+      "icon": "🌊",
+      "category": "weather",
+      "outcomes": [
+        {
+          "choice": "Run to high ground",
+          "results": [
+            { "type": "loot", "id": "tidal_pearl", "count": 1, "text": "From the cliffs, you watch the wave deposit a beautiful pearl on the rocks!", "chance": 0.6 },
+            { "type": "stamina", "value": -10, "text": "You sprint uphill just in time. The wave crashes below.", "chance": 0.4 }
+          ]
+        },
+        {
+          "choice": "Brace yourself",
+          "results": [
+            { "type": "loot", "id": "hermit_crab_shell", "count": 2, "text": "The wave soaks you but washes up some interesting shells!", "chance": 0.5 },
+            { "type": "stamina", "value": -20, "text": "The wave knocks you off your feet! You're soaked and exhausted.", "chance": 0.5 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "coastal_message_bottle",
+      "biomes": ["coastal", "ocean"],
+      "title": "Message in a Bottle",
+      "description": "A glass bottle bobs in the shallow water. There's something inside...",
+      "icon": "📜",
+      "category": "mystery",
+      "outcomes": [
+        {
+          "choice": "Open the bottle",
+          "results": [
+            { "type": "coins", "value": 500, "text": "It's a treasure map! Following the clues, you dig up a small chest.", "chance": 0.4 },
+            { "type": "loot", "id": "sand_dollar", "count": 3, "text": "Inside is a collection of perfectly preserved sand dollars!", "chance": 0.4 },
+            { "type": "nothing", "text": "It's just a soggy love letter. Sweet, but not useful.", "chance": 0.2 }
+          ]
+        },
+        {
+          "choice": "Toss it back",
+          "results": [
+            { "type": "nothing", "text": "You send the bottle back to sea. Maybe someone else will find it.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "volcano_tremor",
+      "biomes": ["volcano"],
+      "title": "Volcanic Tremor!",
+      "description": "The ground shakes violently! Cracks appear in the earth, and steam hisses from below!",
+      "icon": "🌋",
+      "category": "hazard",
+      "outcomes": [
+        {
+          "choice": "Explore the cracks",
+          "results": [
+            { "type": "loot", "id": "fire_opal", "count": 1, "text": "In the fresh cracks, you spot a brilliant fire opal!", "chance": 0.4 },
+            { "type": "loot", "id": "geothermal_mineral", "count": 2, "text": "Geothermal minerals have been pushed to the surface!", "chance": 0.3 },
+            { "type": "stamina", "value": -25, "text": "Steam bursts from a crack and scalds you! You retreat quickly.", "chance": 0.3 }
+          ]
+        },
+        {
+          "choice": "Evacuate area",
+          "results": [
+            { "type": "loot", "id": "volcanic_ash", "count": 2, "text": "As you flee, you scoop up some fresh volcanic ash — useful for crafting!", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "volcano_lava_flow",
+      "biomes": ["volcano"],
+      "title": "Fresh Lava Flow",
+      "description": "A river of glowing lava slowly advances down the mountainside. The heat is intense!",
+      "icon": "🔥",
+      "category": "hazard",
+      "outcomes": [
+        {
+          "choice": "Harvest cooling lava",
+          "results": [
+            { "type": "loot", "id": "obsidian_shard", "count": 2, "text": "At the edge of the flow, the cooling lava forms beautiful obsidian!", "chance": 0.6 },
+            { "type": "stamina", "value": -15, "text": "The heat is unbearable! You manage to grab some lava rock but you're parched.", "chance": 0.4 }
+          ]
+        },
+        {
+          "choice": "Circle around",
+          "results": [
+            { "type": "loot", "id": "basalt_fragment", "count": 1, "text": "Taking the long way, you find some cooled basalt fragments.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "volcano_ember_moths",
+      "biomes": ["volcano"],
+      "title": "Ember Moth Swarm",
+      "description": "A cloud of glowing ember moths rises from the volcanic vents, their wings shimmering with heat...",
+      "icon": "🦋",
+      "category": "discovery",
+      "outcomes": [
+        {
+          "choice": "Catch some carefully",
+          "results": [
+            { "type": "loot", "id": "ember_moth_wing", "count": 3, "text": "You gently capture some ember moth wings — they glow with residual heat!", "chance": 0.7 },
+            { "type": "stamina", "value": -10, "text": "The moths' heat singes you! You back off with minor burns.", "chance": 0.3 }
+          ]
+        },
+        {
+          "choice": "Watch in awe",
+          "results": [
+            { "type": "stamina", "value": 5, "text": "The beautiful display fills you with wonder. You feel energized.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cave_collapse",
+      "biomes": ["cave"],
+      "title": "Cave-In!",
+      "description": "The ceiling groans ominously! Small rocks begin to fall!",
+      "icon": "⚠️",
+      "category": "hazard",
+      "outcomes": [
+        {
+          "choice": "Dive forward",
+          "results": [
+            { "type": "loot", "id": "crystal_geode", "count": 1, "text": "The collapse reveals a hidden chamber with a stunning crystal geode!", "chance": 0.5 },
+            { "type": "stamina", "value": -15, "text": "You make it through but the dust and effort drain you.", "chance": 0.5 }
+          ]
+        },
+        {
+          "choice": "Retreat to entrance",
+          "results": [
+            { "type": "loot", "id": "stalactite_fragment", "count": 2, "text": "Fallen stalactite fragments litter the ground. You collect some.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cave_underground_lake",
+      "biomes": ["cave"],
+      "title": "Underground Lake",
+      "description": "Your flashlight reveals a vast underground lake. Bioluminescent organisms make the water glow an eerie blue...",
+      "icon": "💎",
+      "category": "discovery",
+      "outcomes": [
+        {
+          "choice": "Dive in",
+          "results": [
+            { "type": "loot", "id": "blind_fish_scale", "count": 2, "text": "You find scales from the blind cave fish — prized by collectors!", "chance": 0.4 },
+            { "type": "loot", "id": "phosphorescent_moss", "count": 3, "text": "You harvest some glowing phosphorescent moss from the lake shore!", "chance": 0.4 },
+            { "type": "encounter", "text": "Something massive stirs in the depths! It surfaces!", "chance": 0.2 }
+          ]
+        },
+        {
+          "choice": "Collect water samples",
+          "results": [
+            { "type": "loot", "id": "underground_spring_water", "count": 2, "text": "You bottle some of the pure underground water.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cave_ancient_paintings",
+      "biomes": ["cave"],
+      "title": "Ancient Cave Paintings",
+      "description": "The cave walls are covered in ancient paintings depicting animals and mysterious symbols...",
+      "icon": "🎨",
+      "category": "mystery",
+      "outcomes": [
+        {
+          "choice": "Study the paintings",
+          "results": [
+            { "type": "loot", "id": "ancient_fossil", "count": 1, "text": "Near the paintings, you discover an ancient fossil embedded in the wall!", "chance": 0.5 },
+            { "type": "coins", "value": 1000, "text": "The symbols reveal a hidden alcove containing ancient treasures!", "chance": 0.3 },
+            { "type": "loot", "id": "echo_stone", "count": 1, "text": "You find a perfectly smooth echo stone used by the ancient painters.", "chance": 0.2 }
+          ]
+        },
+        {
+          "choice": "Take a rubbing",
+          "results": [
+            { "type": "loot", "id": "cave_mushroom", "count": 2, "text": "While pressing paper to the wall, you notice rare cave mushrooms growing nearby!", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "urban_lost_pet",
+      "biomes": ["urban"],
+      "title": "Lost Pet",
+      "description": "A concerned citizen approaches you. 'Have you seen my pet? It escaped into the alley!'",
+      "icon": "🐕",
+      "category": "npc",
+      "outcomes": [
+        {
+          "choice": "Help search",
+          "results": [
+            { "type": "coins", "value": 800, "text": "You find the pet hiding behind a dumpster! The grateful owner rewards you.", "chance": 0.6 },
+            { "type": "encounter", "text": "Following the trail, you find something else entirely... and it's hostile!", "chance": 0.4 }
+          ]
+        },
+        {
+          "choice": "Wish them luck",
+          "results": [
+            { "type": "nothing", "text": "You wish them well and continue exploring.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "urban_dumpster_dive",
+      "biomes": ["urban"],
+      "title": "Mysterious Dumpster",
+      "description": "A dumpster behind an electronics shop has its lid slightly ajar. Something's gleaming inside...",
+      "icon": "🗑️",
+      "category": "discovery",
+      "outcomes": [
+        {
+          "choice": "Investigate",
+          "results": [
+            { "type": "loot", "id": "circuit_board", "count": 2, "text": "Jackpot! Perfectly good circuit boards someone threw away!", "chance": 0.4 },
+            { "type": "loot", "id": "scrap_metal", "count": 3, "text": "Lots of useful scrap metal in here!", "chance": 0.3 },
+            { "type": "loot", "id": "raccoon_trinket", "count": 1, "text": "A raccoon stashed a shiny trinket collection in here!", "chance": 0.3 }
+          ]
+        },
+        {
+          "choice": "Keep walking",
+          "results": [
+            { "type": "nothing", "text": "Some treasures aren't worth the smell.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "urban_street_performer",
+      "biomes": ["urban"],
+      "title": "Street Performer",
+      "description": "A street performer plays a haunting melody on a strange instrument. Animals seem drawn to the music...",
+      "icon": "🎵",
+      "category": "npc",
+      "outcomes": [
+        {
+          "choice": "Listen and tip",
+          "results": [
+            { "type": "stamina", "value": 10, "text": "The music soothes your soul. You feel revitalized!", "chance": 0.6 },
+            { "type": "loot", "id": "rusty_key", "count": 1, "text": "The performer gives you an old rusty key as thanks. 'It opens something special,' they wink.", "chance": 0.4 }
+          ]
+        },
+        {
+          "choice": "Move along",
+          "results": [
+            { "type": "nothing", "text": "You nod appreciatively and continue on your way.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "urban_construction_site",
+      "biomes": ["urban"],
+      "title": "Abandoned Construction Site",
+      "description": "An old construction site sits behind rusty fencing. Equipment and materials lie scattered about...",
+      "icon": "🏗️",
+      "category": "discovery",
+      "outcomes": [
+        {
+          "choice": "Sneak in",
+          "results": [
+            { "type": "loot", "id": "scrap_metal", "count": 3, "text": "You find heaps of salvageable scrap metal!", "chance": 0.5 },
+            { "type": "coins", "value": 400, "text": "Someone left their tools behind. You find coins in a lunch box.", "chance": 0.3 },
+            { "type": "encounter", "text": "Feral animals have made this their territory! They're not happy to see you!", "chance": 0.2 }
+          ]
+        },
+        {
+          "choice": "Stay outside",
+          "results": [
+            { "type": "loot", "id": "old_newspaper", "count": 1, "text": "You find an old newspaper blowing in the wind near the fence.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "polar_aurora",
+      "biomes": ["polar", "frozen ocean", "tundra"],
+      "title": "Northern Lights",
+      "description": "The sky erupts in shimmering curtains of green, purple, and pink. The aurora borealis dances overhead!",
+      "icon": "🌌",
+      "category": "weather",
+      "outcomes": [
+        {
+          "choice": "Collect aurora energy",
+          "results": [
+            { "type": "loot", "id": "aurora_fragment", "count": 1, "text": "The light seems to crystallize in the cold air — you capture an aurora fragment!", "chance": 0.6 },
+            { "type": "stamina", "value": 15, "text": "The magnificent display fills you with renewed energy!", "chance": 0.4 }
+          ]
+        },
+        {
+          "choice": "Gaze in wonder",
+          "results": [
+            { "type": "stamina", "value": 10, "text": "You sit and watch, mesmerized. The beauty of nature restores your spirit.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "polar_ice_crack",
+      "biomes": ["polar", "frozen ocean"],
+      "title": "The Ice Cracks!",
+      "description": "A loud crack echoes across the ice! The surface beneath you is splitting!",
+      "icon": "🧊",
+      "category": "hazard",
+      "outcomes": [
+        {
+          "choice": "Jump to solid ice",
+          "results": [
+            { "type": "loot", "id": "ice_crystal", "count": 2, "text": "You leap to safety! The broken ice reveals beautiful crystals underneath.", "chance": 0.6 },
+            { "type": "stamina", "value": -20, "text": "You barely make it! The freezing water splashes your legs.", "chance": 0.4 }
+          ]
+        },
+        {
+          "choice": "Crawl carefully",
+          "results": [
+            { "type": "loot", "id": "permafrost_core", "count": 1, "text": "Moving slowly, you reach safety and extract a permafrost core from the edge.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ocean_whale_song",
+      "biomes": ["ocean", "deep sea"],
+      "title": "Whale Song",
+      "description": "A deep, resonant song fills the water. A pod of whales is passing through...",
+      "icon": "🐋",
+      "category": "discovery",
+      "outcomes": [
+        {
+          "choice": "Follow the pod",
+          "results": [
+            { "type": "loot", "id": "whale_bone", "count": 1, "text": "The pod leads you to their feeding grounds where you find shed whale bone.", "chance": 0.5 },
+            { "type": "loot", "id": "ocean_foam_essence", "count": 2, "text": "Their massive tails churn up ocean foam with rare mineral essence!", "chance": 0.5 }
+          ]
+        },
+        {
+          "choice": "Listen peacefully",
+          "results": [
+            { "type": "stamina", "value": 10, "text": "The haunting melody fills you with peace and wonder.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ocean_storm",
+      "biomes": ["ocean", "coastal"],
+      "title": "Ocean Storm",
+      "description": "Dark clouds gather rapidly. Lightning flashes across the water as waves grow taller!",
+      "icon": "⛈️",
+      "category": "weather",
+      "outcomes": [
+        {
+          "choice": "Ride the storm",
+          "results": [
+            { "type": "loot", "id": "nautilus_shell", "count": 1, "text": "The storm churns up a rare nautilus shell from the deep!", "chance": 0.5 },
+            { "type": "stamina", "value": -15, "text": "The storm batters you relentlessly. You endure but you're weakened.", "chance": 0.5 }
+          ]
+        },
+        {
+          "choice": "Seek shelter",
+          "results": [
+            { "type": "loot", "id": "barnacle_cluster", "count": 2, "text": "Sheltering under a reef overhang, you scrape off some barnacle clusters.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "deep_sea_glowing_trench",
+      "biomes": ["deep sea"],
+      "title": "Bioluminescent Trench",
+      "description": "The walls of an underwater trench pulse with bioluminescent life. The deep glows with alien beauty...",
+      "icon": "✨",
+      "category": "mystery",
+      "outcomes": [
+        {
+          "choice": "Descend deeper",
+          "results": [
+            { "type": "loot", "id": "bioluminescent_gel", "count": 3, "text": "You harvest some concentrated bioluminescent gel from the trench walls!", "chance": 0.5 },
+            { "type": "loot", "id": "pressure_crystal", "count": 1, "text": "At extreme depth, you find a rare pressure crystal!", "chance": 0.3 },
+            { "type": "encounter", "text": "Something enormous stirs in the darkness below... it rises toward you!", "chance": 0.2 }
+          ]
+        },
+        {
+          "choice": "Observe from edge",
+          "results": [
+            { "type": "loot", "id": "tube_worm_casing", "count": 2, "text": "You collect some tube worm casings from the trench rim.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "deep_sea_hydrothermal_vent",
+      "biomes": ["deep sea"],
+      "title": "Hydrothermal Vent",
+      "description": "A column of superheated water erupts from the sea floor. Strange life thrives around it...",
+      "icon": "🌡️",
+      "category": "discovery",
+      "outcomes": [
+        {
+          "choice": "Sample the minerals",
+          "results": [
+            { "type": "loot", "id": "deep_vent_mineral", "count": 2, "text": "You collect mineral deposits from around the vent — rich in rare elements!", "chance": 0.6 },
+            { "type": "loot", "id": "black_smoker_sulfide", "count": 1, "text": "You chip off some black smoker sulfide — a valuable find!", "chance": 0.4 }
+          ]
+        },
+        {
+          "choice": "Study the life",
+          "results": [
+            { "type": "loot", "id": "giant_squid_ink", "count": 1, "text": "A giant squid passes by, leaving behind a cloud of ink you collect!", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "coral_reef_feeding_frenzy",
+      "biomes": ["coral reef"],
+      "title": "Feeding Frenzy!",
+      "description": "Schools of fish suddenly erupt in a feeding frenzy! The reef comes alive with activity!",
+      "icon": "🐠",
+      "category": "hazard",
+      "outcomes": [
+        {
+          "choice": "Swim through",
+          "results": [
+            { "type": "loot", "id": "parrotfish_scale", "count": 3, "text": "The chaos yields dropped scales from parrotfish!", "chance": 0.6 },
+            { "type": "encounter", "text": "A predator follows the frenzy — and targets you!", "chance": 0.4 }
+          ]
+        },
+        {
+          "choice": "Watch from safety",
+          "results": [
+            { "type": "loot", "id": "reef_sand", "count": 2, "text": "The churning water deposits fine reef sand near you.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "coral_reef_treasure_chest",
+      "biomes": ["coral reef", "ocean"],
+      "title": "Sunken Treasure Chest",
+      "description": "Encrusted with coral and barnacles, an ancient treasure chest sits wedged between reef formations!",
+      "icon": "🏴‍☠️",
+      "category": "discovery",
+      "outcomes": [
+        {
+          "choice": "Pry it open",
+          "results": [
+            { "type": "coins", "value": 3000, "text": "Inside you find a pile of ancient gold coins preserved by the sea!", "chance": 0.3 },
+            { "type": "loot", "id": "conch_shell", "count": 1, "text": "The chest contains a magnificent conch shell — a rare prize!", "chance": 0.4 },
+            { "type": "encounter", "text": "Opening the chest disturbs a territorial moray eel!", "chance": 0.3 }
+          ]
+        },
+        {
+          "choice": "Photograph it",
+          "results": [
+            { "type": "loot", "id": "living_coral_piece", "count": 1, "text": "You gently harvest a piece of the coral growing on the chest.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rainforest_canopy_bridge",
+      "biomes": ["rainforest", "jungle"],
+      "title": "Natural Canopy Bridge",
+      "description": "Intertwined vines form a natural bridge high in the canopy. What treasures lie above the forest floor?",
+      "icon": "🌿",
+      "category": "discovery",
+      "outcomes": [
+        {
+          "choice": "Cross the bridge",
+          "results": [
+            { "type": "loot", "id": "orchid_petal", "count": 3, "text": "High in the canopy, you find rare orchids blooming in the mist!", "chance": 0.5 },
+            { "type": "loot", "id": "toucan_feather", "count": 2, "text": "A toucan's roosting spot yields some colorful feathers!", "chance": 0.3 },
+            { "type": "stamina", "value": -10, "text": "The vine bridge snaps! You fall but catch yourself. Your arms ache.", "chance": 0.2 }
+          ]
+        },
+        {
+          "choice": "Explore below",
+          "results": [
+            { "type": "loot", "id": "strangler_fig_root", "count": 2, "text": "The base of the canopy trees yields some strong strangler fig roots.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rainforest_monsoon",
+      "biomes": ["rainforest", "jungle"],
+      "title": "Monsoon Downpour!",
+      "description": "The sky opens up with torrential rain! Rivers form instantly on the forest floor!",
+      "icon": "🌧️",
+      "category": "weather",
+      "outcomes": [
+        {
+          "choice": "Shelter under leaves",
+          "results": [
+            { "type": "loot", "id": "bromeliad_water", "count": 2, "text": "Bromeliads fill with fresh rainwater — you collect some!", "chance": 0.7 },
+            { "type": "stamina", "value": 5, "text": "The rain cools you off in the humid jungle. Refreshing!", "chance": 0.3 }
+          ]
+        },
+        {
+          "choice": "Dance in the rain",
+          "results": [
+            { "type": "loot", "id": "canopy_nectar", "count": 1, "text": "Rain washes nectar down from the canopy flowers — you catch some!", "chance": 0.6 },
+            { "type": "stamina", "value": -10, "text": "The downpour soaks everything. You're chilled and tired.", "chance": 0.4 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rainforest_poison_frog",
+      "biomes": ["rainforest"],
+      "title": "Poison Dart Frogs",
+      "description": "Brilliantly colored frogs hop along the forest floor. Beautiful but deadly...",
+      "icon": "🐸",
+      "category": "discovery",
+      "outcomes": [
+        {
+          "choice": "Carefully collect mucus",
+          "results": [
+            { "type": "loot", "id": "poison_frog_mucus", "count": 2, "text": "With extreme care, you extract some poison dart frog mucus — alchemists pay well for this!", "chance": 0.6 },
+            { "type": "stamina", "value": -20, "text": "You accidentally touch one! The mild toxin makes you dizzy.", "chance": 0.4 }
+          ]
+        },
+        {
+          "choice": "Observe and sketch",
+          "results": [
+            { "type": "loot", "id": "kapok_fiber", "count": 2, "text": "While sketching, you notice kapok fibers drifting nearby.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "kelp_forest_otter_play",
+      "biomes": ["kelp forest"],
+      "title": "Sea Otter Family",
+      "description": "A family of sea otters floats among the kelp, cracking shells on their bellies and playing in the fronds!",
+      "icon": "🦦",
+      "category": "discovery",
+      "outcomes": [
+        {
+          "choice": "Join their play area",
+          "results": [
+            { "type": "loot", "id": "sea_otter_whisker", "count": 1, "text": "The otters leave behind a whisker as they swim off — a lucky find!", "chance": 0.5 },
+            { "type": "loot", "id": "abalone_shell", "count": 2, "text": "The otters' discarded shells include some beautiful abalone!", "chance": 0.5 }
+          ]
+        },
+        {
+          "choice": "Watch from afar",
+          "results": [
+            { "type": "stamina", "value": 10, "text": "Watching the otters play warms your heart. You feel refreshed!", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "kelp_forest_current",
+      "biomes": ["kelp forest"],
+      "title": "Strong Current!",
+      "description": "A powerful underwater current sweeps through the kelp forest, bending the giant stalks!",
+      "icon": "💨",
+      "category": "weather",
+      "outcomes": [
+        {
+          "choice": "Ride the current",
+          "results": [
+            { "type": "loot", "id": "giant_kelp_frond", "count": 3, "text": "The current tears loose some giant kelp fronds — you grab them!", "chance": 0.6 },
+            { "type": "stamina", "value": -10, "text": "The current slams you into a rocky outcrop. Ouch!", "chance": 0.4 }
+          ]
+        },
+        {
+          "choice": "Hold onto kelp",
+          "results": [
+            { "type": "loot", "id": "kelp_holdfast", "count": 1, "text": "Clinging to a kelp stalk, you find a detached holdfast below.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mangrove_rising_tide",
+      "biomes": ["mangrove"],
+      "title": "Rising Tide",
+      "description": "The water is rising fast! The tangled mangrove roots become submerged as the tide sweeps in.",
+      "icon": "🌊",
+      "category": "weather",
+      "outcomes": [
+        {
+          "choice": "Climb the roots",
+          "results": [
+            { "type": "loot", "id": "mangrove_seed_pod", "count": 2, "text": "From your perch, you pluck some mangrove seed pods!", "chance": 0.6 },
+            { "type": "loot", "id": "aerial_root_fiber", "count": 2, "text": "The aerial roots you're clinging to shed some useful fiber!", "chance": 0.4 }
+          ]
+        },
+        {
+          "choice": "Wade through",
+          "results": [
+            { "type": "loot", "id": "mudskipper_scale", "count": 2, "text": "Mudskippers scatter, leaving behind some shiny scales!", "chance": 0.5 },
+            { "type": "stamina", "value": -10, "text": "The murky water soaks you and something nips your ankle!", "chance": 0.5 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mangrove_oyster_bed",
+      "biomes": ["mangrove"],
+      "title": "Oyster Bed Discovery",
+      "description": "The roots are covered in clusters of wild oysters! This could be a valuable harvest...",
+      "icon": "🦪",
+      "category": "discovery",
+      "outcomes": [
+        {
+          "choice": "Harvest oysters",
+          "results": [
+            { "type": "loot", "id": "oyster_shell", "count": 3, "text": "You pry off several oysters — one even contains a small pearl!", "chance": 0.7 },
+            { "type": "stamina", "value": -5, "text": "You cut yourself on a sharp shell. Minor wound, but it stings!", "chance": 0.3 }
+          ]
+        },
+        {
+          "choice": "Mark the location",
+          "results": [
+            { "type": "loot", "id": "mangrove_root", "count": 1, "text": "You snap off a mangrove root as a marker to find this spot again.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "frozen_ocean_narwhal",
+      "biomes": ["frozen ocean"],
+      "title": "Narwhal Surfacing!",
+      "description": "A pod of narwhals surfaces through a crack in the sea ice! Their spiral tusks glint in the polar light.",
+      "icon": "🦄",
+      "category": "discovery",
+      "outcomes": [
+        {
+          "choice": "Search near the gap",
+          "results": [
+            { "type": "loot", "id": "narwhal_ivory_chip", "count": 1, "text": "A small chip of narwhal ivory lies on the ice edge — naturally shed!", "chance": 0.5 },
+            { "type": "loot", "id": "arctic_krill", "count": 3, "text": "The narwhals' feeding stirs up krill near the surface!", "chance": 0.5 }
+          ]
+        },
+        {
+          "choice": "Watch respectfully",
+          "results": [
+            { "type": "stamina", "value": 10, "text": "The majestic sight fills you with awe and energy.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "frozen_ocean_ice_cave",
+      "biomes": ["frozen ocean", "polar"],
+      "title": "Ice Cave",
+      "description": "An ice cave glows with ethereal blue light. The walls are translucent and ancient...",
+      "icon": "🏔️",
+      "category": "discovery",
+      "outcomes": [
+        {
+          "choice": "Enter the cave",
+          "results": [
+            { "type": "loot", "id": "iceberg_fragment", "count": 1, "text": "Deep inside, you find an ancient iceberg fragment with trapped air bubbles!", "chance": 0.4 },
+            { "type": "loot", "id": "frost_coral", "count": 2, "text": "Frost coral grows on the cave walls — you carefully harvest some!", "chance": 0.4 },
+            { "type": "stamina", "value": -15, "text": "The cave collapses partially! You escape but the cold saps your energy.", "chance": 0.2 }
+          ]
+        },
+        {
+          "choice": "Admire from outside",
+          "results": [
+            { "type": "loot", "id": "pack_ice_shard", "count": 2, "text": "Beautiful ice shards litter the cave entrance.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "river_flash_flood",
+      "biomes": ["river"],
+      "title": "Flash Flood!",
+      "description": "The river swells rapidly! Muddy water rushes downstream carrying branches and debris!",
+      "icon": "🌊",
+      "category": "hazard",
+      "outcomes": [
+        {
+          "choice": "Climb to high ground",
+          "results": [
+            { "type": "loot", "id": "waterlogged_scroll", "count": 1, "text": "The flood deposits a waterlogged scroll at your feet!", "chance": 0.5 },
+            { "type": "loot", "id": "driftwood_branch", "count": 2, "text": "Debris from the flood includes some useful driftwood!", "chance": 0.5 }
+          ]
+        },
+        {
+          "choice": "Grab a floating log",
+          "results": [
+            { "type": "loot", "id": "river_clay", "count": 2, "text": "Clinging to a log, you scoop up some river clay from the churning waters!", "chance": 0.6 },
+            { "type": "stamina", "value": -15, "text": "The current pulls you downstream before you can climb out!", "chance": 0.4 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "river_fisherman",
+      "biomes": ["river", "lake"],
+      "title": "Old Fisherman",
+      "description": "An old fisherman sits on the bank, line in the water. He tips his hat as you approach.",
+      "icon": "🎣",
+      "category": "npc",
+      "outcomes": [
+        {
+          "choice": "Chat and fish",
+          "results": [
+            { "type": "loot", "id": "salmon_roe", "count": 3, "text": "The fisherman shares his catch — some fresh salmon roe!", "chance": 0.5 },
+            { "type": "loot", "id": "kingfisher_feather", "count": 1, "text": "He shows you where a kingfisher nests. You find a fallen feather!", "chance": 0.3 },
+            { "type": "coins", "value": 300, "text": "He buys some supplies from you and pays in coins.", "chance": 0.2 }
+          ]
+        },
+        {
+          "choice": "Nod and move on",
+          "results": [
+            { "type": "nothing", "text": "He nods back. Sometimes the best conversations are silent.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "river_beaver_dam",
+      "biomes": ["river"],
+      "title": "Beaver Dam",
+      "description": "A massive beaver dam blocks the river. The engineering is impressive! Debris is piled high...",
+      "icon": "🦫",
+      "category": "discovery",
+      "outcomes": [
+        {
+          "choice": "Search the dam",
+          "results": [
+            { "type": "loot", "id": "river_stone", "count": 3, "text": "Smooth river stones are embedded in the dam — perfect for crafting!", "chance": 0.5 },
+            { "type": "loot", "id": "freshwater_mussel", "count": 2, "text": "The dam's quiet pool holds freshwater mussels!", "chance": 0.5 }
+          ]
+        },
+        {
+          "choice": "Leave it intact",
+          "results": [
+            { "type": "loot", "id": "river_moss", "count": 2, "text": "You gather river moss growing at the dam's base.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lake_mist_mystery",
+      "biomes": ["lake"],
+      "title": "Morning Mist Mystery",
+      "description": "The lake is shrouded in thick morning mist. Strange shapes seem to move beneath the surface...",
+      "icon": "🌫️",
+      "category": "mystery",
+      "outcomes": [
+        {
+          "choice": "Wade in",
+          "results": [
+            { "type": "loot", "id": "freshwater_pearl", "count": 1, "text": "Your feet touch something smooth — a beautiful freshwater pearl!", "chance": 0.4 },
+            { "type": "loot", "id": "lily_pad", "count": 3, "text": "You find a patch of large lily pads with medicinal properties!", "chance": 0.3 },
+            { "type": "encounter", "text": "The mist parts to reveal something large just below the surface!", "chance": 0.3 }
+          ]
+        },
+        {
+          "choice": "Wait for mist to clear",
+          "results": [
+            { "type": "loot", "id": "dragonfly_wing", "count": 2, "text": "As the mist burns off, dragonflies emerge — you find shed wings!", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lake_wishing_well",
+      "biomes": ["lake"],
+      "title": "Wishing Well",
+      "description": "An ancient stone wishing well sits at the lake's edge. The water inside glows faintly...",
+      "icon": "⛲",
+      "category": "mystery",
+      "outcomes": [
+        {
+          "choice": "Toss a coin",
+          "results": [
+            { "type": "stamina", "value": 20, "text": "The well glows brightly! You feel completely rejuvenated!", "chance": 0.4 },
+            { "type": "loot", "id": "sunken_coin", "count": 5, "text": "Your coin disturbs the bottom, and older coins float up!", "chance": 0.3 },
+            { "type": "heal", "value": 20, "text": "The well's magic washes over your team, healing their wounds!", "chance": 0.3 }
+          ]
+        },
+        {
+          "choice": "Drink the water",
+          "results": [
+            { "type": "stamina", "value": 10, "text": "The water tastes pure and ancient. You feel refreshed.", "chance": 0.7 },
+            { "type": "stamina", "value": -10, "text": "The water is stagnant! Your stomach turns.", "chance": 0.3 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tundra_mammoth_remains",
+      "biomes": ["tundra"],
+      "title": "Mammoth Remains!",
+      "description": "The permafrost has thawed enough to reveal the preserved remains of an ancient mammoth!",
+      "icon": "🦣",
+      "category": "discovery",
+      "outcomes": [
+        {
+          "choice": "Excavate carefully",
+          "results": [
+            { "type": "loot", "id": "permafrost_fossil", "count": 1, "text": "You extract a perfectly preserved fossil from the mammoth site!", "chance": 0.5 },
+            { "type": "coins", "value": 2000, "text": "Preserved ivory and ancient artifacts! This is worth a fortune to researchers!", "chance": 0.3 },
+            { "type": "loot", "id": "frozen_amber", "count": 1, "text": "Frozen amber with ancient insects trapped inside!", "chance": 0.2 }
+          ]
+        },
+        {
+          "choice": "Report the find",
+          "results": [
+            { "type": "coins", "value": 500, "text": "Researchers reward you for reporting the discovery!", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tundra_caribou_migration",
+      "biomes": ["tundra"],
+      "title": "Caribou Migration",
+      "description": "Thousands of caribou thunder past! The great migration is underway!",
+      "icon": "🦌",
+      "category": "discovery",
+      "outcomes": [
+        {
+          "choice": "Follow the herd",
+          "results": [
+            { "type": "loot", "id": "caribou_moss", "count": 3, "text": "The herd leads you to rich caribou moss feeding grounds!", "chance": 0.5 },
+            { "type": "loot", "id": "musk_ox_wool", "count": 1, "text": "Musk oxen graze at the migration's edge — you find shed wool!", "chance": 0.5 }
+          ]
+        },
+        {
+          "choice": "Let them pass",
+          "results": [
+            { "type": "loot", "id": "tundra_berries", "count": 2, "text": "After the herd passes, you find tundra berries they uncovered.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "jungle_temple_ruins",
+      "biomes": ["jungle"],
+      "title": "Temple Ruins",
+      "description": "Vine-covered stone walls emerge from the dense jungle. An ancient temple lies hidden here...",
+      "icon": "🏛️",
+      "category": "mystery",
+      "outcomes": [
+        {
+          "choice": "Enter the temple",
+          "results": [
+            { "type": "coins", "value": 2500, "text": "The altar holds ancient golden offerings! You carefully take some.", "chance": 0.3 },
+            { "type": "loot", "id": "jaguar_claw_mark", "count": 1, "text": "Jaguar claw marks on the walls — you take a stone fragment as proof!", "chance": 0.3 },
+            { "type": "encounter", "text": "The temple's guardian emerges! Prepare for battle!", "chance": 0.4 }
+          ]
+        },
+        {
+          "choice": "Explore the exterior",
+          "results": [
+            { "type": "loot", "id": "jungle_vine", "count": 2, "text": "You harvest some strong jungle vines growing on the temple walls.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "jungle_waterfall",
+      "biomes": ["jungle", "rainforest"],
+      "title": "Hidden Waterfall",
+      "description": "Following the sound of rushing water, you discover a magnificent hidden waterfall!",
+      "icon": "💦",
+      "category": "discovery",
+      "outcomes": [
+        {
+          "choice": "Swim behind it",
+          "results": [
+            { "type": "loot", "id": "passion_fruit", "count": 3, "text": "Behind the waterfall, passion fruit grows wild on the cliff!", "chance": 0.5 },
+            { "type": "coins", "value": 1000, "text": "A hidden cave behind the falls contains a treasure cache!", "chance": 0.3 },
+            { "type": "stamina", "value": -10, "text": "The waterfall's force pushes you under. You swallow water.", "chance": 0.2 }
+          ]
+        },
+        {
+          "choice": "Rest by the pool",
+          "results": [
+            { "type": "stamina", "value": 15, "text": "The mist from the waterfall cools you down. Pure bliss!", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "jungle_macaw_flock",
+      "biomes": ["jungle"],
+      "title": "Macaw Flock",
+      "description": "A flock of brilliant macaws erupts from the treetops in a rainbow of color!",
+      "icon": "🦜",
+      "category": "discovery",
+      "outcomes": [
+        {
+          "choice": "Search their perches",
+          "results": [
+            { "type": "loot", "id": "macaw_feather", "count": 3, "text": "Their roosting tree is covered in shed feathers — gorgeous!", "chance": 0.7 },
+            { "type": "loot", "id": "cocoa_pod", "count": 1, "text": "The macaws were eating cocoa pods — some are left behind!", "chance": 0.3 }
+          ]
+        },
+        {
+          "choice": "Follow their flight",
+          "results": [
+            { "type": "loot", "id": "monkey_nut", "count": 2, "text": "The flock leads you to a monkey nut tree!", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "redwoods_ancient_tree",
+      "biomes": ["redwoods"],
+      "title": "The Ancient One",
+      "description": "You stand before a redwood so massive it blocks the sky. This tree is thousands of years old...",
+      "icon": "🌲",
+      "category": "mystery",
+      "outcomes": [
+        {
+          "choice": "Climb inside the hollow",
+          "results": [
+            { "type": "loot", "id": "ancient_amber", "count": 1, "text": "Inside the hollow trunk, you find amber preserved for millennia!", "chance": 0.5 },
+            { "type": "loot", "id": "redwood_bark", "count": 2, "text": "The inner bark is thick and rich — perfect for crafting!", "chance": 0.3 },
+            { "type": "encounter", "text": "Something has made its den inside! It's not pleased about visitors!", "chance": 0.2 }
+          ]
+        },
+        {
+          "choice": "Collect from the base",
+          "results": [
+            { "type": "loot", "id": "old_growth_moss", "count": 2, "text": "Ancient moss covers the base — you collect some carefully.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "redwoods_fog_drip",
+      "biomes": ["redwoods"],
+      "title": "Coastal Fog",
+      "description": "Thick fog rolls through the redwood forest. Water drips from every surface...",
+      "icon": "🌫️",
+      "category": "weather",
+      "outcomes": [
+        {
+          "choice": "Collect fog drip",
+          "results": [
+            { "type": "loot", "id": "banana_slug_slime", "count": 2, "text": "The fog brings out the banana slugs! You collect some of their trail.", "chance": 0.6 },
+            { "type": "loot", "id": "fern_frond", "count": 3, "text": "The misty forest floor is covered in lush ferns!", "chance": 0.4 }
+          ]
+        },
+        {
+          "choice": "Navigate carefully",
+          "results": [
+            { "type": "loot", "id": "redwood_cone", "count": 2, "text": "Tiny redwood cones litter the foggy ground.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "plains_prairie_fire",
+      "biomes": ["plains"],
+      "title": "Prairie Fire!",
+      "description": "Smoke rises on the horizon! A wildfire races across the dry grassland!",
+      "icon": "🔥",
+      "category": "hazard",
+      "outcomes": [
+        {
+          "choice": "Create a firebreak",
+          "results": [
+            { "type": "loot", "id": "flint_chip", "count": 2, "text": "While digging, you uncover flint chips — useful for tools!", "chance": 0.5 },
+            { "type": "stamina", "value": -15, "text": "The smoke inhalation and effort drain you, but you're safe.", "chance": 0.5 }
+          ]
+        },
+        {
+          "choice": "Run downwind",
+          "results": [
+            { "type": "loot", "id": "prairie_grass_bundle", "count": 2, "text": "The fire's edge reveals burned but useful grass bundles.", "chance": 0.6 },
+            { "type": "stamina", "value": -20, "text": "You barely outrun the flames! You're exhausted.", "chance": 0.4 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "plains_bison_herd",
+      "biomes": ["plains"],
+      "title": "Bison Herd",
+      "description": "A massive herd of bison grazes peacefully on the open plain. They eye you warily...",
+      "icon": "🦬",
+      "category": "discovery",
+      "outcomes": [
+        {
+          "choice": "Approach slowly",
+          "results": [
+            { "type": "loot", "id": "bison_tuft", "count": 2, "text": "The bison tolerate your presence. You collect some shed fur!", "chance": 0.6 },
+            { "type": "encounter", "text": "A protective bull charges! Prepare yourself!", "chance": 0.4 }
+          ]
+        },
+        {
+          "choice": "Observe from distance",
+          "results": [
+            { "type": "loot", "id": "wildflower_bouquet", "count": 2, "text": "While watching, you gather beautiful wildflowers from the prairie.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "plains_tornado_warning",
+      "biomes": ["plains"],
+      "title": "Tornado on the Horizon!",
+      "description": "A funnel cloud drops from the dark sky! The tornado tears across the open plains!",
+      "icon": "🌪️",
+      "category": "weather",
+      "outcomes": [
+        {
+          "choice": "Find a ditch",
+          "results": [
+            { "type": "loot", "id": "wind_polished_stone", "count": 2, "text": "In the ditch, you find wind-polished stones — smooth as glass!", "chance": 0.6 },
+            { "type": "stamina", "value": -10, "text": "The wind roars overhead. You're safe but shaken.", "chance": 0.4 }
+          ]
+        },
+        {
+          "choice": "Storm chase",
+          "results": [
+            { "type": "loot", "id": "coyote_fang", "count": 1, "text": "The tornado's path reveals a coyote den — you find a shed fang!", "chance": 0.4 },
+            { "type": "stamina", "value": -25, "text": "Way too close! The wind flings debris at you!", "chance": 0.6 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "wetlands_bird_sanctuary",
+      "biomes": ["wetlands"],
+      "title": "Bird Sanctuary",
+      "description": "Hundreds of wading birds fill the wetlands — herons, egrets, ibises — a natural sanctuary!",
+      "icon": "🦩",
+      "category": "discovery",
+      "outcomes": [
+        {
+          "choice": "Birdwatch carefully",
+          "results": [
+            { "type": "loot", "id": "bittern_feather", "count": 2, "text": "You find beautiful bittern feathers in the reeds!", "chance": 0.5 },
+            { "type": "stamina", "value": 10, "text": "The peaceful scene restores your spirit.", "chance": 0.5 }
+          ]
+        },
+        {
+          "choice": "Search the nests",
+          "results": [
+            { "type": "loot", "id": "marsh_marigold", "count": 3, "text": "Among the nesting areas, marsh marigolds bloom abundantly!", "chance": 0.6 },
+            { "type": "encounter", "text": "A protective crane doesn't appreciate your snooping! It attacks!", "chance": 0.4 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "wetlands_sinkhole",
+      "biomes": ["wetlands", "swamp"],
+      "title": "Wetland Sinkhole",
+      "description": "The ground gives way to reveal a muddy sinkhole! Old relics peek out from the muck...",
+      "icon": "🕳️",
+      "category": "hazard",
+      "outcomes": [
+        {
+          "choice": "Dig around the edges",
+          "results": [
+            { "type": "loot", "id": "wetland_peat", "count": 2, "text": "Rich wetland peat lines the sinkhole — valuable for gardening!", "chance": 0.5 },
+            { "type": "loot", "id": "snail_shell", "count": 3, "text": "Ancient snail shells are embedded in the muck!", "chance": 0.5 }
+          ]
+        },
+        {
+          "choice": "Mark and avoid",
+          "results": [
+            { "type": "loot", "id": "cattail_stalk", "count": 2, "text": "You cut cattail stalks to mark the hazard.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "universal_shooting_star",
+      "biomes": ["savanna", "desert", "plains", "tundra", "mountain", "polar"],
+      "title": "Shooting Star!",
+      "description": "A brilliant streak of light crosses the night sky! It seems to land nearby...",
+      "icon": "🌠",
+      "category": "mystery",
+      "outcomes": [
+        {
+          "choice": "Search for the meteorite",
+          "results": [
+            { "type": "coins", "value": 5000, "text": "You find the meteorite! A rare space rock worth a fortune!", "chance": 0.3 },
+            { "type": "loot", "id": "iron_ore_chunk", "count": 2, "text": "The meteorite has shattered into iron-rich fragments!", "chance": 0.4 },
+            { "type": "nothing", "text": "You search but can't find where it landed. The stars mock you.", "chance": 0.3 }
+          ]
+        },
+        {
+          "choice": "Make a wish",
+          "results": [
+            { "type": "stamina", "value": 15, "text": "You close your eyes and wish for strength. You feel empowered!", "chance": 0.6 },
+            { "type": "nothing", "text": "Nothing visible happens. But who knows what fate has in store?", "chance": 0.4 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "universal_injured_animal",
+      "biomes": ["swamp", "savanna", "desert", "taiga", "mountain", "jungle", "rainforest", "plains", "wetlands", "redwoods", "tundra"],
+      "title": "Injured Animal",
+      "description": "You find a wild animal caught in an old trap. It whimpers in pain...",
+      "icon": "💔",
+      "category": "npc",
+      "outcomes": [
+        {
+          "choice": "Free and heal it",
+          "results": [
+            { "type": "coins", "value": 1000, "text": "The grateful animal leads you to its hidden stash before limping away!", "chance": 0.5 },
+            { "type": "heal", "value": 10, "text": "Your kindness fills you with warmth. Your team feels healthier!", "chance": 0.3 },
+            { "type": "stamina", "value": -10, "text": "The animal bites you in fear before running off. Good deed, painful result.", "chance": 0.2 }
+          ]
+        },
+        {
+          "choice": "Leave it be",
+          "results": [
+            { "type": "nothing", "text": "Nature is harsh. You continue on, conflicted.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "universal_wandering_merchant",
+      "biomes": ["swamp", "savanna", "desert", "taiga", "mountain", "coastal", "urban", "jungle", "rainforest", "plains", "redwoods", "tundra", "wetlands"],
+      "title": "Wandering Merchant",
+      "description": "A mysterious merchant appears from the brush, their pack overflowing with unusual wares.",
+      "icon": "🎒",
+      "category": "npc",
+      "outcomes": [
+        {
+          "choice": "Browse their goods",
+          "results": [
+            { "type": "coins", "value": 750, "text": "The merchant buys some of your extra supplies for a good price!", "chance": 0.4 },
+            { "type": "loot", "id": "wild_herbs", "count": 5, "text": "They trade you a bundle of rare wild herbs!", "chance": 0.3 },
+            { "type": "loot", "id": "truffle", "count": 2, "text": "A fine truffle at a bargain! The merchant seems eager to move.", "chance": 0.3 }
+          ]
+        },
+        {
+          "choice": "Decline",
+          "results": [
+            { "type": "nothing", "text": "The merchant smiles mysteriously and vanishes into the wilderness.", "chance": 1.0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "universal_hidden_cache",
+      "biomes": ["swamp", "savanna", "desert", "taiga", "mountain", "coastal", "cave", "urban", "jungle", "rainforest", "plains", "wetlands", "redwoods", "mangrove", "tundra", "river", "lake"],
+      "title": "Hidden Cache",
+      "description": "You notice a pile of rocks that seems deliberately placed. Someone hid something here...",
+      "icon": "📦",
+      "category": "discovery",
+      "outcomes": [
+        {
+          "choice": "Dig it up",
+          "results": [
+            { "type": "coins", "value": 1500, "text": "A buried chest contains a stash of coins! Someone's rainy day fund.", "chance": 0.3 },
+            { "type": "loot", "id": "capture_net", "count": 2, "text": "A ranger's hidden supply — capture nets!", "chance": 0.3 },
+            { "type": "loot", "id": "wild_herbs", "count": 3, "text": "An herbalist's cache of dried wild herbs!", "chance": 0.2 },
+            { "type": "encounter", "text": "The cache's owner returns... and they're not happy!", "chance": 0.2 }
+          ]
+        },
+        {
+          "choice": "Leave it alone",
+          "results": [
+            { "type": "nothing", "text": "You respect the hidden stash and move on.", "chance": 1.0 }
+          ]
+        }
+      ]
+    }
+  ]
+}

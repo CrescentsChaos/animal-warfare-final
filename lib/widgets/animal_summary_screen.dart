@@ -477,6 +477,9 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
   // ─── INFO TAB ─────────────────────────────────────────────────────────────
 
   Widget _buildInfoTab(Organism base) {
+    final userState = Provider.of<UserState>(context, listen: false);
+    final unitSystem = userState.currentUser?.unitSystem ?? 'metric';
+
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
@@ -494,6 +497,8 @@ class _AnimalSummaryScreenState extends State<AnimalSummaryScreen>
           ('XP', '${_current.xp}'),
           ('NEXT LV.', _current.level >= 100 ? '-' : '${_xpToNext()} XP'),
           ('RARITY', base.rarity),
+          ('SIZE', base.formatScaledSize(_current.sizeScale, unitSystem)),
+          ('WEIGHT', base.formatScaledWeight(_current.weightScale, unitSystem)),
         ]),
         const SizedBox(height: 24),
         _sectionHeader('SATISFACTION'),

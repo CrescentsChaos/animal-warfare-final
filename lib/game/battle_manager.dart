@@ -8093,7 +8093,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       final midDialogue = trainerInfo!.randomMidBattle(_random);
       trainerDialogue = midDialogue;
       trainerDialogueActive = true;
-      final midMsg = '${trainerInfo!.displayName}: "${midDialogue}"';
+      final midMsg = '${trainerInfo!.displayName}: "$midDialogue"';
       addToLog(midMsg);
       notifyListeners();
 

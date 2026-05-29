@@ -24,6 +24,7 @@ import 'package:animal_warfare/widgets/game_clock_widget.dart';
 import 'package:animal_warfare/services/weather_service.dart';
 import 'package:animal_warfare/widgets/weather_overlay.dart';
 import 'package:animal_warfare/models/weather.dart';
+import 'package:animal_warfare/widgets/survival_status_widget.dart';
 
 class ItemFindResult {
   final String itemId;
@@ -36,6 +37,105 @@ class ItemFindResult {
     required this.itemName,
     required this.count,
     required this.message,
+  });
+}
+
+// ── Biome Event Models ──────────────────────────────────────────────
+
+class EventResult {
+  final String type; // loot, coins, stamina, heal, damage, encounter, nothing
+  final String? id;
+  final int? count;
+  final int? value;
+  final String text;
+  final double chance;
+
+  const EventResult({
+    required this.type,
+    this.id,
+    this.count,
+    this.value,
+    required this.text,
+    required this.chance,
+  });
+
+  factory EventResult.fromJson(Map<String, dynamic> json) {
+    return EventResult(
+      type: json['type'] as String,
+      id: json['id'] as String?,
+      count: json['count'] as int?,
+      value: json['value'] as int?,
+      text: json['text'] as String,
+      chance: (json['chance'] as num).toDouble(),
+    );
+  }
+}
+
+class EventChoice {
+  final String label;
+  final List<EventResult> results;
+
+  const EventChoice({required this.label, required this.results});
+
+  factory EventChoice.fromJson(Map<String, dynamic> json) {
+    return EventChoice(
+      label: json['choice'] as String,
+      results: (json['results'] as List<dynamic>)
+          .map((r) => EventResult.fromJson(r as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+}
+
+class BiomeEvent {
+  final String id;
+  final List<String> biomes;
+  final String title;
+  final String description;
+  final String icon;
+  final String category;
+  final List<EventChoice> outcomes;
+
+  const BiomeEvent({
+    required this.id,
+    required this.biomes,
+    required this.title,
+    required this.description,
+    required this.icon,
+    required this.category,
+    required this.outcomes,
+  });
+
+  factory BiomeEvent.fromJson(Map<String, dynamic> json) {
+    return BiomeEvent(
+      id: json['id'] as String,
+      biomes: (json['biomes'] as List<dynamic>)
+          .map((b) => b as String)
+          .toList(),
+      title: json['title'] as String,
+      description: json['description'] as String,
+      icon: json['icon'] as String? ?? '❓',
+      category: json['category'] as String? ?? 'mystery',
+      outcomes: (json['outcomes'] as List<dynamic>)
+          .map((o) => EventChoice.fromJson(o as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+}
+
+class EventResultDisplay {
+  final String text;
+  final String type;
+  final String? itemId;
+  final int? count;
+  final int? value;
+
+  const EventResultDisplay({
+    required this.text,
+    required this.type,
+    this.itemId,
+    this.count,
+    this.value,
   });
 }
 
@@ -64,6 +164,8 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
   SpawnResult? _currentEncounter;
   CapturedOrganism? _persistentEncounter; // Added to track specific instance
   ItemFindResult? _foundItem;
+  BiomeEvent? _currentEvent;
+  EventResultDisplay? _eventResult;
   bool _isExploring = false;
   bool _isNameRevealed = false;
 
@@ -77,6 +179,7 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
   late AchievementService _achievementService;
   late UserData _currentUser;
   Map<String, dynamic> _explorationDropData = {};
+  List<BiomeEvent> _biomeEvents = [];
 
   @override
   void initState() {
@@ -99,6 +202,7 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
       _loadOrganismsData();
     }
     _loadExplorationDropData();
+    _loadBiomeEvents();
 
     WidgetsBinding.instance.addObserver(this);
     TimeService().start();
@@ -507,7 +611,7 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
     return hasMove ? null : requiredMove;
   }
 
-  void _startExploration() async {
+  void _startExploration({bool forceEncounter = false}) async {
     final userState = Provider.of<UserState>(context, listen: false);
     final user = userState.currentUser;
     if (user == null) return;
@@ -553,22 +657,30 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
       }
       return;
     }
-    if (user.stamina < 10) {
+    int baseCost = 10;
+    int drainMultiplier = userState.calculateExplorationStaminaDrain(
+      widget.biomeName,
+    );
+    int totalCost = baseCost * drainMultiplier;
+
+    if (user.stamina < totalCost) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Not enough stamina!'),
+          SnackBar(
+            content: Text('Not enough stamina! Need $totalCost stamina.'),
             backgroundColor: Colors.redAccent,
           ),
         );
       }
       return;
     }
-    await userState.decreaseStamina(10);
+    await userState.decreaseStamina(totalCost);
     setState(() {
       _isExploring = true;
       _currentEncounter = null;
       _foundItem = null;
+      _currentEvent = null;
+      _eventResult = null;
       _isNameRevealed = false;
     });
     Future.delayed(const Duration(seconds: 1), () async {
@@ -588,8 +700,25 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
       }
 
       final random = math.Random();
-      final bool findItem = random.nextDouble() < 0.30;
+      final double roll = random.nextDouble();
+      // 20% event, 30% loot, 50% encounter
+      final bool triggerEvent = !forceEncounter && roll < 0.20;
+      final bool findItem = !forceEncounter && roll >= 0.20 && roll < 0.50;
 
+      // ── Event branch ──
+      if (triggerEvent) {
+        final event = _getRandomEventForBiome(widget.biomeName);
+        if (event != null && mounted) {
+          setState(() {
+            _currentEvent = event;
+            _eventResult = null;
+            _isExploring = false;
+          });
+          return;
+        }
+      }
+
+      // ── Loot branch ──
       if (findItem) {
         final itemPool = _getItemPoolForBiome(widget.biomeName);
         if (itemPool.isNotEmpty) {
@@ -628,6 +757,7 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
                 .toList() ??
             [],
         currentTimeOfDay: _getTimeOfDay(),
+        activeEffects: userState.currentUser?.activeEffects ?? const [],
       );
       if (mounted) {
         setState(() {
@@ -656,6 +786,23 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
       }
     } catch (e) {
       debugPrint('BiomeDetail: failed to load exploration drop data: $e');
+    }
+  }
+
+  Future<void> _loadBiomeEvents() async {
+    try {
+      final raw = await rootBundle.loadString('assets/biome_events.json');
+      final data = jsonDecode(raw) as Map<String, dynamic>;
+      final eventsList = (data['events'] as List<dynamic>?) ?? [];
+      if (mounted) {
+        setState(() {
+          _biomeEvents = eventsList
+              .map((e) => BiomeEvent.fromJson(e as Map<String, dynamic>))
+              .toList();
+        });
+      }
+    } catch (e) {
+      debugPrint('BiomeDetail: failed to load biome events: $e');
     }
   }
 
@@ -900,9 +1047,12 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
                         _buildEncounterResultCard(_currentEncounter!),
                       if (!_isExploring && _foundItem != null)
                         _buildItemFindCard(_foundItem!),
+                      if (!_isExploring && _currentEvent != null)
+                        _buildEventCard(_currentEvent!),
                       if (!_isExploring &&
                           _currentEncounter == null &&
-                          _foundItem == null)
+                          _foundItem == null &&
+                          _currentEvent == null)
                         ElevatedButton(
                           onPressed: _startExploration,
                           style: ElevatedButton.styleFrom(
@@ -1012,6 +1162,238 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
       fit: BoxFit.contain,
       errorBuilder: (context, error, stackTrace) =>
           Icon(Icons.thermostat, color: Colors.white, size: size),
+    );
+  }
+
+  BiomeEvent? _getRandomEventForBiome(String biomeName) {
+    final name = biomeName.toLowerCase();
+    final possibleEvents = _biomeEvents.where((e) {
+      return e.biomes.any((b) => name.contains(b.toLowerCase()));
+    }).toList();
+
+    if (possibleEvents.isEmpty) return null;
+
+    final random = math.Random();
+    return possibleEvents[random.nextInt(possibleEvents.length)];
+  }
+
+  Future<void> _handleEventOutcome(EventChoice choice) async {
+    final userState = Provider.of<UserState>(context, listen: false);
+    final random = math.Random();
+    final double roll = random.nextDouble();
+    double cumulative = 0.0;
+    EventResult? selectedResult;
+
+    for (final result in choice.results) {
+      cumulative += result.chance;
+      if (roll <= cumulative) {
+        selectedResult = result;
+        break;
+      }
+    }
+    final EventResult finalResult = selectedResult ?? choice.results.last;
+
+    if (finalResult.type == 'loot' && finalResult.id != null) {
+      await userState.addLoot(finalResult.id!, finalResult.count ?? 1);
+    } else if (finalResult.type == 'coins' && finalResult.value != null) {
+      await userState.addMoney(finalResult.value!);
+    } else if (finalResult.type == 'stamina' && finalResult.value != null) {
+      if (finalResult.value! < 0) {
+        await userState.decreaseStamina(-finalResult.value!);
+      } else {
+        await userState.updateUserAtomic(
+          (u) => u.restoreStamina(finalResult.value!),
+        );
+      }
+    } else if (finalResult.type == 'heal') {
+      await userState.fullyHealTeam();
+    }
+
+    if (mounted) {
+      setState(() {
+        _eventResult = EventResultDisplay(
+          text: finalResult.text,
+          type: finalResult.type,
+          itemId: finalResult.id,
+          count: finalResult.count,
+          value: finalResult.value,
+        );
+
+        if (finalResult.type == 'encounter') {
+          // Trigger a random encounter
+          _isExploring = true;
+          _currentEvent = null;
+          _eventResult = null;
+          Future.delayed(const Duration(milliseconds: 500), () {
+            if (mounted) _startExploration(forceEncounter: true);
+          });
+        }
+      });
+    }
+  }
+
+  Widget _buildEventCard(BiomeEvent event) {
+    if (_eventResult != null) {
+      // Show result
+      return Card(
+        elevation: 12,
+        shadowColor: _biomeHighlightColor.withValues(alpha: 0.6),
+        color: _biomeDarkColor.withValues(alpha: 0.9),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: BorderSide(color: _biomeHighlightColor, width: 3),
+        ),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'OUTCOME',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontFamily: 'PressStart2P',
+                  fontSize: 12,
+                  letterSpacing: 2.0,
+                  shadows: [
+                    Shadow(color: _biomeHighlightColor, blurRadius: 10.0),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                _eventResult!.text,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontFamily: 'PressStart2P',
+                  fontSize: 10,
+                  height: 1.6,
+                ),
+              ),
+              const SizedBox(height: 24),
+              if (_eventResult!.type == 'loot' && _eventResult!.itemId != null)
+                Container(
+                  width: 60,
+                  height: 60,
+                  margin: const EdgeInsets.only(bottom: 24),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Image.asset(
+                    'assets/items/${_eventResult!.itemId!.replaceAll('_', '-')}.png',
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) =>
+                        const Icon(Icons.inventory, color: Colors.white),
+                  ),
+                ),
+              Row(
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: ElevatedButton(
+                      onPressed: _startExploration,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _biomeHighlightColor,
+                        foregroundColor: Colors.black,
+                        padding: const EdgeInsets.symmetric(vertical: 20),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: const Text(
+                        'CONTINUE',
+                        style: TextStyle(
+                          fontFamily: 'PressStart2P',
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Show initial event choice
+    return Card(
+      elevation: 12,
+      shadowColor: _biomeHighlightColor.withValues(alpha: 0.6),
+      color: _biomeDarkColor.withValues(alpha: 0.9),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: BorderSide(color: _biomeHighlightColor, width: 3),
+      ),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              event.title.toUpperCase(),
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white,
+                fontFamily: 'PressStart2P',
+                fontSize: 12,
+                letterSpacing: 2.0,
+                shadows: [
+                  Shadow(color: _biomeHighlightColor, blurRadius: 10.0),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(event.icon, style: const TextStyle(fontSize: 48)),
+            const SizedBox(height: 16),
+            Text(
+              event.description,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white70,
+                fontFamily: 'PressStart2P',
+                fontSize: 10,
+                height: 1.6,
+              ),
+            ),
+            const SizedBox(height: 24),
+            ...event.outcomes.map(
+              (choice) => Padding(
+                padding: const EdgeInsets.only(bottom: 12.0),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => _handleEventOutcome(choice),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white.withValues(alpha: 0.1),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: const BorderSide(color: Colors.white24),
+                      ),
+                    ),
+                    child: Text(
+                      choice.label,
+                      style: const TextStyle(
+                        fontFamily: 'PressStart2P',
+                        fontSize: 9,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

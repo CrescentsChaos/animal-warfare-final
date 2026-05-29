@@ -28,6 +28,9 @@ class BiomeData {
     'river': Colors.cyanAccent,
     'ocean': Colors.blue,
     'mountain': Color(0xFFBDBDBD), // Colors.grey[300]
+    'redwoods': Color(0xFF5D4037), // deep bark brown
+    'plains': Color(0xFFD4A94B), // warm golden
+    'wetlands': Color(0xFF6B7B3A), // muddy olive
   };
 
   /// Returns the theme [Color] for [biome], falling back to [Colors.white].
@@ -57,5 +60,8 @@ class BiomeData {
     'River',
     'Ocean',
     'Mountain',
+    'Redwoods',
+    'Plains',
+    'Wetlands',
   ];
 }

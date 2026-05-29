@@ -133,7 +133,7 @@ class OrganismFeature {
 
   Map<String, dynamic> toJson() => {
     'organismName': organismName,
-    'dominantColors': dominantColors.map((c) => c.value).toList(),
+    'dominantColors': dominantColors.map((c) => c.toARGB32()).toList(),
     'hueBins': hueBins,
     'spatialHueBins': spatialHueBins,
     'avgBrightness': avgBrightness,
@@ -398,7 +398,9 @@ class BiometricService {
     int minY = resized.height, maxY = 0;
 
     final finalHueBins = <String, double>{};
-    for (int i = 0; i < 36; i++) finalHueBins['h${i * 10}'] = 0;
+    for (int i = 0; i < 36; i++) {
+      finalHueBins['h${i * 10}'] = 0;
+    }
     finalHueBins['hWhite'] = 0;
     finalHueBins['hBlack'] = 0;
     finalHueBins['hGrey'] = 0;
@@ -423,10 +425,11 @@ class BiometricService {
         if (value < 0.15) {
           finalHueBins['hBlack'] = (finalHueBins['hBlack'] ?? 0) + 1;
         } else if (saturation < 0.15) {
-          if (value > 0.8)
+          if (value > 0.8) {
             finalHueBins['hWhite'] = (finalHueBins['hWhite'] ?? 0) + 1;
-          else
+          } else {
             finalHueBins['hGrey'] = (finalHueBins['hGrey'] ?? 0) + 1;
+          }
         } else {
           final binIndex = (hue / 10).floor().clamp(0, 35);
           finalHueBins['h${binIndex * 10}'] =
@@ -464,8 +467,9 @@ class BiometricService {
       return Color.fromARGB(255, r, g, b);
     }).toList();
 
-    for (final key in finalHueBins.keys)
+    for (final key in finalHueBins.keys) {
       finalHueBins[key] = finalHueBins[key]! / objectPixelCount;
+    }
 
     final sym = _calculateSymmetry(resized, mask, minX, maxX, minY, maxY);
     final hSym = sym.$1, vSym = sym.$2;
@@ -547,8 +551,9 @@ class BiometricService {
             (x < minX + insetX ||
                 x > maxX - insetX ||
                 y < minY + insetY ||
-                y > maxY - insetY))
+                y > maxY - insetY)) {
           limbPixels++;
+        }
       }
     }
     final double limbDensity = limbPixels / objectPixelCount;
@@ -1049,8 +1054,9 @@ class BiometricService {
     if (_organisms != null) {
       for (final org in _organisms!) {
         final cachedFeature = _spriteFeatures?[org.name];
-        if (cachedFeature == null)
+        if (cachedFeature == null) {
           continue; // Skip non-cached in pre-pass for extreme speed
+        }
 
         final visualResult = _featureSimilarity(
           inputFeature,

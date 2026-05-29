@@ -564,10 +564,10 @@ class FeatureDbService {
           if (mergedSpatialBins != null)
             'spatial_hue_bins': jsonEncode(mergedSpatialBins),
           'dominant_colors': jsonEncode(
-            newFeature.dominantColors.map((c) => c.value).toList(),
+            newFeature.dominantColors.map((c) => c.toARGB32()).toList(),
           ),
           ...mergedData,
-          if (effectiveClass != null) 'animal_class': effectiveClass,
+          'animal_class': ?effectiveClass,
           'training_count': newCount,
           'updated_at': DateTime.now().toIso8601String(),
         },
@@ -581,7 +581,7 @@ class FeatureDbService {
         'hue_bins': jsonEncode(newFeature.hueBins),
         'spatial_hue_bins': jsonEncode(newFeature.spatialHueBins),
         'dominant_colors': jsonEncode(
-          newFeature.dominantColors.map((c) => c.value).toList(),
+          newFeature.dominantColors.map((c) => c.toARGB32()).toList(),
         ),
         'avg_brightness': newFeature.avgBrightness,
         'avg_saturation': newFeature.avgSaturation,

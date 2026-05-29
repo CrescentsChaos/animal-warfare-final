@@ -239,6 +239,20 @@ class Talisman {
   final List<TalismanEffect> effects;
   final double dropChance;
 
+  // New properties for player-consumable lures
+  final bool isLure;
+  final String? targetTaxonomyType; // "class", "order", or "subfamily"
+  final String? targetTaxonomyValue; // e.g., "mammal", "carnivora", "homininae"
+  final double? lureMultiplier; // Encounter rate multiplier
+  final int? durationMinutes; // Buff duration in minutes
+  final String rarity; // Rarity level of the item (e.g. Common, Rare, Epic, Legendary)
+
+  // Properties for survival gear/consumables
+  final bool isSurvivalItem;
+  final String? mitigatesSeverity; // "freezing", "cold", "hot", "scorching"
+  final double? survivalDamageReduction; // 1.0 = 100% reduction
+  final int? survivalDurationMinutes;
+
   const Talisman({
     required this.id,
     required this.name,
@@ -250,6 +264,16 @@ class Talisman {
     this.preferredSpecies,
     this.nutritionalValue = 0,
     this.dropChance = 1.0,
+    this.isLure = false,
+    this.targetTaxonomyType,
+    this.targetTaxonomyValue,
+    this.lureMultiplier,
+    this.durationMinutes,
+    this.rarity = 'Common',
+    this.isSurvivalItem = false,
+    this.mitigatesSeverity,
+    this.survivalDamageReduction,
+    this.survivalDurationMinutes,
   });
 
   String get spritePath =>
@@ -317,6 +341,16 @@ class Talisman {
       preferredSpecies: json['preferred_species'] as String?,
       nutritionalValue: (json['nutritional_value'] as num? ?? 0).toInt(),
       dropChance: (json['drop_chance'] as num? ?? 1.0).toDouble(),
+      isLure: json['is_lure'] as bool? ?? false,
+      targetTaxonomyType: json['target_taxonomy_type'] as String?,
+      targetTaxonomyValue: json['target_taxonomy_value'] as String?,
+      lureMultiplier: (json['lure_multiplier'] as num?)?.toDouble(),
+      durationMinutes: (json['duration_minutes'] as num?)?.toInt(),
+      rarity: json['rarity'] as String? ?? 'Common',
+      isSurvivalItem: json['is_survival_item'] as bool? ?? false,
+      mitigatesSeverity: json['mitigates_severity'] as String?,
+      survivalDamageReduction: (json['survival_damage_reduction'] as num?)?.toDouble(),
+      survivalDurationMinutes: (json['survival_duration_minutes'] as num?)?.toInt(),
     );
   }
 

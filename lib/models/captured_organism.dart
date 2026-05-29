@@ -64,6 +64,10 @@ class CapturedOrganism {
   // Nicknaming support
   final String? nickname;
 
+  // NEW: Size and Weight variation
+  final double sizeScale;
+  final double weightScale;
+
   // NEW: Capture Metadata
   final DateTime? capturedAtReal;
   final GameTime? capturedAtGame;
@@ -113,6 +117,8 @@ class CapturedOrganism {
     String? activeAbilityName,
     this.teraType,
     this.nickname,
+    this.sizeScale = 1.0,
+    this.weightScale = 1.0,
     this.capturedAtReal,
     this.capturedAtGame,
     this.captureLocation,
@@ -296,6 +302,8 @@ class CapturedOrganism {
     bool clearTeraType = false,
     String? nickname,
     bool clearNickname = false,
+    double? sizeScale,
+    double? weightScale,
     DateTime? capturedAtReal,
     GameTime? capturedAtGame,
     String? captureLocation,
@@ -333,6 +341,8 @@ class CapturedOrganism {
       activeAbilityName: activeAbilityName ?? this.activeAbilityName,
       teraType: clearTeraType ? null : (teraType ?? this.teraType),
       nickname: clearNickname ? null : (nickname ?? this.nickname),
+      sizeScale: sizeScale ?? this.sizeScale,
+      weightScale: weightScale ?? this.weightScale,
       capturedAtReal: capturedAtReal ?? this.capturedAtReal,
       capturedAtGame: capturedAtGame ?? this.capturedAtGame,
       captureLocation: captureLocation ?? this.captureLocation,
@@ -491,6 +501,8 @@ class CapturedOrganism {
         }
         return ElementalType.basic; // Absolute fallback
       }(),
+      sizeScale: 0.8 + (rng.nextDouble() * 0.4),
+      weightScale: (0.8 + (rng.nextDouble() * 0.4)) * (0.9 + (rng.nextDouble() * 0.2)),
       capturedAtReal: capturedAtReal,
       capturedAtGame: capturedAtGame,
       captureLocation: captureLocation,
@@ -742,6 +754,8 @@ class CapturedOrganism {
     'activeAbilityName': activeAbilityName,
     'teraType': teraType?.toString().split('.').last,
     'nickname': nickname,
+    'sizeScale': sizeScale,
+    'weightScale': weightScale,
     'capturedAtReal': capturedAtReal?.toIso8601String(),
     'capturedAtGame': capturedAtGame?.toJson(),
     'captureLocation': captureLocation,
@@ -841,6 +855,8 @@ class CapturedOrganism {
           ? ElementalTypeX.fromString(json['teraType'] as String)
           : null,
       nickname: json['nickname'] as String?,
+      sizeScale: (json['sizeScale'] as num?)?.toDouble() ?? 1.0,
+      weightScale: (json['weightScale'] as num?)?.toDouble() ?? 1.0,
       capturedAtReal: json['capturedAtReal'] != null
           ? DateTime.parse(json['capturedAtReal'] as String)
           : null,

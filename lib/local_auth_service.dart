@@ -13,6 +13,8 @@ import 'package:animal_warfare/models/rogue_like_state.dart';
 import 'package:animal_warfare/models/farm_slot.dart';
 import 'package:animal_warfare/models/saved_map_state.dart'; // NEW import
 import 'package:animal_warfare/models/event_flags.dart';
+import 'package:animal_warfare/models/player_active_effect.dart';
+import 'package:animal_warfare/models/survival_effect.dart';
 
 import 'local_auth_storage_io.dart'
     if (dart.library.html) 'local_auth_storage_web.dart'
@@ -110,6 +112,12 @@ class UserData {
   final List<String> unlockedFrames;
   final List<String> unlockedBackgrounds;
 
+  // --- Active Player Effects (lures, baits) ---
+  final List<PlayerActiveEffect> activeEffects;
+
+  // --- Active Survival Effects (temperature/weather buffs) ---
+  final List<SurvivalEffect> activeSurvivalEffects;
+
   UserData({
     required this.username,
     required this.password,
@@ -158,6 +166,8 @@ class UserData {
     List<FarmSlot>? farmSlots,
     Map<String, SavedMapState>? savedMapStates,
     EventFlags? eventFlags,
+    List<PlayerActiveEffect>? activeEffects,
+    List<SurvivalEffect>? activeSurvivalEffects,
   }) : quizStats = quizStats ?? {},
        discoveredOrganisms = discoveredOrganisms ?? [],
        completedAchievements = completedAchievements ?? [],
@@ -176,7 +186,9 @@ class UserData {
        eventFlags = eventFlags ?? const EventFlags(),
        unlockedFrames = unlockedFrames ?? [],
        unlockedBackgrounds = unlockedBackgrounds ?? [],
-       savedReplays = savedReplays ?? [];
+       savedReplays = savedReplays ?? [],
+       activeEffects = activeEffects ?? [],
+       activeSurvivalEffects = activeSurvivalEffects ?? [];
 
   /// Returns displayName if set, otherwise falls back to username
   String get effectiveDisplayName =>
@@ -230,6 +242,8 @@ class UserData {
     String? profileBackground,
     List<String>? unlockedFrames,
     List<String>? unlockedBackgrounds,
+    List<PlayerActiveEffect>? activeEffects,
+    List<SurvivalEffect>? activeSurvivalEffects,
   }) {
     return UserData(
       username: username ?? this.username,
@@ -285,6 +299,8 @@ class UserData {
       profileBackground: profileBackground ?? this.profileBackground,
       unlockedFrames: unlockedFrames ?? this.unlockedFrames,
       unlockedBackgrounds: unlockedBackgrounds ?? this.unlockedBackgrounds,
+      activeEffects: activeEffects ?? this.activeEffects,
+      activeSurvivalEffects: activeSurvivalEffects ?? this.activeSurvivalEffects,
     );
   }
 
@@ -404,6 +420,8 @@ class UserData {
     'profileBackground': profileBackground,
     'unlockedFrames': unlockedFrames,
     'unlockedBackgrounds': unlockedBackgrounds,
+    'activeEffects': activeEffects.map((e) => e.toJson()).toList(),
+    'activeSurvivalEffects': activeSurvivalEffects.map((e) => e.toJson()).toList(),
   };
 
   factory UserData.fromJson(
@@ -566,6 +584,12 @@ class UserData {
       profileBackground: json['profileBackground'] as String? ?? '',
       unlockedFrames: (json['unlockedFrames'] as List<dynamic>?)?.map((e) => e as String).toList() ?? [],
       unlockedBackgrounds: (json['unlockedBackgrounds'] as List<dynamic>?)?.map((e) => e as String).toList() ?? [],
+      activeEffects: (json['activeEffects'] as List<dynamic>?)
+          ?.map((e) => PlayerActiveEffect.fromJson(e as Map<String, dynamic>))
+          .toList() ?? [],
+      activeSurvivalEffects: (json['activeSurvivalEffects'] as List<dynamic>?)
+          ?.map((e) => SurvivalEffect.fromJson(e as Map<String, dynamic>))
+          .toList() ?? [],
     );
   }
 }

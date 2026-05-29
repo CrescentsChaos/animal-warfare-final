@@ -1518,34 +1518,12 @@ class __OrganismSpriteDisplayState extends State<_OrganismSpriteDisplay> {
     }
 
     // If discovered, show full color. If not, show silhouette.
-    return GestureDetector(
-      onTap: () {
-        showDialog(
-          context: context,
-          builder: (context) => Dialog(
-            backgroundColor: Colors.transparent,
-            insetPadding: const EdgeInsets.all(16),
-            child: InteractiveViewer(
-              maxScale: 5.0,
-              child: buildSilhouetteSprite(
-                imageUrl: _imagePath!,
-                silhouetteColor: widget.isDiscovered ? null : Colors.black45,
-                outlineColor: widget.isDiscovered ? Colors.black : Colors.white,
-                outlineWidth: 2.0,
-                height: MediaQuery.of(context).size.height * 0.5,
-                fit: BoxFit.contain,
-              ),
-            ),
-          ),
-        );
-      },
-      child: buildSilhouetteSprite(
-        imageUrl: _imagePath!,
-        silhouetteColor: widget.isDiscovered ? null : Colors.black45,
-        outlineColor: widget.isDiscovered ? Colors.black : Colors.white,
-        outlineWidth: 2.0,
-        fit: BoxFit.contain,
-      ),
+    return buildSilhouetteSprite(
+      imageUrl: _imagePath!,
+      silhouetteColor: widget.isDiscovered ? null : Colors.black45,
+      outlineColor: widget.isDiscovered ? Colors.black : Colors.white,
+      outlineWidth: 2.0,
+      fit: BoxFit.contain,
     );
   }
 }

@@ -108,7 +108,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Navigator.of(dialogContext).pop();
                 await widget.authService.logout();
                 if (mounted) {
-                  Provider.of<UserState>(context, listen: false).setCurrentUser(null);
+                  Provider.of<UserState>(
+                    context,
+                    listen: false,
+                  ).setCurrentUser(null);
                   Navigator.of(context).pushAndRemoveUntil(
                     _createFadeRoute(const LoginScreen()),
                     (Route<dynamic> route) => false,
@@ -188,7 +191,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final Uri params = Uri(
       scheme: 'mailto',
       path: 'crescentslegacy@gmail.com',
-      queryParameters: {'subject': subject, if (body != null) 'body': body},
+      queryParameters: {'subject': subject, 'body': ?body},
     );
     try {
       await launchUrl(params, mode: LaunchMode.externalApplication);
@@ -327,7 +330,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   onToggle: (val) {
                     setState(() => _anidexUnlocked = val);
                     HapticService.medium();
-                    Provider.of<UserState>(context, listen: false).toggleAnidexUnlocked(val);
+                    Provider.of<UserState>(
+                      context,
+                      listen: false,
+                    ).toggleAnidexUnlocked(val);
                   },
                 ),
                 _buildToggleControl(
@@ -337,7 +343,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   onToggle: (val) {
                     setState(() => _ignoreBiomeRequirements = val);
                     HapticService.medium();
-                    Provider.of<UserState>(context, listen: false).toggleIgnoreBiomeRequirements(val);
+                    Provider.of<UserState>(
+                      context,
+                      listen: false,
+                    ).toggleIgnoreBiomeRequirements(val);
                   },
                 ),
                 _buildUnitToggle(),
@@ -381,7 +390,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   title: 'Unstuck Player',
                   icon: 'assets/icon/electric.png',
                   onTap: () {
-                    final userState = Provider.of<UserState>(context, listen: false);
+                    final userState = Provider.of<UserState>(
+                      context,
+                      listen: false,
+                    );
                     userState.requestUnstuck();
                     Navigator.of(context).pop();
                   },
@@ -470,7 +482,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         width: 20,
                         height: 20,
                       )
-                    : Icon(icon as IconData, color: AppColors.primary, size: 20),
+                    : Icon(
+                        icon as IconData,
+                        color: AppColors.primary,
+                        size: 20,
+                      ),
                 const SizedBox(width: 12),
                 Text(
                   title,
@@ -529,11 +545,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Row(
           children: [
             icon is String
-                ? Image.asset(
-                    icon,
-                    width: 20,
-                    height: 20,
-                  )
+                ? Image.asset(icon, width: 20, height: 20)
                 : Icon(icon as IconData, color: AppColors.primary, size: 20),
             const SizedBox(width: 12),
             Expanded(
@@ -582,11 +594,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Row(
               children: [
                 icon is String
-                    ? Image.asset(
-                        icon,
-                        width: 20,
-                        height: 20,
-                      )
+                    ? Image.asset(icon, width: 20, height: 20)
                     : Icon(icon as IconData, color: color, size: 20),
                 const SizedBox(width: 14),
                 Text(
@@ -623,7 +631,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
           children: [
-            const Icon(Icons.settings_overscan, color: AppColors.primary, size: 20),
+            const Icon(
+              Icons.settings_overscan,
+              color: AppColors.primary,
+              size: 20,
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -638,7 +650,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                   Text(
-                    _unitSystem == 'metric' ? 'Metric (KG, M)' : 'Imperial (LBS, FT)',
+                    _unitSystem == 'metric'
+                        ? 'Metric (KG, M)'
+                        : 'Imperial (LBS, FT)',
                     style: GoogleFonts.inter(
                       color: AppColors.textMuted,
                       fontSize: 12,
@@ -654,7 +668,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _unitSystem = val ? 'imperial' : 'metric';
                 });
                 HapticService.medium();
-                await Provider.of<UserState>(context, listen: false).toggleUnitSystem();
+                await Provider.of<UserState>(
+                  context,
+                  listen: false,
+                ).toggleUnitSystem();
               },
             ),
           ],
