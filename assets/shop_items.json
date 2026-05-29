@@ -1069,42 +1069,42 @@
         "id": "insect_lure_common",
         "name": "Insect Lure (Common)",
         "description": "A basic lure. Increases encounter rates of Insects by 2x for 15 minutes.",
-        "price": 2500,
+        "price": 250,
         "category": "misc"
     },
     {
         "id": "carnivora_bait_uncommon",
         "name": "Carnivora Bait (Uncommon)",
         "description": "Smells like raw meat. Increases encounter rates of Carnivora by 2.5x for 20 minutes.",
-        "price": 5000,
+        "price": 500,
         "category": "misc"
     },
     {
         "id": "mammal_lure_rare",
         "name": "Mammal Lure (Rare)",
         "description": "A high-quality lure. Increases encounter rates of Mammals by 3x for 25 minutes.",
-        "price": 10000,
+        "price": 1000,
         "category": "misc"
     },
     {
         "id": "bird_lure_epic",
         "name": "Bird Lure (Epic)",
         "description": "A beautifully crafted lure. Increases encounter rates of Birds by 4x for 30 minutes.",
-        "price": 25000,
+        "price": 250,
         "category": "misc"
     },
     {
         "id": "homininae_feast_epic",
         "name": "Homininae Feast (Epic)",
         "description": "A feast fit for apes. Increases encounter rates of Homininae by 4x for 30 minutes.",
-        "price": 30000,
+        "price": 3000,
         "category": "misc"
     },
     {
         "id": "primates_lure_legendary",
         "name": "Primates Lure (Legendary)",
         "description": "The ultimate primate lure. Increases encounter rates of Primates by 5x for 45 minutes.",
-        "price": 75000,
+        "price": 7500,
         "category": "misc"
     },
     {
@@ -1125,14 +1125,14 @@
         "id": "thermal_coat",
         "name": "Thermal Coat",
         "description": "A heavy coat. Having this in your inventory permanently reduces the stamina drain of freezing temperatures by half.",
-        "price": 15000,
+        "price": 500,
         "category": "misc"
     },
     {
         "id": "cooling_vest",
         "name": "Cooling Vest",
         "description": "A vest with built-in cooling. Having this in your inventory permanently reduces the stamina drain of scorching temperatures by half.",
-        "price": 15000,
+        "price": 500,
         "category": "misc"
     }
 ]
