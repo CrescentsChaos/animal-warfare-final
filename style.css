@@ -355,6 +355,12 @@ main {
     gap: 16px;
 }
 
+.card-inner {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
 .card {
     background: rgba(15, 25, 35, 0.6);
     backdrop-filter: blur(10px);
@@ -388,11 +394,13 @@ main {
 
 .card-sprite-wrap {
     position: relative;
-    padding: 20px;
+    padding: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 180px;
+    flex: 1 1 auto;
+    min-height: 200px;
+    height: 200px;
     overflow: hidden;
     background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
     background-size: 12px 12px;
@@ -410,12 +418,15 @@ main {
 .item-sprite-wrap { height: 130px; }
 
 .card-sprite-wrap img {
-    max-width: 130px;
-    max-height: 130px;
+    width: auto;
+    height: auto;
+    max-width: min(170px, 85%);
+    max-height: min(170px, 75%);
     object-fit: contain;
     filter: drop-shadow(0 8px 16px rgba(0,0,0,0.6));
     transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     z-index: 2;
+    pointer-events: none;
 }
 
 .card:hover .card-sprite-wrap img {
@@ -448,12 +459,14 @@ main {
 }
 
 .card-body {
-    padding: 16px;
+    padding: 12px 14px;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
+    flex-shrink: 0;
     position: relative;
-    background: linear-gradient(0deg, rgba(0,0,0,0.4) 0%, transparent 100%);
+    background: rgba(0, 0, 0, 0.75);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
     z-index: 2;
 }
 
@@ -688,8 +701,10 @@ main {
 
 .detail-sprite-wrap {
     flex-shrink: 0;
-    width: 140px;
-    height: 140px;
+    width: 180px;
+    height: 180px;
+    min-width: 180px;
+    min-height: 180px;
     background: rgba(255,255,255,0.03);
     border-radius: 20px;
     border: 1px solid var(--border);
@@ -697,13 +712,23 @@ main {
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.detail-sprite-wrap:hover {
+    transform: scale(1.03);
+    border-color: var(--accent);
 }
 
 .detail-sprite-wrap img {
-    max-width: 100%;
-    max-height: 100%;
+    width: auto;
+    height: auto;
+    max-width: 92%;
+    max-height: 92%;
     object-fit: contain;
     filter: drop-shadow(0 6px 16px rgba(0,0,0,0.6));
+    pointer-events: none;
 }
 
 .detail-intro {
@@ -1087,15 +1112,19 @@ main {
         gap: 12px;
     }
 
-    .card-sprite-wrap { height: 130px; }
+    .card-sprite-wrap { min-height: 160px; height: 160px; }
 
-    .card-name { font-size: 7px; }
+    .card-name { font-size: 11px; }
 
-    .detail-header { flex-direction: column; text-align: center; padding: 24px; }
+    .detail-header { flex-direction: column; align-items: center; text-align: center; padding: 24px; }
 
-    .detail-sprite-wrap { width: 120px; height: 120px; }
+    .detail-intro { align-items: center; width: 100%; }
 
-    .detail-name { font-size: 12px; }
+    .classification-row { justify-content: center; }
+
+    .detail-sprite-wrap { width: 160px; height: 160px; min-width: 160px; min-height: 160px; }
+
+    .detail-name { font-size: 22px; }
 
     .type-row { justify-content: center; }
 
@@ -1110,7 +1139,12 @@ main {
         gap: 10px;
     }
 
-    .card-sprite-wrap { height: 110px; }
+    .card-sprite-wrap { min-height: 140px; height: 140px; }
+
+    .card-sprite-wrap img {
+        max-width: min(140px, 88%);
+        max-height: min(140px, 78%);
+    }
 
     .detail-header { padding: 20px 16px; }
     .detail-body { padding: 16px; }
