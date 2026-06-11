@@ -16,7 +16,7 @@ import 'package:animal_warfare/models/farm_slot.dart';
 import 'package:animal_warfare/models/battle_replay.dart';
 import 'package:animal_warfare/models/saved_map_state.dart';
 import 'package:animal_warfare/models/event_flags.dart';
-import 'package:animal_warfare/game/talisman_system.dart';
+import 'package:animal_warfare/game/time_service.dart';
 import 'package:animal_warfare/models/battle_card.dart';
 import 'package:animal_warfare/models/survival_effect.dart';
 import 'package:animal_warfare/models/weather.dart';
@@ -93,7 +93,9 @@ class UserState with ChangeNotifier {
       final fresh = await _authService.readUserFile(username);
       if (fresh == null) {
         if (kDebugMode) {
-          print('UserState: readUserFile returned null for $username, skipping update');
+          print(
+            'UserState: readUserFile returned null for $username, skipping update',
+          );
         }
         return;
       }
@@ -105,8 +107,10 @@ class UserState with ChangeNotifier {
       if (fresh.capturedOrganisms.isEmpty &&
           _currentUser!.capturedOrganisms.isNotEmpty) {
         if (kDebugMode) {
-          print('UserState: SAFETY — fresh data has 0 organisms but memory has '
-              '${_currentUser!.capturedOrganisms.length}. Merging from memory.');
+          print(
+            'UserState: SAFETY — fresh data has 0 organisms but memory has '
+            '${_currentUser!.capturedOrganisms.length}. Merging from memory.',
+          );
         }
         safeBase = fresh.copyWith(
           capturedOrganisms: _currentUser!.capturedOrganisms,
@@ -139,14 +143,22 @@ class UserState with ChangeNotifier {
   Future<void> _cleanExpiredEffects() async {
     if (_currentUser == null) return;
     final now = DateTime.now();
-    final hasExpiredLures = _currentUser!.activeEffects.any((e) => now.isAfter(e.expiresAt));
-    final hasExpiredSurvival = _currentUser!.activeSurvivalEffects.any((e) => now.isAfter(e.expiresAt));
-    
+    final hasExpiredLures = _currentUser!.activeEffects.any(
+      (e) => now.isAfter(e.expiresAt),
+    );
+    final hasExpiredSurvival = _currentUser!.activeSurvivalEffects.any(
+      (e) => now.isAfter(e.expiresAt),
+    );
+
     if (!hasExpiredLures && !hasExpiredSurvival) return;
 
     await _readModifyWrite((u) {
-      final filteredLures = u.activeEffects.where((e) => !now.isAfter(e.expiresAt)).toList();
-      final filteredSurvival = u.activeSurvivalEffects.where((e) => !now.isAfter(e.expiresAt)).toList();
+      final filteredLures = u.activeEffects
+          .where((e) => !now.isAfter(e.expiresAt))
+          .toList();
+      final filteredSurvival = u.activeSurvivalEffects
+          .where((e) => !now.isAfter(e.expiresAt))
+          .toList();
       return u.copyWith(
         activeEffects: filteredLures,
         activeSurvivalEffects: filteredSurvival,
@@ -201,29 +213,31 @@ class UserState with ChangeNotifier {
 
   Future<void> updateUserData(UserData updated) async {
     if (_currentUser == null) return;
-    // 🔴 CRITICAL FIX: Instead of blindly overwriting with 'updated', 
+    // 🔴 CRITICAL FIX: Instead of blindly overwriting with 'updated',
     // we use _readModifyWrite to ensure we don't lose data updated by other services (like achievements).
-    // However, since we don't know exactly what changed in 'updated', 
+    // However, since we don't know exactly what changed in 'updated',
     // this remains a bit risky if 'updated' was based on very stale data.
     // Prefer using more specific atomic update methods.
     await _readModifyWrite((u) => updated);
   }
 
   /// Checks and unlocks achievements atomically.
-  Future<List<String>> checkAndUnlockAchievements(AchievementService service) async {
+  Future<List<String>> checkAndUnlockAchievements(
+    AchievementService service,
+  ) async {
     if (_currentUser == null) return [];
     List<String> newlyUnlocked = [];
-    
+
     await _readModifyWrite((u) {
       newlyUnlocked = service.checkAndUnlockAchievements(u);
       if (newlyUnlocked.isEmpty) return u;
-      
+
       final completed = Set<String>.from(u.completedAchievements);
       completed.addAll(newlyUnlocked);
-      
+
       return u.copyWith(completedAchievements: completed.toList());
     });
-    
+
     return newlyUnlocked;
   }
 
@@ -234,7 +248,7 @@ class UserState with ChangeNotifier {
 
   Future<void> addCapturedOrganism(CapturedOrganism newCapture) async {
     if (_currentUser == null) return;
-    
+
     // Ensure capture metadata is recorded if it's a fresh capture (not restored from JSON)
     CapturedOrganism finalCapture = newCapture;
     if (finalCapture.capturedAtReal == null) {
@@ -250,7 +264,9 @@ class UserState with ChangeNotifier {
 
       final newIndex = list.length - 1;
       if (kDebugMode) {
-        print('UserState: ADD CAPTURE: ${finalCapture.name} (Index: $newIndex, Total: ${list.length})');
+        print(
+          'UserState: ADD CAPTURE: ${finalCapture.name} (Index: $newIndex, Total: ${list.length})',
+        );
       }
 
       // Auto-add to team if not full
@@ -307,10 +323,7 @@ class UserState with ChangeNotifier {
       // Modifying the organism in the list.
       captured[index].feed(food);
 
-      return u.copyWith(
-        inventory: inventory,
-        capturedOrganisms: captured,
-      );
+      return u.copyWith(inventory: inventory, capturedOrganisms: captured);
     });
   }
 
@@ -333,25 +346,24 @@ class UserState with ChangeNotifier {
 
       // Add active effect
       final activeEffects = List<PlayerActiveEffect>.from(u.activeEffects);
-      
+
       // Calculate expiration time
       final duration = Duration(minutes: lure.durationMinutes ?? 15);
       final expiresAt = DateTime.now().add(duration);
-      
-      activeEffects.add(PlayerActiveEffect(
-        id: lure.id,
-        name: lure.name,
-        targetType: lure.targetTaxonomyType ?? 'class',
-        targetValue: lure.targetTaxonomyValue ?? '',
-        multiplier: lure.lureMultiplier ?? 2.0,
-        expiresAt: expiresAt,
-      ));
+
+      activeEffects.add(
+        PlayerActiveEffect(
+          id: lure.id,
+          name: lure.name,
+          targetType: lure.targetTaxonomyType ?? 'class',
+          targetValue: lure.targetTaxonomyValue ?? '',
+          multiplier: lure.lureMultiplier ?? 2.0,
+          expiresAt: expiresAt,
+        ),
+      );
 
       success = true;
-      return u.copyWith(
-        inventory: inventory,
-        activeEffects: activeEffects,
-      );
+      return u.copyWith(inventory: inventory, activeEffects: activeEffects);
     });
 
     return success;
@@ -375,22 +387,26 @@ class UserState with ChangeNotifier {
       }
 
       // Add active effect
-      final activeSurvivalEffects = List<SurvivalEffect>.from(u.activeSurvivalEffects);
-      
+      final activeSurvivalEffects = List<SurvivalEffect>.from(
+        u.activeSurvivalEffects,
+      );
+
       // Calculate expiration time
       final duration = Duration(minutes: item.survivalDurationMinutes ?? 30);
       final expiresAt = DateTime.now().add(duration);
-      
-      activeSurvivalEffects.add(SurvivalEffect(
-        id: item.id,
-        name: item.name,
-        mitigatesSeverity: EnvironmentalSeverity.values.firstWhere(
-          (e) => e.name == item.mitigatesSeverity,
-          orElse: () => EnvironmentalSeverity.comfortable,
+
+      activeSurvivalEffects.add(
+        SurvivalEffect(
+          id: item.id,
+          name: item.name,
+          mitigatesSeverity: EnvironmentalSeverity.values.firstWhere(
+            (e) => e.name == item.mitigatesSeverity,
+            orElse: () => EnvironmentalSeverity.comfortable,
+          ),
+          damageReductionMultiplier: item.survivalDamageReduction ?? 1.0,
+          expiresAt: expiresAt,
         ),
-        damageReductionMultiplier: item.survivalDamageReduction ?? 1.0,
-        expiresAt: expiresAt,
-      ));
+      );
 
       success = true;
       return u.copyWith(
@@ -428,9 +444,7 @@ class UserState with ChangeNotifier {
       final discovered = Set<String>.from(u.discoveredOrganisms);
       discovered.add(species);
 
-      return u.copyWith(
-        discoveredOrganisms: discovered.toList(),
-      );
+      return u.copyWith(discoveredOrganisms: discovered.toList());
     });
   }
 
@@ -439,7 +453,9 @@ class UserState with ChangeNotifier {
     _currentUser = await _authService.getCurrentUser();
     _isInitialized = true;
     if (kDebugMode && _currentUser != null) {
-      debugPrint('UserState: loadCurrentUser — captured=${_currentUser!.capturedOrganisms.length}, team=${_currentUser!.battleTeam}');
+      debugPrint(
+        'UserState: loadCurrentUser — captured=${_currentUser!.capturedOrganisms.length}, team=${_currentUser!.battleTeam}',
+      );
     }
     notifyListeners();
   }
@@ -447,7 +463,9 @@ class UserState with ChangeNotifier {
   Future<void> handleSuccessfulAuth() async {
     _currentUser = await _authService.getCurrentUser();
     if (kDebugMode && _currentUser != null) {
-      debugPrint('UserState: handleSuccessfulAuth — captured=${_currentUser!.capturedOrganisms.length}, team=${_currentUser!.battleTeam}');
+      debugPrint(
+        'UserState: handleSuccessfulAuth — captured=${_currentUser!.capturedOrganisms.length}, team=${_currentUser!.battleTeam}',
+      );
     }
     notifyListeners();
   }
@@ -464,11 +482,13 @@ class UserState with ChangeNotifier {
 
     final severity = WeatherService().getEnvironmentalSeverity(biomeName);
     final weather = WeatherService().getCurrentWeather(biomeName);
-    
+
     // Severity penalty
-    if (severity == EnvironmentalSeverity.freezing || severity == EnvironmentalSeverity.scorching) {
+    if (severity == EnvironmentalSeverity.freezing ||
+        severity == EnvironmentalSeverity.scorching) {
       drain += 4; // Cost is 5
-    } else if (severity == EnvironmentalSeverity.cold || severity == EnvironmentalSeverity.hot) {
+    } else if (severity == EnvironmentalSeverity.cold ||
+        severity == EnvironmentalSeverity.hot) {
       drain += 2; // Cost is 3
     }
 
@@ -477,23 +497,29 @@ class UserState with ChangeNotifier {
 
     // Check inventory for passive items
     double passiveReduction = 0.0;
-    if (severity == EnvironmentalSeverity.freezing || severity == EnvironmentalSeverity.cold) {
-      if ((_currentUser!.inventory['thermal_coat'] ?? 0) > 0) passiveReduction = 0.5;
-    } else if (severity == EnvironmentalSeverity.scorching || severity == EnvironmentalSeverity.hot) {
-      if ((_currentUser!.inventory['cooling_vest'] ?? 0) > 0) passiveReduction = 0.5;
+    if (severity == EnvironmentalSeverity.freezing ||
+        severity == EnvironmentalSeverity.cold) {
+      if ((_currentUser!.inventory['thermal_coat'] ?? 0) > 0)
+        passiveReduction = 0.5;
+    } else if (severity == EnvironmentalSeverity.scorching ||
+        severity == EnvironmentalSeverity.hot) {
+      if ((_currentUser!.inventory['cooling_vest'] ?? 0) > 0)
+        passiveReduction = 0.5;
     }
 
     // Active effects (drinks)
     for (var effect in _currentUser!.activeSurvivalEffects) {
-      if (severity == EnvironmentalSeverity.freezing || severity == EnvironmentalSeverity.cold) {
-         if (effect.mitigatesSeverity == EnvironmentalSeverity.freezing) {
-             passiveReduction = 1.0; // 100% reduction of extra drain
-         }
+      if (severity == EnvironmentalSeverity.freezing ||
+          severity == EnvironmentalSeverity.cold) {
+        if (effect.mitigatesSeverity == EnvironmentalSeverity.freezing) {
+          passiveReduction = 1.0; // 100% reduction of extra drain
+        }
       }
-      if (severity == EnvironmentalSeverity.scorching || severity == EnvironmentalSeverity.hot) {
-         if (effect.mitigatesSeverity == EnvironmentalSeverity.scorching) {
-             passiveReduction = 1.0;
-         }
+      if (severity == EnvironmentalSeverity.scorching ||
+          severity == EnvironmentalSeverity.hot) {
+        if (effect.mitigatesSeverity == EnvironmentalSeverity.scorching) {
+          passiveReduction = 1.0;
+        }
       }
     }
 
@@ -515,7 +541,9 @@ class UserState with ChangeNotifier {
 
   Future<void> toggleUnitSystem() async {
     if (_currentUser == null) return;
-    final newSystem = _currentUser!.unitSystem == 'metric' ? 'imperial' : 'metric';
+    final newSystem = _currentUser!.unitSystem == 'metric'
+        ? 'imperial'
+        : 'metric';
     await _readModifyWrite((u) => u.copyWith(unitSystem: newSystem));
   }
 
@@ -626,7 +654,7 @@ class UserState with ChangeNotifier {
 
   Future<void> addLoot(String lootId, int quantity) async {
     if (_currentUser == null) return;
-    
+
     // Redirect cards if they accidentally come through addLoot
     if (BattleCard.findById(lootId) != null) {
       for (int i = 0; i < quantity; i++) {
@@ -765,11 +793,13 @@ class UserState with ChangeNotifier {
   /// Sets the last visited medical center spawn point.
   Future<void> setLastMedicalCenter(String mapId, int row, int col) async {
     if (_currentUser == null) return;
-    await _readModifyWrite((u) => u.copyWith(
-      lastMedicalCenterMapId: mapId,
-      lastMedicalCenterRow: row,
-      lastMedicalCenterCol: col,
-    ));
+    await _readModifyWrite(
+      (u) => u.copyWith(
+        lastMedicalCenterMapId: mapId,
+        lastMedicalCenterRow: row,
+        lastMedicalCenterCol: col,
+      ),
+    );
   }
 
   Future<bool> craftTalisman(
@@ -1855,9 +1885,9 @@ class UserState with ChangeNotifier {
   /// Toggles the Sickle tool state (on/off).
   Future<void> toggleSickle() async {
     if (_currentUser == null) return;
-    await _readModifyWrite((u) => u.copyWith(
-      eventFlags: u.eventFlags.toggleSickle(),
-    ));
+    await _readModifyWrite(
+      (u) => u.copyWith(eventFlags: u.eventFlags.toggleSickle()),
+    );
   }
 
   /// Updates or clears a persistent exploration encounter for a biome.
@@ -2257,45 +2287,45 @@ class UserState with ChangeNotifier {
 
   Future<void> setFlag(String flag) async {
     if (_currentUser == null) return;
-    await _readModifyWrite((u) => u.copyWith(
-      eventFlags: u.eventFlags.withFlag(flag),
-    ));
+    await _readModifyWrite(
+      (u) => u.copyWith(eventFlags: u.eventFlags.withFlag(flag)),
+    );
   }
 
   Future<void> markTrainerDefeated(String npcId) async {
     if (_currentUser == null) return;
-    await _readModifyWrite((u) => u.copyWith(
-      eventFlags: u.eventFlags.withTrainerDefeated(npcId),
-    ));
+    await _readModifyWrite(
+      (u) => u.copyWith(eventFlags: u.eventFlags.withTrainerDefeated(npcId)),
+    );
   }
 
   Future<void> markQuestCompleted(String questId) async {
     if (_currentUser == null) return;
-    await _readModifyWrite((u) => u.copyWith(
-      eventFlags: u.eventFlags.withQuestCompleted(questId),
-    ));
+    await _readModifyWrite(
+      (u) => u.copyWith(eventFlags: u.eventFlags.withQuestCompleted(questId)),
+    );
   }
 
   Future<void> markItemCollected(String itemId) async {
     if (_currentUser == null) return;
-    await _readModifyWrite((u) => u.copyWith(
-      eventFlags: u.eventFlags.withItemCollected(itemId),
-    ));
+    await _readModifyWrite(
+      (u) => u.copyWith(eventFlags: u.eventFlags.withItemCollected(itemId)),
+    );
   }
 
   Future<void> updateCurrentMapId(String mapId) async {
     if (_currentUser == null) return;
-    await _readModifyWrite((u) => u.copyWith(
-      eventFlags: u.eventFlags.copyWith(currentMapId: mapId),
-    ));
+    await _readModifyWrite(
+      (u) => u.copyWith(eventFlags: u.eventFlags.copyWith(currentMapId: mapId)),
+    );
   }
 
   Future<void> updateTileCooldown(String mapId, int row, int col) async {
     if (_currentUser == null) return;
     final key = '$mapId:$row:$col';
-    await _readModifyWrite((u) => u.copyWith(
-      eventFlags: u.eventFlags.withTileCooldown(key),
-    ));
+    await _readModifyWrite(
+      (u) => u.copyWith(eventFlags: u.eventFlags.withTileCooldown(key)),
+    );
   }
 
   bool isTileOnCooldown(String mapId, int row, int col) {
@@ -2308,9 +2338,9 @@ class UserState with ChangeNotifier {
     if (_currentUser == null) return;
     final key = '$mapId:$row:$col';
     final now = TimeService().currentInGameDateTime.millisecondsSinceEpoch;
-    await _readModifyWrite((u) => u.copyWith(
-      eventFlags: u.eventFlags.withCutGrass(key, now),
-    ));
+    await _readModifyWrite(
+      (u) => u.copyWith(eventFlags: u.eventFlags.withCutGrass(key, now)),
+    );
   }
 
   Future<void> clearExpiredGrass() async {
