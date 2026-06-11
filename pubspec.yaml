@@ -110,6 +110,8 @@ flutter:
     - assets/sprites/
     - assets/status_overlays/
     - assets/items/
+    - assets/cards/
+    - assets/cards.json
     - assets/shop_items.json
     - assets/farming.json
     - assets/achievements.json

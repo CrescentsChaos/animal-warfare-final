@@ -283,13 +283,14 @@ class _BattleScreenContentState extends State<BattleScreenContent>
       _animatingCardIsPlayer = isPlayer;
     });
     AudioService.instance.playSound('audio/effects/card_play.mp3');
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) {
-        setState(() {
-          _animatingCardId = null;
-        });
-      }
+  }
+
+  void _dismissCardAnimation() {
+    if (!mounted) return;
+    setState(() {
+      _animatingCardId = null;
     });
+    _battleManager?.cardAnimationCompleter?.complete();
   }
 
   // Gimmick animation state
@@ -1536,6 +1537,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                     key: ValueKey(_animatingCardId!),
                     cardId: _animatingCardId!,
                     isPlayer: _animatingCardIsPlayer,
+                    onDismissed: _dismissCardAnimation,
                   ),
                 if (battleManager.isCapturing)
                   CaptureNetOverlay(
@@ -3484,7 +3486,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                           ? 'Card Used'
                           : (battleManager.playerEquippedCard == null
                               ? 'No Card'
-                              : 'Play Card'),
+                              : (BattleCard.findById(battleManager.playerEquippedCard!)?.name.toUpperCase() ?? 'PLAY CARD')),
                       style: const TextStyle(
                         fontFamily: 'PressStart2P',
                         fontSize: 8.5,
@@ -7884,8 +7886,9 @@ class _TypewriterCursorState extends State<_TypewriterCursor>
 class _CardPlayOverlay extends StatefulWidget {
   final String cardId;
   final bool isPlayer;
+  final VoidCallback onDismissed;
 
-  const _CardPlayOverlay({Key? key, required this.cardId, required this.isPlayer}) : super(key: key);
+  const _CardPlayOverlay({Key? key, required this.cardId, required this.isPlayer, required this.onDismissed}) : super(key: key);
 
   @override
   State<_CardPlayOverlay> createState() => _CardPlayOverlayState();
@@ -7974,13 +7977,27 @@ class _CardPlayOverlayState extends State<_CardPlayOverlay> with TickerProviderS
 
     _shimmer = CurvedAnimation(parent: _shimmerController, curve: Curves.easeInOut);
 
-    _controller.forward();
+    // Animate to 0.85 (hold phase) and wait for tap
+    _controller.animateTo(0.85).then((_) {
+      if (mounted) _shimmerController.stop();
+    });
 
     Future.delayed(const Duration(milliseconds: 836), () {
-      if (mounted) _shimmerController.repeat();
+      if (mounted && !_isExiting) _shimmerController.repeat();
     });
-    Future.delayed(const Duration(milliseconds: 2960), () {
-      if (mounted) _shimmerController.stop();
+  }
+
+  bool _isExiting = false;
+
+  void _dismiss() {
+    if (_isExiting) return;
+    setState(() {
+      _isExiting = true;
+    });
+    // Start exit phase from wherever we are (or at least 0.85)
+    final double startVal = _controller.value > 0.85 ? _controller.value : 0.85;
+    _controller.forward(from: startVal).then((_) {
+      widget.onDismissed();
     });
   }
 

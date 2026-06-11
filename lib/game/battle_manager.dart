@@ -1452,10 +1452,15 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     return null;
   }
 
+  Completer<void>? cardAnimationCompleter;
+
   Future<void> _executeCard(String cardId, {required bool isPlayer}) async {
     final userTeam = isPlayer ? playerTeam : opponentTeam;
     final userName = isPlayer ? "You" : "The opponent";
     
+    // Trigger the UI animation callback
+    onCardPlayed?.call(cardId, isPlayer);
+
     // Fetch card details
     String cardName = cardId;
     if (cardId == 'gustave') cardName = 'Gustave';
@@ -1465,7 +1470,13 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     addToLog('$userName played the $cardName card!');
     notifyListeners();
-    if (!isTesting) await Future.delayed(const Duration(milliseconds: 2000));
+    
+    // Wait for the user to tap to dismiss the card overlay
+    if (!isTesting) {
+      cardAnimationCompleter = Completer<void>();
+      await cardAnimationCompleter!.future;
+      cardAnimationCompleter = null;
+    }
 
     if (cardId == 'gustave') {
       // Check for Nile Crocodile
