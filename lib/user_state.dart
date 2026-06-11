@@ -2391,6 +2391,14 @@ class UserState with ChangeNotifier {
     return success;
   }
 
+  Future<void> equipCard(String? cardId) async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) {
+      return u.copyWith(equippedCard: cardId);
+    });
+  }
+
+
   bool _unstuckRequested = false;
   bool get unstuckRequested => _unstuckRequested;
 

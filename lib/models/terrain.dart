@@ -21,7 +21,7 @@ extension TerrainExtension on Terrain {
       case Terrain.psychic:
         return 'assets/icon/psychic_terrain.png';
       case Terrain.ashenWaste:
-        return 'assets/icon/ashen_waste_terrain.png';
+        return 'assets/icon/ashen_waste.png';
       default:
         return '';
     }

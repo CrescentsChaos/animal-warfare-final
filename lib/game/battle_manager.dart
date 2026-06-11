@@ -21,6 +21,7 @@ import 'package:animal_warfare/services/weather_service.dart';
 import 'package:animal_warfare/game/ai_decision_engine.dart';
 import 'package:animal_warfare/game/player_history.dart';
 import 'package:animal_warfare/game/trainer_data.dart';
+import 'package:animal_warfare/models/battle_card.dart';
 
 // --- Enums ---
 enum BattleState {
@@ -247,6 +248,10 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   BattleState currentState = BattleState.intro;
   bool playerUsedCardThisBattle = false;
   bool opponentUsedCardThisBattle = false;
+  String? playerEquippedCard;
+  String? opponentEquippedCard;
+  Function(String cardId, bool isPlayer)? onCardPlayed;
+  
   bool isCapturing = false;
   int captureShakeCount = 0;
   String battleLog = ''; // Current/Latest message
@@ -439,6 +444,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     TeamArchetype? opponentArchetype,
     this.startAsleep = false,
     this.trainerInfo,
+    this.playerEquippedCard,
+    this.opponentEquippedCard,
     Random? random,
   }) : _random = random ?? Random(),
        playerTeam = (team?.isNotEmpty ?? false) ? team! : [initialPlayer],
@@ -448,6 +455,50 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     // Auto-generate trainer info for trainer battles if not provided
     if (isTrainerBattle && trainerInfo == null) {
       trainerInfo = TrainerDataLoader.generateRandom(biome: biomeName);
+    }
+    String? _getRandomValidCard(List<CapturedOrganism>? t, String? b, Random r) {
+      if (BattleCard.allCards.isEmpty) return null;
+      final safeT = t ?? [];
+      final valid = BattleCard.allCards.where((c) {
+        if (c.requiredOrganism != null && !safeT.any((o) => o.baseOrganism.name == c.requiredOrganism)) return false;
+        if (c.requiredFamily != null && !safeT.any((o) => o.baseOrganism.family == c.requiredFamily)) return false;
+        if (c.requiredBiomes.isNotEmpty && (b == null || !c.requiredBiomes.contains(b))) return false;
+        return true;
+      }).toList();
+      return valid.isNotEmpty ? valid[r.nextInt(valid.length)].id : null;
+    }
+
+    // Random battle logic: non-trainer, non-rogue battles get random cards for both
+    if (!isTrainerBattle && !isRogueMode) {
+      if (BattleCard.allCards.isNotEmpty) {
+        playerEquippedCard ??= _getRandomValidCard(this.playerTeam, biomeName, _random);
+        opponentEquippedCard ??= _getRandomValidCard(this.opponentTeam, biomeName, _random);
+      } else {
+        // Cards not yet loaded — load them and assign once available
+        BattleCard.loadCards().then((_) {
+          if (BattleCard.allCards.isNotEmpty) {
+            playerEquippedCard ??= _getRandomValidCard(this.playerTeam, biomeName, _random);
+            opponentEquippedCard ??= _getRandomValidCard(this.opponentTeam, biomeName, _random);
+            notifyListeners();
+          }
+        });
+      }
+    }
+    
+    // Give AI (and player) a random valid card if trainer battle
+    if (isTrainerBattle) {
+      if (BattleCard.allCards.isNotEmpty) {
+        opponentEquippedCard ??= _getRandomValidCard(this.opponentTeam, biomeName, _random);
+        playerEquippedCard ??= _getRandomValidCard(this.playerTeam, biomeName, _random);
+      } else {
+        BattleCard.loadCards().then((_) {
+          if (BattleCard.allCards.isNotEmpty) {
+            opponentEquippedCard ??= _getRandomValidCard(this.opponentTeam, biomeName, _random);
+            playerEquippedCard ??= _getRandomValidCard(this.playerTeam, biomeName, _random);
+            notifyListeners();
+          }
+        });
+      }
     }
     if (opponentArchetype != null) {
       this.opponentArchetype = opponentArchetype;
@@ -729,14 +780,14 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       // Sync with WeatherService for consistency across biome/battle
       final biomeWeather = WeatherService().getCurrentWeather(biomeName);
       if (biomeWeather != Weather.none && biomeWeather != Weather.clear) {
-        _setWeather(biomeWeather, 99); // Long duration for biome weather
+        _setWeather(biomeWeather, 5); // Default duration instead of infinite
       }
 
       final biomeTerrain = BiomeWeatherTable.getDefaultTerrainForBiome(
         biomeName,
       );
       if (biomeTerrain != Terrain.none) {
-        _setTerrain(biomeTerrain, 99);
+        _setTerrain(biomeTerrain, 5);
       }
     }
 
@@ -759,6 +810,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     // 2. Speed Check
     // Removed "Opponent is faster" notification as per user request.
   }
+
 
   Future<void> _checkEntranceAbility(
     BattleOrganism user,
@@ -6642,7 +6694,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             t == ElementalType.rock,
       );
       if (!hasOvercoat && !isImmune) {
-        final damage = (target.maxHealth * 0.06).round().clamp(1, 9999);
+        final damage = (target.maxHealth * 0.03125).round().clamp(1, 9999);
         target.health -= damage;
         target.health = target.health.clamp(0, target.maxHealth);
         addToLog(
@@ -6656,7 +6708,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       bool hasOvercoat = target.abilities.any((ab) => ab.name == 'Overcoat');
       bool isCryo = target.types.any((t) => t == ElementalType.cryo);
       if (!hasOvercoat && !isCryo) {
-        final damage = (target.maxHealth * 0.0625).round().clamp(1, 9999);
+        final damage = (target.maxHealth * 0.03125).round().clamp(1, 9999);
         target.health -= damage;
         target.health = target.health.clamp(0, target.maxHealth);
         addToLog(
@@ -6676,7 +6728,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
             t == ElementalType.electric,
       );
       if (!hasOvercoat && !isImmune) {
-        final damage = (target.maxHealth * 0.083).round().clamp(1, 9999);
+        final damage = (target.maxHealth * 0.04).round().clamp(1, 9999);
         target.health -= damage;
         target.health = target.health.clamp(0, target.maxHealth);
         addToLog(
@@ -6688,7 +6740,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     } else if (currentWeather.weather == Weather.tornado) {
       bool hasOvercoat = target.abilities.any((ab) => ab.name == 'Overcoat');
       if (!hasOvercoat) {
-        final damage = (target.maxHealth * 0.125).round().clamp(1, 9999);
+        final damage = (target.maxHealth * 0.0625).round().clamp(1, 9999);
         target.health -= damage;
         target.health = target.health.clamp(0, target.maxHealth);
         addToLog(
@@ -6700,7 +6752,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     } else if (currentWeather.weather == Weather.tsunami) {
       bool isAquatic = target.types.any((t) => t == ElementalType.aquatic);
       if (!isAquatic) {
-        final damage = (target.maxHealth * 0.125).round().clamp(1, 9999);
+        final damage = (target.maxHealth * 0.0625).round().clamp(1, 9999);
         target.health -= damage;
         target.health = target.health.clamp(0, target.maxHealth);
         addToLog(
@@ -6712,7 +6764,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     } else if (currentWeather.weather == Weather.earthquake) {
       bool isFlying = target.types.any((t) => t == ElementalType.flying);
       if (!isFlying) {
-        final damage = (target.maxHealth * 0.125).round().clamp(1, 9999);
+        final damage = (target.maxHealth * 0.0625).round().clamp(1, 9999);
         target.health -= damage;
         target.health = target.health.clamp(0, target.maxHealth);
         addToLog(
@@ -6724,7 +6776,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     } else if (currentWeather.weather == Weather.volcanoEruption) {
       bool isBlaze = target.types.any((t) => t == ElementalType.blaze);
       if (!isBlaze) {
-        final damage = (target.maxHealth * 0.125).round().clamp(1, 9999);
+        final damage = (target.maxHealth * 0.0625).round().clamp(1, 9999);
         target.health -= damage;
         target.health = target.health.clamp(0, target.maxHealth);
         addToLog(
@@ -6736,7 +6788,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     } else if (currentWeather.weather == Weather.blizzard) {
       bool isCryo = target.types.any((t) => t == ElementalType.cryo);
       if (!isCryo) {
-        final damage = (target.maxHealth * 0.083).round().clamp(1, 9999);
+        final damage = (target.maxHealth * 0.04).round().clamp(1, 9999);
         target.health -= damage;
         target.health = target.health.clamp(0, target.maxHealth);
         addToLog(

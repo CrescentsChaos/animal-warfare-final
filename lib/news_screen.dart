@@ -52,17 +52,18 @@ class _NewsScreenState extends State<NewsScreen> with TickerProviderStateMixin {
     if (_selectedFilter != 'ALL') {
       filtered = filtered.where((a) => a.category == _selectedFilter).toList();
     }
-    if (_searchQuery.isNotEmpty) {
-      final q = _searchQuery.toLowerCase();
-      filtered = filtered
-          .where(
-            (a) =>
-                a.headline.toLowerCase().contains(q) ||
-                (a.organismName?.toLowerCase().contains(q) ?? false) ||
-                a.channel.toLowerCase().contains(q),
-          )
-          .toList();
-    }
+      if (_searchQuery.isNotEmpty) {
+        final q = _searchQuery.toLowerCase();
+        filtered = filtered
+            .where(
+              (a) =>
+                  a.headline.toLowerCase().contains(q) ||
+                  (a.organismName?.toLowerCase().contains(q) ?? false) ||
+                  a.channel.toLowerCase().contains(q) ||
+                  a.author.toLowerCase().contains(q),
+            )
+            .toList();
+      }
     return filtered;
   }
 

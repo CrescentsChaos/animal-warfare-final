@@ -805,7 +805,7 @@ class BattleSpriteState extends State<BattleSprite>
                 animalStack,
               if (showTrainer)
                 Positioned(
-                  bottom: -size * 0.05 + 10.0,
+                  bottom: -size * 0.05 + 30.0,
                   child: Transform.translate(
                     offset: Offset(_shouldHideAnimal ? 0 : size * 0.28, 0),
                     child: Image.asset(

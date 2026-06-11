@@ -8,6 +8,7 @@ import 'package:animal_warfare/models/loot_item.dart';
 import 'package:animal_warfare/models/talisman.dart';
 import 'package:animal_warfare/models/recipe.dart';
 import 'package:animal_warfare/models/captured_organism.dart';
+import 'package:animal_warfare/models/battle_card.dart';
 import 'package:animal_warfare/theme.dart';
 import 'package:animal_warfare/widgets/item_icon.dart';
 
@@ -25,7 +26,7 @@ class _CraftingScreenState extends State<CraftingScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
   }
 
   @override
@@ -96,13 +97,14 @@ class _CraftingScreenState extends State<CraftingScreen>
                   text: 'MATERIALS',
                 ),
                 Tab(icon: Icon(Icons.shield_outlined, size: 18), text: 'EQUIP'),
+                Tab(icon: Icon(Icons.style, size: 18), text: 'CARDS'),
               ],
             ),
           ),
         ],
         body: TabBarView(
           controller: _tabController,
-          children: const [_ForgeTab(), _MaterialsTab(), _EquipTab()],
+          children: const [_ForgeTab(), _MaterialsTab(), _EquipTab(), _CardsTab()],
         ),
       ),
     );
@@ -1432,3 +1434,320 @@ Widget _emptyState(String message) {
     ),
   );
 }
+
+// ─── CARDS TAB ────────────────────────────────────────────────────────────────
+
+class _CardsTab extends StatefulWidget {
+  const _CardsTab();
+
+  @override
+  State<_CardsTab> createState() => _CardsTabState();
+}
+
+class _CardsTabState extends State<_CardsTab> {
+  String _search = '';
+  final TextEditingController _ctrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final userState = Provider.of<UserState>(context);
+    final currentUser = userState.currentUser;
+    if (currentUser == null) return const SizedBox.shrink();
+
+    final allCards = BattleCard.allCards;
+    final unlockedIds = currentUser.unlockedCards;
+    final equippedId = currentUser.equippedCard;
+    final fragments = currentUser.cardFragments;
+
+    final displayedCards = allCards.where((c) {
+      if (_search.isEmpty) return true;
+      return c.name.toLowerCase().contains(_search) ||
+          c.description.toLowerCase().contains(_search);
+    }).toList();
+
+    // Sort: Equipped first, then unlocked, then locked
+    displayedCards.sort((a, b) {
+      if (a.id == equippedId) return -1;
+      if (b.id == equippedId) return 1;
+      final aUnlocked = unlockedIds.contains(a.id) ? 0 : 1;
+      final bUnlocked = unlockedIds.contains(b.id) ? 0 : 1;
+      if (aUnlocked != bUnlocked) return aUnlocked.compareTo(bUnlocked);
+      return a.name.compareTo(b.name);
+    });
+
+    return Column(
+      children: [
+        // Top Bar: Search & Fragments
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _ctrl,
+                  onChanged: (v) => setState(() => _search = v.toLowerCase()),
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  decoration: InputDecoration(
+                    hintText: 'Search cards...',
+                    hintStyle: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.3),
+                      fontSize: 12,
+                    ),
+                    prefixIcon: const Icon(
+                      Icons.search,
+                      color: Colors.white38,
+                      size: 18,
+                    ),
+                    filled: true,
+                    fillColor: Colors.white.withValues(alpha: 0.06),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.purpleAccent.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.purpleAccent.withValues(alpha: 0.3)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.auto_awesome, color: Colors.purpleAccent, size: 16),
+                    const SizedBox(width: 6),
+                    Text(
+                      fragments.toString(),
+                      style: const TextStyle(
+                        fontFamily: 'PressStart2P',
+                        fontSize: 10,
+                        color: Colors.purpleAccent,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        // Card Grid
+        Expanded(
+          child: displayedCards.isEmpty
+              ? _emptyState('No cards found')
+              : GridView.builder(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 0.7,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                  ),
+                  itemCount: displayedCards.length,
+                  itemBuilder: (ctx, i) {
+                    final card = displayedCards[i];
+                    final isUnlocked = unlockedIds.contains(card.id);
+                    final isEquipped = card.id == equippedId;
+                    return _CardItem(
+                      card: card,
+                      isUnlocked: isUnlocked,
+                      isEquipped: isEquipped,
+                      userState: userState,
+                      fragments: fragments,
+                    );
+                  },
+                ),
+        ),
+      ],
+    );
+  }
+}
+
+class _CardItem extends StatelessWidget {
+  final BattleCard card;
+  final bool isUnlocked;
+  final bool isEquipped;
+  final UserState userState;
+  final int fragments;
+
+  const _CardItem({
+    required this.card,
+    required this.isUnlocked,
+    required this.isEquipped,
+    required this.userState,
+    required this.fragments,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const costToUnlock = 5;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF14142A),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isEquipped
+              ? Colors.cyanAccent
+              : isUnlocked
+                  ? Colors.white24
+                  : Colors.white10,
+          width: isEquipped ? 2 : 1,
+        ),
+        boxShadow: isEquipped
+            ? [
+                BoxShadow(
+                  color: Colors.cyanAccent.withValues(alpha: 0.3),
+                  blurRadius: 12,
+                  spreadRadius: 1,
+                )
+              ]
+            : null,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Image Area
+          Expanded(
+            flex: 3,
+            child: ClipRRect(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Image.asset(
+                    card.imagePath,
+                    fit: BoxFit.cover,
+                    color: isUnlocked ? null : Colors.black87,
+                    colorBlendMode: isUnlocked ? null : BlendMode.darken,
+                    errorBuilder: (_, __, ___) => Container(color: Colors.grey.shade900),
+                  ),
+                  if (!isUnlocked)
+                    const Center(
+                      child: Icon(Icons.lock_outline, color: Colors.white38, size: 32),
+                    ),
+                ],
+              ),
+            ),
+          ),
+          // Info Area
+          Expanded(
+            flex: 2,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    card.name,
+                    style: TextStyle(
+                      fontFamily: 'PressStart2P',
+                      fontSize: 7,
+                      color: isUnlocked ? Colors.white : Colors.white54,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  // Action Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 28,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (isUnlocked) {
+                          if (!isEquipped) {
+                            userState.equipCard(card.id);
+                          } else {
+                            userState.equipCard(null); // Unequip
+                          }
+                        } else {
+                          // Try to buy
+                          if (fragments >= costToUnlock) {
+                            showDialog(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                backgroundColor: const Color(0xFF14142A),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  side: const BorderSide(color: Colors.white10),
+                                ),
+                                title: const Text(
+                                  'UNLOCK CARD',
+                                  style: TextStyle(fontFamily: 'PressStart2P', fontSize: 10, color: Colors.white),
+                                ),
+                                content: Text(
+                                  'Unlock ${card.name} for $costToUnlock fragments?',
+                                  style: const TextStyle(color: Colors.white70),
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(ctx),
+                                    child: const Text('CANCEL'),
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () async {
+                                      Navigator.pop(ctx);
+                                      final success = await userState.buyCardWithFragments(card.id, costToUnlock);
+                                      if (success && context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(content: Text('Unlocked ${card.name}!')),
+                                        );
+                                      }
+                                    },
+                                    style: ElevatedButton.styleFrom(backgroundColor: Colors.purpleAccent),
+                                    child: const Text('UNLOCK', style: TextStyle(fontWeight: FontWeight.bold)),
+                                  ),
+                                ],
+                              ),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Not enough card fragments!')),
+                            );
+                          }
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isEquipped
+                            ? Colors.cyanAccent.withValues(alpha: 0.2)
+                            : isUnlocked
+                                ? Colors.white12
+                                : Colors.purpleAccent.withValues(alpha: 0.2),
+                        foregroundColor: isEquipped
+                            ? Colors.cyanAccent
+                            : isUnlocked
+                                ? Colors.white
+                                : Colors.purpleAccent,
+                        padding: EdgeInsets.zero,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                      ),
+                      child: Text(
+                        isEquipped
+                            ? 'EQUIPPED'
+                            : isUnlocked
+                                ? 'EQUIP'
+                                : '$costToUnlock FRAGS',
+                        style: const TextStyle(fontFamily: 'PressStart2P', fontSize: 6),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+

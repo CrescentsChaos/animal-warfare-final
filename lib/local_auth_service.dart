@@ -121,6 +121,9 @@ class UserData {
   /// Unlocked battle cards (by ID)
   final List<String> unlockedCards;
 
+  /// The currently equipped card (by ID), only one allowed
+  final String? equippedCard;
+
   /// Currency obtained from duplicate cards
   final int cardFragments;
 
@@ -175,6 +178,7 @@ class UserData {
     List<PlayerActiveEffect>? activeEffects,
     List<SurvivalEffect>? activeSurvivalEffects,
     List<String>? unlockedCards,
+    this.equippedCard,
     this.cardFragments = 0,
   }) : quizStats = quizStats ?? {},
        discoveredOrganisms = discoveredOrganisms ?? [],
@@ -254,6 +258,7 @@ class UserData {
     List<PlayerActiveEffect>? activeEffects,
     List<SurvivalEffect>? activeSurvivalEffects,
     List<String>? unlockedCards,
+    String? equippedCard,
     int? cardFragments,
   }) {
     return UserData(
@@ -313,6 +318,7 @@ class UserData {
       activeEffects: activeEffects ?? this.activeEffects,
       activeSurvivalEffects: activeSurvivalEffects ?? this.activeSurvivalEffects,
       unlockedCards: unlockedCards ?? this.unlockedCards,
+      equippedCard: equippedCard ?? this.equippedCard,
       cardFragments: cardFragments ?? this.cardFragments,
     );
   }
@@ -436,6 +442,7 @@ class UserData {
     'activeEffects': activeEffects.map((e) => e.toJson()).toList(),
     'activeSurvivalEffects': activeSurvivalEffects.map((e) => e.toJson()).toList(),
     'unlockedCards': unlockedCards,
+    'equippedCard': equippedCard,
     'cardFragments': cardFragments,
   };
 
@@ -597,15 +604,20 @@ class UserData {
       ignoreBiomeRequirements: json['ignoreBiomeRequirements'] as bool? ?? false,
       avatarFrame: json['avatarFrame'] as String? ?? '',
       profileBackground: json['profileBackground'] as String? ?? '',
-      unlockedFrames: (json['unlockedFrames'] as List<dynamic>?)?.map((e) => e as String).toList() ?? [],
-      unlockedBackgrounds: (json['unlockedBackgrounds'] as List<dynamic>?)?.map((e) => e as String).toList() ?? [],
+      unlockedFrames:
+          (json['unlockedFrames'] as List<dynamic>?)?.cast<String>(),
+      unlockedBackgrounds:
+          (json['unlockedBackgrounds'] as List<dynamic>?)?.cast<String>(),
       activeEffects: (json['activeEffects'] as List<dynamic>?)
           ?.map((e) => PlayerActiveEffect.fromJson(e as Map<String, dynamic>))
           .toList() ?? [],
       activeSurvivalEffects: (json['activeSurvivalEffects'] as List<dynamic>?)
           ?.map((e) => SurvivalEffect.fromJson(e as Map<String, dynamic>))
           .toList() ?? [],
-      unlockedCards: (json['unlockedCards'] as List<dynamic>?)?.map((e) => e as String).toList() ?? [],
+      unlockedCards: (json['unlockedCards'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ?? [],
+      equippedCard: json['equippedCard'] as String?,
       cardFragments: (json['cardFragments'] as num?)?.toInt() ?? 0,
     );
   }

@@ -9620,6 +9620,210 @@
       "body": "Every {name} is different. Some are bold, some are shy. This {animal_class} from the {habitat} has a {rarity} of character you don't always see in reptiles. Getting to know your pet's {power} PWR is the best part of the job!",
       "category": "TAXONOMY",
       "author": "Clint's Reptiles"
+    },
+    {
+      "headline": "Classifying the {name}: {taxonomy_blurb}",
+      "body": "Where does {name} ({scientific_name}) sit in the tree of life? Taxonomically, it belongs to {taxonomy_blurb}. This {size_class} {animal_class} is a {rarity} example of evolutionary success within its lineage.",
+      "category": "TAXONOMY"
+    },
+    {
+      "headline": "Order {order}: The World the {name} Rules",
+      "body": "Every member of Order {order} shares key traits, but {name} takes them furthest. With a {bst} BST and a {diet} diet, this {size_class} {animal_class} is the flagship of its order in the {habitat}.",
+      "category": "TAXONOMY"
+    },
+    {
+      "headline": "Family {family}: Unity in Diversity",
+      "body": "The {family} family is extraordinarily diverse. Yet {name} stands out — a {rarity}, {size_class} {animal_class} that has perfected {diet} feeding in the {habitat}. Its {speed} SPD and {defense} DEF make it a cut above its relatives.",
+      "category": "TAXONOMY"
+    },
+    {
+      "headline": "Subfamily {subfamily}: A Closer Look",
+      "body": "Within Family {family}, the {subfamily} subfamily contains some of the most specialized animals. {name} ({scientific_name}) is a prime example: {size_class}, {activity_label}, and perfectly adapted to {habitat}.",
+      "category": "TAXONOMY"
+    },
+    {
+      "headline": "How Far Apart Are {name} and {name2}?",
+      "body": "{name} belongs to {taxonomy_blurb}, while {name2} hails from Order {org2_order}, Family {org2_family}. Despite sharing the {habitat}, they are surprisingly distant relatives. Their convergent traits — both {diet} feeders — hint at powerful evolutionary pressures.",
+      "category": "TAXONOMY",
+      "type": "comparison"
+    },
+    {
+      "headline": "The {name}: {size_class} but Mighty",
+      "body": "Don't let the {size_m} frame fool you. {name} ({scientific_name}) packs {attack} ATK and {power} PWR into a {size_class} body. This {taxonomy_blurb} specialist is proof that size is not the only measure of power.",
+      "category": "TAXONOMY"
+    },
+    {
+      "headline": "The {activity_label} Lifestyle of {name}",
+      "body": "Unlike many of its relatives in {family}, {name} is strictly {activity_label}. This adaptation to the {habitat}'s {active_time} conditions has sharpened its {speed} SPD and refined its {diet} hunting strategy over millennia.",
+      "category": "TAXONOMY"
+    },
+    {
+      "headline": "Scientific Name Deep-Dive: {scientific_name}",
+      "body": "The binomial {scientific_name} tells a story. Taxonomically placed in {taxonomy_blurb}, this {size_class} {animal_class} is a landmark member of its family. Its {rarity} status within {habitat} makes every encounter a scientific privilege.",
+      "category": "SCIENCE"
+    },
+    {
+      "headline": "Order {order}: An Evolutionary Timeline",
+      "body": "The Order {order} has been refining its members for millions of years. Today, {name} represents the apex of this journey: a {bst} BST organism with {types} typing and a {diet} feeding strategy honed in the {habitat}.",
+      "category": "SCIENCE"
+    },
+    {
+      "headline": "Convergent Evolution: {name} vs {name2}",
+      "body": "{name} (Order {order}, Family {family}) and {name2} (Order {org2_order}, Family {org2_family}) evolved similar {diet} strategies completely independently. This case of convergent evolution in {habitat} is a textbook example for biology students everywhere.",
+      "category": "SCIENCE",
+      "type": "comparison"
+    },
+    {
+      "headline": "Phylogeny of the {name}: A Tangled Web",
+      "body": "Placing {name} ({scientific_name}) in the tree of life isn't easy. While {taxonomy_blurb} is its current classification, recent genomic data suggests its Order {order} may be paraphyletic. The scientific debate rages on.",
+      "category": "SCIENCE"
+    },
+    {
+      "headline": "Morphological Markers of {family}",
+      "body": "Every member of Family {family} shares a unique skeletal geometry that {name} expresses to the extreme. Its {size_m} frame and {weight_kg} body mass represent the upper limit of what {taxonomy_blurb} can produce.",
+      "category": "SCIENCE"
+    },
+    {
+      "headline": "The {name} and the Ecology of Order {order}",
+      "body": "Members of Order {order} fill many ecological niches, but {name} is particularly dominant in {habitat}. As a {activity_label} {diet} specialist, it shapes the food web in ways scientists are only beginning to understand.",
+      "category": "ECOLOGY"
+    },
+    {
+      "headline": "Family {family} and the {habitat} Balance",
+      "body": "When a family like {family} has a flagship predator like {name}, the whole ecosystem reacts. At {size_m} and {weight_kg}, this {activity_label} organism is both the keystone and the cornerstone of its {habitat} community.",
+      "category": "ECOLOGY"
+    },
+    {
+      "headline": "Niche Partitioning: {name} and Its Order {order} Relatives",
+      "body": "{name} ({scientific_name}) avoids competing with its Order {order} relatives by occupying a specific niche in {habitat}. Its {size_class} body and {diet} diet perfectly distinguish it from the pack.",
+      "category": "ECOLOGY"
+    },
+    {
+      "headline": "The {name}: {activity_label} Predator of the {habitat}",
+      "body": "Researchers tracking {name} through the {habitat} at {active_time} have documented extraordinary behavior. As a {activity_label} member of {taxonomy_blurb}, it uses its {speed} SPD to overcome even larger prey.",
+      "category": "ECOLOGY"
+    },
+    {
+      "headline": "Conservation Alert: Family {family} Under Threat",
+      "body": "With global habitat loss accelerating, the entire Family {family} — including its {rarity} flagship {name} — faces a precarious future. This {size_class} {activity_label} {animal_class} may disappear from the {habitat} within a generation.",
+      "category": "CONSERVATION"
+    },
+    {
+      "headline": "Protecting Order {order}: The Case for {name}",
+      "body": "{name} ({scientific_name}) serves as an umbrella species for Order {order}. Protecting this {rarity}, {size_class} {animal_class}'s {habitat} safeguards dozens of related species that share its Family {family} territory.",
+      "category": "CONSERVATION"
+    },
+    {
+      "headline": "The Last of Family {family}? Scientists Warn of Collapse",
+      "body": "If populations of {name} continue to decline, it may drag entire branches of Family {family} with it. This {activity_label} {diet} specialist from {habitat} is classified as {rarity}, and time is running out.",
+      "category": "CONSERVATION"
+    },
+    {
+      "headline": "{name}: A Profile in Taxonomy",
+      "body": "Class: {animal_class}. Order: {order}. Family: {family}. Subfamily: {subfamily}. Scientific Name: {scientific_name}. This {rarity}, {size_class} organism from {habitat} is a masterpiece of biological classification. Meet the {name}.",
+      "category": "PROFILE"
+    },
+    {
+      "headline": "Full Species Sheet: {name} ({scientific_name})",
+      "body": "Taxonomic rank: {taxonomy_blurb}. Weight: {weight_kg}. Length: {size_m}. Diet: {diet}. Active: {activity_label}. Habitat: {habitat}. BST: {bst}. Rarity: {rarity}. The {name} is a complete specimen in every sense.",
+      "category": "PROFILE"
+    },
+    {
+      "headline": "Meet the {name}: {size_class} {animal_class} of the {habitat}",
+      "body": "Belonging to {taxonomy_blurb}, the {name} is a {size_class}, {activity_label} {animal_class} with a scientific name that speaks volumes: {scientific_name}. With {bst} BST and a {diet} lifestyle, it is one of nature's finest designs.",
+      "category": "PROFILE"
+    },
+    {
+      "headline": "Size Matters: Comparing {name} and {name2}",
+      "body": "{name} measures {size_m} and weighs {weight_kg} — placing it firmly in the {size_class} category. By comparison, {name2} from Order {org2_order} occupies a very different niche. Size is just one dimension of complexity.",
+      "category": "STATISTICS",
+      "type": "comparison"
+    },
+    {
+      "headline": "BST Breakdown: {name} vs {name2} — Family vs Family",
+      "body": "{name} (Family {family}, BST {bst}) faces off against {name2} (Family {org2_family}, BST {bst2}). The numbers are close, but the taxonomy tells a deeper story about which evolutionary lineage has the edge in {habitat}.",
+      "category": "STATISTICS",
+      "type": "comparison"
+    },
+    {
+      "headline": "Taxonomic Richness in {habitat}: By the Numbers",
+      "body": "The {habitat} biome hosts representatives from Order {order} — including the {rarity} {name} — alongside members of Order {org2_order} like {name2}. This taxonomic diversity is what makes {habitat} one of the most complex ecosystems studied.",
+      "category": "STATISTICS"
+    },
+    {
+      "headline": "Extinct Lineage: Order {order} in the Fossil Record",
+      "body": "Long before {name} ({scientific_name}) roamed the {habitat}, its Order {order} ancestors left their mark in the fossil record. This {activity_label} {animal_class} lineage has endured mass extinctions that wiped out far mightier creatures.",
+      "category": "PALEONTOLOGY"
+    },
+    {
+      "headline": "Ancestral Forms of Family {family}",
+      "body": "The fossil ancestors of Family {family} were dramatically different from {name}. {size_class} where its ancestors were enormous, {activity_label} where they were solitary hibernators — evolution is rarely predictable.",
+      "category": "PALEONTOLOGY"
+    },
+    {
+      "headline": "When Order {order} Ruled the Earth",
+      "body": "Millions of years ago, Order {order} was the dominant life form across the ancient {habitat} equivalent. Today's {name} ({scientific_name}) is a shadow of those giants — but a perfect one, optimized to the modern world.",
+      "category": "PALEONTOLOGY"
+    },
+    {
+      "headline": "Field Notes: {name} Spotted at {active_time}",
+      "body": "Our field team confirmed a sighting of {name} ({scientific_name}) during {active_time} hours in {habitat}. This {activity_label} member of {taxonomy_blurb} was actively {v} near {spawn_tiles}. A rare and invaluable observation.",
+      "category": "FIELD STING"
+    },
+    {
+      "headline": "Night Watch: Documenting the {activity_label} {name}",
+      "body": "Armed with thermal cameras, our crew tracked {name} through the {habitat} during peak {active_time} activity. The {size_m}, {size_class} {animal_class} from {taxonomy_blurb} was {v} near {spawn_tiles} with precision.",
+      "category": "FIELD STING"
+    },
+    {
+      "headline": "Battle Tier: Where Does Order {order} Rank?",
+      "body": "Order {order} produces some formidable fighters, but {name} is the standout. With {attack} ATK, {power} PWR, and a {tier}-tier BST of {bst}, this {size_class} {animal_class} dominates its Family {family} in combat metrics.",
+      "category": "BATTLE META"
+    },
+    {
+      "headline": "Family {family}: Best and Worst Meta Picks",
+      "body": "Family {family} has produced some iconic fighters, but the crown goes to {name} ({scientific_name}). {tier}-tier, {bst} BST, and {types} typing. Its Order {order} rivals are simply outmatched in the current meta.",
+      "category": "BATTLE META"
+    },
+    {
+      "headline": "The {order} Order Tier List: Where Does {name} Land?",
+      "body": "We ranked every fighter from Order {order}. {name} comfortably sits at {tier}-tier thanks to its {bst} BST and devastating {moves}. Its {diet} lifestyle and {size_class} build give it unmatched adaptability on the battlefield.",
+      "category": "TIER LIST"
+    },
+    {
+      "headline": "Family {family} Tier List: The Definitive Ranking",
+      "body": "Within Family {family}, {name} reigns supreme. Its {bst} BST, {types} typing, and signature move {moves} place it firmly in the {tier}-tier. Other {family} members have higher speed, but none match {name}'s versatility.",
+      "category": "TIER LIST"
+    },
+    {
+      "headline": "{name}: Survival Guide for {taxonomy_blurb}",
+      "body": "If you encounter a {name} in the {habitat}, remember: this {size_class}, {activity_label} member of {taxonomy_blurb} is a {diet} specialist with {attack} ATK. Keep your distance, move slowly, and never interrupt it while {v}.",
+      "category": "SURVIVAL GUIDE"
+    },
+    {
+      "headline": "Navigating {habitat} Where {name} Roams",
+      "body": "The {name} ({scientific_name}) is a {size_class} but formidable presence in {habitat}. As a member of Order {order}, it shares territory-marking instincts with its relatives. Knowing its {activity_label} schedule is your best survival tool.",
+      "category": "SURVIVAL GUIDE"
+    },
+    {
+      "headline": "Wildlife Doc: The Story of {name} and Its Kin",
+      "body": "From the origins of Order {order} to the rise of Family {family}, the story of {name} spans millions of years. This {rarity}, {size_class}, {activity_label} {animal_class} of {habitat} is the living embodiment of that ancient saga.",
+      "category": "WILDLIFE DOC"
+    },
+    {
+      "headline": "Blood and Taxonomy: {name}'s Family Tree",
+      "body": "The evolutionary lineage of {name} ({scientific_name}) is a story of survival. {taxonomy_blurb} — a grouping defined by shared ancestry and common features. Watch as the {size_class} {animal_class} navigates the {habitat} where its ancestors thrived.",
+      "category": "WILDLIFE DOC"
+    },
+    {
+      "headline": "Opinion: Why the {name}'s Taxonomy Is More Exciting Than Its Stats",
+      "body": "Everyone talks about {name}'s {bst} BST and {types} typing. But nobody talks about {taxonomy_blurb}. The evolutionary story of Order {order} and Family {family} is richer than any stat sheet. This {rarity} {animal_class} deserves better journalism.",
+      "category": "OPINION"
+    },
+    {
+      "headline": "Controversial Take: Family {family} Is the Most Underrated Lineage",
+      "body": "Everyone obsesses over the {name}'s {attack} ATK, but the real story is Family {family}. This {activity_label}, {diet} lineage from the {habitat} has silently outlasted every mass extinction. Order {order} doesn't get nearly enough credit.",
+      "category": "OPINION"
     }
   ]
 }

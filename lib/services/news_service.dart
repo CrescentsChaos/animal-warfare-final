@@ -795,6 +795,43 @@ class NewsService {
       timeOfDay = "Dusk";
     }
 
+    // ── Taxonomy fields ──────────────────────────────────────────────────
+    final rawOrder = org.order.toLowerCase() == 'unknown' ? org.animalClass : org.order;
+    final rawFamily = org.family.toLowerCase() == 'unknown' ? '' : org.family;
+    final rawSubfamily = org.subfamily.toLowerCase() == 'unknown' ? '' : org.subfamily;
+
+    // A human-readable blurb for use in articles: e.g. "Order Carnivora, Family Felidae"
+    final taxParts = <String>[];
+    if (rawOrder.isNotEmpty && rawOrder != org.animalClass) taxParts.add('Order $rawOrder');
+    if (rawFamily.isNotEmpty) taxParts.add('Family $rawFamily');
+    if (rawSubfamily.isNotEmpty) taxParts.add('Subfamily $rawSubfamily');
+    final taxonomyBlurb = taxParts.isNotEmpty ? taxParts.join(', ') : 'Class ${org.animalClass}';
+
+    // Size classification label
+    String sizeClass = 'medium-sized';
+    if (org.size < 0.05) {
+      sizeClass = 'microscopic';
+    } else if (org.size < 0.3) {
+      sizeClass = 'tiny';
+    } else if (org.size < 1.0) {
+      sizeClass = 'small';
+    } else if (org.size > 10) {
+      sizeClass = 'enormous';
+    } else if (org.size > 4) {
+      sizeClass = 'large';
+    }
+
+    // Activity label
+    final actLabel = org.activeTime.toLowerCase() == 'any'
+        ? 'both diurnal and nocturnal'
+        : org.activeTime.toLowerCase() == 'night'
+            ? 'nocturnal'
+            : 'diurnal';
+
+    // Org2 mirrors
+    final org2Family = org2.family.toLowerCase() == 'unknown' ? org2.animalClass : org2.family;
+    final org2Order = org2.order.toLowerCase() == 'unknown' ? org2.animalClass : org2.order;
+
     return {
       '{name}': org.name,
       '{name2}': org2.name,
@@ -806,12 +843,20 @@ class NewsService {
       '{rarity_emoji}': rEmoji,
       '{weight}': org.formattedWeight,
       '{weight_class}': weightClass,
+      '{weight_kg}': '${org.formattedWeight} kg',
       '{size}': org.formattedSize,
+      '{size_m}': '${org.formattedSize} m',
+      '{size_class}': sizeClass,
       '{animal_class}': org.animalClass,
       '{class_title}':
           "The ${org.animalClass[0].toUpperCase()}${org.animalClass.substring(1)}",
+      '{order}': rawOrder,
+      '{family}': rawFamily.isNotEmpty ? rawFamily : org.animalClass,
+      '{subfamily}': rawSubfamily.isNotEmpty ? rawSubfamily : rawFamily.isNotEmpty ? rawFamily : org.animalClass,
+      '{taxonomy_blurb}': taxonomyBlurb,
       '{diet}': org.diet,
       '{active_time}': activeTimeFormatted,
+      '{activity_label}': actLabel,
       '{spawn_tiles}': singleTile,
       '{spawn_tile}': singleTile,
       '{abilities}': singleAbility,
@@ -846,6 +891,10 @@ class NewsService {
       '{subject_status}': org1IsPredator ? "Apex" : "Scavenger",
       '{evolutionary_trait}': singleAbility,
       '{time_of_day}': timeOfDay,
+      '{org2_class}': org2.animalClass,
+      '{org2_diet}': org2.diet,
+      '{org2_family}': org2Family,
+      '{org2_order}': org2Order,
     };
   }
 

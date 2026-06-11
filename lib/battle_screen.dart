@@ -272,6 +272,26 @@ class _BattleScreenContentState extends State<BattleScreenContent>
   final LayerLink _opponentLink = LayerLink();
   final List<_IndicatorData> _indicators = [];
 
+  // Card Animation state
+  String? _animatingCardId;
+  bool _animatingCardIsPlayer = false;
+
+  void _onCardPlayed(String cardId, bool isPlayer) {
+    if (!mounted) return;
+    setState(() {
+      _animatingCardId = cardId;
+      _animatingCardIsPlayer = isPlayer;
+    });
+    AudioService.instance.playSound('audio/effects/card_play.mp3');
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) {
+        setState(() {
+          _animatingCardId = null;
+        });
+      }
+    });
+  }
+
   // Gimmick animation state
   String? _activeGimmickType;
   BattleOrganism? _gimmickTarget;
@@ -341,6 +361,7 @@ class _BattleScreenContentState extends State<BattleScreenContent>
       bm.onStatChange = _onStatChange;
       bm.onVictory = _onVictory;
       bm.onOpponentFainted = _onOpponentFainted;
+      bm.onCardPlayed = _onCardPlayed;
       // Note: Gimmick activation is handled via pendingGimmickType state flag
       // which is read in _handleStateTriggers - no callback needed
 
@@ -1509,6 +1530,12 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                     link: battleManager.currentAbilityNotify!.isPlayer
                         ? _playerLink
                         : _opponentLink,
+                  ),
+                if (_animatingCardId != null)
+                  _CardPlayOverlay(
+                    key: ValueKey(_animatingCardId!),
+                    cardId: _animatingCardId!,
+                    isPlayer: _animatingCardIsPlayer,
                   ),
                 if (battleManager.isCapturing)
                   CaptureNetOverlay(
@@ -3433,19 +3460,20 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               const SizedBox(width: 4),
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed:
-                      (isTurnLocked || battleManager.playerUsedCardThisBattle)
+                  onPressed: (isTurnLocked ||
+                          battleManager.playerUsedCardThisBattle ||
+                          battleManager.playerEquippedCard == null)
                       ? null
-                      : () => _showCardSelectionDialog(
-                          context,
-                          battleManager,
-                          userState,
-                        ),
+                      : () {
+                          battleManager.processPlayerCard(
+                              battleManager.playerEquippedCard!);
+                        },
                   icon: Icon(
                     Icons.style,
                     size: isNarrow ? 12 : 14,
-                    color:
-                        (isTurnLocked || battleManager.playerUsedCardThisBattle)
+                    color: (isTurnLocked ||
+                            battleManager.playerUsedCardThisBattle ||
+                            battleManager.playerEquippedCard == null)
                         ? Colors.white24
                         : Colors.white,
                   ),
@@ -3454,20 +3482,24 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                     child: Text(
                       battleManager.playerUsedCardThisBattle
                           ? 'Card Used'
-                          : 'Cards',
+                          : (battleManager.playerEquippedCard == null
+                              ? 'No Card'
+                              : 'Play Card'),
                       style: const TextStyle(
                         fontFamily: 'PressStart2P',
-                        fontSize: 9,
+                        fontSize: 8.5,
                       ),
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        (isTurnLocked || battleManager.playerUsedCardThisBattle)
+                    backgroundColor: (isTurnLocked ||
+                            battleManager.playerUsedCardThisBattle ||
+                            battleManager.playerEquippedCard == null)
                         ? Colors.grey[700]
                         : Colors.purple.shade700,
-                    foregroundColor:
-                        (isTurnLocked || battleManager.playerUsedCardThisBattle)
+                    foregroundColor: (isTurnLocked ||
+                            battleManager.playerUsedCardThisBattle ||
+                            battleManager.playerEquippedCard == null)
                         ? Colors.white54
                         : Colors.white,
                     padding: EdgeInsets.symmetric(
@@ -7844,6 +7876,440 @@ class _TypewriterCursorState extends State<_TypewriterCursor>
       builder: (context, child) => Opacity(
         opacity: _blinkController.value,
         child: Icon(Icons.arrow_drop_down, color: widget.color, size: 16),
+      ),
+    );
+  }
+}
+
+class _CardPlayOverlay extends StatefulWidget {
+  final String cardId;
+  final bool isPlayer;
+
+  const _CardPlayOverlay({Key? key, required this.cardId, required this.isPlayer}) : super(key: key);
+
+  @override
+  State<_CardPlayOverlay> createState() => _CardPlayOverlayState();
+}
+
+class _CardPlayOverlayState extends State<_CardPlayOverlay> with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late AnimationController _shimmerController;
+
+  late Animation<double> _slideX;
+  late Animation<double> _rotate;
+  late Animation<double> _scale;
+  late Animation<double> _glow;
+  late Animation<double> _burstScale;
+  late Animation<double> _exitOpacity;
+  late Animation<double> _bgOpacity;
+  late Animation<double> _shimmer;
+
+  BattleCard? _card;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _card = BattleCard.findById(widget.cardId);
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 3800),
+    );
+
+    _shimmerController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
+
+    final c = _controller;
+
+    _bgOpacity = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: 0.75).chain(CurveTween(curve: Curves.easeOut)), weight: 10),
+      TweenSequenceItem(tween: ConstantTween(0.75), weight: 75),
+      TweenSequenceItem(tween: Tween(begin: 0.75, end: 0.0).chain(CurveTween(curve: Curves.easeIn)), weight: 15),
+    ]).animate(c);
+
+    final double startX = widget.isPlayer ? -500.0 : 500.0;
+    _slideX = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: startX, end: 0.0).chain(CurveTween(curve: Curves.easeOutCubic)), weight: 22),
+      TweenSequenceItem(tween: ConstantTween(0.0), weight: 56),
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: -startX * 0.6).chain(CurveTween(curve: Curves.easeInCubic)), weight: 22),
+    ]).animate(c);
+
+    _rotate = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: widget.isPlayer ? -0.15 : 0.15, end: 0.0).chain(CurveTween(curve: Curves.elasticOut)), weight: 30),
+      TweenSequenceItem(tween: ConstantTween(0.0), weight: 55),
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: widget.isPlayer ? 0.08 : -0.08).chain(CurveTween(curve: Curves.easeInBack)), weight: 15),
+    ]).animate(c);
+
+    _scale = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 0.3, end: 1.08).chain(CurveTween(curve: Curves.easeOutBack)), weight: 22),
+      TweenSequenceItem(tween: Tween(begin: 1.08, end: 1.0).chain(CurveTween(curve: Curves.bounceOut)), weight: 10),
+      TweenSequenceItem(tween: ConstantTween(1.0), weight: 46),
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.12).chain(CurveTween(curve: Curves.easeOut)), weight: 6),
+      TweenSequenceItem(tween: Tween(begin: 1.12, end: 1.0).chain(CurveTween(curve: Curves.easeIn)), weight: 6),
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.4).chain(CurveTween(curve: Curves.easeInBack)), weight: 10),
+    ]).animate(c);
+
+    _glow = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.0), weight: 10),
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.4).chain(CurveTween(curve: Curves.easeInOut)), weight: 20),
+      TweenSequenceItem(tween: Tween(begin: 0.4, end: 1.0).chain(CurveTween(curve: Curves.easeInOut)), weight: 20),
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.4).chain(CurveTween(curve: Curves.easeInOut)), weight: 18),
+      TweenSequenceItem(tween: Tween(begin: 0.4, end: 1.0), weight: 8),
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.0), weight: 24),
+    ]).animate(c);
+
+    _exitOpacity = TweenSequence<double>([
+      TweenSequenceItem(tween: ConstantTween(1.0), weight: 85),
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.0).chain(CurveTween(curve: Curves.easeIn)), weight: 15),
+    ]).animate(c);
+
+    _burstScale = TweenSequence<double>([
+      TweenSequenceItem(tween: ConstantTween(0.0), weight: 76),
+      TweenSequenceItem(tween: Tween(begin: 0.5, end: 2.5).chain(CurveTween(curve: Curves.easeOut)), weight: 12),
+      TweenSequenceItem(tween: Tween(begin: 2.5, end: 3.5).chain(CurveTween(curve: Curves.easeIn)), weight: 12),
+    ]).animate(c);
+
+    _shimmer = CurvedAnimation(parent: _shimmerController, curve: Curves.easeInOut);
+
+    _controller.forward();
+
+    Future.delayed(const Duration(milliseconds: 836), () {
+      if (mounted) _shimmerController.repeat();
+    });
+    Future.delayed(const Duration(milliseconds: 2960), () {
+      if (mounted) _shimmerController.stop();
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _shimmerController.dispose();
+    super.dispose();
+  }
+
+  Color get _themeColor => widget.isPlayer ? const Color(0xFF4FC3F7) : const Color(0xFFEF5350);
+  Color get _themeColorDark => widget.isPlayer ? const Color(0xFF0288D1) : const Color(0xFFC62828);
+
+  @override
+  Widget build(BuildContext context) {
+    final card = _card;
+    final screenSize = MediaQuery.of(context).size;
+
+    return AnimatedBuilder(
+      animation: Listenable.merge([_controller, _shimmerController]),
+      builder: (context, _) {
+        return IgnorePointer(
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              // Blurred dark scrim
+              Opacity(
+                opacity: _bgOpacity.value,
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+                  child: Container(color: Colors.black.withValues(alpha: 0.6)),
+                ),
+              ),
+
+              // Radial burst ring
+              if (_burstScale.value > 0)
+                Center(
+                  child: Opacity(
+                    opacity: (1.0 - (_burstScale.value - 0.5) / 3.0).clamp(0.0, 0.5),
+                    child: Transform.scale(
+                      scale: _burstScale.value,
+                      child: Container(
+                        width: 200,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: _themeColor, width: 3),
+                          boxShadow: [BoxShadow(color: _themeColor.withValues(alpha: 0.4), blurRadius: 40, spreadRadius: 10)],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+              // The Card
+              Center(
+                child: Opacity(
+                  opacity: _exitOpacity.value,
+                  child: Transform.translate(
+                    offset: Offset(_slideX.value, 0),
+                    child: Transform.rotate(
+                      angle: _rotate.value,
+                      child: Transform.scale(
+                        scale: _scale.value,
+                        child: _buildCardBody(card, screenSize),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildCardBody(BattleCard? card, Size screenSize) {
+    final cardW = (screenSize.width * 0.72).clamp(240.0, 340.0);
+    final cardH = cardW * 1.42;
+    final glowIntensity = _glow.value;
+
+    return Container(
+      width: cardW,
+      height: cardH,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(color: _themeColor.withValues(alpha: glowIntensity * 0.9), blurRadius: 50, spreadRadius: 8),
+          BoxShadow(color: _themeColor.withValues(alpha: glowIntensity * 0.5), blurRadius: 80, spreadRadius: 20),
+          BoxShadow(color: Colors.white.withValues(alpha: glowIntensity * 0.15), blurRadius: 20, spreadRadius: 2),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Stack(
+          children: [
+            // Background gradient
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    const Color(0xFF0A0A1A),
+                    _themeColorDark.withValues(alpha: 0.35),
+                    const Color(0xFF0A0A1A),
+                  ],
+                ),
+              ),
+            ),
+
+            // Card artwork
+            Positioned(
+              top: cardH * 0.12,
+              left: 10,
+              right: 10,
+              height: cardH * 0.55,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(14),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Image.asset(
+                      card?.imagePath ?? 'assets/cards/${widget.cardId}.png',
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        color: Colors.grey[900],
+                        child: Center(
+                          child: Icon(Icons.style_rounded, color: _themeColor, size: 64),
+                        ),
+                      ),
+                    ),
+                    // Bottom vignette on image
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [Colors.transparent, Colors.black.withValues(alpha: 0.5)],
+                        ),
+                      ),
+                    ),
+                    // Shimmer sweep
+                    Positioned.fill(
+                      child: ShaderMask(
+                        blendMode: BlendMode.srcATop,
+                        shaderCallback: (bounds) {
+                          final sweepPos = _shimmer.value;
+                          return LinearGradient(
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                            colors: [
+                              Colors.transparent,
+                              Colors.white.withValues(alpha: 0.28),
+                              Colors.transparent,
+                            ],
+                            stops: [
+                              (sweepPos - 0.15).clamp(0.0, 1.0),
+                              sweepPos.clamp(0.0, 1.0),
+                              (sweepPos + 0.15).clamp(0.0, 1.0),
+                            ],
+                          ).createShader(bounds);
+                        },
+                        child: Container(color: Colors.white.withValues(alpha: 0.01)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Top header: player tag + ACTIVATED badge
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              height: cardH * 0.12,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [_themeColorDark, _themeColor.withValues(alpha: 0.7)],
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      child: Text(
+                        widget.isPlayer ? 'YOUR CARD' : 'OPPONENT CARD',
+                        style: GoogleFonts.orbitron(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.5,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      margin: const EdgeInsets.only(right: 12),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+                      ),
+                      child: Text(
+                        '⚡ ACTIVATED',
+                        style: GoogleFonts.orbitron(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Bottom: name + description panel (glassmorphic)
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(20),
+                  bottomRight: Radius.circular(20),
+                ),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                  child: Container(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.black.withValues(alpha: 0.5),
+                          Colors.black.withValues(alpha: 0.88),
+                        ],
+                      ),
+                      border: Border(
+                        top: BorderSide(color: _themeColor.withValues(alpha: 0.4 * glowIntensity), width: 1.5),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Card name
+                        Text(
+                          card?.name ?? widget.cardId.replaceAll('_', ' ').toUpperCase(),
+                          style: GoogleFonts.orbitron(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.5,
+                            shadows: [Shadow(color: _themeColor, blurRadius: 12 * glowIntensity)],
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Container(
+                          height: 1,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [_themeColor.withValues(alpha: 0.8), Colors.transparent],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        // Description
+                        Text(
+                          card?.description ?? 'A powerful card effect activates!',
+                          maxLines: 4,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                            color: Colors.white.withValues(alpha: 0.88),
+                            fontSize: 11,
+                            height: 1.5,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // Glowing border frame
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: _themeColor.withValues(alpha: glowIntensity * 0.85),
+                    width: 2.0,
+                  ),
+                ),
+              ),
+            ),
+
+            // Corner accent dots
+            ...[
+              const Alignment(-1, -1),
+              const Alignment(1, -1),
+              const Alignment(-1, 1),
+              const Alignment(1, 1),
+            ].map((align) => Positioned.fill(
+              child: Align(
+                alignment: align,
+                child: Container(
+                  width: 10,
+                  height: 10,
+                  margin: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: _themeColor.withValues(alpha: glowIntensity),
+                    boxShadow: [BoxShadow(color: _themeColor, blurRadius: 6)],
+                  ),
+                ),
+              ),
+            )),
+          ],
+        ),
       ),
     );
   }
