@@ -16,7 +16,8 @@ import 'package:animal_warfare/models/farm_slot.dart';
 import 'package:animal_warfare/models/battle_replay.dart';
 import 'package:animal_warfare/models/saved_map_state.dart';
 import 'package:animal_warfare/models/event_flags.dart';
-import 'package:animal_warfare/game/time_service.dart';
+import 'package:animal_warfare/game/talisman_system.dart';
+import 'package:animal_warfare/models/battle_card.dart';
 import 'package:animal_warfare/models/survival_effect.dart';
 import 'package:animal_warfare/models/weather.dart';
 import 'package:animal_warfare/services/weather_service.dart';
@@ -438,7 +439,7 @@ class UserState with ChangeNotifier {
     _currentUser = await _authService.getCurrentUser();
     _isInitialized = true;
     if (kDebugMode && _currentUser != null) {
-      print('UserState: loadCurrentUser — captured=${_currentUser!.capturedOrganisms.length}, team=${_currentUser!.battleTeam}');
+      debugPrint('UserState: loadCurrentUser — captured=${_currentUser!.capturedOrganisms.length}, team=${_currentUser!.battleTeam}');
     }
     notifyListeners();
   }
@@ -446,7 +447,7 @@ class UserState with ChangeNotifier {
   Future<void> handleSuccessfulAuth() async {
     _currentUser = await _authService.getCurrentUser();
     if (kDebugMode && _currentUser != null) {
-      print('UserState: handleSuccessfulAuth — captured=${_currentUser!.capturedOrganisms.length}, team=${_currentUser!.battleTeam}');
+      debugPrint('UserState: handleSuccessfulAuth — captured=${_currentUser!.capturedOrganisms.length}, team=${_currentUser!.battleTeam}');
     }
     notifyListeners();
   }
@@ -625,6 +626,15 @@ class UserState with ChangeNotifier {
 
   Future<void> addLoot(String lootId, int quantity) async {
     if (_currentUser == null) return;
+    
+    // Redirect cards if they accidentally come through addLoot
+    if (BattleCard.findById(lootId) != null) {
+      for (int i = 0; i < quantity; i++) {
+        await addCardOrFragment(lootId);
+      }
+      return;
+    }
+
     await _readModifyWrite((u) {
       final newInventory = Map<String, int>.from(u.inventory);
       newInventory[lootId] = (newInventory[lootId] ?? 0) + quantity;
@@ -2318,6 +2328,37 @@ class UserState with ChangeNotifier {
         eventFlags: u.eventFlags.copyWith(cutGrassTiles: newCutTiles),
       );
     });
+  }
+
+  Future<void> addCardOrFragment(String cardId) async {
+    if (_currentUser == null) return;
+    await _readModifyWrite((u) {
+      if (u.unlockedCards.contains(cardId)) {
+        // Add a card fragment if duplicate
+        return u.copyWith(cardFragments: u.cardFragments + 1);
+      } else {
+        // Unlock new card
+        final newCards = List<String>.from(u.unlockedCards)..add(cardId);
+        return u.copyWith(unlockedCards: newCards);
+      }
+    });
+  }
+
+  Future<bool> buyCardWithFragments(String cardId, int cost) async {
+    if (_currentUser == null) return false;
+    bool success = false;
+    await _readModifyWrite((u) {
+      if (u.cardFragments >= cost && !u.unlockedCards.contains(cardId)) {
+        final newCards = List<String>.from(u.unlockedCards)..add(cardId);
+        success = true;
+        return u.copyWith(
+          unlockedCards: newCards,
+          cardFragments: u.cardFragments - cost,
+        );
+      }
+      return u;
+    });
+    return success;
   }
 
   bool _unstuckRequested = false;

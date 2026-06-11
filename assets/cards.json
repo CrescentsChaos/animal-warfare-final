@@ -1,0 +1,38 @@
+[
+  {
+    "id": "gustave",
+    "name": "Gustave (Nile Crocodile)",
+    "description": "Only works if Nile Crocodile is in the party. Deals massive damage (160 BP, scales with the Nile Crocodile's attack stat) and causes the opponent to bleed.",
+    "imagePath": "assets/cards/gustave.png",
+    "requiredOrganism": "Nile Crocodile",
+    "requiredFamily": null,
+    "requiredBiomes": []
+  },
+  {
+    "id": "locust_swarm",
+    "name": "Locust Swarm",
+    "description": "Requires an Acrididae family creature in the party. Disables all berry item usage for the rest of the battle for both sides.",
+    "imagePath": "assets/cards/locust_swarm.png",
+    "requiredOrganism": null,
+    "requiredFamily": "Acrididae",
+    "requiredBiomes": []
+  },
+  {
+    "id": "flash_flood",
+    "name": "Flash Flood",
+    "description": "Effect scales by Biome. Desert/Savanna: Clears hazards and sets Rain. Wetland/River: Applies Stun or Vulnerable. Mountain/Taiga: Triggers Mudslide (Speed -2 for grounded animals) or fails.",
+    "imagePath": "assets/cards/flash_flood.png",
+    "requiredOrganism": null,
+    "requiredFamily": null,
+    "requiredBiomes": []
+  },
+  {
+    "id": "wildfire",
+    "name": "Wildfire",
+    "description": "Requires Jungle, Forest, or Taiga biome. Instantly converts the biome into an Ashen Waste terrain for 3 turns (Burns non-Fire types, halves healing).",
+    "imagePath": "assets/cards/wildfire.png",
+    "requiredOrganism": null,
+    "requiredFamily": null,
+    "requiredBiomes": ["Jungle", "Forest", "Taiga"]
+  }
+]

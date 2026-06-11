@@ -35,6 +35,7 @@ import 'package:animal_warfare/widgets/terrain_overlay.dart';
 import 'package:animal_warfare/widgets/item_icon.dart';
 import 'package:animal_warfare/widgets/battle_details_sheet.dart';
 import 'package:animal_warfare/widgets/battle_sprite.dart';
+import 'package:animal_warfare/models/battle_card.dart';
 
 class BattleScreen extends StatelessWidget {
   final CapturedOrganism playerOrganism;
@@ -3432,6 +3433,57 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               const SizedBox(width: 4),
               Expanded(
                 child: ElevatedButton.icon(
+                  onPressed:
+                      (isTurnLocked || battleManager.playerUsedCardThisBattle)
+                      ? null
+                      : () => _showCardSelectionDialog(
+                          context,
+                          battleManager,
+                          userState,
+                        ),
+                  icon: Icon(
+                    Icons.style,
+                    size: isNarrow ? 12 : 14,
+                    color:
+                        (isTurnLocked || battleManager.playerUsedCardThisBattle)
+                        ? Colors.white24
+                        : Colors.white,
+                  ),
+                  label: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      battleManager.playerUsedCardThisBattle
+                          ? 'Card Used'
+                          : 'Cards',
+                      style: const TextStyle(
+                        fontFamily: 'PressStart2P',
+                        fontSize: 9,
+                      ),
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        (isTurnLocked || battleManager.playerUsedCardThisBattle)
+                        ? Colors.grey[700]
+                        : Colors.purple.shade700,
+                    foregroundColor:
+                        (isTurnLocked || battleManager.playerUsedCardThisBattle)
+                        ? Colors.white54
+                        : Colors.white,
+                    padding: EdgeInsets.symmetric(
+                      vertical: isNarrow ? 4 : 8,
+                      horizontal: 2,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    elevation: 2,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 4),
+              Expanded(
+                child: ElevatedButton.icon(
                   onPressed: isTurnLocked
                       ? null
                       : (widget.isArenaBattle ||
@@ -3772,7 +3824,14 @@ class _BattleScreenContentState extends State<BattleScreenContent>
         if (battleManager.result == BattleResult.win &&
             droppedLoot.isNotEmpty) {
           for (final entry in droppedLoot.entries) {
-            await userState.addLoot(entry.key, entry.value);
+            final isCard = BattleCard.findById(entry.key) != null;
+            if (isCard) {
+              for (int i = 0; i < entry.value; i++) {
+                await userState.addCardOrFragment(entry.key);
+              }
+            } else {
+              await userState.addLoot(entry.key, entry.value);
+            }
           }
         }
 
@@ -4136,6 +4195,272 @@ class _BattleScreenContentState extends State<BattleScreenContent>
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showCardSelectionDialog(
+    BuildContext context,
+    BattleManager bm,
+    UserState userState,
+  ) {
+    final unlockedCardIds = userState.currentUser?.unlockedCards ?? [];
+    final unlockedCards = unlockedCardIds
+        .map((id) => BattleCard.findById(id))
+        .where((c) => c != null)
+        .cast<BattleCard>()
+        .toList();
+    // No longer using screenWidth or isNarrow
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        maxChildSize: 0.85,
+        minChildSize: 0.4,
+        expand: false,
+        builder: (context, scrollController) => Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0D1117), // sleek dark background
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            border: Border.all(color: Colors.white10, width: 1.5),
+          ),
+          child: Column(
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[700],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'BATTLE CARDS',
+                style: TextStyle(
+                  fontFamily: 'PressStart2P',
+                  fontSize: 14,
+                  color: Colors.purple.shade300,
+                  shadows: const [
+                    Shadow(color: Colors.purpleAccent, blurRadius: 4),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              if (unlockedCards.isEmpty)
+                Expanded(
+                  child: Center(
+                    child: Text(
+                      'No Battle Cards unlocked!\nDefeat animals or explore biomes to find them.',
+                      style: TextStyle(
+                        fontFamily: 'PressStart2P',
+                        fontSize: 10,
+                        color: Colors.grey[400],
+                        height: 1.5,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                )
+              else
+                Expanded(
+                  child: ListView.builder(
+                    controller: scrollController,
+                    itemCount: unlockedCards.length,
+                    itemBuilder: (context, index) {
+                      final card = unlockedCards[index];
+
+                      // Check requirements
+                      bool hasOrganism = true;
+                      if (card.requiredOrganism != null) {
+                        hasOrganism = bm.playerTeam.any(
+                          (co) => co.baseOrganism.name == card.requiredOrganism,
+                        );
+                      }
+
+                      bool hasFamily = true;
+                      if (card.requiredFamily != null) {
+                        hasFamily = bm.playerTeam.any(
+                          (co) => co.baseOrganism.family == card.requiredFamily,
+                        );
+                      }
+
+                      bool isCorrectBiome = true;
+                      if (card.requiredBiomes.isNotEmpty) {
+                        isCorrectBiome = card.requiredBiomes.any(
+                          (b) => (bm.biomeName ?? '').toLowerCase().contains(
+                            b.toLowerCase(),
+                          ),
+                        );
+                      }
+
+                      final bool isEligible =
+                          hasOrganism && hasFamily && isCorrectBiome;
+
+                      return Card(
+                        color: isEligible
+                            ? const Color(0xFF161B22)
+                            : const Color(0xFF0F141C),
+                        elevation: isEligible ? 4 : 0,
+                        margin: const EdgeInsets.only(bottom: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          side: BorderSide(
+                            color: isEligible
+                                ? Colors.purple.withValues(alpha: 0.4)
+                                : Colors.white10,
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    width: 48,
+                                    height: 48,
+                                    decoration: BoxDecoration(
+                                      color: Colors.black,
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: Colors.white10),
+                                    ),
+                                    child: Image.asset(
+                                      card.imagePath,
+                                      errorBuilder: (ctx, err, stack) =>
+                                          const Icon(
+                                            Icons.style,
+                                            color: Colors.purple,
+                                            size: 24,
+                                          ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          card.name,
+                                          style: TextStyle(
+                                            fontFamily: 'PressStart2P',
+                                            fontSize: 10,
+                                            color: isEligible
+                                                ? Colors.white
+                                                : Colors.grey[600],
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          card.description,
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            color: isEligible
+                                                ? Colors.grey[300]
+                                                : Colors.grey[600],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              Divider(
+                                color: Colors.white.withValues(alpha: 0.05),
+                              ),
+                              const SizedBox(height: 4),
+                              // Requirements listing
+                              if (card.requiredOrganism != null)
+                                _buildRequirementRow(
+                                  label:
+                                      'Required Party Animal: ${card.requiredOrganism}',
+                                  met: hasOrganism,
+                                ),
+                              if (card.requiredFamily != null)
+                                _buildRequirementRow(
+                                  label:
+                                      'Required Family: ${card.requiredFamily}',
+                                  met: hasFamily,
+                                ),
+                              if (card.requiredBiomes.isNotEmpty)
+                                _buildRequirementRow(
+                                  label:
+                                      'Required Biome: ${card.requiredBiomes.join(", ")}',
+                                  met: isCorrectBiome,
+                                ),
+                              const SizedBox(height: 8),
+                              SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  onPressed: isEligible
+                                      ? () {
+                                          Navigator.pop(ctx);
+                                          bm.processPlayerCard(card.id);
+                                        }
+                                      : null,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.purple[700],
+                                    disabledBackgroundColor: Colors.grey[800],
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    isEligible
+                                        ? 'PLAY CARD'
+                                        : 'REQUIREMENTS NOT MET',
+                                    style: const TextStyle(
+                                      fontFamily: 'PressStart2P',
+                                      fontSize: 9,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRequirementRow({required String label, required bool met}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4.0),
+      child: Row(
+        children: [
+          Icon(
+            met ? Icons.check_circle_outline : Icons.error_outline,
+            color: met ? Colors.green : Colors.red,
+            size: 14,
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                color: met ? Colors.green[300] : Colors.red[300],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

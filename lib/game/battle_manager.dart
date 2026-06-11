@@ -245,6 +245,8 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   int terrainTurnsLeft = 0;
 
   BattleState currentState = BattleState.intro;
+  bool playerUsedCardThisBattle = false;
+  bool opponentUsedCardThisBattle = false;
   bool isCapturing = false;
   int captureShakeCount = 0;
   String battleLog = ''; // Current/Latest message
@@ -1295,6 +1297,205 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
   // --- Turn Logic ---
 
+  Future<void> processPlayerCard(String cardId) async {
+    if (currentState != BattleState.waitingForInput || _isProcessing) return;
+
+    _isProcessing = true;
+    notifyListeners();
+    _stopSuggestionTimer();
+
+    playerUsedCardThisBattle = true;
+    
+    // Opponent picks action
+    final int? switchIndex = _shouldOpponentSwitch();
+    if (switchIndex != null) {
+      currentTurnOpponentMove = Move(
+        name: 'Switch',
+        description: 'Switching...',
+        baseDamage: 0,
+        accuracy: 100,
+        stamina: 0,
+        priority: 6,
+      );
+      await _switchOpponentTo(switchIndex);
+      opponentJustSwitched = true;
+      lastOpponentSwitchTurn = currentTurn;
+    } else {
+      final opponentCardId = _shouldOpponentUseCard();
+      if (opponentCardId != null) {
+        opponentUsedCardThisBattle = true;
+        currentTurnOpponentMove = Move(
+          name: 'Card',
+          description: 'Playing card...',
+          baseDamage: 0,
+          accuracy: 100,
+          stamina: 0,
+          priority: 99,
+        );
+        lastOpponentAction = currentTurnOpponentMove;
+        await _executeCard(opponentCardId, isPlayer: false);
+      } else {
+        currentTurnOpponentMove = pickOpponentMove();
+      }
+    }
+    lastOpponentAction = currentTurnOpponentMove;
+
+    // Card effect happens immediately
+    await _executeCard(cardId, isPlayer: true);
+
+    // After card, the opponent gets their turn
+    if (currentTurnOpponentMove!.name != 'Switch' && currentTurnOpponentMove!.name != 'Card') {
+      currentState = BattleState.opponentTurn;
+      notifyListeners();
+      // Use existing processOpponentTurn to resolve the move (which is usually a counter/regular attack)
+      await _processOpponentTurn(isCounter: false);
+    }
+    
+    await _finalizeTurn();
+  }
+
+  String? _shouldOpponentUseCard() {
+    if (opponentUsedCardThisBattle) return null;
+    if (!isArenaBattle && !isTrainerBattle) return null;
+
+    final random = Random();
+
+    // Check Wildfire
+    final biome = (biomeName ?? '').toLowerCase();
+    final isForestOrJungle = biome.contains('jungle') || biome.contains('forest') || biome.contains('taiga');
+    if (isForestOrJungle) {
+      if (random.nextDouble() < 0.3) {
+        return 'wildfire';
+      }
+    }
+
+    // Check Flash Flood
+    final isWaterBiome = biome.contains('wetland') || biome.contains('river') || biome.contains('swamp') || 
+                         biome.contains('coral reef') || biome.contains('lake') || biome.contains('ocean') ||
+                         biome.contains('desert') || biome.contains('savanna') || biome.contains('mountain') || biome.contains('taiga');
+    if (isWaterBiome) {
+      if (random.nextDouble() < 0.25) {
+        return 'flash_flood';
+      }
+    }
+
+    // Check Gustave (needs Nile Crocodile in opponent team)
+    final hasCroc = opponentTeam.any((org) => org.baseOrganism.name == 'Nile Crocodile');
+    if (hasCroc) {
+      if (player.health < player.maxHealth * 0.5 || opponent.health < opponent.maxHealth * 0.7) {
+        if (random.nextDouble() < 0.4) {
+          return 'gustave';
+        }
+      }
+    }
+
+    // Check Locust Swarm (needs Acrididae family in opponent team)
+    final hasLocust = opponentTeam.any((org) => org.baseOrganism.family == 'Acrididae');
+    if (hasLocust) {
+      if (player.itemDisabledTurns <= 0 && random.nextDouble() < 0.3) {
+        return 'locust_swarm';
+      }
+    }
+
+    return null;
+  }
+
+  Future<void> _executeCard(String cardId, {required bool isPlayer}) async {
+    final userTeam = isPlayer ? playerTeam : opponentTeam;
+    final userName = isPlayer ? "You" : "The opponent";
+    
+    // Fetch card details
+    String cardName = cardId;
+    if (cardId == 'gustave') cardName = 'Gustave';
+    if (cardId == 'locust_swarm') cardName = 'Locust Swarm';
+    if (cardId == 'flash_flood') cardName = 'Flash Flood';
+    if (cardId == 'wildfire') cardName = 'Wildfire';
+
+    addToLog('$userName played the $cardName card!');
+    notifyListeners();
+    if (!isTesting) await Future.delayed(const Duration(milliseconds: 2000));
+
+    if (cardId == 'gustave') {
+      // Check for Nile Crocodile
+      final croc = userTeam.cast<CapturedOrganism?>().firstWhere(
+        (org) => org?.baseOrganism.name == 'Nile Crocodile', 
+        orElse: () => null
+      );
+      if (croc == null) {
+        addToLog('But there was no Nile Crocodile on the team... It failed!');
+        notifyListeners();
+        if (!isTesting) await Future.delayed(const Duration(milliseconds: 2000));
+        return;
+      }
+      
+      // Execute massive damage
+      final target = isPlayer ? opponent : player;
+      int attackStat = croc.getAttack(atLevel: croc.level);
+      // Formula: ((2 * level / 5 + 2) * power * A / D) / 50 + 2
+      double damage = ((2 * 50 / 5 + 2) * 160 * attackStat / target.currentDefense) / 50 + 2;
+      damage *= 1.5; // STAB equivalent for flavor
+      int finalDamage = damage.round().clamp(1, target.maxHealth);
+      
+      target.health = (target.health - finalDamage).clamp(0, target.maxHealth);
+      addToLog('${target.name} took massive damage from Gustave ($finalDamage)!');
+      
+      if (target.health > 0) {
+        await applyStatusEffect(target, StatusEffectType.bleed, chance: 100);
+      }
+    } else if (cardId == 'locust_swarm') {
+      final grasshopper = userTeam.cast<CapturedOrganism?>().firstWhere(
+        (org) => org?.baseOrganism.family == 'Acrididae', 
+        orElse: () => null
+      );
+      if (grasshopper == null) {
+        addToLog('But there was no Acrididae family member on the team... It failed!');
+        notifyListeners();
+        if (!isTesting) await Future.delayed(const Duration(milliseconds: 2000));
+        return;
+      }
+      
+      player.itemDisabledTurns = 999;
+      opponent.itemDisabledTurns = 999;
+      addToLog('A swarm of locusts ate all the berries! Items are disabled!');
+    } else if (cardId == 'flash_flood') {
+      final biome = (biomeName ?? '').toLowerCase();
+      if (biome.contains('desert') || biome.contains('savanna')) {
+        playerHazards.clear();
+        opponentHazards.clear();
+        _setWeather(Weather.rain, 5);
+        addToLog('The flash flood washed away all hazards and brought rain!');
+      } else if (biome.contains('wetland') || biome.contains('river') || biome.contains('swamp') || biome.contains('coral reef') || biome.contains('lake') || biome.contains('ocean')) {
+        final target = isPlayer ? opponent : player;
+        await applyStatusEffect(target, StatusEffectType.stun, chance: 100);
+        await applyStatusEffect(target, StatusEffectType.vulnerable, chance: 100);
+        addToLog('The target was stunned and made vulnerable by the flood!');
+      } else if (biome.contains('mountain') || biome.contains('taiga')) {
+        final target = isPlayer ? opponent : player;
+        bool isGrounded = target.semiInvulnerable != 'airborne' && !target.types.contains(ElementalType.flying);
+        if (isGrounded) {
+          await applyStatChange(target, 'speed', -2);
+          addToLog('The flood triggered a mudslide! ${target.name}\'s speed sharply fell!');
+        } else {
+          addToLog('The mudslide missed the airborne target!');
+        }
+      } else {
+        addToLog('The flash flood had no major effect here.');
+      }
+    } else if (cardId == 'wildfire') {
+      final biome = (biomeName ?? '').toLowerCase();
+      if (biome.contains('jungle') || biome.contains('forest') || biome.contains('taiga')) {
+        _setTerrain(Terrain.ashenWaste, 3);
+        addToLog('The environment caught fire and became an Ashen Waste!');
+        // Play custom wildfire sound / trigger custom UI animation
+        if (!isTesting) await _audioService.playSound('audio/effects/fire_blast.mp3'); // or equivalent
+      } else {
+        addToLog('The wildfire failed to spread in this biome.');
+      }
+    }
+
+    if (!isTesting) await Future.delayed(const Duration(milliseconds: 2000));
+  }
+
   Future<void> processPlayerAction(Move move) async {
     if (currentState != BattleState.waitingForInput || _isProcessing) return;
 
@@ -1418,31 +1619,46 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     if (!isResumingTurn) {
       // Pre-calculate opponent action
-      final int? switchIndex = _shouldOpponentSwitch();
-      if (switchIndex != null) {
+      final opponentCardId = _shouldOpponentUseCard();
+      if (opponentCardId != null) {
+        opponentUsedCardThisBattle = true;
         currentTurnOpponentMove = Move(
-          name: 'Switch',
-          description: 'Switching...',
+          name: 'Card',
+          description: 'Playing card...',
           baseDamage: 0,
           accuracy: 100,
           stamina: 0,
-          priority: 6,
+          priority: 99,
         );
-        // Pursuit Intercept: If player uses Pursuit, it hits BEFORE the switch
-        if (activeMove.isPursuit) {
-          // Delay switch until after Pursuit hits
-          opponentJustSwitched =
-              false; // We'll handle it in _executeTurn or after
-          pendingOpponentSwitchIndex = switchIndex;
-        } else {
-          await _switchOpponentTo(switchIndex);
-          opponentJustSwitched = true;
-          lastOpponentSwitchTurn = currentTurn;
-        }
         lastOpponentAction = currentTurnOpponentMove;
+        await _executeCard(opponentCardId, isPlayer: false);
       } else {
-        currentTurnOpponentMove = pickOpponentMove();
-        lastOpponentAction = currentTurnOpponentMove;
+        final int? switchIndex = _shouldOpponentSwitch();
+        if (switchIndex != null) {
+          currentTurnOpponentMove = Move(
+            name: 'Switch',
+            description: 'Switching...',
+            baseDamage: 0,
+            accuracy: 100,
+            stamina: 0,
+            priority: 6,
+          );
+          // Pursuit Intercept: If player uses Pursuit, it hits BEFORE the switch
+          if (activeMove.isPursuit) {
+            // Delay switch until after Pursuit hits
+            opponentJustSwitched =
+                false; // We'll handle it in _executeTurn or after
+            pendingOpponentSwitchIndex = switchIndex;
+          } else {
+            await _switchOpponentTo(switchIndex);
+            opponentJustSwitched = true;
+            lastOpponentSwitchTurn = currentTurn;
+          }
+          lastOpponentAction = currentTurnOpponentMove;
+        } else {
+          currentTurnOpponentMove = pickOpponentMove();
+          lastOpponentAction = currentTurnOpponentMove;
+        }
       }
 
       // Determine who goes first
@@ -1636,7 +1852,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
       // Opponent Turn
       if (!opponentMovedThisTurn && !opponentJustSwitched) {
-        if (await _canMove(opponent, currentTurnOpponentMove!)) {
+        if (currentTurnOpponentMove!.name == 'Card') {
+          // Card effect is already executed immediately at turn start
+        } else if (await _canMove(opponent, currentTurnOpponentMove!)) {
           await _executeTurn(
             opponent,
             player,
@@ -1652,7 +1870,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     } else {
       // Opponent Turn
       if (!opponentMovedThisTurn && !opponentJustSwitched) {
-        if (await _canMove(opponent, currentTurnOpponentMove!)) {
+        if (currentTurnOpponentMove!.name == 'Card') {
+          // Card effect is already executed immediately at turn start
+        } else if (await _canMove(opponent, currentTurnOpponentMove!)) {
           await _executeTurn(
             opponent,
             player,

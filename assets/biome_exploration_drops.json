@@ -20,6 +20,14 @@
     {
       "id": "raspberry",
       "name": "Raspberries"
+    },
+    {
+      "id": "flash_flood",
+      "name": "Flash Flood Card"
+    },
+    {
+      "id": "wildfire",
+      "name": "Wildfire Card"
     }
   ],
   "biome_pools": [

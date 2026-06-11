@@ -118,6 +118,12 @@ class UserData {
   // --- Active Survival Effects (temperature/weather buffs) ---
   final List<SurvivalEffect> activeSurvivalEffects;
 
+  /// Unlocked battle cards (by ID)
+  final List<String> unlockedCards;
+
+  /// Currency obtained from duplicate cards
+  final int cardFragments;
+
   UserData({
     required this.username,
     required this.password,
@@ -168,6 +174,8 @@ class UserData {
     EventFlags? eventFlags,
     List<PlayerActiveEffect>? activeEffects,
     List<SurvivalEffect>? activeSurvivalEffects,
+    List<String>? unlockedCards,
+    this.cardFragments = 0,
   }) : quizStats = quizStats ?? {},
        discoveredOrganisms = discoveredOrganisms ?? [],
        completedAchievements = completedAchievements ?? [],
@@ -188,7 +196,8 @@ class UserData {
        unlockedBackgrounds = unlockedBackgrounds ?? [],
        savedReplays = savedReplays ?? [],
        activeEffects = activeEffects ?? [],
-       activeSurvivalEffects = activeSurvivalEffects ?? [];
+       activeSurvivalEffects = activeSurvivalEffects ?? [],
+       unlockedCards = unlockedCards ?? [];
 
   /// Returns displayName if set, otherwise falls back to username
   String get effectiveDisplayName =>
@@ -244,6 +253,8 @@ class UserData {
     List<String>? unlockedBackgrounds,
     List<PlayerActiveEffect>? activeEffects,
     List<SurvivalEffect>? activeSurvivalEffects,
+    List<String>? unlockedCards,
+    int? cardFragments,
   }) {
     return UserData(
       username: username ?? this.username,
@@ -301,6 +312,8 @@ class UserData {
       unlockedBackgrounds: unlockedBackgrounds ?? this.unlockedBackgrounds,
       activeEffects: activeEffects ?? this.activeEffects,
       activeSurvivalEffects: activeSurvivalEffects ?? this.activeSurvivalEffects,
+      unlockedCards: unlockedCards ?? this.unlockedCards,
+      cardFragments: cardFragments ?? this.cardFragments,
     );
   }
 
@@ -422,6 +435,8 @@ class UserData {
     'unlockedBackgrounds': unlockedBackgrounds,
     'activeEffects': activeEffects.map((e) => e.toJson()).toList(),
     'activeSurvivalEffects': activeSurvivalEffects.map((e) => e.toJson()).toList(),
+    'unlockedCards': unlockedCards,
+    'cardFragments': cardFragments,
   };
 
   factory UserData.fromJson(
@@ -590,6 +605,8 @@ class UserData {
       activeSurvivalEffects: (json['activeSurvivalEffects'] as List<dynamic>?)
           ?.map((e) => SurvivalEffect.fromJson(e as Map<String, dynamic>))
           .toList() ?? [],
+      unlockedCards: (json['unlockedCards'] as List<dynamic>?)?.map((e) => e as String).toList() ?? [],
+      cardFragments: (json['cardFragments'] as num?)?.toInt() ?? 0,
     );
   }
 }

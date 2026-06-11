@@ -20,6 +20,7 @@ import 'package:animal_warfare/game/npc_team_loader.dart';
 import 'package:animal_warfare/game/trainer_data.dart';
 
 import 'package:animal_warfare/services/nutrition_service.dart';
+import 'package:animal_warfare/models/battle_card.dart';
 
 void main() async {
   // 1. Ensure Flutter bindings are initialized first
@@ -80,6 +81,8 @@ void main() async {
   await Ability.loadFromJson();
   // Load Recipes from JSON
   await Recipe.loadFromJson();
+  // Load Battle Cards from JSON
+  await BattleCard.loadCards();
   // Load Biome/Tile/NPC data
   await BiomeDataManager.loadData();
   // Load NPC trainer teams

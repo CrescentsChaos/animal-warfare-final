@@ -6,6 +6,7 @@ enum Terrain {
   grassy,   // Heals slightly
   misty,    // Prevents Status Effects
   psychic,  // Boosts Mystic moves
+  ashenWaste, // Burns non-fire types, halves healing
 }
 
 extension TerrainExtension on Terrain {
@@ -19,6 +20,8 @@ extension TerrainExtension on Terrain {
         return 'assets/icon/misty_terrain.png';
       case Terrain.psychic:
         return 'assets/icon/psychic_terrain.png';
+      case Terrain.ashenWaste:
+        return 'assets/icon/ashen_waste_terrain.png';
       default:
         return '';
     }
@@ -48,6 +51,8 @@ class TerrainEffect {
         return 'Mist covered the battlefield!';
       case Terrain.psychic:
         return 'The battlefield got weird!';
+      case Terrain.ashenWaste:
+        return 'The battlefield turned into an Ashen Waste!';
       default:
         return '';
     }
@@ -63,6 +68,8 @@ class TerrainEffect {
         return 'The mist lifted.';
       case Terrain.psychic:
         return 'The weirdness cleared.';
+      case Terrain.ashenWaste:
+        return 'The ashes blew away.';
       default:
         return '';
     }
