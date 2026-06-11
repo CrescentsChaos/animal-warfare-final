@@ -8019,7 +8019,9 @@ class _CardPlayOverlayState extends State<_CardPlayOverlay> with TickerProviderS
     return AnimatedBuilder(
       animation: Listenable.merge([_controller, _shimmerController]),
       builder: (context, _) {
-        return IgnorePointer(
+        return GestureDetector(
+          onTap: _dismiss,
+          behavior: HitTestBehavior.opaque,
           child: Stack(
             fit: StackFit.expand,
             children: [
