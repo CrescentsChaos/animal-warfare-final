@@ -8070,6 +8070,25 @@ class _CardPlayOverlayState extends State<_CardPlayOverlay> with TickerProviderS
                   ),
                 ),
               ),
+
+              // Tap to skip text
+              if (_controller.value >= 0.85 && !_isExiting)
+                Positioned(
+                  bottom: 40,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Text(
+                      'TAP TO CONTINUE',
+                      style: GoogleFonts.orbitron(
+                        color: Colors.white.withValues(alpha: 0.6),
+                        fontSize: 12,
+                        letterSpacing: 2,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
             ],
           ),
         );

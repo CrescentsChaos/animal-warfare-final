@@ -1,0 +1,1838 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MINIGAMES HUB — Animal Warfare</title>
+    <meta name="description" content="Play quiz games and minigames based on the Animal Warfare creature database. Test your knowledge of animal taxonomy, stats, and biology.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* ============================
+           MINIGAMES HUB OVERRIDES
+           ============================ */
+
+        body { overflow-x: hidden; }
+
+        .mg-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ---- Left Nav ---- */
+        .mg-nav {
+            width: 260px;
+            min-width: 260px;
+            background: #0a0a0a;
+            border-right: 1px solid #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            padding: 28px 16px;
+            gap: 0;
+            position: fixed;
+            top: 0; left: 0;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .mg-nav-brand {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 28px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #1a1a1a;
+        }
+
+        .mg-nav-brand a {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 11px;
+            color: #ff0000;
+            text-shadow: 0 0 16px rgba(255,0,0,0.4);
+            text-decoration: none;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .mg-nav-brand .subtitle {
+            font-size: 7px;
+            font-family: 'Press Start 2P', monospace;
+            color: #555;
+            letter-spacing: 1px;
+        }
+
+        .mg-nav-section {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 6px;
+            color: #444;
+            letter-spacing: 1px;
+            margin: 18px 0 8px;
+            text-transform: uppercase;
+        }
+
+        .mg-nav-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            background: transparent;
+            color: #999;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 7px;
+            width: 100%;
+            text-align: left;
+            transition: all 0.2s ease;
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        .mg-nav-btn:hover { background: rgba(255,255,255,0.04); color: #ccc; border-color: #222; }
+
+        .mg-nav-btn.active {
+            background: rgba(255, 0, 0, 0.12);
+            color: #ff0000;
+            border-color: rgba(255,0,0,0.3);
+        }
+
+        .mg-nav-btn .nav-icon { font-size: 14px; flex-shrink: 0; }
+
+        /* ---- Main Content ---- */
+        .mg-main {
+            margin-left: 260px;
+            flex: 1;
+            min-height: 100vh;
+            background: radial-gradient(ellipse at 70% 0%, rgba(255,0,0,0.04) 0%, transparent 60%), #000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .mg-header {
+            padding: 24px 32px;
+            border-bottom: 1px solid #1a1a1a;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .mg-header-title {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 14px;
+            color: #fff;
+        }
+
+        .mg-header-sub {
+            font-size: 12px;
+            color: #555;
+            margin-top: 6px;
+        }
+
+        /* ---- HUB Screen ---- */
+        .hub-screen { display: none; }
+        .hub-screen.active { display: block; }
+
+        .hub-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+            padding: 32px;
+        }
+
+        .hub-card {
+            background: rgba(15,15,15,0.9);
+            border: 1px solid #1a1a1a;
+            border-radius: 16px;
+            padding: 24px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hub-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--card-accent, rgba(255,0,0,0.05)) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .hub-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--card-accent-border, rgba(255,0,0,0.4));
+            box-shadow: 0 12px 40px rgba(0,0,0,0.6), 0 0 30px var(--card-glow, rgba(255,0,0,0.1));
+        }
+
+        .hub-card-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            margin-bottom: 16px;
+            border: 1px solid;
+        }
+
+        .hub-card-title {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 10px;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .hub-card-desc {
+            font-size: 12px;
+            color: #777;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .hub-card-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 6px;
+            border: 1px solid;
+        }
+
+        /* ---- Game Screens ---- */
+        .game-screen {
+            display: none;
+            flex-direction: column;
+            min-height: calc(100vh - 73px);
+        }
+
+        .game-screen.active { display: flex; }
+
+        .game-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 24px;
+            background: rgba(0,0,0,0.6);
+            border-bottom: 1px solid #1a1a1a;
+            flex-shrink: 0;
+        }
+
+        .game-toolbar-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid #222;
+            color: #aaa;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 7px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .game-toolbar-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+        .game-title {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 9px;
+            color: #aaa;
+        }
+
+        .game-stats-bar {
+            display: flex;
+            gap: 20px;
+            margin-left: auto;
+            align-items: center;
+        }
+
+        .stat-pill {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .stat-pill-label {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 5px;
+            color: #555;
+        }
+
+        .stat-pill-value {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 11px;
+            color: #fff;
+        }
+
+        /* ---- Quiz Game ---- */
+        #quiz-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 24px 20px;
+            gap: 20px;
+            max-width: 860px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .quiz-timer-bar {
+            width: 100%;
+            height: 6px;
+            background: #1a1a1a;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .quiz-timer-fill {
+            height: 100%;
+            background: #ff0000;
+            border-radius: 3px;
+            transition: width 0.1s linear, background 0.3s;
+        }
+
+        .quiz-question-box {
+            width: 100%;
+            background: rgba(15,15,15,0.95);
+            border: 2px solid #222;
+            border-radius: 14px;
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .quiz-question-label {
+            font-size: 11px;
+            color: #666;
+            font-family: 'Press Start 2P', monospace;
+            text-align: center;
+        }
+
+        .quiz-question-text {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 13px;
+            color: #fff;
+            text-align: center;
+            line-height: 1.8;
+        }
+
+        .quiz-sprite {
+            width: 200px;
+            height: 200px;
+            object-fit: contain;
+            filter: drop-shadow(0 8px 24px rgba(0,0,0,0.8));
+            transition: filter 0.3s;
+        }
+
+        .quiz-sprite.silhouette {
+            filter: brightness(0) drop-shadow(0 8px 24px rgba(0,0,0,0.8));
+        }
+
+        .quiz-sprite.revealed {
+            filter: drop-shadow(0 8px 24px rgba(0,0,0,0.8));
+        }
+
+        .quiz-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .quiz-options.three-col { grid-template-columns: 1fr 1fr 1fr; }
+
+        .quiz-opt-btn {
+            background: rgba(20,20,20,0.9);
+            border: 2px solid #2a2a2a;
+            border-radius: 10px;
+            padding: 16px 12px;
+            color: #ccc;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 7.5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        .quiz-opt-btn:hover:not(:disabled) {
+            background: rgba(255,255,255,0.06);
+            border-color: #555;
+            color: #fff;
+        }
+
+        .quiz-opt-btn.correct {
+            background: rgba(46, 213, 115, 0.12) !important;
+            border-color: #2ed573 !important;
+            color: #2ed573 !important;
+        }
+
+        .quiz-opt-btn.wrong {
+            background: rgba(255, 71, 87, 0.12) !important;
+            border-color: #ff4757 !important;
+            color: #ff4757 !important;
+        }
+
+        .quiz-opt-btn:disabled { cursor: not-allowed; }
+
+        .quiz-feedback {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 9px;
+            text-align: center;
+            min-height: 24px;
+        }
+
+        /* Difficulty Chips */
+        .diff-selector {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .diff-chip {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 7px;
+            cursor: pointer;
+            border: 1px solid #333;
+            background: transparent;
+            color: #666;
+            transition: all 0.2s;
+        }
+
+        .diff-chip.active-easy { background: rgba(46,213,115,0.15); color: #2ed573; border-color: #2ed573; }
+        .diff-chip.active-normal { background: rgba(255,0,0,0.15); color: #ff0000; border-color: #ff0000; }
+        .diff-chip.active-hard { background: rgba(255,71,87,0.2); color: #ff4757; border-color: #ff4757; }
+
+        /* Quiz Hub (pick mode) */
+        #quiz-hub-area {
+            padding: 24px 32px;
+        }
+
+        .quiz-hub-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .quiz-mode-btn {
+            background: rgba(15,15,15,0.9);
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .quiz-mode-btn:hover {
+            background: rgba(255,0,0,0.06);
+            border-color: rgba(255,0,0,0.3);
+            transform: translateY(-2px);
+        }
+
+        .quiz-mode-icon {
+            font-size: 20px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid #222;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .quiz-mode-info { flex: 1; }
+
+        .quiz-mode-name {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 7px;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .quiz-mode-desc { font-size: 10px; color: #666; }
+
+        /* ---- Stat Showdown ---- */
+        #showdown-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            gap: 16px;
+        }
+
+        .showdown-stat-label {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 18px;
+            letter-spacing: 2px;
+            text-shadow: 0 0 20px;
+        }
+
+        .showdown-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            width: 100%;
+            max-width: 680px;
+        }
+
+        .showdown-animal-card {
+            background: rgba(15,15,15,0.95);
+            border: 2px solid #222;
+            border-radius: 14px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            transition: border-color 0.3s;
+        }
+
+        .showdown-animal-card.is-b { border-color: rgba(255,0,0,0.3); }
+
+        .showdown-animal-name {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 8px;
+            color: #fff;
+            text-align: center;
+        }
+
+        .showdown-sprite {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.8));
+        }
+
+        .showdown-stat-value {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 22px;
+        }
+
+        .showdown-hidden-stat {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .showdown-guess-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid;
+            background: transparent;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+        }
+
+        .showdown-guess-btn.higher { color: #2ed573; border-color: #2ed573; }
+        .showdown-guess-btn.lower { color: #ff4757; border-color: #ff4757; }
+        .showdown-guess-btn.higher:hover { background: rgba(46,213,115,0.15); }
+        .showdown-guess-btn.lower:hover { background: rgba(255,71,87,0.15); }
+        .showdown-guess-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .showdown-vs {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 50%;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 7px;
+            color: #555;
+            align-self: center;
+        }
+
+        /* ---- Silhouette Sprint ---- */
+        #sprint-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            gap: 16px;
+        }
+
+        .sprint-timer-bar {
+            width: 100%;
+            max-width: 600px;
+            height: 8px;
+            background: #1a1a1a;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .sprint-timer-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.1s linear, background 0.3s;
+        }
+
+        .sprint-silhouette-wrap {
+            width: 220px;
+            height: 220px;
+            background: rgba(15,15,15,0.9);
+            border: 1px solid #1a1a1a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .sprint-silhouette-img {
+            width: 160px;
+            height: 160px;
+            object-fit: contain;
+            filter: brightness(0) contrast(1);
+        }
+
+        .sprint-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .sprint-opt-btn {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid #222;
+            border-radius: 8px;
+            padding: 14px;
+            color: #ccc;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 7px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .sprint-opt-btn:hover { background: rgba(255,255,255,0.08); border-color: #555; }
+        .sprint-opt-btn.flash-correct { background: rgba(46,213,115,0.2); border-color: #2ed573; }
+        .sprint-opt-btn.flash-wrong { background: rgba(255,71,87,0.2); border-color: #ff4757; }
+
+        /* ---- Echo Memory ---- */
+        #echo-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .echo-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            width: 100%;
+            max-width: 480px;
+        }
+
+        .echo-tile {
+            border-radius: 16px;
+            border: 3px solid;
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            background: rgba(15,15,15,0.9);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .echo-tile img {
+            width: 80%;
+            height: 80%;
+            object-fit: contain;
+        }
+
+        .echo-tile.flashing {
+            box-shadow: 0 0 40px var(--tile-color), inset 0 0 20px var(--tile-color);
+        }
+
+        /* ---- Habitat Sort ---- */
+        #habitat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .habitat-animal-display {
+            background: rgba(15,15,15,0.9);
+            border: 2px solid #222;
+            border-radius: 16px;
+            padding: 20px 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            min-width: 200px;
+        }
+
+        .habitat-animal-sprite {
+            width: 120px;
+            height: 120px;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.8));
+        }
+
+        .habitat-animal-name {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 9px;
+            color: #fff;
+            text-align: center;
+        }
+
+        .habitat-hint {
+            font-size: 11px;
+            color: #666;
+            text-align: center;
+        }
+
+        .habitat-biomes {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 10px;
+            width: 100%;
+            max-width: 680px;
+        }
+
+        .habitat-biome-btn {
+            background: rgba(15,15,15,0.9);
+            border: 2px solid #222;
+            border-radius: 12px;
+            padding: 14px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .habitat-biome-btn:hover { border-color: #555; background: rgba(255,255,255,0.04); transform: translateY(-2px); }
+
+        .habitat-biome-img {
+            width: 48px;
+            height: 48px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .habitat-biome-name {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 6px;
+            color: #aaa;
+        }
+
+        .habitat-biome-btn.flash-correct { border-color: #2ed573; background: rgba(46,213,115,0.1); }
+        .habitat-biome-btn.flash-wrong { border-color: #ff4757; background: rgba(255,71,87,0.1); }
+
+        /* ---- Game Over / Results ---- */
+        .game-over-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.9);
+            backdrop-filter: blur(12px);
+            z-index: 500;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .game-over-overlay.show { display: flex; }
+
+        .game-over-box {
+            background: #0d0d0d;
+            border: 2px solid;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .game-over-title {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 18px;
+            margin-bottom: 24px;
+        }
+
+        .game-over-score {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 12px;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .game-over-best {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 9px;
+            color: #555;
+            margin-bottom: 28px;
+        }
+
+        .game-over-btns {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .go-btn {
+            padding: 12px 20px;
+            border-radius: 10px;
+            border: 2px solid;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 8px;
+            cursor: pointer;
+            background: transparent;
+            transition: all 0.2s;
+        }
+
+        .go-btn:hover { transform: translateY(-2px); }
+
+        /* ---- Loading ---- */
+        .mg-loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .mg-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #1a1a1a;
+            border-top-color: #ff0000;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .mg-loading-text {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 9px;
+            color: #555;
+        }
+
+        /* ---- Instruction text ---- */
+        .echo-instruction {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 8px;
+            color: #aaa;
+        }
+
+        /* ---- Mobile ---- */
+        @media (max-width: 760px) {
+            .mg-nav { display: none; }
+            .mg-main { margin-left: 0; }
+            .hub-grid { padding: 16px; grid-template-columns: 1fr; }
+            .showdown-cards { grid-template-columns: 1fr; }
+            .quiz-options.three-col { grid-template-columns: 1fr 1fr; }
+            #quiz-area { padding: 16px; }
+        }
+
+        @media (max-width: 600px) {
+            .quiz-options { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+
+<body>
+<div class="mg-layout">
+
+    <!-- Left Navigation -->
+    <nav class="mg-nav" id="mg-nav">
+        <div class="mg-nav-brand">
+            <a href="index.html">◀ ANIDEX</a>
+            <div class="subtitle">MINIGAMES HUB</div>
+        </div>
+
+        <div class="mg-nav-section">ARCADE</div>
+        <button class="mg-nav-btn" id="nav-hub" onclick="MG.showHub()">
+            <span class="nav-icon">🎮</span> HUB
+        </button>
+        <button class="mg-nav-btn" id="nav-showdown" onclick="MG.startShowdown()">
+            <span class="nav-icon">⚡</span> STAT SHOWDOWN
+        </button>
+        <button class="mg-nav-btn" id="nav-sprint" onclick="MG.startSprint()">
+            <span class="nav-icon">👁</span> SILHOUETTE SPRINT
+        </button>
+        <button class="mg-nav-btn" id="nav-echo" onclick="MG.startEcho()">
+            <span class="nav-icon">🧠</span> THE ECHO
+        </button>
+        <button class="mg-nav-btn" id="nav-habitat" onclick="MG.startHabitat()">
+            <span class="nav-icon">🌿</span> HABITAT SORT
+        </button>
+
+        <div class="mg-nav-section">QUIZZES</div>
+        <button class="mg-nav-btn" id="nav-quiz" onclick="MG.showQuizHub()">
+            <span class="nav-icon">📝</span> QUIZ GAMES
+        </button>
+    </nav>
+
+    <!-- Main -->
+    <main class="mg-main">
+
+        <!-- Header -->
+        <div class="mg-header">
+            <div>
+                <div class="mg-header-title" id="mg-page-title">MINIGAMES HUB</div>
+                <div class="mg-header-sub" id="mg-page-sub">Select a game to play</div>
+            </div>
+            <div style="margin-left:auto; display:flex; align-items:center; gap:12px;" id="toolbar-extras"></div>
+        </div>
+
+        <!-- Loading -->
+        <div class="hub-screen active" id="screen-loading">
+            <div class="mg-loading">
+                <div class="mg-spinner"></div>
+                <div class="mg-loading-text">LOADING DATABASE...</div>
+            </div>
+        </div>
+
+        <!-- Hub -->
+        <div class="hub-screen" id="screen-hub">
+            <div class="hub-grid">
+                <div class="hub-card" style="--card-accent: rgba(255,170,0,0.07); --card-accent-border: rgba(255,170,0,0.5); --card-glow: rgba(255,170,0,0.15);" onclick="MG.startShowdown()">
+                    <div class="hub-card-icon" style="background: rgba(255,170,0,0.1); border-color: rgba(255,170,0,0.3); color: #ffaa00;">⚡</div>
+                    <div class="hub-card-title">STAT SHOWDOWN</div>
+                    <div class="hub-card-desc">Higher or Lower survival mode. Compare stats between two animals — keep your streak alive!</div>
+                    <div class="hub-card-badge" style="background: rgba(255,170,0,0.1); color: #ffaa00; border-color: rgba(255,170,0,0.3);">🏆 STREAK GAME</div>
+                </div>
+                <div class="hub-card" style="--card-accent: rgba(0,200,255,0.06); --card-accent-border: rgba(0,200,255,0.4); --card-glow: rgba(0,200,255,0.1);" onclick="MG.startSprint()">
+                    <div class="hub-card-icon" style="background: rgba(0,200,255,0.1); border-color: rgba(0,200,255,0.3); color: #00c8ff;">👁</div>
+                    <div class="hub-card-title">SILHOUETTE SPRINT</div>
+                    <div class="hub-card-desc">Identify species by their shadow. Answer fast — each correct answer adds time!</div>
+                    <div class="hub-card-badge" style="background: rgba(0,200,255,0.1); color: #00c8ff; border-color: rgba(0,200,255,0.3);">⏱ TIME ATTACK</div>
+                </div>
+                <div class="hub-card" style="--card-accent: rgba(180,0,255,0.07); --card-accent-border: rgba(180,0,255,0.4); --card-glow: rgba(180,0,255,0.1);" onclick="MG.startEcho()">
+                    <div class="hub-card-icon" style="background: rgba(180,0,255,0.1); border-color: rgba(180,0,255,0.3); color: #b400ff;">🧠</div>
+                    <div class="hub-card-title">THE ECHO</div>
+                    <div class="hub-card-desc">Memory sequence challenge. Watch the pattern and repeat it — each wave adds another step.</div>
+                    <div class="hub-card-badge" style="background: rgba(180,0,255,0.1); color: #b400ff; border-color: rgba(180,0,255,0.3);">🌊 WAVES</div>
+                </div>
+                <div class="hub-card" style="--card-accent: rgba(0,255,100,0.06); --card-accent-border: rgba(0,255,100,0.4); --card-glow: rgba(0,255,100,0.1);" onclick="MG.startHabitat()">
+                    <div class="hub-card-icon" style="background: rgba(0,255,100,0.1); border-color: rgba(0,255,100,0.3); color: #00ff64;">🌿</div>
+                    <div class="hub-card-title">HABITAT SORT</div>
+                    <div class="hub-card-desc">Categorize wildlife by biome — place animals in their correct habitat before time runs out!</div>
+                    <div class="hub-card-badge" style="background: rgba(0,255,100,0.1); color: #00ff64; border-color: rgba(0,255,100,0.3);">🗺 CLASSIFICATION</div>
+                </div>
+                <div class="hub-card" style="--card-accent: rgba(255,0,0,0.06); --card-accent-border: rgba(255,0,0,0.4); --card-glow: rgba(255,0,0,0.1);" onclick="MG.showQuizHub()">
+                    <div class="hub-card-icon" style="background: rgba(255,0,0,0.1); border-color: rgba(255,0,0,0.3); color: #ff0000;">📝</div>
+                    <div class="hub-card-title">QUIZ GAMES</div>
+                    <div class="hub-card-desc">17 quiz types — from sprite recognition to taxonomy classification. Three difficulty levels.</div>
+                    <div class="hub-card-badge" style="background: rgba(255,0,0,0.1); color: #ff0000; border-color: rgba(255,0,0,0.3);">📊 17 MODES</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quiz Hub (pick a mode) -->
+        <div class="hub-screen" id="screen-quiz-hub">
+            <div id="quiz-hub-area">
+                <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:8px;">
+                    <div style="font-family:'Press Start 2P',monospace; font-size:9px; color:#777;">SELECT QUIZ MODE</div>
+                    <div class="diff-selector" id="quiz-difficulty-selector">
+                        <div style="font-family:'Press Start 2P',monospace; font-size:7px; color:#555; margin-right:4px;">DIFFICULTY:</div>
+                        <button class="diff-chip" onclick="MG.setDifficulty('easy')" id="diff-easy">EASY</button>
+                        <button class="diff-chip active-normal" onclick="MG.setDifficulty('normal')" id="diff-normal">NORMAL</button>
+                        <button class="diff-chip" onclick="MG.setDifficulty('hard')" id="diff-hard">HARD</button>
+                    </div>
+                </div>
+                <div class="quiz-hub-grid" id="quiz-mode-grid"></div>
+            </div>
+        </div>
+
+        <!-- Quiz Game Screen -->
+        <div class="game-screen" id="screen-quiz">
+            <div id="quiz-area">
+                <div class="quiz-timer-bar">
+                    <div class="quiz-timer-fill" id="quiz-timer-fill"></div>
+                </div>
+                <div class="quiz-question-box" id="quiz-question-box"></div>
+                <div class="quiz-options" id="quiz-options"></div>
+                <div class="quiz-feedback" id="quiz-feedback"></div>
+            </div>
+        </div>
+
+        <!-- Stat Showdown Screen -->
+        <div class="game-screen" id="screen-showdown">
+            <div id="showdown-area">
+                <div class="showdown-stat-label" id="showdown-stat-label">HEALTH</div>
+                <div class="showdown-cards" id="showdown-cards"></div>
+            </div>
+        </div>
+
+        <!-- Silhouette Sprint Screen -->
+        <div class="game-screen" id="screen-sprint">
+            <div id="sprint-area">
+                <div class="sprint-timer-bar">
+                    <div class="sprint-timer-fill" id="sprint-timer-fill" style="width:100%; background:#00c8ff;"></div>
+                </div>
+                <div class="sprint-silhouette-wrap" id="sprint-sil-wrap">
+                    <img class="sprint-silhouette-img" id="sprint-sil-img" src="" alt="Silhouette">
+                </div>
+                <div class="sprint-options" id="sprint-options"></div>
+            </div>
+        </div>
+
+        <!-- Echo Memory Screen -->
+        <div class="game-screen" id="screen-echo">
+            <div id="echo-area">
+                <div style="text-align:center;">
+                    <div style="font-family:'Press Start 2P',monospace; font-size:9px; color:#555;">WAVE</div>
+                    <div style="font-family:'Press Start 2P',monospace; font-size:32px; color:#b400ff; text-shadow: 0 0 20px #b400ff; margin-top:6px;" id="echo-wave">1</div>
+                    <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:#ffaa00; margin-top:8px;" id="echo-points">0 POINTS</div>
+                </div>
+                <div class="echo-grid" id="echo-grid"></div>
+                <div class="echo-instruction" id="echo-instruction">WATCH CAREFULLY...</div>
+            </div>
+        </div>
+
+        <!-- Habitat Sort Screen -->
+        <div class="game-screen" id="screen-habitat">
+            <div id="habitat-area">
+                <div style="display:flex; align-items:center; justify-content:space-between; width:100%; max-width:680px;">
+                    <div style="font-family:'Press Start 2P',monospace; font-size:10px; color:#00ff64;" id="habitat-score-label">SCORE: 0</div>
+                    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
+                        <div class="sprint-timer-bar" style="width:200px;">
+                            <div class="sprint-timer-fill" id="habitat-timer-fill" style="width:100%; background:#00ff64;"></div>
+                        </div>
+                        <div style="font-family:'Press Start 2P',monospace; font-size:7px; color:#555;" id="habitat-time-text">60.0s</div>
+                    </div>
+                </div>
+                <div class="habitat-animal-display" id="habitat-animal-display"></div>
+                <div style="font-family:'Press Start 2P',monospace; font-size:8px; color:#555;">PLACE IN ITS BIOME:</div>
+                <div class="habitat-biomes" id="habitat-biomes"></div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<!-- Game Over Overlay -->
+<div class="game-over-overlay" id="game-over-overlay">
+    <div class="game-over-box" id="game-over-box" style="border-color: #ff4757;">
+        <div class="game-over-title" id="go-title" style="color: #ff4757;">GAME OVER!</div>
+        <div class="game-over-score" id="go-score">SCORE: 0</div>
+        <div class="game-over-best" id="go-best">BEST: 0</div>
+        <div class="game-over-btns">
+            <button class="go-btn" id="go-retry-btn" style="color:#ff4757; border-color:#ff4757;" onclick="MG.retryGame()">🔄 RETRY</button>
+            <button class="go-btn" style="color:#555; border-color:#333;" onclick="MG.showHub()">🏠 HUB</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const MG = {
+    orgs: [],
+    difficulty: 'normal',
+    currentGame: null,
+    sessionScores: {},
+
+    // ---- Organism helpers ----
+    getSpritePath(org) {
+        const n = org.name.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/, '');
+        return `assets/sprites/${n}.png`;
+    },
+
+    getBiomes(org) {
+        return (org.habitat || '').split(',').map(s => s.trim()).filter(Boolean);
+    },
+
+    // ---- Init ----
+    async init() {
+        try {
+            const res = await fetch('assets/Organisms.json');
+            this.orgs = await res.json();
+        } catch(e) {
+            this.orgs = [];
+        }
+        this.hideAllScreens();
+        document.getElementById('screen-hub').classList.add('active');
+        this.setNavActive('nav-hub');
+        this.buildQuizHubGrid();
+    },
+
+    hideAllScreens() {
+        document.querySelectorAll('.hub-screen, .game-screen').forEach(s => {
+            s.classList.remove('active');
+        });
+        this.stopAllTimers();
+        document.getElementById('game-over-overlay').classList.remove('show');
+    },
+
+    setNavActive(id) {
+        document.querySelectorAll('.mg-nav-btn').forEach(b => b.classList.remove('active'));
+        const el = document.getElementById(id);
+        if (el) el.classList.add('active');
+    },
+
+    setHeader(title, sub) {
+        document.getElementById('mg-page-title').textContent = title;
+        document.getElementById('mg-page-sub').textContent = sub;
+    },
+
+    // ---- Timers ----
+    _timers: [],
+    addTimer(fn, ms) { this._timers.push(setInterval(fn, ms)); },
+    addTimeout(fn, ms) { this._timers.push(setTimeout(fn, ms)); },
+    stopAllTimers() { this._timers.forEach(t => clearInterval(t) || clearTimeout(t)); this._timers = []; },
+
+    // ---- Shuffle ----
+    shuffle(arr) {
+        const a = [...arr];
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    },
+
+    rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; },
+
+    pickDecoys(exclude, count, pool) {
+        const result = [];
+        const used = new Set([exclude.name]);
+        const shuffled = this.shuffle(pool);
+        for (const org of shuffled) {
+            if (result.length >= count) break;
+            if (!used.has(org.name)) { result.push(org); used.add(org.name); }
+        }
+        return result;
+    },
+
+    // ======================================
+    //  HUB
+    // ======================================
+    showHub() {
+        this.stopAllTimers();
+        this.hideAllScreens();
+        document.getElementById('screen-hub').classList.add('active');
+        this.setNavActive('nav-hub');
+        this.setHeader('MINIGAMES HUB', 'Select a game to play');
+        this.currentGame = null;
+    },
+
+    // ======================================
+    //  QUIZ HUB
+    // ======================================
+    quizModes: [
+        { id: 'scientificToCommon',   icon: '🔬', name: 'Scientific to Name',    desc: 'Identify by Latin names' },
+        { id: 'commonToScientific',   icon: '🔤', name: 'Name to Scientific',    desc: 'Learn the biology' },
+        { id: 'spriteToName',         icon: '🖼', name: 'Sprite to Name',        desc: 'Visual identification' },
+        { id: 'spriteToScientific',   icon: '🔍', name: 'Sprite to Scientific',  desc: 'Advanced recognition' },
+        { id: 'silhouetteToName',     icon: '👤', name: 'Silhouette to Name',    desc: 'Shadow challenge' },
+        { id: 'silhouetteToSci',      icon: '🫥', name: 'Silhouette to Scientific', desc: 'Expert biology' },
+        { id: 'nameToClass',          icon: '🦎', name: 'Taxonomy Expert',       desc: 'Identify biological class' },
+        { id: 'nameToDiet',           icon: '🍖', name: 'Dietary Analyst',       desc: 'Identify feeding habits' },
+        { id: 'spriteToType',         icon: '🔥', name: 'Elemental Affinity',    desc: 'Identify elemental type' },
+        { id: 'spriteToClass',        icon: '📦', name: 'Sprite to Class',       desc: 'Identify class from sprite' },
+        { id: 'nameToGenus',          icon: '🌿', name: 'Name to Genus',         desc: 'Identify biological genus' },
+        { id: 'commonToGenus',        icon: '🌱', name: 'Common to Genus',       desc: 'Identify genus from name' },
+        { id: 'genusToCommon',        icon: '🦋', name: 'Genus to Common',       desc: 'Identify animal from genus' },
+        { id: 'spriteToGenus',        icon: '🎨', name: 'Sprite to Genus',       desc: 'Identify genus from sprite' },
+        { id: 'nameToOrder',          icon: '🌳', name: 'Order Classification',  desc: 'Identify taxonomic order' },
+        { id: 'nameToFamily',         icon: '🧬', name: 'Family Ties',           desc: 'Identify biological family' },
+        { id: 'nameToSubfamily',      icon: '🔗', name: 'Subfamily Details',     desc: 'Identify specific subfamily' },
+    ],
+
+    buildQuizHubGrid() {
+        const grid = document.getElementById('quiz-mode-grid');
+        grid.innerHTML = this.quizModes.map(m => `
+            <button class="quiz-mode-btn" onclick="MG.startQuiz('${m.id}')">
+                <div class="quiz-mode-icon">${m.icon}</div>
+                <div class="quiz-mode-info">
+                    <div class="quiz-mode-name">${m.name.toUpperCase()}</div>
+                    <div class="quiz-mode-desc">${m.desc}</div>
+                </div>
+            </button>
+        `).join('');
+    },
+
+    showQuizHub() {
+        this.stopAllTimers();
+        this.hideAllScreens();
+        document.getElementById('screen-quiz-hub').classList.add('active');
+        this.setNavActive('nav-quiz');
+        this.setHeader('QUIZ GAMES', '17 modes — test your animal knowledge');
+        this.currentGame = 'quiz-hub';
+    },
+
+    setDifficulty(d) {
+        this.difficulty = d;
+        ['easy','normal','hard'].forEach(x => {
+            const btn = document.getElementById(`diff-${x}`);
+            btn.className = 'diff-chip';
+            if (x === d) btn.classList.add(`active-${x}`);
+        });
+    },
+
+    // ======================================
+    //  QUIZ GAME
+    // ======================================
+    quiz: {
+        mode: null, orgs: [], options: 4, timerSec: 10,
+        current: null, correctAnswer: null,
+        isAnswered: false, timeLeft: 10, streak: 0, points: 0, total: 0, correct: 0,
+        timer: null,
+    },
+
+    startQuiz(modeId) {
+        this.stopAllTimers();
+        this.hideAllScreens();
+        document.getElementById('screen-quiz').classList.add('active');
+        this.setNavActive('nav-quiz');
+        const mode = this.quizModes.find(m => m.id === modeId);
+        this.setHeader((mode?.name || 'QUIZ').toUpperCase(), `Difficulty: ${this.difficulty.toUpperCase()}`);
+
+        const q = this.quiz;
+        q.mode = modeId;
+        q.streak = 0; q.points = 0; q.total = 0; q.correct = 0;
+        q.isAnswered = false;
+
+        // difficulty
+        const diffs = { easy: {t:15, o:3}, normal: {t:10, o:4}, hard: {t:7, o:6} };
+        const cfg = diffs[this.difficulty];
+        q.timerSec = cfg.t;
+        q.options = cfg.o;
+
+        // filter orgs
+        q.orgs = this.filterOrgsForQuizMode(modeId);
+        if (q.orgs.length < q.options) {
+            alert('Not enough data for this quiz mode.');
+            this.showQuizHub(); return;
+        }
+        this.currentGame = 'quiz';
+        this.nextQuizQuestion();
+    },
+
+    filterOrgsForQuizMode(modeId) {
+        let pool = this.orgs;
+        if (modeId === 'nameToClass' || modeId === 'spriteToClass') {
+            pool = pool.filter(o => (o.animal_class || o.class || '').toLowerCase() !== 'unknown' && o.animal_class || o.class);
+        }
+        if (modeId === 'nameToDiet') pool = pool.filter(o => o.diet && o.diet.toLowerCase() !== 'unknown');
+        if (modeId === 'nameToOrder') pool = pool.filter(o => o.order && o.order.toLowerCase() !== 'unknown');
+        if (modeId === 'nameToFamily') pool = pool.filter(o => o.family && o.family.toLowerCase() !== 'unknown');
+        if (modeId === 'nameToSubfamily') pool = pool.filter(o => o.subfamily && o.subfamily.toLowerCase() !== 'unknown');
+        if (modeId === 'nameToGenus' || modeId === 'commonToGenus' || modeId === 'genusToCommon' || modeId === 'spriteToGenus') {
+            pool = pool.filter(o => o.scientific_name && o.scientific_name.split(' ').length > 1);
+        }
+        if (modeId === 'spriteToType') pool = pool.filter(o => o.category && o.category.trim() !== '');
+        return pool;
+    },
+
+    getQuizAnswerText(org, modeId) {
+        switch(modeId) {
+            case 'scientificToCommon': case 'spriteToName': case 'silhouetteToName': case 'genusToCommon': return org.name;
+            case 'commonToScientific': case 'spriteToScientific': case 'silhouetteToSci': return org.scientific_name || org.name;
+            case 'nameToClass': case 'spriteToClass': return org.animal_class || org.class || 'Unknown';
+            case 'nameToDiet': return org.diet || 'Unknown';
+            case 'spriteToType': return (org.category || 'basic').split(',')[0].trim();
+            case 'nameToGenus': case 'commonToGenus': case 'spriteToGenus': return (org.scientific_name || '').split(' ')[0] || org.name;
+            case 'genusToCommon': return org.name;
+            case 'nameToOrder': return org.order || 'Unknown';
+            case 'nameToFamily': return org.family || 'Unknown';
+            case 'nameToSubfamily': return org.subfamily || 'Unknown';
+            default: return org.name;
+        }
+    },
+
+    getQuizQuestionContent(org, modeId) {
+        const useSprite = ['spriteToName','spriteToScientific','spriteToType','spriteToClass','spriteToGenus'].includes(modeId);
+        const useSilhouette = ['silhouetteToName','silhouetteToSci'].includes(modeId);
+        const showSpritePlus = ['nameToClass','nameToDiet','nameToGenus','commonToGenus'].includes(modeId);
+
+        if (useSprite || useSilhouette) {
+            const silClass = useSilhouette ? 'silhouette' : '';
+            return `
+                <div class="quiz-question-label">What animal is this?</div>
+                <img class="quiz-sprite ${silClass}" id="quiz-sprite-img" src="${this.getSpritePath(org)}" alt="" onerror="this.src='assets/placeholder_400x200.png'">
+            `;
+        }
+        if (modeId === 'scientificToCommon') return `<div class="quiz-question-label">COMMON NAME OF:</div><div class="quiz-question-text">${org.scientific_name || org.name}</div>`;
+        if (modeId === 'genusToCommon') return `<div class="quiz-question-label">ANIMAL WITH GENUS:</div><div class="quiz-question-text">${(org.scientific_name || '').split(' ')[0] || org.name}</div>`;
+        if (modeId === 'commonToScientific') return `<div class="quiz-question-label">SCIENTIFIC NAME OF:</div><div class="quiz-question-text">${org.name.toUpperCase()}</div>`;
+        if (modeId === 'nameToClass') return `${showSpritePlus ? `<img class="quiz-sprite" src="${this.getSpritePath(org)}" alt="" style="max-height:120px" onerror="this.style.display='none'">` : ''}<div class="quiz-question-label">TAXONOMIC CLASS OF:</div><div class="quiz-question-text">${org.name.toUpperCase()}</div>`;
+        if (modeId === 'nameToDiet') return `${showSpritePlus ? `<img class="quiz-sprite" src="${this.getSpritePath(org)}" alt="" style="max-height:120px" onerror="this.style.display='none'">` : ''}<div class="quiz-question-label">PRIMARY DIET OF:</div><div class="quiz-question-text">${org.name.toUpperCase()}</div>`;
+        if (modeId === 'nameToGenus' || modeId === 'commonToGenus') return `${showSpritePlus ? `<img class="quiz-sprite" src="${this.getSpritePath(org)}" alt="" style="max-height:120px" onerror="this.style.display='none'">` : ''}<div class="quiz-question-label">GENUS OF:</div><div class="quiz-question-text">${org.name.toUpperCase()}</div>`;
+        if (modeId === 'nameToOrder') return `<div class="quiz-question-label">TAXONOMIC ORDER OF:</div><div class="quiz-question-text">${org.name.toUpperCase()}</div>`;
+        if (modeId === 'nameToFamily') return `<div class="quiz-question-label">BIOLOGICAL FAMILY OF:</div><div class="quiz-question-text">${org.name.toUpperCase()}</div>`;
+        if (modeId === 'nameToSubfamily') return `<div class="quiz-question-label">SUBFAMILY OF:</div><div class="quiz-question-text">${org.name.toUpperCase()}</div>`;
+        return `<div class="quiz-question-text">${org.name.toUpperCase()}</div>`;
+    },
+
+    nextQuizQuestion() {
+        const q = this.quiz;
+        q.isAnswered = false;
+        clearInterval(q.timer);
+
+        // pick random correct organism
+        q.current = this.rand(q.orgs);
+        q.correctAnswer = this.getQuizAnswerText(q.current, q.mode);
+
+        // build options — deduplicated by answer text
+        const answerSet = new Set([q.correctAnswer]);
+        const decoys = [];
+        const shuffled = this.shuffle(q.orgs);
+        for (const org of shuffled) {
+            if (decoys.length + 1 >= q.options) break;
+            const ans = this.getQuizAnswerText(org, q.mode);
+            if (!answerSet.has(ans)) { answerSet.add(ans); decoys.push(org); }
+        }
+        const allOptions = this.shuffle([q.current, ...decoys]);
+
+        // Render question
+        document.getElementById('quiz-question-box').innerHTML = this.getQuizQuestionContent(q.current, q.mode);
+
+        // Render options (3-col for hard mode)
+        const optEl = document.getElementById('quiz-options');
+        optEl.className = `quiz-options${q.options === 6 ? ' three-col' : ''}`;
+        optEl.innerHTML = allOptions.map(org => {
+            const ans = this.getQuizAnswerText(org, q.mode);
+            return `<button class="quiz-opt-btn" onclick="MG.handleQuizAnswer('${ans.replace(/'/g,'\\\'')}')">${ans.toUpperCase()}</button>`;
+        }).join('');
+
+        document.getElementById('quiz-feedback').textContent = '';
+        document.getElementById('quiz-feedback').style.color = '#aaa';
+
+        // Timer
+        q.timeLeft = q.timerSec;
+        this.updateQuizTimer();
+        q.timer = setInterval(() => {
+            q.timeLeft--;
+            this.updateQuizTimer();
+            if (q.timeLeft <= 0) {
+                clearInterval(q.timer);
+                this.handleQuizAnswer('');
+            }
+        }, 1000);
+    },
+
+    updateQuizTimer() {
+        const q = this.quiz;
+        const pct = (q.timeLeft / q.timerSec) * 100;
+        const fill = document.getElementById('quiz-timer-fill');
+        fill.style.width = pct + '%';
+        fill.style.background = pct > 50 ? '#ff0000' : pct > 20 ? '#ffaa00' : '#ff4757';
+    },
+
+    handleQuizAnswer(ans) {
+        const q = this.quiz;
+        if (q.isAnswered) return;
+        q.isAnswered = true;
+        clearInterval(q.timer);
+        q.total++;
+
+        const isCorrect = ans === q.correctAnswer;
+        const feedbackEl = document.getElementById('quiz-feedback');
+        const optBtns = document.querySelectorAll('.quiz-opt-btn');
+
+        // Reveal answers
+        optBtns.forEach(btn => {
+            btn.disabled = true;
+            if (btn.textContent === q.correctAnswer.toUpperCase()) btn.classList.add('correct');
+            else if (btn.textContent === ans.toUpperCase() && !isCorrect) btn.classList.add('wrong');
+        });
+
+        // Reveal silhouette
+        const spriteImg = document.getElementById('quiz-sprite-img');
+        if (spriteImg && isCorrect) {
+            spriteImg.classList.remove('silhouette');
+            spriteImg.classList.add('revealed');
+        }
+
+        if (isCorrect) {
+            q.correct++;
+            q.streak++;
+            q.points += 10 * (q.timeLeft + 1);
+            feedbackEl.textContent = q.streak >= 5 && q.streak % 5 === 0 ? `🔥 ${q.streak} STREAK! BONUS XP!` : '✓ CORRECT! +' + (10 * (q.timeLeft + 1)) + ' PTS';
+            feedbackEl.style.color = '#2ed573';
+        } else {
+            q.streak = 0;
+            feedbackEl.textContent = ans ? `✗ WRONG! ANSWER: ${q.correctAnswer.toUpperCase()}` : `⏱ TIME UP! ANSWER: ${q.correctAnswer.toUpperCase()}`;
+            feedbackEl.style.color = '#ff4757';
+        }
+
+        // Update header stats
+        this.setHeader(`${(this.quizModes.find(m=>m.id===q.mode)?.name||'QUIZ').toUpperCase()}`, `✓ ${q.correct}/${q.total}  🔥 ${q.streak}  ⭐ ${q.points}`);
+
+        // Next question delay
+        this.addTimeout(() => { if (this.currentGame === 'quiz') this.nextQuizQuestion(); }, 2200);
+    },
+
+    // ======================================
+    //  STAT SHOWDOWN
+    // ======================================
+    showdown: {
+        animalA: null, animalB: null, stat: null,
+        streak: 0, bestStreak: 0, revealed: false, gameOver: false,
+    },
+
+    showdownStats: ['health','attack','defense','speed','weight'],
+    showdownStatColors: { health:'#ff4757', attack:'#ffaa00', defense:'#3498db', speed:'#2ed573', weight:'#ff8c00' },
+    showdownStatLabels: { health:'HEALTH', attack:'ATTACK', defense:'DEFENSE', speed:'SPEED', weight:'WEIGHT (KG)' },
+
+    getStatValue(org, stat) {
+        switch(stat) {
+            case 'health': return org.health || 0;
+            case 'attack': return org.attack || 0;
+            case 'defense': return org.defense || 0;
+            case 'speed': return org.speed || 0;
+            case 'weight': return parseFloat(org.weight) || 0;
+        }
+        return 0;
+    },
+
+    startShowdown() {
+        this.stopAllTimers();
+        this.hideAllScreens();
+        document.getElementById('screen-showdown').classList.add('active');
+        this.setNavActive('nav-showdown');
+        this.setHeader('STAT SHOWDOWN', 'Higher or Lower survival mode');
+
+        const sd = this.showdown;
+        sd.streak = 0; sd.bestStreak = 0; sd.gameOver = false; sd.revealed = false;
+        this.currentGame = 'showdown';
+
+        this.nextShowdownRound(true);
+    },
+
+    nextShowdownRound(isFirst = false) {
+        const sd = this.showdown;
+        if (isFirst) {
+            sd.animalA = this.rand(this.orgs);
+        } else {
+            sd.animalA = sd.animalB;
+        }
+        sd.stat = this.rand(this.showdownStats);
+        sd.revealed = false;
+
+        // pick B with different stat value
+        let attempts = 0;
+        do {
+            sd.animalB = this.rand(this.orgs);
+            attempts++;
+        } while ((sd.animalB.name === sd.animalA.name || this.getStatValue(sd.animalB, sd.stat) === this.getStatValue(sd.animalA, sd.stat)) && attempts < 100);
+
+        this.renderShowdown();
+    },
+
+    renderShowdown() {
+        const sd = this.showdown;
+        const color = this.showdownStatColors[sd.stat];
+        const label = this.showdownStatLabels[sd.stat];
+        const valA = this.getStatValue(sd.animalA, sd.stat);
+        const valB = this.getStatValue(sd.animalB, sd.stat);
+
+        document.getElementById('showdown-stat-label').textContent = label;
+        document.getElementById('showdown-stat-label').style.color = color;
+        document.getElementById('showdown-stat-label').style.textShadow = `0 0 20px ${color}`;
+
+        const cards = document.getElementById('showdown-cards');
+        const hiddenHtml = !sd.revealed ? `
+            <div class="showdown-hidden-stat">
+                <button class="showdown-guess-btn higher" onclick="MG.handleShowdownGuess(true)">↑ HIGHER</button>
+                <button class="showdown-guess-btn lower" onclick="MG.handleShowdownGuess(false)">↓ LOWER</button>
+            </div>
+        ` : `<div class="showdown-stat-value" style="color:${color}; text-shadow: 0 0 15px ${color};">${sd.stat === 'weight' ? valB.toFixed(2) : valB}</div>`;
+
+        cards.innerHTML = `
+            <div class="showdown-animal-card">
+                <div class="showdown-animal-name">${sd.animalA.name.toUpperCase()}</div>
+                <img class="showdown-sprite" src="${this.getSpritePath(sd.animalA)}" alt="" onerror="this.style.opacity=0.2">
+                <div class="showdown-stat-value" style="color:${color}; text-shadow: 0 0 15px ${color};">${sd.stat === 'weight' ? valA.toFixed(2) : valA}</div>
+            </div>
+            <div class="showdown-animal-card is-b">
+                <div class="showdown-animal-name">${sd.animalB.name.toUpperCase()}</div>
+                <img class="showdown-sprite" src="${this.getSpritePath(sd.animalB)}" alt="" onerror="this.style.opacity=0.2">
+                ${hiddenHtml}
+            </div>
+        `;
+
+        this.setHeader('STAT SHOWDOWN', `🔥 Streak: ${sd.streak}  🏆 Best: ${sd.bestStreak}`);
+    },
+
+    handleShowdownGuess(guessedHigher) {
+        const sd = this.showdown;
+        if (sd.revealed || sd.gameOver) return;
+        sd.revealed = true;
+
+        const valA = this.getStatValue(sd.animalA, sd.stat);
+        const valB = this.getStatValue(sd.animalB, sd.stat);
+        const isHigher = valB > valA;
+        const isCorrect = (guessedHigher && isHigher) || (!guessedHigher && !isHigher);
+
+        this.renderShowdown();
+
+        if (isCorrect) {
+            sd.streak++;
+            if (sd.streak > sd.bestStreak) sd.bestStreak = sd.streak;
+            this.addTimeout(() => { if (this.currentGame === 'showdown') this.nextShowdownRound(); }, 1500);
+        } else {
+            sd.gameOver = true;
+            this.addTimeout(() => { this.showGameOver('WRONG!', sd.streak, sd.bestStreak, '#ff4757', 'showdown'); }, 1000);
+        }
+    },
+
+    // ======================================
+    //  SILHOUETTE SPRINT
+    // ======================================
+    sprint: {
+        score: 0, bestScore: 0, timeLeft: 30, maxTime: 40,
+        current: null, options: [],
+    },
+
+    startSprint() {
+        this.stopAllTimers();
+        this.hideAllScreens();
+        document.getElementById('screen-sprint').classList.add('active');
+        this.setNavActive('nav-sprint');
+        this.setHeader('SILHOUETTE SPRINT', 'Identify species by shadow — survive as long as possible!');
+        this.currentGame = 'sprint';
+
+        const sp = this.sprint;
+        sp.score = 0; sp.timeLeft = 30; sp.maxTime = 40;
+        this.nextSprintQuestion();
+
+        this.addTimer(() => {
+            if (this.currentGame !== 'sprint') return;
+            sp.timeLeft -= 0.1;
+            if (sp.timeLeft <= 0) { this.sprintGameOver(); return; }
+            const pct = (sp.timeLeft / sp.maxTime) * 100;
+            const fill = document.getElementById('sprint-timer-fill');
+            fill.style.width = pct + '%';
+            fill.style.background = sp.timeLeft < 10 ? '#ff4757' : '#00c8ff';
+            this.setHeader('SILHOUETTE SPRINT', `SCORE: ${sp.score}  ⏱ ${sp.timeLeft.toFixed(1)}s`);
+        }, 100);
+    },
+
+    nextSprintQuestion() {
+        const sp = this.sprint;
+        sp.current = this.rand(this.orgs);
+        const decoys = this.pickDecoys(sp.current, 3, this.orgs);
+        sp.options = this.shuffle([sp.current, ...decoys]);
+
+        const img = document.getElementById('sprint-sil-img');
+        img.src = this.getSpritePath(sp.current);
+        img.onerror = () => img.src = 'assets/placeholder_400x200.png';
+
+        document.getElementById('sprint-options').innerHTML = sp.options.map(opt => `
+            <button class="sprint-opt-btn" onclick="MG.handleSprintGuess('${opt.name.replace(/'/g,'\\\'')}')">${opt.name.toUpperCase()}</button>
+        `).join('');
+    },
+
+    handleSprintGuess(name) {
+        const sp = this.sprint;
+        if (this.currentGame !== 'sprint') return;
+        const btns = document.querySelectorAll('.sprint-opt-btn');
+        const isCorrect = name === sp.current.name;
+
+        btns.forEach(b => {
+            if (b.textContent === name.toUpperCase()) {
+                b.classList.add(isCorrect ? 'flash-correct' : 'flash-wrong');
+            }
+        });
+
+        if (isCorrect) {
+            sp.score++;
+            sp.timeLeft = Math.min(sp.maxTime, sp.timeLeft + 2);
+        } else {
+            sp.timeLeft = Math.max(0, sp.timeLeft - 3);
+        }
+
+        this.addTimeout(() => { if (this.currentGame === 'sprint') this.nextSprintQuestion(); }, 300);
+    },
+
+    sprintGameOver() {
+        this.stopAllTimers();
+        if (this.sprint.score > this.sprint.bestScore) this.sprint.bestScore = this.sprint.score;
+        this.showGameOver('TIME\'S UP!', this.sprint.score, this.sprint.bestScore, '#00c8ff', 'sprint');
+    },
+
+    // ======================================
+    //  ECHO MEMORY
+    // ======================================
+    echo: {
+        activeFour: [], sequence: [], playerSeq: [],
+        wave: 1, points: 0, bestScore: 0,
+        isPlaying: false, isGameOver: false,
+    },
+
+    echoColors: ['#00d4ff', '#ff8c00', '#aa00ff', '#00ff64'],
+
+    startEcho() {
+        this.stopAllTimers();
+        this.hideAllScreens();
+        document.getElementById('screen-echo').classList.add('active');
+        this.setNavActive('nav-echo');
+        this.setHeader('THE ECHO', 'Memory sequence challenge — watch and repeat!');
+        this.currentGame = 'echo';
+
+        const ec = this.echo;
+        ec.wave = 1; ec.points = 0; ec.isGameOver = false;
+        ec.sequence = []; ec.playerSeq = [];
+
+        // pick 4 random organisms
+        const shuffled = this.shuffle(this.orgs);
+        ec.activeFour = shuffled.slice(0, 4);
+
+        this.renderEchoGrid();
+        this.addTimeout(() => { if (this.currentGame === 'echo') this.nextEchoWave(); }, 800);
+    },
+
+    renderEchoGrid(flashIdx = null) {
+        const ec = this.echo;
+        document.getElementById('echo-wave').textContent = ec.wave;
+        document.getElementById('echo-points').textContent = ec.points + ' POINTS';
+
+        const grid = document.getElementById('echo-grid');
+        grid.innerHTML = ec.activeFour.map((org, i) => {
+            const color = this.echoColors[i];
+            const isFlashing = flashIdx === i;
+            const style = `--tile-color:${color}; border-color:${isFlashing ? 'white' : color+'66'}; background: ${isFlashing ? color + '44' : 'rgba(15,15,15,0.9)'};`;
+            return `
+                <div class="echo-tile ${isFlashing ? 'flashing' : ''}" style="${style}" onclick="MG.handleEchoInput(${i})">
+                    <img src="${this.getSpritePath(org)}" alt="" style="filter:${isFlashing ? 'brightness(2)' : 'brightness(0.5)'}; width:70%; height:70%; object-fit:contain;" onerror="this.style.display='none'">
+                </div>
+            `;
+        }).join('');
+    },
+
+    nextEchoWave() {
+        const ec = this.echo;
+        ec.sequence.push(Math.floor(Math.random() * 4));
+        ec.playerSeq = [];
+        ec.isPlaying = true;
+        document.getElementById('echo-instruction').textContent = 'WATCH CAREFULLY...';
+        document.getElementById('echo-instruction').style.color = '#ff8c00';
+        this.renderEchoGrid();
+        this.playEchoSequence(0);
+    },
+
+    playEchoSequence(idx) {
+        const ec = this.echo;
+        if (idx >= ec.sequence.length) {
+            ec.isPlaying = false;
+            document.getElementById('echo-instruction').textContent = 'REPEAT THE ECHO!';
+            document.getElementById('echo-instruction').style.color = '#fff';
+            this.renderEchoGrid();
+            return;
+        }
+        const flashIdx = ec.sequence[idx];
+        this.renderEchoGrid(flashIdx);
+        this.addTimeout(() => {
+            this.renderEchoGrid();
+            this.addTimeout(() => {
+                if (this.currentGame === 'echo') this.playEchoSequence(idx + 1);
+            }, 200);
+        }, 600);
+    },
+
+    handleEchoInput(idx) {
+        const ec = this.echo;
+        if (ec.isPlaying || ec.isGameOver || this.currentGame !== 'echo') return;
+
+        this.renderEchoGrid(idx);
+        this.addTimeout(() => { if (this.currentGame === 'echo') this.renderEchoGrid(); }, 200);
+
+        ec.playerSeq.push(idx);
+        const pos = ec.playerSeq.length - 1;
+
+        if (ec.playerSeq[pos] !== ec.sequence[pos]) {
+            // wrong
+            ec.isGameOver = true;
+            if (ec.wave - 1 > ec.bestScore) ec.bestScore = ec.wave - 1;
+            this.addTimeout(() => { this.showGameOver('FADED!', ec.wave - 1, ec.bestScore, '#b400ff', 'echo'); }, 400);
+            return;
+        }
+
+        if (ec.playerSeq.length === ec.sequence.length) {
+            ec.wave++;
+            ec.points += 100;
+            document.getElementById('echo-instruction').textContent = '✓ CORRECT! NEXT WAVE...';
+            document.getElementById('echo-instruction').style.color = '#2ed573';
+            this.addTimeout(() => { if (this.currentGame === 'echo') this.nextEchoWave(); }, 800);
+        }
+    },
+
+    // ======================================
+    //  HABITAT SORT
+    // ======================================
+    habitat: {
+        score: 0, bestScore: 0, timeLeft: 60, maxTime: 60,
+        current: null, biomes: [],
+    },
+
+    startHabitat() {
+        this.stopAllTimers();
+        this.hideAllScreens();
+        document.getElementById('screen-habitat').classList.add('active');
+        this.setNavActive('nav-habitat');
+        this.setHeader('HABITAT SORT', 'Place each animal in its correct biome!');
+        this.currentGame = 'habitat';
+
+        const hb = this.habitat;
+        hb.score = 0; hb.timeLeft = 60;
+
+        // gather all biomes
+        const biomeSet = new Set();
+        this.orgs.forEach(o => {
+            (o.habitat||'').split(',').map(s=>s.trim()).filter(Boolean).forEach(b => biomeSet.add(b));
+        });
+        hb.biomes = [...biomeSet].sort().slice(0, 16); // cap at 16
+
+        this.renderHabitatBiomes();
+        this.nextHabitatAnimal();
+
+        this.addTimer(() => {
+            if (this.currentGame !== 'habitat') return;
+            hb.timeLeft -= 0.1;
+            if (hb.timeLeft <= 0) { this.habitatGameOver(); return; }
+            const pct = (hb.timeLeft / hb.maxTime) * 100;
+            document.getElementById('habitat-timer-fill').style.width = pct + '%';
+            document.getElementById('habitat-timer-fill').style.background = hb.timeLeft < 15 ? '#ff4757' : '#00ff64';
+            document.getElementById('habitat-time-text').textContent = hb.timeLeft.toFixed(1) + 's';
+            document.getElementById('habitat-score-label').textContent = 'SCORE: ' + hb.score;
+        }, 100);
+    },
+
+    renderHabitatBiomes() {
+        const hb = this.habitat;
+        document.getElementById('habitat-biomes').innerHTML = hb.biomes.map(biome => {
+            const slug = biome.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
+            return `
+                <button class="habitat-biome-btn" id="biome-${slug}" onclick="MG.handleHabitatGuess('${biome.replace(/'/g,'\\\'')}')" data-biome="${biome}">
+                    <img class="habitat-biome-img" src="assets/biomes/${slug}.png" alt="" onerror="this.src='assets/placeholder_400x200.png'">
+                    <div class="habitat-biome-name">${biome.toUpperCase()}</div>
+                </button>
+            `;
+        }).join('');
+    },
+
+    nextHabitatAnimal() {
+        const hb = this.habitat;
+        // filter orgs that have at least one habitat in our biome list
+        const eligible = this.orgs.filter(o => {
+            const biomes = this.getBiomes(o);
+            return biomes.some(b => hb.biomes.includes(b));
+        });
+        hb.current = this.rand(eligible);
+
+        const display = document.getElementById('habitat-animal-display');
+        display.innerHTML = `
+            <img class="habitat-animal-sprite" src="${this.getSpritePath(hb.current)}" alt="${hb.current.name}" onerror="this.style.opacity=0.2">
+            <div class="habitat-animal-name">${hb.current.name.toUpperCase()}</div>
+        `;
+    },
+
+    handleHabitatGuess(biome) {
+        const hb = this.habitat;
+        if (this.currentGame !== 'habitat') return;
+        const correctBiomes = this.getBiomes(hb.current);
+        const isCorrect = correctBiomes.includes(biome);
+        const slug = biome.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
+        const btn = document.getElementById(`biome-${slug}`);
+
+        if (btn) {
+            btn.classList.add(isCorrect ? 'flash-correct' : 'flash-wrong');
+            this.addTimeout(() => { if (btn) btn.classList.remove('flash-correct','flash-wrong'); }, 600);
+        }
+
+        if (isCorrect) {
+            hb.score += 10;
+            hb.timeLeft = Math.min(hb.maxTime, hb.timeLeft + 3);
+        } else {
+            hb.timeLeft = Math.max(0, hb.timeLeft - 5);
+        }
+
+        this.addTimeout(() => { if (this.currentGame === 'habitat') this.nextHabitatAnimal(); }, 400);
+    },
+
+    habitatGameOver() {
+        this.stopAllTimers();
+        if (this.habitat.score > this.habitat.bestScore) this.habitat.bestScore = this.habitat.score;
+        this.showGameOver('TIME\'S UP!', this.habitat.score, this.habitat.bestScore, '#00ff64', 'habitat');
+    },
+
+    // ======================================
+    //  GAME OVER
+    // ======================================
+    _retryGame: null,
+
+    showGameOver(title, score, best, color, retryKey) {
+        this._retryGame = retryKey;
+        const overlay = document.getElementById('game-over-overlay');
+        const box = document.getElementById('game-over-box');
+        const scoreUnit = { showdown:'STREAK', sprint:'SCORE', echo:'WAVE', habitat:'SCORE' }[retryKey] || 'SCORE';
+
+        document.getElementById('go-title').textContent = title;
+        document.getElementById('go-title').style.color = color;
+        document.getElementById('go-score').textContent = `${scoreUnit}: ${score}`;
+        document.getElementById('go-best').textContent = `BEST: ${best}`;
+        box.style.borderColor = color;
+        const retryBtn = document.getElementById('go-retry-btn');
+        retryBtn.style.color = color;
+        retryBtn.style.borderColor = color;
+
+        overlay.classList.add('show');
+    },
+
+    retryGame() {
+        document.getElementById('game-over-overlay').classList.remove('show');
+        switch(this._retryGame) {
+            case 'showdown': this.startShowdown(); break;
+            case 'sprint': this.startSprint(); break;
+            case 'echo': this.startEcho(); break;
+            case 'habitat': this.startHabitat(); break;
+        }
+    },
+};
+
+// Boot
+MG.init();
+</script>
+</body>
+</html>
