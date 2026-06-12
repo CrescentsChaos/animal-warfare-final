@@ -251,7 +251,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   String? playerEquippedCard;
   String? opponentEquippedCard;
   Function(String cardId, bool isPlayer)? onCardPlayed;
-  
+
   bool isCapturing = false;
   int captureShakeCount = 0;
   String battleLog = ''; // Current/Latest message
@@ -456,13 +456,19 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     if (isTrainerBattle && trainerInfo == null) {
       trainerInfo = TrainerDataLoader.generateRandom(biome: biomeName);
     }
-    String? _getRandomValidCard(List<CapturedOrganism>? t, String? b, Random r) {
+    String? getRandomValidCard(List<CapturedOrganism>? t, String? b, Random r) {
       if (BattleCard.allCards.isEmpty) return null;
       final safeT = t ?? [];
       final valid = BattleCard.allCards.where((c) {
-        if (c.requiredOrganism != null && !safeT.any((o) => o.baseOrganism.name == c.requiredOrganism)) return false;
-        if (c.requiredFamily != null && !safeT.any((o) => o.baseOrganism.family == c.requiredFamily)) return false;
-        if (c.requiredBiomes.isNotEmpty && (b == null || !c.requiredBiomes.contains(b))) return false;
+        if (c.requiredOrganism != null &&
+            !safeT.any((o) => o.baseOrganism.name == c.requiredOrganism))
+          return false;
+        if (c.requiredFamily != null &&
+            !safeT.any((o) => o.baseOrganism.family == c.requiredFamily))
+          return false;
+        if (c.requiredBiomes.isNotEmpty &&
+            (b == null || !c.requiredBiomes.contains(b)))
+          return false;
         return true;
       }).toList();
       return valid.isNotEmpty ? valid[r.nextInt(valid.length)].id : null;
@@ -471,30 +477,62 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     // Random battle logic: non-trainer, non-rogue battles get random cards for both
     if (!isTrainerBattle && !isRogueMode) {
       if (BattleCard.allCards.isNotEmpty) {
-        playerEquippedCard ??= _getRandomValidCard(this.playerTeam, biomeName, _random);
-        opponentEquippedCard ??= _getRandomValidCard(this.opponentTeam, biomeName, _random);
+        playerEquippedCard ??= getRandomValidCard(
+          this.playerTeam,
+          biomeName,
+          _random,
+        );
+        opponentEquippedCard ??= getRandomValidCard(
+          this.opponentTeam,
+          biomeName,
+          _random,
+        );
       } else {
         // Cards not yet loaded — load them and assign once available
         BattleCard.loadCards().then((_) {
           if (BattleCard.allCards.isNotEmpty) {
-            playerEquippedCard ??= _getRandomValidCard(this.playerTeam, biomeName, _random);
-            opponentEquippedCard ??= _getRandomValidCard(this.opponentTeam, biomeName, _random);
+            playerEquippedCard ??= getRandomValidCard(
+              this.playerTeam,
+              biomeName,
+              _random,
+            );
+            opponentEquippedCard ??= getRandomValidCard(
+              this.opponentTeam,
+              biomeName,
+              _random,
+            );
             notifyListeners();
           }
         });
       }
     }
-    
+
     // Give AI (and player) a random valid card if trainer battle
     if (isTrainerBattle) {
       if (BattleCard.allCards.isNotEmpty) {
-        opponentEquippedCard ??= _getRandomValidCard(this.opponentTeam, biomeName, _random);
-        playerEquippedCard ??= _getRandomValidCard(this.playerTeam, biomeName, _random);
+        opponentEquippedCard ??= getRandomValidCard(
+          this.opponentTeam,
+          biomeName,
+          _random,
+        );
+        playerEquippedCard ??= getRandomValidCard(
+          this.playerTeam,
+          biomeName,
+          _random,
+        );
       } else {
         BattleCard.loadCards().then((_) {
           if (BattleCard.allCards.isNotEmpty) {
-            opponentEquippedCard ??= _getRandomValidCard(this.opponentTeam, biomeName, _random);
-            playerEquippedCard ??= _getRandomValidCard(this.playerTeam, biomeName, _random);
+            opponentEquippedCard ??= getRandomValidCard(
+              this.opponentTeam,
+              biomeName,
+              _random,
+            );
+            playerEquippedCard ??= getRandomValidCard(
+              this.playerTeam,
+              biomeName,
+              _random,
+            );
             notifyListeners();
           }
         });
@@ -810,7 +848,6 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     // 2. Speed Check
     // Removed "Opponent is faster" notification as per user request.
   }
-
 
   Future<void> _checkEntranceAbility(
     BattleOrganism user,
@@ -1357,7 +1394,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     _stopSuggestionTimer();
 
     playerUsedCardThisBattle = true;
-    
+
     // Opponent picks action
     final int? switchIndex = _shouldOpponentSwitch();
     if (switchIndex != null) {
@@ -1396,13 +1433,14 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     await _executeCard(cardId, isPlayer: true);
 
     // After card, the opponent gets their turn
-    if (currentTurnOpponentMove!.name != 'Switch' && currentTurnOpponentMove!.name != 'Card') {
+    if (currentTurnOpponentMove!.name != 'Switch' &&
+        currentTurnOpponentMove!.name != 'Card') {
       currentState = BattleState.opponentTurn;
       notifyListeners();
       // Use existing processOpponentTurn to resolve the move (which is usually a counter/regular attack)
       await _processOpponentTurn(isCounter: false);
     }
-    
+
     await _finalizeTurn();
   }
 
@@ -1414,7 +1452,10 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     // Check Wildfire
     final biome = (biomeName ?? '').toLowerCase();
-    final isForestOrJungle = biome.contains('jungle') || biome.contains('forest') || biome.contains('taiga');
+    final isForestOrJungle =
+        biome.contains('jungle') ||
+        biome.contains('forest') ||
+        biome.contains('taiga');
     if (isForestOrJungle) {
       if (random.nextDouble() < 0.3) {
         return 'wildfire';
@@ -1422,9 +1463,17 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     }
 
     // Check Flash Flood
-    final isWaterBiome = biome.contains('wetland') || biome.contains('river') || biome.contains('swamp') || 
-                         biome.contains('coral reef') || biome.contains('lake') || biome.contains('ocean') ||
-                         biome.contains('desert') || biome.contains('savanna') || biome.contains('mountain') || biome.contains('taiga');
+    final isWaterBiome =
+        biome.contains('wetland') ||
+        biome.contains('river') ||
+        biome.contains('swamp') ||
+        biome.contains('coral reef') ||
+        biome.contains('lake') ||
+        biome.contains('ocean') ||
+        biome.contains('desert') ||
+        biome.contains('savanna') ||
+        biome.contains('mountain') ||
+        biome.contains('taiga');
     if (isWaterBiome) {
       if (random.nextDouble() < 0.25) {
         return 'flash_flood';
@@ -1432,9 +1481,12 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     }
 
     // Check Gustave (needs Nile Crocodile in opponent team)
-    final hasCroc = opponentTeam.any((org) => org.baseOrganism.name == 'Nile Crocodile');
+    final hasCroc = opponentTeam.any(
+      (org) => org.baseOrganism.name == 'Nile Crocodile',
+    );
     if (hasCroc) {
-      if (player.health < player.maxHealth * 0.5 || opponent.health < opponent.maxHealth * 0.7) {
+      if (player.health < player.maxHealth * 0.5 ||
+          opponent.health < opponent.maxHealth * 0.7) {
         if (random.nextDouble() < 0.4) {
           return 'gustave';
         }
@@ -1442,7 +1494,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     }
 
     // Check Locust Swarm (needs Acrididae family in opponent team)
-    final hasLocust = opponentTeam.any((org) => org.baseOrganism.family == 'Acrididae');
+    final hasLocust = opponentTeam.any(
+      (org) => org.baseOrganism.family == 'Acrididae',
+    );
     if (hasLocust) {
       if (player.itemDisabledTurns <= 0 && random.nextDouble() < 0.3) {
         return 'locust_swarm';
@@ -1457,7 +1511,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
   Future<void> _executeCard(String cardId, {required bool isPlayer}) async {
     final userTeam = isPlayer ? playerTeam : opponentTeam;
     final userName = isPlayer ? "You" : "The opponent";
-    
+
     // Trigger the UI animation callback
     onCardPlayed?.call(cardId, isPlayer);
 
@@ -1470,7 +1524,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
 
     addToLog('$userName played the $cardName card!');
     notifyListeners();
-    
+
     // Wait for the user to tap to dismiss the card overlay
     if (!isTesting) {
       cardAnimationCompleter = Completer<void>();
@@ -1481,42 +1535,50 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     if (cardId == 'gustave') {
       // Check for Nile Crocodile
       final croc = userTeam.cast<CapturedOrganism?>().firstWhere(
-        (org) => org?.baseOrganism.name == 'Nile Crocodile', 
-        orElse: () => null
+        (org) => org?.baseOrganism.name == 'Nile Crocodile',
+        orElse: () => null,
       );
       if (croc == null) {
         addToLog('But there was no Nile Crocodile on the team... It failed!');
         notifyListeners();
-        if (!isTesting) await Future.delayed(const Duration(milliseconds: 2000));
+        if (!isTesting)
+          await Future.delayed(const Duration(milliseconds: 2000));
         return;
       }
-      
+
       // Execute massive damage
       final target = isPlayer ? opponent : player;
       int attackStat = croc.getAttack(atLevel: croc.level);
       // Formula: ((2 * level / 5 + 2) * power * A / D) / 50 + 2
-      double damage = ((2 * 50 / 5 + 2) * 160 * attackStat / target.currentDefense) / 50 + 2;
+      double damage =
+          ((2 * 50 / 5 + 2) * 160 * attackStat / target.currentDefense) / 50 +
+          2;
       damage *= 1.5; // STAB equivalent for flavor
       int finalDamage = damage.round().clamp(1, target.maxHealth);
-      
+
       target.health = (target.health - finalDamage).clamp(0, target.maxHealth);
-      addToLog('${target.name} took massive damage from Gustave ($finalDamage)!');
-      
+      addToLog(
+        '${target.name} took massive damage from Gustave ($finalDamage)!',
+      );
+
       if (target.health > 0) {
         await applyStatusEffect(target, StatusEffectType.bleed, chance: 100);
       }
     } else if (cardId == 'locust_swarm') {
       final grasshopper = userTeam.cast<CapturedOrganism?>().firstWhere(
-        (org) => org?.baseOrganism.family == 'Acrididae', 
-        orElse: () => null
+        (org) => org?.baseOrganism.family == 'Acrididae',
+        orElse: () => null,
       );
       if (grasshopper == null) {
-        addToLog('But there was no Acrididae family member on the team... It failed!');
+        addToLog(
+          'But there was no Acrididae family member on the team... It failed!',
+        );
         notifyListeners();
-        if (!isTesting) await Future.delayed(const Duration(milliseconds: 2000));
+        if (!isTesting)
+          await Future.delayed(const Duration(milliseconds: 2000));
         return;
       }
-      
+
       player.itemDisabledTurns = 999;
       opponent.itemDisabledTurns = 999;
       addToLog('A swarm of locusts ate all the berries! Items are disabled!');
@@ -1527,17 +1589,30 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         opponentHazards.clear();
         _setWeather(Weather.rain, 5);
         addToLog('The flash flood washed away all hazards and brought rain!');
-      } else if (biome.contains('wetland') || biome.contains('river') || biome.contains('swamp') || biome.contains('coral reef') || biome.contains('lake') || biome.contains('ocean')) {
+      } else if (biome.contains('wetland') ||
+          biome.contains('river') ||
+          biome.contains('swamp') ||
+          biome.contains('coral reef') ||
+          biome.contains('lake') ||
+          biome.contains('ocean')) {
         final target = isPlayer ? opponent : player;
         await applyStatusEffect(target, StatusEffectType.stun, chance: 100);
-        await applyStatusEffect(target, StatusEffectType.vulnerable, chance: 100);
+        await applyStatusEffect(
+          target,
+          StatusEffectType.vulnerable,
+          chance: 100,
+        );
         addToLog('The target was stunned and made vulnerable by the flood!');
       } else if (biome.contains('mountain') || biome.contains('taiga')) {
         final target = isPlayer ? opponent : player;
-        bool isGrounded = target.semiInvulnerable != 'airborne' && !target.types.contains(ElementalType.flying);
+        bool isGrounded =
+            target.semiInvulnerable != 'airborne' &&
+            !target.types.contains(ElementalType.flying);
         if (isGrounded) {
           await applyStatChange(target, 'speed', -2);
-          addToLog('The flood triggered a mudslide! ${target.name}\'s speed sharply fell!');
+          addToLog(
+            'The flood triggered a mudslide! ${target.name}\'s speed sharply fell!',
+          );
         } else {
           addToLog('The mudslide missed the airborne target!');
         }
@@ -1546,11 +1621,16 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       }
     } else if (cardId == 'wildfire') {
       final biome = (biomeName ?? '').toLowerCase();
-      if (biome.contains('jungle') || biome.contains('forest') || biome.contains('taiga')) {
+      if (biome.contains('jungle') ||
+          biome.contains('forest') ||
+          biome.contains('taiga')) {
         _setTerrain(Terrain.ashenWaste, 3);
         addToLog('The environment caught fire and became an Ashen Waste!');
         // Play custom wildfire sound / trigger custom UI animation
-        if (!isTesting) await _audioService.playSound('audio/effects/fire_blast.mp3'); // or equivalent
+        if (!isTesting)
+          await _audioService.playSound(
+            'audio/effects/fire_blast.mp3',
+          ); // or equivalent
       } else {
         addToLog('The wildfire failed to spread in this biome.');
       }

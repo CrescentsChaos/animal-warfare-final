@@ -1,11 +1,11 @@
 // Register plugin dependencies for the project
 plugins {
-    // Standard plugins: Remove explicit versions to avoid conflict
+    // Standard plugins: Aligned with modern Built-in Kotlin versioning
     id("com.android.application") apply false 
-    id("kotlin-android") apply false 
+    id("org.jetbrains.kotlin.android") version "2.2.20" apply false 
     
     // Firebase plugin: Keep version specified
-    id("com.google.gms.google-services") version "4.4.1" apply false // Use the latest stable version
+    id("com.google.gms.google-services") version "4.4.1" apply false 
 }
 
 allprojects {

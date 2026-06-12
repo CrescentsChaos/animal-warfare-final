@@ -24,7 +24,6 @@ import 'package:animal_warfare/widgets/game_clock_widget.dart';
 import 'package:animal_warfare/services/weather_service.dart';
 import 'package:animal_warfare/widgets/weather_overlay.dart';
 import 'package:animal_warfare/models/weather.dart';
-import 'package:animal_warfare/widgets/survival_status_widget.dart';
 
 class ItemFindResult {
   final String itemId;

@@ -104,7 +104,12 @@ class _CraftingScreenState extends State<CraftingScreen>
         ],
         body: TabBarView(
           controller: _tabController,
-          children: const [_ForgeTab(), _MaterialsTab(), _EquipTab(), _CardsTab()],
+          children: const [
+            _ForgeTab(),
+            _MaterialsTab(),
+            _EquipTab(),
+            _CardsTab(),
+          ],
         ),
       ),
     );
@@ -696,7 +701,15 @@ class _MaterialsTabState extends State<_MaterialsTab> {
                       onTap: () {
                         if (entry.key == 'sickle') {
                           userState.toggleSickle();
-                        } else if (LootItem.findById(entry.key).name.contains('Lure') || LootItem.findById(entry.key).name.contains('Bait') || LootItem.findById(entry.key).name.contains('Feast')) {
+                        } else if (LootItem.findById(
+                              entry.key,
+                            ).name.contains('Lure') ||
+                            LootItem.findById(
+                              entry.key,
+                            ).name.contains('Bait') ||
+                            LootItem.findById(
+                              entry.key,
+                            ).name.contains('Feast')) {
                           final talisman = Talisman.findById(entry.key);
                           if (talisman != null && talisman.isLure) {
                             showDialog(
@@ -725,15 +738,26 @@ class _MaterialsTabState extends State<_MaterialsTab> {
                                 actions: [
                                   TextButton(
                                     onPressed: () => Navigator.pop(ctx),
-                                    child: const Text('CANCEL', style: TextStyle(color: Colors.white54)),
+                                    child: const Text(
+                                      'CANCEL',
+                                      style: TextStyle(color: Colors.white54),
+                                    ),
                                   ),
                                   ElevatedButton(
                                     onPressed: () {
                                       Navigator.pop(ctx);
-                                      userState.consumeLure(talisman).then((success) {
+                                      userState.consumeLure(talisman).then((
+                                        success,
+                                      ) {
                                         if (success && mounted) {
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(content: Text('Consumed ${talisman.name}! effect active.')),
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                'Consumed ${talisman.name}! effect active.',
+                                              ),
+                                            ),
                                           );
                                         }
                                       });
@@ -741,13 +765,21 @@ class _MaterialsTabState extends State<_MaterialsTab> {
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: AppColors.highlightColor,
                                     ),
-                                    child: const Text('CONSUME', style: TextStyle(fontWeight: FontWeight.bold)),
+                                    child: const Text(
+                                      'CONSUME',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                                   ),
                                 ],
                               ),
                             );
                           }
-                        } else if (Talisman.findById(entry.key)?.isSurvivalItem == true) {
+                        } else if (Talisman.findById(
+                              entry.key,
+                            )?.isSurvivalItem ==
+                            true) {
                           final talisman = Talisman.findById(entry.key)!;
                           showDialog(
                             context: context,
@@ -775,15 +807,26 @@ class _MaterialsTabState extends State<_MaterialsTab> {
                               actions: [
                                 TextButton(
                                   onPressed: () => Navigator.pop(ctx),
-                                  child: const Text('CANCEL', style: TextStyle(color: Colors.white54)),
+                                  child: const Text(
+                                    'CANCEL',
+                                    style: TextStyle(color: Colors.white54),
+                                  ),
                                 ),
                                 ElevatedButton(
                                   onPressed: () {
                                     Navigator.pop(ctx);
-                                    userState.consumeSurvivalItem(talisman).then((success) {
+                                    userState.consumeSurvivalItem(talisman).then((
+                                      success,
+                                    ) {
                                       if (success && mounted) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(content: Text('Consumed ${talisman.name}! protection active.')),
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              'Consumed ${talisman.name}! protection active.',
+                                            ),
+                                          ),
                                         );
                                       }
                                     });
@@ -791,7 +834,12 @@ class _MaterialsTabState extends State<_MaterialsTab> {
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: AppColors.highlightColor,
                                   ),
-                                  child: const Text('CONSUME', style: TextStyle(fontWeight: FontWeight.bold)),
+                                  child: const Text(
+                                    'CONSUME',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
@@ -1516,15 +1564,24 @@ class _CardsTabState extends State<_CardsTab> {
               ),
               const SizedBox(width: 12),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.purpleAccent.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.purpleAccent.withValues(alpha: 0.3)),
+                  border: Border.all(
+                    color: Colors.purpleAccent.withValues(alpha: 0.3),
+                  ),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.auto_awesome, color: Colors.purpleAccent, size: 16),
+                    const Icon(
+                      Icons.auto_awesome,
+                      color: Colors.purpleAccent,
+                      size: 16,
+                    ),
                     const SizedBox(width: 6),
                     Text(
                       fragments.toString(),
@@ -1599,8 +1656,8 @@ class _CardItem extends StatelessWidget {
           color: isEquipped
               ? Colors.cyanAccent
               : isUnlocked
-                  ? Colors.white24
-                  : Colors.white10,
+              ? Colors.white24
+              : Colors.white10,
           width: isEquipped ? 2 : 1,
         ),
         boxShadow: isEquipped
@@ -1609,7 +1666,7 @@ class _CardItem extends StatelessWidget {
                   color: Colors.cyanAccent.withValues(alpha: 0.3),
                   blurRadius: 12,
                   spreadRadius: 1,
-                )
+                ),
               ]
             : null,
       ),
@@ -1620,7 +1677,9 @@ class _CardItem extends StatelessWidget {
           Expanded(
             flex: 3,
             child: ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(10),
+              ),
               child: Stack(
                 fit: StackFit.expand,
                 children: [
@@ -1629,11 +1688,16 @@ class _CardItem extends StatelessWidget {
                     fit: BoxFit.cover,
                     color: isUnlocked ? null : Colors.black87,
                     colorBlendMode: isUnlocked ? null : BlendMode.darken,
-                    errorBuilder: (_, __, ___) => Container(color: Colors.grey.shade900),
+                    errorBuilder: (_, _, _) =>
+                        Container(color: Colors.grey.shade900),
                   ),
                   if (!isUnlocked)
                     const Center(
-                      child: Icon(Icons.lock_outline, color: Colors.white38, size: 32),
+                      child: Icon(
+                        Icons.lock_outline,
+                        color: Colors.white38,
+                        size: 32,
+                      ),
                     ),
                 ],
               ),
@@ -1683,7 +1747,11 @@ class _CardItem extends StatelessWidget {
                                 ),
                                 title: const Text(
                                   'UNLOCK CARD',
-                                  style: TextStyle(fontFamily: 'PressStart2P', fontSize: 10, color: Colors.white),
+                                  style: TextStyle(
+                                    fontFamily: 'PressStart2P',
+                                    fontSize: 10,
+                                    color: Colors.white,
+                                  ),
                                 ),
                                 content: Text(
                                   'Unlock ${card.name} for $costToUnlock fragments?',
@@ -1697,22 +1765,41 @@ class _CardItem extends StatelessWidget {
                                   ElevatedButton(
                                     onPressed: () async {
                                       Navigator.pop(ctx);
-                                      final success = await userState.buyCardWithFragments(card.id, costToUnlock);
+                                      final success = await userState
+                                          .buyCardWithFragments(
+                                            card.id,
+                                            costToUnlock,
+                                          );
                                       if (success && context.mounted) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(content: Text('Unlocked ${card.name}!')),
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              'Unlocked ${card.name}!',
+                                            ),
+                                          ),
                                         );
                                       }
                                     },
-                                    style: ElevatedButton.styleFrom(backgroundColor: Colors.purpleAccent),
-                                    child: const Text('UNLOCK', style: TextStyle(fontWeight: FontWeight.bold)),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.purpleAccent,
+                                    ),
+                                    child: const Text(
+                                      'UNLOCK',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                                   ),
                                 ],
                               ),
                             );
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Not enough card fragments!')),
+                              const SnackBar(
+                                content: Text('Not enough card fragments!'),
+                              ),
                             );
                           }
                         }
@@ -1721,23 +1808,28 @@ class _CardItem extends StatelessWidget {
                         backgroundColor: isEquipped
                             ? Colors.cyanAccent.withValues(alpha: 0.2)
                             : isUnlocked
-                                ? Colors.white12
-                                : Colors.purpleAccent.withValues(alpha: 0.2),
+                            ? Colors.white12
+                            : Colors.purpleAccent.withValues(alpha: 0.2),
                         foregroundColor: isEquipped
                             ? Colors.cyanAccent
                             : isUnlocked
-                                ? Colors.white
-                                : Colors.purpleAccent,
+                            ? Colors.white
+                            : Colors.purpleAccent,
                         padding: EdgeInsets.zero,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6),
+                        ),
                       ),
                       child: Text(
                         isEquipped
                             ? 'EQUIPPED'
                             : isUnlocked
-                                ? 'EQUIP'
-                                : '$costToUnlock FRAGS',
-                        style: const TextStyle(fontFamily: 'PressStart2P', fontSize: 6),
+                            ? 'EQUIP'
+                            : '$costToUnlock FRAGS',
+                        style: const TextStyle(
+                          fontFamily: 'PressStart2P',
+                          fontSize: 6,
+                        ),
                       ),
                     ),
                   ),
@@ -1750,4 +1842,3 @@ class _CardItem extends StatelessWidget {
     );
   }
 }
-

@@ -3462,18 +3462,21 @@ class _BattleScreenContentState extends State<BattleScreenContent>
               const SizedBox(width: 4),
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: (isTurnLocked ||
+                  onPressed:
+                      (isTurnLocked ||
                           battleManager.playerUsedCardThisBattle ||
                           battleManager.playerEquippedCard == null)
                       ? null
                       : () {
                           battleManager.processPlayerCard(
-                              battleManager.playerEquippedCard!);
+                            battleManager.playerEquippedCard!,
+                          );
                         },
                   icon: Icon(
                     Icons.style,
                     size: isNarrow ? 12 : 14,
-                    color: (isTurnLocked ||
+                    color:
+                        (isTurnLocked ||
                             battleManager.playerUsedCardThisBattle ||
                             battleManager.playerEquippedCard == null)
                         ? Colors.white24
@@ -3485,8 +3488,11 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                       battleManager.playerUsedCardThisBattle
                           ? 'Card Used'
                           : (battleManager.playerEquippedCard == null
-                              ? 'No Card'
-                              : (BattleCard.findById(battleManager.playerEquippedCard!)?.name.toUpperCase() ?? 'PLAY CARD')),
+                                ? 'No Card'
+                                : (BattleCard.findById(
+                                        battleManager.playerEquippedCard!,
+                                      )?.name.toUpperCase() ??
+                                      'PLAY CARD')),
                       style: const TextStyle(
                         fontFamily: 'PressStart2P',
                         fontSize: 8.5,
@@ -3494,12 +3500,14 @@ class _BattleScreenContentState extends State<BattleScreenContent>
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: (isTurnLocked ||
+                    backgroundColor:
+                        (isTurnLocked ||
                             battleManager.playerUsedCardThisBattle ||
                             battleManager.playerEquippedCard == null)
                         ? Colors.grey[700]
                         : Colors.purple.shade700,
-                    foregroundColor: (isTurnLocked ||
+                    foregroundColor:
+                        (isTurnLocked ||
                             battleManager.playerUsedCardThisBattle ||
                             battleManager.playerEquippedCard == null)
                         ? Colors.white54
@@ -7888,13 +7896,19 @@ class _CardPlayOverlay extends StatefulWidget {
   final bool isPlayer;
   final VoidCallback onDismissed;
 
-  const _CardPlayOverlay({Key? key, required this.cardId, required this.isPlayer, required this.onDismissed}) : super(key: key);
+  const _CardPlayOverlay({
+    super.key,
+    required this.cardId,
+    required this.isPlayer,
+    required this.onDismissed,
+  });
 
   @override
   State<_CardPlayOverlay> createState() => _CardPlayOverlayState();
 }
 
-class _CardPlayOverlayState extends State<_CardPlayOverlay> with TickerProviderStateMixin {
+class _CardPlayOverlayState extends State<_CardPlayOverlay>
+    with TickerProviderStateMixin {
   late AnimationController _controller;
   late AnimationController _shimmerController;
 
@@ -7928,54 +7942,159 @@ class _CardPlayOverlayState extends State<_CardPlayOverlay> with TickerProviderS
     final c = _controller;
 
     _bgOpacity = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween(begin: 0.0, end: 0.75).chain(CurveTween(curve: Curves.easeOut)), weight: 10),
+      TweenSequenceItem(
+        tween: Tween(
+          begin: 0.0,
+          end: 0.75,
+        ).chain(CurveTween(curve: Curves.easeOut)),
+        weight: 10,
+      ),
       TweenSequenceItem(tween: ConstantTween(0.75), weight: 75),
-      TweenSequenceItem(tween: Tween(begin: 0.75, end: 0.0).chain(CurveTween(curve: Curves.easeIn)), weight: 15),
+      TweenSequenceItem(
+        tween: Tween(
+          begin: 0.75,
+          end: 0.0,
+        ).chain(CurveTween(curve: Curves.easeIn)),
+        weight: 15,
+      ),
     ]).animate(c);
 
     final double startX = widget.isPlayer ? -500.0 : 500.0;
     _slideX = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween(begin: startX, end: 0.0).chain(CurveTween(curve: Curves.easeOutCubic)), weight: 22),
+      TweenSequenceItem(
+        tween: Tween(
+          begin: startX,
+          end: 0.0,
+        ).chain(CurveTween(curve: Curves.easeOutCubic)),
+        weight: 22,
+      ),
       TweenSequenceItem(tween: ConstantTween(0.0), weight: 56),
-      TweenSequenceItem(tween: Tween(begin: 0.0, end: -startX * 0.6).chain(CurveTween(curve: Curves.easeInCubic)), weight: 22),
+      TweenSequenceItem(
+        tween: Tween(
+          begin: 0.0,
+          end: -startX * 0.6,
+        ).chain(CurveTween(curve: Curves.easeInCubic)),
+        weight: 22,
+      ),
     ]).animate(c);
 
     _rotate = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween(begin: widget.isPlayer ? -0.15 : 0.15, end: 0.0).chain(CurveTween(curve: Curves.elasticOut)), weight: 30),
+      TweenSequenceItem(
+        tween: Tween(
+          begin: widget.isPlayer ? -0.15 : 0.15,
+          end: 0.0,
+        ).chain(CurveTween(curve: Curves.elasticOut)),
+        weight: 30,
+      ),
       TweenSequenceItem(tween: ConstantTween(0.0), weight: 55),
-      TweenSequenceItem(tween: Tween(begin: 0.0, end: widget.isPlayer ? 0.08 : -0.08).chain(CurveTween(curve: Curves.easeInBack)), weight: 15),
+      TweenSequenceItem(
+        tween: Tween(
+          begin: 0.0,
+          end: widget.isPlayer ? 0.08 : -0.08,
+        ).chain(CurveTween(curve: Curves.easeInBack)),
+        weight: 15,
+      ),
     ]).animate(c);
 
     _scale = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween(begin: 0.3, end: 1.08).chain(CurveTween(curve: Curves.easeOutBack)), weight: 22),
-      TweenSequenceItem(tween: Tween(begin: 1.08, end: 1.0).chain(CurveTween(curve: Curves.bounceOut)), weight: 10),
+      TweenSequenceItem(
+        tween: Tween(
+          begin: 0.3,
+          end: 1.08,
+        ).chain(CurveTween(curve: Curves.easeOutBack)),
+        weight: 22,
+      ),
+      TweenSequenceItem(
+        tween: Tween(
+          begin: 1.08,
+          end: 1.0,
+        ).chain(CurveTween(curve: Curves.bounceOut)),
+        weight: 10,
+      ),
       TweenSequenceItem(tween: ConstantTween(1.0), weight: 46),
-      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.12).chain(CurveTween(curve: Curves.easeOut)), weight: 6),
-      TweenSequenceItem(tween: Tween(begin: 1.12, end: 1.0).chain(CurveTween(curve: Curves.easeIn)), weight: 6),
-      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.4).chain(CurveTween(curve: Curves.easeInBack)), weight: 10),
+      TweenSequenceItem(
+        tween: Tween(
+          begin: 1.0,
+          end: 1.12,
+        ).chain(CurveTween(curve: Curves.easeOut)),
+        weight: 6,
+      ),
+      TweenSequenceItem(
+        tween: Tween(
+          begin: 1.12,
+          end: 1.0,
+        ).chain(CurveTween(curve: Curves.easeIn)),
+        weight: 6,
+      ),
+      TweenSequenceItem(
+        tween: Tween(
+          begin: 1.0,
+          end: 0.4,
+        ).chain(CurveTween(curve: Curves.easeInBack)),
+        weight: 10,
+      ),
     ]).animate(c);
 
     _glow = TweenSequence<double>([
       TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.0), weight: 10),
-      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.4).chain(CurveTween(curve: Curves.easeInOut)), weight: 20),
-      TweenSequenceItem(tween: Tween(begin: 0.4, end: 1.0).chain(CurveTween(curve: Curves.easeInOut)), weight: 20),
-      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.4).chain(CurveTween(curve: Curves.easeInOut)), weight: 18),
+      TweenSequenceItem(
+        tween: Tween(
+          begin: 1.0,
+          end: 0.4,
+        ).chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 20,
+      ),
+      TweenSequenceItem(
+        tween: Tween(
+          begin: 0.4,
+          end: 1.0,
+        ).chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 20,
+      ),
+      TweenSequenceItem(
+        tween: Tween(
+          begin: 1.0,
+          end: 0.4,
+        ).chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 18,
+      ),
       TweenSequenceItem(tween: Tween(begin: 0.4, end: 1.0), weight: 8),
       TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.0), weight: 24),
     ]).animate(c);
 
     _exitOpacity = TweenSequence<double>([
       TweenSequenceItem(tween: ConstantTween(1.0), weight: 85),
-      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.0).chain(CurveTween(curve: Curves.easeIn)), weight: 15),
+      TweenSequenceItem(
+        tween: Tween(
+          begin: 1.0,
+          end: 0.0,
+        ).chain(CurveTween(curve: Curves.easeIn)),
+        weight: 15,
+      ),
     ]).animate(c);
 
     _burstScale = TweenSequence<double>([
       TweenSequenceItem(tween: ConstantTween(0.0), weight: 76),
-      TweenSequenceItem(tween: Tween(begin: 0.5, end: 2.5).chain(CurveTween(curve: Curves.easeOut)), weight: 12),
-      TweenSequenceItem(tween: Tween(begin: 2.5, end: 3.5).chain(CurveTween(curve: Curves.easeIn)), weight: 12),
+      TweenSequenceItem(
+        tween: Tween(
+          begin: 0.5,
+          end: 2.5,
+        ).chain(CurveTween(curve: Curves.easeOut)),
+        weight: 12,
+      ),
+      TweenSequenceItem(
+        tween: Tween(
+          begin: 2.5,
+          end: 3.5,
+        ).chain(CurveTween(curve: Curves.easeIn)),
+        weight: 12,
+      ),
     ]).animate(c);
 
-    _shimmer = CurvedAnimation(parent: _shimmerController, curve: Curves.easeInOut);
+    _shimmer = CurvedAnimation(
+      parent: _shimmerController,
+      curve: Curves.easeInOut,
+    );
 
     // Animate to 0.85 (hold phase) and wait for tap
     _controller.animateTo(0.85).then((_) {
@@ -8008,8 +8127,10 @@ class _CardPlayOverlayState extends State<_CardPlayOverlay> with TickerProviderS
     super.dispose();
   }
 
-  Color get _themeColor => widget.isPlayer ? const Color(0xFF4FC3F7) : const Color(0xFFEF5350);
-  Color get _themeColorDark => widget.isPlayer ? const Color(0xFF0288D1) : const Color(0xFFC62828);
+  Color get _themeColor =>
+      widget.isPlayer ? const Color(0xFF4FC3F7) : const Color(0xFFEF5350);
+  Color get _themeColorDark =>
+      widget.isPlayer ? const Color(0xFF0288D1) : const Color(0xFFC62828);
 
   @override
   Widget build(BuildContext context) {
@@ -8038,7 +8159,10 @@ class _CardPlayOverlayState extends State<_CardPlayOverlay> with TickerProviderS
               if (_burstScale.value > 0)
                 Center(
                   child: Opacity(
-                    opacity: (1.0 - (_burstScale.value - 0.5) / 3.0).clamp(0.0, 0.5),
+                    opacity: (1.0 - (_burstScale.value - 0.5) / 3.0).clamp(
+                      0.0,
+                      0.5,
+                    ),
                     child: Transform.scale(
                       scale: _burstScale.value,
                       child: Container(
@@ -8047,7 +8171,13 @@ class _CardPlayOverlayState extends State<_CardPlayOverlay> with TickerProviderS
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(color: _themeColor, width: 3),
-                          boxShadow: [BoxShadow(color: _themeColor.withValues(alpha: 0.4), blurRadius: 40, spreadRadius: 10)],
+                          boxShadow: [
+                            BoxShadow(
+                              color: _themeColor.withValues(alpha: 0.4),
+                              blurRadius: 40,
+                              spreadRadius: 10,
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -8107,9 +8237,21 @@ class _CardPlayOverlayState extends State<_CardPlayOverlay> with TickerProviderS
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(color: _themeColor.withValues(alpha: glowIntensity * 0.9), blurRadius: 50, spreadRadius: 8),
-          BoxShadow(color: _themeColor.withValues(alpha: glowIntensity * 0.5), blurRadius: 80, spreadRadius: 20),
-          BoxShadow(color: Colors.white.withValues(alpha: glowIntensity * 0.15), blurRadius: 20, spreadRadius: 2),
+          BoxShadow(
+            color: _themeColor.withValues(alpha: glowIntensity * 0.9),
+            blurRadius: 50,
+            spreadRadius: 8,
+          ),
+          BoxShadow(
+            color: _themeColor.withValues(alpha: glowIntensity * 0.5),
+            blurRadius: 80,
+            spreadRadius: 20,
+          ),
+          BoxShadow(
+            color: Colors.white.withValues(alpha: glowIntensity * 0.15),
+            blurRadius: 20,
+            spreadRadius: 2,
+          ),
         ],
       ),
       child: ClipRRect(
@@ -8145,10 +8287,14 @@ class _CardPlayOverlayState extends State<_CardPlayOverlay> with TickerProviderS
                     Image.asset(
                       card?.imagePath ?? 'assets/cards/${widget.cardId}.png',
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
+                      errorBuilder: (_, _, _) => Container(
                         color: Colors.grey[900],
                         child: Center(
-                          child: Icon(Icons.style_rounded, color: _themeColor, size: 64),
+                          child: Icon(
+                            Icons.style_rounded,
+                            color: _themeColor,
+                            size: 64,
+                          ),
                         ),
                       ),
                     ),
@@ -8158,7 +8304,10 @@ class _CardPlayOverlayState extends State<_CardPlayOverlay> with TickerProviderS
                         gradient: LinearGradient(
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
-                          colors: [Colors.transparent, Colors.black.withValues(alpha: 0.5)],
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withValues(alpha: 0.5),
+                          ],
                         ),
                       ),
                     ),
@@ -8183,7 +8332,9 @@ class _CardPlayOverlayState extends State<_CardPlayOverlay> with TickerProviderS
                             ],
                           ).createShader(bounds);
                         },
-                        child: Container(color: Colors.white.withValues(alpha: 0.01)),
+                        child: Container(
+                          color: Colors.white.withValues(alpha: 0.01),
+                        ),
                       ),
                     ),
                   ],
@@ -8200,7 +8351,10 @@ class _CardPlayOverlayState extends State<_CardPlayOverlay> with TickerProviderS
               child: Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [_themeColorDark, _themeColor.withValues(alpha: 0.7)],
+                    colors: [
+                      _themeColorDark,
+                      _themeColor.withValues(alpha: 0.7),
+                    ],
                   ),
                 ),
                 child: Row(
@@ -8220,11 +8374,16 @@ class _CardPlayOverlayState extends State<_CardPlayOverlay> with TickerProviderS
                     ),
                     Container(
                       margin: const EdgeInsets.only(right: 12),
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.3),
+                        ),
                       ),
                       child: Text(
                         '⚡ ACTIVATED',
@@ -8265,7 +8424,12 @@ class _CardPlayOverlayState extends State<_CardPlayOverlay> with TickerProviderS
                         ],
                       ),
                       border: Border(
-                        top: BorderSide(color: _themeColor.withValues(alpha: 0.4 * glowIntensity), width: 1.5),
+                        top: BorderSide(
+                          color: _themeColor.withValues(
+                            alpha: 0.4 * glowIntensity,
+                          ),
+                          width: 1.5,
+                        ),
                       ),
                     ),
                     child: Column(
@@ -8274,13 +8438,19 @@ class _CardPlayOverlayState extends State<_CardPlayOverlay> with TickerProviderS
                       children: [
                         // Card name
                         Text(
-                          card?.name ?? widget.cardId.replaceAll('_', ' ').toUpperCase(),
+                          card?.name ??
+                              widget.cardId.replaceAll('_', ' ').toUpperCase(),
                           style: GoogleFonts.orbitron(
                             color: Colors.white,
                             fontSize: 14,
                             fontWeight: FontWeight.w900,
                             letterSpacing: 0.5,
-                            shadows: [Shadow(color: _themeColor, blurRadius: 12 * glowIntensity)],
+                            shadows: [
+                              Shadow(
+                                color: _themeColor,
+                                blurRadius: 12 * glowIntensity,
+                              ),
+                            ],
                           ),
                         ),
                         const SizedBox(height: 6),
@@ -8288,14 +8458,18 @@ class _CardPlayOverlayState extends State<_CardPlayOverlay> with TickerProviderS
                           height: 1,
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
-                              colors: [_themeColor.withValues(alpha: 0.8), Colors.transparent],
+                              colors: [
+                                _themeColor.withValues(alpha: 0.8),
+                                Colors.transparent,
+                              ],
                             ),
                           ),
                         ),
                         const SizedBox(height: 8),
                         // Description
                         Text(
-                          card?.description ?? 'A powerful card effect activates!',
+                          card?.description ??
+                              'A powerful card effect activates!',
                           maxLines: 4,
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.inter(
@@ -8331,21 +8505,23 @@ class _CardPlayOverlayState extends State<_CardPlayOverlay> with TickerProviderS
               const Alignment(1, -1),
               const Alignment(-1, 1),
               const Alignment(1, 1),
-            ].map((align) => Positioned.fill(
-              child: Align(
-                alignment: align,
-                child: Container(
-                  width: 10,
-                  height: 10,
-                  margin: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: _themeColor.withValues(alpha: glowIntensity),
-                    boxShadow: [BoxShadow(color: _themeColor, blurRadius: 6)],
+            ].map(
+              (align) => Positioned.fill(
+                child: Align(
+                  alignment: align,
+                  child: Container(
+                    width: 10,
+                    height: 10,
+                    margin: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: _themeColor.withValues(alpha: glowIntensity),
+                      boxShadow: [BoxShadow(color: _themeColor, blurRadius: 6)],
+                    ),
                   ),
                 ),
               ),
-            )),
+            ),
           ],
         ),
       ),

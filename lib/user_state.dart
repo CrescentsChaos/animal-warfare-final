@@ -499,12 +499,14 @@ class UserState with ChangeNotifier {
     double passiveReduction = 0.0;
     if (severity == EnvironmentalSeverity.freezing ||
         severity == EnvironmentalSeverity.cold) {
-      if ((_currentUser!.inventory['thermal_coat'] ?? 0) > 0)
+      if ((_currentUser!.inventory['thermal_coat'] ?? 0) > 0) {
         passiveReduction = 0.5;
+      }
     } else if (severity == EnvironmentalSeverity.scorching ||
         severity == EnvironmentalSeverity.hot) {
-      if ((_currentUser!.inventory['cooling_vest'] ?? 0) > 0)
+      if ((_currentUser!.inventory['cooling_vest'] ?? 0) > 0) {
         passiveReduction = 0.5;
+      }
     }
 
     // Active effects (drinks)
@@ -2397,7 +2399,6 @@ class UserState with ChangeNotifier {
       return u.copyWith(equippedCard: cardId);
     });
   }
-
 
   bool _unstuckRequested = false;
   bool get unstuckRequested => _unstuckRequested;

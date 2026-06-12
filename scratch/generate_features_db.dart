@@ -270,8 +270,9 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
     }
   }
 
-  if (objectPixelCount == 0)
+  if (objectPixelCount == 0) {
     return {'organismName': name, 'error': 'Empty sprite'};
+  }
 
   final Map<int, int> colorCounts = {};
   double totalBrightness = 0, totalSaturation = 0;
@@ -495,8 +496,9 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
           if (qc ==
               (((pt.r.toInt() ~/ 32) << 16) |
                   ((pt.g.toInt() ~/ 32) << 8) |
-                  (pt.b.toInt() ~/ 32)))
+                  (pt.b.toInt() ~/ 32))) {
             clustered++;
+          }
         }
       }
     }
@@ -508,8 +510,9 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
   for (int y = minY; y <= maxY; y++) {
     for (int x = minX; x <= maxX; x++) {
       if (mask[y * resized.width + x]) {
-        if (x < minX + iX || x > maxX - iX || y < minY + iY || y > maxY - iY)
+        if (x < minX + iX || x > maxX - iX || y < minY + iY || y > maxY - iY) {
           limbPix++;
+        }
       }
     }
   }
@@ -657,8 +660,9 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
       final p1 = image.getPixel(x, y), p2 = image.getPixel(x2, y);
       hTotal++;
       if (((p1.r - p2.r).abs() + (p1.g - p2.g).abs() + (p1.b - p2.b).abs()) <
-          100)
+          100) {
         hMatches++;
+      }
     }
   }
   for (int x = minX; x <= maxX; x++) {
@@ -668,8 +672,9 @@ Map<String, dynamic> extractFeatures(img.Image decoded, String name) {
       final p1 = image.getPixel(x, y), p2 = image.getPixel(x, y2);
       vTotal++;
       if (((p1.r - p2.r).abs() + (p1.g - p2.g).abs() + (p1.b - p2.b).abs()) <
-          100)
+          100) {
         vMatches++;
+      }
     }
   }
   return (

@@ -1030,7 +1030,7 @@ class _AWStudioState extends State<AWStudio> with TickerProviderStateMixin {
   // -- Import / Export --------------------------------------
 
   Future<void> _importImage() async {
-    final result = await FilePicker.platform.pickFiles(type: FileType.image, allowMultiple: false);
+    final result = await FilePicker.pickFiles(type: FileType.image, allowMultiple: false);
     if (result == null || result.files.isEmpty) return;
     final path = result.files.single.path;
     if (path == null) return;
@@ -1119,7 +1119,7 @@ class _AWStudioState extends State<AWStudio> with TickerProviderStateMixin {
 
     final pngBytes = byteData.buffer.asUint8List();
 
-    final outputPath = await FilePicker.platform.saveFile(
+    final outputPath = await FilePicker.saveFile(
       dialogTitle: 'Save Tile',
       fileName: 'tile_${_canvasW}x$_canvasH.png',
       type: FileType.image,
