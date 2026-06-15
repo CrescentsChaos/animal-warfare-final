@@ -169,6 +169,9 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   /// Maps tile position "row:col" to current horizontal shake offset (pixels).
   final Map<String, double> _tileShakeOffsets = {};
 
+  // ── Survival Mechanics ──
+  final List<Point<int>> _deployedCampfires = [];
+
   // ── Shared Random ──
   final Random _rng = Random();
 
@@ -479,6 +482,25 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
 
     // ── Overworld sprite AI ──
     _phenoTickAccumulator += dt;
+
+    // Apply campfire warmth buff if near a campfire
+    if (_deployedCampfires.isNotEmpty) {
+      final pr = (_playerY / tileSize).floor();
+      final pc = (_playerX / tileSize).floor();
+      bool nearCampfire = false;
+      for (final cf in _deployedCampfires) {
+        // Range 3 tiles
+        if ((cf.x - pc).abs() <= 3 && (cf.y - pr).abs() <= 3) {
+          nearCampfire = true;
+          break;
+        }
+      }
+      if (nearCampfire) {
+        // Campfires restore stamina and hunger slightly if nearby, prevents freezing
+        _userState.addStamina(dt * 2.0); // Recover 2 stamina per second
+        // Freezing prevention is done implicitly by adding survival effects or restoring stamina faster than it drains
+      }
+    }
     if (_phenoTickAccumulator >= 0.05) {
       // ~20fps for AI
       bool anyChanged = false;
@@ -2259,6 +2281,7 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
                 return isFloat(r1, c1);
               }(),
               overworldSprites: _overworldSprites,
+              deployedCampfires: _deployedCampfires,
               fireflies: _fireflies,
               grassParticles: _grassParticles,
               gameNPCs: _gameNPCs,
@@ -2424,23 +2447,58 @@ class _BiomeExplorationMapState extends State<BiomeExplorationMap>
   }
 
   Widget _buildAnimalMenuButton() {
+    final int campfireCount = _userState.currentUser?.inventory['campfire'] ?? 0;
+    
     return Positioned(
       top: 200,
       right: 16,
-      child: GestureDetector(
-        onTap: () => _showAnimalMenu(context),
-        child: Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.black.withValues(alpha: 0.5),
-            border: Border.all(color: _biomeHighlightColor, width: 1.5),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (campfireCount > 0)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: GestureDetector(
+                onTap: _deployCampfire,
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.orange.withValues(alpha: 0.8),
+                    border: Border.all(color: Colors.deepOrange, width: 2),
+                  ),
+                  child: const Icon(Icons.local_fire_department, color: Colors.yellow, size: 24),
+                ),
+              ),
+            ),
+          GestureDetector(
+            onTap: () => _showAnimalMenu(context),
+            child: Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.black.withValues(alpha: 0.5),
+                border: Border.all(color: _biomeHighlightColor, width: 1.5),
+              ),
+              child: Icon(Icons.pets, color: _biomeHighlightColor, size: 22),
+            ),
           ),
-          child: Icon(Icons.pets, color: _biomeHighlightColor, size: 22),
-        ),
+        ],
       ),
     );
+  }
+
+  void _deployCampfire() async {
+    if (await _userState.consumeItem('campfire')) {
+      setState(() {
+        final pr = (_playerY / tileSize).floor();
+        final pc = (_playerX / tileSize).floor();
+        _deployedCampfires.add(Point(pc, pr));
+        _showInteractionBubble('Deployed a Campfire! Enjoy the warmth.');
+      });
+    }
   }
 
   void _showAnimalMenu(BuildContext ctx) {
@@ -4735,6 +4793,7 @@ class _BiomeMapPainter extends CustomPainter {
   final double jumpOffset;
   final bool isOnFloating;
   final List<OverworldSprite> overworldSprites;
+  final List<Point<int>> deployedCampfires;
   final int currentHour;
   final double zoomScale;
   final List<_FireflyParticle> fireflies;
@@ -4761,6 +4820,7 @@ class _BiomeMapPainter extends CustomPainter {
     this.jumpOffset = 0,
     this.isOnFloating = false,
     this.overworldSprites = const [],
+    this.deployedCampfires = const [],
     this.zoomScale = 1.0,
     this.fireflies = const [],
     this.grassParticles = const [],
@@ -4800,6 +4860,35 @@ class _BiomeMapPainter extends CustomPainter {
             }
           }
         }
+      }
+    }
+
+    // ── Draw Deployed Campfires ──
+    for (final cf in deployedCampfires) {
+      if (cf.x >= startCol && cf.x <= endCol && cf.y >= startRow && cf.y <= endRow) {
+        final double dx = (cf.x * tileSize - cameraX);
+        final double dy = (cf.y * tileSize - cameraY);
+        
+        // Draw fire glow
+        final double glowOpacity = (sin(grassAnimTime * 5) * 0.2 + 0.5);
+        canvas.drawCircle(
+          Offset(dx + tileSize / 2, dy + tileSize / 2),
+          tileSize * 1.5,
+          Paint()
+            ..color = Colors.orangeAccent.withValues(alpha: glowOpacity * 0.3)
+            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10.0),
+        );
+        
+        // Draw logs
+        final paintLogs = Paint()..color = Colors.brown[800]!;
+        canvas.drawRect(Rect.fromLTWH(dx + tileSize*0.2, dy + tileSize*0.7, tileSize*0.6, tileSize*0.2), paintLogs);
+        canvas.drawRect(Rect.fromLTWH(dx + tileSize*0.4, dy + tileSize*0.6, tileSize*0.2, tileSize*0.4), paintLogs);
+        
+        // Draw flames
+        final paintFlame = Paint()..color = Colors.orange;
+        canvas.drawCircle(Offset(dx + tileSize / 2, dy + tileSize*0.5 + (sin(grassAnimTime * 10) * 2)), tileSize*0.25, paintFlame);
+        paintFlame.color = Colors.yellow;
+        canvas.drawCircle(Offset(dx + tileSize / 2, dy + tileSize*0.4 + (cos(grassAnimTime * 15) * 2)), tileSize*0.15, paintFlame);
       }
     }
 
@@ -5179,6 +5268,31 @@ class _BiomeMapPainter extends CustomPainter {
 
     if (sprite.tileOffset > 0) {
       canvas.restore();
+    }
+
+    // Draw behavior label (except wandering)
+    if (sprite.ecoState != EcoState.wandering && zoomScale > 0.8) {
+      final labelSpan = TextSpan(
+        text: sprite.behaviorLabel,
+        style: TextStyle(
+          color: Colors.white,
+          fontFamily: 'PressStart2P',
+          fontSize: 6 * zoomScale,
+          background: Paint()
+            ..color = Colors.black.withValues(alpha: 0.5)
+            ..strokeJoin = StrokeJoin.round
+            ..style = PaintingStyle.fill,
+        ),
+      );
+      final textPainter = TextPainter(
+        text: labelSpan,
+        textDirection: TextDirection.ltr,
+      );
+      textPainter.layout();
+      textPainter.paint(
+        canvas,
+        Offset(px - textPainter.width / 2, y - textPainter.height - 4),
+      );
     }
   }
 

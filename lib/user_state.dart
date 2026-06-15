@@ -178,6 +178,18 @@ class UserState with ChangeNotifier {
     await _readModifyWrite((u) => u.restoreStamina(amount));
   }
 
+  double _staminaAccumulator = 0.0;
+
+  Future<void> addStamina(double amount) async {
+    if (_currentUser == null) return;
+    _staminaAccumulator += amount;
+    if (_staminaAccumulator >= 1.0) {
+      final int toAdd = _staminaAccumulator.floor();
+      _staminaAccumulator -= toAdd;
+      await _regenerateStamina(toAdd);
+    }
+  }
+
   Future<void> updateProfile({
     String? avatar,
     String? gender,
@@ -412,6 +424,8 @@ class UserState with ChangeNotifier {
       return u.copyWith(
         inventory: inventory,
         activeSurvivalEffects: activeSurvivalEffects,
+        hunger: 100, // Replenish hunger
+        thirst: 100, // Replenish thirst
       );
     });
 
@@ -486,10 +500,10 @@ class UserState with ChangeNotifier {
     // Severity penalty
     if (severity == EnvironmentalSeverity.freezing ||
         severity == EnvironmentalSeverity.scorching) {
-      drain += 4; // Cost is 5
+      drain += 1; // Was 2
     } else if (severity == EnvironmentalSeverity.cold ||
         severity == EnvironmentalSeverity.hot) {
-      drain += 2; // Cost is 3
+      // drain += 0; // Removed penalty for mild temperatures
     }
 
     // Weather multiplier
@@ -525,10 +539,55 @@ class UserState with ChangeNotifier {
       }
     }
 
+    // Survival buffs/debuffs
+    if (_currentUser!.hunger > 80 && _currentUser!.thirst > 80) {
+      passiveReduction += 0.2; // 20% discount if well fed and hydrated
+    } else if (_currentUser!.hunger < 20 || _currentUser!.thirst < 20) {
+      drain += 2; // Penalty if starving or dehydrated
+    }
+
     // Base cost is 1, only reduce the extra cost, never go below 1
     int extraCost = drain - 1;
     extraCost = (extraCost * (1.0 - passiveReduction)).round();
     return 1 + extraCost;
+  }
+
+  Future<bool> consumeItem(String itemId, {int count = 1}) async {
+    if (_currentUser == null) return false;
+    bool success = false;
+    await _readModifyWrite((u) {
+      final inv = Map<String, int>.from(u.inventory);
+      final current = inv[itemId] ?? 0;
+      if (current >= count) {
+        if (current == count) {
+          inv.remove(itemId);
+        } else {
+          inv[itemId] = current - count;
+        }
+        success = true;
+        return u.copyWith(inventory: inv);
+      }
+      return u;
+    });
+    return success;
+  }
+
+  Future<bool> consumeFood(Talisman talisman) async {
+    if (_currentUser == null) return false;
+    final success = await consumeItem(talisman.id);
+    if (!success) return false;
+
+    await _readModifyWrite((u) {
+      int newHunger = (u.hunger + talisman.hungerFulfillment).clamp(0, 100);
+      int newThirst = (u.thirst + talisman.thirstFulfillment).clamp(0, 100);
+      int newStamina = (u.stamina + talisman.staminaBoost).clamp(0, 100);
+      return u.copyWith(
+        hunger: newHunger,
+        thirst: newThirst,
+        stamina: newStamina,
+      );
+    });
+    return true;
   }
 
   Future<void> toggleAnidexUnlocked(bool unlocked) async {

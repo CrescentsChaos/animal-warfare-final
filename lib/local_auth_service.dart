@@ -45,6 +45,8 @@ class UserData {
 
   final int money; // Currency
   final int stamina;
+  final int hunger;
+  final int thirst;
   final Map<String, dynamic> quizStats;
   final List<String> discoveredOrganisms;
   final List<String> completedAchievements;
@@ -139,6 +141,8 @@ class UserData {
     this.bio = '',
     this.money = 1000,
     this.stamina = 100,
+    this.hunger = 100,
+    this.thirst = 100,
     this.bankTaka = 0,
     this.bankGold = 0,
     this.bankDiamond = 0,
@@ -219,6 +223,8 @@ class UserData {
     String? bio,
     int? money,
     int? stamina,
+    int? hunger,
+    int? thirst,
     Map<String, dynamic>? quizStats,
     List<String>? discoveredOrganisms,
     List<String>? completedAchievements,
@@ -273,6 +279,8 @@ class UserData {
       bio: bio ?? this.bio,
       money: money ?? this.money,
       stamina: stamina ?? this.stamina,
+      hunger: hunger ?? this.hunger,
+      thirst: thirst ?? this.thirst,
       bankTaka: bankTaka ?? this.bankTaka,
       bankGold: bankGold ?? this.bankGold,
       bankDiamond: bankDiamond ?? this.bankDiamond,
@@ -357,7 +365,9 @@ class UserData {
 
   UserData decreaseStamina(int amount) {
     final newStamina = (stamina - amount).clamp(0, 100);
-    return copyWith(stamina: newStamina);
+    final newHunger = (hunger - (amount ~/ 5)).clamp(0, 100);
+    final newThirst = (thirst - (amount ~/ 3)).clamp(0, 100);
+    return copyWith(stamina: newStamina, hunger: newHunger, thirst: newThirst);
   }
 
   UserData restoreStamina(int amount) {
@@ -400,6 +410,8 @@ class UserData {
     'title': title,
     'bio': bio,
     'stamina': stamina,
+    'hunger': hunger,
+    'thirst': thirst,
     'money': money,
     'quizStats': quizStats,
     'discoveredOrganisms': discoveredOrganisms,
@@ -497,6 +509,8 @@ class UserData {
       bio: json['bio'] as String? ?? '',
       money: (json['money'] as num?)?.toInt() ?? 1000,
       stamina: (json['stamina'] as num?)?.toInt() ?? 100,
+      hunger: (json['hunger'] as num?)?.toInt() ?? 100,
+      thirst: (json['thirst'] as num?)?.toInt() ?? 100,
       bankTaka: (json['bankTaka'] as num?)?.toInt() ?? 0,
       bankGold: (json['bankGold'] as num?)?.toInt() ?? 0,
       bankDiamond: (json['bankDiamond'] as num?)?.toInt() ?? 0,

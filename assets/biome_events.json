@@ -6,14 +6,15 @@
       "biomes": ["swamp", "wetlands"],
       "title": "Will-o'-the-Wisp",
       "description": "A mysterious blue-green light dances through the mist, beckoning you deeper into the bog...",
-      "icon": "🔥",
+      "icon": "assets/icons/events/wisp.png",
       "category": "mystery",
       "outcomes": [
         {
           "choice": "Follow the light",
           "results": [
-            { "type": "loot", "id": "swamp_gas_vial", "count": 2, "text": "The light leads you to a pocket of rare swamp gas! You carefully collect some.", "chance": 0.6 },
-            { "type": "stamina", "value": -15, "text": "The light was a trap! You stumble into a hidden sinkhole and exhaust yourself climbing out.", "chance": 0.4 }
+            { "type": "loot", "id": "swamp_gas_vial", "count": 2, "text": "The light leads you to a pocket of rare swamp gas! You carefully collect some.", "chance": 0.4 },
+            { "type": "stamina", "value": 20, "text": "The light leads you to a hidden clearing filled with restorative herbs! Your stamina, hunger, and thirst are replenished.", "chance": 0.3 },
+            { "type": "stamina", "value": -15, "text": "The light was a trap! You stumble into a hidden sinkhole and exhaust yourself climbing out.", "chance": 0.3 }
           ]
         },
         {
@@ -51,15 +52,16 @@
       "id": "swamp_hermit",
       "biomes": ["swamp"],
       "title": "The Swamp Hermit",
-      "description": "An old hermit emerges from a rickety shack hidden among the cypress trees. 'I've got wares, if you've got patience...'",
-      "icon": "🧙",
+      "description": "An old hermit emerges from a rickety shack hidden among the cypress trees. 'I've got wares, and hot stew...'",
+      "icon": "assets/icons/events/hermit.png",
       "category": "npc",
       "outcomes": [
         {
           "choice": "Trade with hermit",
           "results": [
-            { "type": "loot", "id": "leech_extract", "count": 3, "text": "The hermit trades you some potent leech extract! 'Good for what ails ya,' he mutters.", "chance": 0.7 },
-            { "type": "coins", "value": 500, "text": "The hermit hands you a pouch of coins! 'Been saving these. Take 'em before the swamp does.'", "chance": 0.3 }
+            { "type": "loot", "id": "leech_extract", "count": 3, "text": "The hermit trades you some potent leech extract! 'Good for what ails ya,' he mutters.", "chance": 0.5 },
+            { "type": "coins", "value": 500, "text": "The hermit hands you a pouch of coins! 'Been saving these. Take 'em before the swamp does.'", "chance": 0.3 },
+            { "type": "stamina", "value": 30, "text": "The hermit offers you some hot stew. Your hunger and thirst are completely sated, and you feel energized!", "chance": 0.2 }
           ]
         },
         {

@@ -180,7 +180,7 @@ class _QuestScreenState extends State<QuestScreen> {
     final userState = context.watch<UserState>();
 
     return DefaultTabController(
-      length: 1,
+      length: 2,
       child: Scaffold(
         appBar: AppBar(
           title: const Text(
@@ -192,12 +192,17 @@ class _QuestScreenState extends State<QuestScreen> {
             isScrollable: true,
             indicatorColor: AppColors.highlightColor,
             labelStyle: TextStyle(fontFamily: 'PressStart2P', fontSize: 9),
-            tabs: [Tab(text: 'River Monsters')],
+            tabs: [Tab(text: 'River Monsters'), Tab(text: 'Daily Bounties')],
           ),
         ),
         body: Container(
           decoration: const BoxDecoration(color: Color(0xFF1a1a2e)),
-          child: TabBarView(children: [_buildRiverMonstersTab(userState)]),
+          child: TabBarView(
+            children: [
+              _buildRiverMonstersTab(userState),
+              _buildDailyBountiesTab(userState),
+            ],
+          ),
         ),
       ),
     );
@@ -800,6 +805,182 @@ class _QuestScreenState extends State<QuestScreen> {
         ],
       ),
     );
+  }
+
+  Widget _buildDailyBountiesTab(UserState userState) {
+    final activeQuests =
+        userState.currentUser?.activeQuests
+            .where((q) => q.category == 'Bounties')
+            .toList() ??
+        [];
+
+    return Column(
+      children: [
+        const SizedBox(height: 10),
+        Container(
+          padding: const EdgeInsets.all(16),
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.brown.shade800,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.amber, width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.5),
+                blurRadius: 4,
+                offset: const Offset(2, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              const Text(
+                'WANTED POSTERS',
+                style: TextStyle(
+                  color: Colors.amber,
+                  fontFamily: 'PressStart2P',
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Complete these bounties for rewards. New bounties appear over time.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.robotoMono(
+                  color: Colors.white70,
+                  fontSize: 11,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.3),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(20),
+              ),
+            ),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'ACTIVE BOUNTIES (${activeQuests.length}/3)',
+                        style: const TextStyle(
+                          fontFamily: 'PressStart2P',
+                          fontSize: 10,
+                          color: Colors.amber,
+                        ),
+                      ),
+                      if (activeQuests.length < 3)
+                        IconButton(
+                          icon: const Icon(
+                            Icons.add_circle,
+                            color: Colors.amberAccent,
+                            size: 30,
+                          ),
+                          onPressed: _generateNewBounty,
+                        )
+                      else
+                        const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Icon(
+                            Icons.lock,
+                            color: Colors.white24,
+                            size: 24,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: activeQuests.isEmpty
+                      ? const Center(
+                          child: Text(
+                            'Click the + to accept a new bounty!',
+                            style: TextStyle(
+                              color: Colors.white54,
+                              fontSize: 12,
+                            ),
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          itemCount: activeQuests.length,
+                          itemBuilder: (context, index) {
+                            final quest = activeQuests[index];
+                            return _buildQuestCard(quest, userState);
+                          },
+                        ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _generateNewBounty() {
+    final userState = Provider.of<UserState>(context, listen: false);
+    final activeQuests =
+        userState.currentUser?.activeQuests
+            .where((q) => q.category == 'Bounties')
+            .toList() ??
+        [];
+
+    if (activeQuests.length >= 3) return;
+    if (_isLoadingOrganisms || _allOrganisms.isEmpty) return;
+
+    final random = Random();
+    final targetOrg = _allOrganisms[random.nextInt(_allOrganisms.length)];
+    final target = targetOrg.name;
+    final count = random.nextInt(3) + 2; // 2 to 4
+    final baseReward = count * 150;
+    final rarityBonus =
+        (targetOrg.rarity.toLowerCase() == 'uncommon' ? 100 : 0) +
+        (targetOrg.rarity.toLowerCase() == 'rare' ? 250 : 0) +
+        (targetOrg.rarity.toLowerCase() == 'epic' ? 500 : 0) +
+        (targetOrg.rarity.toLowerCase() == 'legendary' ? 1000 : 0);
+    final reward = baseReward + rarityBonus + random.nextInt(100);
+
+    final templates = [
+      "Bounty: Cull {count} {target}. They've been causing trouble in the region.",
+      "Wanted: {count} {target} for research purposes. Dead or alive.",
+      "Pest Control: Remove {count} {target} from the wild.",
+      "The locals put out a hit on {target}. Bring down {count} of them."
+    ];
+
+    final template = templates[random.nextInt(templates.length)];
+    final flavoredDescription = template
+        .replaceAll('{count}', count.toString())
+        .replaceAll('{target}', target);
+
+    final newQuest = Quest(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      description: flavoredDescription,
+      targetOrganismName: target,
+      targetCount: count,
+      rewardMoney: reward,
+      npcId: 'bounty_board',
+      category: 'Bounties',
+    );
+
+    userState.acceptQuest(newQuest);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('New bounty accepted!'), backgroundColor: Colors.amber),
+      );
+    }
   }
 }
 

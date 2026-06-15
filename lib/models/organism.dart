@@ -162,6 +162,78 @@ class Organism {
     return "${robustness.toStringAsFixed(2).replaceAll(RegExp(r'\.00$'), '')} λ";
   }
 
+  /// Dynamically infers the locomotion type(s) based on taxonomy and habitat.
+  /// Returns a list of strings: 'land', 'aquatic', 'flying'
+  List<String> get locomotion {
+    final c = animalClass.toLowerCase();
+    final o = order.toLowerCase();
+    final f = family.toLowerCase();
+    
+    // Birds
+    if (c == 'bird' || c == 'aves') {
+      if (o == 'sphenisciformes') return ['land', 'aquatic']; // Penguins
+      if (o == 'anseriformes') return ['land', 'aquatic', 'flying']; // Ducks/Swans
+      if (o == 'struthioniformes' || o == 'casuariiformes' || o == 'apterygiformes') return ['land']; // Ostriches, Emus, Kiwis
+      return ['flying', 'land']; // Most birds
+    }
+    
+    // Fish
+    if (c == 'fish' || c == 'actinopterygii' || c == 'chondrichthyes' || c == 'sarcopterygii') {
+      return ['aquatic'];
+    }
+    
+    // Amphibians
+    if (c == 'amphibian' || c == 'amphibia') {
+      return ['land', 'aquatic'];
+    }
+    
+    // Reptiles
+    if (c == 'reptile' || c == 'reptilia') {
+      if (o == 'crocodilia') return ['land', 'aquatic'];
+      if (o == 'testudines') {
+        if (f == 'cheloniidae' || f == 'dermochelyidae') return ['aquatic', 'land']; // Sea turtles
+        if (f == 'emydidae' || f == 'chelydridae') return ['land', 'aquatic']; // Pond turtles
+      }
+      return ['land']; // Snakes, lizards, tortoises
+    }
+    
+    // Mammals
+    if (c == 'mammal' || c == 'mammalia') {
+      if (o == 'cetacea' || o == 'sirenia') return ['aquatic']; // Whales, dolphins, manatees
+      if (o == 'carnivora' && (f == 'phocidae' || f == 'otariidae' || f == 'odobenidae')) return ['land', 'aquatic']; // Seals, walruses
+      if (o == 'chiroptera') return ['flying']; // Bats
+      if (name.toLowerCase().contains('platypus') || name.toLowerCase().contains('beaver') || name.toLowerCase().contains('otter')) return ['land', 'aquatic'];
+      return ['land'];
+    }
+    
+    // Insects and others
+    if (c == 'insect' || c == 'insecta') {
+      if (o == 'lepidoptera' || o == 'odonata' || o == 'diptera' || o == 'hymenoptera') return ['flying', 'land'];
+      if (o == 'ephemeroptera' || o == 'plecoptera') return ['flying', 'land', 'aquatic']; // Mayflies etc
+      return ['land'];
+    }
+    
+    // Crustaceans / Mollusks
+    if (c == 'crustacean' || c == 'crustacea') {
+      return ['aquatic', 'land']; // Crabs, lobsters
+    }
+    if (c == 'mollusk' || c == 'mollusca' || c == 'cephalopoda') {
+      if (habitat.toLowerCase().contains('ocean') || habitat.toLowerCase().contains('sea') || habitat.toLowerCase().contains('water')) return ['aquatic'];
+      return ['land']; // Snails, slugs
+    }
+    if (c == 'cnidarian' || c == 'echinoderm') {
+      return ['aquatic']; // Jellyfish, starfish
+    }
+    
+    // Fallback based on habitat
+    final hab = habitat.toLowerCase();
+    if (hab.contains('ocean') || hab.contains('sea') || hab.contains('river') || hab.contains('lake') || hab.contains('water')) {
+      return ['aquatic'];
+    }
+    
+    return ['land']; // Default fallback
+  }
+
   String get formattedSize {
     if (size == size.toInt().toDouble()) {
       return size.toInt().toString();

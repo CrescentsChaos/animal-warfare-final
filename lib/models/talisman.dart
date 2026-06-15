@@ -252,6 +252,9 @@ class Talisman {
   final String? mitigatesSeverity; // "freezing", "cold", "hot", "scorching"
   final double? survivalDamageReduction; // 1.0 = 100% reduction
   final int? survivalDurationMinutes;
+  final int hungerFulfillment;
+  final int thirstFulfillment;
+  final int staminaBoost;
 
   const Talisman({
     required this.id,
@@ -274,6 +277,9 @@ class Talisman {
     this.mitigatesSeverity,
     this.survivalDamageReduction,
     this.survivalDurationMinutes,
+    this.hungerFulfillment = 0,
+    this.thirstFulfillment = 0,
+    this.staminaBoost = 0,
   });
 
   String get spritePath =>
@@ -351,6 +357,9 @@ class Talisman {
       mitigatesSeverity: json['mitigates_severity'] as String?,
       survivalDamageReduction: (json['survival_damage_reduction'] as num?)?.toDouble(),
       survivalDurationMinutes: (json['survival_duration_minutes'] as num?)?.toInt(),
+      hungerFulfillment: (json['hunger_fulfillment'] as num?)?.toInt() ?? 0,
+      thirstFulfillment: (json['thirst_fulfillment'] as num?)?.toInt() ?? 0,
+      staminaBoost: (json['stamina_boost'] as num?)?.toInt() ?? 0,
     );
   }
 

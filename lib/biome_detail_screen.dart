@@ -656,11 +656,11 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
       }
       return;
     }
-    int baseCost = 10;
+    int baseCost = 3;
     int drainMultiplier = userState.calculateExplorationStaminaDrain(
       widget.biomeName,
     );
-    int totalCost = baseCost * drainMultiplier;
+    int totalCost = (baseCost * drainMultiplier).clamp(3, 10);
 
     if (user.stamina < totalCost) {
       if (mounted) {
@@ -1350,7 +1350,19 @@ class _BiomeDetailScreenState extends State<BiomeDetailScreen>
               ),
             ),
             const SizedBox(height: 16),
-            Text(event.icon, style: const TextStyle(fontSize: 48)),
+            event.icon.endsWith('.png') || event.icon.endsWith('.jpg')
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.asset(
+                      event.icon,
+                      width: 400,
+                      height: 200,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const Text('❓', style: TextStyle(fontSize: 48)),
+                    ),
+                  )
+                : Text(event.icon, style: const TextStyle(fontSize: 48)),
             const SizedBox(height: 16),
             Text(
               event.description,

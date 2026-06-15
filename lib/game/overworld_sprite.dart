@@ -1,7 +1,7 @@
 // lib/game/overworld_sprite.dart
 //
 // Represents a roaming animal NPC ("pheno") on the biome exploration map.
-// Movement behaviour is driven by the sprite's Nature.
+// Movement behaviour is driven by the sprite's Nature and ecological context.
 
 import 'dart:math';
 import 'dart:ui' as ui;
@@ -9,6 +9,17 @@ import 'dart:ui' as ui;
 import 'package:animal_warfare/game/biome_map_data.dart';
 import 'package:animal_warfare/models/organism.dart';
 import 'package:animal_warfare/models/nature.dart';
+
+/// Ecological behaviour states animals can perform beyond simple wandering.
+enum EcoState {
+  wandering,
+  sleeping,
+  drinking,
+  grazing,
+  socialising,
+  stalking,
+  sunbathing,
+}
 
 // ── Behaviour profile derived from Nature ──────────────────────────────────
 
@@ -307,6 +318,24 @@ class OverworldSprite {
   double _cryCooldown = 0;
   bool shouldPlayCry = false;
 
+  // Ecological behaviour
+  EcoState ecoState = EcoState.wandering;
+  double _ecoStateDuration = 0; // How long to remain in the current eco state
+  double _ecoStateTimer = 0;    // Counts down
+
+  /// Human-readable label for this sprite's current ecological activity.
+  String get behaviorLabel {
+    switch (ecoState) {
+      case EcoState.sleeping: return 'Sleeping 💤';
+      case EcoState.drinking: return 'Drinking 💧';
+      case EcoState.grazing:  return 'Grazing 🌿';
+      case EcoState.socialising: return 'Socialising 🐾';
+      case EcoState.stalking: return 'Stalking 👁';
+      case EcoState.sunbathing: return 'Sunbathing ☀️';
+      default:                return 'Wandering';
+    }
+  }
+
   // Hopping (Frogs)
   bool isHopping = false;
   double hopProgress = 0.0;
@@ -451,6 +480,121 @@ class OverworldSprite {
     return false;
   }
 
+  /// Evaluate what ecological state this animal should be in based on
+  /// time-of-day, current tile type, and nearby entities.
+  void _updateEcoState(
+    double dt,
+    BiomeMapData mapData,
+    int gameHour,
+    List<OverworldSprite> otherSprites,
+  ) {
+    _ecoStateTimer -= dt;
+    if (_ecoStateTimer > 0) return; // Still in current state
+
+    final rng = Random();
+    final baseTile = mapData.grid[row][col];
+    final overlays = mapData.overlayGrid?[row][col];
+    final bool nearWater = _isNearWater(mapData);
+    final bool inGrass = overlays?.any((t) => t.category == TileCategory.tallGrass) ?? false;
+    final bool isNoctural = organism.pheno.contains('bat') ||
+        organism.pheno.contains('owl') ||
+        organism.pheno.contains('cat');
+    final bool isPredator = _profile.playerAffinity > 0.7;
+    final bool isHerbivore = !isPredator && _profile.playerAffinity <= 0.0;
+    final bool isNight = gameHour >= 21 || gameHour < 6;
+    final bool isDay = gameHour >= 6 && gameHour < 19;
+    final bool isMidDay = gameHour >= 11 && gameHour < 15;
+    final bool isReptile = organism.family.toLowerCase().contains('crocodil') ||
+        organism.family.toLowerCase().contains('squamat') ||
+        organism.family.toLowerCase().contains('cheloni') ||
+        organism.pheno.contains('lizard') ||
+        organism.pheno.contains('croc') ||
+        organism.pheno.contains('gecko');
+    final bool nearOtherSameSpecies = otherSprites.any((s) =>
+        s != this &&
+        s.organism.pheno == organism.pheno &&
+        (pow(s.pixelX - pixelX, 2) + pow(s.pixelY - pixelY, 2)) <
+            pow(6 * 32.0, 2));
+
+    // Weighted state selection
+    final candidates = <MapEntry<EcoState, double>>[];
+
+    // Sleeping: nocturnal animals sleep by day, diurnal sleep at night
+    if ((isNoctural && isDay) || (!isNoctural && isNight)) {
+      candidates.add(MapEntry(EcoState.sleeping, 0.7));
+    }
+
+    // Drinking: any animal near water
+    if (nearWater) {
+      candidates.add(MapEntry(EcoState.drinking, 0.5));
+    }
+
+    // Grazing: herbivores in grass or soft ground during day
+    if (isHerbivore && isDay && (inGrass || baseTile.category == TileCategory.ground)) {
+      candidates.add(MapEntry(EcoState.grazing, 0.45));
+    }
+
+    // Sunbathing: reptiles mid-day
+    if (isReptile && isMidDay) {
+      candidates.add(MapEntry(EcoState.sunbathing, 0.6));
+    }
+
+    // Stalking: predators during dusk/dawn
+    if (isPredator && (gameHour >= 5 && gameHour <= 7 || gameHour >= 18 && gameHour <= 20)) {
+      candidates.add(MapEntry(EcoState.stalking, 0.5));
+    }
+
+    // Socialising: near same species
+    if (nearOtherSameSpecies) {
+      candidates.add(MapEntry(EcoState.socialising, 0.3));
+    }
+
+    // Always have wandering as fallback
+    candidates.add(MapEntry(EcoState.wandering, 0.3));
+
+    // Weighted random selection
+    final totalWeight = candidates.fold(0.0, (sum, e) => sum + e.value);
+    double pick = rng.nextDouble() * totalWeight;
+    EcoState selected = EcoState.wandering;
+    for (final c in candidates) {
+      pick -= c.value;
+      if (pick <= 0) {
+        selected = c.key;
+        break;
+      }
+    }
+
+    ecoState = selected;
+    // Duration: sleeping states last longer, action states are shorter
+    switch (selected) {
+      case EcoState.sleeping:   _ecoStateDuration = 8.0 + rng.nextDouble() * 12.0; break;
+      case EcoState.drinking:   _ecoStateDuration = 3.0 + rng.nextDouble() * 4.0; break;
+      case EcoState.grazing:    _ecoStateDuration = 5.0 + rng.nextDouble() * 8.0; break;
+      case EcoState.sunbathing: _ecoStateDuration = 6.0 + rng.nextDouble() * 10.0; break;
+      case EcoState.stalking:   _ecoStateDuration = 4.0 + rng.nextDouble() * 6.0; break;
+      case EcoState.socialising: _ecoStateDuration = 3.0 + rng.nextDouble() * 5.0; break;
+      case EcoState.wandering:  _ecoStateDuration = 2.0 + rng.nextDouble() * 4.0; break;
+    }
+    _ecoStateTimer = _ecoStateDuration;
+  }
+
+  bool _isNearWater(BiomeMapData mapData) {
+    for (int dr = -2; dr <= 2; dr++) {
+      for (int dc = -2; dc <= 2; dc++) {
+        final nr = row + dr;
+        final nc = col + dc;
+        if (nr < 0 || nr >= mapData.height || nc < 0 || nc >= mapData.width) continue;
+        final t = mapData.grid[nr][nc];
+        final ov = mapData.overlayGrid?[nr][nc];
+        if (t.category == TileCategory.water ||
+            (ov?.any((o) => o.category == TileCategory.water) ?? false)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   /// AI tick — called from _onTick. Returns true if state changed.
   bool tick(
     double dt,
@@ -459,11 +603,15 @@ class OverworldSprite {
     List<OverworldSprite> otherSprites = const [],
     double? pTargetX,
     double? pTargetY,
+    int gameHour = 12,
   }) {
     if (pTargetX != null) playerTargetPixelX = pTargetX;
     if (pTargetY != null) playerTargetPixelY = pTargetY;
 
     if (isExpired) return false;
+
+    // Update ecological state each tick
+    _updateEcoState(dt, mapData, gameHour, otherSprites);
 
     bool changed = false;
 
@@ -544,10 +692,17 @@ class OverworldSprite {
       // Waiting — count down AI cooldown
       isHopping = false; // Ensure hopping is reset when idling
       if (!isAlerted) {
+        // Sleeping, sunbathing, and drinking animals stay idle — much longer cooldown
+        final bool isIdle = ecoState == EcoState.sleeping ||
+            ecoState == EcoState.sunbathing ||
+            ecoState == EcoState.drinking;
+
         if (_aiCooldown > 0) {
           _aiCooldown -= dt;
         }
-        if (_aiCooldown <= 0) {
+        // Sleeping animals barely move; if idle, add extra cooldown
+        final effectiveCooldown = isIdle ? _aiCooldown * 3.0 : _aiCooldown;
+        if (effectiveCooldown <= 0 && !isIdle) {
           _burstRemaining = _profile.burstLength - 1;
           _pickAiMove(
             mapData,
@@ -555,7 +710,12 @@ class OverworldSprite {
             otherSprites: otherSprites,
             pTargetX: playerTargetPixelX,
             pTargetY: playerTargetPixelY,
+            ecoState: ecoState,
           );
+          changed = true;
+        } else if (isIdle) {
+          // Idle – just tick down the cooldown, no movement
+          _aiCooldown -= dt;
           changed = true;
         }
       }
@@ -630,14 +790,15 @@ class OverworldSprite {
     return changed;
   }
 
-  /// Pick the next direction, influenced by nature's playerAffinity and
-  /// erraticChance.
+  /// Pick the next direction, influenced by nature's playerAffinity,
+  /// erraticChance, and current ecological state.
   void _pickAiMove(
     BiomeMapData mapData,
     double tileSize, {
     List<OverworldSprite> otherSprites = const [],
     double? pTargetX,
     double? pTargetY,
+    EcoState ecoState = EcoState.wandering,
   }) {
     final rng = Random();
 
@@ -719,6 +880,45 @@ class OverworldSprite {
           rng.nextDouble() * (_profile.cooldownMax - _profile.cooldownMin);
       _burstRemaining = 0;
       return;
+    }
+
+    // ── Ecological movement overrides ──
+    // Stalking: predators move towards player's last known direction
+    if (ecoState == EcoState.stalking && affinity > 0) {
+      affinity = (affinity + 0.3).clamp(0.0, 1.0); // Even more drawn to player
+    }
+    // Grazing: stay near current tile, prefer grassy patches
+    if (ecoState == EcoState.grazing) {
+      final grassDirs = validDirs.where((d) {
+        final nr = row + (d[0] as int);
+        final nc = col + (d[1] as int);
+        final ov = mapData.overlayGrid?[nr][nc];
+        return ov?.any((t) => t.category == TileCategory.tallGrass) ?? false;
+      }).toList();
+      if (grassDirs.isNotEmpty) {
+        final move = grassDirs[rng.nextInt(grassDirs.length)];
+        _currentBurstDir = [move[0] as int, move[1] as int];
+        _applyMove(move, tileSize);
+        return;
+      }
+    }
+    // Drinking: move towards water
+    if (ecoState == EcoState.drinking) {
+      final waterDirs = validDirs.where((d) {
+        final nr = row + (d[0] as int);
+        final nc = col + (d[1] as int);
+        if (nr < 0 || nr >= mapData.height || nc < 0 || nc >= mapData.width) return false;
+        final bt = mapData.grid[nr][nc];
+        final ov = mapData.overlayGrid?[nr][nc];
+        return bt.category == TileCategory.water ||
+            (ov?.any((t) => t.category == TileCategory.water) ?? false);
+      }).toList();
+      if (waterDirs.isNotEmpty) {
+        final move = waterDirs[rng.nextInt(waterDirs.length)];
+        _currentBurstDir = [move[0] as int, move[1] as int];
+        _applyMove(move, tileSize);
+        return;
+      }
     }
 
     // Decide whether this move is erratic (random) or affinity-guided

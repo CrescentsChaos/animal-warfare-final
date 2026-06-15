@@ -460,6 +460,11 @@ class _PhoneScreenState extends State<PhoneScreen> {
                   Icons.message_outlined,
                   Colors.blueAccent,
                 ),
+                _buildAppIcon(
+                  'Field Guide',
+                  Icons.menu_book,
+                  Colors.green,
+                ),
               ],
             ),
           ),
@@ -568,6 +573,9 @@ class _PhoneScreenState extends State<PhoneScreen> {
         break;
       case 'Translator':
         app = _TranslatorApp(onBack: closeApp);
+        break;
+      case 'Field Guide':
+        app = _FieldGuideApp(onBack: closeApp);
         break;
       default:
         app = Center(
@@ -1988,6 +1996,110 @@ class _TranslatorApp extends StatelessWidget {
           Text(
             msg.message,
             style: const TextStyle(color: Colors.white, fontSize: 11),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FieldGuideApp extends StatelessWidget {
+  final VoidCallback onBack;
+  const _FieldGuideApp({required this.onBack});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        _AppHeader(title: 'Field Guide', onBack: onBack),
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              _buildGuideSection(
+                title: 'Controls & UI',
+                icon: Icons.touch_app,
+                content:
+                    'Tap the directional arrows to move across the biome map.\n'
+                    'Tap the map center to trigger a search for animals or items.\n'
+                    'Use your Phone to access tools like the Weather app or Bank.',
+              ),
+              _buildGuideSection(
+                title: 'Survival 101',
+                icon: Icons.local_fire_department,
+                content:
+                    'Keep an eye on your Stamina, Hunger, and Thirst!\n'
+                    '• Hunger & Thirst drain slowly while exploring.\n'
+                    '• High Hunger/Thirst (>80%) grants a stamina discount.\n'
+                    '• Low Hunger/Thirst (<20%) increases stamina costs.\n'
+                    '• Extreme weather (Freezing/Scorching) drains extra stamina. Use thermal coats or deploy a Campfire to survive.',
+              ),
+              _buildGuideSection(
+                title: 'Combat & Capturing',
+                icon: Icons.catching_pokemon,
+                content:
+                    'Defeat wild animals using your team. If an animal is weak, use an Animal Box to capture it.\n'
+                    'Use Baits and Lures to attract specific types of animals to your location.',
+              ),
+              _buildGuideSection(
+                title: 'Crafting',
+                icon: Icons.construction,
+                content:
+                    'Gather materials like Wood, Vines, and Scraps from events or battles.\n'
+                    'Use the Crafting Station to forge Talismans, Campfires, and survival gear.',
+              ),
+              _buildGuideSection(
+                title: 'Exploration Events',
+                icon: Icons.map,
+                content:
+                    'Watch out for glowing Event Nodes on the map! Interacting with them can trigger narrative events.\n'
+                    'Animals wander the map. Some will sleep at night, drink near water, or flee if they are timid.',
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGuideSection({
+    required String title,
+    required IconData icon,
+    required String content,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.greenAccent.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: Colors.greenAccent, size: 24),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.greenAccent,
+                  fontFamily: 'PressStart2P',
+                  fontSize: 10,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            content,
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: 12,
+              height: 1.4,
+            ),
           ),
         ],
       ),

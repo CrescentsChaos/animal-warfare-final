@@ -461,14 +461,17 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       final safeT = t ?? [];
       final valid = BattleCard.allCards.where((c) {
         if (c.requiredOrganism != null &&
-            !safeT.any((o) => o.baseOrganism.name == c.requiredOrganism))
+            !safeT.any((o) => o.baseOrganism.name == c.requiredOrganism)) {
           return false;
+        }
         if (c.requiredFamily != null &&
-            !safeT.any((o) => o.baseOrganism.family == c.requiredFamily))
+            !safeT.any((o) => o.baseOrganism.family == c.requiredFamily)) {
           return false;
+        }
         if (c.requiredBiomes.isNotEmpty &&
-            (b == null || !c.requiredBiomes.contains(b)))
+            (b == null || !c.requiredBiomes.contains(b))) {
           return false;
+        }
         return true;
       }).toList();
       return valid.isNotEmpty ? valid[r.nextInt(valid.length)].id : null;
@@ -708,6 +711,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           lead,
           isRogueMode: isRogueMode,
           isOpponent: false,
+          biomeName: biomeName,
         );
         playerMoves = _getOrganismMoves(lead);
       }
@@ -739,6 +743,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         trainer,
         isRogueMode: isRogueMode,
         isOpponent: false,
+        biomeName: biomeName,
       );
       playerMoves = _getOrganismMoves(trainer);
       addToLog('You have no animals! You must defend yourself!');
@@ -799,6 +804,7 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         playerTeam[currentPlayerIndex],
         isRogueMode: isRogueMode,
         isOpponent: false,
+        biomeName: biomeName,
       );
       player.revealedMoves.addAll(_getStats(playerOrganism.id).revealedMoves);
       playerMoves = _getOrganismMoves(playerOrganism);
@@ -1541,8 +1547,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
       if (croc == null) {
         addToLog('But there was no Nile Crocodile on the team... It failed!');
         notifyListeners();
-        if (!isTesting)
+        if (!isTesting) {
           await Future.delayed(const Duration(milliseconds: 2000));
+        }
         return;
       }
 
@@ -1574,8 +1581,9 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
           'But there was no Acrididae family member on the team... It failed!',
         );
         notifyListeners();
-        if (!isTesting)
+        if (!isTesting) {
           await Future.delayed(const Duration(milliseconds: 2000));
+        }
         return;
       }
 
@@ -1627,10 +1635,11 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
         _setTerrain(Terrain.ashenWaste, 3);
         addToLog('The environment caught fire and became an Ashen Waste!');
         // Play custom wildfire sound / trigger custom UI animation
-        if (!isTesting)
+        if (!isTesting) {
           await _audioService.playSound(
             'audio/effects/fire_blast.mp3',
           ); // or equivalent
+        }
       } else {
         addToLog('The wildfire failed to spread in this biome.');
       }
@@ -8052,7 +8061,11 @@ class BattleManager extends ChangeNotifier with AbilityHelpers {
     final int evasionStage = player.evasionStage;
     final bool isLeechSeeded = player.isLeechSeeded;
 
-    player = BattleOrganism(playerOrganism, isRogueMode: isRogueMode);
+    player = BattleOrganism(
+      playerOrganism, 
+      isRogueMode: isRogueMode,
+      biomeName: biomeName,
+    );
     player.weather = currentWeather.weather;
     player.terrain = currentTerrain.terrain;
     player.futureSightTurns = fsTurns;

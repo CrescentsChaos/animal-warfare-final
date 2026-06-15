@@ -207,5 +207,21 @@
             "String": 1,
             "truffle": 1
         }
+    },
+    {
+        "id": "recipe_campfire",
+        "resultTalismanId": "campfire",
+        "requiredLoot": {
+            "Wood": 5,
+            "Scraps": 2
+        }
+    },
+    {
+        "id": "recipe_purified_water",
+        "resultTalismanId": "purified_water",
+        "requiredLoot": {
+            "Water": 3,
+            "Wood": 1
+        }
     }
 ]

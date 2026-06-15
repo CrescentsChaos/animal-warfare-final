@@ -776,11 +776,24 @@ class _MaterialsTabState extends State<_MaterialsTab> {
                               ),
                             );
                           }
-                        } else if (Talisman.findById(
-                              entry.key,
-                            )?.isSurvivalItem ==
-                            true) {
+                        } else if (Talisman.findById(entry.key)?.isSurvivalItem == true || Talisman.findById(entry.key)?.isFood == true) {
                           final talisman = Talisman.findById(entry.key)!;
+                          bool isFood = talisman.isFood;
+                          String title = isFood ? 'CONSUME FOOD?' : 'CONSUME DRINK?';
+                          
+                          String contentMsg = '';
+                          if (isFood) {
+                            contentMsg = 'Consume ${talisman.name}? This will restore ';
+                            List<String> benefits = [];
+                            if (talisman.hungerFulfillment > 0) benefits.add('${talisman.hungerFulfillment} Hunger');
+                            if (talisman.thirstFulfillment > 0) benefits.add('${talisman.thirstFulfillment} Thirst');
+                            if (talisman.staminaBoost > 0) benefits.add('${talisman.staminaBoost} Stamina');
+                            if (benefits.isEmpty) benefits.add('some health');
+                            contentMsg += '${benefits.join(', ')}.';
+                          } else {
+                            contentMsg = 'Consume ${talisman.name}? This will grant a ${talisman.mitigatesSeverity?.toUpperCase()} protection effect for ${talisman.survivalDurationMinutes} minutes.';
+                          }
+
                           showDialog(
                             context: context,
                             builder: (ctx) => AlertDialog(
@@ -789,16 +802,16 @@ class _MaterialsTabState extends State<_MaterialsTab> {
                                 borderRadius: BorderRadius.circular(16),
                                 side: const BorderSide(color: Colors.white10),
                               ),
-                              title: const Text(
-                                'CONSUME DRINK?',
-                                style: TextStyle(
+                              title: Text(
+                                title,
+                                style: const TextStyle(
                                   fontFamily: 'PressStart2P',
                                   fontSize: 12,
                                   color: Colors.white,
                                 ),
                               ),
                               content: Text(
-                                'Consume ${talisman.name}? This will grant a ${talisman.mitigatesSeverity?.toUpperCase()} protection effect for ${talisman.survivalDurationMinutes} minutes.',
+                                contentMsg,
                                 style: const TextStyle(
                                   fontSize: 14,
                                   color: Colors.white70,
@@ -815,30 +828,30 @@ class _MaterialsTabState extends State<_MaterialsTab> {
                                 ElevatedButton(
                                   onPressed: () {
                                     Navigator.pop(ctx);
-                                    userState.consumeSurvivalItem(talisman).then((
-                                      success,
-                                    ) {
-                                      if (success && mounted) {
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              'Consumed ${talisman.name}! protection active.',
-                                            ),
-                                          ),
-                                        );
-                                      }
-                                    });
+                                    if (isFood) {
+                                      userState.consumeFood(talisman).then((success) {
+                                        if (success && mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(content: Text('Consumed ${talisman.name}!')),
+                                          );
+                                        }
+                                      });
+                                    } else {
+                                      userState.consumeSurvivalItem(talisman).then((success) {
+                                        if (success && mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(content: Text('Consumed ${talisman.name}! protection active.')),
+                                          );
+                                        }
+                                      });
+                                    }
                                   },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: AppColors.highlightColor,
                                   ),
                                   child: const Text(
                                     'CONSUME',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                    style: TextStyle(fontWeight: FontWeight.bold),
                                   ),
                                 ),
                               ],

@@ -1686,7 +1686,8 @@
     "is_food": true,
     "diet_type": "carnivore",
     "nutritional_value": 30,
-    "effects": []
+    "effects": [],
+    "hunger_fulfillment": 25
   },
   {
     "id": "beef",
@@ -1696,7 +1697,8 @@
     "diet_type": "carnivore",
     "preferred_class": "mammal",
     "nutritional_value": 60,
-    "effects": []
+    "effects": [],
+    "hunger_fulfillment": 50
   },
   {
     "id": "seaweed_salad",
@@ -1706,7 +1708,9 @@
     "diet_type": "herbivore",
     "preferred_class": "fish,mollusk",
     "nutritional_value": 40,
-    "effects": []
+    "effects": [],
+    "hunger_fulfillment": 30,
+    "thirst_fulfillment": 10
   },
   {
     "id": "fish_fillet",
@@ -1715,7 +1719,8 @@
     "is_food": true,
     "diet_type": "piscivore",
     "nutritional_value": 50,
-    "effects": []
+    "effects": [],
+    "hunger_fulfillment": 40
   },
   {
     "id": "seed_mix",
@@ -1725,7 +1730,8 @@
     "diet_type": "herbivore",
     "preferred_class": "bird",
     "nutritional_value": 35,
-    "effects": []
+    "effects": [],
+    "hunger_fulfillment": 20
   },
   {
     "id": "insect_jelly",
@@ -1735,7 +1741,10 @@
     "diet_type": "insectivore",
     "preferred_class": "insect,arachnid,bird,amphibian,reptile",
     "nutritional_value": 45,
-    "effects": []
+    "effects": [],
+    "hunger_fulfillment": 15,
+    "thirst_fulfillment": 5,
+    "stamina_boost": 10
   },
   {
     "id": "royal_honey",
@@ -1745,7 +1754,9 @@
     "diet_type": "omnivore",
     "preferred_species": "Brown Bear,Grizzly Bear,Polar Bear",
     "nutritional_value": 80,
-    "effects": []
+    "effects": [],
+    "hunger_fulfillment": 40,
+    "stamina_boost": 30
   },
   {
     "id": "ambergris",
@@ -1930,5 +1941,33 @@
     "description": "A vest with built-in cooling. Having this in your inventory permanently reduces the stamina drain of scorching temperatures by half.",
     "effects": [],
     "rarity": "Epic"
+  },
+  {
+    "id": "campfire",
+    "name": "Campfire",
+    "description": "A deployable survival tool. Once deployed, it provides a warmth aura that protects from freezing and restores stamina.",
+    "effects": [],
+    "is_survival_item": true,
+    "rarity": "Uncommon"
+  },
+  {
+    "id": "purified_water",
+    "name": "Purified Water",
+    "description": "Clean, safe water. Completely restores thirst and provides a small stamina boost.",
+    "effects": [],
+    "is_food": true,
+    "is_survival_item": true,
+    "rarity": "Common",
+    "thirst_fulfillment": 100,
+    "stamina_boost": 15
+  },
+  {
+    "id": "energy_bar",
+    "name": "Energy Bar",
+    "description": "A dense, high-calorie bar that provides a massive stamina boost.",
+    "is_food": true,
+    "hunger_fulfillment": 15,
+    "stamina_boost": 50,
+    "effects": []
   }
 ]

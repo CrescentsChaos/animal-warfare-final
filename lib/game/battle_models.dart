@@ -441,12 +441,14 @@ class BattleOrganism {
   bool get isPlayer => !isOpponent;
   int level;
   final int? _atLevel;
+  String? biomeName;
 
   BattleOrganism(
     this.organism, {
     this.isRogueMode = false,
     this.isOpponent = false,
     int? atLevel,
+    this.biomeName,
   }) : _atLevel = atLevel,
        level = atLevel ?? organism.level,
        _statusEffects = List.from(organism.statusEffects),
@@ -655,6 +657,41 @@ class BattleOrganism {
     return totalMultiplier;
   }
 
+  double getLocomotionMultiplier() {
+    if (biomeName == null) return 1.0;
+    final loc = organism.baseOrganism.locomotion;
+    final b = biomeName!.toLowerCase();
+    
+    // Ocean / Deep Water
+    if (b.contains('ocean') || b.contains('lake') || b.contains('sea')) {
+      if (!loc.contains('aquatic') && !loc.contains('flying')) {
+        return 0.5; // Severe penalty for land-only in deep water
+      }
+      if (loc.contains('aquatic') && loc.contains('land')) {
+        return 1.1; // Slight advantage for amphibious in water
+      }
+    }
+    
+    // Land
+    if (b.contains('desert') || b.contains('grassland') || b.contains('mountain') || b.contains('forest') || b.contains('savanna')) {
+      if (loc.length == 1 && loc.contains('aquatic')) {
+        return 0.1; // Massive penalty for fish flopping on land
+      }
+    }
+    
+    // Swamp (Mix)
+    if (b.contains('swamp')) {
+      if (loc.contains('aquatic') && loc.contains('land')) {
+        return 1.2; // Amphibious excel in swamps
+      }
+      if (loc.length == 1 && loc.contains('aquatic')) {
+        return 0.8; // Minor penalty for pure fish in shallow swamp
+      }
+    }
+    
+    return 1.0;
+  }
+
   int get currentAttack {
     double attack = organism.getAttack(atLevel: level).toDouble();
     attack *= _getStatStageMultiplier(attackStage);
@@ -692,6 +729,8 @@ class BattleOrganism {
         attack = attack * 0.5;
       }
     }
+
+    attack *= getLocomotionMultiplier();
 
     return attack.round();
   }
@@ -755,6 +794,8 @@ class BattleOrganism {
       }
     }
 
+    power *= getLocomotionMultiplier();
+
     return power.round();
   }
 
@@ -815,6 +856,10 @@ class BattleOrganism {
       if (se.type == StatusEffectType.fear) speed *= 0.9;
       if (se.type == StatusEffectType.paralysis) speed *= 0.25;
     }
+    // Defeatist (Wait, does Defeatist affect speed? Let's just apply locomotion to speed)
+    
+    speed *= getLocomotionMultiplier();
+
     return speed.round();
   }
 
