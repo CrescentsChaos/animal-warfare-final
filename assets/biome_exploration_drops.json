@@ -1,26 +1,6 @@
 {
-  "drop_chance": 0.30,
+  "drop_chance": 0.05,
   "base_pool": [
-    {
-      "id": "wild_herbs",
-      "name": "Wild Herbs"
-    },
-    {
-      "id": "truffle",
-      "name": "Truffle"
-    },
-    {
-      "id": "chicken_egg",
-      "name": "Eggs"
-    },
-    {
-      "id": "blueberry",
-      "name": "Blueberries"
-    },
-    {
-      "id": "raspberry",
-      "name": "Raspberries"
-    },
     {
       "id": "flash_flood",
       "name": "Flash Flood Card"

@@ -673,7 +673,7 @@ class BattleOrganism {
     }
     
     // Land
-    if (b.contains('desert') || b.contains('grassland') || b.contains('mountain') || b.contains('forest') || b.contains('savanna')) {
+    if (b.contains('desert') || b.contains('plains') || b.contains('mountain') || b.contains('forest') || b.contains('savanna')) {
       if (loc.length == 1 && loc.contains('aquatic')) {
         return 0.1; // Massive penalty for fish flopping on land
       }
